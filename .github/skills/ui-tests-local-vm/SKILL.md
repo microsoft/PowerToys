@@ -66,6 +66,11 @@ separately unless the task explicitly asks for stabilization.
 
 - Two guests, two full suites. Windows 10 Enterprise LTSC 2021 (build 19044/21H2, newer than the
   Windows 10 20H2 baseline) and Windows 11. Both must be fully green before a module is done.
+  LTSC is not available through Fido; `-Source Fido -Windows 10` automates Microsoft's official
+  mobile-user-agent ISO page and is the practical public default. The public ISO/MCT images are too
+  old for .NET 10 CET, so Setup Dynamic Update must bring Win10 to 1904x.5007+ before the baseline.
+  Use licensed Microsoft subscription media for LTSC when available, and always record the edition,
+  ISO hash, and installed full build ([references/setup.md §3](references/setup.md#3-get-windows-media)).
 - Windows 10 runs first: it is the faster loop and surfaces most defects. Windows 11 then runs the
   **same** suite, unfiltered - not only the tests that look Windows 11-specific. A test with no
   Windows 11 content can still fail there, which is the whole reason for the second pass.
@@ -222,10 +227,12 @@ waits for parseable `status.json`, summarizes TRX, and leaves the persistent VM 
 - Keep a separate administrator account only for VM control and scheduled-task registration.
 - Verify user, token integrity, Explorer presence, session ID, and display size before tests.
 - Run product/tests from guest-local storage under `C:\PowerToysUiTestRun`.
+- Use PowerShell 7 for interactive probe/test scheduled tasks. PowerShell Direct and OEM bootstrap
+  remain PS5.1-compatible by design; do not enable a remoting endpoint merely to use PS7.
 - Reuse payloads by per-component hashes; refresh only changed tests/product/tools.
 - Preserve assertions and visual thresholds. Classify VM-specific failures from evidence.
-- Always parse TRX. A process exit code alone cannot distinguish assertions, zero tests, timeout, or
-  infrastructure failure.
+- Always parse TRX and require `total > 0` plus `executed == total`. A process exit code alone cannot
+  distinguish assertions, skipped/inconclusive tests, zero tests, timeout, or infrastructure failure.
 - Keep the VM after normal runs for iteration. Stop it explicitly when idle; delete its VHDX only for
   an intentional baseline reset.
 - Final clean-profile claims require a restored baseline checkpoint or a recreated guest. Restore with

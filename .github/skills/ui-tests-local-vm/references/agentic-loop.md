@@ -116,6 +116,10 @@ requires:
 - Display dimensions match the request, unless both are zero.
 - The guest exchange folder is accessible.
 
+The probe and test tasks execute under the provisioned PowerShell 7 `pwsh.exe`. The narrow
+PowerShell Direct control channel remains inbox Windows PowerShell 5.1; no remoting endpoint or
+firewall rule is enabled for PS7.
+
 Failure here is `BLOCKED`, not a test failure.
 
 Iterate on Windows 10 first; it is the faster loop. Point the same controller at the separate
@@ -143,6 +147,8 @@ LocalVmResults\localvm-<timestamp-guid>\
 The controller prints scalar TRX counters and per-test outcomes. Read both `status.json` and TRX:
 
 - Assertion-bearing TRX failures are `FAIL`.
+- Skipped, inconclusive, or otherwise `NotExecuted` tests are `FAIL`; require `total > 0` and
+  `executed == total` even when the test process exits 0.
 - Zero selected tests/MTP exit code 8 is `BLOCKED`.
 - Missing desktop, control channel, archive, or status is `BLOCKED`.
 - Proven display/profile/compositor differences are `ENVIRONMENT`.
@@ -194,10 +200,28 @@ evidence separately. Narrowing the Windows 11 run to Windows 11-specific tests d
 step. The module is done only when both suites are fully green; a Windows 10 pass with an unrun or
 red Windows 11 suite is an incomplete result, not a success.
 
-Once the complete target suite is green, restart the same VM with `-ResourceProfile Constrained`
-(1 vCPU and 4 GB RAM) and repeat the focused-to-suite progression. Keep the default-profile TRX as
-the correctness baseline and classify failures that appear only under constrained resources
-separately.
+Once the complete target suite is green, stop the guest, then let the controller restart it with the
+`Constrained` profile (1 vCPU and 4 GB RAM). Pass the guest's config explicitly when one VM root owns
+multiple guests:
+
+```pwsh
+pwsh <VmRoot>\Stop-LocalVm.ps1 -ConfigPath <VmRoot>\vm.config.win10.psd1
+
+pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
+  -VmName PowerToysUiTest-Win10 `
+  -ConfigurationPath <VmRoot>\vm.config.win10.psd1 `
+  -ResourceProfile Constrained `
+  -VmRoot <VmRoot> -ExchangeRoot <exchange> `
+  -TestExecutable <Module>.UITests.exe `
+  -Filter 'TestCategory=<Module>' -Platform x64Win10 `
+  -ReuseStagedPayload
+```
+
+`Invoke-LocalVmUiTest.ps1` rejects a config whose `VmName` does not match, records the resource
+profile in the request/result, and passes it to `Start-LocalVm.ps1`. Resource changes only apply
+while the VM is off; stopping first is therefore required. Repeat separately on Windows 11. Keep the
+default-profile TRX as the correctness baseline and classify failures that appear only under
+constrained resources separately.
 
 ## 8. Confirm clean-profile behavior
 

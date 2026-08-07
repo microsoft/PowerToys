@@ -20,10 +20,11 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$currentPowerShell = (Get-Process -Id $PID).Path
 
 if ($Detached) {
     $arguments = '-NoLogo -NoProfile -ExecutionPolicy Bypass -File "{0}" -RequestPath "{1}"' -f $PSCommandPath,$RequestPath
-    Start-Process powershell.exe -ArgumentList $arguments -WindowStyle Hidden
+    Start-Process $currentPowerShell -ArgumentList $arguments -WindowStyle Hidden
     return
 }
 
@@ -171,7 +172,7 @@ while (`$true) {
 }
 "@
     $encodedHeartbeat = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($heartbeatScript))
-    return Start-Process powershell.exe `
+    return Start-Process $currentPowerShell `
         -ArgumentList '-NoLogo','-NoProfile','-EncodedCommand',$encodedHeartbeat `
         -NoNewWindow -PassThru
 }
@@ -398,6 +399,23 @@ try {
         Set-Location $testExe.DirectoryName
         & $testExe.FullName @testArguments
         $testExitCode = $LASTEXITCODE
+        $trxPath = Join-Path $localResultsRoot "$($testExe.BaseName).trx"
+        if ($testExitCode -eq 0) {
+            if (-not (Test-Path $trxPath -PathType Leaf)) {
+                Write-Host "Test runner returned success without producing '$trxPath'."
+                $testExitCode = 1
+            }
+            else {
+                [xml]$trx = Get-Content $trxPath -Raw
+                $counters = $trx.TestRun.ResultSummary.Counters
+                $total = [int]$counters.total
+                $executed = [int]$counters.executed
+                if ($total -eq 0 -or $executed -ne $total) {
+                    Write-Host "Incomplete test run: total=$total, executed=$executed, notExecuted=$([int]$counters.notExecuted)."
+                    $testExitCode = 1
+                }
+            }
+        }
         if ($testExitCode -ne 0 -and $overallExitCode -eq 0) {
             $overallExitCode = $testExitCode
         }

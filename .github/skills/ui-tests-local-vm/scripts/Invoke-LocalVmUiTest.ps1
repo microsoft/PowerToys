@@ -43,6 +43,9 @@ param(
     [Parameter(Mandatory)]
     [string]$VmName,
 
+    [string]$ConfigurationPath,
+    [ValidateSet('Default', 'Constrained')]
+    [string]$ResourceProfile = 'Default',
     [string]$Filter,
     # Flows to the guest as the 'platform' environment variable. The framework uses it for visual
     # baseline filenames (VisualAssert) and treats any non-empty value as "running in a pipeline",
@@ -87,10 +90,24 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
 if (($DesktopWidth -eq 0) -ne ($DesktopHeight -eq 0)) {
     throw 'Set both DesktopWidth and DesktopHeight to 0 to disable display validation.'
 }
+$CleanupProcess = @($CleanupProcess | ForEach-Object { $_ -split ',' } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
 
 Import-Module (Join-Path $PSScriptRoot 'LocalVmGuest.psm1') -Force
 
 $controllerName = 'Hyper-V local VM'
+$vmRootPath = [IO.Path]::GetFullPath($VmRoot)
+if ([string]::IsNullOrWhiteSpace($ConfigurationPath)) {
+    $ConfigurationPath = Join-Path $vmRootPath 'vm.config.psd1'
+}
+$configurationPathResolved = [IO.Path]::GetFullPath($ConfigurationPath)
+if (-not (Test-Path $configurationPathResolved -PathType Leaf)) {
+    throw "VM configuration was not found: $configurationPathResolved"
+}
+$vmConfiguration = Import-PowerShellDataFile $configurationPathResolved
+if ([string]$vmConfiguration.VmName -ne $VmName) {
+    throw "VM configuration '$configurationPathResolved' names '$($vmConfiguration.VmName)', but -VmName is '$VmName'."
+}
+
 if ([string]::IsNullOrWhiteSpace($CredentialPath)) {
     $CredentialPath = Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm\admin.credential.xml'
 }
@@ -98,21 +115,18 @@ if ([string]::IsNullOrWhiteSpace($CredentialPath)) {
 # Hyper-V access, the guest credential, and the guest itself all need a human. Fail on the whole set
 # at once so the user gets one actionable instruction instead of three sequential surprises.
 if (-not $PlanOnly) {
-    $vmConfigPath = Join-Path $VmRoot 'vm.config.psd1'
-    $guestAdminUser = if (Test-Path $vmConfigPath -PathType Leaf) {
-        [string](Import-PowerShellDataFile $vmConfigPath).AdminUserName
-    }
-    else {
-        'PTAdmin'
-    }
+    $guestAdminUser = [string]$vmConfiguration.AdminUserName
 
     $hostSetup = Test-LocalVmHostSetup -VmName $VmName -CredentialPath $CredentialPath -AdminUserName $guestAdminUser
     if (-not $hostSetup.IsReady) {
-        throw (Get-LocalVmSetupMessage -Status $hostSetup -VmRoot $VmRoot)
+        throw (Get-LocalVmSetupMessage `
+            -Status $hostSetup `
+            -VmRoot $VmRoot `
+            -ConfigPath $configurationPathResolved `
+            -CredentialPath $CredentialPath)
     }
 }
 
-$vmRootPath = [IO.Path]::GetFullPath($VmRoot)
 $exchangePath = [IO.Path]::GetFullPath($ExchangeRoot)
 $guestRunnerSourcePath = [IO.Path]::GetFullPath($GuestRunnerSource)
 if (-not (Test-Path $guestRunnerSourcePath -PathType Leaf)) {
@@ -136,7 +150,7 @@ function Get-TrxSummary {
     param([Parameter(Mandatory)][string]$ResultRoot)
 
     $suites = @()
-    $totals = [ordered]@{ Total = 0; Executed = 0; Passed = 0; Failed = 0; Error = 0 }
+    $totals = [ordered]@{ Total = 0; Executed = 0; Passed = 0; Failed = 0; Error = 0; NotExecuted = 0 }
     foreach ($trx in Get-ChildItem $ResultRoot -Filter '*.trx' -File -Recurse -ErrorAction SilentlyContinue) {
         [xml]$document = Get-Content $trx.FullName -Raw
         $counters = $document.TestRun.ResultSummary.Counters
@@ -155,10 +169,11 @@ function Get-TrxSummary {
             Passed = [int]$counters.passed
             Failed = [int]$counters.failed
             Error = [int]$counters.error
+            NotExecuted = [int]$counters.notExecuted
             Tests = $tests
         }
         $suites += [pscustomobject]$suite
-        foreach ($name in @('Total', 'Executed', 'Passed', 'Failed', 'Error')) {
+        foreach ($name in @('Total', 'Executed', 'Passed', 'Failed', 'Error', 'NotExecuted')) {
             $totals[$name] += $suite[$name]
         }
     }
@@ -262,6 +277,7 @@ $request = [ordered]@{
     TestExecutables = @($TestExecutable)
     Filter = $Filter
     Platform = $Platform
+    ResourceProfile = $ResourceProfile
     SuiteTimeout = $SuiteTimeout
     OutputHeartbeatSeconds = $OutputHeartbeatSeconds
     DesktopWidth = $DesktopWidth
@@ -288,6 +304,8 @@ $plan = [ordered]@{
     RunId = $runId
     VmRoot = $vmRootPath
     VmName = $guestContext.VmName
+    ConfigurationPath = $configurationPathResolved
+    ResourceProfile = $ResourceProfile
     ExchangeRoot = $exchangePath
     GuestExchangeRoot = $guestExchangeRoot
     GuestRunnerSource = $guestRunnerSourcePath
@@ -330,12 +348,104 @@ try {
         if (-not (Test-Path $startScript -PathType Leaf)) {
             throw "VM start script was not found: $startScript"
         }
-        $startupOutput = & $startScript -Wait -TimeoutMinutes $StartupTimeoutMinutes | Out-String
+        $startupOutput = & $startScript `
+            -ConfigPath $configurationPathResolved `
+            -CredentialPath $CredentialPath `
+            -ResourceProfile $ResourceProfile `
+            -Wait `
+            -TimeoutMinutes $StartupTimeoutMinutes | Out-String
         Write-Verbose $startupOutput
     }
 
     $session = New-LocalVmSession `
         -Context $guestContext -Credential $credential -TimeoutMinutes $StartupTimeoutMinutes
+
+    $guestWindowsVersion = Invoke-Command -Session $session -ScriptBlock {
+        $currentVersion = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
+        [pscustomobject]@{
+            Build = [int]$currentVersion.CurrentBuild
+            Ubr = [int]$currentVersion.UBR
+            Display = "$($currentVersion.CurrentBuild).$($currentVersion.UBR)"
+        }
+    }
+    if ($guestWindowsVersion.Build -lt 22000 -and
+        ($guestWindowsVersion.Build -lt 19041 -or $guestWindowsVersion.Build -gt 19045 -or $guestWindowsVersion.Ubr -lt 5007)) {
+        throw "BLOCKED: '$VmName' is Windows $($guestWindowsVersion.Display). .NET 10 and PowerShell 7.6 require Windows 10 1904x.5007 or newer for CET. Recreate through Initialize-LocalVmHost.ps1 (Setup Dynamic Update) or run Update-LocalVmGuest.ps1."
+    }
+
+    $vcArchitecture = if ([string]$vmConfiguration.ProcessorArchitecture -eq 'arm64') { 'arm64' } else { 'x64' }
+    $vcRuntimePresent = Invoke-Command -Session $session -ScriptBlock {
+        Test-Path "$env:WINDIR\System32\VCRUNTIME140.dll" -PathType Leaf
+    }
+    if (-not $vcRuntimePresent) {
+        $vcRedistPath = Join-Path $vmRootPath "oem\vc_redist.$vcArchitecture.exe"
+        if (-not (Test-Path $vcRedistPath -PathType Leaf)) {
+            throw "BLOCKED: '$VmName' cannot record failure video because VCRUNTIME140.dll is missing, and no repair payload exists at '$vcRedistPath'. Run Initialize-LocalVmHost.ps1 for this VM config."
+        }
+
+        $vcSignature = Get-AuthenticodeSignature $vcRedistPath
+        if ($vcSignature.Status -ne 'Valid' -or $vcSignature.SignerCertificate.Subject -notlike 'CN=Microsoft Corporation*') {
+            throw "BLOCKED: refusing untrusted VC++ redistributable '$vcRedistPath' (status=$($vcSignature.Status))."
+        }
+
+        Invoke-Command -Session $session -ScriptBlock {
+            New-Item C:\PowerToysUiTestTools -ItemType Directory -Force | Out-Null
+        }
+        $guestVcRedist = 'C:\PowerToysUiTestTools\vc_redist.exe'
+        Copy-Item $vcRedistPath -Destination $guestVcRedist -ToSession $session -Force
+        $vcExitCode = Invoke-Command -Session $session -ScriptBlock {
+            param($Installer)
+            (Start-Process $Installer -ArgumentList '/install', '/quiet', '/norestart' -Wait -PassThru).ExitCode
+        } -ArgumentList $guestVcRedist
+        if ($vcExitCode -notin 0, 1638, 3010 -or -not (Invoke-Command -Session $session -ScriptBlock { Test-Path "$env:WINDIR\System32\VCRUNTIME140.dll" })) {
+            throw "BLOCKED: Visual C++ redistributable installation failed in '$VmName' (exit=$vcExitCode)."
+        }
+        Write-Host "Installed the Visual C++ runtime in '$VmName' for failure-video capture."
+    }
+
+    $guestPowerShell = 'C:\Program Files\PowerShell\7\pwsh.exe'
+    $powerShellPresent = Invoke-Command -Session $session -ScriptBlock {
+        param($Path)
+        Test-Path $Path -PathType Leaf
+    } -ArgumentList $guestPowerShell
+    if (-not $powerShellPresent) {
+        $powerShellMsi = Get-ChildItem (Join-Path $vmRootPath 'oem') `
+            -Filter "PowerShell-*-win-$vcArchitecture.msi" -File |
+            Where-Object { Test-Path "$($_.FullName).sha256" -PathType Leaf } |
+            Sort-Object Name -Descending | Select-Object -First 1
+        if ($null -eq $powerShellMsi) {
+            throw "BLOCKED: PowerShell 7 is missing in '$VmName', and no verified repair MSI exists under '$(Join-Path $vmRootPath 'oem')'. Run Initialize-LocalVmHost.ps1 for this VM config."
+        }
+        $expectedPowerShellHash = (Get-Content "$($powerShellMsi.FullName).sha256" -Raw).Trim()
+        $actualPowerShellHash = (Get-FileHash $powerShellMsi.FullName -Algorithm SHA256).Hash
+        $powerShellSignature = Get-AuthenticodeSignature $powerShellMsi.FullName
+        if ($actualPowerShellHash -ne $expectedPowerShellHash -or
+            $powerShellSignature.Status -ne 'Valid' -or
+            $powerShellSignature.SignerCertificate.Subject -notlike 'CN=Microsoft Corporation*') {
+            throw "BLOCKED: refusing unverified PowerShell MSI '$($powerShellMsi.FullName)' (sha256=$actualPowerShellHash, expected=$expectedPowerShellHash, status=$($powerShellSignature.Status))."
+        }
+
+        Invoke-Command -Session $session -ScriptBlock {
+            New-Item C:\PowerToysUiTestTools -ItemType Directory -Force | Out-Null
+        }
+        $guestPowerShellMsi = 'C:\PowerToysUiTestTools\PowerShell.msi'
+        Copy-Item $powerShellMsi.FullName -Destination $guestPowerShellMsi -ToSession $session -Force
+        $powerShellExitCode = Invoke-Command -Session $session -ScriptBlock {
+            param($Installer)
+            (Start-Process msiexec.exe -ArgumentList @(
+                '/i', $Installer, '/qn', '/norestart',
+                'ADD_PATH=1', 'REGISTER_MANIFEST=1',
+                'ENABLE_PSREMOTING=0', 'USE_MU=0', 'ENABLE_MU=0') -Wait -PassThru).ExitCode
+        } -ArgumentList $guestPowerShellMsi
+        if ($powerShellExitCode -notin 0, 1638, 3010 -or -not (Invoke-Command -Session $session -ScriptBlock {
+                param($Path)
+                Test-Path $Path -PathType Leaf
+            } -ArgumentList $guestPowerShell)) {
+            throw "BLOCKED: PowerShell 7 installation failed in '$VmName' (exit=$powerShellExitCode)."
+        }
+        Write-Host "Installed PowerShell 7 in '$VmName' for guest-side test orchestration."
+    }
+
     Initialize-GuestExchange -Context $guestContext -Session $session -StandardUser $StandardUser
     $stagedFiles = @(Copy-ToGuest `
         -Context $guestContext -Session $session -FileName (@($guestRunnerName) + $payloadFiles))
@@ -394,7 +504,7 @@ Add-Type -AssemblyName System.Windows.Forms
     $probeArguments = '-NoLogo -NoProfile -ExecutionPolicy Bypass -File "{0}"' -f $guestProbeScriptPath
     $probeTask = Start-InteractiveTask `
         -Session $session -TaskName $probeTaskName `
-        -Executable 'powershell.exe' -Arguments $probeArguments `
+        -Executable $guestPowerShell -Arguments $probeArguments `
         -UserName $StandardUser -ExecutionTimeLimitMinutes 2
     Write-Host "Desktop probe task: $($probeTask.TaskName), user $($probeTask.UserId)"
 
@@ -438,7 +548,7 @@ Add-Type -AssemblyName System.Windows.Forms
     $taskLimitMinutes = [Math]::Min(1440, $TimeoutMinutes + 5)
     $testTask = Start-InteractiveTask `
         -Session $session -TaskName $testTaskName `
-        -Executable 'powershell.exe' -Arguments $runnerArguments `
+        -Executable $guestPowerShell -Arguments $runnerArguments `
         -UserName $StandardUser -ExecutionTimeLimitMinutes $taskLimitMinutes
     Write-Host "UI-test task: $($testTask.TaskName), user $($testTask.UserId)"
 
@@ -484,23 +594,36 @@ Add-Type -AssemblyName System.Windows.Forms
     $evidenceExported = $true
 
     $trx = Get-TrxSummary -ResultRoot $hostResultRoot
+    $nonPassingTests = @($trx.Suites | ForEach-Object { $_.Tests } | Where-Object { $_.Outcome -ne 'Passed' })
+    $effectiveExitCode = [int]$status.ExitCode
+    $effectiveStatus = [string]$status.Status
+    if ($trx.Suites.Count -eq 0 -or
+        $trx.Totals.Total -eq 0 -or
+        $trx.Totals.Executed -ne $trx.Totals.Total -or
+        $nonPassingTests.Count -gt 0) {
+        $effectiveStatus = 'FAIL'
+        if ($effectiveExitCode -eq 0) {
+            $effectiveExitCode = 1
+        }
+    }
     $controllerResult = [pscustomobject]@{
         Controller = $controllerName
         RunId = $runId
         BuildLabel = $status.BuildLabel
-        Status = $status.Status
-        ExitCode = [int]$status.ExitCode
+        Status = $effectiveStatus
+        ExitCode = $effectiveExitCode
         ResultsPath = $hostResultRoot
         ControlUser = $controlIdentity.User
         GuestUser = $status.User
         GuestSessionId = $status.SessionId
         DesktopWidth = $status.DesktopWidth
         DesktopHeight = $status.DesktopHeight
+        ResourceProfile = $ResourceProfile
         ReusedStagedPayload = $status.ReusedStagedPayload
         RefreshedComponents = $status.RefreshedComponents
         ExportErrors = $status.ExportErrors
         Tests = $trx.Totals
-        Failed = @($trx.Suites | ForEach-Object { $_.Tests } | Where-Object { $_.Outcome -ne 'Passed' } | ForEach-Object {
+        Failed = @($nonPassingTests | ForEach-Object {
             [pscustomobject]@{
                 Name = $_.Name
                 Outcome = $_.Outcome
@@ -552,7 +675,14 @@ finally {
     if ($StopVmAfterRun) {
         $stopScript = Join-Path $vmRootPath 'Stop-LocalVm.ps1'
         if (Test-Path $stopScript -PathType Leaf) {
-            & $stopScript | Out-Host
+            try {
+                & $stopScript `
+                    -ConfigPath $configurationPathResolved `
+                    -CredentialPath $CredentialPath | Out-Host
+            }
+            catch {
+                Write-Warning "The requested post-run VM stop failed: $($_.Exception.Message)"
+            }
         }
     }
 }

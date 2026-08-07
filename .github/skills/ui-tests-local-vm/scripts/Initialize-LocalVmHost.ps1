@@ -45,8 +45,16 @@ param(
     [string]$Account = "$env:USERDOMAIN\$env:USERNAME",
     [string]$AdminUserName,
     [string]$CredentialPath = (Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm\admin.credential.xml'),
+    [string]$VcRedistUrl,
+    [string]$PowerShellVersion = '7.6.4',
+    [string]$PowerShellUrl,
+    [string]$PowerShellSha256,
 
     [switch]$CheckOnly,
+    [switch]$SkipScaffoldRefresh,
+    [switch]$SkipVcRedist,
+    [switch]$SkipPowerShell,
+    [switch]$SkipWindowsUpdate,
     [switch]$SkipGroupMembership,
     [switch]$SkipCredential,
     [switch]$SkipGuestCreation,
@@ -66,6 +74,14 @@ $vmRootPath = [IO.Path]::GetFullPath($VmRoot)
 if (-not (Test-Path $vmRootPath -PathType Container)) {
     throw "VM root was not found: $vmRootPath. Run Initialize-LocalVm.ps1 -DestinationRoot $vmRootPath first."
 }
+
+# Existing scaffolds are copies, so they do not receive skill fixes automatically. Refresh before
+# every mutating setup run; vm.config.psd1, media, VHDX files, and extra OEM installers are preserved.
+if (-not $CheckOnly -and -not $SkipScaffoldRefresh) {
+    Write-Host 'Refreshing the VM scaffold from the current skill templates...'
+    & (Join-Path $PSScriptRoot 'Initialize-LocalVm.ps1') -DestinationRoot $vmRootPath -Force | Out-Null
+}
+
 if ([string]::IsNullOrWhiteSpace($ConfigPath)) {
     $ConfigPath = Join-Path $vmRootPath 'vm.config.psd1'
 }
@@ -77,6 +93,125 @@ $configuration = Import-PowerShellDataFile $ConfigPath
 $vmName = [string]$configuration.VmName
 if ([string]::IsNullOrWhiteSpace($AdminUserName)) {
     $AdminUserName = [string]$configuration.AdminUserName
+}
+
+$vcArchitecture = switch ([string]$configuration.ProcessorArchitecture) {
+    'arm64' { 'arm64' }
+    default { 'x64' }
+}
+$vcRedistPath = Join-Path $vmRootPath "oem\vc_redist.$vcArchitecture.exe"
+$vcRedistReady = if (Test-Path $vcRedistPath -PathType Leaf) {
+    $existingVcSignature = Get-AuthenticodeSignature $vcRedistPath
+    $existingVcSignature.Status -eq 'Valid' -and
+        $null -ne $existingVcSignature.SignerCertificate -and
+        $existingVcSignature.SignerCertificate.Subject -like 'CN=Microsoft Corporation*'
+}
+else {
+    $false
+}
+$powerShellPath = Join-Path $vmRootPath "oem\PowerShell-$PowerShellVersion-win-$vcArchitecture.msi"
+$knownPowerShellHashes = @{
+    'x64' = 'D11942DF52FD12470169797ABFA4781D9480EFDC81000BA4FA55A5B921ED8DD0'
+    'arm64' = '9B441D52176BEFD22B3AADF34F2F43F3A6F692C8D0181815169A397236B33D1F'
+}
+$expectedPowerShellHash = if ([string]::IsNullOrWhiteSpace($PowerShellSha256)) {
+    if ($PowerShellVersion -ne '7.6.4') {
+        throw '-PowerShellSha256 is required when overriding the pinned PowerShell version 7.6.4.'
+    }
+    $knownPowerShellHashes[$vcArchitecture]
+}
+else {
+    $PowerShellSha256.ToUpperInvariant()
+}
+$powerShellPayloadValid = if (Test-Path $powerShellPath -PathType Leaf) {
+    $existingHash = (Get-FileHash $powerShellPath -Algorithm SHA256).Hash
+    $existingSignature = Get-AuthenticodeSignature $powerShellPath
+    $existingSignerIsMicrosoft = $null -ne $existingSignature.SignerCertificate -and
+        $existingSignature.SignerCertificate.Subject -like 'CN=Microsoft Corporation*'
+    $existingHash -eq $expectedPowerShellHash -and
+        $existingSignature.Status -eq 'Valid' -and
+        $existingSignerIsMicrosoft
+}
+else {
+    $false
+}
+$powerShellMetadataPath = "$powerShellPath.sha256"
+$powerShellMetadataValid = (Test-Path $powerShellMetadataPath -PathType Leaf) -and
+    ((Get-Content $powerShellMetadataPath -Raw).Trim() -eq $expectedPowerShellHash)
+$powerShellReady = $powerShellPayloadValid -and $powerShellMetadataValid
+
+function Install-PowerShellPayload {
+    if ($powerShellReady) {
+        return
+    }
+    if ($SkipPowerShell) {
+        return
+    }
+    if ($powerShellPayloadValid) {
+        Set-Content $powerShellMetadataPath $expectedPowerShellHash -Encoding ascii
+        $script:powerShellMetadataValid = $true
+        $script:powerShellReady = $true
+        Write-Host "Repaired PowerShell payload trust metadata: $powerShellMetadataPath"
+        return
+    }
+
+    $url = if ([string]::IsNullOrWhiteSpace($PowerShellUrl)) {
+        "https://github.com/PowerShell/PowerShell/releases/download/v$PowerShellVersion/PowerShell-$PowerShellVersion-win-$vcArchitecture.msi"
+    }
+    else {
+        $PowerShellUrl
+    }
+
+    New-Item (Split-Path $powerShellPath -Parent) -ItemType Directory -Force | Out-Null
+    $temporaryPath = "$powerShellPath.download"
+    Write-Host "Downloading PowerShell $PowerShellVersion for guest-side test orchestration..."
+    Invoke-WebRequest -Uri $url -OutFile $temporaryPath
+
+    $actualHash = (Get-FileHash $temporaryPath -Algorithm SHA256).Hash
+    $signature = Get-AuthenticodeSignature $temporaryPath
+    $isMicrosoft = $null -ne $signature.SignerCertificate -and
+        $signature.SignerCertificate.Subject -like 'CN=Microsoft Corporation*'
+    if ($actualHash -ne $expectedPowerShellHash -or $signature.Status -ne 'Valid' -or -not $isMicrosoft) {
+        Remove-Item $temporaryPath -Force -ErrorAction SilentlyContinue
+        throw "Refusing PowerShell payload '$url': sha256=$actualHash, expected=$expectedPowerShellHash, signature=$($signature.Status), signer='$($signature.SignerCertificate.Subject)'."
+    }
+
+    Move-Item $temporaryPath $powerShellPath -Force
+    Set-Content $powerShellMetadataPath $expectedPowerShellHash -Encoding ascii
+    $script:powerShellPayloadValid = $true
+    $script:powerShellMetadataValid = $true
+    $script:powerShellReady = $true
+    Write-Host "Staged verified PowerShell ${PowerShellVersion}: $powerShellPath"
+}
+
+function Install-VcRedistPayload {
+    if ($vcRedistReady -or $SkipVcRedist) {
+        return
+    }
+
+    $url = if ([string]::IsNullOrWhiteSpace($VcRedistUrl)) {
+        "https://aka.ms/vs/17/release/vc_redist.$vcArchitecture.exe"
+    }
+    else {
+        $VcRedistUrl
+    }
+
+    New-Item (Split-Path $vcRedistPath -Parent) -ItemType Directory -Force | Out-Null
+    $temporaryPath = "$vcRedistPath.download"
+    Write-Host "Downloading the Visual C++ redistributable required for MP4 capture..."
+    Invoke-WebRequest -Uri $url -OutFile $temporaryPath
+
+    $signature = Get-AuthenticodeSignature $temporaryPath
+    $isMicrosoft = $null -ne $signature.SignerCertificate -and
+        $signature.SignerCertificate.Subject -like 'CN=Microsoft Corporation*'
+    if ($signature.Status -ne 'Valid' -or -not $isMicrosoft) {
+        Remove-Item $temporaryPath -Force -ErrorAction SilentlyContinue
+        throw "Refusing VC++ redistributable from '$url': signature=$($signature.Status), signer='$($signature.SignerCertificate.Subject)'."
+    }
+
+    Move-Item $temporaryPath $vcRedistPath -Force
+    $script:vcRedistReady = $true
+    Write-Host "Staged the signed Microsoft redistributable: $vcRedistPath"
 }
 
 function Test-Elevation {
@@ -92,6 +227,8 @@ function Write-Status {
     foreach ($row in @(
             @{ Name = 'Hyper-V access'; Ok = $Status.HyperVAccess; Detail = $Status.HyperVAccessDetail },
             @{ Name = 'Guest credential'; Ok = $Status.Credential; Detail = $Status.CredentialDetail },
+            @{ Name = 'Video prerequisite'; Ok = $vcRedistReady; Detail = $(if ($vcRedistReady) { "ok ($vcArchitecture)" } else { "missing: $vcRedistPath" }) },
+            @{ Name = 'PowerShell 7'; Ok = $powerShellReady; Detail = $(if ($powerShellReady) { "ok ($PowerShellVersion)" } else { "missing: $powerShellPath" }) },
             @{ Name = 'Guest'; Ok = $Status.Guest; Detail = $Status.GuestDetail })) {
         $mark = if ($row.Ok) { '[ok]     ' } else { '[missing]' }
         Write-Host ("  {0} {1,-17} {2}" -f $mark, $row.Name, $row.Detail)
@@ -103,29 +240,45 @@ $status = Test-LocalVmHostSetup -VmName $vmName -CredentialPath $CredentialPath 
 Write-Status -Status $status
 
 if ($CheckOnly) {
-    if (-not $status.IsReady) {
+    $allMissing = @($status.Missing)
+    if (-not $vcRedistReady) {
+        $allMissing += 'VideoPrerequisite'
+    }
+    if (-not $powerShellReady) {
+        $allMissing += 'PowerShell7'
+    }
+    $allReady = $status.IsReady -and $vcRedistReady -and $powerShellReady
+
+    if (-not $allReady) {
         $media = if ([string]::IsNullOrWhiteSpace($InstallMedia)) { '<windows.iso>' } else { $InstallMedia }
-        Write-Host (Get-LocalVmSetupMessage -Status $status -VmRoot $vmRootPath -InstallMedia $media)
+        Write-Host (Get-LocalVmSetupMessage `
+            -Status $status `
+            -VmRoot $vmRootPath `
+            -InstallMedia $media `
+            -ConfigPath $ConfigPath `
+            -CredentialPath $CredentialPath)
     }
     [pscustomobject]@{
         VmName = $vmName
-        IsReady = $status.IsReady
-        Missing = $status.Missing
+        IsReady = $allReady
+        Missing = $allMissing
         CredentialPath = $status.CredentialPath
+        VcRedistReady = $vcRedistReady
+        PowerShellReady = $powerShellReady
     } | ConvertTo-Json -Depth 3
-    exit ($(if ($status.IsReady) { 0 } else { 1 }))
+    exit ($(if ($allReady) { 0 } else { 1 }))
 }
 
 $elevated = Test-Elevation
 $needsElevation = (-not $status.HyperVAccess -and -not $SkipGroupMembership) -or
-                  (-not $status.Guest -and -not $SkipGuestCreation)
+                  ((-not $status.Guest -or $Force) -and -not $SkipGuestCreation)
 if ($needsElevation -and -not $elevated) {
     throw @"
 BLOCKED: this run needs an elevated PowerShell 7 terminal.
 Missing: $($status.Missing -join ', ')
 
 Start an elevated pwsh and re-run:
-  pwsh -File "$PSCommandPath" -VmRoot "$vmRootPath"$(if ($InstallMedia) { " -InstallMedia `"$InstallMedia`"" })
+    pwsh -File "$PSCommandPath" -VmRoot "$vmRootPath" -ConfigPath "$ConfigPath" -CredentialPath "$CredentialPath"$(if ($InstallMedia) { " -InstallMedia `"$InstallMedia`"" })
 "@
 }
 
@@ -170,8 +323,12 @@ if (-not $status.Credential -and -not $SkipCredential) {
     }
 }
 
-# 3. The guest ------------------------------------------------------------------------------------
-if (-not $status.Guest -and -not $SkipGuestCreation) {
+# 3. Recording prerequisite -----------------------------------------------------------------------
+Install-VcRedistPayload
+Install-PowerShellPayload
+
+# 4. The guest ------------------------------------------------------------------------------------
+if ((-not $status.Guest -or $Force) -and -not $SkipGuestCreation) {
     if ([string]::IsNullOrWhiteSpace($InstallMedia)) {
         throw @"
 BLOCKED: -InstallMedia is required to create '$vmName'.
@@ -180,9 +337,11 @@ Obtain media first, for example:
 "@
     }
 
-    $newVmScript = Join-Path $vmRootPath 'New-UiTestVm.ps1'
+    # Execute the source template, not the scaffold copy. A copied script can be stale after the
+    # skill is updated (the PowerShell 5.1 readiness-query fix exposed exactly this failure mode).
+    $newVmScript = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\templates\vm\New-UiTestVm.ps1'))
     if (-not (Test-Path $newVmScript -PathType Leaf)) {
-        throw "New-UiTestVm.ps1 was not found in $vmRootPath. Re-run Initialize-LocalVm.ps1."
+        throw "New-UiTestVm.ps1 template was not found: $newVmScript"
     }
 
     Write-Host "Creating '$vmName' from $InstallMedia. Windows Setup runs inside the guest; this takes a while and needs no interaction."
@@ -191,24 +350,69 @@ Obtain media first, for example:
         InstallMedia = $InstallMedia
         ImageName = $ImageName
         CredentialPath = $CredentialPath
+        OemPath = (Join-Path $vmRootPath 'oem')
     }
     if ($AllowReFsVolume) { $arguments.AllowReFsVolume = $true }
     if ($Force) { $arguments.Force = $true }
     & $newVmScript @arguments
 }
 
+# Windows Setup Dynamic Update is the primary Win10 servicing path. Verify its result against the
+# .NET 10 CET floor (1904x.5007); only then use online Windows Update as a fallback and replace the
+# pre-update checkpoint. Windows 11 media does not need this compatibility step.
+if (-not $SkipWindowsUpdate -and (Get-VM -Name $vmName -ErrorAction SilentlyContinue)) {
+    & ([IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\templates\vm\Start-LocalVm.ps1'))) `
+        -ConfigPath $ConfigPath `
+        -CredentialPath $CredentialPath `
+        -Wait | Out-Null
+    $credential = Import-Clixml $CredentialPath
+    $session = New-PSSession -VMName $vmName -Credential $credential
+    try {
+        $guestVersion = Invoke-Command -Session $session -ScriptBlock {
+            $currentVersion = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
+            [pscustomobject]@{
+                Build = [int]$currentVersion.CurrentBuild
+                Ubr = [int]$currentVersion.UBR
+                Display = "$($currentVersion.CurrentBuild).$($currentVersion.UBR)"
+            }
+        }
+    }
+    finally {
+        Remove-PSSession $session -ErrorAction SilentlyContinue
+    }
+
+    if ($guestVersion.Build -lt 22000 -and
+        ($guestVersion.Build -lt 19041 -or $guestVersion.Build -gt 19045 -or $guestVersion.Ubr -lt 5007)) {
+        Write-Warning "Windows Setup Dynamic Update left '$vmName' at $($guestVersion.Display); .NET 10 needs 1904x.5007 or newer. Falling back to online Windows Update."
+        & (Join-Path $PSScriptRoot 'Update-LocalVmGuest.ps1') `
+            -VmName $vmName `
+            -CredentialPath $CredentialPath
+
+        & ([IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\templates\vm\Reset-LocalVm.ps1'))) `
+            -ConfigPath $ConfigPath `
+            -CreateBaseline | Out-Null
+        Write-Host "Recreated '$($configuration.BaselineCheckpointName)' after Windows Update."
+    }
+}
+
 $final = Test-LocalVmHostSetup -VmName $vmName -CredentialPath $CredentialPath -AdminUserName $AdminUserName
 Write-Status -Status $final
-if ($final.IsReady) {
+$finalMissing = @($final.Missing)
+if (-not $vcRedistReady) { $finalMissing += 'VideoPrerequisite' }
+if (-not $powerShellReady) { $finalMissing += 'PowerShell7' }
+$allReady = $final.IsReady -and $vcRedistReady -and $powerShellReady
+if ($allReady) {
     Write-Host 'Host setup is complete. The agent can now drive Invoke-LocalVmUiTest.ps1 unattended.'
 }
 else {
-    Write-Warning "Still missing: $($final.Missing -join ', '). Re-run this script."
+    Write-Warning "Still missing: $($finalMissing -join ', '). Re-run this script."
 }
 
 [pscustomobject]@{
     VmName = $vmName
-    IsReady = $final.IsReady
-    Missing = $final.Missing
+    IsReady = $allReady
+    Missing = $finalMissing
     CredentialPath = $final.CredentialPath
+    VcRedistReady = $vcRedistReady
+    PowerShellReady = $powerShellReady
 } | ConvertTo-Json -Depth 3

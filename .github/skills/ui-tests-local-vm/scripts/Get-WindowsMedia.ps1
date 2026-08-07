@@ -81,7 +81,8 @@ function Save-LargeFile {
 function Get-MediaResult {
     param(
         [Parameter(Mandatory)][string]$IsoPath,
-        [string]$ResolvedFrom
+        [string]$ResolvedFrom,
+        [string]$ResolvedHost
     )
 
     $item = Get-Item $IsoPath
@@ -94,6 +95,7 @@ function Get-MediaResult {
         SizeGB = [math]::Round($item.Length / 1GB, 2)
         Sha256 = $hash
         Source = $ResolvedFrom
+        ResolvedHost = $ResolvedHost
         Architecture = $Architecture
     }
 }
@@ -122,7 +124,7 @@ switch ($Source) {
         $destination = Join-Path $DestinationRoot $fileName
         Write-Host "Downloading $fileName..."
         Save-LargeFile -Uri $Url -Destination $destination
-        Get-MediaResult -IsoPath $destination -ResolvedFrom 'Url' | ConvertTo-Json
+        Get-MediaResult -IsoPath $destination -ResolvedFrom 'Url' -ResolvedHost ([uri]$Url).DnsSafeHost | ConvertTo-Json
         return
     }
 }
@@ -161,10 +163,16 @@ $resolvedUrl = @($fidoOutput | Where-Object { $_ -match '^https://' }) | Select-
 if ([string]::IsNullOrWhiteSpace($resolvedUrl)) {
     throw "Fido did not return a download URL. $($fidoOutput | Out-String)"
 }
+$resolvedUri = [uri]$resolvedUrl
+$resolvedHost = $resolvedUri.DnsSafeHost.ToLowerInvariant()
+if ($resolvedHost -ne 'microsoft.com' -and -not $resolvedHost.EndsWith('.microsoft.com', [StringComparison]::Ordinal)) {
+    throw "BLOCKED: the mobile-user-agent resolver returned non-Microsoft host '$resolvedHost'. Refusing to download $resolvedUrl"
+}
 
 if ($UrlOnly) {
     [pscustomobject]@{
         Url = $resolvedUrl
+        ResolvedHost = $resolvedHost
         Architecture = $Architecture
         FidoTag = $FidoTag
     } | ConvertTo-Json
@@ -175,4 +183,4 @@ $fileName = [IO.Path]::GetFileName(([uri]$resolvedUrl).AbsolutePath)
 $destination = Join-Path $DestinationRoot $fileName
 Write-Host "Downloading $fileName (several GB)..."
 Save-LargeFile -Uri $resolvedUrl -Destination $destination
-Get-MediaResult -IsoPath $destination -ResolvedFrom "Fido $FidoTag" | ConvertTo-Json
+Get-MediaResult -IsoPath $destination -ResolvedFrom "Microsoft ISO page via verified Fido $FidoTag" -ResolvedHost $resolvedHost | ConvertTo-Json

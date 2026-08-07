@@ -13,6 +13,7 @@ pwsh ./Stop-LocalVm.ps1
 [CmdletBinding()]
 param(
     [string]$ConfigPath = (Join-Path $PSScriptRoot 'vm.config.psd1'),
+    [string]$CredentialPath = (Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm\admin.credential.xml'),
     # Saves the running state instead of shutting the guest down, so the next start resumes instantly.
     [switch]$Save,
     [switch]$TurnOff
@@ -39,6 +40,32 @@ if ($null -eq $vm) {
 }
 
 if ($vm.State -eq 'Running') {
+    if (-not $Save -and -not $TurnOff) {
+        if (-not (Test-Path $CredentialPath -PathType Leaf)) {
+            throw "DPAPI credential file was not found: $CredentialPath"
+        }
+
+        $credential = Import-Clixml $CredentialPath
+        $session = New-PSSession -VMName $vm.Name -Credential $credential
+        try {
+            # Validate the protected guest-local credential; repair it only when it no longer authenticates.
+            $autoLogonScript = Join-Path $PSScriptRoot 'oem\Set-UiTestAutoLogon.ps1'
+            if (-not (Test-Path $autoLogonScript -PathType Leaf)) {
+                $autoLogonScript = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\oem\Set-UiTestAutoLogon.ps1'))
+            }
+            if (-not (Test-Path $autoLogonScript -PathType Leaf)) {
+                throw "Auto-logon persistence helper was not found: $autoLogonScript"
+            }
+            Invoke-Command `
+                -Session $session `
+                -FilePath $autoLogonScript `
+                -ArgumentList ([string]$configuration.StandardUser) | Out-Null
+        }
+        finally {
+            Remove-PSSession $session -ErrorAction SilentlyContinue
+        }
+    }
+
     if ($Save) {
         Save-VM -Name $vm.Name
     }

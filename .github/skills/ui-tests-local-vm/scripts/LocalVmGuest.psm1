@@ -139,9 +139,13 @@ function Get-LocalVmSetupMessage {
     param(
         [Parameter(Mandatory)]$Status,
         [string]$VmRoot = '<VmRoot>',
-        [string]$InstallMedia = '<windows.iso>'
+        [string]$InstallMedia = '<windows.iso>',
+        [string]$ConfigPath,
+        [string]$CredentialPath
     )
 
+    $configArgument = if ([string]::IsNullOrWhiteSpace($ConfigPath)) { '' } else { " -ConfigPath `"$ConfigPath`"" }
+    $credentialArgument = if ([string]::IsNullOrWhiteSpace($CredentialPath)) { '' } else { " -CredentialPath `"$CredentialPath`"" }
     $lines = @(
         "BLOCKED: local-VM host setup is incomplete ($($Status.Missing -join ', ')).",
         "  Hyper-V access : $($Status.HyperVAccessDetail)",
@@ -151,7 +155,7 @@ function Get-LocalVmSetupMessage {
         'These steps need a human: they require elevation (which no tool call can approve) and a',
         'password (which must never be routed through a model). Ask the user to run, once:',
         '',
-        "  pwsh -File <skill>\scripts\Initialize-LocalVmHost.ps1 -VmRoot $VmRoot -InstallMedia $InstallMedia",
+        "  pwsh -File <skill>\scripts\Initialize-LocalVmHost.ps1 -VmRoot `"$VmRoot`" -InstallMedia `"$InstallMedia`"$configArgument$credentialArgument",
         '',
         'Do not continue or work around this - re-check with -CheckOnly after they confirm.')
     return ($lines -join [Environment]::NewLine)

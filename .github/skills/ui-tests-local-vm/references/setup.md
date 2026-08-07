@@ -47,6 +47,22 @@ What you get:
   checkpoint also stores the guest's memory, so add `MemoryStartupGB` on top.
 - Host and guest architecture must match. Hyper-V does not emulate a foreign architecture, so an
   ARM64 host builds ARM64 guests only.
+- **The Visual C++ redistributable, for MP4 capture.** The harness records each test with
+  ScreenRecorderLib, a mixed-mode assembly importing `VCRUNTIME140`/`MSVCP140`; a clean Windows image
+  has neither, so video is skipped (the harness now prints why). `Initialize-LocalVmHost.ps1`
+  downloads the architecture-matched Microsoft-signed redistributable, verifies its Authenticode
+  signer, and stages it under `oem`; provisioning installs it automatically and
+  `ProvisioningReady.json` reports `ScreenRecordingSupported`. The controller also repairs an
+  existing guest from that verified payload before a run.
+- **PowerShell 7 for guest-side orchestration.** The setup helper downloads the pinned official MSI,
+  verifies both its published release SHA-256 and Microsoft Authenticode signer, and stages it under
+  `oem`. Provisioning installs it with PS remoting disabled; the controller repairs existing guests
+  and runs desktop-probe/test scheduled tasks under `pwsh.exe`.
+
+  PowerShell Direct and OEM bootstrap still use inbox Windows PowerShell 5.1. That is intentional:
+  registering a PS7 remoting endpoint would weaken the no-remoting posture, and provisioning must
+  work before PS7 exists. Keep every `Invoke-Command -VMName` scriptblock PS5.1-compatible; PS7
+  removes that constraint from the much larger interactive runner.
 
 > **ARM64 guests need ARM64 payloads.** An ARM64 guest needs ARM64 PowerToys, test, winappcli, .NET,
 > and WebView2 payloads, and it must be run with `-Platform ARM64` so visual baselines resolve.
@@ -56,7 +72,9 @@ What you get:
 Three prerequisites gate every agent-driven run, and **an agent can perform none of them**: two need
 elevation, which no tool call can approve, and one needs a password, which must never be routed
 through a model. `Initialize-LocalVmHost.ps1` does all three, reports what is already in place,
-performs only what is missing, and is safe to re-run.
+performs only what is missing, and is safe to re-run. It also refreshes copied scaffold scripts from
+the current skill templates before mutating anything, stages VC++ and PowerShell 7 prerequisites,
+and verifies Windows 10's .NET 10 CET floor before recapturing the baseline.
 
 | # | Prerequisite | Why a human |
 |---|---|---|
@@ -97,8 +115,9 @@ When it reports `IsReady=false`, **stop and ask the user to run the elevated com
 not autopilot around it, do not ask for a password, and do not substitute a weaker channel.
 `Invoke-LocalVmUiTest.ps1` enforces the same check and throws `BLOCKED` with the same instruction.
 
-Useful switches: `-CheckOnly`, `-SkipGroupMembership`, `-SkipCredential`, `-SkipGuestCreation`,
-`-Account` (defaults to the current user), `-Force`, `-AllowReFsVolume`.
+Useful switches: `-CheckOnly`, `-SkipScaffoldRefresh`, `-SkipVcRedist`, `-SkipPowerShell`, `-SkipWindowsUpdate`,
+`-SkipGroupMembership`, `-SkipCredential`, `-SkipGuestCreation`, `-Account` (defaults to the current
+user), `-Force`, `-AllowReFsVolume`.
 
 ### Verifying by hand
 
@@ -159,16 +178,45 @@ The file decrypts only for the same Windows user on the same host.
 pwsh .github\skills\ui-tests-local-vm\scripts\Get-WindowsMedia.ps1 `
   -Source Local -Path D:\media\Win11_25H2_English_x64.iso
 
-# Or resolve an official Microsoft retail link, including arm64.
+# Windows 11 (x64 or arm64).
 pwsh .github\skills\ui-tests-local-vm\scripts\Get-WindowsMedia.ps1 `
   -Source Fido -Windows 11 -Architecture arm64 -DestinationRoot D:\media
+
+# Windows 10 for the second guest. Fido automates Microsoft's mobile-user-agent download page;
+# the resulting file is hosted by software.download.prss.microsoft.com.
+pwsh .github\skills\ui-tests-local-vm\scripts\Get-WindowsMedia.ps1 `
+  -Source Fido -Windows 10 -Architecture x64 -DestinationRoot D:\media
 ```
 
 | Source | Use it for |
 |---|---|
 | `Local` | An ISO you already downloaded. Reports the SHA-256 so a team can pin one baseline. |
 | `Url` | A pinned Microsoft Evaluation Center link. Enterprise/LTSC evaluations live here. |
-| `Fido` | Official retail links resolved through the GPL-3.0 helper used by Rufus. The only public route that also resolves arm64 Windows 11. |
+| `Fido` | Official retail links resolved through the GPL-3.0 helper used by Rufus. Covers **Windows 10 and 11**, and is the only public route that also resolves arm64 Windows 11. |
+
+### Which Windows 10 image
+
+The two public Microsoft routes are both valid but neither is current enough for this repository:
+
+| Official route | Image currently produced | Notes |
+|---|---|---|
+| Microsoft ISO page (mobile user agent), automated by Fido | `Win10_22H2_English_x64v1.iso`, **19045.2965** (May 2023) | Smallest automation surface; direct Microsoft CDN |
+| Microsoft Media Creation Tool | **19045.3803** (December 2023 service refresh) | Tool requires UAC and interactive choices |
+
+.NET 10 needs Windows 10 **1904x.5007 or newer** for complete CET support. Either public image by
+itself aborts with `0x80131506` / `Your Windows doesn't fully support CET`. The primary path is
+therefore Microsoft media plus the answer file's supported Windows Setup `DynamicUpdate=true`, which
+fetches the current cumulative update during installation before the first baseline. The VM needs a
+network switch for this (the default `Default Switch` does).
+
+`Initialize-LocalVmHost.ps1` verifies the installed UBR before accepting the baseline. If Dynamic
+Update could not reach 5007, it runs `Update-LocalVmGuest.ps1` as a fallback, handles reboots, and
+recreates the baseline. Do not capture a Win10 baseline below that floor.
+
+Windows 10 **Enterprise LTSC 2021** (build 19044) remains the stricter baseline named in the guest-OS
+policy. Its old Evaluation Center page is no longer a dependable public download route; use licensed
+Microsoft 365 / Visual Studio subscription media when available, then let Dynamic Update apply the
+same CET-floor validation. Record the edition, ISO hash, and installed full build in every run.
 
 The `Fido` source downloads the helper from a pinned tag and refuses to run it unless its SHA-256
 matches the value pinned in the script. Upstream publishes no Authenticode-signed script, so review
@@ -182,6 +230,11 @@ Setup owns the disk layout and the boot configuration.
 
 [Step 0](#0-human-only-host-setup-one-command) invokes this script for you. Call it directly when you
 want `-ListImages`, `-PlanOnly`, or to rebuild an existing guest with `-Force`.
+
+The scaffold files are copies and can become stale when the skill is updated. Prefer the step-0
+helper, which refreshes them and executes the **source template** directly. If you intentionally run
+the copied `X:\PowerToysUiTestVm\New-UiTestVm.ps1`, refresh first with
+`Initialize-LocalVm.ps1 -DestinationRoot X:\PowerToysUiTestVm -Force`.
 
 ```pwsh
 # Inspect what the media contains.
@@ -222,6 +275,16 @@ When provisioning finishes the script detaches both optical drives, deletes the 
 and takes the `provisioned-baseline` checkpoint. Provisioning creates `PTUser`, removes it from
 Administrators, grants it the work root, configures console auto-logon, and disables sleep. It does
 **not** enable remoting or open any port: the control channel needs neither.
+
+`Set-UiTestAutoLogon.ps1` validates each generated PTUser credential with `LogonUser`, stores it as
+the protected LSA `DefaultPassword` secret, and removes the readable Winlogon `DefaultPassword` and
+finite `AutoLogonCount` values. The count in the unattended answer is only a bootstrap until OEM
+provisioning replaces the administrator login with persistent PTUser `ForceAutoLogon`.
+`Stop-LocalVm.ps1` revalidates and preserves that credential before a cold shutdown, so PTUser's
+DPAPI-protected profile data remains decryptable. `Start-LocalVm.ps1` uses the same helper for a
+one-time repair when no PTUser Explorer session appears; a new credential is generated only when
+the account has no valid protected secret. Updating only the Winlogon registry identity while
+leaving an older LSA password produces a bad-password console logon.
 
 Watch progress at any time without VMConnect:
 

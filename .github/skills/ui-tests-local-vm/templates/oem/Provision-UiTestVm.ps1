@@ -31,27 +31,11 @@ function Invoke-OfflineInstaller {
     }
 }
 
-$passwordBytes = New-Object byte[] 32
-$random = [Security.Cryptography.RandomNumberGenerator]::Create()
-try {
-    $random.GetBytes($passwordBytes)
+$autoLogonScript = 'C:\OEM\Set-UiTestAutoLogon.ps1'
+if (-not (Test-Path $autoLogonScript -PathType Leaf)) {
+    throw "Auto-logon provisioning helper was not found: $autoLogonScript"
 }
-finally {
-    $random.Dispose()
-}
-$plainPassword = [Convert]::ToBase64String($passwordBytes) + 'aA1!'
-$securePassword = ConvertTo-SecureString $plainPassword -AsPlainText -Force
-if ($null -eq (Get-LocalUser -Name $standardUser -ErrorAction SilentlyContinue)) {
-    New-LocalUser `
-        -Name $standardUser -Password $securePassword `
-        -AccountNeverExpires -PasswordNeverExpires `
-        -Description 'PowerToys standard-user UI-test account' | Out-Null
-}
-else {
-    Set-LocalUser `
-        -Name $standardUser -Password $securePassword `
-        -AccountNeverExpires $true -PasswordNeverExpires $true
-}
+& $autoLogonScript -StandardUser $standardUser | Out-Null
 Remove-LocalGroupMember -Group 'Administrators' -Member $standardUser -ErrorAction SilentlyContinue
 if ($null -eq (Get-LocalGroupMember -Group 'Users' -Member $standardUser -ErrorAction SilentlyContinue)) {
     Add-LocalGroupMember -Group 'Users' -Member $standardUser
@@ -72,13 +56,6 @@ $rule = [Security.AccessControl.FileSystemAccessRule]::new(
     [Security.AccessControl.AccessControlType]::Allow)
 $acl.SetAccessRule($rule)
 Set-Acl $workRoot $acl
-
-$winlogon = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
-Set-ItemProperty $winlogon AutoAdminLogon '1'
-Set-ItemProperty $winlogon ForceAutoLogon '1'
-Set-ItemProperty $winlogon DefaultUserName $standardUser
-Set-ItemProperty $winlogon DefaultDomainName $env:COMPUTERNAME
-Set-ItemProperty $winlogon DefaultPassword $plainPassword
 
 powercfg.exe /change monitor-timeout-ac 0 | Out-Null
 powercfg.exe /change standby-timeout-ac 0 | Out-Null
@@ -118,6 +95,43 @@ if ($null -ne $webView2Installer) {
     Invoke-OfflineInstaller -Path $webView2Installer.FullName -Arguments @('/silent', '/install')
 }
 
+# ScreenRecorderLib is a mixed-mode assembly importing VCRUNTIME140/MSVCP140. A clean Windows image
+# has neither, so without this the harness silently captures no video.
+$vcRedist = Get-ChildItem C:\OEM -Filter 'vc_redist.*.exe' -File | Select-Object -First 1
+if ($null -ne $vcRedist) {
+    $vcSignature = Get-AuthenticodeSignature $vcRedist.FullName
+    if ($vcSignature.Status -ne 'Valid' -or
+        $vcSignature.SignerCertificate.Subject -notlike 'CN=Microsoft Corporation*') {
+        throw "Refusing untrusted Visual C++ redistributable '$($vcRedist.FullName)'."
+    }
+    Invoke-OfflineInstaller -Path $vcRedist.FullName -Arguments @('/install', '/quiet', '/norestart')
+}
+
+$powerShellArchitecture = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'arm64' } else { 'x64' }
+$availablePowerShellMsis = @(Get-ChildItem C:\OEM -Filter "PowerShell-*-win-$powerShellArchitecture.msi" -File)
+$powerShellMsi = Get-ChildItem C:\OEM -Filter "PowerShell-*-win-$powerShellArchitecture.msi" -File |
+    Where-Object { Test-Path "$($_.FullName).sha256" -PathType Leaf } |
+    Sort-Object Name -Descending |
+    Select-Object -First 1
+if ($availablePowerShellMsis.Count -gt 0 -and $null -eq $powerShellMsi) {
+    throw "PowerShell MSI trust metadata is missing. Re-stage the OEM payload with Initialize-LocalVmHost.ps1."
+}
+if ($null -ne $powerShellMsi) {
+    $expectedPowerShellHash = (Get-Content "$($powerShellMsi.FullName).sha256" -Raw).Trim()
+    $actualPowerShellHash = (Get-FileHash $powerShellMsi.FullName -Algorithm SHA256).Hash
+    $powerShellSignature = Get-AuthenticodeSignature $powerShellMsi.FullName
+    if ($actualPowerShellHash -ne $expectedPowerShellHash -or
+        $powerShellSignature.Status -ne 'Valid' -or
+        $powerShellSignature.SignerCertificate.Subject -notlike 'CN=Microsoft Corporation*') {
+        throw "Refusing unverified PowerShell MSI '$($powerShellMsi.FullName)'."
+    }
+    Invoke-OfflineInstaller -Path msiexec.exe -Arguments @(
+        '/i', $powerShellMsi.FullName, '/qn', '/norestart',
+        'ADD_PATH=1', 'REGISTER_MANIFEST=1',
+        'ENABLE_PSREMOTING=0', 'USE_MU=0', 'ENABLE_MU=0')
+}
+$powerShellExecutable = 'C:\Program Files\PowerShell\7\pwsh.exe'
+
 $windowsApplicationId = '55c92734-d682-4d71-983e-d6ec3f16059f'
 $windowsLicense = Get-CimInstance SoftwareLicensingProduct -ErrorAction SilentlyContinue |
     Where-Object {
@@ -126,6 +140,11 @@ $windowsLicense = Get-CimInstance SoftwareLicensingProduct -ErrorAction Silently
         $_.Name -like 'Windows*'
     } |
     Select-Object -First 1
+$windowsVersion = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
+$fullWindowsBuild = "$($windowsVersion.CurrentBuild).$($windowsVersion.UBR)"
+$windowsBuild = [int]$windowsVersion.CurrentBuild
+$dotNet10CetReady = $windowsBuild -ge 22000 -or
+    ($windowsBuild -ge 19041 -and $windowsBuild -le 19045 -and [int]$windowsVersion.UBR -ge 5007)
 
 [ordered]@{
     ProvisionedUtc = [DateTime]::UtcNow.ToString('O')
@@ -136,6 +155,13 @@ $windowsLicense = Get-CimInstance SoftwareLicensingProduct -ErrorAction Silently
     ResolutionTaskRegistered = $resolutionTaskRegistered
     DotNetSdkInstaller = if ($null -ne $dotNetSdk) { $dotNetSdk.Name } else { $null }
     WebView2Installer = if ($null -ne $webView2Installer) { $webView2Installer.Name } else { $null }
+    VcRedistInstaller = if ($null -ne $vcRedist) { $vcRedist.Name } else { $null }
+    ScreenRecordingSupported = (Test-Path "$env:WINDIR\System32\VCRUNTIME140.dll")
+    PowerShellVersion = if (Test-Path $powerShellExecutable) {
+        (& $powerShellExecutable -NoLogo -NoProfile -Command '$PSVersionTable.PSVersion.ToString()').Trim()
+    } else { $null }
+    WindowsBuild = $fullWindowsBuild
+    DotNet10CetReady = $dotNet10CetReady
     WindowsLicenseDescription = [string]$windowsLicense.Description
     WindowsLicenseStatus = [int]$windowsLicense.LicenseStatus
     WindowsGracePeriodMinutes = [int]$windowsLicense.GracePeriodRemaining

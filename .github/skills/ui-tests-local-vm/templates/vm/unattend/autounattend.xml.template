@@ -28,6 +28,10 @@
       <UserLocale>{{LOCALE}}</UserLocale>
     </component>
     <component name="Microsoft-Windows-Setup" processorArchitecture="{{ARCH}}" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
+      <DynamicUpdate>
+        <Enable>true</Enable>
+        <WillShowUI>Never</WillShowUI>
+      </DynamicUpdate>
       <UserData>
         <AcceptEula>true</AcceptEula>
         <ProductKey>
@@ -151,7 +155,7 @@
       </UserAccounts>
       <AutoLogon>
         <Enabled>true</Enabled>
-        <LogonCount>1</LogonCount>
+        <LogonCount>999</LogonCount>
         <Username>{{ADMINUSER}}</Username>
         <Password>
           <Value>{{ADMINPASSWORD}}</Value>

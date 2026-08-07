@@ -24,7 +24,7 @@ Classify the first failed boundary before changing test code.
 | `New-PSSession -VMName` reports the guest is not ready | Guest still booting, or PowerShell Direct disabled | Read the console with `Get-VmConsoleImage.ps1`. PowerShell Direct needs the guest running and the Hyper-V integration services enabled; it does not need networking. |
 | `Copy-VMFile` fails `The Guest Service Interface is not enabled` | Integration service off | `Enable-VMIntegrationService -VMName <name> -Name 'Guest Service Interface'`. Without it, the controller falls back to the much slower session copy. |
 | A large archive copy stalls near completion | Session-copy fallback on a big file | `Copy-Item -ToSession` stalls on archives approaching a gigabyte. Confirm `Copy-VMFile` is being used; run with `-Verbose` to see why it fell back. |
-| Desktop probe times out | No logged-on standard user | Read the console image, verify `PTUser` is the active console user, Explorer is running, and the scheduled task uses `Interactive`/`Limited`. Reboot after first provisioning if auto-logon has not switched users. |
+| Desktop probe times out | No logged-on standard user | Read the console image, verify `PTUser` is the active console user, Explorer is running, and the scheduled task uses `Interactive`/`Limited`. Refresh the scaffold and use the current stop/start scripts: `Set-UiTestAutoLogon.ps1` must update the protected LSA secret and remove stale Winlogon password/count values. |
 | Probe says user is administrator | Wrong account/baseline | Remove the test user from Administrators and log on again. Do not accept `RunLevel=Limited` as proof when UAC is disabled; inspect the token as the probe does. |
 | Probe reports wrong dimensions | Resolution task did not run | Provisioning registers a logon task that calls `ChangeDisplaySettings` in the interactive session; check `C:\PowerToysUiTestRun\set-resolution.json`. Display settings cannot be applied from the PowerShell Direct session. Use zero for both desktop parameters only for nonvisual tests. |
 
@@ -37,6 +37,7 @@ Classify the first failed boundary before changing test code.
 | `status.json` exists but is temporarily empty | Create/write race | Wait for parseable JSON with matching `RunId`; never finish on file existence alone. The controller already does this. |
 | One attachment subtree fails export | Transient copy failure | Inspect `ExportErrors`. The shared runner uses bounded `robocopy` retries for directories and writes status even when an artifact cannot be copied. |
 | Zero tests/MTP exit 8 | Filter | Qualify the filter with `Name=`, `Name~`, `FullyQualifiedName~`, or `TestCategory=`. Treat as `BLOCKED`. |
+| Test process exits 0 but TRX has skipped/`NotExecuted` tests | Incomplete suite | Treat the run as `FAIL`. The controller and guest runner require `total > 0` and `executed == total`; inspect inconclusive messages and restore missing prerequisites instead of accepting the process exit code. |
 | Reuse reports a missing manifest | First run or cleaned work root | Run once without `-ReuseStagedPayload`, then reuse. A recreated guest necessarily needs a full first stage. |
 | Changed archive is not refreshed | Hash/request mismatch | Compare request SHA-256 values with the actual archives and inspect `RefreshedComponents`. Do not compare only apphost EXE hashes. |
 

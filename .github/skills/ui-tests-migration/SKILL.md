@@ -201,6 +201,15 @@ $exe = "<repo>\x64\Debug\tests\<Module>.UITests.Next\net10.0-windows10.0.26100.0
 - **Run it in a loop: write → build → run → diagnose → repeat.** UI tests surface environment-real
   failures (DPI scaling, cursor position, hotkey-arming races) that only a live run reveals. Start
   with one deterministic test (e.g. the activation/toggle test), get it green, then widen.
+- **Diagnose from the artifacts, not from the assertion message.** Every failed test attaches a
+  desktop screenshot, and in pipeline mode an MP4 of the run. **Open them before forming any theory**
+  — especially before concluding the product is broken. An assertion can only say "found 0 rows"; the
+  screenshot says whether the list was empty or whether your selector was wrong. This is the single
+  highest-leverage habit in the agentic loop: skipping it cost ~8 iterations and a confident but
+  entirely wrong product-defect report on File Locksmith (see
+  [references/patterns-and-pitfalls.md](references/patterns-and-pitfalls.md) Pitfall 26). If there is
+  no video, find out why rather than proceeding blind — the harness now prints the reason (a clean
+  Windows image without the Visual C++ redistributable cannot load the native encoder).
 - **First, run the *legacy* suite once for a baseline — and run it ELEVATED.** The legacy harness
   launches PowerToys via `ProcessStartInfo { Verb = "runas" }` (elevated), so a **non-elevated** test
   host can't complete the launch and **every test fails at startup with a misleading `Win32Exception`

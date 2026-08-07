@@ -86,10 +86,10 @@ if ($Wait) {
     }
     $credential = Import-Clixml $CredentialPath
     $deadline = [DateTime]::UtcNow.AddMinutes($TimeoutMinutes)
+    $session = $null
     do {
         try {
             $session = New-PSSession -VMName $vm.Name -Credential $credential -ErrorAction Stop
-            Remove-PSSession $session -ErrorAction SilentlyContinue
             break
         }
         catch {
@@ -99,6 +99,61 @@ if ($Wait) {
             Start-Sleep -Seconds 5
         }
     } while ($true)
+
+    try {
+        $standardUser = [string]$configuration.StandardUser
+        $desktopDeadline = [DateTime]::UtcNow.AddMinutes(2)
+        do {
+            $desktopReady = Invoke-Command -Session $session -ScriptBlock {
+                param($User)
+                @(Get-Process explorer -IncludeUserName -ErrorAction SilentlyContinue |
+                    Where-Object { $_.UserName -like "*\$User" }).Count -gt 0
+            } -ArgumentList $standardUser
+            if ($desktopReady -or [DateTime]::UtcNow -ge $desktopDeadline) { break }
+            Start-Sleep -Seconds 5
+        } while ($true)
+
+        if (-not $desktopReady) {
+            Write-Warning "No interactive Explorer session exists for '$standardUser'; repairing auto-logon and restarting once."
+            $autoLogonScript = Join-Path $PSScriptRoot 'oem\Set-UiTestAutoLogon.ps1'
+            if (-not (Test-Path $autoLogonScript -PathType Leaf)) {
+                $autoLogonScript = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\oem\Set-UiTestAutoLogon.ps1'))
+            }
+            if (-not (Test-Path $autoLogonScript -PathType Leaf)) {
+                throw "Auto-logon repair helper was not found: $autoLogonScript"
+            }
+            Invoke-Command -Session $session -FilePath $autoLogonScript -ArgumentList $standardUser | Out-Null
+            if ($null -ne $session) { Remove-PSSession $session -ErrorAction SilentlyContinue }
+            $session = $null
+            Restart-VM -Name $vm.Name -Force
+
+            do {
+                try {
+                    if ($null -eq $session) {
+                        $session = New-PSSession -VMName $vm.Name -Credential $credential -ErrorAction Stop
+                    }
+                    $desktopReady = Invoke-Command -Session $session -ScriptBlock {
+                        param($User)
+                        @(Get-Process explorer -IncludeUserName -ErrorAction SilentlyContinue |
+                            Where-Object { $_.UserName -like "*\$User" }).Count -gt 0
+                    } -ArgumentList $standardUser
+                    if ($desktopReady) { break }
+                }
+                catch {
+                    if ($null -ne $session) { Remove-PSSession $session -ErrorAction SilentlyContinue }
+                    $session = $null
+                }
+
+                if ([DateTime]::UtcNow -ge $deadline) {
+                    throw "The '$standardUser' interactive desktop did not appear after auto-logon repair."
+                }
+                Start-Sleep -Seconds 5
+            } while ($true)
+        }
+    }
+    finally {
+        if ($null -ne $session) { Remove-PSSession $session -ErrorAction SilentlyContinue }
+    }
 }
 
 $vm = Get-VM -Name $configuration.VmName

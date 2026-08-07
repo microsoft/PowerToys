@@ -516,3 +516,30 @@ Rules for using it:
 25. **`PrintWindow` is not a composed-content oracle.** WinUI/WebView2 can render correctly on video
     while `PrintWindow` is blank or incomplete. Use visible DWM capture and verify z-order before
     changing valid baselines (Recipe 15).
+26. **Read the failure artifacts BEFORE theorising about the product.** Every failed test attaches a
+    desktop screenshot (and, in pipeline mode, an MP4). Open them first — they show what the UI
+    actually did, which is the one thing an assertion message cannot tell you. An assertion says
+    "found 0 rows"; the screenshot says whether the list was empty or whether your *counter* was
+    wrong. Skipping this step cost ~8 local-VM iterations on File Locksmith and produced a confident,
+    fully-argued, and entirely wrong "product defect" report — the window had ~10 rows on screen the
+    whole time while `FindAll<Button>(By.Name("End task"))` returned 0, because the button exposes no
+    UIA name and the `Button` wrapper filtered out the `Text` matches that winappcli did return.
+
+    Concretely, when a test reports "the UI shows nothing":
+
+    | Ask | Where to look |
+    |---|---|
+    | Did the UI really show nothing? | the failure PNG / MP4 |
+    | Is my selector matching the right control type? | `Session.Inspect()`, or `FindAll<Element>` and print `ControlType` |
+    | Did my fixture establish its precondition? | make the fixture assert it (Pitfall 27) |
+    | Is the product genuinely broken? | only after the three above |
+
+    A product-defect claim needs artifact evidence, not inference from an assertion message. If you
+    catch yourself building a theory about product internals from a counter that returns 0, stop and
+    open the PNG.
+27. **A fixture must prove its own precondition, per unit.** "At least one holder locked the file"
+    passes when 1 of 2 holders locked it, so the shortfall gets reported later as a product failure.
+    Assert the exact expected state (e.g. one ready-marker file per holder, written *after* the
+    operation succeeds) and include the fixture's own diagnostics in the assertion message. Equally,
+    expectations must track the lifecycle: a fixture that counts "total ever started" fails a test
+    that deliberately kills one of its processes — count what should be *alive now*.
