@@ -4,6 +4,7 @@
 
 using System;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
@@ -44,8 +45,16 @@ namespace PowerLauncher
         private bool _deletePressed;
         private HwndSource _hwndSource;
         private Timer _firstDeleteTimer = new Timer();
+        private bool _loadedAtLeastOnce;
         private bool _coldStateHotkeyPressed;
         private bool _disposedValue;
+
+        [DllImport("winmm.dll", CharSet = CharSet.Unicode)]
+        private static extern bool PlaySound(string lpszName, IntPtr hModule, uint dwFlags);
+
+        private static readonly uint SndFilename = 0x00020000;
+        private static readonly uint SndAsync = 0x00000001;
+
         private IDisposable _reactiveSubscription;
         private Point _mouseDownPosition;
         private ResultViewModel _mouseDownResultViewModel;
@@ -251,6 +260,7 @@ namespace PowerLauncher
             _viewModel.SetFontSize();
 
             BringProcessToForeground();
+            _loadedAtLeastOnce = true;
         }
 
         private void SetupSearchTextBoxReactiveness(bool showResultsWithDelay)
@@ -785,6 +795,7 @@ namespace PowerLauncher
         {
             if (Visibility == Visibility.Visible)
             {
+                PlayAudibleFeedback(true);
                 _deletePressed = false;
                 if (_firstDeleteTimer != null)
                 {
@@ -815,10 +826,47 @@ namespace PowerLauncher
             }
             else
             {
+                PlayAudibleFeedback(false);
                 if (_firstDeleteTimer != null)
                 {
                     _firstDeleteTimer.Stop();
                 }
+            }
+        }
+
+        private void PlayAudibleFeedback(bool isOpening)
+        {
+            if (!_loadedAtLeastOnce || !_settings.EnableAudibleFeedback)
+            {
+                return;
+            }
+
+            bool shouldPlay = isOpening ? _settings.EnableOpeningSound : _settings.EnableClosingSound;
+            if (!shouldPlay)
+            {
+                return;
+            }
+
+            try
+            {
+                string fileName = isOpening ? "open.wav" : "close.wav";
+                string soundPath = Path.Combine(AppContext.BaseDirectory, "Sounds", fileName);
+
+                Log.Info($"Attempting to play sound: {soundPath}, Exists: {File.Exists(soundPath)}", GetType());
+
+                if (File.Exists(soundPath))
+                {
+                    PlaySound(soundPath, IntPtr.Zero, SndFilename | SndAsync);
+                    Log.Info($"Playing sound: {soundPath}", GetType());
+                }
+                else
+                {
+                    Log.Info($"Sound file not found: {soundPath}", GetType());
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Exception("Failed to play audible feedback", ex, GetType());
             }
         }
 

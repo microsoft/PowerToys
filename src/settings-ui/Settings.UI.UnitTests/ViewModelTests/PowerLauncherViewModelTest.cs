@@ -113,7 +113,10 @@ namespace ViewModelTests
             Assert.AreEqual(originalSettings.Properties.UsePinyin, viewModel.UsePinyin);
             Assert.AreEqual(originalSettings.Properties.ShowPluginsOverview, viewModel.ShowPluginsOverviewIndex);
             Assert.AreEqual(originalSettings.Properties.TitleFontSize, viewModel.TitleFontSize);
-
+            Assert.AreEqual(originalSettings.Properties.EnableAudibleFeedback, viewModel.EnableAudibleFeedback);
+            Assert.AreEqual(originalSettings.Properties.EnableOpeningSound, viewModel.EnableOpeningSound);
+            Assert.AreEqual(originalSettings.Properties.EnableClosingSound, viewModel.EnableClosingSound);
+            
             // Verify that the stub file was used
             var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)
             BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
@@ -204,6 +207,20 @@ namespace ViewModelTests
 
             Assert.IsTrue(mockSettings.Properties.OverrideWinkeyR);
             Assert.IsFalse(mockSettings.Properties.OverrideWinkeyS);
+        }
+
+        [TestMethod]
+        public void SoundSettingsShouldUpdateSettings()
+        {
+            viewModel.EnableAudibleFeedback = true;
+            viewModel.EnableOpeningSound = true;
+            viewModel.EnableClosingSound = false;
+
+            Assert.AreEqual(3, sendCallbackMock.TimesSent);
+
+            Assert.IsTrue(mockSettings.Properties.EnableAudibleFeedback);
+            Assert.IsTrue(mockSettings.Properties.EnableOpeningSound);
+            Assert.IsFalse(mockSettings.Properties.EnableClosingSound);
         }
     }
 }
