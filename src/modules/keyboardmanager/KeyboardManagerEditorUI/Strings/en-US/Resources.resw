@@ -231,6 +231,12 @@
   <data name="TextTriggerBox.PlaceholderText" xml:space="preserve">
     <value>Enter the text to replace when typed</value>
   </data>
+  <data name="TextTriggerBox.AutomationProperties.HelpText" xml:space="preserve">
+    <value>Replacements happen immediately. Input from IME, voice typing, handwriting, and paste is not supported.</value>
+  </data>
+  <data name="TextTriggerBox.Description" xml:space="preserve">
+    <value>Replacements happen immediately. Include a trailing space in both fields to require a word boundary.</value>
+  </data>
   <data name="ActionKeyPlaceholder.Text" xml:space="preserve">
     <value>Press to start recording keys</value>
   </data>
@@ -427,7 +433,7 @@
     <value>Duplicate remapping</value>
   </data>
   <data name="Validation_DuplicateMapping_Message" xml:space="preserve">
-    <value>This key or shortcut is already remapped.</value>
+    <value>This input is already mapped.</value>
   </data>
   <data name="Validation_ConflictingModifier_Title" xml:space="preserve">
     <value>Conflicting modifier</value>
@@ -452,6 +458,24 @@
   </data>
   <data name="Validation_EmptyTriggerText_Message" xml:space="preserve">
     <value>Please enter the text to replace.</value>
+  </data>
+  <data name="Validation_TextTriggerTooLong_Title" xml:space="preserve">
+    <value>Text trigger is too long</value>
+  </data>
+  <data name="Validation_TextTriggerTooLong_Message" xml:space="preserve">
+    <value>Text triggers can contain at most 256 characters.</value>
+  </data>
+  <data name="Validation_TargetTextTooLong_Title" xml:space="preserve">
+    <value>Replacement text is too long</value>
+  </data>
+  <data name="Validation_TargetTextTooLong_Message" xml:space="preserve">
+    <value>Replacement text can contain at most 256 characters.</value>
+  </data>
+  <data name="Validation_TextTriggerPrefixConflict_Title" xml:space="preserve">
+    <value>Conflicting text trigger</value>
+  </data>
+  <data name="Validation_TextTriggerPrefixConflict_Message" xml:space="preserve">
+    <value>This trigger is a prefix of another text trigger, or another trigger is a prefix of this one. Use distinct triggers so every replacement can be reached.</value>
   </data>
   <data name="Validation_EmptyUrl_Title" xml:space="preserve">
     <value>Missing URL</value>

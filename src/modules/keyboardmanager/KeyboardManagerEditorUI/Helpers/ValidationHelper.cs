@@ -14,6 +14,10 @@ namespace KeyboardManagerEditorUI.Helpers
 {
     public static class ValidationHelper
     {
+        // Keep these limits in sync with KeyboardManagerConstants.h.
+        public const int MaxTextReplacementTriggerLength = 256;
+        public const int MaxTextReplacementTargetLength = 256;
+
         public static readonly Dictionary<ValidationErrorType, (string Title, string Message)> ValidationMessages = new()
         {
             { ValidationErrorType.EmptyOriginalKeys, (ResourceHelper.GetString("Validation_EmptyOriginalKeys_Title"), ResourceHelper.GetString("Validation_EmptyOriginalKeys_Message")) },
@@ -26,6 +30,9 @@ namespace KeyboardManagerEditorUI.Helpers
             { ValidationErrorType.SelfMapping, (ResourceHelper.GetString("Validation_SelfMapping_Title"), ResourceHelper.GetString("Validation_SelfMapping_Message")) },
             { ValidationErrorType.EmptyTargetText, (ResourceHelper.GetString("Validation_EmptyTargetText_Title"), ResourceHelper.GetString("Validation_EmptyTargetText_Message")) },
             { ValidationErrorType.EmptyTriggerText, (ResourceHelper.GetString("Validation_EmptyTriggerText_Title"), ResourceHelper.GetString("Validation_EmptyTriggerText_Message")) },
+            { ValidationErrorType.TextTriggerTooLong, (ResourceHelper.GetString("Validation_TextTriggerTooLong_Title"), ResourceHelper.GetString("Validation_TextTriggerTooLong_Message")) },
+            { ValidationErrorType.TargetTextTooLong, (ResourceHelper.GetString("Validation_TargetTextTooLong_Title"), ResourceHelper.GetString("Validation_TargetTextTooLong_Message")) },
+            { ValidationErrorType.TextTriggerPrefixConflict, (ResourceHelper.GetString("Validation_TextTriggerPrefixConflict_Title"), ResourceHelper.GetString("Validation_TextTriggerPrefixConflict_Message")) },
             { ValidationErrorType.EmptyUrl, (ResourceHelper.GetString("Validation_EmptyUrl_Title"), ResourceHelper.GetString("Validation_EmptyUrl_Message")) },
             { ValidationErrorType.EmptyProgramPath, (ResourceHelper.GetString("Validation_EmptyProgramPath_Title"), ResourceHelper.GetString("Validation_EmptyProgramPath_Message")) },
             { ValidationErrorType.OneKeyMapping, (ResourceHelper.GetString("Validation_OneKeyMapping_Title"), ResourceHelper.GetString("Validation_OneKeyMapping_Message")) },
@@ -169,8 +176,7 @@ namespace KeyboardManagerEditorUI.Helpers
         public static ValidationErrorType ValidateTextReplacementMapping(
             string triggerText,
             string textContent,
-            bool isEditMode = false,
-            string editingTriggerText = "")
+            string editingMappingId = "")
         {
             if (string.IsNullOrEmpty(triggerText))
             {
@@ -182,13 +188,33 @@ namespace KeyboardManagerEditorUI.Helpers
                 return ValidationErrorType.EmptyTargetText;
             }
 
-            if (SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values.Any(settings =>
-                settings.IsActive &&
-                settings.Shortcut.OperationType == ShortcutOperationType.RemapText &&
-                settings.Shortcut.TriggerText == triggerText &&
-                (!isEditMode || settings.Shortcut.TriggerText != editingTriggerText)))
+            if (triggerText.Length > MaxTextReplacementTriggerLength)
+            {
+                return ValidationErrorType.TextTriggerTooLong;
+            }
+
+            if (textContent.Length > MaxTextReplacementTargetLength)
+            {
+                return ValidationErrorType.TargetTextTooLong;
+            }
+
+            var existingTextReplacements = SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values
+                .Where(settings =>
+                    settings.Id != editingMappingId &&
+                    settings.Shortcut.OperationType == ShortcutOperationType.RemapText &&
+                    !string.IsNullOrEmpty(settings.Shortcut.TriggerText))
+                .ToList();
+
+            if (existingTextReplacements.Any(settings => string.Equals(settings.Shortcut.TriggerText, triggerText, StringComparison.Ordinal)))
             {
                 return ValidationErrorType.DuplicateMapping;
+            }
+
+            if (existingTextReplacements.Any(settings =>
+                settings.Shortcut.TriggerText.StartsWith(triggerText, StringComparison.Ordinal) ||
+                triggerText.StartsWith(settings.Shortcut.TriggerText, StringComparison.Ordinal)))
+            {
+                return ValidationErrorType.TextTriggerPrefixConflict;
             }
 
             return ValidationErrorType.NoError;

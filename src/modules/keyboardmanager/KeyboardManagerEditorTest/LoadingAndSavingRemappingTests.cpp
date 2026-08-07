@@ -549,5 +549,77 @@ namespace RemappingUITests
             Assert::AreEqual(static_cast<size_t>(1), testShortcuts.textReplacements.size());
             Assert::AreEqual(static_cast<size_t>(5), testShortcuts.maxTextReplacementTriggerLength);
         }
+
+        TEST_METHOD (AddTextReplacement_ShouldRejectPrefixConflictsAndAllowSuffixOverlap)
+        {
+            MappingConfiguration shorterTriggerFirst;
+            Assert::AreEqual(true, shorterTriggerFirst.AddTextReplacement(L"sun", L"first"));
+            Assert::AreEqual(false, shorterTriggerFirst.AddTextReplacement(L"sunny", L"second"));
+
+            MappingConfiguration longerTriggerFirst;
+            Assert::AreEqual(true, longerTriggerFirst.AddTextReplacement(L"sunny", L"first"));
+            Assert::AreEqual(false, longerTriggerFirst.AddTextReplacement(L"sun", L"second"));
+
+            MappingConfiguration suffixOverlap;
+            Assert::AreEqual(true, suffixOverlap.AddTextReplacement(L"sun", L"first"));
+            Assert::AreEqual(true, suffixOverlap.AddTextReplacement(L"risesun", L"second"));
+        }
+
+        TEST_METHOD (AddTextReplacement_ShouldEnforceLengthLimitsAndRejectEmbeddedNulls)
+        {
+            MappingConfiguration atLimit;
+            const std::wstring maximumTrigger(KeyboardManagerConstants::MaxTextReplacementTriggerLength, L't');
+            const std::wstring maximumText(KeyboardManagerConstants::MaxTextReplacementTextLength, L'x');
+            Assert::AreEqual(true, atLimit.AddTextReplacement(maximumTrigger, maximumText));
+            Assert::AreEqual(KeyboardManagerConstants::MaxTextReplacementTriggerLength, atLimit.maxTextReplacementTriggerLength);
+
+            MappingConfiguration overTriggerLimit;
+            const std::wstring excessiveTrigger(KeyboardManagerConstants::MaxTextReplacementTriggerLength + 1, L't');
+            Assert::AreEqual(false, overTriggerLimit.AddTextReplacement(excessiveTrigger, L"text"));
+            Assert::AreEqual(static_cast<size_t>(0), overTriggerLimit.textReplacements.size());
+            Assert::AreEqual(static_cast<size_t>(0), overTriggerLimit.maxTextReplacementTriggerLength);
+
+            MappingConfiguration overTextLimit;
+            const std::wstring excessiveText(KeyboardManagerConstants::MaxTextReplacementTextLength + 1, L'x');
+            Assert::AreEqual(false, overTextLimit.AddTextReplacement(L"trigger", excessiveText));
+            Assert::AreEqual(static_cast<size_t>(0), overTextLimit.textReplacements.size());
+
+            MappingConfiguration embeddedNull;
+            Assert::AreEqual(false, embeddedNull.AddTextReplacement(std::wstring(L"tr\0igger", 8), L"text"));
+            Assert::AreEqual(false, embeddedNull.AddTextReplacement(L"trigger", std::wstring(L"te\0xt", 5)));
+        }
+
+        TEST_METHOD (UpdateAndDeleteTextReplacement_ShouldBeAtomicAndRecalculateMaximumTriggerLength)
+        {
+            MappingConfiguration testShortcuts;
+            Assert::AreEqual(true, testShortcuts.AddTextReplacement(L"planet", L"old text"));
+            Assert::AreEqual(true, testShortcuts.AddTextReplacement(L"moon", L"moon text"));
+
+            Assert::AreEqual(true, testShortcuts.UpdateTextReplacement(L"planet", L"star", L"new text"));
+            Assert::AreEqual(static_cast<size_t>(0), testShortcuts.textReplacements.count(L"planet"));
+            Assert::AreEqual(std::wstring(L"new text"), testShortcuts.textReplacements.at(L"star"));
+            Assert::AreEqual(static_cast<size_t>(4), testShortcuts.maxTextReplacementTriggerLength);
+
+            Assert::AreEqual(true, testShortcuts.UpdateTextReplacement(L"star", L"star", L"updated text"));
+            Assert::AreEqual(std::wstring(L"updated text"), testShortcuts.textReplacements.at(L"star"));
+
+            Assert::AreEqual(false, testShortcuts.UpdateTextReplacement(L"star", L"moonstruck", L"conflict"));
+            Assert::AreEqual(std::wstring(L"updated text"), testShortcuts.textReplacements.at(L"star"));
+            Assert::AreEqual(static_cast<size_t>(0), testShortcuts.textReplacements.count(L"moonstruck"));
+
+            Assert::AreEqual(true, testShortcuts.AddTextReplacement(L"forest", L"first maximum"));
+            Assert::AreEqual(true, testShortcuts.AddTextReplacement(L"galaxy", L"second maximum"));
+            Assert::AreEqual(static_cast<size_t>(6), testShortcuts.maxTextReplacementTriggerLength);
+            Assert::AreEqual(true, testShortcuts.DeleteTextReplacement(L"forest"));
+            Assert::AreEqual(static_cast<size_t>(6), testShortcuts.maxTextReplacementTriggerLength);
+            Assert::AreEqual(true, testShortcuts.DeleteTextReplacement(L"galaxy"));
+            Assert::AreEqual(static_cast<size_t>(4), testShortcuts.maxTextReplacementTriggerLength);
+            Assert::AreEqual(true, testShortcuts.DeleteTextReplacement(L"star"));
+            Assert::AreEqual(static_cast<size_t>(4), testShortcuts.maxTextReplacementTriggerLength);
+            Assert::AreEqual(true, testShortcuts.DeleteTextReplacement(L"moon"));
+            Assert::AreEqual(static_cast<size_t>(0), testShortcuts.maxTextReplacementTriggerLength);
+            Assert::AreEqual(false, testShortcuts.DeleteTextReplacement(L"missing"));
+        }
+
     };
 }

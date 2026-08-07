@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 namespace KeyboardManagerConstants
 {
     // Event name for signaling settings changes
@@ -102,4 +104,7 @@ namespace KeyboardManagerConstants
 
     // String constant to represent no activated application in app-specific shortcuts
     inline const std::wstring NoActivatedApp = L"";
+
+    inline constexpr std::size_t MaxTextReplacementTriggerLength = 256;
+    inline constexpr std::size_t MaxTextReplacementTextLength = 256;
 }

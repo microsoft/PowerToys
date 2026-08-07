@@ -47,7 +47,7 @@ namespace KeyboardManagerEditorUI.Interop
         internal static extern int GetTextReplacementCount(IntPtr config);
 
         [DllImport(DllName, CallingConvention = Convention)]
-        [return: MarshalAs(UnmanagedType.Bool)]
+        [return: MarshalAs(UnmanagedType.I1)]
         internal static extern bool GetTextReplacement(IntPtr config, int index, ref TextReplacementMapping mapping);
 
         [DllImport(DllName, CallingConvention = Convention)]
@@ -74,8 +74,16 @@ namespace KeyboardManagerEditorUI.Interop
         internal static extern bool AddSingleKeyToTextRemap(IntPtr config, int originalKey, [MarshalAs(UnmanagedType.LPWStr)] string targetText);
 
         [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
-        [return: MarshalAs(UnmanagedType.Bool)]
+        [return: MarshalAs(UnmanagedType.I1)]
         internal static extern bool AddTextReplacement(IntPtr config, [MarshalAs(UnmanagedType.LPWStr)] string trigger, [MarshalAs(UnmanagedType.LPWStr)] string targetText);
+
+        [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        internal static extern bool UpdateTextReplacement(
+            IntPtr config,
+            [MarshalAs(UnmanagedType.LPWStr)] string originalTrigger,
+            [MarshalAs(UnmanagedType.LPWStr)] string newTrigger,
+            [MarshalAs(UnmanagedType.LPWStr)] string targetText);
 
         [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -106,7 +114,7 @@ namespace KeyboardManagerEditorUI.Interop
         internal static extern bool DeleteSingleKeyToTextRemap(IntPtr config, int originalKey);
 
         [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
-        [return: MarshalAs(UnmanagedType.Bool)]
+        [return: MarshalAs(UnmanagedType.I1)]
         internal static extern bool DeleteTextReplacement(IntPtr config, [MarshalAs(UnmanagedType.LPWStr)] string trigger);
 
         [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]

@@ -12,10 +12,17 @@ void MockedInput::SetHookProc(std::function<intptr_t(LowlevelKeyboardEvent*)> ho
 // Function to simulate keyboard input - arguments and return value based on SendInput function (https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-sendinput)
 bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
 {
+    sendVirtualInputBatchSizes.push_back(inputs.size());
+
     // Simulate an injection failure (e.g. SendInput blocked) when configured.
     if (sendVirtualInputShouldFail != nullptr && sendVirtualInputShouldFail(inputs))
     {
         return false;
+    }
+
+    if (inputs.empty())
+    {
+        return true;
     }
 
     // Iterate over inputs
@@ -65,6 +72,13 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
         // Set keyboard state if the hook does not suppress the input
         if (result == 0)
         {
+            if (input.type == INPUT_KEYBOARD &&
+                (input.ki.dwFlags & KEYEVENTF_UNICODE) != 0 &&
+                (input.ki.dwFlags & KEYEVENTF_KEYUP) == 0)
+            {
+                injectedUnicodeText.push_back(static_cast<wchar_t>(input.ki.wScan));
+            }
+
             // If key up flag is set, then set keyboard state to false
             keyboardState[input.ki.wVk] = (input.ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
 
@@ -151,6 +165,8 @@ void MockedInput::SetKeyboardState(int key, bool state)
 void MockedInput::ResetKeyboardState()
 {
     std::fill(keyboardState.begin(), keyboardState.end(), false);
+    sendVirtualInputBatchSizes.clear();
+    injectedUnicodeText.clear();
 }
 
 // Function to set SendVirtualInput call count condition
@@ -170,6 +186,29 @@ void MockedInput::SetSendVirtualInputShouldFail(std::function<bool(const std::ve
 int MockedInput::GetSendVirtualInputCallCount()
 {
     return sendVirtualInputCallCount;
+}
+
+// Function to get the number of attempted SendVirtualInput batches
+size_t MockedInput::GetSendVirtualInputBatchCount() const
+{
+    return sendVirtualInputBatchSizes.size();
+}
+
+// Function to get the largest attempted SendVirtualInput batch size
+size_t MockedInput::GetLargestSendVirtualInputBatchSize() const
+{
+    if (sendVirtualInputBatchSizes.empty())
+    {
+        return 0;
+    }
+
+    return *std::max_element(sendVirtualInputBatchSizes.begin(), sendVirtualInputBatchSizes.end());
+}
+
+// Function to inspect successfully delivered Unicode text payloads
+const std::wstring& MockedInput::GetInjectedUnicodeText() const
+{
+    return injectedUnicodeText;
 }
 
 // Function to get the foreground process name

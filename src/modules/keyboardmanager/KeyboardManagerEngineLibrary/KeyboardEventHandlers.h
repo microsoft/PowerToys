@@ -85,6 +85,13 @@ namespace KeyboardEventHandlers
     // Function to replace recently typed text with configured replacement text
     intptr_t HandleTextReplacementEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state);
 
+    // Clears text replacement state that is tied to the current input context.
+    void ResetTextReplacementRuntimeState(State& state) noexcept;
+
+    // Refreshes and updates toggle keys independently from the hook thread keyboard queue.
+    void InitializeTextReplacementToggleKeyState(State& state) noexcept;
+    void UpdateTextReplacementToggleKeyState(const LowlevelKeyboardEvent* data, bool eventSuppressed, State& state) noexcept;
+
     // Function to ensure Ctrl/Shift/Alt modifier key state is not detected as pressed down by applications which detect keys at a lower level than hooks when it is remapped for scenarios where its required
     void ResetIfModifierKeyForLowerLevelKeyHandlers(KeyboardManagerInput::InputInterface& ii, DWORD key, DWORD target);
 };

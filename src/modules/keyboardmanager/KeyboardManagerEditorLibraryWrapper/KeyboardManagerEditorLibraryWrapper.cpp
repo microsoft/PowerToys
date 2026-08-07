@@ -4,7 +4,6 @@
 #include <cstring>
 #include <vector>
 #include <string>
-#include <memory>
 
 #include <common/utils/logger_helper.h>
 #include <keyboardmanager/KeyboardManagerEditor/KeyboardManagerEditor.h>
@@ -114,12 +113,24 @@ extern "C"
 
     int GetTextReplacementCount(void* config)
     {
+        if (config == nullptr)
+        {
+            return 0;
+        }
+
         auto mapping = static_cast<MappingConfiguration*>(config);
         return static_cast<int>(mapping->textReplacements.size());
     }
 
     bool GetTextReplacement(void* config, int index, TextReplacementMapping* mapping)
     {
+        if (config == nullptr || mapping == nullptr)
+        {
+            return false;
+        }
+
+        mapping->trigger = nullptr;
+        mapping->targetText = nullptr;
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
 
         if (index < 0 || index >= mappingConfig->textReplacements.size())
@@ -535,14 +546,22 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
 
     bool AddTextReplacement(void* config, const wchar_t* trigger, const wchar_t* text)
     {
-        auto mappingConfig = static_cast<MappingConfiguration*>(config);
-
-        if (trigger == nullptr || text == nullptr)
+        if (config == nullptr || trigger == nullptr || text == nullptr)
         {
             return false;
         }
 
-        return mappingConfig->AddTextReplacement(trigger, text);
+        return static_cast<MappingConfiguration*>(config)->AddTextReplacement(trigger, text);
+    }
+
+    bool UpdateTextReplacement(void* config, const wchar_t* oldTrigger, const wchar_t* newTrigger, const wchar_t* newText)
+    {
+        if (config == nullptr || oldTrigger == nullptr || newTrigger == nullptr || newText == nullptr)
+        {
+            return false;
+        }
+
+        return static_cast<MappingConfiguration*>(config)->UpdateTextReplacement(oldTrigger, newTrigger, newText);
     }
 
     bool AddSingleKeyToShortcutRemap(void* config, int originalKey, const wchar_t* targetKeys)
@@ -716,27 +735,12 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
 
     bool DeleteTextReplacement(void* config, const wchar_t* trigger)
     {
-        auto mappingConfig = static_cast<MappingConfiguration*>(config);
-        if (trigger == nullptr)
+        if (config == nullptr || trigger == nullptr)
         {
             return false;
         }
 
-        auto it = mappingConfig->textReplacements.find(trigger);
-        if (it != mappingConfig->textReplacements.end())
-        {
-            mappingConfig->textReplacements.erase(it);
-            mappingConfig->maxTextReplacementTriggerLength = 0;
-            for (const auto& [existingTrigger, replacementText] : mappingConfig->textReplacements)
-            {
-                UNREFERENCED_PARAMETER(replacementText);
-                mappingConfig->maxTextReplacementTriggerLength = (std::max)(mappingConfig->maxTextReplacementTriggerLength, existingTrigger.length());
-            }
-
-            return true;
-        }
-
-        return false;
+        return static_cast<MappingConfiguration*>(config)->DeleteTextReplacement(trigger);
     }
 
     // Function to delete a shortcut remapping
