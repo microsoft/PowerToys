@@ -132,6 +132,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 AdvancedPasteUIShortcut,
                 PasteAsMarkdownShortcut,
                 PasteAsJsonShortcut,
+                PasteAsKeystrokeShortcut,
             };
 
             foreach (var action in _additionalActions.GetAllActions())
@@ -470,6 +471,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _advancedPasteSettings.Properties.PasteAsJsonShortcut = value ?? new HotkeySettings();
                     OnPropertyChanged(nameof(IsConflictingCopyShortcut));
                     OnPropertyChanged(nameof(PasteAsJsonShortcut));
+                    SaveAndNotifySettings();
+                }
+            }
+        }
+
+        public HotkeySettings PasteAsKeystrokeShortcut
+        {
+            get => _advancedPasteSettings.Properties.PasteAsKeystrokeShortcut;
+            set
+            {
+                if (_advancedPasteSettings.Properties.PasteAsKeystrokeShortcut != value)
+                {
+                    _advancedPasteSettings.Properties.PasteAsKeystrokeShortcut = value ?? new HotkeySettings();
+                    OnPropertyChanged(nameof(IsConflictingCopyShortcut));
+                    OnPropertyChanged(nameof(PasteAsKeystrokeShortcut));
                     SaveAndNotifySettings();
                 }
             }

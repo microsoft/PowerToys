@@ -39,6 +39,8 @@ namespace CommonSharedConstants
     
     const wchar_t ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE[] = L"CustomAction";
 
+    const wchar_t ADVANCED_PASTE_KEYSTROKE_MESSAGE[] = L"PasteAsKeystrokes";
+
     const wchar_t ADVANCED_PASTE_TERMINATE_APP_MESSAGE[] = L"TerminateApp";
     
     const wchar_t ADVANCED_PASTE_SHOW_UI_EVENT[] = L"Local\\PowerToys_AdvancedPaste_ShowUI";
