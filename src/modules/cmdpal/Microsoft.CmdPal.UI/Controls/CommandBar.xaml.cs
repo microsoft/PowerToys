@@ -47,7 +47,7 @@ public sealed partial class CommandBar : UserControl,
         if (message.Element is null)
         {
             // This is invoked from the "More" button on the command bar
-            if (!ViewModel.ShouldShowContextMenu)
+            if (!ViewModel.ShouldShowMoreCommandsButton)
             {
                 return;
             }
@@ -101,7 +101,7 @@ public sealed partial class CommandBar : UserControl,
 
     public void Receive(TryCommandKeybindingMessage msg)
     {
-        if (!ViewModel.ShouldShowContextMenu)
+        if (!(ViewModel.SelectedItem?.CanOpenContextMenu ?? false))
         {
             return;
         }

@@ -67,7 +67,7 @@ public sealed partial class CommandBarViewModel : ObservableObject,
     public bool HasSecondaryCommand => SecondaryCommand is not null;
 
     [ObservableProperty]
-    public partial bool ShouldShowContextMenu { get; set; } = false;
+    public partial bool ShouldShowMoreCommandsButton { get; set; } = false;
 
     [ObservableProperty]
     public partial PageViewModel? CurrentPage { get; set; }
@@ -105,7 +105,8 @@ public sealed partial class CommandBarViewModel : ObservableObject,
     {
         switch (e.PropertyName)
         {
-            case nameof(SelectedItem.CanOpenContextMenu):
+            case nameof(SelectedItem.HasMoreCommands):
+            case nameof(SelectedItem.MoreCommands):
             case nameof(SelectedItem.SecondaryCommand):
                 UpdateContextItems();
                 break;
@@ -117,17 +118,21 @@ public sealed partial class CommandBarViewModel : ObservableObject,
         if (SelectedItem is null)
         {
             SecondaryCommand = null;
-            ShouldShowContextMenu = false;
+            ShouldShowMoreCommandsButton = false;
             return;
         }
 
         SecondaryCommand = SelectedItem.SecondaryCommand;
-        ShouldShowContextMenu = SelectedItem.CanOpenContextMenu;
+        ShouldShowMoreCommandsButton = ShouldShowMoreCommandsButtonFor(SelectedItem);
 
         OnPropertyChanged(nameof(HasSecondaryCommand));
         OnPropertyChanged(nameof(SecondaryCommand));
-        OnPropertyChanged(nameof(ShouldShowContextMenu));
+        OnPropertyChanged(nameof(ShouldShowMoreCommandsButton));
     }
+
+    // The first entry in MoreCommands is already surfaced as SecondaryButton.
+    internal static bool ShouldShowMoreCommandsButtonFor(ICommandBarContext context) =>
+        context.MoreCommands.Count > 1 && context.HasMoreCommands;
 
     // InvokeItemCommand is what this will be in Xaml due to source generator
     // this comes in when an item in the list is tapped
