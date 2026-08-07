@@ -36,8 +36,9 @@ function Assert-Throws {
 }
 
 Describe "resolveBuildMetadata" {
-    It "generates the canonical preview version for main" {
+    It "generates the canonical preview version for scheduled main with the auto default" {
         $result = & $scriptPath `
+            -VersionOverride "auto" `
             -SourceBranch "refs/heads/main" `
             -BuildReason "Schedule" `
             -BuildNumber "PowerToys Signed YAML Release Build_2607.30099-main" `
@@ -59,6 +60,18 @@ Describe "resolveBuildMetadata" {
 
         $result.Intent | Should Be "stable-release"
         $result.Channel | Should Be "stable"
+        $result.Version | Should Be "0.100.2112.0"
+    }
+
+    It "treats the pipeline auto sentinel as an automatic version" {
+        $result = & $scriptPath `
+            -VersionOverride "auto" `
+            -SourceBranch "refs/heads/stable" `
+            -BuildReason "Manual" `
+            -BuildNumber "PowerToys Signed YAML Release Build_2607.30099-stable" `
+            -DailyVersionSequence "2" `
+            -VersionPropsPath (New-VersionProps)
+
         $result.Version | Should Be "0.100.2112.0"
     }
 
@@ -151,6 +164,18 @@ Describe "resolveBuildMetadata" {
         $result.Version | Should Be "0.100.2.0"
     }
 
+    It "allows an explicit stable override after the automatic sequence is exhausted" {
+        $result = & $scriptPath `
+            -VersionOverride "0.101.0" `
+            -SourceBranch "refs/heads/stable" `
+            -BuildReason "Manual" `
+            -BuildNumber "PowerToys Signed YAML Release Build_2607.30001-stable" `
+            -DailyVersionSequence "10" `
+            -VersionPropsPath (New-VersionProps)
+
+        $result.Version | Should Be "0.101.0.0"
+    }
+
     It "rejects a stable override with a nonzero fourth component" {
         Assert-Throws {
             & $scriptPath `
@@ -182,6 +207,18 @@ Describe "resolveBuildMetadata" {
             -BuildReason "Manual" `
             -BuildNumber "PowerToys Signed YAML Release Build_2607.30001-main" `
             -DailyVersionSequence "1" `
+            -VersionPropsPath (New-VersionProps)
+
+        $result.Version | Should Be "0.100.2111.0"
+    }
+
+    It "allows a full preview override after the automatic sequence is exhausted" {
+        $result = & $scriptPath `
+            -VersionOverride "0.100.2111.0" `
+            -SourceBranch "refs/heads/main" `
+            -BuildReason "Manual" `
+            -BuildNumber "PowerToys Signed YAML Release Build_2607.30001-main" `
+            -DailyVersionSequence "10" `
             -VersionPropsPath (New-VersionProps)
 
         $result.Version | Should Be "0.100.2111.0"

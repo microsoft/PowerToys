@@ -16,9 +16,9 @@ parameters:
     default: false
 
   - name: versionNumber
-    displayName: "Version Override (optional; main and stable default to the release-train version)"
+    displayName: "Version Override ('auto' generates a release-train version)"
     type: string
-    default: ''
+    default: 'auto'
 
   - name: buildConfigurations
     displayName: "Build Configurations"
