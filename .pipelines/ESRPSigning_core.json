@@ -195,10 +195,10 @@
             "PowerToys.MouseHighlighter.dll",
             "PowerToys.MouseJump.dll",
             "PowerToys.MouseJump.Common.dll",
-            "PowerToys.MouseJump.HotKeys.dll",
+            "WinUI3Apps\\PowerToys.MouseJump.HotKeys.dll",
             "PowerToys.MouseJump.Models.dll",
-            "PowerToys.MouseJump.WinUI3.dll",
-            "PowerToys.MouseJump.WinUI3.exe",
+            "WinUI3Apps\\PowerToys.MouseJump.WinUI3.dll",
+            "WinUI3Apps\\PowerToys.MouseJump.WinUI3.exe",
             "PowerToys.MousePointerCrosshairs.dll",
             "PowerToys.CursorWrap.dll",
 
