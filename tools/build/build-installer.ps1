@@ -281,8 +281,8 @@ try {
         $versionPropsPath = Join-Path $repoRoot "src\Version.props"
         [xml]$versionProps = Get-Content $versionPropsPath
         $ptVersion = $versionProps.Project.PropertyGroup.Version
-        # Directory.Build.props appends .0 to the version for .csproj files
-        $ptVersionFull = "$ptVersion.0"
+        # Package versions need four components. Preserve explicit preview build components.
+        $ptVersionFull = if (($ptVersion.ToCharArray() | Where-Object { $_ -eq '.' }).Count -eq 2) { "$ptVersion.0" } else { $ptVersion }
         
         # 2. Build the Generator
         $generatorProj = Join-Path $repoRoot "src\dsc\PowerToys.Settings.DSC.Schema.Generator\PowerToys.Settings.DSC.Schema.Generator.csproj"

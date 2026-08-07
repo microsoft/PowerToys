@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 using Microsoft.PowerToys.Settings.UI.Helpers;
 
@@ -30,6 +31,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         /// </summary>
         public string DateText { get; }
 
+        public bool IsPreview { get; }
+
         public ScoobeReleaseGroupViewModel(IList<PowerToysReleaseInfo> releases)
         {
             Releases = releases ?? throw new ArgumentNullException(nameof(releases));
@@ -37,8 +40,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             if (releases.Count > 0)
             {
                 var latestRelease = releases[0];
+                IsPreview = releases.All(release => release.IsPrerelease);
                 VersionText = GetVersionFromRelease(latestRelease);
-                DateText = latestRelease.PublishedDate.ToString("MMMM yyyy", CultureInfo.CurrentCulture);
+                DateText = IsPreview ?
+                    ResourceLoaderInstance.ResourceLoader.GetString("ScoobeReleaseGroup_Preview") :
+                    latestRelease.PublishedDate.ToString("MMMM yyyy", CultureInfo.CurrentCulture);
             }
             else
             {

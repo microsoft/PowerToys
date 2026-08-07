@@ -1,0 +1,8 @@
+{
+  "name": "docmd-plugin-github-source-links",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "description": "docmd plugin that rewrites repo-root-relative doc links to GitHub blob URLs at build time."
+}

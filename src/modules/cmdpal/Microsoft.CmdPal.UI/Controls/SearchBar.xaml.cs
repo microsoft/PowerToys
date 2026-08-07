@@ -9,6 +9,7 @@ using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -20,6 +21,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -27,7 +29,6 @@ namespace Microsoft.CmdPal.UI.Controls;
 public sealed partial class SearchBar : UserControl,
     INotifyPropertyChanged,
     IRecipient<GoHomeMessage>,
-    IRecipient<FocusSearchBoxMessage>,
     IRecipient<UpdateSuggestionMessage>,
     IRecipient<FocusParamMessage>,
     ICurrentPageAware
@@ -58,6 +59,10 @@ public sealed partial class SearchBar : UserControl,
 
     private bool _tokenSearchEnabled;
 
+    private AppBarSeparator? _menuSeparator;
+    private AppBarButton? _settingsMenuItem;
+    private AppBarButton? _helpMenuItem;
+
     private SettingsModel Settings => App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
     public PageViewModel? CurrentPageViewModel
@@ -71,6 +76,8 @@ public sealed partial class SearchBar : UserControl,
         DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(SearchBar), new PropertyMetadata(null, OnCurrentPageViewModelChanged));
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public event EventHandler? ActiveFocusTargetChanged;
 
     private static void OnCurrentPageViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -102,8 +109,9 @@ public sealed partial class SearchBar : UserControl,
         @this?.PropertyChanged?.Invoke(@this, new(nameof(PageType)));
         @this?.PropertyChanged?.Invoke(@this, new(nameof(Parameters)));
 
-        // Attempt to focus us again, once we evaluate what input is visible
-        @this?.Focus();
+        // Let the shell decide if it's safe to restore focus after the
+        // SwitchPresenter swaps to a different top-bar input.
+        @this?.ActiveFocusTargetChanged?.Invoke(@this, EventArgs.Empty);
     }
 
     public string PageType => CurrentPageViewModel switch
@@ -120,7 +128,6 @@ public sealed partial class SearchBar : UserControl,
     {
         this.InitializeComponent();
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
-        WeakReferenceMessenger.Default.Register<FocusSearchBoxMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateSuggestionMessage>(this);
         WeakReferenceMessenger.Default.Register<FocusParamMessage>(this);
     }
@@ -375,6 +382,53 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
+    // TextCommandBarFlyout rebuilds its commands on every open, so re-append ours each time.
+    private void FilterBoxContextFlyout_Opening(object sender, object e)
+    {
+        if (sender is not TextCommandBarFlyout flyout)
+        {
+            return;
+        }
+
+        if (_settingsMenuItem is null || _helpMenuItem is null)
+        {
+            _menuSeparator = new AppBarSeparator();
+
+            _settingsMenuItem = new AppBarButton
+            {
+                Label = RS_.GetString("SearchBoxContextMenu_Settings"),
+                Icon = new FontIcon { Glyph = "\uE713" },
+                KeyboardAcceleratorTextOverride = RS_.GetString("SearchBoxContextMenu_Settings_Shortcut"),
+            };
+            _settingsMenuItem.Click += (_, _) => WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
+
+            _helpMenuItem = new AppBarButton
+            {
+                Label = RS_.GetString("SearchBoxContextMenu_Help"),
+                Icon = new FontIcon { Glyph = "\uE897" },
+            };
+            _helpMenuItem.Click += (_, _) => WeakReferenceMessenger.Default.Send(new LaunchUriMessage(new Uri("https://aka.ms/PowerToysOverview_CmdPal")));
+        }
+
+        // Only add the separator when the flyout populated built-in secondary commands above us.
+        if (_menuSeparator is not null &&
+            flyout.SecondaryCommands.Count > 0 &&
+            !flyout.SecondaryCommands.Contains(_menuSeparator))
+        {
+            flyout.SecondaryCommands.Add(_menuSeparator);
+        }
+
+        if (!flyout.SecondaryCommands.Contains(_settingsMenuItem))
+        {
+            flyout.SecondaryCommands.Add(_settingsMenuItem);
+        }
+
+        if (!flyout.SecondaryCommands.Contains(_helpMenuItem))
+        {
+            flyout.SecondaryCommands.Add(_helpMenuItem);
+        }
+    }
+
     private void FilterBox_PreviewKeyUp(object sender, KeyRoutedEventArgs e)
     {
         if (e.Key == VirtualKey.Back)
@@ -497,9 +551,13 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
-    public void Receive(FocusSearchBoxMessage message) => Focus();
-
-    private void Focus()
+    /// <summary>
+    /// Moves focus to the inner search text box using <see cref="FocusState.Keyboard"/>, which
+    /// (unlike a programmatic <c>Focus</c> on the control) lets the screen reader announce the
+    /// box and its placeholder. Used for summon and post-navigation focus alike so both paths
+    /// are announced consistently.
+    /// </summary>
+    internal void FocusActiveControl()
     {
         this.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
         {

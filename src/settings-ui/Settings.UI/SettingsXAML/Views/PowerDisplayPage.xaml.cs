@@ -32,7 +32,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.ConfirmDangerousFeatureAsync = ShowDangerousFeatureDialogAsync;
             DataContext = ViewModel;
             InitializeComponent();
-            Loaded += (s, e) => ViewModel.OnPageLoaded();
+            Loaded += PowerDisplayPage_Loaded;
+        }
+
+        private async void PowerDisplayPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            ViewModel.OnPageLoaded();
+            await ViewModel.InitializeProfilesAsync();
         }
 
         private async Task<bool> ShowDangerousFeatureDialogAsync(PowerDisplayWarningKind kind)
@@ -81,7 +87,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (result == ContentDialogResult.Primary && dialog.ResultProfile != null)
             {
-                ViewModel.CreateProfile(dialog.ResultProfile);
+                await ViewModel.CreateProfileAsync(dialog.ResultProfile);
             }
         }
 
@@ -90,7 +96,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var menuItem = sender as MenuFlyoutItem;
             if (menuItem?.Tag is PowerDisplayProfile profile)
             {
-                var dialog = new ProfileEditorDialog(ViewModel.Monitors, profile.Name);
+                var dialog = new ProfileEditorDialog(ViewModel.Monitors, profile.Name, profile.Id);
                 dialog.XamlRoot = this.XamlRoot;
 
                 // Pre-fill with existing profile settings
@@ -100,7 +106,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (result == ContentDialogResult.Primary && dialog.ResultProfile != null)
                 {
-                    ViewModel.UpdateProfile(profile.Name, dialog.ResultProfile);
+                    await ViewModel.UpdateProfileAsync(dialog.ResultProfile);
                 }
             }
         }
@@ -115,7 +121,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 {
                     XamlRoot = this.XamlRoot,
                     Title = resourceLoader.GetString("PowerDisplay_DeleteProfile_Title"),
-                    Content = string.Format(System.Globalization.CultureInfo.CurrentCulture, resourceLoader.GetString("PowerDisplay_DeleteProfile_Content"), profile.Name),
+                    Content = string.Format(System.Globalization.CultureInfo.CurrentCulture, resourceLoader.GetString("PowerDisplay_DeleteProfile_Content"), profile.DisplayName),
                     PrimaryButtonText = resourceLoader.GetString("PowerDisplay_DeleteProfile_PrimaryButton"),
                     CloseButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Cancel"),
                     DefaultButton = ContentDialogButton.Close,
@@ -125,7 +131,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (result == ContentDialogResult.Primary)
                 {
-                    ViewModel.DeleteProfile(profile.Name);
+                    await ViewModel.DeleteProfileAsync(profile.Id);
                 }
             }
         }

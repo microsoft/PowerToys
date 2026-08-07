@@ -32,6 +32,17 @@ namespace EnvironmentVariables
             var loader = ResourceLoaderInstance.ResourceLoader;
             var title = App.GetService<IElevationHelper>().IsElevated ? loader.GetString("WindowAdminTitle") : loader.GetString("WindowTitle");
 
+            // The WinUI TitleBar control reads the owning window's title (AppWindow.Title) during a
+            // deferred layout pass. If the native window title is empty at that instant, the windowing
+            // layer can fault while resolving it and terminate the process. ResourceLoader.GetString
+            // returns an empty string when the resource map can't be resolved at runtime, which would
+            // leave the title empty here, so fall back to a non-empty product name to keep the native
+            // window title populated.
+            if (string.IsNullOrEmpty(title))
+            {
+                title = "Environment Variables";
+            }
+
             Title = title;
             titleBar.Title = title;
 

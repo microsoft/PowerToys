@@ -120,7 +120,7 @@ public partial class ProviderSettingsViewModel : ObservableObject
                     ProviderSettings = s.ProviderSettings.SetItem(_provider.ProviderId, newSettings),
                 });
                 _providerSettings = newSettings;
-                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
+                WeakReferenceMessenger.Default.Send<ProviderEnabledStateChangedMessage>(new(_provider.ProviderId, value));
                 OnPropertyChanged(nameof(IsEnabled));
                 OnPropertyChanged(nameof(ExtensionSubtext));
                 OnPropertyChanged(nameof(Icon));

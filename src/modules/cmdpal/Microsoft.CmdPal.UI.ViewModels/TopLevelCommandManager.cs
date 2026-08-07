@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -11,7 +10,6 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
-using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
@@ -22,22 +20,20 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public sealed partial class TopLevelCommandManager : ObservableObject,
     IRecipient<ReloadCommandsMessage>,
+    IRecipient<ProviderEnabledStateChangedMessage>,
     IRecipient<PinCommandItemMessage>,
     IRecipient<UnpinCommandItemMessage>,
     IRecipient<PinToDockMessage>,
     IDisposable
 {
-    private static readonly TimeSpan ExtensionStartTimeout = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan CommandLoadTimeout = TimeSpan.FromSeconds(10);
-    private static readonly TimeSpan BackgroundStartTimeout = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan BackgroundCommandLoadTimeout = TimeSpan.FromSeconds(60);
 
     private readonly IServiceProvider _serviceProvider;
-    private readonly ICommandProviderCache _commandProviderCache;
+    private readonly IEnumerable<IExtensionService> _extensionServices;
     private readonly TaskScheduler _taskScheduler;
 
-    private readonly List<CommandProviderWrapper> _builtInCommands = [];
-    private readonly List<CommandProviderWrapper> _extensionCommandProviders = [];
+    private readonly List<CommandProviderWrapper> _commandProviders = [];
     private readonly Lock _commandProvidersLock = new();
 
     // watch out: if you add code that locks CommandProviders, be sure to always
@@ -50,18 +46,25 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
     private HashSet<(string ProviderId, string CommandId)> _pinnedCommandSet = [];
 
-    public TopLevelCommandManager(IServiceProvider serviceProvider, ICommandProviderCache commandProviderCache)
+    public TopLevelCommandManager(IServiceProvider serviceProvider, IEnumerable<IExtensionService> extensionServices)
     {
         _serviceProvider = serviceProvider;
-        _commandProviderCache = commandProviderCache;
+        _extensionServices = extensionServices;
         _currentExtensionLoadCancellationToken = _extensionLoadCts.Token;
         _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
+        WeakReferenceMessenger.Default.Register<ProviderEnabledStateChangedMessage>(this);
         WeakReferenceMessenger.Default.Register<PinCommandItemMessage>(this);
         WeakReferenceMessenger.Default.Register<UnpinCommandItemMessage>(this);
         WeakReferenceMessenger.Default.Register<PinToDockMessage>(this);
         _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
         RebuildPinnedCache();
+
+        foreach (var service in _extensionServices)
+        {
+            service.OnProviderAdded += ExtensionService_OnProviderAdded;
+            service.OnProviderRemoved += ExtensionService_OnProviderRemoved;
+        }
     }
 
     public ObservableCollection<PinnedCommandSettings> PinnedCommands { get; } = [];
@@ -84,7 +87,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         {
             lock (_commandProvidersLock)
             {
-                return _builtInCommands.Concat(_extensionCommandProviders).ToList();
+                return _commandProviders.ToList();
             }
         }
     }
@@ -99,58 +102,6 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         var settings = _serviceProvider.GetRequiredService<ISettingsService>().Settings;
         _pinnedCommandSet = new(settings.PinnedCommands.Select(p => (p.ProviderId, p.CommandId)));
         ListHelpers.InPlaceUpdateList(PinnedCommands, settings.PinnedCommands);
-    }
-
-    public async Task<bool> LoadBuiltinsAsync()
-    {
-        var s = new Stopwatch();
-        s.Start();
-
-        lock (_commandProvidersLock)
-        {
-            _builtInCommands.Clear();
-        }
-
-        // Load built-In commands first. These are all in-proc, and
-        // owned by our ServiceProvider.
-        var builtInCommands = _serviceProvider.GetServices<ICommandProvider>();
-        foreach (var provider in builtInCommands)
-        {
-            CommandProviderWrapper wrapper = new(provider, _taskScheduler);
-            lock (_commandProvidersLock)
-            {
-                _builtInCommands.Add(wrapper);
-            }
-
-            var objects = await LoadTopLevelCommandsFromProvider(wrapper);
-            lock (TopLevelCommands)
-            {
-                if (objects.Commands is IEnumerable<TopLevelViewModel> commands)
-                {
-                    foreach (var c in commands)
-                    {
-                        TopLevelCommands.Add(c);
-                    }
-                }
-            }
-
-            lock (_dockBandsLock)
-            {
-                if (objects.DockBands is IEnumerable<TopLevelViewModel> bands)
-                {
-                    foreach (var c in bands)
-                    {
-                        DockBands.Add(c);
-                    }
-                }
-            }
-        }
-
-        s.Stop();
-
-        Logger.LogDebug($"Loading built-ins took {s.ElapsedMilliseconds}ms");
-
-        return true;
     }
 
     // May be called from a background thread
@@ -288,125 +239,197 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     {
         // gate ensures that the reload is serialized and if multiple calls
         // request a reload, only the first and the last one will be executed.
-        // this should be superseded with a cancellable version.
         await _reloadCommandsGate.ExecuteAsync(CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Loads only built-in (in-process) command providers. This is fast and
+    /// suitable for the initial pre-load phase so the UI appears immediately.
+    /// </summary>
+    public async Task LoadBuiltInProvidersAsync()
+    {
+        var ct = _currentExtensionLoadCancellationToken;
+        foreach (var service in _extensionServices.OfType<BuiltInExtensionService>())
+        {
+            var wrappers = await service.LoadProvidersAsync(ct).ConfigureAwait(false);
+            await RegisterAndLoadCommandsAsync(wrappers, ct).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Loads external (out-of-process WinRT) command providers. Call this after
+    /// the root page is displayed so the UI is not blocked by extension startup.
+    /// Commands appear progressively via <see cref="IExtensionService.OnProviderAdded"/>.
+    /// </summary>
+    [RelayCommand]
+    public async Task LoadExternalProvidersAsync()
+    {
+        IsLoading = true;
+        try
+        {
+            var ct = _currentExtensionLoadCancellationToken;
+            foreach (var service in _extensionServices.Where(s => s is not BuiltInExtensionService))
+            {
+                var wrappers = await service.LoadProvidersAsync(ct).ConfigureAwait(false);
+                await RegisterAndLoadCommandsAsync(wrappers, ct).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     private async Task ReloadAllCommandsAsyncCore(CancellationToken cancellationToken)
     {
         IsLoading = true;
 
-        // Invalidate any background continuations from the previous load cycle
-        await _extensionLoadCts.CancelAsync().ConfigureAwait(false);
-        _extensionLoadCts.Dispose();
-        _extensionLoadCts = new();
-        _currentExtensionLoadCancellationToken = _extensionLoadCts.Token;
-
-        var extensionService = _serviceProvider.GetService<IExtensionService>()!;
-        await extensionService.SignalStopExtensionsAsync().ConfigureAwait(false);
-
-        lock (TopLevelCommands)
+        try
         {
-            TopLevelCommands.Clear();
-        }
+            // Invalidate any background continuations from the previous load cycle
+            await _extensionLoadCts.CancelAsync().ConfigureAwait(false);
+            _extensionLoadCts.Dispose();
+            _extensionLoadCts = new();
+            _currentExtensionLoadCancellationToken = _extensionLoadCts.Token;
 
-        lock (_dockBandsLock)
-        {
-            DockBands.Clear();
-        }
-
-        await LoadBuiltinsAsync().ConfigureAwait(false);
-        _ = Task.Run(LoadExtensionsAsync, cancellationToken);
-    }
-
-    // Load commands from our extensions. Called on a background thread.
-    // Currently, this
-    // * queries the package catalog,
-    // * starts all the extensions,
-    // * then fetches the top-level commands from them.
-    // TODO In the future, we'll probably abstract some of this away, to have
-    // separate extension tracking vs stub loading.
-    [RelayCommand]
-    public async Task<bool> LoadExtensionsAsync()
-    {
-        var extensionService = _serviceProvider.GetService<IExtensionService>()!;
-
-        extensionService.OnExtensionAdded -= ExtensionService_OnExtensionAdded;
-        extensionService.OnExtensionRemoved -= ExtensionService_OnExtensionRemoved;
-
-        var ct = _currentExtensionLoadCancellationToken;
-
-        var extensions = (await extensionService.GetInstalledExtensionsAsync().ConfigureAwait(false)).ToImmutableList();
-        lock (_commandProvidersLock)
-        {
-            _extensionCommandProviders.Clear();
-        }
-
-        await StartExtensionsAndGetCommands(extensions, ct).ConfigureAwait(false);
-
-        extensionService.OnExtensionAdded += ExtensionService_OnExtensionAdded;
-        extensionService.OnExtensionRemoved += ExtensionService_OnExtensionRemoved;
-
-        IsLoading = false;
-
-        // Send on the current thread; receivers should marshal to UI if needed
-        WeakReferenceMessenger.Default.Send<ReloadFinishedMessage>();
-
-        return true;
-    }
-
-    private void ExtensionService_OnExtensionAdded(IExtensionService sender, IEnumerable<IExtensionWrapper> extensions)
-    {
-        var ct = _currentExtensionLoadCancellationToken;
-
-        // When we get an extension install event, hop off to a BG thread
-        _ = Task.Run(
-            async () =>
+            // Signal all services to stop their running providers
+            foreach (var service in _extensionServices)
             {
-                // for each newly installed extension, start it and get commands
-                // from it. One single package might have more than one
-                // IExtensionWrapper in it.
-                await StartExtensionsAndGetCommands(extensions, ct).ConfigureAwait(false);
-            },
-            ct);
-    }
-
-    private async Task StartExtensionsAndGetCommands(IEnumerable<IExtensionWrapper> extensions, CancellationToken ct)
-    {
-        var timer = Stopwatch.StartNew();
-
-        // Start all extensions in parallel
-        var startResults = await Task.WhenAll(extensions.Select(TryStartExtensionAsync)).ConfigureAwait(false);
-
-        var startedWrappers = new List<CommandProviderWrapper>();
-        foreach (var r in startResults)
-        {
-            if (r.IsStarted)
-            {
-                startedWrappers.Add(r.Wrapper);
+                await service.SignalStopAsync().ConfigureAwait(false);
             }
-            else if (r.IsTimedOut)
+
+            lock (TopLevelCommands)
             {
-                _ = StartExtensionWhenReadyAsync(r.Extension, r.PendingStartTask, r.Stopwatch, ct);
+                TopLevelCommands.Clear();
+            }
+
+            lock (_dockBandsLock)
+            {
+                DockBands.Clear();
+            }
+
+            lock (_commandProvidersLock)
+            {
+                _commandProviders.Clear();
+            }
+
+            var ct = _currentExtensionLoadCancellationToken;
+
+            // Load providers from each service sequentially (order matters: built-ins first)
+            foreach (var service in _extensionServices)
+            {
+                var wrappers = await service.LoadProvidersAsync(ct).ConfigureAwait(false);
+                await RegisterAndLoadCommandsAsync(wrappers, ct).ConfigureAwait(false);
             }
         }
-
-        // Register started extensions and load their commands
-        var loadSummary = await RegisterAndLoadCommandsAsync(startedWrappers, ct).ConfigureAwait(false);
-
-        timer.Stop();
-        Logger.LogInfo($"Loaded {loadSummary.CommandCount} command(s) and {loadSummary.DockBandCount} band(s) from {startedWrappers.Count} extension(s) in {timer.ElapsedMilliseconds} ms");
+        finally
+        {
+            IsLoading = false;
+            WeakReferenceMessenger.Default.Send<ReloadFinishedMessage>();
+        }
     }
 
-    private async Task<RegisterAndLoadSummary> RegisterAndLoadCommandsAsync(ICollection<CommandProviderWrapper> wrappers, CancellationToken ct)
+    private async Task UpdateProviderEnabledStateAsyncCore(string providerId, bool isEnabled)
     {
+        IsLoading = true;
+
+        try
+        {
+            // If disabled, we'll remove that providers commands from top level commands, dock bands, and pinned commands.
+            if (!isEnabled)
+            {
+                lock (TopLevelCommands)
+                {
+                    var commandsToRemove = TopLevelCommands.Where(c => c.CommandProviderId == providerId).ToList();
+                    foreach (var command in commandsToRemove)
+                    {
+                        TopLevelCommands.Remove(command);
+                    }
+                }
+
+                lock (_dockBandsLock)
+                {
+                    var dockBandsToRemove = DockBands.Where(b => b.CommandProviderId == providerId).ToList();
+                    foreach (var band in dockBandsToRemove)
+                    {
+                        DockBands.Remove(band);
+                    }
+                }
+
+                lock (PinnedCommands)
+                {
+                    var pinnedToRemove = PinnedCommands.Where(p => p.ProviderId == providerId).ToList();
+                    foreach (var command in pinnedToRemove)
+                    {
+                        PinnedCommands.Remove(command);
+                    }
+                }
+            }
+            else
+            {
+                CommandProviderWrapper? provider;
+                lock (_commandProvidersLock)
+                {
+                    provider = _commandProviders.FirstOrDefault(p => p.ProviderId == providerId);
+                }
+
+                if (provider != null)
+                {
+                    await provider.LoadTopLevelCommands(_serviceProvider);
+
+                    lock (TopLevelCommands)
+                    {
+                        foreach (var command in provider.TopLevelItems)
+                        {
+                            if (!TopLevelCommands.Any(a => a.Id == command.Id))
+                            {
+                                TopLevelCommands.Add(command);
+                            }
+                        }
+
+                        foreach (var item in provider.FallbackItems)
+                        {
+                            if (!TopLevelCommands.Any(a => a.Id == item.Id) && item.IsEnabled)
+                            {
+                                TopLevelCommands.Add(item);
+                            }
+                        }
+                    }
+
+                    lock (_dockBandsLock)
+                    {
+                        foreach (var band in provider.DockBandItems)
+                        {
+                            if (!DockBands.Any(a => a.Id == band.Id))
+                            {
+                                DockBands.Add(band);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    Logger.LogWarning($"Could not find provider with id '{providerId}' to update enabled state.");
+                    return;
+                }
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task<RegisterAndLoadSummary> RegisterAndLoadCommandsAsync(IEnumerable<CommandProviderWrapper> wrappers, CancellationToken ct)
+    {
+        var wrapperList = wrappers.ToList();
         lock (_commandProvidersLock)
         {
-            _extensionCommandProviders.AddRange(wrappers);
+            _commandProviders.AddRange(wrapperList);
         }
 
         // Load the commands from the providers in parallel
-        var loadResults = await Task.WhenAll(wrappers.Select(w => TryLoadCommandsAsync(w, ct))).ConfigureAwait(false);
+        var loadResults = await Task.WhenAll(wrapperList.Select(w => TryLoadCommandsAsync(w, ct))).ConfigureAwait(false);
 
         var totalCommands = 0;
         var totalDockBands = 0;
@@ -463,7 +486,6 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         // Fire background continuations for timed-out loads outside the lock
         foreach (var r in timedOut)
         {
-            // It's weird to repeat the condition here, but it allows the compiler to track nullability of other properties
             if (r.IsTimedOut)
             {
                 _ = AppendCommandsWhenReadyAsync(r.Wrapper, r.PendingLoadTask, r.Stopwatch, ct);
@@ -471,60 +493,6 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
 
         return new RegisterAndLoadSummary(totalCommands, totalDockBands);
-    }
-
-    private async Task<ExtensionStartResult> TryStartExtensionAsync(IExtensionWrapper extension)
-    {
-        Logger.LogDebug($"Starting {extension.PackageFullName}");
-        var sw = Stopwatch.StartNew();
-        var ct = _currentExtensionLoadCancellationToken;
-        var startTask = extension.StartExtensionAsync();
-        try
-        {
-            await startTask.WaitAsync(ExtensionStartTimeout, ct).ConfigureAwait(false);
-            Logger.LogInfo($"Started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms");
-            return ExtensionStartResult.Started(extension, new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache));
-        }
-        catch (TimeoutException)
-        {
-            Logger.LogWarning($"Starting extension {extension.PackageFullName} timed out after {sw.ElapsedMilliseconds} ms, continuing in background");
-            return ExtensionStartResult.TimedOut(extension, startTask, sw);
-        }
-        catch (OperationCanceledException)
-        {
-            Logger.LogDebug($"Starting extension {extension.PackageFullName} was cancelled after {sw.ElapsedMilliseconds} ms");
-            return ExtensionStartResult.Failed(extension);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Failed to start extension {extension.PackageFullName} after {sw.ElapsedMilliseconds} ms: {ex}");
-            return ExtensionStartResult.Failed(extension);
-        }
-    }
-
-    private async Task StartExtensionWhenReadyAsync(
-        IExtensionWrapper extension,
-        Task startTask,
-        Stopwatch sw,
-        CancellationToken ct)
-    {
-        try
-        {
-            await startTask.WaitAsync(BackgroundStartTimeout, ct).ConfigureAwait(false);
-
-            var wrapper = new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
-            Logger.LogInfo($"Late-started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms, loading commands and bands");
-
-            await RegisterAndLoadCommandsAsync([wrapper], ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            // Reload happened -- discard stale results
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Background start/load of extension {extension.PackageFullName} failed after {sw.ElapsedMilliseconds} ms: {ex}");
-        }
     }
 
     private async Task<CommandLoadResult> TryLoadCommandsAsync(CommandProviderWrapper wrapper, CancellationToken ct)
@@ -536,22 +504,22 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             var result = await loadTask.WaitAsync(CommandLoadTimeout, ct).ConfigureAwait(false);
             var commandCount = result.Commands?.Count ?? 0;
             var dockBandCount = result.DockBands?.Count ?? 0;
-            Logger.LogInfo($"Loaded {commandCount} command(s) and {dockBandCount} band(s) from {wrapper.ExtensionHost?.Extension?.PackageFullName} in {sw.ElapsedMilliseconds} ms");
+            Logger.LogInfo($"Loaded {commandCount} command(s) and {dockBandCount} band(s) from {wrapper.ExtensionHost?.Extension?.PackageFullName ?? wrapper.DisplayName} in {sw.ElapsedMilliseconds} ms");
             return CommandLoadResult.Loaded(wrapper, result);
         }
         catch (TimeoutException)
         {
-            Logger.LogWarning($"Loading commands and bands from {wrapper.ExtensionHost?.Extension?.PackageFullName} timed out after {sw.ElapsedMilliseconds} ms, continuing in background");
+            Logger.LogWarning($"Loading commands and bands from {wrapper.ExtensionHost?.Extension?.PackageFullName ?? wrapper.DisplayName} timed out after {sw.ElapsedMilliseconds} ms, continuing in background");
             return CommandLoadResult.TimedOut(wrapper, loadTask, sw);
         }
         catch (OperationCanceledException)
         {
-            Logger.LogDebug($"Loading commands and bands from {wrapper.ExtensionHost?.Extension?.PackageFullName} was cancelled after {sw.ElapsedMilliseconds} ms");
+            Logger.LogDebug($"Loading commands and bands from {wrapper.ExtensionHost?.Extension?.PackageFullName ?? wrapper.DisplayName} was cancelled after {sw.ElapsedMilliseconds} ms");
             return CommandLoadResult.Failed(wrapper);
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to load commands and bands for extension {wrapper.ExtensionHost?.Extension?.PackageFullName} after {sw.ElapsedMilliseconds} ms: {ex}");
+            Logger.LogError($"Failed to load commands and bands for {wrapper.ExtensionHost?.Extension?.PackageFullName ?? wrapper.DisplayName} after {sw.ElapsedMilliseconds} ms: {ex}");
             return CommandLoadResult.Failed(wrapper);
         }
     }
@@ -590,7 +558,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                 }
             }
 
-            Logger.LogInfo($"Late-loaded {commands?.Count ?? 0} command(s) and {dockBands?.Count ?? 0} band(s) from {wrapper.ExtensionHost?.Extension?.PackageFullName} in {sw.ElapsedMilliseconds} ms");
+            Logger.LogInfo($"Late-loaded {commands?.Count ?? 0} command(s) and {dockBands?.Count ?? 0} band(s) from {wrapper.ExtensionHost?.Extension?.PackageFullName ?? wrapper.DisplayName} in {sw.ElapsedMilliseconds} ms");
         }
         catch (OperationCanceledException)
         {
@@ -598,52 +566,63 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Background loading of commands and bands from {wrapper.ExtensionHost?.Extension?.PackageFullName} failed after {sw.ElapsedMilliseconds} ms: {ex}");
+            Logger.LogError($"Background loading of commands and bands from {wrapper.ExtensionHost?.Extension?.PackageFullName ?? wrapper.DisplayName} failed after {sw.ElapsedMilliseconds} ms: {ex}");
         }
     }
 
-    private void ExtensionService_OnExtensionRemoved(IExtensionService sender, IEnumerable<IExtensionWrapper> extensions)
+    private void ExtensionService_OnProviderAdded(IExtensionService sender, IEnumerable<CommandProviderWrapper> wrappers)
     {
-        // When we get an extension uninstall event, hop off to a BG thread
+        var ct = _currentExtensionLoadCancellationToken;
+
         _ = Task.Run(
             async () =>
             {
-                // Then find all the top-level commands that belonged to that extension
+                await RegisterAndLoadCommandsAsync(wrappers, ct).ConfigureAwait(false);
+            },
+            ct);
+    }
+
+    private void ExtensionService_OnProviderRemoved(IExtensionService sender, IEnumerable<CommandProviderWrapper> removedWrappers)
+    {
+        // When we get a provider removal event, hop off to a BG thread
+        _ = Task.Run(
+            async () =>
+            {
+                var removedProviderIds = new HashSet<string>(removedWrappers.Select(w => w.ProviderId));
+
                 List<TopLevelViewModel> commandsToRemove = [];
                 List<TopLevelViewModel> bandsToRemove = [];
-                foreach (var extension in extensions)
-                {
-                    lock (TopLevelCommands)
-                    {
-                        foreach (var command in TopLevelCommands)
-                        {
-                            var host = command.ExtensionHost;
-                            if (host?.Extension == extension)
-                            {
-                                commandsToRemove.Add(command);
-                            }
-                        }
-                    }
 
-                    lock (_dockBandsLock)
+                lock (TopLevelCommands)
+                {
+                    foreach (var command in TopLevelCommands)
                     {
-                        foreach (var band in DockBands)
+                        if (removedProviderIds.Contains(command.CommandProviderId))
                         {
-                            var host = band.ExtensionHost;
-                            if (host?.Extension == extension)
-                            {
-                                bandsToRemove.Add(band);
-                            }
+                            commandsToRemove.Add(command);
                         }
                     }
                 }
 
-                // Then back on the UI thread (remember, TopLevelCommands is
-                // Observable, so you can't touch it on the BG thread)...
+                lock (_dockBandsLock)
+                {
+                    foreach (var band in DockBands)
+                    {
+                        if (removedProviderIds.Contains(band.CommandProviderId))
+                        {
+                            bandsToRemove.Add(band);
+                        }
+                    }
+                }
+
+                lock (_commandProvidersLock)
+                {
+                    _commandProviders.RemoveAll(w => removedProviderIds.Contains(w.ProviderId));
+                }
+
                 await Task.Factory.StartNew(
                 () =>
                 {
-                    // ... remove all the deleted commands.
                     lock (TopLevelCommands)
                     {
                         if (commandsToRemove.Count != 0)
@@ -715,6 +694,9 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     public void Receive(ReloadCommandsMessage message) =>
         _ = ReloadAllCommandsAsync();
 
+    public void Receive(ProviderEnabledStateChangedMessage message) =>
+        _ = UpdateProviderEnabledStateAsyncCore(message.ProviderId, message.IsEnabled);
+
     public void Receive(PinCommandItemMessage message)
     {
         var wrapper = LookupProvider(message.ProviderId);
@@ -752,8 +734,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     {
         lock (_commandProvidersLock)
         {
-            return _builtInCommands.FirstOrDefault(w => w.ProviderId == providerId)
-                   ?? _extensionCommandProviders.FirstOrDefault(w => w.ProviderId == providerId);
+            return _commandProviders.FirstOrDefault(w => w.ProviderId == providerId);
         }
     }
 
@@ -761,8 +742,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     {
         lock (_commandProvidersLock)
         {
-            return _builtInCommands.Any(wrapper => wrapper.Id == id && wrapper.IsActive)
-                   || _extensionCommandProviders.Any(wrapper => wrapper.Id == id && wrapper.IsActive);
+            return _commandProviders.Any(wrapper => wrapper.Id == id && wrapper.IsActive);
         }
     }
 
@@ -815,47 +795,16 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
     public void Dispose()
     {
+        foreach (var service in _extensionServices)
+        {
+            service.OnProviderAdded -= ExtensionService_OnProviderAdded;
+            service.OnProviderRemoved -= ExtensionService_OnProviderRemoved;
+        }
+
         _extensionLoadCts.Cancel();
         _extensionLoadCts.Dispose();
         _reloadCommandsGate.Dispose();
         GC.SuppressFinalize(this);
-    }
-
-    private sealed class ExtensionStartResult
-    {
-        public IExtensionWrapper Extension { get; }
-
-        public CommandProviderWrapper? Wrapper { get; private init; }
-
-        public Task? PendingStartTask { get; private init; }
-
-        public Stopwatch? Stopwatch { get; private init; }
-
-        [MemberNotNullWhen(true, nameof(Wrapper))]
-        public bool IsStarted => Wrapper is not null;
-
-        [MemberNotNullWhen(true, nameof(PendingStartTask), nameof(Stopwatch))]
-        public bool IsTimedOut => PendingStartTask is not null;
-
-        private ExtensionStartResult(IExtensionWrapper extension)
-        {
-            Extension = extension;
-        }
-
-        public static ExtensionStartResult Started(IExtensionWrapper extension, CommandProviderWrapper wrapper)
-        {
-            return new ExtensionStartResult(extension) { Wrapper = wrapper };
-        }
-
-        public static ExtensionStartResult TimedOut(IExtensionWrapper extension, Task pendingStartTask, Stopwatch sw)
-        {
-            return new ExtensionStartResult(extension) { PendingStartTask = pendingStartTask, Stopwatch = sw };
-        }
-
-        public static ExtensionStartResult Failed(IExtensionWrapper extension)
-        {
-            return new ExtensionStartResult(extension);
-        }
     }
 
     private sealed class CommandLoadResult
