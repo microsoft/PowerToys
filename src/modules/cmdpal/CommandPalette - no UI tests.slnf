@@ -1,4 +1,4 @@
-﻿{
+{
   "solution": {
     "path": "..\\..\\..\\PowerToys.slnx",
     "projects": [
@@ -19,11 +19,10 @@
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Apps.UnitTests\\Microsoft.CmdPal.Ext.Apps.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Bookmarks.UnitTests\\Microsoft.CmdPal.Ext.Bookmarks.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Calc.UnitTests\\Microsoft.CmdPal.Ext.Calc.UnitTests.csproj",
-	  "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests\\Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests.csproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests\\Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Indexer.UnitTests\\Microsoft.CmdPal.Ext.Indexer.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests\\Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Registry.UnitTests\\Microsoft.CmdPal.Ext.Registry.UnitTests.csproj",
-      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.WindowsSettings.UnitTests\\Microsoft.CmdPal.Ext.WindowsSettings.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests\\Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Shell.UnitTests\\Microsoft.CmdPal.Ext.Shell.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.System.UnitTests\\Microsoft.CmdPal.Ext.System.UnitTests.csproj",
@@ -31,8 +30,9 @@
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.UnitTestsBase\\Microsoft.CmdPal.Ext.UnitTestBase.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.WebSearch.UnitTests\\Microsoft.CmdPal.Ext.WebSearch.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.WindowWalker.UnitTests\\Microsoft.CmdPal.Ext.WindowWalker.UnitTests.csproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.WindowsSettings.UnitTests\\Microsoft.CmdPal.Ext.WindowsSettings.UnitTests.csproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.UnitTests\\Microsoft.CmdPal.UI.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj",
-      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UITests\\Microsoft.CmdPal.UITests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CommandPalette.Extensions.Toolkit.UnitTests\\Microsoft.CommandPalette.Extensions.Toolkit.UnitTests.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.Actions\\Microsoft.CmdPal.Ext.Actions.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.Apps\\Microsoft.CmdPal.Ext.Apps.csproj",
