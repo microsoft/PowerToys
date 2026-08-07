@@ -47,7 +47,6 @@ ALLVIEW
 ALPHATYPE
 altkey
 amr
-ANDSCANS
 animatedvisuals
 Animnate
 AOC
@@ -194,6 +193,7 @@ CAPTURECHANGED
 CARETBLINKING
 carlos
 Carlseibert
+cascadia
 caseinsensitive
 caub
 CBN
@@ -313,7 +313,6 @@ CREATESCHEDULEDTASK
 CREATESTRUCT
 CREATEWINDOWFAILED
 creativecommons
-CRECT
 CRH
 critsec
 cropandlock
@@ -389,7 +388,6 @@ DELA
 DELD
 deld
 DELETEDKEYIMAGE
-DELETESCANS
 DEMOTYPE
 DENORMAL
 depersist
@@ -457,10 +455,8 @@ dreamsofameaningfullife
 drivedetectionwarning
 DROPFILES
 DSPDLOG
-DSTINVERT
 DString
 dto
-DUMMYUNIONNAME
 dumpbin
 dutil
 DVASPECT
@@ -505,6 +501,8 @@ encodedlaunch
 encryptor
 ENDSESSION
 ENSUREVISIBLE
+ENTERIDLE
+ENTERMENULOOP
 ENTERSIZEMOVE
 ENTRYW
 ENU
@@ -538,6 +536,8 @@ EXECUTEDEFAULT
 executionpolicy
 exename
 exf
+EXITCOMMAND
+EXITMENULOOP
 EXITSIZEMOVE
 exlist
 EXPCMDFLAGS
@@ -669,6 +669,7 @@ gwl
 GWLP
 GWLSTYLE
 hangeul
+Hanguel
 Hantai
 Hanzi
 Hardlines
@@ -812,6 +813,7 @@ imageresizerinput
 imageresizersettings
 imagingdevices
 ime
+IMEAceept
 imgflip
 inapp
 inbox
@@ -826,6 +828,8 @@ INITCOMMONCONTROLSEX
 INITDIALOG
 INITGUID
 initialfile
+INITMENU
+INITMENUPOPUP
 INITTOLOGFONTSTRUCT
 inkscape
 INLINEPREFIX
@@ -930,6 +934,7 @@ Lclean
 Ldone
 Ldr
 LEFTALIGN
+LEFTBUTTON
 leftclick
 LEFTSCROLLBAR
 LEFTTEXT
@@ -981,11 +986,9 @@ LPCLSID
 lpcmi
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
-LPCRECT
 LPCTSTR
 lpdw
 lpfn
-LPINPUT
 LPITEMIDLIST
 lpmi
 LPMINMAXINFO
@@ -994,6 +997,7 @@ LPOSVERSIONINFOEXW
 LPQUERY
 lprc
 LPSAFEARRAY
+LPSECURITY
 lpstr
 lpsz
 LPTHREAD
@@ -1054,8 +1058,7 @@ meme
 memicmp
 MENUITEMINFO
 MENUITEMINFOW
-MERGECOPY
-MERGEPAINT
+MENUSELECT
 Metacharacter
 metadatamatters
 Metadatas
@@ -1202,7 +1205,6 @@ NOASYNC
 NOCHANGEDIR
 NOCLIP
 NOCLOSEPROCESS
-NOCOALESCE
 NOCOMM
 NOCONFIRMMKDIR
 NOCOPYBITS
@@ -1219,10 +1221,10 @@ NOLINKINFO
 nologo
 NOMCX
 NOMINMAX
-NOMIRRORBITMAP
 nomove
 NONANTIALIASED
 nonclient
+Nonconvert
 NONCLIENTMETRICSW
 NONELEVATED
 nonspace
@@ -1251,8 +1253,6 @@ NOTIFYICONDATAW
 NOTIMPL
 NOTOPMOST
 NOTRACK
-NOTSRCCOPY
-NOTSRCERASE
 Notupdated
 notwindows
 NOTXORPEN
@@ -1277,7 +1277,10 @@ nwc
 ocr
 Ocrsettings
 odbccp
+Oemcomma
 OEMCONVERT
+Oemplus
+Oemtilde
 officehubintl
 OFN
 ofs
@@ -1302,7 +1305,6 @@ openxmlformats
 OPTIMIZEFORINVOKE
 Optronics
 ORPHANEDDIALOGTITLE
-ORSCANS
 oss
 OSVERSIONINFO
 OSVERSIONINFOEX
@@ -1334,10 +1336,7 @@ PARENTRELATIVEPARSING
 parray
 parseable
 PARTIALCONFIRMATIONDIALOGTITLE
-PATCOPY
 PATHMUSTEXIST
-PATINVERT
-PATPAINT
 pbc
 pbi
 PBP
@@ -1567,6 +1566,7 @@ REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
 remotedesktop
+remotehost
 remoteip
 Removelnk
 renamable
@@ -1603,7 +1603,6 @@ RIGHTBUTTON
 RIGHTSCROLLBAR
 riid
 rollups
-rop
 ROUNDSMALL
 rpcrt
 RRF
@@ -1717,6 +1716,7 @@ shortdate
 SHORTPATH
 shortsplit
 showcolorname
+SHOWCONTEXTMENU
 SHOWDEFAULT
 SHOWELEVATIONPROMPT
 SHOWMAGNIFIEDCURSOR
@@ -1779,12 +1779,8 @@ spsi
 spsia
 spsrm
 spsv
-SRCAND
 SRCCOPY
-SRCERASE
 Srch
-SRCINVERT
-SRCPAINT
 SResize
 srme
 srre
@@ -1948,6 +1944,7 @@ tracerpt
 trackbar
 trafficmanager
 transicc
+TRAYICON
 TRANSIENTWINDOW
 transitioning
 TRAYMOUSEMESSAGE
@@ -1966,6 +1963,8 @@ TYPEMOUSE
 TYPESHORTCUT
 UAC
 UACUI
+UAHINITMENU
+UAHMEASUREMENUITEM
 UAL
 uap
 UBR
@@ -1990,6 +1989,7 @@ unescaped
 unforgeable
 ungroup
 UNICODETEXT
+UNINITMENUPOPUP
 unins
 uninsdeletekey
 Uninstaller
@@ -2060,7 +2060,6 @@ vgetq
 viewmodels
 virama
 VIRTKEY
-VIRTUALDESK
 VISEGRADRELAY
 visiblecolorformats
 visio
