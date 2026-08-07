@@ -48,8 +48,6 @@ internal sealed class LockingProcessFixture : IDisposable
     /// <summary>The file handed to File Locksmith.</summary>
     public const string TargetFileName = "locked-file.dat";
 
-    private const int SW_HIDE = 0;
-
     private static readonly string LockerProcessName = Path.GetFileNameWithoutExtension(LockerFileName);
     private static readonly string LockerSourcePath = Path.Combine(
         Environment.SystemDirectory, "WindowsPowerShell", "v1.0", "powershell.exe");
@@ -187,10 +185,6 @@ internal sealed class LockingProcessFixture : IDisposable
         TryDeleteRoot();
     }
 
-    [DllImport("user32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern uint GetLongPathNameW(string lpszShortPath, System.Text.StringBuilder lpszLongPath, uint cchBuffer);
 
@@ -294,8 +288,8 @@ internal sealed class LockingProcessFixture : IDisposable
 
     /// <summary>
     /// Hand the launch to the (medium-integrity) shell so an elevated test host does not pass its own
-    /// token down. Explorer takes no arguments, so the command line goes through a generated .cmd; the
-    /// new process is then matched by its unique image name and any console window hidden.
+    /// token down. Explorer takes no arguments, so a generated VBScript starts the holder hidden from
+    /// creation; unlike a temporary .cmd console, it cannot steal foreground from the next Explorer.
     /// </summary>
     private Process StartViaShell()
     {
@@ -308,10 +302,13 @@ internal sealed class LockingProcessFixture : IDisposable
             })
             .ToHashSet();
 
-        var launcher = Path.Combine(RootFolder, $"start-{Guid.NewGuid():N}.cmd");
-        File.WriteAllText(
-            launcher,
-            $"@echo off{Environment.NewLine}start \"\" /b \"{LockerPath}\" -NoProfile -NonInteractive -Command \"{BuildHolderCommand()}\"{Environment.NewLine}");
+        var encodedCommand = Convert.ToBase64String(Encoding.Unicode.GetBytes(BuildHolderCommand()));
+        var escapedLockerPath = LockerPath.Replace("\"", "\"\"");
+        var launcher = Path.Combine(RootFolder, $"start-{Guid.NewGuid():N}.vbs");
+        var launcherCommand =
+            $"CreateObject(\"WScript.Shell\").Run \"\"\"{escapedLockerPath}\"\" -NoProfile " +
+            $"-NonInteractive -WindowStyle Hidden -EncodedCommand {encodedCommand}\", 0, False{Environment.NewLine}";
+        File.WriteAllText(launcher, launcherCommand);
 
         using var shellLaunch = Process.Start(new ProcessStartInfo
         {
@@ -327,7 +324,6 @@ internal sealed class LockingProcessFixture : IDisposable
                 .FirstOrDefault(process => !knownProcessIds.Contains(process.Id));
             if (started is not null)
             {
-                HideWindows(started.Id);
                 return started;
             }
 
@@ -337,29 +333,6 @@ internal sealed class LockingProcessFixture : IDisposable
 
         Assert.Fail($"The shell did not start the locking-process fixture '{LockerPath}'.");
         return null!;
-    }
-
-    private static void HideWindows(int processId)
-    {
-        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
-        do
-        {
-            var windows = WindowControl.EnumerateProcessWindows(new[] { processId })
-                .Where(window => window.IsVisible)
-                .ToList();
-            if (windows.Count > 0)
-            {
-                foreach (var window in windows)
-                {
-                    ShowWindow(window.Hwnd, SW_HIDE);
-                }
-
-                return;
-            }
-
-            Thread.Sleep(100);
-        }
-        while (DateTime.UtcNow < deadline);
     }
 
     private void TryDeleteRoot()
