@@ -128,6 +128,7 @@
                                                     Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
                                             </Border>
                                             <Button
+                                                x:Uid="AdvancedPaste_ProviderOptions"
                                                 Padding="8"
                                                 Background="Transparent"
                                                 BorderThickness="0"
@@ -293,6 +294,8 @@
                                             AllowDisable="True"
                                             HotkeySettings="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingShortcut, Mode=TwoWay}" />
                                         <ToggleSwitch
+                                            x:Uid="AdvancedPaste_CoachingToggle"
+                                            AutomationProperties.AutomationId="AdvancedPaste_CoachingToggle"
                                             IsOn="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=TwoWay}"
                                             OffContent=""
                                             OnContent="" />

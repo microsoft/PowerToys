@@ -2032,6 +2032,14 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Reset to default provider</value>
     <comment>Accessible name for button that clears the provider selection back to default</comment>
   </data>
+  <data name="AdvancedPaste_ProviderOptions.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Provider options</value>
+    <comment>Tooltip for the button that opens a provider's options menu</comment>
+  </data>
+  <data name="AdvancedPaste_ProviderOptions.AutomationProperties.Name" xml:space="preserve">
+    <value>Provider options</value>
+    <comment>Accessible name for the button that opens a provider's options menu</comment>
+  </data>
   <data name="FixSpellingAndGrammar_CoachingSection.Header" xml:space="preserve">
     <value>Coaching mode</value>
     <comment>Header for the coaching mode collapsible settings section</comment>
@@ -2039,6 +2047,10 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FixSpellingAndGrammar_CoachingSection.Description" xml:space="preserve">
     <value>When enabled, shows a preview with an explanation of what was fixed and why.</value>
     <comment>Description for the coaching mode settings section</comment>
+  </data>
+  <data name="AdvancedPaste_CoachingToggle.AutomationProperties.Name" xml:space="preserve">
+    <value>Enable coaching mode</value>
+    <comment>Accessible name for the coaching mode toggle</comment>
   </data>
   <data name="FixSpellingAndGrammar_CoachingShortcut.Header" xml:space="preserve">
     <value>Coaching shortcut</value>

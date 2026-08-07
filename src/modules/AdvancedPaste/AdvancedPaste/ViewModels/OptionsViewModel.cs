@@ -133,7 +133,7 @@ namespace AdvancedPaste.ViewModels
                     return false;
                 }
 
-                if (!TryResolveAdvancedAIProvider(out _))
+                if (!AdvancedAIProviderResolver.TryResolveAdvancedProvider(_userSettings?.PasteAIConfiguration, providerIdOverride: null, out _))
                 {
                     return false;
                 }
@@ -237,8 +237,10 @@ namespace AdvancedPaste.ViewModels
 
         public bool HasIndeterminateTransformProgress => double.IsNaN(TransformProgress);
 
-        private PasteFormats CustomAIFormat =>
-            _userSettings.IsAIEnabled && TryResolveAdvancedAIProvider(out _)
+        private PasteFormats CustomAIFormat => GetCustomAIFormat();
+
+        private PasteFormats GetCustomAIFormat(string providerIdOverride = null) =>
+            _userSettings.IsAIEnabled && AdvancedAIProviderResolver.TryResolveAdvancedProvider(_userSettings?.PasteAIConfiguration, providerIdOverride, out _)
                 ? PasteFormats.KernelQuery
                 : PasteFormats.CustomTextTransformation;
 
@@ -350,7 +352,7 @@ namespace AdvancedPaste.ViewModels
         }
 
         private PasteFormat CreateCustomAIPasteFormat(string name, string prompt, bool isSavedQuery, string providerId = null) =>
-            PasteFormat.CreateCustomAIFormat(CustomAIFormat, name, prompt, isSavedQuery, AvailableClipboardFormats, IsCustomAIServiceEnabled, providerId);
+            PasteFormat.CreateCustomAIFormat(GetCustomAIFormat(providerId), name, prompt, isSavedQuery, AvailableClipboardFormats, IsCustomAIServiceEnabled, providerId);
 
         private string GetProviderIdForFormat(PasteFormats format) =>
             format switch
@@ -867,7 +869,7 @@ namespace AdvancedPaste.ViewModels
             if (customAction != null)
             {
                 await ReadClipboardAsync();
-                await ExecutePasteFormatAsync(CreateCustomAIPasteFormat(customAction.Name, customAction.Prompt, isSavedQuery: true), source);
+                await ExecutePasteFormatAsync(CreateCustomAIPasteFormat(customAction.Name, customAction.Prompt, isSavedQuery: true, customAction.ProviderId), source);
             }
         }
 
@@ -876,7 +878,7 @@ namespace AdvancedPaste.ViewModels
             var customAction = _userSettings.CustomActions
                                             .FirstOrDefault(customAction => Models.KernelQueryCache.CacheKey.PromptComparer.Equals(customAction.Prompt, Query));
 
-            await ExecutePasteFormatAsync(CreateCustomAIPasteFormat(customAction?.Name ?? "Default", Query, isSavedQuery: customAction != null), triggerSource);
+            await ExecutePasteFormatAsync(CreateCustomAIPasteFormat(customAction?.Name ?? "Default", Query, isSavedQuery: customAction != null, customAction?.ProviderId), triggerSource);
         }
 
         private void HideWindow()
@@ -937,49 +939,6 @@ namespace AdvancedPaste.ViewModels
                 AIServiceType.FoundryLocal => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteFoundryLocalValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
                 _ => true, // Allow unknown types by default
             };
-        }
-
-        private bool TryResolveAdvancedAIProvider(out PasteAIProviderDefinition provider)
-        {
-            provider = null;
-
-            var configuration = _userSettings?.PasteAIConfiguration;
-            if (configuration is null)
-            {
-                return false;
-            }
-
-            var activeProvider = configuration.ActiveProvider;
-            if (IsAdvancedAIProvider(activeProvider))
-            {
-                provider = activeProvider;
-                return true;
-            }
-
-            if (activeProvider is not null)
-            {
-                return false;
-            }
-
-            var fallback = configuration.Providers?.FirstOrDefault(IsAdvancedAIProvider);
-            if (fallback is not null)
-            {
-                provider = fallback;
-                return true;
-            }
-
-            return false;
-        }
-
-        private static bool IsAdvancedAIProvider(PasteAIProviderDefinition provider)
-        {
-            return provider is not null && provider.EnableAdvancedAI && SupportsAdvancedAI(provider.ServiceTypeKind);
-        }
-
-        private static bool SupportsAdvancedAI(AIServiceType serviceType)
-        {
-            return serviceType is AIServiceType.OpenAI
-                or AIServiceType.AzureOpenAI;
         }
 
         private bool UpdateOpenAIKey()
