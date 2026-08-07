@@ -21,6 +21,7 @@ internal static class ModuleGpoHelper
             ModuleType.ColorPicker => GPOWrapper.GetConfiguredColorPickerEnabledValue(),
             ModuleType.CropAndLock => GPOWrapper.GetConfiguredCropAndLockEnabledValue(),
             ModuleType.CursorWrap => GPOWrapper.GetConfiguredCursorWrapEnabledValue(),
+            ModuleType.CursorFocus => GPOWrapper.GetConfiguredCursorFocusEnabledValue(),
             ModuleType.EnvironmentVariables => GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue(),
             ModuleType.FancyZones => GPOWrapper.GetConfiguredFancyZonesEnabledValue(),
             ModuleType.FileLocksmith => GPOWrapper.GetConfiguredFileLocksmithEnabledValue(),
