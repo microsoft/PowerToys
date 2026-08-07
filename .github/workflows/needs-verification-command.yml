@@ -1,0 +1,44 @@
+name: Needs verification command
+
+# Lets maintainers comment `/needs-verification` on an issue or PR to ask the
+# author to manually verify their change and provide repro steps / screenshots.
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  needs-verification:
+    runs-on: ubuntu-latest
+    if: >-
+      contains(github.event.comment.body, '/needs-verification') &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'MEMBER' ||
+       github.event.comment.author_association == 'COLLABORATOR')
+    steps:
+      - name: Add author-feedback label
+        run: gh api "repos/$REPO/issues/$NUMBER/labels" -f "labels[]=Needs-Author-Feedback"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+      - name: Post verification request
+        run: gh api "repos/$REPO/issues/$NUMBER/comments" -f body="$BODY"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+          BODY: |
+            Thanks for your contribution! Before this can move forward, we need the author to confirm the change has been **manually verified**.
+
+            Please reply with:
+            - The repro / verification steps you followed to confirm the new behavior works (and that existing behavior isn't regressed).
+            - Where relevant, a screenshot or short screen recording showing the new behavior.
+
+            See [Verifying your changes](https://github.com/microsoft/PowerToys/blob/main/CONTRIBUTING.md#verifying-your-changes) for what we're looking for.
+
+            I've added the **Needs-Author-Feedback** label; it will be cleared once you respond.
