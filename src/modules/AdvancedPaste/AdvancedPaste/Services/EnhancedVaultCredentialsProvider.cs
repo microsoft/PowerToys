@@ -129,7 +129,7 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
         }
     }
 
-    private static (string Resource, string Username)? BuildCredentialEntry(AIServiceType serviceType, string providerId)
+    internal static (string Resource, string Username)? BuildCredentialEntry(AIServiceType serviceType, string providerId)
     {
         string resource;
         string serviceKey;
@@ -139,6 +139,10 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
             case AIServiceType.OpenAI:
                 resource = "https://platform.openai.com/api-keys";
                 serviceKey = "openai";
+                break;
+            case AIServiceType.OpenAICompatible:
+                resource = "PowerToys_AdvancedPaste_OpenAICompatible";
+                serviceKey = "openaicompatible";
                 break;
             case AIServiceType.AzureOpenAI:
                 resource = "https://azure.microsoft.com/products/ai-services/openai-service";

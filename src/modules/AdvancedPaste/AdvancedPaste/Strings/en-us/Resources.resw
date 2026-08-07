@@ -135,6 +135,34 @@
   <data name="OpenAIApiKeyError" xml:space="preserve">
     <value>OpenAI request failed with status code: </value>
   </data>
+  <data name="OpenAICompatibleEndpointInvalid" xml:space="preserve">
+    <value>The configured AI endpoint must be an absolute HTTP or HTTPS URL.</value>
+  </data>
+  <data name="OpenAICompatibleModelRequired" xml:space="preserve">
+    <value>A model name is required for the configured AI endpoint.</value>
+  </data>
+  <data name="OpenAICompatibleRequestRejected" xml:space="preserve">
+    <value>The configured AI endpoint rejected the request. Check the model name and whether the model supports this input.</value>
+  </data>
+  <data name="OpenAICompatibleEndpointOrModelNotFound" xml:space="preserve">
+    <value>The configured AI endpoint or model was not found.</value>
+  </data>
+  <data name="OpenAICompatibleServiceUnavailable" xml:space="preserve">
+    <value>The configured AI endpoint or model is temporarily unavailable.</value>
+  </data>
+  <data name="OpenAICompatibleNetworkError" xml:space="preserve">
+    <value>Could not reach the configured AI endpoint. Check the endpoint and network connection.</value>
+  </data>
+  <data name="OpenAICompatibleAuthenticationFailed" xml:space="preserve">
+    <value>The configured AI endpoint rejected the credentials. Check the API token and authentication settings.</value>
+  </data>
+  <data name="OpenAICompatibleRateLimited" xml:space="preserve">
+    <value>The configured AI endpoint is rate limiting requests. Try again later.</value>
+  </data>
+  <data name="OpenAICompatibleRequestFailed" xml:space="preserve">
+    <value>The configured AI endpoint returned status code: {0}</value>
+    <comment>{0} is the HTTP status code. Do not translate {0}.</comment>
+  </data>
   <data name="PasteActionCanceled" xml:space="preserve">
     <value>The paste operation was canceled</value>
   </data>

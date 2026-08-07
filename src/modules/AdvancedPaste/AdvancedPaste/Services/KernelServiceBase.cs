@@ -117,7 +117,11 @@ public abstract class KernelServiceBase(
             Logger.LogError($"Error executing kernel operation", ex);
             Logger.LogError($"Kernel operation Error: \n{FormatChatHistory(chatHistory)}");
 
-            AdvancedPasteSemanticKernelErrorEvent errorEvent = new(ex is PasteActionModeratedException ? PasteActionModeratedException.ErrorDescription : ex.Message);
+            var isOpenAICompatible = GetRuntimeConfiguration().ServiceType == AIServiceType.OpenAICompatible;
+            var telemetryError = isOpenAICompatible
+                ? "OpenAICompatibleRequestFailed"
+                : ex is PasteActionModeratedException ? PasteActionModeratedException.ErrorDescription : ex.Message;
+            AdvancedPasteSemanticKernelErrorEvent errorEvent = new(telemetryError);
             PowerToysTelemetry.Log.WriteEvent(errorEvent);
 
             if (ex is PasteActionException or OperationCanceledException)
@@ -126,9 +130,12 @@ public abstract class KernelServiceBase(
             }
             else
             {
-                var message = ex is HttpOperationException httpOperationEx
-                    ? ErrorHelpers.TranslateErrorText((int?)httpOperationEx.StatusCode ?? -1)
-                    : ResourceLoaderInstance.ResourceLoader.GetString("PasteError");
+                var statusCode = ex is HttpOperationException httpOperationEx ? (int?)httpOperationEx.StatusCode ?? -1 : -1;
+                var message = isOpenAICompatible
+                    ? ErrorHelpers.TranslateOpenAICompatibleError(ex, statusCode)
+                    : ex is HttpOperationException
+                        ? ErrorHelpers.TranslateErrorText(statusCode)
+                        : ResourceLoaderInstance.ResourceLoader.GetString("PasteError");
 
                 var lastAssistantMessage = chatHistory.LastOrDefault(chatMessage => chatMessage.Role == AuthorRole.Assistant)?.ToString();
                 throw new PasteActionException(message, innerException: ex, aiServiceMessage: lastAssistantMessage);
