@@ -337,6 +337,9 @@
   <data name="Network_Usage_Title" xml:space="preserve">
     <value>Network Usage</value>
   </data>
+  <data name="Network_Speed_Title" xml:space="preserve">
+    <value>Network Speed</value>
+  </data>
   <data name="Network_Usage_Label" xml:space="preserve">
     <value>Network ({0}): {1}</value>
     <comment>{0} is the network adapter name, {1} is the usage percentage</comment>
