@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -242,7 +242,7 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             // Copy some text(same as in the previous step or different.If nothing is coppied between steps, previously pasted JSON text will be picked up from clipboard and converted again to nested JSON).
-            // Open Advanced Paste window using hotkey, press Ctrl + 3 and confirm that pasted text is converted to markdown
+            // Open Advanced Paste window using hotkey, press Ctrl + 4 and confirm that pasted text is converted to JSON
             DeleteAndCopyFile(pasteAsJsonFileName, tempTxtFileName);
             ContentCopyAndPasteAsJsonCase3(tempTxtFileName);
             var result = FileReader.CompareRtfFiles(
@@ -251,6 +251,8 @@ namespace Microsoft.AdvancedPaste.UITests
                 compareFormatting: true);
             Assert.IsTrue(result.IsConsistent, "Paste as Json using shortcut failed.");
         }
+
+
 
         /*
          * Clipboard History
@@ -855,7 +857,7 @@ namespace Microsoft.AdvancedPaste.UITests
             this.SendKeys(Key.Win, Key.Shift, Key.V);
             Thread.Sleep(15000);
 
-            this.SendKeys(Key.LCtrl, Key.Num3);
+            this.SendKeys(Key.LCtrl, Key.Num4);
             Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.S);
@@ -863,6 +865,8 @@ namespace Microsoft.AdvancedPaste.UITests
 
             window.Close();
         }
+
+
 
         private string DeleteAndCopyFile(string sourceFileName, string destinationFileName)
         {

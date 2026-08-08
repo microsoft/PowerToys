@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -24,6 +24,7 @@ public static class TransformHelpers
         {
             PasteFormats.PlainText => await ToPlainTextAsync(clipboardData),
             PasteFormats.Markdown => await ToMarkdownAsync(clipboardData),
+            PasteFormats.RichText => await ToRichTextAsync(clipboardData),
             PasteFormats.Json => await ToJsonAsync(clipboardData),
             PasteFormats.ImageToText => await ImageToTextAsync(clipboardData, cancellationToken),
             PasteFormats.PasteAsTxtFile => await ToTxtFileAsync(clipboardData, cancellationToken),
@@ -47,6 +48,12 @@ public static class TransformHelpers
     {
         Logger.LogTrace();
         return CreateDataPackageFromText(await MarkdownHelper.ToMarkdownAsync(clipboardData));
+    }
+
+    private static async Task<DataPackage> ToRichTextAsync(DataPackageView clipboardData)
+    {
+        Logger.LogTrace();
+        return DataPackageHelpers.CreateFromHtml(await RichTextHelper.ToRichTextAsync(clipboardData));
     }
 
     private static async Task<DataPackage> ToJsonAsync(DataPackageView clipboardData)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -43,6 +43,13 @@ internal static class DataPackageHelpers
     {
         DataPackage dataPackage = new();
         dataPackage.SetText(text);
+        return dataPackage;
+    }
+
+    internal static DataPackage CreateFromHtml(string html)
+    {
+        DataPackage dataPackage = new();
+        dataPackage.SetHtmlFormat(HtmlFormatHelper.CreateHtmlFormat(html));
         return dataPackage;
     }
 

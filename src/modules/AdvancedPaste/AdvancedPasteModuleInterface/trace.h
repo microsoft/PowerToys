@@ -19,6 +19,7 @@ public:
     static void Trace::AdvancedPaste_SettingsTelemetry(const PowertoyModuleIface::Hotkey& pastePlainHotkey,
                                          const PowertoyModuleIface::Hotkey& advancedPasteUIHotkey,
                                          const PowertoyModuleIface::Hotkey& pasteMarkdownHotkey,
+                                         const PowertoyModuleIface::Hotkey& pasteRichTextHotkey,
                                          const PowertoyModuleIface::Hotkey& pasteJsonHotkey,
                                          const bool is_advanced_ai_enabled,
                                          const bool preview_custom_format_output,
