@@ -122,4 +122,36 @@ public partial class ExtensionHost
             return await operation;
         }
     }
+
+    /// <summary>
+    /// True when the connected host supports host-driven navigation
+    /// (i.e. it implements <see cref="IExtensionHost2"/>). This is the same
+    /// capability that gates authorization. Older Command Palette versions
+    /// return false.
+    /// </summary>
+    public static bool SupportsNavigation => Host is IExtensionHost2;
+
+    /// <summary>
+    /// Ask Command Palette to navigate to one of this extension's pages (for
+    /// example, right after a successful sign-in). The host summons its window
+    /// and navigates to the supplied page.
+    /// </summary>
+    /// <param name="page">The page to navigate to. Typically an <c>IPage</c>.</param>
+    /// <param name="navigationMode">Controls navigation stack behavior.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="page"/> is null.</exception>
+    /// <exception cref="NotSupportedException">
+    /// The connected host does not implement <see cref="IExtensionHost2"/>.
+    /// </exception>
+    public static async Task GoToPageAsync(ICommand page, NavigationMode navigationMode = NavigationMode.Push)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+
+        if (Host is not IExtensionHost2 host2)
+        {
+            throw new NotSupportedException(
+                "The Command Palette host does not support navigation. Update Command Palette to a newer version.");
+        }
+
+        await host2.GoToPageAsync(page, navigationMode);
+    }
 }
