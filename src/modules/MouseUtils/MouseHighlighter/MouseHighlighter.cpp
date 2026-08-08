@@ -971,7 +971,10 @@ void Highlighter::QueueSettings(MouseHighlighterSettings settings)
 
     if (window != nullptr)
     {
-        PostMessage(window, WM_APPLY_SETTINGS, 0, 0);
+        if (!PostMessage(window, WM_APPLY_SETTINGS, 0, 0))
+        {
+            SendMessage(window, WM_APPLY_SETTINGS, 0, 0);
+        }
     }
 }
 
