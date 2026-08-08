@@ -13,6 +13,12 @@ namespace
 {
     const int FadeInDurationMillis = 200;
     const int FlashZonesDurationMillis = 700;
+
+    const int LayoutNameFadeInMillis = 150;
+    const int LayoutNameFadeOutMillis = 300;
+    const float LayoutNameCornerRadius = 8.f;
+    const float LayoutNameMarginXRatio = 0.02f; // distance from the side edges of the work area, relative to its width
+    const float LayoutNameMarginYRatio = 0.08f; // distance from the top/bottom edges of the work area, relative to its height
 }
 
 namespace NonLocalizable
@@ -39,6 +45,41 @@ float ZonesOverlay::GetAnimationAlpha()
 
     // Return a positive value to avoid hiding
     return std::clamp(millis / FadeInDurationMillis, 0.001f, 1.f);
+}
+
+float ZonesOverlay::GetLayoutNameLabelAlpha()
+{
+    // Lock is held by the caller
+
+    if (!m_layoutNameLabel)
+    {
+        return 0.f;
+    }
+
+    auto tNow = std::chrono::steady_clock().now();
+    auto millis = (tNow - m_layoutNameLabel->tStart).count() / 1e6f;
+
+    const float duration = static_cast<float>(m_layoutNameLabel->durationMillis);
+    const float fadeIn = std::min<float>(LayoutNameFadeInMillis, duration / 3.f);
+    const float fadeOut = std::min<float>(LayoutNameFadeOutMillis, duration / 3.f);
+
+    if (millis >= duration)
+    {
+        return 0.f;
+    }
+
+    if (millis < fadeIn)
+    {
+        return millis / fadeIn;
+    }
+
+    const auto remainingMillis = duration - millis;
+    if (remainingMillis < fadeOut)
+    {
+        return remainingMillis / fadeOut;
+    }
+
+    return 1.f;
 }
 
 IDWriteFactory* ZonesOverlay::GetWriteFactory()
@@ -190,6 +231,113 @@ ZonesOverlay::RenderResult ZonesOverlay::Render()
         textFormat->Release();
     }
 
+    if (m_layoutNameLabel.has_value())
+    {
+        float labelAlpha = GetLayoutNameLabelAlpha();
+        if (labelAlpha <= 0.f)
+        {
+            m_layoutNameLabel.reset();
+        }
+        else if (writeFactory)
+        {
+            if (!isEnabledAnimations)
+            {
+                // No fading, but the label still disappears once its lifetime is over
+                labelAlpha = 1.f;
+            }
+
+            // The label is part of the overlay, don't let it outshine a fading scene
+            labelAlpha *= animationAlpha;
+
+            IDWriteTextFormat* nameFormat = nullptr;
+            writeFactory->CreateTextFormat(NonLocalizable::SegoeUiFont, nullptr, DWRITE_FONT_WEIGHT_SEMI_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, m_layoutNameLabel->fontSize, L"en-US", &nameFormat);
+
+            IDWriteTextLayout* nameLayout = nullptr;
+            const float clientWidth = static_cast<float>(m_clientRect.right - m_clientRect.left);
+            const float clientHeight = static_cast<float>(m_clientRect.bottom - m_clientRect.top);
+            if (nameFormat)
+            {
+                nameFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
+                writeFactory->CreateTextLayout(m_layoutNameLabel->text.c_str(), static_cast<UINT32>(m_layoutNameLabel->text.size()), nameFormat, clientWidth, clientHeight, &nameLayout);
+            }
+
+            if (nameLayout)
+            {
+                DWRITE_TEXT_METRICS metrics{};
+                nameLayout->GetMetrics(&metrics);
+
+                const float chipWidth = metrics.width + 2 * m_layoutNameLabel->paddingX;
+                const float chipHeight = metrics.height + 2 * m_layoutNameLabel->paddingY;
+                const float marginX = clientWidth * LayoutNameMarginXRatio;
+                const float marginY = clientHeight * LayoutNameMarginYRatio;
+
+                float left = (clientWidth - chipWidth) / 2.f;
+                float top = marginY;
+                switch (m_layoutNameLabel->placement)
+                {
+                case LayoutNameLabelPlacement::TopLeft:
+                    left = marginX;
+                    break;
+                case LayoutNameLabelPlacement::TopRight:
+                    left = clientWidth - marginX - chipWidth;
+                    break;
+                case LayoutNameLabelPlacement::Center:
+                    top = (clientHeight - chipHeight) / 2.f;
+                    break;
+                case LayoutNameLabelPlacement::BottomLeft:
+                    left = marginX;
+                    top = clientHeight - marginY - chipHeight;
+                    break;
+                case LayoutNameLabelPlacement::BottomCenter:
+                    top = clientHeight - marginY - chipHeight;
+                    break;
+                case LayoutNameLabelPlacement::BottomRight:
+                    left = clientWidth - marginX - chipWidth;
+                    top = clientHeight - marginY - chipHeight;
+                    break;
+                case LayoutNameLabelPlacement::TopCenter:
+                default:
+                    break;
+                }
+
+                D2D1_ROUNDED_RECT chip{
+                    .rect = D2D1::RectF(left, top, left + chipWidth, top + chipHeight),
+                    .radiusX = LayoutNameCornerRadius,
+                    .radiusY = LayoutNameCornerRadius,
+                };
+
+                auto backgroundColor = m_layoutNameLabel->backgroundColor;
+                auto labelTextColor = m_layoutNameLabel->textColor;
+                backgroundColor.a *= labelAlpha;
+                labelTextColor.a *= labelAlpha;
+
+                ID2D1SolidColorBrush* backgroundBrush = nullptr;
+                ID2D1SolidColorBrush* nameBrush = nullptr;
+                m_renderTarget->CreateSolidColorBrush(backgroundColor, &backgroundBrush);
+                m_renderTarget->CreateSolidColorBrush(labelTextColor, &nameBrush);
+
+                if (backgroundBrush)
+                {
+                    m_renderTarget->FillRoundedRectangle(chip, backgroundBrush);
+                    backgroundBrush->Release();
+                }
+
+                if (nameBrush)
+                {
+                    m_renderTarget->DrawTextLayout(D2D1::Point2F(left + m_layoutNameLabel->paddingX, top + m_layoutNameLabel->paddingY), nameLayout, nameBrush);
+                    nameBrush->Release();
+                }
+
+                nameLayout->Release();
+            }
+
+            if (nameFormat)
+            {
+                nameFormat->Release();
+            }
+        }
+    }
+
     // The lock must be released here, as EndDraw() will wait for vertical sync
     lock.unlock();
 
@@ -222,6 +370,7 @@ void ZonesOverlay::Hide()
     {
         std::unique_lock lock(m_mutex);
         m_animation.reset();
+        m_layoutNameLabel.reset();
         shouldHideWindow = m_shouldRender;
         m_shouldRender = false;
     }
@@ -336,6 +485,31 @@ void ZonesOverlay::DrawActiveZoneSet(const ZonesMap& zones,
             m_sceneRects.push_back(drawableRect);
         }
     }
+}
+
+void ZonesOverlay::ShowLayoutName(const std::wstring& text, const LayoutNameLabelOptions& options)
+{
+    if (text.empty())
+    {
+        return;
+    }
+
+    std::unique_lock lock(m_mutex);
+
+    auto backgroundColor = ConvertColor(options.backgroundColor);
+    backgroundColor.a = 0.9f;
+
+    m_layoutNameLabel.emplace(LayoutNameLabel{
+        .text = text,
+        .textColor = ConvertColor(options.textColor),
+        .backgroundColor = backgroundColor,
+        .fontSize = static_cast<float>(std::max<int>(options.fontSize, 8)),
+        .paddingX = static_cast<float>(2 * std::max<int>(options.padding, 0)),
+        .paddingY = static_cast<float>(std::max<int>(options.padding, 0)),
+        .durationMillis = std::max<int>(options.durationMillis, 300),
+        .placement = options.placement,
+        .tStart = std::chrono::steady_clock().now(),
+    });
 }
 
 ZonesOverlay::~ZonesOverlay()
