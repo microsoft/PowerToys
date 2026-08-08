@@ -361,7 +361,26 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // };
         }
 
-        var result = await dialog.ShowAsync();
+        // In compact mode the palette may be collapsed to just the search box. The confirmation
+        // dialog renders in the host window's popup layer, which is clipped to the card's HWND
+        // region, so merely expanding our own content isn't enough - the card must fill the whole
+        // window or the dialog is clipped. Ask the host window to maximize the card while the
+        // dialog is up (and expand our own content to match), then restore the normal compact
+        // behavior once it closes.
+        WeakReferenceMessenger.Default.Send(new MaximizeForDialogMessage(true));
+        HandleExpandCompactOnUiThread(true);
+
+        ContentDialogResult result;
+        try
+        {
+            result = await dialog.ShowAsync();
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.Send(new MaximizeForDialogMessage(false));
+            UpdateCompactModeForCurrentPage();
+        }
+
         if (result == ContentDialogResult.Primary)
         {
             var performMessage = new PerformCommandMessage(vm);
