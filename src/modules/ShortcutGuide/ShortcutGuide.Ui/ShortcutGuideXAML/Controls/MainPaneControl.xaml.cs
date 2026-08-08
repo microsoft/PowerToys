@@ -105,7 +105,7 @@ namespace ShortcutGuide.Controls
 
         internal bool TryClearSearch()
         {
-            if (string.IsNullOrEmpty(_searchQuery))
+            if (string.IsNullOrWhiteSpace(_searchQuery))
             {
                 return false;
             }

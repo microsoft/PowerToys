@@ -226,6 +226,12 @@ namespace ShortcutGuide
         {
             if (e.Key == VirtualKey.Escape)
             {
+                if (e.KeyStatus.WasKeyDown)
+                {
+                    e.Handled = true;
+                    return;
+                }
+
                 if (this.MainPane.TryClearSearch())
                 {
                     e.Handled = true;
