@@ -8,7 +8,6 @@
     <AssemblyDescription>PowerToys Workspaces Csharp Library</AssemblyDescription>
     <Description>PowerToys Workspaces Csharp Library</Description>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -18,6 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>
 

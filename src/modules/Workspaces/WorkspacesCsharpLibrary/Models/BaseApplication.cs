@@ -3,33 +3,20 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using System.Windows.Media.Imaging;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Windows.Management.Deployment;
 
 namespace WorkspacesCsharpLibrary.Models
 {
-    public partial class BaseApplication : INotifyPropertyChanged, IDisposable
+    public partial class BaseApplication : ObservableObject, IDisposable
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            PropertyChanged?.Invoke(this, e);
-        }
-
         public string PwaAppId { get; set; }
 
         public string AppPath { get; set; }
-
-        private bool _isNotFound;
 
         public string PackagedId { get; set; }
 
@@ -39,23 +26,9 @@ namespace WorkspacesCsharpLibrary.Models
 
         public string Aumid { get; set; }
 
-        [JsonIgnore]
-        public bool IsNotFound
-        {
-            get
-            {
-                return _isNotFound;
-            }
-
-            set
-            {
-                if (_isNotFound != value)
-                {
-                    _isNotFound = value;
-                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsNotFound)));
-                }
-            }
-        }
+        [ObservableProperty]
+        [property: JsonIgnore]
+        private bool _isNotFound;
 
         private Icon _icon;
 
@@ -107,50 +80,6 @@ namespace WorkspacesCsharpLibrary.Models
                 }
 
                 return _icon;
-            }
-        }
-
-        private BitmapImage _iconBitmapImage;
-
-        public BitmapImage IconBitmapImage
-        {
-            get
-            {
-                if (_iconBitmapImage == null)
-                {
-                    try
-                    {
-                        Bitmap previewBitmap = new Bitmap(32, 32);
-                        using (Graphics graphics = Graphics.FromImage(previewBitmap))
-                        {
-                            graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-
-                            graphics.DrawIcon(Icon, new Rectangle(0, 0, 32, 32));
-                        }
-
-                        using (var memory = new MemoryStream())
-                        {
-                            DrawHelper.SaveBitmap(previewBitmap, memory);
-                            memory.Position = 0;
-
-                            BitmapImage bitmapImage = new BitmapImage();
-                            bitmapImage.BeginInit();
-                            bitmapImage.StreamSource = memory;
-                            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                            bitmapImage.EndInit();
-                            bitmapImage.Freeze();
-
-                            _iconBitmapImage = bitmapImage;
-                        }
-                    }
-                    catch (Exception)
-                    {
-                    }
-                }
-
-                return _iconBitmapImage;
             }
         }
 
