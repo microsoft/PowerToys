@@ -1,0 +1,32 @@
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import prettier from 'eslint-config-prettier';
+
+export default tseslint.config(
+  {
+    ignores: ['dist/**', 'node_modules/**', 'coverage/**'],
+  },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    // The hand-written `.mjs` bin wrapper and build scripts run on Node without
+    // TypeScript's ambient lib, so declare the Node runtime globals they use.
+    files: ['**/*.mjs'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+      },
+    },
+  },
+  {
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+      '@typescript-eslint/consistent-type-imports': 'error',
+    },
+  },
+  prettier,
+);
