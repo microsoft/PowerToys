@@ -131,6 +131,14 @@ public partial class SamplesListPage : ListPage
             Subtitle = "A demo of the settings helpers",
         },
 
+        // Tabbed pages
+        new ListItem(new SampleTabbedPage())
+        {
+            Title = "Sample tabbed page",
+            Subtitle = "A page that hosts several independent pages as tabs, with async count badges",
+            Icon = new IconInfo("\uE737"), // Favorite
+        },
+
         // Data package samples
         new ListItem(new SampleDataTransferPage())
         {

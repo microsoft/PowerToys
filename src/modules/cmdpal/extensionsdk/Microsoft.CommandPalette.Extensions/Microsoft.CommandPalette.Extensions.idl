@@ -381,6 +381,31 @@ namespace Microsoft.CommandPalette.Extensions
         IContextItem[] Commands { get; };
     }
     
+    // A single tab within an ITabbedPage. Each tab wraps its own IPage
+    // (an IListPage, IDynamicListPage or IContentPage in v1). The tab chrome
+    // (title, icon, badge) is decoupled from the hosted page so it can be shown
+    // in the tab strip before the page itself is initialized. Badge is
+    // observable so extensions can populate counts asynchronously (raise
+    // PropChanged("Badge")) without forcing the page to initialize.
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ITab requires INotifyPropChanged {
+        String Title { get; };
+        IIconInfo Icon { get; };
+        String Badge { get; };
+        IPage Page { get; };
+    }
+
+    // A container page that renders a strip of tabs, where each tab is its own
+    // independent IPage. The tab set is dynamic (re-read on ItemsChanged).
+    // Toolkit's TabbedPage base also implements IContentPage so that older
+    // hosts which don't understand ITabbedPage fall back to a content page that
+    // prompts the user to update Command Palette. New hosts must therefore
+    // prefer ITabbedPage over IContentPage when choosing how to render a page.
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ITabbedPage requires IPage, INotifyItemsChanged {
+        ITab[] GetTabs();
+    }
+
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ICommandSettings {
         IContentPage SettingsPage { get; };
