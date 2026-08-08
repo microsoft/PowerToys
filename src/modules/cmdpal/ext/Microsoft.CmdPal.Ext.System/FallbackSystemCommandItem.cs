@@ -22,11 +22,12 @@ internal sealed partial class FallbackSystemCommandItem : FallbackCommandItem
         Icon = Icons.LockIcon;
 
         var isBootedInUefiMode = settings.GetSystemFirmwareType() == FirmwareType.Uefi;
+        var isUpdatePending = settings.IsUpdatePending();
         var hideEmptyRB = settings.HideEmptyRecycleBin();
         var confirmSystemCommands = settings.ShowDialogToConfirmCommand();
         var showSuccessOnEmptyRB = settings.ShowSuccessMessageAfterEmptyingRecycleBin();
 
-        systemCommands = Commands.GetSystemCommands(isBootedInUefiMode, hideEmptyRB, confirmSystemCommands, showSuccessOnEmptyRB);
+        systemCommands = Commands.GetSystemCommands(isBootedInUefiMode, isUpdatePending, hideEmptyRB, confirmSystemCommands, showSuccessOnEmptyRB);
     }
 
     private readonly List<IListItem> systemCommands;

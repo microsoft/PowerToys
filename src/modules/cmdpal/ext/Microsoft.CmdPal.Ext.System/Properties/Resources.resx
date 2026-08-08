@@ -374,6 +374,30 @@
   <data name="Microsoft_plugin_sys_Unknown" xml:space="preserve">
     <value>Unknown</value>
   </data>
+  <data name="Microsoft_plugin_sys_update_and_restart" xml:space="preserve">
+    <value>Update and restart</value>
+    <comment>This should align to the "Update and restart" entry in the Windows Start menu power flyout.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_update_and_restart_confirmation" xml:space="preserve">
+    <value>You are about to install pending Windows updates and restart this computer, are you sure?</value>
+    <comment>Confirmation message for the "Update and restart" command.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_update_and_restart_description" xml:space="preserve">
+    <value>Install pending Windows updates and restart the computer</value>
+    <comment>This should align to the "Update and restart" entry in the Windows Start menu power flyout.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_update_and_shutdown" xml:space="preserve">
+    <value>Update and shut down</value>
+    <comment>This should align to the "Update and shut down" entry in the Windows Start menu power flyout.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_update_and_shutdown_confirmation" xml:space="preserve">
+    <value>You are about to install pending Windows updates and shut down this computer, are you sure?</value>
+    <comment>Confirmation message for the "Update and shut down" command.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_update_and_shutdown_description" xml:space="preserve">
+    <value>Install pending Windows updates and shut down the computer</value>
+    <comment>This should align to the "Update and shut down" entry in the Windows Start menu power flyout.</comment>
+  </data>
   <data name="Microsoft_plugin_sys_Wins" xml:space="preserve">
     <value>WINS servers</value>
   </data>

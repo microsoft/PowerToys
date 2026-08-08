@@ -779,7 +779,61 @@ namespace Microsoft.CmdPal.Ext.System {
                 return ResourceManager.GetString("Microsoft_plugin_sys_Unknown", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Update and restart.
+        /// </summary>
+        public static string Microsoft_plugin_sys_update_and_restart {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_update_and_restart", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to You are about to install pending Windows updates and restart this computer, are you sure?.
+        /// </summary>
+        public static string Microsoft_plugin_sys_update_and_restart_confirmation {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_update_and_restart_confirmation", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Install pending Windows updates and restart the computer.
+        /// </summary>
+        public static string Microsoft_plugin_sys_update_and_restart_description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_update_and_restart_description", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Update and shut down.
+        /// </summary>
+        public static string Microsoft_plugin_sys_update_and_shutdown {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_update_and_shutdown", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to You are about to install pending Windows updates and shut down this computer, are you sure?.
+        /// </summary>
+        public static string Microsoft_plugin_sys_update_and_shutdown_confirmation {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_update_and_shutdown_confirmation", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Install pending Windows updates and shut down the computer.
+        /// </summary>
+        public static string Microsoft_plugin_sys_update_and_shutdown_description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_update_and_shutdown_description", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to WINS servers.
         /// </summary>
