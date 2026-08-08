@@ -68,6 +68,12 @@ public sealed partial class MainListPage : DynamicListPage,
     private RoScored<IListItem>[]? _filteredItems;
     private RoScored<IListItem>[]? _filteredApps;
 
+    // Length of the query that produced the current _filteredApps, set under lock(commands)
+    // alongside the array itself. SearchText won't work here: the UI thread advances it ahead of
+    // the publish, so the gate would judge a stale 2-char array against a 3-char query and flash
+    // the tail anyway.
+    private int _filteredAppsQueryLength;
+
     // Global/special fallbacks are scored on the render path, not at keystroke time, because
     // their titles resolve asynchronously. We snapshot the source list and query together so a
     // superseding keystroke replaces both atomically.
@@ -86,6 +92,16 @@ public sealed partial class MainListPage : DynamicListPage,
     private ImmutableDictionary<string, ProviderSettings>? _lastProviderSettingsSnapshot;
 
     private int AppResultLimit => AllAppsCommandProvider.TopLevelResultLimit;
+
+    // ===== Early-frame relevance =====
+    // Longest query we still hold back the weak fuzzy app tail for, since one letter matches most
+    // of the catalog and frecency floats your most-used app up on a match it barely earned. Set to
+    // 0 to turn the gate off.
+    private const int ShortQueryAppTailGateMaxLength = 2;
+
+    // Minimum tier an app has to reach to show while the query is still that short, since
+    // word-boundary, prefix, exact-title and alias matches all relate to what you actually typed.
+    private const RankTier ShortQueryAppGateMinTier = RankTier.AcronymWordBoundary;
 
     private InterlockedBoolean _fullRefreshRequested;
     private InterlockedBoolean _refreshRunning;
@@ -281,10 +297,14 @@ public sealed partial class MainListPage : DynamicListPage,
             .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
             .ToList();
 
+        // Hold back the weak fuzzy tail while the query is still short, so a frecency-floated
+        // match can't surface at the top mid-typing.
+        var gatedApps = ApplyShortQueryAppGate(_filteredApps, _filteredAppsQueryLength);
+
         var result = MainListPageResultFactory.Create(
             _filteredItems,
             validScoredFallbacks,
-            _filteredApps,
+            gatedApps,
             validFallbacks,
             _resultsSeparator,
             _fallbacksSeparator,
@@ -335,6 +355,63 @@ public sealed partial class MainListPage : DynamicListPage,
         }
 
         return valid;
+    }
+
+    // Keeps only the letter-relevant apps while the query is short, and returns a longer query's
+    // results untouched. It slices a contiguous prefix of the already-scored, already-sorted array,
+    // so it can never re-score or reorder anything.
+    internal static IList<RoScored<IListItem>>? ApplyShortQueryAppGate(
+        RoScored<IListItem>[]? scoredApps,
+        int queryLength)
+    {
+        if (scoredApps is null || scoredApps.Length == 0)
+        {
+            return scoredApps;
+        }
+
+        if (queryLength <= 0 || queryLength > ShortQueryAppTailGateMaxLength)
+        {
+            return scoredApps;
+        }
+
+        var keep = HighConfidenceAppPrefixLength(scoredApps, ShortQueryAppGateMinTier);
+        return keep == scoredApps.Length
+            ? scoredApps
+            : new ArraySegment<RoScored<IListItem>>(scoredApps, 0, keep);
+    }
+
+    // The array is sorted descending by packed score and the tier lives in that score's high bits,
+    // so everything at or above a tier forms a contiguous prefix that one forward scan can find.
+    internal static int HighConfidenceAppPrefixLength(IReadOnlyList<RoScored<IListItem>> scored, RankTier minTier)
+    {
+        var min = (int)minTier;
+        for (var i = 0; i < scored.Count; i++)
+        {
+            if ((int)MainListRanker.TierOf(scored[i].Score) < min)
+            {
+                return i;
+            }
+        }
+
+        return scored.Count;
+    }
+
+    // How many apps the user actually sees, mirroring ApplyShortQueryAppGate and the app result
+    // limit, so telemetry doesn't report a count that includes the tail we withheld.
+    internal static int GatedVisibleAppCount(RoScored<IListItem>[]? scoredApps, int queryLength, int appResultLimit)
+    {
+        if (scoredApps is null || scoredApps.Length == 0)
+        {
+            return 0;
+        }
+
+        var count = scoredApps.Length;
+        if (queryLength > 0 && queryLength <= ShortQueryAppTailGateMaxLength)
+        {
+            count = HighConfidenceAppPrefixLength(scoredApps, ShortQueryAppGateMinTier);
+        }
+
+        return Math.Min(count, appResultLimit);
     }
 
     private IListItem[] GetDefaultViewItems()
@@ -421,6 +498,7 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         _filteredItems = null;
         _filteredApps = null;
+        _filteredAppsQueryLength = 0;
         _fallbackItems = null;
         _globalFallbackSources = null;
 
@@ -644,7 +722,9 @@ public sealed partial class MainListPage : DynamicListPage,
         var settings = _settingsService.Settings;
         var scoringNow = DateTimeOffset.UtcNow;
 
-        var searchQuery = matcher.PrecomputeQuery(SearchText);
+        // Precompute from the snapshotted newSearch, not the live SearchText, which a newer
+        // keystroke may already have advanced past.
+        var searchQuery = matcher.PrecomputeQuery(newSearch);
 
         // Every installed app belongs to the well-known AllApps provider, so its weight is constant
         // for the whole pass and we resolve it once instead of once per app.
@@ -716,10 +796,14 @@ public sealed partial class MainListPage : DynamicListPage,
             // ClearResults behavior.
             _filteredApps = appsSource.Count > 0 ? scoredApps : null;
 
+            // Publish the length with the array so the render gate and the telemetry count both
+            // judge against the query that actually produced it.
+            _filteredAppsQueryLength = _filteredApps is null ? 0 : newSearch.Length;
+
             if (isUserInput)
             {
                 deterministicResultCount = (_filteredItems?.Length ?? 0)
-                    + Math.Min(_filteredApps?.Length ?? 0, AppResultLimit);
+                    + GatedVisibleAppCount(_filteredApps, _filteredAppsQueryLength, AppResultLimit);
             }
 
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
