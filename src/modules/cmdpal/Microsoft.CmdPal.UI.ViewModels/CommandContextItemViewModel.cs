@@ -21,6 +21,32 @@ public partial class CommandContextItemViewModel : CommandItemViewModel, IContex
 
     public bool HasRequestedShortcut => RequestedShortcut is not null && (RequestedShortcut.Value != nullKeyChord);
 
+    public bool IsHostInjected { get; private set; }
+
+    public bool ShowInHoverActions { get; private set; }
+
+    public int HoverOrder { get; private set; }
+
+    private bool _isHoverKeyboardSelected;
+
+    /// <summary>
+    /// True while this context item is the keyboard Tab target in a list hover strip.
+    /// </summary>
+    public bool IsHoverKeyboardSelected
+    {
+        get => _isHoverKeyboardSelected;
+        set
+        {
+            if (_isHoverKeyboardSelected == value)
+            {
+                return;
+            }
+
+            _isHoverKeyboardSelected = value;
+            UpdateProperty(nameof(IsHoverKeyboardSelected));
+        }
+    }
+
     public CommandContextItemViewModel(ICommandContextItem contextItem, WeakReference<IPageContext> context)
         : base(new(contextItem), context, contextMenuFactory: null)
     {
@@ -44,6 +70,13 @@ public partial class CommandContextItemViewModel : CommandItemViewModel, IContex
         }
 
         IsCritical = contextItem.IsCritical;
+        IsHostInjected = contextItem is IHostContextItem;
+
+        if (contextItem is ICommandContextItem2 contextItem2)
+        {
+            ShowInHoverActions = contextItem2.ShowInHoverActions;
+            HoverOrder = contextItem2.HoverOrder;
+        }
 
         RequestedShortcut = new(
             contextItem.RequestedShortcut.Modifiers,

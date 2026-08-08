@@ -6,11 +6,17 @@ using Windows.Foundation;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class ListPage : Page, IListPage
+public partial class ListPage : Page, IListPage, IListPage2
 {
     public event TypedEventHandler<object, IItemsChangedEventArgs>? ItemsChanged;
 
     private string _searchText = string.Empty;
+
+    public virtual HoverActionsMode HoverActionsMode { get; set => SetProperty(ref field, value); } = HoverActionsMode.Default;
+
+    public virtual int MaxHoverActions { get; set => SetProperty(ref field, value); } = -1;
+
+    public virtual HoverActionsVisibility HoverActionsVisibility { get; set => SetProperty(ref field, value); } = HoverActionsVisibility.Default;
 
     public virtual string PlaceholderText { get; set => SetProperty(ref field, value); } = string.Empty;
 

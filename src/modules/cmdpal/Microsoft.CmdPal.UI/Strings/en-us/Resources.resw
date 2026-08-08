@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema
@@ -440,6 +440,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Settings_GeneralPage_SingleClickActivation_SettingsCard.Description" xml:space="preserve">
     <value>Choose how to interact with list items: single-click to activate, or single-click to select and double-click to activate</value>
+  </data>
+  <data name="Settings_GeneralPage_ListHoverActions_SettingsCard.Header" xml:space="preserve">
+    <value>List hover actions</value>
+  </data>
+  <data name="Settings_GeneralPage_ListHoverActions_SettingsCard.Description" xml:space="preserve">
+    <value>Show quick action icons when hovering over list items</value>
   </data>
   <data name="Settings_GeneralPage_About_SettingsExpander.Header" xml:space="preserve">
     <value>Windows Command Palette</value>

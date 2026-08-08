@@ -18,6 +18,8 @@ public sealed partial class CommandPaletteHost : AppExtensionHost, IExtensionHos
 
     private readonly ICommandProvider? _builtInProvider;
 
+    public ICommandProvider? CommandProvider { get; private set; }
+
     private CommandPaletteHost()
     {
     }
@@ -30,7 +32,10 @@ public sealed partial class CommandPaletteHost : AppExtensionHost, IExtensionHos
     public CommandPaletteHost(ICommandProvider builtInProvider)
     {
         _builtInProvider = builtInProvider;
+        CommandProvider = builtInProvider;
     }
+
+    internal void SetCommandProvider(ICommandProvider provider) => CommandProvider = provider;
 
     public override string? GetExtensionDisplayName()
     {
