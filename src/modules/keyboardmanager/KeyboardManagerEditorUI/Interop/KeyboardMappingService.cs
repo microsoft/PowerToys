@@ -48,6 +48,23 @@ namespace KeyboardManagerEditorUI.Interop
                 }
             }
 
+            // Also surface "Alone" (dual-key) remaps, tagged so the UI can show the condition.
+            int aloneCount = KeyboardManagerInterop.GetSingleKeyAloneRemapCount(_configHandle);
+            for (int i = 0; i < aloneCount; i++)
+            {
+                var mapping = default(SingleKeyMapping);
+                if (KeyboardManagerInterop.GetSingleKeyAloneRemap(_configHandle, i, ref mapping))
+                {
+                    result.Add(new KeyMapping
+                    {
+                        OriginalKey = mapping.OriginalKey,
+                        TargetKey = KeyboardManagerInterop.GetStringAndFree(mapping.TargetKey),
+                        IsShortcut = mapping.IsShortcut,
+                        IsAlone = true,
+                    });
+                }
+            }
+
             return result;
         }
 
@@ -182,6 +199,28 @@ namespace KeyboardManagerEditorUI.Interop
             }
         }
 
+        public bool AddSingleKeyAloneMapping(int originalKey, int targetKey)
+        {
+            return KeyboardManagerInterop.AddSingleKeyAloneRemap(_configHandle, originalKey, targetKey);
+        }
+
+        public bool AddSingleKeyAloneMapping(int originalKey, string targetKeys)
+        {
+            if (string.IsNullOrEmpty(targetKeys))
+            {
+                return false;
+            }
+
+            if (!targetKeys.Contains(';') && int.TryParse(targetKeys, out int targetKey))
+            {
+                return KeyboardManagerInterop.AddSingleKeyAloneRemap(_configHandle, originalKey, targetKey);
+            }
+            else
+            {
+                return KeyboardManagerInterop.AddSingleKeyAloneToShortcutRemap(_configHandle, originalKey, targetKeys);
+            }
+        }
+
         public bool AddSingleKeyToTextMapping(int originalKey, string targetText)
         {
             if (string.IsNullOrEmpty(targetText))
@@ -261,6 +300,11 @@ namespace KeyboardManagerEditorUI.Interop
         public bool DeleteSingleKeyMapping(int originalKey)
         {
             return KeyboardManagerInterop.DeleteSingleKeyRemap(_configHandle, originalKey);
+        }
+
+        public bool DeleteSingleKeyAloneMapping(int originalKey)
+        {
+            return KeyboardManagerInterop.DeleteSingleKeyAloneRemap(_configHandle, originalKey);
         }
 
         public bool DeleteSingleKeyToTextMapping(int originalKey)

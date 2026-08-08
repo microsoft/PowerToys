@@ -37,6 +37,13 @@ namespace KeyboardManagerEditorUI.Interop
         internal static extern bool GetSingleKeyRemap(IntPtr config, int index, ref SingleKeyMapping mapping);
 
         [DllImport(DllName, CallingConvention = Convention)]
+        internal static extern int GetSingleKeyAloneRemapCount(IntPtr config);
+
+        [DllImport(DllName, CallingConvention = Convention)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetSingleKeyAloneRemap(IntPtr config, int index, ref SingleKeyMapping mapping);
+
+        [DllImport(DllName, CallingConvention = Convention)]
         internal static extern int GetSingleKeyToTextRemapCount(IntPtr config);
 
         [DllImport(DllName, CallingConvention = Convention)]
@@ -70,6 +77,14 @@ namespace KeyboardManagerEditorUI.Interop
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AddSingleKeyToShortcutRemap(IntPtr config, int originalKey, [MarshalAs(UnmanagedType.LPWStr)] string targetKeys);
 
+        [DllImport(DllName, CallingConvention = Convention)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool AddSingleKeyAloneRemap(IntPtr config, int originalKey, int targetKey);
+
+        [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool AddSingleKeyAloneToShortcutRemap(IntPtr config, int originalKey, [MarshalAs(UnmanagedType.LPWStr)] string targetKeys);
+
         [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AddShortcutRemap(
@@ -89,6 +104,10 @@ namespace KeyboardManagerEditorUI.Interop
         [DllImport(DllName, CallingConvention = Convention)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeleteSingleKeyRemap(IntPtr mappingConfiguration, int originalKey);
+
+        [DllImport(DllName, CallingConvention = Convention)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeleteSingleKeyAloneRemap(IntPtr mappingConfiguration, int originalKey);
 
         [DllImport(DllName, CallingConvention = Convention)]
         [return: MarshalAs(UnmanagedType.Bool)]

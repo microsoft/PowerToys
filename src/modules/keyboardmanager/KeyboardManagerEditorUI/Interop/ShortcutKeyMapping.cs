@@ -10,6 +10,14 @@ using System.Threading.Tasks;
 
 namespace KeyboardManagerEditorUI.Interop
 {
+    // Condition for a single-key remap (dual-key / tap-alone). "Always" is the legacy unconditional
+    // behavior; "Alone" applies the remap only when the source key is tapped by itself.
+    public enum SingleKeyRemapCondition
+    {
+        Always = 0,
+        Alone = 1,
+    }
+
     public class ShortcutKeyMapping
     {
         public string OriginalKeys { get; set; } = string.Empty;
@@ -35,6 +43,10 @@ namespace KeyboardManagerEditorUI.Interop
         public StartWindowType Visibility { get; set; } = StartWindowType.Normal;
 
         public string UriToOpen { get; set; } = string.Empty;
+
+        // Condition for single-key remaps (Always/Alone). Only meaningful for single-key key-to-key
+        // or key-to-shortcut remaps; ignored for shortcuts and text remaps.
+        public SingleKeyRemapCondition Condition { get; set; } = SingleKeyRemapCondition.Always;
 
         public enum ElevationLevel
         {
@@ -79,7 +91,8 @@ namespace KeyboardManagerEditorUI.Interop
                    Elevation == other.Elevation &&
                    IfRunningAction == other.IfRunningAction &&
                    Visibility == other.Visibility &&
-                   UriToOpen == other.UriToOpen;
+                   UriToOpen == other.UriToOpen &&
+                   Condition == other.Condition;
         }
 
         public override int GetHashCode()
@@ -97,6 +110,7 @@ namespace KeyboardManagerEditorUI.Interop
             hash.Add(IfRunningAction);
             hash.Add(Visibility);
             hash.Add(UriToOpen);
+            hash.Add(Condition);
             return hash.ToHashCode();
         }
     }

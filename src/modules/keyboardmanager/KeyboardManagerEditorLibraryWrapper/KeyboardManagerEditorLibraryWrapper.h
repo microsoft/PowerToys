@@ -45,6 +45,10 @@ extern "C"
     __declspec(dllexport) int GetSingleKeyRemapCount(void* config);
     __declspec(dllexport) bool GetSingleKeyRemap(void* config, int index, SingleKeyMapping* mapping);
 
+    // "Alone" (dual-key / tap-alone) single key remaps, kept in a separate table from the regular remaps.
+    __declspec(dllexport) int GetSingleKeyAloneRemapCount(void* config);
+    __declspec(dllexport) bool GetSingleKeyAloneRemap(void* config, int index, SingleKeyMapping* mapping);
+
     __declspec(dllexport) int GetSingleKeyToTextRemapCount(void* config);
     __declspec(dllexport) bool GetSingleKeyToTextRemap(void* config, int index, KeyboardTextMapping* mapping);
 
@@ -59,6 +63,9 @@ extern "C"
     __declspec(dllexport) bool AddSingleKeyToShortcutRemap(void* config,
                                                            int originalKey,
                                                            const wchar_t* targetKeys);
+
+    __declspec(dllexport) bool AddSingleKeyAloneRemap(void* config, int originalKey, int targetKey);
+    __declspec(dllexport) bool AddSingleKeyAloneToShortcutRemap(void* config, int originalKey, const wchar_t* targetKeys);
     __declspec(dllexport) bool AddShortcutRemap(void* config,
                                                 const wchar_t* originalKeys,
                                                 const wchar_t* targetKeys,
@@ -80,6 +87,7 @@ extern "C"
     __declspec(dllexport) bool AreShortcutsEqual(const wchar_t* lShort, const wchar_t* rShort);
 
     __declspec(dllexport) bool DeleteSingleKeyRemap(void* config, int originalKey);
+    __declspec(dllexport) bool DeleteSingleKeyAloneRemap(void* config, int originalKey);
     __declspec(dllexport) bool DeleteSingleKeyToTextRemap(void* config, int originalKey);
     __declspec(dllexport) bool DeleteShortcutRemap(void* config, const wchar_t* originalKeys, const wchar_t* targetApp);
 }

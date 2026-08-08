@@ -17,7 +17,7 @@ namespace KeyboardManagerEditorUI.Helpers
 {
     public static class RemappingHelper
     {
-        public static bool SaveMapping(KeyboardMappingService mappingService, List<string> originalKeys, List<string> remappedKeys, bool isAppSpecific, string appName, bool saveToSettings = true)
+        public static bool SaveMapping(KeyboardMappingService mappingService, List<string> originalKeys, List<string> remappedKeys, bool isAppSpecific, string appName, bool saveToSettings = true, SingleKeyRemapCondition condition = SingleKeyRemapCondition.Always)
         {
             if (mappingService == null)
             {
@@ -45,18 +45,34 @@ namespace KeyboardManagerEditorUI.Helpers
                             OriginalKeys = originalKey.ToString(CultureInfo.InvariantCulture),
                             TargetKeys = targetKeysString,
                             TargetApp = isAppSpecific ? appName : string.Empty,
+                            Condition = condition,
                         };
+                        bool isAloneCondition = condition == SingleKeyRemapCondition.Alone;
                         if (remappedKeys.Count == 1)
                         {
                             int targetKey = mappingService.GetKeyCodeFromName(remappedKeys[0]);
                             if (targetKey != 0)
                             {
-                                mappingService.AddSingleKeyMapping(originalKey, targetKey);
+                                if (isAloneCondition)
+                                {
+                                    mappingService.AddSingleKeyAloneMapping(originalKey, targetKey);
+                                }
+                                else
+                                {
+                                    mappingService.AddSingleKeyMapping(originalKey, targetKey);
+                                }
                             }
                         }
                         else
                         {
-                            mappingService.AddSingleKeyMapping(originalKey, targetKeysString);
+                            if (isAloneCondition)
+                            {
+                                mappingService.AddSingleKeyAloneMapping(originalKey, targetKeysString);
+                            }
+                            else
+                            {
+                                mappingService.AddSingleKeyMapping(originalKey, targetKeysString);
+                            }
                         }
 
                         if (saveToSettings)
@@ -117,7 +133,10 @@ namespace KeyboardManagerEditorUI.Helpers
                     int originalKey = mappingService.GetKeyCodeFromName(remapping.Shortcut[0]);
                     if (originalKey != 0)
                     {
-                        if (mappingService.DeleteSingleKeyMapping(originalKey))
+                        bool deleted = remapping.Condition == SingleKeyRemapCondition.Alone
+                            ? mappingService.DeleteSingleKeyAloneMapping(originalKey)
+                            : mappingService.DeleteSingleKeyMapping(originalKey);
+                        if (deleted)
                         {
                             if (deleteFromSettings)
                             {

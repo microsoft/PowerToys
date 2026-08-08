@@ -109,6 +109,7 @@ namespace KeyboardManagerEditorUI.Settings
                     OperationType = ShortcutOperationType.RemapShortcut,
                     OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
                     TargetKeys = mapping.TargetKey,
+                    Condition = mapping.IsAlone ? SingleKeyRemapCondition.Alone : SingleKeyRemapCondition.Always,
                 };
                 AddShortcutMapping(settings, shortcutMapping);
             }
@@ -136,7 +137,8 @@ namespace KeyboardManagerEditorUI.Settings
                 return;
             }
 
-            bool shortcutSettingsChanged = false;
+            // Repair any preexisting duplicate entries first so the store converges on load.
+            bool shortcutSettingsChanged = RemoveDuplicateMappings();
 
             // Process all shortcut mappings
             foreach (ShortcutKeyMapping mapping in service.GetShortcutMappings())
@@ -156,6 +158,7 @@ namespace KeyboardManagerEditorUI.Settings
                     OperationType = ShortcutOperationType.RemapShortcut,
                     OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
                     TargetKeys = mapping.TargetKey,
+                    Condition = mapping.IsAlone ? SingleKeyRemapCondition.Alone : SingleKeyRemapCondition.Always,
                 };
 
                 if (!MappingExists(shortcutMapping))
@@ -211,6 +214,15 @@ namespace KeyboardManagerEditorUI.Settings
 
         public static void AddShortcutKeyMappingToSettings(ShortcutKeyMapping shortcutKeyMapping)
         {
+            // The native mapping tables are keyed by the source key and silently reject duplicates,
+            // so guard the editor-side store the same way. Without this, re-adding an existing remap
+            // (for example saving the same "alone" mapping twice) drifts the editor store out of sync
+            // with the engine and makes the entry appear more than once in the list.
+            if (MappingExists(shortcutKeyMapping))
+            {
+                return;
+            }
+
             AddShortcutMapping(EditorSettings, shortcutKeyMapping);
             WriteSettings();
         }
@@ -260,10 +272,40 @@ namespace KeyboardManagerEditorUI.Settings
 
         private static bool MappingExists(ShortcutKeyMapping mapping)
         {
-            return EditorSettings.ShortcutSettingsDictionary.Values.Any(s =>
-                s.Shortcut.OperationType == mapping.OperationType &&
-                s.Shortcut.OriginalKeys == mapping.OriginalKeys &&
-                s.Shortcut.TargetKeys == mapping.TargetKeys);
+            // Compare the full mapping value (ShortcutKeyMapping.Equals includes the single-key
+            // Condition and the TargetApp) so an "always" and an "alone" remap of the same key are
+            // treated as distinct, while genuine exact duplicates are detected and rejected.
+            return EditorSettings.ShortcutSettingsDictionary.Values.Any(s => s.Shortcut.Equals(mapping));
+        }
+
+        // Removes editor-store entries whose mapping value is an exact duplicate of one already kept,
+        // repairing stores that drifted before the duplicate guard existed. Returns true if anything
+        // was removed. The first occurrence of each distinct mapping is preserved.
+        private static bool RemoveDuplicateMappings()
+        {
+            var seen = new HashSet<ShortcutKeyMapping>();
+            var duplicateIds = new List<string>();
+
+            foreach (var kvp in EditorSettings.ShortcutSettingsDictionary)
+            {
+                if (!seen.Add(kvp.Value.Shortcut))
+                {
+                    duplicateIds.Add(kvp.Key);
+                }
+            }
+
+            foreach (var id in duplicateIds)
+            {
+                ShortcutOperationType operationType = EditorSettings.ShortcutSettingsDictionary[id].Shortcut.OperationType;
+                EditorSettings.ShortcutSettingsDictionary.Remove(id);
+
+                if (EditorSettings.ShortcutsByOperationType.TryGetValue(operationType, out var ids))
+                {
+                    ids.Remove(id);
+                }
+            }
+
+            return duplicateIds.Count > 0;
         }
 
         private static bool IsMappingActiveInService(
@@ -289,9 +331,11 @@ namespace KeyboardManagerEditorUI.Settings
                 }
                 else if (shortcutSettings.Shortcut.OperationType == ShortcutOperationType.RemapShortcut)
                 {
+                    bool wantAlone = shortcutSettings.Shortcut.Condition == SingleKeyRemapCondition.Alone;
                     return singleKeyMappings.Any(m =>
                         m.OriginalKey == keyCode &&
-                        m.TargetKey == shortcutSettings.Shortcut.TargetKeys);
+                        m.TargetKey == shortcutSettings.Shortcut.TargetKeys &&
+                        m.IsAlone == wantAlone);
                 }
             }
 
