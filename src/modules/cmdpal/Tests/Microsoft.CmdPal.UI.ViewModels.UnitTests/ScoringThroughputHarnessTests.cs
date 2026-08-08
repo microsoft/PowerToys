@@ -13,7 +13,6 @@ using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
@@ -49,42 +48,20 @@ public sealed partial class ScoringThroughputHarnessTests
 
     // Stand-in for an installed app or a top-level command. It caches fuzzy targets exactly like
     // AppListItem does, so what we measure is the cached path the product actually runs.
-    private sealed partial class CatalogItem : IListItem, IPrecomputedListItem
+    private sealed partial class CatalogItem : ListItem, IPrecomputedListItem
     {
         private FuzzyTargetCache _titleCache;
         private FuzzyTargetCache _subtitleCache;
 
         public CatalogItem(string title, string subtitle, string id)
+            : base(new NoOpCommand() { Id = id })
         {
             Title = title;
             Subtitle = subtitle;
             Id = id;
-            Command = new NoOpCommand() { Id = id };
         }
 
-        public string Title { get; }
-
-        public string Subtitle { get; }
-
         public string Id { get; }
-
-        public ICommand Command { get; }
-
-        public IDetails? Details => null;
-
-        public IIconInfo? Icon => null;
-
-        public string Section => string.Empty;
-
-        public ITag[] Tags => [];
-
-        public string TextToSuggest => string.Empty;
-
-        public IContextItem[] MoreCommands => [];
-
-#pragma warning disable CS0067 // The event is never used
-        public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
-#pragma warning restore CS0067
 
         public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher) => _titleCache.GetOrUpdate(matcher, Title);
 
@@ -149,7 +126,7 @@ public sealed partial class ScoringThroughputHarnessTests
         {
             // Spread the seeds across the catalog so hits are not all clustered at the front.
             var idx = (i * 7) % apps.Length;
-            history = history.WithHistoryItem(apps[idx].Command.Id);
+            history = history.WithHistoryItem(apps[idx].Id);
         }
 
         return history;
@@ -197,7 +174,7 @@ public sealed partial class ScoringThroughputHarnessTests
         var scoringFn = BuildScoringFunction(history, matcher);
 
         // Simulate the pinned-app removal the product does on the rebuild path.
-        var pinnedIds = new HashSet<string>(apps.Take(PinnedAppCount).Select(a => a.Command.Id));
+        var pinnedIds = new HashSet<string>(apps.Take(PinnedAppCount).Select(a => a.Id));
 
         TestContext.WriteLine($"Catalog: {AppCount} apps, {CommandCount} commands, {GlobalFallbackCount} global fallbacks, {HistorySeedCount} history seeds.");
         TestContext.WriteLine($"Iterations: {WarmupIterations} warmup + {MeasuredIterations} measured (averaged).");
@@ -211,7 +188,7 @@ public sealed partial class ScoringThroughputHarnessTests
             {
                 // Mirrors the product's GetItems().Cast().ToList() plus the pinned filter.
                 var materialized = apps.ToList();
-                _ = materialized.Where(a => !pinnedIds.Contains(a.Command.Id)).ToList();
+                _ = materialized.Where(a => !pinnedIds.Contains(a.Id)).ToList();
             });
 
             RoScored<IListItem>[] cmdScored = [];
@@ -296,7 +273,7 @@ public sealed partial class ScoringThroughputHarnessTests
         var titleTargets = apps.Select(a => a.GetTitleTarget(matcher)).ToArray();
         var subtitleTargets = apps.Select(a => a.GetSubtitleTarget(matcher)).ToArray();
         var extensionTargets = apps.Select(a => matcher.PrecomputeTarget($"{a.Title} Extension")).ToArray();
-        var ids = apps.Select(a => a.Command.Id).ToArray();
+        var ids = apps.Select(a => a.Id).ToArray();
 
         TestContext.WriteLine("Per-item sub-attribution (nanoseconds/item, averaged over the app catalog):");
         TestContext.WriteLine("query | full score | 2 DP | 3 DP | extDelta | classifyTier | wordBoundary | frecency");
