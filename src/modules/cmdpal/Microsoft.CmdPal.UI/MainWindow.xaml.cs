@@ -1443,23 +1443,20 @@ public sealed partial class MainWindow : WindowEx,
 
             if (activatedEventArgs.Kind == ExtendedActivationKind.Protocol)
             {
-                if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs)
+                if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs &&
+                    CmdPalProtocolActivation.Parse(protocolArgs.Uri) is CmdPalProtocolRoute route)
                 {
-                    if (protocolArgs.Uri.ToString() is string uri)
+                    switch (route)
                     {
-                        // was the URI "x-cmdpal://background" ?
-                        if (uri.StartsWith("x-cmdpal://background", StringComparison.OrdinalIgnoreCase))
-                        {
+                        case CmdPalProtocolRoute.Background:
                             // we're running, we don't want to activate our window. bail
                             return;
-                        }
-                        else if (uri.StartsWith("x-cmdpal://settings", StringComparison.OrdinalIgnoreCase))
-                        {
-                            WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
+
+                        case CmdPalProtocolRoute.OpenSettings openSettings:
+                            WeakReferenceMessenger.Default.Send(openSettings.Message);
                             return;
-                        }
-                        else if (uri.StartsWith("x-cmdpal://reload", StringComparison.OrdinalIgnoreCase))
-                        {
+
+                        case CmdPalProtocolRoute.Reload:
                             var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
                             if (settings?.AllowExternalReload == true)
                             {
@@ -1472,7 +1469,6 @@ public sealed partial class MainWindow : WindowEx,
                             }
 
                             return;
-                        }
                     }
                 }
             }
