@@ -59,6 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 "FixedHours",
                 "SunsetToSunrise",
                 "FollowNightLight",
+                "FollowBrightness",
             };
 
             // Check if PowerDisplay is enabled
@@ -308,6 +309,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     ModuleSettings.Properties.SunsetOffset.Value = value;
                     OnPropertyChanged(nameof(DarkTimeTimeSpan));
                     OnPropertyChanged(nameof(SunriseOffsetMax));
+                }
+            }
+        }
+
+        public int BrightnessThreshold
+        {
+            get => ModuleSettings.Properties.BrightnessThreshold.Value;
+            set
+            {
+                var clamped = Math.Max(0, Math.Min(100, value));
+                if (ModuleSettings.Properties.BrightnessThreshold.Value != clamped)
+                {
+                    ModuleSettings.Properties.BrightnessThreshold.Value = clamped;
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -828,6 +843,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(ScheduleMode));
             OnPropertyChanged(nameof(EnableDarkModeProfile));
             OnPropertyChanged(nameof(EnableLightModeProfile));
+            OnPropertyChanged(nameof(BrightnessThreshold));
         }
 
         private void UpdateSunTimes(double latitude, double longitude, string city = "n/a")
