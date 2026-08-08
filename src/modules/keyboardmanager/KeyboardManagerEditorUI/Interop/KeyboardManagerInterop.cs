@@ -83,7 +83,8 @@ namespace KeyboardManagerEditorUI.Interop
             [MarshalAs(UnmanagedType.LPWStr)] string? startDirectory = null,
             int elevation = 0,
             int ifRunningAction = 0,
-            int visibility = 0);
+            int visibility = 0,
+            int exactMatch = 0);
 
         // Delete Mapping Functions
         [DllImport(DllName, CallingConvention = Convention)]
@@ -120,6 +121,21 @@ namespace KeyboardManagerEditorUI.Interop
         [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AreShortcutsEqual([MarshalAs(UnmanagedType.LPWStr)] string lShort, [MarshalAs(UnmanagedType.LPWStr)] string rShortcut);
+
+        /// <summary>
+        /// Wraps EditorHelpers::DoKeysOverlap. Returns a <see cref="ShortcutOverlap"/> value.
+        /// </summary>
+        [DllImport(DllName, CallingConvention = Convention)]
+        internal static extern int DoKeysOverlap(int first, int second);
+
+        /// <summary>
+        /// Wraps EditorHelpers::DoShortcutsOverlap. Returns a <see cref="ShortcutOverlap"/> value.
+        /// </summary>
+        [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
+        internal static extern int DoShortcutsOverlap([MarshalAs(UnmanagedType.LPWStr)] string first, [MarshalAs(UnmanagedType.LPWStr)] string second);
+
+        [DllImport(DllName, CallingConvention = Convention)]
+        internal static extern int GetCombinedKey(int keyCode);
 
         // String Management Functions
         [DllImport(DllName, CallingConvention = Convention)]
@@ -165,6 +181,7 @@ namespace KeyboardManagerEditorUI.Interop
         public IntPtr ProgramPath;
         public IntPtr ProgramArgs;
         public IntPtr UriToOpen;
+        public int ExactMatch;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]

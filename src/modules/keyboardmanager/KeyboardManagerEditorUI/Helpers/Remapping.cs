@@ -22,6 +22,8 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public string AppName { get; set; } = string.Empty;
 
+        public bool ExactMatch { get; set; }
+
         private bool IsEnabledValue { get; set; } = true;
 
         public string Id { get; set; } = string.Empty;

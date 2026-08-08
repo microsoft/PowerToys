@@ -222,6 +222,47 @@
   <data name="ExactMatchCheckBox.Content" xml:space="preserve">
     <value>Exact match</value>
   </data>
+  <data name="ExactMatchCheckBox.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Only trigger when exactly these keys are pressed. Holding any additional modifier will not activate the shortcut.</value>
+    <comment>Tooltip explaining what the "Exact match" option does.</comment>
+  </data>
+  <data name="ExactMatchBadge.Text" xml:space="preserve">
+    <value>Exact match</value>
+    <comment>Badge shown on a mapping row whose origin shortcut requires an exact match.</comment>
+  </data>
+  <data name="Error_ConfigLoadFailed_Title" xml:space="preserve">
+    <value>Your remappings could not be loaded</value>
+  </data>
+  <data name="Error_ConfigLoadFailed_Message" xml:space="preserve">
+    <value>The Keyboard Manager configuration file could not be read, so the list below may be incomplete. Changes cannot be saved until you close and reopen the editor.</value>
+  </data>
+  <data name="TriggerKeyToggleBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Record the keys to remap</value>
+    <comment>Accessible name for the button that starts and stops recording the trigger key or shortcut.</comment>
+  </data>
+  <data name="ActionKeyToggleBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Record the keys to send instead</value>
+    <comment>Accessible name for the button that starts and stops recording the target key or shortcut.</comment>
+  </data>
+  <data name="MappingEnabledToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Mapping enabled</value>
+    <comment>Accessible name for the per-row switch that turns a mapping on or off.</comment>
+  </data>
+  <data name="MappingOverflowButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More options for this mapping</value>
+    <comment>Accessible name for the per-row button that opens the delete menu.</comment>
+  </data>
+  <data name="KeyDropDown_AccessibleName" xml:space="preserve">
+    <value>Key: {0}. Select a different key</value>
+    <comment>{0} is the name of the currently selected key, for example "Ctrl".</comment>
+  </data>
+  <data name="KeyDropDown_Empty_AccessibleName" xml:space="preserve">
+    <value>No key selected. Select a key</value>
+  </data>
+  <data name="Announcement_MappingDeleted" xml:space="preserve">
+    <value>Mapping deleted</value>
+    <comment>Announced to screen readers after a mapping row is removed.</comment>
+  </data>
   <data name="MouseButton_Left.Content" xml:space="preserve">
     <value>Left</value>
   </data>
@@ -450,6 +491,12 @@
   <data name="Validation_OneKeyMapping_Message" xml:space="preserve">
     <value>A single key cannot be remapped to a Program or URL shortcut. Please choose a combination of keys.</value>
   </data>
+  <data name="Validation_ShortcutMissingModifier_Title" xml:space="preserve">
+    <value>Shortcut needs a modifier key</value>
+  </data>
+  <data name="Validation_ShortcutMissingModifier_Message" xml:space="preserve">
+    <value>A shortcut must include at least one modifier key (Win, Ctrl, Alt or Shift) along with an action key.</value>
+  </data>
   <data name="Warning_ShortcutStartWithModifier" xml:space="preserve">
     <value>Shortcuts must start with a modifier key (Ctrl, Alt, Shift, or Win).</value>
   </data>
@@ -485,6 +532,14 @@
   </data>
   <data name="Warning_Title" xml:space="preserve">
     <value>Warning</value>
+  </data>
+  <data name="Warning_OrphanedKeys" xml:space="preserve">
+    <value>The key {0} is now remapped, so it can no longer be typed directly unless another key is mapped to it.</value>
+    <comment>{0} is the name of the key that will be left without an assignment.</comment>
+  </data>
+  <data name="OrphanedKeyInfo_Title" xml:space="preserve">
+    <value>A key is no longer directly available</value>
+    <comment>Title of the non-blocking notice shown after remapping a single key away.</comment>
   </data>
   <data name="Error_UnknownValidation_Title" xml:space="preserve">
     <value>Validation error</value>
