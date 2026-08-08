@@ -22,7 +22,7 @@ public sealed partial class TimeDateCalculator
     /// </summary>
     /// <param name="query">Search query object</param>
     /// <returns>List of Wox <see cref="Result"/>s.</returns>
-    public static List<ListItem> ExecuteSearch(ISettingsInterface settings, string query)
+    public static List<ListItem> ExecuteSearch(ISettingsInterface settings, string query, DateTimeOffset? currentTime = null)
     {
         var isEmptySearchInput = string.IsNullOrWhiteSpace(query);
         List<AvailableResult> availableFormats = new List<AvailableResult>();
@@ -39,7 +39,7 @@ public sealed partial class TimeDateCalculator
         {
             // Return all results for system time/date on empty keyword search
             // or only time, date and now results for system time on global queries if the corresponding setting is enabled
-            availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings));
+            availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings, currentTime: currentTime));
         }
         else if (Regex.IsMatch(query, @".+" + Regex.Escape(InputDelimiter) + @".+"))
         {
@@ -60,7 +60,7 @@ public sealed partial class TimeDateCalculator
         else
         {
             // Search for specified format with system time/date (All other cases)
-            availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings));
+            availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings, currentTime: currentTime));
         }
 
         // Check searchTerm after getting results to select type of result list

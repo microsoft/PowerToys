@@ -29,6 +29,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     private ExtensionObject<IExtendedAttributesProvider>? ExtendedAttributesProvider { get; set; }
 
+    public string? DockCommandId { get; private set; }
+
     private readonly ExtensionObject<ICommandItem> _commandItemModel = new(null);
     private CommandContextItemViewModel? _defaultCommandContextItemViewModel;
 
@@ -199,6 +201,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             ExtendedAttributesProvider = new ExtensionObject<IExtendedAttributesProvider>(extendedAttributesProvider);
             var properties = extendedAttributesProvider.GetProperties();
             UpdateDataPackage(properties);
+            DockCommandId = properties?.TryGetValue(WellKnownExtensionAttributes.DockCommandId, out var dockCommandId) == true
+                ? dockCommandId as string
+                : null;
         }
 
         Initialized |= InitializedState.Initialized;
