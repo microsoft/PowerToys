@@ -268,10 +268,12 @@
     <value>This setting applies to the 'Time' and 'Now' result.</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingDockClockWithSeconds" xml:space="preserve">
-    <value>Show seconds on the dock clock</value>
+    <value>Show seconds on the Dock clock</value>
+    <comment>"Dock" is a product name for "Command Palette Dock" and should not be translated.</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SettingDockClockWithSeconds_Description" xml:space="preserve">
-    <value>This setting applies to the clock shown on the Command Palette dock.</value>
+    <value>This setting applies to the clock shown on the Command Palette Dock.</value>
+    <comment>"Dock" is a product name for "Command Palette Dock" and should not be translated.</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SubTitleNote" xml:space="preserve">
     <value>Select or press Ctrl+C to copy</value>
@@ -440,7 +442,7 @@
   </data>
   <data name="Microsoft_plugin_timedate_dock_band_title" xml:space="preserve">
     <value>Clock</value>
-    <comment>Title for the time and date dock band</comment>
+    <comment>Title for the time and date Dock band. A Dock band is a strip of Dock items, not a music band.</comment>
   </data>
   <data name="timedate_copy_time_command_name" xml:space="preserve">
     <value>Copy time</value>
@@ -456,6 +458,6 @@
   </data>
   <data name="timedate_notification_center_band_title" xml:space="preserve">
     <value>Notification center</value>
-    <comment>Title for the notification center dock band</comment>
+    <comment>Title for the notification center Dock band. A Dock band is a strip of Dock items, not a music band.</comment>
   </data>
 </root>
