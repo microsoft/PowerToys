@@ -542,4 +542,26 @@ Rules for using it:
     Assert the exact expected state (e.g. one ready-marker file per holder, written *after* the
     operation succeeds) and include the fixture's own diagnostics in the assertion message. Equally,
     expectations must track the lifecycle: a fixture that counts "total ever started" fails a test
-    that deliberately kills one of its processes — count what should be *alive now*.
+    that deliberately kills one of its processes — count what should be *alive now*. Marker files
+    outlive crashed/killed processes, so derive the ready count from markers whose PID is still live,
+    not from every marker ever written.
+28. **A background fixture must be non-activating from process creation; hiding its window later is
+    racy.** `CreateNoWindow=true` is reliable for a direct child, but an elevated test host may need
+    Explorer to launch a medium-integrity fixture. Opening a generated `.cmd` through Explorer still
+    creates a console even when the batch uses `start /b`; that console can appear after the first
+    window enumeration, steal foreground from non-elevated Explorer, and make a strict foreground
+    assertion fail on only one CI runner. Do not weaken the target's foreground check or add retries.
+    Eliminate the competing surface: launch the helper hidden from creation. One proven Windows
+    pattern is an Explorer-opened VBScript using `WScript.Shell.Run(command, 0, False)` and an encoded
+    PowerShell command; a dedicated launcher using `CREATE_NO_WINDOW` under the intended token is
+    another. Verify the fixture's ready signal, `MainWindowHandle == 0`, and that its PID does not own
+    `GetForegroundWindow()`.
+29. **Foreground is an interaction contract, not a universal window-readiness assertion.** Keep a
+    strict, stable foreground check for operations whose meaning depends on focus or coordinates —
+    Explorer selection/context menus, SendInput, drag, and physical clicks. Do not require an exact
+    launch-time HWND merely before coordinate-free UIA reads/invokes: WinUI can replace its top-level
+    HWND, and an interactive scheduled-task host can transiently observe `GetForegroundWindow()==0`
+    while the failure PNG shows the target visible and unobscured. In that case, attempt focus and log
+    `GetForegroundWindowInfo()`, but gate readiness on the owning process/window plus the authoritative
+    UIA element. Never apply this relaxation to Explorer context-menu tests; their focused Shell item
+    is part of the behavior under test.

@@ -151,7 +151,8 @@ Create a TODO list and work top-to-bottom. Each step links to the reference that
 - [ ] 6a. If Explorer/Shell is involved, apply references/explorer-shell-tests.md
 - [ ] 7. Apply the CI-stability checklist BEFORE building — references/ci-stability.md
   (stable authoritative signals, retry classification, foreground/integrity, lifecycle reset
-  scope, composed capture, DPI manifest, single-module enable, first-run suppression)
+  scope, non-activating helper processes, composed capture, DPI manifest, single-module enable,
+  first-run suppression)
 - [ ] 8. Build the new project to exit code 0 — this SKILL.md "Build & validate"
 - [ ] 9. Run one deterministic test in the local VM and diagnose the first failure
       — ../ui-tests-local-vm/SKILL.md
@@ -177,6 +178,9 @@ dotnet restore src\modules\<Module>\Tests\<Module>.UITests.Next\<Module>.UITests
 tools\build\build.cmd -Path src\modules\<Module>\Tests\<Module>.UITests.Next -Platform x64 -Configuration Debug
 #    Exit code 0 = success; non-zero = failure. On failure read the errors log next to the project:
 #    build.<Configuration>.<Platform>.errors.log
+#    Do not substitute `dotnet build` when UITestAutomation.Next's COM references are in the graph:
+#    .NET SDK MSBuild cannot run ResolveComReference and fails with MSB4803. Use the repo script or
+#    Visual Studio's full-framework MSBuild.exe; use `dotnet restore` only to create project.assets.json.
 
 # 2. Run (needs a live desktop). A .Next project is a Microsoft.Testing.Platform Exe — run the
 #    produced exe directly with a TRX report; filter to one test/category for a tight loop.
@@ -194,10 +198,10 @@ $exe = "<repo>\x64\Debug\tests\<Module>.UITests.Next\net10.0-windows10.0.26100.0
   named VM volume.
 - **Design for CI stability up-front — [references/ci-stability.md](references/ci-stability.md).**
   Before the first push, walk its pre-flight checklist (authoritative-signal retries instead of fixed
-  sleeps, navigation via UIA invoke, Win32 window/overlay detection, screen-capture cold-start
-  handling, DPI manifest, single-module enable, first-run suppression). Most "passes local, fails CI"
-  loops come from skipping one of these; applying them proactively is how you spend one CI iteration
-  instead of six.
+  sleeps, navigation via UIA invoke, interaction-scoped foreground checks, non-activating helpers,
+  Win32 window/overlay detection, screen-capture cold-start handling, DPI manifest, single-module
+  enable, first-run suppression). Most "passes local, fails CI" loops come from skipping one of
+  these; applying them proactively is how you spend one CI iteration instead of six.
 - **Run it in a loop: write → build → run → diagnose → repeat.** UI tests surface environment-real
   failures (DPI scaling, cursor position, hotkey-arming races) that only a live run reveals. Start
   with one deterministic test (e.g. the activation/toggle test), get it green, then widen.

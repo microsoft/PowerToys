@@ -146,6 +146,23 @@ Log the foreground process, title, and elevation before adding more retries. Mat
 runner integrity where possible; modules configured to run non-elevated still require their own
 foreground handoff.
 
+"Start hidden" means **hidden at process creation**, not enumerate-and-hide afterward. The latter is
+a time-of-check/time-of-use race: a shell-launched console can be created after the hide pass and own
+foreground just as the target opens. For same-integrity direct children, use `UseShellExecute=false`
+plus `CreateNoWindow=true`. If an elevated host must ask Explorer to create a medium-integrity helper,
+do not route it through `.cmd`/`start /b`; use a non-activating launcher such as
+`WScript.Shell.Run(..., 0, False)` with an encoded command. Smoke-test the launcher independently:
+the helper must establish its readiness precondition while exposing no main window and never becoming
+the foreground PID.
+
+**Require foreground only when the interaction requires it.** Explorer context menus, SendInput,
+coordinate clicks, and drags need stable ownership because focus or z-order changes the operation.
+Coordinate-free UIA search/invoke does not. For those flows, an exact-HWND assertion can be a false
+negative when WinUI recreates its top-level window or the scheduled interactive host observes
+`GetForegroundWindow()==0`; use process/window presence plus the authoritative UIA-ready element,
+while keeping foreground activation best-effort and diagnostic. Let the interaction boundary decide —
+do not globally weaken strict Explorer or physical-input checks.
+
 ---
 
 ## Principle 3 — Screen-capture (WGC) modules: cold-start + don't disturb the session
