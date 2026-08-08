@@ -362,6 +362,51 @@ public sealed partial class ScoringThroughputHarnessTests
         }
     }
 
+    /// <summary>
+    /// Times the dominant apps pass serial versus parallel and reports the speedup per query.
+    /// Report-only: it asserts the two paths return the same match count, never a wall-clock
+    /// threshold.
+    /// </summary>
+    [TestMethod]
+    public void AppScoring_BeforeAfter_SerialVsParallelThroughput()
+    {
+        var apps = BuildCatalog(AppCount, "app");
+        var matcher = CreateMatcher();
+        var history = SeedHistory(apps, HistorySeedCount);
+        var scoringFn = BuildScoringFunction(history, matcher);
+        var source = apps.Cast<IListItem>().ToArray();
+
+        // Build the frecency index once, single-threaded, before the parallel pass reads it.
+        history.PrewarmIndex();
+
+        TestContext.WriteLine($"CPU count: {Environment.ProcessorCount}. Catalog: {AppCount} apps.");
+        TestContext.WriteLine("query | serial ms (before) | parallel ms (after) | speedup | matches");
+
+        foreach (var raw in Queries)
+        {
+            var query = matcher.PrecomputeQuery(raw);
+
+            RoScored<IListItem>[] serialResult = [];
+            var serialMs = TimeAverageMs(() =>
+            {
+                serialResult = InternalListHelpers.FilterListWithScores(source, query, scoringFn);
+            });
+
+            RoScored<IListItem>[] parallelResult = [];
+            var parallelMs = TimeAverageMs(() =>
+            {
+                parallelResult = InternalListHelpers.FilterListWithScoresParallel(source, query, scoringFn);
+            });
+
+            var speedup = parallelMs > 0 ? serialMs / parallelMs : 0.0;
+            TestContext.WriteLine(
+                $"{raw,-8}| {serialMs,17:F3} | {parallelMs,18:F3} | {speedup,6:F2}x | {serialResult.Length,7}");
+
+            // The parallel path returns the same match count, on any machine.
+            Assert.AreEqual(serialResult.Length, parallelResult.Length, $"Match count must match for query '{raw}'.");
+        }
+    }
+
     // Averaged per-item nanoseconds for a loop that internally iterates the whole app catalog once.
     private static double PerItemNs(Action loopOverCatalog)
     {
