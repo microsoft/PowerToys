@@ -178,6 +178,13 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Issue-specific samples",
             Subtitle = "Samples designed to reproduce specific issues",
+        },
+
+        // Diagnostics
+        new ListItem(new MemoryLeakDiagnosticsPage())
+        {
+            Title = "Memory leak diagnostics",
+            Subtitle = "Large lists that report whether the host ever releases their items",
         }
     ];
 
