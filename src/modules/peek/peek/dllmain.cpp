@@ -438,7 +438,7 @@ private:
 
         unsigned long powertoys_pid = GetCurrentProcessId();
 
-        std::wstring executable_args = L"";
+        std::wstring executable_args = L"--runner-pid ";
         executable_args.append(std::to_wstring(powertoys_pid));
 
         if (m_alwaysRunNotElevated && is_process_elevated(false))
