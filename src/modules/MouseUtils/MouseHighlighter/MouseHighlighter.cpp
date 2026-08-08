@@ -989,7 +989,14 @@ void Highlighter::ProcessPendingSettings()
     m_settingsPending = false;
     ReleaseSRWLockExclusive(&m_settingsLock);
 
-    ApplySettings(settings);
+    try
+    {
+        ApplySettings(settings);
+    }
+    catch (...)
+    {
+        Logger::error("Failed to apply Mouse Highlighter settings on the window thread.");
+    }
 }
 
 void Highlighter::BringToFront()
