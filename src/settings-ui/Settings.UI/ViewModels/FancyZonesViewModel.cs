@@ -91,10 +91,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _systemTheme = Settings.Properties.FancyzonesSystemTheme.Value;
             _showZoneNumber = Settings.Properties.FancyzonesShowZoneNumber.Value;
             _windowSwitching = Settings.Properties.FancyzonesWindowSwitching.Value;
+            _monitorRotation = Settings.Properties.FancyzonesMonitorRotation.Value;
 
             EditorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
             NextTabHotkey = Settings.Properties.FancyzonesNextTabHotkey.Value;
             PrevTabHotkey = Settings.Properties.FancyzonesPrevTabHotkey.Value;
+            MonitorRotationHotkey = Settings.Properties.FancyzonesMonitorRotationHotkey.Value;
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -141,7 +143,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var hotkeysDict = new Dictionary<string, HotkeySettings[]>
             {
-                [ModuleName] = [EditorHotkey, NextTabHotkey, PrevTabHotkey],
+                [ModuleName] = [EditorHotkey, NextTabHotkey, PrevTabHotkey, MonitorRotationHotkey],
             };
 
             return hotkeysDict;
@@ -180,6 +182,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _windowSwitching;
         private HotkeySettings _nextTabHotkey;
         private HotkeySettings _prevTabHotkey;
+        private bool _monitorRotation;
+        private HotkeySettings _monitorRotationHotkey;
         private string _zoneInActiveColor;
         private string _zoneBorderColor;
         private string _zoneHighlightColor;
@@ -213,6 +217,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(SnapHotkeysCategoryEnabled));
                     OnPropertyChanged(nameof(QuickSwitchEnabled));
                     OnPropertyChanged(nameof(WindowSwitchingCategoryEnabled));
+                    OnPropertyChanged(nameof(MonitorRotationCategoryEnabled));
                 }
             }
         }
@@ -243,6 +248,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get
             {
                 return _isEnabled && _windowSwitching;
+            }
+        }
+
+        public bool MonitorRotationCategoryEnabled
+        {
+            get
+            {
+                return _isEnabled && _monitorRotation;
             }
         }
 
@@ -858,6 +871,52 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     }
 
                     Settings.Properties.FancyzonesPrevTabHotkey.Value = _prevTabHotkey;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool MonitorRotation
+        {
+            get
+            {
+                return _monitorRotation;
+            }
+
+            set
+            {
+                if (value != _monitorRotation)
+                {
+                    _monitorRotation = value;
+
+                    Settings.Properties.FancyzonesMonitorRotation.Value = _monitorRotation;
+                    NotifyPropertyChanged();
+                    OnPropertyChanged(nameof(MonitorRotationCategoryEnabled));
+                }
+            }
+        }
+
+        public HotkeySettings MonitorRotationHotkey
+        {
+            get
+            {
+                return _monitorRotationHotkey;
+            }
+
+            set
+            {
+                if (value != _monitorRotationHotkey)
+                {
+                    if (value == null)
+                    {
+                        _monitorRotationHotkey = FZConfigProperties.DefaultMonitorRotationHotkeyValue;
+                    }
+                    else
+                    {
+                        _monitorRotationHotkey = value;
+                    }
+
+                    Settings.Properties.FancyzonesMonitorRotationHotkey.Value = _monitorRotationHotkey;
                     NotifyPropertyChanged();
                 }
             }

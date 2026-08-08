@@ -43,6 +43,7 @@ namespace FancyZonesUnitTests
         Assert::AreEqual(expected.spanZonesAcrossMonitors, actual.spanZonesAcrossMonitors);
         Assert::AreEqual(expected.makeDraggedWindowTransparent, actual.makeDraggedWindowTransparent);
         Assert::AreEqual(expected.windowSwitching, actual.windowSwitching);
+        Assert::AreEqual(expected.monitorRotation, actual.monitorRotation);
         Assert::AreEqual(expected.zoneColor.c_str(), actual.zoneColor.c_str());
         Assert::AreEqual(expected.zoneBorderColor.c_str(), actual.zoneBorderColor.c_str());
         Assert::AreEqual(expected.zoneHighlightColor.c_str(), actual.zoneHighlightColor.c_str());
@@ -57,6 +58,7 @@ namespace FancyZonesUnitTests
         compareHotkeyObjects(expected.editorHotkey, actual.editorHotkey);
         compareHotkeyObjects(expected.nextTabHotkey, actual.nextTabHotkey);
         compareHotkeyObjects(expected.prevTabHotkey, actual.prevTabHotkey);
+        compareHotkeyObjects(expected.monitorRotationHotkey, actual.monitorRotationHotkey);
     }
 
     TEST_CLASS (FancyZonesSettingsUnitTest)
@@ -90,6 +92,8 @@ namespace FancyZonesUnitTests
             values.add_property(L"fancyzones_windowSwitching", m_defaultSettings.windowSwitching);
             values.add_property(L"fancyzones_nextTab_hotkey", m_defaultSettings.nextTabHotkey.get_json());
             values.add_property(L"fancyzones_prevTab_hotkey", m_defaultSettings.prevTabHotkey.get_json());
+            values.add_property(L"fancyzones_monitorRotation", m_defaultSettings.monitorRotation);
+            values.add_property(L"fancyzones_monitorRotation_hotkey", m_defaultSettings.monitorRotationHotkey.get_json());
             values.add_property(L"fancyzones_excluded_apps", m_defaultSettings.excludedApps);
 
             json::to_file(FancyZonesSettings::GetSettingsFileName(), values.get_raw_json());
@@ -133,6 +137,8 @@ namespace FancyZonesUnitTests
             values.add_property(L"fancyzones_windowSwitching", expected.windowSwitching);
             values.add_property(L"fancyzones_nextTab_hotkey", expected.nextTabHotkey.get_json());
             values.add_property(L"fancyzones_prevTab_hotkey", expected.prevTabHotkey.get_json());
+            values.add_property(L"fancyzones_monitorRotation", expected.monitorRotation);
+            values.add_property(L"fancyzones_monitorRotation_hotkey", expected.monitorRotationHotkey.get_json());
             values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
 
             json::to_file(FancyZonesSettings::GetSettingsFileName(), values.get_raw_json());
