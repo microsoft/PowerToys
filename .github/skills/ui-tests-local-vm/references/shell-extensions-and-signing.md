@@ -55,27 +55,33 @@ whichever tree hosts the packages:
 
 # installed (buildNowSlim / official) — sign after install, before the test enables the module.
 # Machine install lands in %ProgramFiles%\PowerToys; per-user install in %LOCALAPPDATA%\PowerToys:
-.\.pipelines\signSparsePackages.ps1 -PackageRoot "$env:ProgramFiles\PowerToys\WinUI3Apps","$env:LOCALAPPDATA\PowerToys\WinUI3Apps"
+.\.pipelines\signSparsePackages.ps1 `
+  -PackageRoot "$env:ProgramFiles\PowerToys","$env:LOCALAPPDATA\PowerToys" `
+  -RequiredPackage 'ImageResizerContextMenuPackage.msix'
 
 # local UI-test VM sideload — sign the deployed runtime:
-.\.pipelines\signSparsePackages.ps1 -PackageRoot "C:\PowerToysUiTestRun\PowerToys\WinUI3Apps"
+.\.pipelines\signSparsePackages.ps1 -PackageRoot "C:\PowerToysUiTestRun\PowerToys"
 ```
 
-**Where it is wired in CI.** This runs in `.pipelines/v2/templates/job-test-project.yml` as a
-best-effort step after the download/install steps and before **Run UI Tests** (all roots passed;
-missing ones are skipped). It is wrapped so a signing failure (for example, no `signtool` on the
-agent) logs a warning and the shell-extension tests fall back to their `ModernRegistered()` guard —
-the job never regresses:
+**Where it is wired in CI.** This runs in `.pipelines/v2/templates/job-test-project.yml` after the
+download/install steps and before **Run UI Tests**. It recursively searches the run-in-place artifact
+and complete machine/per-user install roots. Windows 11/ARM64 Image Resizer and all-module jobs pass
+`-RequiredPackage ImageResizerContextMenuPackage.msix`, so missing, unsigned, or untrusted setup fails
+at the prerequisite instead of surfacing later as a product-test failure. Jobs that do not exercise
+Image Resizer keep signing best-effort because their suites can guard unavailable modern packages:
 
 ```yaml
   - pwsh: |
-      try {
-        & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" -PackageRoot @(
-          "$(Pipeline.Workspace)\$(TestArtifactsName)",
-          "$env:ProgramFiles\PowerToys\WinUI3Apps",
-          "$env:LOCALAPPDATA\PowerToys\WinUI3Apps")
-      } catch {
-        Write-Host "##vso[task.logissue type=warning]Sparse MSIX signing skipped: $($_.Exception.Message)"
+      $roots = @(
+        "$(Pipeline.Workspace)\$(TestArtifactsName)",
+        "$env:ProgramFiles\PowerToys",
+        "$env:LOCALAPPDATA\PowerToys")
+      if ($requiresImageResizer) {
+        & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" `
+          -PackageRoot $roots -RequiredPackage 'ImageResizerContextMenuPackage.msix'
+      } else {
+        try { & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" -PackageRoot $roots }
+        catch { Write-Host "##vso[task.logissue type=warning]Sparse MSIX signing skipped: $($_.Exception.Message)" }
       }
     displayName: "Sign sparse MSIX packages (test trust)"
 ```

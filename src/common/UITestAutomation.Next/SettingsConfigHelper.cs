@@ -62,6 +62,22 @@ public static class SettingsConfigHelper
     private static string GlobalSettingsPath => Path.Combine(PowerToysSettingsRoot, "settings.json");
 
     /// <summary>
+    /// Snapshot a module's <c>settings.json</c> and restore its exact bytes on disposal, deleting the
+    /// file instead when the test created it. Use before a suite mutates persistent profile settings.
+    /// </summary>
+    public static IDisposable PreserveModuleSettings(string moduleName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(moduleName);
+        return PreserveFile(Path.Combine(PowerToysSettingsRoot, moduleName, "settings.json"));
+    }
+
+    internal static IDisposable PreserveFile(string path)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        return new FileSnapshot(path);
+    }
+
+    /// <summary>
     /// Enable exactly the named modules in the global <c>settings.json</c> and disable every other
     /// known or already-listed module. Module names are the keys under <c>"enabled"</c>
     /// (e.g. "FancyZones", "ColorPicker", "Peek"). Creates the file and keys when missing.
@@ -180,5 +196,39 @@ public static class SettingsConfigHelper
         updateSettingsAction(settings);
 
         File.WriteAllText(settingsPath, settings.ToJsonString(Indented));
+    }
+
+    private sealed class FileSnapshot : IDisposable
+    {
+        private readonly string path;
+        private readonly bool existed;
+        private readonly byte[]? content;
+        private bool disposed;
+
+        public FileSnapshot(string path)
+        {
+            this.path = path;
+            existed = File.Exists(path);
+            content = existed ? File.ReadAllBytes(path) : null;
+        }
+
+        public void Dispose()
+        {
+            if (disposed)
+            {
+                return;
+            }
+
+            disposed = true;
+            if (existed)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                File.WriteAllBytes(path, content!);
+            }
+            else
+            {
+                File.Delete(path);
+            }
+        }
     }
 }

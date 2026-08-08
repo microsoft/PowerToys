@@ -359,7 +359,7 @@ post-deployment signing step costs an extra full run every time the product arch
 ```pwsh
 # 1. Host: sign the staged product tree without trusting anything on the build machine.
 .\.pipelines\signSparsePackages.ps1 `
-  -PackageRoot X:\PowerToysUiTestPayload\product\WinUI3Apps `
+  -PackageRoot X:\PowerToysUiTestPayload\product `
   -SkipLocalTrust -ExportCertificatePath X:\PowerToysUiTestPayload\pt-test-signer.cer
 
 # 2. Guest, once per VM: trust the exported public certificate.

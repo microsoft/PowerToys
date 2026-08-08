@@ -25,10 +25,14 @@ signs packages that are not already validly signed (unless -Force), so real fram
 .PARAMETER PackageRoot
 One or more folders to search recursively for sparse packages. Missing folders are skipped, so you
 can pass both the run-in-place build tree and the installed location:
-  -PackageRoot "$(Pipeline.Workspace)\build-x64-Release", "$env:ProgramFiles\PowerToys\WinUI3Apps"
+    -PackageRoot "$(Pipeline.Workspace)\build-x64-Release", "$env:ProgramFiles\PowerToys"
 
 .PARAMETER Include
 Filename patterns to sign. Defaults to *.msix and *.appx.
+
+.PARAMETER RequiredPackage
+Filename patterns that must be found and end with a Valid signature. Missing, unsigned, or untrusted
+matches make the script fail after attempting all packages.
 
 .PARAMETER Force
 Re-sign even packages that already carry a valid signature.
@@ -42,15 +46,16 @@ host and running it in a VM), so the build machine never gains a test trust anch
 Write the public certificate to this path so the machine that registers the package can trust it.
 
 .EXAMPLE
-.\signSparsePackages.ps1 -PackageRoot "$env:ProgramFiles\PowerToys\WinUI3Apps"
+.\signSparsePackages.ps1 -PackageRoot "$env:ProgramFiles\PowerToys" `
+    -RequiredPackage ImageResizerContextMenuPackage.msix
 
 .EXAMPLE
 # Local sideloading into a UI-test VM runtime:
-.\signSparsePackages.ps1 -PackageRoot "C:\PowerToysUiTestRun\PowerToys\WinUI3Apps"
+.\signSparsePackages.ps1 -PackageRoot "C:\PowerToysUiTestRun\PowerToys"
 
 .EXAMPLE
 # Sign a payload on the host, trust it only inside the VM that will register it:
-.\signSparsePackages.ps1 -PackageRoot "X:\payload\product\WinUI3Apps" -SkipLocalTrust `
+.\signSparsePackages.ps1 -PackageRoot "X:\payload\product" -SkipLocalTrust `
     -ExportCertificatePath "X:\payload\pt-test-signer.cer"
 #>
 param(
@@ -59,6 +64,9 @@ param(
 
     [Parameter()]
     [string[]]$Include = @('*.msix', '*.appx'),
+
+    [Parameter()]
+    [string[]]$RequiredPackage = @(),
 
     [switch]$Force,
 
@@ -240,11 +248,6 @@ function Get-TrustedSigningCert {
     return $cert
 }
 
-$signtool = Find-SignTool
-if (-not $signtool) { $signtool = Get-SignToolFromNuget }
-if (-not $signtool) { throw 'signtool.exe not found and could not be fetched from NuGet. Install the Windows SDK.' }
-Write-Host "Using signtool: $signtool"
-
 $packages = @()
 foreach ($root in $PackageRoot) {
     if (-not (Test-Path $root)) {
@@ -256,11 +259,27 @@ foreach ($root in $PackageRoot) {
 $packages = $packages | Sort-Object FullName -Unique
 
 if (-not $packages) {
+    if ($RequiredPackage.Count -gt 0) {
+        throw "No packages found under '$($PackageRoot -join ', ')' while requiring: $($RequiredPackage -join ', ')."
+    }
+
     Write-Host "No packages found under: $($PackageRoot -join ', ')"
     return
 }
 
+$requiredPackages = @()
+foreach ($pattern in ($RequiredPackage | Where-Object { $_ } | Select-Object -Unique)) {
+    $matches = @($packages | Where-Object { $_.Name -like $pattern })
+    if ($matches.Count -eq 0) {
+        throw "Required sparse package '$pattern' was not found under: $($PackageRoot -join ', ')."
+    }
+
+    $requiredPackages += $matches
+}
+$requiredPackages = @($requiredPackages | Sort-Object FullName -Unique)
+
 $signed = 0
+$signtool = $null
 foreach ($pkg in $packages) {
     if (-not $Force) {
         $existing = Get-AuthenticodeSignature -FilePath $pkg.FullName
@@ -275,6 +294,13 @@ foreach ($pkg in $packages) {
     if (-not $publisher) {
         Write-Host "No manifest publisher, skipping: $($pkg.Name)"
         continue
+    }
+
+    if (-not $signtool) {
+        $signtool = Find-SignTool
+        if (-not $signtool) { $signtool = Get-SignToolFromNuget }
+        if (-not $signtool) { throw 'signtool.exe not found and could not be fetched from NuGet. Install the Windows SDK.' }
+        Write-Host "Using signtool: $signtool"
     }
 
     $cert = Get-TrustedSigningCert -Subject $publisher
@@ -292,6 +318,17 @@ foreach ($pkg in $packages) {
     else {
         Write-Warning "Signature not Valid after signing $($pkg.Name): $($verify.Status)"
     }
+}
+
+if ($requiredPackages.Count -gt 0) {
+    $invalidRequiredPackages = @($requiredPackages | Where-Object {
+        (Get-AuthenticodeSignature -FilePath $_.FullName).Status -ne 'Valid'
+    })
+    if ($invalidRequiredPackages.Count -gt 0) {
+        throw "Required sparse package(s) are not validly signed and trusted: $($invalidRequiredPackages.FullName -join ', ')."
+    }
+
+    Write-Host "Verified required sparse package(s): $($requiredPackages.FullName -join ', ')"
 }
 
 Write-Host "Signed $signed package(s) with a trusted test certificate."

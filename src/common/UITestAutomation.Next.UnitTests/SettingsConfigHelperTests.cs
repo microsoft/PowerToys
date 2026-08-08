@@ -81,4 +81,58 @@ public class SettingsConfigHelperTests
         Assert.IsFalse(enabled["ExistingFutureModule"]!.GetValue<bool>());
         Assert.IsTrue(enabled["RequestedFutureModule"]!.GetValue<bool>());
     }
+
+    [TestMethod]
+    public void PreserveFileRestoresExistingBytes()
+    {
+        var root = CreateTemporaryDirectory();
+        var path = Path.Combine(root, "module", "settings.json");
+        var original = new byte[] { 0xEF, 0xBB, 0xBF, 0x7B, 0x7D };
+
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllBytes(path, original);
+
+            using (SettingsConfigHelper.PreserveFile(path))
+            {
+                File.WriteAllText(path, "changed");
+            }
+
+            CollectionAssert.AreEqual(original, File.ReadAllBytes(path));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void PreserveFileDeletesFileCreatedInsideScope()
+    {
+        var root = CreateTemporaryDirectory();
+        var path = Path.Combine(root, "module", "settings.json");
+
+        try
+        {
+            using (SettingsConfigHelper.PreserveFile(path))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                File.WriteAllText(path, "created by test");
+            }
+
+            Assert.IsFalse(File.Exists(path));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    private static string CreateTemporaryDirectory()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "PowerToys-UITestAutomationNext-UnitTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(path);
+        return path;
+    }
 }

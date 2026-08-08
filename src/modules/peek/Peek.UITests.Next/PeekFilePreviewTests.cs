@@ -25,6 +25,7 @@ public class PeekFilePreviewTests : UITestBase
     private const int PreviewOpenAttempts = 3;
     private const int MaxHotkeyAttempts = 3;
     private const int MaxNavigationAttempts = 3;
+    private static readonly IDisposable PeekSettings;
 
     private long explorerWindowHandle;
     private IReadOnlyList<string> expectedExplorerSelection = Array.Empty<string>();
@@ -42,59 +43,75 @@ public class PeekFilePreviewTests : UITestBase
 
     static PeekFilePreviewTests()
     {
-        ForcePipelineLightTheme();
-
-        SettingsConfigHelper.UpdateModuleSettings(
-            "Peek",
-            """
-            {
-              "name": "Peek",
-              "version": "1.0",
-              "properties": {}
-            }
-            """,
-            settings =>
-            {
-                var properties = settings["properties"] as JsonObject ?? new JsonObject();
-                properties["ActivationShortcut"] = new JsonObject
-                {
-                    ["win"] = false,
-                    ["ctrl"] = true,
-                    ["alt"] = false,
-                    ["shift"] = false,
-                    ["code"] = 32,
-                    ["key"] = "Space",
-                };
-                properties["AlwaysRunNotElevated"] = new JsonObject { ["value"] = true };
-                properties["CloseAfterLosingFocus"] = new JsonObject { ["value"] = false };
-                properties["ConfirmFileDelete"] = new JsonObject { ["value"] = true };
-                properties["EnableSpaceToActivate"] = new JsonObject { ["value"] = false };
-                settings["properties"] = properties;
-            });
-    }
-
-    [ClassCleanup]
-    public static void RestoreAppTheme()
-    {
-        if (!restoreAppsUseLightTheme)
-        {
-            return;
-        }
-
+        PeekSettings = SettingsConfigHelper.PreserveModuleSettings("Peek");
         try
         {
-            using var key = Registry.CurrentUser.CreateSubKey(PersonalizeRegistryPath);
-            if (appsUseLightThemeValueExisted)
-            {
-                key.SetValue(AppsUseLightThemeValueName, originalAppsUseLightThemeValue!, originalAppsUseLightThemeValueKind);
-            }
-            else
-            {
-                key.DeleteValue(AppsUseLightThemeValueName, throwOnMissingValue: false);
-            }
+            ForcePipelineLightTheme();
+
+            SettingsConfigHelper.UpdateModuleSettings(
+                "Peek",
+                """
+                {
+                  "name": "Peek",
+                  "version": "1.0",
+                  "properties": {}
+                }
+                """,
+                settings =>
+                {
+                    var properties = settings["properties"] as JsonObject ?? new JsonObject();
+                    properties["ActivationShortcut"] = new JsonObject
+                    {
+                        ["win"] = false,
+                        ["ctrl"] = true,
+                        ["alt"] = false,
+                        ["shift"] = false,
+                        ["code"] = 32,
+                        ["key"] = "Space",
+                    };
+                    properties["AlwaysRunNotElevated"] = new JsonObject { ["value"] = true };
+                    properties["CloseAfterLosingFocus"] = new JsonObject { ["value"] = false };
+                    properties["ConfirmFileDelete"] = new JsonObject { ["value"] = true };
+                    properties["EnableSpaceToActivate"] = new JsonObject { ["value"] = false };
+                    settings["properties"] = properties;
+                });
         }
         catch
         {
+            PeekSettings.Dispose();
+            throw;
+        }
+    }
+
+    [ClassCleanup]
+    public static void RestoreClassState()
+    {
+        try
+        {
+            if (!restoreAppsUseLightTheme)
+            {
+                return;
+            }
+
+            try
+            {
+                using var key = Registry.CurrentUser.CreateSubKey(PersonalizeRegistryPath);
+                if (appsUseLightThemeValueExisted)
+                {
+                    key.SetValue(AppsUseLightThemeValueName, originalAppsUseLightThemeValue!, originalAppsUseLightThemeValueKind);
+                }
+                else
+                {
+                    key.DeleteValue(AppsUseLightThemeValueName, throwOnMissingValue: false);
+                }
+            }
+            catch
+            {
+            }
+        }
+        finally
+        {
+            PeekSettings.Dispose();
         }
     }
 

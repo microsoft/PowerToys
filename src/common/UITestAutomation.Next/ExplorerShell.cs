@@ -131,9 +131,16 @@ public static class ExplorerShell
             shellWindows = shell.Windows();
             foreach (IWebBrowserApp browser in shellWindows)
             {
+                object? document = null;
                 try
                 {
-                    if (browser.HWND != explorerWindow.ToInt64() || browser.Document is not Shell32.IShellFolderViewDual2 folderView)
+                    if (browser.HWND != explorerWindow.ToInt64())
+                    {
+                        continue;
+                    }
+
+                    document = browser.Document;
+                    if (document is not Shell32.IShellFolderViewDual2 folderView)
                     {
                         continue;
                     }
@@ -192,7 +199,8 @@ public static class ExplorerShell
                 }
                 finally
                 {
-                    Marshal.ReleaseComObject(browser);
+                    ReleaseComObject(document);
+                    ReleaseComObject(browser);
                 }
             }
         }
@@ -221,16 +229,24 @@ public static class ExplorerShell
             shellWindows = shell.Windows();
             foreach (IWebBrowserApp browser in shellWindows)
             {
+                object? document = null;
                 try
                 {
-                    if (browser.HWND == explorerWindow.ToInt64() && browser.Document is Shell32.IShellFolderViewDual3 folderView)
+                    if (browser.HWND != explorerWindow.ToInt64())
+                    {
+                        continue;
+                    }
+
+                    document = browser.Document;
+                    if (document is Shell32.IShellFolderViewDual3 folderView)
                     {
                         return new ViewSnapshot((ViewMode)folderView.CurrentViewMode, folderView.IconSize);
                     }
                 }
                 finally
                 {
-                    Marshal.ReleaseComObject(browser);
+                    ReleaseComObject(document);
+                    ReleaseComObject(browser);
                 }
             }
         }
@@ -259,9 +275,16 @@ public static class ExplorerShell
             shellWindows = shell.Windows();
             foreach (IWebBrowserApp browser in shellWindows)
             {
+                object? document = null;
                 try
                 {
-                    if (browser.HWND != explorerWindow.ToInt64() || browser.Document is not Shell32.IShellFolderViewDual3 folderView)
+                    if (browser.HWND != explorerWindow.ToInt64())
+                    {
+                        continue;
+                    }
+
+                    document = browser.Document;
+                    if (document is not Shell32.IShellFolderViewDual3 folderView)
                     {
                         continue;
                     }
@@ -272,7 +295,8 @@ public static class ExplorerShell
                 }
                 finally
                 {
-                    Marshal.ReleaseComObject(browser);
+                    ReleaseComObject(document);
+                    ReleaseComObject(browser);
                 }
             }
         }
@@ -301,9 +325,16 @@ public static class ExplorerShell
             shellWindows = shell.Windows();
             foreach (IWebBrowserApp browser in shellWindows)
             {
+                object? document = null;
                 try
                 {
-                    if (browser.HWND != explorerWindow.ToInt64() || browser.Document is not Shell32.IShellFolderViewDual2 folderView)
+                    if (browser.HWND != explorerWindow.ToInt64())
+                    {
+                        continue;
+                    }
+
+                    document = browser.Document;
+                    if (document is not Shell32.IShellFolderViewDual2 folderView)
                     {
                         continue;
                     }
@@ -392,7 +423,8 @@ public static class ExplorerShell
                 }
                 finally
                 {
-                    Marshal.ReleaseComObject(browser);
+                    ReleaseComObject(document);
+                    ReleaseComObject(browser);
                 }
             }
         }

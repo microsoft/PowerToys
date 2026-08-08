@@ -55,6 +55,7 @@ public class FileExplorerAddonsTests : UITestBase
     };
 
     private static readonly object ExplorerPreparationLock = new();
+    private static readonly IDisposable FileExplorerSettings;
     private static List<SandboxThumbnailRegistration>? sandboxThumbnailRegistrations;
     private static bool explorerPrepared;
 
@@ -70,36 +71,45 @@ public class FileExplorerAddonsTests : UITestBase
 
     static FileExplorerAddonsTests()
     {
-        SettingsConfigHelper.UpdateModuleSettings(
-            "File Explorer",
-            """
-            {
-              "name": "File Explorer",
-              "version": "1.0",
-              "properties": {}
-            }
-            """,
-            settings =>
-            {
-                var properties = settings["properties"] as JsonObject ?? new JsonObject();
-                foreach (var settingName in new[]
+        FileExplorerSettings = SettingsConfigHelper.PreserveModuleSettings("File Explorer");
+        try
+        {
+            SettingsConfigHelper.UpdateModuleSettings(
+                "File Explorer",
+                """
                 {
-                    "md-previewer-toggle-setting",
-                    "svg-previewer-toggle-setting",
-                    "pdf-previewer-toggle-setting",
-                    "gcode-previewer-toggle-setting",
-                    "monaco-previewer-toggle-setting",
-                    "svg-thumbnail-toggle-setting",
-                    "pdf-thumbnail-toggle-setting",
-                    "gcode-thumbnail-toggle-setting",
-                    "stl-thumbnail-toggle-setting",
-                })
-                {
-                    properties[settingName] = new JsonObject { ["value"] = true };
+                  "name": "File Explorer",
+                  "version": "1.0",
+                  "properties": {}
                 }
+                """,
+                settings =>
+                {
+                    var properties = settings["properties"] as JsonObject ?? new JsonObject();
+                    foreach (var settingName in new[]
+                    {
+                        "md-previewer-toggle-setting",
+                        "svg-previewer-toggle-setting",
+                        "pdf-previewer-toggle-setting",
+                        "gcode-previewer-toggle-setting",
+                        "monaco-previewer-toggle-setting",
+                        "svg-thumbnail-toggle-setting",
+                        "pdf-thumbnail-toggle-setting",
+                        "gcode-thumbnail-toggle-setting",
+                        "stl-thumbnail-toggle-setting",
+                    })
+                    {
+                        properties[settingName] = new JsonObject { ["value"] = true };
+                    }
 
-                settings["properties"] = properties;
-            });
+                    settings["properties"] = properties;
+                });
+        }
+        catch
+        {
+            FileExplorerSettings.Dispose();
+            throw;
+        }
     }
 
     [ClassInitialize]
@@ -114,17 +124,24 @@ public class FileExplorerAddonsTests : UITestBase
     [ClassCleanup]
     public static void CleanupClass()
     {
-        if (sandboxThumbnailRegistrations is null)
+        try
         {
-            return;
-        }
+            if (sandboxThumbnailRegistrations is null)
+            {
+                return;
+            }
 
-        for (var index = sandboxThumbnailRegistrations.Count - 1; index >= 0; index--)
+            for (var index = sandboxThumbnailRegistrations.Count - 1; index >= 0; index--)
+            {
+                sandboxThumbnailRegistrations[index].Dispose();
+            }
+
+            sandboxThumbnailRegistrations = null;
+        }
+        finally
         {
-            sandboxThumbnailRegistrations[index].Dispose();
+            FileExplorerSettings.Dispose();
         }
-
-        sandboxThumbnailRegistrations = null;
     }
 
     [TestInitialize]

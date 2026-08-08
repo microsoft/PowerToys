@@ -180,18 +180,29 @@ jobs:
   # Sign the sparse shell-extension MSIX packages with a machine-trusted TEST certificate so they
   # register on unsigned PR builds and the UI tests can drive the real modern (Win11 tier-1) context
   # menu instead of the signing-free fallback. Test-only trust anchor; asserts no security. All roots
-  # are passed (buildNow run-in-place tree + the machine and per-user install locations); missing ones
-  # are skipped. Best-effort: on failure the shell-extension tests fall back to their ModernRegistered()
-  # guard, so the job never regresses. Verified in a local Win11 VM — unsigned Add-AppxPackage fails
-  # 0x800B0100; after signing + force-trust the same registration succeeds.
+  # are searched recursively (buildNow run-in-place tree + complete machine/per-user installs).
+  # Image Resizer has no Windows 11 classic-menu fallback, so its focused and all-module jobs require
+  # the signed/trusted package; unrelated jobs keep this setup best-effort.
   - pwsh: |
-      try {
-        & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" -PackageRoot @(
-          "$(Pipeline.Workspace)\$(TestArtifactsName)",
-          "$env:ProgramFiles\PowerToys\WinUI3Apps",
-          "$env:LOCALAPPDATA\PowerToys\WinUI3Apps")
-      } catch {
-        Write-Host "##vso[task.logissue type=warning]Sparse MSIX signing skipped: $($_.Exception.Message)"
+      $packageRoots = @(
+        "$(Pipeline.Workspace)\$(TestArtifactsName)",
+        "$env:ProgramFiles\PowerToys",
+        "$env:LOCALAPPDATA\PowerToys")
+      $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
+      $requiresImageResizer = '$(TestPlatform)' -ne 'x64Win10' -and (
+        [string]::IsNullOrWhiteSpace($modulesRaw) -or
+        @($modulesRaw -split ';' | Where-Object { $_ -match 'ImageResizer' }).Count -gt 0)
+
+      if ($requiresImageResizer) {
+        & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" `
+          -PackageRoot $packageRoots `
+          -RequiredPackage 'ImageResizerContextMenuPackage.msix'
+      } else {
+        try {
+          & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" -PackageRoot $packageRoots
+        } catch {
+          Write-Host "##vso[task.logissue type=warning]Sparse MSIX signing skipped: $($_.Exception.Message)"
+        }
       }
     displayName: "Sign sparse MSIX packages (test trust)"
 

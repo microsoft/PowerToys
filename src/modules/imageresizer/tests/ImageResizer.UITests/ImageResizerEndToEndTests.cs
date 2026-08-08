@@ -20,6 +20,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
     private const string ExplorerProcessName = "explorer";
     private const string ImageResizerModuleName = "Image Resizer";
     private const string ImageResizerProcessName = "PowerToys.ImageResizer";
+    private const string ModernPackageName = "ImageResizerContextMenu";
     private const string ModernContextMenuClassName = "Microsoft.UI.Content.PopupWindowSiteBridge";
     private const int DialogTimeoutMS = 30_000;
     private const int ExplorerTimeoutMS = 30_000;
@@ -118,6 +119,10 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             AssertContextMenuPresence(explorer, new[] { fixture }, expected: false);
 
             toggle = SetModuleEnabled(toggle, true);
+            Assert.IsTrue(
+                WaitForModernPackageRegistration(timeoutMS: 30_000),
+                "The signed Image Resizer sparse package did not finish registering after the module was re-enabled.");
+            contextMenuExplorerRefreshed = false;
             explorer = OpenExplorer(folder);
             AssertContextMenuPresence(explorer, new[] { fixture }, expected: true);
         }
@@ -1102,6 +1107,35 @@ public sealed class ImageResizerEndToEndTests : UITestBase
     }
 
     private static bool IsWindows11OrNewer() => Environment.OSVersion.Version.Build >= 22_000;
+
+    private static bool WaitForModernPackageRegistration(int timeoutMS)
+    {
+        if (!IsWindows11OrNewer())
+        {
+            return true;
+        }
+
+        return WaitHelper.WaitForStable(
+            observe: ModernPackageRegistered,
+            isMatch: registered => registered,
+            timeoutMS: timeoutMS,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 250).Succeeded;
+    }
+
+    private static bool ModernPackageRegistered()
+    {
+        try
+        {
+            return new Windows.Management.Deployment.PackageManager()
+                .FindPackagesForUser(string.Empty)
+                .Any(package => package.Id.Name.Contains(ModernPackageName, StringComparison.OrdinalIgnoreCase));
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     // Windows 11 shows the tier-1 (modern, sparse-MSIX) context menu; Windows 10 shows the classic
     // (registry-COM) menu. CI signs the sparse package so the modern menu registers, so the test
