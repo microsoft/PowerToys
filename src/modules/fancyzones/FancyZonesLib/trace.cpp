@@ -48,6 +48,7 @@
 #define MoveWindowsOnZoneSetChangeKey "MoveWindowsOnZoneSetChange"
 #define OverrideSnapHotKeysKey "OverrideSnapHotKeys"
 #define MoveWindowAcrossMonitorsKey "MoveWindowAcrossMonitors"
+#define CycleThroughAllZonesKey "CycleThroughAllZones"
 #define MoveWindowsBasedOnPositionKey "MoveWindowsBasedOnPosition"
 #define MoveWindowsToLastZoneOnAppOpeningKey "MoveWindowsToLastZoneOnAppOpening"
 #define OpenWindowOnActiveMonitorKey "OpenWindowOnActiveMonitor"
@@ -303,6 +304,7 @@ void Trace::SettingsTelemetry(const Settings& settings) noexcept
         TraceLoggingBoolean(settings.zoneSetChange_moveWindows, MoveWindowsOnZoneSetChangeKey),
         TraceLoggingBoolean(settings.overrideSnapHotkeys, OverrideSnapHotKeysKey),
         TraceLoggingBoolean(settings.moveWindowAcrossMonitors, MoveWindowAcrossMonitorsKey),
+        TraceLoggingBoolean(settings.cycleThroughAllZones, CycleThroughAllZonesKey),
         TraceLoggingBoolean(settings.moveWindowsBasedOnPosition, MoveWindowsBasedOnPositionKey),
         TraceLoggingBoolean(settings.appLastZone_moveWindows, MoveWindowsToLastZoneOnAppOpeningKey),
         TraceLoggingBoolean(settings.openWindowOnActiveMonitor, OpenWindowOnActiveMonitorKey),
