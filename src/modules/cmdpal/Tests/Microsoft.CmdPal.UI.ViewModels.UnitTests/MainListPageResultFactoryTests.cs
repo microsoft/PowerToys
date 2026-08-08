@@ -232,6 +232,32 @@ public partial class MainListPageResultFactoryTests
     }
 
     [TestMethod]
+    public void Merge_FallbackTitleClearedConcurrently_ResultHasNoNullSlots()
+    {
+        // Simulates a background fallback update clearing a title after the caller's
+        // visibility filter ran: the array is sized for both items but only one is written.
+        var fallbacks = new List<RoScored<IListItem>>
+        {
+            S("FB1", 0),
+            S(string.Empty, 0),
+        };
+
+        var result = MainListPageResultFactory.Create(
+            null,
+            null,
+            null,
+            fallbacks,
+            _resultsSeparator,
+            _fallbacksSeparator,
+            appResultLimit: 10);
+
+        CollectionAssert.AllItemsAreNotNull(result);
+        Assert.AreEqual(2, result.Length);
+        Assert.AreEqual("Fallbacks", result[0].Title);
+        Assert.AreEqual("FB1", result[1].Title);
+    }
+
+    [TestMethod]
     public void Merge_HandlesNullLists()
     {
         var result = MainListPageResultFactory.Create(

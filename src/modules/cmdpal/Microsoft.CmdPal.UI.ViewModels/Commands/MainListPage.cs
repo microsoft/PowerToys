@@ -63,10 +63,14 @@ public sealed partial class MainListPage : DynamicListPage,
     private RoScored<IListItem>[]? _filteredItems;
     private RoScored<IListItem>[]? _filteredApps;
 
-    // Keep as IEnumerable for deferred execution. Fallback item titles are updated
-    // asynchronously, so scoring must happen lazily when GetItems is called.
-    private IEnumerable<RoScored<IListItem>>? _scoredFallbackItems;
-    private IEnumerable<RoScored<IListItem>>? _fallbackItems;
+    // Global fallback titles are updated asynchronously while a query is active, so their
+    // title-based scores go stale. Keep the unscored candidates and re-score on every GetItems.
+    private TopLevelViewModel[]? _globalFallbackCandidates;
+
+    private RoScored<IListItem>[]? _fallbackItems;
+
+    private FuzzyQuery _searchQuery;
+    private IPrecomputedFuzzyMatcher _queryMatcher;
 
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
@@ -100,7 +104,8 @@ public sealed partial class MainListPage : DynamicListPage,
         _appStateService = appStateService;
         _tlcManager = topLevelCommandManager;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
-        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateService.State.RecentCommands, _fuzzyMatcherProvider.Current);
+        _queryMatcher = fuzzyMatcherProvider.Current;
+        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateService.State.RecentCommands, _queryMatcher);
         _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, _settingsService.Settings.FallbackRanks);
 
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
@@ -259,9 +264,9 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private IListItem[] GetSearchViewItems()
     {
-        var validScoredFallbacks = _scoredFallbackItems?
-            .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
-            .ToList();
+        // Re-score global fallbacks on every read so late-arriving titles get fresh scores
+        var scoredFallbacks = InternalListHelpers.FilterListWithScores<IListItem>(
+            _globalFallbackCandidates, in _searchQuery, _scoringFunction);
 
         var validFallbacks = _fallbackItems?
             .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
@@ -269,7 +274,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
         return MainListPageResultFactory.Create(
             _filteredItems,
-            validScoredFallbacks,
+            scoredFallbacks,
             _filteredApps,
             validFallbacks,
             _resultsSeparator,
@@ -362,7 +367,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _filteredItems = null;
         _filteredApps = null;
         _fallbackItems = null;
-        _scoredFallbackItems = null;
+        _globalFallbackCandidates = null;
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
@@ -562,7 +567,9 @@ public sealed partial class MainListPage : DynamicListPage,
                 }
             }
 
-            var searchQuery = _fuzzyMatcherProvider.Current.PrecomputeQuery(SearchText);
+            _queryMatcher = _fuzzyMatcherProvider.Current;
+            var searchQuery = _queryMatcher.PrecomputeQuery(SearchText);
+            _searchQuery = searchQuery;
 
             // Produce a list of everything that matches the current filter.
             _filteredItems = InternalListHelpers.FilterListWithScores(newFilteredItems, searchQuery, _scoringFunction);
@@ -572,8 +579,8 @@ public sealed partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            IEnumerable<IListItem> newFallbacksForScoring = commands.Where(s => s.IsFallback && configuredGlobalFallbackIds.Contains(s.Id));
-            _scoredFallbackItems = InternalListHelpers.FilterListWithScores(newFallbacksForScoring, searchQuery, _scoringFunction);
+            // Global fallbacks are scored at read time in GetSearchViewItems; just snapshot them.
+            _globalFallbackCandidates = [.. specialFallbacks];
 
             if (token.IsCancellationRequested)
             {
