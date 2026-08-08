@@ -384,11 +384,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 return;
             }
 
-            OpenSettings(message.SettingsPageTag);
+            OpenSettings(message.SettingsPageTag, message.ExtensionGalleryId);
         });
     }
 
-    public void OpenSettings(string pageTag)
+    public void OpenSettings(string pageTag, string? extensionGalleryId = null)
     {
         if (_settingsWindow is null)
         {
@@ -397,7 +397,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         _settingsWindow.Activate();
         _settingsWindow.BringToFront();
-        _settingsWindow.Navigate(pageTag);
+        _settingsWindow.Navigate(pageTag, extensionGalleryId);
     }
 
     public void Receive(ShowDetailsMessage message)
