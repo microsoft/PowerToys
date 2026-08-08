@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
+  <Import Project="$(RepoRoot)src\modules\cmdpal\CmdPal.Diagnostics.props" />
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -88,4 +89,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
 </Project>

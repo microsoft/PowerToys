@@ -73,6 +73,81 @@ internal sealed partial class DevRibbonViewModel : ObservableObject
     [ObservableProperty]
     public partial Color TagColor { get; private set; }
 
+    [ObservableProperty]
+    public partial bool IsInstanceTrackingEnabled { get; private set; }
+
+    [ObservableProperty]
+    public partial string MemorySummary { get; private set; } = "Not measured yet.";
+
+    [ObservableProperty]
+    public partial string LiveViewModels { get; private set; } = "Enable tracking, then open and leave a page.";
+
+    [RelayCommand]
+    private void ToggleInstanceTracking()
+    {
+        ViewModelInstanceTracker.IsEnabled = !ViewModelInstanceTracker.IsEnabled;
+        IsInstanceTrackingEnabled = ViewModelInstanceTracker.IsEnabled;
+
+        if (!IsInstanceTrackingEnabled)
+        {
+            ViewModelInstanceTracker.Reset();
+        }
+
+        RefreshMemory();
+    }
+
+    /// <summary>
+    /// Runs a full collect / drain / collect cycle before reading the counters.
+    /// Without the drain, view-models whose extension proxies are merely queued
+    /// for finalization still read as alive.
+    /// </summary>
+    /// <remarks>
+    /// The collection deliberately runs off the UI thread. Releasing an
+    /// apartment-bound RCW marshals back to the thread that created it, so a UI
+    /// thread parked inside WaitForPendingFinalizers is the one thread those
+    /// releases cannot make progress on - the proxies that most need draining
+    /// are exactly the ones that would never drain.
+    /// </remarks>
+    [RelayCommand]
+    private async Task CollectAndMeasureAsync()
+    {
+        await Task.Run(ViewModelInstanceTracker.ForceFullCollection).ConfigureAwait(true);
+        RefreshMemory();
+    }
+
+    [RelayCommand]
+    private void ResetInstanceTracking()
+    {
+        ViewModelInstanceTracker.Reset();
+        RefreshMemory();
+    }
+
+    [RelayCommand]
+    private void RefreshMemory()
+    {
+        var heapMb = GC.GetTotalMemory(forceFullCollection: false) / (1024d * 1024d);
+        var workingSetMb = Environment.WorkingSet / (1024d * 1024d);
+
+        MemorySummary = $"Heap {heapMb:N1} MB   |   Working set {workingSetMb:N1} MB   |   Gen2 collections {GC.CollectionCount(2):N0}";
+
+        if (!ViewModelInstanceTracker.IsEnabled)
+        {
+            LiveViewModels = "Tracking is off. Turn it on, then open and leave a page.";
+            return;
+        }
+
+        var snapshot = ViewModelInstanceTracker.Snapshot();
+        if (snapshot.Count == 0)
+        {
+            LiveViewModels = "Nothing recorded yet - only view-models created while tracking is on are counted.";
+            return;
+        }
+
+        LiveViewModels = string.Join(
+            Environment.NewLine,
+            snapshot.Select(static entry => $"{entry.TypeName}: {entry.Alive:N0} alive of {entry.Seen:N0} created, {entry.CleanedUp:N0} cleaned up"));
+    }
+
     [RelayCommand]
     private async Task OpenLogFileAsync()
     {

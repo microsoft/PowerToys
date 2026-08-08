@@ -73,6 +73,8 @@ public partial class ListItemViewModel : CommandItemViewModel
         : base(new(model), context, contextMenuFactory)
     {
         Model = new ExtensionObject<IListItem>(model);
+
+        ViewModelInstanceTracker.Register(this);
     }
 
     public override void InitializeProperties()

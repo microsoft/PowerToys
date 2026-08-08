@@ -45,6 +45,8 @@ public partial class CommandViewModel : ExtensionObjectViewModel
     {
         Model = new(command);
         Icon = new(null);
+
+        ViewModelInstanceTracker.Register(this);
     }
 
     public void FastInitializeProperties()
@@ -149,6 +151,11 @@ public partial class CommandViewModel : ExtensionObjectViewModel
         {
             model.PropChanged -= Model_PropChanged;
         }
+
+        // Recorded after the unsubscribe so the counter separates "cleanup never
+        // ran for this instance" from "cleanup ran but the cross-process
+        // unsubscribe did not take effect".
+        ViewModelInstanceTracker.RecordCleanup(this);
     }
 
     private void UpdatePropertiesFromExtension(IExtendedAttributesProvider? model)

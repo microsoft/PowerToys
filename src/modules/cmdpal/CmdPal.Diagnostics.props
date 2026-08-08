@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+
+  <!--
+    Opt-in dev diagnostics (see ViewModelInstanceTracker).
+
+    Defined for everything except CI, so shipping builds do not compile the
+    tracking calls at all rather than relying on a runtime flag. Import this
+    from any CmdPal project that calls into the diagnostics: [Conditional] is
+    evaluated where the call is compiled, so a project without the constant
+    silently keeps its calls.
+  -->
+  <PropertyGroup Condition=" '$(CIBuild)' != 'true' ">
+    <DefineConstants>$(DefineConstants);CMDPAL_DIAGNOSTICS</DefineConstants>
+  </PropertyGroup>
+
+</Project>

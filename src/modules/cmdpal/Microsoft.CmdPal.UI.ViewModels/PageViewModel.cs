@@ -107,6 +107,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
         ExtensionHost.StatusMessages.CollectionChanged += StatusMessages_CollectionChanged;
         UpdateHasStatusMessage();
+
+        ViewModelInstanceTracker.Register(this);
     }
 
     private void StatusMessages_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => UpdateHasStatusMessage();
