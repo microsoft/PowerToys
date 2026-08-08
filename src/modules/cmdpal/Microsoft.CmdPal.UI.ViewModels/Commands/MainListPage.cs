@@ -6,6 +6,7 @@
  #define CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
 */
 
+using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
@@ -71,6 +72,10 @@ public sealed partial class MainListPage : DynamicListPage,
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
 
+    // Last per-provider settings we reacted to, so a settings reload can tell whether any
+    // provider's search weight actually changed and only then re-rank the active query.
+    private ImmutableDictionary<string, ProviderSettings>? _lastProviderSettingsSnapshot;
+
     private int AppResultLimit => AllAppsCommandProvider.TopLevelResultLimit;
 
     private InterlockedBoolean _fullRefreshRequested;
@@ -100,7 +105,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _appStateService = appStateService;
         _tlcManager = topLevelCommandManager;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
-        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateService.State.RecentCommands, _fuzzyMatcherProvider.Current);
+        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateService.State.RecentCommands, _fuzzyMatcherProvider.Current, ResolveProviderSearchWeight);
         _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, _settingsService.Settings.FallbackRanks);
 
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
@@ -640,7 +645,8 @@ public sealed partial class MainListPage : DynamicListPage,
         in FuzzyQuery query,
         IListItem topLevelOrAppItem,
         IRecentCommandsManager history,
-        IPrecomputedFuzzyMatcher precomputedFuzzyMatcher)
+        IPrecomputedFuzzyMatcher precomputedFuzzyMatcher,
+        Func<IListItem, ProviderSearchWeight>? providerWeightLookup = null)
     {
         var title = topLevelOrAppItem.Title;
         if (string.IsNullOrWhiteSpace(title))
@@ -708,11 +714,16 @@ public sealed partial class MainListPage : DynamicListPage,
         var frecencyWeight = history.GetCommandHistoryWeight(id);
         var aliasSubstringBonus = isAliasSubstringMatch && !isAliasMatch ? MainListRanker.AliasSubstringBonus : 0.0;
 
+        // Per-provider weight is a within-tier nudge only. Resolving it here (rather than in
+        // the tier classifier) guarantees it can never promote an item across a tier boundary.
+        var providerWeight = providerWeightLookup?.Invoke(topLevelOrAppItem) ?? ProviderSearchWeight.Normal;
+        var providerBonus = MainListRanker.ProviderBonus(providerWeight);
+
         var withinTier = MainListRanker.WithinTierScore(
             lexicalQuality,
             frecencyWeight,
             aliasSubstringBonus,
-            providerBonus: 0.0);
+            providerBonus: providerBonus);
 
         return MainListRanker.Pack(tier, withinTier);
     }
@@ -767,6 +778,25 @@ public sealed partial class MainListPage : DynamicListPage,
         }
     }
 
+    // Resolves the user-configured per-provider search weight for an item. Top-level commands
+    // carry their own provider id; installed apps all belong to the well-known "AllApps"
+    // provider, so app items are weighted by that provider's setting.
+    private ProviderSearchWeight ResolveProviderSearchWeight(IListItem topLevelOrAppItem)
+    {
+        var providerId = topLevelOrAppItem is TopLevelViewModel topLevel
+            ? topLevel.CommandProviderId
+            : AllAppsCommandProvider.WellKnownId;
+
+        if (string.IsNullOrEmpty(providerId))
+        {
+            return ProviderSearchWeight.Normal;
+        }
+
+        return _settingsService.Settings.ProviderSettings.TryGetValue(providerId, out var providerSettings)
+            ? providerSettings.SearchWeight
+            : ProviderSearchWeight.Normal;
+    }
+
     public void Receive(ClearSearchMessage message) => SearchText = string.Empty;
 
     public void Receive(UpdateFallbackItemsMessage message)
@@ -778,7 +808,65 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private void SettingsChangedHandler(ISettingsService sender, SettingsModel args) => HotReloadSettings(args);
 
-    private void HotReloadSettings(SettingsModel settings) => ShowDetails = settings.ShowAppDetails;
+    private void HotReloadSettings(SettingsModel settings)
+    {
+        ShowDetails = settings.ShowAppDetails;
+
+        // A per-provider search-weight change has to reorder the query that is already on screen.
+        // Scoring reads the weight live, but scored results are cached, so without an explicit
+        // re-score the active query keeps its old order until the next keystroke. Detect a weight
+        // change and re-rank the current search in place.
+        var providerSettings = settings.ProviderSettings;
+        var weightsChanged = ProviderWeightsChanged(_lastProviderSettingsSnapshot, providerSettings);
+        _lastProviderSettingsSnapshot = providerSettings;
+
+        if (weightsChanged && !string.IsNullOrEmpty(SearchText))
+        {
+            RerankActiveSearch();
+        }
+    }
+
+    // Re-scores the current query off the UI thread so a settings change (e.g. a per-provider
+    // search-weight change) reorders the results already shown. This reuses the same non-reset
+    // re-score path as an app-inclusion refresh: the retained matches are re-scored with the new
+    // weights, which is sufficient because provider weight only nudges order within a tier and
+    // never changes which items match.
+    private void RerankActiveSearch()
+    {
+        var current = SearchText;
+        if (!string.IsNullOrEmpty(current))
+        {
+            _ = Task.Run(() => UpdateSearchTextCore(current, current, isUserInput: false));
+        }
+    }
+
+    // True when the effective per-provider search weight differs between two snapshots. A provider
+    // absent from a snapshot is treated as Normal, so adding or removing an entry whose weight is
+    // Normal does not count as a change.
+    private static bool ProviderWeightsChanged(
+        ImmutableDictionary<string, ProviderSettings>? previous,
+        ImmutableDictionary<string, ProviderSettings> current)
+    {
+        previous ??= ImmutableDictionary<string, ProviderSettings>.Empty;
+        if (ReferenceEquals(previous, current))
+        {
+            return false;
+        }
+
+        var keys = new HashSet<string>(previous.Keys, StringComparer.Ordinal);
+        keys.UnionWith(current.Keys);
+        foreach (var key in keys)
+        {
+            var previousWeight = previous.TryGetValue(key, out var p) ? p.SearchWeight : ProviderSearchWeight.Normal;
+            var currentWeight = current.TryGetValue(key, out var c) ? c.SearchWeight : ProviderSearchWeight.Normal;
+            if (previousWeight != currentWeight)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public void Dispose()
     {
