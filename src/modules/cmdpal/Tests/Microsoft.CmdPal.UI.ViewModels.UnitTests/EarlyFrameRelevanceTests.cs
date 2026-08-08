@@ -16,12 +16,6 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
-/// <summary>
-/// Guardrail for the early-frame relevance change, which stops the "completely wrong when I start
-/// typing" flash by withholding the weak fuzzy app tail on short queries. These lock the mechanism
-/// (a 1-char query drops most of the catalog into one Fuzzy tier where frecency decides the order)
-/// and the fix (short queries keep only the confident head, longer queries pass through untouched).
-/// </summary>
 [TestClass]
 public sealed partial class EarlyFrameRelevanceTests
 {
@@ -91,8 +85,7 @@ public sealed partial class EarlyFrameRelevanceTests
         return history;
     }
 
-    // Apps that match "x" only as a mid-word subsequence, so every match lands at the Fuzzy tier.
-    // This is the pathological shape: a big weak-match set with no confident matches at all.
+    // Every app matches "x" only at the Fuzzy tier.
     private static CatalogItem[] BuildFuzzyOnlyCatalogForX() =>
     [
         new CatalogItem("Galaxy Store", "Shop for apps", "app.galaxy"),
@@ -150,12 +143,10 @@ public sealed partial class EarlyFrameRelevanceTests
     }
 
     /// <summary>
-    /// The fix: a 1-char query withholds the whole Fuzzy tail, so the frecency-floated weak match
-    /// can't reach rank 1 while you're still typing. Every match here is Fuzzy, so the gated app
-    /// set comes back empty and only commands and fallbacks render.
+    /// A short query filters every fuzzy-only app match.
     /// </summary>
     [TestMethod]
-    public void ShortQuery_Gate_WithholdsEntireFuzzyTail()
+    public void ShortQuery_Filter_RemovesEveryFuzzyMatch()
     {
         var matcher = CreateMatcher();
         var apps = BuildFuzzyOnlyCatalogForX();
@@ -166,18 +157,17 @@ public sealed partial class EarlyFrameRelevanceTests
         var scored = Score(apps, "x", history, matcher);
         Assert.IsTrue(scored.Length > 0, "Precondition: the ungated result surfaces weak fuzzy matches.");
 
-        var gated = MainListPage.ApplyShortQueryAppGate(scored, queryLength: 1);
+        var filtered = MainListPage.FilterAppsForShortQueries(scored, queryLength: 1);
 
-        Assert.IsNotNull(gated);
-        Assert.AreEqual(0, gated!.Count, "For a 1-char query with only fuzzy matches, the whole low-confidence tail is withheld.");
+        Assert.IsNotNull(filtered);
+        Assert.AreEqual(0, filtered!.Count, "A one-character query should filter fuzzy-only app matches.");
     }
 
     /// <summary>
-    /// The gate keeps the confident head and drops only the Fuzzy tail, checked against a mixed
-    /// catalog for "c".
+    /// The filter keeps high-confidence matches and removes fuzzy matches.
     /// </summary>
     [TestMethod]
-    public void ShortQuery_Gate_KeepsConfidentTiers_DropsFuzzyTail()
+    public void ShortQuery_Filter_KeepsHighConfidenceMatches()
     {
         var matcher = CreateMatcher();
         var apps = BuildMixedCatalogForC();
@@ -190,30 +180,29 @@ public sealed partial class EarlyFrameRelevanceTests
         Assert.IsTrue(fuzzyCount > 0, "Precondition: the mixed catalog produces some fuzzy-tail matches for 'c'.");
         Assert.IsTrue(confidentCount > 0, "Precondition: the mixed catalog produces some confident matches for 'c'.");
 
-        var gated = MainListPage.ApplyShortQueryAppGate(scored, queryLength: 1);
-        Assert.IsNotNull(gated);
+        var filtered = MainListPage.FilterAppsForShortQueries(scored, queryLength: 1);
+        Assert.IsNotNull(filtered);
 
-        Assert.AreEqual(confidentCount, gated!.Count, "Only the confident (tier >= word-boundary) head is kept.");
-        foreach (var s in gated)
+        Assert.AreEqual(confidentCount, filtered!.Count, "Only word-boundary or stronger matches should remain.");
+        foreach (var s in filtered)
         {
             Assert.IsTrue(
                 (int)MainListRanker.TierOf(s.Score) >= (int)RankTier.AcronymWordBoundary,
-                $"Gated item '{s.Item.Title}' must be word-boundary tier or higher, was {MainListRanker.TierOf(s.Score)}.");
+                $"Filtered item '{s.Item.Title}' must be word-boundary tier or higher, was {MainListRanker.TierOf(s.Score)}.");
         }
 
-        // The gated head is a contiguous prefix of the scored array, in the same order.
-        for (var i = 0; i < gated.Count; i++)
+        // Filtering preserves the scored order.
+        for (var i = 0; i < filtered.Count; i++)
         {
-            Assert.AreSame(scored[i].Item, gated[i].Item, $"Gated item at index {i} must be the same instance and position as the scored array.");
+            Assert.AreSame(scored[i].Item, filtered[i].Item, $"Filtered item at index {i} must keep its scored position.");
         }
     }
 
     /// <summary>
-    /// For a 3+ char query the gate is a no-op and hands back the same array instance, so a
-    /// meaningful query's settled order is exactly what it was before.
+    /// Queries longer than two characters return the original array.
     /// </summary>
     [TestMethod]
-    public void DiscriminatingQuery_Gate_ReturnsInputUnchanged()
+    public void LongerQuery_Filter_ReturnsInputUnchanged()
     {
         var matcher = CreateMatcher();
         var apps = BuildMixedCatalogForC();
@@ -221,52 +210,49 @@ public sealed partial class EarlyFrameRelevanceTests
         foreach (var raw in new[] { "cal", "calc", "code" })
         {
             var scored = Score(apps, raw, new RecentCommandsManager(), matcher);
-            var gated = MainListPage.ApplyShortQueryAppGate(scored, raw.Length);
+            var filtered = MainListPage.FilterAppsForShortQueries(scored, raw.Length);
 
-            Assert.AreSame(scored, gated, $"A {raw.Length}-char query ('{raw}') must pass the scored apps through unchanged.");
+            Assert.AreSame(scored, filtered, $"A {raw.Length}-character query ('{raw}') should return the original array.");
         }
     }
 
     /// <summary>
-    /// The gate fires for lengths 1 and 2 but not 3, checked against the fuzzy-only catalog where
-    /// firing empties the set and not firing passes it through.
+    /// The filter applies to query lengths one and two.
     /// </summary>
     [TestMethod]
-    public void Gate_LengthBoundary_FiresForOneAndTwo_NotThree()
+    public void Filter_LengthBoundary_AppliesToOneAndTwo_NotThree()
     {
         var matcher = CreateMatcher();
         var apps = BuildFuzzyOnlyCatalogForX();
         var scored = Score(apps, "x", new RecentCommandsManager(), matcher);
         Assert.IsTrue(scored.Length > 0, "Precondition: 'x' matches fuzzily.");
 
-        Assert.AreEqual(0, MainListPage.ApplyShortQueryAppGate(scored, 1)!.Count, "Length 1 must gate.");
-        Assert.AreEqual(0, MainListPage.ApplyShortQueryAppGate(scored, 2)!.Count, "Length 2 must gate.");
-        Assert.AreSame(scored, MainListPage.ApplyShortQueryAppGate(scored, 3), "Length 3 must not gate.");
+        Assert.AreEqual(0, MainListPage.FilterAppsForShortQueries(scored, 1)!.Count, "Length 1 should be filtered.");
+        Assert.AreEqual(0, MainListPage.FilterAppsForShortQueries(scored, 2)!.Count, "Length 2 should be filtered.");
+        Assert.AreSame(scored, MainListPage.FilterAppsForShortQueries(scored, 3), "Length 3 should not be filtered.");
     }
 
     /// <summary>
-    /// The gate leaves an empty or null app set alone, and treats a zero-length query (the default
-    /// view) as a pass-through.
+    /// Null, empty, and default-view inputs are unchanged.
     /// </summary>
     [TestMethod]
-    public void Gate_NullEmptyAndZeroLength_AreNoOps()
+    public void Filter_NullEmptyAndZeroLength_AreNoOps()
     {
-        Assert.IsNull(MainListPage.ApplyShortQueryAppGate(null, 1));
+        Assert.IsNull(MainListPage.FilterAppsForShortQueries(null, 1));
 
         var empty = Array.Empty<RoScored<IListItem>>();
-        Assert.AreSame(empty, MainListPage.ApplyShortQueryAppGate(empty, 1));
+        Assert.AreSame(empty, MainListPage.FilterAppsForShortQueries(empty, 1));
 
         var matcher = CreateMatcher();
         var scored = Score(BuildFuzzyOnlyCatalogForX(), "x", new RecentCommandsManager(), matcher);
-        Assert.AreSame(scored, MainListPage.ApplyShortQueryAppGate(scored, 0), "A zero-length query is a pass-through.");
+        Assert.AreSame(scored, MainListPage.FilterAppsForShortQueries(scored, 0), "A zero-length query should return the original array.");
     }
 
     /// <summary>
-    /// The prefix-length helper returns the run of entries at or above a tier, which works because
-    /// the array is sorted descending by packed score and the tier sits in the high bits.
+    /// Counts the leading entries at or above the requested tier.
     /// </summary>
     [TestMethod]
-    public void HighConfidenceAppPrefixLength_CountsLeadingHighTierEntries()
+    public void GetHighConfidenceAppsCount_CountsLeadingHighTierEntries()
     {
         RoScored<IListItem> Make(RankTier tier, int within)
             => new(new CatalogItem($"{tier}", string.Empty, $"{tier}.{within}"), MainListRanker.Pack(tier, within));
@@ -281,43 +267,37 @@ public sealed partial class EarlyFrameRelevanceTests
             Make(RankTier.FallbackFloor, 5),
         };
 
-        Assert.AreEqual(5, MainListPage.HighConfidenceAppPrefixLength(scored, RankTier.FallbackFloor));
-        Assert.AreEqual(4, MainListPage.HighConfidenceAppPrefixLength(scored, RankTier.Fuzzy));
-        Assert.AreEqual(3, MainListPage.HighConfidenceAppPrefixLength(scored, RankTier.AcronymWordBoundary));
-        Assert.AreEqual(2, MainListPage.HighConfidenceAppPrefixLength(scored, RankTier.Prefix));
-        Assert.AreEqual(1, MainListPage.HighConfidenceAppPrefixLength(scored, RankTier.ExactTitle));
-        Assert.AreEqual(0, MainListPage.HighConfidenceAppPrefixLength(scored, RankTier.AliasExact));
+        Assert.AreEqual(5, MainListPage.GetHighConfidenceAppsCount(scored, RankTier.FallbackFloor));
+        Assert.AreEqual(4, MainListPage.GetHighConfidenceAppsCount(scored, RankTier.Fuzzy));
+        Assert.AreEqual(3, MainListPage.GetHighConfidenceAppsCount(scored, RankTier.AcronymWordBoundary));
+        Assert.AreEqual(2, MainListPage.GetHighConfidenceAppsCount(scored, RankTier.Prefix));
+        Assert.AreEqual(1, MainListPage.GetHighConfidenceAppsCount(scored, RankTier.ExactTitle));
+        Assert.AreEqual(0, MainListPage.GetHighConfidenceAppsCount(scored, RankTier.AliasExact));
     }
 
     /// <summary>
-    /// The gate decides on the length it's handed, the one published with the array, not on
-    /// anything read later. That's why MainListPage gates on _filteredAppsQueryLength instead of
-    /// the live SearchText.
+    /// Uses the query length published with the scored array.
     /// </summary>
     [TestMethod]
-    public void Gate_DecidesOnSuppliedPublishedLength_NotLiveText()
+    public void Filter_UsesSuppliedPublishedLength()
     {
         RoScored<IListItem> Fuzzy(int within)
             => new(new CatalogItem($"fuzzy.{within}", string.Empty, $"fuzzy.{within}"), MainListRanker.Pack(RankTier.Fuzzy, within));
 
         var scored = new[] { Fuzzy(30), Fuzzy(20), Fuzzy(10) };
 
-        // The query that produced this array is still short, so withhold.
-        var gatedByPublished = MainListPage.ApplyShortQueryAppGate(scored, queryLength: 2);
-        Assert.IsNotNull(gatedByPublished);
-        Assert.AreEqual(0, gatedByPublished!.Count, "Gating on the published short length (2) must withhold the fuzzy tail.");
+        var filteredByPublished = MainListPage.FilterAppsForShortQueries(scored, queryLength: 2);
+        Assert.IsNotNull(filteredByPublished);
+        Assert.AreEqual(0, filteredByPublished!.Count, "The published short length should filter fuzzy matches.");
 
-        // The same array with a longer length passes through, which is the regression a stale
-        // length would cause.
-        Assert.AreSame(scored, MainListPage.ApplyShortQueryAppGate(scored, queryLength: 5), "A longer length would pass the tail through, proving the supplied length is what decides.");
+        Assert.AreSame(scored, MainListPage.FilterAppsForShortQueries(scored, queryLength: 5), "A longer published length should return the original array.");
     }
 
     /// <summary>
-    /// Telemetry counts the gated visible apps on a short query and the full capped set on a longer
-    /// one, so the reported count matches what you're actually looking at.
+    /// Telemetry counts only visible apps after filtering.
     /// </summary>
     [TestMethod]
-    public void GatedVisibleAppCount_ShortQuery_CountsOnlyGatedApps()
+    public void GetVisibleAppCount_ShortQuery_CountsOnlyFilteredApps()
     {
         var matcher = CreateMatcher();
         var apps = BuildMixedCatalogForC();
@@ -325,40 +305,34 @@ public sealed partial class EarlyFrameRelevanceTests
 
         var full = scored.Length;
         var confident = scored.Count(s => (int)MainListRanker.TierOf(s.Score) >= (int)RankTier.AcronymWordBoundary);
-        Assert.IsTrue(confident < full, "Precondition: a fuzzy tail exists so the gated count is strictly less than the full count.");
+        Assert.IsTrue(confident < full, "Precondition: fuzzy matches make the filtered count smaller.");
 
         const int NoCap = 1000;
 
-        // Short published length: only the confident head is counted.
-        Assert.AreEqual(confident, MainListPage.GatedVisibleAppCount(scored, queryLength: 1, appResultLimit: NoCap));
-        Assert.AreEqual(confident, MainListPage.GatedVisibleAppCount(scored, queryLength: 2, appResultLimit: NoCap));
+        Assert.AreEqual(confident, MainListPage.GetVisibleAppCount(scored, queryLength: 1, appResultLimit: NoCap));
+        Assert.AreEqual(confident, MainListPage.GetVisibleAppCount(scored, queryLength: 2, appResultLimit: NoCap));
 
-        // Longer published length: the full set (capped) is counted.
-        Assert.AreEqual(full, MainListPage.GatedVisibleAppCount(scored, queryLength: 3, appResultLimit: NoCap));
-        Assert.AreEqual(full, MainListPage.GatedVisibleAppCount(scored, queryLength: 0, appResultLimit: NoCap), "A zero-length (default view) count is ungated.");
+        Assert.AreEqual(full, MainListPage.GetVisibleAppCount(scored, queryLength: 3, appResultLimit: NoCap));
+        Assert.AreEqual(full, MainListPage.GetVisibleAppCount(scored, queryLength: 0, appResultLimit: NoCap), "A zero-length query should count the full set.");
     }
 
     /// <summary>
-    /// The gated count still respects the app result limit, reports zero when a short query's whole
-    /// tail is withheld, and reports zero for null or empty input.
+    /// The count respects the app limit and handles empty input.
     /// </summary>
     [TestMethod]
-    public void GatedVisibleAppCount_RespectsCap_AndZeroForWithheldOrEmpty()
+    public void GetVisibleAppCount_RespectsCap_AndEmptyInput()
     {
         var matcher = CreateMatcher();
 
-        // Nothing confident here, so the gated count is zero.
         var fuzzyOnly = Score(BuildFuzzyOnlyCatalogForX(), "x", new RecentCommandsManager(), matcher);
         Assert.IsTrue(fuzzyOnly.Length > 0, "Precondition: 'x' matches fuzzily.");
-        Assert.AreEqual(0, MainListPage.GatedVisibleAppCount(fuzzyOnly, queryLength: 1, appResultLimit: 1000));
+        Assert.AreEqual(0, MainListPage.GetVisibleAppCount(fuzzyOnly, queryLength: 1, appResultLimit: 1000));
 
-        // The cap applies on the ungated path.
         var mixed = Score(BuildMixedCatalogForC(), "c", new RecentCommandsManager(), matcher);
         Assert.IsTrue(mixed.Length > 2, "Precondition: the mixed catalog has more than two matches so the cap bites.");
-        Assert.AreEqual(2, MainListPage.GatedVisibleAppCount(mixed, queryLength: 3, appResultLimit: 2), "The full count is capped by the app result limit.");
+        Assert.AreEqual(2, MainListPage.GetVisibleAppCount(mixed, queryLength: 3, appResultLimit: 2), "The app result limit should cap the count.");
 
-        // Null and empty report zero.
-        Assert.AreEqual(0, MainListPage.GatedVisibleAppCount(null, 1, 1000));
-        Assert.AreEqual(0, MainListPage.GatedVisibleAppCount(Array.Empty<RoScored<IListItem>>(), 1, 1000));
+        Assert.AreEqual(0, MainListPage.GetVisibleAppCount(null, 1, 1000));
+        Assert.AreEqual(0, MainListPage.GetVisibleAppCount(Array.Empty<RoScored<IListItem>>(), 1, 1000));
     }
 }
