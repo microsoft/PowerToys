@@ -117,6 +117,10 @@ constexpr size_t LongMaxPathSize = 65536;
 std::wstring pid_to_full_path(DWORD pid)
 {
     HANDLE process = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
+    if (!process)
+    {
+        return {};
+    }
 
     std::wstring result(LongMaxPathSize, L'\0');
 
