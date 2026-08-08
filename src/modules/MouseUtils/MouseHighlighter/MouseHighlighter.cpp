@@ -1009,7 +1009,9 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
     switch (message)
     {
     case WM_NCCREATE:
+        AcquireSRWLockExclusive(&instance->m_settingsLock);
         instance->m_hwnd = hWnd;
+        ReleaseSRWLockExclusive(&instance->m_settingsLock);
         return DefWindowProc(hWnd, message, wParam, lParam);
     case WM_CREATE:
         if (!instance->CreateHighlighter())
