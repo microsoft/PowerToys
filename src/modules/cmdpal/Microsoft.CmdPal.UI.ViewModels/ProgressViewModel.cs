@@ -67,4 +67,15 @@ public partial class ProgressViewModel : ExtensionObjectViewModel
 
         UpdateProperty(propertyName);
     }
+
+    protected override void UnsafeCleanup()
+    {
+        base.UnsafeCleanup();
+
+        var model = Model.Unsafe;
+        if (model is not null)
+        {
+            model.PropChanged -= Model_PropChanged;
+        }
+    }
 }
