@@ -11,8 +11,8 @@ using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static Microsoft.CmdPal.UI.ViewModels.UnitTests.ScoringTestCatalog;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
@@ -45,92 +45,6 @@ public sealed partial class ScoringThroughputHarnessTests
     private static readonly string[] Queries = ["c", "ca", "cal", "calc", "vsc", "vs code"];
 
     public TestContext TestContext { get; set; } = null!;
-
-    // Stand-in for an installed app or a top-level command. It caches fuzzy targets exactly like
-    // AppListItem does, so what we measure is the cached path the product actually runs.
-    private sealed partial class CatalogItem : ListItem, IPrecomputedListItem
-    {
-        private FuzzyTargetCache _titleCache;
-        private FuzzyTargetCache _subtitleCache;
-
-        public CatalogItem(string title, string subtitle, string id)
-            : base(new NoOpCommand() { Id = id })
-        {
-            Title = title;
-            Subtitle = subtitle;
-            Id = id;
-        }
-
-        public string Id { get; }
-
-        public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher) => _titleCache.GetOrUpdate(matcher, Title);
-
-        public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher) => _subtitleCache.GetOrUpdate(matcher, Subtitle);
-    }
-
-    // Composition is index-driven, no RNG and no wall clock, so the catalog and its match counts
-    // are reproducible across runs and hosts.
-    private static readonly string[] Nouns =
-    [
-        "Calculator", "Calendar", "Camera", "Canvas", "Command", "Control", "Cloud", "Cast",
-        "Visual", "Studio", "Code", "Terminal", "Task", "Notepad", "Paint", "Photos", "Player",
-        "Panel", "Prompt", "Settings", "Store", "System", "Manager", "Monitor", "Editor", "Browser",
-        "Mail", "Maps", "Music", "Movies", "Network", "Office", "Onenote", "Outlook", "People",
-    ];
-
-    private static readonly string[] Qualifiers =
-    [
-        string.Empty, "Pro", "2022", "3D", "Preview", "X", "Lite", "Plus", "Home", "Enterprise",
-        "for Windows", "Insider", "Legacy", "New", "Classic",
-    ];
-
-    private static readonly string[] SubtitleWords =
-    [
-        "Perform calculations and conversions", "View and manage your schedule", "Edit and refine images",
-        "Modern terminal for command-line tools", "Full-featured integrated development environment",
-        "Browse the web quickly and securely", "Adjust your computer settings", "Monitor apps and processes",
-        "A simple and fast text editor", "Play and organize your media library",
-    ];
-
-    private static IPrecomputedFuzzyMatcher CreateMatcher() => new PrecomputedFuzzyMatcher(new PrecomputedFuzzyMatcherOptions());
-
-    // Titles cycle the word banks to build dense confusable clusters, which is the shape that makes
-    // a 1-char query match a big slice of the catalog.
-    private static CatalogItem[] BuildCatalog(int count, string idPrefix)
-    {
-        var items = new CatalogItem[count];
-        for (var i = 0; i < count; i++)
-        {
-            var noun = Nouns[i % Nouns.Length];
-            var qualifier = Qualifiers[(i / Nouns.Length) % Qualifiers.Length];
-            var title = string.IsNullOrEmpty(qualifier) ? noun : $"{noun} {qualifier}";
-
-            // Only disambiguate past the first cycle, so early titles stay realistic.
-            if (i >= Nouns.Length * Qualifiers.Length)
-            {
-                title = $"{title} {i}";
-            }
-
-            var subtitle = SubtitleWords[i % SubtitleWords.Length];
-            items[i] = new CatalogItem(title, subtitle, $"{idPrefix}.{i}");
-        }
-
-        return items;
-    }
-
-    private static RecentCommandsManager SeedHistory(CatalogItem[] apps, int seedCount)
-    {
-        var history = new RecentCommandsManager();
-        var n = Math.Min(seedCount, apps.Length);
-        for (var i = 0; i < n; i++)
-        {
-            // Spread the seeds across the catalog so hits are not all clustered at the front.
-            var idx = (i * 7) % apps.Length;
-            history = history.WithHistoryItem(apps[idx].Id);
-        }
-
-        return history;
-    }
 
     private static ScoringFunction<IListItem> BuildScoringFunction(
         IRecentCommandsManager history,

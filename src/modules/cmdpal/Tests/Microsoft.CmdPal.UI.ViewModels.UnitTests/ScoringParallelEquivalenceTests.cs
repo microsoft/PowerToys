@@ -3,16 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Windows.Foundation;
+using static Microsoft.CmdPal.UI.ViewModels.UnitTests.ScoringTestCatalog;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
@@ -38,106 +36,6 @@ public sealed partial class ScoringParallelEquivalenceTests
         ["c", "ca", "cal", "calc", "vs", "vsc", "vs code", "term", "set", "e"];
 
     public TestContext TestContext { get; set; } = null!;
-
-    private sealed partial class CatalogItem : IListItem, IPrecomputedListItem
-    {
-        private FuzzyTargetCache _titleCache;
-        private FuzzyTargetCache _subtitleCache;
-
-        public CatalogItem(string title, string subtitle, string id)
-        {
-            Title = title;
-            Subtitle = subtitle;
-            Id = id;
-            Command = new NoOpCommand() { Id = id };
-        }
-
-        public string Title { get; }
-
-        public string Subtitle { get; }
-
-        public string Id { get; }
-
-        public ICommand Command { get; }
-
-        public IDetails? Details => null;
-
-        public IIconInfo? Icon => null;
-
-        public string Section => string.Empty;
-
-        public ITag[] Tags => [];
-
-        public string TextToSuggest => string.Empty;
-
-        public IContextItem[] MoreCommands => [];
-
-#pragma warning disable CS0067 // The event is never used
-        public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
-#pragma warning restore CS0067
-
-        public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher) => _titleCache.GetOrUpdate(matcher, Title);
-
-        public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher) => _subtitleCache.GetOrUpdate(matcher, Subtitle);
-    }
-
-    private static readonly string[] Nouns =
-    [
-        "Calculator", "Calendar", "Camera", "Canvas", "Command", "Control", "Cloud", "Cast",
-        "Visual", "Studio", "Code", "Terminal", "Task", "Notepad", "Paint", "Photos", "Player",
-        "Panel", "Prompt", "Settings", "Store", "System", "Manager", "Monitor", "Editor", "Browser",
-        "Mail", "Maps", "Music", "Movies", "Network", "Office", "Onenote", "Outlook", "People",
-    ];
-
-    private static readonly string[] Qualifiers =
-    [
-        string.Empty, "Pro", "2022", "3D", "Preview", "X", "Lite", "Plus", "Home", "Enterprise",
-        "for Windows", "Insider", "Legacy", "New", "Classic",
-    ];
-
-    private static readonly string[] SubtitleWords =
-    [
-        "Perform calculations and conversions", "View and manage your schedule", "Edit and refine images",
-        "Modern terminal for command-line tools", "Full-featured integrated development environment",
-        "Browse the web quickly and securely", "Adjust your computer settings", "Monitor apps and processes",
-        "A simple and fast text editor", "Play and organize your media library",
-    ];
-
-    private static IPrecomputedFuzzyMatcher CreateMatcher() => new PrecomputedFuzzyMatcher(new PrecomputedFuzzyMatcherOptions());
-
-    private static CatalogItem[] BuildCatalog(int count, string idPrefix)
-    {
-        var items = new CatalogItem[count];
-        for (var i = 0; i < count; i++)
-        {
-            var noun = Nouns[i % Nouns.Length];
-            var qualifier = Qualifiers[(i / Nouns.Length) % Qualifiers.Length];
-            var title = string.IsNullOrEmpty(qualifier) ? noun : $"{noun} {qualifier}";
-
-            if (i >= Nouns.Length * Qualifiers.Length)
-            {
-                title = $"{title} {i}";
-            }
-
-            var subtitle = SubtitleWords[i % SubtitleWords.Length];
-            items[i] = new CatalogItem(title, subtitle, $"{idPrefix}.{i}");
-        }
-
-        return items;
-    }
-
-    private static RecentCommandsManager SeedHistory(CatalogItem[] apps, int seedCount)
-    {
-        var history = new RecentCommandsManager();
-        var n = Math.Min(seedCount, apps.Length);
-        for (var i = 0; i < n; i++)
-        {
-            var idx = (i * 7) % apps.Length;
-            history = history.WithHistoryItem(apps[idx].Command.Id);
-        }
-
-        return history;
-    }
 
     private static ScoringFunction<IListItem> BuildScoringFunction(
         IRecentCommandsManager history,
