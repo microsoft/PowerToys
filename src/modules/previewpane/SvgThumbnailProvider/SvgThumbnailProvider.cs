@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -116,6 +117,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
             _browser.Visible = true;
             _browser.Width = (int)cx;
             _browser.Height = (int)cx;
+            _browser.DefaultBackgroundColor = Color.Transparent;
             _browser.NavigationCompleted += async (object sender, CoreWebView2NavigationCompletedEventArgs args) =>
             {
                 var a = await _browser.ExecuteScriptAsync($"document.getElementsByTagName('svg')[0].viewBox;");
@@ -258,7 +260,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 return null;
             }
 
-            Bitmap destImage = new Bitmap(width, height);
+            Bitmap destImage = new Bitmap(width, height, PixelFormat.Format32bppArgb);
 
             destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
 
@@ -270,7 +272,6 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 graphics.SmoothingMode = SmoothingMode.HighQuality;
                 graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-                graphics.Clear(Color.White);
                 graphics.DrawImage(image, 0, 0, width, height);
             }
 
