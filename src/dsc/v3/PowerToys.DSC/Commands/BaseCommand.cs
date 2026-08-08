@@ -32,6 +32,7 @@ public abstract class BaseCommand : Command
     private static readonly Dictionary<string, Func<string?, BaseResource>> _resourceFactories = new()
     {
         { SettingsResource.ResourceName, module => new SettingsResource(module) },
+        { ProfileResource.ResourceName, module => new ProfileResource(module) },
 
         // Add other resources here
     };

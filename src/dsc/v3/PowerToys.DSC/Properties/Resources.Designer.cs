@@ -79,6 +79,15 @@ namespace PowerToys.DSC.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not signal a running Keyboard Manager instance; the new remappings will be applied the next time PowerToys starts.
+        /// </summary>
+        internal static string FailedToSignalSettingsEvent {
+            get {
+                return ResourceManager.GetString("FailedToSignalSettingsEvent", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Get the resource state.
         /// </summary>
         internal static string GetCommandDescription {
@@ -123,6 +132,15 @@ namespace PowerToys.DSC.Properties {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Keyboard Manager profile: {0}.
+        /// </summary>
+        internal static string InvalidProfileError {
+            get {
+                return ResourceManager.GetString("InvalidProfileError", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Invalid resource name. Valid resource names are: {0}.
         /// </summary>
