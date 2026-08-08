@@ -84,6 +84,41 @@ public class PrimaryActionTests
         Assert.IsInstanceOfType(GetFallbackSecondaryCommand(item), typeof(CalculatorCopyCommand));
     }
 
+    [DataTestMethod]
+    [DataRow("en-US", "1,234,567.89", "1234567.89")]
+    [DataRow("de-DE", "1.234.567,89", "1234567,89")]
+    public void ResultTitlesUseCultureGroupingWithoutChangingOperationalValues(string cultureName, string expectedTitle, string expectedRawResult)
+    {
+        var culture = new CultureInfo(cultureName);
+        var settings = new Settings();
+        TypedEventHandler<object, object> handleReplace = (_, _) => { };
+
+        var pageItem = ResultHelper.CreateResultForPage(
+            1234567.89m,
+            culture,
+            culture,
+            "1234567.89",
+            settings,
+            handleReplace);
+
+        Assert.IsNotNull(pageItem);
+        Assert.AreEqual(expectedTitle, pageItem.Title);
+        Assert.IsInstanceOfType(pageItem.Command, typeof(CalculatorCopyCommand));
+        Assert.AreEqual(expectedRawResult, ((CalculatorCopyCommand)pageItem.Command).Text);
+
+        var fallbackItem = ResultHelper.CreateResultForFallback(
+            1234567.89m,
+            culture,
+            culture,
+            "1234567.89");
+
+        Assert.IsNotNull(fallbackItem);
+        Assert.AreEqual(expectedTitle, fallbackItem.Title);
+        Assert.AreEqual(expectedRawResult, fallbackItem.TextToSuggest);
+        Assert.IsInstanceOfType(fallbackItem.Command, typeof(CopyTextCommand));
+        Assert.AreEqual(expectedRawResult, ((CopyTextCommand)fallbackItem.Command).Text);
+    }
+
     private static ICommand GetFallbackSecondaryCommand(FallbackCalculatorItem item)
     {
         var secondaryCommand = item.MoreCommands

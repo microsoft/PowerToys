@@ -77,7 +77,7 @@ public sealed partial class CalculatorListPage : DynamicListPage
 
     private void HandleReplaceQuery(object sender, object args)
     {
-        var lastResult = _items[0].Title;
+        var lastResult = GetOperationalResult(_items[0]);
         if (!string.IsNullOrEmpty(lastResult))
         {
             _skipQuerySearchText = lastResult;
@@ -117,8 +117,9 @@ public sealed partial class CalculatorListPage : DynamicListPage
 
         if (copyResultToSearchText && result is not null)
         {
-            _skipQuerySearchText = result.Title;
-            SearchText = result.Title;
+            var operationalResult = GetOperationalResult(result);
+            _skipQuerySearchText = operationalResult;
+            SearchText = operationalResult;
 
             // LOAD BEARING: The SearchText setter does not raise a PropertyChanged notification,
             // so we must raise it explicitly to ensure the UI updates correctly.
@@ -241,6 +242,16 @@ public sealed partial class CalculatorListPage : DynamicListPage
     }
 
     public override IListItem[] GetItems() => _items.ToArray();
+
+    private static string GetOperationalResult(ListItem result)
+    {
+        return result.Command switch
+        {
+            CalculatorCopyCommand copyCommand => copyCommand.Text,
+            CalculatorPasteCommand pasteCommand => pasteCommand.Text,
+            _ => result.Title,
+        };
+    }
 
     private static ListItem CreateSectionHeader(string title)
     {
