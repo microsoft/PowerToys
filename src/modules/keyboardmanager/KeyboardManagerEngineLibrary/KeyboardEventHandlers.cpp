@@ -88,6 +88,26 @@ namespace
 
 namespace KeyboardEventHandlers
 {
+    namespace ProgramLauncher
+    {
+        std::wstring GetWorkingDirectory(const std::wstring& filePath, const std::wstring& configuredDirectory)
+        {
+            if (!configuredDirectory.empty())
+            {
+                return configuredDirectory;
+            }
+
+            const std::filesystem::path path{ filePath };
+            const auto extension = path.extension().wstring();
+            if (_wcsicmp(extension.c_str(), L".exe") != 0 && _wcsicmp(extension.c_str(), L".com") != 0)
+            {
+                return {};
+            }
+
+            return path.parent_path().wstring();
+        }
+    }
+
     // Function to handle a single key remap
     intptr_t HandleSingleKeyRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
     {
@@ -1393,7 +1413,7 @@ namespace KeyboardEventHandlers
 
                 for (DWORD pid : processIds)
                 {
-                    ShowProgram(targetPid, fileNamePart, false, false, 0);
+                    ShowProgram(pid, fileNamePart, false, false, 0);
                 }
 
                 //if (!ShowProgram(targetPid, fileNamePart, false, false, 0))
@@ -1424,47 +1444,70 @@ namespace KeyboardEventHandlers
             expandedArgs.resize(dwSize);
             DWORD result = ExpandEnvironmentStrings(shortcut.runProgramArgs.c_str(), expandedArgs.data(), dwSize);
 
-            WCHAR currentDir[MAX_PATH];
-            WCHAR* currentDirPtr = currentDir;
-            result = ExpandEnvironmentStrings(shortcut.runProgramStartInDir.c_str(), currentDir, MAX_PATH);
-
-            if (shortcut.runProgramStartInDir == L"")
+            std::wstring currentDir;
+            if (shortcut.runProgramStartInDir.empty())
             {
-                currentDirPtr = nullptr;
+                currentDir = ProgramLauncher::GetWorkingDirectory(fullExpandedFilePath, {});
             }
             else
             {
-                DWORD dwAttrib = GetFileAttributesW(currentDir);
-
-                if (dwAttrib == INVALID_FILE_ATTRIBUTES)
+                WCHAR expandedCurrentDir[MAX_PATH];
+                result = ExpandEnvironmentStrings(shortcut.runProgramStartInDir.c_str(), expandedCurrentDir, MAX_PATH);
+                if (result == 0 || result > ARRAYSIZE(expandedCurrentDir))
                 {
                     std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
-                    std::wstring message = fmt::format(L"The start in path was not valid. It could not be used.", currentDir);
-                    currentDirPtr = nullptr;
+                    std::wstring message = L"The start in path was not valid. It could not be used.";
+                    toast(title, message);
+                    return;
+                }
+
+                currentDir = ProgramLauncher::GetWorkingDirectory(fullExpandedFilePath, expandedCurrentDir);
+
+                DWORD dwAttrib = GetFileAttributesW(currentDir.c_str());
+
+                if (dwAttrib == INVALID_FILE_ATTRIBUTES || (dwAttrib & FILE_ATTRIBUTE_DIRECTORY) == 0)
+                {
+                    std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
+                    std::wstring message = L"The start in path was not valid. It could not be used.";
                     toast(title, message);
                     return;
                 }
             }
 
             DWORD processId = 0;
-            HANDLE newProcessHandle;
+            HANDLE newProcessHandle = nullptr;
+            bool processStarted = false;
+            const auto currentDirPtr = currentDir.empty() ? nullptr : currentDir.c_str();
 
             if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
             {
                 newProcessHandle = run_elevated(fullExpandedFilePath, expandedArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
-                processId = GetProcessId(newProcessHandle);
+                processStarted = newProcessHandle != nullptr;
             }
             else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
             {
-                run_non_elevated(fullExpandedFilePath, expandedArgs, &processId, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
+                if (ProgramLauncher::ShouldUseExplorerShell(shortcut.startWindowType))
+                {
+                    processStarted = RunNonElevatedEx(fullExpandedFilePath, expandedArgs, currentDir);
+                }
+                else
+                {
+                    processStarted = run_non_elevated(fullExpandedFilePath, expandedArgs, &processId, currentDirPtr, false);
+                }
             }
             else if (shortcut.elevationLevel == Shortcut::ElevationLevel::DifferentUser)
             {
                 newProcessHandle = run_as_different_user(fullExpandedFilePath, expandedArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
-                processId = GetProcessId(newProcessHandle);
+                processStarted = newProcessHandle != nullptr;
             }
 
-            if (processId == 0)
+            if (newProcessHandle != nullptr)
+            {
+                processId = GetProcessId(newProcessHandle);
+                CloseHandle(newProcessHandle);
+            }
+
+            if (!processStarted)
             {
                 std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
                 std::wstring message = fmt::format(L"The application might not have started.");
@@ -1472,7 +1515,7 @@ namespace KeyboardEventHandlers
                 return;
             }
 
-            if (shortcut.startWindowType == Shortcut::StartWindowType::Hidden)
+            if (processId != 0 && shortcut.startWindowType == Shortcut::StartWindowType::Hidden)
             {
                 HideProgram(processId, fileNamePart, 0);
             }
@@ -1900,7 +1943,7 @@ namespace KeyboardEventHandlers
         // reports it as up, so there is no reliable way to tell whether the user is
         // still physically holding the key or has released it. Re-pressing
         // unconditionally would risk leaving a modifier stuck down if the user let
-        // go during injection — the exact failure this change set prevents. Leaving
+        // go during injection - the exact failure this change set prevents. Leaving
         // the modifier released is always safe: the user taps it again to re-engage.
 
         return 1;
