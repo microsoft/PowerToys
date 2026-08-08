@@ -278,6 +278,22 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander
+                        Name="FileExplorerPreviewToggleSwitchThumbnailThreeMf"
+                        x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_ThreeMf"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
+                        IsEnabled="{x:Bind ViewModel.ThreeMfThumbnailIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsEnabled="{x:Bind ViewModel.ThreeMfThumbnailIsGpoEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                            IsOn="{x:Bind ViewModel.ThreeMfThumbnailIsEnabled, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard Name="FileExplorerPreviewColorThumbnailThreeMf" x:Uid="FileExplorerPreview_Color_Thumbnail_ThreeMf">
+                                <controls:ColorPickerButton IsEnabled="{x:Bind ViewModel.ThreeMfThumbnailIsEnabled, Mode=OneWay}" SelectedColor="{x:Bind Path=ViewModel.ThreeMfThumbnailColor, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
