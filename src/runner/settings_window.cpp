@@ -111,6 +111,7 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                 }
                 else if (action == L"check_for_updates")
                 {
+                    apply_general_settings(value);
                     bool expected_isUpdateCheckThreadRunning = false;
                     if (isUpdateCheckThreadRunning.compare_exchange_strong(expected_isUpdateCheckThreadRunning, true))
                     {

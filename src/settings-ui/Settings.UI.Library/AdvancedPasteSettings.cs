@@ -72,6 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             string[] additionalActionHeaderKeys =
             [
                 "ImageToText",
+                "FixSpellingAndGrammar",
                 "PasteAsTxtFile",
                 "PasteAsPngFile",
                 "PasteAsHtmlFile",
@@ -83,11 +84,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 if (action is AdvancedPasteAdditionalAction additionalAction)
                 {
+                    var headerKey = additionalActionHeaderKeys[Math.Min(index, additionalActionHeaderKeys.Length - 1)];
                     hotkeyAccessors.Add(new HotkeyAccessor(
                         () => additionalAction.Shortcut,
                         value => additionalAction.Shortcut = value ?? new HotkeySettings(),
-                        additionalActionHeaderKeys[index]));
+                        headerKey));
                     index++;
+
+                    // The coaching shortcut is registered by the runner as a separate hotkey
+                    // immediately after Fix Spelling and Grammar (and only when it's active), so it
+                    // must appear in the same position here to keep hotkey IDs aligned with conflicts.
+                    if (ReferenceEquals(additionalAction, Properties.AdditionalActions.FixSpellingAndGrammar)
+                        && additionalAction.CoachingEnabled
+                        && additionalAction.CoachingShortcut is { Code: not 0 })
+                    {
+                        hotkeyAccessors.Add(new HotkeyAccessor(
+                            () => additionalAction.CoachingShortcut,
+                            value => additionalAction.CoachingShortcut = value ?? new HotkeySettings(),
+                            "FixSpellingAndGrammarCoaching"));
+                    }
                 }
             }
 

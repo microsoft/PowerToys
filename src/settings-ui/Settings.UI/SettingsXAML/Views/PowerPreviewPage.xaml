@@ -286,8 +286,8 @@
             <controls:PageLink x:Uid="LearnMore_PowerPreview" Link="https://aka.ms/PowerToysOverview_FileExplorerAddOns" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Link="https://noraajunker.ch" Text="Noraa Junker's work on developer file preview" />
-            <controls:PageLink Link="https://www.pedrolamas.com" Text="Pedro Lamas's work on G-Code, Binary G-Code, STL, and QOI" />
+            <controls:PageLink x:Uid="Attribution_PowerPreview_DeveloperFilePreview" Link="https://noraajunker.ch" />
+            <controls:PageLink x:Uid="Attribution_PowerPreview_FileFormats" Link="https://www.pedrolamas.com" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </local:NavigablePage>

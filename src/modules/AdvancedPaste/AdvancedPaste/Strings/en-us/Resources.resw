@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -234,6 +234,12 @@
   </data>
   <data name="PasteAsSingleLine" xml:space="preserve">
     <value>Paste as single line</value>
+  <data name="FixSpellingAndGrammar" xml:space="preserve">
+    <value>Fix spelling and grammar</value>
+  </data>
+  <data name="CoachingExplanationTitle.Text" xml:space="preserve">
+    <value>What was changed and why</value>
+
   </data>
   <data name="ImageToText" xml:space="preserve">
     <value>Image to text</value>

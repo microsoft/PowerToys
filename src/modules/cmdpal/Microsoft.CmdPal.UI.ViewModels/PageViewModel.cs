@@ -228,7 +228,10 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
                 UpdateProperty(nameof(ModelIsLoading));
                 break;
             case nameof(Icon):
-                this.Icon = new(model.Icon);
+                var incomingIcon = model.Icon;
+
+                this.Icon = new(incomingIcon);
+                this.Icon.InitializeProperties();
                 break;
             default:
                 updateProperty = false;

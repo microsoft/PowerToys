@@ -309,6 +309,11 @@ pwa
 AOT
 Aot
 ify
+LAF
+Laf
+languagemodel
+philm
+phisilica
 TFM
 
 # YML
@@ -400,6 +405,17 @@ FFF
 HHH
 riday
 YYY
+
+# Release versioning identifiers and format fragments
+DAILYVERSIONSEQUENCE
+DDNNN
+Mdd
+SOURCEBRANCH
+SOURCEVERSION
+VERSIONDATE
+YDDD
+YDDDB
+YYMM
 
 # Unicode
 precomposed
