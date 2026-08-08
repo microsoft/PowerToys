@@ -5,6 +5,7 @@
   "homepage": "https://github.com/microsoft/PowerToys",
   "license": "MIT",
   "dependencies": [
+    "libzip",
     "libwebp",
     "spdlog"
   ],
