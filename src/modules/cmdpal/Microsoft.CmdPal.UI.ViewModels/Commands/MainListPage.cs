@@ -64,9 +64,14 @@ public sealed partial class MainListPage : DynamicListPage,
     private RoScored<IListItem>[]? _filteredItems;
     private RoScored<IListItem>[]? _filteredApps;
 
-    // Keep as IEnumerable for deferred execution. Fallback item titles are updated
-    // asynchronously, so scoring must happen lazily when GetItems is called.
-    private IEnumerable<RoScored<IListItem>>? _scoredFallbackItems;
+    // Global/special fallbacks are scored on the render path, not at keystroke time, because
+    // their titles resolve asynchronously. We snapshot the source list and query together so a
+    // superseding keystroke replaces both atomically.
+    private IReadOnlyList<IListItem>? _globalFallbackSources;
+    private FuzzyQuery _globalFallbackQuery;
+
+    // Common fallbacks use query-independent scores, so freezing them is safe; only their live
+    // titles decide whether they render.
     private IEnumerable<RoScored<IListItem>>? _fallbackItems;
 
     private bool _includeApps;
@@ -264,9 +269,9 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private IListItem[] GetSearchViewItems()
     {
-        var validScoredFallbacks = _scoredFallbackItems?
-            .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
-            .ToList();
+        // Score global fallbacks against their current titles so a fallback whose title
+        // resolved after first paint gets the right score. Cheap: only a handful are configured.
+        var validScoredFallbacks = ScoreDeferredFallbacks(_globalFallbackSources, _globalFallbackQuery, _scoringFunction);
 
         var validFallbacks = _fallbackItems?
             .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
@@ -280,6 +285,39 @@ public sealed partial class MainListPage : DynamicListPage,
             _resultsSeparator,
             _fallbacksSeparator,
             AppResultLimit);
+    }
+
+    // Scores the current global-fallback snapshot against its query, dropping any whose title is
+    // still empty. Static so it can be unit tested with a fake slow source.
+    internal static List<RoScored<IListItem>>? ScoreDeferredFallbacks(
+        IReadOnlyList<IListItem>? sources,
+        in FuzzyQuery query,
+        ScoringFunction<IListItem> scoringFunction)
+    {
+        if (sources is null || sources.Count == 0)
+        {
+            return null;
+        }
+
+        var scored = InternalListHelpers.FilterListWithScores(sources, query, scoringFunction);
+        if (scored.Length == 0)
+        {
+            return null;
+        }
+
+        List<RoScored<IListItem>>? valid = null;
+        foreach (var s in scored)
+        {
+            if (string.IsNullOrWhiteSpace(s.Item.Title))
+            {
+                continue;
+            }
+
+            valid ??= new List<RoScored<IListItem>>(scored.Length);
+            valid.Add(s);
+        }
+
+        return valid;
     }
 
     private IListItem[] GetDefaultViewItems()
@@ -367,7 +405,10 @@ public sealed partial class MainListPage : DynamicListPage,
         _filteredItems = null;
         _filteredApps = null;
         _fallbackItems = null;
-        _scoredFallbackItems = null;
+        _globalFallbackSources = null;
+
+        // Clear the paired query too, so both are reset together.
+        _globalFallbackQuery = default;
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
@@ -577,8 +618,10 @@ public sealed partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            IEnumerable<IListItem> newFallbacksForScoring = commands.Where(s => s.IsFallback && configuredGlobalFallbackIds.Contains(s.Id));
-            _scoredFallbackItems = InternalListHelpers.FilterListWithScores(newFallbacksForScoring, searchQuery, _scoringFunction);
+            // Snapshot the global fallbacks and query, but score them later on the render path,
+            // since their titles are still resolving asynchronously (BeginUpdate, above).
+            _globalFallbackSources = commands.Where(s => s.IsFallback && configuredGlobalFallbackIds.Contains(s.Id)).ToArray();
+            _globalFallbackQuery = searchQuery;
 
             if (token.IsCancellationRequested)
             {
