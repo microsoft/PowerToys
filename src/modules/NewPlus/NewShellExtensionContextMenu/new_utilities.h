@@ -10,7 +10,9 @@
 #include "template_item.h"
 #include "trace.h"
 #include "helpers_variables.h"
+#include <shellscalingapi.h>
 
+#pragma comment(lib, "Shcore.lib")
 #pragma comment(lib, "Shlwapi.lib")
 
 using namespace newplus;
@@ -19,59 +21,6 @@ namespace newplus::utilities
 {
     size_t get_saved_number_of_templates();
     void set_saved_number_of_templates(size_t templates);
-
-    inline std::wstring get_explorer_icon(std::filesystem::path path)
-    {
-        SHFILEINFO shell_file_info = { 0 };
-        const std::wstring filepath = path.wstring();
-        DWORD_PTR result = SHGetFileInfo(filepath.c_str(), 0, &shell_file_info, sizeof(shell_file_info), SHGFI_ICONLOCATION);
-        std::wstring icon_path = shell_file_info.szDisplayName;
-        if (icon_path != L"")
-        {
-            const int icon_index = shell_file_info.iIcon;
-            std::wstring icon_resource = icon_path + std::wstring(L",") + std::to_wstring(icon_index);
-            return icon_resource;
-        }
-
-        WCHAR icon_resource_specifier[MAX_PATH] = { 0 };
-        DWORD buffer_length = MAX_PATH;
-        const std::wstring extension = path.extension().wstring();
-        const HRESULT hr = AssocQueryString(ASSOCF_INIT_IGNOREUNKNOWN,
-                                            ASSOCSTR_DEFAULTICON,
-                                            extension.c_str(),
-                                            NULL,
-                                            icon_resource_specifier,
-                                            &buffer_length);
-        const std::wstring icon_resource = icon_resource_specifier;
-        return icon_resource;
-    }
-
-    inline HICON get_explorer_icon_handle(std::filesystem::path path)
-    {
-        SHFILEINFO shell_file_info = { 0 };
-        const std::wstring filepath = path.wstring();
-        DWORD_PTR result = SHGetFileInfo(filepath.c_str(), 0, &shell_file_info, sizeof(shell_file_info), SHGFI_ICON);
-        if (shell_file_info.hIcon)
-        {
-            return shell_file_info.hIcon;
-        }
-
-        WCHAR icon_resource_specifier[MAX_PATH] = { 0 };
-        DWORD buffer_length = MAX_PATH;
-        const std::wstring extension = path.extension().wstring();
-        const HRESULT hr = AssocQueryString(ASSOCF_INIT_IGNOREUNKNOWN,
-                                            ASSOCSTR_DEFAULTICON,
-                                            extension.c_str(),
-                                            NULL,
-                                            icon_resource_specifier,
-                                            &buffer_length);
-        const std::wstring icon_resource = icon_resource_specifier;
-        
-        const auto icon_x = GetSystemMetrics(SM_CXSMICON);
-        const auto icon_y = GetSystemMetrics(SM_CYSMICON);
-        HICON hIcon = static_cast<HICON>(LoadImage(NULL, icon_resource.c_str(), IMAGE_ICON, icon_x, icon_y, LR_LOADFROMFILE));
-        return hIcon;
-    }
 
     inline bool wstring_same_when_comparing_ignore_case(std::wstring stringA, std::wstring stringB)
     {
@@ -198,21 +147,21 @@ namespace newplus::utilities
         return false;
     }
 
-    inline void explorer_enter_rename_mode(const std::filesystem::path target_fullpath_of_new_instance)
+    inline bool explorer_enter_rename_mode_and_reposition(const std::filesystem::path target_fullpath_of_new_instance, const POINT mouse_position_at_time_of_invoke, const bool enter_rename_mode = true)
     {
         const std::filesystem::path path_without_new_file_or_dir = target_fullpath_of_new_instance.parent_path();
         const std::filesystem::path new_file_or_dir_without_path = target_fullpath_of_new_instance.filename();
 
-        ComPtr<IShellWindows> shell_windows;
+        CComPtr<IShellWindows> shell_windows;
 
         HRESULT hr;
         if (FAILED(CoCreateInstance(CLSID_ShellWindows, NULL, CLSCTX_ALL, IID_PPV_ARGS(&shell_windows))))
         {
-            return;
+            return false;
         }
 
-        long window_handle;
-        ComPtr<IDispatch> shell_window;
+        long desktop_window_handle = 0;
+        CComPtr<IDispatch> shell_window;
         const bool object_created_on_desktop = is_desktop_folder(path_without_new_file_or_dir.c_str());
         if (object_created_on_desktop)
         {
@@ -220,9 +169,9 @@ namespace newplus::utilities
             VARIANT empty_yet_needed_incl_init;
             VariantInit(&empty_yet_needed_incl_init);
 
-            if (FAILED(shell_windows->FindWindowSW(&empty_yet_needed_incl_init, &empty_yet_needed_incl_init, SWC_DESKTOP, &window_handle, SWFO_NEEDDISPATCH, &shell_window)))
+            if (FAILED(shell_windows->FindWindowSW(&empty_yet_needed_incl_init, &empty_yet_needed_incl_init, SWC_DESKTOP, &desktop_window_handle, SWFO_NEEDDISPATCH, &shell_window)))
             {
-                return;
+                return false;
             }
         }
         else
@@ -232,7 +181,7 @@ namespace newplus::utilities
 
             for (long i = 0; i < count_of_shell_windows; ++i)
             {
-                ComPtr<IWebBrowserApp> web_browser_app;
+                CComPtr<IWebBrowserApp> web_browser_app;
                 VARIANT v;
                 VariantInit(&v);
                 V_VT(&v) = VT_I4;
@@ -240,14 +189,14 @@ namespace newplus::utilities
                 hr = shell_windows->Item(v, &shell_window);
                 if (SUCCEEDED(hr) && shell_window)
                 {
-                    hr = shell_window.As(&web_browser_app);
+                    hr = shell_window->QueryInterface(&web_browser_app);
                     if (SUCCEEDED(hr))
                     {
                         BSTR folder_view_location;
                         hr = web_browser_app->get_LocationURL(&folder_view_location);
                         if (SUCCEEDED(hr) && folder_view_location)
                         {
-                            wchar_t path[MAX_PATH];
+                            wchar_t path[MAX_PATH * 2];
                             DWORD pathLength = ARRAYSIZE(path);
                             hr = PathCreateFromUrl(folder_view_location, path, &pathLength, 0);
                             SysFreeString(folder_view_location);
@@ -264,17 +213,17 @@ namespace newplus::utilities
 
         if (!shell_window)
         {
-            return;
+            return false;
         }
 
-        ComPtr<IServiceProvider> service_provider;
-        shell_window.As(&service_provider);
-        ComPtr<IShellBrowser> shell_browser;
+        CComPtr<IServiceProvider> service_provider;
+        shell_window->QueryInterface(&service_provider);
+        CComPtr<IShellBrowser> shell_browser;
         service_provider->QueryService(SID_STopLevelBrowser, IID_PPV_ARGS(&shell_browser));
-        ComPtr<IShellView> shell_view;
+        CComPtr<IShellView> shell_view;
         shell_browser->QueryActiveShellView(&shell_view);
-        ComPtr<IFolderView> folder_view;
-        shell_view.As(&folder_view);
+        CComPtr<IFolderView> folder_view;
+        shell_view->QueryInterface(&folder_view);
 
         // Find the newly created object (file or folder)
         // And put object into edit mode (SVSI_EDIT) and if desktop also reposition
@@ -283,29 +232,66 @@ namespace newplus::utilities
         folder_view->ItemCount(SVGIO_ALLVIEW, &number_of_objects_in_view);
         for (int i = 0; i < number_of_objects_in_view && !done; ++i)
         {
-            std::wstring path_of_item(MAX_PATH, 0);
-            LPITEMIDLIST shell_item_ids;
+            PITEMID_CHILD shell_item_id = nullptr;
 
-            folder_view->Item(i, &shell_item_ids);
-            SHGetPathFromIDList(shell_item_ids, &path_of_item[0]);
+            folder_view->Item(i, &shell_item_id);
 
-            const std::wstring current_filename = std::filesystem::path(path_of_item.c_str()).filename();
-
-            if (utilities::wstring_same_when_comparing_ignore_case(new_file_or_dir_without_path, current_filename))
+            wchar_t path_buffer[MAX_PATH * 2] = { 0 };
+            if (!SHGetPathFromIDListW(reinterpret_cast<PCIDLIST_ABSOLUTE>(shell_item_id), path_buffer))
             {
-                const DWORD common_select_flags = SVSI_EDIT | SVSI_SELECT | SVSI_DESELECTOTHERS | SVSI_ENSUREVISIBLE | SVSI_FOCUSED;
+                CoTaskMemFree(shell_item_id);
+                continue;
+            }
+
+            const std::wstring current_filename = std::filesystem::path(path_buffer).filename();
+
+            if (newplus::utilities::wstring_same_when_comparing_ignore_case(new_file_or_dir_without_path, current_filename))
+            {
+                const DWORD common_select_flags = (enter_rename_mode ? SVSI_EDIT : 0) | SVSI_SELECT | SVSI_DESELECTOTHERS | SVSI_ENSUREVISIBLE | SVSI_FOCUSED;
 
                 if (object_created_on_desktop)
                 {
-                    // Newly created object is on the desktop -- reposition under mouse and enter rename mode
-                    LPCITEMIDLIST shell_item_to_select_and_position[] = { shell_item_ids };
-                    POINT mouse_position;
-                    GetCursorPos(&mouse_position);
-                    mouse_position.x -= GetSystemMetrics(SM_CXMENUSIZE);
-                    mouse_position.x = (std::max)(mouse_position.x, 20L);
-                    mouse_position.y -= GetSystemMetrics(SM_CXMENUSIZE)/2;
-                    mouse_position.y = (std::max)(mouse_position.y, 20L);
-                        POINT position[] = { mouse_position };
+                    // All coordinate work is done under per-monitor-DPI-aware context so that
+                    // GetCursorPos, MonitorFromPoint, ScreenToClient, and GetDpiForMonitor all
+                    // operate in physical screen pixels — correctly handling mixed-DPI setups
+                    // where the invoke monitor differs from the primary monitor.
+                    POINT screen_point;
+                    const DPI_AWARENESS_CONTEXT prev_ctx = SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
+                    if (mouse_position_at_time_of_invoke.x != -1)
+                    {
+                        screen_point = mouse_position_at_time_of_invoke;
+                    }
+                    else
+                    {
+                        if (!GetCursorPos(&screen_point))
+                            screen_point = { 100, 100 };
+                    }
+
+                    // Resolve effective DPI for the monitor the right-click was on.
+                    UINT invoke_dpi_x = 96;
+                    const HMONITOR h_monitor = MonitorFromPoint(screen_point, MONITOR_DEFAULTTONEAREST);
+                    if (h_monitor)
+                    {
+                        UINT invoke_dpi_y = 0;
+                        GetDpiForMonitor(h_monitor, MDT_EFFECTIVE_DPI, &invoke_dpi_x, &invoke_dpi_y);
+                    }
+
+                    // Convert physical screen coordinates to the desktop ListView's client coordinates.
+                    if (desktop_window_handle)
+                    {
+                        ::ScreenToClient(reinterpret_cast<HWND>(static_cast<LONG_PTR>(desktop_window_handle)), &screen_point);
+                    }
+
+                    SetThreadDpiAwarenessContext(prev_ctx);
+
+                    // Keep icon clear of the screen edge: ~30 logical pixels scaled to the invoke monitor's DPI.
+                    const LONG min_margin = ::MulDiv(30, static_cast<int>(invoke_dpi_x), 96);
+                    screen_point.x = std::max<LONG>(screen_point.x, min_margin);
+                    screen_point.y = std::max<LONG>(screen_point.y, min_margin);
+
+                    POINT position[] = { screen_point };
+                    PCUITEMID_CHILD shell_item_to_select_and_position[] = { shell_item_id };
                     folder_view->SelectAndPositionItems(1, shell_item_to_select_and_position, position, common_select_flags | SVSI_POSITIONITEM);
                 }
                 else
@@ -315,8 +301,9 @@ namespace newplus::utilities
                 }
                 done = true;
             }
-            CoTaskMemFree(shell_item_ids);
+            CoTaskMemFree(shell_item_id);
         }
+        return done;
     }
 
     inline void update_last_write_time(const std::filesystem::path path)
@@ -334,7 +321,7 @@ namespace newplus::utilities
         }
     }
 
-    inline HRESULT copy_template(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder)
+    inline HRESULT copy_template(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder, const POINT mouse_position_at_invoke)
     {
         HRESULT hr = S_OK;
 
@@ -396,7 +383,7 @@ namespace newplus::utilities
             template_entry->refresh_target(target_final_fullpath);
 
             // Enter rename mode
-            template_entry->enter_rename_mode(target_final_fullpath);
+            template_entry->enter_rename_mode(target_final_fullpath, mouse_position_at_invoke);
         }
         catch (const std::exception& ex)
         {
