@@ -523,5 +523,31 @@ namespace RemappingUITests
             Assert::AreEqual(true, areOSLevelTablesEqual);
             Assert::AreEqual(true, areAppSpecificTablesEqual);
         }
+
+        TEST_METHOD (AddTextReplacement_ShouldStoreReplacementAndUpdateMaxTriggerLength)
+        {
+            MappingConfiguration testShortcuts;
+
+            bool addedShortTrigger = testShortcuts.AddTextReplacement(L"sun", L"moon");
+            bool addedLongTrigger = testShortcuts.AddTextReplacement(L"planet", L"galaxy");
+
+            Assert::AreEqual(true, addedShortTrigger);
+            Assert::AreEqual(true, addedLongTrigger);
+            Assert::AreEqual(std::wstring(L"moon"), testShortcuts.textReplacements[L"sun"]);
+            Assert::AreEqual(std::wstring(L"galaxy"), testShortcuts.textReplacements[L"planet"]);
+            Assert::AreEqual(static_cast<size_t>(6), testShortcuts.maxTextReplacementTriggerLength);
+        }
+
+        TEST_METHOD (AddTextReplacement_ShouldRejectEmptyOrDuplicateReplacement)
+        {
+            MappingConfiguration testShortcuts;
+
+            Assert::AreEqual(true, testShortcuts.AddTextReplacement(L"hello", L"world"));
+            Assert::AreEqual(false, testShortcuts.AddTextReplacement(L"hello", L"target"));
+            Assert::AreEqual(false, testShortcuts.AddTextReplacement(L"", L"world"));
+            Assert::AreEqual(false, testShortcuts.AddTextReplacement(L"greeting", L""));
+            Assert::AreEqual(static_cast<size_t>(1), testShortcuts.textReplacements.size());
+            Assert::AreEqual(static_cast<size_t>(5), testShortcuts.maxTextReplacementTriggerLength);
+        }
     };
 }

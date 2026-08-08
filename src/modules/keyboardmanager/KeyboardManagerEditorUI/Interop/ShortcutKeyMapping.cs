@@ -14,6 +14,8 @@ namespace KeyboardManagerEditorUI.Interop
     {
         public string OriginalKeys { get; set; } = string.Empty;
 
+        public string TriggerText { get; set; } = string.Empty;
+
         public string TargetKeys { get; set; } = string.Empty;
 
         public string TargetApp { get; set; } = string.Empty;
@@ -69,6 +71,7 @@ namespace KeyboardManagerEditorUI.Interop
             }
 
             return OriginalKeys == other.OriginalKeys &&
+                   TriggerText == other.TriggerText &&
                    TargetKeys == other.TargetKeys &&
                    TargetApp == other.TargetApp &&
                    OperationType == other.OperationType &&
@@ -86,6 +89,7 @@ namespace KeyboardManagerEditorUI.Interop
         {
             HashCode hash = default(HashCode);
             hash.Add(OriginalKeys);
+            hash.Add(TriggerText);
             hash.Add(TargetKeys);
             hash.Add(TargetApp);
             hash.Add(OperationType);

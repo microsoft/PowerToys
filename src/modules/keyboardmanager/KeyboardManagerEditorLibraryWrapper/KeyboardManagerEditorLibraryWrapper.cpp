@@ -112,6 +112,30 @@ extern "C"
         return true;
     }
 
+    int GetTextReplacementCount(void* config)
+    {
+        auto mapping = static_cast<MappingConfiguration*>(config);
+        return static_cast<int>(mapping->textReplacements.size());
+    }
+
+    bool GetTextReplacement(void* config, int index, TextReplacementMapping* mapping)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        if (index < 0 || index >= mappingConfig->textReplacements.size())
+        {
+            return false;
+        }
+
+        auto it = mappingConfig->textReplacements.begin();
+        std::advance(it, index);
+
+        mapping->trigger = AllocateAndCopyString(it->first);
+        mapping->targetText = AllocateAndCopyString(it->second);
+
+        return true;
+    }
+
     int GetShortcutRemapCountByType(void* config, int operationType)
     {
         auto mapping = static_cast<MappingConfiguration*>(config);
@@ -375,7 +399,7 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         {
             std::wstring text = std::get<std::wstring>(targetShortcutUnion);
             mapping->targetKeys = AllocateAndCopyString(L"");
-            mapping->operationType = 0;
+            mapping->operationType = static_cast<int>(Shortcut::OperationType::RemapText);
             mapping->targetText = AllocateAndCopyString(text);
             mapping->programPath = AllocateAndCopyString(L"");
             mapping->programArgs = AllocateAndCopyString(L"");
@@ -476,7 +500,7 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         {
             std::wstring text = std::get<std::wstring>(targetShortcutUnion);
             mapping->targetKeys = AllocateAndCopyString(L"");
-            mapping->operationType = 0;
+            mapping->operationType = static_cast<int>(Shortcut::OperationType::RemapText);
             mapping->targetText = AllocateAndCopyString(text);
             mapping->programPath = AllocateAndCopyString(L"");
             mapping->programArgs = AllocateAndCopyString(L"");
@@ -507,6 +531,18 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         }
 
         return mappingConfig->AddSingleKeyToTextRemap(static_cast<DWORD>(originalKey), text);
+    }
+
+    bool AddTextReplacement(void* config, const wchar_t* trigger, const wchar_t* text)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        if (trigger == nullptr || text == nullptr)
+        {
+            return false;
+        }
+
+        return mappingConfig->AddTextReplacement(trigger, text);
     }
 
     bool AddSingleKeyToShortcutRemap(void* config, int originalKey, const wchar_t* targetKeys)
@@ -675,6 +711,31 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             mappingConfig->singleKeyToTextReMap.erase(it);
             return true;
         }
+        return false;
+    }
+
+    bool DeleteTextReplacement(void* config, const wchar_t* trigger)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+        if (trigger == nullptr)
+        {
+            return false;
+        }
+
+        auto it = mappingConfig->textReplacements.find(trigger);
+        if (it != mappingConfig->textReplacements.end())
+        {
+            mappingConfig->textReplacements.erase(it);
+            mappingConfig->maxTextReplacementTriggerLength = 0;
+            for (const auto& [existingTrigger, replacementText] : mappingConfig->textReplacements)
+            {
+                UNREFERENCED_PARAMETER(replacementText);
+                mappingConfig->maxTextReplacementTriggerLength = (std::max)(mappingConfig->maxTextReplacementTriggerLength, existingTrigger.length());
+            }
+
+            return true;
+        }
+
         return false;
     }
 
