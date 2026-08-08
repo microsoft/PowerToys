@@ -65,8 +65,15 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public List<object> Keys
         {
-            get { return (List<object>)GetValue(KeysProperty); }
-            set { SetValue(KeysProperty, value); }
+            get => (List<object>)GetValue(KeysProperty);
+
+            set
+            {
+                if (Keys != null || !JudgeIfKeyValueSame(value))
+                {
+                    SetValue(KeysProperty, value);
+                }
+            }
         }
 
         public bool IsError
@@ -128,6 +135,29 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private void LearnMoreBtn_Click(object sender, RoutedEventArgs e)
         {
             LearnMoreClick?.Invoke(this, new RoutedEventArgs());
+        }
+
+        public bool JudgeIfKeyValueSame(List<object> newValue)
+        {
+            List<object> currentValue = (List<object>)GetValue(KeysProperty);
+
+            if (currentValue == null && newValue == null)
+            {
+                return true;
+            }
+
+            if (currentValue == null || newValue == null)
+            {
+                return false;
+            }
+
+            if (currentValue.Count != newValue.Count)
+            {
+                return false;
+            }
+
+            var set = new HashSet<object>(currentValue);
+            return set.SetEquals(newValue);
         }
     }
 }
