@@ -155,7 +155,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         if (extensionDetails is not null)
         {
             Details = new(extensionDetails, PageContext);
-            Details.InitializeProperties();
+            Details.SafeInitializeProperties();
         }
 
         UpdateDetails();
@@ -231,7 +231,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 var existingDetails = Details;
                 var extensionDetails = model.Details;
                 Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
-                Details?.InitializeProperties();
+                Details?.SafeInitializeProperties();
                 UpdateDetails();
                 existingDetails?.SafeCleanup();
                 break;

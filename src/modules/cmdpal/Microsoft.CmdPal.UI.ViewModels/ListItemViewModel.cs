@@ -119,7 +119,7 @@ public partial class ListItemViewModel : CommandItemViewModel
         if (extensionDetails is not null)
         {
             Details = new(extensionDetails, PageContext);
-            Details.InitializeProperties();
+            Details.SafeInitializeProperties();
             UpdateProperty(nameof(Details), nameof(HasDetails));
         }
 
@@ -161,7 +161,7 @@ public partial class ListItemViewModel : CommandItemViewModel
                 var existingReference = Details;
                 var extensionDetails = model.Details;
                 Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
-                Details?.InitializeProperties();
+                Details?.SafeInitializeProperties();
                 UpdateProperty(nameof(Details), nameof(HasDetails));
                 UpdateShowDetailsCommand();
                 existingReference?.SafeCleanup();

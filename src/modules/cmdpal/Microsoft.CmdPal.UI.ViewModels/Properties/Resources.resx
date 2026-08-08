@@ -277,6 +277,18 @@
     <value>Built-in</value>
     <comment>Fallback name for built-in extensions</comment>
   </data>
+  <data name="details_error_title" xml:space="preserve">
+    <value>Error</value>
+    <comment>Title shown in the details pane when an extension fails to provide its details</comment>
+  </data>
+  <data name="details_error_body" xml:space="preserve">
+    <value>Details failed to load.</value>
+    <comment>Body shown in the details pane when an extension fails to provide its details. The error reported by the extension is appended after this text.</comment>
+  </data>
+  <data name="details_error_no_message" xml:space="preserve">
+    <value>[No message available]</value>
+    <comment>Placeholder used when a failing extension didn't report an error message</comment>
+  </data>
   <data name="dock_item_count_singular" xml:space="preserve">
     <value>1 item</value>
     <comment>Singular form for item count in dock band</comment>

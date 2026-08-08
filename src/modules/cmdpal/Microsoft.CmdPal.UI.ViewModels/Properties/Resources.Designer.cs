@@ -529,6 +529,33 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Details failed to load..
+        /// </summary>
+        public static string details_error_body {
+            get {
+                return ResourceManager.GetString("details_error_body", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to [No message available].
+        /// </summary>
+        public static string details_error_no_message {
+            get {
+                return ResourceManager.GetString("details_error_no_message", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        public static string details_error_title {
+            get {
+                return ResourceManager.GetString("details_error_title", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Edit Dock.
         /// </summary>
         public static string dock_edit_dock_name {

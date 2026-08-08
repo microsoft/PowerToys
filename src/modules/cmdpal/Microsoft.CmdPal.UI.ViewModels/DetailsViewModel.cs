@@ -2,16 +2,20 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class DetailsViewModel : ExtensionObjectViewModel
 {
+    private static readonly IconInfoViewModel ErrorIcon = CreateErrorIcon();
+
     private readonly ExtensionObject<IDetails> _detailsModel;
     private INotifyPropChanged? _observableDetails;
-    private bool _isSubscribed;
+    private volatile bool _isSubscribed;
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -37,6 +41,11 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
 
     private void Model_PropChanged(object sender, IPropChangedEventArgs args)
     {
+        if (!_isSubscribed)
+        {
+            return;
+        }
+
         try
         {
             FetchProperty(args.PropertyName);
@@ -152,9 +161,9 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
         // Subscribe to PropChanged if the model supports it (only subscribe once)
         if (!_isSubscribed && model is INotifyPropChanged observable)
         {
-            observable.PropChanged += Model_PropChanged;
             _observableDetails = observable;
             _isSubscribed = true;
+            observable.PropChanged += Model_PropChanged;
         }
 
         Title = model.Title ?? string.Empty;
@@ -184,17 +193,77 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
         RebuildMetadata(model);
     }
 
+    /// <summary>
+    /// Initializes the details, replacing them with an error message when the
+    /// extension throws. Details are supplementary content, so a broken
+    /// extension shouldn't take down the page or item displaying them.
+    /// </summary>
+    /// <returns><see langword="true"/> when the details initialized successfully.</returns>
+    public bool SafeInitializeProperties()
+    {
+        try
+        {
+            InitializeProperties();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            CoreLogger.LogError("error initializing DetailsViewModel", ex);
+            StopObservingModel();
+            ShowErrorDetails(ex);
+        }
+
+        return false;
+    }
+
+    private static IconInfoViewModel CreateErrorIcon()
+    {
+        IconInfoViewModel icon = new(new IconInfo("\uEA39")); // ErrorBadge
+        icon.InitializeProperties();
+        return icon;
+    }
+
+    /// <summary>
+    /// Replaces whatever was read from the extension with an error message, so
+    /// the details pane explains the failure instead of showing a partially
+    /// initialized (or stale) state.
+    /// </summary>
+    private void ShowErrorDetails(Exception ex)
+    {
+        var message = string.IsNullOrWhiteSpace(ex.Message) ? Properties.Resources.details_error_no_message : ex.Message;
+
+        Title = Properties.Resources.details_error_title;
+        Body = $"{Properties.Resources.details_error_body}\n\n{message}";
+        HeroImage = ErrorIcon;
+        Size ??= ContentSize.Small;
+        ReplaceMetadata([]);
+
+        UpdateProperty(nameof(Title), nameof(Body), nameof(HeroImage), nameof(Size), nameof(Metadata));
+    }
+
     protected override void UnsafeCleanup()
     {
         base.UnsafeCleanup();
 
-        if (_isSubscribed && _observableDetails is not null)
-        {
-            _observableDetails.PropChanged -= Model_PropChanged;
-            _observableDetails = null;
-            _isSubscribed = false;
-        }
-
+        StopObservingModel();
         ReplaceMetadata([]);
+    }
+
+    private void StopObservingModel()
+    {
+        _isSubscribed = false;
+
+        if (_observableDetails is not null)
+        {
+            try
+            {
+                _observableDetails.PropChanged -= Model_PropChanged;
+                _observableDetails = null;
+            }
+            catch (Exception ex)
+            {
+                CoreLogger.LogError("Failed to unsubscribe DetailsViewModel from detail updates.", ex);
+            }
+        }
     }
 }

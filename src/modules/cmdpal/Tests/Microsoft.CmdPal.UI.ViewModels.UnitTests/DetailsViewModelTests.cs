@@ -110,6 +110,33 @@ public partial class DetailsViewModelTests
     }
 
     [TestMethod]
+    public void SafeInitializeProperties_ReturnsTrue_AndInitializes_OnSuccess()
+    {
+        var details = new Details { Title = "Hello", Body = "World" };
+        var vm = new DetailsViewModel(details, CreatePageContext());
+
+        Assert.IsTrue(vm.SafeInitializeProperties());
+        Assert.AreEqual("Hello", vm.Title);
+        Assert.AreEqual("World", vm.Body);
+    }
+
+    [TestMethod]
+    public void SafeInitializeProperties_ShowsErrorDetails_WhenExtensionThrows()
+    {
+        // A broken extension shouldn't take down the page showing its details -
+        // the pane explains the failure instead.
+        var details = new ThrowingDetails();
+        var vm = new DetailsViewModel(details, CreatePageContext());
+
+        Assert.IsFalse(vm.SafeInitializeProperties(), "a failed initialization should be reported");
+        Assert.AreEqual(Properties.Resources.details_error_title, vm.Title);
+        StringAssert.Contains(vm.Body, Properties.Resources.details_error_body);
+        StringAssert.Contains(vm.Body, "boom", "the underlying failure should be surfaced");
+        Assert.AreEqual(0, vm.Metadata.Count, "partially built metadata should not be left behind");
+        Assert.AreEqual(0, details.HandlerCount, "failed details should no longer be observed");
+    }
+
+    [TestMethod]
     public void NonObservableDetails_DoesNotThrow()
     {
         // IDetails that does NOT implement INotifyPropChanged
@@ -359,6 +386,31 @@ public partial class DetailsViewModelTests
         public string Title => "Static Title";
 
         public string Body => "Static Body";
+
+        public IDetailsElement[] Metadata => [];
+    }
+
+    /// <summary>
+    /// An IDetails that throws while being read, like an extension that died
+    /// part way through the call.
+    /// </summary>
+    private sealed partial class ThrowingDetails : IDetails, INotifyPropChanged
+    {
+        private TypedEventHandler<object, IPropChangedEventArgs>? _propChanged;
+
+        public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged
+        {
+            add => _propChanged += value;
+            remove => _propChanged -= value;
+        }
+
+        public int HandlerCount => _propChanged?.GetInvocationList().Length ?? 0;
+
+        public IIconInfo HeroImage => throw new InvalidOperationException("boom");
+
+        public string Title => "Throwing";
+
+        public string Body => "Throwing body";
 
         public IDetailsElement[] Metadata => [];
     }

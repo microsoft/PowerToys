@@ -5,6 +5,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -77,6 +79,26 @@ public partial class ContentPageViewModelTests
         public IDetailsElement[] Metadata => [];
     }
 
+    private sealed partial class ThrowingDetails : IDetails
+    {
+        public IIconInfo HeroImage => throw new InvalidOperationException("boom");
+
+        public string Title => "Throwing";
+
+        public string Body => "Throwing body";
+
+        public IDetailsElement[] Metadata => [];
+    }
+
+    private sealed class ShowDetailsRecipient
+    {
+        private int _messageCount;
+
+        public int MessageCount => Volatile.Read(ref _messageCount);
+
+        public void RecordMessage() => Interlocked.Increment(ref _messageCount);
+    }
+
     private static CommandPaletteContentPageViewModel CreateContentViewModel(SwappableContentPage page) =>
         new(page, TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty);
 
@@ -145,6 +167,47 @@ public partial class ContentPageViewModelTests
         page.Details = new Details { Title = "Second", Body = "Second body" };
 
         Assert.AreEqual("Second body", viewModel.Details?.Body, "the replacement details were never initialized");
+    }
+
+    [TestMethod]
+    public void DetailsUpdate_CleansUpDisplacedDetails_WhenReplacementInitializationThrows()
+    {
+        var first = new CountingDetails();
+        var page = new SwappableContentPage
+        {
+            Id = "content.page",
+            Name = "Content Page",
+            Title = "Content Page",
+            Details = first,
+        };
+
+        var recipient = new ShowDetailsRecipient();
+        WeakReferenceMessenger.Default.Register<ShowDetailsRecipient, ShowDetailsMessage>(recipient, static (r, _) => r.RecordMessage());
+
+        try
+        {
+            var viewModel = CreateContentViewModel(page);
+            viewModel.InitializeProperties();
+
+            Assert.AreEqual(1, first.HandlerCount, "the initial details should be subscribed");
+            Assert.IsTrue(
+                SpinWait.SpinUntil(() => recipient.MessageCount > 0, TimeSpan.FromSeconds(2)),
+                "initial details message was not sent");
+            var initialShowMessages = recipient.MessageCount;
+
+            page.Details = new ThrowingDetails();
+
+            SpinWait.SpinUntil(() => first.HandlerCount == 0, TimeSpan.FromSeconds(2));
+            Assert.AreEqual(0, first.HandlerCount, "displaced details were left subscribed after replacement initialization failed");
+            Assert.IsTrue(
+                SpinWait.SpinUntil(() => recipient.MessageCount == initialShowMessages + 1, TimeSpan.FromSeconds(2)),
+                "details update message was not sent when replacement initialization failed");
+            Assert.AreEqual(initialShowMessages + 1, recipient.MessageCount, "unexpected details message count");
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+        }
     }
 
     private static CommandContextItem Command(string name) => new(new NoOpCommand { Name = name });
