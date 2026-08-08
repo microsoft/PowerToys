@@ -433,12 +433,16 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         // RPC to check type
         if (model is IFallbackCommandItem fallback)
         {
-            var wasEmpty = string.IsNullOrEmpty(Title);
+            var oldTitle = Title;
 
             // RPC for method
             fallback.FallbackHandler.UpdateQuery(newQuery);
-            var isEmpty = string.IsNullOrEmpty(Title);
-            return wasEmpty != isEmpty;
+            var newTitle = Title;
+
+            // Report any title change, not just an empty <-> non-empty flip: the render path
+            // re-scores fallbacks off this signal, so a change like "server01" -> "server02"
+            // must still trigger a refresh or the fallback keeps its stale score and position.
+            return !string.Equals(oldTitle, newTitle, StringComparison.Ordinal);
         }
 
         return false;
