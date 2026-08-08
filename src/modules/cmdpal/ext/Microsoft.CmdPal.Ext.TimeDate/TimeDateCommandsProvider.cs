@@ -47,7 +47,7 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         // On subsequent timer ticks, wrappedBand is non-null and SetItems fires
         // RaiseItemsChanged - the framework marshals to the UI thread in
         // DockBandViewModel.InitializeFromList via DoOnUiThread.
-        _nowDockBand = new NowDockBand(_settingsManager.DockClockWithSecond, onUpdated: () =>
+        _nowDockBand = new NowDockBand(_settingsManager, onUpdated: () =>
         {
             if (wrappedBand is not null)
             {
@@ -55,7 +55,7 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
             }
         });
 
-        // Re-read the dock clock preference whenever settings change so the band updates
+        // Re-read the dock clock preferences whenever settings change so the band updates
         // live (no app restart required). The band ignores no-op changes internally.
         _settingsManager.Settings.SettingsChanged += OnSettingsChanged;
 
@@ -96,7 +96,7 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
 
     private void OnSettingsChanged(object sender, Settings args)
     {
-        _nowDockBand?.UpdateSettings(_settingsManager.DockClockWithSecond);
+        _nowDockBand?.UpdateSettings();
     }
 
     public override void Dispose()
