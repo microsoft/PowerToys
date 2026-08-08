@@ -20,7 +20,18 @@ namespace KeyboardManagerEditorUI.Settings
             "PowerToys",
             "Keyboard Manager");
 
-        private static readonly string _settingsFilePath = Path.Combine(_settingsDirectory, "editorSettings.json");
+        // The editor cache is per-profile so switching profiles never mixes mappings.
+        // The built-in "default" profile keeps the legacy "editorSettings.json" name for back-compat.
+        private static string CurrentCacheFilePath
+        {
+            get
+            {
+                string profile = ProfileManager.GetActiveProfile();
+                return profile.Equals("default", StringComparison.OrdinalIgnoreCase)
+                    ? Path.Combine(_settingsDirectory, "editorSettings.json")
+                    : Path.Combine(_settingsDirectory, $"editorSettings.{profile}.json");
+            }
+        }
 
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions { WriteIndented = true };
 
@@ -53,11 +64,11 @@ namespace KeyboardManagerEditorUI.Settings
         {
             try
             {
-                if (!File.Exists(_settingsFilePath))
+                if (!File.Exists(CurrentCacheFilePath))
                 {
                     if (_mappingService is not null)
                     {
-                        EditorSettings createdSettings = CreateSettingsFromKeyboardManagerService();
+                        EditorSettings createdSettings = CreateSettingsFromKeyboardManagerService(_mappingService);
                         WriteSettings(createdSettings);
                         return createdSettings;
                     }
@@ -65,7 +76,7 @@ namespace KeyboardManagerEditorUI.Settings
                     return new EditorSettings();
                 }
 
-                string json = File.ReadAllText(_settingsFilePath);
+                string json = File.ReadAllText(CurrentCacheFilePath);
                 return JsonSerializer.Deserialize<EditorSettings>(json, _jsonOptions) ?? new EditorSettings();
             }
             catch (Exception)
@@ -80,7 +91,7 @@ namespace KeyboardManagerEditorUI.Settings
             {
                 Directory.CreateDirectory(_settingsDirectory);
                 string json = JsonSerializer.Serialize(editorSettings, _jsonOptions);
-                File.WriteAllText(_settingsFilePath, json);
+                File.WriteAllText(CurrentCacheFilePath, json);
                 return true;
             }
             catch (Exception)
@@ -91,18 +102,18 @@ namespace KeyboardManagerEditorUI.Settings
 
         public static bool WriteSettings() => WriteSettings(EditorSettings);
 
-        private static EditorSettings CreateSettingsFromKeyboardManagerService()
+        private static EditorSettings CreateSettingsFromKeyboardManagerService(KeyboardMappingService service)
         {
             EditorSettings settings = new EditorSettings();
 
             // Process all shortcut mappings (RunProgram, OpenUri, RemapShortcut, RemapText)
-            foreach (ShortcutKeyMapping mapping in _mappingService!.GetShortcutMappings())
+            foreach (ShortcutKeyMapping mapping in service.GetShortcutMappings())
             {
                 AddShortcutMapping(settings, mapping);
             }
 
             // Process single key to key mappings
-            foreach (var mapping in _mappingService!.GetSingleKeyMappings())
+            foreach (var mapping in service.GetSingleKeyMappings())
             {
                 var shortcutMapping = new ShortcutKeyMapping
                 {
@@ -114,7 +125,7 @@ namespace KeyboardManagerEditorUI.Settings
             }
 
             // Process single key to text mappings
-            foreach (var mapping in _mappingService!.GetKeyToTextMappings())
+            foreach (var mapping in service.GetKeyToTextMappings())
             {
                 var shortcutMapping = new ShortcutKeyMapping
                 {
@@ -127,6 +138,32 @@ namespace KeyboardManagerEditorUI.Settings
             }
 
             return settings;
+        }
+
+        /// <summary>
+        /// Reloads the editor cache to reflect whatever profile is currently active (call after
+        /// <see cref="ProfileManager.SetActiveProfile"/>). Rebuilds from the now-active profile's
+        /// native config so the editor shows exactly what the engine will apply, and persists it to
+        /// that profile's cache file. No-op when the native service is unavailable (preview mode).
+        /// </summary>
+        public static void ReloadForActiveProfile()
+        {
+            if (_mappingService is null)
+            {
+                return;
+            }
+
+            try
+            {
+                using var service = new KeyboardMappingService();
+                EditorSettings = CreateSettingsFromKeyboardManagerService(service);
+                WriteSettings();
+            }
+            catch (Exception ex)
+            {
+                ManagedCommon.Logger.LogError($"SettingsManager.ReloadForActiveProfile failed: {ex.Message}");
+                EditorSettings = new EditorSettings();
+            }
         }
 
         public static void CorrelateServiceAndEditorMappings()
