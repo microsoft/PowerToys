@@ -50,6 +50,10 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
 
+    // All main-page search telemetry state and emission is owned by this dedicated type, keeping
+    // MainListPage responsible for producing results rather than for tracking telemetry bookkeeping.
+    private readonly MainListPageSearchTelemetry _searchTelemetry = new();
+
     // Stable separator instances so that the VM cache and InPlaceUpdateList
     // recognise them across successive GetItems() calls
     private readonly Separator _pinnedSeparator = new(Resources.home_sections_pinned_title);
@@ -277,7 +281,7 @@ public sealed partial class MainListPage : DynamicListPage,
             .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
             .ToList();
 
-        return MainListPageResultFactory.Create(
+        var result = MainListPageResultFactory.Create(
             _filteredItems,
             validScoredFallbacks,
             _filteredApps,
@@ -285,6 +289,19 @@ public sealed partial class MainListPage : DynamicListPage,
             _resultsSeparator,
             _fallbacksSeparator,
             AppResultLimit);
+
+        // Snapshot the rendered order plus every scored input and the query length together, so
+        // selection telemetry resolves an invoked item's rank, tier, and query length from this one
+        // generation off the hot path. These are plain reference assignments - no extra allocation.
+        _searchTelemetry.CaptureSearchView(
+            result,
+            _filteredItems,
+            _filteredApps,
+            validScoredFallbacks,
+            _fallbackItems,
+            SearchText?.Length ?? 0);
+
+        return result;
     }
 
     // Scores the current global-fallback snapshot against its query, dropping any whose title is
@@ -449,6 +466,10 @@ public sealed partial class MainListPage : DynamicListPage,
 
             if (aliases.CheckAlias(newSearch))
             {
+                // An alias query supersedes any normal query whose settled-search telemetry is
+                // still pending in the debounce; drop it so the superseded query never emits.
+                _searchTelemetry.CancelPendingResults();
+
                 if (_filteredItemsIncludesApps != _includeApps)
                 {
                     lock (_tlcManager.TopLevelCommands)
@@ -509,6 +530,10 @@ public sealed partial class MainListPage : DynamicListPage,
             {
                 _filteredItemsIncludesApps = _includeApps;
                 ClearResults();
+
+                // Drop any pending settled-search telemetry so a cleared query never emits.
+                _searchTelemetry.ClearSearchView();
+
                 var wasAlreadyEmpty = string.IsNullOrWhiteSpace(oldSearch);
                 RequestRefresh(fullRefresh: true, interval: wasAlreadyEmpty ? null : TimeSpan.Zero);
 
@@ -649,6 +674,18 @@ public sealed partial class MainListPage : DynamicListPage,
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
             var filterDoneTimestamp = stopwatch.ElapsedMilliseconds;
 #endif
+
+            // Queue a settled-search telemetry event. This measures the deterministic first-paint
+            // results (commands + capped apps) and the latency to produce them, at this boundary -
+            // never inside the per-item scoring loop. The event is debounced so it is emitted only
+            // when the query settles, not on every keystroke, and it carries the query LENGTH only.
+            if (isUserInput)
+            {
+                var deterministicResultCount = (_filteredItems?.Length ?? 0)
+                    + Math.Min(_filteredApps?.Length ?? 0, AppResultLimit);
+                _searchTelemetry.QueueSearchResults(newSearch.Length, deterministicResultCount, stopwatch.ElapsedMilliseconds);
+            }
+
             if (isUserInput)
             {
                 // Make sure that the throttle delay is consistent from the user's perspective, even if filtering
@@ -806,6 +843,8 @@ public sealed partial class MainListPage : DynamicListPage,
         {
             RecentCommands = state.RecentCommands.WithHistoryItem(id),
         });
+
+        _searchTelemetry.ReportSelection(topLevelOrAppItem, _resultsSeparator, _fallbacksSeparator);
     }
 
     private static string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
@@ -916,6 +955,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         _fallbackUpdateManager.Dispose();
+        _searchTelemetry.Dispose();
 
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
