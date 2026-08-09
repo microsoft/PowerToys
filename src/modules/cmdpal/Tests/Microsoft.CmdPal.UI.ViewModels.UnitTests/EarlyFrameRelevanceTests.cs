@@ -12,7 +12,6 @@ using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
@@ -21,42 +20,20 @@ public sealed partial class EarlyFrameRelevanceTests
 {
     public TestContext TestContext { get; set; } = null!;
 
-    private sealed partial class CatalogItem : IListItem, IPrecomputedListItem
+    private sealed partial class CatalogItem : ListItem, IPrecomputedListItem
     {
         private FuzzyTargetCache _titleCache;
         private FuzzyTargetCache _subtitleCache;
 
         public CatalogItem(string title, string subtitle, string id)
+            : base(new NoOpCommand() { Id = id })
         {
             Title = title;
             Subtitle = subtitle;
             Id = id;
-            Command = new NoOpCommand() { Id = id };
         }
 
-        public string Title { get; }
-
-        public string Subtitle { get; }
-
         public string Id { get; }
-
-        public ICommand Command { get; }
-
-        public IDetails? Details => null;
-
-        public IIconInfo? Icon => null;
-
-        public string Section => string.Empty;
-
-        public ITag[] Tags => [];
-
-        public string TextToSuggest => string.Empty;
-
-        public IContextItem[] MoreCommands => [];
-
-#pragma warning disable CS0067 // The event is never used
-        public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
-#pragma warning restore CS0067
 
         public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher) => _titleCache.GetOrUpdate(matcher, Title);
 
