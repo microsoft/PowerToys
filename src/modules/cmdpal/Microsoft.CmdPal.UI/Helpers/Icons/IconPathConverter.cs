@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.UI.Xaml.Controls;
@@ -163,20 +164,43 @@ internal static partial class IconPathConverter
             try
             {
                 var bytesPerRow = checked(bitmap.Width * 4);
-                var pixels = GC.AllocateUninitializedArray<byte>(checked(bytesPerRow * bitmap.Height));
-                for (var row = 0; row < bitmap.Height; row++)
+                var pixelBufferLength = checked(bytesPerRow * bitmap.Height);
+                var pixels = ArrayPool<byte>.Shared.Rent(pixelBufferLength);
+                try
                 {
-                    var source = nint.Add(bitmapData.Scan0, row * bitmapData.Stride);
-                    Marshal.Copy(source, pixels, row * bytesPerRow, bytesPerRow);
-                }
+                    if (bitmapData.Stride == bytesPerRow)
+                    {
+                        Marshal.Copy(bitmapData.Scan0, pixels, 0, pixelBufferLength);
+                    }
+                    else
+                    {
+                        for (var row = 0; row < bitmap.Height; row++)
+                        {
+                            var source = nint.Add(bitmapData.Scan0, row * bitmapData.Stride);
+                            Marshal.Copy(source, pixels, row * bytesPerRow, bytesPerRow);
+                        }
+                    }
 
-                var softwareBitmap = new SoftwareBitmap(
-                    BitmapPixelFormat.Bgra8,
-                    bitmap.Width,
-                    bitmap.Height,
-                    BitmapAlphaMode.Premultiplied);
-                softwareBitmap.CopyFromBuffer(pixels.AsBuffer());
-                return softwareBitmap;
+                    var softwareBitmap = new SoftwareBitmap(
+                        BitmapPixelFormat.Bgra8,
+                        bitmap.Width,
+                        bitmap.Height,
+                        BitmapAlphaMode.Premultiplied);
+                    try
+                    {
+                        softwareBitmap.CopyFromBuffer(pixels.AsBuffer(0, pixelBufferLength));
+                        return softwareBitmap;
+                    }
+                    catch
+                    {
+                        softwareBitmap.Dispose();
+                        throw;
+                    }
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(pixels);
+                }
             }
             finally
             {
