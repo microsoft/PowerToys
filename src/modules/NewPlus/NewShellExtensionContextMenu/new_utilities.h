@@ -189,7 +189,7 @@ namespace newplus::utilities
                 hr = shell_windows->Item(v, &shell_window);
                 if (SUCCEEDED(hr) && shell_window)
                 {
-                    hr = shell_window->QueryInterface(&web_browser_app);
+                    hr = shell_window->QueryInterface(IID_PPV_ARGS(&web_browser_app));
                     if (SUCCEEDED(hr))
                     {
                         BSTR folder_view_location;
@@ -217,13 +217,32 @@ namespace newplus::utilities
         }
 
         CComPtr<IServiceProvider> service_provider;
-        shell_window->QueryInterface(&service_provider);
+        if (FAILED(shell_window->QueryInterface(IID_PPV_ARGS(&service_provider))) || service_provider == nullptr)
+        {
+            return false;
+        }
+
         CComPtr<IShellBrowser> shell_browser;
-        service_provider->QueryService(SID_STopLevelBrowser, IID_PPV_ARGS(&shell_browser));
+        if (FAILED(service_provider->QueryService(SID_STopLevelBrowser, IID_PPV_ARGS(&shell_browser))) || shell_browser == nullptr)
+        {
+            return false;
+        }
+
         CComPtr<IShellView> shell_view;
-        shell_browser->QueryActiveShellView(&shell_view);
+        if (FAILED(shell_browser->QueryActiveShellView(&shell_view)) || shell_view == nullptr)
+        {
+            return false;
+        }
+
         CComPtr<IFolderView> folder_view;
-        shell_view->QueryInterface(&folder_view);
+        if (FAILED(shell_view->QueryInterface(IID_PPV_ARGS(&folder_view))) || folder_view == nullptr)
+        {
+            return false;
+        }
+
+        // The folder backing the active view; used to resolve child PIDLs to their names below.
+        CComPtr<IShellFolder> view_shell_folder;
+        folder_view->GetFolder(IID_PPV_ARGS(&view_shell_folder));
 
         // Find the newly created object (file or folder)
         // And put object into edit mode (SVSI_EDIT) and if desktop also reposition
@@ -234,10 +253,27 @@ namespace newplus::utilities
         {
             PITEMID_CHILD shell_item_id = nullptr;
 
-            folder_view->Item(i, &shell_item_id);
+            if (FAILED(folder_view->Item(i, &shell_item_id)) || shell_item_id == nullptr)
+            {
+                continue;
+            }
 
             wchar_t path_buffer[MAX_PATH * 2] = { 0 };
-            if (!SHGetPathFromIDListW(reinterpret_cast<PCIDLIST_ABSOLUTE>(shell_item_id), path_buffer))
+
+            // IFolderView::Item returns a child (folder-relative) PIDL. SHGetPathFromIDList expects an
+            // absolute PIDL, so ask the parent IShellFolder for the item's in-folder parsing name instead
+            // of reinterpret-casting the child PIDL to absolute (which fails outside the desktop and
+            // would leave the new item never matched, so rename/reposition would silently time out).
+            if (view_shell_folder != nullptr)
+            {
+                STRRET str_ret;
+                if (SUCCEEDED(view_shell_folder->GetDisplayNameOf(shell_item_id, SHGDN_INFOLDER | SHGDN_FORPARSING, &str_ret)))
+                {
+                    StrRetToBufW(&str_ret, shell_item_id, path_buffer, ARRAYSIZE(path_buffer));
+                }
+            }
+
+            if (path_buffer[0] == L'\0')
             {
                 CoTaskMemFree(shell_item_id);
                 continue;
@@ -277,13 +313,17 @@ namespace newplus::utilities
                         GetDpiForMonitor(h_monitor, MDT_EFFECTIVE_DPI, &invoke_dpi_x, &invoke_dpi_y);
                     }
 
-                    // Convert physical screen coordinates to the desktop ListView's client coordinates.
-                    if (desktop_window_handle)
+                    // IFolderView expects client coordinates for its view window.
+                    HWND folder_view_window = nullptr;
+                    if (SUCCEEDED(shell_view->GetWindow(&folder_view_window)) && folder_view_window != nullptr)
                     {
-                        ::ScreenToClient(reinterpret_cast<HWND>(static_cast<LONG_PTR>(desktop_window_handle)), &screen_point);
+                        ::ScreenToClient(folder_view_window, &screen_point);
                     }
 
-                    SetThreadDpiAwarenessContext(prev_ctx);
+                    if (prev_ctx != nullptr)
+                    {
+                        SetThreadDpiAwarenessContext(prev_ctx);
+                    }
 
                     // Keep icon clear of the screen edge: ~30 logical pixels scaled to the invoke monitor's DPI.
                     const LONG min_margin = ::MulDiv(30, static_cast<int>(invoke_dpi_x), 96);
@@ -292,14 +332,13 @@ namespace newplus::utilities
 
                     POINT position[] = { screen_point };
                     PCUITEMID_CHILD shell_item_to_select_and_position[] = { shell_item_id };
-                    folder_view->SelectAndPositionItems(1, shell_item_to_select_and_position, position, common_select_flags | SVSI_POSITIONITEM);
+                    done = SUCCEEDED(folder_view->SelectAndPositionItems(1, shell_item_to_select_and_position, position, common_select_flags | SVSI_POSITIONITEM));
                 }
                 else
                 {
                     // Enter rename mode
-                    folder_view->SelectItem(i, common_select_flags);
+                    done = SUCCEEDED(folder_view->SelectItem(i, common_select_flags));
                 }
-                done = true;
             }
             CoTaskMemFree(shell_item_id);
         }

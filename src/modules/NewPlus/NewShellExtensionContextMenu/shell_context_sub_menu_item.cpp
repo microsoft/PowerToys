@@ -8,7 +8,7 @@ using namespace Microsoft::WRL;
 
 // Sub context menu containing the actual list of templates
 shell_context_sub_menu_item::shell_context_sub_menu_item()
-    : template_entry(nullptr), site_of_folder(nullptr), mouse_position_at_time_of_invoke{ 0, 0 }
+    : template_entry(nullptr), site_of_folder(nullptr), mouse_position_at_time_of_invoke{ -1, -1 }
 {
 }
 

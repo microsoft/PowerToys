@@ -45,10 +45,16 @@ IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UIN
 
     try
     {
-        // Capture mouse position now (at menu-open time) for more accurate desktop icon placement later
-        mouse_position_at_time_of_invoke = { 0, 0 };
+        // Capture mouse position now (at menu-open time) for more accurate desktop icon placement later.
+        // Use {-1,-1} as the "not captured" sentinel (matching the Win11 path) because (0,0) is a valid
+        // screen coordinate; only treat the position as real when GetCursorPos succeeds.
+        mouse_position_at_time_of_invoke = { -1, -1 };
         const DPI_AWARENESS_CONTEXT prev_dpi_ctx = SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-        GetCursorPos(&mouse_position_at_time_of_invoke);
+        if (!GetCursorPos(&mouse_position_at_time_of_invoke))
+        {
+            mouse_position_at_time_of_invoke = { -1, -1 };
+        }
+
         SetThreadDpiAwarenessContext(prev_dpi_ctx);
 
         // Create the initial context popup menu containing the list of templates and open templates action

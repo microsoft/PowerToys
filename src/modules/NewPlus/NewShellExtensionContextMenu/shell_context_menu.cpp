@@ -76,7 +76,11 @@ IFACEMETHODIMP shell_context_menu::EnumSubCommands(_COM_Outptr_ IEnumExplorerCom
         // Capture in per-monitor-DPI-aware context so the stored position is always in physical screen pixels.
         POINT cursor_position = { -1, -1 };
         const DPI_AWARENESS_CONTEXT prev_dpi_ctx = SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-        GetCursorPos(&cursor_position);
+        if (!GetCursorPos(&cursor_position))
+        {
+            cursor_position = { -1, -1 };
+        }
+
         SetThreadDpiAwarenessContext(prev_dpi_ctx);
 
         auto e = Make<shell_context_sub_menu>(site_of_folder, cursor_position);
