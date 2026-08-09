@@ -2,8 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
+using CommunityToolkit.WinUI;
+using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
@@ -22,12 +25,17 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
     private readonly SettingsViewModel? viewModel;
     private readonly IApplicationInfoService _appInfoService;
     private readonly ISettingsService _settingsService;
+    private readonly IExternalCommandPermissionStore _externalCommandPermissionStore;
     private readonly DispatcherTimer _notificationStateTimer;
 
+    private bool _hasExternalCommandPermissions;
+    private bool _isPageLoaded;
     private bool _isNotificationStateSuppressing;
     private string _notificationStateMessage = string.Empty;
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public ObservableCollection<ExternalCommandPermissionViewModel> ExternalCommandPermissions { get; } = [];
 
     public GeneralPage()
     {
@@ -36,6 +44,7 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+        _externalCommandPermissionStore = App.Current.Services.GetRequiredService<IExternalCommandPermissionStore>();
         _appInfoService = App.Current.Services.GetRequiredService<IApplicationInfoService>();
         viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, _settingsService);
 
@@ -44,6 +53,19 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
 
         Loaded += GeneralPage_Loaded;
         Unloaded += GeneralPage_Unloaded;
+    }
+
+    public bool HasExternalCommandPermissions
+    {
+        get => _hasExternalCommandPermissions;
+        private set
+        {
+            if (_hasExternalCommandPermissions != value)
+            {
+                _hasExternalCommandPermissions = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasExternalCommandPermissions)));
+            }
+        }
     }
 
     public bool IsNotificationStateSuppressing
@@ -84,15 +106,95 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
 
     private void GeneralPage_Loaded(object sender, RoutedEventArgs e)
     {
+        _isPageLoaded = true;
         _settingsService.SettingsChanged += SettingsService_SettingsChanged;
+        _externalCommandPermissionStore.PermissionsChanged += ExternalCommandPermissionStore_PermissionsChanged;
         UpdateNotificationState();
         _notificationStateTimer.Start();
+        _ = RefreshExternalCommandPermissionsAsync();
     }
 
     private void GeneralPage_Unloaded(object sender, RoutedEventArgs e)
     {
+        _isPageLoaded = false;
         _notificationStateTimer.Stop();
         _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
+        _externalCommandPermissionStore.PermissionsChanged -= ExternalCommandPermissionStore_PermissionsChanged;
+    }
+
+    private void ExternalCommandPermissionStore_PermissionsChanged(object? sender, EventArgs e) =>
+        _ = RefreshExternalCommandPermissionsAsync();
+
+    private async Task RefreshExternalCommandPermissionsAsync()
+    {
+        try
+        {
+            var permissions = await _externalCommandPermissionStore.GetAllAsync();
+            await DispatcherQueue.EnqueueAsync(() =>
+            {
+                if (_isPageLoaded)
+                {
+                    ApplyExternalCommandPermissions(permissions);
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to refresh external command link permissions.", ex);
+        }
+    }
+
+    private void ApplyExternalCommandPermissions(IReadOnlyList<ExternalCommandPermission> permissions)
+    {
+        ExternalCommandPermissions.Clear();
+        foreach (var permission in permissions)
+        {
+            ExternalCommandPermissions.Add(new ExternalCommandPermissionViewModel(permission));
+        }
+
+        HasExternalCommandPermissions = ExternalCommandPermissions.Count > 0;
+    }
+
+    private async void RevokeExternalCommandPermission_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (sender is FrameworkElement { DataContext: ExternalCommandPermissionViewModel viewModel })
+            {
+                await _externalCommandPermissionStore.RevokeAsync(viewModel.Permission.Key);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to revoke an external command link permission.", ex);
+        }
+    }
+
+    private async void ClearExternalCommandPermissions_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var dialog = new ContentDialog
+            {
+                Title = ResourceLoaderInstance.GetString("Settings_GeneralPage_ExternalCommandPermissions_ClearConfirmation_Title"),
+                Content = ResourceLoaderInstance.GetString("Settings_GeneralPage_ExternalCommandPermissions_ClearConfirmation_Description"),
+                PrimaryButtonText = ResourceLoaderInstance.GetString("Settings_GeneralPage_ExternalCommandPermissions_ClearConfirmation_RemoveButton"),
+                CloseButtonText = ResourceLoaderInstance.GetString("ConfirmationDialog_CancelButtonText"),
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = XamlRoot,
+            };
+
+            if (await dialog.ShowAsync() != ContentDialogResult.Primary)
+            {
+                return;
+            }
+
+            await _externalCommandPermissionStore.ClearAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to clear external command link permissions.", ex);
+        }
     }
 
     private void NotificationStateTimer_Tick(object? sender, object e)

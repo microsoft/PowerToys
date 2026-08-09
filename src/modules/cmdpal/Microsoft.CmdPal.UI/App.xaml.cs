@@ -242,6 +242,8 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ISettingsService, SettingsService>();
         services.AddSingleton<IAppStateService, AppStateService>();
         services.AddSingleton<ICmdPalProtocolActivation, CmdPalProtocolActivation>();
+        services.AddSingleton<IAtRestDataProtector, CurrentUserDataProtector>();
+        services.AddSingleton<IExternalCommandPermissionStore, ExternalCommandPermissionStore>();
 
         // Services
         services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();

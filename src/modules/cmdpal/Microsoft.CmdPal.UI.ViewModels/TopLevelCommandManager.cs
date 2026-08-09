@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -722,6 +723,59 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
 
         return null;
+    }
+
+    public TopLevelViewModel? LookupCommand(string providerId, string commandId)
+    {
+        lock (TopLevelCommands)
+        {
+            foreach (var command in TopLevelCommands)
+            {
+                if (!command.IsFallback &&
+                    string.Equals(command.CommandProviderId, providerId, StringComparison.Ordinal) &&
+                    string.Equals(command.Id, commandId, StringComparison.Ordinal))
+                {
+                    return command;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>Waits for the command load active at call time, excluding late provider continuations.</summary>
+    public async Task WaitForCurrentLoadAsync(CancellationToken cancellationToken = default)
+    {
+        if (!IsLoading)
+        {
+            return;
+        }
+
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        PropertyChangedEventHandler? handler = null;
+        handler = (_, args) =>
+        {
+            if (args.PropertyName == nameof(IsLoading) && !IsLoading)
+            {
+                completion.TrySetResult();
+            }
+        };
+
+        PropertyChanged += handler;
+        try
+        {
+            // IsLoading may have changed between the first check and subscribing.
+            if (!IsLoading)
+            {
+                return;
+            }
+
+            await completion.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            PropertyChanged -= handler;
+        }
     }
 
     public TopLevelViewModel? LookupDockBand(string id)

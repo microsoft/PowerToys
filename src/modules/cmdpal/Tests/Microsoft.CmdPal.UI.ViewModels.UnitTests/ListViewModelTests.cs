@@ -76,8 +76,171 @@ public partial class ListViewModelTests
         public void TriggerItemsChanged(int totalItems) => RaiseItemsChanged(totalItems);
     }
 
+    private sealed partial class LaunchFilters : Filters
+    {
+        public LaunchFilters()
+        {
+            CurrentFilterId = "all";
+        }
+
+        public override IFilterItem[] GetFilters() =>
+        [
+            new Filter() { Id = "all", Name = "All" },
+            new Separator(),
+            new Filter() { Id = "running", Name = "Running" },
+        ];
+    }
+
+    private sealed partial class SearchableStaticPage : ListPage
+    {
+        public int GetItemsCallCount { get; private set; }
+
+        public string? FilterAtFirstGetItems { get; private set; }
+
+        public SearchableStaticPage()
+        {
+            Filters = new LaunchFilters();
+        }
+
+        public override IListItem[] GetItems()
+        {
+            GetItemsCallCount++;
+            FilterAtFirstGetItems ??= Filters?.CurrentFilterId;
+            return
+            [
+                new ListItem(new NoOpCommand() { Name = "SSH server" }),
+                new ListItem(new NoOpCommand() { Name = "Calculator" }),
+            ];
+        }
+    }
+
+    private sealed partial class SearchableDynamicPage : DynamicListPage
+    {
+        public int GetItemsCallCount { get; private set; }
+
+        public string? SearchAtFirstGetItems { get; private set; }
+
+        public string? FilterAtFirstGetItems { get; private set; }
+
+        public string? FilterWhenSearchChanged { get; private set; }
+
+        public SearchableDynamicPage()
+        {
+            Filters = new LaunchFilters();
+        }
+
+        public override void UpdateSearchText(string oldSearch, string newSearch)
+        {
+            FilterWhenSearchChanged = Filters?.CurrentFilterId;
+        }
+
+        public override IListItem[] GetItems()
+        {
+            GetItemsCallCount++;
+            SearchAtFirstGetItems ??= SearchText;
+            FilterAtFirstGetItems ??= Filters?.CurrentFilterId;
+            return [new ListItem(new NoOpCommand() { Name = "Result" })];
+        }
+    }
+
     private static ListViewModel CreateViewModel(IListPage page) =>
         new(page, TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty, DefaultContextMenuFactory.Instance);
+
+    [TestMethod]
+    public async Task StaticListPageLaunchOptions_ApplyFilterBeforeFetchAndHostQuery()
+    {
+        var page = new SearchableStaticPage
+        {
+            Id = "static.list.page",
+            Name = "Static List Page",
+            Title = "Static List Page",
+        };
+        var viewModel = CreateViewModel(page);
+        viewModel.SetLaunchOptions(new(Query: "ssh", FilterId: "running"));
+
+        try
+        {
+            await ObserveNextItemsUpdateAsync(viewModel, viewModel.InitializeProperties);
+
+            Assert.AreEqual(1, page.GetItemsCallCount);
+            Assert.AreEqual("running", page.FilterAtFirstGetItems);
+            Assert.AreEqual("ssh", viewModel.SearchTextBox);
+            Assert.AreEqual("ssh", viewModel.InitialSearchText);
+            Assert.AreEqual(1, viewModel.FilteredItems.Count);
+            Assert.AreEqual("SSH server", viewModel.FilteredItems[0].Title);
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+            viewModel.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task DynamicListPageLaunchOptions_ReachProviderBeforeFirstFetch()
+    {
+        var page = new SearchableDynamicPage
+        {
+            Id = "dynamic.list.page",
+            Name = "Dynamic List Page",
+            Title = "Dynamic List Page",
+        };
+        var viewModel = CreateViewModel(page);
+        viewModel.SetLaunchOptions(new(Query: "ssh", FilterId: "running"));
+
+        try
+        {
+            await ObserveNextItemsUpdateAsync(viewModel, viewModel.InitializeProperties);
+
+            Assert.AreEqual(1, page.GetItemsCallCount);
+            Assert.AreEqual("running", page.FilterWhenSearchChanged);
+            Assert.AreEqual("running", page.FilterAtFirstGetItems);
+            Assert.AreEqual("ssh", page.SearchAtFirstGetItems);
+            Assert.AreEqual("ssh", viewModel.SearchTextBox);
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+            viewModel.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task UnknownFilter_ShowsPageErrorAndPreventsInitialFetch()
+    {
+        var page = new SearchableStaticPage
+        {
+            Id = "static.list.page",
+            Name = "Static List Page",
+            Title = "Static List Page",
+        };
+        var viewModel = CreateViewModel(page);
+        viewModel.SetLaunchOptions(new(FilterId: "RUNNING"));
+        var errorObserved = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        viewModel.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(PageViewModel.ErrorMessage) &&
+                !string.IsNullOrEmpty(viewModel.ErrorMessage))
+            {
+                errorObserved.TrySetResult();
+            }
+        };
+
+        try
+        {
+            viewModel.InitializeProperties();
+
+            var completed = await Task.WhenAny(errorObserved.Task, Task.Delay(TimeSpan.FromSeconds(2)));
+            Assert.AreSame(errorObserved.Task, completed);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(viewModel.ErrorMessage));
+            Assert.AreEqual(0, page.GetItemsCallCount);
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+            viewModel.Dispose();
+        }
+    }
 
     [TestMethod]
     public async Task RecursiveItemsChangedDuringGetItems_IsDeferredUntilGetItemsReturns()

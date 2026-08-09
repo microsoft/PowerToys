@@ -44,7 +44,7 @@ public record SettingsModel
     public ImmutableList<PinnedCommandSettings> PinnedCommands { get; init; }
         = ImmutableList<PinnedCommandSettings>.Empty;
 
-    public bool AllowExternalReload { get; init; }
+    public bool EnableExternalCommandLinks { get; init; } = true;
 
     public bool AllowAltF4 { get; init; }
 
