@@ -9,18 +9,18 @@
 
 namespace
 {
-    Measurement GetMeasurement(const CursorDrag& currentBounds, POINT cursorPos, float px2mmRatio)
+    Measurement GetMeasurement(const CursorDrag& currentBounds, float px2mmRatio)
     {
         D2D1_RECT_F rect;
         std::tie(rect.left, rect.right) =
-            std::minmax(static_cast<float>(cursorPos.x), currentBounds.startPos.x);
+            std::minmax(currentBounds.currentPos.x, currentBounds.startPos.x);
         std::tie(rect.top, rect.bottom) =
-            std::minmax(static_cast<float>(cursorPos.y), currentBounds.startPos.y);
+            std::minmax(currentBounds.currentPos.y, currentBounds.startPos.y);
 
         return Measurement(rect, px2mmRatio);
     }
 
-    void CopyToClipboard(HWND window, const BoundsToolState& toolState, POINT cursorPos)
+    void CopyToClipboard(HWND window, const BoundsToolState& toolState)
     {
         std::vector<Measurement> allMeasurements;
         for (const auto& [handle, perScreen] : toolState.perScreen)
@@ -30,7 +30,7 @@ namespace
             if (handle == window && perScreen.currentBounds)
             {
                 auto px2mmRatio = toolState.commonState->GetPhysicalPx2MmRatio(window);
-                allMeasurements.push_back(GetMeasurement(*perScreen.currentBounds, cursorPos, px2mmRatio));
+                allMeasurements.push_back(GetMeasurement(*perScreen.currentBounds, px2mmRatio));
             }
         }
 
@@ -51,13 +51,99 @@ namespace
         }
     }
 
+    CursorDrag ApplySnappedBounds(const CursorDrag& rawBounds, const RECT& snappedBounds)
+    {
+        const bool reverseX = rawBounds.currentPos.x < rawBounds.startPos.x;
+        const bool reverseY = rawBounds.currentPos.y < rawBounds.startPos.y;
+        return CursorDrag{
+            .startPos = D2D_POINT_2F{
+                .x = static_cast<float>(reverseX ? snappedBounds.right : snappedBounds.left),
+                .y = static_cast<float>(reverseY ? snappedBounds.bottom : snappedBounds.top),
+            },
+            .currentPos = D2D_POINT_2F{
+                .x = static_cast<float>(reverseX ? snappedBounds.left : snappedBounds.right),
+                .y = static_cast<float>(reverseY ? snappedBounds.top : snappedBounds.bottom),
+            },
+            .touchID = rawBounds.touchID,
+        };
+    }
+
+    bool IsAltPressed()
+    {
+        constexpr SHORT Pressed = static_cast<SHORT>(0x8000);
+        return (GetKeyState(VK_MENU) & Pressed) != 0 ||
+               (GetAsyncKeyState(VK_MENU) & Pressed) != 0 ||
+               (GetAsyncKeyState(VK_LMENU) & Pressed) != 0 ||
+               (GetAsyncKeyState(VK_RMENU) & Pressed) != 0;
+    }
+
+    void CommitCurrentBounds(HWND window, BoundsToolState* toolState)
+    {
+        auto& perScreen = toolState->perScreen[window];
+        if (!perScreen.rawBounds)
+        {
+            return;
+        }
+
+        const auto& rawDrag = *perScreen.rawBounds;
+        CursorDrag completedBounds = rawDrag;
+        if (perScreen.fitSelectionOnCommit && perScreen.snapFrame)
+        {
+            const RECT rawBounds = BoundsSnapModel::NormalizeBounds(
+                POINT{
+                    .x = static_cast<LONG>(rawDrag.startPos.x),
+                    .y = static_cast<LONG>(rawDrag.startPos.y),
+                },
+                POINT{
+                    .x = static_cast<LONG>(rawDrag.currentPos.x),
+                    .y = static_cast<LONG>(rawDrag.currentPos.y),
+                });
+            const auto fittedBounds = BoundsSnapModel::FitSelectionToContent(
+                perScreen.snapFrame->view,
+                rawBounds,
+                toolState->global.perColorChannelEdgeDetection,
+                toolState->global.pixelTolerance);
+            if (fittedBounds)
+            {
+                completedBounds = ApplySnappedBounds(rawDrag, *fittedBounds);
+            }
+        }
+
+        perScreen.currentBounds = completedBounds;
+        const auto px2mmRatio = toolState->commonState->GetPhysicalPx2MmRatio(window);
+        const Measurement measurement = GetMeasurement(completedBounds, px2mmRatio);
+        if (!perScreen.appendMeasurement)
+        {
+            for (auto& screen : toolState->perScreen)
+            {
+                screen.second.measurements.clear();
+            }
+        }
+        perScreen.measurements.push_back(measurement);
+
+        perScreen.rawBounds.reset();
+        perScreen.currentBounds.reset();
+        perScreen.snapFrame.reset();
+        perScreen.waitingForSnapFrame = false;
+        perScreen.snapFrameReady = false;
+        perScreen.appendMeasurement = false;
+        perScreen.fitSelectionOnCommit = false;
+        CopyToClipboard(window, *toolState);
+    }
+
     void HandleCursorMove(HWND window, BoundsToolState* toolState, const POINT cursorPos, const DWORD touchID = 0)
     {
-        if (!toolState->perScreen[window].currentBounds || (toolState->perScreen[window].currentBounds->touchID != touchID))
+        auto& perScreen = toolState->perScreen[window];
+        if (!perScreen.rawBounds ||
+            perScreen.rawBounds->touchID != touchID ||
+            perScreen.waitingForSnapFrame)
+        {
             return;
+        }
 
-        toolState->perScreen[window].currentBounds->currentPos =
+        perScreen.rawBounds->currentPos =
             D2D_POINT_2F{ .x = static_cast<float>(cursorPos.x), .y = static_cast<float>(cursorPos.y) };
+        perScreen.currentBounds = perScreen.rawBounds;
     }
 
     void HandleCursorDown(HWND window, BoundsToolState* toolState, const POINT cursorPos, const DWORD touchID = 0)
@@ -69,28 +155,46 @@ namespace
             ClipCursor(&windowRect);
 
         const D2D_POINT_2F newBoundsStart = { .x = static_cast<float>(cursorPos.x), .y = static_cast<float>(cursorPos.y) };
-        toolState->perScreen[window].currentBounds = CursorDrag{
+        auto& perScreen = toolState->perScreen[window];
+        perScreen.snapFrame.reset();
+        perScreen.waitingForSnapFrame = false;
+        perScreen.snapFrameReady = false;
+        perScreen.appendMeasurement = false;
+        perScreen.fitSelectionOnCommit = false;
+        perScreen.rawBounds = CursorDrag{
             .startPos = newBoundsStart,
             .currentPos = newBoundsStart,
             .touchID = touchID
         };
+        perScreen.currentBounds = perScreen.rawBounds;
+        if (touchID == 0 && perScreen.requestSnapFrame)
+        {
+            perScreen.requestSnapFrame(++perScreen.snapCaptureGeneration);
+        }
     }
 
-    void HandleCursorUp(HWND window, BoundsToolState* toolState, const POINT cursorPos)
+    void HandleCursorUp(HWND window, BoundsToolState* toolState)
     {
         ToggleCursor(true);
         ClipCursor(nullptr);
-        CopyToClipboard(window, *toolState, cursorPos);
 
         auto& perScreen = toolState->perScreen[window];
-
-        if (const bool shiftPress = GetKeyState(VK_SHIFT) & 0x80000; shiftPress && perScreen.currentBounds)
+        if (!perScreen.rawBounds)
         {
-            auto px2mmRatio = toolState->commonState->GetPhysicalPx2MmRatio(window);
-            perScreen.measurements.push_back(GetMeasurement(*perScreen.currentBounds, cursorPos, px2mmRatio));
+            return;
         }
 
-        perScreen.currentBounds = std::nullopt;
+        perScreen.appendMeasurement = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
+        perScreen.fitSelectionOnCommit =
+            perScreen.rawBounds->touchID == 0 &&
+            !IsAltPressed();
+        if (perScreen.fitSelectionOnCommit && !perScreen.snapFrameReady)
+        {
+            perScreen.waitingForSnapFrame = true;
+            return;
+        }
+
+        CommitCurrentBounds(window, toolState);
     }
 }
 
@@ -106,12 +210,35 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
     }
     case WM_ERASEBKGND:
         return 1;
+    case WM_BOUNDS_SNAP_FRAME_READY:
+    {
+        const auto frameMessage = reinterpret_cast<const BoundsSnapFrameMessage*>(lparam);
+        auto* toolState = GetWindowParam<BoundsToolState*>(window);
+        if (!frameMessage || !toolState)
+        {
+            return FALSE;
+        }
+
+        auto& perScreen = toolState->perScreen[window];
+        if (frameMessage->generation != perScreen.snapCaptureGeneration)
+        {
+            return FALSE;
+        }
+
+        perScreen.snapFrame = frameMessage->frame;
+        perScreen.snapFrameReady = true;
+        if (perScreen.waitingForSnapFrame)
+        {
+            CommitCurrentBounds(window, toolState);
+        }
+        return TRUE;
+    }
     case WM_KEYUP:
         if (wparam == VK_ESCAPE)
         {
             if (const auto* toolState = GetWindowParam<BoundsToolState*>(window))
             {
-                CopyToClipboard(window, *toolState, convert::FromSystemToWindow(window, toolState->commonState->cursorPosSystemSpace));
+                CopyToClipboard(window, *toolState);
             }
 
             PostMessageW(window, WM_CLOSE, {}, {});
@@ -140,7 +267,12 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
         auto toolState = GetWindowParam<BoundsToolState*>(window);
         if (!toolState)
             break;
-        toolState->perScreen[window].currentBounds = std::nullopt;
+        auto& perScreen = toolState->perScreen[window];
+        perScreen.rawBounds.reset();
+        perScreen.currentBounds.reset();
+        perScreen.waitingForSnapFrame = false;
+        perScreen.snapFrameReady = false;
+        perScreen.fitSelectionOnCommit = false;
         break;
     }
     case WM_TOUCH:
@@ -169,10 +301,12 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
 
             if (const bool up = input.dwFlags & TOUCHEVENTF_UP; up)
             {
-                HandleCursorUp(
+                HandleCursorMove(
                     window,
                     toolState,
-                    POINT{ TOUCH_COORD_TO_PIXEL(input.x), TOUCH_COORD_TO_PIXEL(input.y) });
+                    POINT{ TOUCH_COORD_TO_PIXEL(input.x), TOUCH_COORD_TO_PIXEL(input.y) },
+                    input.dwID);
+                HandleCursorUp(window, toolState);
                 continue;
             }
 
@@ -216,9 +350,11 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
         if (!toolState)
             break;
 
-        HandleCursorUp(window,
-                       toolState,
-                       convert::FromSystemToWindow(window, toolState->commonState->cursorPosSystemSpace));
+        HandleCursorMove(
+            window,
+            toolState,
+            convert::FromSystemToWindow(window, toolState->commonState->cursorPosSystemSpace));
+        HandleCursorUp(window, toolState);
         break;
     }
     case WM_RBUTTONUP:
@@ -237,7 +373,11 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
 
         if (perScreen.currentBounds)
         {
-            perScreen.currentBounds = std::nullopt;
+            perScreen.rawBounds.reset();
+            perScreen.currentBounds.reset();
+            perScreen.waitingForSnapFrame = false;
+            perScreen.snapFrameReady = false;
+            perScreen.fitSelectionOnCommit = false;
         }
         else
         {
@@ -291,8 +431,11 @@ namespace
                              measureStringBufLen,
                              crossSymbolPos,
                              textBoxPos,
-                             screenQuadrantAware,
-                             window);
+                             screenQuadrantAware ? TextBoxPlacement::CursorQuadrant :
+                                                   TextBoxPlacement::OutsideRectangle,
+                             window,
+                             screenQuadrantAware ? std::nullopt :
+                                                   std::optional<D2D1_RECT_F>{ measurement.rect });
     }
 }
 

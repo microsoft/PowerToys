@@ -9,6 +9,8 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/EventWaiter.h>
 
+#include <mutex>
+
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
@@ -49,7 +51,10 @@ private:
     bool m_enabled = false;
 
     Hotkey m_hotkey;
-    HANDLE m_hProcess;
+    HANDLE m_hProcess = nullptr;
+    HANDLE m_toggleEvent = nullptr;
+    HANDLE m_terminateEvent = nullptr;
+    std::mutex m_lifecycleMutex;
 
     HANDLE triggerEvent;
     EventWaiter triggerEventWaiter;
@@ -89,14 +94,32 @@ private:
         }
     }
 
-    bool is_process_running()
+    bool is_process_running_locked()
     {
-        return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
+        if (!m_hProcess)
+        {
+            return false;
+        }
+
+        if (WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT)
+        {
+            return true;
+        }
+
+        CloseHandle(m_hProcess);
+        m_hProcess = nullptr;
+        return false;
     }
 
-    void launch_process()
+    void launch_process_locked()
     {
         Logger::trace(L"Starting MeasureTool process");
+        if (m_hProcess)
+        {
+            CloseHandle(m_hProcess);
+            m_hProcess = nullptr;
+        }
+
         unsigned long powertoys_pid = GetCurrentProcessId();
 
         std::wstring executable_args = L"";
@@ -137,9 +160,32 @@ private:
         }
     }
 
-    void terminate_process()
+    void terminate_process_locked()
     {
-        TerminateProcess(m_hProcess, 1);
+        if (!is_process_running_locked())
+        {
+            return;
+        }
+
+        if (m_terminateEvent)
+        {
+            SetEvent(m_terminateEvent);
+        }
+
+        const DWORD waitResult = WaitForSingleObject(m_hProcess, 4000);
+        if (waitResult == WAIT_TIMEOUT || waitResult == WAIT_FAILED)
+        {
+            if (waitResult == WAIT_FAILED)
+            {
+                Logger::warn(L"Failed to wait for MeasureTool shutdown. {}", get_last_error_or_default(GetLastError()));
+            }
+            Logger::warn(L"MeasureTool did not exit after the terminate event; forcing termination");
+            TerminateProcess(m_hProcess, 1);
+            WaitForSingleObject(m_hProcess, 500);
+        }
+
+        CloseHandle(m_hProcess);
+        m_hProcess = nullptr;
     }
 
 public:
@@ -149,6 +195,8 @@ public:
         init_settings();
 
         triggerEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::MEASURE_TOOL_TRIGGER_EVENT);
+        m_toggleEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::MEASURE_TOOL_TOGGLE_EVENT);
+        m_terminateEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::MEASURE_TOOL_TERMINATE_EVENT);
         triggerEventWaiter.start(CommonSharedConstants::MEASURE_TOOL_TRIGGER_EVENT, [this](DWORD) {
             on_hotkey(0);
         });
@@ -156,9 +204,23 @@ public:
 
     ~MeasureTool()
     {
-        if (m_enabled)
+        triggerEventWaiter.stop();
+        std::scoped_lock lifecycleLock{ m_lifecycleMutex };
+        terminate_process_locked();
+        if (triggerEvent)
         {
-            terminate_process();
+            CloseHandle(triggerEvent);
+            triggerEvent = nullptr;
+        }
+        if (m_toggleEvent)
+        {
+            CloseHandle(m_toggleEvent);
+            m_toggleEvent = nullptr;
+        }
+        if (m_terminateEvent)
+        {
+            CloseHandle(m_terminateEvent);
+            m_terminateEvent = nullptr;
         }
         m_enabled = false;
     }
@@ -214,6 +276,7 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
+            std::scoped_lock lifecycleLock{ m_lifecycleMutex };
             parse_hotkey(values);
             // If you don't need to do any custom processing of the settings, proceed
             // to persists the values calling:
@@ -230,6 +293,7 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
+        std::scoped_lock lifecycleLock{ m_lifecycleMutex };
         m_enabled = true;
         Trace::EnableMeasureTool(true);
     }
@@ -237,11 +301,8 @@ public:
     // Disable the powertoy
     virtual void disable()
     {
-        if (m_enabled)
-        {
-            terminate_process();
-        }
-
+        std::scoped_lock lifecycleLock{ m_lifecycleMutex };
+        terminate_process_locked();
         m_enabled = false;
         Trace::EnableMeasureTool(false);
     }
@@ -249,21 +310,23 @@ public:
     // Returns if the powertoys is enabled
     virtual bool is_enabled() override
     {
+        std::scoped_lock lifecycleLock{ m_lifecycleMutex };
         return m_enabled;
     }
 
     virtual bool on_hotkey(size_t /*hotkeyId*/) override
     {
+        std::scoped_lock lifecycleLock{ m_lifecycleMutex };
         if (m_enabled)
         {
             Logger::trace(L"MeasureTool hotkey pressed");
-            if (is_process_running())
+            if (is_process_running_locked())
             {
-                terminate_process();
+                SetEvent(m_toggleEvent);
             }
             else
             {
-                launch_process();
+                launch_process_locked();
             }
 
             return true;
@@ -274,6 +337,7 @@ public:
 
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
+        std::scoped_lock lifecycleLock{ m_lifecycleMutex };
         if (m_hotkey.key)
         {
             if (hotkeys && buffer_size >= 1)

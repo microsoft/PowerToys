@@ -7,9 +7,14 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <ClCompile Include="ScreenCapturing.cpp" />
+    <ClCompile Include="ScreenCaptureSession.cpp" />
     <ClCompile Include="OverlayUI.cpp" />
     <ClCompile Include="BGRATextureView.cpp" />
+    <ClCompile Include="BoundsSnapModel.cpp" />
     <ClCompile Include="EdgeDetection.cpp" />
+    <ClCompile Include="GuideModel.cpp" />
+    <ClCompile Include="GuideCompositionRenderer.cpp" />
+    <ClCompile Include="GuideOverlayUI.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="D2DState.cpp" />
     <ClCompile Include="BoundsToolOverlayUI.cpp" />
@@ -23,9 +28,16 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="ScreenCapturing.h" />
+    <ClInclude Include="ScreenCaptureSession.h" />
     <ClInclude Include="OverlayUI.h" />
     <ClInclude Include="BGRATextureView.h" />
+    <ClInclude Include="BoundsSnapModel.h" />
     <ClInclude Include="EdgeDetection.h" />
+    <ClInclude Include="GuideModel.h" />
+    <ClInclude Include="GuideCompositionRenderer.h" />
+    <ClInclude Include="GuideOverlayUI.h" />
+    <ClInclude Include="GuideVisualMetrics.h" />
+    <ClInclude Include="MeasurementTooltipStyle.h" />
     <ClInclude Include="ToolState.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="BoundsToolOverlayUI.h" />

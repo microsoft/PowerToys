@@ -1,14 +1,19 @@
 #pragma once
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 #include <cinttypes>
-#include <wil/resource.h>
+#include <winrt/base.h>
 #ifdef _M_ARM64
 #include <arm64_neon.h.>
 #else
 #include <emmintrin.h>
 #endif
 #include <cassert>
-#include <limits>
+#include <algorithm>
+#include <vector>
 #include <d3d11.h>
 
 
@@ -118,7 +123,7 @@ struct BGRATextureView
         else
         {
             // Method 2: Test whether sum of all channel differences is smaller than tolerance
-            const int32_t score = _mm_cvtsi128_si32(_mm_sad_epu8(distances, _mm_setzero_si128())) & std::numeric_limits<uint8_t>::max();
+            const int32_t score = _mm_cvtsi128_si32(_mm_sad_epu8(distances, _mm_setzero_si128()));
             return score <= tolerance;
         }
     }
@@ -126,6 +131,34 @@ struct BGRATextureView
 #if defined(DEBUG_TEXTURE)
     void SaveAsBitmap(const char* filename) const;
 #endif
+};
+
+struct OwnedBGRATextureView
+{
+    explicit OwnedBGRATextureView(const BGRATextureView& source)
+    {
+        pixels.resize(source.width * source.height);
+        for (size_t y = 0; y < source.height; ++y)
+        {
+            std::copy_n(
+                source.pixels + (y * source.pitch),
+                source.width,
+                pixels.data() + (y * source.width));
+        }
+
+        view.pixels = pixels.data();
+        view.pitch = source.width;
+        view.width = source.width;
+        view.height = source.height;
+    }
+
+    OwnedBGRATextureView(const OwnedBGRATextureView&) = delete;
+    OwnedBGRATextureView& operator=(const OwnedBGRATextureView&) = delete;
+    OwnedBGRATextureView(OwnedBGRATextureView&&) = delete;
+    OwnedBGRATextureView& operator=(OwnedBGRATextureView&&) = delete;
+
+    std::vector<uint32_t> pixels;
+    BGRATextureView view;
 };
 
 class MappedTextureView

@@ -100,6 +100,8 @@ namespace CommonSharedConstants
 
     // Path to the event used by MeasureTool
     const wchar_t MEASURE_TOOL_TRIGGER_EVENT[] = L"Local\\MeasureToolEvent-3d46745f-09b3-4671-a577-236be7abd199";
+    const wchar_t MEASURE_TOOL_TOGGLE_EVENT[] = L"Local\\MeasureToolToggleEvent-a2d2b9f0-249f-4cd8-a647-bbde95b608dd";
+    const wchar_t MEASURE_TOOL_TERMINATE_EVENT[] = L"Local\\MeasureToolTerminateEvent-82f2f7c0-83f5-4b58-9809-92a6b913da4e";
 
     // Path to the event used by LightSwitch
     const wchar_t LIGHTSWITCH_TOGGLE_EVENT[] = L"Local\\PowerToys-LightSwitch-ToggleEvent-d8dc2f29-8c94-4ca1-8c5f-3e2b1e3c4f5a";
@@ -192,4 +194,3 @@ namespace CommonSharedConstants
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;
 }
-

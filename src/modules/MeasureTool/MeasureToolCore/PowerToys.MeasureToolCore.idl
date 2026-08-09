@@ -9,6 +9,13 @@ namespace PowerToys
         };
 
         delegate void ToolSessionCompleted();
+        delegate void GuidePresenceChanged(Boolean hasGuides);
+
+        enum GuideOrientation
+        {
+            Horizontal = 0,
+            Vertical = 1
+        };
 
         [default_interface]
         runtimeclass Core : Windows.Foundation.IClosable
@@ -17,9 +24,15 @@ namespace PowerToys
             void SetToolCompletionEvent(event ToolSessionCompleted completionTrigger);
             void StartMeasureTool(Boolean horizontal, Boolean vertical);
             void StartBoundsTool();
+            void BeginGuidePlacement(GuideOrientation orientation);
+            void ClearGuides();
+            Boolean HasGuides();
+            void SetGuidePresenceChangedEvent(event GuidePresenceChanged presenceChangedTrigger);
+            void SetGuideEditMode(Boolean enabled);
             void ResetState();
 
             void InitResources();
+            void SetToolbarWindowHandle(Int64 windowHandle);
             void SetToolbarBoundingBox(Int32 fromX, Int32 fromY, Int32 toX, Int32 toY);
             Single GetDPIScaleForWindow(Int64 windowHandle);
         }

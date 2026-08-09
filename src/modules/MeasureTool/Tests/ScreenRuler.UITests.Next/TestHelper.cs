@@ -36,6 +36,7 @@ public static class TestHelper
     public const string HorizontalSpacingButtonName = "Button_SpacingHorizontal";
     public const string VerticalSpacingButtonName = "Button_SpacingVertical";
     public const string CloseButtonId = "Button_Close";
+    public const string ToolbarDragHandleId = "ToolbarDragHandle";
 
     // The Measure Tool UI process (the toolbar + measurement overlays). NOTE: the window TITLE is
     // "PowerToys.ScreenRuler", but the PROCESS name winappcli's -a flag needs is "PowerToys.MeasureToolUI".
@@ -397,10 +398,11 @@ public static class TestHelper
             if (cycle > 1)
             {
                 Log($"{testName}: no measurement after cycle {cycle - 1} — re-engaging the tool to restart the screen capture");
-                ReengageTool(ruler, buttonId, testName);
+                ReengageTool(ruler, SpacingButtonName, testName);
             }
 
-            SelectToolAndVerify(ruler, buttonId, testName, useMouseClick: false);
+            SelectSpacingMode(ruler, buttonId, testName);
+            SelectToolAndVerify(ruler, SpacingButtonName, testName, useMouseClick: false);
             clipboardText = MeasureWithRetry(testName, PerformMeasurementAction, maxAttempts: 5);
             if (!string.IsNullOrEmpty(clipboardText))
             {
@@ -417,6 +419,29 @@ public static class TestHelper
         Assert.IsTrue(
             WaitForScreenRulerUIToDisappear(testBase, 2000),
             $"{testName}: ScreenRulerUI should close after calling CloseScreenRulerUI");
+    }
+
+    private static void SelectSpacingMode(Session ruler, string modeItemId, string testName)
+    {
+        if (string.Equals(modeItemId, SpacingButtonName, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        var splitButton = ruler.Find<Element>(By.AccessibilityId(SpacingButtonName), 8000);
+        Assert.IsTrue(splitButton.Width > 0 && splitButton.Height > 0, $"{testName}: spacing split button should have visible bounds");
+
+        var secondaryX = splitButton.X + splitButton.Width - Math.Max(4, splitButton.Height / 4);
+        var centerY = splitButton.Y + (splitButton.Height / 2);
+        Log($"SelectSpacingMode[{testName}]: opening split flyout at ({secondaryX},{centerY})");
+
+        ruler.EnsureForeground();
+        MouseHelper.LeftClickAt(secondaryX, centerY);
+        Thread.Sleep(300);
+
+        var modeItem = ruler.Find<Element>(By.AccessibilityId(modeItemId), 5000);
+        Log($"SelectSpacingMode[{testName}]: selecting {modeItemId}");
+        modeItem.Click(msPostAction: 300);
     }
 
     /// <summary>Run a bounds-tool measurement (drag a 100x100 box) and validate the clipboard output.</summary>

@@ -46,6 +46,23 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
+                    <tkcontrols:SettingsCard
+                        Name="MeasureToolToolbarPosition"
+                        x:Uid="MeasureTool_ToolbarPosition"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE759;}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="ComboBox_ScreenRulerToolbarPosition"
+                            SelectedIndex="{x:Bind Path=ViewModel.ToolbarPosition, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="MeasureTool_ToolbarPosition_TopLeft" />
+                            <ComboBoxItem x:Uid="MeasureTool_ToolbarPosition_TopCenter" />
+                            <ComboBoxItem x:Uid="MeasureTool_ToolbarPosition_TopRight" />
+                            <ComboBoxItem x:Uid="MeasureTool_ToolbarPosition_BottomLeft" />
+                            <ComboBoxItem x:Uid="MeasureTool_ToolbarPosition_BottomCenter" />
+                            <ComboBoxItem x:Uid="MeasureTool_ToolbarPosition_BottomRight" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
+
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="MeasureTool_Settings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

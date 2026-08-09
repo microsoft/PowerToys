@@ -4,10 +4,13 @@
 #include "ToolState.h"
 #include "OverlayUI.h"
 #include "Settings.h"
+#include "GuideOverlayUI.h"
 
 #include <common/Telemetry/EtwTrace/EtwTrace.h>
 #include <common/utils/serialized.h>
 #include "ScreenCapturing.h"
+
+#include <mutex>
 
 struct PowerToysMisc
 {
@@ -35,11 +38,20 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         void InitResources();
         void StartBoundsTool();
         void StartMeasureTool(const bool horizontal, const bool vertical);
+        void BeginGuidePlacement(GuideOrientation orientation);
+        void ClearGuides();
+        bool HasGuides();
+        void SetGuidePresenceChangedEvent(GuidePresenceChanged presenceChangedTrigger);
+        void SetGuideEditMode(bool enabled);
         void SetToolCompletionEvent(ToolSessionCompleted sessionCompletedTrigger);
-        void SetToolbarBoundingBox(const uint32_t fromX, const uint32_t fromY, const uint32_t toX, const uint32_t toY);
+        void SetToolbarWindowHandle(uint64_t windowHandle);
+        void SetToolbarBoundingBox(const int32_t fromX, const int32_t fromY, const int32_t toX, const int32_t toY);
         void ResetState();
         float GetDPIScaleForWindow(uint64_t windowHandle);
         void MouseCaptureThread();
+        void LoadSettings();
+        void UpdateGuideCaptureWindows();
+        void NotifyGuidePresenceChanged(bool hasGuides);
 
         DxgiAPI dxgiAPI;
 
@@ -52,6 +64,10 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         BoundsToolState _boundsToolState;
         CommonState _commonState;
         Settings _settings;
+        std::unique_ptr<GuideOverlayManager> _guideOverlayManager;
+        std::mutex _guidePresenceChangedMutex;
+        GuidePresenceChanged _guidePresenceChanged{ nullptr };
+        bool _closed = false;
         Shared::Trace::ETWTrace trace{};
     };
 }

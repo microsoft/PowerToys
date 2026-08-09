@@ -25,6 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             PerColorChannelEdgeDetection = false;
             MeasureCrossColor = new StringProperty("#FF4500");
             DefaultMeasureStyle = new IntProperty((int)MeasureToolMeasureStyle.None);
+            ToolbarPosition = new IntProperty((int)MeasureToolToolbarPosition.TopCenter);
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
@@ -45,6 +46,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public StringProperty MeasureCrossColor { get; set; }
 
         public IntProperty DefaultMeasureStyle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the anchor (see <see cref="MeasureToolToolbarPosition"/>) the toolbar is
+        /// placed at - on the monitor containing the mouse cursor - every time it is summoned.
+        /// A manual drag only repositions the current visible toolbar; it is never written back
+        /// here, so the next summon always restores this configured anchor.
+        /// </summary>
+        public IntProperty ToolbarPosition { get; set; }
 
         public override string ToString() => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.MeasureToolProperties);
     }

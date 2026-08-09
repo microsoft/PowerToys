@@ -4,6 +4,7 @@
 
 #include <initguid.h>
 #include <windows.h>
+#include <windowsx.h>
 #include <Unknwn.h>
 #include <restrictederrorinfo.h>
 #include <hstring.h>
@@ -18,6 +19,9 @@
 #include <windows.graphics.directX.direct3d11.interop.h>
 #include <windows.graphics.capture.interop.h>
 #include <windows.graphics.capture.h>
+#include <Windows.UI.Composition.Desktop.h>
+#include <windows.ui.composition.interop.h>
+#include <DispatcherQueue.h>
 
 #include <thread>
 #include <functional>
@@ -37,8 +41,10 @@
 
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/Windows.System.h>
+#include <winrt/Windows.UI.Composition.h>
+#include <winrt/Windows.UI.Composition.Desktop.h>
 #include <winrt/Windows.ApplicationModel.Activation.h>
-#include <winrt/Microsoft.UI.Composition.h>
 #include <winrt/Microsoft.UI.Xaml.h>
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
 #include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>

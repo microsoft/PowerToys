@@ -43,13 +43,13 @@
         <value>Bounds (Ctrl+1)</value>
     </data>
     <data name="BtnBoundsTooltip.Text" xml:space="preserve">
-        <value>Bounds (Ctrl+1)</value>
+        <value>Free-form measurement (Ctrl+1)&#x0A;Drag to measure any rectangular area. Hold Alt while dragging to skip automatic edge snapping. Hold Shift when releasing to keep multiple measurements on screen.</value>
     </data>
     <data name="BtnSpacing.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
         <value>Spacing (Ctrl+2)</value>
     </data>
     <data name="BtnSpacingTooltip.Text" xml:space="preserve">
-        <value>Spacing (Ctrl+2)</value>
+        <value>Horizontal and vertical spacing (Ctrl+2)&#x0A;Measure pixel spacing around the pointer in both directions. Hold Shift while measuring to keep multiple measurements on screen.</value>
     </data>
     <data name="BtnHorizontalSpacing.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
         <value>Horizontal spacing (Ctrl+3)</value>
@@ -63,8 +63,68 @@
     <data name="BtnVerticalSpacingTooltip.Text" xml:space="preserve">
         <value>Vertical spacing (Ctrl+4)</value>
     </data>
+    <data name="SpacingModeBoth.Text" xml:space="preserve">
+        <value>Horizontal and vertical spacing</value>
+    </data>
+    <data name="SpacingModeBoth.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+        <value>Spacing (Ctrl+2)</value>
+    </data>
+    <data name="SpacingModeBoth.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
+        <value>Horizontal and vertical spacing (Ctrl+2)&#x0A;Measure pixel spacing around the pointer in both directions. Hold Shift while measuring to keep multiple measurements on screen.</value>
+    </data>
+    <data name="SpacingModeHorizontal.Text" xml:space="preserve">
+        <value>Horizontal spacing</value>
+    </data>
+    <data name="SpacingModeHorizontal.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+        <value>Horizontal spacing (Ctrl+3)</value>
+    </data>
+    <data name="SpacingModeHorizontal.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
+        <value>Horizontal spacing (Ctrl+3)&#x0A;Measure pixel spacing around the pointer horizontally. Hold Shift while measuring to keep multiple measurements on screen.</value>
+    </data>
+    <data name="SpacingModeVertical.Text" xml:space="preserve">
+        <value>Vertical spacing</value>
+    </data>
+    <data name="SpacingModeVertical.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+        <value>Vertical spacing (Ctrl+4)</value>
+    </data>
+    <data name="SpacingModeVertical.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
+        <value>Vertical spacing (Ctrl+4)&#x0A;Measure pixel spacing around the pointer vertically. Hold Shift while measuring to keep multiple measurements on screen.</value>
+    </data>
+    <data name="BtnAddHorizontalGuide.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+        <value>Add horizontal guide (Ctrl+5)</value>
+    </data>
+    <data name="BtnAddHorizontalGuideTooltip.Text" xml:space="preserve">
+        <value>Add horizontal guide (Ctrl+5)&#x0A;Hold Alt while placing or moving a guide to move freely without snapping.</value>
+    </data>
+    <data name="BtnAddVerticalGuide.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+        <value>Add vertical guide (Ctrl+6)</value>
+    </data>
+    <data name="BtnAddVerticalGuideTooltip.Text" xml:space="preserve">
+        <value>Add vertical guide (Ctrl+6)&#x0A;Hold Alt while placing or moving a guide to move freely without snapping.</value>
+    </data>
+    <data name="BtnClearGuides.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+        <value>Clear all guides (Ctrl+Delete)</value>
+    </data>
+    <data name="BtnClearGuidesTooltip.Text" xml:space="preserve">
+        <value>Clear all guides (Ctrl+Delete)</value>
+    </data>
+    <data name="GuideRemoveLabel" xml:space="preserve">
+        <value>Remove guide</value>
+    </data>
+    <data name="ToleranceTooltipFormat" xml:space="preserve">
+        <value>Tolerance: {0}</value>
+    </data>
     <data name="BtnClosePanelTooltip.Text" xml:space="preserve">
         <value>Close (Esc)</value>
+    </data>
+    <data name="ToolbarDragHandle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+        <value>Move toolbar</value>
+    </data>
+    <data name="ToolbarDragHandle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
+        <value>Use the arrow keys to move the toolbar, then press Enter.</value>
+    </data>
+    <data name="ToolbarDragHandleTooltip.Text" xml:space="preserve">
+        <value>Move toolbar</value>
     </data>
     <data name="MeasurementUnitAbbrPixel" xml:space="preserve">
         <value>px</value>

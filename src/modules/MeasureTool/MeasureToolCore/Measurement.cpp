@@ -58,6 +58,8 @@ namespace
 }
 
 winrt::hstring Measurement::abbreviations[4]{};
+winrt::hstring Measurement::removeGuideLabel{};
+winrt::hstring Measurement::toleranceLabelFormat{};
 
 inline float Measurement::Width(const Unit units) const
 {
@@ -94,6 +96,8 @@ void Measurement::InitResources()
     abbreviations[1] = mm.GetValue(L"Resources/MeasurementUnitAbbrInch").ValueAsString();
     abbreviations[2] = mm.GetValue(L"Resources/MeasurementUnitAbbrCentimetre").ValueAsString();
     abbreviations[3] = mm.GetValue(L"Resources/MeasurementUnitAbbrMillimetre").ValueAsString();
+    removeGuideLabel = mm.GetValue(L"Resources/GuideRemoveLabel").ValueAsString();
+    toleranceLabelFormat = mm.GetValue(L"Resources/ToleranceTooltipFormat").ValueAsString();
 }
 
 const wchar_t* Measurement::GetUnitAbbreviation(Measurement::Unit units)
@@ -111,6 +115,46 @@ const wchar_t* Measurement::GetUnitAbbreviation(Measurement::Unit units)
     default:
         return L"??";
     }
+}
+
+size_t Measurement::PrintPixelTolerance(wchar_t* buf, size_t bufSize, uint8_t tolerance)
+{
+    if (!buf || bufSize == 0)
+    {
+        return 0;
+    }
+
+    constexpr std::wstring_view Placeholder = L"{0}";
+    const std::wstring_view format{ toleranceLabelFormat };
+    const auto placeholderPosition = format.find(Placeholder);
+    if (placeholderPosition == std::wstring_view::npos)
+    {
+        const int written = swprintf_s(
+            buf,
+            bufSize,
+            L"%s %u",
+            toleranceLabelFormat.c_str(),
+            static_cast<unsigned int>(tolerance));
+        return written > 0 ? static_cast<size_t>(written) : 0;
+    }
+
+    const auto value = std::to_wstring(tolerance);
+    const size_t requiredLength = format.size() - Placeholder.size() + value.size();
+    if (requiredLength >= bufSize)
+    {
+        buf[0] = L'\0';
+        return 0;
+    }
+
+    const auto suffixPosition = placeholderPosition + Placeholder.size();
+    std::wmemcpy(buf, format.data(), placeholderPosition);
+    std::wmemcpy(buf + placeholderPosition, value.data(), value.size());
+    std::wmemcpy(
+        buf + placeholderPosition + value.size(),
+        format.data() + suffixPosition,
+        format.size() - suffixPosition);
+    buf[requiredLength] = L'\0';
+    return requiredLength;
 }
 
 Measurement::PrintResult Measurement::Print(wchar_t* buf,

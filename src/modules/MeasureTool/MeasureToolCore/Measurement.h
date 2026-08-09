@@ -19,6 +19,8 @@ struct Measurement
 
     float px2mmRatio = 0;
     static winrt::hstring abbreviations[4]; // Abbreviations of units.
+    static winrt::hstring removeGuideLabel;
+    static winrt::hstring toleranceLabelFormat;
 
     Measurement(const Measurement&) = default;
     Measurement& operator=(const Measurement&) = default;
@@ -38,6 +40,7 @@ struct Measurement
     static void InitResources();
     static Unit GetUnitFromIndex(int index);
     static const wchar_t* GetUnitAbbreviation(const Unit units);
+    static size_t PrintPixelTolerance(wchar_t* buf, size_t bufSize, uint8_t tolerance);
 
     PrintResult Print(wchar_t* buf,
                       const size_t bufSize,

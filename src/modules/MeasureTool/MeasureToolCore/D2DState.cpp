@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "D2DState.h"
 #include "DxgiAPI.h"
+#include "MeasurementTooltipStyle.h"
 
 #include <common/Display/dpi_aware.h>
 #include <ToolState.h>
@@ -66,9 +67,10 @@ D2DState::D2DState(const DxgiAPI* dxgi,
 void D2DState::DrawTextBox(const wchar_t* text,
                            const size_t textLen,
                            const size_t halfOpaqueSymbolPos[2],
-                           const D2D_POINT_2F center,
-                           const bool screenQuadrantAware,
-                           const HWND window) const
+                           const D2D_POINT_2F anchor,
+                           TextBoxPlacement placement,
+                           HWND window,
+                           std::optional<D2D1_RECT_F> referenceRect) const
 {
     wil::com_ptr<IDWriteTextLayout> textLayout;
     winrt::check_hresult(
@@ -86,13 +88,11 @@ void D2DState::DrawTextBox(const wchar_t* text,
     winrt::check_hresult(textLayout->SetMaxWidth(textMetrics.width));
     winrt::check_hresult(textLayout->SetMaxHeight(textMetrics.height));
 
-    D2D1_RECT_F textRect{ .left = center.x - textMetrics.width / 2.f,
-                          .top = center.y - textMetrics.height / 2.f,
-                          .right = center.x + textMetrics.width / 2.f,
-                          .bottom = center.y + textMetrics.height / 2.f };
+    D2D_POINT_2F center = anchor;
 
     const float SHADOW_OFFSET = consts::SHADOW_OFFSET * dpiScale;
-    if (screenQuadrantAware)
+    const auto viewport = dxgiWindowState.rt->GetSize();
+    if (placement == TextBoxPlacement::CursorQuadrant)
     {
         bool cursorInLeftScreenHalf = false;
         bool cursorInTopScreenHalf = false;
@@ -107,11 +107,47 @@ void D2DState::DrawTextBox(const wchar_t* text,
             textQuadrantOffsetX *= -1.f;
         if (!cursorInTopScreenHalf)
             textQuadrantOffsetY *= -1.f;
-        textRect.left += textQuadrantOffsetX;
-        textRect.right += textQuadrantOffsetX;
-        textRect.top += textQuadrantOffsetY;
-        textRect.bottom += textQuadrantOffsetY;
+        center.x += textQuadrantOffsetX;
+        center.y += textQuadrantOffsetY;
     }
+    else if (placement == TextBoxPlacement::AboveAnchor)
+    {
+        center.x = MeasurementTooltipStyle::ClampCenter(anchor.x, textMetrics.width, viewport.width);
+        center.y = anchor.y - SHADOW_OFFSET - textMetrics.height / 2.0f;
+        if (center.y - textMetrics.height / 2.0f < 0.0f)
+        {
+            center.y = anchor.y + SHADOW_OFFSET + textMetrics.height / 2.0f;
+        }
+        center.y = MeasurementTooltipStyle::ClampCenter(center.y, textMetrics.height, viewport.height);
+    }
+    else if (placement == TextBoxPlacement::OutsideRectangle && referenceRect)
+    {
+        const auto outsidePlacement = MeasurementTooltipStyle::PlaceOutsideSelection(
+            MeasurementTooltipStyle::Rect{
+                .left = referenceRect->left,
+                .top = referenceRect->top,
+                .right = referenceRect->right,
+                .bottom = referenceRect->bottom,
+            },
+            MeasurementTooltipStyle::Size{
+                .width = textMetrics.width,
+                .height = textMetrics.height,
+            },
+            MeasurementTooltipStyle::Size{
+                .width = viewport.width,
+                .height = viewport.height,
+            },
+            MeasurementTooltipStyle::OutsideSelectionGap * dpiScale);
+        center = D2D_POINT_2F{
+            .x = outsidePlacement.center.x,
+            .y = outsidePlacement.center.y,
+        };
+    }
+
+    D2D1_RECT_F textRect{ .left = center.x - textMetrics.width / 2.f,
+                          .top = center.y - textMetrics.height / 2.f,
+                          .right = center.x + textMetrics.width / 2.f,
+                          .bottom = center.y + textMetrics.height / 2.f };
 
     // Draw shadow
     bitmapRt->BeginDraw();
@@ -150,7 +186,7 @@ void D2DState::DrawTextBox(const wchar_t* text,
     {
         DWRITE_TEXT_RANGE textRange = { static_cast<uint32_t>(*halfOpaqueSymbolPos), 2 };
         auto opacityEffect = winrt::make_self<OpacityEffect>();
-        opacityEffect->alpha = consts::CROSS_OPACITY;
+        opacityEffect->alpha = MeasurementTooltipStyle::SecondaryTextOpacity;
         winrt::check_hresult(textLayout->SetDrawingEffect(opacityEffect.get(), textRange));
         if (halfOpaqueSymbolPos[1] > halfOpaqueSymbolPos[0])
         {

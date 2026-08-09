@@ -26,6 +26,8 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring AdvancedPasteShowUIEvent();
         static hstring AlwaysOnTopPinEvent();
         static hstring MeasureToolTriggerEvent();
+        static hstring MeasureToolToggleEvent();
+        static hstring MeasureToolTerminateEvent();
         static hstring FindMyMouseTriggerEvent();
         static hstring MouseHighlighterTriggerEvent();
         static hstring MouseCrosshairsTriggerEvent();
@@ -90,4 +92,3 @@ namespace winrt::PowerToys::Interop::factory_implementation
     {
     };
 }
-

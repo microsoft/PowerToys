@@ -21,6 +21,9 @@ namespace ScreenRuler.UITests
         public const string SpacingButtonName = "Button_Spacing";
         public const string HorizontalSpacingButtonName = "Button_SpacingHorizontal";
         public const string VerticalSpacingButtonName = "Button_SpacingVertical";
+        public const string AddHorizontalGuideButtonId = "Button_AddHorizontalGuide";
+        public const string AddVerticalGuideButtonId = "Button_AddVerticalGuide";
+        public const string ClearGuidesButtonId = "Button_ClearGuides";
         public const string CloseButtonId = "Button_Close";
 
         /// <summary>
@@ -351,12 +354,20 @@ namespace ScreenRuler.UITests
                 WaitForScreenRulerUI(testBase, 2000),
                 $"ScreenRulerUI should appear after pressing activation shortcut for {testName}: {string.Join(" + ", activationKeys)}");
 
-            // Attach to ScreenRuler window and click spacing button
-            // testBase.Session.Attach(PowerToysModule.ScreenRuler);
-            var spacingButton = testBase.Session.Find<Element>(By.AccessibilityId(buttonId), 15000, true);
-            Assert.IsNotNull(spacingButton, $"{testName} button should be found");
+            var spacingButton = testBase.Session.Find<Element>(By.AccessibilityId(SpacingButtonName), 15000, true);
+            Assert.IsNotNull(spacingButton, $"{testName} split button should be found");
 
             spacingButton!.Click();
+            if (!string.Equals(buttonId, SpacingButtonName, StringComparison.Ordinal))
+            {
+                testBase.SendKeys(Key.Alt, Key.Down);
+                Task.Delay(300).Wait();
+
+                var spacingModeItem = testBase.Session.Find<Element>(By.AccessibilityId(buttonId), 5000, true);
+                Assert.IsNotNull(spacingModeItem, $"{testName} flyout item should be found");
+                spacingModeItem!.Click();
+            }
+
             Task.Delay(500).Wait();
 
             // Perform measurement action (stay attached to ScreenRuler for this)
@@ -402,7 +413,8 @@ namespace ScreenRuler.UITests
             testBase.MoveMouseTo(startX, startY);
             Task.Delay(200).Wait();
 
-            // Drag operation
+            // Keep this deterministic regardless of desktop content by bypassing magnetic snapping.
+            testBase.Session.PressKey(Key.Alt);
             testBase.Session.PerformMouseAction(MouseActionType.LeftDown);
             Task.Delay(100).Wait();
 
@@ -410,6 +422,7 @@ namespace ScreenRuler.UITests
             Task.Delay(200).Wait();
 
             testBase.Session.PerformMouseAction(MouseActionType.LeftUp);
+            testBase.Session.ReleaseKey(Key.Alt);
             Task.Delay(500).Wait();
 
             // Dismiss selection

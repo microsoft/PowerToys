@@ -240,6 +240,30 @@
   <data name="MeasureTool_DefaultMeasureStyle_Vertical_Spacing.Content" xml:space="preserve">
     <value>Vertical spacing</value>
   </data>
+  <data name="MeasureTool_ToolbarPosition.Header" xml:space="preserve">
+    <value>Toolbar position</value>
+  </data>
+  <data name="MeasureTool_ToolbarPosition.Description" xml:space="preserve">
+    <value>Where the toolbar is placed on the monitor containing the mouse cursor when activated. Dragging the toolbar only moves it temporarily; it returns to this position the next time it's activated.</value>
+  </data>
+  <data name="MeasureTool_ToolbarPosition_TopLeft.Content" xml:space="preserve">
+    <value>Top left</value>
+  </data>
+  <data name="MeasureTool_ToolbarPosition_TopCenter.Content" xml:space="preserve">
+    <value>Top center</value>
+  </data>
+  <data name="MeasureTool_ToolbarPosition_TopRight.Content" xml:space="preserve">
+    <value>Top right</value>
+  </data>
+  <data name="MeasureTool_ToolbarPosition_BottomLeft.Content" xml:space="preserve">
+    <value>Bottom left</value>
+  </data>
+  <data name="MeasureTool_ToolbarPosition_BottomCenter.Content" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+  <data name="MeasureTool_ToolbarPosition_BottomRight.Content" xml:space="preserve">
+    <value>Bottom right</value>
+  </data>
   <data name="MeasureTool_UnitsOfMeasure.Header" xml:space="preserve">
     <value>Extra units of measurement</value>
   </data>

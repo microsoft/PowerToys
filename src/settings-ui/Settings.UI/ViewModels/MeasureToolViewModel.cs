@@ -13,11 +13,17 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
+using Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class MeasureToolViewModel : PageViewModelBase
     {
+        private const int UnitsOfMeasureItemCount = 4;
+        private const int MeasureStyleItemCount = 5;
+        private const int ToolbarPositionItemCount = 6;
+        private const int DefaultToolbarPositionIndex = 1;
+
         protected override string ModuleName => MeasureToolSettings.ModuleName;
 
         private SettingsUtils SettingsUtils { get; set; }
@@ -43,6 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ArgumentNullException.ThrowIfNull(measureToolSettingsRepository);
 
             Settings = measureToolSettingsRepository.SettingsConfig;
+            NormalizeToolbarPosition(persistCorrection: true);
 
             SendConfigMSG = ipcMSGCallBackFunc;
         }
@@ -177,14 +184,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return Settings.Properties.UnitsOfMeasure.Value;
+                return NormalizeSelectedIndex(Settings.Properties.UnitsOfMeasure.Value, UnitsOfMeasureItemCount);
             }
 
             set
             {
-                if (Settings.Properties.UnitsOfMeasure.Value != value)
+                int normalizedValue = NormalizeSelectedIndex(value, UnitsOfMeasureItemCount);
+                if (Settings.Properties.UnitsOfMeasure.Value != normalizedValue)
                 {
-                    Settings.Properties.UnitsOfMeasure.Value = value;
+                    Settings.Properties.UnitsOfMeasure.Value = normalizedValue;
                     NotifyPropertyChanged();
                 }
             }
@@ -236,17 +244,86 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return Settings.Properties.DefaultMeasureStyle.Value;
+                return NormalizeSelectedIndex(Settings.Properties.DefaultMeasureStyle.Value, MeasureStyleItemCount);
             }
 
             set
             {
-                if (Settings.Properties.DefaultMeasureStyle.Value != value)
+                int normalizedValue = NormalizeSelectedIndex(value, MeasureStyleItemCount);
+                if (Settings.Properties.DefaultMeasureStyle.Value != normalizedValue)
                 {
-                    Settings.Properties.DefaultMeasureStyle.Value = value;
+                    Settings.Properties.DefaultMeasureStyle.Value = normalizedValue;
                     NotifyPropertyChanged();
                 }
             }
+        }
+
+        public int ToolbarPosition
+        {
+            get
+            {
+                return NormalizeToolbarPosition(persistCorrection: false);
+            }
+
+            set
+            {
+                int normalizedIndex = NormalizeToolbarPositionIndex(value);
+                int persistedValue = (int)GetToolbarPositionFromSelectedIndex(normalizedIndex);
+                if (Settings.Properties.ToolbarPosition.Value != persistedValue || value != normalizedIndex)
+                {
+                    Settings.Properties.ToolbarPosition.Value = persistedValue;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        private int NormalizeToolbarPosition(bool persistCorrection)
+        {
+            int storedValue = Settings.Properties.ToolbarPosition.Value;
+            MeasureToolToolbarPosition normalizedPosition = MeasureToolToolbarPlacement.Normalize(storedValue);
+            int normalizedValue = (int)normalizedPosition;
+            if (storedValue != normalizedValue)
+            {
+                Settings.Properties.ToolbarPosition.Value = normalizedValue;
+                if (persistCorrection)
+                {
+                    SettingsUtils.SaveSettings(Settings.ToJsonString(), MeasureToolSettings.ModuleName);
+                }
+            }
+
+            return GetSelectedIndexFromToolbarPosition(normalizedPosition);
+        }
+
+        private static int NormalizeToolbarPositionIndex(int value)
+        {
+            return value >= 0 && value < ToolbarPositionItemCount ? value : DefaultToolbarPositionIndex;
+        }
+
+        private static MeasureToolToolbarPosition GetToolbarPositionFromSelectedIndex(int value) => value switch
+        {
+            0 => MeasureToolToolbarPosition.TopLeft,
+            1 => MeasureToolToolbarPosition.TopCenter,
+            2 => MeasureToolToolbarPosition.TopRight,
+            3 => MeasureToolToolbarPosition.BottomLeft,
+            4 => MeasureToolToolbarPosition.BottomCenter,
+            5 => MeasureToolToolbarPosition.BottomRight,
+            _ => MeasureToolToolbarPosition.TopCenter,
+        };
+
+        private static int GetSelectedIndexFromToolbarPosition(MeasureToolToolbarPosition value) => value switch
+        {
+            MeasureToolToolbarPosition.TopLeft => 0,
+            MeasureToolToolbarPosition.TopCenter => 1,
+            MeasureToolToolbarPosition.TopRight => 2,
+            MeasureToolToolbarPosition.BottomLeft => 3,
+            MeasureToolToolbarPosition.BottomCenter => 4,
+            MeasureToolToolbarPosition.BottomRight => 5,
+            _ => DefaultToolbarPositionIndex,
+        };
+
+        private static int NormalizeSelectedIndex(int value, int itemCount)
+        {
+            return value >= 0 && value < itemCount ? value : 0;
         }
 
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)

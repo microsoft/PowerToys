@@ -3,18 +3,24 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-
+using System.Collections.Generic;
+using System.Threading;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using PowerToys.Interop;
 
 namespace MeasureToolUI
 {
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
     /// </summary>
-    public partial class App : Application
+    public partial class App : Application, IDisposable
     {
+        private readonly CancellationTokenSource _eventWaitCancellation = new();
+        private readonly List<Thread> _eventWaitThreads = new();
+        private bool _disposed;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -52,10 +58,10 @@ namespace MeasureToolUI
             {
                 if (int.TryParse(cmdArgs[cmdArgs.Length - 1], out int powerToysRunnerPid))
                 {
-                    var dispatcher = DispatcherQueue.GetForCurrentThread();
+                    var runnerDispatcher = DispatcherQueue.GetForCurrentThread();
                     RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
                     {
-                        dispatcher.TryEnqueue(App.Current.Exit);
+                        runnerDispatcher.TryEnqueue(App.Current.Exit);
                     });
                 }
             }
@@ -73,9 +79,45 @@ namespace MeasureToolUI
             }
 
             _window = new MainWindow(core);
-            _window.Activate();
+            _window.Closed += (_, _) => Dispose();
+            _window.ShowToolbar();
+
+            var dispatcher = DispatcherQueue.GetForCurrentThread();
+            _eventWaitThreads.Add(NativeEventWaiter.WaitForEventLoop(
+                Constants.MeasureToolToggleEvent(),
+                _window.ToggleToolbarVisibility,
+                dispatcher,
+                _eventWaitCancellation.Token));
+            _eventWaitThreads.Add(NativeEventWaiter.WaitForEventLoop(
+                Constants.MeasureToolTerminateEvent(),
+                _window.Shutdown,
+                dispatcher,
+                _eventWaitCancellation.Token));
         }
 
-        private Window _window;
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _eventWaitCancellation.Cancel();
+            foreach (Thread thread in _eventWaitThreads)
+            {
+                if (!ReferenceEquals(thread, Thread.CurrentThread) && thread.IsAlive)
+                {
+                    thread.Join();
+                }
+            }
+
+            _eventWaitThreads.Clear();
+            _window?.Dispose();
+            _eventWaitCancellation.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
+        private MainWindow _window;
     }
 }

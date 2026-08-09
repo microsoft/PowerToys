@@ -15,6 +15,8 @@
 
 namespace
 {
+    constexpr size_t FullyOpaqueText[2]{};
+
     constexpr std::pair<bool, bool> GetHorizontalVerticalLines(MeasureToolState::Mode mode)
     {
         switch (mode)
@@ -153,7 +155,7 @@ namespace
                              measureStringBufLen,
                              crossSymbolPos,
                              D2D_POINT_2F{ static_cast<float>(cursorPos.x), static_cast<float>(cursorPos.y) },
-                             true,
+                             TextBoxPlacement::CursorQuadrant,
                              window);
     }
 }
@@ -241,10 +243,28 @@ LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
         if (auto state = GetWindowParam<Serialized<MeasureToolState>*>(window))
         {
             const int8_t step = static_cast<short>(HIWORD(wparam)) < 0 ? -consts::MOUSE_WHEEL_TOLERANCE_STEP : consts::MOUSE_WHEEL_TOLERANCE_STEP;
-            state->Access([step](MeasureToolState& s) {
+            POINT cursorPos{
+                .x = GET_X_LPARAM(lparam),
+                .y = GET_Y_LPARAM(lparam),
+            };
+            ScreenToClient(window, &cursorPos);
+            state->Access([step, cursorPos, window](MeasureToolState& s) {
                 int wideVal = s.global.pixelTolerance;
                 wideVal += step;
-                s.global.pixelTolerance = static_cast<uint8_t>(std::clamp(wideVal, 0, 255));
+                const auto updatedTolerance = static_cast<uint8_t>(std::clamp(wideVal, 0, 255));
+                if (updatedTolerance == s.global.pixelTolerance)
+                {
+                    return;
+                }
+
+                s.global.pixelTolerance = updatedTolerance;
+                auto& feedback = s.perScreen[window].toleranceFeedback.emplace();
+                feedback.textLength = Measurement::PrintPixelTolerance(
+                    feedback.text.buffer.data(),
+                    feedback.text.buffer.size(),
+                    updatedTolerance);
+                feedback.cursorPos = cursorPos;
+                feedback.expiresAt = std::chrono::steady_clock::now() + consts::TOLERANCE_TOOLTIP_DURATION;
             });
         }
         break;
@@ -266,6 +286,9 @@ void DrawMeasureToolTick(const CommonState& commonState,
     winrt::com_ptr<ID2D1Bitmap> backgroundBitmap;
     const MappedTextureView* backgroundTextureToConvert = nullptr;
     std::vector<MeasureToolState::PerScreen::PrevMeasurement> prevMeasurements;
+    std::optional<MeasureToolState::PerScreen::ToleranceFeedback> toleranceFeedback;
+    bool toleranceFeedbackExpired = false;
+    const auto now = std::chrono::steady_clock::now();
     toolState.Read([&](const MeasureToolState& state) {
         continuousCapture = state.global.continuousCapture;
         drawFeetOnCross = state.global.drawFeetOnCross;
@@ -276,6 +299,17 @@ void DrawMeasureToolTick(const CommonState& commonState,
             const auto& perScreen = it->second;
 
             prevMeasurements = perScreen.prevMeasurements;
+            if (perScreen.toleranceFeedback)
+            {
+                if (perScreen.toleranceFeedback->expiresAt > now)
+                {
+                    toleranceFeedback = perScreen.toleranceFeedback;
+                }
+                else
+                {
+                    toleranceFeedbackExpired = true;
+                }
+            }
 
             if (!perScreen.measuredEdges)
             {
@@ -298,8 +332,23 @@ void DrawMeasureToolTick(const CommonState& commonState,
         }
     });
 
-    if (!measuredEdges && prevMeasurements.empty())
+    if (toleranceFeedbackExpired)
     {
+        toolState.Access([&](MeasureToolState& state) {
+            auto& feedback = state.perScreen[window].toleranceFeedback;
+            if (feedback && feedback->expiresAt <= now)
+            {
+                feedback.reset();
+            }
+        });
+    }
+
+    if (!measuredEdges && prevMeasurements.empty() && !toleranceFeedback)
+    {
+        if (toleranceFeedbackExpired)
+        {
+            d2dState.dxgiWindowState.rt->Clear();
+        }
         return;
     }
 
@@ -334,5 +383,19 @@ void DrawMeasureToolTick(const CommonState& commonState,
     {
         const auto cursorPos = convert::FromSystemToWindow(window, commonState.cursorPosSystemSpace);
         DrawMeasurement(*measuredEdges, d2dState, drawFeetOnCross, mode, cursorPos, commonState, window);
+    }
+
+    if (toleranceFeedback)
+    {
+        d2dState.DrawTextBox(
+            toleranceFeedback->text.buffer.data(),
+            toleranceFeedback->textLength,
+            FullyOpaqueText,
+            D2D_POINT_2F{
+                .x = static_cast<float>(toleranceFeedback->cursorPos.x),
+                .y = static_cast<float>(toleranceFeedback->cursorPos.y),
+            },
+            TextBoxPlacement::AboveAnchor,
+            window);
     }
 }

@@ -16,6 +16,14 @@ enum Brush : size_t
     border
 };
 
+enum class TextBoxPlacement
+{
+    Centered,
+    CursorQuadrant,
+    AboveAnchor,
+    OutsideRectangle,
+};
+
 struct D2DState
 {
     const DxgiAPI* dxgiAPI = nullptr;
@@ -36,8 +44,9 @@ struct D2DState
     void DrawTextBox(const wchar_t* text,
                      const size_t textLen,
                      const size_t halfOpaqueSymbolPos[2],
-                     const D2D_POINT_2F center,
-                     const bool screenQuadrantAware,
-                     const HWND window) const;
+                     const D2D_POINT_2F anchor,
+                     TextBoxPlacement placement,
+                     HWND window,
+                     std::optional<D2D1_RECT_F> referenceRect = std::nullopt) const;
     void ToggleAliasedLinesMode(const bool enabled) const;
 };

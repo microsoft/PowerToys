@@ -1,15 +1,12 @@
-#include "pch.h"
-
-#include "constants.h"
 #include "EdgeDetection.h"
+
+#include <algorithm>
 
 template<bool PerChannel,
          bool IsX,
          bool Increment>
 inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, const uint8_t tolerance)
 {
-    using namespace consts;
-
     const size_t maxDim = IsX ? texture.width : texture.height;
 
     long x = std::clamp<long>(centerPoint.x, 1, static_cast<long>(texture.width - 2));

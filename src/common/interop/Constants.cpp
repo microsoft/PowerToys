@@ -175,6 +175,14 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::MEASURE_TOOL_TRIGGER_EVENT;
     }
+    hstring Constants::MeasureToolToggleEvent()
+    {
+        return CommonSharedConstants::MEASURE_TOOL_TOGGLE_EVENT;
+    }
+    hstring Constants::MeasureToolTerminateEvent()
+    {
+        return CommonSharedConstants::MEASURE_TOOL_TERMINATE_EVENT;
+    }
     hstring Constants::GcodePreviewResizeEvent()
     {
         return CommonSharedConstants::GCODE_PREVIEW_RESIZE_EVENT;
@@ -313,4 +321,3 @@ namespace winrt::PowerToys::Interop::implementation
         return CommonSharedConstants::KEYBOARD_MANAGER_ENGINE_INSTANCE_MUTEX;
     }
 }
-

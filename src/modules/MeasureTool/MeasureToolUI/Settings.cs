@@ -27,5 +27,25 @@ namespace MeasureToolUI
                 }
             }
         }
+
+        /// <summary>
+        /// Gets the configured toolbar anchor, reloaded from disk on every access (in particular,
+        /// once per Screen Ruler summon - see MainWindow's constructor) so a setting changed while
+        /// the toolbar was last dismissed takes effect on the next summon.
+        /// </summary>
+        public int ToolbarPosition
+        {
+            get
+            {
+                try
+                {
+                    return ModuleSettings.GetSettings<MeasureToolSettings>(MeasureToolSettings.ModuleName).Properties.ToolbarPosition.Value;
+                }
+                catch (FileNotFoundException)
+                {
+                    return (int)MeasureToolToolbarPosition.TopCenter;
+                }
+            }
+        }
     }
 }
