@@ -28,6 +28,13 @@ namespace Hosts
 
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
+
+            if (AppWindowTitleBar.IsCustomizationSupported())
+            {
+                var appWindowTitleBar = this.AppWindow.TitleBar;
+                appWindowTitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
+            }
+
             AppWindow.SetIcon("Assets/Hosts/Hosts.ico");
 
             var loader = new ResourceLoader("PowerToys.HostsUILib.pri", "PowerToys.HostsUILib/Resources");

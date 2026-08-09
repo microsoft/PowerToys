@@ -13,6 +13,7 @@ using ImageResizer.ViewModels;
 using ImageResizer.Views;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
@@ -42,6 +43,13 @@ namespace ImageResizer
 
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
+
+            if (AppWindowTitleBar.IsCustomizationSupported())
+            {
+                var appWindowTitleBar = this.AppWindow.TitleBar;
+                appWindowTitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
+            }
+
             this.SetIcon("Assets/ImageResizer/ImageResizer.ico");
 
             Title = ResourceLoaderInstance.GetString("ImageResizer");

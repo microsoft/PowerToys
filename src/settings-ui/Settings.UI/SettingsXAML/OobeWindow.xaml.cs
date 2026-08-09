@@ -73,6 +73,8 @@ namespace Microsoft.PowerToys.Settings.UI
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(this));
             this.ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(AppTitleBar);
+            TitleBarHelper.SetPreferredTheme(this);
+
             Title = ResourceLoaderInstance.ResourceLoader.GetString("OobeWindow_Title");
         }
 

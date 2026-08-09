@@ -41,6 +41,13 @@ namespace KeyboardManagerEditorUI
             ExtendsContentIntoTitleBar = true;
             this.SetIcon(@"Assets\KeyboardManagerEditor\Keyboard.ico");
             this.SetTitleBar(titleBar);
+
+            if (AppWindowTitleBar.IsCustomizationSupported())
+            {
+                var appWindowTitleBar = this.AppWindow.TitleBar;
+                appWindowTitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
+            }
+
             Title = "Keyboard Manager";
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
         }

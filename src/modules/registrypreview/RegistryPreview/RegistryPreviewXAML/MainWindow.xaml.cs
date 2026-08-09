@@ -46,6 +46,13 @@ namespace RegistryPreview
             IntPtr windowHandle = this.GetWindowHandle();
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(windowHandle);
             SetTitleBar(titleBar);
+
+            if (AppWindowTitleBar.IsCustomizationSupported())
+            {
+                var appWindowTitleBar = this.AppWindow.TitleBar;
+                appWindowTitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
+            }
+
             AppWindow.SetIcon("Assets\\RegistryPreview\\RegistryPreview.ico");
 
             // Ensure a non-empty window title before the title bar's first layout reads it.

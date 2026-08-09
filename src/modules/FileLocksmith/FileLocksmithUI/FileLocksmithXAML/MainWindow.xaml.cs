@@ -20,6 +20,13 @@ namespace FileLocksmithUI
             mainPage.ViewModel.IsElevated = isElevated;
             SetTitleBar(titleBar);
             ExtendsContentIntoTitleBar = true;
+
+            if (AppWindowTitleBar.IsCustomizationSupported())
+            {
+                var appWindowTitleBar = this.AppWindow.TitleBar;
+                appWindowTitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
+            }
+
             AppWindow.SetIcon("Assets/FileLocksmith/Icon.ico");
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
 

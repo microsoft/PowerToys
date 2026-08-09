@@ -27,6 +27,13 @@ namespace EnvironmentVariables
 
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
+
+            if (AppWindowTitleBar.IsCustomizationSupported())
+            {
+                var appWindowTitleBar = this.AppWindow.TitleBar;
+                appWindowTitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
+            }
+
             AppWindow.SetIcon("Assets/EnvironmentVariables/EnvironmentVariables.ico");
 
             var loader = ResourceLoaderInstance.ResourceLoader;

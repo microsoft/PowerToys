@@ -44,6 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
+            TitleBarHelper.SetPreferredTheme(this);
 
             var windowTitle = resourceLoader.GetString("ShortcutConflictWindow_Title");
 
