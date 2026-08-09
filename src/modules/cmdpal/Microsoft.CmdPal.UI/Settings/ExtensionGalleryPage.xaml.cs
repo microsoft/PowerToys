@@ -80,16 +80,6 @@ public sealed partial class ExtensionGalleryPage : Page, IDisposable
         }
     }
 
-    protected override void OnNavigatedTo(NavigationEventArgs e)
-    {
-        base.OnNavigatedTo(e);
-        _extensionIdToOpen = null;
-        if (e.Parameter is string extensionId)
-        {
-            OpenExtension(extensionId);
-        }
-    }
-
     private void GalleryItemsView_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
     {
         if (args.InvokedItem is ExtensionGalleryItemViewModel vm)

@@ -183,13 +183,9 @@ public sealed partial class SettingsWindow : WindowEx,
             return;
         }
 
-        var openGalleryExtension = pageType == typeof(ExtensionGalleryPage) && !string.IsNullOrWhiteSpace(extensionGalleryId);
-        if (openGalleryExtension && TryOpenGalleryExtension(extensionGalleryId!))
-        {
-            return;
-        }
-
-        if (NavFrame.Content is ExtensionGalleryPage && pageType == typeof(ExtensionGalleryPage))
+        var openGallery = pageType == typeof(ExtensionGalleryPage);
+        var openGalleryExtension = openGallery && !string.IsNullOrWhiteSpace(extensionGalleryId);
+        if (openGallery && TryOpenGallery(extensionGalleryId))
         {
             return;
         }
@@ -199,13 +195,11 @@ public sealed partial class SettingsWindow : WindowEx,
             return;
         }
 
-        if (openGalleryExtension)
+        NavFrame.Navigate(pageType);
+
+        if (openGalleryExtension && NavFrame.Content is ExtensionGalleryPage galleryPage)
         {
-            NavFrame.Navigate(pageType, extensionGalleryId);
-        }
-        else
-        {
-            NavFrame.Navigate(pageType);
+            galleryPage.OpenExtension(extensionGalleryId!);
         }
 
         // Now, make sure to actually select the correct menu item too
@@ -218,11 +212,12 @@ public sealed partial class SettingsWindow : WindowEx,
         }
     }
 
-    private bool TryOpenGalleryExtension(string extensionId)
+    private bool TryOpenGallery(string? extensionId)
     {
+        var openExtension = !string.IsNullOrWhiteSpace(extensionId);
         if (NavFrame.Content is ExtensionGalleryItemPage itemPage)
         {
-            if (string.Equals(itemPage.ViewModel?.Id, extensionId, StringComparison.OrdinalIgnoreCase))
+            if (openExtension && string.Equals(itemPage.ViewModel?.Id, extensionId, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -243,7 +238,11 @@ public sealed partial class SettingsWindow : WindowEx,
             return false;
         }
 
-        galleryPage.OpenExtension(extensionId);
+        if (openExtension)
+        {
+            galleryPage.OpenExtension(extensionId!);
+        }
+
         return true;
     }
 
