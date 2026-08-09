@@ -12,7 +12,7 @@ internal static class IconPathParser
     public static bool TryParseBinaryIconReference(string iconPath, out BinaryIconReference iconReference)
     {
         var commaIndex = iconPath.IndexOf(',');
-        var path = commaIndex < 0 ? iconPath : iconPath[..commaIndex];
+        var path = commaIndex < 0 ? iconPath.AsSpan() : iconPath.AsSpan(0, commaIndex);
 
         if (!path.EndsWith(".exe", StringComparison.Ordinal)
             && !path.EndsWith(".dll", StringComparison.Ordinal)
@@ -33,7 +33,7 @@ internal static class IconPathParser
             }
         }
 
-        iconReference = new(path, index);
+        iconReference = new(commaIndex < 0 ? iconPath : iconPath[..commaIndex], index);
         return true;
     }
 
