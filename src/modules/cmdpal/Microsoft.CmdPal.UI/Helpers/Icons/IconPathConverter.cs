@@ -38,7 +38,7 @@ internal static partial class IconPathConverter
         // Avoid using exception-based URI probing for the common Fluent glyph case.
         if (iconPath[0] < 128 && Uri.TryCreate(iconPath, UriKind.Absolute, out var uri))
         {
-            var isSvg = Path.GetExtension(uri.AbsolutePath).Equals(".svg", StringComparison.OrdinalIgnoreCase);
+            var isSvg = uri.AbsolutePath.EndsWith(".svg", StringComparison.OrdinalIgnoreCase);
             return PreparedIcon.FromUri(uri, isSvg, targetSize);
         }
 
