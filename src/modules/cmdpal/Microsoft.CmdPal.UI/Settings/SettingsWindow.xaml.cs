@@ -238,6 +238,8 @@ public sealed partial class SettingsWindow : WindowEx,
             return false;
         }
 
+        galleryPage.ClearPendingExtension();
+
         if (openExtension)
         {
             galleryPage.OpenExtension(extensionId!);

@@ -33,6 +33,7 @@ public sealed partial class ExtensionGalleryPage : Page, IDisposable
 
     private void ExtensionGalleryPage_Unloaded(object sender, RoutedEventArgs e)
     {
+        _extensionIdToOpen = null;
         _isGalleryLoaded = false;
         ViewModel.Dispose();
     }
@@ -59,6 +60,11 @@ public sealed partial class ExtensionGalleryPage : Page, IDisposable
 
         _extensionIdToOpen = extensionId;
         OpenPendingExtension();
+    }
+
+    internal void ClearPendingExtension()
+    {
+        _extensionIdToOpen = null;
     }
 
     private void OpenPendingExtension()
