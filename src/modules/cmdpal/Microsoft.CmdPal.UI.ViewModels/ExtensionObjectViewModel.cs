@@ -254,15 +254,96 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static PropertyChangedEventArgs Args(string name) => new(name);
 
+    /// <summary>
+    /// Runs the specified action on the UI thread using the TaskScheduler from the PageContext. If the PageContext is no longer available, the action will not be executed.
+    /// </summary>
+    /// <param name="action">The action to run on the UI thread.</param>
+    /// <remarks>
+    /// The action is silently dropped when the page is gone. If it takes ownership of anything
+    /// that needs releasing, use the <see cref="DoOnUiThread(Action, Action{bool})"/> overload.
+    /// </remarks>
     protected void DoOnUiThread(Action action)
     {
-        if (PageContext.TryGetTarget(out var pageContext))
+        if (!PageContext.TryGetTarget(out var pageContext))
+        {
+            return;
+        }
+
+        Task.Factory.StartNew(
+            action,
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            pageContext.Scheduler);
+    }
+
+    /// <summary>
+    /// Runs the specified action on the UI thread, then invokes <paramref name="followup"/> to
+    /// report whether it began execution. Use this overload when <paramref name="action"/> takes
+    /// ownership of resources, so the caller can release them when the hand-off never happens.
+    /// </summary>
+    /// <param name="action">The action to run on the UI thread.</param>
+    /// <param name="followup">
+    /// Invoked with <see langword="true"/> after <paramref name="action"/> began running on the UI
+    /// thread, even if it threw, and with <see langword="false"/> when the PageContext is gone or
+    /// scheduling throws before the action begins. It is invoked off the UI thread, so it is safe
+    /// to do cleanup work there. Exceptions from it are logged, not thrown.
+    /// </param>
+    protected void DoOnUiThread(Action action, Action<bool> followup)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(followup);
+
+        if (!PageContext.TryGetTarget(out var pageContext))
+        {
+            InvokeFollowup(false);
+            return;
+        }
+
+        try
         {
             Task.Factory.StartNew(
-                action,
+                () =>
+                {
+                    try
+                    {
+                        action();
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreLogger.LogError("Failed to run action on the UI thread.", ex);
+                    }
+                    finally
+                    {
+                        InvokeFollowup(true);
+                    }
+                },
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 pageContext.Scheduler);
+        }
+        catch (Exception ex)
+        {
+            // The scheduler can reject the work outright (for example during shutdown), in which
+            // case the action will never run and the caller still needs to hear about it.
+            CoreLogger.LogError("Failed to schedule action on the UI thread.", ex);
+            InvokeFollowup(false);
+        }
+
+        return;
+
+        void InvokeFollowup(bool handedOff)
+        {
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    followup(handedOff);
+                }
+                catch (Exception ex)
+                {
+                    CoreLogger.LogError("Failed to run the DoOnUiThread follow-up.", ex);
+                }
+            });
         }
     }
 

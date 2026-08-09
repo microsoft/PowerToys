@@ -114,6 +114,8 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
     private void FetchContent()
     {
         List<ContentViewModel> newContent = [];
+        var transferred = false;
+
         try
         {
             var newItems = Model.Unsafe!.GetChildren();
@@ -123,23 +125,62 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
                 var viewModel = ViewModelFromContent(item, PageContext);
                 if (viewModel is not null)
                 {
+                    // Track before initializing, so we can cleanup in finally
+                    newContent.Add(viewModel);
                     viewModel.InitializeProperties();
-                    newContent.Add((ContentViewModel)viewModel);
                 }
             }
+
+            // Now, back to a UI thread to update the observable collection. Ownership of newContent
+            // moves to the follow-up, which cleans up if the hand-off never happened.
+            transferred = true;
+
+            DoOnUiThread(
+            () =>
+            {
+                ListHelpers.InPlaceUpdateList(Children, newContent, out var removedContent);
+
+                if (removedContent.Count == 0)
+                {
+                    return;
+                }
+
+                _ = Task.Run(() =>
+                {
+                    foreach (var removed in removedContent)
+                    {
+                        removed.SafeCleanup();
+                    }
+                });
+            },
+            handedOff =>
+            {
+                if (handedOff)
+                {
+                    return;
+                }
+
+                foreach (var viewModel in newContent)
+                {
+                    viewModel.SafeCleanup();
+                }
+            });
         }
         catch (Exception ex)
         {
             ShowException(ex);
             throw;
         }
-
-        // Now, back to a UI thread to update the observable collection
-        DoOnUiThread(
-        () =>
+        finally
         {
-            ListHelpers.InPlaceUpdateList(Children, newContent);
-        });
+            if (!transferred)
+            {
+                foreach (var viewModel in newContent)
+                {
+                    viewModel.SafeCleanup();
+                }
+            }
+        }
 
         UpdateProperty(nameof(HasChildren));
     }
