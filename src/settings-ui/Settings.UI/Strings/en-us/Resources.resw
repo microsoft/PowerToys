@@ -3463,7 +3463,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Plugin hints</value>
   </data>
   <data name="PowerLauncher_ShowPluginKeywords.Description" xml:space="preserve">
-    <value>Choose which plugin keywords to be shown when the searchbox is empty</value>
+    <value>Choose which plugin keywords to be shown when the search box is empty</value>
   </data>
   <data name="PowerLauncher_PluginWeightBoost.Description" xml:space="preserve">
     <value>Use a higher number to have this plugin's result show higher in the global results. Default is 0.</value>
