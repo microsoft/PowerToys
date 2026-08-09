@@ -2,24 +2,26 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CmdPal.UI.Messages;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Services;
 
-public static class CmdPalProtocolActivation
+public sealed class CmdPalProtocolActivation : ICmdPalProtocolActivation
 {
     private const string Scheme = "x-cmdpal";
     private const int MaxExtensionIdLength = 256;
     private const string GalleryPageTag = "Gallery";
 
-    public static CmdPalProtocolRoute? Parse(Uri uri)
+    public bool TryParse(Uri? uri, [NotNullWhen(true)] out CmdPalProtocolRoute? route)
     {
-        if (!UriBreadcrumbs.TryParse(uri, Scheme, out var path))
+        route = null;
+        if (uri is null || !UriBreadcrumbs.TryParse(uri, Scheme, out var path))
         {
-            return null;
+            return false;
         }
 
-        return path switch
+        route = path switch
         {
             [var background]
                 when Is(background, "background")
@@ -38,12 +40,14 @@ public static class CmdPalProtocolActivation
                 => new CmdPalProtocolRoute.Reload(),
             _ => null,
         };
+
+        return route is not null;
     }
 
     private static bool Is(string actual, string expected) =>
         actual.Equals(expected, StringComparison.OrdinalIgnoreCase);
 
-    internal static bool TryParseExtensionId(string segment, out string extensionId)
+    internal bool TryParseExtensionId(string segment, out string extensionId)
     {
         extensionId = string.Empty;
         if (segment.Length is 0 or > MaxExtensionIdLength ||

@@ -71,6 +71,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly KeyboardListener _keyboardListener;
     private readonly LocalKeyboardListener _localKeyboardListener;
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
+    private readonly ICmdPalProtocolActivation _protocolActivation;
     private readonly IThemeService _themeService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
     private readonly List<long> _breakthroughTimestamps = [];
@@ -122,6 +123,8 @@ public sealed partial class MainWindow : WindowEx,
 
     public MainWindow()
     {
+        _protocolActivation = App.Current.Services.GetRequiredService<ICmdPalProtocolActivation>();
+
         InitializeComponent();
 
         ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
@@ -1404,7 +1407,7 @@ public sealed partial class MainWindow : WindowEx,
             if (activatedEventArgs.Kind == ExtendedActivationKind.Protocol)
             {
                 if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs &&
-                    CmdPalProtocolActivation.Parse(protocolArgs.Uri) is CmdPalProtocolRoute route)
+                    _protocolActivation.TryParse(protocolArgs.Uri, out var route))
                 {
                     switch (route)
                     {

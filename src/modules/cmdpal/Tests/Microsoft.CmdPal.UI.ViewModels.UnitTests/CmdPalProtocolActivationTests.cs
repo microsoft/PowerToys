@@ -11,10 +11,12 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 [TestClass]
 public class CmdPalProtocolActivationTests
 {
+    private readonly CmdPalProtocolActivation _protocolActivation = new();
+
     [TestMethod]
-    public void Parse_SettingsUri_ReturnsGeneralSettingsRoute()
+    public void TryParse_SettingsUri_ReturnsGeneralSettingsRoute()
     {
-        var result = CmdPalProtocolActivation.Parse(new Uri("x-cmdpal://settings"));
+        Assert.IsTrue(_protocolActivation.TryParse(new Uri("x-cmdpal://settings"), out var result));
 
         Assert.IsInstanceOfType<CmdPalProtocolRoute.OpenSettings>(result);
         var message = ((CmdPalProtocolRoute.OpenSettings)result).Message;
@@ -23,9 +25,9 @@ public class CmdPalProtocolActivationTests
     }
 
     [TestMethod]
-    public void Parse_GalleryUri_ReturnsGallerySettingsRoute()
+    public void TryParse_GalleryUri_ReturnsGallerySettingsRoute()
     {
-        var result = CmdPalProtocolActivation.Parse(new Uri("x-cmdpal://extensions/gallery"));
+        Assert.IsTrue(_protocolActivation.TryParse(new Uri("x-cmdpal://extensions/gallery"), out var result));
 
         Assert.IsInstanceOfType<CmdPalProtocolRoute.OpenSettings>(result);
         var message = ((CmdPalProtocolRoute.OpenSettings)result).Message;
@@ -34,9 +36,11 @@ public class CmdPalProtocolActivationTests
     }
 
     [TestMethod]
-    public void Parse_GalleryExtensionUri_ReturnsDecodedExtensionId()
+    public void TryParse_GalleryExtensionUri_ReturnsDecodedExtensionId()
     {
-        var result = CmdPalProtocolActivation.Parse(new Uri("X-CMDPAL://EXTENSIONS/GALLERY/sample%20extension?source=web"));
+        Assert.IsTrue(_protocolActivation.TryParse(
+            new Uri("X-CMDPAL://EXTENSIONS/GALLERY/sample%20extension?source=web"),
+            out var result));
 
         Assert.IsInstanceOfType<CmdPalProtocolRoute.OpenSettings>(result);
         var message = ((CmdPalProtocolRoute.OpenSettings)result).Message;
@@ -47,7 +51,7 @@ public class CmdPalProtocolActivationTests
     [TestMethod]
     public void TryParseExtensionId_PreservesValidIdExactly()
     {
-        Assert.IsTrue(CmdPalProtocolActivation.TryParseExtensionId("sample extension", out var extensionId));
+        Assert.IsTrue(_protocolActivation.TryParseExtensionId("sample extension", out var extensionId));
         Assert.AreEqual("sample extension", extensionId);
     }
 
@@ -67,23 +71,23 @@ public class CmdPalProtocolActivationTests
 
         foreach (var invalidId in invalidIds)
         {
-            Assert.IsFalse(CmdPalProtocolActivation.TryParseExtensionId(invalidId, out var extensionId), invalidId);
+            Assert.IsFalse(_protocolActivation.TryParseExtensionId(invalidId, out var extensionId), invalidId);
             Assert.AreEqual(string.Empty, extensionId);
         }
     }
 
     [TestMethod]
-    public void Parse_BackgroundUri_ReturnsBackgroundRoute()
+    public void TryParse_BackgroundUri_ReturnsBackgroundRoute()
     {
-        var result = CmdPalProtocolActivation.Parse(new Uri("x-cmdpal://background"));
+        Assert.IsTrue(_protocolActivation.TryParse(new Uri("x-cmdpal://background"), out var result));
 
         Assert.IsInstanceOfType<CmdPalProtocolRoute.Background>(result);
     }
 
     [TestMethod]
-    public void Parse_ReloadUri_ReturnsReloadRoute()
+    public void TryParse_ReloadUri_ReturnsReloadRoute()
     {
-        var result = CmdPalProtocolActivation.Parse(new Uri("x-cmdpal://reload"));
+        Assert.IsTrue(_protocolActivation.TryParse(new Uri("x-cmdpal://reload"), out var result));
 
         Assert.IsInstanceOfType<CmdPalProtocolRoute.Reload>(result);
     }
@@ -99,10 +103,20 @@ public class CmdPalProtocolActivationTests
     [DataRow("x-cmdpal://extensions/gallery/sample%5Cextension")]
     [DataRow("x-cmdpal://extensions/gallery/sample%0Aextension")]
     [DataRow("x-cmdpal://extensions/gallery/sample#fragment")]
-    public void Parse_UnknownOrUnsafeUri_ReturnsNull(string uri)
+    public void TryParse_UnknownOrUnsafeUri_ReturnsFalse(string uri)
     {
-        var result = CmdPalProtocolActivation.Parse(new Uri(uri));
+        var parsed = _protocolActivation.TryParse(new Uri(uri), out var result);
 
+        Assert.IsFalse(parsed);
+        Assert.IsNull(result);
+    }
+
+    [TestMethod]
+    public void TryParse_NullUri_ReturnsFalse()
+    {
+        var parsed = _protocolActivation.TryParse(null, out var result);
+
+        Assert.IsFalse(parsed);
         Assert.IsNull(result);
     }
 }
