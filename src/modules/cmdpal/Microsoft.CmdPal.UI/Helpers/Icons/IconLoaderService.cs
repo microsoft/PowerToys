@@ -229,11 +229,15 @@ internal sealed partial class IconLoaderService : IIconLoaderService
                     ? IconDispatcherMaterializationKind.Unknown
                     : GetDispatcherMaterializationKind(preparedIcon);
                 var dispatcherEnqueuedAt = diagnostics?.BeginDispatcherWait(materializationKind) ?? 0;
+
+                // Keep the dispatcher callback synchronous for glyph and URI sources.
+                // The returned ValueTask carries only binary transfer work beyond it.
                 try
                 {
-                    return await _dispatcherQueue
+                    var materialization = await _dispatcherQueue
                         .EnqueueAsync(CreateIconSourceOnDispatcher, LoadingPriorityOnDispatcher)
                         .ConfigureAwait(false);
+                    return await materialization.ConfigureAwait(false);
                 }
                 catch
                 {
@@ -242,14 +246,43 @@ internal sealed partial class IconLoaderService : IIconLoaderService
                     throw;
                 }
 
-                async Task<IconSource?> CreateIconSourceOnDispatcher()
+                ValueTask<IconSource?> CreateIconSourceOnDispatcher()
                 {
                     var dispatcherStartedAt = diagnostics?.DispatcherStarted(dispatcherEnqueuedAt) ?? 0;
+                    var completionOwnedByCallback = true;
+                    try
+                    {
+                        if (IconPathConverter.TryCreateIconSourceSynchronously(preparedIcon, out var result))
+                        {
+                            diagnostics?.SetResult(result);
+                            return ValueTask.FromResult<IconSource?>(result);
+                        }
+
+                        var materializationInner = CompleteAsynchronousMaterializationAsync(dispatcherStartedAt);
+
+                        // The asynchronous continuation now owns the single timing-completion notification.
+                        completionOwnedByCallback = false;
+                        return materializationInner;
+                    }
+                    finally
+                    {
+                        if (completionOwnedByCallback)
+                        {
+                            diagnostics?.DispatcherUiSliceCompleted(
+                                dispatcherStartedAt,
+                                IconDispatcherUiSliceKind.SynchronousCallback);
+                            diagnostics?.DispatcherCompleted(dispatcherStartedAt);
+                        }
+                    }
+                }
+
+                async ValueTask<IconSource?> CompleteAsynchronousMaterializationAsync(long dispatcherStartedAt)
+                {
                     var suspensionStartedAt = 0L;
                     var continuationStartedAt = 0L;
                     try
                     {
-                        var operation = IconPathConverter.CreateIconSourceAsync(preparedIcon);
+                        var operation = IconPathConverter.CompleteIconSourceCreationAsync(preparedIcon);
                         if (operation.IsCompleted)
                         {
                             var synchronousResult = await operation;
