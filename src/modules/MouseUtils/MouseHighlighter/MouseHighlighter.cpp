@@ -483,6 +483,7 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
 void Highlighter::QueueMouseEvent(MouseEvent event) noexcept
 {
     bool postMessage = false;
+    bool coalesced = false;
 
     AcquireSRWLockExclusive(&m_mouseEventQueueLock);
     if (m_acceptMouseEvents)
@@ -493,12 +494,11 @@ void Highlighter::QueueMouseEvent(MouseEvent event) noexcept
             if (m_mouseEventQueue[lastIndex].type == MouseEventType::Move)
             {
                 m_mouseEventQueue[lastIndex] = event;
-                ReleaseSRWLockExclusive(&m_mouseEventQueueLock);
-                return;
+                coalesced = true;
             }
         }
 
-        if (m_mouseEventQueueSize == MOUSE_EVENT_QUEUE_CAPACITY)
+        if (!coalesced && m_mouseEventQueueSize == MOUSE_EVENT_QUEUE_CAPACITY)
         {
             if (event.type == MouseEventType::Move)
             {
@@ -513,9 +513,12 @@ void Highlighter::QueueMouseEvent(MouseEvent event) noexcept
             m_mouseEventQueue[0] = { MouseEventType::Reset, event.position, event.timestamp };
         }
 
-        const size_t insertIndex = (m_mouseEventQueueHead + m_mouseEventQueueSize) % MOUSE_EVENT_QUEUE_CAPACITY;
-        m_mouseEventQueue[insertIndex] = event;
-        ++m_mouseEventQueueSize;
+        if (!coalesced)
+        {
+            const size_t insertIndex = (m_mouseEventQueueHead + m_mouseEventQueueSize) % MOUSE_EVENT_QUEUE_CAPACITY;
+            m_mouseEventQueue[insertIndex] = event;
+            ++m_mouseEventQueueSize;
+        }
 
         if (!m_mouseEventMessagePending)
         {
@@ -525,11 +528,18 @@ void Highlighter::QueueMouseEvent(MouseEvent event) noexcept
     }
     ReleaseSRWLockExclusive(&m_mouseEventQueueLock);
 
-    if (postMessage && !PostMessage(m_hwnd, WM_PROCESS_MOUSE_EVENTS, 0, 0))
+    HWND window = nullptr;
+    if (postMessage)
+    {
+        AcquireSRWLockShared(&m_settingsLock);
+        window = m_hwnd;
+        ReleaseSRWLockShared(&m_settingsLock);
+    }
+
+    if (postMessage && (window == nullptr || !PostMessage(window, WM_PROCESS_MOUSE_EVENTS, 0, 0)))
     {
         AcquireSRWLockExclusive(&m_mouseEventQueueLock);
-        m_mouseEventQueueHead = 0;
-        m_mouseEventQueueSize = 0;
+        // Preserve queued events so the next hook event can retry delivery.
         m_mouseEventMessagePending = false;
         ReleaseSRWLockExclusive(&m_mouseEventQueueLock);
     }
