@@ -6,7 +6,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.Versioning;
-using System.Security.Principal;
 using Microsoft.Win32;
 
 namespace ManagedCommon
@@ -60,13 +59,31 @@ namespace ManagedCommon
 #endif
         }
 
+        private const uint TokenQuery = 0x0008;
+        private const int TokenElevation = 20;
+
+        [System.Runtime.InteropServices.DllImport("advapi32.dll", SetLastError = true)]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        private static extern bool OpenProcessToken(IntPtr processHandle, uint desiredAccess, out Microsoft.Win32.SafeHandles.SafeAccessTokenHandle tokenHandle);
+
+        [System.Runtime.InteropServices.DllImport("advapi32.dll", SetLastError = true)]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        private static extern bool GetTokenInformation(Microsoft.Win32.SafeHandles.SafeAccessTokenHandle tokenHandle, int tokenInformationClass, out uint tokenInformation, uint tokenInformationLength, out uint returnLength);
+
         private static bool IsProcessElevated()
         {
             try
             {
-                using var identity = WindowsIdentity.GetCurrent();
-                var principal = new WindowsPrincipal(identity);
-                return principal.IsInRole(WindowsBuiltInRole.Administrator);
+                using var process = Process.GetCurrentProcess();
+                if (!OpenProcessToken(process.Handle, TokenQuery, out var token))
+                {
+                    return true;
+                }
+
+                using (token)
+                {
+                    return !GetTokenInformation(token, TokenElevation, out var elevation, sizeof(uint), out _) || elevation != 0;
+                }
             }
             catch (Exception)
             {
