@@ -72,6 +72,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly KeyboardListener _keyboardListener;
     private readonly LocalKeyboardListener _localKeyboardListener;
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
+    private readonly ICmdPalProtocolActivation _protocolActivation;
     private readonly IThemeService _themeService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
     private readonly List<long> _breakthroughTimestamps = [];
@@ -133,6 +134,8 @@ public sealed partial class MainWindow : WindowEx,
 
     public MainWindow()
     {
+        _protocolActivation = App.Current.Services.GetRequiredService<ICmdPalProtocolActivation>();
+
         InitializeComponent();
 
         ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
@@ -1443,23 +1446,20 @@ public sealed partial class MainWindow : WindowEx,
 
             if (activatedEventArgs.Kind == ExtendedActivationKind.Protocol)
             {
-                if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs)
+                if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs &&
+                    _protocolActivation.TryParse(protocolArgs.Uri, out var route))
                 {
-                    if (protocolArgs.Uri.ToString() is string uri)
+                    switch (route)
                     {
-                        // was the URI "x-cmdpal://background" ?
-                        if (uri.StartsWith("x-cmdpal://background", StringComparison.OrdinalIgnoreCase))
-                        {
+                        case CmdPalProtocolRoute.Background:
                             // we're running, we don't want to activate our window. bail
                             return;
-                        }
-                        else if (uri.StartsWith("x-cmdpal://settings", StringComparison.OrdinalIgnoreCase))
-                        {
-                            WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
+
+                        case CmdPalProtocolRoute.OpenSettings openSettings:
+                            WeakReferenceMessenger.Default.Send(openSettings.Message);
                             return;
-                        }
-                        else if (uri.StartsWith("x-cmdpal://reload", StringComparison.OrdinalIgnoreCase))
-                        {
+
+                        case CmdPalProtocolRoute.Reload:
                             var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
                             if (settings?.AllowExternalReload == true)
                             {
@@ -1472,7 +1472,6 @@ public sealed partial class MainWindow : WindowEx,
                             }
 
                             return;
-                        }
                     }
                 }
             }
