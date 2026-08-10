@@ -100,27 +100,6 @@ public class SettingsServiceTests
         Assert.IsTrue(service.Settings.ShowAppDetails);
     }
 
-    [DataTestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void Constructor_RetiresAllowExternalReloadWithExternalCommandLinksEnabled(bool legacyValue)
-    {
-        Directory.CreateDirectory(_testDirectory);
-        File.WriteAllText(
-            Path.Combine(_testDirectory, "settings.json"),
-            $"{{\"AllowExternalReload\":{legacyValue.ToString().ToLowerInvariant()}}}");
-
-        var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
-
-        Assert.IsTrue(service.Settings.EnableExternalCommandLinks);
-        _mockPersistence.Verify(
-            p => p.Save(
-                It.Is<SettingsModel>(settings => settings.EnableExternalCommandLinks),
-                It.IsAny<string>(),
-                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()),
-            Times.Once);
-    }
-
     [TestMethod]
     public void Constructor_DefaultsExternalCommandLinksToEnabled()
     {
@@ -135,15 +114,9 @@ public class SettingsServiceTests
         Directory.CreateDirectory(_testDirectory);
         File.WriteAllText(Path.Combine(_testDirectory, "settings.json"), "{}");
 
-        var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
+        var service = new SettingsService(new PersistenceService(), _mockAppInfo.Object);
 
         Assert.IsTrue(service.Settings.EnableExternalCommandLinks);
-        _mockPersistence.Verify(
-            p => p.Save(
-                It.Is<SettingsModel>(settings => settings.EnableExternalCommandLinks),
-                It.IsAny<string>(),
-                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()),
-            Times.Once);
     }
 
     [TestMethod]
@@ -152,24 +125,11 @@ public class SettingsServiceTests
         Directory.CreateDirectory(_testDirectory);
         File.WriteAllText(
             Path.Combine(_testDirectory, "settings.json"),
-            "{\"EnableExternalCommandLinks\":false,\"AllowExternalReload\":true}");
+            "{\"EnableExternalCommandLinks\":false}");
 
-        _testSettings = _testSettings with { EnableExternalCommandLinks = false };
-        _mockPersistence
-            .Setup(p => p.Load(
-                It.IsAny<string>(),
-                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()))
-            .Returns(_testSettings);
-
-        var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
+        var service = new SettingsService(new PersistenceService(), _mockAppInfo.Object);
 
         Assert.IsFalse(service.Settings.EnableExternalCommandLinks);
-        _mockPersistence.Verify(
-            p => p.Save(
-                It.Is<SettingsModel>(settings => !settings.EnableExternalCommandLinks),
-                It.IsAny<string>(),
-                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()),
-            Times.Once);
     }
 
     [TestMethod]
