@@ -9,8 +9,8 @@ using EnvironmentVariablesUILib;
 using EnvironmentVariablesUILib.Helpers;
 using EnvironmentVariablesUILib.ViewModels;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WinUIEx;
@@ -27,12 +27,7 @@ namespace EnvironmentVariables
 
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
-
-            if (AppWindowTitleBar.IsCustomizationSupported())
-            {
-                var appWindowTitleBar = this.AppWindow.TitleBar;
-                appWindowTitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
-            }
+            TitleBarHelper.SetPreferredTheme(this);
 
             AppWindow.SetIcon("Assets/EnvironmentVariables/EnvironmentVariables.ico");
 

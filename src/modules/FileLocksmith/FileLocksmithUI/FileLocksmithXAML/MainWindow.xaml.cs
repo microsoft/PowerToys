@@ -4,7 +4,7 @@
 
 using System;
 using ManagedCommon;
-using Microsoft.UI.Windowing;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using PowerToys.FileLocksmithUI.Helpers;
@@ -20,12 +20,7 @@ namespace FileLocksmithUI
             mainPage.ViewModel.IsElevated = isElevated;
             SetTitleBar(titleBar);
             ExtendsContentIntoTitleBar = true;
-
-            if (AppWindowTitleBar.IsCustomizationSupported())
-            {
-                var appWindowTitleBar = this.AppWindow.TitleBar;
-                appWindowTitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
-            }
+            TitleBarHelper.SetPreferredTheme(this);
 
             AppWindow.SetIcon("Assets/FileLocksmith/Icon.ico");
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());

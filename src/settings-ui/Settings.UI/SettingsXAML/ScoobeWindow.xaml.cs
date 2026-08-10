@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;

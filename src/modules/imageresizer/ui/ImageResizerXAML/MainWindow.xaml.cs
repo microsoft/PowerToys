@@ -12,8 +12,8 @@ using ImageResizer.Helpers;
 using ImageResizer.ViewModels;
 using ImageResizer.Views;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
@@ -43,12 +43,7 @@ namespace ImageResizer
 
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
-
-            if (AppWindowTitleBar.IsCustomizationSupported())
-            {
-                var appWindowTitleBar = this.AppWindow.TitleBar;
-                appWindowTitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
-            }
+            TitleBarHelper.SetPreferredTheme(this);
 
             this.SetIcon("Assets/ImageResizer/ImageResizer.ico");
 
