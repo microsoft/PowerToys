@@ -4,9 +4,11 @@
 
 using System;
 
+using ManagedCommon;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml.Hosting;
 using Windows.Graphics;
 using CoreSize = PowerAccent.Core.Size;
 
@@ -129,7 +131,7 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
         IsAlwaysOnTop = true;
         Show();
 
-        DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+        DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, async () =>
         {
             if (generation != _showGeneration)
             {
@@ -147,12 +149,26 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
             Selector.UpdateLayout();
             Selector.ScrollSelectedIntoView(_selectedIndex);
 
-            // Everything above happened on a window that was shown but cloaked, so the bar is laid
-            // out, sized and positioned before anything reaches the screen. Uncloaking hands DWM the
-            // last composed frame until the next one lands, and that frame is the dormant window's -
-            // empty, because the surface sits Collapsed between summons. So the worst case here is a
-            // single frame of nothing, never a frame of the previous summon's bar (issue #49489).
-            // That is what the surface's Collapsed dormant state buys, and why it must stay.
+            // UpdateLayout only completes XAML measure/arrange. Wait for the composition commit so
+            // uncloaking cannot expose the previous summon's redirection surface at the new bounds.
+            try
+            {
+                await ElementCompositionPreview.GetElementVisual(Selector).Compositor.RequestCommitAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to commit the Quick Accent layout before reveal", ex);
+                return;
+            }
+
+            if (generation != _showGeneration)
+            {
+                return;
+            }
+
+            // Everything above happened on a window that was shown but cloaked. The commit ensures
+            // DWM's redirection surface already contains this summon's final layout before it is
+            // exposed, so Reveal cannot flash the previous bar at the new bounds (issue #49489).
             Reveal();
         });
 
