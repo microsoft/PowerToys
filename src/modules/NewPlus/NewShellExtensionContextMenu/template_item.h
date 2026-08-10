@@ -32,7 +32,8 @@ namespace newplus
         std::filesystem::path path;
 
     private:
-        static void rename_on_other_thread_workaround(const std::filesystem::path target_fullpath, const POINT mouse_position_at_invoke);
+        static DWORD WINAPI rename_worker_thread_proc(void* parameter);
+        static void rename_on_other_thread_workaround(const std::filesystem::path& target_fullpath, const POINT mouse_position_at_invoke);
 
         std::wstring remove_starting_digits_from_filename(std::wstring filename) const;
     };

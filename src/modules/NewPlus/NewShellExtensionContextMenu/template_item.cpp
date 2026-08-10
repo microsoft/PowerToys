@@ -9,6 +9,16 @@
 using namespace Microsoft::WRL;
 using namespace newplus;
 
+namespace
+{
+    struct rename_worker_context
+    {
+        std::filesystem::path target_fullpath;
+        POINT mouse_position_at_invoke;
+        HMODULE module_reference;
+    };
+}
+
 template_item::template_item(const std::filesystem::path entry)
 {
     path = entry;
@@ -194,19 +204,54 @@ void template_item::refresh_target(const std::filesystem::path target_final_full
 
 void template_item::enter_rename_mode(const std::filesystem::path target_fullpath, const POINT mouse_position_at_invoke) const
 {
-    active_rename_workers.fetch_add(1);
+    HMODULE module_reference = nullptr;
+    if (!GetModuleHandleExW(
+            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+            reinterpret_cast<LPCWSTR>(&module_instance_handle),
+            &module_reference))
+    {
+        return;
+    }
+
+    std::unique_ptr<rename_worker_context> context;
     try
     {
-        std::thread thread_for_renaming_workaround(rename_on_other_thread_workaround, target_fullpath, mouse_position_at_invoke);
-        thread_for_renaming_workaround.detach();
+        context = std::make_unique<rename_worker_context>(
+            target_fullpath,
+            mouse_position_at_invoke,
+            module_reference);
     }
     catch (...)
     {
-        active_rename_workers.fetch_sub(1);
+        FreeLibrary(module_reference);
+        return;
     }
+
+    active_rename_workers.fetch_add(1);
+    const HANDLE thread = CreateThread(nullptr, 0, rename_worker_thread_proc, context.get(), 0, nullptr);
+    if (thread == nullptr)
+    {
+        active_rename_workers.fetch_sub(1);
+        FreeLibrary(module_reference);
+        return;
+    }
+
+    context.release();
+    CloseHandle(thread);
 }
 
-void template_item::rename_on_other_thread_workaround(const std::filesystem::path target_fullpath, const POINT mouse_position_at_invoke)
+DWORD WINAPI template_item::rename_worker_thread_proc(void* parameter)
+{
+    std::unique_ptr<rename_worker_context> context(static_cast<rename_worker_context*>(parameter));
+    const HMODULE module_reference = context->module_reference;
+
+    rename_on_other_thread_workaround(context->target_fullpath, context->mouse_position_at_invoke);
+    context.reset();
+    active_rename_workers.fetch_sub(1);
+    FreeLibraryAndExitThread(module_reference, 0);
+}
+
+void template_item::rename_on_other_thread_workaround(const std::filesystem::path& target_fullpath, const POINT mouse_position_at_invoke)
 {
     struct worker_cleanup
     {
@@ -218,7 +263,6 @@ void template_item::rename_on_other_thread_workaround(const std::filesystem::pat
             {
                 CoUninitialize();
             }
-            active_rename_workers.fetch_sub(1);
         }
     } cleanup;
 
