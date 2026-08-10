@@ -31,6 +31,7 @@ internal enum PerformanceMetricKind
     Cpu,
     Memory,
     Network,
+    NetworkSpeed,
     Disk,
     Gpu,
     Battery,
@@ -42,10 +43,10 @@ internal enum PerformanceMetricKind
 /// By using OnLoadStaticListPage, we can get onload/onunload events to start/stop
 /// the data gathering.
 ///
-/// When <paramref name="singleMetric"/> is supplied, the page only initializes
+/// When <code>singleMetric</code> is supplied, the page only initializes
 /// and surfaces a single metric — used to back per-metric dock bands. When
-/// null, the page surfaces all metrics (the default behavior for both the main
-/// list page and the all-metrics dock band).
+/// null, the main list page surfaces all metrics, while the default dock band
+/// surfaces only CPU and memory. Other metrics have their own dock bands.
 /// </summary>
 internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDisposable
 {
@@ -60,6 +61,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         PerformanceMetricKind.Cpu => Icons.CpuIcon,
         PerformanceMetricKind.Memory => Icons.MemoryIcon,
         PerformanceMetricKind.Network => Icons.NetworkIcon,
+        PerformanceMetricKind.NetworkSpeed => Icons.NetworkIcon,
         PerformanceMetricKind.Disk => Icons.HardDriveIcon,
         PerformanceMetricKind.Gpu => Icons.GpuIcon,
         PerformanceMetricKind.Battery => _batteryPage?.CurrentIcon ?? Icons.BatteryIcon,
@@ -88,11 +90,9 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     private readonly SystemBatteryUsageWidgetPage? _batteryPage;
     private readonly ListItem? _batteryItem;
 
-    // For bands, we want two bands, one for up and one for down
+    // For the network band, show one item for upload and one for download.
     private ListItem? _networkUpItem;
     private ListItem? _networkDownItem;
-    private string _networkUpSpeed = string.Empty;
-    private string _networkDownSpeed = string.Empty;
 
     // For bands, we want two bands, one for read and one for write
     private ListItem? _diskReadItem;
@@ -145,32 +145,11 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 MoreCommands = _networkPage.Commands,
             };
 
-            if (isBandPage)
-            {
-                _networkUpItem = new ListItem(_networkPage)
-                {
-                    Title = $"{_networkUpSpeed}",
-                    Subtitle = Resources.GetResource("Network_Send_Subtitle"),
-                    Icon = Icons.NetworkUpIcon,
-                    MoreCommands = _networkPage.Commands,
-                };
-
-                _networkDownItem = new ListItem(_networkPage)
-                {
-                    Title = $"{_networkDownSpeed}",
-                    Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
-                    Icon = Icons.NetworkDownIcon,
-                    MoreCommands = _networkPage.Commands,
-                };
-            }
-
             _networkPage.Updated += (s, e) =>
             {
                 _networkItem.Title = _networkPage.GetItemTitle(isBandPage);
-                _networkUpSpeed = _networkPage.GetUpSpeed();
-                _networkDownSpeed = _networkPage.GetDownSpeed();
-                _networkDownItem?.Title = $"{_networkDownSpeed}";
-                _networkUpItem?.Title = $"{_networkUpSpeed}";
+                _networkUpItem?.Title = _networkPage.GetUpSpeed();
+                _networkDownItem?.Title = _networkPage.GetDownSpeed();
             };
         }
 
@@ -190,7 +169,6 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _diskWriteSpeed = _diskPage.GetWriteSpeed();
                 _diskReadItem?.Title = $"{_diskReadSpeed}";
                 _diskWriteItem?.Title = $"{_diskWriteSpeed}";
-                RaiseItemsChanged();
             };
         }
 
@@ -296,12 +274,20 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     public override IListItem[] GetItems()
     {
-        // Per-metric pages just return the single matching item.
+        // Per-metric pages return only the items for that metric.
         if (_singleMetric is PerformanceMetricKind metric)
         {
-            if (metric == PerformanceMetricKind.Disk && _isBandPage)
+            if (_isBandPage)
             {
-                return CreateDiskBandItems();
+                if (metric == PerformanceMetricKind.NetworkSpeed)
+                {
+                    return CreateNetworkBandItems();
+                }
+
+                if (metric == PerformanceMetricKind.Disk)
+                {
+                    return CreateDiskBandItems();
+                }
             }
 
             return metric switch
@@ -309,6 +295,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 PerformanceMetricKind.Cpu => new IListItem[] { _cpuItem! },
                 PerformanceMetricKind.Memory => new IListItem[] { _memoryItem! },
                 PerformanceMetricKind.Network => new IListItem[] { _networkItem! },
+                PerformanceMetricKind.NetworkSpeed => new IListItem[] { _networkItem! },
                 PerformanceMetricKind.Disk => new IListItem[] { _diskItem! },
                 PerformanceMetricKind.Gpu => new IListItem[] { _gpuItem! },
                 PerformanceMetricKind.Battery => new IListItem[] { _batteryItem! },
@@ -323,39 +310,29 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 ? new[] { _cpuItem!, _memoryItem!, _networkItem!, _diskItem!, _gpuItem!, _batteryItem! }
                 : new[] { _cpuItem!, _memoryItem!, _networkItem!, _diskItem!, _gpuItem! };
         }
-        else
+
+        return [_cpuItem!, _memoryItem!];
+    }
+
+    private IListItem[] CreateNetworkBandItems()
+    {
+        _networkUpItem ??= new ListItem(_networkPage!)
         {
-            if (_networkUpItem is null)
-            {
-                _networkUpItem = new ListItem(_networkPage!)
-                {
-                    Title = $"{_networkUpSpeed}",
-                    Subtitle = Resources.GetResource("Network_Send_Subtitle"),
-                    Icon = Icons.NetworkUpIcon,
-                    MoreCommands = _networkPage!.Commands,
-                };
-            }
+            Subtitle = Resources.GetResource("Network_Send_Subtitle"),
+            Icon = Icons.NetworkUpIcon,
+            MoreCommands = _networkPage!.Commands,
+        };
+        _networkUpItem.Title = _networkPage!.GetUpSpeed();
 
-            _networkUpItem.Title = _networkUpSpeed;
+        _networkDownItem ??= new ListItem(_networkPage!)
+        {
+            Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
+            Icon = Icons.NetworkDownIcon,
+            MoreCommands = _networkPage!.Commands,
+        };
+        _networkDownItem.Title = _networkPage!.GetDownSpeed();
 
-            if (_networkDownItem is null)
-            {
-                _networkDownItem = new ListItem(_networkPage!)
-                {
-                    Title = $"{_networkDownSpeed}",
-                    Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
-                    Icon = Icons.NetworkDownIcon,
-                    MoreCommands = _networkPage!.Commands,
-                };
-            }
-
-            _networkDownItem.Title = _networkDownSpeed;
-
-            CreateDiskBandItems();
-            return _batteryItem is not null
-                ? new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _diskReadItem!, _diskWriteItem!, _diskItem!, _gpuItem!, _batteryItem! }
-                : new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _diskReadItem!, _diskWriteItem!, _diskItem!, _gpuItem! };
-        }
+        return [_networkUpItem, _networkDownItem];
     }
 
     private IListItem[] CreateDiskBandItems()
@@ -396,7 +373,13 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     private bool IncludesMetric(PerformanceMetricKind metric)
     {
-        return _singleMetric is null || _singleMetric == metric;
+        if (_singleMetric is PerformanceMetricKind singleMetric)
+        {
+            return singleMetric == metric
+                || (singleMetric == PerformanceMetricKind.NetworkSpeed && metric == PerformanceMetricKind.Network);
+        }
+
+        return !_isBandPage || metric is PerformanceMetricKind.Cpu or PerformanceMetricKind.Memory;
     }
 
     private static string GetMetricSuffix(PerformanceMetricKind metric)
@@ -406,6 +389,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             PerformanceMetricKind.Cpu => "cpu",
             PerformanceMetricKind.Memory => "memory",
             PerformanceMetricKind.Network => "network",
+            PerformanceMetricKind.NetworkSpeed => "networkSpeed",
             PerformanceMetricKind.Disk => "disk",
             PerformanceMetricKind.Gpu => "gpu",
             PerformanceMetricKind.Battery => "battery",
@@ -972,6 +956,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     private readonly DataManager _dataManager;
     private readonly SettingsManager _settingsManager;
     private int _networkIndex;
+    private bool _defaultNetworkInitialized;
 
     public SystemNetworkUsageWidgetPage(SettingsManager settingsManager)
     {
@@ -980,6 +965,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         Commands = [
             new CommandContextItem(new PrevNetworkCommand(this) { Name = Resources.GetResource("Previous_Network_Title") }),
             new CommandContextItem(new NextNetworkCommand(this) { Name = Resources.GetResource("Next_Network_Title") }),
+            new CommandContextItem(new SetDefaultNetworkCommand(this) { Name = Resources.GetResource("Set_Default_Network_Title") }),
             new CommandContextItem(OpenTaskManagerCommand.Instance),
         ];
     }
@@ -994,6 +980,16 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
             var timer = Stopwatch.StartNew();
 
             var currentData = _dataManager.GetNetworkStats();
+
+            if (!_defaultNetworkInitialized)
+            {
+                var defaultNetworkIndex = currentData.GetNetworkIndex(_settingsManager.DefaultNetworkAdapterId);
+                if (defaultNetworkIndex >= 0)
+                {
+                    _networkIndex = defaultNetworkIndex;
+                    _defaultNetworkInitialized = true;
+                }
+            }
 
             var dataDuration = timer.ElapsedMilliseconds;
 
@@ -1042,29 +1038,14 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
     }
 
-    // up/down speed is always used for bands
     public string GetUpSpeed()
     {
-        if (ContentData.TryGetValue("netSent", out var upSpeed))
-        {
-            return upSpeed;
-        }
-        else
-        {
-            return "???";
-        }
+        return ContentData.TryGetValue("netSent", out var upSpeed) ? upSpeed : "???";
     }
 
     public string GetDownSpeed()
     {
-        if (ContentData.TryGetValue("netReceived", out var downSpeed))
-        {
-            return downSpeed;
-        }
-        else
-        {
-            return "???";
-        }
+        return ContentData.TryGetValue("netReceived", out var downSpeed) ? downSpeed : "???";
     }
 
     private string SpeedToString(float bytesPerSec)
@@ -1097,14 +1078,30 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
     private void HandlePrevNetwork()
     {
+        _defaultNetworkInitialized = true;
         _networkIndex = _dataManager.GetNetworkStats().GetPrevNetworkIndex(_networkIndex);
         UpdateWidget();
     }
 
     private void HandleNextNetwork()
     {
+        _defaultNetworkInitialized = true;
         _networkIndex = _dataManager.GetNetworkStats().GetNextNetworkIndex(_networkIndex);
         UpdateWidget();
+    }
+
+    private ICommandResult HandleSetDefaultNetwork()
+    {
+        _defaultNetworkInitialized = true;
+        var networkStats = _dataManager.GetNetworkStats();
+        var networkName = networkStats.GetNetworkName(_networkIndex);
+        _settingsManager.SetDefaultNetworkAdapterId(networkStats.GetNetworkId(_networkIndex));
+
+        return CommandResult.ShowToast(new ToastArgs
+        {
+            Message = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Set_Default_Network_Success"), networkName),
+            Result = CommandResult.KeepOpen(),
+        });
     }
 
     public void Dispose()
@@ -1149,6 +1146,25 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         {
             _page.HandleNextNetwork();
             return CommandResult.KeepOpen();
+        }
+    }
+
+    private sealed partial class SetDefaultNetworkCommand : InvokableCommand
+    {
+        private readonly SystemNetworkUsageWidgetPage _page;
+
+        public SetDefaultNetworkCommand(SystemNetworkUsageWidgetPage page)
+        {
+            _page = page;
+        }
+
+        public override string Id => "com.microsoft.cmdpal.network_widget.setDefault";
+
+        public override IconInfo Icon => Icons.SetDefaultIcon;
+
+        public override ICommandResult Invoke()
+        {
+            return _page.HandleSetDefaultNetwork();
         }
     }
 }

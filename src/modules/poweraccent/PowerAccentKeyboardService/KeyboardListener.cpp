@@ -13,7 +13,7 @@
 namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 {
     KeyboardListener::KeyboardListener() :
-        m_toolbarVisible(false), m_triggeredWithSpace(false), m_leftShiftPressed(false), m_rightShiftPressed(false), m_triggeredWithLeftArrow(false), m_triggeredWithRightArrow(false)
+        m_toolbarVisible(false), m_triggeredWithSpace(false), m_triggeredWithLeftArrow(false), m_triggeredWithRightArrow(false), m_leftShiftPressed(false), m_rightShiftPressed(false), m_pressAndHoldCancelled(false)
     {
         s_instance = this;
         LoggerHelpers::init_logger(L"PowerAccent", L"PowerAccentKeyboardService", "PowerAccent");
@@ -60,12 +60,20 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         m_triggeredWithRightArrow = false;
         m_leftShiftPressed = false;
         m_rightShiftPressed = false;
+        m_pressAndHoldCancelled = false;
     }
 
     void KeyboardListener::SetShowToolbarEvent(ShowToolbar showToolbarEvent)
     {
-        m_showToolbarCb = [trigger = std::move(showToolbarEvent)](LetterKey key) {
-            trigger(key);
+        m_showToolbarCb = [trigger = std::move(showToolbarEvent)](LetterKey key, int32_t displayDelay) {
+            trigger(key, displayDelay);
+        };
+    }
+
+    void KeyboardListener::SetCancelToolbarEvent(CancelToolbar cancelToolbarEvent)
+    {
+        m_cancelToolbarCb = [trigger = std::move(cancelToolbarEvent)]() {
+            trigger();
         };
     }
 
@@ -94,7 +102,16 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
     void KeyboardListener::UpdateActivationKey(int32_t activationKey)
     {
+        std::lock_guard<std::mutex> lock(m_mutex_activation_settings);
         m_settings.activationKey = static_cast<PowerAccentActivationKey>(activationKey);
+    }
+
+    void KeyboardListener::UpdateActivationSettings(int32_t activationKey, int32_t inputTime, int32_t holdDuration)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex_activation_settings);
+        m_settings.activationKey = static_cast<PowerAccentActivationKey>(activationKey);
+        m_settings.inputTime = std::chrono::milliseconds(inputTime);
+        m_settings.holdDuration = std::chrono::milliseconds(holdDuration);
     }
 
     void KeyboardListener::UpdateDoNotActivateOnGameMode(bool doNotActivateOnGameMode)
@@ -104,11 +121,13 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
     void KeyboardListener::UpdateInputTime(int32_t inputTime)
     {
+        std::lock_guard<std::mutex> lock(m_mutex_activation_settings);
         m_settings.inputTime = std::chrono::milliseconds(inputTime);
     }
 
     void KeyboardListener::UpdateHoldDuration(int32_t holdDuration)
     {
+        std::lock_guard<std::mutex> lock(m_mutex_activation_settings);
         m_settings.holdDuration = std::chrono::milliseconds(holdDuration);
     }
 
@@ -194,23 +213,55 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             m_rightShiftPressed = true;
         }
 
-        if (std::find(letters.begin(), letters.end(), letterKey) != cend(letters) && m_isLanguageLetterCb(letterKey))
+        const bool isLetterKey = std::find(letters.begin(), letters.end(), letterKey) != cend(letters);
+        if (isLetterKey &&
+            m_toolbarVisible &&
+            m_gestureActivationKey == PowerAccentActivationKey::PressAndHold)
         {
-            if (m_toolbarVisible && letterPressed == letterKey)
+            if (letterPressed == letterKey)
             {
-                // On-screen keyboard continuously sends WM_KEYDOWN when a key is held down
-                // If Quick Accent is visible, prevent the letter key from being processed
+                // On-screen keyboard continuously sends WM_KEYDOWN when a key is held down.
+                // If Quick Accent is active, prevent the owner letter from being processed.
                 // https://github.com/microsoft/PowerToys/issues/36853
                 return true;
             }
 
+            // Any different physical letter must not be replaced when the original owner is
+            // released, even if that letter has no mapping in the selected language.
+            if (!m_pressAndHoldCancelled)
+            {
+                m_pressAndHoldCancelled = true;
+                m_cancelToolbarCb();
+            }
+
+            return false;
+        }
+
+        // Language eligibility gates starting a new owner gesture, not canceling an active one.
+        if (isLetterKey && m_isLanguageLetterCb(letterKey))
+        {
+            if (m_toolbarVisible && letterPressed == letterKey)
+            {
+                // Preserve repeat suppression for trigger-key activation modes.
+                return true;
+            }
+
+            const bool isNewOwnerGesture = letterPressed != letterKey;
             m_stopwatch.reset();
             letterPressed = letterKey;
+            m_pressAndHoldCancelled = false;
+            if (isNewOwnerGesture && !m_toolbarVisible)
+            {
+                std::lock_guard<std::mutex> lock(m_mutex_activation_settings);
+                m_gestureActivationKey = m_settings.activationKey;
+                m_gestureInputTime = m_settings.inputTime;
+                m_gestureHoldDuration = m_settings.holdDuration;
+            }
         }
 
         // Press-and-hold activation: the held letter itself opens the toolbar after the hold
         // duration. The base letter still types on first press; auto-repeats are swallowed above.
-        if (m_settings.activationKey == PowerAccentActivationKey::PressAndHold &&
+        if (m_gestureActivationKey == PowerAccentActivationKey::PressAndHold &&
             !m_toolbarVisible &&
             letterPressed != LetterKey::None &&
             letterKey == letterPressed &&
@@ -223,7 +274,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             m_triggeredWithLeftArrow = false;
             m_triggeredWithRightArrow = false;
             m_toolbarVisible = true;
-            m_showToolbarCb(letterPressed);
+            m_showToolbarCb(letterPressed, static_cast<int32_t>(m_gestureHoldDuration.count()));
             return false;
         }
 
@@ -236,8 +287,8 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                 const bool isLetterReleased = (GetAsyncKeyState((int)letterPressed) & 0x8000) == 0;
 
                 if (isLetterReleased ||
-                    (triggerPressed == VK_SPACE && m_settings.activationKey == PowerAccentActivationKey::LeftRightArrow) ||
-                    ((triggerPressed == VK_LEFT || triggerPressed == VK_RIGHT) && m_settings.activationKey == PowerAccentActivationKey::Space))
+                    (triggerPressed == VK_SPACE && m_gestureActivationKey == PowerAccentActivationKey::LeftRightArrow) ||
+                    ((triggerPressed == VK_LEFT || triggerPressed == VK_RIGHT) && m_gestureActivationKey == PowerAccentActivationKey::Space))
                 {
                     Logger::debug(L"Reset trigger key");
                     return false;
@@ -246,7 +297,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         }
 
         // Trigger-key activation (letter + Space/arrow) is exclusive to the non-hold modes.
-        if (m_settings.activationKey != PowerAccentActivationKey::PressAndHold &&
+        if (m_gestureActivationKey != PowerAccentActivationKey::PressAndHold &&
             !m_toolbarVisible && letterPressed != LetterKey::None && triggerPressed && !IsSuppressedByGameMode() && !IsForegroundAppExcluded())
         {
             Logger::debug(L"Show toolbar. Letter: {}, Trigger: {}", letterPressed, triggerPressed);
@@ -256,15 +307,29 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             m_triggeredWithLeftArrow = triggerPressed == VK_LEFT;
             m_triggeredWithRightArrow = triggerPressed == VK_RIGHT;
             m_toolbarVisible = true;
-            m_showToolbarCb(letterPressed);
+            m_showToolbarCb(letterPressed, static_cast<int32_t>(m_gestureInputTime.count()));
+        }
+
+        // A legacy trigger pressed while a hold is still pending cancels this owner-letter
+        // gesture. Let the trigger pass through and require a fresh letter press to re-arm.
+        if (m_gestureActivationKey == PowerAccentActivationKey::PressAndHold &&
+            m_toolbarVisible &&
+            !m_pressAndHoldCancelled &&
+            triggerPressed &&
+            m_stopwatch.elapsed() < m_gestureHoldDuration)
+        {
+            m_pressAndHoldCancelled = true;
+            m_cancelToolbarCb();
+            return false;
         }
 
         // In press-and-hold the popup only appears once the hold duration elapses, so Space/arrow
         // must pass through until then; treat the picker as interactive only once it is shown.
         const bool pickerInteractive =
             m_toolbarVisible &&
-            (m_settings.activationKey != PowerAccentActivationKey::PressAndHold ||
-             m_stopwatch.elapsed() >= m_settings.holdDuration);
+            !m_pressAndHoldCancelled &&
+            (m_gestureActivationKey != PowerAccentActivationKey::PressAndHold ||
+             m_stopwatch.elapsed() >= m_gestureHoldDuration);
 
         if (pickerInteractive && triggerPressed)
         {
@@ -303,7 +368,9 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         }
 
         const auto releasedLetter = static_cast<LetterKey>(info.vkCode);
-        if (std::find(std::begin(letters), end(letters), releasedLetter) != end(letters) && m_isLanguageLetterCb(releasedLetter))
+        const bool isLetterKey = std::find(std::begin(letters), end(letters), releasedLetter) != end(letters);
+        const bool isActiveOwner = letterPressed == releasedLetter;
+        if (isLetterKey && (isActiveOwner || m_isLanguageLetterCb(releasedLetter)))
         {
             // Only react to the key-up of the letter that owns the toolbar, so releasing a
             // different held letter can't cancel or commit the active picker.
@@ -314,14 +381,21 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
             letterPressed = LetterKey::None;
 
+            if (m_pressAndHoldCancelled)
+            {
+                m_toolbarVisible = false;
+                m_pressAndHoldCancelled = false;
+                return false;
+            }
+
             if (m_toolbarVisible)
             {
                 // Press-and-hold uses its own (typically longer) hold duration as the
                 // minimum-hold threshold; the trigger-key modes use inputTime.
                 const auto activationThreshold =
-                    m_settings.activationKey == PowerAccentActivationKey::PressAndHold
-                        ? m_settings.holdDuration
-                        : m_settings.inputTime;
+                    m_gestureActivationKey == PowerAccentActivationKey::PressAndHold
+                        ? m_gestureHoldDuration
+                        : m_gestureInputTime;
                 if (m_stopwatch.elapsed() < activationThreshold)
                 {
                     Logger::debug(L"Activation too fast. Do nothing.");

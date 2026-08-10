@@ -598,7 +598,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 return _newUpdatesToastIsGpoDisabled ||
                     (_isAdmin && _autoDownloadUpdatesIsGpoDisabled) ||
-                    _includePrereleaseUpdatesIsGpoDisabled ||
                     _showWhatsNewAfterUpdatesIsGpoDisabled;
             }
         }
@@ -668,6 +667,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsIncludePrereleaseUpdatesCardEnabled
         {
             get => !_isDevBuild && !_includePrereleaseUpdatesIsGpoDisabled;
+        }
+
+        public bool IsIncludePrereleaseUpdatesGpoManaged
+        {
+            get => _includePrereleaseUpdatesIsGpoDisabled;
         }
 
         public bool ShowWhatsNewAfterUpdates

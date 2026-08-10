@@ -20,6 +20,11 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+$VersionOverride = $VersionOverride.Trim()
+if ($VersionOverride.Equals("auto", [StringComparison]::OrdinalIgnoreCase)) {
+    $VersionOverride = ""
+}
+
 function Get-BuildStamp {
     param([string]$PipelineBuildNumber)
 
@@ -186,11 +191,27 @@ function Get-ReleaseDailySequence {
     return [int]::Parse($Sequence)
 }
 
-function Get-PreviewVersion {
+function Get-AutomaticReleaseVersion {
     param(
         [Parameter(Mandatory)][string]$ReleaseTrain,
-        [AllowEmptyString()][string]$Override,
-        [Parameter(Mandatory)][string]$GeneratedVersion
+        [Parameter(Mandatory)][datetime]$Epoch,
+        [Parameter(Mandatory)]$BuildStamp,
+        [Parameter(Mandatory)][AllowEmptyString()][string]$DateOverride,
+        [Parameter(Mandatory)][AllowEmptyString()][string]$DailySequence
+    )
+
+    $releaseBuildStamp = [pscustomobject]@{
+        Date = Get-VersionDate -DateOverride $DateOverride -BuildStamp $BuildStamp
+        Revision = $BuildStamp.Revision
+    }
+    $releaseDailySequence = Get-ReleaseDailySequence -Sequence $DailySequence
+    return Get-ReleaseVersion -ReleaseTrain $ReleaseTrain -Epoch $Epoch -BuildStamp $releaseBuildStamp -DailySequence $releaseDailySequence
+}
+
+function Get-PreviewVersionOverride {
+    param(
+        [Parameter(Mandatory)][string]$ReleaseTrain,
+        [AllowEmptyString()][string]$Override
     )
 
     $inputVersion = $Override.Trim()
@@ -199,7 +220,7 @@ function Get-PreviewVersion {
     }
 
     if ([string]::IsNullOrWhiteSpace($inputVersion)) {
-        return $GeneratedVersion
+        return $null
     }
 
     if ($inputVersion -match "^(?<major>\d+)\.(?<minor>\d+)$") {
@@ -207,7 +228,7 @@ function Get-PreviewVersion {
             throw "Preview version base '$inputVersion' does not match ReleaseTrainVersion '$ReleaseTrain'"
         }
 
-        return $GeneratedVersion
+        return $null
     }
 
     if ($inputVersion -notmatch "^(?<major>\d+)\.(?<minor>\d+)\.(?<revision>\d+)\.(?<build>\d+)$") {
@@ -258,14 +279,13 @@ function Get-MsiSafeVersionOverride {
     return ($parts | ForEach-Object { [int]::Parse($_) }) -join "."
 }
 
-function Get-StableVersion {
+function Get-StableVersionOverride {
     param(
-        [Parameter(Mandatory)][AllowEmptyString()][string]$Override,
-        [Parameter(Mandatory)][string]$GeneratedVersion
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Override
     )
 
     if ([string]::IsNullOrWhiteSpace($Override)) {
-        return $GeneratedVersion
+        return $null
     }
 
     return Get-MsiSafeVersionOverride -Override $Override -VersionKind "Stable"
@@ -290,10 +310,15 @@ if ($isMain) {
 
     $intent = if ($isScheduled) { "preview-release" } else { "preview-validation" }
     $channel = "preview"
-    $buildStamp.Date = Get-VersionDate -DateOverride $BuildDate -BuildStamp $buildStamp
-    $releaseDailySequence = Get-ReleaseDailySequence -Sequence $DailyVersionSequence
-    $generatedVersion = Get-ReleaseVersion -ReleaseTrain $releaseTrain -Epoch $releaseMetadata.Epoch -BuildStamp $buildStamp -DailySequence $releaseDailySequence
-    $version = Get-PreviewVersion -ReleaseTrain $releaseTrain -Override $VersionOverride -GeneratedVersion $generatedVersion
+    $version = Get-PreviewVersionOverride -ReleaseTrain $releaseTrain -Override $VersionOverride
+    if ($null -eq $version) {
+        $version = Get-AutomaticReleaseVersion `
+            -ReleaseTrain $releaseTrain `
+            -Epoch $releaseMetadata.Epoch `
+            -BuildStamp $buildStamp `
+            -DateOverride $BuildDate `
+            -DailySequence $DailyVersionSequence
+    }
     $allowPublicSymbols = $false
     $shouldPublishPreview = $isScheduled
 }
@@ -304,10 +329,15 @@ elseif ($isStable) {
 
     $intent = "stable-release"
     $channel = "stable"
-    $buildStamp.Date = Get-VersionDate -DateOverride $BuildDate -BuildStamp $buildStamp
-    $releaseDailySequence = Get-ReleaseDailySequence -Sequence $DailyVersionSequence
-    $generatedVersion = Get-ReleaseVersion -ReleaseTrain $releaseTrain -Epoch $releaseMetadata.Epoch -BuildStamp $buildStamp -DailySequence $releaseDailySequence
-    $version = Get-StableVersion -Override $VersionOverride -GeneratedVersion $generatedVersion
+    $version = Get-StableVersionOverride -Override $VersionOverride
+    if ($null -eq $version) {
+        $version = Get-AutomaticReleaseVersion `
+            -ReleaseTrain $releaseTrain `
+            -Epoch $releaseMetadata.Epoch `
+            -BuildStamp $buildStamp `
+            -DateOverride $BuildDate `
+            -DailySequence $DailyVersionSequence
+    }
     $allowPublicSymbols = $true
     $shouldPublishPreview = $false
 }
