@@ -73,8 +73,11 @@ namespace Awake.Core
             _monitorTokenSource = new CancellationTokenSource();
             _stateQueue = [];
             ModuleSettings = SettingsUtils.Default;
-            IsScreenLocked = SessionStateDetector.IsWorkstationLocked();
-            SystemEvents.SessionSwitch += OnSessionSwitch;
+            lock (StateLock)
+            {
+                SystemEvents.SessionSwitch += OnSessionSwitch;
+                IsScreenLocked = SessionStateDetector.IsWorkstationLocked();
+            }
         }
 
         internal static void StartMonitor()
@@ -549,11 +552,12 @@ namespace Awake.Core
                 }
             }
 
-            Logger.LogInfo($"Passive keep-awake starting...");
+            Logger.LogInfo("Passive keep-awake starting...");
 
             lock (StateLock)
             {
                 CurrentOperatingMode = AwakeMode.PASSIVE;
+                _stateQueue.Add(ExecutionState.ES_CONTINUOUS);
             }
 
             SetModeShellIcon();
