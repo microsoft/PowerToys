@@ -31,6 +31,20 @@ public sealed class MonitorService : IMonitorService
     /// <inheritdoc/>
     public IReadOnlyList<MonitorInfo> GetMonitors()
     {
+        // Check the cache first without paying for a retry-with-sleep under the lock.
+        lock (_lock)
+        {
+            if (_cachedSnapshot is not null)
+            {
+                return _cachedSnapshot;
+            }
+        }
+
+        // BuildDisplayInfoMapWithRetry can sleep between attempts, so it runs unlocked.
+        // Another thread might race us here and rebuild the map too, but that's cheap
+        // compared to blocking every other caller on the UI thread for up to 100ms.
+        var displayInfo = BuildDisplayInfoMapWithRetry();
+
         lock (_lock)
         {
             if (_cachedSnapshot is not null)
@@ -38,7 +52,7 @@ public sealed class MonitorService : IMonitorService
                 return _cachedSnapshot;
             }
 
-            _cachedMonitors = EnumerateMonitors();
+            _cachedMonitors = EnumerateMonitors(displayInfo);
             _cachedSnapshot = _cachedMonitors.AsReadOnly();
             return _cachedSnapshot;
         }
@@ -109,16 +123,15 @@ public sealed class MonitorService : IMonitorService
     /// Number of attempts to build the stable-ID display info map before giving up.
     /// Immediately after a WM_DISPLAYCHANGE the Display Configuration API can transiently
     /// fail or return an incomplete topology while Windows is still settling the new
-    /// configuration; retrying a couple of times avoids incorrectly falling back to the
+    /// configuration. Retrying a couple of times avoids incorrectly falling back to the
     /// volatile GDI device name (which breaks per-monitor dock config reconciliation).
     /// </summary>
     private const int DisplayInfoMapRetryCount = 3;
     private static readonly TimeSpan DisplayInfoMapRetryDelay = TimeSpan.FromMilliseconds(50);
 
-    private static unsafe List<MonitorInfo> EnumerateMonitors()
+    private static unsafe List<MonitorInfo> EnumerateMonitors(Dictionary<string, (string FriendlyName, string DevicePath)> displayInfo)
     {
         var monitors = new List<MonitorInfo>();
-        var displayInfo = BuildDisplayInfoMapWithRetry();
 
         PInvoke.EnumDisplayMonitors(
             HDC.Null,
@@ -186,18 +199,21 @@ public sealed class MonitorService : IMonitorService
 
     /// <summary>
     /// Calls <see cref="BuildDisplayInfoMap"/>, retrying a few times with a short delay
-    /// if it comes back empty. The Display Configuration API can transiently fail right
-    /// after a WM_DISPLAYCHANGE (topology still settling); without a retry, monitors would
-    /// silently fall back from their stable hardware path to the volatile GDI device name,
-    /// which makes <see cref="Settings.MonitorConfigReconciler"/> treat a still-connected
-    /// monitor as brand new and wipe/disable its dock config.
+    /// if it comes back incomplete. The Display Configuration API can transiently fail or
+    /// only resolve some of the active paths right after a WM_DISPLAYCHANGE (topology still
+    /// settling); without a retry, a partially resolved map would silently leave the
+    /// remaining monitors on their volatile GDI device name, which makes
+    /// <see cref="Settings.MonitorConfigReconciler"/> treat a still-connected monitor as
+    /// brand new and wipe/disable its dock config.
     /// </summary>
     private static Dictionary<string, (string FriendlyName, string DevicePath)> BuildDisplayInfoMapWithRetry()
     {
+        var map = new Dictionary<string, (string FriendlyName, string DevicePath)>(StringComparer.OrdinalIgnoreCase);
+
         for (var attempt = 0; attempt < DisplayInfoMapRetryCount; attempt++)
         {
-            var map = BuildDisplayInfoMap();
-            if (map.Count > 0)
+            map = BuildDisplayInfoMap(out var pathCount);
+            if (map.Count >= pathCount && pathCount > 0)
             {
                 return map;
             }
@@ -208,23 +224,26 @@ public sealed class MonitorService : IMonitorService
             }
         }
 
-        return BuildDisplayInfoMap();
+        return map;
     }
 
     /// <summary>
     /// Builds a map from GDI device name (e.g. <c>\\.\DISPLAY1</c>) to display metadata
     /// (friendly name and stable device path) using the Display Configuration APIs.
     /// Returns an empty dictionary on failure so callers can fall back gracefully.
+    /// <paramref name="pathCount"/> is the number of active display paths Windows reported,
+    /// so callers can tell a fully resolved map from a partial one.
     /// </summary>
-    private static unsafe Dictionary<string, (string FriendlyName, string DevicePath)> BuildDisplayInfoMap()
+    private static unsafe Dictionary<string, (string FriendlyName, string DevicePath)> BuildDisplayInfoMap(out uint pathCount)
     {
         var map = new Dictionary<string, (string FriendlyName, string DevicePath)>(StringComparer.OrdinalIgnoreCase);
+        pathCount = 0;
 
         try
         {
             var result = PInvoke.GetDisplayConfigBufferSizes(
                 QUERY_DISPLAY_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS,
-                out var pathCount,
+                out pathCount,
                 out var modeCount);
             if (result != WIN32_ERROR.NO_ERROR)
             {

@@ -29,7 +29,7 @@ public sealed partial class DockWindowManager : IDisposable
     /// <summary>
     /// Debounces rapid-fire monitor-change notifications (e.g. several WM_DISPLAYCHANGE
     /// messages during a Win+P mode switch or a dock/undock event). Without this, each
-    /// intermediate — possibly incomplete or incorrect — topology snapshot gets reconciled
+    /// intermediate topology snapshot (possibly incomplete or incorrect) gets reconciled
     /// and persisted to settings, which can permanently corrupt per-monitor dock configs
     /// even though the topology settles to something that would have reconciled cleanly.
     /// </summary>
