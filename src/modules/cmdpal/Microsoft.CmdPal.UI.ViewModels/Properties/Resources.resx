@@ -453,10 +453,11 @@
   </data>
   <data name="gallery_item_winget_action_downloading_with_progress" xml:space="preserve">
     <value>Downloading with WinGet... {0}%</value>
-    <comment>{0}=download percent</comment>
+    <comment>{0}=download percent. JA: translate "Downloading" as "受信" not "受け取り".</comment>
   </data>
   <data name="gallery_item_winget_action_downloading" xml:space="preserve">
     <value>Downloading with WinGet...</value>
+    <comment>JA: translate "Downloading" as "受信" not "受け取り".</comment>
   </data>
   <data name="gallery_item_winget_action_uninstalling" xml:space="preserve">
     <value>Uninstalling with WinGet...</value>
@@ -561,10 +562,11 @@
   </data>
   <data name="winget_operation_status_downloading" xml:space="preserve">
     <value>Downloading</value>
+    <comment>JA: translate as "受信" not "受け取り" for consistency.</comment>
   </data>
   <data name="winget_operation_status_downloading_percent" xml:space="preserve">
     <value>Downloading {0}%</value>
-    <comment>{0}=download percent</comment>
+    <comment>{0}=download percent. JA: translate "Downloading" as "受信" not "受け取り".</comment>
   </data>
   <data name="winget_operation_status_failed" xml:space="preserve">
     <value>Failed</value>

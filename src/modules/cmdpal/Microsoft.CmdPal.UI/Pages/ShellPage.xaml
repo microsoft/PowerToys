@@ -28,6 +28,7 @@
 
             <cmdpalUI:DetailsSizeToGridLengthConverter x:Key="SizeToWidthConverter" />
             <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
+            <cmdpalUI:BoolToStarOrAutoGridLengthConverter x:Key="ExpandedModeToRowHeightConverter" />
 
             <cmdpalUI:DetailsDataTemplateSelector
                 x:Key="DetailsDataTemplateSelector"
@@ -183,14 +184,18 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <!--
+                In compact mode this row collapses to Auto so the card can shrink to just the
+                search box. A star row would otherwise reserve space during measure even when
+                its only child (the collapsed content) is hidden.
+            -->
+            <RowDefinition Height="{x:Bind ExpandedMode, Mode=OneWay, Converter={StaticResource ExpandedModeToRowHeightConverter}}" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0" Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
@@ -201,7 +206,7 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 BorderBrush="{ThemeResource CmdPal.TopBarBorderBrush}"
-                BorderThickness="0,0,0,1">
+                BorderThickness="{x:Bind h:BindTransformers.BottomBorderThicknessWhenAll(ViewModel.IsSearchBoxVisible, ExpandedMode), Mode=OneWay}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -348,6 +353,7 @@
                     <cpcontrols:SearchBar
                         x:Name="SearchBox"
                         HorizontalAlignment="Stretch"
+                        ActiveFocusTargetChanged="SearchBox_ActiveFocusTargetChanged"
                         CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
                     <Grid.Transitions>
                         <TransitionCollection>
@@ -382,6 +388,18 @@
                         Duration="0:0:0.333" />
                 </animations:Implicit.HideAnimations>
             </ProgressBar>
+
+        </Grid>
+
+        <Grid
+            Grid.Row="1"
+            Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}"
+            Visibility="{x:Bind ExpandedMode, Mode=OneWay}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
             <Grid x:Name="ContentGrid" Grid.Row="1">
 
@@ -516,12 +534,13 @@
             See https://github.com/microsoft/microsoft-ui-xaml/issues/5741
         -->
         <StackPanel
-            Grid.Row="0"
+            Grid.Row="1"
             Margin="16,8,16,8"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Bottom"
             Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-            CornerRadius="{ThemeResource ControlCornerRadius}">
+            CornerRadius="{ThemeResource ControlCornerRadius}"
+            Visibility="Collapsed">
             <InfoBar
                 CornerRadius="{ThemeResource ControlCornerRadius}"
                 IsOpen="{x:Bind ViewModel.CurrentPage.HasStatusMessage, Mode=OneWay}"
@@ -540,10 +559,11 @@
         </StackPanel>
 
         <Grid
-            Grid.Row="1"
+            Grid.Row="2"
             Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}"
             BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
-            BorderThickness="0,1,0,0">
+            BorderThickness="0,1,0,0"
+            Visibility="{x:Bind ExpandedMode, Mode=OneWay}">
             <cpcontrols:CommandBar CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
         </Grid>
 
@@ -576,7 +596,6 @@
                     <VisualState.Setters>
                         <Setter Target="SearchBox.IsEnabled" Value="False" />
                         <Setter Target="SearchBox.Opacity" Value="0" />
-                        <Setter Target="TopBarGrid.BorderBrush" Value="Transparent" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

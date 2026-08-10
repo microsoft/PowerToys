@@ -17,8 +17,8 @@ LIGHTTURQUOISE
 NCol
 OLIVEGREEN
 PALEBLUE
-PArgb
-Pbgra
+pargb
+pbgra
 SRGBTo
 WHITEONBLACK
 
@@ -309,6 +309,11 @@ pwa
 AOT
 Aot
 ify
+LAF
+Laf
+languagemodel
+philm
+phisilica
 TFM
 
 # YML
@@ -330,6 +335,7 @@ xes
 PACKAGEVERSIONNUMBER
 APPXMANIFESTVERSION
 PROGMAN
+ROOTOWNER
 
 # MRU lists
 CACHEWRITE
@@ -400,6 +406,17 @@ HHH
 riday
 YYY
 
+# Release versioning identifiers and format fragments
+DAILYVERSIONSEQUENCE
+DDNNN
+Mdd
+SOURCEBRANCH
+SOURCEVERSION
+VERSIONDATE
+YDDD
+YDDDB
+YYMM
+
 # Unicode
 precomposed
 
@@ -432,3 +449,6 @@ SHELLEXPERIENCEHOST
 SHELLHOST
 STARTMENUEXPERIENCEHOST
 WIDGETBOARD
+
+# URIs
+actioncenter

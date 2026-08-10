@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <AssemblyName>PowerToys.PowerAccent.Core.UnitTests</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\PowerAccent.Core.UnitTests\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      Do NOT set CsWinRTIncludes here. PowerAccent.Core already projects PowerToys.GPOWrapper and
+      PowerToys.PowerAccentKeyboardService, and those managed projections arrive transitively through
+      the PowerAccent.Core project reference. Listing either here generates a SECOND copy and breaks
+      the build with CS0436 (matches PowerAccent.UI, which references Core the same way).
+    -->
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PowerAccent.Core\PowerAccent.Core.csproj" />
+  </ItemGroup>
+
+</Project>

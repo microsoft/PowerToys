@@ -13,6 +13,7 @@ using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Common.WinGet.Models;
 using Microsoft.CmdPal.Common.WinGet.Services;
 using Microsoft.CmdPal.UI.ViewModels.Gallery;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -61,7 +62,7 @@ public class ExtensionGalleryViewModelTests
 
         using var viewModel = new ExtensionGalleryViewModel(
             galleryService.Object,
-            extensionService.Object,
+            new[] { extensionService.Object },
             NullLogger<ExtensionGalleryViewModel>.Instance,
             CreateGalleryExtensionViewModelFactory());
 
@@ -118,7 +119,7 @@ public class ExtensionGalleryViewModelTests
 
         using var viewModel = new ExtensionGalleryViewModel(
             galleryService.Object,
-            extensionService.Object,
+            new[] { extensionService.Object },
             NullLogger<ExtensionGalleryViewModel>.Instance,
             CreateGalleryExtensionViewModelFactory(winGetService.Object, winGetStatusService.Object),
             winGetService.Object,
@@ -202,7 +203,7 @@ public class ExtensionGalleryViewModelTests
 
         using var viewModel = new ExtensionGalleryViewModel(
             galleryService.Object,
-            extensionService.Object,
+            new[] { extensionService.Object },
             NullLogger<ExtensionGalleryViewModel>.Instance,
             CreateGalleryExtensionViewModelFactory(winGetService.Object, winGetStatusService.Object),
             winGetService.Object,
@@ -216,6 +217,29 @@ public class ExtensionGalleryViewModelTests
         Assert.IsTrue(refreshTask.IsCompletedSuccessfully);
         Assert.AreEqual(1, viewModel.FilteredEntries.Count);
         Assert.AreEqual("Feed Extension", viewModel.FilteredEntries[0].Title);
+    }
+
+    [TestMethod]
+    public async Task FindById_ReturnsMatchingEntryCaseInsensitively()
+    {
+        var galleryService = CreateGalleryService(
+            CreateGalleryEntry("first-extension", "First", "Author"),
+            CreateGalleryEntry("second-extension", "Second", "Author"));
+
+        using var viewModel = new ExtensionGalleryViewModel(
+            galleryService.Object,
+            [],
+            NullLogger<ExtensionGalleryViewModel>.Instance,
+            CreateGalleryExtensionViewModelFactory());
+
+        await viewModel.LoadAsync();
+
+        var result = viewModel.FindById("SECOND-EXTENSION");
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual("second-extension", result.Id);
+        Assert.IsNull(viewModel.FindById("missing-extension"));
+        Assert.IsNull(viewModel.FindById(string.Empty));
     }
 
     [TestMethod]
@@ -250,7 +274,7 @@ public class ExtensionGalleryViewModelTests
 
         using var viewModel = new ExtensionGalleryViewModel(
             galleryService.Object,
-            extensionService.Object,
+            new[] { extensionService.Object },
             NullLogger<ExtensionGalleryViewModel>.Instance,
             CreateGalleryExtensionViewModelFactory());
 
@@ -292,7 +316,7 @@ public class ExtensionGalleryViewModelTests
 
         using var viewModel = new ExtensionGalleryViewModel(
             galleryService.Object,
-            extensionService.Object,
+            new[] { extensionService.Object },
             NullLogger<ExtensionGalleryViewModel>.Instance,
             CreateGalleryExtensionViewModelFactory());
 
@@ -324,7 +348,7 @@ public class ExtensionGalleryViewModelTests
 
         using var viewModel = new ExtensionGalleryViewModel(
             galleryService.Object,
-            extensionService.Object,
+            new[] { extensionService.Object },
             NullLogger<ExtensionGalleryViewModel>.Instance,
             CreateGalleryExtensionViewModelFactory());
 
@@ -359,7 +383,7 @@ public class ExtensionGalleryViewModelTests
 
         using var viewModel = new ExtensionGalleryViewModel(
             galleryService.Object,
-            extensionService.Object,
+            new[] { extensionService.Object },
             NullLogger<ExtensionGalleryViewModel>.Instance,
             CreateGalleryExtensionViewModelFactory());
 
@@ -389,7 +413,7 @@ public class ExtensionGalleryViewModelTests
 
         using var viewModel = new ExtensionGalleryViewModel(
             galleryService.Object,
-            extensionService.Object,
+            new[] { extensionService.Object },
             NullLogger<ExtensionGalleryViewModel>.Instance,
             CreateGalleryExtensionViewModelFactory());
 
@@ -421,7 +445,7 @@ public class ExtensionGalleryViewModelTests
 
         using var viewModel = new ExtensionGalleryViewModel(
             galleryService.Object,
-            extensionService.Object,
+            new[] { extensionService.Object },
             NullLogger<ExtensionGalleryViewModel>.Instance,
             CreateGalleryExtensionViewModelFactory());
 
@@ -485,7 +509,7 @@ public class ExtensionGalleryViewModelTests
 
         using var viewModel = new ExtensionGalleryViewModel(
             galleryService.Object,
-            extensionService.Object,
+            new[] { extensionService.Object },
             NullLogger<ExtensionGalleryViewModel>.Instance,
             CreateGalleryExtensionViewModelFactory(winGetPackageStatusService: winGetStatusService.Object),
             winGetPackageManagerService: null,

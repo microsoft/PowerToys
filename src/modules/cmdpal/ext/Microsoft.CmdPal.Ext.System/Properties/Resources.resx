@@ -129,6 +129,7 @@
   </data>
   <data name="Microsoft_plugin_command_name_hibernate" xml:space="preserve">
     <value>Hibernate</value>
+    <comment>ZH: translate as '休眠' (hibernation, not sleep)</comment>
   </data>
   <data name="Microsoft_plugin_command_name_lock" xml:space="preserve">
     <value>Lock</value>
@@ -200,11 +201,11 @@
   </data>
   <data name="Microsoft_plugin_sys_hibernate" xml:space="preserve">
     <value>Hibernate computer</value>
-    <comment>This should align to the action in Windows of a hibernating your computer.</comment>
+    <comment>This should align to the action in Windows of a hibernating your computer. ZH: translate as '让计算机休眠' (use 休眠 not 睡眠)</comment>
   </data>
   <data name="Microsoft_plugin_sys_hibernate_confirmation" xml:space="preserve">
     <value>You are about to put this computer into hibernation, are you sure?</value>
-    <comment>This should align to the action in Windows of a hibernating your computer.</comment>
+    <comment>This should align to the action in Windows of a hibernating your computer. ZH: translate as '即将让计算机进入休眠状态' (use 休眠 not 睡眠)</comment>
   </data>
   <data name="Microsoft_plugin_sys_Ip4Address" xml:space="preserve">
     <value>IPv4 address</value>
@@ -336,11 +337,11 @@
   </data>
   <data name="Microsoft_plugin_sys_sleep" xml:space="preserve">
     <value>Put computer to sleep</value>
-    <comment>This should align to the action in Windows of a making your computer go to sleep.</comment>
+    <comment>This should align to the action in Windows of a making your computer go to sleep. ZH: translate as '让计算机睡眠' (use 睡眠 not 休眠)</comment>
   </data>
   <data name="Microsoft_plugin_sys_sleep_confirmation" xml:space="preserve">
     <value>You are about to put this computer to sleep, are you sure?</value>
-    <comment>This should align to the action in Windows of a making your computer go to sleep.</comment>
+    <comment>This should align to the action in Windows of a making your computer go to sleep. ZH: translate as '即将让计算机进入睡眠状态' (use 睡眠 not 休眠)</comment>
   </data>
   <data name="Microsoft_plugin_sys_Speed" xml:space="preserve">
     <value>Speed</value>
@@ -381,6 +382,7 @@
   </data>
   <data name="Microsoft_plugin_command_name_sleep" xml:space="preserve">
     <value>Sleep</value>
+    <comment>ZH: translate as '睡眠' (sleep, not hibernation). Do NOT use '休眠'.</comment>
   </data>
   <data name="Microsoft_plugin_ext_fallback_display_title" xml:space="preserve">
     <value>Execute system commands</value>

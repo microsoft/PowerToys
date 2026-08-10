@@ -8,8 +8,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <UseWPF>true</UseWPF>
-    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -24,6 +22,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="UnicodeInformation" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Expose internal helpers (e.g. Tools.Calculation) to the unit-test assembly. -->
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>PowerToys.PowerAccent.Core.UnitTests</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>

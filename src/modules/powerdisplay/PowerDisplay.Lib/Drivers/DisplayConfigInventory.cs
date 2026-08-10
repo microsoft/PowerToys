@@ -14,9 +14,8 @@ namespace PowerDisplay.Common.Drivers
     /// <summary>
     /// Win32 DisplayConfig API wrapper that enumerates all active display paths
     /// (QueryDisplayConfig + DisplayConfigGetDeviceInfo) and produces a neutral
-    /// <see cref="MonitorDisplayInfo"/> inventory used by Phase 0 classification.
-    /// This layer is independent of DDC/CI and WMI — both downstream controllers
-    /// consume its output via <see cref="DisplayClassifier"/>.
+    /// <see cref="MonitorDisplayInfo"/> inventory. This layer is independent of DDC/CI and
+    /// WMI; <see cref="MonitorManager"/> routes the inventory to both downstream controllers.
     /// </summary>
     public static class DisplayConfigInventory
     {
@@ -68,10 +67,10 @@ namespace PowerDisplay.Common.Drivers
                         continue;
                     }
 
-                    // Get target info (friendly name, device path, output technology)
-                    var (friendlyName, devicePath, outputTechnology) = GetTargetDeviceInfo(path.TargetInfo.AdapterId, path.TargetInfo.Id);
+                    // Get target info (friendly name, device path)
+                    var (friendlyName, devicePath) = GetTargetDeviceInfo(path.TargetInfo.AdapterId, path.TargetInfo.Id);
 
-                    // Use device path as key - unique per target, supports mirror mode
+                    // Device path is the dictionary key; skip targets that don't have one.
                     if (string.IsNullOrEmpty(devicePath))
                     {
                         continue;
@@ -82,11 +81,7 @@ namespace PowerDisplay.Common.Drivers
                         DevicePath = devicePath,
                         GdiDeviceName = gdiDeviceName,
                         FriendlyName = friendlyName ?? string.Empty,
-                        AdapterId = path.TargetInfo.AdapterId,
-                        TargetId = path.TargetInfo.Id,
                         MonitorNumber = i + 1, // 1-based, matches Windows Display Settings
-                        OutputTechnology = outputTechnology,
-                        IsInternal = DisplayClassifier.IsInternal(outputTechnology),
                     };
                 }
             }
@@ -135,9 +130,9 @@ namespace PowerDisplay.Common.Drivers
         }
 
         /// <summary>
-        /// Gets friendly name, device path, and output technology for a monitor target.
+        /// Gets friendly name and device path for a monitor target.
         /// </summary>
-        private static unsafe (string? FriendlyName, string? DevicePath, uint OutputTechnology) GetTargetDeviceInfo(LUID adapterId, uint targetId)
+        private static unsafe (string? FriendlyName, string? DevicePath) GetTargetDeviceInfo(LUID adapterId, uint targetId)
         {
             try
             {
@@ -157,8 +152,7 @@ namespace PowerDisplay.Common.Drivers
                 {
                     return (
                         deviceName.GetMonitorFriendlyDeviceName(),
-                        deviceName.GetMonitorDevicePath(),
-                        deviceName.OutputTechnology);
+                        deviceName.GetMonitorDevicePath());
                 }
 
                 Logger.LogWarning(
@@ -170,7 +164,7 @@ namespace PowerDisplay.Common.Drivers
                     $"DisplayConfigInventory: GetTargetDeviceInfo exception (adapter.low=0x{adapterId.LowPart:X}, target={targetId}): {ex.Message}");
             }
 
-            return (null, null, 0u);
+            return (null, null);
         }
     }
 }

@@ -18,6 +18,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="WinUIEx" />
+    <PackageReference Include="CommunityToolkit.WinUI.Animations" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />

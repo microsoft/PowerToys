@@ -97,6 +97,27 @@ public class MonitorSettingsRebuilderTests
     }
 
     [TestMethod]
+    public void Rebuild_TreatsIdsDifferingOnlyByCase_AsSameMonitor()
+    {
+        // Same physical monitor: discovered now spelled upper-case, previously saved lower-case.
+        // The DevicePath-based Id must be matched case-insensitively so the saved entry is deduped
+        // against the freshly-discovered one rather than lingering as a stale duplicate.
+        var current = new List<MonitorInfo>
+        {
+            new() { Id = @"\\?\DISPLAY#BOE0900#4&ABC&0&UID111", EnableInputSource = true },
+        };
+        var existing = new List<MonitorInfo>
+        {
+            Existing(@"\\?\display#boe0900#4&abc&0&uid111", enableInputSource: true, Now.AddDays(-5)),
+        };
+
+        var result = MonitorSettingsRebuilder.Rebuild(current, existing, new FixedClock(Now), retentionDays: 30);
+
+        Assert.AreEqual(1, result.Count, "Ids differing only by case denote the same monitor and must dedupe to one entry");
+        Assert.AreEqual(@"\\?\DISPLAY#BOE0900#4&ABC&0&UID111", result[0].Id);
+    }
+
+    [TestMethod]
     public void Rebuild_DiscoveryRevocationRoundtrip_DoesNotLoseFlags()
     {
         // Step A: monitor present, flag set

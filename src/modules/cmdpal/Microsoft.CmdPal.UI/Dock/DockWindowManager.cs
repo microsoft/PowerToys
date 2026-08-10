@@ -26,6 +26,9 @@ public sealed partial class DockWindowManager : IDisposable
     private bool _disposed;
     private int _syncing;
 
+    private bool? _lastSyncedEnableDock;
+    private DockSettings? _lastSyncedDockSettings;
+
     public DockWindowManager(
         IMonitorService monitorService,
         ISettingsService settingsService,
@@ -217,6 +220,14 @@ public sealed partial class DockWindowManager : IDisposable
 
     private void OnSettingsChanged(ISettingsService sender, SettingsModel args)
     {
+        if (args.EnableDock == _lastSyncedEnableDock && args.DockSettings == _lastSyncedDockSettings)
+        {
+            return;
+        }
+
+        _lastSyncedEnableDock = args.EnableDock;
+        _lastSyncedDockSettings = args.DockSettings;
+
         _dispatcherQueue.TryEnqueue(() =>
         {
             if (!_disposed)

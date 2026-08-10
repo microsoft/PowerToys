@@ -95,6 +95,9 @@ std::optional<fs::path> CopySelfToTempDir()
     return dst_path;
 }
 
+// The installer filename read from UpdateState.json is validated by
+// updating::IsSafeDownloadedInstallerFilename (common/updating/updateLifecycle.h)
+// so it can be unit-tested. See ObtainInstaller below for how it's used.
 std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
 {
     using namespace updating;
@@ -107,7 +110,25 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
     // so we don't need a GitHub API call (which may fail if offline).
     if (state.state == UpdateState::readyToInstall)
     {
-        fs::path installer{ get_pending_updates_path() / state.downloadedInstallerFilename };
+        if (!IsSafeDownloadedInstallerFilename(state.downloadedInstallerFilename))
+        {
+            Logger::error(L"Ignoring unexpected downloadedInstallerFilename from update state: {}", state.downloadedInstallerFilename);
+            return std::nullopt;
+        }
+
+        const fs::path updatesDir = get_pending_updates_path();
+        fs::path installer{ updatesDir / state.downloadedInstallerFilename };
+
+        // Make sure the resolved path actually stays within the Updates directory.
+        std::error_code ec;
+        const fs::path normalizedInstaller = fs::weakly_canonical(installer, ec);
+        const fs::path normalizedUpdatesDir = fs::weakly_canonical(updatesDir, ec);
+        if (ec || normalizedInstaller.parent_path() != normalizedUpdatesDir)
+        {
+            Logger::error(L"Resolved installer path is outside the updates directory: {}", installer.native());
+            return std::nullopt;
+        }
+
         if (fs::is_regular_file(installer))
         {
             return std::move(installer);
@@ -125,7 +146,8 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
         return std::nullopt;
     }
 
-    const auto new_version_info = std::move(get_github_version_info_async()).get();
+    const bool include_prerelease_updates = PTSettingsHelper::load_general_settings().GetNamedBoolean(L"include_prerelease_updates", false);
+    const auto new_version_info = std::move(get_github_version_info_async(include_prerelease_updates)).get();
 
     // Check for error BEFORE dereferencing — the old code crashed here
     // when GitHub API was unreachable (new_version_info held an error string).
@@ -169,9 +191,17 @@ bool InstallNewVersionStage1(fs::path installer)
 
         if (pt_main_window != nullptr)
         {
-            // Get the process that owns the tray window so we can wait for it to exit
+            // Get the process that owns the tray window so we can wait for it to exit.
             DWORD ptProcessId = 0;
             GetWindowThreadProcessId(pt_main_window, &ptProcessId);
+
+            // Open the process handle BEFORE sending WM_CLOSE. PowerToys can exit
+            // inside its own WM_CLOSE handler, and once it does the OS is free to
+            // recycle its PID -- opening by PID afterwards could then fail or, worse,
+            // attach to an unrelated process that reused the PID. Holding the handle
+            // anchors the kernel object to the original process, so reuse is
+            // impossible while we wait on it.
+            wil::unique_handle ptProcess{ ptProcessId != 0 ? OpenProcess(SYNCHRONIZE, FALSE, ptProcessId) : nullptr };
 
             // Use SendMessageTimeoutW to avoid blocking indefinitely if the
             // tray window thread is hung or unresponsive.
@@ -180,13 +210,9 @@ bool InstallNewVersionStage1(fs::path installer)
 
             // Wait for PT to actually exit before launching installer.
             // Without this, the installer may find PT files locked.
-            if (ptProcessId != 0)
+            if (ptProcess)
             {
-                wil::unique_handle ptProcess{ OpenProcess(SYNCHRONIZE, FALSE, ptProcessId) };
-                if (ptProcess)
-                {
-                    WaitForSingleObject(ptProcess.get(), 10000); // 10 second timeout
-                }
+                WaitForSingleObject(ptProcess.get(), 10000); // 10 second timeout
             }
         }
 
@@ -212,6 +238,33 @@ bool InstallNewVersionStage1(fs::path installer)
 bool InstallNewVersionStage2(std::wstring installer_path)
 {
     std::transform(begin(installer_path), end(installer_path), begin(installer_path), ::towlower);
+
+    // Security (MSRC 112000): the installer was downloaded into a user-writable directory
+    // (%LOCALAPPDATA%\Microsoft\PowerToys\Updates). Stage 2 runs elevated, so executing the
+    // installer without verifying it would let a local, non-elevated attacker swap in a
+    // malicious installer between download and execution (TOCTOU) and gain elevation.
+    //
+    // Open the installer denying write/delete sharing so it cannot be replaced from under us,
+    // then verify it is Authenticode-signed by Microsoft. The handle is kept open across the
+    // launch so the verified bytes are the bytes that run.
+    wil::unique_hfile installerFile{ CreateFileW(installer_path.c_str(),
+                                                 GENERIC_READ,
+                                                 FILE_SHARE_READ,
+                                                 nullptr,
+                                                 OPEN_EXISTING,
+                                                 FILE_ATTRIBUTE_NORMAL,
+                                                 nullptr) };
+    if (!installerFile)
+    {
+        Logger::error(L"Couldn't open the downloaded installer for verification: {} (error {:#x})", installer_path, GetLastError());
+        return false;
+    }
+
+    if (!updating::verify_installer_trust(installer_path, installerFile.get()))
+    {
+        Logger::error(L"Aborting update: downloaded installer failed trust verification and will not be executed elevated");
+        return false;
+    }
 
     bool success = true;
 

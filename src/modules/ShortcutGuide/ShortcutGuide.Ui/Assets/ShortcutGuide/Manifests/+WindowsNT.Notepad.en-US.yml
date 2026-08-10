@@ -210,7 +210,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 0
+            - "<0>"
   - SectionName: Formatting
     Properties:
       - Name: Bold

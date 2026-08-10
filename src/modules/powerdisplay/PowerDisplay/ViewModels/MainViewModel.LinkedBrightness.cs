@@ -10,6 +10,7 @@ using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Helpers;
+using PowerDisplay.Models;
 
 namespace PowerDisplay.ViewModels;
 
@@ -23,7 +24,7 @@ public partial class MainViewModel
     // monitor keeps its own slider while link mode is on. Authoritative runtime copy of
     // PowerDisplayProperties.ExcludedFromSyncMonitorIds; loaded by LoadExcludedMonitorIds and
     // persisted by SaveExcludedMonitorIds. Monitors not in this set are linked by default.
-    private readonly HashSet<string> _excludedMonitorIds = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _excludedMonitorIds = new(MonitorIdComparer.Instance);
 
     // Set while the toggle handler is seeding the initial LinkedBrightness value
     // so OnLinkedBrightnessChanged does not treat the seed as a user-driven change

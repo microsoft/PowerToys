@@ -146,13 +146,7 @@ public sealed partial class MainListPage : DynamicListPage,
         // The all apps page will kick off a BG thread to start loading apps.
         // We just want to know when it is done.
         var allApps = AllAppsCommandProvider.Page;
-        allApps.PropChanged += (s, p) =>
-        {
-            if (p.PropertyName == nameof(allApps.IsLoading))
-            {
-                IsLoading = ActuallyLoading();
-            }
-        };
+        allApps.PropChanged += AllApps_PropChanged;
 
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
@@ -167,6 +161,14 @@ public sealed partial class MainListPage : DynamicListPage,
     private void TlcManager_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(IsLoading))
+        {
+            IsLoading = ActuallyLoading();
+        }
+    }
+
+    private void AllApps_PropChanged(object? sender, IPropChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(AllAppsCommandProvider.Page.IsLoading))
         {
             IsLoading = ActuallyLoading();
         }
@@ -365,6 +367,13 @@ public sealed partial class MainListPage : DynamicListPage,
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
+        var oldWasEmpty = string.IsNullOrEmpty(oldSearch);
+        var newWasEmpty = string.IsNullOrEmpty(newSearch);
+        if (oldWasEmpty != newWasEmpty)
+        {
+            WeakReferenceMessenger.Default.Send<ExpandCompactModeMessage>(new(!newWasEmpty));
+        }
+
         UpdateSearchTextCore(oldSearch, newSearch, isUserInput: true);
     }
 
@@ -436,7 +445,7 @@ public sealed partial class MainListPage : DynamicListPage,
                 {
                     specialFallbacks.Add(s);
                 }
-                else
+                else if (s.IsEnabled)
                 {
                     commonFallbacks.Add(s);
                 }
@@ -669,37 +678,43 @@ public sealed partial class MainListPage : DynamicListPage,
             ? (precomputedItem.GetTitleTarget(precomputedFuzzyMatcher), precomputedItem.GetSubtitleTarget(precomputedFuzzyMatcher))
             : (precomputedFuzzyMatcher.PrecomputeTarget(title), precomputedFuzzyMatcher.PrecomputeTarget(topLevelOrAppItem.Subtitle));
 
-        // Score components
+        // Score components. Keep the raw matcher scores so "did this signal match at
+        // all" is decided before the historical subtitle penalty (which can push a real
+        // subtitle match below zero).
         var nameScore = precomputedFuzzyMatcher.Score(query, titleTarget);
-        var descriptionScore = (precomputedFuzzyMatcher.Score(query, subtitleTarget) - 4) / 2.0;
-        var extensionScore = extensionDisplayNameTarget is { } extTarget ? precomputedFuzzyMatcher.Score(query, extTarget) / 1.5 : 0;
+        var rawSubtitleScore = precomputedFuzzyMatcher.Score(query, subtitleTarget);
+        var rawExtensionScore = extensionDisplayNameTarget is { } extTarget ? precomputedFuzzyMatcher.Score(query, extTarget) : 0;
 
-        // Take best match from title/description/fallback, then add extension score
-        // Extension adds to max so items matching both title AND extension bubble up
-        var baseScore = Math.Max(Math.Max(nameScore, descriptionScore), isFallback ? 1 : 0);
-        var matchScore = baseScore + extensionScore;
+        var descriptionScore = (rawSubtitleScore - 4) / 2.0;
+        var extensionScore = rawExtensionScore / 1.5;
 
-        // Apply a penalty to fallback items so they rank below direct matches.
-        // Fallbacks that dynamically match queries (like RDP connections) should
-        // appear after apps and direct command matches.
-        if (isFallback && matchScore > 1)
+        // Lexical quality preserves the previous relative weighting of the signals: best
+        // of title/description (plus the fallback floor), then a smaller extension-name
+        // contribution added on top so items matching both title AND extension bubble up.
+        var lexicalQuality = Math.Max(Math.Max(nameScore, descriptionScore), isFallback ? 1 : 0) + extensionScore;
+
+        var matchedLexically = nameScore > 0 || rawSubtitleScore > 0 || rawExtensionScore > 0;
+
+        // The hard tier decides ordering; frecency and the alias-substring nudge only
+        // reorder items that already share a tier. ClassifyTier returns None precisely when
+        // nothing matched (no lexical, alias, or fallback signal), so this single gate also
+        // filters non-matches - no separate pre-check is needed.
+        var tier = MainListRanker.ClassifyTier(query.Original, title, isFallback, isAliasMatch, isAliasSubstringMatch, matchedLexically);
+        if (tier == RankTier.None)
         {
-            // Reduce fallback scores by 50% to prioritize direct matches
-            matchScore = matchScore * 0.5;
+            return 0;
         }
 
-        // Alias matching: exact match is overwhelming priority, substring match adds a small boost
-        var aliasBoost = isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0);
-        var totalMatch = matchScore + aliasBoost;
+        var frecencyWeight = history.GetCommandHistoryWeight(id);
+        var aliasSubstringBonus = isAliasSubstringMatch && !isAliasMatch ? MainListRanker.AliasSubstringBonus : 0.0;
 
-        // Apply scaling and history boost only if we matched something real
-        var finalScore = totalMatch * 10;
-        if (totalMatch > 0)
-        {
-            finalScore += history.GetCommandHistoryWeight(id);
-        }
+        var withinTier = MainListRanker.WithinTierScore(
+            lexicalQuality,
+            frecencyWeight,
+            aliasSubstringBonus,
+            providerBonus: 0.0);
 
-        return (int)finalScore;
+        return MainListRanker.Pack(tier, withinTier);
     }
 
     private static int ScoreWhitespaceQuery(string query, string title, string subtitle, bool isFallback)
@@ -774,6 +789,8 @@ public sealed partial class MainListPage : DynamicListPage,
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
         _tlcManager.PinnedCommands.CollectionChanged -= PinnedCommands_CollectionChanged;
+
+        AllAppsCommandProvider.Page.PropChanged -= AllApps_PropChanged;
 
         if (_settingsService is not null)
         {

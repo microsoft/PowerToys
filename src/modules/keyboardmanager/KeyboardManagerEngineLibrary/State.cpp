@@ -73,3 +73,20 @@ std::wstring State::GetActivatedApp()
 {
     return activatedAppSpecificShortcutTarget;
 }
+
+void State::SetSingleKeyRemapInjectionFailed(const DWORD sourceKey, const bool failed)
+{
+    if (failed)
+    {
+        singleKeyRemapInjectionFailedKeys.insert(sourceKey);
+    }
+    else
+    {
+        singleKeyRemapInjectionFailedKeys.erase(sourceKey);
+    }
+}
+
+bool State::ConsumeSingleKeyRemapInjectionFailed(const DWORD sourceKey)
+{
+    return singleKeyRemapInjectionFailedKeys.erase(sourceKey) > 0;
+}

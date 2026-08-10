@@ -52,11 +52,18 @@
                         <tkcontrols:MarkdownTextBlock
                             x:Name="ReleaseNotesMarkdown"
                             Config="{StaticResource ReleaseNotesMarkdownConfig}"
+                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                             UseAutoLinks="True"
                             UseEmphasisExtras="True"
                             UseListExtras="True"
                             UsePipeTables="True"
                             UseTaskLists="True" />
+                        <!--  Hidden helper used to resolve the accent brush for the active element theme (see ApplyMarkdownThemeWorkaround).  -->
+                        <TextBlock
+                            x:Name="LinkBrushProvider"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            IsHitTestVisible="False"
+                            Visibility="Collapsed" />
                     </Grid>
                 </Grid>
             </Grid>

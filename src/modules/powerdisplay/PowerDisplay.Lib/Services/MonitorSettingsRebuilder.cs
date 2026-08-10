@@ -56,7 +56,7 @@ public static class MonitorSettingsRebuilder
                 continue;
             }
 
-            if (result.Any(m => m.Id == existingMonitor.Id))
+            if (result.Any(m => MonitorIdComparer.Equal(m.Id, existingMonitor.Id)))
             {
                 continue;
             }

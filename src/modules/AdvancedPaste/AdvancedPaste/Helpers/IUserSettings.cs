@@ -17,6 +17,8 @@ namespace AdvancedPaste.Settings
 
         public bool ShowCustomPreview { get; }
 
+        public bool ShowAIPaste { get; }
+
         public bool CloseAfterLosingFocus { get; }
 
         public bool EnableClipboardPreview { get; }
@@ -24,6 +26,22 @@ namespace AdvancedPaste.Settings
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions { get; }
 
         public IReadOnlyList<PasteFormats> AdditionalActions { get; }
+
+        public string FixSpellingAndGrammarPrompt { get; }
+
+        public string FixSpellingAndGrammarSystemPrompt { get; }
+
+        public string FixSpellingAndGrammarProviderId { get; }
+
+        public bool FixSpellingAndGrammarCoachingEnabled { get; }
+
+        public bool FixSpellingAndGrammarCoachingShortcutSet { get; }
+
+        public string FixSpellingAndGrammarCoachingPrompt { get; }
+
+        public string FixSpellingAndGrammarCoachingSystemPrompt { get; }
+
+        public string FixSpellingAndGrammarCoachingProviderId { get; }
 
         public PasteAIConfiguration PasteAIConfiguration { get; }
 
