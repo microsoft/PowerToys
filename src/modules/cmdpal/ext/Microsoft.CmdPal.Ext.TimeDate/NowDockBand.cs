@@ -12,6 +12,10 @@ namespace Microsoft.CmdPal.Ext.TimeDate;
 
 internal sealed partial class NowDockBand : ListItem, IDisposable
 {
+    // Manually set the icon to blank, to override the "open link" icon on the
+    // command itself
+    public override IconInfo Icon => new(string.Empty);
+
     private readonly Func<DateTime> _clock;
     private readonly ClockUpdateService _clockUpdateService;
     private readonly ICommand _allClocksPage;
