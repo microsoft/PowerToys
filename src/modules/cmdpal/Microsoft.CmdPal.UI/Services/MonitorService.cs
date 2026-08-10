@@ -200,8 +200,8 @@ public sealed class MonitorService : IMonitorService
     /// <summary>
     /// Calls <see cref="BuildDisplayInfoMap"/>, retrying a few times with a short delay
     /// if it comes back incomplete. The Display Configuration API can transiently fail or
-    /// only resolve some of the active paths right after a WM_DISPLAYCHANGE (topology still
-    /// settling); without a retry, a partially resolved map would silently leave the
+    /// only resolve some of the active sources right after a WM_DISPLAYCHANGE (topology
+    /// still settling); without a retry, a partially resolved map would silently leave the
     /// remaining monitors on their volatile GDI device name, which makes
     /// <see cref="Settings.MonitorConfigReconciler"/> treat a still-connected monitor as
     /// brand new and wipe/disable its dock config.
@@ -212,8 +212,8 @@ public sealed class MonitorService : IMonitorService
 
         for (var attempt = 0; attempt < DisplayInfoMapRetryCount; attempt++)
         {
-            map = BuildDisplayInfoMap(out var pathCount);
-            if (map.Count >= pathCount && pathCount > 0)
+            map = BuildDisplayInfoMap(out var expectedSourceCount);
+            if (map.Count >= expectedSourceCount && expectedSourceCount > 0)
             {
                 return map;
             }
@@ -231,19 +231,21 @@ public sealed class MonitorService : IMonitorService
     /// Builds a map from GDI device name (e.g. <c>\\.\DISPLAY1</c>) to display metadata
     /// (friendly name and stable device path) using the Display Configuration APIs.
     /// Returns an empty dictionary on failure so callers can fall back gracefully.
-    /// <paramref name="pathCount"/> is the number of active display paths Windows reported,
-    /// so callers can tell a fully resolved map from a partial one.
+    /// <paramref name="expectedSourceCount"/> is the number of distinct GDI source device
+    /// names among the active paths, not the raw path count. In Duplicate/clone display
+    /// mode, several paths share one source, so comparing against the path count itself
+    /// would never be satisfied and the retry loop would always exhaust every attempt.
     /// </summary>
-    private static unsafe Dictionary<string, (string FriendlyName, string DevicePath)> BuildDisplayInfoMap(out uint pathCount)
+    private static unsafe Dictionary<string, (string FriendlyName, string DevicePath)> BuildDisplayInfoMap(out uint expectedSourceCount)
     {
         var map = new Dictionary<string, (string FriendlyName, string DevicePath)>(StringComparer.OrdinalIgnoreCase);
-        pathCount = 0;
+        expectedSourceCount = 0;
 
         try
         {
             var result = PInvoke.GetDisplayConfigBufferSizes(
                 QUERY_DISPLAY_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS,
-                out pathCount,
+                out var pathCount,
                 out var modeCount);
             if (result != WIN32_ERROR.NO_ERROR)
             {
@@ -266,9 +268,12 @@ public sealed class MonitorService : IMonitorService
                 return map;
             }
 
+            var expectedSources = new HashSet<(LUID AdapterId, uint Id)>();
+
             for (var i = 0; i < pathCount; i++)
             {
                 var path = paths[i];
+                expectedSources.Add((path.sourceInfo.adapterId, path.sourceInfo.id));
 
                 // Get the GDI device name from the source info
                 var sourceName = default(DISPLAYCONFIG_SOURCE_DEVICE_NAME);
@@ -307,6 +312,8 @@ public sealed class MonitorService : IMonitorService
                     map.TryAdd(gdiName, (friendly ?? string.Empty, devicePath ?? string.Empty));
                 }
             }
+
+            expectedSourceCount = (uint)expectedSources.Count;
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
