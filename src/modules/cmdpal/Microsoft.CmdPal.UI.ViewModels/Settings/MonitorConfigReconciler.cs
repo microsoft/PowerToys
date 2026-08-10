@@ -147,6 +147,14 @@ public static class MonitorConfigReconciler
         // non-primary config: with more than one on either side we can't tell which
         // monitor a config belongs to, and guessing risks associating the wrong settings
         // with a genuinely new, unrelated display.
+        //
+        // Note this isn't limited to the Win+P case: configs are kept around for
+        // StaleThreshold (180 days), so this same one-to-one match can also fire when a
+        // secondary monitor was unplugged weeks ago and a different, genuinely new
+        // secondary monitor is plugged in later. In that case we still reassociate the old
+        // config with the new monitor. That's intentional: inheriting a stale config (which
+        // the user can review and change) beats silently wiping it and starting from a
+        // disabled/empty default.
         var unmatchedSecondaryMonitors = new List<int>();
         for (var mi = 0; mi < currentMonitors.Count; mi++)
         {

@@ -205,10 +205,17 @@ public sealed class MonitorService : IMonitorService
     /// remaining monitors on their volatile GDI device name, which makes
     /// <see cref="Settings.MonitorConfigReconciler"/> treat a still-connected monitor as
     /// brand new and wipe/disable its dock config.
+    ///
+    /// A source can also fail to resolve permanently (for example a virtual or otherwise
+    /// unnamed source whose <c>DisplayConfigGetDeviceInfo</c> call never succeeds), in which
+    /// case the map can never reach <c>expectedSourceCount</c> no matter how many times we
+    /// retry. To avoid burning every attempt (and its sleep) on a result that will never
+    /// improve, we stop early once an attempt makes no more progress than the last one.
     /// </summary>
     private static Dictionary<string, (string FriendlyName, string DevicePath)> BuildDisplayInfoMapWithRetry()
     {
         var map = new Dictionary<string, (string FriendlyName, string DevicePath)>(StringComparer.OrdinalIgnoreCase);
+        var lastResolvedCount = -1;
 
         for (var attempt = 0; attempt < DisplayInfoMapRetryCount; attempt++)
         {
@@ -217,6 +224,14 @@ public sealed class MonitorService : IMonitorService
             {
                 return map;
             }
+
+            if (map.Count <= lastResolvedCount)
+            {
+                // No progress since the previous attempt; further retries won't help.
+                break;
+            }
+
+            lastResolvedCount = map.Count;
 
             if (attempt < DisplayInfoMapRetryCount - 1)
             {
