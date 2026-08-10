@@ -13,7 +13,7 @@ body:
 - type: input
   attributes:
     label: Microsoft PowerToys version and release channel
-    placeholder: 0.100.2 (Stable) or 0.101.2211.0 (Preview (Insider))
+    placeholder: 0.100.2 - Stable or 0.101.2211.0 - Preview (Insider)
     description: Find the version and update channel in PowerToys Settings > General.
   validations:
     required: true
