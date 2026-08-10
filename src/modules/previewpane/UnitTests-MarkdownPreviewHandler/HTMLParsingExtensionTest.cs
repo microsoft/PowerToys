@@ -318,6 +318,77 @@ namespace PreviewPaneUnitTests
             }
         }
 
+        [DataTestMethod]
+        [DataRow(true, "img-src https://localmdimages")]
+        [DataRow(false, "img-src 'none'")]
+        public void ContentSecurityPolicyMatchesTheSettingState(bool allowLocalImages, string expectedImgSrc)
+        {
+            string html = Microsoft.PowerToys.FilePreviewCommon.MarkdownHelper.MarkdownHtml(
+                "# heading", "light", @"C:\docs\doc.md", () => { }, allowLocalImages, @"C:\docs");
+
+            StringAssert.Contains(html, "http-equiv=\"Content-Security-Policy\"");
+            StringAssert.Contains(html, expectedImgSrc);
+            StringAssert.Contains(html, "default-src 'none'");
+            StringAssert.Contains(html, "object-src 'none'");
+            StringAssert.Contains(html, "frame-src 'none'");
+
+            // The policy has to precede the content it governs.
+            Assert.IsTrue(
+                html.IndexOf("Content-Security-Policy", StringComparison.Ordinal) < html.IndexOf("<body", StringComparison.Ordinal),
+                "the policy must appear before the body so the parser places it in the head");
+        }
+
+        [TestMethod]
+        public void FourArgumentOverloadStillBlocksImages()
+        {
+            int blockedCount = 0;
+
+            // Callers compiled against the original signature (Peek) must keep working.
+            string html = Microsoft.PowerToys.FilePreviewCommon.MarkdownHelper.MarkdownHtml(
+                "![text](images/test.png)", "light", @"C:\docs\doc.md", () => { blockedCount++; });
+
+            StringAssert.Contains(html, "src=\"#\"");
+            StringAssert.Contains(html, "img-src 'none'");
+            Assert.AreNotEqual(0, blockedCount);
+        }
+
+        [DataTestMethod]
+        [DataRow("images/a#b.png")]
+        [DataRow("images/a%20b.png")]
+        [DataRow("images/a b.png")]
+        [DataRow("images/a&b.png")]
+        public void VirtualUrlRoundTripsFilenamesWithReservedCharacters(string relativePath)
+        {
+            string root = Path.Combine(Path.GetTempPath(), "ptmd-" + Guid.NewGuid().ToString("N"));
+            string onDisk = Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(onDisk));
+            File.WriteAllText(onDisk, "not really an image");
+
+            try
+            {
+                bool built = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryGetLocalImageVirtualUrl(
+                    relativePath, root, root, out string virtualUrl);
+                Assert.IsTrue(built, "the URL should be produced");
+
+                // A URL carrying a raw '#' or '%' would be truncated or misparsed here.
+                bool resolved = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryResolveVirtualUrl(
+                    virtualUrl, root, out string resolvedPath);
+
+                Assert.IsTrue(resolved, $"the escaped URL '{virtualUrl}' should resolve back");
+                Assert.AreEqual(onDisk, resolvedPath);
+            }
+            finally
+            {
+                try
+                {
+                    Directory.Delete(root, true);
+                }
+                catch (IOException)
+                {
+                }
+            }
+        }
+
         [TestMethod]
         public void ExtensionRewritesLocalImageToVirtualHostWhenLocalImagesAllowed()
         {

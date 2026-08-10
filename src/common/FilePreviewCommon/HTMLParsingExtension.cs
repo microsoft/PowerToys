@@ -113,7 +113,11 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                     return false;
                 }
 
-                virtualUrl = "https://localmdimages/" + relativePath.Replace('\\', '/');
+                // Reserved characters in a filename (#, %, ...) are not valid in a URL path, so
+                // escape it while keeping the directory separators intact. TryResolveVirtualUrl
+                // unescapes symmetrically when the request comes back.
+                string escapedPath = Uri.EscapeDataString(relativePath.Replace('\\', '/')).Replace("%2F", "/", StringComparison.OrdinalIgnoreCase);
+                virtualUrl = "https://localmdimages/" + escapedPath;
                 return true;
             }
             catch (ArgumentException)

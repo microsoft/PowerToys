@@ -27,9 +27,19 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         /// </summary>
         private static readonly string HtmlFooter = "</div></body></html>";
 
-        public static string MarkdownHtml(string fileContent, string theme, string filePath, ImagesBlockedCallBack imagesBlockedCallBack, bool allowLocalImages = false, string? allowedBasePath = null)
+        public static string MarkdownHtml(string fileContent, string theme, string filePath, ImagesBlockedCallBack imagesBlockedCallBack)
         {
-            var htmlHeader = theme == "dark" ? HtmlDarkHeader : HtmlLightHeader;
+            return MarkdownHtml(fileContent, theme, filePath, imagesBlockedCallBack, false, null);
+        }
+
+        public static string MarkdownHtml(string fileContent, string theme, string filePath, ImagesBlockedCallBack imagesBlockedCallBack, bool allowLocalImages, string? allowedBasePath)
+        {
+            // Enforce the resource policy in the browser as well as in the rewriting below: regex
+            // cannot cover every resource-bearing construct (objects, frames, styles, malformed
+            // markup), so WebView2 blocks anything the sanitizers do not catch.
+            string imageSourcePolicy = allowLocalImages ? "https://localmdimages" : "'none'";
+            string contentSecurityPolicy = $"<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; img-src {imageSourcePolicy}; object-src 'none'; frame-src 'none';\">";
+            var htmlHeader = (theme == "dark" ? HtmlDarkHeader : HtmlLightHeader).Insert("<!doctype html>".Length, contentSecurityPolicy);
 
             // Extension to modify markdown AST.
             HTMLParsingExtension extension = new HTMLParsingExtension(imagesBlockedCallBack);
