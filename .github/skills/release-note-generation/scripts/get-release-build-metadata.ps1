@@ -375,16 +375,7 @@ if ($sourceCommit -notmatch "^[0-9a-fA-F]{40}$") {
     throw "Build $buildId does not identify a full immutable source commit."
 }
 if ([string]::IsNullOrWhiteSpace([string]$version) -or $version -notmatch "^\d+\.\d+\.\d+\.0$") {
-    throw "Build $buildId preview version could not be resolved uniquely."
-}
-if ($intent -ne "preview-release") {
-    throw "Build $buildId intent is '$intent'; expected 'preview-release'."
-}
-if ($channel -ne "preview") {
-    throw "Build $buildId channel is '$channel'; expected 'preview'."
-}
-if (-not $shouldPublishPreview) {
-    throw "Build $buildId is not marked for preview publication."
+    throw "Build $buildId release version could not be resolved uniquely."
 }
 if ([string]::IsNullOrWhiteSpace($queuedAt)) {
     throw "Build $buildId does not contain a queue timestamp."

@@ -15,7 +15,6 @@ param(
     [Parameter(Mandatory)][string]$Tag,
     [Parameter(Mandatory)][string]$TargetCommit,
     [Parameter(Mandatory)][string]$AssetsDirectory,
-    [string[]]$AdditionalAsset = @(),
     [string]$Repo = "microsoft/PowerToys",
     [string]$ContextPath,
     [string]$PreviousReleasePath,
@@ -35,7 +34,7 @@ if ($TargetCommit -notmatch "^[0-9a-fA-F]{40}$") {
 
 $releaseJson = gh release view $Tag `
     --repo $Repo `
-    --json databaseId,isDraft,isPrerelease,tagName,targetCommitish,url,body
+    --json databaseId,isDraft,isPrerelease,tagName,targetCommitish,url,body,name
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($releaseJson)) {
     throw "Draft release '$Tag' was not found."
 }
@@ -49,6 +48,9 @@ if (-not [bool]$release.isPrerelease) {
 }
 if ([string]$release.targetCommitish -ne $TargetCommit) {
     throw "Release target '$($release.targetCommitish)' does not match '$TargetCommit'."
+}
+if ([string]$release.name -ne "Preview $Tag") {
+    throw "Release title '$($release.name)' does not match 'Preview $Tag'."
 }
 if ([string]$release.body -notmatch "<!-- BEGIN POWERTOYS PREVIEW AGENT -->" -or
     [string]$release.body -notmatch "<!-- END POWERTOYS PREVIEW AGENT -->") {
@@ -64,12 +66,6 @@ $localFiles = @(
             )
         }
 )
-foreach ($path in $AdditionalAsset) {
-    if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
-        throw "Additional release asset not found: $path"
-    }
-    $localFiles += Get-Item -LiteralPath $path
-}
 $localFiles = @($localFiles | Sort-Object FullName -Unique)
 
 $apiJson = gh api "repos/$Repo/releases/$($release.databaseId)"
@@ -78,6 +74,9 @@ if ($LASTEXITCODE -ne 0) {
 }
 $apiRelease = $apiJson | ConvertFrom-Json
 $remoteAssets = @($apiRelease.assets)
+if (@($remoteAssets | Where-Object { $_.name -eq "release-manifest.json" }).Count -ne 0) {
+    throw "Draft '$Tag' must not contain release-manifest.json as an uploaded asset."
+}
 
 $assetResults = @()
 foreach ($file in $localFiles) {
@@ -125,6 +124,7 @@ $report = [System.Text.StringBuilder]::new()
 [void]$report.AppendLine("**PASS:** Draft prerelease is complete and remains unpublished.")
 [void]$report.AppendLine("")
 [void]$report.AppendLine("- Draft: $($release.url)")
+[void]$report.AppendLine("- Title: $($release.name)")
 if ($context) {
     [void]$report.AppendLine("- Build: [$($context.buildId)]($($context.buildUrl))")
     [void]$report.AppendLine("- Version: $($context.version)")

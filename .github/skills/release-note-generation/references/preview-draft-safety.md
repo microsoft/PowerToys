@@ -6,7 +6,7 @@ The preview workflow may create or update GitHub drafts only.
 
 ```text
 Tag:        v<resolved version>
-Title:      PowerToys Preview v<resolved version>
+Title:      Preview v<resolved version>
 Target:     exact ADO source commit
 Draft:      true
 Prerelease: true
@@ -32,6 +32,7 @@ On rerun, replace only this region. Preserve human-authored text before and afte
 - Update an existing draft for the same tag.
 - Stop if a published release owns the tag.
 - Replace only expected generated assets.
+- Keep `release-manifest.json` local and remove any stale uploaded copy on rerun.
 - Validate all local files before creating the draft.
 - After every write, assert `draft=true` and `prerelease=true`.
 

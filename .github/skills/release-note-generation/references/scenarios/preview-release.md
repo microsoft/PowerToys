@@ -15,6 +15,14 @@ Generated Files/ReleaseNotes/preview-<buildId>/
 
 for every local artifact.
 
+## Candidate eligibility
+
+During release preparation, preview builds may come from either `main` or `stable`; both are official supported patterns. Any successful build from trusted release definition `76541` on either branch is eligible regardless of its resolved intent, channel, or `shouldPublishPreview` value.
+
+`get-release-build-metadata.ps1` first reads the pipeline-published `release-metadata.json` and falls back to immutable versioning logs for older builds. Preserve the original metadata as audit evidence, but do not use release intent or channel as eligibility gates. The requested workflow determines that GitHub receives a draft prerelease.
+
+Reject builds from other branches, failed or incomplete builds, non-release definitions, unresolved versions or commits, and missing or invalid assets.
+
 ## Workflow
 
 1. Resolve and validate build metadata:
@@ -58,11 +66,12 @@ for every local artifact.
    - Do not assign milestones or change labels.
    - Put unlabeled PRs under `General`.
    - Use conservative title-based wording when summary confidence is low.
+   - Place `Installer Hashes` immediately after the title and short public introduction, before `Highlights` and all change sections.
    - Include removed PRs under `Differences from the previous preview`.
    - Include unattributed commits under `Changes needing final review`.
    - Enclose the generated body in the managed markers documented in [preview draft safety](../preview-draft-safety.md).
 
-6. Create `release-manifest.json` from the build, baseline, and delta outputs:
+6. Create `release-manifest.json` from the build, baseline, and delta outputs. Keep this manifest in the local audit package; never upload it as a GitHub release asset:
 
    ```powershell
    .\.github\skills\release-note-generation\scripts\new-preview-release-manifest.ps1 `
@@ -88,11 +97,9 @@ for every local artifact.
    ```powershell
    .\.github\skills\release-note-generation\scripts\upsert-draft-preview-release.ps1 `
      -Tag "v$($context.version)" `
-     -Title "PowerToys Preview v$($context.version)" `
      -TargetCommit $context.sourceCommit `
      -BodyPath '<run directory>\release-notes.md' `
-     -AssetsDirectory '<run directory>\assets' `
-     -AdditionalAsset '<run directory>\release-manifest.json'
+     -AssetsDirectory '<run directory>\assets'
    ```
 
 10. Verify the resulting draft:
@@ -102,7 +109,9 @@ for every local artifact.
       -Tag "v$($context.version)" `
       -TargetCommit $context.sourceCommit `
       -AssetsDirectory '<run directory>\assets' `
-      -AdditionalAsset '<run directory>\release-manifest.json' `
+      -ContextPath '<run directory>\release-context.json' `
+      -PreviousReleasePath '<run directory>\previous-release.json' `
+      -DeltaDirectory '<run directory>' `
       -OutputPath '<run directory>\final-review.md'
     ```
 

@@ -44,7 +44,7 @@ function Add-TestCommit {
 }
 
 Describe "preview release build metadata" {
-    It "resolves a valid candidate from offline metadata" {
+    It "supports a main-branch candidate regardless of release intent" {
         $buildPath = Join-Path $TestDrive "build.json"
         $metadataPath = Join-Path $TestDrive "release-metadata.json"
         @'
@@ -84,9 +84,31 @@ Describe "preview release build metadata" {
         $result.buildId | Should Be 154000000
         $result.version | Should Be "0.101.2181.0"
         $result.intent | Should Be "preview-release"
+
+        @'
+{
+  "schemaVersion": 1,
+  "definitionId": 76541,
+  "buildId": 154000000,
+  "version": "0.101.2181.0",
+  "channel": "preview",
+  "intent": "preview-validation",
+  "sourceBranch": "refs/heads/main",
+  "sourceCommit": "0123456789abcdef0123456789abcdef01234567",
+  "shouldPublishPreview": false
+}
+'@ | Set-Content -LiteralPath $metadataPath
+
+        $result = & (Join-Path $scripts "get-release-build-metadata.ps1") `
+            -Build "https://microsoft.visualstudio.com/Dart/_build/results?buildId=154000000" `
+            -BuildJsonPath $buildPath `
+            -MetadataJsonPath $metadataPath
+
+        $result.intent | Should Be "preview-validation"
+        $result.shouldPublishPreview | Should Be $false
     }
 
-    It "rejects a non-preview candidate" {
+    It "supports a stable-branch candidate regardless of release intent" {
         $buildPath = Join-Path $TestDrive "stable-build.json"
         $metadataPath = Join-Path $TestDrive "stable-metadata.json"
         @'
@@ -113,9 +135,63 @@ Describe "preview release build metadata" {
 }
 '@ | Set-Content -LiteralPath $metadataPath
 
+        $result = & (Join-Path $scripts "get-release-build-metadata.ps1") `
+            -Build 154000001 `
+            -BuildJsonPath $buildPath `
+            -MetadataJsonPath $metadataPath
+
+        $result.intent | Should Be "stable-release"
+        $result.channel | Should Be "stable"
+        $result.shouldPublishPreview | Should Be $false
+
+        @'
+{
+  "version": "0.101.2181.0",
+  "channel": "preview",
+  "intent": "stable-release",
+  "shouldPublishPreview": false
+}
+'@ | Set-Content -LiteralPath $metadataPath
+
+        $result = & (Join-Path $scripts "get-release-build-metadata.ps1") `
+            -Build 154000001 `
+            -BuildJsonPath $buildPath `
+            -MetadataJsonPath $metadataPath
+
+        $result.intent | Should Be "stable-release"
+        $result.channel | Should Be "preview"
+    }
+
+    It "rejects a release build from an unsupported branch" {
+        $buildPath = Join-Path $TestDrive "private-build.json"
+        $metadataPath = Join-Path $TestDrive "private-metadata.json"
+        @'
+{
+  "id": 154000002,
+  "definition": { "id": 76541 },
+  "buildNumber": "private",
+  "result": "succeeded",
+  "sourceBranch": "refs/heads/user/feature",
+  "sourceVersion": "2123456789abcdef0123456789abcdef01234567",
+  "reason": "manual",
+  "queueTime": "2026-08-06T06:00:00Z",
+  "startTime": "2026-08-06T06:00:20Z",
+  "finishTime": "2026-08-06T09:00:00Z",
+  "templateParameters": {}
+}
+'@ | Set-Content -LiteralPath $buildPath
+        @'
+{
+  "version": "0.101.2181.0",
+  "channel": "private",
+  "intent": "private-validation",
+  "shouldPublishPreview": false
+}
+'@ | Set-Content -LiteralPath $metadataPath
+
         Assert-Throws {
             & (Join-Path $scripts "get-release-build-metadata.ps1") `
-                -Build 154000001 `
+                -Build 154000002 `
                 -BuildJsonPath $buildPath `
                 -MetadataJsonPath $metadataPath
         }
@@ -231,10 +307,10 @@ Describe "draft preview release dry run" {
         New-Item -ItemType Directory -Path $assetsPath | Out-Null
         "Preview notes" | Set-Content -LiteralPath $bodyPath
         "installer" | Set-Content -LiteralPath (Join-Path $assetsPath "PowerToysSetup-0.101.2181.0-x64.exe")
+        "local audit only" | Set-Content -LiteralPath (Join-Path $assetsPath "release-manifest.json")
 
         $result = & (Join-Path $scripts "upsert-draft-preview-release.ps1") `
             -Tag "v0.101.2181.0" `
-            -Title "PowerToys Preview v0.101.2181.0" `
             -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
             -BodyPath $bodyPath `
             -AssetsDirectory $assetsPath `
@@ -242,7 +318,9 @@ Describe "draft preview release dry run" {
 
         $result.draft | Should Be $true
         $result.prerelease | Should Be $true
+        $result.title | Should Be "Preview v0.101.2181.0"
         $result.assetNames.Count | Should Be 1
+        ($result.assetNames -contains "release-manifest.json") | Should Be $false
     }
 
     It "preserves human text outside managed body markers" {
@@ -267,7 +345,6 @@ New generated notes
 
         & (Join-Path $scripts "upsert-draft-preview-release.ps1") `
             -Tag "v0.101.2181.0" `
-            -Title "PowerToys Preview v0.101.2181.0" `
             -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
             -BodyPath $bodyPath `
             -AssetsDirectory $assetsPath `
@@ -294,7 +371,6 @@ New generated notes
         Assert-Throws {
             & (Join-Path $scripts "upsert-draft-preview-release.ps1") `
                 -Tag "v0.101.2181.0" `
-                -Title "PowerToys Preview v0.101.2181.0" `
                 -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
                 -BodyPath $bodyPath `
                 -AssetsDirectory $assetsPath `

@@ -8,16 +8,14 @@
     generated release assets.
 
 .EXAMPLE
-    .\upsert-draft-preview-release.ps1 -Tag v0.101.2181.0 -Title 'PowerToys Preview v0.101.2181.0' -TargetCommit 0123... -BodyPath .\release-notes.md -AssetsDirectory .\assets
+    .\upsert-draft-preview-release.ps1 -Tag v0.101.2181.0 -TargetCommit 0123... -BodyPath .\release-notes.md -AssetsDirectory .\assets
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$Tag,
-    [Parameter(Mandatory)][string]$Title,
     [Parameter(Mandatory)][string]$TargetCommit,
     [Parameter(Mandatory)][string]$BodyPath,
     [Parameter(Mandatory)][string]$AssetsDirectory,
-    [string[]]$AdditionalAsset = @(),
     [string]$Repo = "microsoft/PowerToys",
     [string]$OutputPath,
     [string]$ExistingReleaseJsonPath,
@@ -30,6 +28,7 @@ $ErrorActionPreference = "Stop"
 
 $beginMarker = "<!-- BEGIN POWERTOYS PREVIEW AGENT -->"
 $endMarker = "<!-- END POWERTOYS PREVIEW AGENT -->"
+$releaseTitle = "Preview $Tag"
 
 function Get-ManagedBlock {
     param([Parameter(Mandatory)][string]$Body)
@@ -75,13 +74,6 @@ function Get-GeneratedAssets {
                 )
             }
     )
-
-    foreach ($path in $AdditionalAsset) {
-        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
-            throw "Additional release asset not found: $path"
-        }
-        $files += Get-Item -LiteralPath $path
-    }
 
     return @($files | Sort-Object FullName -Unique)
 }
@@ -152,7 +144,7 @@ try {
         if ($existing) {
             gh release edit $Tag `
                 --repo $Repo `
-                --title $Title `
+                --title $releaseTitle `
                 --notes-file $temporaryBody `
                 --target $TargetCommit `
                 --draft `
@@ -164,13 +156,33 @@ try {
         else {
             gh release create $Tag `
                 --repo $Repo `
-                --title $Title `
+                --title $releaseTitle `
                 --notes-file $temporaryBody `
                 --target $TargetCommit `
                 --draft `
                 --prerelease | Out-Null
             if ($LASTEXITCODE -ne 0) {
                 throw "Failed to create draft release '$Tag'."
+            }
+        }
+
+        $releaseMetadataJson = gh release view $Tag `
+            --repo $Repo `
+            --json databaseId
+        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($releaseMetadataJson)) {
+            throw "Failed to load draft '$Tag' before asset upload."
+        }
+        $releaseMetadata = $releaseMetadataJson | ConvertFrom-Json
+        $remoteReleaseJson = gh api "repos/$Repo/releases/$($releaseMetadata.databaseId)"
+        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($remoteReleaseJson)) {
+            throw "Failed to inspect existing assets for draft '$Tag'."
+        }
+        $remoteRelease = $remoteReleaseJson | ConvertFrom-Json
+        $staleManifests = @($remoteRelease.assets | Where-Object { $_.name -eq "release-manifest.json" })
+        foreach ($asset in $staleManifests) {
+            gh api --method DELETE "repos/$Repo/releases/assets/$($asset.id)" | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+                throw "Failed to remove stale release-manifest.json from draft '$Tag'."
             }
         }
 
@@ -182,7 +194,7 @@ try {
 
         $verifiedJson = gh release view $Tag `
             --repo $Repo `
-            --json isDraft,isPrerelease,targetCommitish,url
+            --json isDraft,isPrerelease,targetCommitish,url,name
         if ($LASTEXITCODE -ne 0) {
             throw "Failed to reload draft '$Tag' after update."
         }
@@ -193,6 +205,9 @@ try {
         if ([string]$verified.targetCommitish -ne $TargetCommit) {
             throw "Release '$Tag' target '$($verified.targetCommitish)' does not match '$TargetCommit'."
         }
+        if ([string]$verified.name -ne $releaseTitle) {
+            throw "Release '$Tag' title '$($verified.name)' does not match '$releaseTitle'."
+        }
     }
 
     $result = [ordered]@{
@@ -200,6 +215,7 @@ try {
         dryRun = [bool]$DryRun
         action = if ($existing) { "updated" } else { "created" }
         tag = $Tag
+        title = $releaseTitle
         targetCommit = $TargetCommit.ToLowerInvariant()
         draft = $true
         prerelease = $true
