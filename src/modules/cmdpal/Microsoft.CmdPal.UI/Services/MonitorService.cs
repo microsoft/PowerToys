@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Threading;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Windows.Win32;
@@ -104,10 +105,20 @@ public sealed class MonitorService : IMonitorService
         MonitorsChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// Number of attempts to build the stable-ID display info map before giving up.
+    /// Immediately after a WM_DISPLAYCHANGE the Display Configuration API can transiently
+    /// fail or return an incomplete topology while Windows is still settling the new
+    /// configuration; retrying a couple of times avoids incorrectly falling back to the
+    /// volatile GDI device name (which breaks per-monitor dock config reconciliation).
+    /// </summary>
+    private const int DisplayInfoMapRetryCount = 3;
+    private static readonly TimeSpan DisplayInfoMapRetryDelay = TimeSpan.FromMilliseconds(50);
+
     private static unsafe List<MonitorInfo> EnumerateMonitors()
     {
         var monitors = new List<MonitorInfo>();
-        var displayInfo = BuildDisplayInfoMap();
+        var displayInfo = BuildDisplayInfoMapWithRetry();
 
         PInvoke.EnumDisplayMonitors(
             HDC.Null,
@@ -171,6 +182,33 @@ public sealed class MonitorService : IMonitorService
             0);
 
         return monitors;
+    }
+
+    /// <summary>
+    /// Calls <see cref="BuildDisplayInfoMap"/>, retrying a few times with a short delay
+    /// if it comes back empty. The Display Configuration API can transiently fail right
+    /// after a WM_DISPLAYCHANGE (topology still settling); without a retry, monitors would
+    /// silently fall back from their stable hardware path to the volatile GDI device name,
+    /// which makes <see cref="Settings.MonitorConfigReconciler"/> treat a still-connected
+    /// monitor as brand new and wipe/disable its dock config.
+    /// </summary>
+    private static Dictionary<string, (string FriendlyName, string DevicePath)> BuildDisplayInfoMapWithRetry()
+    {
+        for (var attempt = 0; attempt < DisplayInfoMapRetryCount; attempt++)
+        {
+            var map = BuildDisplayInfoMap();
+            if (map.Count > 0)
+            {
+                return map;
+            }
+
+            if (attempt < DisplayInfoMapRetryCount - 1)
+            {
+                Thread.Sleep(DisplayInfoMapRetryDelay);
+            }
+        }
+
+        return BuildDisplayInfoMap();
     }
 
     /// <summary>

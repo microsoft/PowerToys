@@ -26,6 +26,16 @@ public sealed partial class DockWindowManager : IDisposable
     private bool _disposed;
     private int _syncing;
 
+    /// <summary>
+    /// Debounces rapid-fire monitor-change notifications (e.g. several WM_DISPLAYCHANGE
+    /// messages during a Win+P mode switch or a dock/undock event). Without this, each
+    /// intermediate — possibly incomplete or incorrect — topology snapshot gets reconciled
+    /// and persisted to settings, which can permanently corrupt per-monitor dock configs
+    /// even though the topology settles to something that would have reconciled cleanly.
+    /// </summary>
+    private static readonly TimeSpan MonitorsChangedDebounceInterval = TimeSpan.FromMilliseconds(400);
+    private DispatcherQueueTimer? _monitorsChangedDebounceTimer;
+
     private bool? _lastSyncedEnableDock;
     private DockSettings? _lastSyncedDockSettings;
 
@@ -180,6 +190,12 @@ public sealed partial class DockWindowManager : IDisposable
         _monitorService.MonitorsChanged -= OnMonitorsChanged;
         _settingsService.SettingsChanged -= OnSettingsChanged;
 
+        if (_monitorsChangedDebounceTimer is not null)
+        {
+            _monitorsChangedDebounceTimer.Stop();
+            _monitorsChangedDebounceTimer.Tick -= OnMonitorsChangedDebounceTimerTick;
+        }
+
         HideDocks();
     }
 
@@ -211,11 +227,32 @@ public sealed partial class DockWindowManager : IDisposable
     {
         _dispatcherQueue.TryEnqueue(() =>
         {
-            if (!_disposed)
+            if (_disposed)
             {
-                SyncDocksToSettings();
+                return;
             }
+
+            // Debounce: (re)start a short timer instead of syncing immediately so a burst
+            // of monitor-change notifications collapses into a single reconciliation against
+            // the final, settled topology.
+            _monitorsChangedDebounceTimer ??= _dispatcherQueue.CreateTimer();
+            _monitorsChangedDebounceTimer.Stop();
+            _monitorsChangedDebounceTimer.Interval = MonitorsChangedDebounceInterval;
+            _monitorsChangedDebounceTimer.IsRepeating = false;
+            _monitorsChangedDebounceTimer.Tick -= OnMonitorsChangedDebounceTimerTick;
+            _monitorsChangedDebounceTimer.Tick += OnMonitorsChangedDebounceTimerTick;
+            _monitorsChangedDebounceTimer.Start();
         });
+    }
+
+    private void OnMonitorsChangedDebounceTimerTick(object? sender, object e)
+    {
+        _monitorsChangedDebounceTimer?.Stop();
+
+        if (!_disposed)
+        {
+            SyncDocksToSettings();
+        }
     }
 
     private void OnSettingsChanged(ISettingsService sender, SettingsModel args)
