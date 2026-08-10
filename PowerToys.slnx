@@ -58,6 +58,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/common/UITestAutomation.Next.UnitTests/UITestAutomation.Next.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/common/UnitTests-CommonLib/UnitTests-CommonLib.vcxproj" Id="1a066c63-64b3-45f8-92fe-664e1cce8077" />
     <Project Path="src/common/UnitTests-CommonUtils/UnitTests-CommonUtils.vcxproj" Id="8b5cfb38-ccba-40a8-ad7a-89c57b070884" />
     <Project Path="src/common/updating/UnitTests/UpdatingUnitTests.vcxproj" Id="a1b2c3d4-e5f6-7890-abcd-ef1234567890" />
@@ -479,6 +483,10 @@
   </Folder>
   <Folder Name="/modules/FileLocksmith/Tests/">
     <Project Path="src/modules/FileLocksmith/FileLocksmithCLI/tests/FileLocksmithCLIUnitTests.vcxproj" Id="a1b2c3d4-e5f6-7890-1234-567890abcdef" />
+    <Project Path="src/modules/FileLocksmith/Tests/FileLocksmith.UITests/FileLocksmith.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/modules/Hosts/">
     <Project Path="src/modules/Hosts/Hosts/Hosts.csproj">
@@ -517,6 +525,10 @@
   </Folder>
   <Folder Name="/modules/imageresizer/Tests/">
     <Project Path="src/modules/imageresizer/tests/ImageResizer.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/imageresizer/tests/ImageResizer.UITests/ImageResizer.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -885,6 +897,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/peek/Peek.UITests.Next/Peek.UITests.Next.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/peek/peek/peek.vcxproj" Id="a1425b53-3d61-4679-8623-e64a0d3d0a48" />
   </Folder>
   <Folder Name="/modules/PowerAccent/">
@@ -1021,6 +1037,10 @@
     <Project Path="src/modules/previewpane/SvgThumbnailProviderCpp/SvgThumbnailProviderCpp.vcxproj" Id="2bbc9e33-21ec-401c-84da-bb6590a9b2aa" />
   </Folder>
   <Folder Name="/modules/previewpane/Tests/">
+    <Project Path="src/modules/previewpane/PreviewPane.UITests/PreviewPane.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/previewpane/UnitTests-BgcodePreviewHandler/Preview.BgcodePreviewHandler.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
