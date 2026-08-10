@@ -190,7 +190,6 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _diskWriteSpeed = _diskPage.GetWriteSpeed();
                 _diskReadItem?.Title = $"{_diskReadSpeed}";
                 _diskWriteItem?.Title = $"{_diskWriteSpeed}";
-                RaiseItemsChanged();
             };
         }
 

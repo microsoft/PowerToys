@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.20" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.21" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -37,6 +37,7 @@
       <string id="SUPPORTED_POWERTOYS_0_97_0">PowerToys version 0.97.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_98_0">PowerToys version 0.98.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_99_0">PowerToys version 0.99.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_100_0">PowerToys version 0.100.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1">From PowerToys version 0.64.0 until PowerToys version 0.87.1</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
@@ -78,6 +79,11 @@ If enabled, per-user installation is not allowed.
 
 If disabled or not configured, per-user installation is allowed.
 </string>
+      <string id="DisablePreviewUpdatesDescription">This policy configures whether users can opt in to preview (prerelease) build updates.
+
+If you enable this policy, preview build updates are turned off: the per-user setting to include preview/prerelease updates is ignored and cannot be changed. Only stable updates are offered.
+
+If you disable or do not configure this policy, users can choose whether to receive preview build updates. Stable updates are unaffected either way.</string>
       <string id="DisableAutomaticUpdateDownloadDescription">This policy configures whether or not the automatic download and installation of available updates is disabled. (On metered connections updates are never downloaded.)
 
 If enabled, automatic download and installation is disabled.
@@ -289,6 +295,7 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="ConfigureEnabledUtilityZoomIt">Zoom It: Configure enabled state</string>
       <string id="DisablePerUserInstallation">Disable per-user installation</string>
       <string id="DisableAutomaticUpdateDownload">Disable automatic downloads</string>
+      <string id="DisablePreviewUpdates">Disable preview build updates</string>
       <string id="DoNotShowWhatsNewAfterUpdates">Do not show the release notes after updates</string>
       <string id="SuspendNewUpdateToast">Suspend Action Center notification for new updates</string>
       <string id="DisableNewUpdateToast">Disable Action Center notification for new updates</string>
