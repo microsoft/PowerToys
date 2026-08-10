@@ -6,6 +6,10 @@ using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.Security;
+using Windows.Win32.System.Shutdown;
 
 namespace Microsoft.CmdPal.Ext.System.Helpers;
 
@@ -15,19 +19,11 @@ namespace Microsoft.CmdPal.Ext.System.Helpers;
 /// </summary>
 internal static partial class WindowsUpdateHelper
 {
-    // InitiateShutdown flags (winreg.h)
-    internal const uint ShutdownRestart = 0x00000004;
-    internal const uint ShutdownPoweroff = 0x00000008;
-    internal const uint ShutdownInstallUpdates = 0x00000040;
-
     // SHTDN_REASON_FLAG_PLANNED | SHTDN_REASON_MAJOR_OPERATINGSYSTEM | SHTDN_REASON_MINOR_UPGRADE
-    internal const uint ShutdownReasonPlannedOsUpgrade = 0x80000000 | 0x00020000 | 0x00000003;
+    private const SHUTDOWN_REASON ShutdownReasonPlannedOsUpgrade =
+        SHUTDOWN_REASON.SHTDN_REASON_FLAG_PLANNED | SHUTDOWN_REASON.SHTDN_REASON_MAJOR_OPERATINGSYSTEM | SHUTDOWN_REASON.SHTDN_REASON_MINOR_UPGRADE;
 
     private const uint ClsCtxInprocServer = 0x1;
-    private const uint TokenAdjustPrivileges = 0x20;
-    private const uint TokenQuery = 0x8;
-    private const uint SePrivilegeEnabled = 0x2;
-    private const string SeShutdownName = "SeShutdownPrivilege";
 
     // WUAPI SystemInformation coclass (wuapi.idl)
     private static readonly Guid SystemInformationClsid = new("C01B9BA0-BEA7-41BA-B604-D0A36F469133");
@@ -88,7 +84,7 @@ internal static partial class WindowsUpdateHelper
     /// "update and shut down" (false) request.
     /// </summary>
     public static uint GetUpdateShutdownFlags(bool restart)
-        => ShutdownInstallUpdates | (restart ? ShutdownRestart : ShutdownPoweroff);
+        => (uint)(SHUTDOWN_FLAGS.SHUTDOWN_INSTALL_UPDATES | (restart ? SHUTDOWN_FLAGS.SHUTDOWN_RESTART : SHUTDOWN_FLAGS.SHUTDOWN_POWEROFF));
 
     /// <summary>
     /// Installs pending updates and restarts (true) or shuts down (false) the computer.
@@ -99,7 +95,7 @@ internal static partial class WindowsUpdateHelper
         // InitiateShutdown requires the (normally disabled) shutdown privilege on the token.
         EnableShutdownPrivilege();
 
-        var result = InitiateShutdown(null, null, 0, GetUpdateShutdownFlags(restart), ShutdownReasonPlannedOsUpgrade);
+        var result = PInvoke.InitiateShutdown(null, null, 0, (SHUTDOWN_FLAGS)GetUpdateShutdownFlags(restart), ShutdownReasonPlannedOsUpgrade);
         if (result != 0)
         {
             ExtensionHost.LogMessage(new LogMessage() { Message = $"InitiateShutdown failed with Win32 error {result}" });
@@ -109,28 +105,32 @@ internal static partial class WindowsUpdateHelper
         return true;
     }
 
-    private static void EnableShutdownPrivilege()
+    private static unsafe void EnableShutdownPrivilege()
     {
-        if (!OpenProcessToken(GetCurrentProcess(), TokenAdjustPrivileges | TokenQuery, out var token))
+        HANDLE token;
+        if (!PInvoke.OpenProcessToken(PInvoke.GetCurrentProcess(), TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES | TOKEN_ACCESS_MASK.TOKEN_QUERY, &token))
         {
             return;
         }
 
         try
         {
-            if (!LookupPrivilegeValue(null, SeShutdownName, out var luid))
+            if (!PInvoke.LookupPrivilegeValue(null, PInvoke.SE_SHUTDOWN_NAME, out var luid))
             {
                 return;
             }
 
-            var privileges = new TokenPrivileges
+            var privileges = new TOKEN_PRIVILEGES
             {
                 PrivilegeCount = 1,
+            };
+            privileges.Privileges[0] = new LUID_AND_ATTRIBUTES
+            {
                 Luid = luid,
-                Attributes = SePrivilegeEnabled,
+                Attributes = TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED,
             };
 
-            _ = AdjustTokenPrivileges(token, false, ref privileges, 0, IntPtr.Zero, IntPtr.Zero);
+            _ = PInvoke.AdjustTokenPrivileges(token, false, &privileges, 0, null, null);
         }
         finally
         {
@@ -138,41 +138,8 @@ internal static partial class WindowsUpdateHelper
         }
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    private struct Luid
-    {
-        public uint LowPart;
-        public int HighPart;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct TokenPrivileges
-    {
-        public uint PrivilegeCount;
-        public Luid Luid;
-        public uint Attributes;
-    }
-
     [LibraryImport("ole32.dll")]
     private static partial int CoCreateInstance(in Guid rclsid, IntPtr pUnkOuter, uint dwClsContext, in Guid riid, out IntPtr ppv);
-
-    [LibraryImport("advapi32.dll", EntryPoint = "InitiateShutdownW", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
-    private static partial uint InitiateShutdown(string? lpMachineName, string? lpMessage, uint dwGracePeriod, uint dwShutdownFlags, uint dwReason);
-
-    [LibraryImport("advapi32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool OpenProcessToken(IntPtr processHandle, uint desiredAccess, out IntPtr tokenHandle);
-
-    [LibraryImport("kernel32.dll")]
-    private static partial IntPtr GetCurrentProcess();
-
-    [LibraryImport("advapi32.dll", EntryPoint = "LookupPrivilegeValueW", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool LookupPrivilegeValue(string? lpSystemName, string lpName, out Luid lpLuid);
-
-    [LibraryImport("advapi32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool AdjustTokenPrivileges(IntPtr tokenHandle, [MarshalAs(UnmanagedType.Bool)] bool disableAllPrivileges, ref TokenPrivileges newState, uint bufferLength, IntPtr previousState, IntPtr returnLength);
 }
 
 /// <summary>
