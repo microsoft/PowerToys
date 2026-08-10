@@ -130,11 +130,12 @@ public class NowDockBandTests
                 clockReads++;
                 return FixedTime;
             });
-        var readsAfterConstruction = clockReads;
+        _band.StartUpdating();
+        var readsBeforeTick = clockReads;
 
         _clockUpdateService.DispatchTick(FixedTime.AddSeconds(1));
 
-        Assert.AreEqual(readsAfterConstruction + 1, clockReads);
+        Assert.AreEqual(readsBeforeTick + 1, clockReads);
     }
 
     [DataTestMethod]
