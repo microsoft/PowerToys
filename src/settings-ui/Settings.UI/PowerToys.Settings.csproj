@@ -129,8 +129,8 @@
 	<!-- XamlIndexBuilder now outputs directly to Assets\Settings -->
 	<PropertyGroup>
 		<GeneratedJsonFile>$(MSBuildProjectDirectory)\Assets\Settings\search.index.json</GeneratedJsonFile>
-		<!-- Generate Settings search index in Release and Custom builds. Debug builds skip index generation for faster builds. 
-		     To enable index generation in Debug, uncomment the line below: -->
+		<!-- Generate Settings search index in Release and Custom builds. Debug builds skip index generation for faster builds.
+		     To enable index generation in Debug, pass /p:GenerateSettingsSearchIndex=true or uncomment the line below: -->
 		<!-- <GenerateSettingsSearchIndex>true</GenerateSettingsSearchIndex> -->
 		<GenerateSettingsSearchIndex Condition="'$(GenerateSettingsSearchIndex)' == '' and '$(Configuration)' != 'Debug'">true</GenerateSettingsSearchIndex>
 		<GenerateSettingsSearchIndex Condition="'$(GenerateSettingsSearchIndex)' == ''">false</GenerateSettingsSearchIndex>
@@ -145,15 +145,13 @@
 		<NoWarn>VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
 	</PropertyGroup>
 
-	<!-- Include the search index only if generation is enabled and the file exists (prevents accidentally embedding stale indices) -->
-
-	<ItemGroup>
-		<!-- Ensure the generated search index is present in the project; only if it exists to prevent CS1566 in clean CI -->
-		<Content Include="$(GeneratedJsonFile)" Condition="'$(GenerateSettingsSearchIndex)' == 'true' and Exists('$(GeneratedJsonFile)')">
+	<!-- Register the generated file during project evaluation. Do not use Exists() here: the file is generated later, before CoreCompile. -->
+	<ItemGroup Condition="'$(DesignTimeBuild)' != 'true' and '$(GenerateSettingsSearchIndex)' == 'true'">
+		<Content Include="$(GeneratedJsonFile)">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<!-- Embed the generated search index; logical name must match PrebuiltIndexResourceName -->
-		<EmbeddedResource Include="$(GeneratedJsonFile)" Condition="'$(GenerateSettingsSearchIndex)' == 'true' and Exists('$(GeneratedJsonFile)')">
+		<EmbeddedResource Include="$(GeneratedJsonFile)">
 			<LogicalName>Microsoft.PowerToys.Settings.UI.Assets.search.index.json</LogicalName>
 		</EmbeddedResource>
 	</ItemGroup>
@@ -215,5 +213,6 @@
 	<Target Name="BuildXamlIndexBeforeSettings" BeforeTargets="CoreCompile" Condition="'$(DesignTimeBuild)' != 'true' and '$(GenerateSettingsSearchIndex)' == 'true'">
 		<Message Importance="high" Text="[Settings] Building XamlIndexBuilder prior to compile. Views='$(MSBuildProjectDirectory)\SettingsXAML\Views' Out='$(GeneratedJsonFile)'" />
 		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=$(CoreTargetFramework);XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile);GenerateSettingsSearchIndex=$(GenerateSettingsSearchIndex)" />
+		<Error Condition="!Exists('$(GeneratedJsonFile)')" Text="Settings search index generation did not produce '$(GeneratedJsonFile)'." />
 	</Target>
 </Project>
