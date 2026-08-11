@@ -327,7 +327,9 @@ def language_signal(title, body):
     prose = re.sub(r"`[^`\r\n]+`", " ", prose)
     prose = re.sub(r"https?://\S+", " ", prose)
     prose = re.sub(
-        r"^###\s+(?:" + "|".join(re.escape(heading) for heading in BUG_HEADINGS) + r")\s*$",
+        r"^###\s+(?:[^\w\r\n]+\s*)?(?:"
+        + "|".join(re.escape(heading) for heading in BUG_HEADINGS)
+        + r")\s*$",
         " ",
         prose,
         flags=re.IGNORECASE | re.MULTILINE,

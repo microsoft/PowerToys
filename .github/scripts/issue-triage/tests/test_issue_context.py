@@ -216,6 +216,13 @@ class IssueContextTests(unittest.TestCase):
             "LATIN_SCRIPT_TEXT",
         )
 
+    def test_language_signal_ignores_prefixed_template_headings(self):
+        body = "\n".join(f"### ❌ {heading}" for heading in CONTEXT.BUG_HEADINGS)
+        self.assertEqual(
+            CONTEXT.language_signal("", body),
+            "INSUFFICIENT_TEXT",
+        )
+
     def test_language_signal_does_not_guess_from_short_technical_text(self):
         self.assertEqual(
             CONTEXT.language_signal("0x8007007E", "`Example.dll`"),

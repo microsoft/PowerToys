@@ -30,7 +30,7 @@ class BugReportAnalyzerTests(unittest.TestCase):
             "PowerToysReport_2026-08-04-10-00-00.zip",
         )
 
-    def test_rejects_path_traversal_and_encrypted_archives(self):
+    def test_rejects_path_traversal(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             zip_path = Path(temp_dir) / "unsafe.zip"
             with zipfile.ZipFile(zip_path, "w") as archive:
@@ -38,6 +38,15 @@ class BugReportAnalyzerTests(unittest.TestCase):
             with zipfile.ZipFile(zip_path) as archive:
                 with self.assertRaises(ANALYZER.AnalysisRejected):
                     ANALYZER.validate_archive(archive)
+
+    def test_rejects_encrypted_archives(self):
+        entry = zipfile.ZipInfo("secret.txt")
+        entry.flag_bits = 0x1
+        archive = mock.Mock()
+        archive.infolist.return_value = [entry]
+
+        with self.assertRaises(ANALYZER.AnalysisRejected):
+            ANALYZER.validate_archive(archive)
 
     def test_redacts_common_identifiers(self):
         text = (
