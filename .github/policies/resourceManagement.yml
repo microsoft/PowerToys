@@ -8,22 +8,7 @@ where:
 configuration:
   resourceManagementConfiguration:
     scheduledSearches:
-    - description: 
-      frequencies:
-      - hourly:
-          hour: 6
-      filters:
-      - isIssue
-      - isOpen
-      - hasLabel:
-          label: Needs-Author-Feedback
-      - hasLabel:
-          label: Status-No recent activity
-      - noActivitySince:
-          days: 5
-      actions:
-      - closeIssue
-    - description: 
+    - description: Close issues awaiting author feedback after 7 days of inactivity
       frequencies:
       - hourly:
           hour: 6
@@ -33,14 +18,11 @@ configuration:
       - hasLabel:
           label: Needs-Author-Feedback
       - noActivitySince:
-          days: 5
-      - isNotLabeledWith:
-          label: Status-No recent activity
+          days: 7
       actions:
-      - addLabel:
-          label: Status-No recent activity
       - addReply:
-          reply: This issue has been automatically marked as stale because it has been marked as requiring author feedback but has not had any activity for **5 days**. It will be closed if no further activity occurs **within 5 days of this comment**.
+          reply: This issue has been automatically closed because it has been marked as requiring author feedback but has not had any activity for **7 days**. If you can provide the requested information, please reopen the issue and add it in a comment.
+      - closeIssue
     - description: 
       frequencies:
       - hourly:
@@ -56,8 +38,8 @@ configuration:
       - addReply:
           reply: This issue has been marked as duplicate and has not had any activity for **1 day**. It will be closed for housekeeping purposes.
       - closeIssue
-    # ─── PR Needs-Author-Feedback: close after 7+7 days of inactivity ───
-    - description: Close PRs with Needs-Author-Feedback + Status-No recent activity after 7 more days
+    # ─── PR Needs-Author-Feedback: close after 7 days of inactivity ───
+    - description: Close PRs awaiting author feedback after 7 days of inactivity
       frequencies:
       - hourly:
           hour: 6
@@ -66,32 +48,12 @@ configuration:
       - isOpen
       - hasLabel:
           label: Needs-Author-Feedback
-      - hasLabel:
-          label: Status-No recent activity
       - noActivitySince:
           days: 7
       actions:
       - addReply:
-          reply: This pull request has been automatically closed because it has been marked as requiring author feedback but has not had any activity for **14 days**. If you would like to continue working on this, please reopen the PR and push your changes.
+          reply: This pull request has been automatically closed because it has been marked as requiring author feedback but has not had any activity for **7 days**. If you would like to continue working on it, please reopen the PR and push your changes or leave a comment.
       - closeIssue
-    - description: Warn PRs with Needs-Author-Feedback after 7 days of no activity
-      frequencies:
-      - hourly:
-          hour: 6
-      filters:
-      - isPullRequest
-      - isOpen
-      - hasLabel:
-          label: Needs-Author-Feedback
-      - noActivitySince:
-          days: 7
-      - isNotLabeledWith:
-          label: Status-No recent activity
-      actions:
-      - addLabel:
-          label: Status-No recent activity
-      - addReply:
-          reply: This pull request has been automatically marked as stale because it has been marked as requiring author feedback but has not had any activity for **7 days**. It will be closed if no further activity occurs **within 7 days of this comment**. To keep this PR active, please push your changes or leave a comment.
     eventResponderTasks:
     # ─── When issue/PR author comments, swap Needs-Author-Feedback → Needs-Triage ───
     - if:
