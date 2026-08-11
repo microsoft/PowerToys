@@ -126,12 +126,22 @@ namespace ViewModelTests
             settings.Properties.WindowsKeyAction.Value = 42;
             settings.Properties.PressTime.Value = ShortcutGuideProperties.MaximumPressTimeMs + 1;
 
-            var viewModel = CreateViewModel(settings, out _);
+            int ipcMessageCount = 0;
+            var viewModel = CreateViewModel(settings, out var settingsUtilsMock, _ => ipcMessageCount++);
 
             Assert.AreEqual((int)ShortcutGuideWindowsKeyAction.TaskbarIndicators, viewModel.WindowsKeyActionIndex);
             Assert.AreEqual(ShortcutGuideProperties.MaximumPressTimeMs, viewModel.PressTime);
+            Assert.AreEqual((int)ShortcutGuideWindowsKeyAction.TaskbarIndicators, settings.Properties.WindowsKeyAction.Value);
+            Assert.AreEqual(ShortcutGuideProperties.MaximumPressTimeMs, settings.Properties.PressTime.Value);
             Assert.IsTrue(viewModel.IsWindowsKeyHoldEnabled);
             Assert.IsFalse(viewModel.IsOpenShortcutGuideWindowsKeyAction);
+            Assert.AreEqual(1, ipcMessageCount);
+            settingsUtilsMock.Verify(
+                x => x.SaveSettings(
+                    It.Is<string>(json => JsonSerializer.Deserialize<ShortcutGuideSettings>(json).Properties.WindowsKeyAction.Value == (int)ShortcutGuideWindowsKeyAction.TaskbarIndicators),
+                    ShortcutGuideSettings.ModuleName,
+                    It.IsAny<string>()),
+                Times.Once);
         }
 
         [TestMethod]

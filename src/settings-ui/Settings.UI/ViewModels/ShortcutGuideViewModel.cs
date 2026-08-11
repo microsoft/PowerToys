@@ -55,6 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             InitializeEnabledValue();
 
             _windowsKeyActionIndex = NormalizeWindowsKeyAction(Settings.Properties.WindowsKeyAction.Value);
+            bool settingsNormalized = Settings.Properties.WindowsKeyAction.Value != _windowsKeyActionIndex;
             Settings.Properties.WindowsKeyAction.Value = _windowsKeyActionIndex;
             _pressTime = Math.Clamp(
                 Settings.Properties.PressTime.Value,
@@ -63,6 +64,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Settings.Properties.PressTime.Value = _pressTime;
             _closeOnWindowsKeyRelease = Settings.Properties.CloseOnWindowsKeyRelease.Value;
             _disabledApps = Settings.Properties.DisabledApps.Value;
+
+            if (settingsNormalized)
+            {
+                NotifyPropertyChanged(nameof(WindowsKeyActionIndex));
+            }
 
             switch (Settings.Properties.Theme.Value)
             {
