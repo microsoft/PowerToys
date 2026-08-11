@@ -257,20 +257,11 @@
   <data name="ResizeFit_Fill" xml:space="preserve">
     <value>Fill</value>
   </data>
-  <data name="ResizeFit_Fill_ThirdPersonSingular" xml:space="preserve">
-    <value>fills</value>
-  </data>
   <data name="ResizeFit_Fit" xml:space="preserve">
     <value>Fit</value>
   </data>
-  <data name="ResizeFit_Fit_ThirdPersonSingular" xml:space="preserve">
-    <value>fits within</value>
-  </data>
   <data name="ResizeFit_Stretch" xml:space="preserve">
     <value>Stretch</value>
-  </data>
-  <data name="ResizeFit_Stretch_ThirdPersonSingular" xml:space="preserve">
-    <value>stretches to</value>
   </data>
   <data name="ResizeUnit_Centimeter" xml:space="preserve">
     <value>Centimeters</value>

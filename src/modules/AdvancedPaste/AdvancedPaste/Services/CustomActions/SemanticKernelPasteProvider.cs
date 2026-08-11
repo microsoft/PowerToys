@@ -175,6 +175,7 @@ namespace AdvancedPaste.Services.CustomActions
                 AIServiceType.OpenAI or AIServiceType.AzureOpenAI => new OpenAIPromptExecutionSettings
                 {
                     FunctionChoiceBehavior = null,
+                    ReasoningEffort = "minimal",
                 },
                 _ => new PromptExecutionSettings(),
             };

@@ -309,6 +309,11 @@ pwa
 AOT
 Aot
 ify
+LAF
+Laf
+languagemodel
+philm
+phisilica
 TFM
 
 # YML
@@ -330,6 +335,7 @@ xes
 PACKAGEVERSIONNUMBER
 APPXMANIFESTVERSION
 PROGMAN
+ROOTOWNER
 
 # MRU lists
 CACHEWRITE
@@ -399,6 +405,17 @@ FFF
 HHH
 riday
 YYY
+
+# Release versioning identifiers and format fragments
+DAILYVERSIONSEQUENCE
+DDNNN
+Mdd
+SOURCEBRANCH
+SOURCEVERSION
+VERSIONDATE
+YDDD
+YDDDB
+YYMM
 
 # Unicode
 precomposed

@@ -55,19 +55,38 @@ namespace Microsoft.PowerToys.Common.UI.Controls.Window;
 public partial class TransparentWindow : WinUIEx.WindowEx
 {
     private const uint DwmwaColorNone = 0xFFFFFFFE;
+    private const int DwmwaNcRenderingPolicy = 2;
+    private const int DwmwaCloak = 13;
     private const int DwmwaWindowCornerPreference = 33;
     private const int DwmwaBorderColor = 34;
     private const int DwmwcpDoNotRound = 1;
+    private const int DwmncrpDisabled = 2;
 
+    private const int GwlpHwndParent = -8;
     private const int GwlExStyle = -20;
+    private const int WsExDlgModalFrame = 0x00000001;
+    private const int WsExTransparent = 0x00000020;
     private const int WsExToolWindow = 0x00000080;
+    private const int WsExWindowEdge = 0x00000100;
+    private const int WsExClientEdge = 0x00000200;
+    private const int WsExAppWindow = 0x00040000;
 
+    private const uint SwpNoSize = 0x0001;
+    private const uint SwpNoMove = 0x0002;
+    private const uint SwpNoZOrder = 0x0004;
+    private const uint SwpNoActivate = 0x0010;
+    private const uint SwpFrameChanged = 0x0020;
+
+    private const int SwHide = 0;
     private const int SwShowNa = 8;
 
     private readonly nint _hwnd;
 
+    private Microsoft.UI.Xaml.Window? _hiddenOwnerWindow;
     private bool _inputHooked;
     private bool _seenActivated;
+    private bool _cloakWhenHidden;
+    private bool _cloaked;
 
     public TransparentWindow()
     {
@@ -76,6 +95,27 @@ public partial class TransparentWindow : WinUIEx.WindowEx
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
 
         _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+
+        ApplyTransparentChrome();
+
+        SystemBackdrop = new TransparentTintBackdrop();
+
+        Activated += OnActivatedForDismiss;
+    }
+
+    /// <summary>
+    /// Applies (or re-applies) the baseline transparent chrome: strips the
+    /// native frame, disables the Win11 DWM border color and corner rounding,
+    /// and marks the window as a tool window. Idempotent and safe to call again
+    /// after a cross-monitor move — a DPI change can reset some of these
+    /// attributes, so consumers that reposition across monitors may re-invoke it.
+    /// </summary>
+    protected void ApplyTransparentChrome()
+    {
+        if (_hwnd == 0)
+        {
+            return;
+        }
 
         HwndExtensions.ToggleWindowStyle(_hwnd, false, WindowStyle.TiledWindow);
 
@@ -89,10 +129,56 @@ public partial class TransparentWindow : WinUIEx.WindowEx
         }
 
         ApplyExStyleBit(WsExToolWindow, true);
+    }
 
-        SystemBackdrop = new TransparentTintBackdrop();
+    /// <summary>
+    /// Opt-in, aggressive frame elimination for <b>full-monitor / edge-to-edge</b>
+    /// overlays (e.g. Shortcut Guide), layered on top of
+    /// <see cref="ApplyTransparentChrome"/>. On such a window the HWND edge
+    /// coincides with the screen edge, so any residual 1-pixel DWM seam shows as
+    /// a faint full-screen outline; this removes it by dropping the 3-D edge
+    /// extended styles, disabling non-client rendering, and extending the frame
+    /// across the whole client area.
+    /// </summary>
+    /// <remarks>
+    /// This is intentionally <b>not</b> applied by default: content-sized
+    /// surfaces inset their visible card behind transparent padding, so any
+    /// phantom border falls in the transparent margin and is invisible — and the
+    /// aggressive bits here (disabled NC rendering + sheet-of-glass frame) carry
+    /// needless compositing risk for those surfaces. Like
+    /// <see cref="ApplyTransparentChrome"/> it is idempotent and may be re-called
+    /// after a cross-monitor move.
+    /// </remarks>
+    protected void ApplyFullBleedHardening()
+    {
+        if (_hwnd == 0)
+        {
+            return;
+        }
 
-        Activated += OnActivatedForDismiss;
+        // Drop the 3-D-ish window edges Windows draws for ordinary top-level
+        // windows; the remaining 1-px line around a transparent overlay comes
+        // from these extended styles.
+        ApplyExStyleBit(WsExWindowEdge, false);
+        ApplyExStyleBit(WsExClientEdge, false);
+        ApplyExStyleBit(WsExDlgModalFrame, false);
+
+        unsafe
+        {
+            // Disable non-client rendering entirely so the DWM doesn't draw ANY
+            // frame/border chrome (not even a 1-px line).
+            int ncrpDisabled = DwmncrpDisabled;
+            _ = DwmSetWindowAttribute(_hwnd, DwmwaNcRenderingPolicy, &ncrpDisabled, sizeof(int));
+        }
+
+        // Extend the frame into the entire client area. With a transparent
+        // backdrop this eliminates the last possible seam between the
+        // non-client and client regions that the DWM might draw.
+        var margins = new Margins { CxLeftWidth = -1, CxRightWidth = -1, CyTopHeight = -1, CyBottomHeight = -1 };
+        _ = DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+
+        // Force DWM to re-evaluate the frame after the style/frame changes.
+        _ = SetWindowPos(_hwnd, 0, 0, 0, 0, 0, SwpNoMove | SwpNoSize | SwpNoZOrder | SwpNoActivate | SwpFrameChanged);
     }
 
     /// <summary>
@@ -133,7 +219,9 @@ public partial class TransparentWindow : WinUIEx.WindowEx
     /// <summary>
     /// Shows the window without activation (<c>SW_SHOWNA</c>) and raises
     /// <see cref="Showing"/> without a transition, so subscribed content animates
-    /// in using its own configured show transition.
+    /// in using its own configured show transition. After
+    /// <see cref="EnableCloakedHide"/> the window stays cloaked here and only
+    /// becomes visible on <see cref="Reveal"/>.
     /// </summary>
     public void Show() => RaiseShow(null);
 
@@ -141,27 +229,50 @@ public partial class TransparentWindow : WinUIEx.WindowEx
     /// Shows the window without activation (<c>SW_SHOWNA</c>) and raises
     /// <see cref="Showing"/> so subscribed content animates in using
     /// <paramref name="transition"/>, overriding its configured show transition.
+    /// After <see cref="EnableCloakedHide"/> the window stays cloaked here and only
+    /// becomes visible on <see cref="Reveal"/>.
     /// </summary>
     /// <param name="transition">The transition the content should play.</param>
     public void Show(Transition transition) => RaiseShow(transition);
 
     private void RaiseShow(Transition? transition)
     {
+        // A new show can interrupt a deferred hide. In that case HideCore never runs, so the
+        // previous Reveal left the HWND uncloaked. Cloak synchronously before the caller returns to
+        // the dispatcher; otherwise content rebuilt for this summon can render at the old bounds.
+        if (DispatcherQueue.HasThreadAccess)
+        {
+            // CloakAndKeepShown uses SW_HIDE, which can raise Deactivated. Reset this first so an
+            // internal show transition is not mistaken for a user-initiated focus loss.
+            _seenActivated = false;
+            EnsureCloakedBeforeShow();
+        }
+
         DispatcherQueue.TryEnqueue(
             DispatcherQueuePriority.Low,
             () =>
             {
                 _seenActivated = false;
+
+                // Also cover callers that entered Show from another thread.
+                EnsureCloakedBeforeShow();
                 EnsureInputHooks();
-                _ = ShowWindow(_hwnd, SwShowNa);
+
+                // Cloaked mode is made SW_SHOWNA-visible only after cloaking succeeds.
+                if (!_cloakWhenHidden)
+                {
+                    _ = ShowWindow(_hwnd, SwShowNa);
+                }
+
                 Showing?.Invoke(this, new ShowingEventArgs(transition));
             });
     }
 
     /// <summary>
     /// Raises <see cref="Hiding"/> so subscribed content animates out, then hides
-    /// the underlying <see cref="Microsoft.UI.Windowing.AppWindow"/> once every
-    /// deferral taken by a handler has completed (immediately if none were taken).
+    /// the underlying <see cref="Microsoft.UI.Windowing.AppWindow"/> - or cloaks the
+    /// window when <see cref="EnableCloakedHide"/> was called - once every deferral
+    /// taken by a handler has completed (immediately if none were taken).
     /// </summary>
     public void Hide()
     {
@@ -171,8 +282,141 @@ public partial class TransparentWindow : WinUIEx.WindowEx
             {
                 var args = new HidingEventArgs();
                 Hiding?.Invoke(this, args);
-                args.RunWhenComplete(AppWindow.Hide);
+                args.RunWhenComplete(HideCore);
             });
+    }
+
+    /// <summary>
+    /// Switches this window from hiding to <b>cloaking</b>, and immediately puts it
+    /// into that state.
+    /// </summary>
+    /// <remarks>
+    /// <para>A hidden WinUI 3 window renders nothing, so its composition surface keeps
+    /// whatever frame it was showing when it was hidden, and the next <see cref="Show()"/>
+    /// puts that stale frame back on screen before the new content has been laid out.
+    /// A cloaked window is equally invisible but stays <c>SW_SHOWNA</c>-shown, so XAML
+    /// keeps laying it out and painting it and there is no stale frame to put back.</para>
+    /// <para>This changes what the show sequence means: <see cref="Show()"/> still raises
+    /// <see cref="Showing"/> so the content lays out and animates in, but the window stays
+    /// cloaked - <see cref="Reveal"/> is what puts it on screen. A consumer that rebuilds
+    /// its content on every summon can therefore lay that content out while still invisible
+    /// and reveal a window that is correct in its first visible frame.</para>
+    /// <para>Enabling it also warms the window up: the XAML tree is built, templated and
+    /// painted right away rather than on the first summon.</para>
+    /// <para>Call this once, from the consumer's constructor after its content has been
+    /// set. Cloaking is a DWM feature; if DWM refuses, the window remains hidden and the
+    /// next <see cref="Show()"/> retries.</para>
+    /// </remarks>
+    protected void EnableCloakedHide()
+    {
+        // Unlike a hidden HWND, a cloaked HWND remains WS_VISIBLE. Give it a hidden owner before
+        // the first SW_SHOWNA so Explorer reliably keeps it out of the taskbar on every virtual-
+        // desktop taskbar configuration; WS_EX_TOOLWINDOW alone is not sufficient there.
+        EnsureHiddenOwner();
+        _cloakWhenHidden = true;
+        HideCore();
+    }
+
+    /// <summary>
+    /// Puts a cloaked window on screen. Consumers call this once the content that
+    /// <see cref="Show()"/> laid out is ready to be seen. Does nothing unless
+    /// <see cref="EnableCloakedHide"/> was called and the window is currently cloaked.
+    /// </summary>
+    public void Reveal()
+    {
+        if (!_cloaked)
+        {
+            return;
+        }
+
+        // Keep the state and click-through style when DWM refuses to uncloak. A later Reveal can
+        // then retry instead of returning early while the HWND is still invisible.
+        if (!SetCloak(false))
+        {
+            return;
+        }
+
+        _cloaked = false;
+
+        // Restore hit-testing: the window is on screen again, so it must behave like any
+        // other window (see CloakAndKeepShown for why it is click-through while cloaked).
+        ApplyExStyleBit(WsExTransparent, false);
+    }
+
+    private void HideCore()
+    {
+        if (_cloakWhenHidden)
+        {
+            CloakAndKeepShown();
+            return;
+        }
+
+        AppWindow.Hide();
+    }
+
+    private void EnsureCloakedBeforeShow()
+    {
+        if (_cloakWhenHidden && !_cloaked)
+        {
+            CloakAndKeepShown();
+        }
+    }
+
+    private void EnsureHiddenOwner()
+    {
+        if (_hiddenOwnerWindow is not null || _hwnd == 0)
+        {
+            return;
+        }
+
+        _hiddenOwnerWindow = new Microsoft.UI.Xaml.Window();
+        nint hiddenOwnerHwnd = WinRT.Interop.WindowNative.GetWindowHandle(_hiddenOwnerWindow);
+        _ = SetWindowLongPtr(_hwnd, GwlpHwndParent, hiddenOwnerHwnd);
+
+        // WS_EX_APPWINDOW overrides normal owner-based taskbar suppression.
+        ApplyExStyleBit(WsExAppWindow, false);
+    }
+
+    private void CloakAndKeepShown()
+    {
+        if (_cloaked)
+        {
+            return;
+        }
+
+        // Hide first so a DWM failure cannot leave an uncloaked overlay on screen. The next Show
+        // retries cloaking; only a successfully cloaked HWND is made SW_SHOWNA-visible again.
+        _ = ShowWindow(_hwnd, SwHide);
+        if (!SetCloak(true))
+        {
+            return;
+        }
+
+        _cloaked = true;
+
+        // Cloaking only takes the window out of composition, not out of hit-testing, and
+        // this HWND sits exactly where the user is working. Make it click-through so the
+        // invisible window cannot swallow input meant for the app underneath it.
+        ApplyExStyleBit(WsExTransparent, true);
+
+        // SW_HIDE above hands the foreground back to whatever window should own it (only the OS
+        // can pick the right one). Now that cloaking succeeded, SW_SHOWNA leaves this window
+        // "shown", which keeps XAML painting it, while the cloak keeps it off screen.
+        _ = ShowWindow(_hwnd, SwShowNa);
+    }
+
+    private bool SetCloak(bool cloak)
+    {
+        if (_hwnd == 0)
+        {
+            return false;
+        }
+
+        unsafe
+        {
+            int value = cloak ? 1 : 0;
+            return DwmSetWindowAttribute(_hwnd, DwmwaCloak, &value, sizeof(int)) == 0;
+        }
     }
 
     private void OnActivatedForDismiss(object sender, WindowActivatedEventArgs args)
@@ -235,6 +479,22 @@ public partial class TransparentWindow : WinUIEx.WindowEx
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool ShowWindow(nint hWnd, int nCmdShow);
 
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool SetWindowPos(nint hWnd, nint hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+
+    [LibraryImport("dwmapi.dll")]
+    private static partial int DwmExtendFrameIntoClientArea(nint hwnd, ref Margins pMarInset);
+
     [LibraryImport("dwmapi.dll")]
     private static unsafe partial int DwmSetWindowAttribute(nint hwnd, int dwAttribute, void* pvAttribute, int cbAttribute);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Margins
+    {
+        public int CxLeftWidth;
+        public int CxRightWidth;
+        public int CyTopHeight;
+        public int CyBottomHeight;
+    }
 }
