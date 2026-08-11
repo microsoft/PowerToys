@@ -4,6 +4,13 @@ This isolated native prototype validates one machine-wide Windows service servin
 multiple local users and multiple trusted module targets. It does not replace or
 modify `WorkspacesSettingsService`.
 
+**Decision status:** core feasibility is GO, but replacing the current per-user
+virtual-account baseline is **not recommended under the current
+security-isolation-first requirements**. The singleton reduces service count
+and may simplify machine-wide servicing, but it moves cross-user isolation,
+fairness, mixed-version compatibility, and machine-wide availability into one
+privileged broker implementation.
+
 ## Architecture
 
 - SCM service: `PTSettingsBrokerPrototype`.
