@@ -11,7 +11,7 @@ and pitfalls by number). The canonical worked example for everything below is th
 [ScreenRuler.UITests.Next/TestHelper.cs](../../../../src/modules/MeasureTool/Tests/ScreenRuler.UITests.Next/TestHelper.cs).
 
 > **Why this matters for iteration count.** Almost every "flaky on CI, fine locally" failure traces to
-> one of five root causes below. A dev box hides all of them (higher-res display, warmed caches, a
+> one of the root causes below. A dev box hides them (higher-res display, warmed caches, a
 > profile that already dismissed first-run windows, a human not touching the mouse). If you design for
 > them up-front, the first CI run tends to be green; if you don't, you rediscover them one push at a
 > time.
@@ -43,6 +43,24 @@ The operating rules that fall out of this:
   empties the very next frame. For a capture module, detect windows with Win32 `EnumWindows`, not UIA
   (Pitfall 18).
 
+### Model the workflow as owned state boundaries
+
+Before writing retries, make a table for every external boundary. Peek's stable workflow was:
+`Explorer HWND → Shell selection/focus → hotkey → Peek HWND/title → renderer state → DWM pixels`.
+
+| Boundary | Owner | Authoritative signal | Stability / recovery |
+|---|---|---|---|
+| Top-level window | Win32 | Exact expected HWND exists and owns foreground | Retry foreground; diagnose foreground PID/title/elevation |
+| Explorer selection | Shell view | Exact selected path set plus focused path | Require consecutive samples; repair through `ExplorerShell` |
+| Explorer layout | Shell view | Exact view mode and icon size | Set through `ExplorerShell`; verify item geometry |
+| Shell extension | Explorer + provider | Provider log plus visible content | Drive through Explorer in the user's context; avoid test-host-only COM probes |
+| Toggle hotkey | Runner/module | Any target HWND appeared | Stop resending once a window exists; wait for initialization |
+| Renderer | Product automation peer | Product state is `Loaded`; loading UI is gone | Restart the process tree only after a bounded terminal failure |
+| Visible output | DWM/compositor | Captured pixels match baseline | Capture composed desktop pixels; do not rewrite baselines first |
+
+For each boundary, name: **action, owner, signal, stable-sample count, retry semantics, and reset
+scope**. A wait without these fields usually becomes an arbitrary sleep or a destructive retry.
+
 ---
 
 ## Principle 1 — Assert on an **authoritative signal**, retry until true (not a fixed sleep)
@@ -65,6 +83,22 @@ the clipboard is empty. Both adapt to a slow agent for free.
 
 > Corollary: **fail with the signal in the message.** `Assert.Fail("overlay never appeared after N
 > attempts")` tells you *which* signal missed on CI; `Assert.IsTrue(x)` tells you nothing.
+
+### Observed once is not necessarily stable
+
+Explorer selection, foreground, window bounds, and renderer state can briefly match and then regress
+while deferred UI initializes. Use `WaitHelper.WaitForStable` when readiness must survive several
+samples. A mismatch resets the count and may run a recovery action. Keep the observation structured
+so timeout diagnostics can report the last state rather than only `false`.
+
+Classify every retry before implementing it:
+
+- **Idempotent**: setting text, selecting an exact Shell item, bringing a known HWND forward. Safe to
+  repeat while the signal is false.
+- **Toggle**: activation hotkeys, pin buttons, toggle buttons. Re-read state before repeating; once
+  any target window appears, do not resend a show/hide chord.
+- **Destructive/resetting**: killing a process, recreating WebView2, restarting capture. Use only after
+  patient in-place readiness has failed, because the reset discards progress and state.
 
 ---
 
@@ -101,16 +135,33 @@ window holds the foreground, Windows' **foreground lock** puts it *behind* that 
 and looks **exactly** like the interactivity race, but it's occlusion. This is a prime "passes local,
 flakes on CI" cause: on CI the Settings window used to enable the module is still foreground when the
 overlay appears. The harness guards against it — `Element.Click()` calls `Session.EnsureForeground()`
-first, which raises the target with the foreground-lock-defeating `AttachThreadInput` dance
-(`WindowControl.TryBringToForeground`) before the real click, and still falls back to `Invoke()` if the
-raise doesn't take. Diagnose it via winappcli's `isForeground` flag on `list-windows`; UIA `invoke` is
-immune because it never touches coordinates.
+first. `WindowControl.TryBringToForeground` is best-effort; use `WaitForForeground` when exact
+ownership is required and inspect `GetForegroundWindowInfo()` on failure. UIA `Invoke` is immune to
+occlusion because it never touches coordinates.
 
-**Elevation must match.** Injected input — a synthetic hotkey *or* a real click — from a process at a
-*different* integrity level than the PowerToys runner is blocked by UIPI: a non-elevated host can't
-drive an elevated runner, and an elevated host's foreground window blocks the non-elevated runner's
-hook. Run the test host at the **same** elevation as the runner (the `.Next` harness launches the
-runner non-elevated, so run the tests non-elevated too).
+**Integrity boundaries can make foreground activation impossible.** `AttachThreadInput` does not
+override UIPI. A visible elevated helper console can permanently block a non-elevated Explorer or
+module window. Pipeline helpers must start hidden (the shared WinAppDriver uses `-WindowStyle Hidden`).
+Log the foreground process, title, and elevation before adding more retries. Match the test host and
+runner integrity where possible; modules configured to run non-elevated still require their own
+foreground handoff.
+
+"Start hidden" means **hidden at process creation**, not enumerate-and-hide afterward. The latter is
+a time-of-check/time-of-use race: a shell-launched console can be created after the hide pass and own
+foreground just as the target opens. For same-integrity direct children, use `UseShellExecute=false`
+plus `CreateNoWindow=true`. If an elevated host must ask Explorer to create a medium-integrity helper,
+do not route it through `.cmd`/`start /b`; use a non-activating launcher such as
+`WScript.Shell.Run(..., 0, False)` with an encoded command. Smoke-test the launcher independently:
+the helper must establish its readiness precondition while exposing no main window and never becoming
+the foreground PID.
+
+**Require foreground only when the interaction requires it.** Explorer context menus, SendInput,
+coordinate clicks, and drags need stable ownership because focus or z-order changes the operation.
+Coordinate-free UIA search/invoke does not. For those flows, an exact-HWND assertion can be a false
+negative when WinUI recreates its top-level window or the scheduled interactive host observes
+`GetForegroundWindow()==0`; use process/window presence plus the authoritative UIA-ready element,
+while keeping foreground activation best-effort and diagnostic. Let the interaction boundary decide —
+do not globally weaken strict Explorer or physical-input checks.
 
 ---
 
@@ -146,9 +197,23 @@ to select" can *deselect* an already-engaged control — and an innocent retry c
 guard on `GetProperty("ToggleState")` yourself (as `SelectToolAndVerify` / `ReengageTool` do). This is
 also why a *retry loop* around a toggle is dangerous unless it re-reads state each pass.
 
+The same state rule applies to global hotkeys that toggle a window. Revalidate the input source,
+send the chord once, wait for any target HWND, then wait for expected title/content without
+resending. If initialization reaches a terminal timeout, stop the full process tree and begin a
+fresh attempt.
+
 ---
 
-## Principle 5 — Everything on-screen, DPI-correct, from a clean profile
+## Principle 5 — Match process lifecycle to scenario state
+
+Closing a window, waiting for input idle, and terminating a process tree are different operations.
+Some state lives only in a long-running process. Peek's pinned geometry must preserve that process,
+while an explicitly unpinned reopen is safer with a fresh process. Encode this as a lifecycle matrix
+per scenario; use `TryKillProcessTreeByNameAndWait` only where state should be discarded.
+
+---
+
+## Principle 6 — Everything on-screen, DPI-correct, from a clean profile
 
 The whole "passes local, fails CI" cluster is environment differences a dev box papers over. Each has
 a one-time fix; do them all up-front:
@@ -163,19 +228,80 @@ a one-time fix; do them all up-front:
 
 ---
 
+## Principle 7 — Trace every action with a timestamp so a hang shows where it stuck
+
+An assertion failure gives you a stack trace; a **hang or CI timeout does not** — the process is
+killed with no exception and the recording only shows a frozen window, so you cannot tell *which* step
+blocked. Emit a **timestamped line before every meaningful UI action**: on CI the **last line before
+the kill** names the stuck step, and the gap between two lines shows *which* step was slow (a classic
+context menu that took 15 s is obvious from the timestamps, with no profiler).
+
+```csharp
+// Last line before a CI timeout = the step that hung; gaps between lines = the slow step.
+private void Step(string message) =>
+    TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
+```
+
+```csharp
+Step($"Opening Explorer at '{folder}'");
+var explorer = OpenExplorer(folder);
+Step("Selecting fixture");
+SelectFiles(explorer, fixture);
+Step("Opening context menu");
+var menu = OpenContextMenu(explorer);          // if this blocks, the trail ends on this line
+Step($"Invoking '{ContextMenuCaption}'");
+```
+
+- **Log *before* the blocking call, not after** — a line printed after the action can never appear for
+  the action that hung.
+- **`TestContext.WriteLine`, not `Console.WriteLine`** — MTP captures it into the TRX
+  `<Output><StdOut>` attributed to the test, so it reaches the CI test log and the failure attachment.
+- **UTC, millisecond precision** — read per-step durations straight from adjacent lines.
+- **Name the target** (file, window, control, awaited signal), not just the verb.
+- **One line per external interaction** (open / select / menu / invoke / wait-for-window), so the trail
+  reads as the workflow, not noise.
+
+This complements Principle 1 (a signal-bearing `Assert.Fail` says *what* was missing) and a rich
+one-shot failure dump (Peek's `GetActivationDiagnostics`: foreground PID/title/elevation, process and
+window inventory): the trail says *where* it stuck, the dump says *why*.
+
+---
+
+## Composed visuals: HWND, renderer, and pixels are separate
+
+`PrintWindow` can omit WinUI/WebView2/compositor content. Use `Session.ScreenshotVisibleWindow`, which
+requires exact foreground ownership and captures DWM extended-frame screen pixels. The capture helper
+temporarily raises the target topmost and restores its prior state so another window cannot contaminate
+the frame. `VisualAssert` retries pixel comparison because `Loaded` may precede the final composed
+frame. Before changing a baseline or similarity threshold, verify title, renderer state, theme,
+platform, foreground HWND, z-order, dimensions, and captured content.
+
+---
+
 ## Pre-flight CI-stability checklist
 
 Tick these **before** the first CI push. Each maps to a principle/recipe above; skipping one is a
 likely extra CI iteration.
 
 ```markdown
-- [ ] app.manifest (PerMonitorV2) wired into the csproj — any coordinate-exact test (P5 / Pitfall 12)
-- [ ] Base ctor enables ONLY the module under test (P5 / Recipe 9)
-- [ ] First-run/what's-new suppression confirmed for capture & coordinate modules (P5 / Pitfall 17)
-- [ ] Gestures anchored to ScreenCenter(), cursor moved in steps, never to the current cursor (P5 / Recipe 11)
+- [ ] app.manifest (PerMonitorV2) wired into the csproj — any coordinate-exact test (P6 / Pitfall 12)
+- [ ] Base ctor enables ONLY the module under test (P6 / Recipe 9)
+- [ ] First-run/what's-new suppression confirmed for capture & coordinate modules (P6 / Pitfall 17)
+- [ ] Gestures anchored to ScreenCenter(), cursor moved in steps, never to the current cursor (P6 / Recipe 11)
 - [ ] Navigation & the first interaction go through By.AccessibilityId(...).Click() (invoke under the hood) (P2 / Recipe 1)
 - [ ] Window/overlay presence via WindowControl/WindowsFinder (Win32) — never a UIA walk of a live-capture window (mental model / P3 / Pitfall 18)
 - [ ] Every wait polls an authoritative signal to a deadline — no bare Thread.Sleep standing in for "wait until ready" (P1)
+- [ ] Multi-part readiness uses consecutive stable samples and reports the last structured observation (P1)
+- [ ] Every meaningful UI action is preceded by a timestamped TestContext.WriteLine so a hang/timeout shows the stuck step (P7)
+- [ ] Every retry is classified as idempotent, toggle, or destructive; toggle hotkeys stop after any target HWND appears
+- [ ] Exact foreground requirements use `WaitForForeground`; failures record foreground PID/title/elevation
+- [ ] Pipeline helper processes have no visible foreground-capable windows; detached consoles start hidden
+- [ ] Process lifecycle is explicit per scenario: close/preserve/input-idle/process-tree restart
+- [ ] Renderer readiness is separate from window/title readiness; composed visuals use visible DWM capture
+- [ ] Explorer-driven tests verify exact selected paths and focused path via `ExplorerShell` (Recipe 13)
+- [ ] Explorer view mode/icon size is set through `ExplorerShell`, then independently verified by item geometry
+- [ ] Shell handlers are activated by Explorer; readiness requires provider logs plus visible output
+- [ ] Derived cleanup captures failure artifacts before closing the window that explains the failure
 - [ ] Capture modules: in-place gesture retry + single re-engage; overlay detected via Win32 (P3 / Recipe 12)
 - [ ] Toggle/ToggleButton presses guarded on the current ToggleState (P4)
 - [ ] Clipboard via ClipboardHelper (STA + retry); no hand-rolled STA wrapper (Recipe 5)

@@ -221,6 +221,19 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         await FetchCoreAsync(_galleryService.FetchExtensionsAsync, refreshInstallationStatus: false);
     }
 
+    public ExtensionGalleryItemViewModel? FindById(string extensionId)
+    {
+        if (string.IsNullOrWhiteSpace(extensionId))
+        {
+            return null;
+        }
+
+        lock (_entriesLock)
+        {
+            return _allEntries.Find(entry => string.Equals(entry.Id, extensionId, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
     private async Task RefreshAsync()
     {
         await FetchCoreAsync(_galleryService.RefreshAsync, refreshInstallationStatus: true);

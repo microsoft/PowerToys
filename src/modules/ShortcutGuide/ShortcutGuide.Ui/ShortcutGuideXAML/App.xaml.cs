@@ -16,6 +16,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using PowerToys.Interop;
+using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
 using ShortcutGuide.Telemetry;
 using KeyEventHandler = Microsoft.UI.Xaml.Input.KeyEventHandler;
@@ -263,10 +264,10 @@ namespace ShortcutGuide
                 string pinnedPath = settingsUtils.GetSettingsFilePath(ShortcutGuideSettings.ModuleName, "Pinned.json");
                 try
                 {
-                    var loaded = JsonSerializer.Deserialize<Dictionary<string, List<ShortcutEntry>>>(File.ReadAllText(pinnedPath));
+                    var loaded = JsonSerializer.Deserialize(File.ReadAllText(pinnedPath), typeof(Dictionary<string, List<ShortcutEntry>>), ShortcutGuideJsonContext.Default);
                     if (loaded != null)
                     {
-                        PinnedShortcuts = loaded;
+                        PinnedShortcuts = (Dictionary<string, List<ShortcutEntry>>)loaded;
                     }
                 }
                 catch (Exception ex) when (ex is JsonException

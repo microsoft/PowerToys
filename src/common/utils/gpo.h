@@ -80,6 +80,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_SUSPEND_NEW_UPDATE_TOAST = L"SuspendNewUpdateAvailableToast";
     const std::wstring POLICY_DISABLE_NEW_UPDATE_TOAST = L"DisableNewUpdateAvailableToast";
     const std::wstring POLICY_DISABLE_SHOW_WHATS_NEW_AFTER_UPDATES = L"DoNotShowWhatsNewAfterUpdates";
+    const std::wstring POLICY_DISABLE_PREVIEW_UPDATES = L"PreviewUpdatesDisabled";
 
     // The registry value names for other PowerToys policies.
     const std::wstring POLICY_ALLOW_EXPERIMENTATION = L"AllowExperimentation";
@@ -546,6 +547,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getDisableShowWhatsNewAfterUpdatesValue()
     {
         return getConfiguredValue(POLICY_DISABLE_SHOW_WHATS_NEW_AFTER_UPDATES);
+    }
+
+    inline gpo_rule_configured_t getDisablePreviewUpdatesValue()
+    {
+        return getConfiguredValue(POLICY_DISABLE_PREVIEW_UPDATES);
     }
 
     inline gpo_rule_configured_t getAllowExperimentationValue()

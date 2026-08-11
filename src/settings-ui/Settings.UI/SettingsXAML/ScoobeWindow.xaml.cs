@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.UI.Xaml;
@@ -110,7 +111,7 @@ namespace Microsoft.PowerToys.Settings.UI
             try
             {
                 var releases = await FetchReleasesFromGitHubAsync();
-                ReleaseGroups = GroupReleasesByMajorMinor(releases);
+                ReleaseGroups = CreateReleaseGroups(releases, ShouldShowPrereleases());
                 PopulateNavigationItems();
             }
             catch (Exception ex)
@@ -137,7 +138,7 @@ namespace Microsoft.PowerToys.Settings.UI
             using var httpClient = new HttpClient(proxyClientHandler);
             httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "PowerToys");
 
-            string json = await httpClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases?per_page=20");
+            string json = await httpClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases?per_page=100");
             var allReleases = JsonSerializer.Deserialize<IList<PowerToysReleaseInfo>>(json, SourceGenerationContextContext.Default.IListPowerToysReleaseInfo);
 
             if (allReleases is null || allReleases.Count == 0)
@@ -150,12 +151,45 @@ namespace Microsoft.PowerToys.Settings.UI
                 .ToList();
         }
 
-        private static IList<IList<PowerToysReleaseInfo>> GroupReleasesByMajorMinor(IList<PowerToysReleaseInfo> releases)
+        internal static IList<IList<PowerToysReleaseInfo>> CreateReleaseGroups(IList<PowerToysReleaseInfo> releases, bool showPrereleases)
         {
-            return releases
+            var groups = new List<IList<PowerToysReleaseInfo>>();
+            if (showPrereleases)
+            {
+                var previewReleases = releases
+                    .Where(r => r.IsPrerelease)
+                    .OrderByDescending(r => r.PublishedDate)
+                    .Take(10)
+                    .ToList();
+                if (previewReleases.Count > 0)
+                {
+                    groups.Add(previewReleases);
+                }
+            }
+
+            var stableGroups = releases
+                .Where(r => !r.IsPrerelease)
+                .OrderByDescending(r => r.PublishedDate)
+                .Take(20)
                 .GroupBy(GetMajorMinorVersion)
                 .Select(g => g.OrderByDescending(r => r.PublishedDate).ToList() as IList<PowerToysReleaseInfo>)
                 .ToList();
+            foreach (var stableGroup in stableGroups)
+            {
+                groups.Add(stableGroup);
+            }
+
+            return groups;
+        }
+
+        private static bool ShouldShowPrereleases()
+        {
+            var generalSettings = SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default).SettingsConfig;
+            bool isPreviewBuild = string.Equals(
+                global::PowerToys.Interop.CommonManaged.GetProductVersionChannel(),
+                "preview",
+                StringComparison.OrdinalIgnoreCase);
+            return generalSettings.IncludePrereleaseUpdates || isPreviewBuild;
         }
 
         private static string GetMajorMinorVersion(PowerToysReleaseInfo release)
