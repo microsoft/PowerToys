@@ -19,26 +19,47 @@ param(
     [string]$ContextPath,
     [string]$PreviousReleasePath,
     [string]$DeltaDirectory,
+    [string]$BodyPath,
+    [switch]$DryRun,
     [Parameter(Mandatory)][string]$OutputPath
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
-    throw "GitHub CLI ('gh') is required. Install it and run 'gh auth login'."
-}
+. (Join-Path $PSScriptRoot "preview-release-assets.ps1")
+
 if ($TargetCommit -notmatch "^[0-9a-fA-F]{40}$") {
     throw "TargetCommit must be a full immutable commit SHA."
 }
 
-$releaseJson = gh release view $Tag `
-    --repo $Repo `
-    --json databaseId,isDraft,isPrerelease,tagName,targetCommitish,url,body,name
-if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($releaseJson)) {
-    throw "Draft release '$Tag' was not found."
+$release = if ($DryRun) {
+    if (-not $BodyPath -or -not (Test-Path -LiteralPath $BodyPath -PathType Leaf)) {
+        throw "Dry-run verification requires an existing -BodyPath."
+    }
+    [pscustomobject]@{
+        databaseId = $null
+        isDraft = $true
+        isPrerelease = $true
+        tagName = $Tag
+        targetCommitish = $TargetCommit
+        url = $null
+        body = Get-Content -LiteralPath $BodyPath -Raw
+        name = "Preview $Tag"
+    }
 }
-$release = $releaseJson | ConvertFrom-Json
+else {
+    if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+        throw "GitHub CLI ('gh') is required. Install it and run 'gh auth login'."
+    }
+    $releaseJson = gh release view $Tag `
+        --repo $Repo `
+        --json databaseId,isDraft,isPrerelease,tagName,targetCommitish,url,body,name
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($releaseJson)) {
+        throw "Draft release '$Tag' was not found."
+    }
+    $releaseJson | ConvertFrom-Json
+}
 
 if (-not [bool]$release.isDraft) {
     throw "Release '$Tag' is not a draft."
@@ -57,40 +78,57 @@ if ([string]$release.body -notmatch "<!-- BEGIN POWERTOYS PREVIEW AGENT -->" -or
     throw "Release '$Tag' is missing the managed preview body markers."
 }
 
-$localFiles = @(
-    Get-ChildItem -LiteralPath $AssetsDirectory -File |
-        Where-Object {
-            $_.Name -notmatch "^\." -and (
-                $_.Extension -in @(".exe", ".zip") -or
-                $_.Name -eq "assets-manifest.json"
-            )
-        }
-)
-$localFiles = @($localFiles | Sort-Object FullName -Unique)
-
-$apiJson = gh api "repos/$Repo/releases/$($release.databaseId)"
-if ($LASTEXITCODE -ne 0) {
-    throw "Failed to load release assets for '$Tag'."
-}
-$apiRelease = $apiJson | ConvertFrom-Json
-$remoteAssets = @($apiRelease.assets)
-if (@($remoteAssets | Where-Object { $_.name -eq "release-manifest.json" }).Count -ne 0) {
-    throw "Draft '$Tag' must not contain release-manifest.json as an uploaded asset."
-}
+$localFiles = @(Get-PreviewReleaseAssets -AssetsDirectory $AssetsDirectory)
 
 $assetResults = @()
-foreach ($file in $localFiles) {
-    $remote = @($remoteAssets | Where-Object { $_.name -eq $file.Name })
-    if ($remote.Count -ne 1) {
-        throw "Expected exactly one uploaded asset named '$($file.Name)', found $($remote.Count)."
+if ($DryRun) {
+    foreach ($file in $localFiles) {
+        $assetResults += [pscustomobject]@{
+            name = $file.Name
+            size = [long]$file.Length
+            state = "local"
+        }
     }
-    if ([long]$remote[0].size -ne [long]$file.Length) {
-        throw "Uploaded asset '$($file.Name)' size '$($remote[0].size)' does not match local size '$($file.Length)'."
+}
+else {
+    $apiJson = gh api "repos/$Repo/releases/$($release.databaseId)"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to load release assets for '$Tag'."
     }
-    $assetResults += [pscustomobject]@{
-        name = $file.Name
-        size = [long]$file.Length
-        state = [string]$remote[0].state
+    $apiRelease = $apiJson | ConvertFrom-Json
+    $remoteAssets = @($apiRelease.assets)
+    if (@($remoteAssets | Where-Object { $_.name -eq "release-manifest.json" }).Count -ne 0) {
+        throw "Draft '$Tag' must not contain release-manifest.json as an uploaded asset."
+    }
+
+    $expectedNames = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    foreach ($file in $localFiles) {
+        [void]$expectedNames.Add($file.Name)
+    }
+    $unexpectedRemoteAssets = @(
+        $remoteAssets |
+            Where-Object {
+                ($_.name -eq "assets-manifest.json" -or [System.IO.Path]::GetExtension([string]$_.name) -in @(".exe", ".zip")) -and
+                -not $expectedNames.Contains([string]$_.name)
+            }
+    )
+    if ($unexpectedRemoteAssets.Count -gt 0) {
+        throw "Draft '$Tag' contains unexpected generated assets: $(($unexpectedRemoteAssets.name | Sort-Object) -join ', ')"
+    }
+
+    foreach ($file in $localFiles) {
+        $remote = @($remoteAssets | Where-Object { $_.name -eq $file.Name })
+        if ($remote.Count -ne 1) {
+            throw "Expected exactly one uploaded asset named '$($file.Name)', found $($remote.Count)."
+        }
+        if ([long]$remote[0].size -ne [long]$file.Length) {
+            throw "Uploaded asset '$($file.Name)' size '$($remote[0].size)' does not match local size '$($file.Length)'."
+        }
+        $assetResults += [pscustomobject]@{
+            name = $file.Name
+            size = [long]$file.Length
+            state = [string]$remote[0].state
+        }
     }
 }
 
@@ -121,9 +159,13 @@ if ($DeltaDirectory) {
 $report = [System.Text.StringBuilder]::new()
 [void]$report.AppendLine("# Preview release final review")
 [void]$report.AppendLine("")
-[void]$report.AppendLine("**PASS:** Draft prerelease is complete and remains unpublished.")
+[void]$report.AppendLine($(if ($DryRun) {
+    "**PASS:** Local dry-run package is complete; no GitHub draft was created."
+} else {
+    "**PASS:** Draft prerelease is complete and remains unpublished."
+}))
 [void]$report.AppendLine("")
-[void]$report.AppendLine("- Draft: $($release.url)")
+[void]$report.AppendLine("- Draft: $(if ($DryRun) { "Not created (dry run)" } else { $release.url })")
 [void]$report.AppendLine("- Title: $($release.name)")
 if ($context) {
     [void]$report.AppendLine("- Build: [$($context.buildId)]($($context.buildUrl))")
@@ -142,16 +184,31 @@ if ($deltaDetails) {
 [void]$report.AppendLine("- Unattributed commits: $($unattributed.Count)")
 [void]$report.AppendLine("- Assets: $($assetResults.Count)/$($localFiles.Count) verified")
 [void]$report.AppendLine("")
-[void]$report.AppendLine("## Uploaded assets")
+[void]$report.AppendLine($(if ($DryRun) { "## Validated local assets" } else { "## Uploaded assets" }))
 [void]$report.AppendLine("")
 foreach ($asset in $assetResults) {
     [void]$report.AppendLine("- $($asset.name) ($($asset.size) bytes)")
 }
 [void]$report.AppendLine("")
+[void]$report.AppendLine("## Unattributed commits")
+[void]$report.AppendLine("")
+if ($unattributed.Count -eq 0) {
+    [void]$report.AppendLine("- None.")
+}
+else {
+    foreach ($commit in $unattributed) {
+        [void]$report.AppendLine("- `$($commit.sha)`: $($commit.subject)")
+    }
+}
+[void]$report.AppendLine("")
 [void]$report.AppendLine("## Human review remaining")
 [void]$report.AppendLine("")
 [void]$report.AppendLine("- Review highlights, branch-transition removals, and unattributed changes.")
-[void]$report.AppendLine("- Download one installer and one ZIP from the draft.")
+[void]$report.AppendLine($(if ($DryRun) {
+    "- Create the draft through the canonical release workflow before publication."
+} else {
+    "- Download one installer and one ZIP from the draft."
+}))
 [void]$report.AppendLine("- Publish only through the existing release-management process.")
 
 $parent = Split-Path -Parent $OutputPath
@@ -162,7 +219,7 @@ $report.ToString() | Set-Content -LiteralPath $OutputPath -Encoding utf8
 
 [pscustomobject]@{
     status = "PASS"
-    draftUrl = [string]$release.url
+    draftUrl = if ($DryRun) { $null } else { [string]$release.url }
     assetCount = $assetResults.Count
     outputPath = (Resolve-Path -LiteralPath $OutputPath).Path
 }

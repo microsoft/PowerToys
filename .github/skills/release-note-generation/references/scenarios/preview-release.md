@@ -55,10 +55,13 @@ Reject builds from other branches, failed or incomplete builds, non-release defi
 
 4. Collect normalized metadata for added PRs:
 
+   First create `<run directory>\MemberList.md` from the **PowerToys core team** section in [`COMMUNITY.md`](../../../../../COMMUNITY.md), following the exact username format in [Step 1.0.1](../step1-collection.md#101-generate-memberlistmd-required). Then run:
+
    ```powershell
    .\.github\skills\release-note-generation\scripts\collect-pr-metadata.ps1 `
      -DeltaPath '<run directory>\delta-prs.json' `
-     -OutputDirectory '<run directory>'
+     -OutputDirectory '<run directory>' `
+     -MemberListPath '<run directory>\MemberList.md'
    ```
 
 5. Generate summaries and compose `release-notes.md` using the existing label, contributor-attribution, grouping, and formatting conventions. Preview-specific rules:
@@ -90,7 +93,20 @@ Reject builds from other branches, failed or incomplete builds, non-release defi
      -DestinationFolder '<run directory>\assets'
    ```
 
-8. In dry-run mode, stop after writing the complete local package and `final-review.md`.
+8. In dry-run mode, write the complete local review report and stop without contacting GitHub:
+
+   ```powershell
+   .\.github\skills\release-note-generation\scripts\verify-draft-preview-release.ps1 `
+     -Tag "v$($context.version)" `
+     -TargetCommit $context.sourceCommit `
+     -AssetsDirectory '<run directory>\assets' `
+     -BodyPath '<run directory>\release-notes.md' `
+     -ContextPath '<run directory>\release-context.json' `
+     -PreviousReleasePath '<run directory>\previous-release.json' `
+     -DeltaDirectory '<run directory>' `
+     -OutputPath '<run directory>\final-review.md' `
+     -DryRun
+   ```
 
 9. Otherwise, create or update the draft prerelease:
 

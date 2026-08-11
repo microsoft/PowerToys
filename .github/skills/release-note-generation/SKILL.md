@@ -31,6 +31,7 @@ Generated Files/ReleaseNotes/preview-<buildId>/
 ├── delta-prs.json
 ├── removed-prs.json
 ├── unattributed-commits.json
+├── MemberList.md
 ├── milestone_prs.json
 ├── sorted_prs.csv
 ├── release-notes.md

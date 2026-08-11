@@ -146,10 +146,10 @@ function Get-RemoteHash {
         if ($text -match "[0-9a-fA-F]{64}") {
             return $matches[0].ToUpperInvariant()
         }
-        return $null
+        throw "Hash file '$HashFile' does not contain a valid SHA256 hash."
     }
     catch {
-        return $null
+        throw "Failed to load required ADO hash '$HashFile' from artifact '$($Artifact.name)'. $_"
     }
 }
 
@@ -259,16 +259,6 @@ if (-not (Test-Path $destFolder)) {
 Write-Host "  Destination: $destFolder" -ForegroundColor DarkGray
 
 $buildMarkerPath = Join-Path $destFolder ".buildinfo.json"
-$existingBuildId = 0
-if (Test-Path -LiteralPath $buildMarkerPath) {
-    try {
-        $existingBuildId = [int](Get-Content -LiteralPath $buildMarkerPath -Raw | ConvertFrom-Json).buildId
-    }
-    catch {
-        $existingBuildId = 0
-    }
-}
-$sameBuild = $existingBuildId -eq $BuildId
 
 # --- Step 4: Get an ADO access token once ---
 $token = Invoke-Az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query accessToken -o tsv
@@ -299,7 +289,7 @@ foreach ($t in $targets) {
         $sizeMB = [math]::Round((Get-Item $destPath).Length / 1MB, 1)
         $remoteHash = Get-RemoteHash -Artifact $artifact -HashFile $t.HashFile -Token $token
         $localHash = (Get-FileHash -LiteralPath $destPath -Algorithm SHA256).Hash.ToUpperInvariant()
-        if (($remoteHash -and $localHash -eq $remoteHash) -or ($sameBuild -and -not $remoteHash)) {
+        if ($localHash -eq $remoteHash) {
             Write-Host "[skip] $($t.FileName) already matches build $BuildId ($sizeMB MB)" -ForegroundColor DarkGray
             continue
         }
@@ -453,7 +443,7 @@ foreach ($t in $targets) {
     $hash = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToUpperInvariant()
     $artifact = $artifacts | Where-Object { $_.name -eq $t.Artifact }
     $remoteHash = Get-RemoteHash -Artifact $artifact -HashFile $t.HashFile -Token $token
-    if ($remoteHash -and $hash -ne $remoteHash) {
+    if ($hash -ne $remoteHash) {
         throw "Installer '$($file.Name)' hash '$hash' does not match ADO-published hash '$remoteHash'."
     }
 

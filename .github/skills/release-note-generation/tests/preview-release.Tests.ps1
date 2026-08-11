@@ -43,6 +43,29 @@ function Add-TestCommit {
     return ([string](Invoke-TestGit -Repository $Repository rev-parse HEAD)).Trim()
 }
 
+function Write-TestAssetsManifest {
+    param(
+        [Parameter(Mandatory)][string]$AssetsPath,
+        [Parameter(Mandatory)][string[]]$AssetNames
+    )
+
+    $assets = @(
+        foreach ($name in $AssetNames) {
+            $path = Join-Path $AssetsPath $name
+            $file = Get-Item -LiteralPath $path
+            [ordered]@{
+                name = $file.Name
+                size = [long]$file.Length
+                sha256 = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+            }
+        }
+    )
+    [ordered]@{
+        schemaVersion = 1
+        assets = $assets
+    } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $AssetsPath "assets-manifest.json")
+}
+
 Describe "preview release build metadata" {
     It "supports a main-branch candidate regardless of release intent" {
         $buildPath = Join-Path $TestDrive "build.json"
@@ -308,6 +331,7 @@ Describe "draft preview release dry run" {
         "Preview notes" | Set-Content -LiteralPath $bodyPath
         "installer" | Set-Content -LiteralPath (Join-Path $assetsPath "PowerToysSetup-0.101.2181.0-x64.exe")
         "local audit only" | Set-Content -LiteralPath (Join-Path $assetsPath "release-manifest.json")
+        Write-TestAssetsManifest -AssetsPath $assetsPath -AssetNames @("PowerToysSetup-0.101.2181.0-x64.exe")
 
         $result = & (Join-Path $scripts "upsert-draft-preview-release.ps1") `
             -Tag "v0.101.2181.0" `
@@ -319,7 +343,7 @@ Describe "draft preview release dry run" {
         $result.draft | Should Be $true
         $result.prerelease | Should Be $true
         $result.title | Should Be "Preview v0.101.2181.0"
-        $result.assetNames.Count | Should Be 1
+        $result.assetNames.Count | Should Be 2
         ($result.assetNames -contains "release-manifest.json") | Should Be $false
     }
 
@@ -335,6 +359,7 @@ New generated notes
 <!-- END POWERTOYS PREVIEW AGENT -->
 '@ | Set-Content -LiteralPath $bodyPath
         "installer" | Set-Content -LiteralPath (Join-Path $assetsPath "PowerToysSetup-0.101.2181.0-x64.exe")
+        Write-TestAssetsManifest -AssetsPath $assetsPath -AssetNames @("PowerToysSetup-0.101.2181.0-x64.exe")
         @'
 {
   "isDraft": true,
@@ -366,6 +391,7 @@ New generated notes
         New-Item -ItemType Directory -Path $assetsPath | Out-Null
         "Preview notes" | Set-Content -LiteralPath $bodyPath
         "installer" | Set-Content -LiteralPath (Join-Path $assetsPath "PowerToysSetup-0.101.2181.0-x64.exe")
+        Write-TestAssetsManifest -AssetsPath $assetsPath -AssetNames @("PowerToysSetup-0.101.2181.0-x64.exe")
         '{"isDraft":false,"isPrerelease":true,"body":""}' | Set-Content -LiteralPath $existingPath
 
         Assert-Throws {
@@ -376,6 +402,130 @@ New generated notes
                 -AssetsDirectory $assetsPath `
                 -ExistingReleaseJsonPath $existingPath `
                 -DryRun
+        }
+    }
+
+    It "rejects undeclared executable and ZIP assets" {
+        $bodyPath = Join-Path $TestDrive "extra-notes.md"
+        $assetsPath = Join-Path $TestDrive "extra-assets"
+        New-Item -ItemType Directory -Path $assetsPath | Out-Null
+        "Preview notes" | Set-Content -LiteralPath $bodyPath
+        "installer" | Set-Content -LiteralPath (Join-Path $assetsPath "PowerToysSetup-0.101.2181.0-x64.exe")
+        "unexpected" | Set-Content -LiteralPath (Join-Path $assetsPath "unexpected.zip")
+        Write-TestAssetsManifest -AssetsPath $assetsPath -AssetNames @("PowerToysSetup-0.101.2181.0-x64.exe")
+
+        Assert-Throws {
+            & (Join-Path $scripts "upsert-draft-preview-release.ps1") `
+                -Tag "v0.101.2181.0" `
+                -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
+                -BodyPath $bodyPath `
+                -AssetsDirectory $assetsPath `
+                -DryRun
+        }
+    }
+
+    It "rejects an asset whose contents no longer match the manifest" {
+        $bodyPath = Join-Path $TestDrive "tampered-notes.md"
+        $assetsPath = Join-Path $TestDrive "tampered-assets"
+        New-Item -ItemType Directory -Path $assetsPath | Out-Null
+        "Preview notes" | Set-Content -LiteralPath $bodyPath
+        $installerPath = Join-Path $assetsPath "PowerToysSetup-0.101.2181.0-x64.exe"
+        "installer" | Set-Content -LiteralPath $installerPath -NoNewline
+        Write-TestAssetsManifest -AssetsPath $assetsPath -AssetNames @("PowerToysSetup-0.101.2181.0-x64.exe")
+        "tampered!" | Set-Content -LiteralPath $installerPath -NoNewline
+
+        Assert-Throws {
+            & (Join-Path $scripts "upsert-draft-preview-release.ps1") `
+                -Tag "v0.101.2181.0" `
+                -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
+                -BodyPath $bodyPath `
+                -AssetsDirectory $assetsPath `
+                -DryRun
+        }
+    }
+
+    It "writes a complete local final review in dry-run mode" {
+        $bodyPath = Join-Path $TestDrive "dry-run-notes.md"
+        $assetsPath = Join-Path $TestDrive "dry-run-assets"
+        $deltaPath = Join-Path $TestDrive "dry-run-delta"
+        $contextPath = Join-Path $TestDrive "release-context.json"
+        $previousReleasePath = Join-Path $TestDrive "previous-release.json"
+        $reviewPath = Join-Path $TestDrive "final-review.md"
+        New-Item -ItemType Directory -Path $assetsPath | Out-Null
+        New-Item -ItemType Directory -Path $deltaPath | Out-Null
+        @'
+<!-- BEGIN POWERTOYS PREVIEW AGENT -->
+Preview notes
+<!-- END POWERTOYS PREVIEW AGENT -->
+'@ | Set-Content -LiteralPath $bodyPath
+        "installer" | Set-Content -LiteralPath (Join-Path $assetsPath "PowerToysSetup-0.101.2181.0-x64.exe")
+        Write-TestAssetsManifest -AssetsPath $assetsPath -AssetNames @("PowerToysSetup-0.101.2181.0-x64.exe")
+        "[]" | Set-Content -LiteralPath (Join-Path $deltaPath "delta-prs.json")
+        "[]" | Set-Content -LiteralPath (Join-Path $deltaPath "removed-prs.json")
+        '[{"sha":"abcdef0123456789abcdef0123456789abcdef01","subject":"Aggregate promotion commit"}]' |
+            Set-Content -LiteralPath (Join-Path $deltaPath "unattributed-commits.json")
+        '{"deltaMode":"same-lineage","mergeBase":null}' |
+            Set-Content -LiteralPath (Join-Path $deltaPath "delta-commits.json")
+        @'
+{
+  "buildId": 154000000,
+  "buildUrl": "https://microsoft.visualstudio.com/Dart/_build/results?buildId=154000000",
+  "version": "0.101.2181.0",
+  "sourceBranch": "refs/heads/main",
+  "sourceCommit": "0123456789abcdef0123456789abcdef01234567",
+  "intent": "preview-release",
+  "channel": "preview"
+}
+'@ | Set-Content -LiteralPath $contextPath
+        @'
+{
+  "tag": "v0.100.0",
+  "sourceCommit": "1123456789abcdef0123456789abcdef01234567"
+}
+'@ | Set-Content -LiteralPath $previousReleasePath
+
+        $result = & (Join-Path $scripts "verify-draft-preview-release.ps1") `
+            -Tag "v0.101.2181.0" `
+            -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
+            -AssetsDirectory $assetsPath `
+            -BodyPath $bodyPath `
+            -ContextPath $contextPath `
+            -PreviousReleasePath $previousReleasePath `
+            -DeltaDirectory $deltaPath `
+            -OutputPath $reviewPath `
+            -DryRun
+
+        $result.status | Should Be "PASS"
+        $result.draftUrl | Should Be $null
+        $review = Get-Content -LiteralPath $reviewPath -Raw
+        $review.Contains("Local dry-run package is complete") | Should Be $true
+        $review.Contains("abcdef0123456789abcdef0123456789abcdef01") | Should Be $true
+        $review.Contains("Aggregate promotion commit") | Should Be $true
+        $review.Contains("154000000") | Should Be $true
+        $review.Contains("v0.100.0@1123456789ab") | Should Be $true
+        $review.Contains("Delta mode: same-lineage") | Should Be $true
+    }
+}
+
+Describe "preview PR metadata attribution" {
+    It "rejects a missing member list before fetching PRs" {
+        Assert-Throws {
+            & (Join-Path $scripts "collect-pr-metadata.ps1") `
+                -PrNumbers @(123) `
+                -OutputDirectory (Join-Path $TestDrive "missing-members") `
+                -MemberListPath (Join-Path $TestDrive "MemberList.md")
+        }
+    }
+
+    It "rejects an empty member list before fetching PRs" {
+        $memberListPath = Join-Path $TestDrive "EmptyMemberList.md"
+        "" | Set-Content -LiteralPath $memberListPath
+
+        Assert-Throws {
+            & (Join-Path $scripts "collect-pr-metadata.ps1") `
+                -PrNumbers @(123) `
+                -OutputDirectory (Join-Path $TestDrive "empty-members") `
+                -MemberListPath $memberListPath
         }
     }
 }

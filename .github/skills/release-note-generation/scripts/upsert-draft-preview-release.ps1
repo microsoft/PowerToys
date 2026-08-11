@@ -26,6 +26,8 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+. (Join-Path $PSScriptRoot "preview-release-assets.ps1")
+
 $beginMarker = "<!-- BEGIN POWERTOYS PREVIEW AGENT -->"
 $endMarker = "<!-- END POWERTOYS PREVIEW AGENT -->"
 $releaseTitle = "Preview $Tag"
@@ -64,20 +66,6 @@ function Merge-ReleaseBody {
     return "$($ExistingBody.TrimEnd())`n`n$managedBlock"
 }
 
-function Get-GeneratedAssets {
-    $files = @(
-        Get-ChildItem -LiteralPath $AssetsDirectory -File |
-            Where-Object {
-                $_.Name -notmatch "^\." -and (
-                    $_.Extension -in @(".exe", ".zip") -or
-                    $_.Name -eq "assets-manifest.json"
-                )
-            }
-    )
-
-    return @($files | Sort-Object FullName -Unique)
-}
-
 if ($TargetCommit -notmatch "^[0-9a-fA-F]{40}$") {
     throw "TargetCommit must be a full immutable commit SHA."
 }
@@ -89,7 +77,7 @@ if (-not (Test-Path -LiteralPath $AssetsDirectory -PathType Container)) {
 }
 
 $generatedBody = Get-Content -LiteralPath $BodyPath -Raw
-$assetFiles = @(Get-GeneratedAssets)
+$assetFiles = @(Get-PreviewReleaseAssets -AssetsDirectory $AssetsDirectory)
 if ($assetFiles.Count -eq 0) {
     throw "No generated release assets were found in '$AssetsDirectory'."
 }

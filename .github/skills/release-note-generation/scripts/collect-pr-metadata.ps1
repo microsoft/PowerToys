@@ -40,13 +40,17 @@ if (-not $MemberListPath) {
     $MemberListPath = Join-Path $repoRoot "Generated Files\ReleaseNotes\MemberList.md"
 }
 
-$members = @()
-if (Test-Path -LiteralPath $MemberListPath) {
-    $members = @(
-        Get-Content -LiteralPath $MemberListPath |
-            Where-Object { $_ -notmatch '^\s*```' -and -not [string]::IsNullOrWhiteSpace($_) } |
-            ForEach-Object { $_.Trim() }
-    )
+if (-not (Test-Path -LiteralPath $MemberListPath -PathType Leaf)) {
+    throw "Required PowerToys member list not found: $MemberListPath"
+}
+
+$members = @(
+    Get-Content -LiteralPath $MemberListPath |
+        Where-Object { $_ -notmatch '^\s*```' -and -not [string]::IsNullOrWhiteSpace($_) } |
+        ForEach-Object { $_.Trim() }
+)
+if ($members.Count -eq 0) {
+    throw "Required PowerToys member list is empty: $MemberListPath"
 }
 
 $memberSet = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
