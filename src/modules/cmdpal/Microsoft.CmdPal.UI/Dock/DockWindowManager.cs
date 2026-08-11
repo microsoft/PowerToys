@@ -85,7 +85,7 @@ public sealed partial class DockWindowManager : IDisposable
     /// <summary>
     /// Synchronizes running dock windows to match the current settings and connected monitors.
     /// </summary>
-    public void SyncDocksToSettings()
+    public void SyncDocksToSettings(bool refreshDockWindows = false)
     {
         if (Interlocked.CompareExchange(ref _syncing, 1, 0) != 0)
         {
@@ -94,7 +94,7 @@ public sealed partial class DockWindowManager : IDisposable
 
         try
         {
-            SyncDocksToSettingsCore();
+            SyncDocksToSettingsCore(refreshDockWindows);
         }
         finally
         {
@@ -102,7 +102,7 @@ public sealed partial class DockWindowManager : IDisposable
         }
     }
 
-    private void SyncDocksToSettingsCore()
+    private void SyncDocksToSettingsCore(bool refreshDockWindows)
     {
         var settings = _settingsService.Settings;
         if (!settings.EnableDock)
@@ -178,6 +178,16 @@ public sealed partial class DockWindowManager : IDisposable
                 dock.ViewModel.Dispose();
             }
         }
+
+        if (!refreshDockWindows)
+        {
+            return;
+        }
+
+        foreach (var (_, (window, _)) in _docks)
+        {
+            window.RefreshForMonitorChange();
+        }
     }
 
     public void Dispose()
@@ -230,7 +240,7 @@ public sealed partial class DockWindowManager : IDisposable
             }
 
             _monitorsChangedDebounceTimer.Debounce(
-                SyncDocksToSettings,
+                () => SyncDocksToSettings(refreshDockWindows: true),
                 interval: MonitorsChangedDebounceInterval,
                 immediate: false);
         });
