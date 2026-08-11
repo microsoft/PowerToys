@@ -52,7 +52,12 @@ namespace Microsoft.PowerToys.ThumbnailHandler.ThreeMf
         /// <returns>A thumbnail rendered from the ThreeMf model.</returns>
         public static Bitmap GetThumbnail(Stream stream, uint cx)
         {
-            if (cx > MaxThumbnailSize || stream == null || stream.Length == 0)
+            if (cx == 0 || cx > MaxThumbnailSize || stream == null || !stream.CanRead)
+            {
+                return null;
+            }
+
+            if (stream.CanSeek && stream.Length == 0)
             {
                 return null;
             }

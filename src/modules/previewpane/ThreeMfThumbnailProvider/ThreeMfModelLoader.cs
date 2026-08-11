@@ -13,6 +13,8 @@ namespace Microsoft.PowerToys.ThumbnailHandler.ThreeMf
 {
     internal static class ThreeMfModelLoader
     {
+        private const long MaxTotalModelBytes = 128L * 1024 * 1024;
+
         private static readonly string[] ThumbnailExtensions = { ".png", ".jpg", ".jpeg" };
 
         private static readonly char[] TransformSeparators = { ' ' };
@@ -78,12 +80,17 @@ namespace Microsoft.PowerToys.ThumbnailHandler.ThreeMf
 
                 var modelGroup = new Model3DGroup();
                 var material = new DiffuseMaterial(new SolidColorBrush(materialColor));
+                var loadContext = new ModelLoadContext(archive, MaxTotalModelBytes);
 
                 foreach (var modelEntry in modelEntries)
                 {
-                    using var modelStream = modelEntry.Open();
-                    var document = XDocument.Load(modelStream);
-                    AppendModelMeshes(document, modelGroup, material);
+                    var document = loadContext.LoadDocument(modelEntry);
+                    if (document == null)
+                    {
+                        return null;
+                    }
+
+                    AppendModelMeshes(loadContext, modelEntry.FullName, document, modelGroup, material);
                 }
 
                 return modelGroup.Children.Count > 0 ? modelGroup : null;
@@ -174,7 +181,56 @@ namespace Microsoft.PowerToys.ThumbnailHandler.ThreeMf
             return targets;
         }
 
-        private static void AppendModelMeshes(XDocument document, Model3DGroup modelGroup, Material material)
+        private static void AppendModelMeshes(ModelLoadContext loadContext, string currentModelPath, XDocument document, Model3DGroup modelGroup, Material material)
+        {
+            var meshGeometries = BuildMeshGeometries(document);
+            var buildItems = document.Descendants().Where(element => element.Name.LocalName == "item");
+            var coreNamespace = document.Root?.Name.Namespace ?? XNamespace.None;
+            if (buildItems.Any())
+            {
+                foreach (var buildItem in buildItems)
+                {
+                    var objectId = buildItem.Attribute("objectid")?.Value;
+                    var sourceGeometries = meshGeometries;
+
+                    var externalPartPath = buildItem.Attributes()
+                        .FirstOrDefault(attribute => attribute.Name.LocalName == "path" &&
+                                                     attribute.Name.Namespace != XNamespace.None &&
+                                                     attribute.Name.Namespace != coreNamespace)?.Value;
+
+                    if (!string.IsNullOrWhiteSpace(externalPartPath))
+                    {
+                        var normalizedPartPath = NormalizePartPath(currentModelPath, externalPartPath);
+                        var externalEntry = loadContext.FindModelEntry(normalizedPartPath);
+                        var externalDocument = externalEntry == null ? null : loadContext.LoadDocument(externalEntry);
+                        if (externalDocument == null)
+                        {
+                            continue;
+                        }
+
+                        sourceGeometries = BuildMeshGeometries(externalDocument);
+                    }
+
+                    if (string.IsNullOrWhiteSpace(objectId) || !sourceGeometries.TryGetValue(objectId, out var geometry))
+                    {
+                        continue;
+                    }
+
+                    var transform = ParseTransform(buildItem.Attribute("transform")?.Value);
+                    var transformedGeometry = transform == null ? geometry : ApplyTransform(geometry, transform.Value);
+                    modelGroup.Children.Add(new GeometryModel3D(transformedGeometry, material));
+                }
+            }
+            else
+            {
+                foreach (var geometry in meshGeometries.Values)
+                {
+                    modelGroup.Children.Add(new GeometryModel3D(geometry, material));
+                }
+            }
+        }
+
+        private static Dictionary<string, MeshGeometry3D> BuildMeshGeometries(XDocument document)
         {
             var meshGeometries = new Dictionary<string, MeshGeometry3D>(StringComparer.Ordinal);
             foreach (var meshElement in document.Descendants().Where(element => element.Name.LocalName == "mesh"))
@@ -192,29 +248,47 @@ namespace Microsoft.PowerToys.ThumbnailHandler.ThreeMf
                 }
             }
 
-            var buildItems = document.Descendants().Where(element => element.Name.LocalName == "item");
-            if (buildItems.Any())
+            return meshGeometries;
+        }
+
+        private static string NormalizePartPath(string basePartPath, string targetPath)
+        {
+            if (string.IsNullOrWhiteSpace(targetPath))
             {
-                foreach (var buildItem in buildItems)
+                return null;
+            }
+
+            var normalizedBasePath = basePartPath.Replace('\\', '/');
+            var normalizedTargetPath = targetPath.Replace('\\', '/');
+            var lastSeparator = normalizedBasePath.LastIndexOf('/');
+            var combinedPath = normalizedTargetPath.StartsWith('/')
+                ? normalizedTargetPath.TrimStart('/')
+                : (lastSeparator >= 0 ? normalizedBasePath[..(lastSeparator + 1)] : string.Empty) + normalizedTargetPath.TrimStart('/');
+
+            var segments = new List<string>();
+            foreach (var segment in combinedPath.Split('/'))
+            {
+                if (string.IsNullOrEmpty(segment) || segment == ".")
                 {
-                    var objectId = buildItem.Attribute("objectid")?.Value;
-                    if (string.IsNullOrWhiteSpace(objectId) || !meshGeometries.TryGetValue(objectId, out var geometry))
+                    continue;
+                }
+
+                if (segment == "..")
+                {
+                    if (segments.Count == 0)
                     {
-                        continue;
+                        return null;
                     }
 
-                    var transform = ParseTransform(buildItem.Attribute("transform")?.Value);
-                    var transformedGeometry = transform == null ? geometry : ApplyTransform(geometry, transform.Value);
-                    modelGroup.Children.Add(new GeometryModel3D(transformedGeometry, material));
+                    segments.RemoveAt(segments.Count - 1);
+                    continue;
                 }
+
+                segments.Add(segment);
             }
-            else
-            {
-                foreach (var geometry in meshGeometries.Values)
-                {
-                    modelGroup.Children.Add(new GeometryModel3D(geometry, material));
-                }
-            }
+
+            var normalizedPath = string.Join("/", segments);
+            return normalizedPath.EndsWith(".model", StringComparison.OrdinalIgnoreCase) ? normalizedPath : null;
         }
 
         private static MeshGeometry3D CreateMeshGeometry(XElement meshElement)
@@ -321,6 +395,51 @@ namespace Microsoft.PowerToys.ThumbnailHandler.ThreeMf
             return int.TryParse(value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var result)
                 ? result
                 : -1;
+        }
+
+        private sealed class ModelLoadContext
+        {
+            private readonly ZipArchive archive;
+            private readonly Dictionary<string, XDocument> loadedDocuments = new(StringComparer.OrdinalIgnoreCase);
+            private long remainingModelBytes;
+
+            public ModelLoadContext(ZipArchive archive, long modelByteBudget)
+            {
+                this.archive = archive;
+                remainingModelBytes = modelByteBudget;
+            }
+
+            public ZipArchiveEntry FindModelEntry(string normalizedPartPath)
+            {
+                if (string.IsNullOrWhiteSpace(normalizedPartPath))
+                {
+                    return null;
+                }
+
+                return archive.GetEntry(normalizedPartPath) ??
+                       archive.Entries.FirstOrDefault(entry =>
+                           string.Equals(entry.FullName.Replace('\\', '/'), normalizedPartPath, StringComparison.OrdinalIgnoreCase));
+            }
+
+            public XDocument LoadDocument(ZipArchiveEntry modelEntry)
+            {
+                var normalizedEntryPath = modelEntry.FullName.Replace('\\', '/');
+                if (loadedDocuments.TryGetValue(normalizedEntryPath, out var loadedDocument))
+                {
+                    return loadedDocument;
+                }
+
+                if (modelEntry.Length <= 0 || modelEntry.Length > remainingModelBytes)
+                {
+                    return null;
+                }
+
+                remainingModelBytes -= modelEntry.Length;
+                using var modelStream = modelEntry.Open();
+                var document = XDocument.Load(modelStream);
+                loadedDocuments[normalizedEntryPath] = document;
+                return document;
+            }
         }
     }
 }
