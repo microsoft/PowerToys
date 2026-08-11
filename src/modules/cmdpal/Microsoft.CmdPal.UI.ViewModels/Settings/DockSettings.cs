@@ -86,6 +86,11 @@ public record DockSettings
         },
         new DockBandSettings
         {
+            ProviderId = "PerformanceMonitor",
+            CommandId = "com.microsoft.cmdpal.performanceWidget.networkSpeed",
+        },
+        new DockBandSettings
+        {
             ProviderId = "com.microsoft.cmdpal.builtin.datetime",
             CommandId = "com.microsoft.cmdpal.timedate.dockBand",
         }));

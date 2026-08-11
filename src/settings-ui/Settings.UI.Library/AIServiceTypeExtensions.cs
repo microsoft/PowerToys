@@ -31,6 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 "google" or "googleai" or "googlegemini" => AIServiceType.Google,
                 "azureaiinference" or "azureinference" => AIServiceType.AzureAIInference,
                 "ollama" => AIServiceType.Ollama,
+                "phisilica" or "phi" or "philm" => AIServiceType.PhiSilica,
                 _ => AIServiceType.Unknown,
             };
         }
@@ -51,6 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 AIServiceType.Google => "Google",
                 AIServiceType.AzureAIInference => "AzureAIInference",
                 AIServiceType.Ollama => "Ollama",
+                AIServiceType.PhiSilica => "PhiSilica",
                 AIServiceType.Unknown => string.Empty,
                 _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, "Unsupported AI service type."),
             };
@@ -72,6 +74,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 AIServiceType.Google => "google",
                 AIServiceType.AzureAIInference => "azureaiinference",
                 AIServiceType.Ollama => "ollama",
+                AIServiceType.PhiSilica => "phisilica",
                 _ => string.Empty,
             };
         }

@@ -165,3 +165,22 @@ for UI hints:
 - `detection.packageFamilyName` lets the gallery recognise an
   already-installed packaged extension before WinGet metadata resolves.
 
+## Deep links
+
+CmdPal's `x-cmdpal` protocol can open the gallery or a specific extension
+detail page in the Settings window:
+
+```text
+x-cmdpal://extensions/gallery
+x-cmdpal://extensions/gallery/{extension-id}
+```
+
+For example, `x-cmdpal://extensions/gallery/jiripolasek.colors` opens the
+Colors extension detail page.
+
+Use the stable `id` from the gallery feed for `{extension-id}` and URL-encode
+it as one path segment when needed. IDs with leading or trailing whitespace,
+path separators, control characters, or more than 256 characters are rejected.
+Extension IDs are matched case-insensitively. If an ID is not present in the
+current feed, Settings remains on the gallery page.
+

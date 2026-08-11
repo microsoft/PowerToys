@@ -596,6 +596,18 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 {
     switch (message)
     {
+    case WM_QUERYENDSESSION:
+        return TRUE;
+
+    case WM_ENDSESSION:
+        if (wparam)
+        {
+            // This window has no WM_DESTROY -> PostQuitMessage path, so it
+            // cannot use handle_stateless_session_end_message.
+            PostQuitMessage(0);
+        }
+        return 0;
+
     case WM_HOTKEY:
     {
         if (wparam == static_cast<WPARAM>(HotkeyId::Editor))
@@ -739,6 +751,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_CUSTOM_LAYOUTS_FILE_UPDATE)
         {
             CustomLayouts::instance().LoadData();
+            RefreshLayouts();
         }
         else if (message == WM_PRIV_APPLIED_LAYOUTS_FILE_UPDATE)
         {

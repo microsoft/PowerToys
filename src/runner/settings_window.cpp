@@ -111,6 +111,7 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                 }
                 else if (action == L"check_for_updates")
                 {
+                    apply_general_settings(value);
                     bool expected_isUpdateCheckThreadRunning = false;
                     if (isUpdateCheckThreadRunning.compare_exchange_strong(expected_isUpdateCheckThreadRunning, true))
                     {
@@ -582,7 +583,24 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     {
         std::unique_lock lock{ ipc_mutex };
         current_settings_ipc = new TwoWayPipeMessageIPC(powertoys_pipe_name, settings_pipe_name, receive_json_send_to_main_thread);
-        current_settings_ipc->start(hToken);
+
+        // Authenticate the connecting client (Settings) before dispatching any privileged command.
+        // The expected image directory is derived from the Runner's own module folder so it adapts to
+        // both installed and dev-build layouts; only Microsoft-signed PowerToys.Settings.exe at the
+        // Runner's own version is accepted (signature check is compiled out in Debug).
+        interop_auth::CallerPolicy settings_caller_policy;
+        settings_caller_policy.enabled = true;
+        settings_caller_policy.expectedDirectory = get_module_folderpath() + L"\\WinUI3Apps";
+        settings_caller_policy.allowedBasenames = { L"PowerToys.Settings.exe" };
+        settings_caller_policy.expectedVersion = interop_auth::GetOwnModuleVersion();
+        settings_caller_policy.requireMicrosoftSignature = true;
+        settings_caller_policy.logReject = [](const interop_auth::AuthResult& r) {
+            Logger::warn(L"Rejected unauthenticated Settings pipe client: pid={} image='{}' reason={}",
+                         r.pid,
+                         r.imagePath,
+                         r.reasonCode);
+        };
+        current_settings_ipc->start(hToken, settings_caller_policy);
 
         // Register callback for bug report status changes
         BugReportManager::instance().register_callback([](bool isRunning) {

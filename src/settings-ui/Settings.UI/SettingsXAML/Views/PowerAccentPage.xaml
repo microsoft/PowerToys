@@ -243,7 +243,7 @@
             <controls:PageLink x:Uid="LearnMore_QuickAccent" Link="https://aka.ms/PowerToysOverview_QuickAccent" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Link="https://github.com/damienleroy/PowerAccent" Text="Damien Leroy's PowerAccent" />
+            <controls:PageLink x:Uid="Attribution_PowerAccent" Link="https://github.com/damienleroy/PowerAccent" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </local:NavigablePage>

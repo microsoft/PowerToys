@@ -49,11 +49,15 @@ public static class WindowHelper
     }
 
     private const uint SWP_NOMOVE = 0x0002;
+    private const uint SWP_NOSIZE = 0x0001;
     private const uint SWP_NOZORDER = 0x0004;
     private const uint SWP_NOACTIVATE = 0x0010;
+    private const int GWL_EXSTYLE = -20;
+    private const long WS_EX_TOPMOST = 0x00000008L;
     private const int SM_CXSCREEN = 0;
     private const int SM_CYSCREEN = 1;
     private const int SW_MAXIMIZE = 3;
+    private const int DwmExtendedFrameBoundsAttribute = 9;
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -62,6 +66,9 @@ public static class WindowHelper
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+
+    [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW", SetLastError = true)]
+    private static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
 
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -78,6 +85,12 @@ public static class WindowHelper
 
     [DllImport("gdi32.dll")]
     private static extern uint GetPixel(IntPtr hdc, int x, int y);
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmGetWindowAttribute(IntPtr hWnd, int dwAttribute, out RECT pvAttribute, int cbAttribute);
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmFlush();
 
     /// <summary>True when any UIA-visible window's title contains <paramref name="titleContains"/> (CLI-based).</summary>
     public static bool IsWindowOpen(string titleContains) =>
@@ -115,6 +128,10 @@ public static class WindowHelper
     public static void SetMainWindowSize(IntPtr hWnd, int width, int height) =>
         SetWindowPos(hWnd, IntPtr.Zero, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
 
+    /// <summary>Move a window to explicit screen coordinates while preserving its current size.</summary>
+    public static void MoveWindow(IntPtr hWnd, int x, int y) =>
+        SetWindowPos(hWnd, IntPtr.Zero, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+
     /// <summary>
     /// Maximize a window so it fills the monitor work area and is fully on-screen. Used as the default
     /// window state for tests so a module's restored (possibly small or off-screen) last window rect
@@ -131,6 +148,53 @@ public static class WindowHelper
         }
 
         return (0, 0, 0, 0);
+    }
+
+    /// <summary>
+    /// Capture the visible DWM frame from the screen. Unlike PrintWindow, this includes composed
+    /// WinUI/WebView content; unlike a raw GetWindowRect capture, it excludes invisible resize borders.
+    /// </summary>
+    public static void CaptureVisibleWindow(IntPtr hWnd, string outputPath)
+    {
+        var result = DwmGetWindowAttribute(
+            hWnd,
+            DwmExtendedFrameBoundsAttribute,
+            out var bounds,
+            Marshal.SizeOf<RECT>());
+        if (result != 0 || bounds.Right <= bounds.Left || bounds.Bottom <= bounds.Top)
+        {
+            throw new InvalidOperationException($"Unable to read visible frame bounds for HWND {hWnd} (HRESULT 0x{result:X8}).");
+        }
+
+        var wasTopmost = (GetWindowLongPtr(hWnd, GWL_EXSTYLE).ToInt64() & WS_EX_TOPMOST) != 0;
+        var noMoveOrResize = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE;
+        var topmost = new IntPtr(-1);
+        var notTopmost = new IntPtr(-2);
+
+        try
+        {
+            SetWindowPos(hWnd, topmost, 0, 0, 0, 0, noMoveOrResize);
+            DwmFlush();
+
+            using var bitmap = new Bitmap(bounds.Right - bounds.Left, bounds.Bottom - bounds.Top);
+            using var graphics = Graphics.FromImage(bitmap);
+            graphics.CopyFromScreen(
+                bounds.Left,
+                bounds.Top,
+                0,
+                0,
+                bitmap.Size,
+                CopyPixelOperation.SourceCopy);
+            bitmap.Save(outputPath, System.Drawing.Imaging.ImageFormat.Png);
+        }
+        finally
+        {
+            if (!wasTopmost)
+            {
+                SetWindowPos(hWnd, notTopmost, 0, 0, 0, 0, noMoveOrResize);
+                DwmFlush();
+            }
+        }
     }
 
     /// <summary>Center point of the window in screen pixels.</summary>

@@ -110,6 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI
                     case "RegistryPreview": NavigationFrame.Navigate(typeof(OobeRegistryPreview)); break;
                     case "Peek": NavigationFrame.Navigate(typeof(OobePeek)); break;
                     case "NewPlus": NavigationFrame.Navigate(typeof(OobeNewPlus)); break;
+                    case "AltWindowCycle": NavigationFrame.Navigate(typeof(OobeAltWindowCycle)); break;
                     case "Workspaces": NavigationFrame.Navigate(typeof(OobeWorkspaces)); break;
                     case "GrabAndMove": NavigationFrame.Navigate(typeof(OobeGrabAndMove)); break;
                     case "ZoomIt": NavigationFrame.Navigate(typeof(OobeZoomIt)); break;
