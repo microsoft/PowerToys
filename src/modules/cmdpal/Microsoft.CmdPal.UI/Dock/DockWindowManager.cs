@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -33,7 +34,7 @@ public sealed partial class DockWindowManager : IDisposable
     /// even though things settle fine on their own a moment later.
     /// </summary>
     private static readonly TimeSpan MonitorsChangedDebounceInterval = TimeSpan.FromMilliseconds(400);
-    private DispatcherQueueTimer? _monitorsChangedDebounceTimer;
+    private readonly DispatcherQueueTimer _monitorsChangedDebounceTimer;
 
     private bool? _lastSyncedEnableDock;
     private DockSettings? _lastSyncedDockSettings;
@@ -46,6 +47,7 @@ public sealed partial class DockWindowManager : IDisposable
         _monitorService = monitorService;
         _settingsService = settingsService;
         _dispatcherQueue = dispatcherQueue;
+        _monitorsChangedDebounceTimer = _dispatcherQueue.CreateTimer();
 
         _monitorService.MonitorsChanged += OnMonitorsChanged;
         _settingsService.SettingsChanged += OnSettingsChanged;
@@ -189,11 +191,7 @@ public sealed partial class DockWindowManager : IDisposable
         _monitorService.MonitorsChanged -= OnMonitorsChanged;
         _settingsService.SettingsChanged -= OnSettingsChanged;
 
-        if (_monitorsChangedDebounceTimer is not null)
-        {
-            _monitorsChangedDebounceTimer.Stop();
-            _monitorsChangedDebounceTimer.Tick -= OnMonitorsChangedDebounceTimerTick;
-        }
+        _monitorsChangedDebounceTimer.Stop();
 
         HideDocks();
     }
@@ -231,27 +229,11 @@ public sealed partial class DockWindowManager : IDisposable
                 return;
             }
 
-            // Debounce: (re)start a short timer instead of syncing immediately so a burst
-            // of monitor-change notifications collapses into a single reconciliation against
-            // the final, settled topology.
-            _monitorsChangedDebounceTimer ??= _dispatcherQueue.CreateTimer();
-            _monitorsChangedDebounceTimer.Stop();
-            _monitorsChangedDebounceTimer.Interval = MonitorsChangedDebounceInterval;
-            _monitorsChangedDebounceTimer.IsRepeating = false;
-            _monitorsChangedDebounceTimer.Tick -= OnMonitorsChangedDebounceTimerTick;
-            _monitorsChangedDebounceTimer.Tick += OnMonitorsChangedDebounceTimerTick;
-            _monitorsChangedDebounceTimer.Start();
+            _monitorsChangedDebounceTimer.Debounce(
+                SyncDocksToSettings,
+                interval: MonitorsChangedDebounceInterval,
+                immediate: false);
         });
-    }
-
-    private void OnMonitorsChangedDebounceTimerTick(object? sender, object e)
-    {
-        _monitorsChangedDebounceTimer?.Stop();
-
-        if (!_disposed)
-        {
-            SyncDocksToSettings();
-        }
     }
 
     private void OnSettingsChanged(ISettingsService sender, SettingsModel args)
