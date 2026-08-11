@@ -275,6 +275,8 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 graphics.DrawImage(image, 0, 0, width, height);
             }
 
+            image.Dispose();
+
             return destImage;
         }
 
