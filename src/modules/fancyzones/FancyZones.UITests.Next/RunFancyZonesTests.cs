@@ -29,6 +29,14 @@ public class RunFancyZonesTests : UITestBase
     [TestCategory("FancyZones")]
     public void FancyZonesProcessFollowsTheSettingsToggle()
     {
+        // This test runs last, so it inherits whatever the preceding 16 tests left behind. Record the
+        // starting instances: more than one here means an earlier scope restart orphaned a module
+        // process, which would make the "exits when disabled" assertion fail for an unrelated reason.
+        FancyZonesTestHelper.Step(
+            this,
+            $"Live {FancyZonesTestHelper.FancyZonesProcess} instances before touching the toggle: " +
+            FancyZonesTestHelper.DescribeProcesses(FancyZonesTestHelper.FancyZonesProcess));
+
         FancyZonesTestHelper.GoToFancyZonesPage(this);
 
         FancyZonesTestHelper.SetFancyZonesEnabled(this, true);
@@ -39,7 +47,8 @@ public class RunFancyZonesTests : UITestBase
         FancyZonesTestHelper.SetFancyZonesEnabled(this, false);
         Assert.IsTrue(
             FancyZonesTestHelper.WaitForProcess(FancyZonesTestHelper.FancyZonesProcess, false, 15_000),
-            $"{FancyZonesTestHelper.FancyZonesProcess} should exit once the module is disabled.");
+            $"{FancyZonesTestHelper.FancyZonesProcess} should exit once the module is disabled. " +
+            $"Live instances: {FancyZonesTestHelper.DescribeProcesses(FancyZonesTestHelper.FancyZonesProcess)}");
 
         FancyZonesTestHelper.SetFancyZonesEnabled(this, true);
     }

@@ -21,11 +21,12 @@ namespace FancyZones.UITests;
 /// Two deliberate departures from the legacy suite, both forced by what is actually observable:
 /// </para>
 /// <list type="bullet">
-///   <item><description><b>The subject window is File Explorer, not PowerToys Settings.</b> Settings
-///   is a WinUI 3 window whose custom title bar moves the window itself instead of running the
-///   standard <c>DefWindowProc</c> move loop, so no <c>EVENT_SYSTEM_MOVESIZESTART</c> is raised and
-///   FancyZones never sees the drag at all. Explorer is a classic Win32 window and behaves like the
-///   windows a user actually snaps.</description></item>
+///   <item><description><b>The subject window is File Explorer, not PowerToys Settings.</b> Synthetic
+///   title-bar drags of the Settings window did not start a move loop FancyZones could see, so the
+///   window moved without any zones appearing. Explorer is a plain top-level window that responds to
+///   an injected drag the same way it does to a real one. (This is about driving the drag from a test,
+///   not about the window's UI framework - dragging Settings or Notepad by hand activates zones
+///   normally.)</description></item>
 ///   <item><description><b>Zone activation is asserted through the snap outcome, not the zone
 ///   colour.</b> The legacy tests sampled the highlight colour off the screen, but FancyZones paints
 ///   zones on a layered, DWM-composited overlay that GDI screen reads (both <c>GetPixel</c> and
@@ -187,10 +188,11 @@ public class DragWindowTests : UITestBase
         Assert.AreEqual(
             (byte)255,
             afterShift,
-            "With Shift-to-activate off, holding Shift should deactivate the zones. " +
-            $"The system reported Shift held = {shiftReachedTheSystem}: FancyZones' own low-level hook " +
-            "(FancyZones.cpp OnKeyDown) swallows the bare Shift while it is showing zones, so its raw-input " +
-            "handler never learns the key went down and the drag state is never re-evaluated.");
+            "With Shift-to-activate off, holding Shift should deactivate the zones. This regressed once " +
+            "before: FancyZones' low-level hook swallows the bare Shift while zones are showing, which " +
+            "also hid it from the module's own raw-input handler, so OnKeyDown must record the press " +
+            $"itself. (The system still reports Shift held = {shiftReachedTheSystem}, because the key is " +
+            "deliberately kept from the foreground app.)");
     }
 
     /// <summary>

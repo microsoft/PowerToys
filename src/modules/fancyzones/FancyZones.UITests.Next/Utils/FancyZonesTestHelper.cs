@@ -102,8 +102,32 @@ public static class FancyZonesTestHelper
             $"The FancyZones enable toggle did not reach {(enable ? "On" : "Off")}.");
 
         Assert.IsTrue(
-            WaitForProcess(FancyZonesProcess, enable, 15_000),
-            $"The {FancyZonesProcess} process did not {(enable ? "start" : "exit")} after toggling the module.");
+            WaitForProcess(FancyZonesProcess, enable, 30_000),
+            $"The {FancyZonesProcess} process did not {(enable ? "start" : "exit")} after toggling the module. " +
+            $"Live instances: {DescribeProcesses(FancyZonesProcess)}. A process started well before this test " +
+            "is an orphan left by an earlier scope restart, not the module refusing to follow the toggle.");
+    }
+
+    /// <summary>Live instances of a process with their ids and start times, for failure messages.</summary>
+    public static string DescribeProcesses(string processName)
+    {
+        var live = Process.GetProcessesByName(processName);
+        if (live.Length == 0)
+        {
+            return "none";
+        }
+
+        return string.Join(", ", live.Select(p =>
+        {
+            try
+            {
+                return $"pid {p.Id} (started {p.StartTime:HH:mm:ss})";
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
+            {
+                return $"pid {p.Id} (start time unavailable)";
+            }
+        }));
     }
 
     /// <summary>
@@ -636,6 +660,13 @@ public static class FancyZonesTestHelper
                 var targetY = grabY + deltaY;
                 Step(testBase, $"Window is moving (now at {moved}); dragging on to ({targetX},{targetY})");
                 DragCursorTo(grabX + nudge, grabY + nudge, targetX, targetY);
+
+                // MoveSizeEnd snaps to the zone the last processed MoveSizeUpdate highlighted, and
+                // those updates arrive from the dragged window's location-change events - which stop
+                // as soon as the cursor does. Without a final move and a settle here, the caller's
+                // drop can beat the highlight and the window lands unsnapped at the drop point.
+                Thread.Sleep(400);
+                JiggleCursor();
                 Thread.Sleep(400);
                 return (targetX, targetY);
             }

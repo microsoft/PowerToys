@@ -536,6 +536,10 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     if (m_draggingState.IsDragging() &&
         (info->vkCode == VK_LSHIFT || info->vkCode == VK_RSHIFT))
     {
+        // Record the press before swallowing it. Returning 1 removes the key from the input stream
+        // for every listener - including this module's own WM_INPUT handler, which is what normally
+        // calls SetShiftState - so without this the zones could never be switched off with Shift.
+        m_draggingState.SetShiftState(true);
         return true;
     }
     return false;

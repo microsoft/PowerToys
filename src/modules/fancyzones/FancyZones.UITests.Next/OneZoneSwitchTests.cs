@@ -218,27 +218,48 @@ public class OneZoneSwitchTests : UITestBase
     }
 
     /// <summary>Shift-drag a window by its title bar and drop it on the given point so it snaps.</summary>
+    /// <remarks>
+    /// Verified and retried because this is setup, not the behaviour under test: a drop that races the
+    /// zone highlight leaves the window unsnapped at the drop point, which would otherwise surface as a
+    /// confusing "both windows should occupy the same zone" failure in the switching assertions.
+    /// </remarks>
     private void SnapWindowToPoint(IntPtr window, int targetX, int targetY, string label)
     {
-        FancyZonesTestHelper.Step(this, $"Snapping '{label}' to ({targetX},{targetY})");
+        const int attempts = 2;
 
-        WindowControl.TryBringToForeground(window);
-        WindowHelper.RestoreWindow(window);
-        WindowHelper.SetWindowSize(window, WindowSize.Medium);
-        Thread.Sleep(500);
+        for (var attempt = 1; attempt <= attempts; attempt++)
+        {
+            FancyZonesTestHelper.Step(this, $"Snapping '{label}' to ({targetX},{targetY})");
 
-        var (left, top, right, bottom) = WindowHelper.GetWindowBounds(window);
+            WindowControl.TryBringToForeground(window);
+            WindowHelper.RestoreWindow(window);
+            WindowHelper.SetWindowSize(window, WindowSize.Medium);
+            Thread.Sleep(500);
 
-        KeyboardHelper.PressKey(Key.Shift);
-        FancyZonesTestHelper.BeginWindowDrag(
-            this,
-            window,
-            targetX - ((left + right) / 2),
-            targetY - ((top + bottom) / 2));
-        MouseHelper.LeftUp();
-        KeyboardHelper.ReleaseKey(Key.Shift);
+            var (left, top, right, bottom) = WindowHelper.GetWindowBounds(window);
 
-        Thread.Sleep(1500);
+            KeyboardHelper.PressKey(Key.Shift);
+            FancyZonesTestHelper.BeginWindowDrag(
+                this,
+                window,
+                targetX - ((left + right) / 2),
+                targetY - ((top + bottom) / 2));
+            MouseHelper.LeftUp();
+            KeyboardHelper.ReleaseKey(Key.Shift);
+
+            Thread.Sleep(1500);
+
+            // A snapped window takes the zone's size; one that missed keeps the size it was dragged at.
+            var after = WindowHelper.GetWindowBounds(window);
+            if (after.Right - after.Left != right - left || after.Bottom - after.Top != bottom - top)
+            {
+                return;
+            }
+
+            FancyZonesTestHelper.Step(
+                this,
+                $"'{label}' is still at its dragged size {after}, so the drop did not snap (attempt {attempt}/{attempts})");
+        }
     }
 
     private void CloseExtraVirtualDesktop()
