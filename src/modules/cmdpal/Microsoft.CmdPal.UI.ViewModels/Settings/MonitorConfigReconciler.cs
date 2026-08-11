@@ -138,50 +138,6 @@ public static class MonitorConfigReconciler
             }
         }
 
-        // Fuzzy match: recover secondary monitor configs when their ID changed.
-        // Windows can reassign device paths for a still-connected monitor (a Win+P
-        // round-trip, a dock/undock), which would otherwise make it look brand new and get
-        // a fresh disabled/empty config (see issue #48516). Only fires when there's exactly
-        // one unmatched monitor and one unmatched config on each side, since anything more
-        // and we can't tell who owns what.
-        //
-        // This isn't Win+P-only: configs stick around for StaleThreshold (180 days), so a
-        // genuinely new monitor plugged in after an old one aged out can inherit its stale
-        // config too. That's fine. Inheriting a config you can review and change beats
-        // wiping it.
-        var unmatchedSecondaryMonitors = new List<int>();
-        for (var mi = 0; mi < currentMonitors.Count; mi++)
-        {
-            var monitor = currentMonitors[mi];
-            if (!monitor.IsPrimary && !matchedMonitorStableIds.Contains(monitor.StableId))
-            {
-                unmatchedSecondaryMonitors.Add(mi);
-            }
-        }
-
-        var unmatchedSecondaryConfigs = new List<int>();
-        for (var ci = 0; ci < existingConfigs.Count; ci++)
-        {
-            if (!matchedConfigIndices.Contains(ci) && !existingConfigs[ci].IsPrimary)
-            {
-                unmatchedSecondaryConfigs.Add(ci);
-            }
-        }
-
-        if (unmatchedSecondaryMonitors.Count == 1 && unmatchedSecondaryConfigs.Count == 1)
-        {
-            var monitor = currentMonitors[unmatchedSecondaryMonitors[0]];
-            var ci = unmatchedSecondaryConfigs[0];
-            result.Add(existingConfigs[ci] with
-            {
-                MonitorDeviceId = monitor.StableId,
-                IsPrimary = monitor.IsPrimary,
-                LastSeen = utcNow,
-            });
-            matchedMonitorStableIds.Add(monitor.StableId);
-            matchedConfigIndices.Add(ci);
-        }
-
         // Create defaults for new monitors with no matching config.
         // Primary monitors inherit global bands (IsCustomized = false) for a seamless
         // upgrade path. Secondary monitors start disabled with empty band lists;
