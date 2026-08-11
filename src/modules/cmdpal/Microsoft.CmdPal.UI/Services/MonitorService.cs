@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Threading;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Windows.Win32;
@@ -120,13 +119,12 @@ public sealed class MonitorService : IMonitorService
     }
 
     /// <summary>
-    /// Number of attempts to build the stable-ID display info map before giving up.
+    /// Number of immediate attempts to build the stable-ID display info map before giving up.
     /// Right after WM_DISPLAYCHANGE, the Display Configuration API can transiently fail or
-    /// return an incomplete topology while Windows is still settling. A couple of retries
-    /// avoids falling back to the volatile GDI device name and breaking dock reconciliation.
+    /// return an incomplete topology while Windows is still settling. Immediate retries
+    /// avoid blocking the UI thread while giving the API another chance to return stable data.
     /// </summary>
     private const int DisplayInfoMapRetryCount = 3;
-    private static readonly TimeSpan DisplayInfoMapRetryDelay = TimeSpan.FromMilliseconds(50);
 
     private static unsafe List<MonitorInfo> EnumerateMonitors(Dictionary<string, (string FriendlyName, string DevicePath)> displayInfo)
     {
@@ -197,20 +195,15 @@ public sealed class MonitorService : IMonitorService
     }
 
     /// <summary>
-    /// Calls <see cref="BuildDisplayInfoMap"/>, retrying a few times with a short delay if
-    /// it comes back incomplete. Right after WM_DISPLAYCHANGE the API can transiently fail
-    /// or only resolve some active sources, and a partial map would leave those monitors on
-    /// their volatile GDI name, tricking <see cref="Settings.MonitorConfigReconciler"/> into
-    /// treating a still-connected monitor as brand new.
-    ///
-    /// A source can also fail to resolve permanently (a virtual or unnamed source whose
-    /// <c>DisplayConfigGetDeviceInfo</c> call never succeeds), so we stop retrying early
-    /// once an attempt makes no more progress than the last one.
+    /// Calls <see cref="BuildDisplayInfoMap"/>, retrying a few times if it comes back
+    /// incomplete. Right after WM_DISPLAYCHANGE the API can transiently fail or only resolve
+    /// some active sources, and a partial map would leave those monitors on their volatile
+    /// GDI name, tricking <see cref="Settings.MonitorConfigReconciler"/> into treating a
+    /// still-connected monitor as brand new.
     /// </summary>
     private static Dictionary<string, (string FriendlyName, string DevicePath)> BuildDisplayInfoMapWithRetry()
     {
         var map = new Dictionary<string, (string FriendlyName, string DevicePath)>(StringComparer.OrdinalIgnoreCase);
-        var lastResolvedCount = -1;
 
         for (var attempt = 0; attempt < DisplayInfoMapRetryCount; attempt++)
         {
@@ -218,19 +211,6 @@ public sealed class MonitorService : IMonitorService
             if (map.Count >= expectedSourceCount && expectedSourceCount > 0)
             {
                 return map;
-            }
-
-            if (map.Count <= lastResolvedCount)
-            {
-                // No progress since the previous attempt; further retries won't help.
-                break;
-            }
-
-            lastResolvedCount = map.Count;
-
-            if (attempt < DisplayInfoMapRetryCount - 1)
-            {
-                Thread.Sleep(DisplayInfoMapRetryDelay);
             }
         }
 
