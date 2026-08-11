@@ -187,8 +187,9 @@ The prototype separates three decisions:
   major 1 does not guess how to process major 2.
 - **Minor** identifies explicitly supported backward-compatible additions.
   This service advertises a concrete supported range, 0 through 1.
-- **Capabilities** are response bits for optional behavior. A client only uses
-  a feature when the server reports the corresponding bit.
+- **Capabilities** should be response bits for concrete optional client-visible
+  behavior. A production client would use an optional operation only when the
+  server reports the corresponding bit.
 
 For the prototype:
 
@@ -198,21 +199,46 @@ request 1.1 -> accepted, capabilities = multi-target | per-user-quota
 request 1.2 -> UnsupportedMinor
 ```
 
-The harness changes the protocol fields emitted by the prototype client. It
-validates the negotiation implementation; it is not a substitute for later
-testing with actual independently built old/new product binaries. Production
-still needs a separate signed-binary identity check, minimum-secure-build
-policy, and anti-rollback policy.
+The current two bits are illustrative server traits. `multi-target` describes
+the target table and `per-user-quota` describes admission behavior; the
+prototype client only prints/asserts them and does not select a different
+operation based on either bit. Therefore case 5 validates version-window
+handling and capability-field advertisement, not a complete capability-gated
+fallback workflow.
+
+A product capability should correspond to behavior the client can actually
+choose, for example:
+
+```text
+compare-and-swap
+batch-get
+transactional-migration
+compression
+```
+
+For example, a client seeing `compare-and-swap` could send
+`Put(expectedGeneration, bytes)`; without the bit it must use unconditional Put
+or disable concurrent editing. If no such optional operations are needed,
+removing capabilities is better than advertising server-internal
+implementation details.
+
+The harness changes the protocol fields emitted by the same prototype client.
+It is not a substitute for later testing with independently built old/new
+product binaries. Production still needs a separate signed-binary identity
+check, minimum-secure-build policy, and anti-rollback policy.
 
 ### Why quota, bounded I/O, and response ACK are all needed
 
-The broker has eight fixed workers. Without additional controls, one local user
-could occupy all eight and deny settings access to every other signed-in user.
+The broker has eight fixed workers in this prototype. This means at most eight
+connections/requests can be active at the same instant; it does **not** mean the
+broker supports only eight SIDs. Connections are short-lived and workers return
+to the pool after one request, so arbitrarily many SIDs can be served over time.
+The product value `8` is not proposed as a final capacity.
 
 - **Per-SID quota:** after obtaining the real token SID, the server allows at
   most two active connections for that SID. One user can therefore consume two
-  workers, not all eight. The quota is keyed by the token SID, not a request
-  field.
+  workers at one instant, not all eight. No workers are permanently reserved
+  for that SID; the quota is only an admission counter keyed by the token SID.
 - **Bounded I/O:** every pipe read/write has one five-second deadline. It uses
   overlapped I/O and waits on both completion and the service stop event.
   Timeout/stop calls `CancelIoEx`; cancellation itself has a one-second bound.
@@ -228,6 +254,17 @@ These controls bound the tested slow-request and slow-response cases. They do
 not prove immunity to every local DoS strategy: many distinct local SIDs,
 expensive future authentication work, CPU exhaustion, handle pressure, or
 implementation bugs still require a broader product threat model.
+
+This fairness machinery is a real cost of the singleton topology. A per-user
+service pipe admits only its owning SID, so one user can stall only that user's
+service; it does not need per-SID fairness to protect other users. It still
+needs bounded I/O and connection limits for reliability and prompt stop, but a
+self-DoS does not become a machine-wide cross-user outage.
+
+A production singleton need not use one thread per pipe instance. IOCP/thread
+pool I/O could support many more concurrent connections with fewer threads, but
+it would not eliminate admission accounting: one SID must still be prevented
+from consuming all pending requests, memory, handles, or execution slots.
 
 ## Security properties validated by this prototype
 
