@@ -47,10 +47,17 @@ namespace mousebuttonlock
     // Abstraction over the synthetic button-up injection (SendInput in production, a recording fake in
     // tests). Returns true if the OS accepted the synthetic event. A lock is held by suppressing the
     // physical up, so the only injection the engine needs is the up that releases a lock.
+    //
+    // dismissContextMenu tells the injector whether this release will surface a context menu that
+    // should be dismissed on the user's behalf (see WinInjector::InjectEscape). It is true for a
+    // same-button release tap and for lifecycle/settings releases (no other button is down, so a
+    // right-button up opens a menu), and false for a cross-button release, where the injected up is
+    // chorded with the newly pressed button: no menu opens, and a dismissal keystroke would leak to
+    // whatever has focus.
     struct IButtonUpInjector
     {
         virtual ~IButtonUpInjector() = default;
-        virtual bool InjectUp(MouseButton button) = 0;
+        virtual bool InjectUp(MouseButton button, bool dismissContextMenu) = 0;
     };
 
     class Engine
@@ -79,10 +86,12 @@ namespace mousebuttonlock
             // Tap-to-release the pressed button's own lock. exchange() claims the lock atomically so a
             // concurrent release (settings change / shutdown) can't double-act. On successful injection
             // suppress the DOWN and swallow its paired UP; on failure drop the lock and let the physical
-            // events through so the OS can resolve the state.
+            // events through so the OS can resolve the state. This DOWN is suppressed, so the injected
+            // up is not chorded and a right-button release will surface a context menu: ask the
+            // injector to dismiss it.
             if (st.locked.exchange(false))
             {
-                if (m_injector.InjectUp(button))
+                if (m_injector.InjectUp(button, /*dismissContextMenu=*/true))
                 {
                     st.swallowNextRealUp = true;
                     ReleaseAllExcept(button); // also free any other held button
@@ -159,29 +168,31 @@ namespace mousebuttonlock
             CheckMoveCancel(m_middle, pixels, pt);
         }
 
-        // Release any button whose lock has just been turned off in settings.
+        // Release any button whose lock has just been turned off in settings. No button is being
+        // pressed here, so the injected up is not chorded: request the context-menu dismissal.
         void EnforceEnabled(const Settings& s)
         {
             if (!s.lmbEnabled)
             {
-                ReleaseButton(m_left, MouseButton::Left);
+                ReleaseButton(m_left, MouseButton::Left, /*dismissContextMenu=*/true);
             }
             if (!s.rmbEnabled)
             {
-                ReleaseButton(m_right, MouseButton::Right);
+                ReleaseButton(m_right, MouseButton::Right, /*dismissContextMenu=*/true);
             }
             if (!s.mmbEnabled)
             {
-                ReleaseButton(m_middle, MouseButton::Middle);
+                ReleaseButton(m_middle, MouseButton::Middle, /*dismissContextMenu=*/true);
             }
         }
 
-        // Release every locked button (crash/shutdown safety).
+        // Release every locked button (crash/shutdown safety). As with EnforceEnabled, these
+        // releases are not chorded, so a surfaced context menu should be dismissed.
         void ReleaseAll()
         {
-            ReleaseButton(m_left, MouseButton::Left);
-            ReleaseButton(m_right, MouseButton::Right);
-            ReleaseButton(m_middle, MouseButton::Middle);
+            ReleaseButton(m_left, MouseButton::Left, /*dismissContextMenu=*/true);
+            ReleaseButton(m_right, MouseButton::Right, /*dismissContextMenu=*/true);
+            ReleaseButton(m_middle, MouseButton::Middle, /*dismissContextMenu=*/true);
         }
 
         // Clear transient hold state. Call when (re)enabling so a button held across a
@@ -274,30 +285,32 @@ namespace mousebuttonlock
             }
         }
 
-        void ReleaseButton(ButtonState& st, MouseButton button)
+        void ReleaseButton(ButtonState& st, MouseButton button, bool dismissContextMenu)
         {
             // exchange() claims the lock atomically so among racing releasers exactly one injects.
             if (st.locked.exchange(false))
             {
-                m_injector.InjectUp(button);
+                m_injector.InjectUp(button, dismissContextMenu);
             }
         }
 
         // Release every locked button other than `keep` (the one currently being pressed). Used so any
-        // button press frees a held button instead of leaving the mouse stuck on the locked one.
+        // button press frees a held button instead of leaving the mouse stuck on the locked one. The
+        // injected up is chorded with `keep`'s press, so no context menu opens; never request the
+        // dismissal here, or its keystroke would land on the foreground app instead.
         void ReleaseAllExcept(MouseButton keep)
         {
             if (keep != MouseButton::Left)
             {
-                ReleaseButton(m_left, MouseButton::Left);
+                ReleaseButton(m_left, MouseButton::Left, /*dismissContextMenu=*/false);
             }
             if (keep != MouseButton::Right)
             {
-                ReleaseButton(m_right, MouseButton::Right);
+                ReleaseButton(m_right, MouseButton::Right, /*dismissContextMenu=*/false);
             }
             if (keep != MouseButton::Middle)
             {
-                ReleaseButton(m_middle, MouseButton::Middle);
+                ReleaseButton(m_middle, MouseButton::Middle, /*dismissContextMenu=*/false);
             }
         }
 

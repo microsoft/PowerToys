@@ -12,17 +12,24 @@ using namespace mousebuttonlock;
 
 namespace
 {
-    // Records every InjectUp (each is a lock release) and can be configured to report failure
-    // (e.g. a UIPI block on the injection).
+    // Records every InjectUp (each is a lock release), including whether the engine asked for the
+    // context-menu dismissal, and can be configured to report failure (e.g. a UIPI block on the
+    // injection).
     class FakeInjector : public IButtonUpInjector
     {
     public:
-        std::vector<MouseButton> upCalls;
+        struct UpCall
+        {
+            MouseButton button;
+            bool dismissContextMenu;
+        };
+
+        std::vector<UpCall> upCalls;
         bool succeed = true;
 
-        bool InjectUp(MouseButton button) override
+        bool InjectUp(MouseButton button, bool dismissContextMenu) override
         {
-            upCalls.push_back(button);
+            upCalls.push_back({ button, dismissContextMenu });
             return succeed;
         }
     };
@@ -46,15 +53,15 @@ namespace MouseButtonLockEngineTests
     public:
         TEST_METHOD(DownIsNeverSuppressed)
         {
-            FakeInjector inj;
-            Engine e(inj);
+            FakeInjector injector;
+            Engine e(injector);
             Assert::IsFalse(e.OnButtonDown(MouseButton::Right, 0, PointL{ 100, 100 }, DefaultSettings()));
         }
 
         TEST_METHOD(HoldPastThresholdLocksAndSuppressesUp)
         {
-            FakeInjector inj;
-            Engine e(inj);
+            FakeInjector injector;
+            Engine e(injector);
             Settings s = DefaultSettings();
 
             e.OnButtonDown(MouseButton::Right, 0, PointL{ 100, 100 }, s);
@@ -62,13 +69,13 @@ namespace MouseButtonLockEngineTests
             // completing. Locking injects nothing; the held state is the suppressed up.
             Assert::IsTrue(e.OnButtonUp(MouseButton::Right, 400, s)); // held >= 300 ms -> suppress UP
             Assert::IsTrue(e.IsLocked(MouseButton::Right));
-            Assert::AreEqual(static_cast<size_t>(0), inj.upCalls.size()); // locking does not inject
+            Assert::AreEqual(static_cast<size_t>(0), injector.upCalls.size()); // locking does not inject
         }
 
         TEST_METHOD(ExactThresholdLocks)
         {
-            FakeInjector inj;
-            Engine e(inj);
+            FakeInjector injector;
+            Engine e(injector);
             Settings s = DefaultSettings();
             s.holdDurationMs = 300;
 
@@ -79,8 +86,8 @@ namespace MouseButtonLockEngineTests
 
         TEST_METHOD(JustUnderThresholdDoesNotLock)
         {
-            FakeInjector inj;
-            Engine e(inj);
+            FakeInjector injector;
+            Engine e(injector);
             Settings s = DefaultSettings();
             s.holdDurationMs = 300;
 
@@ -91,8 +98,8 @@ namespace MouseButtonLockEngineTests
 
         TEST_METHOD(TapToReleaseInjectsUpAndSwallowsPairedUp)
         {
-            FakeInjector inj;
-            Engine e(inj);
+            FakeInjector injector;
+            Engine e(injector);
             Settings s = DefaultSettings();
 
             e.OnButtonDown(MouseButton::Right, 0, PointL{ 0, 0 }, s);
@@ -102,8 +109,11 @@ namespace MouseButtonLockEngineTests
             // Next physical tap releases the lock: inject the balancing UP and suppress the DOWN.
             Assert::IsTrue(e.OnButtonDown(MouseButton::Right, 1000, PointL{ 0, 0 }, s)); // suppress DOWN
             Assert::IsFalse(e.IsLocked(MouseButton::Right));
-            Assert::AreEqual(static_cast<size_t>(1), inj.upCalls.size());
-            Assert::IsTrue(inj.upCalls[0] == MouseButton::Right);
+            Assert::AreEqual(static_cast<size_t>(1), injector.upCalls.size());
+            Assert::IsTrue(injector.upCalls[0].button == MouseButton::Right);
+            // The release tap's own DOWN is suppressed, so this up is not chorded and the context
+            // menu it surfaces must be dismissed.
+            Assert::IsTrue(injector.upCalls[0].dismissContextMenu);
 
             // The paired physical UP is swallowed so the app never sees an unbalanced up.
             Assert::IsTrue(e.OnButtonUp(MouseButton::Right, 1005, s));
@@ -111,9 +121,9 @@ namespace MouseButtonLockEngineTests
 
         TEST_METHOD(TapToReleaseInjectionFailureDropsLockAndPassesThrough)
         {
-            FakeInjector inj;
-            inj.succeed = false; // the release UP injection fails (e.g. a UIPI block)
-            Engine e(inj);
+            FakeInjector injector;
+            injector.succeed = false; // the release UP injection fails (e.g. a UIPI block)
+            Engine e(injector);
             Settings s = DefaultSettings();
 
             e.OnButtonDown(MouseButton::Right, 0, PointL{ 0, 0 }, s);
@@ -129,10 +139,10 @@ namespace MouseButtonLockEngineTests
     TEST_CLASS(MoveCancel)
     {
     public:
-        TEST_METHOD(MoveBeyondDeadzoneBeforeThresholdCancels)
+        TEST_METHOD(MoveBeyondDeadZoneBeforeThresholdCancels)
         {
-            FakeInjector inj;
-            Engine e(inj);
+            FakeInjector injector;
+            Engine e(injector);
             Settings s = DefaultSettings(); // 5 px dead-zone
 
             e.OnButtonDown(MouseButton::Right, 0, PointL{ 0, 0 }, s);
@@ -141,10 +151,10 @@ namespace MouseButtonLockEngineTests
             Assert::IsFalse(e.IsLocked(MouseButton::Right));
         }
 
-        TEST_METHOD(MoveWithinDeadzoneStillLocks)
+        TEST_METHOD(MoveWithinDeadZoneStillLocks)
         {
-            FakeInjector inj;
-            Engine e(inj);
+            FakeInjector injector;
+            Engine e(injector);
             Settings s = DefaultSettings();
 
             e.OnButtonDown(MouseButton::Right, 0, PointL{ 0, 0 }, s);
@@ -155,8 +165,8 @@ namespace MouseButtonLockEngineTests
 
         TEST_METHOD(MoveAfterThresholdCancelsLock)
         {
-            FakeInjector inj;
-            Engine e(inj);
+            FakeInjector injector;
+            Engine e(injector);
             Settings s = DefaultSettings();
 
             // A drag past the dead-zone after the threshold is still a drag (e.g. selecting text),
@@ -174,8 +184,8 @@ namespace MouseButtonLockEngineTests
     public:
         TEST_METHOD(PressingAnotherButtonReleasesTheLock)
         {
-            FakeInjector inj;
-            Engine e(inj);
+            FakeInjector injector;
+            Engine e(injector);
             Settings s = DefaultSettings();
             s.rmbEnabled = true;
             s.mmbEnabled = true;
@@ -189,8 +199,12 @@ namespace MouseButtonLockEngineTests
             // so the mouse is never left stuck on the locked one.
             e.OnButtonDown(MouseButton::Middle, 500, PointL{ 0, 0 }, s);
             Assert::IsFalse(e.IsLocked(MouseButton::Right));
-            Assert::AreEqual(static_cast<size_t>(1), inj.upCalls.size());
-            Assert::IsTrue(inj.upCalls[0] == MouseButton::Right);
+            Assert::AreEqual(static_cast<size_t>(1), injector.upCalls.size());
+            Assert::IsTrue(injector.upCalls[0].button == MouseButton::Right);
+            // Regression: this release is chorded with the middle button's press, so no context menu
+            // opens and the engine must NOT ask for the dismissal; a stray Esc would otherwise reach
+            // the foreground app (close a dialog, cancel an operation).
+            Assert::IsFalse(injector.upCalls[0].dismissContextMenu);
             // The middle tap itself is quick, so it does not lock.
             Assert::IsFalse(e.OnButtonUp(MouseButton::Middle, 550, s));
             Assert::IsFalse(e.IsLocked(MouseButton::Middle));
@@ -198,8 +212,8 @@ namespace MouseButtonLockEngineTests
 
         TEST_METHOD(DisabledButtonDoesNotLock)
         {
-            FakeInjector inj;
-            Engine e(inj);
+            FakeInjector injector;
+            Engine e(injector);
             Settings s = DefaultSettings();
             s.mmbEnabled = false;
 
@@ -210,8 +224,8 @@ namespace MouseButtonLockEngineTests
 
         TEST_METHOD(LeftButtonOffByDefault)
         {
-            FakeInjector inj;
-            Engine e(inj);
+            FakeInjector injector;
+            Engine e(injector);
             Settings s = DefaultSettings(); // lmbEnabled defaults to false
 
             Assert::IsFalse(s.lmbEnabled);
@@ -222,8 +236,8 @@ namespace MouseButtonLockEngineTests
 
         TEST_METHOD(LeftButtonLocksWhenEnabled)
         {
-            FakeInjector inj;
-            Engine e(inj);
+            FakeInjector injector;
+            Engine e(injector);
             Settings s = DefaultSettings();
             s.lmbEnabled = true;
 
@@ -234,14 +248,15 @@ namespace MouseButtonLockEngineTests
             // A left-lock is released by the injected LEFTUP path just like the other buttons.
             Assert::IsTrue(e.OnButtonDown(MouseButton::Left, 1000, PointL{ 0, 0 }, s));
             Assert::IsFalse(e.IsLocked(MouseButton::Left));
-            Assert::AreEqual(static_cast<size_t>(1), inj.upCalls.size());
-            Assert::IsTrue(inj.upCalls[0] == MouseButton::Left);
+            Assert::AreEqual(static_cast<size_t>(1), injector.upCalls.size());
+            Assert::IsTrue(injector.upCalls[0].button == MouseButton::Left);
+            Assert::IsTrue(injector.upCalls[0].dismissContextMenu); // same-button release tap
         }
 
         TEST_METHOD(LockedButtonIsIndependentUntilAnotherButtonIsPressed)
         {
-            FakeInjector inj;
-            Engine e(inj);
+            FakeInjector injector;
+            Engine e(injector);
             Settings s = DefaultSettings();
             s.lmbEnabled = true;
             s.rmbEnabled = true;
@@ -256,8 +271,9 @@ namespace MouseButtonLockEngineTests
             // itself lock on a quick tap.
             e.OnButtonDown(MouseButton::Right, 500, PointL{ 0, 0 }, s);
             Assert::IsFalse(e.IsLocked(MouseButton::Left));
-            Assert::AreEqual(static_cast<size_t>(1), inj.upCalls.size());
-            Assert::IsTrue(inj.upCalls[0] == MouseButton::Left);
+            Assert::AreEqual(static_cast<size_t>(1), injector.upCalls.size());
+            Assert::IsTrue(injector.upCalls[0].button == MouseButton::Left);
+            Assert::IsFalse(injector.upCalls[0].dismissContextMenu); // chorded cross-button release
             Assert::IsFalse(e.OnButtonUp(MouseButton::Right, 550, s));
             Assert::IsFalse(e.IsLocked(MouseButton::Right));
             Assert::IsFalse(e.IsLocked(MouseButton::Middle));
@@ -265,8 +281,8 @@ namespace MouseButtonLockEngineTests
 
         TEST_METHOD(EnforceEnabledReleasesNowDisabledButton)
         {
-            FakeInjector inj;
-            Engine e(inj);
+            FakeInjector injector;
+            Engine e(injector);
             Settings s = DefaultSettings();
 
             e.OnButtonDown(MouseButton::Right, 0, PointL{ 0, 0 }, s);
@@ -276,26 +292,30 @@ namespace MouseButtonLockEngineTests
             s.rmbEnabled = false;
             e.EnforceEnabled(s);
             Assert::IsFalse(e.IsLocked(MouseButton::Right));
-            Assert::AreEqual(static_cast<size_t>(1), inj.upCalls.size()); // released via the injector
+            Assert::AreEqual(static_cast<size_t>(1), injector.upCalls.size()); // released via the injector
+            // A settings-driven release is not chorded, so its context menu must be dismissed.
+            Assert::IsTrue(injector.upCalls[0].dismissContextMenu);
         }
 
         TEST_METHOD(ReleaseAllReleasesLockedButtons)
         {
-            FakeInjector inj;
-            Engine e(inj);
+            FakeInjector injector;
+            Engine e(injector);
             Settings s = DefaultSettings();
 
             e.OnButtonDown(MouseButton::Right, 0, PointL{ 0, 0 }, s);
             e.OnButtonUp(MouseButton::Right, 400, s);
             e.ReleaseAll();
             Assert::IsFalse(e.IsLocked(MouseButton::Right));
-            Assert::AreEqual(static_cast<size_t>(1), inj.upCalls.size());
+            Assert::AreEqual(static_cast<size_t>(1), injector.upCalls.size());
+            // A lifecycle (disable/shutdown) release is not chorded: dismiss the surfaced menu.
+            Assert::IsTrue(injector.upCalls[0].dismissContextMenu);
         }
 
         TEST_METHOD(ResetTransientClearsStaleHold)
         {
-            FakeInjector inj;
-            Engine e(inj);
+            FakeInjector injector;
+            Engine e(injector);
             Settings s = DefaultSettings();
 
             // Begin a hold but never release (as if the module was disabled mid-hold).
