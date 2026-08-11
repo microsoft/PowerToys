@@ -138,6 +138,60 @@ public static class WindowControl
     /// </summary>
     public static IReadOnlyList<ProcessWindow> EnumerateAllWindows() => EnumerateTopLevelWindows(null);
 
+    /// <summary>
+    /// Whether any top-level window of <paramref name="className"/> is currently visible.
+    /// </summary>
+    /// <remarks>
+    /// Cheap enough to poll: it reads class names only, never window titles, so it avoids the
+    /// cross-process <c>WM_GETTEXT</c> that <see cref="EnumerateAllWindows"/> performs per window.
+    /// For a window that only appears briefly, prefer <see cref="WindowShowWatcher"/> — no poll can
+    /// tell "never shown" apart from "shown between two samples".
+    /// </remarks>
+    public static bool IsAnyWindowOfClassVisible(string className) =>
+        AnyWindowOfClass(className, requireVisible: true);
+
+    /// <summary>Whether any top-level window of <paramref name="className"/> exists, visible or not.</summary>
+    public static bool AnyWindowOfClassExists(string className) =>
+        AnyWindowOfClass(className, requireVisible: false);
+
+    private static bool AnyWindowOfClass(string className, bool requireVisible)
+    {
+        // EnumWindows rather than chained FindWindowEx calls: when several windows share a class (the
+        // caller's product may pool and recycle them) the chained form is easy to get subtly wrong and
+        // end up only ever inspecting the first match.
+        var found = false;
+
+        try
+        {
+            EnumWindows(
+                (hWnd, _) =>
+                {
+                    try
+                    {
+                        if ((!requireVisible || IsWindowVisible(hWnd)) &&
+                            GetWindowClassName(hWnd).Equals(className, StringComparison.OrdinalIgnoreCase))
+                        {
+                            found = true;
+                            return false;
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore any single window we can't read; keep enumerating.
+                    }
+
+                    return true;
+                },
+                IntPtr.Zero);
+        }
+        catch
+        {
+            // Best-effort: report whatever was determined before the failure.
+        }
+
+        return found;
+    }
+
     private static IReadOnlyList<ProcessWindow> EnumerateTopLevelWindows(Func<int, bool>? pidFilter)
     {
         var result = new List<ProcessWindow>();
