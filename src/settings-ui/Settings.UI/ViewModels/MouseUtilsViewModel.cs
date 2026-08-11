@@ -135,8 +135,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             MouseButtonLockSettingsConfig = mouseButtonLockSettingsRepository.SettingsConfig;
 
             // Null-safe in case a hand-edited settings.json carries explicit nulls: repair the
-            // property objects to their defaults so both the reads below and the property setters
-            // are safe (mirrors the null-handling the CursorWrap block above uses).
+            // properties container and its members to their defaults so both the reads below and
+            // the property setters are safe (mirrors the null-handling the CursorWrap block above
+            // uses, and covers a "properties": null payload that would otherwise throw here).
+            MouseButtonLockSettingsConfig.Properties ??= new MouseButtonLockProperties();
             MouseButtonLockSettingsConfig.Properties.LmbLockEnabled ??= new BoolProperty(false);
             MouseButtonLockSettingsConfig.Properties.RmbLockEnabled ??= new BoolProperty(true);
             MouseButtonLockSettingsConfig.Properties.MmbLockEnabled ??= new BoolProperty(false);
@@ -219,6 +221,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             else
             {
+                // Clear the cached flag so a policy retracted between refreshes (Enabled/Disabled
+                // back to Not Configured) re-enables the toggle instead of leaving it marked as
+                // policy-managed.
+                _mouseButtonLockEnabledStateIsGPOConfigured = false;
                 _isMouseButtonLockEnabled = GeneralSettingsConfig.Enabled.MouseButtonLock;
             }
         }
