@@ -208,13 +208,14 @@ ZonesOverlay::RenderResult ZonesOverlay::Render()
     {
         animationAlpha = 1.f;
     }
+    const bool animateRotation = m_animateRotation && isEnabledAnimations;
 
     m_renderTarget->BeginDraw();
 
     const auto renderNow = std::chrono::steady_clock().now();
     float rotationPulse = 0.f;
     float rotationProgress = 0.f;
-    if (m_rotationPulseStart)
+    if (animateRotation && m_rotationPulseStart)
     {
         const auto pulseMillis = (renderNow - *m_rotationPulseStart).count() / 1e6f;
         if (pulseMillis < RotationPulseDurationMillis)
@@ -233,8 +234,8 @@ ZonesOverlay::RenderResult ZonesOverlay::Render()
     const auto height = static_cast<float>(m_clientRect.bottom - m_clientRect.top);
     const float directionSign = m_rotationDirection == RotationDirection::Left ? -1.f : (m_rotationDirection == RotationDirection::Right ? 1.f : 0.f);
     const float easedRotationProgress = SmoothStep(rotationProgress);
-    const float pulseOffset = m_animateRotation ? directionSign * easedRotationProgress * ClampDimension(width * 0.075f, 44.f, 132.f) : 0.f;
-    const float pulseScale = 1.f + ((m_animateRotation ? rotationPulse : 0.f) * 0.05f);
+    const float pulseOffset = animateRotation ? directionSign * easedRotationProgress * ClampDimension(width * 0.075f, 44.f, 132.f) : 0.f;
+    const float pulseScale = 1.f + ((animateRotation ? rotationPulse : 0.f) * 0.05f);
 
     // Draw backdrop
     m_renderTarget->Clear(D2D1::ColorF(0.f, 0.f, 0.f, 0.f));
@@ -311,7 +312,7 @@ ZonesOverlay::RenderResult ZonesOverlay::Render()
 
     const auto accentColor = MonitorAccentColor(m_monitorNumber.value_or(1));
 
-    if (m_animateRotation && (m_rotationDirection == RotationDirection::Left || m_rotationDirection == RotationDirection::Right))
+    if (animateRotation && (m_rotationDirection == RotationDirection::Left || m_rotationDirection == RotationDirection::Right))
     {
         constexpr int MarkerCount = 7;
         const float railWidth = ClampDimension(width * 0.58f, 260.f, 760.f);
@@ -346,7 +347,7 @@ ZonesOverlay::RenderResult ZonesOverlay::Render()
     if (m_monitorNumber && writeFactory)
     {
         const float smallerDimension = width < height ? width : height;
-        const bool isRotating = m_animateRotation && (m_rotationDirection == RotationDirection::Left || m_rotationDirection == RotationDirection::Right);
+        const bool isRotating = animateRotation && (m_rotationDirection == RotationDirection::Left || m_rotationDirection == RotationDirection::Right);
         const float radius = ClampDimension(smallerDimension * 0.14f, 82.f, 170.f) * pulseScale;
         const float centerX = width / 2.f;
         const float centerY = height / 2.f;
