@@ -1770,11 +1770,9 @@ public sealed partial class MainWindow : WindowEx,
                     return (LRESULT)IntPtr.Zero;
                 }
 
-            // MainWindow always exists (unlike DockWindow instances, which only exist for
-            // enabled monitors, or none at all when the dock is disabled), so it is the one
-            // reliable place to observe display topology changes and keep IMonitorService's
-            // cache fresh. Without this, the Settings page's monitor list can go stale when
-            // no dock window happens to be alive to receive WM_DISPLAYCHANGE itself.
+            // Unlike DockWindow instances, MainWindow always exists, so it's the one
+            // reliable place to catch topology changes. Without this, the Settings page's
+            // monitor list goes stale whenever no dock window is around to see WM_DISPLAYCHANGE.
             case PInvoke.WM_DISPLAYCHANGE:
                 Logger.LogDebug("MainWindow WM_DISPLAYCHANGE");
                 _monitorService.NotifyMonitorsChanged();

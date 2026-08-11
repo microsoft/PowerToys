@@ -40,9 +40,9 @@ public sealed class MonitorService : IMonitorService
             }
         }
 
-        // BuildDisplayInfoMapWithRetry can sleep between attempts, so it runs unlocked.
-        // Another thread might race us here and rebuild the map too, but that's cheap
-        // compared to blocking every other caller on the UI thread for up to 100ms.
+        // BuildDisplayInfoMapWithRetry sleeps between attempts, so it runs unlocked. Another
+        // thread might race us and rebuild the map too, but that's cheaper than blocking
+        // every caller for up to 100ms.
         var displayInfo = BuildDisplayInfoMapWithRetry();
 
         lock (_lock)
@@ -121,10 +121,9 @@ public sealed class MonitorService : IMonitorService
 
     /// <summary>
     /// Number of attempts to build the stable-ID display info map before giving up.
-    /// Immediately after a WM_DISPLAYCHANGE the Display Configuration API can transiently
-    /// fail or return an incomplete topology while Windows is still settling the new
-    /// configuration. Retrying a couple of times avoids incorrectly falling back to the
-    /// volatile GDI device name (which breaks per-monitor dock config reconciliation).
+    /// Right after WM_DISPLAYCHANGE, the Display Configuration API can transiently fail or
+    /// return an incomplete topology while Windows is still settling. A couple of retries
+    /// avoids falling back to the volatile GDI device name and breaking dock reconciliation.
     /// </summary>
     private const int DisplayInfoMapRetryCount = 3;
     private static readonly TimeSpan DisplayInfoMapRetryDelay = TimeSpan.FromMilliseconds(50);
@@ -198,19 +197,15 @@ public sealed class MonitorService : IMonitorService
     }
 
     /// <summary>
-    /// Calls <see cref="BuildDisplayInfoMap"/>, retrying a few times with a short delay
-    /// if it comes back incomplete. The Display Configuration API can transiently fail or
-    /// only resolve some of the active sources right after a WM_DISPLAYCHANGE (topology
-    /// still settling); without a retry, a partially resolved map would silently leave the
-    /// remaining monitors on their volatile GDI device name, which makes
-    /// <see cref="Settings.MonitorConfigReconciler"/> treat a still-connected monitor as
-    /// brand new and wipe/disable its dock config.
+    /// Calls <see cref="BuildDisplayInfoMap"/>, retrying a few times with a short delay if
+    /// it comes back incomplete. Right after WM_DISPLAYCHANGE the API can transiently fail
+    /// or only resolve some active sources, and a partial map would leave those monitors on
+    /// their volatile GDI name, tricking <see cref="Settings.MonitorConfigReconciler"/> into
+    /// treating a still-connected monitor as brand new.
     ///
-    /// A source can also fail to resolve permanently (for example a virtual or otherwise
-    /// unnamed source whose <c>DisplayConfigGetDeviceInfo</c> call never succeeds), in which
-    /// case the map can never reach <c>expectedSourceCount</c> no matter how many times we
-    /// retry. To avoid burning every attempt (and its sleep) on a result that will never
-    /// improve, we stop early once an attempt makes no more progress than the last one.
+    /// A source can also fail to resolve permanently (a virtual or unnamed source whose
+    /// <c>DisplayConfigGetDeviceInfo</c> call never succeeds), so we stop retrying early
+    /// once an attempt makes no more progress than the last one.
     /// </summary>
     private static Dictionary<string, (string FriendlyName, string DevicePath)> BuildDisplayInfoMapWithRetry()
     {
@@ -247,9 +242,8 @@ public sealed class MonitorService : IMonitorService
     /// (friendly name and stable device path) using the Display Configuration APIs.
     /// Returns an empty dictionary on failure so callers can fall back gracefully.
     /// <paramref name="expectedSourceCount"/> is the number of distinct GDI source device
-    /// names among the active paths, not the raw path count. In Duplicate/clone display
-    /// mode, several paths share one source, so comparing against the path count itself
-    /// would never be satisfied and the retry loop would always exhaust every attempt.
+    /// names among the active paths, not the raw path count: in Duplicate/clone mode several
+    /// paths share one source, so comparing against the path count would never be satisfied.
     /// </summary>
     private static unsafe Dictionary<string, (string FriendlyName, string DevicePath)> BuildDisplayInfoMap(out uint expectedSourceCount)
     {

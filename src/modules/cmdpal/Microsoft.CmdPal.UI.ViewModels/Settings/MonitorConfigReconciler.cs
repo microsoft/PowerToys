@@ -139,22 +139,16 @@ public static class MonitorConfigReconciler
         }
 
         // Fuzzy match: recover secondary monitor configs when their ID changed.
-        // Windows can reassign device paths for a still-connected monitor across a Win+P
-        // "PC screen only" -> "Extend" round-trip or a dock/undock event, which otherwise
-        // makes an existing secondary monitor look brand new and get a fresh disabled/empty
-        // config (see issue #48516). This is safe to apply only when there is exactly one
-        // remaining unmatched secondary monitor and exactly one remaining unmatched
-        // non-primary config: with more than one on either side we can't tell which
-        // monitor a config belongs to, and guessing risks associating the wrong settings
-        // with a genuinely new, unrelated display.
+        // Windows can reassign device paths for a still-connected monitor (a Win+P
+        // round-trip, a dock/undock), which would otherwise make it look brand new and get
+        // a fresh disabled/empty config (see issue #48516). Only fires when there's exactly
+        // one unmatched monitor and one unmatched config on each side, since anything more
+        // and we can't tell who owns what.
         //
-        // Note this isn't limited to the Win+P case: configs are kept around for
-        // StaleThreshold (180 days), so this same one-to-one match can also fire when a
-        // secondary monitor was unplugged weeks ago and a different, genuinely new
-        // secondary monitor is plugged in later. In that case we still reassociate the old
-        // config with the new monitor. That's intentional: inheriting a stale config (which
-        // the user can review and change) beats silently wiping it and starting from a
-        // disabled/empty default.
+        // This isn't Win+P-only: configs stick around for StaleThreshold (180 days), so a
+        // genuinely new monitor plugged in after an old one aged out can inherit its stale
+        // config too. That's fine. Inheriting a config you can review and change beats
+        // wiping it.
         var unmatchedSecondaryMonitors = new List<int>();
         for (var mi = 0; mi < currentMonitors.Count; mi++)
         {
