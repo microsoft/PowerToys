@@ -65,6 +65,41 @@ public partial class CachedIconSourceProviderTests
 
     [TestMethod]
     [Timeout(5_000)]
+    public async Task SharedInFlightLoadTracksEveryLiveRequest()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
+        var icon = new IconDataViewModel { Icon = "test" };
+        var firstDemand = new IconRequestDemand();
+        var secondDemand = new IconRequestDemand();
+
+        var first = provider.GetIconSource(icon, 1.0, demand: firstDemand);
+        var second = provider.GetIconSource(icon, 1.0, demand: secondDemand);
+
+        Assert.AreSame(first, second);
+        Assert.IsNotNull(loader.LastDemand);
+        Assert.IsTrue(loader.LastDemand.IsDemanded);
+
+        firstDemand.Release();
+        Assert.IsTrue(loader.LastDemand.IsDemanded);
+
+        secondDemand.Release();
+        Assert.IsFalse(loader.LastDemand.IsDemanded);
+
+        var returnedDemand = new IconRequestDemand();
+        var returned = provider.GetIconSource(icon, 1.0, demand: returnedDemand);
+        Assert.AreSame(first, returned);
+        Assert.IsTrue(loader.LastDemand.IsDemanded);
+
+        returnedDemand.Release();
+        Assert.IsFalse(loader.LastDemand.IsDemanded);
+
+        loader.CompleteNext(null);
+        await Task.WhenAll(first, second, returned);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
     public async Task SuccessfulDirectGlyphLoadIsCachedWithoutQueueing()
     {
         var glyph = CreateTestIconSource();
@@ -293,6 +328,8 @@ public partial class CachedIconSourceProviderTests
 
         public int GlyphAttemptCount => Volatile.Read(ref _glyphAttemptCount);
 
+        public IconLoadDemand? LastDemand { get; private set; }
+
         public bool TryLoadGlyph(
             string? iconString,
             string? fontFamily,
@@ -313,9 +350,11 @@ public partial class CachedIconSourceProviderTests
             double scale,
             TaskCompletionSource<IconSource?> tcs,
             IconLoadPriority priority,
-            IconLoadMeasurement? diagnostics = null)
+            IconLoadMeasurement? diagnostics = null,
+            IconLoadDemand? demand = null)
         {
             Interlocked.Increment(ref _enqueueCount);
+            LastDemand = demand;
             if (!AcceptLoads)
             {
                 return false;

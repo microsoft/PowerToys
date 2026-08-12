@@ -4,13 +4,9 @@
 
 namespace Microsoft.CmdPal.UI.Helpers;
 
-internal enum IconLoadDemandStage
+internal interface IIconRequestDemand
 {
-    Unlinked,
-    BeforeEnqueue,
-    Queued,
-    WorkerActive,
-    Completed,
-    Rejected,
-    Abandoned,
+    void Attach(IconLoadDemand loadDemand);
+
+    void Release();
 }

@@ -27,6 +27,7 @@ public partial class IconBox : ContentControl
     private IconRefreshState _refreshState;
     private long _requestVersion;
     private IconRequestMeasurement _activeRequestDiagnostics;
+    private IIconRequestDemand? _activeRequestDemand;
     private long _diagnosticId;
     private IconRequestSite _derivedRequestSite;
     private bool _hasDerivedRequestSite;
@@ -198,13 +199,51 @@ public partial class IconBox : ContentControl
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
+        // ListView recycling can deliver an Unloaded event after the same template
+        // instance has already been rebound, loaded, and arranged for a new item.
+        // No matching Loaded event follows that stale notification, so invalidating
+        // the new request here would leave the previous icon in the visible row.
+        if (_activeRequestDemand is not null && IsLoaded && IsWithinXamlRootBounds())
+        {
+            return;
+        }
+
         if (XamlRoot is not null)
         {
             XamlRoot.Changed -= OnXamlRootChanged;
         }
 
+        if (_activeRequestDemand is not null)
+        {
+            AdvanceRequestVersion();
+            MarkRefreshPending(IconRequestReason.Loaded);
+        }
+
         _hasDerivedRequestSite = false;
         _derivedRequestSite = IconRequestSite.Unknown;
+    }
+
+    private bool IsWithinXamlRootBounds()
+    {
+        var xamlRoot = XamlRoot;
+        if (xamlRoot is null || ActualWidth <= 0 || ActualHeight <= 0)
+        {
+            return false;
+        }
+
+        try
+        {
+            var bounds = TransformToVisual(null).TransformBounds(new Rect(0, 0, ActualWidth, ActualHeight));
+            var rootSize = xamlRoot.Size;
+            return bounds.Right > 0
+                && bounds.Bottom > 0
+                && bounds.Left < rootSize.Width
+                && bounds.Top < rootSize.Height;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
     }
 
     private void OnXamlRootChanged(XamlRoot sender, XamlRootChangedEventArgs args)
@@ -262,26 +301,35 @@ public partial class IconBox : ContentControl
     {
         _activeRequestDiagnostics.Invalidate();
         _activeRequestDiagnostics = default;
+        _activeRequestDemand?.Release();
+        _activeRequestDemand = null;
         return ++_requestVersion;
     }
 
-    private void TrackActiveRequest(long requestVersion, IconRequestMeasurement diagnostics)
+    private void TrackActiveRequest(
+        long requestVersion,
+        IconRequestMeasurement diagnostics,
+        IIconRequestDemand demand)
     {
         if (requestVersion == _requestVersion)
         {
             _activeRequestDiagnostics = diagnostics;
+            _activeRequestDemand = demand;
         }
         else
         {
             diagnostics.Invalidate();
+            demand.Release();
         }
     }
 
-    private void ClearActiveRequest(long requestVersion)
+    private void ClearActiveRequest(long requestVersion, IIconRequestDemand demand)
     {
-        if (requestVersion == _requestVersion)
+        demand.Release();
+        if (requestVersion == _requestVersion && ReferenceEquals(_activeRequestDemand, demand))
         {
             _activeRequestDiagnostics = default;
+            _activeRequestDemand = null;
         }
     }
 
@@ -422,6 +470,7 @@ public partial class IconBox : ContentControl
         IconRequestReason reason)
     {
         var diagnostics = default(IconRequestMeasurement);
+        SourceRequestedEventArgs? eventArgs = null;
 
         try
         {
@@ -432,11 +481,11 @@ public partial class IconBox : ContentControl
             diagnostics = IconLoadDiagnostics.IsRecording
                 ? IconLoadDiagnostics.BeginRequest(reason, scale, iconBox.GetDiagnosticOrigin())
                 : default;
-            iconBox.TrackActiveRequest(requestVersion, diagnostics);
-            var eventArgs = new SourceRequestedEventArgs(sourceKey, iconBox._lastTheme, scale)
+            eventArgs = new SourceRequestedEventArgs(sourceKey, iconBox._lastTheme, scale)
             {
                 Diagnostics = diagnostics,
             };
+            iconBox.TrackActiveRequest(requestVersion, diagnostics, eventArgs);
             await sourceRequested.InvokeAsync(iconBox, eventArgs);
 
             // After the await:
@@ -474,7 +523,10 @@ public partial class IconBox : ContentControl
         }
         finally
         {
-            iconBox.ClearActiveRequest(requestVersion);
+            if (eventArgs is not null)
+            {
+                iconBox.ClearActiveRequest(requestVersion, eventArgs);
+            }
         }
     }
 }
