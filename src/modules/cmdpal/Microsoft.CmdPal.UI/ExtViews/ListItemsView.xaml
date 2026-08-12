@@ -366,7 +366,9 @@
                     Width="20"
                     Height="20"
                     AutomationProperties.AccessibilityView="Raw"
+                    DiagnosticScope="SingleRow"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    RequestSite="ListItem"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
 
@@ -479,7 +481,9 @@
                     Margin="0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
+                    DiagnosticScope="SmallGrid"
                     Foreground="{ThemeResource TextFillColorPrimary}"
+                    RequestSite="ListItem"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconProvider.SourceRequested32}" />
             </StackPanel>
@@ -507,7 +511,9 @@
                     VerticalAlignment="Center"
                     CharacterSpacing="12"
                     FontSize="14"
+                    DiagnosticScope="MediumGrid"
                     Foreground="{ThemeResource TextFillColorPrimary}"
+                    RequestSite="ListItem"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconProvider.SourceRequested64}" />
                 <TextBlock
@@ -553,7 +559,9 @@
                         StretchDirection="Both">
                         <cpcontrols:IconBox
                             CornerRadius="4"
+                            DiagnosticScope="Gallery"
                             Foreground="{ThemeResource TextFillColorPrimary}"
+                            RequestSite="ListItem"
                             SourceKey="{x:Bind Icon, Mode=OneWay}"
                             SourceRequested="{x:Bind help:IconProvider.SourceRequested256}" />
                     </Viewbox>
@@ -679,7 +687,9 @@
                         Width="48"
                         Height="48"
                         Margin="8"
+                        DiagnosticScope="ListItems"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        RequestSite="EmptyState"
                         SourceKey="{x:Bind ViewModel.EmptyContent.Icon, Mode=OneWay}"
                         SourceRequested="{x:Bind help:IconProvider.SourceRequested64}" />
                     <TextBlock

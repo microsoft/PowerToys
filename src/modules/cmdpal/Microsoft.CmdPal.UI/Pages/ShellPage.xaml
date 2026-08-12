@@ -94,6 +94,8 @@
                                 Width="16"
                                 Height="16"
                                 Margin="0,3,8,0"
+                                DiagnosticScope="DetailsCommand"
+                                RequestSite="Details"
                                 SourceKey="{x:Bind Icon, Mode=OneWay}"
                                 SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
                             <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{x:Bind Name}" />
@@ -314,7 +316,9 @@
                         Margin="4,0,4,0"
                         VerticalAlignment="Center"
                         ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                        DiagnosticScope="CurrentPage"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        RequestSite="PageHeader"
                         SourceKey="{x:Bind ViewModel.CurrentPage.Icon, Mode=OneWay}"
                         SourceRequested="{x:Bind help:IconProvider.SourceRequested20}"
                         Visibility="{x:Bind ViewModel.CurrentPage.IsRootPage, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
@@ -468,6 +472,8 @@
                             Margin="0,0,16,16"
                             HorizontalAlignment="Left"
                             AutomationProperties.AccessibilityView="Raw"
+                            DiagnosticScope="HeroImage"
+                            RequestSite="Details"
                             SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
                             SourceRequested="{x:Bind help:IconProvider.SourceRequested64}"
                             Visibility="{x:Bind HasHeroImage, Mode=OneWay}" />

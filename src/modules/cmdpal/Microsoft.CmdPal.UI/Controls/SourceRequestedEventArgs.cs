@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Common.Deferred;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -20,4 +21,6 @@ public class SourceRequestedEventArgs(object? key, ElementTheme requestedTheme, 
     public ElementTheme Theme => requestedTheme;
 
     public double Scale => scale;
+
+    internal IconRequestMeasurement Diagnostics { get; set; }
 }

@@ -74,6 +74,8 @@
                                 Grid.Column="0"
                                 Width="12"
                                 Height="12"
+                                DiagnosticScope="Default"
+                                RequestSite="Tag"
                                 SourceKey="{TemplateBinding Icon}">
                                 <local:IconBox.Margin>
                                     <Binding
