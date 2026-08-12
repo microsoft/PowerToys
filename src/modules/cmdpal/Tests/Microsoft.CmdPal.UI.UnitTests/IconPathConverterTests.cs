@@ -78,4 +78,42 @@ public class IconPathConverterTests
 
         Assert.AreEqual(IconPathConverter.PreparedIconKind.Empty, prepared.Kind);
     }
+
+    [TestMethod]
+    public void ThemedInlineSvgProtocolIsPreparedAsThemeSpecificSvgData()
+    {
+        const string Icon = "|ThemedSvg|warning|<svg xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"{{ThemeColor}}\"/><path fill=\"{{AccentColor}}\"/></svg>";
+
+        using var prepared = IconPathConverter.Prepare(Icon, null, 20, ElementTheme.Dark);
+
+        Assert.AreEqual(IconPathConverter.PreparedIconKind.SvgData, prepared.Kind);
+        Assert.AreEqual(20, prepared.TargetSize);
+        var svg = Encoding.UTF8.GetString(prepared.SvgData!);
+        StringAssert.Contains(svg, "fill=\"#FFFFFF\"");
+        StringAssert.Contains(svg, "fill=\"#FCE100\"");
+    }
+
+    [TestMethod]
+    public void PlainInlineSvgProtocolDoesNotExpandPlaceholders()
+    {
+        const string Icon = "|Svg|<svg xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"{{ThemeColor}}\"/><path fill=\"{{AccentColor}}\"/></svg>";
+
+        using var prepared = IconPathConverter.Prepare(Icon, null, 20, ElementTheme.Dark);
+
+        Assert.AreEqual(IconPathConverter.PreparedIconKind.SvgData, prepared.Kind);
+        Assert.AreEqual(20, prepared.TargetSize);
+        var svg = Encoding.UTF8.GetString(prepared.SvgData!);
+        StringAssert.Contains(svg, "fill=\"{{ThemeColor}}\"");
+        StringAssert.Contains(svg, "fill=\"{{AccentColor}}\"");
+    }
+
+    [TestMethod]
+    public void InvalidSvgProtocolDoesNotFallThroughToGlyphParsing()
+    {
+        var missingPath = Path.Combine(Path.GetTempPath(), $"CmdPal-{Guid.NewGuid():N}.svg");
+
+        using var prepared = IconPathConverter.Prepare($"|Svg|{missingPath}", null, 20, ElementTheme.Light);
+
+        Assert.AreEqual(IconPathConverter.PreparedIconKind.Empty, prepared.Kind);
+    }
 }

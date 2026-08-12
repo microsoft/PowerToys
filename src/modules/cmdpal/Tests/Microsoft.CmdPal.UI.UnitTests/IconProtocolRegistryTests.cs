@@ -92,6 +92,39 @@ public class IconProtocolRegistryTests
     }
 
     [DataTestMethod]
+    [DataRow("|Svg|<svg/>", "SvgInline")]
+    [DataRow("|Svg|C:\\Icons\\sample.svg", "SvgFile")]
+    [DataRow("|ThemedSvg|warning|<svg/>", "ThemedSvgInline")]
+    [DataRow("|ThemedSvg|warning|C:\\Icons\\sample.svg", "ThemedSvgFile")]
+    public void BuiltInRegistryFindsSvgIconProcessor(string value, string inputKind)
+    {
+        var processor = IconProtocolRegistry.Find(value);
+
+        Assert.IsNotNull(processor);
+        Assert.AreSame(SvgIconProtocolProcessor.Instance, processor);
+        Assert.AreEqual(IconCachePartition.Other, processor.CachePartition);
+        Assert.AreEqual(inputKind, processor.ClassifyInput(value).ToString());
+    }
+
+    [TestMethod]
+    public void InlineSvgProtocolPreparesSynchronously()
+    {
+        const string Value = "|ThemedSvg|warning|<svg/>";
+        var processor = IconProtocolRegistry.Find(Value);
+
+        Assert.IsNotNull(processor);
+        Assert.IsTrue(processor.TryPrepareSynchronously(
+            Value,
+            20,
+            ElementTheme.Light,
+            out var preparedIcon));
+        using (preparedIcon)
+        {
+            Assert.AreEqual(IconPathConverter.PreparedIconKind.SvgData, preparedIcon.Kind);
+        }
+    }
+
+    [DataTestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow("\uE700")]
