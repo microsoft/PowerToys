@@ -26,7 +26,11 @@ internal sealed class IconSourceProvider : IIconSourceProvider
     {
     }
 
-    public Task<IconSource?> GetIconSource(IconDataViewModel icon, double scale, IconRequestMeasurement diagnostics = default)
+    public Task<IconSource?> GetIconSource(
+        IconDataViewModel icon,
+        double scale,
+        IconRequestMeasurement diagnostics = default,
+        IIconRequestDemand? demand = null)
     {
         var tcs = new TaskCompletionSource<IconSource?>(TaskCreationOptions.RunContinuationsAsynchronously);
         IconLoadMeasurement? loadDiagnostics = null;
@@ -50,6 +54,9 @@ internal sealed class IconSourceProvider : IIconSourceProvider
                 return tcs.Task;
             }
 
+            var loadDemand = new IconLoadDemand();
+            loadDemand.Attach(demand);
+
             if (!_loader.TryEnqueueLoad(
                     icon.Icon,
                     icon.FontFamily,
@@ -58,7 +65,8 @@ internal sealed class IconSourceProvider : IIconSourceProvider
                     scale,
                     tcs,
                     _isPriority ? IconLoadPriority.High : IconLoadPriority.Low,
-                    loadDiagnostics))
+                    loadDiagnostics,
+                    loadDemand))
             {
                 tcs.TrySetException(new ObjectDisposedException(nameof(IIconLoaderService)));
             }
