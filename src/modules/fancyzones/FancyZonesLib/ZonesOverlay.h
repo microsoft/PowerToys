@@ -12,6 +12,7 @@
 #include "FancyZones.h"
 #include "Colors.h"
 #include "LayoutConfigurator.h"
+#include "Settings.h"
 
 class ZonesOverlay
 {
@@ -31,6 +32,19 @@ class ZonesOverlay
         bool autoHide;
     };
 
+    struct LayoutNameLabel
+    {
+        std::wstring text;
+        D2D1_COLOR_F textColor;
+        D2D1_COLOR_F backgroundColor;
+        float fontSize;
+        float paddingX;
+        float paddingY;
+        int durationMillis;
+        LayoutNameLabelPlacement placement;
+        std::chrono::steady_clock::time_point tStart;
+    };
+
     enum struct RenderResult
     {
         Ok,
@@ -42,11 +56,13 @@ class ZonesOverlay
     RECT m_clientRect{};
     ID2D1HwndRenderTarget* m_renderTarget = nullptr;
     std::optional<AnimationInfo> m_animation;
+    std::optional<LayoutNameLabel> m_layoutNameLabel;
 
     std::mutex m_mutex;
     std::vector<DrawableRect> m_sceneRects;
 
     float GetAnimationAlpha();
+    float GetLayoutNameLabelAlpha();
     static IDWriteFactory* GetWriteFactory();
     static D2D1_COLOR_F ConvertColor(COLORREF color);
     static D2D1_RECT_F ConvertRect(RECT rect);
@@ -59,6 +75,15 @@ class ZonesOverlay
     std::thread m_renderThread;
 
 public:
+    struct LayoutNameLabelOptions
+    {
+        COLORREF textColor;
+        COLORREF backgroundColor;
+        int fontSize;
+        int padding;
+        int durationMillis;
+        LayoutNameLabelPlacement placement;
+    };
 
     ~ZonesOverlay();
     ZonesOverlay(HWND window);
@@ -69,4 +94,5 @@ public:
                            const ZoneIndexSet& highlightZones,
                            const Colors::ZoneColors& colors,
                            const bool showZoneText);
+    void ShowLayoutName(const std::wstring& text, const LayoutNameLabelOptions& options);
 };

@@ -288,6 +288,24 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void MouseWheelLayoutSwitchShouldSetValue2TrueWhenSuccessful()
+        {
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
+
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            Assert.IsFalse(viewModel.MouseWheelLayoutSwitch); // check if value was initialized to false.
+
+            // act
+            viewModel.MouseWheelLayoutSwitch = true;
+
+            // assert
+            var expected = viewModel.MouseWheelLayoutSwitch;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesMouseWheelLayoutSwitch.Value;
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
         public void DisplayOrWorkAreaChangeMoveWindowsShouldSetValue2FalseWhenSuccessful()
         {
             Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
