@@ -246,7 +246,7 @@ public class IconLoadDiagnosticsTests
 
     [DataTestMethod]
     [DataRow("|Swatch|#FF0067C0|", "GeneratedSwatch")]
-    [DataRow("|Initials|CP|#FF005FB8|rounded|", "GeneratedInitials")]
+    [DataRow("|Initials|CP|#FF005FB8|square|", "GeneratedInitials")]
     public void GeneratedIconProtocolUsesSpecificInputKind(string icon, string expectedKind)
     {
         IconLoadDiagnostics.Start();
