@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Text;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.UI.Xaml;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Graphics.Imaging;
 
@@ -124,6 +126,18 @@ public class IconPathConverterTests
             [missingExecutable, "|AppIcon|", "not a glyph"],
             null,
             20);
+
+        Assert.AreEqual(IconPathConverter.PreparedIconKind.Empty, prepared.Kind);
+    }
+
+    [TestMethod]
+    public void GeneratedInitialsDoNotShapeInSynchronousConverter()
+    {
+        using var prepared = IconPathConverter.Prepare(
+            "|Initials|CP|#FF005FB8|#FF60CDFF|rounded|",
+            null,
+            20,
+            ElementTheme.Dark);
 
         Assert.AreEqual(IconPathConverter.PreparedIconKind.Empty, prepared.Kind);
     }

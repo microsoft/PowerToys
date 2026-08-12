@@ -215,6 +215,26 @@ public partial class CachedIconSourceProviderTests
 
     [TestMethod]
     [Timeout(5_000)]
+    public async Task CanonicallyEquivalentInitialsShareCacheEntry()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var precomposed = new IconDataViewModel { Icon = "|Initials|Å|#0067C0|circle|" };
+        var decomposed = new IconDataViewModel { Icon = "|Initials|A\u030A|#0067C0|circle|" };
+        var percentEncoded = new IconDataViewModel { Icon = "|Initials|%C3%85|#0067C0|circle|" };
+
+        var first = provider.GetIconSource(precomposed, 1.0, theme: ElementTheme.Light);
+        loader.CompleteNext(null);
+        await first;
+        Assert.IsTrue(SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)));
+
+        Assert.AreSame(first, provider.GetIconSource(decomposed, 1.0, theme: ElementTheme.Light));
+        Assert.AreSame(first, provider.GetIconSource(percentEncoded, 1.0, theme: ElementTheme.Light));
+        Assert.AreEqual(1, loader.EnqueueCount);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
     public async Task FailedLoadIsRemovedAndCanBeRetried()
     {
         var loader = new ControllableIconLoader();

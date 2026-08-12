@@ -28,6 +28,8 @@ internal sealed class AppIconProtocolProcessor : IIconProtocolProcessor
 
     public ReadOnlySpan<string> ProtocolPrefixes => AppIconProtocol.ProtocolPrefixes;
 
+    public string GetCacheIdentity(string value) => value;
+
     public ElementTheme GetCacheTheme(string value, ElementTheme theme) => ElementTheme.Default;
 
     public IconLoadInputKind ClassifyInput(string value) => IconLoadInputKind.SpecializedAppIcon;

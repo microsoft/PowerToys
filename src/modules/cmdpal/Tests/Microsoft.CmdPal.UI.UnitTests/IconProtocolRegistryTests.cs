@@ -40,6 +40,58 @@ public class IconProtocolRegistryTests
     }
 
     [DataTestMethod]
+    [DataRow("|Swatch|#FF0067C0|", "GeneratedSwatch", true)]
+    [DataRow("|Initials|CP|#FF0067C0|circle|", "GeneratedInitials", false)]
+    public void BuiltInRegistryFindsGeneratedIconProcessor(
+        string value,
+        string inputKind,
+        bool preparesSynchronously)
+    {
+        var processor = IconProtocolRegistry.Find(value);
+
+        Assert.IsNotNull(processor);
+        Assert.AreSame(GeneratedIconProtocolProcessor.Instance, processor);
+        Assert.AreEqual(IconCachePartition.Other, processor.CachePartition);
+        Assert.AreEqual(inputKind, processor.ClassifyInput(value).ToString());
+        Assert.AreEqual(preparesSynchronously, processor.TryPrepareSynchronously(
+            value,
+            20,
+            ElementTheme.Light,
+            out var preparedIcon));
+        using (preparedIcon)
+        {
+            if (preparesSynchronously)
+            {
+                Assert.AreEqual(IconPathConverter.PreparedIconKind.SvgData, preparedIcon!.Kind);
+            }
+            else
+            {
+                Assert.IsNull(preparedIcon);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task InitialsPreparationRunsThroughAsyncProcessorPath()
+    {
+        const string Value = "|Initials|CP|#FF0067C0|circle|";
+        var processor = IconProtocolRegistry.Find(Value);
+
+        Assert.IsNotNull(processor);
+        Assert.IsFalse(processor.TryPrepareSynchronously(
+            Value,
+            20,
+            ElementTheme.Light,
+            out var synchronousIcon));
+        Assert.IsNull(synchronousIcon);
+
+        using var result = await processor.PrepareAsync(Value, 20, ElementTheme.Light);
+        using var preparedIcon = result.TakePreparedIcon();
+        Assert.IsNotNull(preparedIcon);
+        Assert.AreEqual(IconPathConverter.PreparedIconKind.SvgData, preparedIcon.Kind);
+    }
+
+    [DataTestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow("\uE700")]
@@ -149,6 +201,8 @@ public class IconProtocolRegistryTests
                 return _prefixes;
             }
         }
+
+        public string GetCacheIdentity(string value) => value;
 
         public ElementTheme GetCacheTheme(string value, ElementTheme theme) => ElementTheme.Default;
 

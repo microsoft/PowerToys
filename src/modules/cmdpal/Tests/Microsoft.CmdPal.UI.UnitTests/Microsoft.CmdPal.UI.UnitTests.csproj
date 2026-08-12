@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="MSTest" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" />
     <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>
 
@@ -38,6 +39,10 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\FontIconGlyphClassifier.cs" Link="Helpers\Icons\FontIconGlyphClassifier.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\FontIconGlyphKind.cs" Link="Helpers\Icons\FontIconGlyphKind.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\FontIconSizeCalculator.cs" Link="Helpers\Icons\FontIconSizeCalculator.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\GeneratedIconProtocol.cs" Link="Helpers\Icons\GeneratedIconProtocol.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\GeneratedIconProtocolProcessor.cs" Link="Helpers\Icons\GeneratedIconProtocolProcessor.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\InitialsTextRenderer.cs" Link="Helpers\Icons\InitialsTextRenderer.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\SvgPathDataReceiver.cs" Link="Helpers\Icons\SvgPathDataReceiver.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconCachePartition.cs" Link="Helpers\Icons\IconCachePartition.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadDemand.cs" Link="Helpers\Icons\IconLoadDemand.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadDemandStage.cs" Link="Helpers\Icons\IconLoadDemandStage.cs" />
