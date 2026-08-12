@@ -80,14 +80,8 @@ public partial class CachedIconSourceProviderTests
 
         var loader = new ControllableIconLoader();
         var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
-        var firstIcon = new IconDataViewModel
-        {
-            Data = new IconDataStreamReference { Unsafe = firstStream },
-        };
-        var secondIcon = new IconDataViewModel
-        {
-            Data = new IconDataStreamReference { Unsafe = secondStream },
-        };
+        var firstIcon = CreateIcon(string.Empty, firstStream);
+        var secondIcon = CreateIcon(string.Empty, secondStream);
 
         var first = provider.GetIconSource(firstIcon, 1.0);
         var second = provider.GetIconSource(secondIcon, 1.0);
@@ -162,9 +156,9 @@ public partial class CachedIconSourceProviderTests
         Assert.AreEqual(1, loader.EnqueueCount);
     }
 
-    private static IconDataViewModel CreateIcon()
+    private static IconDataViewModel CreateIcon(string iconString = "test", IRandomAccessStreamReference? stream = null)
     {
-        var icon = new IconDataViewModel(new IconData("test"));
+        var icon = new IconDataViewModel(new IconData(iconString) { Data = stream });
         icon.InitializeProperties();
         return icon;
     }
