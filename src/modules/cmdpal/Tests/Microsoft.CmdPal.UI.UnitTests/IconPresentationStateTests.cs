@@ -11,7 +11,7 @@ namespace Microsoft.CmdPal.UI.UnitTests;
 public class IconPresentationStateTests
 {
     [TestMethod]
-    public void SourceChangeImmediatelyReplacesResolvedSourceWithPlacementFallback()
+    public void SourceChangeResetsResolvedSourceToPlacementFallback()
     {
         var state = new IconPresentationState<string>
         {
