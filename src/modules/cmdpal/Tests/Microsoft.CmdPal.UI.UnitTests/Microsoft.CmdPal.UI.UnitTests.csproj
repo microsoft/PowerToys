@@ -31,6 +31,7 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\CachedIconSourceProvider.cs" Link="Helpers\Icons\CachedIconSourceProvider.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconDispatcherMaterializationKind.cs" Link="Helpers\Icons\IconDispatcherMaterializationKind.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconDispatcherUiSliceKind.cs" Link="Helpers\Icons\IconDispatcherUiSliceKind.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\FontIconSizeCalculator.cs" Link="Helpers\Icons\FontIconSizeCalculator.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadDemandStage.cs" Link="Helpers\Icons\IconLoadDemandStage.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadDiagnostics.cs" Link="Helpers\Icons\IconLoadDiagnostics.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadDiagnosticsReport.cs" Link="Helpers\Icons\IconLoadDiagnosticsReport.cs" />

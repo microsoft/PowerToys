@@ -2,12 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Channels;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
 using Microsoft.Terminal.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Foundation;
 using Windows.Storage.Streams;
@@ -28,6 +30,10 @@ internal sealed partial class IconLoaderService : IIconLoaderService
     private readonly Channel<Func<Task>> _lowPriorityQueue = Channel.CreateUnbounded<Func<Task>>();
     private readonly Task[] _workers;
     private readonly DispatcherQueue _dispatcherQueue;
+    private FontFamily? _fluentIconFontFamily;
+    private FontFamily? _emojiFontFamily;
+    private FontFamily? _generalFontFamily;
+    private int _directGlyphFailureLogged;
 
     public IconLoaderService(DispatcherQueue dispatcherQueue)
     {
@@ -38,6 +44,71 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         {
             _workers[i] = Task.Run(ProcessQueueAsync);
         }
+    }
+
+    public bool TryLoadGlyph(
+        string? iconString,
+        string? fontFamily,
+        Size iconSize,
+        double scale,
+        [MaybeNullWhen(false)] out IconSource result)
+    {
+        result = null;
+
+        // IconSource is a XAML object. If a caller ever reaches the provider away from
+        // the UI thread, preserve the existing dispatcher-based path.
+        if (!_dispatcherQueue.HasThreadAccess || string.IsNullOrEmpty(iconString))
+        {
+            return false;
+        }
+
+        try
+        {
+            var glyphKind = FontIconGlyphClassifier.Classify(iconString);
+            if (glyphKind is FontIconGlyphKind.Invalid or FontIconGlyphKind.None)
+            {
+                return false;
+            }
+
+            result = new FontIconSource
+            {
+                FontFamily = GetOrCreateFontFamily(glyphKind, fontFamily),
+                FontSize = FontIconSizeCalculator.Calculate(iconSize, scale, DefaultIconSize),
+                Glyph = iconString,
+            };
+            return true;
+        }
+        catch (Exception ex)
+        {
+            // The general converter has its own fallback behavior. Let it handle any
+            // input that cannot be represented by this narrow glyph fast path.
+            if (Interlocked.Exchange(ref _directGlyphFailureLogged, 1) == 0)
+            {
+                Logger.LogError("Direct glyph construction failed; falling back to queued icon loading", ex);
+            }
+
+            result = null;
+            return false;
+        }
+    }
+
+    private FontFamily GetOrCreateFontFamily(FontIconGlyphKind glyphKind, string? requestedFontFamily)
+    {
+        if (!string.IsNullOrEmpty(requestedFontFamily))
+        {
+            return new FontFamily(requestedFontFamily);
+        }
+
+        // TryLoadGlyph gates this method to the service's dispatcher thread, so these
+        // XAML objects can be reused without a lock or cross-STA sharing.
+        return glyphKind switch
+        {
+            FontIconGlyphKind.FluentSymbol =>
+                _fluentIconFontFamily ??= new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"),
+            FontIconGlyphKind.Emoji =>
+                _emojiFontFamily ??= new FontFamily("Segoe UI Emoji, Segoe UI"),
+            _ => _generalFontFamily ??= new FontFamily("Segoe UI"),
+        };
     }
 
     public bool TryEnqueueLoad(

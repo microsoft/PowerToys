@@ -202,10 +202,14 @@ public class IconLoadDiagnosticsTests
         request.Complete(IconRequestStatus.Empty);
 
         var report = IconLoadDiagnostics.StopAndCreateReport();
+        var directGlyphResults =
+            $"  Direct glyph construction by result kind{Environment.NewLine}" +
+            $"    Empty: count=1";
 
         Assert.IsNotNull(report);
         StringAssert.Contains(report.Text, "Direct glyph loads: 1");
         StringAssert.Contains(report.Text, "Direct glyph construction: count=1");
+        StringAssert.Contains(report.Text, directGlyphResults);
         StringAssert.Contains(report.Text, "Active at stop: 0");
         StringAssert.Contains(report.Text, "Maximum active workers: 0");
         StringAssert.Contains(report.Text, "Enqueue to completion: no samples");

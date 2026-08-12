@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.CmdPal.UI.Helpers;
@@ -60,6 +61,48 @@ public partial class CachedIconSourceProviderTests
 
         Assert.AreSame(first, cached);
         Assert.AreEqual(1, loader.EnqueueCount);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task SuccessfulDirectGlyphLoadIsCachedWithoutQueueing()
+    {
+        var glyph = CreateTestIconSource();
+        var loader = new ControllableIconLoader
+        {
+            ReturnDirectGlyph = true,
+            DirectGlyphResult = glyph,
+        };
+        var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
+        var icon = new IconDataViewModel { Icon = "glyph" };
+
+        var first = provider.GetIconSource(icon, 1.0);
+        var firstResult = await first;
+
+        Assert.IsTrue(
+            SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)),
+            "The direct glyph load was not retired from the in-flight dictionary.");
+
+        var cached = provider.GetIconSource(icon, 1.0);
+
+        Assert.AreSame(glyph, firstResult);
+        Assert.AreSame(first, cached);
+        Assert.AreEqual(1, loader.GlyphAttemptCount);
+        Assert.AreEqual(0, loader.EnqueueCount);
+    }
+
+    [TestMethod]
+    public async Task CachedProviderFallsBackWhenLoaderViolatesDirectGlyphContract()
+    {
+        var loader = new ControllableIconLoader { ReturnDirectGlyph = true };
+        var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
+
+        var result = provider.GetIconSource(new IconDataViewModel { Icon = "glyph" }, 1.0);
+
+        Assert.AreEqual(1, loader.GlyphAttemptCount);
+        Assert.AreEqual(1, loader.EnqueueCount);
+        loader.CompleteNext(null);
+        Assert.IsNull(await result);
     }
 
     [TestMethod]
@@ -161,6 +204,45 @@ public partial class CachedIconSourceProviderTests
         Assert.AreEqual(1, loader.EnqueueCount);
     }
 
+    [TestMethod]
+    public async Task UncachedProviderLoadsGlyphDirectlyWithoutQueueing()
+    {
+        var glyph = CreateTestIconSource();
+        var loader = new ControllableIconLoader
+        {
+            ReturnDirectGlyph = true,
+            DirectGlyphResult = glyph,
+        };
+        var provider = new IconSourceProvider(loader, new Size(16, 16));
+
+        var result = await provider.GetIconSource(new IconDataViewModel { Icon = "glyph" }, 1.0);
+
+        Assert.AreSame(glyph, result);
+        Assert.AreEqual(1, loader.GlyphAttemptCount);
+        Assert.AreEqual(0, loader.EnqueueCount);
+    }
+
+    [TestMethod]
+    public async Task UncachedProviderFallsBackWhenLoaderViolatesDirectGlyphContract()
+    {
+        var loader = new ControllableIconLoader { ReturnDirectGlyph = true };
+        var provider = new IconSourceProvider(loader, new Size(16, 16));
+
+        var result = provider.GetIconSource(new IconDataViewModel { Icon = "glyph" }, 1.0);
+
+        Assert.AreEqual(1, loader.GlyphAttemptCount);
+        Assert.AreEqual(1, loader.EnqueueCount);
+        loader.CompleteNext(null);
+        Assert.IsNull(await result);
+    }
+
+    private static IconSource CreateTestIconSource()
+    {
+        // The unit-test process does not initialize WinUI. Providers treat a completed
+        // IconSource opaquely, so use a non-activated projection only as an identity token.
+        return (IconSource)RuntimeHelpers.GetUninitializedObject(typeof(FontIconSource));
+    }
+
     private static int GetInFlightCount(CachedIconSourceProvider provider)
     {
         var field = typeof(CachedIconSourceProvider).GetField("_inFlight", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -199,10 +281,29 @@ public partial class CachedIconSourceProviderTests
     {
         private readonly ConcurrentQueue<TaskCompletionSource<IconSource?>> _pending = new();
         private int _enqueueCount;
+        private int _glyphAttemptCount;
 
         public bool AcceptLoads { get; set; } = true;
 
+        public bool ReturnDirectGlyph { get; set; }
+
+        public IconSource? DirectGlyphResult { get; set; }
+
         public int EnqueueCount => Volatile.Read(ref _enqueueCount);
+
+        public int GlyphAttemptCount => Volatile.Read(ref _glyphAttemptCount);
+
+        public bool TryLoadGlyph(
+            string? iconString,
+            string? fontFamily,
+            Size iconSize,
+            double scale,
+            [MaybeNullWhen(false)] out IconSource result)
+        {
+            Interlocked.Increment(ref _glyphAttemptCount);
+            result = DirectGlyphResult!;
+            return ReturnDirectGlyph;
+        }
 
         public bool TryEnqueueLoad(
             string? iconString,
