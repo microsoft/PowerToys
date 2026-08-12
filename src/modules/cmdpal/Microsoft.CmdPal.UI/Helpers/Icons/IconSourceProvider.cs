@@ -43,6 +43,13 @@ internal sealed class IconSourceProvider : IIconSourceProvider
                 scale);
             diagnostics.RecordProviderResolution(IconProviderResolution.NewLoad, loadDiagnostics);
 
+            if (_loader.TryLoadGlyph(icon.Icon, icon.FontFamily, _iconSize, scale, out var glyph) && glyph is not null)
+            {
+                loadDiagnostics?.CompleteDirectGlyph(glyph);
+                tcs.TrySetResult(glyph);
+                return tcs.Task;
+            }
+
             if (!_loader.TryEnqueueLoad(
                     icon.Icon,
                     icon.FontFamily,
