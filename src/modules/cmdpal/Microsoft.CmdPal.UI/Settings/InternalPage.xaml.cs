@@ -110,7 +110,7 @@ public sealed partial class InternalPage : Page
 
     private void StartIconDiagnosticsClicked(object sender, RoutedEventArgs e)
     {
-        var sessionId = IconLoadDiagnostics.Start();
+        var sessionId = IconLoadDiagnostics.Start(DispatcherQueue);
         IconDiagnosticsStatusTextBlock.Text = $"Recording session {sessionId}. Reproduce the icon workload, then select Stop.";
         UpdateIconDiagnosticsControls();
     }

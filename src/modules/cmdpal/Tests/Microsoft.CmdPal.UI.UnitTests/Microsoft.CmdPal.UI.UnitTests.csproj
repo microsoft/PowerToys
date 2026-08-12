@@ -42,6 +42,7 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconRequestReason.cs" Link="Helpers\Icons\IconRequestReason.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconRequestStatus.cs" Link="Helpers\Icons\IconRequestStatus.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconSourceProvider.cs" Link="Helpers\Icons\IconSourceProvider.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconUiResponsivenessProbe.cs" Link="Helpers\Icons\IconUiResponsivenessProbe.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconLoaderService.cs" Link="Helpers\Icons\IIconLoaderService.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconSourceProvider.cs" Link="Helpers\Icons\IIconSourceProvider.cs" />
   </ItemGroup>

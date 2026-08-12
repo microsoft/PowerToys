@@ -4,14 +4,20 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.CmdPal.UI.Controls;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.CmdPal.UI.Helpers;
 
+[SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The diagnostics facade owns the session and always calls Stop. Avoid implementing a WinRT interface on this internal NativeAOT type.")]
 internal sealed class IconLoadDiagnosticsSession
 {
     private readonly object _stopLock = new();
@@ -32,6 +38,7 @@ internal sealed class IconLoadDiagnosticsSession
     private readonly DiagnosticHistogram _backgroundPreparationLatency = new();
     private readonly DiagnosticHistogram _dispatcherWaitLatency = new();
     private readonly DiagnosticHistogram _dispatcherWorkLatency = new();
+    private readonly DiagnosticHistogram _uiProbeWaitLatency = new();
     private readonly DiagnosticHistogram _elementUpdateLatency = new();
     private readonly InputKindMeasurements[] _inputKindMeasurements = CreateInputKindMeasurements();
     private readonly ElementKindMeasurements[] _elementKindMeasurements = CreateElementKindMeasurements();
@@ -44,9 +51,24 @@ internal sealed class IconLoadDiagnosticsSession
     private readonly ConcurrentDictionary<RequestOriginKey, RequestOriginMeasurements> _requestOriginMeasurements = new();
     private readonly long[] _invalidatedRequestLoadStages = new long[Enum.GetValues<IconLoadDemandStage>().Length];
     private readonly long[] _capacityInterferingSpeculativeStartsByInputKind = new long[Enum.GetValues<IconLoadInputKind>().Length];
+    private readonly long _processCpuStartedTicks;
+    private readonly long _managedAllocatedBytesStarted;
+    private readonly long _gcPauseStartedTicks;
+    private readonly int _gen0CollectionsStarted;
+    private readonly int _gen1CollectionsStarted;
+    private readonly int _gen2CollectionsStarted;
+    private readonly long _workingSetStartedBytes;
+    private readonly IconUiResponsivenessProbe? _uiResponsivenessProbe;
 
     private DateTimeOffset _stoppedUtc;
     private long _stoppedAt;
+    private long _processCpuStoppedTicks;
+    private long _managedAllocatedBytesStopped;
+    private long _gcPauseStoppedTicks;
+    private int _gen0CollectionsStopped;
+    private int _gen1CollectionsStopped;
+    private int _gen2CollectionsStopped;
+    private long _workingSetStoppedBytes;
     private long _nextRequestId;
     private long _nextLoadId;
     private long _requestsStarted;
@@ -73,13 +95,44 @@ internal sealed class IconLoadDiagnosticsSession
     private long _maximumActiveWorkers;
     private long _elementsCreated;
     private long _elementsReused;
+    private long _uiProbeEnqueued;
+    private long _uiProbeCompleted;
+    private long _uiProbeSkipped;
+    private long _uiProbeRejected;
 
     public long Id { get; }
 
-    internal IconLoadDiagnosticsSession(long id)
+    internal IconLoadDiagnosticsSession(long id, DispatcherQueue? dispatcherQueue = null)
     {
         Id = id;
+        _processCpuStartedTicks = GetProcessCpuTicks();
+        _managedAllocatedBytesStarted = GC.GetTotalAllocatedBytes(precise: false);
+        _gcPauseStartedTicks = GC.GetTotalPauseDuration().Ticks;
+        _gen0CollectionsStarted = GC.CollectionCount(0);
+        _gen1CollectionsStarted = GC.CollectionCount(1);
+        _gen2CollectionsStarted = GC.CollectionCount(2);
+        _workingSetStartedBytes = GetWorkingSetBytes();
+        if (dispatcherQueue is not null)
+        {
+            // The probe retains this session and starts RunAsync during construction. Keep its
+            // creation after all state used by RecordUiProbe* is initialized because a timer tick
+            // may call back as soon as RunAsync starts.
+            _uiResponsivenessProbe = new IconUiResponsivenessProbe(dispatcherQueue, this);
+        }
     }
+
+    internal void RecordUiProbeEnqueued() => Interlocked.Increment(ref _uiProbeEnqueued);
+
+    internal void RecordUiProbeCompleted(long elapsedTicks)
+    {
+        Interlocked.Increment(ref _uiProbeCompleted);
+        _uiProbeWaitLatency.Record(elapsedTicks);
+        IconLoadEventSource.Log.UiResponsivenessProbeCompleted(Id, ToMicroseconds(elapsedTicks));
+    }
+
+    internal void RecordUiProbeSkipped() => Interlocked.Increment(ref _uiProbeSkipped);
+
+    internal void RecordUiProbeRejected() => Interlocked.Increment(ref _uiProbeRejected);
 
     public IconRequestMeasurement BeginRequest(IconRequestReason reason, double scale, IconRequestOrigin origin)
     {
@@ -558,7 +611,16 @@ internal sealed class IconLoadDiagnosticsSession
             if (_stoppedAt == 0)
             {
                 _stoppedUtc = DateTimeOffset.UtcNow;
-                Volatile.Write(ref _stoppedAt, Stopwatch.GetTimestamp());
+                var stoppedAt = Stopwatch.GetTimestamp();
+                _uiResponsivenessProbe?.Stop();
+                _processCpuStoppedTicks = GetProcessCpuTicks();
+                _managedAllocatedBytesStopped = GC.GetTotalAllocatedBytes(precise: false);
+                _gcPauseStoppedTicks = GC.GetTotalPauseDuration().Ticks;
+                _gen0CollectionsStopped = GC.CollectionCount(0);
+                _gen1CollectionsStopped = GC.CollectionCount(1);
+                _gen2CollectionsStopped = GC.CollectionCount(2);
+                _workingSetStoppedBytes = GetWorkingSetBytes();
+                Volatile.Write(ref _stoppedAt, stoppedAt);
             }
         }
     }
@@ -569,12 +631,20 @@ internal sealed class IconLoadDiagnosticsSession
         var stoppedAt = Volatile.Read(ref _stoppedAt);
         var duration = TimeSpan.FromSeconds((stoppedAt - _startedAt) / (double)Stopwatch.Frequency);
 
-        var builder = new StringBuilder(2048);
+        var builder = new StringBuilder(4096);
         builder.AppendLine("CmdPal icon diagnostics");
         builder.Append("Session: ").AppendLine(Id.ToString(CultureInfo.InvariantCulture));
         builder.Append("Started UTC: ").AppendLine(_startedUtc.ToString("O", CultureInfo.InvariantCulture));
         builder.Append("Ended UTC: ").AppendLine(_stoppedUtc.ToString("O", CultureInfo.InvariantCulture));
         builder.Append("Duration: ").Append(FormatMilliseconds(stoppedAt - _startedAt)).AppendLine(" ms");
+        builder.AppendLine();
+
+        builder.AppendLine("Process work during session");
+        AppendProcessWorkMeasurements(builder, stoppedAt - _startedAt);
+        builder.AppendLine();
+
+        builder.AppendLine("UI responsiveness probe");
+        AppendUiResponsivenessMeasurements(builder);
         builder.AppendLine();
 
         builder.AppendLine("Requests");
@@ -630,6 +700,75 @@ internal sealed class IconLoadDiagnosticsSession
         builder.AppendLine("No icon strings, paths, glyphs, application identifiers, or item data are included. Diagnostic scopes are static developer labels.");
 
         return new IconLoadDiagnosticsReport(Id, _startedUtc, _stoppedUtc, duration, builder.ToString());
+    }
+
+    private void AppendProcessWorkMeasurements(StringBuilder builder, long durationTicks)
+    {
+        builder.AppendLine("  Definition: process-wide measurements include all CmdPal work during the session, not only icon loading.");
+
+        if (_processCpuStartedTicks < 0 || _processCpuStoppedTicks < 0)
+        {
+            builder.AppendLine("  Process CPU time: unavailable");
+        }
+        else
+        {
+            var cpuTicks = Math.Max(0, _processCpuStoppedTicks - _processCpuStartedTicks);
+            var cpuMilliseconds = TimeSpan.FromTicks(cpuTicks).TotalMilliseconds;
+            var durationMilliseconds = durationTicks * 1000D / Stopwatch.Frequency;
+            var equivalentCoreUtilization = durationMilliseconds <= 0
+                ? 0
+                : cpuMilliseconds * 100D / durationMilliseconds;
+            builder.Append("  Process CPU time: ")
+                .Append(cpuMilliseconds.ToString("0.###", CultureInfo.InvariantCulture))
+                .AppendLine(" ms");
+            builder.Append("  Equivalent logical-core utilization (100% = one fully busy logical core): ")
+                .Append(equivalentCoreUtilization.ToString("0.###", CultureInfo.InvariantCulture))
+                .AppendLine(" %");
+        }
+
+        var allocatedBytes = Math.Max(0, _managedAllocatedBytesStopped - _managedAllocatedBytesStarted);
+        builder.Append("  Managed allocations: ")
+            .Append(allocatedBytes.ToString(CultureInfo.InvariantCulture))
+            .Append(" bytes (")
+            .Append(FormatMebibytes(allocatedBytes))
+            .AppendLine(" MiB)");
+        AppendValue(builder, "Gen 0 collections", Math.Max(0, _gen0CollectionsStopped - _gen0CollectionsStarted));
+        AppendValue(builder, "Gen 1 collections", Math.Max(0, _gen1CollectionsStopped - _gen1CollectionsStarted));
+        AppendValue(builder, "Gen 2 collections", Math.Max(0, _gen2CollectionsStopped - _gen2CollectionsStarted));
+        builder.Append("  GC pause time: ")
+            .Append(TimeSpan.FromTicks(Math.Max(0, _gcPauseStoppedTicks - _gcPauseStartedTicks))
+                .TotalMilliseconds.ToString("0.###", CultureInfo.InvariantCulture))
+            .AppendLine(" ms");
+
+        if (_workingSetStartedBytes < 0 || _workingSetStoppedBytes < 0)
+        {
+            builder.AppendLine("  Working set: unavailable");
+        }
+        else
+        {
+            builder.Append("  Working set at start: ").Append(FormatMebibytes(_workingSetStartedBytes)).AppendLine(" MiB");
+            builder.Append("  Working set at stop: ").Append(FormatMebibytes(_workingSetStoppedBytes)).AppendLine(" MiB");
+            builder.Append("  Working set change: ")
+                .Append(FormatSignedMebibytes(_workingSetStoppedBytes - _workingSetStartedBytes))
+                .AppendLine(" MiB");
+        }
+    }
+
+    private void AppendUiResponsivenessMeasurements(StringBuilder builder)
+    {
+        builder.AppendLine("  Definition: a background clock posts at most one minimal normal-priority callback every 50 ms.");
+        builder.AppendLine("  Its delay measures how long executing dispatcher work blocks normal-priority responsiveness; it intentionally runs before queued low-priority icon callbacks.");
+        builder.AppendLine("  Use Dispatcher wait measurements for low-priority icon queue depth. This is a coarse signal, not frame time.");
+        builder.Append("  Enabled: ").AppendLine(_uiResponsivenessProbe is null ? "no" : "yes");
+        var enqueued = Volatile.Read(ref _uiProbeEnqueued);
+        var completed = Volatile.Read(ref _uiProbeCompleted);
+        var rejected = Volatile.Read(ref _uiProbeRejected);
+        AppendValue(builder, "Callbacks enqueued", enqueued);
+        AppendValue(builder, "Callbacks completed", completed);
+        AppendValue(builder, "Callbacks outstanding at stop", Math.Max(0, enqueued - completed - rejected));
+        AppendValue(builder, "Timer ticks skipped while a callback was pending", Volatile.Read(ref _uiProbeSkipped));
+        AppendValue(builder, "Callbacks rejected by DispatcherQueue", rejected);
+        _uiProbeWaitLatency.Append(builder, "Normal-priority queue wait");
     }
 
     private void AppendLoadDemandMeasurements(StringBuilder builder)
@@ -980,6 +1119,38 @@ internal sealed class IconLoadDiagnosticsSession
             current = previous;
         }
     }
+
+    private static long GetProcessCpuTicks()
+    {
+        try
+        {
+            using var process = Process.GetCurrentProcess();
+            return process.TotalProcessorTime.Ticks;
+        }
+        catch
+        {
+            return -1;
+        }
+    }
+
+    private static long GetWorkingSetBytes()
+    {
+        try
+        {
+            using var process = Process.GetCurrentProcess();
+            return process.WorkingSet64;
+        }
+        catch
+        {
+            return -1;
+        }
+    }
+
+    private static string FormatMebibytes(long bytes) =>
+        (bytes / (1024D * 1024D)).ToString("0.###", CultureInfo.InvariantCulture);
+
+    private static string FormatSignedMebibytes(long bytes) =>
+        (bytes / (1024D * 1024D)).ToString("+0.###;-0.###;0", CultureInfo.InvariantCulture);
 
     private static long ToMicroseconds(long ticks) => (long)(ticks * 1_000_000D / Stopwatch.Frequency);
 
