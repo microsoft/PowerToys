@@ -13,6 +13,18 @@ public sealed partial class CommandPreviewBox : UserControl
     private string _title = string.Empty;
     private string _subtitle = string.Empty;
 
+    public IconRequestSite RequestSite
+    {
+        get => PreviewIcon.RequestSite;
+        set => PreviewIcon.RequestSite = value;
+    }
+
+    public string? DiagnosticScope
+    {
+        get => PreviewIcon.DiagnosticScope;
+        set => PreviewIcon.DiagnosticScope = value;
+    }
+
     public CommandPreviewBox()
     {
         InitializeComponent();
