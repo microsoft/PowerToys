@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -16,7 +16,7 @@ public enum PasteFormats
         CanPreview = false,
         SupportedClipboardFormats = ClipboardFormat.Text,
         KernelFunctionDescription = "Takes clipboard text and returns it as it is.")]
-    PlainText,
+    PlainText = 0,
 
     [PasteFormatMetadata(
         IsCoreAction = true,
@@ -26,7 +26,17 @@ public enum PasteFormats
         CanPreview = false,
         SupportedClipboardFormats = ClipboardFormat.Text,
         KernelFunctionDescription = "Takes clipboard text and formats it as markdown text.")]
-    Markdown,
+    Markdown = 1,
+
+    [PasteFormatMetadata(
+        IsCoreAction = true,
+        ResourceId = "PasteAsRichText",
+        IconGlyph = "\uE8D2", // Using a rich text / formatting icon (can adjust later, maybe \uE8D2 which is text icon)
+        RequiresAIService = false,
+        CanPreview = false,
+        SupportedClipboardFormats = ClipboardFormat.Text,
+        KernelFunctionDescription = "Takes markdown or plain text from the clipboard and formats it as rich HTML text.")]
+    RichText = 11,
 
     [PasteFormatMetadata(
         IsCoreAction = true,
@@ -36,7 +46,7 @@ public enum PasteFormats
         CanPreview = false,
         SupportedClipboardFormats = ClipboardFormat.Text,
         KernelFunctionDescription = "Takes clipboard text and formats it as JSON text.")]
-    Json,
+    Json = 2,
 
     [PasteFormatMetadata(
         IsCoreAction = false,
@@ -58,7 +68,7 @@ public enum PasteFormats
         SupportedClipboardFormats = ClipboardFormat.Image,
         IPCKey = AdvancedPasteAdditionalActions.PropertyNames.ImageToText,
         KernelFunctionDescription = "Takes an image from the clipboard and extracts text using OCR. This function is intended only for explicit text extraction or OCR requests.")]
-    ImageToText,
+    ImageToText = 3,
 
     [PasteFormatMetadata(
         IsCoreAction = false,
@@ -69,7 +79,7 @@ public enum PasteFormats
         SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Html,
         IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsTxtFile,
         KernelFunctionDescription = "Takes text or HTML data in the clipboard and transforms it to a TXT file.")]
-    PasteAsTxtFile,
+    PasteAsTxtFile = 4,
 
     [PasteFormatMetadata(
         IsCoreAction = false,
@@ -80,7 +90,7 @@ public enum PasteFormats
         SupportedClipboardFormats = ClipboardFormat.Image,
         IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsPngFile,
         KernelFunctionDescription = "Takes an image in the clipboard and transforms it to a PNG file.")]
-    PasteAsPngFile,
+    PasteAsPngFile = 5,
 
     [PasteFormatMetadata(
         IsCoreAction = false,
@@ -91,7 +101,7 @@ public enum PasteFormats
         SupportedClipboardFormats = ClipboardFormat.Html,
         IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsHtmlFile,
         KernelFunctionDescription = "Takes HTML data in the clipboard and transforms it to an HTML file.")]
-    PasteAsHtmlFile,
+    PasteAsHtmlFile = 6,
 
     [PasteFormatMetadata(
         IsCoreAction = false,
@@ -102,7 +112,7 @@ public enum PasteFormats
         SupportedClipboardFormats = ClipboardFormat.Audio | ClipboardFormat.Video,
         IPCKey = AdvancedPasteTranscodeAction.PropertyNames.TranscodeToMp3,
         KernelFunctionDescription = "Takes an audio or video file in the clipboard and transcodes it to MP3.")]
-    TranscodeToMp3,
+    TranscodeToMp3 = 7,
 
     [PasteFormatMetadata(
         IsCoreAction = false,
@@ -113,7 +123,7 @@ public enum PasteFormats
         SupportedClipboardFormats = ClipboardFormat.Video,
         IPCKey = AdvancedPasteTranscodeAction.PropertyNames.TranscodeToMp4,
         KernelFunctionDescription = "Takes a video file in the clipboard and transcodes it to MP4 (H.264/AAC).")]
-    TranscodeToMp4,
+    TranscodeToMp4 = 8,
 
     [PasteFormatMetadata(
         IsCoreAction = false,
@@ -122,7 +132,7 @@ public enum PasteFormats
         CanPreview = true,
         SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Html | ClipboardFormat.Audio | ClipboardFormat.Video | ClipboardFormat.Image,
         RequiresPrompt = true)]
-    KernelQuery,
+    KernelQuery = 9,
 
     [PasteFormatMetadata(
         IsCoreAction = false,
@@ -132,5 +142,5 @@ public enum PasteFormats
         SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Image,
         KernelFunctionDescription = "Takes user instructions and applies them to the current clipboard content (text or image). Use this function for image analysis, description, or transformation tasks beyond simple OCR.",
         RequiresPrompt = true)]
-    CustomTextTransformation,
+    CustomTextTransformation = 10,
 }
