@@ -4,6 +4,8 @@
 
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Threading;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -19,8 +21,11 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
     private readonly CommandItemViewModel _rootItem;
     private readonly ISettingsService _settingsService;
     private readonly IContextMenuFactory _contextMenuFactory;
+    private readonly Lock _subscriptionLock = new();
 
     private DockBandSettings _bandSettings;
+    private InterlockedBoolean _cleanupStarted;
+    private IListPage? _subscribedList;
 
     public ObservableCollection<DockItemViewModel> Items { get; } = new();
 
@@ -253,12 +258,26 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
     public override void InitializeProperties()
     {
+        if (_cleanupStarted.Value)
+        {
+            return;
+        }
+
         var command = _rootItem.Command;
         var list = command.Model.Unsafe as IListPage;
         if (list is not null)
         {
             InitializeFromList(list);
-            list.ItemsChanged += HandleItemsChanged;
+            lock (_subscriptionLock)
+            {
+                if (_cleanupStarted.Value || _subscribedList is not null)
+                {
+                    return;
+                }
+
+                list.ItemsChanged += HandleItemsChanged;
+                _subscribedList = list;
+            }
         }
         else
         {
@@ -273,6 +292,11 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
     private void HandleItemsChanged(object sender, IItemsChangedEventArgs args)
     {
+        if (_cleanupStarted.Value)
+        {
+            return;
+        }
+
         if (_rootItem.Command.Model.Unsafe is IListPage p)
         {
             InitializeFromList(p);
@@ -281,12 +305,23 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
     protected override void UnsafeCleanup()
     {
+        if (!_cleanupStarted.Set())
+        {
+            return;
+        }
+
         base.UnsafeCleanup();
 
-        var command = _rootItem.Command;
-        if (command.Model.Unsafe is IListPage list)
+        IListPage? subscribedList;
+        lock (_subscriptionLock)
         {
-            list.ItemsChanged -= HandleItemsChanged;
+            subscribedList = _subscribedList;
+            _subscribedList = null;
+        }
+
+        if (subscribedList is not null)
+        {
+            subscribedList.ItemsChanged -= HandleItemsChanged;
         }
 
         foreach (var item in Items)
