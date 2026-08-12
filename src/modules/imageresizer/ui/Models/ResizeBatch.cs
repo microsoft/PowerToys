@@ -7,9 +7,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.IO.Pipes;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,11 +23,15 @@ namespace ImageResizer.Models
     public class ResizeBatch
     {
         private readonly IFileSystem _fileSystem = new FileSystem();
+        private readonly List<ResizeError> _inputErrors = [];
+        private readonly HashSet<string> _resolvedInputPaths = new(StringComparer.OrdinalIgnoreCase);
         private static IAISuperResolutionService _aiSuperResolutionService;
 
         public string DestinationDirectory { get; set; }
 
         public ICollection<string> Files { get; } = new List<string>();
+
+        internal IReadOnlyList<ResizeError> InputErrors => _inputErrors;
 
         public static void SetAiSuperResolutionService(IAISuperResolutionService service)
         {
@@ -72,6 +78,18 @@ namespace ImageResizer.Models
         /// <param name="options">The parsed CLI options.</param>
         /// <returns>A ResizeBatch instance.</returns>
         public static ResizeBatch FromCliOptions(TextReader standardInput, CliOptions options)
+            => FromCliOptionsCore(standardInput, options, reportInvalidInputs: false);
+
+        /// <summary>
+        /// Creates a batch for the public CLI and preserves a diagnostic for every rejected input.
+        /// </summary>
+        /// <param name="standardInput">Standard input stream for reading additional file paths.</param>
+        /// <param name="options">The parsed CLI options.</param>
+        /// <returns>A resize batch containing valid files and input diagnostics.</returns>
+        internal static ResizeBatch FromCliOptionsWithDiagnostics(TextReader standardInput, CliOptions options)
+            => FromCliOptionsCore(standardInput, options, reportInvalidInputs: true);
+
+        private static ResizeBatch FromCliOptionsCore(TextReader standardInput, CliOptions options, bool reportInvalidInputs)
         {
             var batch = new ResizeBatch
             {
@@ -80,11 +98,13 @@ namespace ImageResizer.Models
 
             foreach (var file in options.Files)
             {
-                // Convert relative paths to absolute paths
-                var absolutePath = Path.IsPathRooted(file) ? file : Path.GetFullPath(file);
-                if (IsValidImagePath(absolutePath))
+                if (reportInvalidInputs)
                 {
-                    batch.Files.Add(absolutePath);
+                    AddStrictInput(batch, file);
+                }
+                else
+                {
+                    AddLenientInput(batch, file);
                 }
             }
 
@@ -97,11 +117,13 @@ namespace ImageResizer.Models
                 {
                     while ((file = standardInput.ReadLine()) != null)
                     {
-                        // Convert relative paths to absolute paths
-                        var absolutePath = Path.IsPathRooted(file) ? file : Path.GetFullPath(file);
-                        if (IsValidImagePath(absolutePath))
+                        if (reportInvalidInputs)
                         {
-                            batch.Files.Add(absolutePath);
+                            AddStrictInput(batch, file);
+                        }
+                        else
+                        {
+                            AddLenientInput(batch, file);
                         }
                     }
                 }
@@ -133,6 +155,104 @@ namespace ImageResizer.Models
             return batch;
         }
 
+        private static void AddLenientInput(ResizeBatch batch, string input)
+        {
+            // Keep the GUI and context-menu behavior unchanged: unsupported selections are ignored.
+            var absolutePath = Path.IsPathRooted(input) ? input : Path.GetFullPath(input);
+            if (IsValidImagePath(absolutePath))
+            {
+                batch.Files.Add(absolutePath);
+            }
+        }
+
+        private static void AddStrictInput(ResizeBatch batch, string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                AddInputError(batch, input ?? string.Empty, Resources.CLI_ErrorFileNotFound);
+                return;
+            }
+
+            try
+            {
+                if (ContainsWildcard(input))
+                {
+                    AddWildcardMatches(batch, input);
+                }
+                else
+                {
+                    AddResolvedInput(batch, input, Path.GetFullPath(input));
+                }
+            }
+            catch (Exception ex) when (ex is ArgumentException or IOException or NotSupportedException or UnauthorizedAccessException)
+            {
+                AddInputError(
+                    batch,
+                    input,
+                    string.Format(CultureInfo.InvariantCulture, Resources.CLI_ErrorInvalidInputPath, ex.Message));
+            }
+        }
+
+        private static void AddWildcardMatches(ResizeBatch batch, string input)
+        {
+            var absolutePattern = Path.GetFullPath(input);
+            var directory = Path.GetDirectoryName(absolutePattern);
+            var pattern = Path.GetFileName(absolutePattern);
+
+            if (string.IsNullOrEmpty(directory) || ContainsWildcard(directory))
+            {
+                AddInputError(batch, input, Resources.CLI_ErrorWildcardInDirectory);
+                return;
+            }
+
+            List<string> matches = Directory.Exists(directory)
+                ? Directory.EnumerateFiles(directory, pattern, SearchOption.TopDirectoryOnly)
+                    .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+                    .ToList()
+                : [];
+
+            if (matches.Count == 0)
+            {
+                AddInputError(batch, input, Resources.CLI_ErrorNoWildcardMatches);
+                return;
+            }
+
+            foreach (var match in matches)
+            {
+                AddResolvedInput(batch, match, match);
+            }
+        }
+
+        private static void AddResolvedInput(ResizeBatch batch, string input, string absolutePath)
+        {
+            var normalizedPath = Path.GetFullPath(absolutePath);
+            if (!File.Exists(normalizedPath))
+            {
+                AddInputError(batch, input, Resources.CLI_ErrorFileNotFound);
+                return;
+            }
+
+            if (!ValidImageExtensions.Contains(Path.GetExtension(normalizedPath)))
+            {
+                AddInputError(batch, input, Resources.CLI_ErrorUnsupportedFileType);
+                return;
+            }
+
+            if (batch._resolvedInputPaths.Add(normalizedPath))
+            {
+                batch.Files.Add(normalizedPath);
+            }
+        }
+
+        private static void AddInputError(ResizeBatch batch, string input, string message)
+            => batch._inputErrors.Add(new ResizeError(input, message));
+
+        private static bool ContainsWildcard(string value)
+        {
+            var startIndex = value.StartsWith(@"\\?\", StringComparison.Ordinal) ? 4 : 0;
+            return value.IndexOf('*', startIndex) >= 0 || value.IndexOf('?', startIndex) >= 0;
+        }
+
         public static ResizeBatch FromCommandLine(TextReader standardInput, string[] args)
         {
             var options = CliOptions.Parse(args);
@@ -151,7 +271,7 @@ namespace ImageResizer.Models
         {
             double total = Files.Count;
             int completed = 0;
-            var errors = new ConcurrentBag<ResizeError>();
+            var processingErrors = new ConcurrentBag<ResizeError>();
 
             await Parallel.ForEachAsync(
                 Files,
@@ -167,14 +287,28 @@ namespace ImageResizer.Models
                     }
                     catch (Exception ex)
                     {
-                        errors.Add(new ResizeError(_fileSystem.Path.GetFileName(file), ex.Message));
+                        processingErrors.Add(new ResizeError(_fileSystem.Path.GetFileName(file), FormatErrorMessage(ex)));
                     }
 
                     Interlocked.Increment(ref completed);
                     reportProgress(completed, total);
                 });
 
-            return errors;
+            return _inputErrors.Concat(processingErrors);
+        }
+
+        internal static string FormatErrorMessage(Exception exception)
+        {
+            if (!string.IsNullOrWhiteSpace(exception.Message))
+            {
+                return exception.Message;
+            }
+
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                Resources.CLI_ErrorProcessingFallback,
+                exception.GetType().Name,
+                exception.HResult);
         }
 
         protected virtual async Task ExecuteAsync(string file, Settings settings)

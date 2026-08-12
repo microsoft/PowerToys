@@ -335,6 +335,44 @@ namespace ImageResizer.Models
         }
 
         [TestMethod]
+        public async Task TransformRejectsScaledDimensionsAboveInt32RangeBeforeWriting()
+        {
+            var operation = new ResizeOperation(
+                "Test.png",
+                _directory,
+                Settings(
+                    settings =>
+                    {
+                        settings.SelectedSize.Fit = ResizeFit.Stretch;
+                        settings.SelectedSize.Width = (double)int.MaxValue + 1;
+                        settings.SelectedSize.Height = 100;
+                    }));
+
+            await Assert.ThrowsExactlyAsync<ArgumentOutOfRangeException>(() => operation.ExecuteAsync());
+
+            Assert.AreEqual(0, _directory.FileNames.Count());
+        }
+
+        [TestMethod]
+        public async Task TransformRejectsNegativeFractionalDimensionsBeforeRounding()
+        {
+            var operation = new ResizeOperation(
+                "Test.png",
+                _directory,
+                Settings(
+                    settings =>
+                    {
+                        settings.SelectedSize.Fit = ResizeFit.Stretch;
+                        settings.SelectedSize.Width = -0.4;
+                        settings.SelectedSize.Height = 100;
+                    }));
+
+            await Assert.ThrowsExactlyAsync<ArgumentOutOfRangeException>(() => operation.ExecuteAsync());
+
+            Assert.AreEqual(0, _directory.FileNames.Count());
+        }
+
+        [TestMethod]
         public async Task TransformHonorsUnit()
         {
             var operation = new ResizeOperation(

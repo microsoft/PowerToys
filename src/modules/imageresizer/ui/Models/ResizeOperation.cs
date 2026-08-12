@@ -476,8 +476,8 @@ namespace ImageResizer.Models
             }
 
             // Calculate scaled dimensions
-            uint scaledWidth = (uint)Math.Max(1, (int)Math.Round(originalWidth * scaleX));
-            uint scaledHeight = (uint)Math.Max(1, (int)Math.Round(originalHeight * scaleY));
+            uint scaledWidth = GetValidatedScaledDimension(originalWidth * scaleX);
+            uint scaledHeight = GetValidatedScaledDimension(originalHeight * scaleY);
 
             // Apply the centered crop for Fill mode, if necessary.
             if (_settings.SelectedSize.Fit == ResizeFit.Fill
@@ -498,6 +498,17 @@ namespace ImageResizer.Models
             }
 
             return (scaledWidth, scaledHeight, null, false);
+        }
+
+        private static uint GetValidatedScaledDimension(double value)
+        {
+            if (!double.IsFinite(value) || value < 0 || value > int.MaxValue)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), Resources.Error_DimensionOutOfRange);
+            }
+
+            var roundedValue = Math.Round(value);
+            return (uint)Math.Max(1, (int)roundedValue);
         }
 
         private async Task<BitmapEncoder> CreateFreshEncoderAsync(Guid encoderGuid, IRandomAccessStream outputStream)

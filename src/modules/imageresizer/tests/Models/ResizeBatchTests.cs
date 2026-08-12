@@ -91,6 +91,125 @@ namespace ImageResizer.Models
             Assert.AreEqual(2, calls.Count);
         }
 
+        [TestMethod]
+        public void FromCliOptionsWithDiagnostics_ReportsMissingAndUnsupportedInputs()
+        {
+            using var directory = new TestDirectory();
+            var unsupported = Path.Combine(directory, "notes.txt");
+            var missing = Path.Combine(directory, "missing.png");
+            File.WriteAllText(unsupported, "not an image");
+            var options = Options(unsupported, missing);
+
+            var batch = ResizeBatch.FromCliOptionsWithDiagnostics(null, options);
+
+            Assert.AreEqual(0, batch.Files.Count);
+            Assert.AreEqual(2, batch.InputErrors.Count);
+            CollectionAssert.AreEquivalent(
+                new[] { unsupported, missing },
+                batch.InputErrors.Select(error => error.File).ToArray());
+        }
+
+        [TestMethod]
+        public void FromCliOptionsWithDiagnostics_ResolvesWildcardMatches()
+        {
+            using var directory = new TestDirectory();
+            var first = CopyTestImage(directory, "first.jpg");
+            var second = CopyTestImage(directory, "second.jpg");
+            var options = Options(Path.Combine(directory, "*.jpg"));
+
+            var batch = ResizeBatch.FromCliOptionsWithDiagnostics(null, options);
+
+            Assert.AreEqual(0, batch.InputErrors.Count);
+            CollectionAssert.AreEquivalent(new[] { first, second }, batch.Files.ToArray());
+        }
+
+        [TestMethod]
+        public void FromCliOptionsWithDiagnostics_DeduplicatesExplicitAndOverlappingWildcardPaths()
+        {
+            using var directory = new TestDirectory();
+            var file = CopyTestImage(directory, "overlap.jpg");
+            var options = Options(file, file.ToUpperInvariant(), Path.Combine(directory, "*.jpg"));
+
+            var batch = ResizeBatch.FromCliOptionsWithDiagnostics(null, options);
+
+            Assert.AreEqual(0, batch.InputErrors.Count);
+            CollectionAssert.AreEqual(new[] { file }, batch.Files.ToArray());
+        }
+
+        [TestMethod]
+        public void FromCliOptionsWithDiagnostics_ReportsWildcardWithNoMatches()
+        {
+            using var directory = new TestDirectory();
+            var pattern = Path.Combine(directory, "*.jpg");
+            var options = Options(pattern);
+
+            var batch = ResizeBatch.FromCliOptionsWithDiagnostics(null, options);
+
+            Assert.AreEqual(0, batch.Files.Count);
+            Assert.AreEqual(1, batch.InputErrors.Count);
+            Assert.AreEqual(pattern, batch.InputErrors[0].File);
+        }
+
+        [TestMethod]
+        public void FromCliOptionsWithDiagnostics_PreservesValidFilesInMixedInput()
+        {
+            using var directory = new TestDirectory();
+            var valid = CopyTestImage(directory, "valid.jpg");
+            var missing = Path.Combine(directory, "missing.jpg");
+            var options = Options(valid, missing);
+
+            var batch = ResizeBatch.FromCliOptionsWithDiagnostics(null, options);
+
+            CollectionAssert.AreEqual(new[] { valid }, batch.Files.ToArray());
+            Assert.AreEqual(1, batch.InputErrors.Count);
+            Assert.AreEqual(missing, batch.InputErrors[0].File);
+        }
+
+        [TestMethod]
+        public void FromCliOptions_RemainsLenientForInvalidInputs()
+        {
+            using var directory = new TestDirectory();
+            var options = Options(Path.Combine(directory, "missing.jpg"));
+
+            var batch = ResizeBatch.FromCliOptions(null, options);
+
+            Assert.AreEqual(0, batch.Files.Count);
+            Assert.AreEqual(0, batch.InputErrors.Count);
+        }
+
+        [TestMethod]
+        public async Task ProcessIncludesStrictInputDiagnostics()
+        {
+            using var directory = new TestDirectory();
+            var firstMissing = Path.Combine(directory, "first-missing.jpg");
+            var secondMissing = Path.Combine(directory, "second-missing.jpg");
+            var batch = ResizeBatch.FromCliOptionsWithDiagnostics(null, Options(firstMissing, secondMissing));
+
+            var errors = (await batch.ProcessAsync((_, __) => { }, CancellationToken.None)).ToList();
+
+            Assert.AreEqual(2, errors.Count);
+            CollectionAssert.AreEqual(new[] { firstMissing, secondMissing }, errors.Select(error => error.File).ToArray());
+        }
+
+        [TestMethod]
+        public void FormatErrorMessage_PreservesNonEmptyMessage()
+        {
+            const string message = "Decoder failed.";
+
+            var result = ResizeBatch.FormatErrorMessage(new InvalidOperationException(message));
+
+            Assert.AreEqual(message, result);
+        }
+
+        [TestMethod]
+        public void FormatErrorMessage_UsesTypeAndHResultWhenMessageIsEmpty()
+        {
+            var result = ResizeBatch.FormatErrorMessage(new EmptyMessageException());
+
+            StringAssert.Contains(result, nameof(EmptyMessageException));
+            StringAssert.Contains(result, "0x88982F60");
+        }
+
         private static ResizeBatch CreateBatch(Action<string> executeAction)
         {
             var mock = new Mock<ResizeBatch> { CallBase = true };
@@ -103,6 +222,34 @@ namespace ImageResizer.Models
                 });
 
             return mock.Object;
+        }
+
+        private static CliOptions Options(params string[] files)
+        {
+            var options = new CliOptions();
+            foreach (var file in files)
+            {
+                options.Files.Add(file);
+            }
+
+            return options;
+        }
+
+        private static string CopyTestImage(TestDirectory directory, string fileName)
+        {
+            var sourceDirectory = Path.GetDirectoryName(typeof(ResizeBatchTests).Assembly.Location);
+            var destination = Path.Combine(directory, fileName);
+            File.Copy(Path.Combine(sourceDirectory, "Test.jpg"), destination);
+            return destination;
+        }
+
+        private sealed class EmptyMessageException : Exception
+        {
+            public EmptyMessageException()
+                : base(string.Empty)
+            {
+                HResult = unchecked((int)0x88982F60);
+            }
         }
     }
 }
