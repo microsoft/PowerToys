@@ -23,7 +23,7 @@ public partial class CachedIconSourceProviderTests
     public async Task ConcurrentRequestsShareOneInFlightLoad()
     {
         var loader = new ControllableIconLoader();
-        var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
+        var provider = CreateProvider(loader);
         var icon = new IconDataViewModel { Icon = "test" };
         var requests = new ConcurrentBag<Task<IconSource?>>();
 
@@ -46,7 +46,7 @@ public partial class CachedIconSourceProviderTests
     public async Task SuccessfulLoadIsCachedBeforeInFlightEntryIsRemoved()
     {
         var loader = new ControllableIconLoader();
-        var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
+        var provider = CreateProvider(loader);
         var icon = new IconDataViewModel { Icon = "test" };
 
         var first = provider.GetIconSource(icon, 1.0);
@@ -68,7 +68,7 @@ public partial class CachedIconSourceProviderTests
     public async Task SharedInFlightLoadTracksEveryLiveRequest()
     {
         var loader = new ControllableIconLoader();
-        var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
+        var provider = CreateProvider(loader);
         var icon = new IconDataViewModel { Icon = "test" };
         var firstDemand = new IconRequestDemand();
         var secondDemand = new IconRequestDemand();
@@ -108,8 +108,8 @@ public partial class CachedIconSourceProviderTests
             ReturnDirectGlyph = true,
             DirectGlyphResult = glyph,
         };
-        var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
-        var icon = new IconDataViewModel { Icon = "glyph" };
+        var provider = CreateProvider(loader);
+        var icon = new IconDataViewModel { Icon = "\uE700" };
 
         var first = provider.GetIconSource(icon, 1.0);
         var firstResult = await first;
@@ -130,7 +130,7 @@ public partial class CachedIconSourceProviderTests
     public async Task CachedProviderFallsBackWhenLoaderViolatesDirectGlyphContract()
     {
         var loader = new ControllableIconLoader { ReturnDirectGlyph = true };
-        var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
+        var provider = CreateProvider(loader);
 
         var result = provider.GetIconSource(new IconDataViewModel { Icon = "glyph" }, 1.0);
 
@@ -138,6 +138,41 @@ public partial class CachedIconSourceProviderTests
         Assert.AreEqual(1, loader.EnqueueCount);
         loader.CompleteNext(null);
         Assert.IsNull(await result);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task GlyphAndOtherEntriesUseIndependentCacheCapacities()
+    {
+        var glyphResult = CreateTestIconSource();
+        var loader = new ControllableIconLoader
+        {
+            ReturnDirectGlyph = true,
+            DirectGlyphResult = glyphResult,
+        };
+        var provider = CreateProvider(loader, glyphCacheSize: 1, otherCacheSize: 1);
+        var glyph = new IconDataViewModel { Icon = "\uE700" };
+        var other = new IconDataViewModel { Icon = "bitmap.png" };
+
+        var glyphLoad = provider.GetIconSource(glyph, 1.0);
+        await glyphLoad;
+
+        loader.ReturnDirectGlyph = false;
+        var otherLoad = provider.GetIconSource(other, 1.0);
+        loader.CompleteNext(null);
+        await otherLoad;
+
+        Assert.IsTrue(
+            SpinWait.SpinUntil(
+                () => GetInFlightCount(provider) == 0 &&
+                    GetCacheCount(provider, "_glyphCache") == 1 &&
+                    GetCacheCount(provider, "_otherCache") == 1,
+                TimeSpan.FromSeconds(2)),
+            "The completed entries were not added to their independent caches.");
+
+        Assert.AreSame(glyphLoad, provider.GetIconSource(glyph, 1.0));
+        Assert.AreSame(otherLoad, provider.GetIconSource(other, 1.0));
+        Assert.AreEqual(1, loader.EnqueueCount);
     }
 
     [TestMethod]
@@ -156,7 +191,7 @@ public partial class CachedIconSourceProviderTests
         Assert.AreEqual(RuntimeHelpers.GetHashCode(firstStream), RuntimeHelpers.GetHashCode(secondStream));
 
         var loader = new ControllableIconLoader();
-        var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
+        var provider = CreateProvider(loader);
         var firstIcon = new IconDataViewModel
         {
             Data = new IconDataStreamReference { Unsafe = firstStream },
@@ -182,7 +217,7 @@ public partial class CachedIconSourceProviderTests
     public async Task FailedLoadIsRemovedAndCanBeRetried()
     {
         var loader = new ControllableIconLoader();
-        var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
+        var provider = CreateProvider(loader);
         var icon = new IconDataViewModel { Icon = "test" };
 
         var failed = provider.GetIconSource(icon, 1.0);
@@ -207,7 +242,7 @@ public partial class CachedIconSourceProviderTests
     public async Task RejectedLoadFaultsAndCanBeRetried()
     {
         var loader = new ControllableIconLoader { AcceptLoads = false };
-        var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
+        var provider = CreateProvider(loader);
         var icon = new IconDataViewModel { Icon = "test" };
 
         var rejected = provider.GetIconSource(icon, 1.0);
@@ -250,7 +285,7 @@ public partial class CachedIconSourceProviderTests
         };
         var provider = new IconSourceProvider(loader, new Size(16, 16));
 
-        var result = await provider.GetIconSource(new IconDataViewModel { Icon = "glyph" }, 1.0);
+        var result = await provider.GetIconSource(new IconDataViewModel { Icon = "\uE700" }, 1.0);
 
         Assert.AreSame(glyph, result);
         Assert.AreEqual(1, loader.GlyphAttemptCount);
@@ -285,6 +320,20 @@ public partial class CachedIconSourceProviderTests
         var countProperty = inFlight.GetType().GetProperty("Count");
         return (int)countProperty!.GetValue(inFlight)!;
     }
+
+    private static int GetCacheCount(CachedIconSourceProvider provider, string fieldName)
+    {
+        var field = typeof(CachedIconSourceProvider).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+        var cache = field!.GetValue(provider)!;
+        var countProperty = cache.GetType().GetProperty("ApproximateCount", BindingFlags.Instance | BindingFlags.NonPublic);
+        return (int)countProperty!.GetValue(cache)!;
+    }
+
+    private static CachedIconSourceProvider CreateProvider(
+        ControllableIconLoader loader,
+        int glyphCacheSize = 16,
+        int otherCacheSize = 16) =>
+        new(loader, new Size(20, 20), glyphCacheSize, otherCacheSize);
 
     private static (TestStreamReference First, TestStreamReference Second)? FindRuntimeHashCollision()
     {

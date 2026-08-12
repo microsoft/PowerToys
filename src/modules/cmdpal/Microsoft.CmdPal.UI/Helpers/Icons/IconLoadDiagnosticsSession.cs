@@ -202,23 +202,32 @@ internal sealed class IconLoadDiagnosticsSession
 
     internal void RecordUiProbeRejected() => Interlocked.Increment(ref _uiProbeRejected);
 
-    internal void RecordCacheLookup(Size iconSize, int capacity, bool hit)
+    internal void RecordCacheLookup(
+        Size iconSize,
+        IconCachePartition partition,
+        int capacity,
+        bool hit)
     {
-        GetCacheMeasurements(iconSize, capacity).RecordLookup(hit);
+        GetCacheMeasurements(iconSize, partition, capacity).RecordLookup(hit);
     }
 
-    internal void RecordCacheEntryAdded(Size iconSize, int capacity, int entryCount)
+    internal void RecordCacheEntryAdded(
+        Size iconSize,
+        IconCachePartition partition,
+        int capacity,
+        int entryCount)
     {
-        GetCacheMeasurements(iconSize, capacity).RecordAdded(entryCount);
+        GetCacheMeasurements(iconSize, partition, capacity).RecordAdded(entryCount);
     }
 
     internal void RecordCacheEntryRemoved(
         Size iconSize,
+        IconCachePartition partition,
         int capacity,
         int entryCount,
         AdaptiveCacheRemovalReason reason)
     {
-        GetCacheMeasurements(iconSize, capacity).RecordRemoved(entryCount, reason);
+        GetCacheMeasurements(iconSize, partition, capacity).RecordRemoved(entryCount, reason);
     }
 
     internal bool IsLoadDemanded(long loadId)
@@ -1499,7 +1508,13 @@ internal sealed class IconLoadDiagnosticsSession
                 }
 
                 var height = left.Key.Height.CompareTo(right.Key.Height);
-                return height != 0 ? height : left.Key.Capacity.CompareTo(right.Key.Capacity);
+                if (height != 0)
+                {
+                    return height;
+                }
+
+                var partition = left.Key.Partition.CompareTo(right.Key.Partition);
+                return partition != 0 ? partition : left.Key.Capacity.CompareTo(right.Key.Capacity);
             });
 
         foreach (var (descriptor, measurements) in caches)
@@ -1510,7 +1525,9 @@ internal sealed class IconLoadDiagnosticsSession
                 .Append(descriptor.Width)
                 .Append('x')
                 .Append(descriptor.Height)
-                .Append(", capacity ")
+                .Append(' ')
+                .Append(descriptor.Partition)
+                .Append(" cache, capacity ")
                 .AppendLine(descriptor.Capacity.ToString(CultureInfo.InvariantCulture));
             AppendValue(builder, "Lookups", snapshot.Hits + snapshot.Misses, "    ");
             AppendValue(builder, "Hits", snapshot.Hits, "    ");
@@ -1530,11 +1547,15 @@ internal sealed class IconLoadDiagnosticsSession
         }
     }
 
-    private CacheMeasurements GetCacheMeasurements(Size iconSize, int capacity)
+    private CacheMeasurements GetCacheMeasurements(
+        Size iconSize,
+        IconCachePartition partition,
+        int capacity)
     {
         var descriptor = new CacheDescriptor(
             NormalizeCacheDimension(iconSize.Width),
             NormalizeCacheDimension(iconSize.Height),
+            partition,
             capacity);
         return _cacheMeasurements.GetOrAdd(descriptor, static _ => new CacheMeasurements());
     }
@@ -2268,7 +2289,11 @@ internal sealed class IconLoadDiagnosticsSession
         long StartedAt,
         long ElapsedTicks);
 
-    private readonly record struct CacheDescriptor(int Width, int Height, int Capacity);
+    private readonly record struct CacheDescriptor(
+        int Width,
+        int Height,
+        IconCachePartition Partition,
+        int Capacity);
 
     private readonly record struct CacheMeasurementsSnapshot(
         long Hits,
