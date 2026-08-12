@@ -22,6 +22,7 @@ namespace ColorPicker.Behaviors
         private const int XOffset = 5;
 
         private Point _lastMousePosition;
+        private bool _hasMousePosition;
 
         protected override void OnAttached()
         {
@@ -33,10 +34,23 @@ namespace ColorPicker.Behaviors
         {
             var mouseInfoProvider = Bootstrapper.Container.GetExportedValue<IMouseInfoProvider>();
 
-            SetWindowPosition(mouseInfoProvider.CurrentPosition);
+            // The hidden startup Show/Hide cycle runs before the first screen sample is available.
+            if (mouseInfoProvider.HasValidSample)
+            {
+                SetWindowPosition(mouseInfoProvider.CurrentPosition);
+            }
+
             mouseInfoProvider.MousePositionChanged += (s, mousePosition) =>
             {
                 SetWindowPosition(mousePosition);
+            };
+            mouseInfoProvider.SampleValidityChanged += (s, isValid) =>
+            {
+                if (!isValid)
+                {
+                    _lastMousePosition = default;
+                    _hasMousePosition = false;
+                }
             };
 
             AssociatedObject.IsVisibleChanged += AssociatedObject_IsVisibleChanged;
@@ -44,7 +58,7 @@ namespace ColorPicker.Behaviors
 
         private void AssociatedObject_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if ((bool)e.NewValue)
+            if ((bool)e.NewValue && _hasMousePosition)
             {
                 SetWindowPosition(_lastMousePosition);
             }
@@ -53,6 +67,7 @@ namespace ColorPicker.Behaviors
         private void SetWindowPosition(Point mousePosition)
         {
             _lastMousePosition = mousePosition;
+            _hasMousePosition = true;
             var dpi = MonitorResolutionHelper.GetCurrentMonitorDpi();
             var mousePositionScaled = new Point(mousePosition.X / dpi.DpiScaleX, mousePosition.Y / dpi.DpiScaleX);
 

@@ -67,7 +67,7 @@ namespace ColorPicker
             uint iModeNum,
             out DEVMODEW lpDevMode);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool GetCursorPos(out PointInter lpPoint);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall, SetLastError = true)]

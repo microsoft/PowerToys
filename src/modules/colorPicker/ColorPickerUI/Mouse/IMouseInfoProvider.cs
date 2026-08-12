@@ -13,6 +13,8 @@ namespace ColorPicker.Mouse
 
         event EventHandler<System.Windows.Point> MousePositionChanged;
 
+        event EventHandler<bool> SampleValidityChanged;
+
         // position and bool indicating zoom in or zoom out
         event EventHandler<Tuple<System.Windows.Point, bool>> OnMouseWheel;
 
@@ -25,5 +27,9 @@ namespace ColorPicker.Mouse
         System.Windows.Point CurrentPosition { get; }
 
         Color CurrentColor { get; }
+
+        bool HasValidSample { get; }
+
+        bool TryPrepareForColorSelection();
     }
 }

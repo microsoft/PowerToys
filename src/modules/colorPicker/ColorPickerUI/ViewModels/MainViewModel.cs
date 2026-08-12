@@ -26,6 +26,7 @@ namespace ColorPicker.ViewModels
     {
         private readonly ZoomWindowHelper _zoomWindowHelper;
         private readonly AppStateHandler _appStateHandler;
+        private readonly IMouseInfoProvider _mouseInfoProvider;
         private readonly IUserSettings _userSettings;
         private KeyboardMonitor _keyboardMonitor;
 
@@ -55,6 +56,7 @@ namespace ColorPicker.ViewModels
         {
             _zoomWindowHelper = zoomWindowHelper;
             _appStateHandler = appStateHandler;
+            _mouseInfoProvider = mouseInfoProvider;
             _userSettings = userSettings;
             _keyboardMonitor = keyboardMonitor;
 
@@ -78,7 +80,12 @@ namespace ColorPicker.ViewModels
 
             if (mouseInfoProvider != null)
             {
-                SetColorDetails(mouseInfoProvider.CurrentColor);
+                if (mouseInfoProvider.HasValidSample)
+                {
+                    SetColorDetails(mouseInfoProvider.CurrentColor);
+                }
+
+                mouseInfoProvider.SampleValidityChanged += MouseInfoProvider_SampleValidityChanged;
                 mouseInfoProvider.MouseColorChanged += Mouse_ColorChanged;
                 mouseInfoProvider.OnPrimaryMouseDown += MouseInfoProvider_OnPrimaryMouseDown;
                 mouseInfoProvider.OnMouseWheel += MouseInfoProvider_OnMouseWheel;
@@ -115,6 +122,12 @@ namespace ColorPicker.ViewModels
 
         private void AppStateHandler_EnterPressed(object sender, EventArgs e)
         {
+            ColorPickerClickAction action = _userSettings.PrimaryClickAction.Value;
+            if (action != ColorPickerClickAction.Close && (_mouseInfoProvider == null || !_mouseInfoProvider.TryPrepareForColorSelection()))
+            {
+                return;
+            }
+
             MouseInfoProvider_OnPrimaryMouseDown(null, default);
         }
 
@@ -169,6 +182,14 @@ namespace ColorPicker.ViewModels
             SetColorDetails(color);
         }
 
+        private void MouseInfoProvider_SampleValidityChanged(object sender, bool isValid)
+        {
+            if (!isValid)
+            {
+                ClearColorDetails();
+            }
+        }
+
         private void MouseInfoProvider_OnPrimaryMouseDown(object sender, IntPtr wParam)
         {
             HandleMouseClickAction(_userSettings.PrimaryClickAction.Value);
@@ -186,6 +207,11 @@ namespace ColorPicker.ViewModels
 
         private void HandleMouseClickAction(ColorPickerClickAction action)
         {
+            if (!CanHandleMouseClickAction(action, _mouseInfoProvider))
+            {
+                return;
+            }
+
             switch (action)
             {
                 case ColorPickerClickAction.PickColorThenEditor:
@@ -209,6 +235,9 @@ namespace ColorPicker.ViewModels
                     break;
             }
         }
+
+        internal static bool CanHandleMouseClickAction(ColorPickerClickAction action, IMouseInfoProvider mouseInfoProvider)
+            => action == ColorPickerClickAction.Close || (mouseInfoProvider != null && mouseInfoProvider.HasValidSample);
 
         private void UpdateColorHistory(string color)
         {
@@ -239,6 +268,13 @@ namespace ColorPicker.ViewModels
             ColorBrush = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
             ColorText = ColorRepresentationHelper.GetStringRepresentation(color, _userSettings.CopiedColorRepresentation.Value, _userSettings.CopiedColorRepresentationFormat.Value);
             ColorName = ColorRepresentationHelper.GetColorNameFromColorIdentifier(ColorNameHelper.GetColorNameIdentifier(color));
+        }
+
+        private void ClearColorDetails()
+        {
+            ColorBrush = null;
+            ColorText = string.Empty;
+            ColorName = string.Empty;
         }
 
         /// <summary>
