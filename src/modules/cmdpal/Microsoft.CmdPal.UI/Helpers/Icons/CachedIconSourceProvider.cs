@@ -61,8 +61,11 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
         ElementTheme theme = ElementTheme.Default)
     {
         var protocolProcessor = IconProtocolRegistry.Find(icon.Icon);
+        var iconIdentity = icon.Icon is { } iconString && protocolProcessor is not null
+            ? protocolProcessor.GetCacheIdentity(iconString)
+            : icon.Icon;
         var cacheTheme = protocolProcessor?.GetCacheTheme(icon.Icon!, theme) ?? ElementTheme.Default;
-        var key = new IconCacheKey(icon, scale, cacheTheme);
+        var key = new IconCacheKey(icon, iconIdentity, scale, cacheTheme);
         var partition = ClassifyCachePartition(icon.Icon, protocolProcessor);
         var cache = GetCache(partition);
         var cacheSize = GetCacheSize(partition);
@@ -256,9 +259,13 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
         private readonly int _scale;
         private readonly ElementTheme _theme;
 
-        public IconCacheKey(IconDataViewModel icon, double scale, ElementTheme cacheTheme)
+        public IconCacheKey(
+            IconDataViewModel icon,
+            string? iconIdentity,
+            double scale,
+            ElementTheme cacheTheme)
         {
-            _icon = icon.Icon;
+            _icon = iconIdentity;
             _fontFamily = icon.FontFamily;
             _streamIdentity = icon.Data?.Unsafe is { } stream
                 ? StreamIdentities.GetValue(stream, static _ => new StreamIdentity())
