@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -22,11 +23,30 @@ internal static partial class IconPathConverter
     private const string InvalidGlyph = "\u25CC";
     private const int DefaultBinaryIconSize = 256;
 
-    public static PreparedIcon Prepare(string iconPath, string? fontFamily, int targetSize)
+    public static PreparedIcon Prepare(
+        string iconPath,
+        string? fontFamily,
+        int targetSize,
+        ElementTheme theme = ElementTheme.Default)
     {
         if (string.IsNullOrEmpty(iconPath))
         {
             return PreparedIcon.Empty();
+        }
+
+        if (IconProtocolRegistry.Find(iconPath) is { } protocolProcessor)
+        {
+            try
+            {
+                return protocolProcessor.TryPrepareSynchronously(iconPath, targetSize, theme, out var protocolIcon)
+                    ? protocolIcon
+                    : PreparedIcon.Empty();
+            }
+            catch
+            {
+                // A claimed protocol must not fall through and become a glyph or URI.
+                return PreparedIcon.Empty();
+            }
         }
 
         if (IconPathParser.TryParseBinaryIconReference(iconPath, out var binaryIcon))
