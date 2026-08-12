@@ -280,6 +280,58 @@ public class IconLoadDiagnosticsTests
     }
 
     [TestMethod]
+    [Timeout(5_000)]
+    public async Task SchedulerReportCapturesSpeculativeDemandReserve()
+    {
+        IconLoadDiagnostics.Start();
+        var queue = new IconLoadQueue(workerCount: 4);
+        var speculativeWork = new TestOperation();
+        var demandedWork = new TestOperation();
+        var speculativeDemand = IconLoadDemand.CreateDemanded();
+        speculativeDemand.RemoveRequester();
+
+        Assert.IsTrue(queue.TryEnqueue(
+            speculativeWork,
+            IconLoadPriority.Low,
+            speculativeDemand,
+            out _));
+
+        var reservedDequeue = queue.DequeueAsync().AsTask();
+        Assert.IsTrue(queue.TryEnqueue(
+            demandedWork,
+            IconLoadPriority.Low,
+            IconLoadDemand.CreateDemanded(),
+            out _));
+        Assert.AreSame(demandedWork, await reservedDequeue);
+
+        var firstReadyWorker = queue.DequeueAsync().AsTask();
+        var secondReadyWorker = queue.DequeueAsync().AsTask();
+        var speculativeDequeue = await Task.WhenAny(firstReadyWorker, secondReadyWorker);
+        Assert.AreSame(speculativeWork, await speculativeDequeue);
+
+        queue.Complete();
+        var remainingDequeue = ReferenceEquals(speculativeDequeue, firstReadyWorker)
+            ? secondReadyWorker
+            : firstReadyWorker;
+        Assert.IsNull(await remainingDequeue);
+        await queue.Completion;
+
+        var report = IconLoadDiagnostics.StopAndCreateReport();
+
+        Assert.IsNotNull(report);
+        var reserveBlock =
+            $"  Speculative dispatch deferred by the demand reserve{Environment.NewLine}" +
+            $"    Definition: a coordinator-state interval with speculative work queued, no demanded work queued, and a worker-ready slot deliberately retained for a future live request.{Environment.NewLine}" +
+            $"    Intervals started: 2{Environment.NewLine}" +
+            $"    Intervals active at stop: 0{Environment.NewLine}" +
+            $"    Maximum speculative queue depth during an interval: 1{Environment.NewLine}" +
+            $"    Maximum configured worker count during an interval: 4{Environment.NewLine}" +
+            $"    Maximum worker-ready slots retained during an interval: 1{Environment.NewLine}" +
+            $"    Interval duration: count=2";
+        StringAssert.Contains(report.Text, reserveBlock);
+    }
+
+    [TestMethod]
     public void SchedulerReportSeparatesEmptyCoalescedBatchWakeLatency()
     {
         IconLoadDiagnostics.Start();

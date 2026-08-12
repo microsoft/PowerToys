@@ -403,6 +403,17 @@ internal sealed partial class IconLoadEventSource : EventSource
         WriteEvent(37, sessionId, elapsedMicroseconds);
     }
 
+    [Event(38, Level = EventLevel.Informational)]
+    public void SpeculativeDispatchDeferralCompleted(long sessionId, long elapsedMicroseconds)
+    {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        WriteEvent(38, sessionId, elapsedMicroseconds);
+    }
+
     // These exact overloads intentionally shadow EventSource.WriteEvent(params object?[]).
     // The params overload allocates an array and boxes values while ETW is enabled, which
     // would make the icon diagnostics measurably perturb the paths they are observing.

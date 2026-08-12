@@ -146,6 +146,89 @@ public class IconLoadQueueTests
     }
 
     [TestMethod]
+    [DataRow(2)]
+    [DataRow(4)]
+    [Timeout(5_000)]
+    public async Task SpeculativeWorkLeavesOneWorkerAvailableForDemand(int workerCount)
+    {
+        var queue = new IconLoadQueue(workerCount);
+        var releaseSpeculativeWork = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var speculativeCapacityFilled = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var demandedWorkStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var speculativeStarts = 0;
+        var workers = new Task[workerCount];
+
+        for (var i = 0; i < workers.Length; i++)
+        {
+            workers[i] = RunWorkerAsync(queue);
+        }
+
+        try
+        {
+            for (var i = 0; i < workerCount; i++)
+            {
+                var speculativeDemand = IconLoadDemand.CreateDemanded();
+                speculativeDemand.RemoveRequester();
+                Assert.IsTrue(queue.TryEnqueue(
+                    new TestOperation(async () =>
+                    {
+                        if (Interlocked.Increment(ref speculativeStarts) == workerCount - 1)
+                        {
+                            speculativeCapacityFilled.TrySetResult(true);
+                        }
+
+                        await releaseSpeculativeWork.Task;
+                    }),
+                    IconLoadPriority.Low,
+                    speculativeDemand,
+                    out _));
+            }
+
+            await speculativeCapacityFilled.Task.WaitAsync(TimeSpan.FromSeconds(1));
+
+            Assert.IsTrue(queue.TryEnqueue(
+                new TestOperation(() =>
+                {
+                    demandedWorkStarted.TrySetResult(true);
+                    return Task.CompletedTask;
+                }),
+                IconLoadPriority.Low,
+                IconLoadDemand.CreateDemanded(),
+                out _));
+
+            await demandedWorkStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
+            Assert.AreEqual(workerCount - 1, Volatile.Read(ref speculativeStarts));
+        }
+        finally
+        {
+            queue.Complete();
+            releaseSpeculativeWork.TrySetResult(true);
+            await Task.WhenAll(workers);
+            await queue.Completion;
+        }
+
+        Assert.AreEqual(workerCount, speculativeStarts);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task SingleWorkerStillProcessesSpeculativeWork()
+    {
+        var queue = new IconLoadQueue(workerCount: 1);
+        var work = new TestOperation();
+        var speculativeDemand = IconLoadDemand.CreateDemanded();
+        speculativeDemand.RemoveRequester();
+
+        var dequeue = queue.DequeueAsync().AsTask();
+        Assert.IsTrue(queue.TryEnqueue(work, IconLoadPriority.Low, speculativeDemand, out _));
+
+        Assert.AreSame(work, await dequeue);
+        queue.Complete();
+        Assert.IsNull(await queue.DequeueAsync());
+        await queue.Completion;
+    }
+
+    [TestMethod]
     [Timeout(10_000)]
     public async Task DemandChurnDuringDequeueRunsEveryWorkExactlyOnce()
     {

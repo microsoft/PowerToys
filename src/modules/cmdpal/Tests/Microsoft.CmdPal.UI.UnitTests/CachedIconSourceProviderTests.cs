@@ -70,7 +70,7 @@ public partial class CachedIconSourceProviderTests
     {
         var loader = new ControllableIconLoader();
         var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
-        var icon = new IconDataViewModel { Icon = "test" };
+        var icon = CreateIcon();
         var firstDemand = new IconRequestDemand();
         var secondDemand = new IconRequestDemand();
 
