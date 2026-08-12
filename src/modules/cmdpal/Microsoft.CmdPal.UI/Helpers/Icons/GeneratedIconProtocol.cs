@@ -10,13 +10,17 @@ using Microsoft.UI.Xaml;
 namespace Microsoft.CmdPal.UI.Helpers;
 
 /// <summary>
-/// Parses <c>|Swatch|color[|dark]</c> and
-/// <c>|Initials|text|color[|dark][|circle|rounded]</c> icon strings.
+/// Parses <c>|Swatch|color[|dark][|circle|square]</c> and
+/// <c>|Initials|text|color[|dark][|circle|square]</c> icon strings.
 /// Initials accept one to three Unicode text elements. A literal percent sign in
 /// the text token is encoded as <c>%25</c>, and a literal separator as <c>%7C</c>.
 /// Percent encoding keeps this hand-authored protocol legible; the machine-generated
 /// app-icon protocol uses length-prefixed fields instead.
 /// Colors use the XAML #RGB, #ARGB, #RRGGBB, or #AARRGGBB forms.
+/// Both protocols also accept danger, subtle, info, warning, success, neutral,
+/// dark, normal, or transparent as a semantic color. A semantic color supplies
+/// both light and dark values and may be followed only by an optional shape. Use
+/// two explicit hex colors to customize the light and dark values separately.
 /// </summary>
 internal static class GeneratedIconProtocol
 {
@@ -44,7 +48,7 @@ internal static class GeneratedIconProtocol
             {
                 var swatchPayload = value.AsSpan(SwatchPrefix.Length);
                 if (HasCanonicalStyleTokenCasing(swatchPayload)
-                    || !TryParseSwatch(swatchPayload, out _, out _, out _))
+                    || !TryParseSwatch(swatchPayload, out _, out _, out _, out _))
                 {
                     return value;
                 }
@@ -239,12 +243,13 @@ internal static class GeneratedIconProtocol
                     value!.AsSpan(SwatchPrefix.Length),
                     out var light,
                     out var dark,
-                    out _))
+                    out _,
+                    out var shape))
             {
                 return false;
             }
 
-            svg = CreateSwatchSvg(SelectColor(light, dark, theme));
+            svg = CreateSwatchSvg(SelectColor(light, dark, theme), shape);
             return true;
         }
         catch
@@ -296,7 +301,7 @@ internal static class GeneratedIconProtocol
         switch (Classify(value))
         {
             case Kind.Swatch:
-                return TryParseSwatch(value!.AsSpan(SwatchPrefix.Length), out _, out _, out var hasDark) && hasDark;
+                return TryParseSwatch(value!.AsSpan(SwatchPrefix.Length), out _, out _, out var hasDark, out _) && hasDark;
 
             case Kind.Initials:
                 // Foreground contrast can depend on the surface theme when the
@@ -313,29 +318,59 @@ internal static class GeneratedIconProtocol
         ReadOnlySpan<char> payload,
         out RgbaColor light,
         out RgbaColor dark,
-        out bool hasDark)
+        out bool hasDark,
+        out BackgroundShape shape)
     {
         light = default;
         dark = default;
         hasDark = false;
+        shape = BackgroundShape.Circle;
         payload = TrimOptionalTrailingSeparator(payload);
-        if (!TryReadToken(ref payload, out var lightToken) || !TryParseColor(lightToken, out light))
+        if (!TryReadToken(ref payload, out var lightToken))
         {
             return false;
         }
 
-        dark = light;
-        if (!payload.IsEmpty)
+        if (TryParseSemanticColorPair(lightToken, out light, out dark))
         {
-            if (!TryReadToken(ref payload, out var darkToken) || !TryParseColor(darkToken, out dark))
-            {
-                return false;
-            }
-
-            hasDark = true;
+            hasDark = light != dark;
+            return TryParseOptionalShape(ref payload, out shape);
         }
 
-        return payload.IsEmpty;
+        if (!TryParseColor(lightToken, out light))
+        {
+            return false;
+        }
+
+        return TryParseOptionalDarkAndShape(ref payload, light, out dark, out hasDark, out shape);
+    }
+
+    private static bool TryParseSemanticColorPair(
+        ReadOnlySpan<char> value,
+        out RgbaColor light,
+        out RgbaColor dark)
+    {
+        light = default;
+        dark = default;
+        if (value.IsEmpty || value[0] == '#')
+        {
+            return false;
+        }
+
+        return SemanticIconColor.TryResolvePair(value, out var lightValue, out var darkValue)
+            && TryParseColor(lightValue, out light)
+            && TryParseColor(darkValue, out dark);
+    }
+
+    private static bool TryParseOptionalShape(
+        ref ReadOnlySpan<char> payload,
+        out BackgroundShape shape)
+    {
+        shape = BackgroundShape.Circle;
+        return payload.IsEmpty
+            || (TryReadToken(ref payload, out var shapeToken)
+                && TryParseShape(shapeToken, out shape)
+                && payload.IsEmpty);
     }
 
     private static bool TryParseInitials(
@@ -344,53 +379,34 @@ internal static class GeneratedIconProtocol
         out RgbaColor light,
         out RgbaColor dark,
         out bool hasDark,
-        out InitialsShape shape)
+        out BackgroundShape shape)
     {
         initials = string.Empty;
         light = default;
         dark = default;
         hasDark = false;
-        shape = InitialsShape.Circle;
+        shape = BackgroundShape.Circle;
 
         payload = TrimOptionalTrailingSeparator(payload);
         if (!TryReadToken(ref payload, out var initialsToken)
             || !TryNormalizeInitials(initialsToken, out initials)
-            || !TryReadToken(ref payload, out var lightToken)
-            || !TryParseColor(lightToken, out light))
+            || !TryReadToken(ref payload, out var lightToken))
         {
             return false;
         }
 
-        dark = light;
-        if (!payload.IsEmpty)
+        if (TryParseSemanticColorPair(lightToken, out light, out dark))
         {
-            if (!TryReadToken(ref payload, out var nextToken))
-            {
-                return false;
-            }
-
-            if (TryParseColor(nextToken, out var darkColor))
-            {
-                dark = darkColor;
-                hasDark = true;
-                if (!payload.IsEmpty
-                    && (!TryReadToken(ref payload, out var shapeToken) || !TryParseShape(shapeToken, out shape)))
-                {
-                    return false;
-                }
-            }
-            else if (!TryParseShape(nextToken, out shape))
-            {
-                return false;
-            }
+            hasDark = light != dark;
+            return TryParseOptionalShape(ref payload, out shape);
         }
 
-        if (!payload.IsEmpty)
+        if (!TryParseColor(lightToken, out light))
         {
             return false;
         }
 
-        return true;
+        return TryParseOptionalDarkAndShape(ref payload, light, out dark, out hasDark, out shape);
     }
 
     private static bool TryNormalizeInitials(ReadOnlySpan<char> value, out string initials)
@@ -510,17 +526,55 @@ internal static class GeneratedIconProtocol
             .Replace("|", "%7C", StringComparison.Ordinal);
     }
 
-    private static bool TryParseShape(ReadOnlySpan<char> value, out InitialsShape shape)
+    private static bool TryParseOptionalDarkAndShape(
+        ref ReadOnlySpan<char> payload,
+        RgbaColor light,
+        out RgbaColor dark,
+        out bool hasDark,
+        out BackgroundShape shape)
     {
-        if (value.Equals("circle", StringComparison.OrdinalIgnoreCase))
+        dark = light;
+        hasDark = false;
+        shape = BackgroundShape.Circle;
+        if (payload.IsEmpty)
         {
-            shape = InitialsShape.Circle;
             return true;
         }
 
-        if (value.Equals("rounded", StringComparison.OrdinalIgnoreCase))
+        if (!TryReadToken(ref payload, out var nextToken))
         {
-            shape = InitialsShape.RoundedSquare;
+            return false;
+        }
+
+        if (TryParseColor(nextToken, out var darkColor))
+        {
+            dark = darkColor;
+            hasDark = true;
+            if (!payload.IsEmpty
+                && (!TryReadToken(ref payload, out var shapeToken) || !TryParseShape(shapeToken, out shape)))
+            {
+                return false;
+            }
+        }
+        else if (!TryParseShape(nextToken, out shape))
+        {
+            return false;
+        }
+
+        return payload.IsEmpty;
+    }
+
+    private static bool TryParseShape(ReadOnlySpan<char> value, out BackgroundShape shape)
+    {
+        if (value.Equals("circle", StringComparison.OrdinalIgnoreCase))
+        {
+            shape = BackgroundShape.Circle;
+            return true;
+        }
+
+        if (value.Equals("square", StringComparison.OrdinalIgnoreCase))
+        {
+            shape = BackgroundShape.Square;
             return true;
         }
 
@@ -661,18 +715,13 @@ internal static class GeneratedIconProtocol
     private static RgbaColor SelectColor(RgbaColor light, RgbaColor dark, ElementTheme theme) =>
         theme == ElementTheme.Dark ? dark : light;
 
-    private static byte[] CreateSwatchSvg(RgbaColor color)
+    private static byte[] CreateSwatchSvg(RgbaColor color, BackgroundShape shape)
     {
         using var stream = new MemoryStream();
         using (var writer = CreateSvgWriter(stream))
         {
             WriteSvgStart(writer);
-            writer.WriteStartElement("circle");
-            writer.WriteAttributeString("cx", "16");
-            writer.WriteAttributeString("cy", "16");
-            writer.WriteAttributeString("r", "12");
-            WriteFill(writer, color);
-            writer.WriteEndElement();
+            WriteBackground(writer, color, shape);
             writer.WriteEndElement();
         }
 
@@ -684,31 +733,13 @@ internal static class GeneratedIconProtocol
         bool useEvenOddFill,
         RgbaColor background,
         ElementTheme theme,
-        InitialsShape shape)
+        BackgroundShape shape)
     {
         using var stream = new MemoryStream();
         using (var writer = CreateSvgWriter(stream))
         {
             WriteSvgStart(writer);
-            if (shape == InitialsShape.Circle)
-            {
-                writer.WriteStartElement("circle");
-                writer.WriteAttributeString("cx", "16");
-                writer.WriteAttributeString("cy", "16");
-                writer.WriteAttributeString("r", "15.5");
-            }
-            else
-            {
-                writer.WriteStartElement("rect");
-                writer.WriteAttributeString("x", "0.5");
-                writer.WriteAttributeString("y", "0.5");
-                writer.WriteAttributeString("width", "31");
-                writer.WriteAttributeString("height", "31");
-                writer.WriteAttributeString("rx", "7");
-            }
-
-            WriteFill(writer, background);
-            writer.WriteEndElement();
+            WriteBackground(writer, background, shape);
 
             if (!string.IsNullOrEmpty(pathData))
             {
@@ -729,6 +760,31 @@ internal static class GeneratedIconProtocol
         return stream.ToArray();
     }
 
+    private static void WriteBackground(XmlWriter writer, RgbaColor color, BackgroundShape shape)
+    {
+        // The generated background is the icon, so it fills 31 of the 32 view-box
+        // units. The 0.5-unit guard on each edge keeps antialiased pixels in bounds.
+        if (shape == BackgroundShape.Circle)
+        {
+            writer.WriteStartElement("circle");
+            writer.WriteAttributeString("cx", "16");
+            writer.WriteAttributeString("cy", "16");
+            writer.WriteAttributeString("r", "15.5");
+        }
+        else
+        {
+            writer.WriteStartElement("rect");
+            writer.WriteAttributeString("x", "0.5");
+            writer.WriteAttributeString("y", "0.5");
+            writer.WriteAttributeString("width", "31");
+            writer.WriteAttributeString("height", "31");
+            writer.WriteAttributeString("rx", "7");
+        }
+
+        WriteFill(writer, color);
+        writer.WriteEndElement();
+    }
+
     private static XmlWriter CreateSvgWriter(Stream stream) =>
         XmlWriter.Create(
             stream,
@@ -743,6 +799,9 @@ internal static class GeneratedIconProtocol
     private static void WriteSvgStart(XmlWriter writer)
     {
         writer.WriteStartElement("svg", "http://www.w3.org/2000/svg");
+
+        // The 32x32 view box is a scale-independent design grid; it does not request
+        // a 32-pixel output. The loader rasterizes it for the calling surface's size.
         writer.WriteAttributeString("viewBox", "0 0 32 32");
     }
 
@@ -785,10 +844,10 @@ internal static class GeneratedIconProtocol
         Initials,
     }
 
-    private enum InitialsShape
+    private enum BackgroundShape
     {
         Circle,
-        RoundedSquare,
+        Square,
     }
 
     private readonly record struct RgbaColor(byte A, byte R, byte G, byte B);
