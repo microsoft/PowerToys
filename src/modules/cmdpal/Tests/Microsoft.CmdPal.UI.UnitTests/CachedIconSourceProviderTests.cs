@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Foundation;
@@ -397,11 +398,13 @@ public partial class CachedIconSourceProviderTests
             IRandomAccessStreamReference? streamRef,
             Size iconSize,
             double scale,
+            ElementTheme theme,
             TaskCompletionSource<IconSource?> tcs,
             IconLoadPriority priority,
             IconLoadMeasurement? diagnostics = null,
             IconLoadDemand? demand = null)
         {
+            _ = theme;
             Interlocked.Increment(ref _enqueueCount);
             LastDemand = demand;
             if (!AcceptLoads)

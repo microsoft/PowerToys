@@ -5,6 +5,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 using Windows.Storage.Streams;
@@ -56,10 +57,13 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
         IconDataViewModel icon,
         double scale,
         IconRequestMeasurement diagnostics = default,
-        IIconRequestDemand? demand = null)
+        IIconRequestDemand? demand = null,
+        ElementTheme theme = ElementTheme.Default)
     {
-        var key = new IconCacheKey(icon, scale);
-        var partition = ClassifyCachePartition(icon.Icon);
+        var protocolProcessor = IconProtocolRegistry.Find(icon.Icon);
+        var cacheTheme = protocolProcessor?.GetCacheTheme(icon.Icon!, theme) ?? ElementTheme.Default;
+        var key = new IconCacheKey(icon, scale, cacheTheme);
+        var partition = ClassifyCachePartition(icon.Icon, protocolProcessor);
         var cache = GetCache(partition);
         var cacheSize = GetCacheSize(partition);
 
@@ -71,13 +75,14 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
         }
 
         IconLoadDiagnostics.RecordCacheLookup(_iconSize, partition, cacheSize, hit: false);
-        return GetOrCreateSlowPath(key, icon, scale, partition, diagnostics, demand);
+        return GetOrCreateSlowPath(key, icon, scale, theme, partition, diagnostics, demand);
     }
 
     private Task<IconSource?> GetOrCreateSlowPath(
         IconCacheKey key,
         IconDataViewModel icon,
         double scale,
+        ElementTheme theme,
         IconCachePartition partition,
         IconRequestMeasurement diagnostics,
         IIconRequestDemand? demand)
@@ -150,6 +155,7 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
                     streamReference,
                     _iconSize,
                     scale,
+                    theme,
                     tcs,
                     IconLoadPriority.Low,
                     loadDiagnostics,
@@ -167,8 +173,15 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
         return task;
     }
 
-    private static IconCachePartition ClassifyCachePartition(string? iconString)
+    private static IconCachePartition ClassifyCachePartition(
+        string? iconString,
+        IIconProtocolProcessor? protocolProcessor)
     {
+        if (protocolProcessor is not null)
+        {
+            return protocolProcessor.CachePartition;
+        }
+
         try
         {
             return FontIconGlyphClassifier.IsGlyphCandidate(iconString)
@@ -241,8 +254,9 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
         private readonly string? _fontFamily;
         private readonly StreamIdentity? _streamIdentity;
         private readonly int _scale;
+        private readonly ElementTheme _theme;
 
-        public IconCacheKey(IconDataViewModel icon, double scale)
+        public IconCacheKey(IconDataViewModel icon, double scale, ElementTheme cacheTheme)
         {
             _icon = icon.Icon;
             _fontFamily = icon.FontFamily;
@@ -250,17 +264,19 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
                 ? StreamIdentities.GetValue(stream, static _ => new StreamIdentity())
                 : null;
             _scale = (int)(100 * Math.Round(scale, 2));
+            _theme = cacheTheme;
         }
 
         public bool Equals(IconCacheKey other) =>
             _icon == other._icon &&
             _fontFamily == other._fontFamily &&
             ReferenceEquals(_streamIdentity, other._streamIdentity) &&
-            _scale == other._scale;
+            _scale == other._scale &&
+            _theme == other._theme;
 
         public override bool Equals(object? obj) => obj is IconCacheKey other && Equals(other);
 
-        public override int GetHashCode() => HashCode.Combine(_icon, _fontFamily, _streamIdentity, _scale);
+        public override int GetHashCode() => HashCode.Combine(_icon, _fontFamily, _streamIdentity, _scale, _theme);
     }
 
     // A RuntimeHelpers.GetHashCode value is not unique. Keep a weak mapping from each

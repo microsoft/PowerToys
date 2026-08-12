@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.CmdPal.UI.Helpers;
@@ -13,5 +14,6 @@ internal interface IIconSourceProvider
         IconDataViewModel icon,
         double scale,
         IconRequestMeasurement diagnostics = default,
-        IIconRequestDemand? demand = null);
+        IIconRequestDemand? demand = null,
+        ElementTheme theme = ElementTheme.Default);
 }
