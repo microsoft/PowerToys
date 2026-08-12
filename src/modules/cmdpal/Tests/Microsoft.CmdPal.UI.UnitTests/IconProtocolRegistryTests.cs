@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -11,6 +12,33 @@ namespace Microsoft.CmdPal.UI.UnitTests;
 [TestClass]
 public class IconProtocolRegistryTests
 {
+    [TestMethod]
+    public void BuiltInRegistryFindsAppIconProcessor()
+    {
+        var values = new[]
+        {
+            AppIconProtocol.Create("C:\\Windows\\notepad.exe"),
+            AppIconProtocol.CreateJumbo("C:\\Windows\\notepad.exe"),
+        };
+
+        foreach (var value in values)
+        {
+            var processor = IconProtocolRegistry.Find(value);
+
+            Assert.IsNotNull(processor);
+            Assert.AreSame(AppIconProtocolProcessor.Instance, processor);
+            Assert.AreEqual(IconCachePartition.Other, processor.CachePartition);
+            Assert.AreEqual(IconLoadInputKind.SpecializedAppIcon, processor.ClassifyInput(value));
+            Assert.AreEqual(ElementTheme.Default, processor.GetCacheTheme(value, ElementTheme.Dark));
+            Assert.IsFalse(processor.TryPrepareSynchronously(
+                value,
+                20,
+                ElementTheme.Dark,
+                out var preparedIcon));
+            Assert.IsNull(preparedIcon);
+        }
+    }
+
     [DataTestMethod]
     [DataRow(null)]
     [DataRow("")]

@@ -9,7 +9,10 @@ internal static class IconProtocolRegistry
     // This is deliberately immutable after type initialization. Protocol lookup is
     // used from the WinUI STA and loader workers, so it must not acquire a registry lock.
     // Explicit construction also keeps the registry visible to Native AOT without reflection.
-    private static readonly IIconProtocolProcessor[] Processors = [];
+    private static readonly IIconProtocolProcessor[] Processors =
+    [
+        AppIconProtocolProcessor.Instance,
+    ];
 
     static IconProtocolRegistry()
     {

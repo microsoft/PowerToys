@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
@@ -131,5 +132,52 @@ public class AllAppsPageTests : AppsTestBase
         {
             AllAppsSettings.Instance.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
         }
+    }
+
+    [TestMethod]
+    public void AppListItem_DefersWin32RowAndHeroIconsToUiLoader()
+    {
+        var app = new AppItem
+        {
+            Name = "Test App",
+            IcoPath = "C:\\Windows\\System32\\shell32.dll,1",
+            JumboIconPath = "C:\\Windows\\System32\\imageres.dll,2",
+            ExePath = "C:\\Program Files\\Example\\app.exe",
+        };
+
+        var item = new AppListItem(app, useThumbnails: true);
+
+        var rowIcon = (IconInfo)item.Icon!;
+        Assert.IsTrue(AppIconProtocol.TryParse(rowIcon.Light.Icon, out var rowCandidates, out var rowJumbo));
+        Assert.IsFalse(rowJumbo);
+        CollectionAssert.AreEqual(new[] { app.IcoPath, app.ExePath }, rowCandidates);
+        Assert.AreSame(rowIcon, item.Command.Icon);
+
+        var details = (Details)item.Details!;
+        var heroIcon = (IconInfo)details.HeroImage;
+        Assert.IsTrue(AppIconProtocol.TryParse(heroIcon.Light.Icon, out var heroCandidates, out var heroJumbo));
+        Assert.IsTrue(heroJumbo);
+        CollectionAssert.AreEqual(new[] { app.JumboIconPath, app.IcoPath, app.ExePath }, heroCandidates);
+    }
+
+    [TestMethod]
+    public void AppListItem_KeepsPackagedIconAssetsAsDirectPaths()
+    {
+        var app = new AppItem
+        {
+            Name = "Test Packaged App",
+            IcoPath = "C:\\Program Files\\WindowsApps\\Example\\small.png",
+            JumboIconPath = "C:\\Program Files\\WindowsApps\\Example\\large.png",
+            IsPackaged = true,
+        };
+
+        var item = new AppListItem(app, useThumbnails: true);
+
+        var rowIcon = (IconInfo)item.Icon!;
+        Assert.AreEqual(app.IcoPath, rowIcon.Light.Icon);
+
+        var details = (Details)item.Details!;
+        var heroIcon = (IconInfo)details.HeroImage;
+        Assert.AreEqual(app.JumboIconPath, heroIcon.Light.Icon);
     }
 }
