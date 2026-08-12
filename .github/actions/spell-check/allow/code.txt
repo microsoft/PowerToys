@@ -171,6 +171,7 @@ thmutil
 uriutil
 VKTAB
 wcautil
+wcsnlen
 winkey
 wininet
 WMKEYDOWN
@@ -452,3 +453,7 @@ WIDGETBOARD
 
 # URIs
 actioncenter
+
+# New+ shell PIDL type names
+PCUITEMID
+PITEMID
