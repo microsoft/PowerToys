@@ -66,6 +66,7 @@ internal sealed class IconLoadDiagnosticsSession
     private readonly DiagnosticHistogram _workerReadyToDemandedDispatchLatency = new();
     private readonly DiagnosticHistogram _workerReadyToSpeculativeDispatchLatency = new();
     private readonly DiagnosticHistogram _demandedIdleCapacityDuration = new();
+    private readonly DiagnosticHistogram _speculativeDispatchDeferralDuration = new();
     private readonly InputKindMeasurements[] _inputKindMeasurements = CreateInputKindMeasurements();
     private readonly ElementKindMeasurements[] _elementKindMeasurements = CreateElementKindMeasurements();
     private readonly ConditionalWeakTable<Task<IconSource?>, IconLoadMeasurement> _loadsByTask = new();
@@ -142,6 +143,11 @@ internal sealed class IconLoadDiagnosticsSession
     private long _currentDemandedIdleCapacityIntervals;
     private long _maximumDemandedQueueDepthWithIdleCapacity;
     private long _maximumAvailableWorkerSlotsWithDemandedWork;
+    private long _speculativeDispatchDeferralIntervalsStarted;
+    private long _currentSpeculativeDispatchDeferralIntervals;
+    private long _maximumSpeculativeQueueDepthDuringDeferral;
+    private long _maximumWorkerCountDuringSpeculativeDispatchDeferral;
+    private long _maximumReservedWorkerSlotsDuringDeferral;
     private long _activeWorkers;
     private long _maximumActiveWorkers;
     private long _dispatcherEnqueuedDemanded;
@@ -313,6 +319,34 @@ internal sealed class IconLoadDiagnosticsSession
         Debug.Assert(activeIntervals >= 0, "A demanded-idle-capacity interval must start before it completes.");
         _demandedIdleCapacityDuration.Record(elapsedTicks);
         IconLoadEventSource.Log.DemandedIdleCapacityCompleted(Id, ToMicroseconds(elapsedTicks));
+    }
+
+    public void RecordSpeculativeDispatchDeferralStarted(
+        int speculativeQueueDepth,
+        int workerCount,
+        int reservedWorkerSlots)
+    {
+        Interlocked.Increment(ref _speculativeDispatchDeferralIntervalsStarted);
+        Interlocked.Increment(ref _currentSpeculativeDispatchDeferralIntervals);
+        RecordSpeculativeDispatchDeferralObserved(speculativeQueueDepth, workerCount, reservedWorkerSlots);
+    }
+
+    public void RecordSpeculativeDispatchDeferralObserved(
+        int speculativeQueueDepth,
+        int workerCount,
+        int reservedWorkerSlots)
+    {
+        UpdateMaximum(ref _maximumSpeculativeQueueDepthDuringDeferral, speculativeQueueDepth);
+        UpdateMaximum(ref _maximumWorkerCountDuringSpeculativeDispatchDeferral, workerCount);
+        UpdateMaximum(ref _maximumReservedWorkerSlotsDuringDeferral, reservedWorkerSlots);
+    }
+
+    public void RecordSpeculativeDispatchDeferralCompleted(long elapsedTicks)
+    {
+        var activeIntervals = Interlocked.Decrement(ref _currentSpeculativeDispatchDeferralIntervals);
+        Debug.Assert(activeIntervals >= 0, "A speculative-dispatch-deferral interval must start before it completes.");
+        _speculativeDispatchDeferralDuration.Record(elapsedTicks);
+        IconLoadEventSource.Log.SpeculativeDispatchDeferralCompleted(Id, ToMicroseconds(elapsedTicks));
     }
 
     public IconRequestMeasurement BeginRequest(IconRequestReason reason, double scale, IconRequestOrigin origin)
@@ -1590,6 +1624,34 @@ internal sealed class IconLoadDiagnosticsSession
             Volatile.Read(ref _maximumAvailableWorkerSlotsWithDemandedWork),
             "    ");
         _demandedIdleCapacityDuration.Append(builder, "Interval duration", "    ");
+        builder.AppendLine("  Speculative dispatch deferred by the demand reserve");
+        builder.AppendLine("    Definition: a coordinator-state interval with speculative work queued, no demanded work queued, and a worker-ready slot deliberately retained for a future live request.");
+        AppendValue(
+            builder,
+            "Intervals started",
+            Volatile.Read(ref _speculativeDispatchDeferralIntervalsStarted),
+            "    ");
+        AppendValue(
+            builder,
+            "Intervals active at stop",
+            Math.Max(0, Volatile.Read(ref _currentSpeculativeDispatchDeferralIntervals)),
+            "    ");
+        AppendValue(
+            builder,
+            "Maximum speculative queue depth during an interval",
+            Volatile.Read(ref _maximumSpeculativeQueueDepthDuringDeferral),
+            "    ");
+        AppendValue(
+            builder,
+            "Maximum configured worker count during an interval",
+            Volatile.Read(ref _maximumWorkerCountDuringSpeculativeDispatchDeferral),
+            "    ");
+        AppendValue(
+            builder,
+            "Maximum worker-ready slots retained during an interval",
+            Volatile.Read(ref _maximumReservedWorkerSlotsDuringDeferral),
+            "    ");
+        _speculativeDispatchDeferralDuration.Append(builder, "Interval duration", "    ");
     }
 
     private void AppendLoadDemandMeasurements(StringBuilder builder)
