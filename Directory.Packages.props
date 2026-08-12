@@ -3,8 +3,8 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <MSTestVersion>3.8.3</MSTestVersion>
-    <!-- .NET SDK 10.0.302 contains runtime 10.0.10. Keep this aligned with exactVersion in .pipelines/v2/templates/job-build-project.yml. -->
-    <DotNetRuntimePackageVersion>10.0.10</DotNetRuntimePackageVersion>
+    <!-- .NET SDK 10.0.303 contains runtime 10.0.11. Keep this aligned with exactVersion in .pipelines/v2/templates/job-build-project.yml. -->
+    <DotNetRuntimePackageVersion>10.0.11</DotNetRuntimePackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="AdaptiveCards.ObjectModel.WinUI3" Version="2.0.2-beta" />
