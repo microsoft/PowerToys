@@ -40,6 +40,8 @@
                         Height="16"
                         Margin="4,0,0,0"
                         HorizontalAlignment="Left"
+                        DiagnosticScope="Default"
+                        RequestSite="ContextMenu"
                         SourceKey="{x:Bind Icon, Mode=OneWay}"
                         SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
                     <TextBlock
@@ -88,7 +90,9 @@
                         Height="16"
                         Margin="4,0,0,0"
                         HorizontalAlignment="Left"
+                        DiagnosticScope="Critical"
                         Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                        RequestSite="ContextMenu"
                         SourceKey="{x:Bind Icon, Mode=OneWay}"
                         SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
                     <TextBlock

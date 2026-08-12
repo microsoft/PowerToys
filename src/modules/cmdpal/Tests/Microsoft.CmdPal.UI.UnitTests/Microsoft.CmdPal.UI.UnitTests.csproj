@@ -23,9 +23,24 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconRequestSite.cs" Link="Controls\IconRequestSite.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\AdaptiveCache`2.cs" Link="Helpers\AdaptiveCache`2.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\CachedIconSourceProvider.cs" Link="Helpers\Icons\CachedIconSourceProvider.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadDemandStage.cs" Link="Helpers\Icons\IconLoadDemandStage.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadDiagnostics.cs" Link="Helpers\Icons\IconLoadDiagnostics.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadDiagnosticsReport.cs" Link="Helpers\Icons\IconLoadDiagnosticsReport.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadDiagnosticsSession.cs" Link="Helpers\Icons\IconLoadDiagnosticsSession.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadEventSource.cs" Link="Helpers\Icons\IconLoadEventSource.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadInputKind.cs" Link="Helpers\Icons\IconLoadInputKind.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadMeasurement.cs" Link="Helpers\Icons\IconLoadMeasurement.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadPriority.cs" Link="Helpers\Icons\IconLoadPriority.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadQueueDemandTransition.cs" Link="Helpers\Icons\IconLoadQueueDemandTransition.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadResultKind.cs" Link="Helpers\Icons\IconLoadResultKind.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconProviderResolution.cs" Link="Helpers\Icons\IconProviderResolution.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconRequestMeasurement.cs" Link="Helpers\Icons\IconRequestMeasurement.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconRequestOrigin.cs" Link="Helpers\Icons\IconRequestOrigin.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconRequestReason.cs" Link="Helpers\Icons\IconRequestReason.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconRequestStatus.cs" Link="Helpers\Icons\IconRequestStatus.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconSourceProvider.cs" Link="Helpers\Icons\IconSourceProvider.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconLoaderService.cs" Link="Helpers\Icons\IIconLoaderService.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconSourceProvider.cs" Link="Helpers\Icons\IIconSourceProvider.cs" />

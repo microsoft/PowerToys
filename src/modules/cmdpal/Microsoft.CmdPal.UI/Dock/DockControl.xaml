@@ -49,7 +49,9 @@
                                         Width="16"
                                         VerticalAlignment="Center"
                                         AutomationProperties.AccessibilityView="Raw"
+                                        DiagnosticScope="BandItem"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        RequestSite="Dock"
                                         SourceKey="{x:Bind Icon, Mode=OneWay}"
                                         SourceRequested="{x:Bind help:IconProvider.SourceRequested16}" />
                                 </local:DockItemControl.Icon>
@@ -164,7 +166,9 @@
                                         Width="20"
                                         Height="20"
                                         VerticalAlignment="Center"
+                                        DiagnosticScope="AddBand"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        RequestSite="Dock"
                                         SourceKey="{x:Bind IconViewModel, Mode=OneWay}"
                                         SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
                                     <TextBlock

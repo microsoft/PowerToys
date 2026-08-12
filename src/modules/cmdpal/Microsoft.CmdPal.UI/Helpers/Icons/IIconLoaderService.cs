@@ -17,5 +17,6 @@ internal interface IIconLoaderService : IAsyncDisposable
         Size iconSize,
         double scale,
         TaskCompletionSource<IconSource?> tcs,
-        IconLoadPriority priority);
+        IconLoadPriority priority,
+        IconLoadMeasurement? diagnostics = null);
 }

@@ -32,6 +32,8 @@
                 Margin="0,0,8,0"
                 VerticalAlignment="Center"
                 AutomationProperties.AccessibilityView="Raw"
+                DiagnosticScope="Notification"
+                RequestSite="Toast"
                 SourceKey="{x:Bind ViewModel.Icon, Mode=OneWay}"
                 SourceRequested="{x:Bind help:IconProvider.SourceRequested16}"
                 Visibility="{x:Bind ViewModel.HasIcon, Mode=OneWay}" />
@@ -55,6 +57,8 @@
                         Height="16"
                         VerticalAlignment="Center"
                         AutomationProperties.AccessibilityView="Raw"
+                        DiagnosticScope="Command"
+                        RequestSite="Toast"
                         SourceKey="{x:Bind ViewModel.CommandIcon, Mode=OneWay}"
                         SourceRequested="{x:Bind help:IconProvider.SourceRequested16}"
                         Visibility="{x:Bind ViewModel.CommandHasIcon, Mode=OneWay}" />
