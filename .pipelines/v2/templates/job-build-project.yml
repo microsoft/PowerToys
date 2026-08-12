@@ -213,7 +213,7 @@ jobs:
     parameters:
       sdk: true
       version: '10.0'
-      # Keep this SDK version aligned with the .NET servicing package versions in Directory.Packages.props.
+      # SDK 10.0.302 contains runtime 10.0.10. Keep this aligned with DotNetRuntimePackageVersion in Directory.Packages.props.
       exactVersion: '10.0.302'
 
   - ${{ if eq(parameters.runTests, true) }}:
