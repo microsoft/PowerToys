@@ -64,6 +64,16 @@ public partial class SamplesListPage : ListPage
             Title = "Sample Icon Page",
             Subtitle = "A demo of using icons in various ways",
         },
+        new ListItem(new SampleSwatchIconPage())
+        {
+            Title = "Swatch Icon Palette",
+            Subtitle = "A 256-color circle and square swatch stress sample",
+        },
+        new ListItem(new SampleSvgIconPage())
+        {
+            Title = "SVG Icon Protocols",
+            Subtitle = "Plain, themed, semantic, and custom-color SVG icon samples",
+        },
         new ListItem(new SlowListPage())
         {
             Title = "Slow loading list page",

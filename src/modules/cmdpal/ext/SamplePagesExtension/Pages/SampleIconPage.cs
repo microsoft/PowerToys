@@ -30,42 +30,82 @@ internal sealed partial class SampleIconPage : ListPage
 
     private readonly IListItem[] _items =
     [
-        BuildIconItem(
-            "|Swatch|#FF0067C0|#FF60CDFF|square|",
-            "Theme-aware square swatch",
-            "Uses separate light and dark colors with the square background shape"),
-
-        BuildIconItem(
-            "|Swatch|success|circle|",
-            "Semantic success swatch",
-            "Uses a theme-aware semantic color with the circle background shape"),
-
-        BuildIconItem(
+        BuildProtocolIconItem(
             "|Initials|A|#FF7A3E9D|circle|",
             "Generated circular initials avatar",
             "Uses an automatically contrasting foreground"),
 
-        BuildIconItem(
+        BuildProtocolIconItem(
             "|Initials|CP|#FF005FB8|#FF60CDFF|square|",
             "Theme-aware square initials avatar",
             "Uses separate light and dark background colors"),
 
-        BuildIconItem(
+        BuildProtocolIconItem(
+            "|Initials|Å|info|circle|",
+            "Accented Latin initials avatar",
+            "Uses DirectWrite font fallback and vector outlines"),
+
+        BuildProtocolIconItem(
+            "|Initials|ЖП|success|square|",
+            "Cyrillic initials avatar",
+            "Shapes non-Latin initials off the UI thread"),
+
+        BuildProtocolIconItem(
+            "|Initials|東京|warning|circle|",
+            "CJK initials avatar",
+            "Uses the installed Windows font selected by system fallback"),
+
+        BuildProtocolIconItem(
+            "|Initials|👩‍💻|#FF7A3E9D|square|",
+            "Multi-code-point initials avatar",
+            "Treats a joined emoji sequence as one Unicode text element"),
+
+        BuildProtocolIconItem(
+            "|Initials|A%7CB|neutral|circle|",
+            "Escaped separator initials avatar",
+            "Uses %7C for a literal protocol separator"),
+
+        BuildProtocolIconItem(
+            "|Initials|%25|subtle|square|",
+            "Escaped percent initials avatar",
+            "Uses %25 for a literal percent sign"),
+
+        BuildProtocolIconItem(
             "|Initials|N|normal|circle|",
-            "Semantic normal initials avatar",
+            "Normal-color initials avatar",
             "Uses the normal theme foreground as its background color"),
 
-        BuildIconItem(
+        BuildProtocolIconItem(
             "|Initials|T|transparent|square|",
-            "Transparent initials avatar",
-            "Uses a transparent square background and a theme-aware foreground"),
+            "Transparent initials icon",
+            "Omits the visible background while keeping theme-contrasting initials"),
 
-        BuildIconItem(
+        BuildProtocolIconItem(
+            "|Swatch|#FF7A3E9D|circle|",
+            "Generated circular color swatch",
+            "Uses one literal color in both themes"),
+
+        BuildProtocolIconItem(
+            "|Swatch|#FF005FB8|#FF60CDFF|square|",
+            "Theme-aware square color swatch",
+            "Uses separate light and dark colors"),
+
+        BuildProtocolIconItem("|Swatch|danger|circle|", "Semantic danger swatch", "Uses the theme-aware danger color"),
+        BuildProtocolIconItem("|Swatch|subtle|square|", "Semantic subtle swatch", "Uses the theme-aware subtle color"),
+        BuildProtocolIconItem("|Swatch|info|circle|", "Semantic info swatch", "Uses the theme-aware info color"),
+        BuildProtocolIconItem("|Swatch|warning|square|", "Semantic warning swatch", "Uses the theme-aware warning color"),
+        BuildProtocolIconItem("|Swatch|success|circle|", "Semantic success swatch", "Uses the theme-aware success color"),
+        BuildProtocolIconItem("|Swatch|neutral|square|", "Semantic neutral swatch", "Uses the theme-aware neutral color"),
+        BuildProtocolIconItem("|Swatch|dark|circle|", "Semantic dark swatch", "Uses the same deliberately dark color in both themes"),
+        BuildProtocolIconItem("|Swatch|normal|square|", "Semantic normal swatch", "Uses the normal foreground color for the current theme"),
+        BuildProtocolIconItem("|Swatch|transparent|circle|", "Transparent swatch", "Intentionally renders no visible fill; primarily useful as an initials background"),
+
+        BuildProtocolIconItem(
             "|Svg|" + PlainSvgSample,
             "Plain inline SVG",
             "Passes SVG content through without theme expansion"),
 
-        BuildIconItem(
+        BuildProtocolIconItem(
             "|ThemedSvg|success|" + ThemedSvgSample,
             "Themed inline SVG",
             "Uses currentColor for the globe and a semantic success accent for the overlay"),
@@ -211,7 +251,42 @@ internal sealed partial class SampleIconPage : ListPage
 
     public override IListItem[] GetItems() => _items;
 
-    private static ListItem BuildIconItem(string icon, string title, string description)
+    private static ListItem BuildProtocolIconItem(string icon, string title, string description) =>
+        BuildIconItem(
+            icon,
+            title,
+            description,
+            new DetailsElement
+            {
+                Key = "Icon Protocol",
+                Data = new DetailsTags
+                {
+                    Tags = [new Tag(icon)],
+                },
+            });
+
+    private static ListItem BuildIconItem(string icon, string title, string description) =>
+        BuildIconItem(
+            icon,
+            title,
+            description,
+            new DetailsElement
+            {
+                Key = "Unicode Code Points",
+                Data = new DetailsTags
+                {
+                    Tags = icon.EnumerateRunes()
+                        .Select(rune => rune.Value <= 0xFFFF ? $"\\u{rune.Value:X4}" : $"\\U{rune.Value:X8}")
+                        .Select(t => new Tag(t))
+                        .ToArray<ITag>(),
+                },
+            });
+
+    private static ListItem BuildIconItem(
+        string icon,
+        string title,
+        string description,
+        DetailsElement metadata)
     {
         var iconInfo = new IconInfo(icon);
 
@@ -229,17 +304,7 @@ internal sealed partial class SampleIconPage : ListPage
                 Title = title,
                 Body = description,
                 Metadata = [
-                    new DetailsElement
-                    {
-                        Key = "Unicode Code Points",
-                        Data = new DetailsTags
-                        {
-                            Tags = icon.EnumerateRunes()
-                                .Select(rune => rune.Value <= 0xFFFF ? $"\\u{rune.Value:X4}" : $"\\U{rune.Value:X8}")
-                                .Select(t => new Tag(t))
-                                .ToArray<ITag>(),
-                        },
-                    }
+                    metadata,
                 ],
             },
         };

@@ -234,10 +234,7 @@ public partial class CachedIconSourceProviderTests
     {
         var loader = new ControllableIconLoader();
         var provider = CreateProvider(loader);
-        var icon = new IconDataViewModel
-        {
-            Icon = "|ThemedSvg|<svg xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"{{ThemeColor}}\"/></svg>",
-        };
+        var icon = CreateIcon("|ThemedSvg|<svg xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"{{ThemeColor}}\"/></svg>");
 
         var light = provider.GetIconSource(icon, 1.0, theme: ElementTheme.Light);
         loader.CompleteNext(null);
@@ -264,10 +261,7 @@ public partial class CachedIconSourceProviderTests
     {
         var loader = new ControllableIconLoader();
         var provider = CreateProvider(loader);
-        var icon = new IconDataViewModel
-        {
-            Icon = "|Svg|<svg xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"#0067C0\"/></svg>",
-        };
+        var icon = CreateIcon("|Svg|<svg xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"#0067C0\"/></svg>");
 
         var light = provider.GetIconSource(icon, 1.0, theme: ElementTheme.Light);
         loader.CompleteNext(null);
