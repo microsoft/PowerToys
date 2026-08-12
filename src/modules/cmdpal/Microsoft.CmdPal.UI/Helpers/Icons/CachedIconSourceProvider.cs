@@ -7,11 +7,14 @@ using System.Runtime.CompilerServices;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
+using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.UI.Helpers;
 
 internal sealed class CachedIconSourceProvider : IIconSourceProvider
 {
+    private static readonly ConditionalWeakTable<IRandomAccessStreamReference, StreamIdentity> StreamIdentities = new();
+
     private readonly AdaptiveCache<IconCacheKey, Task<IconSource?>> _cache;
     private readonly ConcurrentDictionary<IconCacheKey, Task<IconSource?>> _inFlight = new();
     private readonly Size _iconSize;
@@ -145,27 +148,34 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
     {
         private readonly string? _icon;
         private readonly string? _fontFamily;
-        private readonly int _streamRefHashCode;
+        private readonly StreamIdentity? _streamIdentity;
         private readonly int _scale;
 
         public IconCacheKey(IconDataViewModel icon, double scale)
         {
             _icon = icon.Icon;
             _fontFamily = icon.FontFamily;
-            _streamRefHashCode = icon.Data?.Unsafe is { } stream
-                ? RuntimeHelpers.GetHashCode(stream)
-                : 0;
+            _streamIdentity = icon.Data?.Unsafe is { } stream
+                ? StreamIdentities.GetValue(stream, static _ => new StreamIdentity())
+                : null;
             _scale = (int)(100 * Math.Round(scale, 2));
         }
 
         public bool Equals(IconCacheKey other) =>
             _icon == other._icon &&
             _fontFamily == other._fontFamily &&
-            _streamRefHashCode == other._streamRefHashCode &&
+            ReferenceEquals(_streamIdentity, other._streamIdentity) &&
             _scale == other._scale;
 
         public override bool Equals(object? obj) => obj is IconCacheKey other && Equals(other);
 
-        public override int GetHashCode() => HashCode.Combine(_icon, _fontFamily, _streamRefHashCode, _scale);
+        public override int GetHashCode() => HashCode.Combine(_icon, _fontFamily, _streamIdentity, _scale);
+    }
+
+    // A RuntimeHelpers.GetHashCode value is not unique. Keep a weak mapping from each
+    // stream reference to a stable token so cached keys cannot alias distinct streams,
+    // without making the cache retain the stream and its encoded image data.
+    private sealed class StreamIdentity
+    {
     }
 }
