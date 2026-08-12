@@ -10,6 +10,24 @@ namespace SamplePagesExtension.Pages;
 
 internal sealed partial class SampleIconPage : ListPage
 {
+    private const string PlainSvgSample = """
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+          <rect x="1" y="1" width="30" height="30" rx="8" fill="#E8DEF8" />
+          <path d="M9 16l5 5 9-11" fill="none" stroke="#7A3E9D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        """;
+
+    private const string ThemedSvgSample = """
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" color="{{ThemeColor}}">
+          <path
+            fill="currentColor"
+            d="M10 18q.128 0 .254-.004a5.5 5.5 0 0 1-.698-1.083c-.536-.207-1.098-.793-1.578-1.821A9.3 9.3 0 0 1 7.42 13.5h1.672q.096-.52.284-1h-2.17A15 15 0 0 1 7 10c0-.883.073-1.725.206-2.5h5.588c.092.541.156 1.115.186 1.713q.48-.138.992-.188a16 16 0 0 0-.165-1.525h2.733c.251.656.406 1.36.448 2.094q.543.276 1.008.66A8 8 0 1 0 10 18M10 3c.657 0 1.407.59 2.022 1.908.217.466.406 1.002.559 1.592H7.419c.153-.59.342-1.126.56-1.592C8.592 3.59 9.342 3 10 3M7.072 4.485A10.5 10.5 0 0 0 6.389 6.5H3.936a7.02 7.02 0 0 1 3.778-3.118c-.241.33-.456.704-.642 1.103M6.192 7.5A16 16 0 0 0 6 10c0 .87.067 1.712.193 2.5H3.46A7 7 0 0 1 3 10c0-.88.163-1.724.46-2.5zm.197 6c.176.743.407 1.422.683 2.015c.186.399.401.773.642 1.103A7.02 7.02 0 0 1 3.936 13.5zm5.897-10.118A7.02 7.02 0 0 1 16.064 6.5H13.61a10.5 10.5 0 0 0-.683-2.015 6.6 6.6 0 0 0-.642-1.103" />
+          <path
+            fill="{{AccentColor}}"
+            d="M19 14.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0m-4.854-2.353-2 2a.5.5 0 0 0 .708.707L14 13.707V16.5a.5.5 0 0 0 1 0v-2.793l1.146 1.147a.5.5 0 0 0 .708-.708l-2-2a.5.5 0 0 0-.351-.146h-.006a.5.5 0 0 0-.348.144z" />
+        </svg>
+        """;
+
     private readonly IListItem[] _items =
     [
         BuildIconItem(
@@ -41,6 +59,16 @@ internal sealed partial class SampleIconPage : ListPage
             "|Initials|T|transparent|square|",
             "Transparent initials avatar",
             "Uses a transparent square background and a theme-aware foreground"),
+
+        BuildIconItem(
+            "|Svg|" + PlainSvgSample,
+            "Plain inline SVG",
+            "Passes SVG content through without theme expansion"),
+
+        BuildIconItem(
+            "|ThemedSvg|success|" + ThemedSvgSample,
+            "Themed inline SVG",
+            "Uses currentColor for the globe and a semantic success accent for the overlay"),
 
         /*
          * Quick intro to Unicode in source code:
