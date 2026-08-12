@@ -29,6 +29,16 @@ public partial class IconBox : ContentControl
     private long _requestVersion;
     private IconRequestMeasurement _activeRequestDiagnostics;
     private IIconRequestDemand? _activeRequestDemand;
+
+    // ImageIconSource does not render through IconSourceElement. Reassigning Source on
+    // one realized Image left recycled rows intermittently blank in testing. Keep a
+    // stable Grid and alternate inactive Image slots so Source changes occur only on a
+    // collapsed element before it is shown.
+    private Grid? _imagePresenter;
+    private Image? _firstImageSlot;
+    private Image? _secondImageSlot;
+    private Image? _activeImageSlot;
+    private bool _imagePresenterDisabled;
     private long _diagnosticId;
     private IconRequestSite _derivedRequestSite;
     private bool _hasDerivedRequestSite;
@@ -421,11 +431,18 @@ public partial class IconBox : ContentControl
         switch (e.NewValue)
         {
             case null:
-                self.Content = null;
+                var imagePresenterWasActive = ReferenceEquals(self.Content, self._imagePresenter);
+                self.ClearImagePresenter();
+                if (!imagePresenterWasActive)
+                {
+                    self.Content = null;
+                }
+
                 self.Padding = default;
                 break;
             case FontIconSource fontIcon:
                 var fontElementStartedAt = IconLoadDiagnostics.BeginElementUpdate();
+                self.ClearImagePresenter();
                 self.UpdateLastFontSize();
                 fontIcon.FontSize = self._lastFontSize;
                 if (self.Content is IconSourceElement iconSourceElement)
@@ -444,6 +461,7 @@ public partial class IconBox : ContentControl
                 break;
             case BitmapIconSource bitmapIcon:
                 var bitmapElementStartedAt = IconLoadDiagnostics.BeginElementUpdate();
+                self.ClearImagePresenter();
                 if (self.Content is IconSourceElement iconSourceElement2)
                 {
                     iconSourceElement2.IconSource = bitmapIcon;
@@ -459,8 +477,16 @@ public partial class IconBox : ContentControl
 
                 break;
 
+            case ImageIconSource imageIcon:
+                var imageElementStartedAt = IconLoadDiagnostics.BeginElementUpdate();
+                var reusedImagePresenter = self.PresentImageIconSource(imageIcon);
+                IconLoadDiagnostics.RecordElementUpdate(reusedImagePresenter, imageIcon, imageElementStartedAt);
+                self.Padding = default;
+                break;
+
             case IconSource source:
                 var sourceElementStartedAt = IconLoadDiagnostics.BeginElementUpdate();
+                self.ClearImagePresenter();
                 self.Content = source.CreateIconElement();
                 IconLoadDiagnostics.RecordElementUpdate(reused: false, source, sourceElementStartedAt);
                 self.Padding = default;
@@ -469,6 +495,134 @@ public partial class IconBox : ContentControl
             default:
                 throw new InvalidOperationException($"New value of {e.NewValue} is not of type IconSource.");
         }
+    }
+
+    private bool PresentImageIconSource(ImageIconSource source)
+    {
+        if (_imagePresenterDisabled)
+        {
+            Content = source.CreateIconElement();
+            return false;
+        }
+
+        if (source.ImageSource is null)
+        {
+            var imagePresenterWasActive = ReferenceEquals(Content, _imagePresenter);
+            ClearImagePresenter();
+            if (!imagePresenterWasActive)
+            {
+                Content = null;
+            }
+
+            return _imagePresenter is not null;
+        }
+
+        var reused = _imagePresenter is not null;
+
+        try
+        {
+            var presenter = EnsureImagePresenter();
+            var nextSlot = ReferenceEquals(_activeImageSlot, _firstImageSlot)
+                ? EnsureSecondImageSlot()
+                : _firstImageSlot!;
+            var previousSlot = _activeImageSlot;
+
+            if (previousSlot is not null)
+            {
+                previousSlot.Visibility = Visibility.Collapsed;
+            }
+
+            nextSlot.Source = source.ImageSource;
+            nextSlot.Visibility = Visibility.Visible;
+
+            if (previousSlot is not null)
+            {
+                previousSlot.Source = null;
+            }
+
+            _activeImageSlot = nextSlot;
+            if (!ReferenceEquals(Content, presenter))
+            {
+                Content = presenter;
+            }
+
+            return reused;
+        }
+        catch (Exception ex)
+        {
+            DisableImagePresenter();
+            Logger.LogError($"Failed to update reusable image presenter ({GetDiagnosticDescription()})", ex);
+            Content = source.CreateIconElement();
+            return false;
+        }
+    }
+
+    private Grid EnsureImagePresenter()
+    {
+        if (_imagePresenter is not null)
+        {
+            return _imagePresenter;
+        }
+
+        var presenter = new Grid
+        {
+            IsHitTestVisible = false,
+        };
+        var firstSlot = CreateImageSlot();
+        presenter.Children.Add(firstSlot);
+
+        _imagePresenter = presenter;
+        _firstImageSlot = firstSlot;
+        return presenter;
+    }
+
+    private Image EnsureSecondImageSlot()
+    {
+        if (_secondImageSlot is not null)
+        {
+            return _secondImageSlot;
+        }
+
+        var secondSlot = CreateImageSlot();
+        _imagePresenter!.Children.Add(secondSlot);
+        _secondImageSlot = secondSlot;
+        return secondSlot;
+    }
+
+    private static Image CreateImageSlot()
+    {
+        return new Image
+        {
+            IsHitTestVisible = false,
+            Stretch = Stretch.Uniform,
+            Visibility = Visibility.Collapsed,
+        };
+    }
+
+    private void ClearImagePresenter()
+    {
+        _activeImageSlot?.Visibility = Visibility.Collapsed;
+        _firstImageSlot?.Source = null;
+        _secondImageSlot?.Source = null;
+        _activeImageSlot = null;
+    }
+
+    private void DisableImagePresenter()
+    {
+        try
+        {
+            ClearImagePresenter();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to clear reusable image presenter ({GetDiagnosticDescription()})", ex);
+        }
+
+        _imagePresenter = null;
+        _firstImageSlot = null;
+        _secondImageSlot = null;
+        _activeImageSlot = null;
+        _imagePresenterDisabled = true;
     }
 
     private static void OnFallbackSourcePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -510,9 +664,15 @@ public partial class IconBox : ContentControl
             return;
         }
 
-        // A recycled IconBox must stop presenting the preceding item's icon before
-        // the replacement request has a chance to yield or enter the load queue.
-        self.UpdatePresentedSource();
+        // Keep the preceding source only while a replacement has a chance to resolve
+        // synchronously in Refresh. RequestIconFromSource presents the fallback before
+        // an asynchronous suspension, so the preceding item can never reach another frame.
+        // If no request can start now, clear it immediately instead.
+        if (!self.IsLoaded || self._sourceRequested is null)
+        {
+            self.UpdatePresentedSource();
+        }
+
         self.RequestRefresh(IconRequestReason.SourceChanged);
     }
 
@@ -574,6 +734,17 @@ public partial class IconBox : ContentControl
 
             if (requestVersion == iconBox._requestVersion)
             {
+                // A synchronous provider failure occurs before the pending-source path
+                // gets a chance to clear the preceding item.
+                try
+                {
+                    iconBox.UpdatePresentedSource();
+                }
+                catch (Exception presentationException)
+                {
+                    Logger.LogError($"Failed to clear icon after a request failure ({iconBox.GetDiagnosticDescription()})", presentationException);
+                }
+
                 // Do not dispatch immediately: a deterministic failure would recurse forever.
                 // Keep the request pending for the next external lifecycle or source trigger.
                 iconBox.MarkRefreshPending(IconRequestReason.Retry);
