@@ -26,13 +26,13 @@ public class GeneratedIconProtocolTests
         Assert.IsNotNull(shape);
         Assert.AreEqual(expectedFill, shape.Attribute("fill")?.Value);
         Assert.AreEqual(expectedOpacity, shape.Attribute("fill-opacity")?.Value);
-        Assert.AreEqual("12", shape.Attribute("r")?.Value);
+        Assert.AreEqual("15.5", shape.Attribute("r")?.Value);
     }
 
     [TestMethod]
     public void ThemeAwareSwatchSelectsThemeColorAndUsesThemeInCacheIdentity()
     {
-        const string Value = "|Swatch|#FF0067C0|#FF60CDFF|";
+        const string Value = "|Swatch|#FF0067C0|#FF60CDFF|square|";
 
         Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg(Value, ElementTheme.Light, out var lightSvg));
         Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg(Value, ElementTheme.Dark, out var darkSvg));
@@ -53,10 +53,66 @@ public class GeneratedIconProtocolTests
         Assert.AreEqual(ElementTheme.Default, GeneratedIconProtocol.GetCacheTheme(Value, ElementTheme.Dark));
     }
 
+    [DataTestMethod]
+    [DataRow("danger", "#C42B1C", "#FF99A4", true, null)]
+    [DataRow("subtle", "#616161", "#C5C5C5", true, null)]
+    [DataRow("info", "#0067C0", "#60CDFF", true, null)]
+    [DataRow("warning", "#9D5D00", "#FCE100", true, null)]
+    [DataRow("success", "#0F7B0F", "#6CCB5F", true, null)]
+    [DataRow("neutral", "#8A8A8A", "#9D9D9D", true, null)]
+    [DataRow("dark", "#1B1A19", "#1B1A19", false, null)]
+    [DataRow("normal", "#000000", "#FFFFFF", true, null)]
+    [DataRow("transparent", "#000000", "#000000", false, "0")]
+    public void SwatchSupportsSemanticColors(
+        string semanticColor,
+        string expectedLight,
+        string expectedDark,
+        bool isThemeDependent,
+        string? expectedOpacity)
+    {
+        var value = $"|Swatch|{semanticColor}|square|";
+
+        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg(value, ElementTheme.Light, out var lightSvg));
+        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg(value, ElementTheme.Dark, out var darkSvg));
+
+        Assert.AreEqual(expectedLight, GetBackgroundFill(lightSvg));
+        Assert.AreEqual(expectedDark, GetBackgroundFill(darkSvg));
+        Assert.AreEqual(expectedOpacity, GetBackgroundOpacity(lightSvg));
+        Assert.AreEqual(expectedOpacity, GetBackgroundOpacity(darkSvg));
+        Assert.IsNotNull(ParseSvg(lightSvg).Element(SvgName("rect")));
+        Assert.AreEqual(
+            isThemeDependent ? ElementTheme.Light : ElementTheme.Default,
+            GeneratedIconProtocol.GetCacheTheme(value, ElementTheme.Light));
+        Assert.AreEqual(
+            isThemeDependent ? ElementTheme.Dark : ElementTheme.Default,
+            GeneratedIconProtocol.GetCacheTheme(value, ElementTheme.Dark));
+    }
+
+    [TestMethod]
+    public async Task InitialsSupportsNormalAndTransparentSemanticBackgrounds()
+    {
+        const string Normal = "|Initials|N|normal|circle|";
+        const string Transparent = "|Initials|T|transparent|square|";
+
+        var normalLight = await CreateSvgAsync(Normal, ElementTheme.Light);
+        var normalDark = await CreateSvgAsync(Normal, ElementTheme.Dark);
+        Assert.AreEqual("#000000", GetBackgroundFill(normalLight));
+        Assert.AreEqual("#FFFFFF", GetBackgroundFill(normalDark));
+        Assert.AreEqual("#FFFFFF", GetForegroundFill(normalLight));
+        Assert.AreEqual("#000000", GetForegroundFill(normalDark));
+
+        var transparentLight = await CreateSvgAsync(Transparent, ElementTheme.Light);
+        var transparentDark = await CreateSvgAsync(Transparent, ElementTheme.Dark);
+        Assert.AreEqual("0", GetBackgroundOpacity(transparentLight));
+        Assert.AreEqual("0", GetBackgroundOpacity(transparentDark));
+        Assert.AreEqual("#000000", GetForegroundFill(transparentLight));
+        Assert.AreEqual("#FFFFFF", GetForegroundFill(transparentDark));
+    }
+
     [TestMethod]
     public async Task TranslucentInitialsUsesThemeForContrastAndCacheIdentity()
     {
-        const string Value = "|Initials|AB|#80000000|rounded|";
+        const string Value = "|Initials|AB|#80000000|square|";
 
         var lightSvg = await CreateSvgAsync(Value, ElementTheme.Light);
         var darkSvg = await CreateSvgAsync(Value, ElementTheme.Dark);
@@ -68,13 +124,13 @@ public class GeneratedIconProtocolTests
     }
 
     [TestMethod]
-    public async Task InitialsSupportsCircleRoundedSquareAndVectorGlyphs()
+    public async Task InitialsSupportsCircleSquareAndVectorGlyphs()
     {
         var circleSvg = await CreateSvgAsync(
             "|Initials|a|#FFFFFFFF|circle|",
             ElementTheme.Light);
-        var roundedSvg = await CreateSvgAsync(
-            "|Initials|CP|#FF005FB8|#FF60CDFF|rounded|",
+        var squareSvg = await CreateSvgAsync(
+            "|Initials|CP|#FF005FB8|#FF60CDFF|square|",
             ElementTheme.Dark);
 
         var circle = ParseSvg(circleSvg);
@@ -82,10 +138,23 @@ public class GeneratedIconProtocolTests
         Assert.IsFalse(string.IsNullOrEmpty(circle.Element(SvgName("path"))?.Attribute("d")?.Value));
         Assert.AreEqual("#000000", circle.Element(SvgName("path"))?.Attribute("fill")?.Value);
 
-        var rounded = ParseSvg(roundedSvg);
-        Assert.IsNotNull(rounded.Element(SvgName("rect")));
-        Assert.AreEqual("#60CDFF", rounded.Element(SvgName("rect"))?.Attribute("fill")?.Value);
-        Assert.IsFalse(string.IsNullOrEmpty(rounded.Element(SvgName("path"))?.Attribute("d")?.Value));
+        var square = ParseSvg(squareSvg);
+        Assert.IsNotNull(square.Element(SvgName("rect")));
+        Assert.AreEqual("#60CDFF", square.Element(SvgName("rect"))?.Attribute("fill")?.Value);
+        Assert.IsFalse(string.IsNullOrEmpty(square.Element(SvgName("path"))?.Attribute("d")?.Value));
+    }
+
+    [TestMethod]
+    public async Task SwatchAndInitialsShareCircleAndSquareBackgroundGeometry()
+    {
+        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg("|Swatch|#0067C0|", ElementTheme.Light, out var circleSwatch));
+        var circleInitials = await CreateSvgAsync("|Initials|A|#0067C0|", ElementTheme.Light);
+        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg("|Swatch|#0067C0|square|", ElementTheme.Light, out var squareSwatch));
+        var squareInitials = await CreateSvgAsync("|Initials|A|#0067C0|square|", ElementTheme.Light);
+
+        Assert.AreEqual(GetBackgroundGeometry(circleSwatch), GetBackgroundGeometry(circleInitials));
+        Assert.AreEqual(GetBackgroundGeometry(squareSwatch), GetBackgroundGeometry(squareInitials));
+        Assert.AreNotEqual(GetBackgroundGeometry(circleSwatch), GetBackgroundGeometry(squareSwatch));
     }
 
     [DataTestMethod]
@@ -110,8 +179,8 @@ public class GeneratedIconProtocolTests
     [TestMethod]
     public async Task InitialsPercentEncodingDistinguishesSeparatorAndPercentText()
     {
-        const string Separator = "|Initials|A%7CB|#0F7B0F|rounded|";
-        const string Percent = "|Initials|%25|#0F7B0F|rounded|";
+        const string Separator = "|Initials|A%7CB|#0F7B0F|square|";
+        const string Percent = "|Initials|%25|#0F7B0F|square|";
 
         var separatorSvg = await CreateSvgAsync(Separator, ElementTheme.Light);
         var percentSvg = await CreateSvgAsync(Percent, ElementTheme.Light);
@@ -153,8 +222,10 @@ public class GeneratedIconProtocolTests
     [DataTestMethod]
     [DataRow("|Swatch|#fff|", "|Swatch|#FFF|")]
     [DataRow("|Swatch|#abcdef|#a1b2c3|", "|Swatch|#ABCDEF|#A1B2C3|")]
+    [DataRow("|Swatch|INFO|SQUARE|", "|Swatch|info|square|")]
     [DataRow("|Initials|CP|#fff|CIRCLE|", "|Initials|CP|#FFF|circle|")]
     [DataRow("|Initials|cp|#abcdef|CIRCLE|", "|Initials|CP|#ABCDEF|circle|")]
+    [DataRow("|Initials|CP|WARNING|SQUARE|", "|Initials|CP|warning|square|")]
     public void EquivalentGeneratedStyleTokensShareCacheIdentity(string value, string canonical)
     {
         Assert.AreEqual(canonical, GeneratedIconProtocol.GetCacheIdentity(value));
@@ -166,10 +237,12 @@ public class GeneratedIconProtocolTests
     [DataTestMethod]
     [DataRow("|Swatch|#FFF|")]
     [DataRow("|Swatch|#ABCDEF|#A1B2C3|")]
+    [DataRow("|Swatch|info|square|")]
     [DataRow("|Initials|A|#0067C0|circle|")]
-    [DataRow("|Initials|AB|#0067C0|rounded|")]
+    [DataRow("|Initials|AB|#0067C0|square|")]
     [DataRow("|Initials|JP|#0067C0|circle|")]
-    [DataRow("|Initials|123|#0067C0|rounded|")]
+    [DataRow("|Initials|123|#0067C0|square|")]
+    [DataRow("|Initials|CP|warning|square|")]
     public void CanonicalGeneratedIdentitiesReuseInput(string value)
     {
         Assert.AreSame(value, GeneratedIconProtocol.GetCacheIdentity(value));
@@ -178,7 +251,7 @@ public class GeneratedIconProtocolTests
     [TestMethod]
     public async Task MissingInitialsFontDegradesToBackgroundTile()
     {
-        var svg = await CreateSvgAsync("|Initials|\U0010FFFF|#C42B1C|rounded|", ElementTheme.Light);
+        var svg = await CreateSvgAsync("|Initials|\U0010FFFF|#C42B1C|square|", ElementTheme.Light);
         var root = ParseSvg(svg);
 
         Assert.IsNotNull(root.Element(SvgName("rect")));
@@ -191,6 +264,7 @@ public class GeneratedIconProtocolTests
     [DataRow("|Swatch|")]
     [DataRow("|Swatch|red|")]
     [DataRow("|Swatch|#12345|")]
+    [DataRow("|Swatch|#123456|triangle|")]
     [DataRow("|Swatch|#123456|#654321|#ABCDEF|")]
     [DataRow("|swatch|#123456|")]
     [DataRow("|Initials||#123456|")]
@@ -203,7 +277,8 @@ public class GeneratedIconProtocolTests
     [DataRow("|Initials|%FF|#123456|")]
     [DataRow("|Initials|%F0%9F%91|#123456|")]
     [DataRow("|Initials|AB|#123456|triangle|")]
-    [DataRow("|Initials|AB|#123456|#654321|rounded|extra|")]
+    [DataRow("|Initials|AB|unknown|circle|")]
+    [DataRow("|Initials|AB|#123456|#654321|square|extra|")]
     public async Task InvalidProtocolIsRejected(string? value)
     {
         var (success, svg) = await TryCreateSvgAsync(value, ElementTheme.Light);
@@ -252,8 +327,32 @@ public class GeneratedIconProtocolTests
         return (root.Element(SvgName("circle")) ?? root.Element(SvgName("rect")))?.Attribute("fill")?.Value;
     }
 
+    private static string? GetBackgroundOpacity(byte[] svg)
+    {
+        var root = ParseSvg(svg);
+        return (root.Element(SvgName("circle")) ?? root.Element(SvgName("rect")))?.Attribute("fill-opacity")?.Value;
+    }
+
     private static string? GetForegroundFill(byte[] svg) =>
         ParseSvg(svg).Element(SvgName("path"))?.Attribute("fill")?.Value;
+
+    private static string GetBackgroundGeometry(byte[] svg)
+    {
+        var root = ParseSvg(svg);
+        var background = root.Element(SvgName("circle")) ?? root.Element(SvgName("rect"));
+        Assert.IsNotNull(background);
+
+        var geometry = background.Name.LocalName;
+        foreach (var attribute in background.Attributes())
+        {
+            if (attribute.Name.LocalName is not "fill" and not "fill-opacity")
+            {
+                geometry += $"|{attribute.Name.LocalName}={attribute.Value}";
+            }
+        }
+
+        return geometry;
+    }
 
     private static XName SvgName(string localName) => XName.Get(localName, "http://www.w3.org/2000/svg");
 }

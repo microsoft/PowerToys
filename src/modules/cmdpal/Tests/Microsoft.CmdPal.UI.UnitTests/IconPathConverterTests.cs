@@ -71,7 +71,7 @@ public class IconPathConverterTests
     public void GeneratedInitialsDoNotShapeInSynchronousConverter()
     {
         using var prepared = IconPathConverter.Prepare(
-            "|Initials|CP|#FF005FB8|#FF60CDFF|rounded|",
+            "|Initials|CP|#FF005FB8|#FF60CDFF|square|",
             null,
             20,
             ElementTheme.Dark);
