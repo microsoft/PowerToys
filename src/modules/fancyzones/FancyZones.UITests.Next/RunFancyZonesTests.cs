@@ -25,13 +25,13 @@ public class RunFancyZonesTests : UITestBase
     {
     }
 
+    protected override IReadOnlyList<string> StaleProcessNames => FancyZonesTestHelper.StaleProcessNames;
+
     [TestMethod]
     [TestCategory("FancyZones")]
     public void FancyZonesProcessFollowsTheSettingsToggle()
     {
-        // This test runs last, so it inherits whatever the preceding 16 tests left behind. Record the
-        // starting instances: more than one here means an earlier scope restart orphaned a module
-        // process, which would make the "exits when disabled" assertion fail for an unrelated reason.
+        // Record the runner-owned starting instance so a lifecycle failure identifies the exact PID.
         FancyZonesTestHelper.Step(
             this,
             $"Live {FancyZonesTestHelper.FancyZonesProcess} instances before touching the toggle: " +

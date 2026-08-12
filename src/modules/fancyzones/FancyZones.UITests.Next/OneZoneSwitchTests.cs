@@ -36,13 +36,15 @@ public class OneZoneSwitchTests : UITestBase
     {
     }
 
+    protected override IReadOnlyList<string> StaleProcessNames => FancyZonesTestHelper.StaleProcessNames;
+
     [TestCleanup]
     public async Task CleanupTest()
     {
         await CaptureFailureArtifactsBeforeCleanupAsync();
 
         MouseHelper.LeftUp();
-        KeyboardHelper.ReleaseKey(Key.Shift);
+        KeyboardHelper.ReleaseKey(Key.LShift);
 
         FancyZonesTestHelper.CloseLayoutEditor(this);
         FancyZonesTestHelper.CloseExplorerWindows();
@@ -159,7 +161,7 @@ public class OneZoneSwitchTests : UITestBase
 
         // Resets the FancyZones editor toggle state, not the settings — see DragWindowTests.Arrange.
         FancyZonesTestHelper.Step(this, "Restarting PowerToys to reset the FancyZones editor toggle state");
-        RestartScope();
+        FancyZonesTestHelper.RestartPowerToys(this);
 
         FancyZonesTestHelper.EnsureFancyZonesRunning(this);
         FancyZonesTestHelper.ApplyLayoutThroughEditor(
@@ -238,14 +240,14 @@ public class OneZoneSwitchTests : UITestBase
 
             var (left, top, right, bottom) = WindowHelper.GetWindowBounds(window);
 
-            KeyboardHelper.PressKey(Key.Shift);
+            KeyboardHelper.PressKey(Key.LShift);
             FancyZonesTestHelper.BeginWindowDrag(
                 this,
                 window,
                 targetX - ((left + right) / 2),
                 targetY - ((top + bottom) / 2));
             MouseHelper.LeftUp();
-            KeyboardHelper.ReleaseKey(Key.Shift);
+            KeyboardHelper.ReleaseKey(Key.LShift);
 
             Thread.Sleep(1500);
 

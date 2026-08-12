@@ -22,6 +22,16 @@ public static class FancyZonesTestHelper
 
     public const string SettingsProcess = "PowerToys.Settings";
 
+    /// <summary>Processes that must not survive into the next FancyZones test.</summary>
+    public static IReadOnlyList<string> StaleProcessNames { get; } =
+    new List<string>
+    {
+        "PowerToys",
+        SettingsProcess,
+        FancyZonesProcess,
+        EditorProcess,
+    };
+
     /// <summary>Window class of the zone overlay (<c>FancyZonesLib/WorkArea.cpp</c>).</summary>
     public const string ZonesOverlayClassName = "FancyZones_ZonesOverlay";
 
@@ -104,8 +114,22 @@ public static class FancyZonesTestHelper
         Assert.IsTrue(
             WaitForProcess(FancyZonesProcess, enable, 30_000),
             $"The {FancyZonesProcess} process did not {(enable ? "start" : "exit")} after toggling the module. " +
-            $"Live instances: {DescribeProcesses(FancyZonesProcess)}. A process started well before this test " +
-            "is an orphan left by an earlier scope restart, not the module refusing to follow the toggle.");
+            $"Live instances: {DescribeProcesses(FancyZonesProcess)}.");
+    }
+
+    /// <summary>
+    /// Stop FancyZones before restarting its runner so a slow child teardown cannot retain the
+    /// single-instance mutex and make the new runner track a short-lived duplicate process.
+    /// </summary>
+    public static void RestartPowerToys(UITestBase testBase)
+    {
+        Step(testBase, $"Stopping {FancyZonesProcess} before restarting PowerToys");
+        Assert.IsTrue(
+            WindowControl.TryKillProcessTreeByNameAndWait(FancyZonesProcess, 10_000),
+            $"Could not stop {FancyZonesProcess} before restarting PowerToys. " +
+            $"Live instances: {DescribeProcesses(FancyZonesProcess)}.");
+
+        testBase.RestartScope();
     }
 
     /// <summary>Live instances of a process with their ids and start times, for failure messages.</summary>

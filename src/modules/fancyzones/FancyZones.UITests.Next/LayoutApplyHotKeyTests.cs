@@ -29,6 +29,8 @@ public class LayoutApplyHotKeyTests : UITestBase
     {
     }
 
+    protected override IReadOnlyList<string> StaleProcessNames => FancyZonesTestHelper.StaleProcessNames;
+
     [TestCleanup]
     public async Task CleanupTest()
     {
@@ -123,7 +125,7 @@ public class LayoutApplyHotKeyTests : UITestBase
             KeyboardHelper.SendKeys(Key.Ctrl, Key.LWin, Key.D);
             Thread.Sleep(1000);
 
-            RestartScope();
+            FancyZonesTestHelper.RestartPowerToys(this);
             FancyZonesTestHelper.EnsureFancyZonesRunning(this);
 
             AssertLayoutSelected(Id.GridCustomLayoutCard, expectSelected: true);
@@ -152,7 +154,7 @@ public class LayoutApplyHotKeyTests : UITestBase
             KeyboardHelper.SendKeys(Key.Ctrl, Key.LWin, Key.D);
             Thread.Sleep(1000);
 
-            RestartScope();
+            FancyZonesTestHelper.RestartPowerToys(this);
             FancyZonesTestHelper.EnsureFancyZonesRunning(this);
             SelectLayoutInEditor(Id.Grid9LayoutCard);
 
@@ -160,7 +162,7 @@ public class LayoutApplyHotKeyTests : UITestBase
             KeyboardHelper.SendKeys(Key.Ctrl, Key.LWin, Key.Left);
             Thread.Sleep(1000);
 
-            RestartScope();
+            FancyZonesTestHelper.RestartPowerToys(this);
             FancyZonesTestHelper.EnsureFancyZonesRunning(this);
 
             AssertLayoutSelected(Id.GridCustomLayoutCard, expectSelected: true);
@@ -299,7 +301,7 @@ public class LayoutApplyHotKeyTests : UITestBase
 
         // Resets the FancyZones editor toggle state, not the settings — see DragWindowTests.Arrange.
         FancyZonesTestHelper.Step(this, "Restarting PowerToys to reset the FancyZones editor toggle state");
-        RestartScope();
+        FancyZonesTestHelper.RestartPowerToys(this);
 
         FancyZonesTestHelper.EnsureFancyZonesRunning(this);
 

@@ -12,6 +12,7 @@ public enum Key : byte
 {
     Ctrl = 0x11,
     Shift = 0x10,
+    LShift = 0xA0,
     Alt = 0x12,
     LWin = 0x5B,
     Tab = 0x09,
@@ -122,7 +123,8 @@ public static class KeyboardHelper
                     winDown = true;
                     break;
                 case Key.Ctrl: chord.Append('^'); break;
-                case Key.Shift: chord.Append('+'); break;
+                case Key.Shift:
+                case Key.LShift: chord.Append('+'); break;
                 case Key.Alt: chord.Append('%'); break;
                 case Key.Esc: chord.Append("{ESC}"); break;
                 case Key.Enter: chord.Append("{ENTER}"); break;

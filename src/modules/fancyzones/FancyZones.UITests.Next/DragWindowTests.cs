@@ -57,6 +57,8 @@ public class DragWindowTests : UITestBase
     {
     }
 
+    protected override IReadOnlyList<string> StaleProcessNames => FancyZonesTestHelper.StaleProcessNames;
+
     /// <summary>The button that toggles zone activation, honouring a swapped-buttons mouse.</summary>
     private static bool NonPrimaryIsRight => !SystemInformation.MouseButtonsSwapped;
 
@@ -67,7 +69,7 @@ public class DragWindowTests : UITestBase
 
         // A test that failed mid-gesture can leave the button/modifier down; free them first.
         MouseHelper.LeftUp();
-        KeyboardHelper.ReleaseKey(Key.Shift);
+        KeyboardHelper.ReleaseKey(Key.LShift);
 
         FancyZonesTestHelper.CloseLayoutEditor(this);
         FancyZonesTestHelper.CloseExplorerWindows();
@@ -88,7 +90,7 @@ public class DragWindowTests : UITestBase
         StartDrag();
         PressShiftDuringDrag();
         Drop();
-        KeyboardHelper.ReleaseKey(Key.Shift);
+        KeyboardHelper.ReleaseKey(Key.LShift);
 
         AssertSnapped(true, "Holding Shift during the drag should activate the zones.");
     }
@@ -104,11 +106,11 @@ public class DragWindowTests : UITestBase
     {
         Arrange(shiftDrag: true, mouseSwitch: false, transparent: false);
 
-        KeyboardHelper.PressKey(Key.Shift);
+        KeyboardHelper.PressKey(Key.LShift);
         Thread.Sleep(200);
         StartDrag();
         Drop();
-        KeyboardHelper.ReleaseKey(Key.Shift);
+        KeyboardHelper.ReleaseKey(Key.LShift);
 
         AssertSnapped(true, "Starting the drag with Shift already held should activate the zones.");
     }
@@ -174,7 +176,7 @@ public class DragWindowTests : UITestBase
             $"Alpha after pressing Shift mid-drag: {afterShift} (system reports Shift held: {shiftReachedTheSystem})");
 
         MouseHelper.LeftUp();
-        KeyboardHelper.ReleaseKey(Key.Shift);
+        KeyboardHelper.ReleaseKey(Key.LShift);
         Thread.Sleep(1000);
 
         var alphaWhenShiftHeldFirst = DragWithShiftHeldFromTheStart();
@@ -211,7 +213,7 @@ public class DragWindowTests : UITestBase
         PressShiftDuringDrag();
         ClickNonPrimaryButton();
         Drop();
-        KeyboardHelper.ReleaseKey(Key.Shift);
+        KeyboardHelper.ReleaseKey(Key.LShift);
 
         AssertSnapped(false, "The non-primary mouse click should deactivate the zones Shift had activated.");
     }
@@ -280,7 +282,7 @@ public class DragWindowTests : UITestBase
         // terminate-editor handle is alive, and that state survives between tests, so a long-lived
         // module ends up swallowing the next open. Measured: 14/17 with the restart, 3/17 without.
         FancyZonesTestHelper.Step(this, "Restarting PowerToys to reset the FancyZones editor toggle state");
-        RestartScope();
+        FancyZonesTestHelper.RestartPowerToys(this);
 
         FancyZonesTestHelper.EnsureFancyZonesRunning(this);
         FancyZonesTestHelper.ApplyLayoutThroughEditor(
@@ -333,7 +335,7 @@ public class DragWindowTests : UITestBase
     private void PressShiftDuringDrag()
     {
         FancyZonesTestHelper.Step(this, "Pressing Shift during the drag");
-        KeyboardHelper.PressKey(Key.Shift);
+        KeyboardHelper.PressKey(Key.LShift);
         Thread.Sleep(300);
         FancyZonesTestHelper.JiggleCursor();
         Thread.Sleep(500);
@@ -349,7 +351,7 @@ public class DragWindowTests : UITestBase
         Thread.Sleep(500);
 
         FancyZonesTestHelper.Step(this, "Holding Shift before the drag starts");
-        KeyboardHelper.PressKey(Key.Shift);
+        KeyboardHelper.PressKey(Key.LShift);
         Thread.Sleep(500);
 
         StartDrag();
@@ -357,7 +359,7 @@ public class DragWindowTests : UITestBase
         var alpha = WindowHelper.GetWindowAlpha(draggedWindow);
 
         MouseHelper.LeftUp();
-        KeyboardHelper.ReleaseKey(Key.Shift);
+        KeyboardHelper.ReleaseKey(Key.LShift);
         Thread.Sleep(500);
         return alpha;
     }
@@ -400,7 +402,7 @@ public class DragWindowTests : UITestBase
     /// <summary>Drag with the zones active and read the dragged window's alpha mid-gesture.</summary>
     private byte DragAndReadWindowAlpha()
     {
-        KeyboardHelper.PressKey(Key.Shift);
+        KeyboardHelper.PressKey(Key.LShift);
         Thread.Sleep(200);
         StartDrag();
 
@@ -409,7 +411,7 @@ public class DragWindowTests : UITestBase
         FancyZonesTestHelper.Step(this, $"Dragged window alpha while dragging: {alpha}");
 
         MouseHelper.LeftUp();
-        KeyboardHelper.ReleaseKey(Key.Shift);
+        KeyboardHelper.ReleaseKey(Key.LShift);
         Thread.Sleep(500);
         return alpha;
     }
