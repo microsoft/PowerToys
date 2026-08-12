@@ -19,7 +19,7 @@ namespace FancyZones.UITests;
 /// that move themselves rather than running the standard <c>DefWindowProc</c> move loop, so
 /// FancyZones never observes the drag and neither window ever snaps (see <see cref="DragWindowTests"/>).
 /// The port snaps two File Explorer windows opened at different folders instead: classic Win32
-/// windows with distinct titles, which is what the switching assertions need. Since two Explorer
+/// windows tracked by HWND, so delayed title updates cannot change their identity. Since two Explorer
 /// windows share one <c>app-zone-history.json</c> entry, each exact HWND is verified through the
 /// <c>FancyZones_zones</c> property the product stamps when it assigns that window to a zone.
 /// </remarks>
@@ -64,15 +64,15 @@ public class OneZoneSwitchTests : UITestBase
         var (previousWindow, activeWindow) = SnapBothWindowsToOneZone();
 
         Assert.IsTrue(
-            FancyZonesTestHelper.WaitForForegroundTitle(activeWindow, 5_000),
-            $"The last snapped window ('{activeWindow}') should be active, but '{FancyZonesTestHelper.GetForegroundWindowTitle()}' is.");
+            FancyZonesTestHelper.WaitForForegroundWindow(activeWindow, 5_000),
+            $"The last snapped window ({DescribeWindow(activeWindow)}) should be active, but {WindowControl.GetForegroundWindowInfo()} is.");
 
         FancyZonesTestHelper.Step(this, "Sending Win+PageDown to switch within the zone");
         KeyboardHelper.SendKeys(Key.LWin, Key.PageDown);
 
         Assert.IsTrue(
-            FancyZonesTestHelper.WaitForForegroundTitle(previousWindow, 5_000),
-            $"Win+PageDown should switch to '{previousWindow}', but '{FancyZonesTestHelper.GetForegroundWindowTitle()}' is active.");
+            FancyZonesTestHelper.WaitForForegroundWindow(previousWindow, 5_000),
+            $"Win+PageDown should switch to {DescribeWindow(previousWindow)}, but {WindowControl.GetForegroundWindowInfo()} is active.");
     }
 
     /// <summary>
@@ -88,8 +88,8 @@ public class OneZoneSwitchTests : UITestBase
         var (previousWindow, activeWindow) = SnapBothWindowsToOneZone();
 
         Assert.IsTrue(
-            FancyZonesTestHelper.WaitForForegroundTitle(activeWindow, 5_000),
-            $"The last snapped window ('{activeWindow}') should be active before changing desktops.");
+            FancyZonesTestHelper.WaitForForegroundWindow(activeWindow, 5_000),
+            $"The last snapped window ({DescribeWindow(activeWindow)}) should be active before changing desktops.");
 
         try
         {
@@ -100,15 +100,15 @@ public class OneZoneSwitchTests : UITestBase
             Thread.Sleep(1500);
 
             Assert.IsTrue(
-                FancyZonesTestHelper.WaitForForegroundTitle(activeWindow, 10_000),
-                $"'{activeWindow}' should still be active after returning to the original desktop.");
+                FancyZonesTestHelper.WaitForForegroundWindow(activeWindow, 10_000),
+                $"{DescribeWindow(activeWindow)} should still be active after returning to the original desktop.");
 
             FancyZonesTestHelper.Step(this, "Sending Win+PageDown to switch within the zone");
             KeyboardHelper.SendKeys(Key.LWin, Key.PageDown);
 
             Assert.IsTrue(
-                FancyZonesTestHelper.WaitForForegroundTitle(previousWindow, 5_000),
-                $"Win+PageDown should switch to '{previousWindow}' after the desktop change.");
+                FancyZonesTestHelper.WaitForForegroundWindow(previousWindow, 5_000),
+                $"Win+PageDown should switch to {DescribeWindow(previousWindow)} after the desktop change.");
         }
         finally
         {
@@ -129,16 +129,16 @@ public class OneZoneSwitchTests : UITestBase
         var (_, activeWindow) = SnapBothWindowsToOneZone();
 
         Assert.IsTrue(
-            FancyZonesTestHelper.WaitForForegroundTitle(activeWindow, 5_000),
-            $"The last snapped window ('{activeWindow}') should be active.");
+            FancyZonesTestHelper.WaitForForegroundWindow(activeWindow, 5_000),
+            $"The last snapped window ({DescribeWindow(activeWindow)}) should be active.");
 
         FancyZonesTestHelper.Step(this, "Sending Win+PageDown with window switching disabled");
         KeyboardHelper.SendKeys(Key.LWin, Key.PageDown);
         Thread.Sleep(2000);
 
         Assert.IsTrue(
-            FancyZonesTestHelper.GetForegroundWindowTitle().Contains(activeWindow, StringComparison.OrdinalIgnoreCase),
-            $"Win+PageDown must not switch windows while the shortcut is disabled, but '{FancyZonesTestHelper.GetForegroundWindowTitle()}' became active.");
+            FancyZonesTestHelper.WaitForForegroundWindow(activeWindow, 5_000),
+            $"Win+PageDown must not switch windows while the shortcut is disabled, but {WindowControl.GetForegroundWindowInfo()} became active.");
     }
 
     private void Arrange(bool windowSwitching)
@@ -175,19 +175,15 @@ public class OneZoneSwitchTests : UITestBase
 
     /// <summary>
     /// Snap two Explorer windows into the same (right) zone and confirm both landed there. Returns the
-    /// two window titles, oldest first.
+    /// two HWNDs, oldest first.
     /// </summary>
-    private (string PreviousWindow, string ActiveWindow) SnapBothWindowsToOneZone()
+    private (IntPtr PreviousWindow, IntPtr ActiveWindow) SnapBothWindowsToOneZone()
     {
         var first = FancyZonesTestHelper.OpenExplorerWindow(this, Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
         var second = FancyZonesTestHelper.OpenExplorerWindow(this, Environment.GetFolderPath(Environment.SpecialFolder.Windows));
 
         var firstTitle = FancyZonesTestHelper.GetWindowTitle(first);
         var secondTitle = FancyZonesTestHelper.GetWindowTitle(second);
-        Assert.AreNotEqual(
-            firstTitle,
-            secondTitle,
-            "The two Explorer windows must have distinct titles for the switching assertions to mean anything.");
 
         var (targetX, targetY) = RightZoneCenter();
         var firstZone = SnapWindowToPoint(first, targetX, targetY, firstTitle);
@@ -206,7 +202,7 @@ public class OneZoneSwitchTests : UITestBase
             secondZone,
             $"Both windows should occupy the same zone, but their bitmasks are 0x{firstZone:X} and 0x{secondZone:X}.");
 
-        return (firstTitle, secondTitle);
+        return (first, second);
     }
 
     /// <summary>Centre of the right-hand zone of the seeded two-column layout.</summary>
@@ -235,15 +231,40 @@ public class OneZoneSwitchTests : UITestBase
             WindowHelper.SetWindowSize(window, WindowSize.Medium);
             Thread.Sleep(500);
 
-            FancyZonesTestHelper.BeginWindowDrag(this, window, targetX, targetY);
+            if (!FancyZonesTestHelper.WaitForZonesOverlayHidden())
+            {
+                FancyZonesTestHelper.Step(this, $"The previous overlay did not hide before regrabbing '{label}' (attempt {attempt}/{attempts})");
+                MouseHelper.LeftUp();
+                KeyboardHelper.ReleaseKey(Key.LShift);
+                continue;
+            }
+
+            if (!FancyZonesTestHelper.BeginWindowDrag(this, window, targetX, targetY))
+            {
+                FancyZonesTestHelper.Step(this, $"Could not acquire '{label}' by its title bar (attempt {attempt}/{attempts})");
+                MouseHelper.LeftUp();
+                KeyboardHelper.ReleaseKey(Key.LShift);
+                Thread.Sleep(500);
+                continue;
+            }
+
             var zonesActivated = FancyZonesTestHelper.ActivateZonesWithShiftDuringDrag(this);
             MouseHelper.LeftUp();
+
+            if (!zonesActivated)
+            {
+                KeyboardHelper.ReleaseKey(Key.LShift);
+                FancyZonesTestHelper.WaitForZonesOverlayHidden();
+                FancyZonesTestHelper.Step(this, $"'{label}' never showed a stable overlay (attempt {attempt}/{attempts}); regrabbing");
+                Thread.Sleep(500);
+                continue;
+            }
+
+            // Keep Shift down until MoveSizeEnd stamps this exact HWND. Releasing it immediately
+            // after the asynchronous mouse-up can disable snapping before MOVESIZEEND is delivered.
+            var zoneBitmask = WaitForZoneBitmask(window, 5_000);
             KeyboardHelper.ReleaseKey(Key.LShift);
-
-            Thread.Sleep(1500);
-
             var after = WindowHelper.GetWindowBounds(window);
-            var zoneBitmask = WaitForZoneBitmask(window, 3_000);
             if (zoneBitmask != 0)
             {
                 FancyZonesTestHelper.Step(this, $"'{label}' snapped with zone bitmask 0x{zoneBitmask:X} at {after}");
@@ -253,11 +274,15 @@ public class OneZoneSwitchTests : UITestBase
             FancyZonesTestHelper.Step(
                 this,
                 $"'{label}' was not stamped as zoned at {after}; overlay activated={zonesActivated} (attempt {attempt}/{attempts})");
+            FancyZonesTestHelper.WaitForZonesOverlayHidden();
         }
 
         Assert.Fail($"Could not snap '{label}' after {attempts} attempts.");
         return 0;
     }
+
+    private static string DescribeWindow(IntPtr window) =>
+        $"'{FancyZonesTestHelper.GetWindowTitle(window)}' (HWND {window})";
 
     private static long WaitForZoneBitmask(IntPtr window, int timeoutMs)
     {

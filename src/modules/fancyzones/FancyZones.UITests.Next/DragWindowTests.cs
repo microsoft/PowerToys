@@ -87,14 +87,8 @@ public class DragWindowTests : UITestBase
     {
         Arrange(shiftDrag: true, mouseSwitch: false, transparent: false);
 
-        StartDrag();
-        Assert.IsTrue(
-            FancyZonesTestHelper.ActivateZonesWithShiftDuringDrag(this),
-            "Holding Shift during the drag never made the zones overlay visible.");
-        Drop();
-        KeyboardHelper.ReleaseKey(Key.LShift);
-
-        AssertSnapped(true, "Holding Shift during the drag should activate the zones.");
+        StartShiftActivatedDrag();
+        DropAndAssertSnapped("Holding Shift during the drag should activate the zones.");
     }
 
     /// <summary>
@@ -110,11 +104,8 @@ public class DragWindowTests : UITestBase
 
         KeyboardHelper.PressKey(Key.LShift);
         Thread.Sleep(200);
-        StartDrag();
-        Drop();
-        KeyboardHelper.ReleaseKey(Key.LShift);
-
-        AssertSnapped(true, "Starting the drag with Shift already held should activate the zones.");
+        Assert.IsTrue(StartDrag(), "Could not start a title-bar drag while Shift was held.");
+        DropAndAssertSnapped("Starting the drag with Shift already held should activate the zones.");
     }
 
     /// <summary>
@@ -128,7 +119,7 @@ public class DragWindowTests : UITestBase
     {
         Arrange(shiftDrag: false, mouseSwitch: true, transparent: false);
 
-        StartDrag();
+        Assert.IsTrue(StartDrag(), "Could not start the title-bar drag.");
         ClickNonPrimaryButton();
         Drop();
 
@@ -160,7 +151,7 @@ public class DragWindowTests : UITestBase
     {
         Arrange(shiftDrag: false, mouseSwitch: false, transparent: true);
 
-        StartDrag();
+        Assert.IsTrue(StartDrag(), "Could not start the title-bar drag.");
         var whileDragging = WaitForWindowAlpha(TransparentAlpha);
         FancyZonesTestHelper.Step(this, $"Alpha at drag start: {whileDragging}");
 
@@ -211,10 +202,7 @@ public class DragWindowTests : UITestBase
     {
         Arrange(shiftDrag: true, mouseSwitch: true, transparent: false);
 
-        StartDrag();
-        Assert.IsTrue(
-            FancyZonesTestHelper.ActivateZonesWithShiftDuringDrag(this),
-            "Holding Shift during the drag never made the zones overlay visible.");
+        StartShiftActivatedDrag();
         ClickNonPrimaryButton();
         Drop();
         KeyboardHelper.ReleaseKey(Key.LShift);
@@ -316,10 +304,10 @@ public class DragWindowTests : UITestBase
     }
 
     /// <summary>Grab the window by its title bar and drag it towards the centre, button still down.</summary>
-    private void StartDrag()
+    private bool StartDrag()
     {
         var (centerX, centerY) = FancyZonesTestHelper.ScreenCenter();
-        FancyZonesTestHelper.BeginWindowDrag(this, draggedWindow, centerX, centerY);
+        return FancyZonesTestHelper.BeginWindowDrag(this, draggedWindow, centerX, centerY);
     }
 
     /// <summary>Release the drag and let FancyZones settle the snap.</summary>
@@ -329,14 +317,73 @@ public class DragWindowTests : UITestBase
         Thread.Sleep(1500);
     }
 
-    /// <summary>Hold Shift mid-drag, then nudge the cursor so FancyZones re-evaluates the drag state.</summary>
+    /// <summary>Release the mouse but keep Shift held until FancyZones records MoveSizeEnd.</summary>
+    private void DropAndAssertSnapped(string because)
+    {
+        MouseHelper.LeftUp();
+        try
+        {
+            AssertSnapped(true, because);
+        }
+        finally
+        {
+            KeyboardHelper.ReleaseKey(Key.LShift);
+        }
+    }
+
+    /// <summary>Hold Shift mid-drag; the product posts its own location update for the new key state.</summary>
     private void PressShiftDuringDrag()
     {
         FancyZonesTestHelper.Step(this, "Pressing Shift during the drag");
         KeyboardHelper.PressKey(Key.LShift);
         Thread.Sleep(300);
-        FancyZonesTestHelper.JiggleCursor();
-        Thread.Sleep(500);
+    }
+
+    /// <summary>Retry the complete grab-and-activate gesture on the same Explorer HWND.</summary>
+    private void StartShiftActivatedDrag()
+    {
+        const int attempts = 3;
+
+        for (var attempt = 1; attempt <= attempts; attempt++)
+        {
+            FancyZonesTestHelper.Step(this, $"Shift-activated drag attempt {attempt}/{attempts}");
+            if (!FancyZonesTestHelper.WaitForZonesOverlayHidden())
+            {
+                FancyZonesTestHelper.Step(this, "The previous overlay did not hide; resetting before the next attempt");
+                ResetDraggedWindowForRetry();
+                continue;
+            }
+
+            if (!StartDrag())
+            {
+                FancyZonesTestHelper.Step(this, "Could not acquire the title bar; resetting the same window before retrying");
+                ResetDraggedWindowForRetry();
+                continue;
+            }
+
+            if (FancyZonesTestHelper.ActivateZonesWithShiftDuringDrag(this))
+            {
+                return;
+            }
+
+            FancyZonesTestHelper.Step(this, "The overlay did not stabilize; releasing input and regrabbing the same window");
+            MouseHelper.LeftUp();
+            KeyboardHelper.ReleaseKey(Key.LShift);
+            FancyZonesTestHelper.WaitForZonesOverlayHidden();
+            ResetDraggedWindowForRetry();
+        }
+
+        Assert.Fail($"Holding Shift during the drag never made the zones overlay stable after {attempts} complete drag attempts.");
+    }
+
+    private void ResetDraggedWindowForRetry()
+    {
+        MouseHelper.LeftUp();
+        KeyboardHelper.ReleaseKey(Key.LShift);
+        WindowControl.TryBringToForeground(draggedWindow);
+        WindowHelper.RestoreWindow(draggedWindow);
+        WindowHelper.SetWindowSize(draggedWindow, WindowSize.Medium);
+        Thread.Sleep(750);
     }
 
     /// <summary>
@@ -352,7 +399,7 @@ public class DragWindowTests : UITestBase
         KeyboardHelper.PressKey(Key.LShift);
         Thread.Sleep(500);
 
-        StartDrag();
+        Assert.IsTrue(StartDrag(), "Could not start the title-bar drag while Shift was held.");
         Thread.Sleep(1000);
         var alpha = WindowHelper.GetWindowAlpha(draggedWindow);
 
@@ -402,7 +449,7 @@ public class DragWindowTests : UITestBase
     {
         KeyboardHelper.PressKey(Key.LShift);
         Thread.Sleep(200);
-        StartDrag();
+        Assert.IsTrue(StartDrag(), "Could not start the title-bar drag while Shift was held.");
 
         // The fade is applied when the zones engage, which can trail the first move on a slow machine.
         var alpha = WaitForWindowAlpha(TransparentAlpha);

@@ -236,51 +236,28 @@ public static class FancyZonesTestHelper
     public static bool IsZonesOverlayVisible() =>
         WindowControl.IsAnyWindowOfClassVisible(ZonesOverlayClassName);
 
-    /// <summary>Poll until a zone overlay becomes visible (or the timeout elapses).</summary>
-    public static bool WaitForZonesOverlay(int timeoutMs = 5_000)
+    /// <summary>Press Shift once, then wait without moving the cursor until the overlay is stable.</summary>
+    public static bool ActivateZonesWithShiftDuringDrag(UITestBase testBase, int timeoutMs = 5_000)
     {
-        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMs);
-        while (true)
-        {
-            if (IsZonesOverlayVisible())
-            {
-                return true;
-            }
+        Step(testBase, "Pressing Shift and waiting for the zones overlay to remain visible");
+        KeyboardHelper.PressKey(Key.LShift);
 
-            if (DateTime.UtcNow >= deadline)
-            {
-                return false;
-            }
-
-            // The flash is short-lived, so sample finely.
-            Thread.Sleep(50);
-        }
+        return WaitHelper.WaitForStable(
+            IsZonesOverlayVisible,
+            visible => visible,
+            timeoutMs,
+            requiredConsecutiveMatches: 5,
+            pollIntervalMS: 100).Succeeded;
     }
 
-    /// <summary>
-    /// Press Shift after a window move loop has started and retry the idempotent key-down until the
-    /// FancyZones overlay proves that snapping is active.
-    /// </summary>
-    public static bool ActivateZonesWithShiftDuringDrag(UITestBase testBase, int attempts = 3)
-    {
-        for (var attempt = 1; attempt <= attempts; attempt++)
-        {
-            Step(testBase, $"Attempt {attempt}/{attempts}: pressing Shift and waiting for the zones overlay");
-            KeyboardHelper.PressKey(Key.LShift);
-            Thread.Sleep(200);
-            JiggleCursor();
-
-            if (WaitForZonesOverlay(2_000))
-            {
-                return true;
-            }
-
-            KeyboardHelper.ReleaseKey(Key.LShift);
-            Thread.Sleep(200);
-        }
-
-        return false;
-    }
+    /// <summary>Wait until no FancyZones overlay remains visible between complete drag attempts.</summary>
+    public static bool WaitForZonesOverlayHidden(int timeoutMs = 5_000) =>
+        WaitHelper.WaitForStable(
+            IsZonesOverlayVisible,
+            visible => !visible,
+            timeoutMs,
+            requiredConsecutiveMatches: 3,
+            pollIntervalMS: 100).Succeeded;
 
     /// <summary>
     /// Run <paramref name="trigger"/> and report whether FancyZones showed a zone overlay.
@@ -537,7 +514,29 @@ public static class FancyZonesTestHelper
             var fresh = ExplorerWindows().FirstOrDefault(w => !existing.Contains(w.Hwnd));
             if (fresh.Hwnd != IntPtr.Zero)
             {
-                Step(testBase, $"Explorer window {fresh.Hwnd} ready ('{fresh.Title}')");
+                var ready = WaitHelper.WaitForStable(
+                    () =>
+                    {
+                        var current = ExplorerWindows().FirstOrDefault(w => w.Hwnd == fresh.Hwnd);
+                        var bounds = WindowHelper.GetWindowBounds(fresh.Hwnd);
+                        return current.Hwnd == fresh.Hwnd &&
+                               !string.IsNullOrWhiteSpace(current.Title) &&
+                               bounds.Right - bounds.Left > 300 &&
+                               bounds.Bottom - bounds.Top > 200 &&
+                               WindowControl.GetForegroundWindowHandle() == fresh.Hwnd;
+                    },
+                    value => value,
+                    10_000,
+                    requiredConsecutiveMatches: 3,
+                    pollIntervalMS: 200,
+                    recover: _ => WindowControl.TryBringToForeground(fresh.Hwnd));
+
+                Assert.IsTrue(
+                    ready.Succeeded,
+                    $"Explorer window {fresh.Hwnd} appeared but never became a stable foreground window. " +
+                    $"Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
+
+                Step(testBase, $"Explorer window {fresh.Hwnd} ready ('{GetWindowTitle(fresh.Hwnd)}')");
                 return fresh.Hwnd;
             }
 
@@ -563,22 +562,13 @@ public static class FancyZonesTestHelper
             .Where(w => w.IsVisible && w.ClassName.Equals(ExplorerWindowClass, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
-    /// <summary>Title of the window that currently owns the foreground (empty when unavailable).</summary>
-    public static string GetForegroundWindowTitle() => WindowControl.GetForegroundWindowInfo().Title ?? string.Empty;
-
-    /// <summary>
-    /// Wait until the foreground window's title contains <paramref name="titleContains"/>, requiring
-    /// consecutive stable samples so a transient activation doesn't satisfy the check.
-    /// </summary>
-    public static bool WaitForForegroundTitle(string titleContains, int timeoutMs = 5_000)
-    {
-        var result = WaitHelper.WaitForStable(
-            GetForegroundWindowTitle,
-            title => title is not null && title.Contains(titleContains, StringComparison.OrdinalIgnoreCase),
+    /// <summary>Wait for an exact HWND to own foreground without changing foreground as a recovery.</summary>
+    public static bool WaitForForegroundWindow(IntPtr window, int timeoutMs = 5_000) =>
+        WaitHelper.WaitForStable(
+            WindowControl.GetForegroundWindowHandle,
+            foreground => foreground == window,
             timeoutMs,
-            requiredConsecutiveMatches: 2);
-        return result.Succeeded;
-    }
+            requiredConsecutiveMatches: 2).Succeeded;
 
     /// <summary>Primary display bounds in physical pixels.</summary>
     public static (int Left, int Top, int Right, int Bottom) ScreenBounds()
@@ -627,7 +617,7 @@ public static class FancyZonesTestHelper
     /// without teleporting.
     /// </para>
     /// </remarks>
-    public static (int X, int Y) BeginWindowDrag(
+    public static bool BeginWindowDrag(
         UITestBase testBase,
         IntPtr window,
         int targetX,
@@ -639,7 +629,8 @@ public static class FancyZonesTestHelper
         WindowControl.TryBringToForeground(window);
         if (!WindowControl.WaitForForeground(window, 5_000, 2))
         {
-            Step(testBase, $"The window never took the foreground; current owner: {WindowControl.GetForegroundWindowInfo()}");
+            Step(testBase, $"The window never took the foreground; current owner: {WindowControl.GetForegroundWindowInfo()}.");
+            return false;
         }
 
         var (left, top, right, _) = WindowHelper.GetWindowBounds(window);
@@ -660,6 +651,13 @@ public static class FancyZonesTestHelper
 
         foreach (var (grabX, grabY) in candidates)
         {
+            WindowControl.TryBringToForeground(window);
+            if (!WindowControl.WaitForForeground(window, 3_000, 2))
+            {
+                Step(testBase, $"Could not reacquire foreground before grabbing ({grabX},{grabY})");
+                continue;
+            }
+
             Step(testBase, $"Grabbing the window at ({grabX},{grabY})");
             MouseHelper.MoveTo(grabX, grabY);
             Thread.Sleep(300);
@@ -668,30 +666,29 @@ public static class FancyZonesTestHelper
             DragCursorTo(grabX, grabY, grabX + nudge, grabY + nudge);
 
             var moved = WindowHelper.GetWindowBounds(window);
-            if (moved.Left != left || moved.Top != top)
+            if ((moved.Left != left || moved.Top != top) && WindowControl.GetForegroundWindowHandle() == window)
             {
                 Step(testBase, $"Window is moving (now at {moved}); dragging on to ({targetX},{targetY})");
                 DragCursorTo(grabX + nudge, grabY + nudge, targetX, targetY);
 
-                // MoveSizeEnd snaps to the zone the last processed MoveSizeUpdate highlighted, and
-                // those updates arrive from the dragged window's location-change events - which stop
-                // as soon as the cursor does. Without a final move and a settle here, the caller's
-                // drop can beat the highlight and the window lands unsnapped at the drop point.
-                Thread.Sleep(400);
-                JiggleCursor();
-                Thread.Sleep(400);
-                return (targetX, targetY);
+                // Let the move-loop event reach FancyZones without moving away from the requested
+                // target. Shift activation posts its own location update, so no cursor jiggle is needed.
+                Thread.Sleep(750);
+                return true;
             }
 
-            Step(testBase, $"The window did not move from that point (still at {moved}); releasing and trying the next candidate");
+            Step(
+                testBase,
+                $"The target window did not keep a foreground move from that point (bounds {moved}); releasing and trying the next candidate");
             MouseHelper.LeftUp();
             Thread.Sleep(400);
         }
 
-        Assert.Fail(
+        Step(
+            testBase,
             $"Could not start a title-bar drag: none of {candidates.Length} candidate grab points moved the window " +
             $"at ({left},{top},{right}). Foreground owner: {WindowControl.GetForegroundWindowInfo()}");
-        return (0, 0);
+        return false;
     }
 
     /// <summary>
@@ -742,18 +739,4 @@ public static class FancyZonesTestHelper
         Thread.Sleep(300);
     }
 
-    /// <summary>
-    /// Move the cursor a few pixels and back, mid-drag.
-    /// </summary>
-    /// <remarks>
-    /// FancyZones re-evaluates whether zones are active from <c>MoveSizeUpdate</c>, i.e. on cursor
-    /// movement. A modifier pressed while the cursor is stationary therefore has no effect until the
-    /// drag moves again — a real user is always still moving the mouse, an injected test is not.
-    /// </remarks>
-    public static void JiggleCursor()
-    {
-        var (x, y) = MouseHelper.GetMousePosition();
-        DragCursorTo(x, y, x + 12, y + 12, steps: 4, stepDelayMs: 40);
-        DragCursorTo(x + 12, y + 12, x, y, steps: 4, stepDelayMs: 40);
-    }
 }
