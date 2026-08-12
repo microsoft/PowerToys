@@ -13,6 +13,7 @@ internal static class IconProtocolRegistry
     [
         AppIconProtocolProcessor.Instance,
         GeneratedIconProtocolProcessor.Instance,
+        SvgIconProtocolProcessor.Instance,
     ];
 
     static IconProtocolRegistry()
