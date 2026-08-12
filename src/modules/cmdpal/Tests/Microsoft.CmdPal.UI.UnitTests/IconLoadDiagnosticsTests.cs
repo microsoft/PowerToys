@@ -244,6 +244,34 @@ public class IconLoadDiagnosticsTests
         Assert.IsFalse(report.Text.Contains("shell32", StringComparison.OrdinalIgnoreCase));
     }
 
+    [DataTestMethod]
+    [DataRow("|Swatch|#FF0067C0|", "GeneratedSwatch")]
+    [DataRow("|Initials|CP|#FF005FB8|rounded|", "GeneratedInitials")]
+    public void GeneratedIconProtocolUsesSpecificInputKind(string icon, string expectedKind)
+    {
+        IconLoadDiagnostics.Start();
+        var request = IconLoadDiagnostics.BeginRequest(IconRequestReason.SourceChanged, 1.0);
+        var load = IconLoadDiagnostics.CreateLoad(
+            request,
+            icon,
+            hasStream: false,
+            width: 20,
+            height: 20,
+            scale: 1.0);
+
+        Assert.IsNotNull(load);
+        request.RecordProviderResolution(IconProviderResolution.NewLoad, load);
+        load.SetResult(null);
+        load.Complete();
+        request.Complete(IconRequestStatus.Empty);
+
+        var report = IconLoadDiagnostics.StopAndCreateReport();
+
+        Assert.IsNotNull(report);
+        StringAssert.Contains(report.Text, $"  {expectedKind}: 1");
+        Assert.IsFalse(report.Text.Contains(icon, StringComparison.Ordinal));
+    }
+
     [TestMethod]
     [Timeout(5_000)]
     public async Task SchedulerReportCapturesCoordinatorAndWorkerHandoff()
