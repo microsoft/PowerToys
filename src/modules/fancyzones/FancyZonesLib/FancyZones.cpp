@@ -310,7 +310,6 @@ private:
     void HideMonitorRotationPreview() noexcept;
     void EnsureMonitorRotationContentNumbers(const std::vector<std::pair<HMONITOR, RECT>>& monitors) noexcept;
     void RotateMonitorRotationContentNumbers(bool reverse) noexcept;
-    void UpdateMonitorRotationModifierState(DWORD vkCode, bool isDown) noexcept;
     bool IsMonitorRotationActivatorKey(DWORD vkCode) const noexcept;
     bool IsMonitorRotationChordDown() const noexcept;
 
@@ -337,13 +336,7 @@ private:
     WorkAreaConfiguration m_workAreaConfiguration;
     DraggingState m_draggingState;
     bool m_monitorRotationPreviewActive = false;
-    bool m_monitorRotationWinDown = false;
-    bool m_monitorRotationCtrlDown = false;
-    bool m_monitorRotationAltDown = false;
-    bool m_monitorRotationShiftDown = false;
-    bool m_monitorRotationActivatorDown = false;
-    bool m_monitorRotationLeftConsumed = false;
-    bool m_monitorRotationRightConsumed = false;
+    MonitorRotation::KeyState m_monitorRotationKeyState;
     std::optional<bool> m_pendingMonitorRotationReverse;
     std::unordered_map<HMONITOR, size_t> m_monitorRotationContentNumbers;
 
@@ -639,7 +632,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
 IFACEMETHODIMP_(bool)
 FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
 {
-    UpdateMonitorRotationModifierState(info->vkCode, true);
+    m_monitorRotationKeyState.Update(info->vkCode, true);
 
     // Return true to swallow the keyboard event
     bool const shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
@@ -662,20 +655,13 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
                 PostMessageW(m_window, WM_PRIV_MONITOR_ROTATION_PREVIEW_ROTATE, static_cast<WPARAM>(reverse), 0);
             }
 
-            if (info->vkCode == VK_LEFT)
-            {
-                m_monitorRotationLeftConsumed = true;
-            }
-            else
-            {
-                m_monitorRotationRightConsumed = true;
-            }
-
+            m_monitorRotationKeyState.Consume(info->vkCode);
             return true;
         }
 
         if (IsMonitorRotationActivatorKey(info->vkCode))
         {
+            m_monitorRotationKeyState.Consume(info->vkCode);
             return true;
         }
 
@@ -744,19 +730,8 @@ FancyZones::OnKeyUp(PKBDLLHOOKSTRUCT info) noexcept
 {
     const bool wasMonitorRotationPreviewActive = m_monitorRotationPreviewActive;
     const bool isActivatorKey = IsMonitorRotationActivatorKey(info->vkCode);
-    bool wasConsumed = false;
-    if (info->vkCode == VK_LEFT)
-    {
-        wasConsumed = m_monitorRotationLeftConsumed;
-        m_monitorRotationLeftConsumed = false;
-    }
-    else if (info->vkCode == VK_RIGHT)
-    {
-        wasConsumed = m_monitorRotationRightConsumed;
-        m_monitorRotationRightConsumed = false;
-    }
-
-    UpdateMonitorRotationModifierState(info->vkCode, false);
+    const bool wasConsumed = m_monitorRotationKeyState.ReleaseWasConsumed(info->vkCode);
+    m_monitorRotationKeyState.Update(info->vkCode, false);
 
     if (wasMonitorRotationPreviewActive && !IsMonitorRotationChordDown())
     {
@@ -768,30 +743,6 @@ FancyZones::OnKeyUp(PKBDLLHOOKSTRUCT info) noexcept
     return wasConsumed;
 }
 
-void FancyZones::UpdateMonitorRotationModifierState(DWORD vkCode, bool isDown) noexcept
-{
-    if (IsWinKey(vkCode))
-    {
-        m_monitorRotationWinDown = isDown || (GetAsyncKeyState(VK_LWIN) & 0x8000) || (GetAsyncKeyState(VK_RWIN) & 0x8000);
-    }
-    else if (IsCtrlKey(vkCode))
-    {
-        m_monitorRotationCtrlDown = isDown || (GetAsyncKeyState(VK_LCONTROL) & 0x8000) || (GetAsyncKeyState(VK_RCONTROL) & 0x8000) || (GetAsyncKeyState(VK_CONTROL) & 0x8000);
-    }
-    else if (IsAltKey(vkCode))
-    {
-        m_monitorRotationAltDown = isDown || (GetAsyncKeyState(VK_LMENU) & 0x8000) || (GetAsyncKeyState(VK_RMENU) & 0x8000) || (GetAsyncKeyState(VK_MENU) & 0x8000);
-    }
-    else if (IsShiftKey(vkCode))
-    {
-        m_monitorRotationShiftDown = isDown || (GetAsyncKeyState(VK_LSHIFT) & 0x8000) || (GetAsyncKeyState(VK_RSHIFT) & 0x8000) || (GetAsyncKeyState(VK_SHIFT) & 0x8000);
-    }
-    else if (IsMonitorRotationActivatorKey(vkCode))
-    {
-        m_monitorRotationActivatorDown = isDown;
-    }
-}
-
 bool FancyZones::IsMonitorRotationChordDown() const noexcept
 {
     if (!FancyZonesSettings::settings().monitorRotation)
@@ -800,11 +751,15 @@ bool FancyZones::IsMonitorRotationChordDown() const noexcept
     }
 
     const auto& hotkey = FancyZonesSettings::settings().monitorRotationHotkey;
-    return hotkey.win_pressed() == m_monitorRotationWinDown &&
-           hotkey.ctrl_pressed() == m_monitorRotationCtrlDown &&
-           hotkey.alt_pressed() == m_monitorRotationAltDown &&
-           hotkey.shift_pressed() == m_monitorRotationShiftDown &&
-           m_monitorRotationActivatorDown;
+    const bool winDown = m_monitorRotationKeyState.IsAnyDown({ VK_LWIN, VK_RWIN });
+    const bool ctrlDown = m_monitorRotationKeyState.IsAnyDown({ VK_CONTROL, VK_LCONTROL, VK_RCONTROL });
+    const bool altDown = m_monitorRotationKeyState.IsAnyDown({ VK_MENU, VK_LMENU, VK_RMENU });
+    const bool shiftDown = m_monitorRotationKeyState.IsAnyDown({ VK_SHIFT, VK_LSHIFT, VK_RSHIFT });
+    return hotkey.win_pressed() == winDown &&
+           hotkey.ctrl_pressed() == ctrlDown &&
+           hotkey.alt_pressed() == altDown &&
+           hotkey.shift_pressed() == shiftDown &&
+           m_monitorRotationKeyState.IsDown(hotkey.get_code());
 }
 
 bool FancyZones::IsMonitorRotationActivatorKey(DWORD vkCode) const noexcept
@@ -1555,6 +1510,7 @@ void FancyZones::SettingsUpdate(SettingId id)
     {
         m_pendingMonitorRotationReverse.reset();
         KillTimer(m_window, MonitorRotationCommitTimerId);
+        m_monitorRotationKeyState.Reset();
         if (m_monitorRotationPreviewActive && !IsMonitorRotationChordDown())
         {
             HideMonitorRotationPreview();

@@ -196,5 +196,53 @@ namespace FancyZonesUnitTests
         {
             Assert::AreEqual<LONG>(42, MonitorRotation::ScaleCoordinate(10, 0, 0, 42, 100));
         }
+
+        TEST_METHOD (ModifierReleaseDoesNotLeaveKeyPressed)
+        {
+            MonitorRotation::KeyState state;
+
+            for (const auto key : { VK_LCONTROL, VK_RCONTROL, VK_LSHIFT, VK_RSHIFT, VK_LWIN, VK_RWIN })
+            {
+                state.Update(key, true);
+                Assert::IsTrue(state.IsDown(key));
+                state.Update(key, false);
+                Assert::IsFalse(state.IsDown(key));
+            }
+        }
+
+        TEST_METHOD (ModifierStateKeepsOtherSidePressed)
+        {
+            MonitorRotation::KeyState state;
+            state.Update(VK_LCONTROL, true);
+            state.Update(VK_RCONTROL, true);
+            state.Update(VK_LCONTROL, false);
+
+            Assert::IsTrue(state.IsAnyDown({ VK_LCONTROL, VK_RCONTROL }));
+
+            state.Update(VK_RCONTROL, false);
+            Assert::IsFalse(state.IsAnyDown({ VK_LCONTROL, VK_RCONTROL }));
+        }
+
+        TEST_METHOD (ConsumedKeyReleaseIsReportedOnce)
+        {
+            MonitorRotation::KeyState state;
+
+            Assert::IsTrue(state.Consume(VK_LEFT));
+            Assert::IsFalse(state.Consume(VK_LEFT));
+            Assert::IsTrue(state.ReleaseWasConsumed(VK_LEFT));
+            Assert::IsFalse(state.ReleaseWasConsumed(VK_LEFT));
+        }
+
+        TEST_METHOD (ResetClearsPressedAndConsumedKeys)
+        {
+            MonitorRotation::KeyState state;
+            state.Update(VK_LCONTROL, true);
+            state.Consume(VK_RIGHT);
+
+            state.Reset();
+
+            Assert::IsFalse(state.IsDown(VK_LCONTROL));
+            Assert::IsFalse(state.ReleaseWasConsumed(VK_RIGHT));
+        }
     };
 }
