@@ -4,6 +4,7 @@
 
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.UI.Dispatching;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
@@ -56,6 +57,10 @@ public class IconLoadDiagnosticsTests
         Assert.IsTrue(report.Duration >= TimeSpan.Zero);
         StringAssert.Contains(report.Text, $"Session: {sessionId}");
         StringAssert.Contains(report.Text, "Ended UTC:");
+        StringAssert.Contains(report.Text, "Process work during session");
+        StringAssert.Contains(report.Text, "Managed allocations:");
+        StringAssert.Contains(report.Text, "UI responsiveness probe");
+        StringAssert.Contains(report.Text, "  Enabled: no");
         StringAssert.Contains(report.Text, "Started: 1");
         StringAssert.Contains(report.Text, "Stale: 1");
         StringAssert.Contains(report.Text, "NewLoad: 1");
@@ -111,6 +116,62 @@ public class IconLoadDiagnosticsTests
         var inputKinds = report.Text[inputKindsStart..inputKindsEnd];
         StringAssert.Contains(inputKinds, "  String: 1");
         StringAssert.Contains(inputKinds, "  ShellBinary: 0");
+    }
+
+    [TestMethod]
+    public void UiResponsivenessProbeTracksCompletedSkippedRejectedAndOutstandingCallbacks()
+    {
+        var session = new IconLoadDiagnosticsSession(1);
+        var acceptCallback = true;
+        DispatcherQueueHandler? pendingCallback = null;
+        var observedPriorities = new List<DispatcherQueuePriority>();
+        var probe = new IconUiResponsivenessProbe(TryEnqueue, session);
+
+        probe.OnTimerTick();
+        Assert.IsNotNull(pendingCallback);
+        probe.OnTimerTick();
+
+        var completedCallback = pendingCallback;
+        pendingCallback = null;
+        completedCallback!();
+
+        acceptCallback = false;
+        probe.OnTimerTick();
+
+        acceptCallback = true;
+        probe.OnTimerTick();
+        Assert.IsNotNull(pendingCallback);
+
+        probe.Stop();
+        var report = session.CreateReport();
+
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                DispatcherQueuePriority.Normal,
+                DispatcherQueuePriority.Normal,
+                DispatcherQueuePriority.Normal,
+            },
+            observedPriorities);
+        StringAssert.Contains(report.Text, "Callbacks enqueued: 3");
+        StringAssert.Contains(report.Text, "Callbacks completed: 1");
+        StringAssert.Contains(report.Text, "Callbacks outstanding at stop: 1");
+        StringAssert.Contains(report.Text, "Timer ticks skipped while a callback was pending: 1");
+        StringAssert.Contains(report.Text, "Callbacks rejected by DispatcherQueue: 1");
+        StringAssert.Contains(report.Text, "Normal-priority queue wait: count=1");
+
+        bool TryEnqueue(DispatcherQueuePriority priority, DispatcherQueueHandler callback)
+        {
+            observedPriorities.Add(priority);
+            if (!acceptCallback)
+            {
+                return false;
+            }
+
+            Assert.IsNull(pendingCallback);
+            pendingCallback = callback;
+            return true;
+        }
     }
 
     [TestMethod]

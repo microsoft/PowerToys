@@ -267,4 +267,17 @@ internal sealed partial class IconLoadEventSource : EventSource
             workerCount,
             demandedBeyondCapacity);
     }
+
+    // Event IDs follow the final grouped diagnostics schema and intentionally remain sparse so
+    // independently reviewable layers can land without changing an event's published identity.
+    [Event(37, Level = EventLevel.Informational)]
+    public void UiResponsivenessProbeCompleted(long sessionId, long elapsedMicroseconds)
+    {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        WriteEvent(37, sessionId, elapsedMicroseconds);
+    }
 }
