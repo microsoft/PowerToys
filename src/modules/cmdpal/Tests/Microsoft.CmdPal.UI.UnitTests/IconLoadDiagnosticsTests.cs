@@ -414,11 +414,12 @@ public class IconLoadDiagnosticsTests
     {
         IconLoadDiagnostics.Start();
         var size = new global::Windows.Foundation.Size(20, 20);
-        IconLoadDiagnostics.RecordCacheLookup(size, capacity: 16, hit: false);
-        IconLoadDiagnostics.RecordCacheEntryAdded(size, capacity: 16, entryCount: 1);
-        IconLoadDiagnostics.RecordCacheLookup(size, capacity: 16, hit: true);
+        IconLoadDiagnostics.RecordCacheLookup(size, IconCachePartition.Glyph, capacity: 16, hit: false);
+        IconLoadDiagnostics.RecordCacheEntryAdded(size, IconCachePartition.Glyph, capacity: 16, entryCount: 1);
+        IconLoadDiagnostics.RecordCacheLookup(size, IconCachePartition.Glyph, capacity: 16, hit: true);
         IconLoadDiagnostics.RecordCacheEntryRemoved(
             size,
+            IconCachePartition.Glyph,
             capacity: 16,
             entryCount: 0,
             AdaptiveCacheRemovalReason.Explicit);
@@ -431,7 +432,7 @@ public class IconLoadDiagnosticsTests
             $"  Definition: each entry is a cached IconSource task; counts are approximate concurrent observations. Eviction only drops the cache reference.{Environment.NewLine}" +
             $"  A request coalesced with an in-flight load is a cache miss; see Provider resolution for in-flight reuse.{Environment.NewLine}" +
             $"  Capacity means the cache was over its limit when removal was attempted and takes precedence over LowScore; LowScore means score alone caused removal.{Environment.NewLine}" +
-            "  20x20, capacity 16";
+            "  20x20 Glyph cache, capacity 16";
         StringAssert.Contains(report.Text, expectedHeader);
         StringAssert.Contains(report.Text, "    Lookups: 2");
         StringAssert.Contains(report.Text, "    Hits: 1");
