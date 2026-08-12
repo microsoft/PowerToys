@@ -33,6 +33,7 @@ internal sealed class IconLoadDiagnosticsSession
     private readonly DiagnosticHistogram _requestLatency = new();
     private readonly DiagnosticHistogram _loadLatency = new();
     private readonly DiagnosticHistogram _directGlyphLatency = new();
+    private readonly DiagnosticHistogram[] _directGlyphLatencyByResultKind = CreateResultMeasurements();
     private readonly DiagnosticHistogram _queueLatency = new();
     private readonly DiagnosticHistogram _demandedQueueLatency = new();
     private readonly DiagnosticHistogram _speculativeQueueLatency = new();
@@ -753,6 +754,7 @@ internal sealed class IconLoadDiagnosticsSession
         Interlocked.Increment(ref _directGlyphLoads);
         Interlocked.Increment(ref _resultKinds[(int)resultKind]);
         _directGlyphLatency.Record(elapsedTicks);
+        _directGlyphLatencyByResultKind[(int)resultKind].Record(elapsedTicks);
         _inputKindMeasurements[(int)inputKind].DirectGlyphLatency.Record(elapsedTicks);
         RecordDemandCompletion(loadId, resultKind);
         IconLoadEventSource.Log.DirectGlyphLoadCompleted(Id, loadId, (int)resultKind, ToMicroseconds(elapsedTicks));
@@ -871,6 +873,7 @@ internal sealed class IconLoadDiagnosticsSession
         AppendValue(builder, "Maximum low queue depth", Volatile.Read(ref _maximumLowQueueDepth));
         _loadLatency.Append(builder, "Enqueue to completion");
         _directGlyphLatency.Append(builder, "Direct glyph construction");
+        AppendDirectGlyphResultMeasurements(builder);
         _queueLatency.Append(builder, "Queue wait");
         _backgroundPreparationLatency.Append(builder, "Background preparation");
         _dispatcherWaitLatency.Append(builder, "Dispatcher wait");
@@ -1356,6 +1359,28 @@ internal sealed class IconLoadDiagnosticsSession
         }
     }
 
+    private void AppendDirectGlyphResultMeasurements(StringBuilder builder)
+    {
+        var resultKinds = Enum.GetValues<IconLoadResultKind>();
+        var wroteHeader = false;
+        for (var i = 0; i < resultKinds.Length; i++)
+        {
+            var measurement = _directGlyphLatencyByResultKind[i];
+            if (measurement.Count == 0)
+            {
+                continue;
+            }
+
+            if (!wroteHeader)
+            {
+                builder.AppendLine("  Direct glyph construction by result kind");
+                wroteHeader = true;
+            }
+
+            measurement.Append(builder, resultKinds[i].ToString(), "    ");
+        }
+    }
+
     private void AppendRequestMeasurements(StringBuilder builder)
     {
         builder.AppendLine("  Request to completion by resolution and result");
@@ -1505,6 +1530,17 @@ internal sealed class IconLoadDiagnosticsSession
             {
                 measurements[resolutionIndex][resultIndex] = new DiagnosticHistogram();
             }
+        }
+
+        return measurements;
+    }
+
+    private static DiagnosticHistogram[] CreateResultMeasurements()
+    {
+        var measurements = new DiagnosticHistogram[Enum.GetValues<IconLoadResultKind>().Length];
+        for (var i = 0; i < measurements.Length; i++)
+        {
+            measurements[i] = new DiagnosticHistogram();
         }
 
         return measurements;
