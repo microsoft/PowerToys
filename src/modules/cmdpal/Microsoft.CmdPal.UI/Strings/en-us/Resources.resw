@@ -1430,4 +1430,112 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Dock position</value>
     <comment>Per-monitor dock position settings card header</comment>
   </data>
+  <data name="AdaptiveListInput_Add" xml:space="preserve">
+    <value>Add</value>
+    <comment>Button that adds an entry to a list in an adaptive-card form.</comment>
+  </data>
+  <data name="AdaptiveListInput_RemoveItem" xml:space="preserve">
+    <value>Remove {0}</value>
+    <comment>Accessible label for a button that removes an entry from a list. {0} is the entry text or path.</comment>
+  </data>
+  <data name="AdaptiveListInput_RequiredError" xml:space="preserve">
+    <value>Add at least one item.</value>
+    <comment>Validation error shown when a required list has no entries.</comment>
+  </data>
+  <data name="AdaptiveListInput_ItemValidationError" xml:space="preserve">
+    <value>One or more items have an invalid format.</value>
+    <comment>Validation error shown when a string-list entry does not match its configured regular expression.</comment>
+  </data>
+  <data name="AdaptiveListInput_DuplicateItemError" xml:space="preserve">
+    <value>Each item must be unique.</value>
+    <comment>Validation error shown when duplicate string-list entries are not allowed.</comment>
+  </data>
+  <data name="AdaptiveStringListInput_Placeholder" xml:space="preserve">
+    <value>New item</value>
+    <comment>Placeholder in the text box used to add an entry to a string list.</comment>
+  </data>
+  <data name="AdaptiveFilePathListInput_AddFile" xml:space="preserve">
+    <value>Add file</value>
+    <comment>Button or menu item that opens a file picker to add a path.</comment>
+  </data>
+  <data name="AdaptiveFilePathListInput_AddFolder" xml:space="preserve">
+    <value>Add folder</value>
+    <comment>Button or menu item that opens a folder picker to add a path.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_Key" xml:space="preserve">
+    <value>Key</value>
+    <comment>Label for the key field of a key/value list entry.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_Value" xml:space="preserve">
+    <value>Value</value>
+    <comment>Label for the value field of a key/value list entry.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_KeyPlaceholder" xml:space="preserve">
+    <value>New key</value>
+    <comment>Placeholder in the key field used to add a key/value list entry.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_ValuePlaceholder" xml:space="preserve">
+    <value>New value</value>
+    <comment>Placeholder in the value field used to add a key/value list entry.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_MissingKeyDisplay" xml:space="preserve">
+    <value>(missing key)</value>
+    <comment>Text displayed for a persisted key/value list entry that does not contain a key.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_MissingKeyError" xml:space="preserve">
+    <value>Each value must have a key.</value>
+    <comment>Validation error shown when a key/value list entry has no key.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_KeyValidationError" xml:space="preserve">
+    <value>One or more keys have an invalid format.</value>
+    <comment>Validation error shown when a key does not match its configured regular expression.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_ValueValidationError" xml:space="preserve">
+    <value>One or more values have an invalid format.</value>
+    <comment>Validation error shown when a value does not match its configured regular expression.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_DuplicateKeyError" xml:space="preserve">
+    <value>Each key must be unique.</value>
+    <comment>Validation error shown when duplicate keys are not allowed in a key/value list.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_Browse" xml:space="preserve">
+    <value>Browse...</value>
+    <comment>Button that opens a picker for a single file or folder path.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_BrowseFor" xml:space="preserve">
+    <value>Browse for {0}</value>
+    <comment>Accessible label for the browse button. {0} is the name of the path field.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_FilePath" xml:space="preserve">
+    <value>File path</value>
+    <comment>Accessible name for a single-file path field without a developer-provided header.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_FolderPath" xml:space="preserve">
+    <value>Folder path</value>
+    <comment>Accessible name for a single-folder path field without a developer-provided header.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_FilePlaceholder" xml:space="preserve">
+    <value>Enter or select a file</value>
+    <comment>Default placeholder for a single-file path field.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_FolderPlaceholder" xml:space="preserve">
+    <value>Enter or select a folder</value>
+    <comment>Default placeholder for a single-folder path field.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_SelectFile" xml:space="preserve">
+    <value>Select file</value>
+    <comment>Commit button text in the single-file picker.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_SelectFolder" xml:space="preserve">
+    <value>Select folder</value>
+    <comment>Commit button text in the single-folder picker.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_RequiredError" xml:space="preserve">
+    <value>Select or enter a path.</value>
+    <comment>Validation error shown when a required single-path input is empty.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_ValidationError" xml:space="preserve">
+    <value>The path has an invalid format.</value>
+    <comment>Validation error shown when a single path does not match its configured regular expression.</comment>
+  </data>
 </root>
