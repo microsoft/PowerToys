@@ -4,8 +4,8 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using ManagedCommon;
-using Microsoft.PowerToys.Common.UI.Controls.Flyout;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Windowing;
@@ -121,11 +121,24 @@ namespace PowerDisplay
         {
             _hasInitialized = true;
             Logger.LogInfo("MainWindow: Initialization completed via ViewModel event, _hasInitialized=true");
+
+            // Start the CLI pipe server once, immediately after monitor discovery.
+            // Guard against double-start (event fires exactly once per ViewModel lifetime,
+            // but be defensive in case of future refactors).
+            if (_cliServerCts is null)
+            {
+                _cliServerCts = new CancellationTokenSource();
+                var handler = new PowerDisplay.Ipc.CliRequestHandler(ViewModel, this.DispatcherQueue);
+                new PowerDisplay.Ipc.CliPipeServer(handler, new PowerDisplay.Ipc.ManagedCliLogger()).Start(_cliServerCts.Token);
+                Logger.LogInfo("MainWindow: CLI pipe server started");
+            }
+
             AdjustWindowSizeToContent();
         }
 
         private bool _hasInitialized;
         private bool _isShowingWindow;
+        private CancellationTokenSource? _cliServerCts;
 
         private void ShowError(string message)
         {
@@ -480,7 +493,7 @@ namespace PowerDisplay
                 return;
             }
 
-            Logger.LogInfo($"[UI] ProfileListView_SelectionChanged: Applying profile '{selectedProfile.Name}'");
+            Logger.LogInfo($"[UI] ProfileListView_SelectionChanged: Applying profile '{selectedProfile.DisplayName}'");
 
             // Apply profile via ViewModel command
             if (_viewModel?.ApplyProfileCommand?.CanExecute(selectedProfile) == true)
@@ -519,6 +532,9 @@ namespace PowerDisplay
 
         public void Dispose()
         {
+            _cliServerCts?.Cancel();
+            _cliServerCts?.Dispose();
+            _cliServerCts = null;
             _hotkeyService?.Dispose();
             _messageHook?.Dispose();
             _viewModel?.Dispose();

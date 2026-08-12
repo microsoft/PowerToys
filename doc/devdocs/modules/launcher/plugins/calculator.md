@@ -47,18 +47,18 @@ var result = CalculateEngine.Interpret(query.Search, CultureInfo.CurrentUICultur
 The score of each result from the calculator plugin is `300`.
 
 
-## [Unit Tests](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests)
-We have a [Unit Test project](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests) that executes various test to ensure that the plugin works as expected.
+## [Unit Tests](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest)
+We have a [Unit Test project](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest) that executes various test to ensure that the plugin works as expected.
 
-### [`BracketHelperTests`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests/BracketHelperTests.cs)
-- The [`BracketHelperTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests/BracketHelperTests.cs) class contains tests to validate that brackets are handled correctly.
+### [`BracketHelperTests`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/BracketHelperTests.cs)
+- The [`BracketHelperTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/BracketHelperTests.cs) class contains tests to validate that brackets are handled correctly.
 
-### [`ExtendedCalculatorParserTests`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests/ExtendedCalculatorParserTests.cs)
-- The [`ExtendedCalculatorParserTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests/ExtendedCalculatorParserTests.cs) class contains tests to validate that the input is parsed correctly and the result is correct.
+### [`ExtendedCalculatorParserTests`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/ExtendedCalculatorParserTests.cs)
+- The [`ExtendedCalculatorParserTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/ExtendedCalculatorParserTests.cs) class contains tests to validate that the input is parsed correctly and the result is correct.
 
-### [`NumberTranslatorTests`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests/NumberTranslatorTests.cs)
-- The [`NumberTranslatorTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests/NumberTranslatorTests.cs) class contains tests to validate that each number is converted correctly based on the defined locals.
+### [`NumberTranslatorTests`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/NumberTranslatorTests.cs)
+- The [`NumberTranslatorTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/NumberTranslatorTests.cs) class contains tests to validate that each number is converted correctly based on the defined locals.
 
-### [`QueryTests`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests/QueryTests.cs)
-- The [`QueryTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests/QueryTests.cs) class contains tests to validate that the user gets the correct results when searching.
+### [`QueryTests`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/QueryTests.cs)
+- The [`QueryTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/QueryTests.cs) class contains tests to validate that the user gets the correct results when searching.
 

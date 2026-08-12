@@ -8,6 +8,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         GPOWrapper() = default;
         static GpoRuleConfigured GetConfiguredAlwaysOnTopEnabledValue();
+        static GpoRuleConfigured GetConfiguredAltWindowCycleEnabledValue();
         static GpoRuleConfigured GetConfiguredAwakeEnabledValue();
         static GpoRuleConfigured GetConfiguredCmdNotFoundEnabledValue();
         static GpoRuleConfigured GetConfiguredCmdPalEnabledValue();
@@ -50,6 +51,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredPeekEnabledValue();
         static GpoRuleConfigured GetDisableNewUpdateToastValue();
         static GpoRuleConfigured GetDisableAutomaticUpdateDownloadValue();
+        static GpoRuleConfigured GetDisablePreviewUpdatesValue();
         static GpoRuleConfigured GetDisableShowWhatsNewAfterUpdatesValue();
         static GpoRuleConfigured GetAllowExperimentationValue();
         static GpoRuleConfigured GetRunPluginEnabledValue(winrt::hstring const& pluginID);

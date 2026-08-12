@@ -11,6 +11,11 @@ namespace Peek.Common.Helpers
     {
         public static int Modulo(int a, int b)
         {
+            if (b <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(b), b, "Divisor must be positive.");
+            }
+
             return a < 0 ? ((a % b) + b) % b : a % b;
         }
 

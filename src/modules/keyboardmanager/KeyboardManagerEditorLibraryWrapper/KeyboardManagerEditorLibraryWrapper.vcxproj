@@ -37,6 +37,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetName>PowerToys.KeyboardManagerEditorLibraryWrapper</TargetName>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>

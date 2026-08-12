@@ -33,6 +33,7 @@
 
             "PowerToys.AlwaysOnTop.exe",
             "PowerToys.AlwaysOnTopModuleInterface.dll",
+            "PowerToys.AltWindowCycle.dll",
 
             "PowerToys.CmdNotFoundModuleInterface.dll",
 
@@ -194,9 +195,11 @@
             "PowerToys.MouseHighlighter.dll",
             "PowerToys.MouseJump.dll",
             "PowerToys.MouseJump.Common.dll",
+            "WinUI3Apps\\PowerToys.MouseJump.HotKeys.dll",
+            "PowerToys.MouseJump.Models.dll",
+            "WinUI3Apps\\PowerToys.MouseJump.WinUI3.dll",
+            "WinUI3Apps\\PowerToys.MouseJump.WinUI3.exe",
             "PowerToys.MousePointerCrosshairs.dll",
-            "PowerToys.MouseJumpUI.dll",
-            "PowerToys.MouseJumpUI.exe",
             "PowerToys.CursorWrap.dll",
 
             "PowerToys.MouseWithoutBorders.dll",
@@ -211,16 +214,20 @@
             "WinUI3Apps\\NewPlusPackage.msix",
             "WinUI3Apps\\PowerToys.NewPlus.ShellExtension.win10.dll",
 
-            "PowerAccent.Core.dll",
-            "PowerAccent.Common.dll",
-            "PowerToys.PowerAccent.dll",
-            "PowerToys.PowerAccent.exe",
+            "WinUI3Apps\\PowerAccent.Core.dll",
+            "WinUI3Apps\\PowerAccent.Common.dll",
+            "WinUI3Apps\\PowerToys.PowerAccent.dll",
+            "WinUI3Apps\\PowerToys.PowerAccent.exe",
             "PowerToys.PowerAccentModuleInterface.dll",
-            "PowerToys.PowerAccentKeyboardService.dll",
+            "WinUI3Apps\\PowerToys.PowerAccentKeyboardService.dll",
 
             "PowerToys.PowerDisplayModuleInterface.dll",
             "WinUI3Apps\\PowerToys.PowerDisplay.dll",
             "WinUI3Apps\\PowerToys.PowerDisplay.exe",
+            "WinUI3Apps\\PowerToys.PowerDisplay.Cli.exe",
+            "WinUI3Apps\\PowerToys.PowerDisplay.Cli.dll",
+            "WinUI3Apps\\PowerToys.PowerDisplay.Contracts.dll",
+            "WinUI3Apps\\PowerToys.PowerDisplay.Ipc.dll",
             "PowerDisplay.Lib.dll",
             "PowerDisplay.Models.dll",
 

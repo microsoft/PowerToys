@@ -241,6 +241,7 @@ public partial class App : Application, IDisposable
         services.AddSingleton<IPersistenceService, PersistenceService>();
         services.AddSingleton<ISettingsService, SettingsService>();
         services.AddSingleton<IAppStateService, AppStateService>();
+        services.AddSingleton<ICmdPalProtocolActivation, CmdPalProtocolActivation>();
 
         // Services
         services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
@@ -271,6 +272,9 @@ public partial class App : Application, IDisposable
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
+        services.AddSingleton<IRootPageAccessor>(static sp =>
+            new DeferredRootPageAccessor(() => sp.GetRequiredService<IRootPageService>()));
+
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
         services.AddSingleton<ITelemetryService, TelemetryForwarder>();
 

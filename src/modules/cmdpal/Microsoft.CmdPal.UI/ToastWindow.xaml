@@ -4,13 +4,63 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:common="using:Microsoft.PowerToys.Common.UI.Controls.Window"
+    xmlns:controls="using:Microsoft.PowerToys.Common.UI.Controls"
+    xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <TextBlock
-        Margin="16,10,20,12"
-        Text="{x:Bind ViewModel.ToastMessage, Mode=OneWay}"
-        TextAlignment="Center"
-        TextWrapping="Wrap" />
+    <controls:TransientSurface
+        x:Name="Surface"
+        MaxWidth="560"
+        Margin="24,24,24,16"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Bottom"
+        HideTransition="Bottom"
+        ShowTransition="Bottom">
+        <Grid Margin="16,10,20,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <cpcontrols:IconBox
+                Grid.Column="0"
+                Width="16"
+                Height="16"
+                Margin="0,0,8,0"
+                VerticalAlignment="Center"
+                AutomationProperties.AccessibilityView="Raw"
+                SourceKey="{x:Bind ViewModel.Icon, Mode=OneWay}"
+                SourceRequested="{x:Bind help:IconProvider.SourceRequested16}"
+                Visibility="{x:Bind ViewModel.HasIcon, Mode=OneWay}" />
+            <TextBlock
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Text="{x:Bind ViewModel.ToastMessage, Mode=OneWay}"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+            <Button
+                x:Name="CommandButton"
+                Grid.Column="2"
+                Margin="12,0,0,0"
+                VerticalAlignment="Center"
+                AutomationProperties.Name="{x:Bind ViewModel.CommandName, Mode=OneWay}"
+                Click="CommandButton_Click"
+                Visibility="{x:Bind ViewModel.HasCommand, Mode=OneWay}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <cpcontrols:IconBox
+                        Width="16"
+                        Height="16"
+                        VerticalAlignment="Center"
+                        AutomationProperties.AccessibilityView="Raw"
+                        SourceKey="{x:Bind ViewModel.CommandIcon, Mode=OneWay}"
+                        SourceRequested="{x:Bind help:IconProvider.SourceRequested16}"
+                        Visibility="{x:Bind ViewModel.CommandHasIcon, Mode=OneWay}" />
+                    <TextBlock VerticalAlignment="Center" Text="{x:Bind ViewModel.CommandName, Mode=OneWay}" />
+                </StackPanel>
+            </Button>
+        </Grid>
+    </controls:TransientSurface>
 </common:TransparentWindow>

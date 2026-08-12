@@ -18,6 +18,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             ActivationShortcut = DefaultActivationShortcut;
             MonitorRefreshDelay = 5;
+            MouseWheelIncrement = 5;
+            MouseWheelControlMode = MouseWheelControlMode.Disabled;
             Monitors = new List<MonitorInfo>();
             RestoreSettingsOnStartup = false;
             ShowSystemTrayIcon = true;
@@ -47,6 +49,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         [JsonPropertyName("monitor_refresh_delay")]
         public int MonitorRefreshDelay { get; set; }
+
+        /// <summary>
+        /// Gets or sets the amount each PowerDisplay flyout slider (brightness, contrast, volume)
+        /// changes per mouse-wheel notch. Defaults to 5, the historical hardcoded step.
+        /// </summary>
+        [JsonPropertyName("mouse_wheel_increment")]
+        public int MouseWheelIncrement { get; set; }
+
+        /// <summary>
+        /// Gets or sets which displays a mouse-wheel notch over the PowerDisplay tray icon adjusts.
+        /// Scoped to the tray icon: the flyout sliders accept wheel input regardless.
+        /// </summary>
+        [JsonPropertyName("mouse_wheel_control_mode")]
+        public MouseWheelControlMode MouseWheelControlMode { get; set; }
 
         [JsonPropertyName("monitors")]
         public List<MonitorInfo> Monitors { get; set; }

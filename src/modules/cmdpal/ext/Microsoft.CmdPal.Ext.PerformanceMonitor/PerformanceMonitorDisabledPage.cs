@@ -12,9 +12,9 @@ internal sealed partial class PerformanceMonitorDisabledPage : ContentPage
 {
     private readonly MarkdownContent _content;
 
-    public PerformanceMonitorDisabledPage(PerformanceMonitorCommandsProvider provider)
+    public PerformanceMonitorDisabledPage(PerformanceMonitorCommandsProvider provider, string? id = null)
     {
-        Id = PerformanceMonitorCommandsProvider.PageIdValue;
+        Id = id ?? PerformanceMonitorCommandsProvider.PageIdValue;
         Name = Resources.GetResource("Performance_Monitor_Disabled_Title");
         Title = Resources.GetResource("Performance_Monitor_Title");
         Icon = Icons.PerformanceMonitorIcon;

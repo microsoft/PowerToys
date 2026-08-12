@@ -4,10 +4,8 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
@@ -43,14 +41,17 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         private bool UseInstallerForTest { get; }
 
-        [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
         public SessionHelper(PowerToysModule scope, string[]? commandLineArgs = null)
         {
             this.scope = scope;
             this.commandLineArgs = commandLineArgs;
             this.sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
             UseInstallerForTest = EnvironmentConfig.UseInstallerForTest;
-            this.locationPath = UseInstallerForTest ? string.Empty : Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            // GetModulePath now returns an ABSOLUTE path (adaptive dev-build walk-up or the installed
+            // path), so no per-assembly prefix is needed; locationPath stays empty and the launch-path
+            // concatenations below resolve to that absolute path.
+            this.locationPath = string.Empty;
 
             CheckWinAppDriverAndRoot();
         }
@@ -362,14 +363,89 @@ namespace Microsoft.PowerToys.UITest
 
         private void StartWindowsAppDriverApp()
         {
+            // Reuse an already-running WinAppDriver — one started once per job by the pipeline
+            // ("Start WinAppDriver" step), or by an earlier test in this assembly — instead of killing
+            // and relaunching it. Only reuse the listener when a WinAppDriver process actually owns it,
+            // so a stale or unrelated process holding :4723 can't be mistaken for the driver.
+            var existingWinAppDriver = Process.GetProcessesByName("WinAppDriver").FirstOrDefault();
+            if (existingWinAppDriver is not null)
+            {
+                if (IsWinAppDriverListening())
+                {
+                    SessionHelper.appDriver = existingWinAppDriver;
+                    return;
+                }
+
+                existingWinAppDriver.Dispose();
+            }
+
             var winAppDriverProcessInfo = new ProcessStartInfo
             {
                 FileName = "C:\\Program Files (x86)\\Windows Application Driver\\WinAppDriver.exe",
-                Verb = "runas",
+
+                // WinAppDriver ends its Main with "Press ENTER to exit" + Console.ReadLine(). Under the
+                // Microsoft.Testing.Platform test host the child inherits a stdin that is already at EOF,
+                // so that read returns immediately and WinAppDriver prints "Exiting..." and dies right
+                // after it starts listening — which is what forced the previous launch to keep
+                // relaunching it (and made the very first connection racy). Redirecting stdin and NEVER
+                // closing the pipe makes that read block, so the server stays alive for the whole test
+                // process and is reused by every test in this assembly. Redirect requires
+                // UseShellExecute = false; the default endpoint 127.0.0.1:4723 needs no elevation (only a
+                // custom IP/port does, per WinAppDriver's docs), so "runas" is not needed.
+                UseShellExecute = false,
+                RedirectStandardInput = true,
+                CreateNoWindow = true,
             };
 
             this.ExitExe(winAppDriverProcessInfo.FileName);
             SessionHelper.appDriver = Process.Start(winAppDriverProcessInfo);
+
+            // Intentionally do NOT close appDriver.StandardInput: the open pipe is exactly what blocks
+            // WinAppDriver's stdin read and keeps the server alive. The static appDriver reference holds
+            // the pipe open until the test process exits, at which point WinAppDriver shuts down cleanly.
+
+            // WinAppDriver needs a moment to open its HTTP listener on :4723. Connecting immediately races
+            // that startup, so wait until the port accepts a connection before returning.
+            WaitForWinAppDriverReady();
+        }
+
+        // True when something is already accepting connections on the WinAppDriver port (127.0.0.1:4723).
+        private static bool IsWinAppDriverListening()
+        {
+            try
+            {
+                using var client = new System.Net.Sockets.TcpClient();
+                client.Connect("127.0.0.1", 4723);
+                return client.Connected;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static void WaitForWinAppDriverReady(int timeoutMs = 30000)
+        {
+            var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+            while (DateTime.UtcNow < deadline)
+            {
+                if (SessionHelper.appDriver is { HasExited: false } && IsWinAppDriverListening())
+                {
+                    return;
+                }
+
+                System.Threading.Thread.Sleep(500);
+            }
+
+            // Surface a WinAppDriver startup failure here, with its process state, instead of letting
+            // it turn into a generic "connection refused" later when the first session is created.
+            var processState = SessionHelper.appDriver is null
+                ? "not started"
+                : SessionHelper.appDriver.HasExited
+                    ? $"exited with code {SessionHelper.appDriver.ExitCode}"
+                    : "running";
+            throw new TimeoutException(
+                $"WinAppDriver did not start listening on 127.0.0.1:4723 within {timeoutMs}ms; process state: {processState}.");
         }
 
         private void KillPowerToysProcesses()

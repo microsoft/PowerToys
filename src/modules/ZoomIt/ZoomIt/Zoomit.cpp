@@ -17,6 +17,7 @@
 #include "ZoomItSettings.h"
 #include "GifRecordingSession.h"
 #include "WebcamPreviewWindow.h"
+#include "MirrorWindow.h"
 #include "BreakTimer.h"
 #include "PanoramaCapture.h"
 #include "ImageEncoder.h"
@@ -102,6 +103,9 @@ COLORREF	g_CustomColors[16];
 #define SNIP_PANORAMA_HOTKEY     19
 #define SNIP_PANORAMA_SAVE_HOTKEY 20
 #define WEBCAM_TOGGLE_HOTKEY     21
+#define MIRROR_HOTKEY            22
+#define MIRROR_WINDOW_HOTKEY     23
+#define MIRROR_CROP_HOTKEY       24
 
 #define ZOOM_PAGE	  0
 #define LIVE_PAGE	  1
@@ -117,6 +121,7 @@ COLORREF	g_CustomColors[16];
 #define RECORD_PAGE	  6
 #define SNIP_PAGE	  7
 #define PANORAMA_PAGE 8
+#define MIRROR_PAGE	  9
 
 OPTION_TABS g_OptionsTabs[] = {
     { _T("Zoom"), NULL },
@@ -127,7 +132,8 @@ OPTION_TABS g_OptionsTabs[] = {
     { _T("Break"), NULL },
     { _T("Record"), NULL },
     { _T("Snip"), NULL },
-    { _T("Panorama"), NULL }
+    { _T("Panorama"), NULL },
+    { _T("DemoMirror"), NULL }
 };
 
 static const TCHAR* g_RecordingFormats[] = {
@@ -174,6 +180,9 @@ DWORD	g_RecordToggleMod;
 DWORD   g_SnipToggleMod;
 DWORD   g_SnipPanoramaToggleMod;
 DWORD   g_SnipOcrToggleMod;
+DWORD   g_SnipSaveToggleMod;
+DWORD   g_SnipPanoramaSaveToggleMod;
+DWORD   g_MirrorToggleMod;
 
 BOOLEAN	g_ZoomOnLiveZoom = FALSE;
 DWORD	g_PenWidth = PEN_WIDTH;
@@ -212,7 +221,12 @@ BOOL	g_RecordToggle = FALSE;
 BOOL	g_RecordCropping = FALSE;
 SelectRectangle g_SelectRectangle;
 WebcamPreviewWindow g_WebcamPreview;
+SelectRectangle g_MirrorSelectRectangle;
+MirrorWindow g_MirrorWindow;
+// The full path of the last saved recording file.
 std::wstring	g_RecordingSaveLocation;
+// The last user-chosen recording filename. Used to construct unique recording filenames.
+std::wstring	g_RecordingSaveBaseFilename;
 std::wstring	g_ScreenshotSaveLocation;
 winrt::IDirect3DDevice	g_RecordDevice{ nullptr };
 std::shared_ptr<VideoRecordingSession> g_RecordingSession = nullptr;
@@ -413,6 +427,9 @@ const wchar_t* HotkeyIdToString( WPARAM hotkeyId )
     case SNIP_OCR_HOTKEY: return L"SNIP_OCR_HOTKEY";
     case SNIP_PANORAMA_HOTKEY: return L"SNIP_PANORAMA_HOTKEY";
     case SNIP_PANORAMA_SAVE_HOTKEY: return L"SNIP_PANORAMA_SAVE_HOTKEY";
+    case MIRROR_HOTKEY: return L"MIRROR_HOTKEY";
+    case MIRROR_WINDOW_HOTKEY: return L"MIRROR_WINDOW_HOTKEY";
+    case MIRROR_CROP_HOTKEY: return L"MIRROR_CROP_HOTKEY";
     default: return L"UNKNOWN_HOTKEY";
     }
 }
@@ -3554,6 +3571,9 @@ void UnregisterAllHotkeys( HWND hWnd )
     unregisterHotkey( SAVE_CROP_HOTKEY );
     unregisterHotkey( COPY_IMAGE_HOTKEY );
     unregisterHotkey( COPY_CROP_HOTKEY );
+    unregisterHotkey( MIRROR_HOTKEY );
+    unregisterHotkey( MIRROR_WINDOW_HOTKEY );
+    unregisterHotkey( MIRROR_CROP_HOTKEY );
 }
 
 //----------------------------------------------------------------------------
@@ -3582,12 +3602,16 @@ void RegisterAllHotkeys(HWND hWnd)
     }
     if (g_SnipToggleKey) {
         registerHotkey( SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF );
-        registerHotkey( SNIP_SAVE_HOTKEY, ( g_SnipToggleMod ^ MOD_SHIFT ), g_SnipToggleKey & 0xFF );
     }
-    if( g_SnipPanoramaToggleKey &&
+    if (g_SnipSaveToggleKey) {
+        registerHotkey( SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF);
+    }
+    if (g_SnipPanoramaToggleKey &&
         (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) ) {
         registerHotkey( SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF );
-        registerHotkey( SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF );
+    }
+    if (g_SnipPanoramaSaveToggleKey) {
+        registerHotkey( SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF );
     }
     if (g_SnipOcrToggleKey) {
         registerHotkey( SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF );
@@ -3601,6 +3625,17 @@ void RegisterAllHotkeys(HWND hWnd)
         }
         if ( windowMod != 0 ) {
             registerHotkey( RECORD_WINDOW_HOTKEY, windowMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
+        }
+    }
+    if (g_MirrorToggleKey) {
+        registerHotkey( MIRROR_HOTKEY, g_MirrorToggleMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF );
+        UINT mirrorCropMod = g_MirrorToggleMod ^ MOD_SHIFT;
+        UINT mirrorWindowMod = g_MirrorToggleMod ^ MOD_ALT;
+        if ( mirrorCropMod != 0 ) {
+            registerHotkey( MIRROR_CROP_HOTKEY, mirrorCropMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF );
+        }
+        if ( mirrorWindowMod != 0 ) {
+            registerHotkey( MIRROR_WINDOW_HOTKEY, mirrorWindowMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF );
         }
     }
 
@@ -4816,7 +4851,10 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
     TCHAR			text[32];
     DWORD			newToggleKey, newTimeout, newToggleMod, newBreakToggleKey, newDemoTypeToggleKey, newRecordToggleKey, newSnipToggleKey, newSnipPanoramaToggleKey, newSnipOcrToggleKey;
     DWORD			newDrawToggleKey, newDrawToggleMod, newBreakToggleMod, newDemoTypeToggleMod, newRecordToggleMod, newSnipToggleMod, newSnipPanoramaToggleMod, newSnipOcrToggleMod;
+    DWORD			newSnipSaveToggleKey, newSnipSaveToggleMod;
+    DWORD			newSnipPanoramaSaveToggleKey, newSnipPanoramaSaveToggleMod;
     DWORD			newLiveZoomToggleKey, newLiveZoomToggleMod;
+    DWORD			newMirrorToggleKey, newMirrorToggleMod;
     static std::vector<std::pair<std::wstring, std::wstring>>	microphones;
 
     auto CleanupFonts = [&]()
@@ -5050,8 +5088,13 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         if( g_DemoTypeToggleKey ) SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_HOTKEY ), HKM_SETHOTKEY, g_DemoTypeToggleKey, 0 );
         if( g_RecordToggleKey )	SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_HOTKEY), HKM_SETHOTKEY, g_RecordToggleKey, 0 );
         if( g_SnipToggleKey) 	SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_SETHOTKEY, g_SnipToggleKey, 0 );
+        if( g_SnipSaveToggleKey) 	SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_SAVE_HOTKEY), HKM_SETHOTKEY, g_SnipSaveToggleKey, 0 );
         if( g_SnipPanoramaToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_SETHOTKEY, g_SnipPanoramaToggleKey, 0 );
+        if( g_SnipPanoramaSaveToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_SAVE_HOTKEY), HKM_SETHOTKEY, g_SnipPanoramaSaveToggleKey, 0 );
         if( g_SnipOcrToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_SETHOTKEY, g_SnipOcrToggleKey, 0 );
+        if( g_MirrorToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[MIRROR_PAGE].hPage, IDC_MIRROR_HOTKEY), HKM_SETHOTKEY, g_MirrorToggleKey, 0 );
+        CheckDlgButton( g_OptionsTabs[MIRROR_PAGE].hPage, IDC_MIRROR_TRACK_WINDOW,
+            g_MirrorTrackWindow ? BST_CHECKED: BST_UNCHECKED );
         CheckDlgButton( hDlg, IDC_SHOW_TRAY_ICON,
             g_ShowTrayIcon ? BST_CHECKED: BST_UNCHECKED );
         CheckDlgButton( hDlg, IDC_AUTOSTART,
@@ -5512,8 +5555,11 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newDemoTypeToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_HOTKEY ), HKM_GETHOTKEY, 0, 0 ));
             newRecordToggleKey = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_HOTKEY), HKM_GETHOTKEY, 0, 0));
             newSnipToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newSnipSaveToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_SAVE_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
             newSnipPanoramaToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newSnipPanoramaSaveToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_SAVE_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
             newSnipOcrToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newMirrorToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[MIRROR_PAGE].hPage, IDC_MIRROR_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
 
             newToggleMod = GetKeyMod( newToggleKey );
             newLiveZoomToggleMod = GetKeyMod( newLiveZoomToggleKey );
@@ -5522,8 +5568,11 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newDemoTypeToggleMod = GetKeyMod( newDemoTypeToggleKey );
             newRecordToggleMod = GetKeyMod(newRecordToggleKey);
             newSnipToggleMod = GetKeyMod( newSnipToggleKey );
+            newSnipSaveToggleMod = GetKeyMod( newSnipSaveToggleKey );
             newSnipPanoramaToggleMod = GetKeyMod( newSnipPanoramaToggleKey );
+            newSnipPanoramaSaveToggleMod = GetKeyMod( newSnipPanoramaSaveToggleKey );
             newSnipOcrToggleMod = GetKeyMod( newSnipOcrToggleKey );
+            newMirrorToggleMod = GetKeyMod( newMirrorToggleKey );
 
             g_SliderZoomLevel = static_cast<int>(SendMessage( GetDlgItem(g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ZOOM_SLIDER), TBM_GETPOS, 0, 0 ));
             g_DemoTypeSpeedSlider = static_cast<int>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_SPEED_SLIDER ), TBM_GETPOS, 0, 0 ));
@@ -5535,6 +5584,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             g_MicMonoMix = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MIC_MONO_MIX) == BST_CHECKED;
             g_NoiseCancellation = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_NOISE_CANCELLATION) == BST_CHECKED;
             g_RecordAspectRatio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_ASPECT_RATIO) == BST_CHECKED;
+            g_MirrorTrackWindow = IsDlgButtonChecked(g_OptionsTabs[MIRROR_PAGE].hPage, IDC_MIRROR_TRACK_WINDOW) == BST_CHECKED;
             GetDlgItemText( g_OptionsTabs[BREAK_PAGE].hPage, IDC_TIMER, text, 3 );
             text[2] = 0;
             newTimeout = _tstoi( text );
@@ -5591,8 +5641,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 
             }
             else if (newSnipToggleKey &&
-                (!RegisterHotKey(GetParent(hDlg), SNIP_HOTKEY, newSnipToggleMod, newSnipToggleKey & 0xFF) ||
-                 !RegisterHotKey(GetParent(hDlg), SNIP_SAVE_HOTKEY, (newSnipToggleMod ^ MOD_SHIFT), newSnipToggleKey & 0xFF))) {
+                !RegisterHotKey(GetParent(hDlg), SNIP_HOTKEY, newSnipToggleMod, newSnipToggleKey & 0xFF)) {
 
                 MessageBox(hDlg, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.",
                     APPNAME, MB_ICONERROR);
@@ -5600,12 +5649,29 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 break;
 
             }
+            else if (newSnipSaveToggleKey &&
+                !RegisterHotKey(GetParent(hDlg), SNIP_SAVE_HOTKEY, newSnipSaveToggleMod, newSnipSaveToggleKey & 0xFF)) {
+
+                MessageBox(hDlg, L"The specified snip save hotkey is already in use.\nSelect a different snip save hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
+
+            }
             else if (newSnipPanoramaToggleKey &&
                 (newSnipPanoramaToggleKey != newSnipToggleKey || newSnipPanoramaToggleMod != newSnipToggleMod) &&
-                (!RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_HOTKEY, newSnipPanoramaToggleMod | MOD_NOREPEAT, newSnipPanoramaToggleKey & 0xFF) ||
-                 !RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_SAVE_HOTKEY, ( newSnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, newSnipPanoramaToggleKey & 0xFF))) {
+                !RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_HOTKEY, newSnipPanoramaToggleMod | MOD_NOREPEAT, newSnipPanoramaToggleKey & 0xFF)) {
 
                 MessageBox(hDlg, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
+
+            }
+            else if (newSnipPanoramaSaveToggleKey &&
+                !RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_SAVE_HOTKEY, newSnipPanoramaSaveToggleMod | MOD_NOREPEAT, newSnipPanoramaSaveToggleKey & 0xFF)) {
+
+                MessageBox(hDlg, L"The specified panorama snip save hotkey is already in use.\nSelect a different panorama snip save hotkey.",
                     APPNAME, MB_ICONERROR);
                 UnregisterAllHotkeys(GetParent(hDlg));
                 break;
@@ -5629,6 +5695,16 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                     APPNAME, MB_ICONERROR);
                 UnregisterAllHotkeys(GetParent(hDlg));
                 break;
+            }
+            else if( UINT mirrorCropMod = newMirrorToggleMod ^ MOD_SHIFT, mirrorWindowMod = newMirrorToggleMod ^ MOD_ALT; newMirrorToggleKey &&
+                (!RegisterHotKey(GetParent(hDlg), MIRROR_HOTKEY, newMirrorToggleMod | MOD_NOREPEAT, newMirrorToggleKey & 0xFF) ||
+                (mirrorCropMod != 0 && !RegisterHotKey(GetParent(hDlg), MIRROR_CROP_HOTKEY, mirrorCropMod | MOD_NOREPEAT, newMirrorToggleKey & 0xFF)) ||
+                (mirrorWindowMod != 0 && !RegisterHotKey(GetParent(hDlg), MIRROR_WINDOW_HOTKEY, mirrorWindowMod | MOD_NOREPEAT, newMirrorToggleKey & 0xFF)))) {
+
+                MessageBox(hDlg, L"The specified mirror hotkey is already in use.\nSelect a different mirror hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
             } else {
 
                 g_BreakTimeout = newTimeout;
@@ -5645,10 +5721,16 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 g_RecordToggleMod = newRecordToggleMod;
                 g_SnipToggleKey = newSnipToggleKey;
                 g_SnipToggleMod = newSnipToggleMod;
+                g_SnipSaveToggleKey = newSnipSaveToggleKey;
+                g_SnipSaveToggleMod = newSnipSaveToggleMod;
                 g_SnipPanoramaToggleKey = newSnipPanoramaToggleKey;
                 g_SnipPanoramaToggleMod = newSnipPanoramaToggleMod;
+                g_SnipPanoramaSaveToggleKey = newSnipPanoramaSaveToggleKey;
+                g_SnipPanoramaSaveToggleMod = newSnipPanoramaSaveToggleMod;
                 g_SnipOcrToggleKey = newSnipOcrToggleKey;
                 g_SnipOcrToggleMod = newSnipOcrToggleMod;
+                g_MirrorToggleKey = newMirrorToggleKey;
+                g_MirrorToggleMod = newMirrorToggleMod;
                 reg.WriteRegSettings( RegSettings );
                 EnableDisableTrayIcon( GetParent( hDlg ), g_ShowTrayIcon );
 
@@ -6737,6 +6819,45 @@ void StopRecording()
     }
 }
 
+//----------------------------------------------------------------------------
+// GetTimestampSuffix
+//
+// Returns a timestamp string for disambiguating filenames.
+// Format: " YYYY-MM-DD HHMMSS", e.g." 2025-11-02 143000".
+//
+// Used as a suffix for the default recording filename. Ensures
+// chronological name sorting in Explorer.
+// 
+//----------------------------------------------------------------------------
+static std::wstring GetTimestampSuffix()
+{
+    auto const now = std::chrono::system_clock::now();
+    auto const in_time_t = std::chrono::system_clock::to_time_t( now );
+
+    std::tm buf{};
+    localtime_s( &buf, &in_time_t );
+
+    std::wstringstream ss;
+    ss << L" " << std::put_time( &buf, L"%Y-%m-%d %H%M%S" );
+
+    return ss.str();
+}
+
+//----------------------------------------------------------------------------
+// IsDefaultRecordingFilename
+// 
+// Determines if the provided filename matches the default recording name.
+// Case-insensitive comparison.
+// 
+// Returns:
+//   true if filename is the default; otherwise false.
+// 
+//----------------------------------------------------------------------------
+static bool IsDefaultRecordingFilename(const std::wstring& filename)
+{
+    return CompareStringOrdinal( DEFAULT_RECORDING_FILE, -1, filename.c_str(), -1, TRUE ) == CSTR_EQUAL
+        || CompareStringOrdinal( DEFAULT_GIF_RECORDING_FILE, -1, filename.c_str(), -1, TRUE ) == CSTR_EQUAL;
+}
 
 //----------------------------------------------------------------------------
 //
@@ -6791,19 +6912,70 @@ std::wstring GetUniqueFilename(const std::wstring& lastSavePath, const wchar_t* 
 //
 // GetUniqueRecordingFilename
 //
-// Gets a unique file name for recording saves, using the " (N)" suffix
-// approach so that the user can hit OK without worrying about overwriting
-// if they are making multiple recordings in one session or don't want to
-// always see an overwrite dialog or stop to clean up files.
+// Generates a unique filename to be suggested in the "Save As" recording
+// dialog, based on the user's last chosen filename and save location.
+// This allows the user to quickly save a recording without worrying about
+// manual renaming to prevent overwriting earlier recordings.
+// 
+// There are two distinct behaviors based on the last used filename:
+// 
+// 1. For the default filename ("Recording.mp4"):
+//    Generates a more descriptive name by appending a timestamp, e.g.
+//    "Recording 2025-11-03 143015.mp4". This ensures chronological sorting
+//    in Explorer when ordered by name and is consistent with other tools.
+// 
+// 2. For custom filenames (e.g. "Presentation.mp4"):
+//    Appends a numeric suffix if the file already exists, e.g.
+//    "Presentation (1).mp4", "Presentation (2).mp4", etc.
+// 
+// Returns:
+//   A unique filename (without folder path).
+// 
+// Relies upon the global state of `g_RecordingSaveLocation` and
+// `g_RecordingSaveBaseFilename`.
 //
 //----------------------------------------------------------------------------
-auto GetUniqueRecordingFilename()
+static auto GetUniqueRecordingFilename()
 {
     const wchar_t* defaultFile = (g_RecordingFormat == RecordingFormat::GIF)
         ? DEFAULT_GIF_RECORDING_FILE
         : DEFAULT_RECORDING_FILE;
 
-    return GetUniqueFilename(g_RecordingSaveLocation, defaultFile, FOLDERID_Videos);
+    // Without a remembered filename, suggest the default name for the current format.
+    std::wstring baseFilename = g_RecordingSaveBaseFilename.empty()
+        ? std::wstring( defaultFile )
+        : g_RecordingSaveBaseFilename;
+
+    std::filesystem::path basePath{ baseFilename };
+
+    // For the default filename, append a timestamp so successive default saves stay
+    // unique and sort chronologically in Explorer.
+    if ( IsDefaultRecordingFilename( basePath.filename().wstring() ) )
+    {
+        return basePath.stem().wstring() + GetTimestampSuffix() + basePath.extension().wstring();
+    }
+
+    // For custom filenames, append a numeric suffix to avoid collisions.
+    std::filesystem::path directory;
+    if ( !g_RecordingSaveLocation.empty() )
+        directory = std::filesystem::path( g_RecordingSaveLocation ).parent_path();
+    if ( directory.empty() )
+    {
+        wil::unique_cotaskmem_string folderPath;
+        if ( SUCCEEDED( SHGetKnownFolderPath( FOLDERID_Videos, KF_FLAG_DEFAULT, nullptr, folderPath.put() ) ) )
+            directory = folderPath.get();
+    }
+
+    std::wstring baseStem = basePath.stem().wstring();
+    std::wstring baseExtension = basePath.extension().wstring();
+
+    std::filesystem::path testPath = directory / ( baseStem + baseExtension );
+    for ( int index = 1; std::filesystem::exists( testPath ); index++ )
+    {
+        testPath = directory / ( baseStem + L" (" + std::to_wstring( index ) + L')' + baseExtension );
+    }
+
+    return testPath.filename().wstring();
 }
 
 //----------------------------------------------------------------------------
@@ -6833,28 +7005,52 @@ auto GetUniqueScreenshotFilename()
 
 //----------------------------------------------------------------------------
 //
+// FindMirrorTargetMonitor
+//
+// Picks the monitor to mirror onto: the one showing a PowerPoint slide show
+// if there is one, otherwise the first monitor that isn't the source.
+//
+//----------------------------------------------------------------------------
+HMONITOR FindMirrorTargetMonitor( HMONITOR sourceMonitor )
+{
+    HWND hWndSlideShow = FindWindow( L"screenClass", NULL );
+    if( hWndSlideShow != NULL && IsWindowVisible( hWndSlideShow ) ) {
+
+        HMONITOR hMonitor = MonitorFromWindow( hWndSlideShow, MONITOR_DEFAULTTONEAREST );
+        if( hMonitor != sourceMonitor ) {
+
+            return hMonitor;
+        }
+    }
+
+    struct MONITOR_SEARCH {
+        HMONITOR	sourceMonitor;
+        HMONITOR	targetMonitor;
+    } search = { sourceMonitor, NULL };
+
+    EnumDisplayMonitors( NULL, NULL, []( HMONITOR hMonitor, HDC, LPRECT, LPARAM lParam ) -> BOOL {
+
+        auto search = reinterpret_cast<MONITOR_SEARCH *>( lParam );
+        if( hMonitor != search->sourceMonitor && search->targetMonitor == NULL ) {
+
+            search->targetMonitor = hMonitor;
+            return FALSE;
+        }
+        return TRUE;
+    }, reinterpret_cast<LPARAM>( &search ));
+
+    return search.targetMonitor;
+}
+
+//----------------------------------------------------------------------------
+//
 // StartRecordingAsync
 //
-// Starts the screen recording.
+// Initiates screen recording and handles the save dialog workflow.
 //
 //----------------------------------------------------------------------------
 winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndRecord ) try
 {
-    // ---- Recording startup timing diagnostics ----
-    LARGE_INTEGER _diagFreq, _diagT0, _diagT1;
-    QueryPerformanceFrequency( &_diagFreq );
-    QueryPerformanceCounter( &_diagT0 );
-    auto _diagMs = [&]() -> double {
-        QueryPerformanceCounter( &_diagT1 );
-        return static_cast<double>( _diagT1.QuadPart - _diagT0.QuadPart ) * 1000.0 / _diagFreq.QuadPart;
-    };
-    auto _diagLog = [&]( const wchar_t* label ) {
-        wchar_t buf[256];
-        swprintf_s( buf, L"[RecStartup +%.1fms] %s\n", _diagMs(), label );
-        OutputDebugStringW( buf );
-    };
-    _diagLog( L"entry" );
-
     // Capture the UI thread context so we can resume on it for the save dialog
     winrt::apartment_context uiThread;
 
@@ -6871,7 +7067,6 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         audioGenerator = std::make_unique<AudioSampleGenerator>(
             g_CaptureAudio, g_CaptureSystemAudio, g_MicMonoMix, g_NoiseCancellation );
         audioInitAction = audioGenerator->InitializeAsync();
-        _diagLog( L"audio InitializeAsync started (background)" );
     }
 
     auto tempFolderPath = std::filesystem::temp_directory_path().wstring();
@@ -6881,13 +7076,11 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
     // Choose temp file extension based on format
     const wchar_t* tempFileName = (g_RecordingFormat == RecordingFormat::GIF) ? L"zoomit.gif" : L"zoomit.mp4";
     auto file = co_await appFolder.CreateFileAsync( tempFileName, winrt::CreationCollisionOption::ReplaceExisting );
-    _diagLog( L"temp file created" );
 
     // Get the device
     auto d3dDevice = util::CreateD3D11Device();
     auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
     g_RecordDevice = CreateDirect3DDevice( dxgiDevice.get() );
-    _diagLog( L"D3D device created" );
 
     // Get the active MONITOR capture device
     HMONITOR hMon = NULL;
@@ -6903,10 +7096,8 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         item = util::CreateCaptureItemForWindow( hWndRecord );
     else
         item = util::CreateCaptureItemForMonitor( hMon );
-    _diagLog( L"capture item created" );
 
     auto stream = co_await file.OpenAsync( winrt::FileAccessMode::ReadWrite );
-    _diagLog( L"file stream opened" );
 
     // Create the appropriate recording session based on format
     OutputDebugStringW((L"Starting recording session. Framerate:  " + std::to_wstring(g_RecordFrameRate) + L" scaling: " + std::to_wstring(g_RecordScaling) + L" Format: " + (g_RecordingFormat == RecordingFormat::GIF ? L"GIF" : L"MP4") + L"\n").c_str());
@@ -6956,7 +7147,6 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
     }
     else
     {
-        _diagLog( L"calling VideoRecordingSession::Create (constructor)" );
         g_RecordingSession = VideoRecordingSession::Create(
                                         g_RecordDevice,
                                         item,
@@ -6965,7 +7155,6 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                                         std::move(audioGenerator),
                                         audioInitAction,
                                         stream );
-        _diagLog( L"VideoRecordingSession::Create returned" );
 
         recordingStarted = (g_RecordingSession != nullptr);
 
@@ -7004,9 +7193,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         {
             try
             {
-                _diagLog( L"calling co_await StartAsync()" );
                 co_await g_RecordingSession->StartAsync();
-                _diagLog( L"StartAsync returned" );
             }
             catch (const winrt::hresult_error& error)
             {
@@ -7080,8 +7267,30 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
             if (!finalPath.empty())
             {
                 auto path = std::filesystem::path(finalPath);
+
+                // Remember the user's chosen filename and apply a timestamp to default
+                // names so successive saves stay unique and sort chronologically.
+                std::wstring filename = path.filename().wstring();
+                std::wstring finalFilename = filename;
+                if ( IsDefaultRecordingFilename( filename ) )
+                {
+                    // The user accepted or re-typed the default filename. Remember it so the
+                    // next suggestion also uses a timestamp, and append one to this save.
+                    g_RecordingSaveBaseFilename = filename;
+                    finalFilename = path.stem().wstring() + GetTimestampSuffix() + path.extension().wstring();
+                }
+                else if ( CompareStringOrdinal( suggestedName.c_str(), -1, filename.c_str(), -1, TRUE ) != CSTR_EQUAL )
+                {
+                    // The user chose their own filename instead of the suggested one. Remember
+                    // it so future suggestions use numeric suffixes based on this name.
+                    g_RecordingSaveBaseFilename = filename;
+                }
+
+                // The path actually written to disk (with any timestamp applied).
+                std::wstring savedPath = ( path.parent_path() / finalFilename ).wstring();
+
                 winrt::StorageFolder folder{ co_await winrt::StorageFolder::GetFolderFromPathAsync(path.parent_path().c_str()) };
-                destFile = co_await folder.CreateFileAsync(path.filename().c_str(), winrt::CreationCollisionOption::ReplaceExisting);
+                destFile = co_await folder.CreateFileAsync(finalFilename.c_str(), winrt::CreationCollisionOption::ReplaceExisting);
 
                 // If user trimmed, use the trimmed file
                 winrt::StorageFile sourceFile = file;
@@ -7099,8 +7308,8 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                     try { co_await file.DeleteAsync(); } catch (...) {}
                 }
 
-                // Use finalPath directly - destFile.Path() may be stale after MoveAndReplaceAsync
-                g_RecordingSaveLocation = finalPath;
+                // Use savedPath directly - destFile.Path() may be stale after MoveAndReplaceAsync
+                g_RecordingSaveLocation = savedPath;
                 // Update the registry buffer and save to persist across app restarts
                 wcsncpy_s(g_RecordingSaveLocationBuffer, g_RecordingSaveLocation.c_str(), _TRUNCATE);
                 reg.WriteRegSettings(RegSettings);
@@ -7600,9 +7809,12 @@ LRESULT APIENTRY MainWndProc(
         g_BreakToggleMod = GetKeyMod( g_BreakToggleKey );
         g_DemoTypeToggleMod = GetKeyMod( g_DemoTypeToggleKey );
         g_SnipToggleMod = GetKeyMod( g_SnipToggleKey );
+        g_SnipSaveToggleMod = GetKeyMod( g_SnipSaveToggleKey );
         g_SnipPanoramaToggleMod = GetKeyMod( g_SnipPanoramaToggleKey );
+        g_SnipPanoramaSaveToggleMod = GetKeyMod( g_SnipPanoramaSaveToggleKey );
         g_SnipOcrToggleMod = GetKeyMod( g_SnipOcrToggleKey );
         g_RecordToggleMod = GetKeyMod( g_RecordToggleKey );
+        g_MirrorToggleMod = GetKeyMod( g_MirrorToggleKey );
 
         if( !g_OptionsShown && !g_StartedByPowerToys ) {
             // First run should show options when running as standalone. If not running as standalone,
@@ -7651,20 +7863,34 @@ LRESULT APIENTRY MainWndProc(
 
             }
             else if (g_SnipToggleKey &&
-                (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF) ||
-                 !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF))) {
+                !RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF)) {
 
                 MessageBox(hWnd, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.",
                     APPNAME, MB_ICONERROR);
                 showOptions = TRUE;
 
             }
+            else if (g_SnipSaveToggleKey &&
+                !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified snip save hotkey is already in use.\nSelect a different snip save hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
             else if (g_SnipPanoramaToggleKey &&
                 (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) &&
-                (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF) ||
-                 !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))) {
+                !RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF)) {
 
                 MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
+            else if (g_SnipPanoramaSaveToggleKey &&
+                !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified panorama snip save hotkey is already in use.\nSelect a different panorama snip save hotkey.",
                     APPNAME, MB_ICONERROR);
                 showOptions = TRUE;
 
@@ -7685,6 +7911,18 @@ LRESULT APIENTRY MainWndProc(
                     (windowMod != 0 && !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, windowMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF))) {
 
                     MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.",
+                        APPNAME, MB_ICONERROR);
+                    showOptions = TRUE;
+                }
+            }
+            if (showOptions == FALSE && g_MirrorToggleKey) {
+                UINT mirrorCropMod = g_MirrorToggleMod ^ MOD_SHIFT;
+                UINT mirrorWindowMod = g_MirrorToggleMod ^ MOD_ALT;
+                if (!RegisterHotKey(hWnd, MIRROR_HOTKEY, g_MirrorToggleMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF) ||
+                    (mirrorCropMod != 0 && !RegisterHotKey(hWnd, MIRROR_CROP_HOTKEY, mirrorCropMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF)) ||
+                    (mirrorWindowMod != 0 && !RegisterHotKey(hWnd, MIRROR_WINDOW_HOTKEY, mirrorWindowMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF))) {
+
+                    MessageBox(hWnd, L"The specified mirror hotkey is already in use.\nSelect a different mirror hotkey.",
                         APPNAME, MB_ICONERROR);
                     showOptions = TRUE;
                 }
@@ -8446,6 +8684,147 @@ LRESULT APIENTRY MainWndProc(
                 StopRecording();
             }
             break;
+
+        case MIRROR_HOTKEY:
+        case MIRROR_CROP_HOTKEY:
+        case MIRROR_WINDOW_HOTKEY: {
+
+            //
+            // DemoMirror: mirror the screen, a region (Shift), or a window
+            // (Alt), including the mouse cursor, onto a second monitor on
+            // top of a slide show so the audience can follow a demo without
+            // the presenter leaving the presentation. Entered once to start
+            // mirroring and again to stop.
+            //
+            if( g_MirrorWindow.IsActive() ) {
+
+                g_MirrorWindow.Stop();
+                g_MirrorSelectRectangle.Stop();
+                break;
+            }
+
+            if( g_RecordCropping == TRUE || g_bSaveInProgress ) {
+
+                break;
+            }
+
+            bool mirrorCaptureSupported = false;
+            try {
+
+                mirrorCaptureSupported = winrt::GraphicsCaptureSession::IsSupported();
+            }
+            catch( const winrt::hresult_error& ) {}
+            if( !mirrorCaptureSupported ) {
+
+                MessageBox( hWnd, L"Screen mirroring requires Windows 10, May 2019 Update or higher.", APPNAME, MB_OK );
+                break;
+            }
+
+            HWND		hWndMirrorSource = NULL;
+            HMONITOR	mirrorSourceMonitor = NULL;
+            RECT		mirrorSourceRect = {};
+
+            if( wParam == MIRROR_WINDOW_HOTKEY ) {
+
+                // Mirror the top-level window under the cursor.
+                POINT mirrorPoint;
+                GetCursorPos( &mirrorPoint );
+                hWndMirrorSource = WindowFromPoint( mirrorPoint );
+                while( hWndMirrorSource != NULL && GetParent( hWndMirrorSource ) != NULL ) {
+
+                    hWndMirrorSource = GetParent( hWndMirrorSource );
+                }
+                if( hWndMirrorSource == NULL || hWndMirrorSource == GetDesktopWindow() ||
+                    hWndMirrorSource == hWnd ) {
+
+                    break;
+                }
+                mirrorSourceMonitor = MonitorFromWindow( hWndMirrorSource, MONITOR_DEFAULTTONEAREST );
+                mirrorSourceRect = MirrorWindow::GetWindowFrameRect( hWndMirrorSource );
+
+            } else if( wParam == MIRROR_CROP_HOTKEY ) {
+
+                // Select the region to mirror. The selection border stays up
+                // to show what's being mirrored; it is excluded from capture.
+                g_RecordCropping = TRUE;
+                g_MirrorSelectRectangle.BorderColor( MIRROR_BORDER_COLOR );
+                g_MirrorSelectRectangle.AspectRatio( 0.0 );
+                bool mirrorCanceled = !g_MirrorSelectRectangle.Start( nullptr, false, MIRROR_BORDER_COLOR );
+                g_RecordCropping = FALSE;
+                if( mirrorCanceled ) {
+
+                    break;
+                }
+                mirrorSourceRect = g_MirrorSelectRectangle.SelectedRect();
+                mirrorSourceMonitor = MonitorFromRect( &mirrorSourceRect, MONITOR_DEFAULTTONEAREST );
+
+                // The selection border defaults to translucent; make the
+                // mirror border fully opaque so it reads bright green.
+                SetLayeredWindowAttributes( g_MirrorSelectRectangle.Window(), 0, 255, LWA_ALPHA );
+
+            } else {
+
+                // Mirror the entire monitor under the cursor, with a
+                // full-monitor border showing that mirroring is active.
+                POINT mirrorPoint;
+                GetCursorPos( &mirrorPoint );
+                mirrorSourceMonitor = MonitorFromPoint( mirrorPoint, MONITOR_DEFAULTTONEAREST );
+                MONITORINFO mirrorMonitorInfo = { sizeof( mirrorMonitorInfo ) };
+                GetMonitorInfo( mirrorSourceMonitor, &mirrorMonitorInfo );
+                mirrorSourceRect = mirrorMonitorInfo.rcMonitor;
+
+                g_MirrorSelectRectangle.BorderColor( MIRROR_BORDER_COLOR );
+                g_MirrorSelectRectangle.AspectRatio( 0.0 );
+                g_MirrorSelectRectangle.Start( nullptr, true, MIRROR_BORDER_COLOR );
+                SetLayeredWindowAttributes( g_MirrorSelectRectangle.Window(), 0, 255, LWA_ALPHA );
+            }
+
+            HMONITOR mirrorTargetMonitor = FindMirrorTargetMonitor( mirrorSourceMonitor );
+            if( mirrorTargetMonitor == NULL ) {
+
+                g_MirrorSelectRectangle.Stop();
+                MessageBox( hWnd, L"Screen mirroring requires a second monitor.", APPNAME, MB_OK );
+                break;
+            }
+
+            // With window tracking, mirror the monitor region under the
+            // window instead of the window's own surface so ZoomIt zoom and
+            // draw annotations show in place.
+            bool mirrorTrackWindow = ( hWndMirrorSource != NULL && g_MirrorTrackWindow );
+
+            winrt::Windows::Graphics::Capture::GraphicsCaptureItem mirrorItem{ nullptr };
+            try {
+
+                if( hWndMirrorSource != NULL && !mirrorTrackWindow )
+                    mirrorItem = util::CreateCaptureItemForWindow( hWndMirrorSource );
+                else
+                    mirrorItem = util::CreateCaptureItemForMonitor( mirrorSourceMonitor );
+            }
+            catch( const winrt::hresult_error& ) {}
+
+            // Reports when a zoom/draw/live-zoom mode is active so a window
+            // mirror can temporarily capture the monitor instead - those
+            // modes render in overlay windows a window capture can't see.
+            auto mirrorAnnotationQuery = []() {
+                if( g_hWndLiveZoom != NULL && IsWindowVisible( g_hWndLiveZoom ))
+                    return MirrorWindow::AnnotationState::AnnotatingLiveZoom;
+                if( g_Zoomed )
+                    return MirrorWindow::AnnotationState::Annotating;
+                return MirrorWindow::AnnotationState::None;
+            };
+
+            HWND mirrorBorderWindow = hWndMirrorSource == NULL ? g_MirrorSelectRectangle.Window() : NULL;
+            if( mirrorItem == nullptr ||
+                !g_MirrorWindow.Start( mirrorItem, mirrorSourceRect, hWndMirrorSource,
+                                       mirrorSourceMonitor, mirrorTargetMonitor, hWnd,
+                                       mirrorAnnotationQuery, mirrorTrackWindow,
+                                       mirrorBorderWindow )) {
+
+                g_MirrorSelectRectangle.Stop();
+                MessageBox( hWnd, L"Unable to start screen mirroring.", APPNAME, MB_OK );
+            }
+            break;
+        }
 
         case ZOOM_HOTKEY:
             //
@@ -10130,6 +10509,12 @@ LRESULT APIENTRY MainWndProc(
         StopRecording();
         break;
 
+    case WM_USER_MIRROR_STOP:
+        // The mirrored window closed.
+        g_MirrorWindow.Stop();
+        g_MirrorSelectRectangle.Stop();
+        break;
+
     case WM_USER_RECORDING_STARTED:
         // The first video frame has been captured.  Change the selection
         // border from yellow to orange so the user knows recording is live.
@@ -10141,6 +10526,21 @@ LRESULT APIENTRY MainWndProc(
             OutputDebugStringW( dbg );
         }
         g_SelectRectangle.SetRecordingActive();
+        break;
+
+    case WM_USER_RECORDING_NO_FRAMES:
+        // The capture pipeline started but never delivered a single frame,
+        // so recording was aborted.  This is typical on headless / GPU-less
+        // virtual machines, cloud PCs, or remote sessions where
+        // Windows.Graphics.Capture cannot capture the display.  Tear down the
+        // recording border / state and tell the user why nothing was saved.
+        OutputDebugStringW( L"[RecBorder] WM_USER_RECORDING_NO_FRAMES received\n" );
+        StopRecording();
+        MessageBox( g_hWndMain,
+            L"ZoomIt could not capture any video from the display, so recording was cancelled.\n\n"
+            L"Screen recording uses Windows Graphics Capture, which needs a GPU-backed (WDDM) display. "
+            L"This is often unavailable on virtual machines, cloud PCs, or remote sessions that lack a virtual GPU.",
+            APPNAME, MB_OK | MB_ICONWARNING );
         break;
 
     case WM_USER_SAVE_CURSOR:
@@ -10254,9 +10654,12 @@ LRESULT APIENTRY MainWndProc(
         g_BreakToggleMod = GetKeyMod(g_BreakToggleKey);
         g_DemoTypeToggleMod = GetKeyMod(g_DemoTypeToggleKey);
         g_SnipToggleMod = GetKeyMod(g_SnipToggleKey);
+        g_SnipSaveToggleMod = GetKeyMod(g_SnipSaveToggleKey);
         g_SnipPanoramaToggleMod = GetKeyMod(g_SnipPanoramaToggleKey);
+        g_SnipPanoramaSaveToggleMod = GetKeyMod(g_SnipPanoramaSaveToggleKey);
         g_SnipOcrToggleMod = GetKeyMod(g_SnipOcrToggleKey);
         g_RecordToggleMod = GetKeyMod(g_RecordToggleKey);
+        g_MirrorToggleMod = GetKeyMod(g_MirrorToggleKey);
         BOOL showOptions = FALSE;
         if (g_ToggleKey)
         {
@@ -10317,8 +10720,7 @@ LRESULT APIENTRY MainWndProc(
         }
         if (g_SnipToggleKey)
         {
-            if (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF))
+            if (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF))
             {
                 if(!g_StartedByPowerToys)
                 {
@@ -10327,15 +10729,36 @@ LRESULT APIENTRY MainWndProc(
                 showOptions = TRUE;
             }
         }
+        if (g_SnipSaveToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified snip save hotkey is already in use.\nSelect a different snip save hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
         if (g_SnipPanoramaToggleKey &&
             (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod))
         {
-            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))
+            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))
             {
                 if(!g_StartedByPowerToys)
                 {
                     MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_SnipPanoramaSaveToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified panorama snip save hotkey is already in use.\nSelect a different panorama snip save hotkey.", APPNAME, MB_ICONERROR);
                 }
                 showOptions = TRUE;
             }
@@ -10362,6 +10785,21 @@ LRESULT APIENTRY MainWndProc(
                 if(!g_StartedByPowerToys)
                 {
                     MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_MirrorToggleKey)
+        {
+            UINT mirrorCropMod = g_MirrorToggleMod ^ MOD_SHIFT;
+            UINT mirrorWindowMod = g_MirrorToggleMod ^ MOD_ALT;
+            if (!RegisterHotKey(hWnd, MIRROR_HOTKEY, g_MirrorToggleMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF) ||
+                (mirrorCropMod != 0 && !RegisterHotKey(hWnd, MIRROR_CROP_HOTKEY, mirrorCropMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF)) ||
+                (mirrorWindowMod != 0 && !RegisterHotKey(hWnd, MIRROR_WINDOW_HOTKEY, mirrorWindowMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF)))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified mirror hotkey is already in use.\nSelect a different mirror hotkey.", APPNAME, MB_ICONERROR);
                 }
                 showOptions = TRUE;
             }
@@ -10493,14 +10931,21 @@ LRESULT APIENTRY MainWndProc(
             saveDialog->SetFileName( suggestedName.c_str() );
             saveDialog->SetTitle( L"ZoomIt: Save Zoomed Screen..." );
 
-            // Set default folder to the last save location if available
+            // Set default folder to the configured/last save location if available.
+            // The stored value may be a directory (a user-configured default folder)
+            // or a full file path (the last saved screenshot); handle both.
             if( !g_ScreenshotSaveLocation.empty() )
             {
                 std::filesystem::path lastPath( g_ScreenshotSaveLocation );
-                if( lastPath.has_parent_path() )
+                std::error_code ec;
+                std::filesystem::path folderPath =
+                    std::filesystem::is_directory( lastPath, ec )
+                        ? lastPath
+                        : lastPath.parent_path();
+                if( !folderPath.empty() )
                 {
                     wil::com_ptr<IShellItem> folderItem;
-                    if( SUCCEEDED( SHCreateItemFromParsingName( lastPath.parent_path().c_str(),
+                    if( SUCCEEDED( SHCreateItemFromParsingName( folderPath.c_str(),
                         nullptr, IID_PPV_ARGS( &folderItem ) ) ) )
                     {
                         saveDialog->SetFolder( folderItem.get() );
@@ -10598,6 +11043,49 @@ LRESULT APIENTRY MainWndProc(
                 g_ScreenshotSaveLocation = targetFilePath;
                 wcsncpy_s(g_ScreenshotSaveLocationBuffer, g_ScreenshotSaveLocation.c_str(), _TRUNCATE);
                 reg.WriteRegSettings(RegSettings);
+
+                // When enabled, also place the captured (actual-size) image on the
+                // clipboard so the snip is immediately available to paste. CF_BITMAP
+                // takes ownership of the handle, so hand it a dedicated copy.
+                if( g_SnipCopyToClipboard )
+                {
+                    wil::unique_hdc hdcClipboard( CreateCompatibleDC( hdcScreen ) );
+                    HBITMAP hbmClipboard =
+                        CreateCompatibleBitmap( hdcScreen, saveWidth, saveHeight );
+                    if( hdcClipboard && hbmClipboard )
+                    {
+                        HGDIOBJ hOldClip = SelectObject( hdcClipboard.get(), hbmClipboard );
+                        BitBlt( hdcClipboard.get(),
+                                0, 0,
+                                saveWidth, saveHeight,
+                                hdcActualSize.get(),
+                                0, 0,
+                                SRCCOPY );
+                        SelectObject( hdcClipboard.get(), hOldClip );
+
+                        bool ownershipTransferred = false;
+                        if( OpenClipboard( hWnd ) )
+                        {
+                            EmptyClipboard();
+                            // SetClipboardData only transfers ownership on success;
+                            // on failure the handle is still ours and must be freed.
+                            if( SetClipboardData( CF_BITMAP, hbmClipboard ) != nullptr )
+                            {
+                                ownershipTransferred = true;
+                            }
+                            CloseClipboard();
+                        }
+
+                        if( !ownershipTransferred )
+                        {
+                            DeleteObject( hbmClipboard );
+                        }
+                    }
+                    else if( hbmClipboard )
+                    {
+                        DeleteObject( hbmClipboard );
+                    }
+                }
             }
             g_bSaveInProgress = false;
 
