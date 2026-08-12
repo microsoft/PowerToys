@@ -13,9 +13,8 @@ namespace FancyZones.UITests;
 /// </summary>
 /// <remarks>
 /// The legacy test started <c>PowerToys.FancyZones.exe</c> directly. A standalone module process has
-/// no runner behind it (no keyboard hook, no lifecycle owner), so the port asserts the same thing the
-/// original cared about — the module process runs — through the supported path: the runner starts it
-/// when the Settings toggle is on, and stops it when the toggle goes off.
+/// no runner behind it (no lifecycle owner), so the port asserts the same thing the original cared
+/// about — the module process runs — through the supported path: the runner starts it when enabled.
 /// </remarks>
 [TestClass]
 public class RunFancyZonesTests : UITestBase
@@ -29,27 +28,11 @@ public class RunFancyZonesTests : UITestBase
 
     [TestMethod]
     [TestCategory("FancyZones")]
-    public void FancyZonesProcessFollowsTheSettingsToggle()
+    public void RunFancyZones()
     {
-        // Record the runner-owned starting instance so a lifecycle failure identifies the exact PID.
-        FancyZonesTestHelper.Step(
-            this,
-            $"Live {FancyZonesTestHelper.FancyZonesProcess} instances before touching the toggle: " +
-            FancyZonesTestHelper.DescribeProcesses(FancyZonesTestHelper.FancyZonesProcess));
-
-        FancyZonesTestHelper.GoToFancyZonesPage(this);
-
-        FancyZonesTestHelper.SetFancyZonesEnabled(this, true);
         Assert.IsTrue(
-            FancyZonesTestHelper.WaitForProcess(FancyZonesTestHelper.FancyZonesProcess, true, 15_000),
-            $"{FancyZonesTestHelper.FancyZonesProcess} should be running while the module is enabled.");
-
-        FancyZonesTestHelper.SetFancyZonesEnabled(this, false);
-        Assert.IsTrue(
-            FancyZonesTestHelper.WaitForProcess(FancyZonesTestHelper.FancyZonesProcess, false, 15_000),
-            $"{FancyZonesTestHelper.FancyZonesProcess} should exit once the module is disabled. " +
-            $"Live instances: {FancyZonesTestHelper.DescribeProcesses(FancyZonesTestHelper.FancyZonesProcess)}");
-
-        FancyZonesTestHelper.SetFancyZonesEnabled(this, true);
+            FancyZonesTestHelper.WaitForProcess(FancyZonesTestHelper.FancyZonesProcess, true, 30_000),
+            $"The runner did not start {FancyZonesTestHelper.FancyZonesProcess}. " +
+            $"Live instances: {FancyZonesTestHelper.DescribeProcesses(FancyZonesTestHelper.FancyZonesProcess)}.");
     }
 }

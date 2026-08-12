@@ -533,7 +533,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
 
     // Only suppress the bare Shift key itself during drag (used for drag-toggle).
     // Do NOT swallow Shift+<other key> combos - that steals keystrokes from apps.
-    if (m_draggingState.IsDragging() &&
+    if (m_windowMouseSnapper &&
         (info->vkCode == VK_LSHIFT || info->vkCode == VK_RSHIFT))
     {
         // Record the press before swallowing it. Returning 1 removes the key from the input stream

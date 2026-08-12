@@ -88,7 +88,9 @@ public class DragWindowTests : UITestBase
         Arrange(shiftDrag: true, mouseSwitch: false, transparent: false);
 
         StartDrag();
-        PressShiftDuringDrag();
+        Assert.IsTrue(
+            FancyZonesTestHelper.ActivateZonesWithShiftDuringDrag(this),
+            "Holding Shift during the drag never made the zones overlay visible.");
         Drop();
         KeyboardHelper.ReleaseKey(Key.LShift);
 
@@ -210,7 +212,9 @@ public class DragWindowTests : UITestBase
         Arrange(shiftDrag: true, mouseSwitch: true, transparent: false);
 
         StartDrag();
-        PressShiftDuringDrag();
+        Assert.IsTrue(
+            FancyZonesTestHelper.ActivateZonesWithShiftDuringDrag(this),
+            "Holding Shift during the drag never made the zones overlay visible.");
         ClickNonPrimaryButton();
         Drop();
         KeyboardHelper.ReleaseKey(Key.LShift);
@@ -315,13 +319,7 @@ public class DragWindowTests : UITestBase
     private void StartDrag()
     {
         var (centerX, centerY) = FancyZonesTestHelper.ScreenCenter();
-        var (left, top, right, bottom) = WindowHelper.GetWindowBounds(draggedWindow);
-
-        FancyZonesTestHelper.BeginWindowDrag(
-            this,
-            draggedWindow,
-            centerX - ((left + right) / 2),
-            centerY - ((top + bottom) / 2));
+        FancyZonesTestHelper.BeginWindowDrag(this, draggedWindow, centerX, centerY);
     }
 
     /// <summary>Release the drag and let FancyZones settle the snap.</summary>

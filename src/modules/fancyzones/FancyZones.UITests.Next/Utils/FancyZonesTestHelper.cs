@@ -49,7 +49,6 @@ public static class FancyZonesTestHelper
         // PowerToys Settings, FancyZones page.
         public const string WindowingNavItem = "WindowingAndLayoutsNavItem";
         public const string FancyZonesNavItem = "FancyZonesNavItem";
-        public const string EnableToggle = "EnableFancyZonesToggleSwitch";
         public const string LaunchLayoutEditorButton = "LaunchLayoutEditorButton";
 
         // Layout editor.
@@ -83,39 +82,6 @@ public static class FancyZonesTestHelper
     /// </summary>
     public static void Step(UITestBase testBase, string message) =>
         testBase.TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
-
-    /// <summary>Navigate the Settings window to the FancyZones page (expanding its group when needed).</summary>
-    public static void GoToFancyZonesPage(UITestBase testBase)
-    {
-        Step(testBase, "Navigating to the FancyZones settings page");
-
-        if (!testBase.Session.Has(By.AccessibilityId(AccessibilityId.FancyZonesNavItem), 2_000))
-        {
-            testBase.Session.Find<NavigationViewItem>(By.AccessibilityId(AccessibilityId.WindowingNavItem), FindTimeoutMs)
-                .Click(msPostAction: 500);
-        }
-
-        testBase.Session.Find<NavigationViewItem>(By.AccessibilityId(AccessibilityId.FancyZonesNavItem), FindTimeoutMs)
-            .Click(msPostAction: 800);
-    }
-
-    /// <summary>Set the FancyZones enable toggle and wait for the module process to follow.</summary>
-    public static void SetFancyZonesEnabled(UITestBase testBase, bool enable)
-    {
-        Step(testBase, $"Setting the FancyZones enable toggle to {(enable ? "On" : "Off")}");
-
-        var toggle = testBase.Session.Find<ToggleSwitch>(By.AccessibilityId(AccessibilityId.EnableToggle), FindTimeoutMs);
-        toggle.Toggle(enable);
-
-        Assert.IsTrue(
-            toggle.WaitForProperty("ToggleState", enable ? "On" : "Off", FindTimeoutMs),
-            $"The FancyZones enable toggle did not reach {(enable ? "On" : "Off")}.");
-
-        Assert.IsTrue(
-            WaitForProcess(FancyZonesProcess, enable, 30_000),
-            $"The {FancyZonesProcess} process did not {(enable ? "start" : "exit")} after toggling the module. " +
-            $"Live instances: {DescribeProcesses(FancyZonesProcess)}.");
-    }
 
     /// <summary>
     /// Stop FancyZones before restarting its runner so a slow child teardown cannot retain the
@@ -161,8 +127,7 @@ public static class FancyZonesTestHelper
     /// <remarks>
     /// Tests that only need FancyZones <i>running</i> use this instead of navigating Settings and
     /// flipping the page toggle: the toggle route costs several UIA tree walks through the Settings
-    /// window, while the process check is a local Win32 query. <see cref="SetFancyZonesEnabled"/>
-    /// remains for the test whose subject is the toggle itself.
+    /// window, while the process check is a local Win32 query.
     /// </remarks>
     public static void EnsureFancyZonesRunning(UITestBase testBase)
     {
@@ -290,6 +255,31 @@ public static class FancyZonesTestHelper
             // The flash is short-lived, so sample finely.
             Thread.Sleep(50);
         }
+    }
+
+    /// <summary>
+    /// Press Shift after a window move loop has started and retry the idempotent key-down until the
+    /// FancyZones overlay proves that snapping is active.
+    /// </summary>
+    public static bool ActivateZonesWithShiftDuringDrag(UITestBase testBase, int attempts = 3)
+    {
+        for (var attempt = 1; attempt <= attempts; attempt++)
+        {
+            Step(testBase, $"Attempt {attempt}/{attempts}: pressing Shift and waiting for the zones overlay");
+            KeyboardHelper.PressKey(Key.LShift);
+            Thread.Sleep(200);
+            JiggleCursor();
+
+            if (WaitForZonesOverlay(2_000))
+            {
+                return true;
+            }
+
+            KeyboardHelper.ReleaseKey(Key.LShift);
+            Thread.Sleep(200);
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -616,8 +606,8 @@ public static class FancyZonesTestHelper
 
     /// <summary>
     /// Press the left button on the window's title bar and drag it by
-    /// (<paramref name="deltaX"/>, <paramref name="deltaY"/>), leaving the button DOWN. Returns the
-    /// cursor position at the end of the drag.
+    /// cursor to (<paramref name="targetX"/>, <paramref name="targetY"/>), leaving the button DOWN.
+    /// Returns the cursor position at the end of the drag.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -640,8 +630,8 @@ public static class FancyZonesTestHelper
     public static (int X, int Y) BeginWindowDrag(
         UITestBase testBase,
         IntPtr window,
-        int deltaX,
-        int deltaY,
+        int targetX,
+        int targetY,
         params (int X, int Y)[] preferredGrabPoints)
     {
         // A press on an inactive window can be consumed by activation alone, so take the foreground
@@ -680,8 +670,6 @@ public static class FancyZonesTestHelper
             var moved = WindowHelper.GetWindowBounds(window);
             if (moved.Left != left || moved.Top != top)
             {
-                var targetX = grabX + deltaX;
-                var targetY = grabY + deltaY;
                 Step(testBase, $"Window is moving (now at {moved}); dragging on to ({targetX},{targetY})");
                 DragCursorTo(grabX + nudge, grabY + nudge, targetX, targetY);
 

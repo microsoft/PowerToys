@@ -19,15 +19,15 @@ namespace FancyZones.UITests;
 /// that move themselves rather than running the standard <c>DefWindowProc</c> move loop, so
 /// FancyZones never observes the drag and neither window ever snaps (see <see cref="DragWindowTests"/>).
 /// The port snaps two File Explorer windows opened at different folders instead: classic Win32
-/// windows with distinct titles, which is what the switching assertions need. "Both landed in the
-/// same zone" is asserted from the window rectangles rather than <c>app-zone-history.json</c>, since
-/// two Explorer windows share one app-path entry.
+/// windows with distinct titles, which is what the switching assertions need. Since two Explorer
+/// windows share one <c>app-zone-history.json</c> entry, each exact HWND is verified through the
+/// <c>FancyZones_zones</c> property the product stamps when it assigns that window to a zone.
 /// </remarks>
 [TestClass]
 public class OneZoneSwitchTests : UITestBase
 {
-    /// <summary>Windows may inset a snapped window slightly; compare rectangles with a tolerance.</summary>
-    private const int SnapTolerance = 24;
+    private const string ZonedWindowProperty = "FancyZones_zones";
+    private const long RightZoneBitmask = 1L << 1;
 
     private readonly FancyZonesFiles files = new();
 
@@ -190,27 +190,24 @@ public class OneZoneSwitchTests : UITestBase
             "The two Explorer windows must have distinct titles for the switching assertions to mean anything.");
 
         var (targetX, targetY) = RightZoneCenter();
-        SnapWindowToPoint(first, targetX, targetY, firstTitle);
-        SnapWindowToPoint(second, targetX, targetY, secondTitle);
+        var firstZone = SnapWindowToPoint(first, targetX, targetY, firstTitle);
+        var secondZone = SnapWindowToPoint(second, targetX, targetY, secondTitle);
 
         var firstBounds = WindowHelper.GetWindowBounds(first);
         var secondBounds = WindowHelper.GetWindowBounds(second);
         FancyZonesTestHelper.Step(this, $"Snapped bounds: '{firstTitle}' {firstBounds}, '{secondTitle}' {secondBounds}");
 
-        Assert.IsTrue(
-            IsSameZone(firstBounds, secondBounds),
-            $"Both windows should occupy the same zone, but '{firstTitle}' is at {firstBounds} and '{secondTitle}' is at {secondBounds}.");
+        Assert.AreEqual(
+            RightZoneBitmask,
+            firstZone,
+            $"'{firstTitle}' should be stamped into the right zone, but its bitmask is 0x{firstZone:X}.");
+        Assert.AreEqual(
+            firstZone,
+            secondZone,
+            $"Both windows should occupy the same zone, but their bitmasks are 0x{firstZone:X} and 0x{secondZone:X}.");
 
         return (firstTitle, secondTitle);
     }
-
-    private static bool IsSameZone(
-        (int Left, int Top, int Right, int Bottom) a,
-        (int Left, int Top, int Right, int Bottom) b) =>
-        Math.Abs(a.Left - b.Left) <= SnapTolerance &&
-        Math.Abs(a.Top - b.Top) <= SnapTolerance &&
-        Math.Abs(a.Right - b.Right) <= SnapTolerance &&
-        Math.Abs(a.Bottom - b.Bottom) <= SnapTolerance;
 
     /// <summary>Centre of the right-hand zone of the seeded two-column layout.</summary>
     private static (int X, int Y) RightZoneCenter()
@@ -225,9 +222,9 @@ public class OneZoneSwitchTests : UITestBase
     /// zone highlight leaves the window unsnapped at the drop point, which would otherwise surface as a
     /// confusing "both windows should occupy the same zone" failure in the switching assertions.
     /// </remarks>
-    private void SnapWindowToPoint(IntPtr window, int targetX, int targetY, string label)
+    private long SnapWindowToPoint(IntPtr window, int targetX, int targetY, string label)
     {
-        const int attempts = 2;
+        const int attempts = 3;
 
         for (var attempt = 1; attempt <= attempts; attempt++)
         {
@@ -238,30 +235,47 @@ public class OneZoneSwitchTests : UITestBase
             WindowHelper.SetWindowSize(window, WindowSize.Medium);
             Thread.Sleep(500);
 
-            var (left, top, right, bottom) = WindowHelper.GetWindowBounds(window);
-
-            KeyboardHelper.PressKey(Key.LShift);
-            FancyZonesTestHelper.BeginWindowDrag(
-                this,
-                window,
-                targetX - ((left + right) / 2),
-                targetY - ((top + bottom) / 2));
+            FancyZonesTestHelper.BeginWindowDrag(this, window, targetX, targetY);
+            var zonesActivated = FancyZonesTestHelper.ActivateZonesWithShiftDuringDrag(this);
             MouseHelper.LeftUp();
             KeyboardHelper.ReleaseKey(Key.LShift);
 
             Thread.Sleep(1500);
 
-            // A snapped window takes the zone's size; one that missed keeps the size it was dragged at.
             var after = WindowHelper.GetWindowBounds(window);
-            if (after.Right - after.Left != right - left || after.Bottom - after.Top != bottom - top)
+            var zoneBitmask = WaitForZoneBitmask(window, 3_000);
+            if (zoneBitmask != 0)
             {
-                return;
+                FancyZonesTestHelper.Step(this, $"'{label}' snapped with zone bitmask 0x{zoneBitmask:X} at {after}");
+                return zoneBitmask;
             }
 
             FancyZonesTestHelper.Step(
                 this,
-                $"'{label}' is still at its dragged size {after}, so the drop did not snap (attempt {attempt}/{attempts})");
+                $"'{label}' was not stamped as zoned at {after}; overlay activated={zonesActivated} (attempt {attempt}/{attempts})");
         }
+
+        Assert.Fail($"Could not snap '{label}' after {attempts} attempts.");
+        return 0;
+    }
+
+    private static long WaitForZoneBitmask(IntPtr window, int timeoutMs)
+    {
+        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+        long bitmask;
+        do
+        {
+            bitmask = WindowHelper.GetWindowPropertyValue(window, ZonedWindowProperty);
+            if (bitmask != 0)
+            {
+                return bitmask;
+            }
+
+            Thread.Sleep(200);
+        }
+        while (DateTime.UtcNow < deadline);
+
+        return 0;
     }
 
     private void CloseExtraVirtualDesktop()

@@ -74,6 +74,9 @@ public static class WindowHelper
     [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW", SetLastError = true)]
     private static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
 
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    private static extern IntPtr GetPropW(IntPtr hWnd, string lpString);
+
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GetLayeredWindowAttributes(IntPtr hWnd, out uint crKey, out byte bAlpha, out uint dwFlags);
@@ -167,6 +170,13 @@ public static class WindowHelper
         }
 
         return (0, 0, 0, 0);
+    }
+
+    /// <summary>Read a named Win32 property stamped on a window, or zero when it is absent.</summary>
+    public static long GetWindowPropertyValue(IntPtr hWnd, string propertyName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
+        return GetPropW(hWnd, propertyName).ToInt64();
     }
 
     /// <summary>
