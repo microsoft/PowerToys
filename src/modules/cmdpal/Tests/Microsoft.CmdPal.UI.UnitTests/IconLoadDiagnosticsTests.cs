@@ -247,7 +247,11 @@ public class IconLoadDiagnosticsTests
     [DataTestMethod]
     [DataRow("|Swatch|#FF0067C0|", "GeneratedSwatch")]
     [DataRow("|Initials|CP|#FF005FB8|square|", "GeneratedInitials")]
-    public void GeneratedIconProtocolUsesSpecificInputKind(string icon, string expectedKind)
+    [DataRow("|Svg|C:\\Icons\\plain.svg", "SvgFile")]
+    [DataRow("|Svg|<svg xmlns=\"http://www.w3.org/2000/svg\"/>", "SvgInline")]
+    [DataRow("|ThemedSvg|warning|C:\\Icons\\themed.svg", "ThemedSvgFile")]
+    [DataRow("|ThemedSvg|#7A3E9D|<svg xmlns=\"http://www.w3.org/2000/svg\"/>", "ThemedSvgInline")]
+    public void SpecialIconProtocolsUseSpecificInputKind(string icon, string expectedKind)
     {
         IconLoadDiagnostics.Start();
         var request = IconLoadDiagnostics.BeginRequest(IconRequestReason.SourceChanged, 1.0);
