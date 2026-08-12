@@ -473,10 +473,17 @@
                             HorizontalAlignment="Left"
                             AutomationProperties.AccessibilityView="Raw"
                             DiagnosticScope="HeroImage"
+                            PreferFallbackSourceForFontIcons="True"
                             RequestSite="Details"
                             SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
                             SourceRequested="{x:Bind help:IconProvider.SourceRequested64}"
-                            Visibility="{x:Bind HasHeroImage, Mode=OneWay}" />
+                            Visibility="{x:Bind HasHeroImage, Mode=OneWay}">
+                            <cpcontrols:IconBox.FallbackSource>
+                                <BitmapIconSource
+                                    ShowAsMonochrome="False"
+                                    UriSource="ms-appx:///Assets/Icons/ExtensionIconPlaceholder.png" />
+                            </cpcontrols:IconBox.FallbackSource>
+                        </cpcontrols:IconBox>
 
                         <TextBlock
                             Grid.Row="1"
