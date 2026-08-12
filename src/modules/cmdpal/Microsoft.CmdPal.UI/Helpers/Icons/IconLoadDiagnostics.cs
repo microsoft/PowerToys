@@ -247,6 +247,22 @@ internal static class IconLoadDiagnostics
         return new DemandedIdleCapacityMeasurement(session, startedAt);
     }
 
+    internal static SpeculativeDispatchDeferralMeasurement? BeginSpeculativeDispatchDeferral(
+        int speculativeQueueDepth,
+        int workerCount,
+        int reservedWorkerSlots)
+    {
+        var session = Volatile.Read(ref _activeSession);
+        if (session is null)
+        {
+            return null;
+        }
+
+        var startedAt = Stopwatch.GetTimestamp();
+        session.RecordSpeculativeDispatchDeferralStarted(speculativeQueueDepth, workerCount, reservedWorkerSlots);
+        return new SpeculativeDispatchDeferralMeasurement(session, startedAt, workerCount);
+    }
+
     private static IconLoadInputKind ClassifyInput(string? iconString, bool hasStream)
     {
         if (!string.IsNullOrEmpty(iconString))
@@ -412,6 +428,42 @@ internal static class IconLoadDiagnostics
             if (Interlocked.Exchange(ref _completed, 1) == 0)
             {
                 _session.RecordDemandedIdleCapacityCompleted(Stopwatch.GetTimestamp() - _startedAt);
+            }
+        }
+    }
+
+    internal sealed class SpeculativeDispatchDeferralMeasurement
+    {
+        private readonly IconLoadDiagnosticsSession _session;
+        private readonly long _startedAt;
+        private readonly int _workerCount;
+        private int _completed;
+
+        public SpeculativeDispatchDeferralMeasurement(
+            IconLoadDiagnosticsSession session,
+            long startedAt,
+            int workerCount)
+        {
+            _session = session;
+            _startedAt = startedAt;
+            _workerCount = workerCount;
+        }
+
+        public bool IsForActiveSession => ReferenceEquals(_session, Volatile.Read(ref _activeSession));
+
+        public void Observe(int speculativeQueueDepth, int reservedWorkerSlots)
+        {
+            _session.RecordSpeculativeDispatchDeferralObserved(
+                speculativeQueueDepth,
+                _workerCount,
+                reservedWorkerSlots);
+        }
+
+        public void Complete()
+        {
+            if (Interlocked.Exchange(ref _completed, 1) == 0)
+            {
+                _session.RecordSpeculativeDispatchDeferralCompleted(Stopwatch.GetTimestamp() - _startedAt);
             }
         }
     }

@@ -51,8 +51,9 @@ public sealed class IconLoadEventSourceTests
         log.DispatcherUiSliceCompleted(11, 14, 52, 53, isDemanded: true, 54);
         log.DispatcherAsyncSuspensionCompleted(11, 14, 55, isDemanded: false, 56);
         log.UiResponsivenessProbeCompleted(11, 57);
+        log.SpeculativeDispatchDeferralCompleted(11, 69);
 
-        Assert.AreEqual(30, listener.Events.Count);
+        Assert.AreEqual(31, listener.Events.Count);
         Assert.IsFalse(listener.Events.Any(e => e.EventId == 0), listener.GetEventSourceErrors());
 
         CollectionAssert.AreEqual(
@@ -88,6 +89,9 @@ public sealed class IconLoadEventSourceTests
         CollectionAssert.AreEqual(
             new object?[] { 11L, 14L, 55, false, 56L },
             listener.GetEvent(36).Payload!.ToArray());
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 69L },
+            listener.GetEvent(38).Payload!.ToArray());
     }
 
     private sealed class CollectingEventListener : EventListener
