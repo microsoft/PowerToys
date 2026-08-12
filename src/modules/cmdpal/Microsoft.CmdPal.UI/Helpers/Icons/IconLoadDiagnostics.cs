@@ -277,6 +277,11 @@ internal static class IconLoadDiagnostics
     {
         if (!string.IsNullOrEmpty(iconString))
         {
+            if (IconProtocolRegistry.Find(iconString) is { } protocolProcessor)
+            {
+                return protocolProcessor.ClassifyInput(iconString);
+            }
+
             var path = iconString.AsSpan();
             var comma = path.IndexOf(',');
             if (comma >= 0)

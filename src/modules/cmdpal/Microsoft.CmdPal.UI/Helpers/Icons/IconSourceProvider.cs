@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 
@@ -30,7 +31,8 @@ internal sealed class IconSourceProvider : IIconSourceProvider
         IconDataViewModel icon,
         double scale,
         IconRequestMeasurement diagnostics = default,
-        IIconRequestDemand? demand = null)
+        IIconRequestDemand? demand = null,
+        ElementTheme theme = ElementTheme.Default)
     {
         var tcs = new TaskCompletionSource<IconSource?>(TaskCreationOptions.RunContinuationsAsynchronously);
         IconLoadMeasurement? loadDiagnostics = null;
@@ -63,6 +65,7 @@ internal sealed class IconSourceProvider : IIconSourceProvider
                     streamReference,
                     _iconSize,
                     scale,
+                    theme,
                     tcs,
                     _isPriority ? IconLoadPriority.High : IconLoadPriority.Low,
                     loadDiagnostics,
