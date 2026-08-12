@@ -4,6 +4,7 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <MSTestVersion>3.8.3</MSTestVersion>
   </PropertyGroup>
+  <!-- Keep .NET servicing package versions aligned with exactVersion for .NET 10 in .pipelines/v2/templates/job-build-project.yml. -->
   <ItemGroup>
     <PackageVersion Include="AdaptiveCards.ObjectModel.WinUI3" Version="2.0.2-beta" />
     <PackageVersion Include="AdaptiveCards.Rendering.WinUI3" Version="2.2.4-beta" />
