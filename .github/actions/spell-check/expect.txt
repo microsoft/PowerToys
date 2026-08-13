@@ -238,6 +238,7 @@ closesocket
 clp
 CLSCTX
 CLSIDs
+CLOSEAPP
 clsids
 Clusion
 cmder

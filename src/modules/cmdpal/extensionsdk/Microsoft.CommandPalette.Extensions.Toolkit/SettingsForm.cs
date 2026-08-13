@@ -30,7 +30,7 @@ public partial class SettingsForm : FormContent
         // current settings value.
         TemplateJson = _settings.ToFormJson();
 
-        _settings.Update(inputs);
+        _settings.UpdateFromForm(inputs);
         _settings.RaiseSettingsChanged();
 
         return CommandResult.GoHome();

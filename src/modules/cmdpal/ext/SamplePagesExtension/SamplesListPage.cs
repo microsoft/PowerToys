@@ -130,6 +130,11 @@ public partial class SamplesListPage : ListPage
             Title = "Sample settings page",
             Subtitle = "A demo of the settings helpers",
         },
+        new ListItem(new SampleListSettingsPage())
+        {
+            Title = "Path and list settings controls",
+            Subtitle = "Manage strings, file paths, and escaped key/value pairs",
+        },
 
         // Data package samples
         new ListItem(new SampleDataTransferPage())

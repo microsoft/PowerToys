@@ -108,7 +108,7 @@
                             IsEnabled="{x:Bind ViewModel.IsIncludePrereleaseUpdatesCardEnabled, Mode=OneWay}">
                             <tkcontrols:SettingsExpander.Description>
                                 <StackPanel Orientation="Vertical">
-                                    <ptcontrols:IsEnabledTextBlock x:Uid="GeneralPage_UpdateChannelDescription" Style="{StaticResource SecondaryTextStyle}" />
+                                    <ptcontrols:IsEnabledTextBlock x:Uid="GeneralPage_UpdateChannelDescription" Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
                                     <HyperlinkButton
                                         x:Uid="GeneralPage_UpdateChannelLearnMore"
                                         Margin="0,2,0,0"
