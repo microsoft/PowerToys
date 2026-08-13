@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.UpdateDebugControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Visibility="Collapsed"
+    mc:Ignorable="d">
+
+    <Grid ColumnSpacing="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <ComboBox
+            x:Name="DebugPreviewStateComboBox"
+            MinWidth="220"
+            AutomationProperties.AutomationId="UpdatePreviewStateComboBox"
+            SelectionChanged="DebugPreviewStateComboBox_SelectionChanged">
+            <ComboBoxItem AutomationProperties.AutomationId="UpdatePreviewLiveState" Content="Live updater state" />
+            <ComboBoxItem AutomationProperties.AutomationId="UpdatePreviewUpToDate" Content="Up to date" />
+            <ComboBoxItem AutomationProperties.AutomationId="UpdatePreviewChecking" Content="Checking for updates" />
+            <ComboBoxItem AutomationProperties.AutomationId="UpdatePreviewNetworkError" Content="Network error" />
+            <ComboBoxItem AutomationProperties.AutomationId="UpdatePreviewAvailable" Content="Update available" />
+            <ComboBoxItem AutomationProperties.AutomationId="UpdatePreviewDownloading" Content="Downloading" />
+            <ComboBoxItem AutomationProperties.AutomationId="UpdatePreviewReadyToInstall" Content="Ready to install" />
+            <ComboBoxItem AutomationProperties.AutomationId="UpdatePreviewDownloadError" Content="Download error" />
+        </ComboBox>
+        <Button
+            x:Name="DebugRunFlowButton"
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            AutomationProperties.AutomationId="RunUpdatePreviewFlowButton"
+            Click="DebugRunFlowButton_Click"
+            Content="Run flow" />
+    </Grid>
+</UserControl>
