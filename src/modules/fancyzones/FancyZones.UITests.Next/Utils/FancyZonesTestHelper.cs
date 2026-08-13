@@ -513,7 +513,8 @@ public static class FancyZonesTestHelper
     /// <c>EVENT_SYSTEM_MOVESIZESTART</c> — the event FancyZones listens to. A WinUI 3 window such as
     /// PowerToys Settings implements its custom title bar in user space and moves itself with
     /// <c>SetWindowPos</c>, so dragging it moves the window without FancyZones ever seeing a drag and
-    /// no zones are drawn.
+    /// no zones are drawn. The returned HWND has stable title/bounds but is not guaranteed foreground;
+    /// callers must acquire foreground at the physical-input boundary.
     /// </summary>
     public static IntPtr OpenExplorerWindow(UITestBase testBase, string? folder = null, int timeoutMs = 30_000)
     {
@@ -534,27 +535,30 @@ public static class FancyZonesTestHelper
             var fresh = ExplorerWindows().FirstOrDefault(w => !existing.Contains(w.Hwnd));
             if (fresh.Hwnd != IntPtr.Zero)
             {
+                (string Title, (int Left, int Top, int Right, int Bottom) Bounds)? previous = null;
                 var ready = WaitHelper.WaitForStable(
                     () =>
                     {
                         var current = ExplorerWindows().FirstOrDefault(w => w.Hwnd == fresh.Hwnd);
                         var bounds = WindowHelper.GetWindowBounds(fresh.Hwnd);
-                        return current.Hwnd == fresh.Hwnd &&
-                               !string.IsNullOrWhiteSpace(current.Title) &&
-                               bounds.Right - bounds.Left > 300 &&
-                               bounds.Bottom - bounds.Top > 200 &&
-                               WindowControl.GetForegroundWindowHandle() == fresh.Hwnd;
+                        var observation = (current.Title, bounds);
+                        var stable = current.Hwnd == fresh.Hwnd &&
+                                     !string.IsNullOrWhiteSpace(current.Title) &&
+                                     bounds.Right - bounds.Left > 300 &&
+                                     bounds.Bottom - bounds.Top > 200 &&
+                                     previous == observation;
+                        previous = observation;
+                        return stable;
                     },
                     value => value,
                     10_000,
                     requiredConsecutiveMatches: 3,
-                    pollIntervalMS: 200,
-                    recover: _ => WindowControl.TryBringToForeground(fresh.Hwnd));
+                    pollIntervalMS: 200);
 
                 Assert.IsTrue(
                     ready.Succeeded,
-                    $"Explorer window {fresh.Hwnd} appeared but never became a stable foreground window. " +
-                    $"Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
+                    $"Explorer window {fresh.Hwnd} appeared but its title and bounds never stabilized. " +
+                    $"Last title: '{GetWindowTitle(fresh.Hwnd)}'; bounds: {WindowHelper.GetWindowBounds(fresh.Hwnd)}.");
 
                 Step(testBase, $"Explorer window {fresh.Hwnd} ready ('{GetWindowTitle(fresh.Hwnd)}')");
                 return fresh.Hwnd;
@@ -644,49 +648,56 @@ public static class FancyZonesTestHelper
         int targetY,
         params (int X, int Y)[] preferredGrabPoints)
     {
-        // A press on an inactive window can be consumed by activation alone, so take the foreground
-        // first and confirm it, rather than spending a candidate on it.
-        WindowControl.TryBringToForeground(window);
-        if (!WindowControl.WaitForForeground(window, 5_000, 2))
-        {
-            Step(testBase, $"The window never took the foreground; current owner: {WindowControl.GetForegroundWindowInfo()}.");
-            return false;
-        }
-
-        var (left, top, right, _) = WindowHelper.GetWindowBounds(window);
-        var width = right - left;
+        var originalBounds = WindowHelper.GetWindowBounds(window);
+        var originalWidth = originalBounds.Right - originalBounds.Left;
+        var originalHeight = originalBounds.Bottom - originalBounds.Top;
         const int nudge = 60;
 
-        // Points supplied by the caller (derived from real chrome) first, then generic fallbacks that
-        // avoid the left icons, a centred title-bar control and the right-hand caption buttons.
-        (int X, int Y)[] candidates =
-        [
-            .. preferredGrabPoints,
-            (left + (width / 2), top + 16),
-            (left + 150, top + 20),
-            (left + width - 200, top + 20),
-            (left + (width / 3), top + 12),
-            (left + 70, top + 25),
-        ];
+        // Convert caller-supplied absolute points to window-relative offsets so they can be
+        // recomputed after a failed attempt moves or restores the window.
+        var preferredOffsets = preferredGrabPoints
+            .Select(point => (X: point.X - originalBounds.Left, Y: point.Y - originalBounds.Top))
+            .ToArray();
+        var candidateCount = preferredOffsets.Length + 5;
 
-        foreach (var (grabX, grabY) in candidates)
+        for (var candidateIndex = 0; candidateIndex < candidateCount; candidateIndex++)
         {
+            // A failed press can begin a desktop selection drag while Explorer is still rendering.
+            // Reset the whole acquisition before every candidate, then derive the next point from
+            // the current rectangle rather than stale pre-attempt coordinates.
+            MouseHelper.LeftUp();
+            WindowHelper.RestoreWindow(window);
+            WindowHelper.MoveWindow(window, originalBounds.Left, originalBounds.Top);
+            WindowHelper.SetMainWindowSize(window, originalWidth, originalHeight);
             WindowControl.TryBringToForeground(window);
-            if (!WindowControl.WaitForForeground(window, 3_000, 2))
+
+            if (!TryGetStableGrabPoint(window, candidateIndex, preferredOffsets, out var grabPoint))
             {
-                Step(testBase, $"Could not reacquire foreground before grabbing ({grabX},{grabY})");
+                Step(
+                    testBase,
+                    $"Candidate {candidateIndex + 1}/{candidateCount} never became owned by HWND {window}; " +
+                    $"bounds {WindowHelper.GetWindowBounds(window)}, foreground {WindowControl.GetForegroundWindowInfo()}");
                 continue;
             }
 
+            var (grabX, grabY) = grabPoint;
             Step(testBase, $"Grabbing the window at ({grabX},{grabY})");
             MouseHelper.MoveTo(grabX, grabY);
             Thread.Sleep(300);
+
+            if (!WindowControl.IsPointOwnedByWindow(window, grabX, grabY))
+            {
+                Step(testBase, "The grab point stopped belonging to the target before mouse-down; recomputing the next candidate");
+                continue;
+            }
+
+            var before = WindowHelper.GetWindowBounds(window);
             MouseHelper.LeftDown();
             Thread.Sleep(300);
             DragCursorTo(grabX, grabY, grabX + nudge, grabY + nudge);
 
             var moved = WindowHelper.GetWindowBounds(window);
-            if ((moved.Left != left || moved.Top != top) && WindowControl.GetForegroundWindowHandle() == window)
+            if ((moved.Left != before.Left || moved.Top != before.Top) && WindowControl.GetForegroundWindowHandle() == window)
             {
                 Step(testBase, $"Window is moving (now at {moved}); dragging on to ({targetX},{targetY})");
                 DragCursorTo(grabX + nudge, grabY + nudge, targetX, targetY);
@@ -706,9 +717,67 @@ public static class FancyZonesTestHelper
 
         Step(
             testBase,
-            $"Could not start a title-bar drag: none of {candidates.Length} candidate grab points moved the window " +
-            $"at ({left},{top},{right}). Foreground owner: {WindowControl.GetForegroundWindowInfo()}");
+            $"Could not start a title-bar drag: none of {candidateCount} recomputed candidate points moved HWND {window}. " +
+            $"Bounds: {WindowHelper.GetWindowBounds(window)}. Foreground owner: {WindowControl.GetForegroundWindowInfo()}");
         return false;
+    }
+
+    private static bool TryGetStableGrabPoint(
+        IntPtr window,
+        int candidateIndex,
+        IReadOnlyList<(int X, int Y)> preferredOffsets,
+        out (int X, int Y) grabPoint)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        var consecutiveMatches = 0;
+        var previousBounds = (Left: 0, Top: 0, Right: 0, Bottom: 0);
+        grabPoint = default;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            WindowControl.TryBringToForeground(window);
+            var bounds = WindowHelper.GetWindowBounds(window);
+            var point = ResolveGrabPoint(candidateIndex, preferredOffsets, bounds);
+            var ready = bounds.Right > bounds.Left &&
+                        bounds.Bottom > bounds.Top &&
+                        bounds == previousBounds &&
+                        WindowControl.GetForegroundWindowHandle() == window &&
+                        WindowControl.IsPointOwnedByWindow(window, point.X, point.Y);
+
+            consecutiveMatches = ready ? consecutiveMatches + 1 : 0;
+            if (consecutiveMatches >= 4)
+            {
+                grabPoint = point;
+                return true;
+            }
+
+            previousBounds = bounds;
+            Thread.Sleep(200);
+        }
+
+        return false;
+    }
+
+    private static (int X, int Y) ResolveGrabPoint(
+        int candidateIndex,
+        IReadOnlyList<(int X, int Y)> preferredOffsets,
+        (int Left, int Top, int Right, int Bottom) bounds)
+    {
+        if (candidateIndex < preferredOffsets.Count)
+        {
+            var offset = preferredOffsets[candidateIndex];
+            return (bounds.Left + offset.X, bounds.Top + offset.Y);
+        }
+
+        var width = bounds.Right - bounds.Left;
+        return (candidateIndex - preferredOffsets.Count) switch
+        {
+            0 => (bounds.Left + (width / 2), bounds.Top + 16),
+            1 => (bounds.Left + 150, bounds.Top + 20),
+            2 => (bounds.Left + width - 200, bounds.Top + 20),
+            3 => (bounds.Left + (width / 3), bounds.Top + 12),
+            _ => (bounds.Left + 70, bounds.Top + 25),
+        };
     }
 
     /// <summary>
@@ -758,5 +827,4 @@ public static class FancyZonesTestHelper
         MouseHelper.MoveTo(toX, toY);
         Thread.Sleep(300);
     }
-
 }

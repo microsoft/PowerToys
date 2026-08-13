@@ -63,6 +63,12 @@ public static class WindowControl
     [DllImport("user32.dll")]
     private static extern IntPtr GetForegroundWindow();
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr WindowFromPoint(POINT point);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetAncestor(IntPtr hWnd, uint gaFlags);
+
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, [MarshalAs(UnmanagedType.Bool)] bool fAttach);
@@ -82,6 +88,7 @@ public static class WindowControl
 
     private const uint WM_CLOSE = 0x0010;
     private const uint WM_CONTEXTMENU = 0x007B;
+    private const uint GaRoot = 2;
     private const int SW_RESTORE = 9;
 
     [StructLayout(LayoutKind.Sequential)]
@@ -91,6 +98,13 @@ public static class WindowControl
         public int Top;
         public int Right;
         public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT
+    {
+        public int X;
+        public int Y;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -397,6 +411,25 @@ public static class WindowControl
 
     /// <summary>Return the current foreground window handle.</summary>
     public static IntPtr GetForegroundWindowHandle() => GetForegroundWindow();
+
+    /// <summary>Whether the root window under a screen point is the expected HWND.</summary>
+    public static bool IsPointOwnedByWindow(IntPtr window, int x, int y)
+    {
+        if (window == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        try
+        {
+            var atPoint = WindowFromPoint(new POINT { X = x, Y = y });
+            return atPoint != IntPtr.Zero && GetAncestor(atPoint, GaRoot) == window;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     /// <summary>Open the context menu owned by the control that currently has focus in a foreground window.</summary>
     public static bool TryOpenContextMenuForFocusedControl(IntPtr ownerWindow)

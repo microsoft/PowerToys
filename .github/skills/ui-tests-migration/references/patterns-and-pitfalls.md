@@ -553,6 +553,12 @@ can move out of the selected zone or hide it. If the modifier callback already s
 update, wait without moving; keep the modifier held until the asynchronous move-end signal records
 the authoritative snap result.
 
+Explorer can expose its top-level HWND before its title bar finishes rendering. Before mouse-down,
+verify the root HWND under the intended screen point is the target. After any failed grab, release the
+button, restore/recenter the same HWND, wait for stable bounds and foreground, and recompute the next
+candidate from those current bounds. Reusing points derived before a failed desktop-selection drag
+keeps clicking behind a window that has already moved.
+
 Pair it with a **control gesture** that drives the same state machine through a path where nothing can
 swallow the key — usually by reordering the gesture:
 
