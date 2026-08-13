@@ -642,9 +642,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_AppearancePage_InteractionSettingsHeader.Text" xml:space="preserve">
     <value>Interaction</value>
   </data>
-  <data name="Settings_GeneralPage_SearchTextBehavior_SettingsExpander.Header" xml:space="preserve">
-    <value>Search text behavior</value>
-  </data>
   <data name="Settings_GeneralPage_AppTheme_Mode_System.Text" xml:space="preserve">
     <value>Use system settings</value>
   </data>

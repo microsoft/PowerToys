@@ -100,22 +100,12 @@
                             <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After180Seconds" />
                         </ComboBox>
                     </controls:SettingsCard>
-                    <controls:SettingsExpander x:Uid="Settings_GeneralPage_SearchTextBehavior_SettingsExpander" HeaderIcon="{ui:FontIcon Glyph=&#xE721;}">
-                        <controls:SettingsExpander.Items>
-                            <controls:SettingsCard ContentAlignment="Left">
-                                <ptcontrols:CheckBoxWithDescriptionControl
-                                    x:Uid="Settings_GeneralPage_KeepPreviousQuery_SettingsCard"
-                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_KeepPreviousQuery"
-                                    IsChecked="{x:Bind viewModel.KeepPreviousQuery, Mode=TwoWay}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
-                                <ptcontrols:CheckBoxWithDescriptionControl
-                                    x:Uid="Settings_GeneralPage_HighlightSearch_SettingsCard"
-                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_HighlightSearch"
-                                    IsChecked="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
-                            </controls:SettingsCard>
-                        </controls:SettingsExpander.Items>
-                    </controls:SettingsExpander>
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_KeepPreviousQuery_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE81C;}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_KeepPreviousQuery" IsOn="{x:Bind viewModel.KeepPreviousQuery, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_HighlightSearch_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE933;}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_HighlightSearch" IsOn="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
+                    </controls:SettingsCard>
 
                     <!--  'Behavior' section  -->
 
