@@ -80,6 +80,13 @@ namespace UnitTestsCommonUtils
             Assert::IsFalse(changeSet.changes.empty());
         }
 
+        TEST_METHOD(GetThreeMfThumbnailProviderChangeSet_ReturnsChangeSet)
+        {
+            auto changeSet = getThreeMfThumbnailHandlerChangeSet(GetInstallDir(), false);
+
+            Assert::IsFalse(changeSet.changes.empty());
+        }
+
         TEST_METHOD(GetQoiPreviewHandlerChangeSet_ReturnsChangeSet)
         {
             auto changeSet = getQoiPreviewHandlerChangeSet(GetInstallDir(), false);
@@ -162,6 +169,8 @@ namespace UnitTestsCommonUtils
             getGcodeThumbnailHandlerChangeSet(installDir, false);
             getStlThumbnailHandlerChangeSet(installDir, true);
             getStlThumbnailHandlerChangeSet(installDir, false);
+            getThreeMfThumbnailHandlerChangeSet(installDir, true);
+            getThreeMfThumbnailHandlerChangeSet(installDir, false);
             getQoiPreviewHandlerChangeSet(installDir, true);
             getQoiPreviewHandlerChangeSet(installDir, false);
             getQoiThumbnailHandlerChangeSet(installDir, true);
