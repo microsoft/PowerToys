@@ -322,13 +322,12 @@
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_ToastPosition_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75A;}">
                         <controls:SettingsCard.Description>
-                            <StackPanel Visibility="{x:Bind ViewModel.IsToastPositionFromSystemSettings, Mode=OneWay}">
-                                <HyperlinkButton
-                                    x:Uid="Settings_GeneralPage_ToastPosition_OpenSystemSettings_Hyperlink"
-                                    Padding="0"
-                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_ToastPosition_OpenSystemSettings"
-                                    Click="OpenSystemSettings_Click" />
-                            </StackPanel>
+                            <HyperlinkButton
+                                x:Uid="Settings_GeneralPage_ToastPosition_OpenSystemSettings_Hyperlink"
+                                Padding="0"
+                                AutomationProperties.AutomationId="CmdPal_GeneralPage_ToastPosition_OpenSystemSettings"
+                                Click="OpenSystemSettings_Click"
+                                Visibility="{x:Bind ViewModel.IsToastPositionFromSystemSettings, Mode=OneWay}" />
                         </controls:SettingsCard.Description>
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"

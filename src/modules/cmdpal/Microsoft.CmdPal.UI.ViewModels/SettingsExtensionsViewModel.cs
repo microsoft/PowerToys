@@ -126,6 +126,13 @@ public partial class SettingsExtensionsViewModel : ObservableObject
         return !string.IsNullOrEmpty(haystack) && haystack.Contains(needle, StringComparison.OrdinalIgnoreCase);
     }
 
+    [RelayCommand]
+    private void OpenStoreWithExtension(string? query)
+    {
+        const string extensionsAssocUri = "ms-windows-store://assoc/?Tags=AppExtension-com.microsoft.commandpalette";
+        ShellHelpers.OpenInShell(extensionsAssocUri);
+    }
+
     private void ReloadExtensions()
     {
         ShowManualReloadOverlay = true;
