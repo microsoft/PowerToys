@@ -44,6 +44,8 @@ param(
 $ErrorActionPreference = "Stop"
 $env:AZURE_CORE_NO_PROMPT = "true"
 
+. (Join-Path $PSScriptRoot "web-response-content.ps1")
+
 # --- Helpers -----------------------------------------------------------------
 
 # Invoke an `az` CLI command and capture stderr in $script:LastAzError so
@@ -142,7 +144,7 @@ function Get-RemoteHash {
             -Uri $url `
             -Headers @{ Authorization = "Bearer $Token" } `
             -TimeoutSec 30
-        $text = [string]$response.Content
+        $text = ConvertFrom-WebResponseContent -Content $response.Content
         if ($text -match "[0-9a-fA-F]{64}") {
             return $matches[0].ToUpperInvariant()
         }

@@ -71,6 +71,5 @@ function Get-PreviewReleaseAssets {
         throw "Assets directory contains undeclared release files: $(($extraCandidates.Name | Sort-Object) -join ', ')"
     }
 
-    $files += Get-Item -LiteralPath $manifestPath
     return @($files | Sort-Object FullName -Unique)
 }

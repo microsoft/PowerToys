@@ -37,7 +37,7 @@ Generated Files/ReleaseNotes/preview-<buildId>/
 ├── release-notes.md
 ├── hashes.md
 ├── release-manifest.json        # Local audit artifact; never uploaded
-├── assets-manifest.json
+├── assets-manifest.json         # Local asset inventory; never uploaded
 └── final-review.md
 ```
 
@@ -164,7 +164,7 @@ Do not read all steps at once—only read the step you are executing.
 
 - **Terminal usage**: Disabled by default; only run scripts when user explicitly requests
 - **Preview automation**: An explicit request to prepare a preview release, or invocation by the Prepare Preview Release agent, authorizes the canonical preview scripts
-- **Preview release manifest**: Keep `release-manifest.json` in the local audit package; do not upload it as a GitHub release asset
+- **Preview manifests**: Keep `release-manifest.json` and `assets-manifest.json` in the local audit package; do not upload either file as a GitHub release asset
 - **Preview note layout**: Place the `Installer Hashes` section immediately after the title and short public introduction, before `Highlights` and all change sections
 - **Batch generation**: Generate ALL grouped_md files in one pass, then human reviews
 - **PR order**: Preserve order from `sorted_prs.csv` in all outputs

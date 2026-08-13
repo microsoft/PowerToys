@@ -35,6 +35,8 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $env:AZURE_CORE_NO_PROMPT = "true"
 
+. (Join-Path $PSScriptRoot "web-response-content.ps1")
+
 $defaultExtensionDirectory = Join-Path $env:USERPROFILE ".azure\cliextensions"
 if (-not $env:AZURE_EXTENSION_DIR -and (Test-Path -LiteralPath $defaultExtensionDirectory)) {
     $inaccessibleExtension = Get-ChildItem "$defaultExtensionDirectory\*\*.dist-info" -Directory -ErrorAction SilentlyContinue |
@@ -162,7 +164,7 @@ function Get-ArtifactMetadata {
                     -Uri $url `
                     -Headers @{ Authorization = "Bearer $Token" } `
                     -TimeoutSec 15
-                $text = [string]$response.Content
+                $text = ConvertFrom-WebResponseContent -Content $response.Content
                 if (-not [string]::IsNullOrWhiteSpace($text)) {
                     return $text | ConvertFrom-Json
                 }

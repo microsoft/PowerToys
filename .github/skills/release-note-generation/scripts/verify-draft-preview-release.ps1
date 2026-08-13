@@ -97,8 +97,12 @@ else {
     }
     $apiRelease = $apiJson | ConvertFrom-Json
     $remoteAssets = @($apiRelease.assets)
-    if (@($remoteAssets | Where-Object { $_.name -eq "release-manifest.json" }).Count -ne 0) {
-        throw "Draft '$Tag' must not contain release-manifest.json as an uploaded asset."
+    $uploadedLocalOnlyManifests = @(
+        $remoteAssets |
+            Where-Object { $_.name -in @("release-manifest.json", "assets-manifest.json") }
+    )
+    if ($uploadedLocalOnlyManifests.Count -ne 0) {
+        throw "Draft '$Tag' must not contain local-only manifests: $(($uploadedLocalOnlyManifests.name | Sort-Object) -join ', ')."
     }
 
     $expectedNames = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
@@ -108,7 +112,7 @@ else {
     $unexpectedRemoteAssets = @(
         $remoteAssets |
             Where-Object {
-                ($_.name -eq "assets-manifest.json" -or [System.IO.Path]::GetExtension([string]$_.name) -in @(".exe", ".zip")) -and
+                [System.IO.Path]::GetExtension([string]$_.name) -in @(".exe", ".zip") -and
                 -not $expectedNames.Contains([string]$_.name)
             }
     )

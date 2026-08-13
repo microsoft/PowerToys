@@ -93,6 +93,8 @@ Reject builds from other branches, failed or incomplete builds, non-release defi
      -DestinationFolder '<run directory>\assets'
    ```
 
+   Keep the generated `assets-manifest.json` in the local audit package. Do not upload it as a GitHub release asset.
+
 8. In dry-run mode, write the complete local review report and stop without contacting GitHub:
 
    ```powershell

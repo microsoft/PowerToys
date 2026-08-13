@@ -66,6 +66,23 @@ function Write-TestAssetsManifest {
     } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $AssetsPath "assets-manifest.json")
 }
 
+Describe "web response content decoding" {
+    BeforeAll {
+        . (Join-Path $scripts "web-response-content.ps1")
+    }
+
+    It "decodes UTF-8 byte arrays returned by Invoke-WebRequest" {
+        $expected = "F74FF2A89EA37D582F7E18E34EA6E40554C842FA0405725F68969805E6DA0DA9"
+        $content = [System.Text.Encoding]::UTF8.GetBytes("$expected`r`n")
+
+        (ConvertFrom-WebResponseContent -Content $content).Trim() | Should Be $expected
+    }
+
+    It "preserves string response content" {
+        ConvertFrom-WebResponseContent -Content "response text" | Should Be "response text"
+    }
+}
+
 Describe "preview release build metadata" {
     It "supports a main-branch candidate regardless of release intent" {
         $buildPath = Join-Path $TestDrive "build.json"
@@ -343,8 +360,9 @@ Describe "draft preview release dry run" {
         $result.draft | Should Be $true
         $result.prerelease | Should Be $true
         $result.title | Should Be "Preview v0.101.2181.0"
-        $result.assetNames.Count | Should Be 2
+        $result.assetNames.Count | Should Be 1
         ($result.assetNames -contains "release-manifest.json") | Should Be $false
+        ($result.assetNames -contains "assets-manifest.json") | Should Be $false
     }
 
     It "preserves human text outside managed body markers" {

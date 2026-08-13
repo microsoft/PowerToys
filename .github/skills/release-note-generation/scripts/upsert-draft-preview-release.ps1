@@ -166,11 +166,12 @@ try {
             throw "Failed to inspect existing assets for draft '$Tag'."
         }
         $remoteRelease = $remoteReleaseJson | ConvertFrom-Json
-        $staleManifests = @($remoteRelease.assets | Where-Object { $_.name -eq "release-manifest.json" })
+        $localOnlyManifestNames = @("release-manifest.json", "assets-manifest.json")
+        $staleManifests = @($remoteRelease.assets | Where-Object { $_.name -in $localOnlyManifestNames })
         foreach ($asset in $staleManifests) {
             gh api --method DELETE "repos/$Repo/releases/assets/$($asset.id)" | Out-Null
             if ($LASTEXITCODE -ne 0) {
-                throw "Failed to remove stale release-manifest.json from draft '$Tag'."
+                throw "Failed to remove stale local-only manifest '$($asset.name)' from draft '$Tag'."
             }
         }
 
