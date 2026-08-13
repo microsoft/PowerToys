@@ -1,7 +1,7 @@
 ---
 description: 'Analyzes GitHub issues to produce overview and implementation plans'
 name: 'PlanIssue'
-tools: ['execute', 'read', 'edit', 'search', 'web', 'github/*', 'agent', 'github-artifacts/*', 'todo']
+tools: ['execute', 'read', 'edit', 'search', 'web', 'github/*', 'agent', 'todo']
 argument-hint: 'GitHub issue number (e.g., #12345)'
 handoffs:
   - label: Start Implementation
@@ -38,7 +38,7 @@ Above is the core interaction with the end user. If you cannot produce the files
 
 **Follow the template in `.github/prompts/review-issue.prompt.md` exactly.** Read it first, then apply every section as specified.
 
-- Fetch issue details: reactions, comments, linked PRs, images, logs
+- Fetch issue details: reactions, comments, linked PRs, and available supporting evidence
 - Search related code and similar past fixes
 - Ask clarifying questions when ambiguous
 - Identify subject matter experts via git history
