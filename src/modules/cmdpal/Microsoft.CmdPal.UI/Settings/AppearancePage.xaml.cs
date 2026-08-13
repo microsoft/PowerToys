@@ -90,6 +90,11 @@ public sealed partial class AppearancePage : Page
         });
     }
 
+    private void OpenSystemSettings_Click(object sender, RoutedEventArgs e)
+    {
+        _ = global::Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:notifications"));
+    }
+
     private void OpenCommandPalette_Click(object sender, RoutedEventArgs e)
     {
         WeakReferenceMessenger.Default.Send<HotkeySummonMessage>(new(string.Empty, HWND.Null));
