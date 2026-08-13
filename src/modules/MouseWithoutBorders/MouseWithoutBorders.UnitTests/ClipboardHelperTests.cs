@@ -9,10 +9,14 @@ namespace MouseWithoutBorders.UnitTests;
 [TestClass]
 public sealed class ClipboardHelperTests
 {
-    [TestMethod]
-    public void LocalPathLease_RejectsRemotePath()
+    [DataTestMethod]
+    [DataRow(@"\\attacker\share\file.txt")]
+    [DataRow(@"//attacker/share/file.txt")]
+    [DataRow(@"\\?\UNC\attacker\share\file.txt")]
+    [DataRow(@"\\.\GLOBALROOT\Device\Mup\attacker\share\file.txt")]
+    public void LocalPathLease_RejectsRemoteOrDevicePath(string path)
     {
-        using LocalPathLease lease = LocalPathLease.TryCreateForCurrentUser(@"\\attacker\share\file.txt");
+        using LocalPathLease lease = LocalPathLease.TryCreateForCurrentUser(path);
 
         Assert.IsNull(lease);
     }
@@ -51,7 +55,7 @@ public sealed class ClipboardHelperTests
     }
 
     [TestMethod]
-    public void LocalPathLease_PreventsPathReplacementUntilLastReferenceIsReleased()
+    public void LocalPathLease_AcquiredReferencePreventsPathReplacementUntilReleased()
     {
         string directory = Directory.CreateTempSubdirectory().FullName;
         string sourceDirectory = Path.Combine(directory, "source");
@@ -61,18 +65,25 @@ public sealed class ClipboardHelperTests
         File.WriteAllText(path, "content");
 
         LocalPathLease? lease = null;
+        LocalPathLease? acquiredLease = null;
         try
         {
             lease = LocalPathLease.TryCreateForCurrentUser(path);
             Assert.IsNotNull(lease);
-            Assert.IsFalse(TryMoveDirectory(sourceDirectory, movedDirectory));
+            acquiredLease = lease.Acquire();
+            Assert.IsNotNull(acquiredLease);
 
             lease.Dispose();
             lease = null;
+            Assert.IsFalse(TryMoveDirectory(sourceDirectory, movedDirectory));
+
+            acquiredLease.Dispose();
+            acquiredLease = null;
             Directory.Move(sourceDirectory, movedDirectory);
         }
         finally
         {
+            acquiredLease?.Dispose();
             lease?.Dispose();
             Directory.Delete(directory, true);
         }
