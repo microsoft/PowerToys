@@ -21,6 +21,7 @@ public class ShortcutGuideSessionEvent : EventBase, IEvent
 
     public ShortcutGuideSessionEvent(long durationInMs, string closeType)
     {
+        EventName = "ShortcutGuide_GuideSession";
         DurationInMs = durationInMs;
         CloseType = closeType;
     }

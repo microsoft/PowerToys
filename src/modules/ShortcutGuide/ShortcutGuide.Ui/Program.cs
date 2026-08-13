@@ -157,8 +157,7 @@ namespace ShortcutGuide
                     var props = settings.Properties;
                     PowerToysTelemetry.Log.WriteEvent(new ShortcutGuideSettingsEvent(
                         props.OpenShortcutGuide?.ToString() ?? string.Empty,
-                        props.Theme?.Value ?? "system",
-                        props.DisabledApps?.Value ?? string.Empty));
+                        props.Theme?.Value ?? "system"));
                 }
             }
             catch (Exception ex)

@@ -18,7 +18,7 @@ public class CmdPalInvokeResult : EventBase, IEvent
 
     public CmdPalInvokeResult(CommandResultKind resultKind)
     {
-        EventName = "CmdPal_InvokeResult";
+        EventName = "CmdPalInvokeResult";
         ResultKind = resultKind.ToString();
     }
 

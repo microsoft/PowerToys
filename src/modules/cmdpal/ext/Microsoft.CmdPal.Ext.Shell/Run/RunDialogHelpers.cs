@@ -98,13 +98,10 @@ internal static class RunDialogHelpers
 
         telemetryService?.LogEvent("LoadHistoryItem", new PropertySet()
         {
-                { "type", li?.GetType().Name ?? "null" },
                 { "timedOut", timedOut },
                 { "totalMs", itemTimer.ElapsedMilliseconds },
                 { "parseMs", parseTime },
                 { "isUri", parseResult?.IsUri },
-                { "target", parseResult?.FilePath ?? query },
-                { "args", parseResult?.Arguments },
                 { "parseResult", parseResult?.Result ?? E_WAITTIMEOUT },
         });
 
