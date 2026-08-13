@@ -1319,12 +1319,6 @@ public sealed partial class DockWindow : WindowEx,
                 DispatcherQueue.TryEnqueue(HandleWorkAreaChanged);
             }
         }
-        else if (msg == PInvoke.WM_DISPLAYCHANGE)
-        {
-            Logger.LogDebug("WM_DISPLAYCHANGE");
-
-            _monitorService.NotifyMonitorsChanged();
-        }
         else if (msg == PInvoke.WM_MOUSEMOVE)
         {
             HandleMouseMoveForAutoHide();
