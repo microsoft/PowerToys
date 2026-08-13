@@ -225,7 +225,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Command Palette settings</value>
     <comment>A section header for app-wide settings. "Command Palette" is the name of the app.</comment>
   </data>
-  <data name="Settings_GeneralPage_AboutSettingsGroup.Header" xml:space="preserve">
+  <data name="Settings_GeneralPage_AboutSettingsHeader.Text" xml:space="preserve">
     <value>About</value>
     <comment>A section header for information about the app</comment>
   </data>
@@ -442,13 +442,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Open Command Palette settings, shortcut Control plus comma</value>
   </data>
-  <data name="Settings_GeneralPage_ActivationSettingsGroup.Header" xml:space="preserve">
+  <data name="Settings_GeneralPage_ActivationSettingsHeader.Text" xml:space="preserve">
     <value>Activation</value>
   </data>
   <data name="BehaviorSettingsHeader.Text" xml:space="preserve">
     <value>Behavior</value>
   </data>
-  <data name="Settings_GeneralPage_AppBehaviorSettingsGroup.Header" xml:space="preserve">
+  <data name="Settings_GeneralPage_AppBehaviorSettingsHeader.Text" xml:space="preserve">
     <value>App behavior</value>
   </data>
   <data name="DockAppearanceSettingsHeader.Text" xml:space="preserve">
@@ -555,7 +555,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_AllowExternalReload_SettingsCard.Description" xml:space="preserve">
     <value>Allow reloads through the x-cmdpal://reload protocol</value>
   </data>
-  <data name="Settings_GeneralPage_ForDevelopersSettingsGroup.Header" xml:space="preserve">
+  <data name="Settings_GeneralPage_ForDevelopersSettingsHeader.Text" xml:space="preserve">
     <value>For developers</value>
   </data>
   <data name="UntitledPageTitle" xml:space="preserve">
@@ -633,14 +633,17 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_AppTheme_SettingsCard.Description" xml:space="preserve">
     <value>Select which app theme to display</value>
   </data>
-  <data name="Settings_AppearancePage_AppearanceSettingsGroup.Header" xml:space="preserve">
+  <data name="Settings_AppearancePage_AppearanceSettingsHeader.Text" xml:space="preserve">
     <value>Appearance</value>
   </data>
-  <data name="Settings_AppearancePage_LayoutSettingsGroup.Header" xml:space="preserve">
+  <data name="Settings_AppearancePage_LayoutSettingsHeader.Text" xml:space="preserve">
     <value>Layout and positioning</value>
   </data>
-  <data name="Settings_AppearancePage_InteractionSettingsGroup.Header" xml:space="preserve">
+  <data name="Settings_AppearancePage_InteractionSettingsHeader.Text" xml:space="preserve">
     <value>Interaction</value>
+  </data>
+  <data name="Settings_GeneralPage_SearchTextBehavior_SettingsExpander.Header" xml:space="preserve">
+    <value>Search text behavior</value>
   </data>
   <data name="Settings_GeneralPage_AppTheme_Mode_System.Text" xml:space="preserve">
     <value>Use system settings</value>

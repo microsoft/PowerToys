@@ -43,123 +43,129 @@
                         FontWeight="SemiBold"
                         NavigateUri="https://aka.ms/cmdpal" />
 
-                    <ptControls:SettingsGroup x:Uid="Settings_GeneralPage_ActivationSettingsGroup">
-                        <controls:SettingsExpander
-                            x:Uid="Settings_GeneralPage_ActivationKey_SettingsExpander"
-                            AutomationProperties.AutomationId="CmdPal_GeneralPage_ActivationKey"
-                            HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
-                            IsExpanded="True">
-                            <ptControls:ShortcutControl AutomationProperties.AutomationId="CmdPal_GeneralPage_HotkeyShortcut" HotkeySettings="{x:Bind viewModel.Hotkey, Mode=TwoWay}" />
-                            <controls:SettingsExpander.Items>
-                                <controls:SettingsCard ContentAlignment="Left">
-                                    <ptcontrols:CheckBoxWithDescriptionControl
-                                        x:Uid="Settings_GeneralPage_LowLevelHook_SettingsCard"
-                                        AutomationProperties.AutomationId="CmdPal_GeneralPage_LowLevelHook"
-                                        IsChecked="{x:Bind viewModel.UseLowLevelGlobalHotkey, Mode=TwoWay}" />
-                                </controls:SettingsCard>
-                                <controls:SettingsCard ContentAlignment="Left">
-                                    <ptcontrols:CheckBoxWithDescriptionControl
-                                        x:Uid="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard"
-                                        AutomationProperties.AutomationId="CmdPal_GeneralPage_IgnoreShortcutWhenFullscreen"
-                                        IsChecked="{x:Bind viewModel.IgnoreShortcutWhenFullscreen, Mode=TwoWay}" />
-                                </controls:SettingsCard>
-                                <controls:SettingsCard ContentAlignment="Left">
-                                    <ptcontrols:CheckBoxWithDescriptionControl
-                                        x:Uid="Settings_GeneralPage_IgnoreShortcutWhenBusy_SettingsCard"
-                                        AutomationProperties.AutomationId="CmdPal_GeneralPage_IgnoreShortcutWhenBusy"
-                                        IsChecked="{x:Bind viewModel.IgnoreShortcutWhenBusy, Mode=TwoWay}" />
-                                </controls:SettingsCard>
-                                <controls:SettingsCard ContentAlignment="Left">
-                                    <ptcontrols:CheckBoxWithDescriptionControl
-                                        x:Uid="Settings_GeneralPage_AllowBreakthroughShortcut_SettingsCard"
-                                        AutomationProperties.AutomationId="CmdPal_GeneralPage_AllowBreakthroughShortcut"
-                                        IsChecked="{x:Bind viewModel.AllowBreakthroughShortcut, Mode=TwoWay}" />
-                                </controls:SettingsCard>
-                            </controls:SettingsExpander.Items>
-                            <controls:SettingsExpander.ItemsFooter>
-                                <InfoBar
-                                    IsClosable="False"
-                                    IsOpen="{x:Bind IsNotificationStateSuppressing, Mode=OneWay}"
-                                    Message="{x:Bind NotificationStateMessage, Mode=OneWay}"
-                                    Severity="Warning" />
-                            </controls:SettingsExpander.ItemsFooter>
-                        </controls:SettingsExpander>
-                        <controls:SettingsCard x:Uid="Settings_GeneralPage_AutoGoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
-                            <ComboBox
-                                MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                AutomationProperties.AutomationId="CmdPal_GeneralPage_AutoGoHome"
-                                SelectedIndex="{x:Bind viewModel.AutoGoBackIntervalIndex, Mode=TwoWay}">
-                                <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_Never" />
-                                <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_Immediately" />
-                                <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After10Seconds" />
-                                <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After20Seconds" />
-                                <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After30Seconds" />
-                                <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After60Seconds" />
-                                <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After90Seconds" />
-                                <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After120Seconds" />
-                                <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After180Seconds" />
-                            </ComboBox>
-                        </controls:SettingsCard>
-                        <controls:SettingsCard x:Uid="Settings_GeneralPage_KeepPreviousQuery_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE81C;}">
-                            <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_KeepPreviousQuery" IsOn="{x:Bind viewModel.KeepPreviousQuery, Mode=TwoWay}" />
-                        </controls:SettingsCard>
-                        <controls:SettingsCard x:Uid="Settings_GeneralPage_HighlightSearch_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE933;}">
-                            <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_HighlightSearch" IsOn="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
-                        </controls:SettingsCard>
-                    </ptControls:SettingsGroup>
+                    <TextBlock x:Uid="Settings_GeneralPage_ActivationSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <controls:SettingsExpander
+                        x:Uid="Settings_GeneralPage_ActivationKey_SettingsExpander"
+                        AutomationProperties.AutomationId="CmdPal_GeneralPage_ActivationKey"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsExpanded="True">
+                        <ptControls:ShortcutControl AutomationProperties.AutomationId="CmdPal_GeneralPage_HotkeyShortcut" HotkeySettings="{x:Bind viewModel.Hotkey, Mode=TwoWay}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl
+                                    x:Uid="Settings_GeneralPage_LowLevelHook_SettingsCard"
+                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_LowLevelHook"
+                                    IsChecked="{x:Bind viewModel.UseLowLevelGlobalHotkey, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl
+                                    x:Uid="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard"
+                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_IgnoreShortcutWhenFullscreen"
+                                    IsChecked="{x:Bind viewModel.IgnoreShortcutWhenFullscreen, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl
+                                    x:Uid="Settings_GeneralPage_IgnoreShortcutWhenBusy_SettingsCard"
+                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_IgnoreShortcutWhenBusy"
+                                    IsChecked="{x:Bind viewModel.IgnoreShortcutWhenBusy, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl
+                                    x:Uid="Settings_GeneralPage_AllowBreakthroughShortcut_SettingsCard"
+                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_AllowBreakthroughShortcut"
+                                    IsChecked="{x:Bind viewModel.AllowBreakthroughShortcut, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                        <controls:SettingsExpander.ItemsFooter>
+                            <InfoBar
+                                IsClosable="False"
+                                IsOpen="{x:Bind IsNotificationStateSuppressing, Mode=OneWay}"
+                                Message="{x:Bind NotificationStateMessage, Mode=OneWay}"
+                                Severity="Warning" />
+                        </controls:SettingsExpander.ItemsFooter>
+                    </controls:SettingsExpander>
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_AutoGoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="CmdPal_GeneralPage_AutoGoHome"
+                            SelectedIndex="{x:Bind viewModel.AutoGoBackIntervalIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_Never" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_Immediately" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After10Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After20Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After30Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After60Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After90Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After120Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After180Seconds" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+                    <controls:SettingsExpander x:Uid="Settings_GeneralPage_SearchTextBehavior_SettingsExpander" HeaderIcon="{ui:FontIcon Glyph=&#xE721;}">
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl
+                                    x:Uid="Settings_GeneralPage_KeepPreviousQuery_SettingsCard"
+                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_KeepPreviousQuery"
+                                    IsChecked="{x:Bind viewModel.KeepPreviousQuery, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl
+                                    x:Uid="Settings_GeneralPage_HighlightSearch_SettingsCard"
+                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_HighlightSearch"
+                                    IsChecked="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
 
                     <!--  'Behavior' section  -->
 
-                    <ptControls:SettingsGroup x:Uid="Settings_GeneralPage_AppBehaviorSettingsGroup">
-                        <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
-                            <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_ShowSystemTrayIcon" IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
-                        </controls:SettingsCard>
+                    <TextBlock x:Uid="Settings_GeneralPage_AppBehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_ShowSystemTrayIcon" IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
+                    </controls:SettingsCard>
 
-                        <controls:SettingsCard x:Uid="Settings_GeneralPage_AllowAltF4_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE7E8;}">
-                            <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_AllowAltF4" IsOn="{x:Bind viewModel.AllowAltF4, Mode=TwoWay}" />
-                        </controls:SettingsCard>
-                    </ptControls:SettingsGroup>
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_AllowAltF4_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE7E8;}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_AllowAltF4" IsOn="{x:Bind viewModel.AllowAltF4, Mode=TwoWay}" />
+                    </controls:SettingsCard>
 
                     <!--  'For Developers' section  -->
 
-                    <ptControls:SettingsGroup x:Uid="Settings_GeneralPage_ForDevelopersSettingsGroup">
-                        <controls:SettingsCard x:Uid="Settings_GeneralPage_AllowExternalReload_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
-                            <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_AllowExternalReload" IsOn="{x:Bind viewModel.AllowExternalReload, Mode=TwoWay}" />
-                        </controls:SettingsCard>
-                    </ptControls:SettingsGroup>
+                    <TextBlock x:Uid="Settings_GeneralPage_ForDevelopersSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_AllowExternalReload_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_AllowExternalReload" IsOn="{x:Bind viewModel.AllowExternalReload, Mode=TwoWay}" />
+                    </controls:SettingsCard>
 
                     <!--  'About' section  -->
 
-                    <ptControls:SettingsGroup x:Uid="Settings_GeneralPage_AboutSettingsGroup">
-                        <controls:SettingsExpander
-                            x:Uid="Settings_GeneralPage_About_SettingsExpander"
-                            AutomationProperties.AutomationId="CmdPal_GeneralPage_About"
-                            HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/StoreLogo.png}">
-                            <TextBlock
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                IsTextSelectionEnabled="True"
-                                Text="{x:Bind ApplicationVersion}" />
-                            <controls:SettingsExpander.Items>
-                                <controls:SettingsCard HorizontalContentAlignment="Left" ContentAlignment="Left">
-                                    <StackPanel Margin="-12,0,0,0" Orientation="Vertical">
-                                        <HyperlinkButton
-                                            x:Uid="Settings_GeneralPage_About_GithubLink_Hyperlink"
-                                            AutomationProperties.AutomationId="CmdPal_GeneralPage_GithubLink"
-                                            NavigateUri="https://go.microsoft.com/fwlink/?linkid=2310837" />
-                                        <HyperlinkButton
-                                            x:Uid="Settings_GeneralPage_About_SDKDocs_Hyperlink"
-                                            AutomationProperties.AutomationId="CmdPal_GeneralPage_SDKDocs"
-                                            NavigateUri="https://aka.ms/cmdpalextensions-devdocs" />
-                                    </StackPanel>
-                                </controls:SettingsCard>
-                            </controls:SettingsExpander.Items>
-                        </controls:SettingsExpander>
-                        <HyperlinkButton
-                            x:Uid="Settings_GeneralPage_SendFeedback_Hyperlink"
-                            Margin="0,8,0,0"
-                            AutomationProperties.AutomationId="CmdPal_GeneralPage_SendFeedback"
-                            NavigateUri="https://go.microsoft.com/fwlink/?linkid=2310638" />
-                    </ptControls:SettingsGroup>
+                    <TextBlock x:Uid="Settings_GeneralPage_AboutSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <controls:SettingsExpander
+                        x:Uid="Settings_GeneralPage_About_SettingsExpander"
+                        AutomationProperties.AutomationId="CmdPal_GeneralPage_About"
+                        HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/StoreLogo.png}">
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            IsTextSelectionEnabled="True"
+                            Text="{x:Bind ApplicationVersion}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard HorizontalContentAlignment="Left" ContentAlignment="Left">
+                                <StackPanel Margin="-12,0,0,0" Orientation="Vertical">
+                                    <HyperlinkButton
+                                        x:Uid="Settings_GeneralPage_About_GithubLink_Hyperlink"
+                                        AutomationProperties.AutomationId="CmdPal_GeneralPage_GithubLink"
+                                        NavigateUri="https://go.microsoft.com/fwlink/?linkid=2310837" />
+                                    <HyperlinkButton
+                                        x:Uid="Settings_GeneralPage_About_SDKDocs_Hyperlink"
+                                        AutomationProperties.AutomationId="CmdPal_GeneralPage_SDKDocs"
+                                        NavigateUri="https://aka.ms/cmdpalextensions-devdocs" />
+                                </StackPanel>
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+                    <HyperlinkButton
+                        x:Uid="Settings_GeneralPage_SendFeedback_Hyperlink"
+                        Margin="0,8,0,0"
+                        AutomationProperties.AutomationId="CmdPal_GeneralPage_SendFeedback"
+                        NavigateUri="https://go.microsoft.com/fwlink/?linkid=2310638" />
                 </StackPanel>
             </Grid>
         </ScrollViewer>
