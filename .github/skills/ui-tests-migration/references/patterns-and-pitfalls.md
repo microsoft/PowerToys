@@ -465,6 +465,10 @@ product's acknowledgement, re-read state before retrying a stateful trigger); if
 keep the restart and write down which state forces it. The failures this exposes are real ones users
 can hit — worth reporting to the module owners rather than only working around.
 
+When a test must restart the runner, wait for its single-instance module process to exit too. Waiting
+only for the runner PID can leave the child holding its mutex long enough that the replacement runner
+tracks a short-lived duplicate; explicitly stop-and-wait the module before relaunching.
+
 ---
 
 ## Recipe 18 — Catch a short-lived window (flash, toast, overlay): hook, don't poll
@@ -526,10 +530,28 @@ it or never *received* it — modules install low-level keyboard hooks, and a ho
 removes the event from the input stream for everyone, including the module's own raw-input listener.
 
 ```csharp
-KeyboardHelper.PressKey(Key.Shift);
+KeyboardHelper.PressKey(Key.LShift); // inject one physical Shift key; generic VK_SHIFT is ambiguous
 // false => the key never reached the system's async key state, i.e. some LL hook swallowed it
 var reachedTheSystem = KeyboardHelper.IsKeyDown(Key.Shift);
 ```
+
+Use `LShift` when the test must exercise a physical left/right-key branch in a low-level hook; keep
+`Shift` for the aggregate state query. This makes the injected path explicit, but it does not repair
+incorrect product state logic by itself.
+
+Do not gate the hook on a derived "snapping active" flag when the key itself activates snapping.
+FancyZones originally checked `DraggingState::IsDragging()`, which is false in Shift-to-activate
+mode until Shift is processed; gate on the active window move loop instead. Also apply the snapping
+mode transition before calculating the first highlighted zone: if the transition resets highlight
+state afterward, the first modifier-triggered update is discarded and a second mouse move becomes
+an accidental requirement.
+
+For a stateful drag, retry the **whole gesture**: reacquire the same HWND and foreground, grab its
+title bar, move, change modifier state, wait, and drop. Repeating only the modifier after a missed
+grab just repeats input over the desktop. Avoid movement-based readiness probes too: a cursor jiggle
+can move out of the selected zone or hide it. If the modifier callback already schedules a product
+update, wait without moving; keep the modifier held until the asynchronous move-end signal records
+the authoritative snap result.
 
 Pair it with a **control gesture** that drives the same state machine through a path where nothing can
 swallow the key — usually by reordering the gesture:
