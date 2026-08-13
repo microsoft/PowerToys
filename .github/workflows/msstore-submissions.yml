@@ -41,7 +41,7 @@ jobs:
           echo powerToysInstallerArm64Url=$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("arm64"))][0].browser_download_url') >> $GITHUB_OUTPUT
 
       - name: Setup .NET 9.0
-        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           dotnet-version: '9.0.x'
 
