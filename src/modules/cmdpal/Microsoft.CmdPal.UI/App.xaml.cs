@@ -27,6 +27,7 @@ using Microsoft.CmdPal.Ext.WindowsSettings;
 using Microsoft.CmdPal.Ext.WindowsTerminal;
 using Microsoft.CmdPal.Ext.WindowWalker;
 using Microsoft.CmdPal.Ext.WinGet;
+using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
@@ -83,6 +84,8 @@ public partial class App : Application, IDisposable
         IconProvider.Initialize(Services);
 
         this.InitializeComponent();
+
+        ContentFormControl.RegisterCustomElements();
 
         // Ensure types used in XAML are preserved for AOT compilation
         TypePreservation.PreserveTypes();
