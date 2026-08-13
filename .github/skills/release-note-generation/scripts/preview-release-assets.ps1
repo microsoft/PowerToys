@@ -1,3 +1,19 @@
+function Test-PreviewReleaseAssetBuildMarker {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$MarkerPath,
+        [Parameter(Mandatory)][int]$BuildId,
+        [Parameter(Mandatory)][string]$Version
+    )
+
+    if (-not (Test-Path -LiteralPath $MarkerPath -PathType Leaf)) {
+        return $false
+    }
+
+    $marker = Get-Content -LiteralPath $MarkerPath -Raw | ConvertFrom-Json
+    return [int]$marker.buildId -eq $BuildId -and [string]$marker.version -eq $Version
+}
+
 function Get-PreviewReleaseAssets {
     [CmdletBinding()]
     param(

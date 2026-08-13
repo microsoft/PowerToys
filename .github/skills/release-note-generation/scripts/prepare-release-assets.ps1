@@ -45,6 +45,7 @@ $ErrorActionPreference = "Stop"
 $env:AZURE_CORE_NO_PROMPT = "true"
 
 . (Join-Path $PSScriptRoot "web-response-content.ps1")
+. (Join-Path $PSScriptRoot "preview-release-assets.ps1")
 
 # --- Helpers -----------------------------------------------------------------
 
@@ -261,6 +262,10 @@ if (-not (Test-Path $destFolder)) {
 Write-Host "  Destination: $destFolder" -ForegroundColor DarkGray
 
 $buildMarkerPath = Join-Path $destFolder ".buildinfo.json"
+$sameBuild = Test-PreviewReleaseAssetBuildMarker `
+    -MarkerPath $buildMarkerPath `
+    -BuildId $BuildId `
+    -Version $versionParam
 
 # --- Step 4: Get an ADO access token once ---
 $token = Invoke-Az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query accessToken -o tsv

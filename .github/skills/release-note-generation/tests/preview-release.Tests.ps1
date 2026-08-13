@@ -83,6 +83,71 @@ Describe "web response content decoding" {
     }
 }
 
+Describe "GitHub tag target validation" {
+    BeforeAll {
+        . (Join-Path $scripts "github-tag-target.ps1")
+    }
+
+    It "accepts an unused tag" {
+        Assert-GitHubTagTarget `
+            -Tag "v0.101.2181.0" `
+            -ResolvedCommit $null `
+            -TargetCommit "0123456789abcdef0123456789abcdef01234567"
+    }
+
+    It "accepts a tag that resolves to the target commit" {
+        Assert-GitHubTagTarget `
+            -Tag "v0.101.2181.0" `
+            -ResolvedCommit "0123456789abcdef0123456789abcdef01234567" `
+            -TargetCommit "0123456789abcdef0123456789abcdef01234567"
+    }
+
+    It "rejects a tag that resolves to another commit" {
+        Assert-Throws {
+            Assert-GitHubTagTarget `
+                -Tag "v0.101.2181.0" `
+                -ResolvedCommit "1123456789abcdef0123456789abcdef01234567" `
+                -TargetCommit "0123456789abcdef0123456789abcdef01234567"
+        }
+    }
+}
+
+Describe "preview release asset build marker" {
+    BeforeAll {
+        . (Join-Path $scripts "preview-release-assets.ps1")
+    }
+
+    It "matches the requested build and version" {
+        $markerPath = Join-Path $TestDrive "matching-build.json"
+        '{"buildId":154000000,"version":"0.101.2181.0"}' | Set-Content -LiteralPath $markerPath
+
+        Test-PreviewReleaseAssetBuildMarker `
+            -MarkerPath $markerPath `
+            -BuildId 154000000 `
+            -Version "0.101.2181.0" |
+            Should Be $true
+    }
+
+    It "rejects a marker for a different build" {
+        $markerPath = Join-Path $TestDrive "different-build.json"
+        '{"buildId":154000001,"version":"0.101.2181.0"}' | Set-Content -LiteralPath $markerPath
+
+        Test-PreviewReleaseAssetBuildMarker `
+            -MarkerPath $markerPath `
+            -BuildId 154000000 `
+            -Version "0.101.2181.0" |
+            Should Be $false
+    }
+
+    It "rejects a missing marker" {
+        Test-PreviewReleaseAssetBuildMarker `
+            -MarkerPath (Join-Path $TestDrive "missing-build.json") `
+            -BuildId 154000000 `
+            -Version "0.101.2181.0" |
+            Should Be $false
+    }
+}
+
 Describe "preview release build metadata" {
     It "supports a main-branch candidate regardless of release intent" {
         $buildPath = Join-Path $TestDrive "build.json"

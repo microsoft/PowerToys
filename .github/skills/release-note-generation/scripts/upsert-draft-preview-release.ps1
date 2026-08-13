@@ -27,6 +27,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 . (Join-Path $PSScriptRoot "preview-release-assets.ps1")
+. (Join-Path $PSScriptRoot "github-tag-target.ps1")
 
 $beginMarker = "<!-- BEGIN POWERTOYS PREVIEW AGENT -->"
 $endMarker = "<!-- END POWERTOYS PREVIEW AGENT -->"
@@ -110,6 +111,10 @@ elseif (-not $DryRun) {
 
 if ($existing -and -not [bool]$existing.isDraft) {
     throw "Published release '$Tag' already exists. Published releases are immutable in this workflow."
+}
+if (-not $DryRun) {
+    $tagCommit = Get-GitHubTagCommit -Repo $Repo -Tag $Tag
+    Assert-GitHubTagTarget -Tag $Tag -ResolvedCommit $tagCommit -TargetCommit $TargetCommit
 }
 
 $finalBody = Merge-ReleaseBody `

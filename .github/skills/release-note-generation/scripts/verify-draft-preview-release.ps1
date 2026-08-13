@@ -28,6 +28,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 . (Join-Path $PSScriptRoot "preview-release-assets.ps1")
+. (Join-Path $PSScriptRoot "github-tag-target.ps1")
 
 if ($TargetCommit -notmatch "^[0-9a-fA-F]{40}$") {
     throw "TargetCommit must be a full immutable commit SHA."
@@ -69,6 +70,10 @@ if (-not [bool]$release.isPrerelease) {
 }
 if ([string]$release.targetCommitish -ne $TargetCommit) {
     throw "Release target '$($release.targetCommitish)' does not match '$TargetCommit'."
+}
+if (-not $DryRun) {
+    $tagCommit = Get-GitHubTagCommit -Repo $Repo -Tag $Tag
+    Assert-GitHubTagTarget -Tag $Tag -ResolvedCommit $tagCommit -TargetCommit $TargetCommit
 }
 if ([string]$release.name -ne "Preview $Tag") {
     throw "Release title '$($release.name)' does not match 'Preview $Tag'."
