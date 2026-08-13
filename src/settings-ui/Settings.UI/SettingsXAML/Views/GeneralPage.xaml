@@ -83,15 +83,6 @@
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsShowWhatsNewAfterUpdatesCardEnabled}">
                                 <CheckBox x:Uid="GeneralPage_ShowWhatsNewAfterUpdates" IsChecked="{Binding Mode=TwoWay, Path=ShowWhatsNewAfterUpdates}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard
-                                x:Name="UpdateDebugPreviewCard"
-                                AutomationProperties.AutomationId="UpdateDebugPreviewCard"
-                                ContentAlignment="Right"
-                                Description="Preview only - no updater actions are sent."
-                                Header="Debug update state"
-                                Visibility="Collapsed">
-                                <controls:UpdateDebugControl ViewModel="{x:Bind SharedUpdateViewModel, Mode=OneWay}" />
-                            </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
 

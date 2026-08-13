@@ -36,9 +36,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public GeneralPage()
         {
             InitializeComponent();
-#if DEBUG
-            UpdateDebugPreviewCard.Visibility = Visibility.Visible;
-#endif
 
             // Load string resources
             var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
