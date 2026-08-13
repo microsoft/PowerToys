@@ -33,11 +33,42 @@ public sealed class ShortcutSearchMatcherTests
     }
 
     [TestMethod]
+    [DataRow("tgl dsk")]
+    [DataRow("mng vrtl")]
+    public void Matches_NonContiguousFuzzyQuery_ReturnsTrue(string query)
+    {
+        var shortcut = CreateShortcut(name: "Toggle desktop", description: "Manage Virtual Desktops");
+
+        Assert.IsTrue(ShortcutSearchMatcher.Matches(shortcut, query));
+    }
+
+    [TestMethod]
     [DataRow("windows", true, false, false, false)]
     [DataRow("control", false, true, false, false)]
     [DataRow("alt", false, false, true, false)]
     [DataRow("shift", false, false, false, true)]
     public void Matches_ModifierSemanticName_ReturnsTrue(string query, bool win, bool ctrl, bool alt, bool shift)
+    {
+        var shortcut = CreateShortcut(
+            shortcutDescriptions: [new ShortcutDescription(ctrl, shift, alt, win, ["K"])]);
+
+        Assert.IsTrue(ShortcutSearchMatcher.Matches(shortcut, query));
+    }
+
+    [TestMethod]
+    public void Matches_DisplayedChord_ReturnsTrue()
+    {
+        var shortcut = CreateShortcut(
+            name: "Open Snipping Tool",
+            shortcutDescriptions: [new ShortcutDescription(false, true, false, true, ["S"])]);
+
+        Assert.IsTrue(ShortcutSearchMatcher.Matches(shortcut, "Win Shift S"));
+    }
+
+    [TestMethod]
+    [DataRow("Windows K", false, false, false, true)]
+    [DataRow("Control K", true, false, false, false)]
+    public void Matches_SemanticModifierInChord_ReturnsTrue(string query, bool ctrl, bool shift, bool alt, bool win)
     {
         var shortcut = CreateShortcut(
             shortcutDescriptions: [new ShortcutDescription(ctrl, shift, alt, win, ["K"])]);

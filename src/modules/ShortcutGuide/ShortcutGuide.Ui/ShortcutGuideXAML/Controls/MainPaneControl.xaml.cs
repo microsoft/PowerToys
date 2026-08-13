@@ -115,6 +115,11 @@ namespace ShortcutGuide.Controls
             return true;
         }
 
+        internal void FocusSearch()
+        {
+            this.SearchBox.Focus(FocusState.Programmatic);
+        }
+
         internal string SelectedAppName => _selectedAppName;
 
         private void OnUnloaded(object sender, RoutedEventArgs e)

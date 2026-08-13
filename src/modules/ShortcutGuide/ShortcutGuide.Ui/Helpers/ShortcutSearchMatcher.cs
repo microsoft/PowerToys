@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Common.Search.FuzzSearch;
 using ShortcutGuide.Models;
 
 namespace ShortcutGuide.Helpers
@@ -18,16 +20,24 @@ namespace ShortcutGuide.Helpers
                 return true;
             }
 
-            if (Contains(shortcut.Name, searchText) || Contains(shortcut.Description, searchText))
+            if (MatchesText(shortcut.Name, searchText) || MatchesText(shortcut.Description, searchText))
             {
                 return true;
             }
 
             foreach (var description in shortcut.Shortcut ?? [])
             {
+                foreach (string chordLabel in GetChordSearchLabels(description))
+                {
+                    if (MatchesText(chordLabel, searchText))
+                    {
+                        return true;
+                    }
+                }
+
                 foreach (string label in GetSearchLabels(description))
                 {
-                    if (Contains(label, searchText))
+                    if (MatchesText(label, searchText))
                     {
                         return true;
                     }
@@ -35,6 +45,47 @@ namespace ShortcutGuide.Helpers
             }
 
             return false;
+        }
+
+        private static IEnumerable<string> GetChordSearchLabels(ShortcutDescription description)
+        {
+            var displayedLabels = new List<string>();
+            var semanticLabels = new List<string>();
+
+            if (description.Win)
+            {
+                displayedLabels.Add("Win");
+                semanticLabels.Add("Windows");
+            }
+
+            if (description.Ctrl)
+            {
+                displayedLabels.Add("Ctrl");
+                semanticLabels.Add("Control");
+            }
+
+            if (description.Alt)
+            {
+                displayedLabels.Add("Alt");
+                semanticLabels.Add("Alt");
+            }
+
+            if (description.Shift)
+            {
+                displayedLabels.Add("Shift");
+                semanticLabels.Add("Shift");
+            }
+
+            var keyLabels = (description.Keys ?? []).Select(GetKeySearchLabel);
+            displayedLabels.AddRange(keyLabels);
+            semanticLabels.AddRange(keyLabels);
+
+            yield return string.Join(' ', displayedLabels);
+
+            if (!displayedLabels.SequenceEqual(semanticLabels, StringComparer.Ordinal))
+            {
+                yield return string.Join(' ', semanticLabels);
+            }
         }
 
         private static IEnumerable<string> GetSearchLabels(ShortcutDescription description)
@@ -99,9 +150,19 @@ namespace ShortcutGuide.Helpers
             };
         }
 
-        private static bool Contains(string? value, string searchText)
+        private static bool MatchesText(string? value, string searchText)
         {
-            return value?.Contains(searchText, StringComparison.OrdinalIgnoreCase) == true;
+            if (value is null)
+            {
+                return false;
+            }
+
+            if (value.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return StringMatcher.FuzzyMatch(searchText, value).IsSearchPrecisionScoreMet();
         }
     }
 }
