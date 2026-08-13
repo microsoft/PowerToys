@@ -42,9 +42,7 @@ Thank you for using PowerToys!
 | --- | --- |
 | Microsoft.PowerToys.DebugEvent | Logs debugging information for diagnostics and troubleshooting. |
 | Microsoft.PowerToys.GeneralSettingsChanged | Logs changes made to general settings within PowerToys. |
-| Microsoft.PowerToys.Install_Cancel | Triggered when the PowerToys installation process is cancelled by the user before completion. |
 | Microsoft.PowerToys.Install_Fail | Triggered when the PowerToys installation process encounters an error and fails to complete. |
-| Microsoft.PowerToys.Install_Success | Logs when PowerToys is successfully installed. |
 | Microsoft.PowerToys.PowerToys_ModuleLaunchedFromSettings | Logs when a module editor is launched from the Settings UI or Quick Access panel, including which module was launched. |
 | Microsoft.PowerToys.Repair_Cancel | Triggered when a PowerToys repair operation is cancelled by the user before completion. |
 | Microsoft.PowerToys.Repair_Fail | Triggered when the PowerToys repair operation fails to complete successfully due to an error. |
@@ -57,12 +55,9 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.ShortcutConflictResolvedEvent | Triggered when a keyboard shortcut conflict is resolved in the PowerToys Settings UI. |
 | Microsoft.PowerToys.TrayFlyoutActivatedEvent | Indicates when the tray flyout menu is activated. |
 | Microsoft.PowerToys.TrayFlyoutModuleRunEvent | Logs when a utility from the tray flyout menu is run. |
-| Microsoft.PowerToys.TrayIcon_DoubleClick | Triggered when the PowerToys tray icon is double-clicked, including whether Quick Access is enabled. |
-| Microsoft.PowerToys.TrayIcon_LeftClick | Triggered when the PowerToys tray icon is left-clicked, including whether Quick Access is enabled. |
-| Microsoft.PowerToys.TrayIcon_RightClick | Triggered when the PowerToys tray icon is right-clicked, including whether Quick Access is enabled. |
 | Microsoft.PowerToys.UnInstall_Cancel | Triggered when the PowerToys uninstallation process is cancelled by the user before completion. |
 | Microsoft.PowerToys.UnInstall_Fail | Triggered when the PowerToys uninstallation process fails to complete successfully due to an error. |
-| Microsoft.PowerToys.UnInstall_Success | Logs when PowerToys is successfully uninstalled (who would do such a thing!). |
+| Microsoft.PowerToys.Uninstall_Success | Logs when PowerToys is successfully uninstalled (who would do such a thing!). |
 | Microsoft.PowerToys.UpdateCheck_Completed | Logs when an auto-update check completes, including success status, whether an update is available, and version information. |
 | Microsoft.PowerToys.UpdateDownload_Completed | Logs when an update download completes, including success status and version. |
 
@@ -104,13 +99,6 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.AlwaysOnTop_PinWindow | Occurs when a window is pinned to stay on top of other windows. |
 | Microsoft.PowerToys.AlwaysOnTop_UnpinWindow | Triggered when a pinned window is unpinned, allowing it to be behind other windows. |
 
-### Alt Window Cycle
-
-| Event Name | Description |
-| --- | --- |
-| Microsoft.PowerToys.AltWindowCycle_CycleWindow | Triggered when Alt Window Cycle cycles to the next or previous window. |
-| Microsoft.PowerToys.AltWindowCycle_EnableAltWindowCycle | Triggered when Alt Window Cycle is enabled or disabled. |
-
 ### Awake
 
 | Event Name | Description |
@@ -147,15 +135,10 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.CmdPal_DockConfiguration | Tracks dock configuration at startup including whether the dock is enabled, dock side (top, bottom, left, or right), and the list of extension commands pinned to the start, center, and end sections of the dock. |
 | Microsoft.PowerToys.CmdPal_ExtensionInvoked | Tracks extension usage including extension ID, command details, success status, and execution time. |
 | Microsoft.PowerToys.CmdPal_OpenPage | Triggered when a page is opened within the Command Palette, tracking navigation depth. |
-| Microsoft.PowerToys.CmdPal_OpenUri | Occurs when a URI is opened through the Command Palette, recording only whether it is a web URL and whether opening succeeded. |
+| Microsoft.PowerToys.CmdPal_OpenUri | Occurs when a URI is opened through the Command Palette, including whether it's a web URL. |
 | Microsoft.PowerToys.CmdPal_ReactivateInstance | Triggered when an existing Command Palette instance is reactivated. |
 | Microsoft.PowerToys.CmdPal_RunCommand | Logs when a command is executed through the Command Palette, including admin elevation status. |
 | Microsoft.PowerToys.CmdPal_RunQuery | Triggered when a search query is performed, including result count and duration. |
-| Microsoft.PowerToys.CmdPal_Run_BuildItemsForDirectory | Records the number of items discovered while building directory suggestions. |
-| Microsoft.PowerToys.CmdPal_Run_BuildListPathResolution | Records aggregate path-resolution results, options, and duration without collecting the path or search text. |
-| Microsoft.PowerToys.CmdPal_Run_CreatePathItemsFiltered | Records the number of path suggestions remaining after filtering. |
-| Microsoft.PowerToys.CmdPal_Run_LoadHistory | Records aggregate counts and duration when loading Run history. |
-| Microsoft.PowerToys.CmdPal_Run_LoadHistoryItem | Records aggregate timing, result, timeout, and URI-state information while parsing a Run history item. |
 | Microsoft.PowerToys.CmdPal_SessionDuration | Logs session metrics from launch to dismissal including duration, commands executed, pages visited, search queries, navigation depth, and errors. |
 | Microsoft.PowerToys.CmdPalDismissedOnEsc | Occurs when the Command Palette is dismissed by pressing the Escape key. |
 | Microsoft.PowerToys.CmdPalDismissedOnLostFocus | Triggered when the Command Palette is dismissed due to losing focus. |
@@ -451,7 +434,7 @@ Thank you for using PowerToys!
 | Event Name | Description |
 | --- | --- |
 | Microsoft.PowerToys.ShortcutGuide_GuideSession | Logs a Shortcut Guide session including duration and how it was closed. |
-| Microsoft.PowerToys.ShortcutGuide_Settings | Records the configured Shortcut Guide hotkey and theme without collecting the disabled-apps list. |
+| Microsoft.PowerToys.ShortcutGuide_Settings | Indicates a change in the settings related to the Shortcut Guide. |
 
 ### Text Extractor
 
@@ -484,7 +467,6 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.ZoomIt_ActivateLiveZoom | Triggered when the Live Zoom mode is entered. |
 | Microsoft.PowerToys.ZoomIt_ActivateRecord | Triggered when the Record mode is entered. |
 | Microsoft.PowerToys.ZoomIt_ActivateSnip | Triggered when the Snip mode is entered. |
-| Microsoft.PowerToys.ZoomIt_ActivateSnipOcr | Triggered when OCR is invoked from Snip mode. |
 | Microsoft.PowerToys.ZoomIt_ActivateZoom | Triggered when the Zoom mode is entered. |
 | Microsoft.PowerToys.ZoomIt_EnableZoomIt | Triggered when ZoomIt is enabled/disabled. |
 | Microsoft.PowerToys.ZoomIt_Started | Triggered when the ZoomIt process starts. |

@@ -182,6 +182,9 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         var pathResolutionTime = timer.ElapsedMilliseconds;
         _telemetryService?.LogEvent("BuildListItems_PathResolution", new PropertySet()
         {
+            { "newSearch", newSearch },
+            { "correctedSearchText", correctedSearchText },
+            { "expanded", expanded },
             { "withLeadingTilde", withLeadingTilde },
             { "couldResolvePath", couldResolvePath },
             { "isFile", isFile },
@@ -324,6 +327,13 @@ public sealed partial class RunListPage : AsyncDynamicListPage
             return;
         }
 
+        _telemetryService?.LogEvent("CreatePathItems_ResolvedPath", new PropertySet()
+        {
+            { "fullFilePath", fullFilePath },
+            { "searchText", searchText },
+            { "directoryPath", directoryPath },
+        });
+
         // Check for cancellation before file system enumeration
         if (cancellationToken.IsCancellationRequested)
         {
@@ -398,6 +408,8 @@ public sealed partial class RunListPage : AsyncDynamicListPage
 
         telemetryService?.LogEvent("CreatePathItems_Filtered", new PropertySet()
         {
+                { "dir", currentSubdir },
+                { "fuzzyString", fuzzyString },
                 { "filteredCount", newMatchedPathItems.Count },
         });
 
@@ -438,6 +450,12 @@ public sealed partial class RunListPage : AsyncDynamicListPage
     /// </summary>
     private async Task<bool> ChangeDirectory(string directoryPath, bool withLeadingTilde, CancellationToken cancellationToken)
     {
+        _telemetryService?.LogEvent("CreatePathItems_ChangedDirectory", new PropertySet()
+        {
+                    { "old", _currentSubdir },
+                    { "new", directoryPath },
+        });
+
         var newPathItems = await BuildItemsForDirectory(
             directoryPath,
             withLeadingTilde,
@@ -492,6 +510,7 @@ public sealed partial class RunListPage : AsyncDynamicListPage
 
         telemetryService?.LogEvent("BuildItemsForDirectory", new PropertySet()
         {
+            { "dir", directoryPath },
             { "fileCount", files.Length },
         });
 

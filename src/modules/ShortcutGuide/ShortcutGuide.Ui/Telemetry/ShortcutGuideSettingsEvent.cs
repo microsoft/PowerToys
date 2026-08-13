@@ -17,12 +17,14 @@ public class ShortcutGuideSettingsEvent : EventBase, IEvent
 
     public string Theme { get; }
 
+    public string DisabledApps { get; }
+
     public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServicePerformance;
 
-    public ShortcutGuideSettingsEvent(string hotkey, string theme)
+    public ShortcutGuideSettingsEvent(string hotkey, string theme, string disabledApps)
     {
-        EventName = "ShortcutGuide_Settings";
         Hotkey = hotkey;
         Theme = theme;
+        DisabledApps = disabledApps;
     }
 }
