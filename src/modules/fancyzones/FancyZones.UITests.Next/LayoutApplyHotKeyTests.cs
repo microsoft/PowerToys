@@ -36,7 +36,10 @@ public class LayoutApplyHotKeyTests : UITestBase
     {
         await CaptureFailureArtifactsBeforeCleanupAsync();
 
+        MouseHelper.LeftUp();
+        KeyboardHelper.ReleaseKey(Key.LShift);
         FancyZonesTestHelper.CloseLayoutEditor(this);
+        FancyZonesTestHelper.CloseExplorerWindows();
         files.RestoreAll();
     }
 
@@ -54,6 +57,56 @@ public class LayoutApplyHotKeyTests : UITestBase
         AssertLayoutAfterHotkey(Key.Num0, Id.GridCustomLayoutCard, expectSelected: true);
         AssertLayoutAfterHotkey(Key.Num1, Id.Grid9LayoutCard, expectSelected: true);
         AssertLayoutAfterHotkey(Key.Num2, Id.CanvasCustomLayoutCard, expectSelected: true);
+    }
+
+    /// <summary>
+    /// Verifies that the quick-layout chord applies its layout while a window move loop is active.
+    /// The checklist's historical "digit only" wording is obsolete; current FancyZones deliberately
+    /// requires Win+Ctrl+Alt while dragging to avoid stealing number keys from applications.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("FancyZones")]
+    [TestCategory("FancyZones #2")]
+    public void TestQuickLayoutHotKeyDuringDrag()
+    {
+        Arrange(quickLayoutSwitch: true, shiftDrag: false);
+
+        FancyZonesTestHelper.Step(this, "Applying Grid-9 as setup with Win+Ctrl+Alt+1");
+        KeyboardHelper.SendKeys(Key.LWin, Key.Ctrl, Key.Alt, Key.Num1);
+        Assert.IsTrue(
+            FancyZonesTestHelper.AppliedLayoutContains(LayoutFixtures.Grid9LayoutUuid, 15_000),
+            $"Could not apply the setup layout {LayoutFixtures.Grid9LayoutUuid}. " +
+            $"Last content: {FancyZonesTestHelper.ReadAppliedLayouts()}");
+
+        WindowHelper.MinimizeWindow(new IntPtr(Session.WindowHandle));
+        var window = FancyZonesTestHelper.OpenExplorerWindow(this);
+        WindowHelper.RestoreWindow(window);
+        WindowHelper.SetWindowSize(window, WindowSize.Medium);
+        Thread.Sleep(500);
+
+        var (targetX, targetY) = FancyZonesTestHelper.ScreenCenter();
+        Assert.IsTrue(
+            FancyZonesTestHelper.BeginWindowDrag(this, window, targetX, targetY),
+            "Could not start the Explorer title-bar drag needed to test quick layout switching.");
+
+        try
+        {
+            Assert.IsTrue(
+                FancyZonesTestHelper.WaitForZonesOverlayVisible(),
+                "The drag move loop never activated the zones overlay.");
+
+            FancyZonesTestHelper.Step(this, "Sending Win+Ctrl+Alt+0 while the drag is active");
+            KeyboardHelper.SendKeys(Key.LWin, Key.Ctrl, Key.Alt, Key.Num0);
+
+            Assert.IsTrue(
+                FancyZonesTestHelper.AppliedLayoutContains(LayoutFixtures.GridCustomLayoutUuid, 15_000),
+                $"The drag-specific quick-layout chord did not apply {LayoutFixtures.GridCustomLayoutUuid}. " +
+                $"Last content: {FancyZonesTestHelper.ReadAppliedLayouts()}");
+        }
+        finally
+        {
+            MouseHelper.LeftUp();
+        }
     }
 
     /// <summary>
@@ -277,7 +330,7 @@ public class LayoutApplyHotKeyTests : UITestBase
     /// Seed the editor's JSON fixtures and the quick-layout-switch settings, then relaunch PowerToys so
     /// FancyZones reads them and land on the FancyZones settings page with the module enabled.
     /// </summary>
-    private void Arrange(bool quickLayoutSwitch, bool flashZones = false)
+    private void Arrange(bool quickLayoutSwitch, bool flashZones = false, bool shiftDrag = true)
     {
         FancyZonesTestHelper.Step(this, $"Seeding layouts and hotkeys (quick layout switch: {quickLayoutSwitch})");
 
@@ -295,7 +348,7 @@ public class LayoutApplyHotKeyTests : UITestBase
         new FancyZonesSettingsSeed()
             .Set(Setting.QuickLayoutSwitch, quickLayoutSwitch)
             .Set(Setting.FlashZonesOnQuickSwitch, flashZones)
-            .Set(Setting.ShiftDrag, true)
+            .Set(Setting.ShiftDrag, shiftDrag)
             .Set(Setting.ShowZoneNumber, false)
             .Apply();
 

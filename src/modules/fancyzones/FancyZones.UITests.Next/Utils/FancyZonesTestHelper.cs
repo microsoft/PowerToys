@@ -35,6 +35,9 @@ public static class FancyZonesTestHelper
     /// <summary>Window class of the zone overlay (<c>FancyZonesLib/WorkArea.cpp</c>).</summary>
     public const string ZonesOverlayClassName = "FancyZones_ZonesOverlay";
 
+    /// <summary>Per-HWND bitmask stamped by FancyZones when a window is assigned to zones 0-63.</summary>
+    public const string ZonedWindowProperty = "FancyZones_zones";
+
     /// <summary>
     /// Default timeout for a UI lookup. Deliberately generous: every <c>Find</c> shells out to
     /// <c>winapp.exe</c>, and a single call takes tens of seconds on a loaded machine. A deadline
@@ -236,27 +239,44 @@ public static class FancyZonesTestHelper
     public static bool IsZonesOverlayVisible() =>
         WindowControl.IsAnyWindowOfClassVisible(ZonesOverlayClassName);
 
+    /// <summary>Wait until a FancyZones overlay remains visible across consecutive samples.</summary>
+    public static bool WaitForZonesOverlayVisible(int timeoutMs = 5_000) =>
+        WaitHelper.WaitForStable(
+            IsZonesOverlayVisible,
+            visible => visible,
+            timeoutMs,
+            requiredConsecutiveMatches: 5,
+            pollIntervalMS: 100).Succeeded;
+
     /// <summary>Press Shift once, then wait without moving the cursor until the overlay is stable.</summary>
     public static bool ActivateZonesWithShiftDuringDrag(UITestBase testBase, int timeoutMs = 5_000)
     {
         Step(testBase, "Pressing Shift and waiting for the zones overlay to remain visible");
         KeyboardHelper.PressKey(Key.LShift);
 
-        return WaitHelper.WaitForStable(
-            IsZonesOverlayVisible,
-            visible => visible,
-            timeoutMs,
-            requiredConsecutiveMatches: 5,
-            pollIntervalMS: 100).Succeeded;
+        return WaitForZonesOverlayVisible(timeoutMs);
     }
 
     /// <summary>Wait until no FancyZones overlay remains visible between complete drag attempts.</summary>
-    public static bool WaitForZonesOverlayHidden(int timeoutMs = 5_000) =>
+    public static bool WaitForZonesOverlayHidden(int timeoutMs = 5_000, int requiredConsecutiveMatches = 3) =>
         WaitHelper.WaitForStable(
             IsZonesOverlayVisible,
             visible => !visible,
             timeoutMs,
-            requiredConsecutiveMatches: 3,
+            requiredConsecutiveMatches,
+            pollIntervalMS: 100).Succeeded;
+
+    /// <summary>Current zone-assignment bitmask stamped on an exact HWND.</summary>
+    public static long GetZoneBitmask(IntPtr window) =>
+        WindowHelper.GetWindowPropertyValue(window, ZonedWindowProperty);
+
+    /// <summary>Wait until an exact HWND is stamped with the expected zone bitmask.</summary>
+    public static bool WaitForZoneBitmask(IntPtr window, long expected, int timeoutMs = 5_000) =>
+        WaitHelper.WaitForStable(
+            () => GetZoneBitmask(window),
+            bitmask => bitmask == expected,
+            timeoutMs,
+            requiredConsecutiveMatches: 2,
             pollIntervalMS: 100).Succeeded;
 
     /// <summary>

@@ -26,7 +26,6 @@ namespace FancyZones.UITests;
 [TestClass]
 public class OneZoneSwitchTests : UITestBase
 {
-    private const string ZonedWindowProperty = "FancyZones_zones";
     private const long RightZoneBitmask = 1L << 1;
 
     private readonly FancyZonesFiles files = new();
@@ -262,10 +261,11 @@ public class OneZoneSwitchTests : UITestBase
 
             // Keep Shift down until MoveSizeEnd stamps this exact HWND. Releasing it immediately
             // after the asynchronous mouse-up can disable snapping before MOVESIZEEND is delivered.
-            var zoneBitmask = WaitForZoneBitmask(window, 5_000);
+            var zoneReady = FancyZonesTestHelper.WaitForZoneBitmask(window, RightZoneBitmask, 5_000);
             KeyboardHelper.ReleaseKey(Key.LShift);
+            var zoneBitmask = FancyZonesTestHelper.GetZoneBitmask(window);
             var after = WindowHelper.GetWindowBounds(window);
-            if (zoneBitmask != 0)
+            if (zoneReady)
             {
                 FancyZonesTestHelper.Step(this, $"'{label}' snapped with zone bitmask 0x{zoneBitmask:X} at {after}");
                 return zoneBitmask;
@@ -283,25 +283,6 @@ public class OneZoneSwitchTests : UITestBase
 
     private static string DescribeWindow(IntPtr window) =>
         $"'{FancyZonesTestHelper.GetWindowTitle(window)}' (HWND {window})";
-
-    private static long WaitForZoneBitmask(IntPtr window, int timeoutMs)
-    {
-        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
-        long bitmask;
-        do
-        {
-            bitmask = WindowHelper.GetWindowPropertyValue(window, ZonedWindowProperty);
-            if (bitmask != 0)
-            {
-                return bitmask;
-            }
-
-            Thread.Sleep(200);
-        }
-        while (DateTime.UtcNow < deadline);
-
-        return 0;
-    }
 
     private void CloseExtraVirtualDesktop()
     {

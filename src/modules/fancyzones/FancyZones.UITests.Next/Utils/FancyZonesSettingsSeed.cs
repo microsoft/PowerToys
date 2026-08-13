@@ -116,6 +116,10 @@ public sealed class FancyZonesSettingsSeed
         public const string FlashZonesOnQuickSwitch = "fancyzones_flashZonesOnQuickSwitch";
         public const string ZoneSetChangeMoveWindows = "fancyzones_zoneSetChange_moveWindows";
         public const string AppLastZoneMoveWindows = "fancyzones_appLastZone_moveWindows";
+        public const string ExcludedApps = "fancyzones_excluded_apps";
+        public const string OverrideSnapHotkeys = "fancyzones_overrideSnapHotkeys";
+        public const string MoveWindowsBasedOnPosition = "fancyzones_moveWindowsBasedOnPosition";
+        public const string MoveWindowAcrossMonitors = "fancyzones_moveWindowAcrossMonitors";
         public const string AllowChildWindowSnap = "fancyzones_allowChildWindowSnap";
         public const string AllowPopupWindowSnap = "fancyzones_allowPopupWindowSnap";
     }
