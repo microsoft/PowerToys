@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.PowerToys.Settings.UI.Controls.UpdateStatusControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -10,9 +10,7 @@
     AutomationProperties.AutomationId="UpdateStatusControl"
     mc:Ignorable="d">
 
-    <StackPanel
-        DataContext="{Binding ViewModel, ElementName=Root}"
-        Spacing="16">
+    <StackPanel DataContext="{Binding ViewModel, ElementName=Root}" Spacing="16">
         <Grid ColumnSpacing="12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -89,16 +87,16 @@
 
         <StackPanel Spacing="8">
             <Button
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
                 AutomationProperties.AutomationId="UpdatePrimaryActionButton"
                 Command="{Binding PrimaryActionCommand}"
                 Content="{Binding PrimaryActionText, Mode=OneWay}"
-                HorizontalAlignment="Stretch"
-                HorizontalContentAlignment="Center"
                 Style="{StaticResource AccentButtonStyle}" />
             <HyperlinkButton
                 x:Uid="SeeWhatsNew"
-                AutomationProperties.AutomationId="UpdateReleaseNotesButton"
                 HorizontalAlignment="Center"
+                AutomationProperties.AutomationId="UpdateReleaseNotesButton"
                 Click="SeeWhatsNewButton_Click"
                 Style="{StaticResource TextButtonStyle}"
                 Visibility="{Binding ShowReleaseLink, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />

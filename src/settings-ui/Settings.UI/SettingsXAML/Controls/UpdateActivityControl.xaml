@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.PowerToys.Settings.UI.Controls.UpdateActivityControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -9,9 +9,7 @@
     x:Name="Root"
     mc:Ignorable="d">
 
-    <Grid
-        x:Name="ShadowHost"
-        Padding="12">
+    <Grid x:Name="ShadowHost" Padding="12">
         <Border
             x:Name="ActivitySurface"
             Width="440"
@@ -28,9 +26,7 @@
             <Border.Shadow>
                 <ThemeShadow />
             </Border.Shadow>
-            <local:UpdateStatusControl
-                x:Name="UpdateStatus"
-                ViewModel="{Binding ViewModel, ElementName=Root}" />
+            <local:UpdateStatusControl x:Name="UpdateStatus" ViewModel="{Binding ViewModel, ElementName=Root}" />
         </Border>
     </Grid>
 </UserControl>

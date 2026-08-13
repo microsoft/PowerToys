@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.PowerToys.Settings.UI.Controls.CheckUpdateControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -23,9 +23,7 @@
                 Width="20"
                 Height="20"
                 VerticalAlignment="Center">
-                <local:UpdateStateBadgeControl
-                    State="{x:Bind ViewModel.CurrentUpdateUIState, Mode=OneWay}"
-                    Visibility="{x:Bind ViewModel.IsProgressActive, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}" />
+                <local:UpdateStateBadgeControl State="{x:Bind ViewModel.CurrentUpdateUIState, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsProgressActive, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}" />
                 <ProgressRing
                     Width="18"
                     Height="18"
@@ -37,9 +35,7 @@
                 Grid.Column="1"
                 VerticalAlignment="Center"
                 Orientation="Vertical">
-                <TextBlock
-                    FontWeight="SemiBold"
-                    Text="{x:Bind ViewModel.StatusTitle, Mode=OneWay}" />
+                <TextBlock FontWeight="SemiBold" Text="{x:Bind ViewModel.StatusTitle, Mode=OneWay}" />
                 <TextBlock
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Style="{StaticResource CaptionTextBlockStyle}"
