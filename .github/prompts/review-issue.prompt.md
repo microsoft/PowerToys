@@ -14,7 +14,7 @@ For **#{{issue_number}}** produce:
 Figure out required inputs {{issue_number}} from the invocation context; if anything is missing, ask for the value or note it as a gap.
 
 # CONTEXT (brief)
-Ground evidence using `gh issue view {{issue_number}} --json number,title,body,author,createdAt,updatedAt,state,labels,milestone,reactions,comments,linkedPullRequests`. Review images or attached logs only when the active environment provides a trusted built-in tool for them; do not start repository-local download helpers. Locate the source code in the current workspace (use `rg`/`git grep` as needed). Link related issues and PRs.
+Ground evidence using `gh issue view {{issue_number}} --json number,title,body,author,createdAt,updatedAt,state,labels,milestone,reactions,comments,linkedPullRequests`. Use Copilot's standard web and execution tools to review images or attached logs when needed. Locate the source code in the current workspace (use `rg`/`git grep` as needed). Link related issues and PRs.
 
 # OVERVIEW.MD
 ## Summary
