@@ -59,8 +59,15 @@ that retain `Needs-Author-Feedback` for seven days without activity.
 - A content hash skips unchanged edits and unrelated comments.
 - Per-user rate limits, daily AI-credit limits, and per-issue concurrency bound
   repeated execution.
-- The agent has read-only issue/repository access. A separate validated
-  safe-output job owns comment, label, and duplicate-suggestion writes.
+- The agent has no shell or GitHub API tools. It can only read the checked-out
+  repository and call the structured safe-output tool.
+- Threat detection fails closed; publication requires an explicit successful
+  detection result.
+- The publishing job rebuilds evidence from the current issue and accepts only
+  deterministic product-label candidates, duplicate candidates, hashes, and
+  classifications. Stale or manipulated model output fails before any write.
+- A separate validated safe-output job owns comment, label, and
+  duplicate-suggestion writes.
 
 ## Retired automation
 
