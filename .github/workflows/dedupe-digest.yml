@@ -234,47 +234,76 @@ jobs:
               return;
             }
 
-            // --- 5b. Build and open the new digest -------------------------------
+            // --- 5b. Group flagged issues under their strongest canonical -------
+            // Each flagged issue is a duplicate to close; candidates[0] is the
+            // strongest suggested canonical (the one to keep).
+            const groups = new Map();
+            for (const f of flagged) {
+              const primary = f.candidates[0];
+              if (!groups.has(primary.number)) {
+                groups.set(primary.number, {
+                  canonical: { number: primary.number, title: primary.title },
+                  dupes: []
+                });
+              }
+              groups.get(primary.number).dupes.push({
+                number: f.number,
+                title: f.title,
+                reason: primary.reason,
+                triageUrl: f.triageUrl,
+                others: f.candidates.slice(1).map(c => c.number)
+              });
+            }
+            const groupList = Array.from(groups.values())
+              .sort((a, b) => b.canonical.number - a.canonical.number);
+            for (const g of groupList) {
+              g.dupes.sort((a, b) => b.number - a.number);
+            }
+
+            // --- 5c. Build and open the new digest -------------------------------
             const lines = [];
             lines.push(BODY_MARKER);
             lines.push(`## 🧭 Daily Duplicate Digest — ${today}`);
             lines.push('');
             lines.push(
               `AI Issue Triage flagged **${flagged.length}** open issue(s) as possible ` +
-              `duplicates. Each issue below already has a pending duplicate-close ` +
-              `suggestion from triage — review it and accept or decline on the issue itself.`
+              `duplicates, grouped under **${groupList.length}** canonical issue(s) below. ` +
+              `Each listed issue already has a pending duplicate-close suggestion from ` +
+              `triage — review it and accept or decline on the issue itself.`
             );
-            lines.push('');
-            lines.push('| Duplicate → close | Suggested canonical → keep | Why |');
-            lines.push('| --- | --- | --- |');
-            for (const f of flagged) {
-              const canonical = f.candidates[0];
-              const extra = f.candidates.slice(1).map(c => `#${c.number}`);
-              const canonCell = extra.length
-                ? `#${canonical.number} — ${canonical.title}<br/>_other: ${extra.join(', ')}_`
-                : `#${canonical.number} — ${canonical.title}`;
-              const reason = canonical.reason || '—';
-              lines.push(`| #${f.number} — ${f.title} | ${canonCell} | ${reason} |`);
-            }
-            lines.push('');
-            lines.push('---');
-            lines.push('');
-            lines.push('### Details');
-            for (const f of flagged) {
+
+            for (const g of groupList) {
               lines.push('');
-              lines.push(`#### #${f.number} — ${f.title}`);
-              lines.push(`- **Close as duplicate:** ${f.url}`);
-              lines.push('- **Suggested canonical issue(s):**');
-              for (const c of f.candidates) {
-                lines.push(`  - #${c.number} — ${c.title}${c.reason ? ` — ${c.reason}` : ''}`);
+              lines.push('---');
+              lines.push('');
+              lines.push(`### ✅ Keep #${g.canonical.number} — ${g.canonical.title}`);
+              lines.push('');
+              lines.push(
+                g.dupes.length === 1
+                  ? `The following issue looks like a duplicate of #${g.canonical.number} and can be closed:`
+                  : `The following issues look like duplicates of #${g.canonical.number} and can be closed:`
+              );
+              lines.push('');
+              for (const d of g.dupes) {
+                const reason = d.reason ? ` — ${d.reason}` : '';
+                const others = d.others.length
+                  ? ` _(also similar to ${d.others.map(n => `#${n}`).join(', ')})_`
+                  : '';
+                lines.push(
+                  `- **#${d.number} — ${d.title}**${reason}${others} ` +
+                  `([triage summary](${d.triageUrl}))`
+                );
               }
-              lines.push(`- **Triage summary:** ${f.triageUrl}`);
-              // Machine-readable carry-over markers (one per canonical candidate).
+            }
+
+            // Hidden machine-readable carry-over markers (one per dup→candidate).
+            lines.push('');
+            lines.push('<!-- carry-over state; do not edit -->');
+            for (const f of flagged) {
               for (const c of f.candidates) {
                 lines.push(`<!-- dup:ISSUE=${f.number} CANON=${c.number} -->`);
               }
             }
-            lines.push('');
             lines.push('<!-- gh-aw-workflow-id: dedupe-digest -->');
 
             const created = await github.rest.issues.create({
