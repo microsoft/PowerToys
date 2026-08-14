@@ -102,7 +102,8 @@ export class ExtensionRuntime {
    */
   private fallbackScope = new Map<string, ICommand>();
   /**
-   * Commands resolved on demand (a `provider/getCommand` result, the settings
+   * Commands resolved on demand (a `provider/getCommand` or
+   * `provider/getCommandItem` result, the settings
    * page, or a nested command carried by a command result). Keyed by id, so
    * re-resolving the same id overwrites rather than growing the registry.
    */
@@ -239,6 +240,8 @@ export class ExtensionRuntime {
           return await this.getFallbackCommands(id);
         case 'provider/getCommand':
           return await this.getCommand(id, stringField(params, 'commandId') ?? '');
+        case 'provider/getCommandItem':
+          return await this.getCommandItem(id, stringField(params, 'commandId') ?? '');
         case 'provider/getSettings':
           return this.getSettings(id);
         case 'command/invoke':
@@ -448,6 +451,14 @@ export class ExtensionRuntime {
     const command = await this.resolveCommand(commandId);
     const serialized = command
       ? await this.withMapSink(this.resolved, () => this.serializer.command(command))
+      : null;
+    this.respond(id, serialized);
+  }
+
+  private async getCommandItem(id: number | string, commandId: string): Promise<void> {
+    const item = (await this.provider?.getCommandItem?.(commandId)) ?? null;
+    const serialized = item
+      ? await this.withMapSink(this.resolved, () => this.serializer.commandItem(item))
       : null;
     this.respond(id, serialized);
   }

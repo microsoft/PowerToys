@@ -24,6 +24,7 @@ export { InvokableCommandBase } from './base/InvokableCommandBase.js';
 export { CommandItemBase, type CommandItemOptions } from './base/CommandItemBase.js';
 export { ListItemBase, type ListItemOptions } from './base/ListItemBase.js';
 export { FallbackCommandItemBase } from './base/FallbackCommandItemBase.js';
+export { ObservableBase } from './base/ObservableBase.js';
 export { Separator } from './base/Separator.js';
 
 // Settings.

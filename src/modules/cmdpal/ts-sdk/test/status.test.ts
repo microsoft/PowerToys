@@ -34,7 +34,16 @@ describe('client-side status identity', () => {
       statusId: 'status-1',
       message: { Message: 'Working', State: 0 },
       progress: { isIndeterminate: false, progressPercent: 25 },
+      context: 'extension',
     });
+  });
+
+  it('includes a page context when requested', () => {
+    const { bridge, sent } = createBridge();
+
+    bridge.showStatus('Working', 'info', undefined, 'page');
+
+    expect(sent[0]?.params).toMatchObject({ context: 'page' });
   });
 
   it('mints a distinct id for each shown status', () => {
@@ -61,6 +70,7 @@ describe('client-side status identity', () => {
       statusId: 'status-1',
       message: { Message: 'Almost done', State: 2 },
       progress: { isIndeterminate: false, progressPercent: 75 },
+      context: 'extension',
     });
   });
 

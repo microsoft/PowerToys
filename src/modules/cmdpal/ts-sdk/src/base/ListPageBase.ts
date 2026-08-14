@@ -11,6 +11,7 @@ import type {
   IconInfo,
   OptionalColor,
 } from '../types.js';
+import { ObservableBase } from './ObservableBase.js';
 
 /**
  * Base class for a page that shows a scrollable, static list of items.
@@ -28,13 +29,16 @@ import type {
  * }
  * ```
  */
-export abstract class ListPageBase implements IListPage {
+export abstract class ListPageBase extends ObservableBase implements IListPage {
   /** Unique identifier for the page. */
   abstract readonly id: string;
   /** Internal name of the page. */
   abstract readonly name: string;
   /** Title shown at the top of the page. */
   abstract readonly title: string;
+  protected get notificationId(): string {
+    return this.id;
+  }
 
   /** Icon shown for the page. */
   icon?: IconInfo | null = null;

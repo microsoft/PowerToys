@@ -20,7 +20,8 @@ export function setNotificationSink(next: NotificationSink | null): void {
 
 /**
  * Sends an Extension to Host JSON-RPC notification, such as
- * `listPage/itemsChanged` or `command/propChanged`. Silently dropped until the
+ * `listPage/itemsChanged`, `contentPage/itemsChanged`, or `command/propChanged`.
+ * Silently dropped until the
  * runtime installs a sink, so it is safe to call outside a host.
  *
  * @param method JSON-RPC notification method name.

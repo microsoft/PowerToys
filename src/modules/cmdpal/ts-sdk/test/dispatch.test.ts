@@ -18,6 +18,8 @@ import {
   type JsonRpcResponse,
 } from '../src/runtime/jsonrpc.js';
 import { Settings, ToggleSetting } from '../src/index.js';
+import { setNotificationSink } from '../src/runtime/notifications.js';
+import { ListPageBase } from '../src/base/ListPageBase.js';
 
 interface Harness {
   runtime: ExtensionRuntime;
@@ -79,6 +81,20 @@ const provider: ICommandProvider = {
   },
 };
 
+const providerWithCommandItem: ICommandProvider = {
+  ...provider,
+  getCommandItem(id) {
+    return id === 'pinned'
+      ? {
+          command: { id: 'pinned', name: 'Pinned' },
+          title: 'Pinned',
+          subtitle: 'From anywhere',
+          moreCommands: [],
+        }
+      : null;
+  },
+};
+
 describe('ExtensionRuntime request dispatch', () => {
   it('answers initialize with the extension capabilities', async () => {
     const { runtime, sent } = createHarness();
@@ -124,6 +140,26 @@ describe('ExtensionRuntime request dispatch', () => {
     });
 
     expect(responseFor(sent, 3)?.result).toEqual({ Kind: 6, Args: { Message: 'hi' } });
+  });
+
+  it('returns a full command item by id', async () => {
+    const { runtime, sent } = createHarness();
+    await runtime.setProvider(providerWithCommandItem);
+
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 8,
+      method: 'provider/getCommandItem',
+      params: { commandId: 'pinned' },
+    });
+
+    expect(responseFor(sent, 8)?.result).toEqual({
+      id: 'pinned',
+      title: 'Pinned',
+      displayName: 'Pinned',
+      subtitle: 'From anywhere',
+      command: { id: 'pinned', name: 'Pinned', displayName: 'Pinned' },
+    });
   });
 
   it('returns list page items', async () => {
@@ -195,6 +231,38 @@ describe('ExtensionRuntime request dispatch', () => {
 });
 
 describe('ExtensionRuntime notification dispatch', () => {
+  it('sends the current typed property value for observable SDK models', () => {
+    const notifications: Array<{ method: string; params: unknown }> = [];
+    setNotificationSink((method, params) => notifications.push({ method, params }));
+
+    class LoadingPage extends ListPageBase {
+      readonly id = 'loading';
+      readonly name = 'Loading';
+      readonly title = 'Loading';
+      override isLoading = false;
+
+      getItems() {
+        return [];
+      }
+
+      setLoading(value: boolean): void {
+        this.isLoading = value;
+        this.notifyPropChanged('isLoading');
+      }
+    }
+
+    const page = new LoadingPage();
+    page.setLoading(true);
+
+    expect(notifications).toEqual([
+      {
+        method: 'command/propChanged',
+        params: { commandId: 'loading', properties: { isLoading: true } },
+      },
+    ]);
+    setNotificationSink(null);
+  });
+
   it('disposes the runtime and the provider on a dispose notification', async () => {
     let providerDisposed = false;
     const disposableProvider: ICommandProvider = {

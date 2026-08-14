@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 import type { ContextItem, Details, ICommand, IListItem, IconInfo, Tag } from '../types.js';
+import { ObservableBase } from './ObservableBase.js';
 
 /** Options for constructing a {@link ListItemBase}. */
 export interface ListItemOptions {
@@ -27,9 +28,12 @@ export interface ListItemOptions {
 }
 
 /** A concrete, ready-to-use {@link IListItem} built from a plain options bag. */
-export class ListItemBase implements IListItem {
+export class ListItemBase extends ObservableBase implements IListItem {
   /** The command run when the item is activated. */
   command: ICommand;
+  protected get notificationId(): string {
+    return this.command.id;
+  }
   /** Primary text shown for the item. */
   title: string;
   /** Secondary text shown below the title. */
@@ -53,6 +57,7 @@ export class ListItemBase implements IListItem {
    * @param options Values copied onto the new item.
    */
   constructor(options: ListItemOptions) {
+    super();
     this.command = options.command;
     this.title = options.title;
     this.subtitle = options.subtitle;
