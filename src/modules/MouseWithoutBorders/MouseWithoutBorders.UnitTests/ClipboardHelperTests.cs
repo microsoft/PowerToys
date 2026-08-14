@@ -355,6 +355,37 @@ public sealed class ClipboardHelperTests
     }
 
     [TestMethod]
+    public void Clipboard_RepeatedReleaseRequestsDoNotExtendTransientTimeout()
+    {
+        string directory = Directory.CreateTempSubdirectory().FullName;
+        string path = Path.Combine(directory, "file.txt");
+        File.WriteAllText(path, "content");
+
+        TimeSpan originalTimeout = Clipboard.TransientLeaseReleaseTimeout;
+        try
+        {
+            Clipboard.TransientLeaseReleaseTimeout = TimeSpan.FromMilliseconds(500);
+            LocalPathLease? lease = LocalPathLease.TryCreateForCurrentUser(path);
+            Assert.IsNotNull(lease);
+            long validationGeneration = Clipboard.BeginTransientDragFileValidation();
+            Assert.IsTrue(Clipboard.TrySetValidatedTransientDragFile(validationGeneration, path, lease));
+            Clipboard.RequestLastDragDropFileReleaseAfterSend();
+
+            System.Threading.Thread.Sleep(350);
+            Clipboard.RequestLastDragDropFileReleaseAfterSend();
+
+            Assert.IsTrue(SpinWait.SpinUntil(() => TryOpenForWrite(path), TimeSpan.FromMilliseconds(300)));
+            Assert.IsNull(Clipboard.LastDragDropFile);
+        }
+        finally
+        {
+            Clipboard.LastDragDropFile = null;
+            Clipboard.TransientLeaseReleaseTimeout = originalTimeout;
+            Directory.Delete(directory, true);
+        }
+    }
+
+    [TestMethod]
     public void Clipboard_TransientValidationDoesNotPublishAfterButtonUp()
     {
         string directory = Directory.CreateTempSubdirectory().FullName;

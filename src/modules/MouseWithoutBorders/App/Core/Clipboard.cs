@@ -218,9 +218,8 @@ internal static class Clipboard
             {
                 ownerLeaseToRelease = ClearLastDragDropFileLocked(out timerToDispose);
             }
-            else
+            else if (lastDragDropFileReleaseTimer == null)
             {
-                timerToDispose = lastDragDropFileReleaseTimer;
                 long generation = lastDragDropFileGeneration;
                 lastDragDropFileReleaseTimer = new ThreadingTimer(
                     ReleaseExpiredTransientDragFile,
