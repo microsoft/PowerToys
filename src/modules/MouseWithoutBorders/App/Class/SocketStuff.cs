@@ -1707,13 +1707,7 @@ namespace MouseWithoutBorders.Class
                             {
                                 try
                                 {
-                                    leasedFileStream = new FileStream(
-                                        pathLease.PhysicalPath,
-                                        FileMode.Open,
-                                        FileAccess.Read,
-                                        FileShare.Read,
-                                        Common.NETWORK_STREAM_BUF_SIZE,
-                                        FileOptions.SequentialScan);
+                                    leasedFileStream = pathLease.OpenReadStream(Common.NETWORK_STREAM_BUF_SIZE);
                                 }
                                 catch (Exception e)
                                 {

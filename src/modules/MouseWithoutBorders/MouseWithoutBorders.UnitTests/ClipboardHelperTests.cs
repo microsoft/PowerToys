@@ -31,6 +31,40 @@ public sealed class ClipboardHelperTests
         Assert.IsNull(lease);
     }
 
+    [DataTestMethod]
+    [DataRow(@"\Device\HarddiskVolume3\Users")]
+    [DataRow(@"\Device\HarddiskVolume3\mount\redirect")]
+    [DataRow(@"\??\C:\Users")]
+    [DataRow(@"\Device\Mup")]
+    [DataRow(@"\Device\LanmanRedirector")]
+    [DataRow(@"\Device\WebDavRedirector")]
+    public void TryGetLocalDevicePath_RejectsNonVolumeRootTargets(string target)
+    {
+        Assert.IsFalse(LocalPathLease.TryGetLocalDevicePath(
+            @"C:\source\file.txt",
+            _ => DriveType.Fixed,
+            _ => target,
+            out _,
+            out _,
+            out _));
+    }
+
+    [TestMethod]
+    public void TryGetLocalDevicePath_AcceptsDirectLocalVolumeRoot()
+    {
+        Assert.IsTrue(LocalPathLease.TryGetLocalDevicePath(
+            @"C:\source\file.txt",
+            _ => DriveType.Fixed,
+            _ => @"\Device\HarddiskVolume3",
+            out string displayPath,
+            out string deviceRoot,
+            out string physicalPath));
+
+        Assert.AreEqual(@"C:\source\file.txt", displayPath);
+        Assert.AreEqual(@"\\?\GLOBALROOT\Device\HarddiskVolume3", deviceRoot);
+        Assert.AreEqual(@"\\?\GLOBALROOT\Device\HarddiskVolume3\source\file.txt", physicalPath);
+    }
+
     [TestMethod]
     public void LocalPathLease_RejectsPathTraversingSymbolicLink()
     {
@@ -142,13 +176,56 @@ public sealed class ClipboardHelperTests
             Assert.IsNotNull(lease);
 
             Assert.IsFalse(TryOpenForWrite(path));
-            using FileStream stream = new(lease.PhysicalPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using FileStream stream = lease.OpenReadStream(4096);
+            Assert.IsNotNull(stream);
             using StreamReader reader = new(stream);
             Assert.AreEqual("content", reader.ReadToEnd());
             Assert.IsFalse(TryMoveDirectory(sourceDirectory, movedDirectory));
         }
         finally
         {
+            Directory.Delete(directory, true);
+        }
+    }
+
+    [TestMethod]
+    public void LocalPathLease_OpenReadStreamOwnsIndependentFinalHandles()
+    {
+        string directory = Directory.CreateTempSubdirectory().FullName;
+        string path = Path.Combine(directory, "file.txt");
+        File.WriteAllText(path, "content");
+
+        LocalPathLease? lease = null;
+        FileStream? firstStream = null;
+        FileStream? secondStream = null;
+        try
+        {
+            lease = LocalPathLease.TryCreateForCurrentUser(path);
+            Assert.IsNotNull(lease);
+
+            firstStream = lease.OpenReadStream(4096);
+            secondStream = lease.OpenReadStream(4096);
+            Assert.IsNotNull(firstStream);
+            Assert.IsNotNull(secondStream);
+
+            lease.Dispose();
+            lease = null;
+
+            Assert.AreEqual((int)'c', firstStream.ReadByte());
+            Assert.AreEqual((int)'c', secondStream.ReadByte());
+            Assert.IsFalse(TryOpenForWrite(path));
+
+            firstStream.Dispose();
+            firstStream = null;
+            secondStream.Dispose();
+            secondStream = null;
+            Assert.IsTrue(TryOpenForWrite(path));
+        }
+        finally
+        {
+            firstStream?.Dispose();
+            secondStream?.Dispose();
+            lease?.Dispose();
             Directory.Delete(directory, true);
         }
     }

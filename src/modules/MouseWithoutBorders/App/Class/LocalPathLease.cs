@@ -21,23 +21,28 @@ internal sealed class LocalPathLease : IDisposable
     private const uint OpenExisting = 3;
     private const uint FileFlagBackupSemantics = 0x02000000;
     private const uint FileFlagOpenReparsePoint = 0x00200000;
+    private const uint FileFlagSequentialScan = 0x08000000;
 
     private readonly object _lock = new();
     private List<SafeFileHandle> _handles;
+    private SafeFileHandle _fileHandle;
     private int _referenceCount = 1;
 
-    private LocalPathLease(string displayPath, string physicalPath, bool isDirectory, long length, List<SafeFileHandle> handles)
+    private LocalPathLease(
+        string displayPath,
+        bool isDirectory,
+        long length,
+        List<SafeFileHandle> handles,
+        SafeFileHandle fileHandle)
     {
         DisplayPath = displayPath;
-        PhysicalPath = physicalPath;
         IsDirectory = isDirectory;
         Length = length;
         _handles = handles;
+        _fileHandle = fileHandle;
     }
 
     internal string DisplayPath { get; }
-
-    internal string PhysicalPath { get; }
 
     internal bool IsDirectory { get; }
 
@@ -57,6 +62,39 @@ internal sealed class LocalPathLease : IDisposable
         }
     }
 
+    internal FileStream OpenReadStream(int bufferSize)
+    {
+        lock (_lock)
+        {
+            if (_referenceCount == 0 || IsDirectory || _fileHandle == null || _fileHandle.IsInvalid)
+            {
+                return null;
+            }
+
+            SafeFileHandle reopenedHandle = ReOpenFile(
+                _fileHandle,
+                GenericRead,
+                FileShareRead,
+                FileFlagSequentialScan);
+
+            if (reopenedHandle.IsInvalid)
+            {
+                reopenedHandle.Dispose();
+                return null;
+            }
+
+            try
+            {
+                return new FileStream(reopenedHandle, FileAccess.Read, bufferSize, false);
+            }
+            catch (Exception)
+            {
+                reopenedHandle.Dispose();
+                return null;
+            }
+        }
+    }
+
     public void Dispose()
     {
         List<SafeFileHandle> handles = null;
@@ -70,6 +108,7 @@ internal sealed class LocalPathLease : IDisposable
 
             handles = _handles;
             _handles = null;
+            _fileHandle = null;
         }
 
         foreach (SafeFileHandle handle in handles)
@@ -141,7 +180,8 @@ internal sealed class LocalPathLease : IDisposable
             }
 
             bool isDirectory = (attributes & FileAttributes.Directory) != 0;
-            LocalPathLease lease = new(displayPath, physicalPath, isDirectory, length, handles);
+            SafeFileHandle fileHandle = handles[^1];
+            LocalPathLease lease = new(displayPath, isDirectory, length, handles, fileHandle);
             handles = null;
             return lease;
         }
@@ -167,6 +207,23 @@ internal sealed class LocalPathLease : IDisposable
         out string deviceRoot,
         out string physicalPath)
     {
+        return TryGetLocalDevicePath(
+            path,
+            root => new DriveInfo(root).DriveType,
+            QueryDosDeviceTarget,
+            out displayPath,
+            out deviceRoot,
+            out physicalPath);
+    }
+
+    internal static bool TryGetLocalDevicePath(
+        string path,
+        Func<string, DriveType> getDriveType,
+        Func<string, string> queryDosDevice,
+        out string displayPath,
+        out string deviceRoot,
+        out string physicalPath)
+    {
         displayPath = null;
         deviceRoot = null;
         physicalPath = null;
@@ -183,22 +240,13 @@ internal sealed class LocalPathLease : IDisposable
         if (string.IsNullOrEmpty(root)
             || root.Length != 3
             || root[1] != Path.VolumeSeparatorChar
-            || new DriveInfo(root).DriveType is DriveType.Network or DriveType.NoRootDirectory or DriveType.Unknown)
+            || getDriveType(root) is DriveType.Network or DriveType.NoRootDirectory or DriveType.Unknown)
         {
             return false;
         }
 
-        StringBuilder targetBuffer = new(32768);
-        if (QueryDosDevice(root[..2], targetBuffer, targetBuffer.Capacity) == 0)
-        {
-            return false;
-        }
-
-        string target = targetBuffer.ToString().Split('\0')[0].TrimEnd(Path.DirectorySeparatorChar);
-        if (!target.StartsWith(@"\Device\", StringComparison.OrdinalIgnoreCase)
-            || target.StartsWith(@"\Device\Mup", StringComparison.OrdinalIgnoreCase)
-            || target.StartsWith(@"\Device\LanmanRedirector", StringComparison.OrdinalIgnoreCase)
-            || target.StartsWith(@"\Device\WebDavRedirector", StringComparison.OrdinalIgnoreCase))
+        string target = queryDosDevice(root[..2])?.TrimEnd(Path.DirectorySeparatorChar);
+        if (!IsDirectLocalVolumeDeviceTarget(target))
         {
             return false;
         }
@@ -207,6 +255,36 @@ internal sealed class LocalPathLease : IDisposable
         deviceRoot = @"\\?\GLOBALROOT" + target;
         physicalPath = deviceRoot + fullPath[(root.Length - 1)..];
         return true;
+    }
+
+    private static string QueryDosDeviceTarget(string deviceName)
+    {
+        StringBuilder targetBuffer = new(32768);
+        return QueryDosDevice(deviceName, targetBuffer, targetBuffer.Capacity) == 0
+            ? null
+            : targetBuffer.ToString().Split('\0')[0];
+    }
+
+    private static bool IsDirectLocalVolumeDeviceTarget(string target)
+    {
+        const string devicePrefix = @"\Device\";
+        if (string.IsNullOrEmpty(target)
+            || !target.StartsWith(devicePrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        string deviceName = target[devicePrefix.Length..];
+
+        // Only direct volume-device roots are accepted. SUBST/custom DOS mappings,
+        // directory mount points, and cloud/symbolic-link/reparse-backed paths fail
+        // closed because retaining only the final handle cannot stabilize path
+        // components embedded inside the DOS-device target.
+        return deviceName.Length > 0
+            && !deviceName.Contains(Path.DirectorySeparatorChar)
+            && !deviceName.Equals("Mup", StringComparison.OrdinalIgnoreCase)
+            && !deviceName.Equals("LanmanRedirector", StringComparison.OrdinalIgnoreCase)
+            && !deviceName.Equals("WebDavRedirector", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool TryOpenComponent(
@@ -273,6 +351,13 @@ internal sealed class LocalPathLease : IDisposable
         uint creationDisposition,
         uint flagsAndAttributes,
         IntPtr templateFile);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern SafeFileHandle ReOpenFile(
+        SafeFileHandle originalFile,
+        uint desiredAccess,
+        uint shareMode,
+        uint flagsAndAttributes);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
