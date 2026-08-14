@@ -272,6 +272,62 @@ class IssueContextTests(unittest.TestCase):
             "Product-General",
         )
 
+    def test_title_prefix_maps_to_existing_product_label(self):
+        labels = [{"name": "Product-Screen Ruler"}, {"name": "Product-FancyZones"}]
+        self.assertEqual(
+            CONTEXT.title_bracket_segments("[Screen Ruler] Settings crash"),
+            ["Screen Ruler"],
+        )
+        self.assertEqual(
+            CONTEXT.title_bracket_segments("[Screen Ruler][Settings] crash"),
+            ["Screen Ruler", "Settings"],
+        )
+        self.assertEqual(CONTEXT.title_bracket_segments("No brackets here"), [])
+        self.assertEqual(
+            CONTEXT.title_product_label("[Screen Ruler] Settings crash", labels),
+            "Product-Screen Ruler",
+        )
+        self.assertEqual(
+            CONTEXT.title_product_label("[Bug] something broke", labels),
+            "None",
+        )
+
+    def test_available_product_labels_are_sorted_and_filtered(self):
+        labels = [
+            {"name": "Product-Screen Ruler"},
+            {"name": "Needs-Triage"},
+            {"name": "Product-Awake"},
+        ]
+        self.assertEqual(
+            CONTEXT.available_product_labels(labels),
+            ["Product-Awake", "Product-Screen Ruler"],
+        )
+
+    def test_prepare_labels_bracketed_title_without_area_section(self):
+        issue = {
+            "number": 42,
+            "title": "[Screen Ruler] Settings crashes on legacy units value",
+            "body": (
+                "## Description\n\nSettings crashes when leaving the Screen "
+                "Ruler page with a legacy measurement-unit value."
+            ),
+            "user": {"login": "alice"},
+            "labels": [],
+        }
+
+        class ScreenRulerApi(FakeApi):
+            def list_labels(self):
+                return [{"name": "Product-Screen Ruler"}]
+
+        context, _, should_process = CONTEXT.prepare(
+            {"action": "opened", "issue": issue},
+            ScreenRulerApi(),
+        )
+        self.assertTrue(should_process)
+        self.assertIn("Detected area: Screen Ruler", context)
+        self.assertIn("Candidate product label: Product-Screen Ruler", context)
+        self.assertIn("Available product labels: Product-Screen Ruler", context)
+
     def test_context_redacts_report_attachment_urls(self):
         context = CONTEXT.render_context(
             {

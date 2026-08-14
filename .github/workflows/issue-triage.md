@@ -772,8 +772,13 @@ Call `publish_triage_summary` exactly once with:
 - `summary`: a factual one- or two-sentence summary.
 - `suggested_area`: copy `Detected area` from the deterministic evidence.
 - `product_label`: copy `Candidate product label` from the deterministic
-  evidence. When the evidence says `None`, send the literal string `None`;
-  never send JSON null.
+  evidence. When the evidence says `None`, you may select the single
+  best-matching label from the `Available product labels` list if the issue
+  clearly concerns that product (for example a `[Module]` title prefix or
+  unambiguous references in the title or body); send that exact label string.
+  If no listed product clearly applies, send the literal string `None`. Never
+  send JSON null and never invent a label that is absent from
+  `Available product labels`.
 - `powertoys_version`: copy `PowerToys version` from the deterministic evidence.
 
 The deterministic publisher independently verifies the latest stable release.

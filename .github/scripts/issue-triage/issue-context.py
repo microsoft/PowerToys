@@ -405,6 +405,33 @@ def product_label(area, labels):
     return "None"
 
 
+def title_bracket_segments(title):
+    match = re.match(r"\s*((?:\[[^\]]*\]\s*)+)", title or "")
+    if not match:
+        return []
+    return [
+        segment.strip()
+        for segment in re.findall(r"\[([^\]]*)\]", match.group(1))
+        if segment.strip()
+    ]
+
+
+def title_product_label(title, labels):
+    for segment in title_bracket_segments(title):
+        candidate = product_label(segment, labels)
+        if candidate != "None":
+            return candidate
+    return "None"
+
+
+def available_product_labels(labels):
+    names = {
+        label.get("name", "") if isinstance(label, dict) else str(label)
+        for label in labels
+    }
+    return sorted(name for name in names if name.startswith("Product-"))
+
+
 def build_queries(repository, title, body, label):
     technical, concepts = search_terms(title, body)
     scope = f"repo:{repository} is:issue"
@@ -593,6 +620,8 @@ def render_context(issue, facts, queries, candidates, digest):
         f"Issue kind: {facts['issue_kind']}",
         f"Detected area: {facts['area']}",
         f"Candidate product label: {facts['product_label']}",
+        "Available product labels: "
+        + (", ".join(facts.get("available_product_labels", [])) or "None"),
         f"PowerToys version: {facts['version']}",
         "Latest stable PowerToys version: "
         f"{facts.get('latest_stable_version', 'Unavailable')}",
@@ -656,6 +685,12 @@ def prepare(event, api):
     labels = api.list_labels()
     area = parse_area(issue.get("body", ""), issue.get("title", ""))
     desired_label = product_label(area, labels)
+    if desired_label == "None":
+        title_label = title_product_label(issue.get("title", ""), labels)
+        if title_label != "None":
+            desired_label = title_label
+            if area == "Unknown":
+                area = title_label[len("Product-"):]
     issue_for_ranking = dict(issue)
     issue_for_ranking["labels"] = list(issue.get("labels") or [])
     if desired_label != "None":
@@ -667,6 +702,7 @@ def prepare(event, api):
         "issue_kind": "BUG" if is_bug_template(issue.get("body", "")) else "OTHER",
         "area": area,
         "product_label": desired_label,
+        "available_product_labels": available_product_labels(labels),
         "version": reported_version,
         "latest_stable_version": stable_version,
         "version_status": version_status(reported_version, stable_version),
