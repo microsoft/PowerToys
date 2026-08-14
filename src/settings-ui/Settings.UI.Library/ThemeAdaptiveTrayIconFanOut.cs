@@ -96,7 +96,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 return;
             }
 
-            var settingsJson = File.ReadAllText(SettingsUtils.Default.GetSettingsFilePath(AwakeSettings.ModuleName));
+            var settingsJson = File.ReadAllText(SettingsUtils.Default.GetSettingsFilePath(AwakeSettings.ModuleName)).Trim('\0');
             sendConfigMsg("{\"powertoys\":{\"Awake\":" + settingsJson + "}}");
         }
 
@@ -143,7 +143,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
 
             var path = settingsUtils.GetSettingsFilePath(moduleName);
-            var root = JsonNode.Parse(File.ReadAllText(path)) as JsonObject;
+            var root = JsonNode.Parse(File.ReadAllText(path).Trim('\0')) as JsonObject;
             if (root == null)
             {
                 Logger.LogWarning($"Skipping theme-adaptive tray fan-out for {moduleName}: settings JSON was not an object.");
