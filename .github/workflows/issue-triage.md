@@ -27,7 +27,7 @@ permissions:
   copilot-requests: write
 steps:
   - name: Set up Python
-    uses: actions/setup-python@v7
+    uses: actions/setup-python@v7.0.0
     with:
       python-version: "3.12"
   - name: Prepare deterministic issue evidence
@@ -125,7 +125,7 @@ safe-outputs:
           options: [ENGLISH, NON_ENGLISH, UNCERTAIN]
       steps:
         - name: Upsert canonical triage summary
-          uses: actions/github-script@v9
+          uses: actions/github-script@v9.0.0
           with:
             script: |
               const fs = require('fs');
