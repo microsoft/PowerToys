@@ -30,6 +30,16 @@ public sealed class FancyZonesEditorFiles
 
     public JsonFile LayoutTemplates { get; }
 
+    public void RestageAll()
+    {
+        Parameters.Restage();
+        AppliedLayouts.Restage();
+        CustomLayouts.Restage();
+        DefaultLayouts.Restage();
+        LayoutHotkeys.Restage();
+        LayoutTemplates.Restage();
+    }
+
     public void RestoreAll()
     {
         Parameters.Restore();

@@ -87,9 +87,7 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
         Assert.AreEqual(key, ReadSelectedHotkeyValue());
 
         EditorUiTestHelper.Step(this, "Saving assigned layout shortcut");
-        Session.Find<Button>(EditorUiTestHelper.ElementName.Save).Click();
-
-        AssertLayoutHasHotkey(target.Uuid, 3);
+        SaveHotkeyAndWait(target.Uuid, 3);
 
         var checkLayout = Layouts[3];
         EditorUiTestHelper.OpenEditLayoutDialog(this, Session, checkLayout.Name);
@@ -137,7 +135,7 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
         {
             EditorUiTestHelper.OpenEditLayoutDialog(this, Session, name);
             SelectHotkeyOption(name, "None");
-            Session.Find<Button>(EditorUiTestHelper.ElementName.Save).Click();
+            SaveHotkeyAndWait(Layouts.First(layout => layout.Name == name).Uuid, null);
         }
 
         var target = Layouts[3];
@@ -146,9 +144,7 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
             var expected = key.ToString(CultureInfo.InvariantCulture);
             EditorUiTestHelper.OpenEditLayoutDialog(this, Session, target.Name);
             SelectHotkeyOption(target.Name, expected);
-            Session.Find<Button>(EditorUiTestHelper.ElementName.Save).Click();
-
-            AssertLayoutHasHotkey(target.Uuid, key);
+            SaveHotkeyAndWait(target.Uuid, key);
 
             EditorUiTestHelper.OpenEditLayoutDialog(this, Session, target.Name);
             Assert.AreEqual(expected, ReadSelectedHotkeyValue(), $"Assigned key '{expected}' was not persisted.");
@@ -170,9 +166,7 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
         Assert.AreEqual("None", ReadSelectedHotkeyValue());
 
         EditorUiTestHelper.Step(this, "Saving layout shortcut reset");
-        Session.Find<Button>(EditorUiTestHelper.ElementName.Save).Click();
-
-        var data = EditorUiTestHelper.ReadLayoutHotkeys();
+        var data = SaveHotkeyAndWait(target.Uuid, null);
         Assert.IsFalse(data.LayoutHotkeys.Any(x => x.LayoutId == target.Uuid && x.Key == assignedKey));
 
         var checkLayout = Layouts[3];
@@ -306,11 +300,23 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
         button?.Invoke();
     }
 
-    private static void AssertLayoutHasHotkey(string layoutUuid, int expectedKey)
+    private LayoutHotkeys.LayoutHotkeysWrapper SaveHotkeyAndWait(string layoutUuid, int? expectedKey)
     {
-        var actualData = EditorUiTestHelper.ReadLayoutHotkeys();
-        Assert.IsTrue(
-            actualData.LayoutHotkeys.Any(x => x.LayoutId == layoutUuid && x.Key == expectedKey),
-            $"Expected layout '{layoutUuid}' to own key '{expectedKey}' in layout-hotkeys.json.");
+        EditorUiTestHelper.Step(
+            this,
+            expectedKey.HasValue
+                ? $"Saving layout shortcut {expectedKey.Value} for '{layoutUuid}'"
+                : $"Saving removal of the layout shortcut for '{layoutUuid}'");
+        Session.Find<Button>(EditorUiTestHelper.ElementName.Save).Invoke();
+
+        return EditorUiTestHelper.WaitForLayoutHotkeys(
+            this,
+            data => expectedKey.HasValue
+                                ? data.LayoutHotkeys.Count(item => item.LayoutId == layoutUuid) == 1 &&
+                                    data.LayoutHotkeys.Any(item => item.LayoutId == layoutUuid && item.Key == expectedKey.Value)
+                : !data.LayoutHotkeys.Any(item => item.LayoutId == layoutUuid),
+            expectedKey.HasValue
+                ? $"layout '{layoutUuid}' to own key {expectedKey.Value}"
+                : $"layout '{layoutUuid}' to have no assigned key");
     }
 }

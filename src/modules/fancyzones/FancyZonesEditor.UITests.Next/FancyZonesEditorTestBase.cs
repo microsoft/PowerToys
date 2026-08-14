@@ -19,6 +19,14 @@ public abstract class FancyZonesEditorTestBase : UITestBase
 
     protected FancyZonesEditorFiles Files { get; }
 
+    protected override void PrepareTestState()
+    {
+        Assert.IsTrue(
+            WindowControl.TryKillProcessTreeByNameAndWait("PowerToys.FancyZonesEditor", 10_000),
+            "A stale FancyZones Editor process was still running before fixture restaging.");
+        Files.RestageAll();
+    }
+
     [TestCleanup]
     public async Task CleanupEditorTest()
     {
