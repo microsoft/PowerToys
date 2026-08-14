@@ -175,6 +175,11 @@ namespace Microsoft.PowerToys.Settings.UI
             }
         }
 
+        public void BeginWindowSession()
+        {
+            shellPage.BeginWindowSession();
+        }
+
         public void CloseHiddenWindow()
         {
             var hWnd = WindowNative.GetWindowHandle(this);

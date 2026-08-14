@@ -25,6 +25,9 @@ The **Hold Windows key** setting is independent of the activation shortcut:
 - **Show taskbar indicators** is the default and always hides the indicators when the Windows key is released.
 - **Open Shortcut Guide** can close on Windows-key release or remain open.
 
+- Use the title-bar search box to filter shortcuts on the selected application page
+- Press Ctrl+F to focus search. Escape clears an active search before dismissing the overlay
+- 
 The hold duration accepts values from 100 through 5,000 milliseconds and defaults to 900 milliseconds.
 
 ## Build and Debug Instructions
