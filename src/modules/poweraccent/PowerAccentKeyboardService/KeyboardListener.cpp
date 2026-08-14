@@ -37,11 +37,42 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                 auto errorMessage = get_last_error_message(errorCode);
                 Logger::error(errorMessage.has_value() ? errorMessage.value() : L"");
             }
+
+            // The toolbar is normally hidden only when the held letter's WM_KEYUP reaches
+            // this hook. If that key-up is missed (for example the user switches focus to
+            // another window while the bar is up, the hook times out, or input is dropped
+            // during heavy typing or gaming), nothing else hides the bar and it stays stuck
+            // on screen until the process is killed. To recover, also listen for the OS
+            // foreground window changing: if focus moves to another process while the bar
+            // is visible, hide it. WINEVENT_SKIPOWNPROCESS makes the OS skip our own
+            // windows, so showing the bar never triggers this.
+            // Guard against a repeat InitHook overwriting a live handle and leaking it.
+            if (!s_foregroundEventHook)
+            {
+                s_foregroundEventHook = SetWinEventHook(
+                    EVENT_SYSTEM_FOREGROUND,
+                    EVENT_SYSTEM_FOREGROUND,
+                    nullptr,
+                    ForegroundEventProc,
+                    0,
+                    0,
+                    WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+                if (!s_foregroundEventHook)
+                {
+                    Logger::error(L"Failed to set foreground win event hook for stuck-toolbar recovery");
+                }
+            }
         }
     }
 
     void KeyboardListener::UnInitHook()
     {
+        if (s_foregroundEventHook)
+        {
+            UnhookWinEvent(s_foregroundEventHook);
+            s_foregroundEventHook = nullptr;
+        }
+
         if (s_llKeyboardHook)
         {
             if (UnhookWindowsHookEx(s_llKeyboardHook))
@@ -433,6 +464,41 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         }
 
         return false;
+    }
+
+    // Hides the accent bar when focus moves to another process while it is shown
+    // (stuck-toolbar recovery, see InitHook). The held letter's key-up was lost, so the
+    // normal hide path never ran. Hiding with InputType::None inserts nothing and cannot
+    // corrupt the user's text. WINEVENT_SKIPOWNPROCESS already excludes our own windows.
+    void CALLBACK KeyboardListener::ForegroundEventProc(HWINEVENTHOOK, DWORD event, HWND, LONG idObject, LONG, DWORD, DWORD) noexcept
+    {
+        if (event != EVENT_SYSTEM_FOREGROUND || idObject != OBJID_WINDOW)
+        {
+            return;
+        }
+
+        if (s_instance == nullptr)
+        {
+            return;
+        }
+
+        if (s_instance->m_toolbarVisible)
+        {
+            Logger::debug(L"Foreground changed while toolbar visible; hiding stuck toolbar");
+
+            // Clear state before invoking the hide callback. If the callback runs
+            // synchronously it can pump the message queue and deliver another
+            // foreground event reentrantly; resetting first makes that a no-op.
+            s_instance->m_toolbarVisible = false;
+            s_instance->letterPressed = LetterKey::None;
+            s_instance->m_leftShiftPressed = false;
+            s_instance->m_rightShiftPressed = false;
+
+            if (s_instance->m_hideToolbarCb)
+            {
+                s_instance->m_hideToolbarCb(InputType::None);
+            }
+        }
     }
 
     LRESULT KeyboardListener::LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)

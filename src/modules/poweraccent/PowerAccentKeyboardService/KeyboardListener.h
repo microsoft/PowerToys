@@ -49,6 +49,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         void ForceReset();
 
         static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
+        static void CALLBACK ForegroundEventProc(HWINEVENTHOOK hook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime) noexcept;
 
     private:
         bool OnKeyDown(KBDLLHOOKSTRUCT info) noexcept;
@@ -59,6 +60,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
         static inline KeyboardListener* s_instance;
         HHOOK s_llKeyboardHook = nullptr;
+        HWINEVENTHOOK s_foregroundEventHook = nullptr;
         bool m_toolbarVisible;
         PowerAccentSettings m_settings;
         std::function<void(LetterKey, int32_t)> m_showToolbarCb;
