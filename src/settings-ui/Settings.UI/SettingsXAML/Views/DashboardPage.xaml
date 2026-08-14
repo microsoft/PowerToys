@@ -235,6 +235,7 @@
                                 x:Uid="Dashboard_SortBy"
                                 Margin="0,0,4,0"
                                 VerticalAlignment="Center"
+                                AutomationProperties.AutomationId="DashboardSortButton"
                                 Style="{StaticResource SubtleButtonStyle}">
                                 <ToolTipService.ToolTip>
                                     <TextBlock x:Uid="Dashboard_SortBy_ToolTip" />
