@@ -24,6 +24,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
     private const string GenericErrorIconGlyph = "\u26A0";
     private const string RateLimitedErrorIconGlyph = "\U0001F984";
     private static readonly TimeSpan WinGetRefreshTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan StoreLookupTimeout = TimeSpan.FromSeconds(30);
     private static readonly StringComparer SortStringComparer = StringComparer.CurrentCultureIgnoreCase;
     private static readonly CompositeFormat LabelGalleryExtensionsAvailable
         = CompositeFormat.Parse(Resources.gallery_n_extensions_available!);
@@ -473,7 +474,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
                 if (storeIdsToLookup.Count > 0)
                 {
                     using var storeCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                    storeCts.CancelAfter(WinGetRefreshTimeout);
+                    storeCts.CancelAfter(StoreLookupTimeout);
 
                     var results = await RunInBackgroundAsync(
                         () => _winGetPackageManagerService.GetStorePackagesByIdAsync(storeIdsToLookup, storeCts.Token),
@@ -496,15 +497,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
                             }
                         }
 
-                        // Mark any Store-ID entries not found in the catalog as known-not-installed.
-                        foreach (var entry in snapshot)
-                        {
-                            if (!entry.IsInstalledStateKnown && !string.IsNullOrWhiteSpace(entry.StoreId))
-                            {
-                                entry.IsInstalled = false;
-                                entry.IsInstalledStateKnown = true;
-                            }
-                        }
+
                     }
 
                     QueueApplyFilter();
