@@ -145,6 +145,8 @@ interface GoToPageArgs {
 interface ToastArgs {
   message: string;
   result?: CommandResult;  // What to do after toast is dismissed
+  icon?: IconInfo | null;  // Optional toast icon
+  command?: ICommand;      // Optional toast action button command
 }
 
 interface ConfirmationArgs {
@@ -212,6 +214,7 @@ A command that receives the user's search query in real-time.
 
 ```typescript
 interface IFallbackCommandItem extends ICommandItem {
+  id?: string;                 // Fallback item identity; defaults to command.id
   fallbackHandler?: IFallbackHandler;
   displayTitle?: string;   // Dynamic title that updates as user types
 }
@@ -479,6 +482,10 @@ class MyProvider extends CommandProviderBase implements ICommandProvider {
     return null;
   }
 
+  getCommandItem(id: string): ICommandItem | null | Promise<ICommandItem | null> {
+    return null;
+  }
+
   settings?: ICommandSettings | null;
 
   initializeWithHost(host: IExtensionHost): void {
@@ -611,7 +618,7 @@ ExtensionHost.log('Error occurred', 'error');
 // Status bar
 // showStatus returns a stable status id. Keep it to update or hide that exact
 // status later, rather than matching on the message text.
-const statusId = ExtensionHost.showStatus('Loading...', 'info', { isIndeterminate: true });
+const statusId = ExtensionHost.showStatus('Loading...', 'info', { isIndeterminate: true }, 'page');
 // Replace the working status in place once the work is done...
 ExtensionHost.updateStatus(statusId, 'Done', 'success');
 // ...then clear it by id so the spinner is not left behind.
@@ -646,12 +653,32 @@ import { sendNotification } from '@microsoft/cmdpal-sdk';
 // Tell the host that a list page's items have changed
 sendNotification('listPage/itemsChanged', { pageId: 'my-list' });
 
+// Tell the host that a content page's content has changed
+sendNotification('contentPage/itemsChanged', { pageId: 'my-content-page' });
+
 // Tell the host that a command's properties changed
 sendNotification('command/propChanged', {
   commandId: 'my-fallback',
   properties: { displayTitle: 'Search: query text' },
 });
 ```
+
+Observable SDK base classes also expose a protected
+`notifyPropChanged(propertyName)` helper. Set the property first, then notify
+the host; the helper reads and sends the current value:
+
+```typescript
+class LoadingPage extends ListPageBase {
+  // ...
+  setLoading(value: boolean): void {
+    this.isLoading = value;
+    this.notifyPropChanged('isLoading');
+  }
+}
+```
+
+The property name is typed to the ABI-backed observable properties, so typos are
+compile-time errors. Notifications are ordered by the JSON-RPC transport.
 
 ---
 

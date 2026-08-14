@@ -49,6 +49,9 @@ Called once after the Node.js process starts. The extension should initialize it
 }
 ```
 
+`context` is optional for backward compatibility. It accepts `page` or
+`extension` and defaults to `extension` when omitted or unknown.
+
 **Response:**
 ```json
 {
@@ -102,13 +105,16 @@ Fetches commands that receive the user's search query when no other results matc
 ```json
 [
   {
-    "id": "search-web",
+    "id": "search-web-item",
     "title": "Search the web",
     "displayName": "Search the web",
     "command": { "id": "search-web", "name": "Search the web" }
   }
 ]
 ```
+
+The fallback item's `id` is optional in the TypeScript SDK. When omitted, it
+defaults to the nested command's `id`.
 
 ---
 
@@ -130,6 +136,34 @@ Fetches a specific command/page by ID. Used when navigating to a page.
   "name": "My Page",
   "pageType": "listPage",
   "icon": { "light": { "icon": "\uE8A5" } }
+}
+```
+
+---
+
+### `provider/getCommandItem`
+
+Fetches a full command item by ID, including the display metadata used when a
+command is shown outside the extension's top-level results.
+
+**Parameters:**
+```json
+{
+  "commandId": "my-command-id"
+}
+```
+
+**Response:** Command item object or `null`:
+```json
+{
+  "id": "my-command-id",
+  "title": "My Command",
+  "subtitle": "Does something useful",
+  "command": {
+    "id": "my-command-id",
+    "name": "My Command"
+  },
+  "moreCommands": []
 }
 ```
 
@@ -420,22 +454,51 @@ Tells the host to re-fetch items for a list page.
 
 ---
 
+### `contentPage/itemsChanged`
+
+Tells the host to re-fetch content for a content page after its content changes.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "contentPage/itemsChanged",
+  "params": {
+    "pageId": "my-content-page"
+  }
+}
+```
+
+The notification has no item count because content pages expose content blocks
+rather than a list of items.
+
+---
+
 ### `command/propChanged`
 
-Tells the host that a command's properties have changed (e.g., fallback display title).
+Tells the host that a command, page, command item, or list item property has
+changed. The `properties` object contains the current values, and multiple
+notifications for one command are applied in the order received.
 
 ```json
 {
   "jsonrpc": "2.0",
   "method": "command/propChanged",
   "params": {
-    "commandId": "my-fallback",
+    "commandId": "my-page",
     "properties": {
-      "displayTitle": "Search: new query"
+      "isLoading": false,
+      "title": "Results"
     }
   }
 }
 ```
+
+The SDK constrains property names to the observable CmdPal ABI surface:
+`id`, `name`, `icon`, `title`, `isLoading`, `accentColor`, `searchText`,
+`placeholderText`, `showDetails`, `filters`, `gridProperties`, `hasMoreItems`,
+`emptyContent`, `command`, `moreCommands`, `subtitle`, `tags`, `details`,
+`section`, `textToSuggest`, `displayTitle`, and `commands`. The host ignores
+unknown or malformed properties.
 
 ---
 
@@ -530,6 +593,7 @@ Copies text to the system clipboard (since Node.js doesn't have clipboard access
 | `provider/getTopLevelCommands` | Host → Ext | Request | Get top-level commands |
 | `provider/getFallbackCommands` | Host → Ext | Request | Get fallback commands |
 | `provider/getCommand` | Host → Ext | Request | Get command by ID |
+| `provider/getCommandItem` | Host → Ext | Request | Get full command item by ID |
 | `provider/getSettings` | Host → Ext | Request | Get settings page |
 | `command/invoke` | Host → Ext | Request | Invoke a command |
 | `listPage/getItems` | Host → Ext | Request | Get list page items |
@@ -542,6 +606,7 @@ Copies text to the system clipboard (since Node.js doesn't have clipboard access
 | `dispose` | Host → Ext | Notification | Clean up before exit |
 | `provider/itemsChanged` | Ext → Host | Notification | Provider items have changed |
 | `listPage/itemsChanged` | Ext → Host | Notification | Items have changed |
+| `contentPage/itemsChanged` | Ext → Host | Notification | Content has changed |
 | `command/propChanged` | Ext → Host | Notification | Command props changed |
 | `host/logMessage` | Ext → Host | Notification | Log message |
 | `host/showStatus` | Ext → Host | Notification | Show status bar message |
