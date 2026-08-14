@@ -29,6 +29,7 @@
             <cmdpalUI:DetailsSizeToGridLengthConverter x:Key="SizeToWidthConverter" />
             <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
             <cmdpalUI:BoolToStarOrAutoGridLengthConverter x:Key="ExpandedModeToRowHeightConverter" />
+            <cmdpalUI:QuickAccessShortcutTextConverter x:Key="QuickAccessShortcutTextConverter" />
 
             <cmdpalUI:DetailsDataTemplateSelector
                 x:Key="DetailsDataTemplateSelector"
@@ -186,15 +187,18 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <!--
-                In compact mode this row collapses to Auto so the card can shrink to just the
-                search box. A star row would otherwise reserve space during measure even when
-                its only child (the collapsed content) is hidden.
+                In compact mode this row collapses to Auto so the card can shrink to the search
+                row and optional quick-access shelf. A star row would otherwise reserve space
+                during measure even when the expanded content is hidden.
             -->
             <RowDefinition Height="{x:Bind ExpandedMode, Mode=OneWay, Converter={StaticResource ExpandedModeToRowHeightConverter}}" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
+        <Grid
+            x:Name="TopBarSurface"
+            Grid.Row="0"
+            Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
@@ -389,6 +393,110 @@
                 </animations:Implicit.HideAnimations>
             </ProgressBar>
 
+        </Grid>
+
+        <!--
+            Compact quick access occupies the same row as the expanded body. Switching to the
+            expanded shell therefore replaces this secondary surface in place instead of
+            inserting another permanent section into the window.
+        -->
+        <Grid
+            x:Name="QuickAccessShelfSurface"
+            x:Uid="QuickAccessShelfSurface"
+            Grid.Row="1"
+            MinHeight="48"
+            Padding="12,4"
+            AutomationProperties.LandmarkType="Custom"
+            Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}"
+            BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0"
+            Visibility="{x:Bind IsQuickAccessShelfVisible, Mode=OneWay}">
+            <animations:Implicit.ShowAnimations>
+                <animations:OpacityAnimation
+                    From="0"
+                    To="1"
+                    Duration="0:0:0.187" />
+                <animations:TranslationAnimation
+                    From="0,-8,0"
+                    To="0,0,0"
+                    Duration="0:0:0.187" />
+            </animations:Implicit.ShowAnimations>
+            <animations:Implicit.HideAnimations>
+                <animations:OpacityAnimation
+                    From="1"
+                    To="0"
+                    Duration="0:0:0.187" />
+                <animations:TranslationAnimation
+                    From="0,0,0"
+                    To="0,-8,0"
+                    Duration="0:0:0.187" />
+            </animations:Implicit.HideAnimations>
+
+            <Grid
+                x:Name="QuickAccessShelfItemsHost"
+                SizeChanged="QuickAccessShelfItemsHost_SizeChanged">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <ItemsRepeater ItemsSource="{x:Bind QuickAccessShelf.VisibleItems, Mode=OneWay}">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Orientation="Horizontal" Spacing="4" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:QuickAccessShelfItem">
+                            <Button
+                                Width="44"
+                                Height="40"
+                                Padding="8"
+                                AccessKey="{x:Bind ShortcutDigit, Mode=OneWay}"
+                                AutomationProperties.Name="{x:Bind Command.Title, Mode=OneWay}"
+                                Click="QuickAccessShelfItem_Click"
+                                Style="{StaticResource SubtleButtonStyle}"
+                                Tag="{x:Bind}"
+                                UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}">
+                                <ToolTipService.ToolTip>
+                                    <ToolTip>
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="{x:Bind Command.Title, Mode=OneWay}" />
+                                            <TextBlock
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Text="{x:Bind ShortcutDigit, Mode=OneWay, Converter={StaticResource QuickAccessShortcutTextConverter}}"
+                                                Visibility="{x:Bind ShortcutDigit, Mode=OneWay, Converter={StaticResource StringNotEmptyToVisibilityConverter}}" />
+                                        </StackPanel>
+                                    </ToolTip>
+                                </ToolTipService.ToolTip>
+                                <cpcontrols:IconBox
+                                    Width="20"
+                                    Height="20"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    SourceKey="{x:Bind Command.IconViewModel, Mode=OneWay}"
+                                    SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
+                            </Button>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+
+                <Button
+                    x:Name="QuickAccessOverflowButton"
+                    x:Uid="QuickAccessOverflowButton"
+                    Grid.Column="1"
+                    Width="44"
+                    Height="40"
+                    Padding="8"
+                    AccessKey="0"
+                    Style="{StaticResource SubtleButtonStyle}"
+                    UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}"
+                    Visibility="{x:Bind QuickAccessShelf.HasOverflow, Mode=OneWay}">
+                    <Button.Flyout>
+                        <MenuFlyout x:Name="QuickAccessOverflowFlyout" Opening="QuickAccessOverflowFlyout_Opening" />
+                    </Button.Flyout>
+                    <FontIcon Glyph="&#xE712;" />
+                </Button>
+            </Grid>
         </Grid>
 
         <Grid
