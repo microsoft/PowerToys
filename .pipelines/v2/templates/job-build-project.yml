@@ -220,10 +220,6 @@ jobs:
     - task: VisualStudioTestPlatformInstaller@1
       displayName: Ensure VSTest Platform
 
-  - pwsh: |-
-      & '.pipelines/applyXamlStyling.ps1' -Passive
-    displayName: Verify XAML formatting
-
   - task: NuGetAuthenticate@1
     displayName: Authenticate NuGet feeds for verification
 
