@@ -49,7 +49,7 @@ that retain `Needs-Author-Feedback` for seven days without activity.
 
 - An author comment removes `Needs-Author-Feedback` and returns the item to
   team triage.
-- A PR push reruns AI PR Triage, which recalculates `Needs-Author-Feedback`.
+- A PR push reruns PR intake, which recalculates `Needs-Author-Feedback`.
 - Manual label removal immediately makes the item ineligible for scheduled
   closure.
 

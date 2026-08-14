@@ -9,16 +9,19 @@ import {
   READY_FOR_REVIEW_LABEL,
   ApiError,
   buildIntakeReport,
-  buildPullRequestAiContext,
   classifyChangedPaths,
+  deriveVisualAssessment,
   determineFeedbackSince,
-  extractAiAssessmentFromAgentOutput,
   findClosingIssueReferences,
   findVisualEvidence,
+  getPullRequestWithMergeability,
   hasMergeConflict,
+  isMergeabilityKnown,
   parseFeedbackSince,
   planManagedLabelChanges,
+  renderAllClearComment,
   renderIntakeComment,
+  runPullRequestIntake,
   selectCanonicalComment,
   upsertCanonicalComment,
   verifyClosingIssueReferences,
@@ -41,13 +44,21 @@ class MockApi {
     comments = [],
     issues = [],
     pullRequests = [],
+    files = [],
+    pullRequestQueue = null,
   } = {}) {
     this.comments = comments;
     this.issues = issues;
     this.pullRequests = pullRequests;
+    this.files = files;
+    this.pullRequestQueue = pullRequestQueue;
     this.created = 0;
     this.updated = 0;
     this.deleted = [];
+    this.addedLabels = [];
+    this.removedLabels = [];
+    this.getIssueCalls = 0;
+    this.getPullRequestCalls = 0;
     this.nextCommentId = 1000;
   }
 
@@ -77,6 +88,7 @@ class MockApi {
   }
 
   async getIssue(issueNumber) {
+    this.getIssueCalls += 1;
     const issue = this.issues.find((entry) => entry.number === issueNumber);
     if (!issue) {
       throw new ApiError('Not Found', 404);
@@ -85,10 +97,27 @@ class MockApi {
   }
 
   async getPullRequest(issueNumber) {
+    this.getPullRequestCalls += 1;
+    if (Array.isArray(this.pullRequestQueue) && this.pullRequestQueue.length) {
+      return this.pullRequestQueue.shift();
+    }
     return this.pullRequests.find((entry) => entry.number === issueNumber)
       ?? { number: issueNumber, draft: false };
   }
 
+  async listPullRequestFiles(_pullNumber, page) {
+    return page === 1 ? this.files : [];
+  }
+
+  async addLabels(issueNumber, labels) {
+    this.addedLabels.push({ issueNumber, labels });
+    return null;
+  }
+
+  async removeLabel(issueNumber, label) {
+    this.removedLabels.push({ issueNumber, label });
+    return null;
+  }
 }
 
 test('changed paths provide a visual hint for product UI files', () => {
@@ -113,12 +142,57 @@ test('docs-only changes do not require visual evidence', () => {
   assert.deepEqual(report.categories, ['docs']);
 });
 
+test('deriveVisualAssessment maps the path hint to a requirement', () => {
+  assert.deepEqual(deriveVisualAssessment(true).visualEvidenceRequirement, 'REQUIRED');
+  assert.deepEqual(deriveVisualAssessment(false).visualEvidenceRequirement, 'NOT_NEEDED');
+  assert.match(deriveVisualAssessment(true).visualEvidenceReason, /product UI/);
+});
+
 test('merge conflicts are detected from GitHub mergeability fields', () => {
   assert.equal(hasMergeConflict({ mergeable: false }), true);
   assert.equal(hasMergeConflict({ mergeable_state: 'dirty' }), true);
   assert.equal(hasMergeConflict({ mergeStateStatus: 'CONFLICTING' }), true);
   assert.equal(hasMergeConflict({ mergeable: true, mergeable_state: 'clean' }), false);
   assert.equal(hasMergeConflict({ mergeable: null, mergeable_state: 'unknown' }), false);
+});
+
+test('mergeability is only known once GitHub reports a definite state', () => {
+  assert.equal(isMergeabilityKnown({ mergeable: true }), true);
+  assert.equal(isMergeabilityKnown({ mergeable: false }), true);
+  assert.equal(isMergeabilityKnown({ mergeable_state: 'clean' }), true);
+  assert.equal(isMergeabilityKnown({ mergeable: null, mergeable_state: 'unknown' }), false);
+  assert.equal(isMergeabilityKnown({ mergeable: null }), false);
+});
+
+test('getPullRequestWithMergeability retries while mergeability is unknown', async () => {
+  const api = new MockApi({
+    pullRequestQueue: [
+      { number: 7, mergeable: null, mergeable_state: 'unknown' },
+      { number: 7, mergeable: null, mergeable_state: 'unknown' },
+      { number: 7, mergeable: true, mergeable_state: 'clean' },
+    ],
+  });
+
+  const result = await getPullRequestWithMergeability(api, 7, { delayMs: 0 });
+  assert.equal(result.mergeabilityKnown, true);
+  assert.equal(result.pullRequest.mergeable, true);
+  assert.equal(api.getPullRequestCalls, 3);
+});
+
+test('getPullRequestWithMergeability gives up after the attempt cap', async () => {
+  const api = new MockApi({
+    pullRequestQueue: [
+      { number: 7, mergeable: null, mergeable_state: 'unknown' },
+      { number: 7, mergeable: null, mergeable_state: 'unknown' },
+    ],
+  });
+
+  const result = await getPullRequestWithMergeability(api, 7, {
+    maxAttempts: 2,
+    delayMs: 0,
+  });
+  assert.equal(result.mergeabilityKnown, false);
+  assert.equal(api.getPullRequestCalls, 2);
 });
 
 test('closing issue parsing finds supported keywords and de-duplicates issue numbers', () => {
@@ -130,6 +204,38 @@ test('closing issue parsing finds supported keywords and de-duplicates issue num
     { keyword: 'fixes', issueNumber: 12, repositoryFullName: null },
     { keyword: 'closes', issueNumber: 44, repositoryFullName: 'owner/repo' },
   ]);
+});
+
+test('closing issue parsing caps the number of references it accepts', () => {
+  const body = Array.from({ length: 50 }, (_unused, index) => `Closes #${index + 1}`).join('\n');
+  const references = findClosingIssueReferences(body);
+  assert.equal(references.length, 20);
+});
+
+test('closing issue verification is bounded and preserves reference order', async () => {
+  const api = new MockApi({
+    issues: Array.from({ length: 20 }, (_unused, index) => ({
+      number: index + 1,
+      title: `Issue ${index + 1}`,
+    })),
+  });
+  const references = Array.from({ length: 20 }, (_unused, index) => ({
+    keyword: 'closes',
+    issueNumber: index + 1,
+    repositoryFullName: null,
+  }));
+
+  const result = await verifyClosingIssueReferences({
+    api,
+    repositoryFullName: 'microsoft/PowerToys',
+    references,
+  });
+
+  assert.equal(result.validReferences.length, 20);
+  assert.deepEqual(
+    result.validReferences.map((entry) => entry.issueNumber),
+    references.map((entry) => entry.issueNumber),
+  );
 });
 
 test('closing issue verification accepts local issues and rejects pull requests, other repos, and 404s', async () => {
@@ -187,67 +293,6 @@ https://github.com/user-attachments/files/1234/PowerToysReport_demo.zip
   assert.deepEqual(evidence.types, []);
 });
 
-test('AI context includes bounded PR evidence and a stable digest', () => {
-  const pullRequest = {
-    number: 42,
-    title: 'Improve the layout editor',
-    body: 'Closes #12',
-    draft: false,
-    base: { ref: 'main' },
-    head: { sha: 'abc123' },
-  };
-  const files = [{
-    filename: 'src/settings-ui/Settings.UI/SettingsXAML/Views/DashboardPage.xaml',
-    status: 'modified',
-    additions: 3,
-    deletions: 1,
-    patch: '@@ -1 +1 @@\n-Old\n+New',
-  }];
-
-  const first = buildPullRequestAiContext({ pullRequest, files });
-  const second = buildPullRequestAiContext({ pullRequest, files });
-
-  assert.equal(first.inputSha256, second.inputSha256);
-  assert.match(first.inputSha256, /^[a-f0-9]{64}$/);
-  assert.match(first.context, /Visual path hint: YES/);
-  assert.match(first.context, /DashboardPage\.xaml/);
-  assert.match(first.context, /```diff/);
-});
-
-test('agent output is normalized into a validated assessment', () => {
-  const assessment = extractAiAssessmentFromAgentOutput({
-    items: [{
-      type: 'publish_pr_intake',
-      input_sha256: 'A'.repeat(64),
-      summary: 'Changes the visible layout editor call to action.',
-      visual_evidence_requirement: 'required',
-      visual_evidence_reason: 'The call to action is visible in the product UI.',
-    }],
-  });
-
-  assert.deepEqual(assessment, {
-    inputSha256: 'a'.repeat(64),
-    summary: 'Changes the visible layout editor call to action.',
-    visualEvidenceRequirement: 'REQUIRED',
-    visualEvidenceReason: 'The call to action is visible in the product UI.',
-  });
-});
-
-test('agent output rejects a missing PR evidence hash', () => {
-  assert.throws(
-    () => extractAiAssessmentFromAgentOutput({
-      items: [{
-        type: 'publish_pr_intake',
-        input_sha256: '',
-        summary: 'Updates the UI.',
-        visual_evidence_requirement: 'REQUIRED',
-        visual_evidence_reason: 'The visible layout changes.',
-      }],
-    }),
-    /valid PR evidence hash/,
-  );
-});
-
 test('label plan removes only managed lifecycle labels', () => {
   const plan = planManagedLabelChanges(
     ['Product-FancyZones', NEEDS_AUTHOR_FEEDBACK_LABEL],
@@ -272,17 +317,11 @@ test('incomplete comment mentions the author and shows only actionable bullets',
     invalidClosingIssues: [
       { keyword: 'closes', issueNumber: 999, repositoryFullName: null, reason: 'not-found' },
     ],
-    aiAssessment: {
-      summary: 'Updates the visible FancyZones layout editor.',
-      visualEvidenceRequirement: 'REQUIRED',
-      visualEvidenceReason: 'The change alters visible product UI.',
-    },
   });
 
   const body = renderIntakeComment(report, '2026-08-05T10:00:00.000Z');
   assert.match(body, /^<!-- powertoys-pr-intake:canonical:v1 -->/);
   assert.match(body, /## 🧭 PR intake/);
-  assert.match(body, /Updates the visible FancyZones layout editor/);
   assert.match(body, /Visual evidence:\*\* Required/);
   assert.match(body, /@alice, please update/);
   assert.match(body, /invalid closing reference `#999` \(not found\)/);
@@ -292,10 +331,10 @@ test('incomplete comment mentions the author and shows only actionable bullets',
   assert.match(body, /no author response within 7 days/);
   assert.equal(parseFeedbackSince(body), '2026-08-05T10:00:00.000Z');
   assert.match(body, /\[contribution guide\]\(https:\/\/github\.com\/microsoft\/PowerToys\/blob\/main\/CONTRIBUTING\.md\)/);
-  assert.doesNotMatch(body, /Ownership matches|Managed labels|Routing|Files scanned/);
+  assert.doesNotMatch(body, /Summary:|Ownership matches|Managed labels|Routing|Files scanned/);
 });
 
-test('complete intake renders the AI summary and ready state', () => {
+test('complete intake renders the ready state without a summary line', () => {
   const report = buildIntakeReport({
     changedPaths: ['doc/devdocs/core/architecture.md'],
     body: 'Closes #12',
@@ -304,19 +343,13 @@ test('complete intake renders the AI summary and ready state', () => {
     authorLogin: 'alice',
     verifiedClosingIssues: [{ issueNumber: 12, title: 'Tracked issue' }],
     invalidClosingIssues: [],
-    aiAssessment: {
-      summary: 'Clarifies the docs-only contribution checklist.',
-      visualEvidenceRequirement: 'NOT_NEEDED',
-      visualEvidenceReason: 'The change only updates documentation.',
-    },
   });
 
   const body = renderIntakeComment(report);
   assert.equal(report.readyForReview, true);
   assert.match(body, /## ✅ Ready for review/);
-  assert.match(body, /Clarifies the docs-only contribution checklist/);
   assert.match(body, /Visual evidence:\*\* Not needed/);
-  assert.doesNotMatch(body, /@alice|contribution guide|Products|Routing/);
+  assert.doesNotMatch(body, /Summary:|@alice|contribution guide|Products|Routing/);
 });
 
 test('missing issue link is recommended without blocking readiness', () => {
@@ -328,11 +361,6 @@ test('missing issue link is recommended without blocking readiness', () => {
     authorLogin: 'alice',
     verifiedClosingIssues: [],
     invalidClosingIssues: [],
-    aiAssessment: {
-      summary: 'Clarifies the docs-only contribution checklist.',
-      visualEvidenceRequirement: 'NOT_NEEDED',
-      visualEvidenceReason: 'The change only updates documentation.',
-    },
   });
 
   assert.equal(report.readyForReview, true);
@@ -354,11 +382,6 @@ test('merge conflict blocks readiness with an author action', () => {
     mergeConflict: true,
     verifiedClosingIssues: [{ issueNumber: 12, title: 'Tracked issue' }],
     invalidClosingIssues: [],
-    aiAssessment: {
-      summary: 'Improves deterministic issue triage classification.',
-      visualEvidenceRequirement: 'NOT_NEEDED',
-      visualEvidenceReason: 'The change only updates repository automation.',
-    },
   });
 
   assert.equal(report.readyForReview, false);
@@ -369,7 +392,24 @@ test('merge conflict blocks readiness with an author action', () => {
   assert.match(renderIntakeComment(report), /Resolve the merge conflicts/);
 });
 
-test('AI can override a product UI path when the actual change is nonvisual', () => {
+test('unknown mergeability holds readiness even when nothing else is flagged', () => {
+  const report = buildIntakeReport({
+    changedPaths: ['doc/devdocs/core/architecture.md'],
+    body: 'Closes #12',
+    repositoryHtmlUrl: 'https://github.com/microsoft/PowerToys',
+    baseRef: 'main',
+    authorLogin: 'alice',
+    mergeabilityKnown: false,
+    verifiedClosingIssues: [{ issueNumber: 12, title: 'Tracked issue' }],
+    invalidClosingIssues: [],
+  });
+
+  assert.equal(report.readyForReview, false);
+  assert.equal(report.needsAuthorFeedback, false);
+  assert.deepEqual(report.authorActions, []);
+});
+
+test('product UI paths require visual evidence when none is present', () => {
   const report = buildIntakeReport({
     changedPaths: ['src/settings-ui/Settings.UI/SettingsXAML/Views/DashboardPage.xaml'],
     body: 'Closes #12',
@@ -378,58 +418,28 @@ test('AI can override a product UI path when the actual change is nonvisual', ()
     authorLogin: 'alice',
     verifiedClosingIssues: [{ issueNumber: 12, title: 'Tracked issue' }],
     invalidClosingIssues: [],
-    aiAssessment: {
-      summary: 'Renames an internal identifier without changing rendered UI.',
-      visualEvidenceRequirement: 'NOT_NEEDED',
-      visualEvidenceReason: 'The rendered interface is unchanged.',
-    },
   });
 
   assert.equal(report.requiresVisualEvidence, true);
-  assert.equal(report.aiAssessment.visualEvidenceRequirement, 'NOT_NEEDED');
-  assert.equal(report.readyForReview, true);
-});
-
-test('AI can require visual evidence outside a preclassified UI path', () => {
-  const report = buildIntakeReport({
-    changedPaths: ['doc/devdocs/core/architecture.md'],
-    body: 'Closes #12',
-    repositoryHtmlUrl: 'https://github.com/microsoft/PowerToys',
-    baseRef: 'main',
-    authorLogin: 'alice',
-    verifiedClosingIssues: [{ issueNumber: 12, title: 'Tracked issue' }],
-    invalidClosingIssues: [],
-    aiAssessment: {
-      summary: 'Updates embedded UI guidance shown to contributors.',
-      visualEvidenceRequirement: 'REQUIRED',
-      visualEvidenceReason: 'The change updates a rendered visual example.',
-    },
-  });
-
-  assert.equal(report.requiresVisualEvidence, false);
+  assert.equal(report.visualAssessment.visualEvidenceRequirement, 'REQUIRED');
   assert.equal(report.readyForReview, false);
   assert.match(report.authorActions.join(' '), /screenshot, GIF, or video/);
 });
 
-test('recommended visual evidence remains nonblocking', () => {
+test('product UI paths are satisfied when visual evidence is present', () => {
   const report = buildIntakeReport({
-    changedPaths: ['doc/devdocs/core/architecture.md'],
-    body: 'Closes #12',
+    changedPaths: ['src/settings-ui/Settings.UI/SettingsXAML/Views/DashboardPage.xaml'],
+    body: 'Closes #12\n![screenshot](https://example.com/shot.png)',
     repositoryHtmlUrl: 'https://github.com/microsoft/PowerToys',
     baseRef: 'main',
     authorLogin: 'alice',
     verifiedClosingIssues: [{ issueNumber: 12, title: 'Tracked issue' }],
     invalidClosingIssues: [],
-    aiAssessment: {
-      summary: 'Documents a user-facing workflow.',
-      visualEvidenceRequirement: 'RECOMMENDED',
-      visualEvidenceReason: 'A short recording would make the workflow easier to understand.',
-    },
   });
 
+  assert.equal(report.requiresVisualEvidence, true);
   assert.equal(report.readyForReview, true);
-  assert.doesNotMatch(report.authorActions.join(' '), /screenshot|video/i);
-  assert.match(renderIntakeComment(report), /would help reviewers/);
+  assert.doesNotMatch(report.authorActions.join(' '), /screenshot/i);
 });
 
 test('draft PR remains incomplete until marked ready', () => {
@@ -442,11 +452,6 @@ test('draft PR remains incomplete until marked ready', () => {
     isDraft: true,
     verifiedClosingIssues: [{ issueNumber: 12, title: 'Tracked issue' }],
     invalidClosingIssues: [],
-    aiAssessment: {
-      summary: 'Clarifies contributor guidance.',
-      visualEvidenceRequirement: 'NOT_NEEDED',
-      visualEvidenceReason: 'The change is documentation-only.',
-    },
   });
 
   assert.equal(report.readyForReview, false);
@@ -491,8 +496,7 @@ test('author activity resets the feedback window while bot activity does not', (
       recommendations: [],
       contributingUrl: 'https://example.test/CONTRIBUTING.md',
       visualEvidence: { found: false, types: [] },
-      aiAssessment: {
-        summary: 'Updates the PR.',
+      visualAssessment: {
         visualEvidenceRequirement: 'NOT_NEEDED',
         visualEvidenceReason: 'The change is nonvisual.',
       },
@@ -564,4 +568,95 @@ test('canonical upsert updates the oldest trusted comment and deletes extras', a
   assert.equal(api.updated, 1);
   assert.deepEqual(api.deleted, [40]);
   assert.equal(api.comments.length, 1);
+});
+
+test('all-clear comment carries the canonical marker', () => {
+  const body = renderAllClearComment();
+  assert.match(body, /^<!-- powertoys-pr-intake:canonical:v1 -->/);
+  assert.match(body, /All automated intake checks now pass/);
+});
+
+function intakeEvent(overrides = {}) {
+  return {
+    action: 'opened',
+    repository: {
+      full_name: 'microsoft/PowerToys',
+      html_url: 'https://github.com/microsoft/PowerToys',
+    },
+    pull_request: { number: 100 },
+    sender: { login: 'alice' },
+    ...overrides,
+  };
+}
+
+test('runPullRequestIntake stays silent on a clean PR with no prior comment', async () => {
+  const api = new MockApi({
+    issues: [{ number: 100, labels: [], title: 'PR' }],
+    pullRequests: [{
+      number: 100,
+      draft: false,
+      mergeable: true,
+      mergeable_state: 'clean',
+      body: 'Closes #12',
+      base: { ref: 'main' },
+      user: { login: 'alice' },
+    }],
+    files: [{ filename: 'doc/devdocs/core/architecture.md', status: 'modified' }],
+  });
+  api.issues.push({ number: 12, title: 'Tracked issue' });
+
+  const result = await runPullRequestIntake({ api, event: intakeEvent() });
+  assert.equal(result.commentResult.operation, 'skipped');
+  assert.equal(api.created, 0);
+  assert.equal(api.updated, 0);
+  assert.deepEqual(result.labelPlan.add, [READY_FOR_REVIEW_LABEL]);
+});
+
+test('runPullRequestIntake replaces a stale comment with an all-clear note when the PR is clean', async () => {
+  const existing = botComment(50, `${CANONICAL_MARKER}\n## 🧭 PR intake\nplease update`);
+  const api = new MockApi({
+    comments: [existing],
+    issues: [{ number: 100, labels: [NEEDS_AUTHOR_FEEDBACK_LABEL], title: 'PR' }],
+    pullRequests: [{
+      number: 100,
+      draft: false,
+      mergeable: true,
+      mergeable_state: 'clean',
+      body: 'Closes #12',
+      base: { ref: 'main' },
+      user: { login: 'alice' },
+    }],
+    files: [{ filename: 'doc/devdocs/core/architecture.md', status: 'modified' }],
+  });
+  api.issues.push({ number: 12, title: 'Tracked issue' });
+
+  const result = await runPullRequestIntake({ api, event: intakeEvent() });
+  assert.equal(result.commentResult.operation, 'updated');
+  assert.match(existing.body, /All automated intake checks now pass/);
+  assert.deepEqual(result.labelPlan.remove, [NEEDS_AUTHOR_FEEDBACK_LABEL]);
+});
+
+test('runPullRequestIntake posts a feedback comment when there are remarks', async () => {
+  const api = new MockApi({
+    issues: [{ number: 100, labels: [], title: 'PR' }],
+    pullRequests: [{
+      number: 100,
+      draft: false,
+      mergeable: true,
+      mergeable_state: 'clean',
+      body: 'No linked issue here.',
+      base: { ref: 'main' },
+      user: { login: 'alice' },
+    }],
+    files: [{
+      filename: 'src/settings-ui/Settings.UI/SettingsXAML/Views/DashboardPage.xaml',
+      status: 'modified',
+    }],
+  });
+
+  const result = await runPullRequestIntake({ api, event: intakeEvent() });
+  assert.equal(result.commentResult.operation, 'created');
+  assert.equal(api.created, 1);
+  assert.equal(result.readyForReview, false);
+  assert.match(api.comments[0].body, /screenshot, GIF, or video/);
 });

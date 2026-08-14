@@ -1,4 +1,3 @@
-import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -14,10 +13,15 @@ export const STALE_FEEDBACK_DAYS = 7;
 const PAGE_SIZE = 100;
 const MAX_COMMENT_PAGES = 10;
 const MAX_FILE_PAGES = 10;
-const MAX_AI_BODY_LENGTH = 12000;
-const MAX_AI_FILE_COUNT = 100;
-const MAX_AI_PATCH_FILES = 12;
-const MAX_AI_PATCH_LENGTH = 2400;
+// Closing references come from the untrusted PR body. Cap how many we accept and
+// verify them with bounded concurrency so a crafted body cannot fan out into
+// thousands of concurrent API calls and exhaust the token's rate limit.
+const MAX_CLOSING_REFERENCES = 20;
+const CLOSING_VERIFY_CONCURRENCY = 5;
+// GitHub computes mergeability asynchronously and returns `mergeable: null`
+// meanwhile. Re-fetch a few times before treating the state as known.
+const MERGEABILITY_MAX_ATTEMPTS = 5;
+const MERGEABILITY_RETRY_DELAY_MS = 2000;
 
 const VISUAL_FILE_EXTENSIONS = new Set([
   '.axaml',
@@ -70,39 +74,42 @@ function formatInlineCode(value) {
   return `\`${boundedString(String(value).replaceAll('`', '').replace(/\r?\n+/g, ' '), 500)}\``;
 }
 
-export function normalizeAiAssessment(value, fallbackRequiresVisualEvidence = false) {
-  const requestedRequirement = boundedString(
-    value?.visualEvidenceRequirement ?? value?.visual_evidence_requirement,
-    40,
-  ).toUpperCase();
-  const visualEvidenceRequirement = [
-    'REQUIRED',
-    'RECOMMENDED',
-    'NOT_NEEDED',
-  ].includes(requestedRequirement)
-    ? requestedRequirement
-    : (fallbackRequiresVisualEvidence ? 'REQUIRED' : 'NOT_NEEDED');
-  const defaultReason = fallbackRequiresVisualEvidence
-    ? 'The changed paths indicate a product UI change.'
-    : 'The deterministic fallback did not identify a visual UI change.';
+export function deriveVisualAssessment(requiresVisualEvidence) {
+  return requiresVisualEvidence
+    ? {
+      visualEvidenceRequirement: 'REQUIRED',
+      visualEvidenceReason:
+        'The pull request changes product UI files, so reviewers need to see the visible result.',
+    }
+    : {
+      visualEvidenceRequirement: 'NOT_NEEDED',
+      visualEvidenceReason:
+        'The changed files do not indicate a visible UI change.',
+    };
+}
 
-  return {
-    inputSha256: boundedString(
-      value?.inputSha256 ?? value?.input_sha256,
-      64,
-    ).toLowerCase(),
-    summary: boundedString(
-      value?.summary,
-      800,
-      'Automated summary unavailable.',
-    ),
-    visualEvidenceRequirement,
-    visualEvidenceReason: boundedString(
-      value?.visualEvidenceReason ?? value?.visual_evidence_reason,
-      500,
-      defaultReason,
-    ),
-  };
+function sleep(milliseconds) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, Math.max(0, milliseconds));
+  });
+}
+
+async function mapWithConcurrency(items, limit, mapper) {
+  const list = Array.isArray(items) ? items : [];
+  const results = new Array(list.length);
+  const boundedLimit = Math.max(1, Math.min(limit, list.length || 1));
+  let cursor = 0;
+  async function worker() {
+    while (cursor < list.length) {
+      const index = cursor;
+      cursor += 1;
+      results[index] = await mapper(list[index], index);
+    }
+  }
+  await Promise.all(
+    Array.from({ length: boundedLimit }, () => worker()),
+  );
+  return results;
 }
 
 function uniqueSorted(values) {
@@ -200,6 +207,9 @@ export function findClosingIssueReferences(body) {
       issueNumber,
       repositoryFullName: repositoryFullName || null,
     });
+    if (matches.length >= MAX_CLOSING_REFERENCES) {
+      break;
+    }
   }
 
   return matches;
@@ -238,37 +248,43 @@ export async function verifyClosingIssueReferences({
     throw new Error('Repository full name is required for closing issue verification');
   }
 
-  const results = await Promise.all((Array.isArray(references) ? references : []).map(async (reference) => {
-    if (reference.repositoryFullName
-      && reference.repositoryFullName.toLowerCase() !== normalizedRepositoryFullName) {
-      return {
-        ...reference,
-        reason: 'different-repository',
-      };
-    }
+  const boundedReferences = (Array.isArray(references) ? references : [])
+    .slice(0, MAX_CLOSING_REFERENCES);
+  const results = await mapWithConcurrency(
+    boundedReferences,
+    CLOSING_VERIFY_CONCURRENCY,
+    async (reference) => {
+      if (reference.repositoryFullName
+        && reference.repositoryFullName.toLowerCase() !== normalizedRepositoryFullName) {
+        return {
+          ...reference,
+          reason: 'different-repository',
+        };
+      }
 
-    try {
-      const issue = await api.getIssue(reference.issueNumber);
-      if (issue?.pull_request) {
+      try {
+        const issue = await api.getIssue(reference.issueNumber);
+        if (issue?.pull_request) {
+          return {
+            ...reference,
+            reason: 'pull-request',
+          };
+        }
         return {
           ...reference,
-          reason: 'pull-request',
+          title: boundedString(issue?.title, 300, `Issue ${reference.issueNumber}`),
         };
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 404) {
+          return {
+            ...reference,
+            reason: 'not-found',
+          };
+        }
+        throw error;
       }
-      return {
-        ...reference,
-        title: boundedString(issue?.title, 300, `Issue ${reference.issueNumber}`),
-      };
-    } catch (error) {
-      if (error instanceof ApiError && error.status === 404) {
-        return {
-          ...reference,
-          reason: 'not-found',
-        };
-      }
-      throw error;
-    }
-  }));
+    },
+  );
 
   return {
     validReferences: results.filter((reference) => !reference.reason),
@@ -334,6 +350,17 @@ export function findVisualEvidence(body) {
   };
 }
 
+export function isMergeabilityKnown(pullRequest) {
+  if (pullRequest?.mergeable === true || pullRequest?.mergeable === false) {
+    return true;
+  }
+  const mergeableState = boundedString(
+    pullRequest?.mergeable_state ?? pullRequest?.mergeStateStatus,
+    40,
+  ).toLowerCase();
+  return mergeableState !== '' && mergeableState !== 'unknown';
+}
+
 export function hasMergeConflict(pullRequest) {
   const mergeableState = boundedString(
     pullRequest?.mergeable_state ?? pullRequest?.mergeStateStatus,
@@ -342,6 +369,31 @@ export function hasMergeConflict(pullRequest) {
   return pullRequest?.mergeable === false
     || mergeableState === 'dirty'
     || mergeableState === 'conflicting';
+}
+
+// GitHub returns `mergeable: null` / `mergeable_state: unknown` while it is still
+// computing mergeability. Re-fetch until the state is known so a conflicting PR
+// is never treated as ready by default.
+export async function getPullRequestWithMergeability(
+  api,
+  pullNumber,
+  {
+    maxAttempts = MERGEABILITY_MAX_ATTEMPTS,
+    delayMs = MERGEABILITY_RETRY_DELAY_MS,
+    sleepImpl = sleep,
+  } = {},
+) {
+  let pullRequest = await api.getPullRequest(pullNumber);
+  let attempt = 1;
+  while (!isMergeabilityKnown(pullRequest) && attempt < maxAttempts) {
+    await sleepImpl(delayMs);
+    pullRequest = await api.getPullRequest(pullNumber);
+    attempt += 1;
+  }
+  return {
+    pullRequest,
+    mergeabilityKnown: isMergeabilityKnown(pullRequest),
+  };
 }
 
 function buildContributingUrl(repositoryHtmlUrl, baseRef) {
@@ -361,15 +413,12 @@ export function buildIntakeReport({
   authorLogin,
   isDraft = false,
   mergeConflict = false,
+  mergeabilityKnown = true,
   verifiedClosingIssues,
   invalidClosingIssues,
-  aiAssessment,
 }) {
   const ownership = classifyChangedPaths(changedPaths);
-  const normalizedAiAssessment = normalizeAiAssessment(
-    aiAssessment,
-    ownership.requiresVisualEvidence,
-  );
+  const visualAssessment = deriveVisualAssessment(ownership.requiresVisualEvidence);
   const closingIssues = Array.isArray(verifiedClosingIssues)
     ? verifiedClosingIssues
     : findClosingIssueReferences(body);
@@ -398,11 +447,11 @@ export function buildIntakeReport({
     );
   }
   if (
-    normalizedAiAssessment.visualEvidenceRequirement === 'REQUIRED'
+    visualAssessment.visualEvidenceRequirement === 'REQUIRED'
     && !visualEvidence.found
   ) {
     authorActions.push(
-      'Add a screenshot, GIF, or video to the PR description because this change affects product UI.',
+      'Add a screenshot, GIF, or video to the PR description so reviewers can validate the visible change.',
     );
   }
   const needsAuthorFeedback = authorActions.length > 0;
@@ -415,13 +464,14 @@ export function buildIntakeReport({
     closingIssues,
     invalidClosingIssues: invalidClosingReferences,
     visualEvidence,
-    aiAssessment: normalizedAiAssessment,
+    visualAssessment,
     authorActions,
     recommendations,
     authorLogin: boundedString(authorLogin, 100),
     mergeConflict,
+    mergeabilityKnown,
     needsAuthorFeedback,
-    readyForReview: authorActions.length === 0,
+    readyForReview: authorActions.length === 0 && mergeabilityKnown,
     contributingUrl: buildContributingUrl(repositoryHtmlUrl, baseRef),
   };
 }
@@ -473,29 +523,18 @@ export function renderIntakeComment(report, feedbackSince = null) {
   const deadlineNotice = report.needsAuthorFeedback
     ? `\nIf there is no author response within ${STALE_FEEDBACK_DAYS} days, this PR will be automatically closed.\n`
     : '';
-  const requirementLabels = {
-    REQUIRED: 'Required',
-    RECOMMENDED: 'Recommended',
-    NOT_NEEDED: 'Not needed',
-  };
-  const requirement = report.aiAssessment.visualEvidenceRequirement;
+  const requirement = report.visualAssessment.visualEvidenceRequirement;
   const visualEvidenceState = report.visualEvidence.found
     ? 'Visual evidence was detected in the PR description.'
     : requirement === 'REQUIRED'
       ? 'Visual evidence is currently missing.'
-      : requirement === 'RECOMMENDED'
-        ? 'Visual evidence is not present, but it would help reviewers.'
-        : 'No visual evidence is expected.';
-  const summary = markdownPlainText(
-    report.aiAssessment.summary,
-    800,
-    'Automated summary unavailable.',
-  );
+      : 'No visual evidence is expected.';
   const visualReason = markdownPlainText(
-    report.aiAssessment.visualEvidenceReason,
+    report.visualAssessment.visualEvidenceReason,
     500,
     'No explanation was provided.',
   );
+  const requirementLabel = requirement === 'REQUIRED' ? 'Required' : 'Not needed';
   const statusSection = report.readyForReview
     ? `## ✅ Ready for review
 
@@ -520,13 +559,21 @@ ${report.recommendations.map((entry) => `> ${entry}`).join('\n')}
   return `${CANONICAL_MARKER}
 ## 🧭 PR intake${feedbackMarker}
 
-**Summary:** ${summary}
-
-**Visual evidence:** ${requirementLabels[requirement]} — ${visualReason} ${visualEvidenceState}
+**Visual evidence:** ${requirementLabel} — ${visualReason} ${visualEvidenceState}
 
 ${recommendationSection}
 ${statusSection}
-_AI-assisted automated intake; PowerToys maintainers make final decisions._
+_Automated PR intake; PowerToys maintainers make final decisions._
+`;
+}
+
+export function renderAllClearComment() {
+  return `${CANONICAL_MARKER}
+## ✅ PR intake
+
+All automated intake checks now pass. Thanks for the updates!
+
+_Automated PR intake; PowerToys maintainers make final decisions._
 `;
 }
 
@@ -660,123 +707,6 @@ function changedPathsFromFileDetails(files) {
   ]).filter(Boolean);
 }
 
-export function buildPullRequestAiContext({ pullRequest, files }) {
-  const fileDetails = Array.isArray(files) ? files : [];
-  const changedPaths = changedPathsFromFileDetails(fileDetails);
-  const ownership = classifyChangedPaths(changedPaths);
-  const visualEvidence = findVisualEvidence(pullRequest?.body ?? '');
-  const source = {
-    number: Number(pullRequest?.number),
-    title: boundedString(pullRequest?.title, 500),
-    body: boundedString(pullRequest?.body, MAX_AI_BODY_LENGTH),
-    draft: pullRequest?.draft === true,
-    baseRef: boundedString(pullRequest?.base?.ref, 200),
-    headSha: boundedString(pullRequest?.head?.sha, 100),
-    changedFiles: fileDetails.slice(0, MAX_AI_FILE_COUNT).map((file) => ({
-      filename: boundedString(file?.filename, 500),
-      previousFilename: boundedString(file?.previous_filename, 500),
-      status: boundedString(file?.status, 40),
-      additions: Number(file?.additions) || 0,
-      deletions: Number(file?.deletions) || 0,
-      patch: boundedString(file?.patch, MAX_AI_PATCH_LENGTH),
-    })),
-    changedFileCount: fileDetails.length,
-    categories: ownership.categories,
-    visualPathHint: ownership.requiresVisualEvidence,
-    visualEvidenceFound: visualEvidence.found,
-    visualEvidenceTypes: visualEvidence.types,
-  };
-  const canonicalSource = JSON.stringify(source);
-  const inputSha256 = crypto
-    .createHash('sha256')
-    .update(canonicalSource, 'utf8')
-    .digest('hex');
-  const fileLines = source.changedFiles.map((file) =>
-    `- ${file.filename} (${file.status || 'modified'}, +${file.additions}/-${file.deletions})`);
-  const patchSections = source.changedFiles
-    .filter((file) => file.patch)
-    .slice(0, MAX_AI_PATCH_FILES)
-    .map((file) => `### ${file.filename}\n\n\`\`\`diff\n${file.patch}\n\`\`\``);
-
-  return {
-    inputSha256,
-    context: [
-      '# Deterministic PR evidence',
-      '',
-      `Input SHA-256: ${inputSha256}`,
-      `PR number: ${source.number}`,
-      `Draft: ${source.draft ? 'YES' : 'NO'}`,
-      `Base ref: ${source.baseRef || 'Unknown'}`,
-      `Head SHA: ${source.headSha || 'Unknown'}`,
-      `Changed file count: ${source.changedFileCount}`,
-      `Path categories: ${source.categories.join(', ') || 'Unknown'}`,
-      `Visual path hint: ${source.visualPathHint ? 'YES' : 'NO'}`,
-      `Visual evidence already present: ${source.visualEvidenceFound ? 'YES' : 'NO'}`,
-      `Detected visual evidence types: ${source.visualEvidenceTypes.join(', ') || 'None'}`,
-      '',
-      '## Untrusted PR title',
-      '',
-      source.title || 'Not provided',
-      '',
-      '## Untrusted PR description',
-      '',
-      source.body || 'Not provided',
-      '',
-      `## Changed files (${Math.min(source.changedFiles.length, MAX_AI_FILE_COUNT)} shown)`,
-      '',
-      ...(fileLines.length ? fileLines : ['- None']),
-      '',
-      '## Bounded patch excerpts',
-      '',
-      ...(patchSections.length ? patchSections : ['No patch excerpts were available.']),
-      '',
-    ].join('\n'),
-  };
-}
-
-export function extractAiAssessmentFromAgentOutput(output) {
-  const item = output?.items?.find(
-    (candidate) => candidate?.type === 'publish_pr_intake',
-  );
-  if (!item) {
-    throw new Error('The agent did not provide a PR intake assessment');
-  }
-  const assessment = normalizeAiAssessment(item);
-  if (!/^[a-f0-9]{64}$/.test(assessment.inputSha256)) {
-    throw new Error('The agent did not provide a valid PR evidence hash');
-  }
-  if (!boundedString(item.summary, 800)) {
-    throw new Error('The agent did not provide a PR summary');
-  }
-  if (![
-    'REQUIRED',
-    'RECOMMENDED',
-    'NOT_NEEDED',
-  ].includes(boundedString(item.visual_evidence_requirement, 40).toUpperCase())) {
-    throw new Error('The agent provided an invalid visual-evidence requirement');
-  }
-  if (!boundedString(item.visual_evidence_reason, 500)) {
-    throw new Error('The agent did not explain the visual-evidence requirement');
-  }
-  return assessment;
-}
-
-export async function preparePullRequestAiContext({ api, event, outputPath }) {
-  const pullNumber = Number(event?.pull_request?.number);
-  if (!Number.isSafeInteger(pullNumber) || pullNumber <= 0) {
-    throw new Error('The GitHub event payload must contain a pull request');
-  }
-  const pullRequest = await api.getPullRequest(pullNumber);
-  const files = await listAllPullRequestFileDetails(api, pullNumber);
-  const result = buildPullRequestAiContext({ pullRequest, files });
-  await fs.writeFile(outputPath, result.context, 'utf8');
-  return {
-    issueNumber: Number(pullRequest.number),
-    inputSha256: result.inputSha256,
-    outputPath,
-  };
-}
-
 function parseIssueLabels(issue) {
   return Array.isArray(issue?.labels)
     ? issue.labels
@@ -785,7 +715,7 @@ function parseIssueLabels(issue) {
     : [];
 }
 
-export async function runPullRequestIntake({ api, event, aiAssessment = null }) {
+export async function runPullRequestIntake({ api, event }) {
   if (!event?.repository) {
     throw new Error('The GitHub event payload must contain repository data');
   }
@@ -797,31 +727,14 @@ export async function runPullRequestIntake({ api, event, aiAssessment = null }) 
   if (!Number.isSafeInteger(pullNumber) || pullNumber <= 0) {
     throw new Error('The GitHub event payload must identify a pull request');
   }
-  const pullRequest = await api.getPullRequest(pullNumber);
+  const { pullRequest, mergeabilityKnown } = await getPullRequestWithMergeability(
+    api,
+    pullNumber,
+  );
   const issueNumber = pullNumber;
 
   const fileDetails = await listAllPullRequestFileDetails(api, issueNumber);
   const changedPaths = changedPathsFromFileDetails(fileDetails);
-  const currentAiContext = buildPullRequestAiContext({
-    pullRequest,
-    files: fileDetails,
-  });
-  const normalizedAiAssessment = normalizeAiAssessment(
-    aiAssessment,
-    classifyChangedPaths(changedPaths).requiresVisualEvidence,
-  );
-  if (
-    aiAssessment
-    && !/^[a-f0-9]{64}$/.test(normalizedAiAssessment.inputSha256)
-  ) {
-    throw new Error('The agent assessment is missing a valid PR evidence hash');
-  }
-  if (
-    normalizedAiAssessment.inputSha256
-    && normalizedAiAssessment.inputSha256 !== currentAiContext.inputSha256
-  ) {
-    throw new Error('The agent assessment does not match the current pull request state');
-  }
   const issue = await api.getIssue(issueNumber);
   const closingReferenceVerification = await verifyClosingIssueReferences({
     api,
@@ -836,9 +749,9 @@ export async function runPullRequestIntake({ api, event, aiAssessment = null }) 
     authorLogin: pullRequest.user?.login ?? '',
     isDraft: pullRequest.draft === true,
     mergeConflict: hasMergeConflict(pullRequest),
+    mergeabilityKnown,
     verifiedClosingIssues: closingReferenceVerification.validReferences,
     invalidClosingIssues: closingReferenceVerification.invalidReferences,
-    aiAssessment: normalizedAiAssessment,
   });
   const comments = await listAllComments(api, issueNumber);
   const { canonical } = selectCanonicalComment(comments);
@@ -863,12 +776,33 @@ export async function runPullRequestIntake({ api, event, aiAssessment = null }) 
   );
 
   await syncManagedLabels(api, issueNumber, labelPlan);
-  const commentResult = await upsertCanonicalComment({
-    api,
-    issueNumber,
-    body: renderIntakeComment(report, feedbackSince),
-    comments,
-  });
+
+  // Only surface a comment when there is something for the author to act on or
+  // consider. When a previously flagged PR becomes clean we replace the stale
+  // comment with a short all-clear note; when nothing was ever posted we stay
+  // silent to avoid noise on already-healthy PRs.
+  const hasRemarks = report.authorActions.length > 0
+    || report.recommendations.length > 0;
+  let commentResult = {
+    operation: 'skipped',
+    comment: null,
+    deletedExtraComments: [],
+  };
+  if (hasRemarks) {
+    commentResult = await upsertCanonicalComment({
+      api,
+      issueNumber,
+      body: renderIntakeComment(report, feedbackSince),
+      comments,
+    });
+  } else if (canonical) {
+    commentResult = await upsertCanonicalComment({
+      api,
+      issueNumber,
+      body: renderAllClearComment(),
+      comments,
+    });
+  }
 
   return {
     issueNumber,
@@ -880,9 +814,10 @@ export async function runPullRequestIntake({ api, event, aiAssessment = null }) 
       deletedExtraComments: commentResult.deletedExtraComments,
     },
     requiresVisualEvidence: report.requiresVisualEvidence,
-    visualEvidenceRequirement: report.aiAssessment.visualEvidenceRequirement,
+    visualEvidenceRequirement: report.visualAssessment.visualEvidenceRequirement,
     visualEvidenceFound: report.visualEvidence.found,
     mergeConflict: report.mergeConflict,
+    mergeabilityKnown: report.mergeabilityKnown,
     closingIssueCount: report.closingIssues.length,
     invalidClosingIssueCount: report.invalidClosingIssues.length,
     needsAuthorFeedback: report.needsAuthorFeedback,
@@ -1007,29 +942,7 @@ async function main() {
     repo,
   });
 
-  const prepareContextIndex = process.argv.indexOf('--prepare-ai-context');
-  const publishOutputIndex = process.argv.indexOf('--publish-agent-output');
-  let result;
-  if (prepareContextIndex >= 0) {
-    const outputPath = process.argv[prepareContextIndex + 1];
-    if (!outputPath) {
-      throw new Error('The AI context output path is required');
-    }
-    result = await preparePullRequestAiContext({ api, event, outputPath });
-  } else if (publishOutputIndex >= 0) {
-    const outputPath = process.argv[publishOutputIndex + 1];
-    if (!outputPath) {
-      throw new Error('The agent output path is required');
-    }
-    const output = JSON.parse(await fs.readFile(outputPath, 'utf8'));
-    result = await runPullRequestIntake({
-      api,
-      event,
-      aiAssessment: extractAiAssessmentFromAgentOutput(output),
-    });
-  } else {
-    result = await runPullRequestIntake({ api, event });
-  }
+  const result = await runPullRequestIntake({ api, event });
   console.log(JSON.stringify(result, null, 2));
 }
 
