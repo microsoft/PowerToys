@@ -238,6 +238,7 @@ namespace ShortcutGuide
                                 await OverlayWindow.MainPaneControl.Open();
                                 OverlayWindow.UpdateTaskbarPaneLayout();
                                 OverlayWindow.MainPaneControl.Visibility = Visibility.Visible;
+                                OverlayWindow.MainPaneControl.FocusSearch();
                             }
                         });
                     }
