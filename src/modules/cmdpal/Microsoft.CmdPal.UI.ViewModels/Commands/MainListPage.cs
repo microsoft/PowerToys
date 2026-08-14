@@ -452,7 +452,7 @@ public sealed partial class MainListPage : DynamicListPage,
             for (var j = 0; j < allCommands.Count; j++)
             {
                 var cmd = allCommands[j];
-                if (IsEligibleTopLevelCommand(cmd) &&
+                if (TopLevelCommandEligibility.IsEligibleForHome(cmd) &&
                     cmd.CommandProviderId == s.ProviderId &&
                     cmd.Id == s.CommandId)
                 {
@@ -467,7 +467,7 @@ public sealed partial class MainListPage : DynamicListPage,
         for (var i = 0; i < allCommands.Count; i++)
         {
             var candidate = allCommands[i];
-            if (IsEligibleTopLevelCommand(candidate) && !_tlcManager.IsPinned(candidate.CommandProviderId, candidate.Id))
+            if (TopLevelCommandEligibility.IsEligibleForHome(candidate) && !_tlcManager.IsPinned(candidate.CommandProviderId, candidate.Id))
             {
                 regular.Add(candidate);
             }
@@ -476,11 +476,6 @@ public sealed partial class MainListPage : DynamicListPage,
         _cachedPinnedViewModels = [.. pinned];
         _cachedRegularViewModels = [.. regular];
         _defaultViewDirty = false;
-    }
-
-    private static bool IsEligibleTopLevelCommand(TopLevelViewModel command)
-    {
-        return !command.IsFallback && !string.IsNullOrEmpty(command.Title);
     }
 
     private void ClearResults()
