@@ -161,7 +161,7 @@ internal sealed class LocalPathLease : IDisposable
             if (!TryOpenComponent(
                 currentPath,
                 FileReadAttributes,
-                FileShareRead | FileShareWrite,
+                FileShareRead,
                 handles,
                 out FileAttributes attributes,
                 out _)
@@ -183,7 +183,7 @@ internal sealed class LocalPathLease : IDisposable
                 uint desiredAccess = isLast ? GenericRead : FileReadAttributes;
                 uint shareMode = isLast
                     ? FileShareRead | FileShareWrite | FileShareDelete
-                    : FileShareRead | FileShareWrite;
+                    : FileShareRead;
                 if (!TryOpenComponent(
                     currentPath,
                     desiredAccess,
