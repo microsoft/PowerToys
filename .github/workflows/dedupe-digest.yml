@@ -26,7 +26,6 @@ on:
         default: "26"
 
 permissions:
-  contents: read
   issues: write
 
 concurrency:
@@ -74,16 +73,26 @@ jobs:
 
             const today = new Date().toISOString().slice(0, 10);
 
-            // Strip control chars, HTML comments (marker injection) and angle
-            // brackets from any text pulled out of untrusted issue/comment bodies.
-            const sanitize = (text, max = 200) =>
-              String(text == null ? '' : text)
+            // Neutralize untrusted issue/comment text before the bot republishes
+            // it: strip HTML comments (marker injection) and control chars, then
+            // escape Markdown and `@` mentions so a crafted title cannot inject
+            // links/formatting or notify users/teams on every carried-over digest.
+            const sanitize = (text, max = 200) => {
+              const cleaned = String(text == null ? '' : text)
                 .replace(/<!--[\s\S]*?-->/g, ' ')
                 .replace(/[\u0000-\u001F\u007F]/g, ' ')
-                .replace(/[<>]/g, '')
                 .replace(/\s+/g, ' ')
                 .trim()
                 .slice(0, max);
+              return cleaned
+                .replace(/\\/g, '\\\\')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/@/g, '@\u200B')
+                .replace(/([`*_{}\[\]()#+.!|~])/g, '\\$1')
+                .replace(/-/g, '\\-');
+            };
 
             const labelNames = (issue) =>
               (issue.labels || []).map(l => (typeof l === 'string' ? l : l.name) || '');
@@ -180,7 +189,6 @@ jobs:
             // --- 4. Resolve each candidate against its live triage comment -------
             const flagged = [];
             for (const number of candidateNumbers) {
-              if (flagged.length >= MAX_FLAGGED) break;
               let issue;
               try {
                 issue = (await github.rest.issues.get({ owner, repo, issue_number: number })).data;
@@ -206,8 +214,17 @@ jobs:
               });
             }
 
+            // Newest issues first, then keep at most MAX_FLAGGED. Because every
+            // candidate was inspected above, capping the *sorted* list here means
+            // a full carry-over set can never starve fresher issues out of the
+            // scan — the newest ones always win the cap.
             flagged.sort((a, b) => b.number - a.number);
-            core.info(`Flagged ${flagged.length} issue(s) as possible duplicates.`);
+            const totalFlagged = flagged.length;
+            const tracked = flagged.slice(0, MAX_FLAGGED);
+            core.info(
+              `Flagged ${totalFlagged} issue(s) as possible duplicates; ` +
+              `tracking ${tracked.length}.`
+            );
 
             // --- 5a. Nothing flagged: close priors, open nothing -----------------
             const closePrior = async (noteBody) => {
@@ -234,11 +251,11 @@ jobs:
               return;
             }
 
-            // --- 5b. Group flagged issues under their strongest canonical -------
-            // Each flagged issue is a duplicate to close; candidates[0] is the
+            // --- 5b. Group tracked issues under their strongest canonical ------
+            // Each tracked issue is a duplicate to close; candidates[0] is the
             // strongest suggested canonical (the one to keep).
             const groups = new Map();
-            for (const f of flagged) {
+            for (const f of tracked) {
               const primary = f.candidates[0];
               if (!groups.has(primary.number)) {
                 groups.set(primary.number, {
@@ -251,7 +268,8 @@ jobs:
                 title: f.title,
                 reason: primary.reason,
                 triageUrl: f.triageUrl,
-                others: f.candidates.slice(1).map(c => c.number)
+                others: f.candidates.slice(1).map(c => c.number),
+                allCandidates: f.candidates.map(c => c.number)
               });
             }
             const groupList = Array.from(groups.values())
@@ -260,56 +278,92 @@ jobs:
               g.dupes.sort((a, b) => b.number - a.number);
             }
 
-            // --- 5c. Build and open the new digest -------------------------------
-            const lines = [];
-            lines.push(BODY_MARKER);
-            lines.push(`## 🧭 Daily Duplicate Digest — ${today}`);
-            lines.push('');
-            lines.push(
-              `AI Issue Triage flagged **${flagged.length}** open issue(s) as possible ` +
+            // --- 5c. Build the digest body within GitHub's body-size limit ------
+            // GitHub rejects issue bodies over 65,536 chars with a 422. Render
+            // whole groups only while they fit inside a conservative budget, then
+            // note how many issues were deferred so nothing looks silently lost.
+            const MAX_BODY = 60000;
+            const footer = '<!-- gh-aw-workflow-id: dedupe-digest -->';
+
+            const head = [];
+            head.push(BODY_MARKER);
+            head.push(`## 🧭 Daily Duplicate Digest — ${today}`);
+            head.push('');
+            head.push(
+              `AI Issue Triage flagged **${totalFlagged}** open issue(s) as possible ` +
               `duplicates, grouped under **${groupList.length}** canonical issue(s) below. ` +
-              `Each listed issue already has a pending duplicate-close suggestion from ` +
-              `triage — review it and accept or decline on the issue itself.`
+              `Triage may have already filed a duplicate-close suggestion on each one — ` +
+              `open the linked triage summary and accept or decline it on the issue itself.`
             );
 
-            for (const g of groupList) {
-              lines.push('');
-              lines.push('---');
-              lines.push('');
-              lines.push(`### ✅ Keep #${g.canonical.number} — ${g.canonical.title}`);
-              lines.push('');
-              lines.push(
+            const renderGroup = (g) => {
+              const block = [];
+              block.push('');
+              block.push('---');
+              block.push('');
+              block.push(`### ✅ Keep #${g.canonical.number} — ${g.canonical.title}`);
+              block.push('');
+              block.push(
                 g.dupes.length === 1
                   ? `The following issue looks like a duplicate of #${g.canonical.number} and can be closed:`
                   : `The following issues look like duplicates of #${g.canonical.number} and can be closed:`
               );
-              lines.push('');
+              block.push('');
               for (const d of g.dupes) {
                 const reason = d.reason ? ` — ${d.reason}` : '';
                 const others = d.others.length
                   ? ` _(also similar to ${d.others.map(n => `#${n}`).join(', ')})_`
                   : '';
-                lines.push(
+                block.push(
                   `- **#${d.number} — ${d.title}**${reason}${others} ` +
                   `([triage summary](${d.triageUrl}))`
                 );
               }
+              return block;
+            };
+
+            const body = head.slice();
+            const markerLines = [];
+            let renderedGroups = 0;
+            let renderedDupes = 0;
+            for (const g of groupList) {
+              const block = renderGroup(g);
+              const blockMarkers = g.dupes.flatMap(d =>
+                d.allCandidates.map(cn => `<!-- dup:ISSUE=${d.number} CANON=${cn} -->`)
+              );
+              // +240 leaves room for the deferral note and footer.
+              const projected = body.join('\n').length + block.join('\n').length +
+                markerLines.join('\n').length + blockMarkers.join('\n').length +
+                footer.length + 240;
+              if (projected > MAX_BODY && renderedGroups > 0) break;
+              body.push(...block);
+              markerLines.push(...blockMarkers);
+              renderedGroups++;
+              renderedDupes += g.dupes.length;
+            }
+
+            const deferred = totalFlagged - renderedDupes;
+            if (deferred > 0) {
+              body.push('');
+              body.push('---');
+              body.push('');
+              body.push(
+                `_${deferred} additional flagged issue(s) are still being tracked but ` +
+                `were not shown here (digest size or daily cap). They will surface in a ` +
+                `later digest as capacity allows._`
+              );
             }
 
             // Hidden machine-readable carry-over markers (one per dup→candidate).
-            lines.push('');
-            lines.push('<!-- carry-over state; do not edit -->');
-            for (const f of flagged) {
-              for (const c of f.candidates) {
-                lines.push(`<!-- dup:ISSUE=${f.number} CANON=${c.number} -->`);
-              }
-            }
-            lines.push('<!-- gh-aw-workflow-id: dedupe-digest -->');
+            body.push('');
+            body.push('<!-- carry-over state; do not edit -->');
+            body.push(...markerLines);
+            body.push(footer);
 
             const created = await github.rest.issues.create({
               owner, repo,
               title: `${PREFIX} ${today}`,
-              body: lines.join('\n'),
+              body: body.join('\n'),
               labels: [LABEL]
             });
             core.info(`Created digest issue #${created.data.number}.`);
@@ -331,5 +385,6 @@ jobs:
             );
 
             core.notice(
-              `Dedupe digest #${created.data.number} created with ${flagged.length} flagged issue(s).`
+              `Dedupe digest #${created.data.number} created: ` +
+              `${renderedDupes} shown, ${deferred} deferred, ${totalFlagged} total.`
             );
