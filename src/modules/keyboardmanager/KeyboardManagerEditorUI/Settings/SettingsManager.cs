@@ -41,7 +41,7 @@ namespace KeyboardManagerEditorUI.Settings
             {
                 _mappingService = new KeyboardMappingService();
             }
-            catch (Exception ex) when (ex is DllNotFoundException or InvalidOperationException)
+            catch (Exception ex) when (ex is DllNotFoundException or EntryPointNotFoundException or InvalidOperationException)
             {
                 ManagedCommon.Logger.LogWarning($"Native KBM library unavailable, running in standalone mode: {ex.Message}");
                 _mappingService = null;
@@ -59,7 +59,11 @@ namespace KeyboardManagerEditorUI.Settings
                     if (_mappingService is not null)
                     {
                         EditorSettings createdSettings = CreateSettingsFromKeyboardManagerService();
-                        WriteSettings(createdSettings);
+                        if (_mappingService.LoadResult == MappingConfigurationLoadResult.Success)
+                        {
+                            WriteSettings(createdSettings);
+                        }
+
                         return createdSettings;
                     }
 
@@ -67,10 +71,21 @@ namespace KeyboardManagerEditorUI.Settings
                 }
 
                 string json = File.ReadAllText(_settingsFilePath);
-                EditorSettings settings = JsonSerializer.Deserialize<EditorSettings>(json, _jsonOptions) ?? new EditorSettings();
-                if (MigrateLegacyTextReplacementTriggerKeys(settings))
+                EditorSettings? settings = JsonSerializer.Deserialize<EditorSettings>(json, _jsonOptions);
+                if (settings is null)
                 {
-                    WriteSettings(settings);
+                    return new EditorSettings();
+                }
+
+                bool migrated = MigrateLegacyTextReplacementTriggerKeys(settings);
+                if (!EditorSettingsRecoveryValidator.IsValid(settings))
+                {
+                    return new EditorSettings();
+                }
+
+                if (migrated && !WriteSettings(settings))
+                {
+                    return settings;
                 }
 
                 return settings;
@@ -184,6 +199,12 @@ namespace KeyboardManagerEditorUI.Settings
                 return;
             }
 
+            if (service.LoadResult == MappingConfigurationLoadResult.Partial)
+            {
+                ManagedCommon.Logger.LogError("Keyboard Manager mappings were only partially loaded; correlation is disabled to prevent data loss.");
+                return;
+            }
+
             bool shortcutSettingsChanged = false;
             List<ShortcutKeyMapping> shortcutKeyMappings = service.GetShortcutMappings();
             List<KeyMapping> singleKeyMappings = service.GetSingleKeyMappings();
@@ -232,25 +253,7 @@ namespace KeyboardManagerEditorUI.Settings
                 }
             }
 
-            foreach (TextReplacement mapping in textReplacementMappings)
-            {
-                if (!EditorSettings.ShortcutSettingsDictionary.Values.Any(settings =>
-                    settings.Shortcut.OperationType == ShortcutOperationType.RemapText &&
-                    string.Equals(settings.Shortcut.TriggerText, mapping.Trigger, StringComparison.Ordinal) &&
-                    settings.Shortcut.TriggerKey == mapping.TriggerKey &&
-                    string.Equals(settings.Shortcut.TargetText, mapping.TargetText, StringComparison.Ordinal)))
-                {
-                    AddShortcutMapping(EditorSettings, new ShortcutKeyMapping
-                    {
-                        OperationType = ShortcutOperationType.RemapText,
-                        TriggerText = mapping.Trigger,
-                        TriggerKey = mapping.TriggerKey,
-                        TargetKeys = mapping.TargetText,
-                        TargetText = mapping.TargetText,
-                    });
-                    shortcutSettingsChanged = true;
-                }
-            }
+            shortcutSettingsChanged = TextReplacementMappingReconciler.Reconcile(EditorSettings, textReplacementMappings) || shortcutSettingsChanged;
 
             foreach (ShortcutSettings shortcutSettings in EditorSettings.ShortcutSettingsDictionary.Values)
             {
@@ -270,7 +273,10 @@ namespace KeyboardManagerEditorUI.Settings
 
             if (shortcutSettingsChanged)
             {
-                WriteSettings();
+                if (!WriteSettings())
+                {
+                    ManagedCommon.Logger.LogError("Failed to persist reconciled Keyboard Manager editor settings.");
+                }
             }
         }
 
@@ -416,9 +422,7 @@ namespace KeyboardManagerEditorUI.Settings
             if (!string.IsNullOrEmpty(shortcutSettings.Shortcut.TriggerText))
             {
                 return textReplacementMappings.Any(m =>
-                    m.Trigger == shortcutSettings.Shortcut.TriggerText &&
-                    m.TriggerKey == shortcutSettings.Shortcut.TriggerKey &&
-                    m.TargetText == shortcutSettings.Shortcut.TargetText);
+                    string.Equals(m.Trigger, shortcutSettings.Shortcut.TriggerText, StringComparison.Ordinal));
             }
 
             if (string.IsNullOrEmpty(shortcutSettings.Shortcut.OriginalKeys))

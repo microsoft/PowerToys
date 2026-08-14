@@ -26,6 +26,10 @@ namespace KeyboardManagerInput
         // call, that call fails (returns false) to simulate a SendInput failure.
         std::function<bool(const std::vector<INPUT>&)> sendVirtualInputShouldFail;
 
+        // Optional prefix count returned by the simulated SendInput call. This models
+        // the documented partial-success case without pretending the whole batch landed.
+        std::function<size_t(const std::vector<INPUT>&)> sendVirtualInputInjectedCount;
+
         // Records attempted SendVirtualInput batch sizes, including failed batches.
         std::vector<size_t> sendVirtualInputBatchSizes;
 
@@ -44,7 +48,7 @@ namespace KeyboardManagerInput
         void SetHookProc(std::function<intptr_t(LowlevelKeyboardEvent*)> hookProcedure);
 
         // Function to simulate keyboard input
-        bool SendVirtualInput(const std::vector<INPUT>& inputs);
+        SendVirtualInputResult SendVirtualInput(const std::vector<INPUT>& inputs) override;
 
         // Function to simulate keyboard hook behavior
         intptr_t MockedKeyboardHook(LowlevelKeyboardEvent* data);
@@ -63,6 +67,9 @@ namespace KeyboardManagerInput
 
         // Function to force SendVirtualInput to fail for calls matching a predicate
         void SetSendVirtualInputShouldFail(std::function<bool(const std::vector<INPUT>&)> condition);
+
+        // Function to force SendVirtualInput to deliver only a prefix of a batch.
+        void SetSendVirtualInputInjectedCount(std::function<size_t(const std::vector<INPUT>&)> countProvider);
 
         // Function to get SendVirtualInput call count
         int GetSendVirtualInputCallCount();

@@ -1,6 +1,8 @@
 #pragma once
 #include <keyboardmanager/common/MappingConfiguration.h>
 #include <atomic>
+#include <mutex>
+#include <unordered_map>
 #include <unordered_set>
 
 enum class TextReplacementContextStatus : uint8_t
@@ -10,17 +12,38 @@ enum class TextReplacementContextStatus : uint8_t
     Blocked,
 };
 
+enum class SingleKeyRemapPressOwner : uint8_t
+{
+    OriginalPassthrough,
+    Suppressed,
+    RemappedTarget,
+};
+
+struct SingleKeyRemapPressState
+{
+    SingleKeyRemapPressOwner owner = SingleKeyRemapPressOwner::OriginalPassthrough;
+    bool releasePending = false;
+    bool suppressedPhysicalPressHeld = false;
+    std::vector<INPUT> repeatEvents;
+    std::vector<INPUT> releaseEvents;
+};
+
 class State : public MappingConfiguration
 {
 private:
     // Stores the activated target application in app-specific shortcut
     std::wstring activatedAppSpecificShortcutTarget;
 
-    // Source keys whose single-key remap key-down injection was blocked, so the original
-    // key-down was passed through to the foreground app. The matching key-up must be
-    // passed through too; otherwise the physical key is stranded DOWN. Only accessed from
-    // the (serialized) low-level keyboard hook thread.
-    std::unordered_set<DWORD> singleKeyRemapInjectionFailedKeys;
+    // A physical press chooses one owner on its first key-down and never changes owner on
+    // repeats. Release events are retained independently of the mapping table so a failed
+    // target key-up can be retried without leaking the original key-up.
+    std::unordered_map<DWORD, SingleKeyRemapPressState> singleKeyRemapPressStates;
+
+    // Key-up events required to finish cleanup after a partial SendInput. The hook
+    // thread normally owns this ledger; the mutex also permits shutdown to make one
+    // final best-effort attempt after input hooks have been detached.
+    mutable std::mutex pendingInputCleanupMutex;
+    std::vector<INPUT> pendingInputCleanup;
 
 public:
     // Source keys whose remapped target key/shortcut is currently held down by
@@ -44,6 +67,9 @@ public:
     // Activation key-downs that fired a replacement. Repeats and the matching key-up
     // must remain suppressed even if the input context changes in the meantime.
     std::unordered_set<DWORD> textReplacementSuppressedTriggerKeys;
+    // Physical trigger keys currently held down. A replacement may only activate on the
+    // first down transition; an auto-repeat can never retroactively consume a passed pair.
+    std::unordered_set<DWORD> textReplacementTriggerKeysDown;
     uint64_t textReplacementObservedContextEpoch = 0;
 
     // Other threads only request invalidation. The hook thread observes these atomics
@@ -88,13 +114,21 @@ public:
     // Gets the activated target application in app-specific shortcut
     std::wstring GetActivatedApp();
 
-    // Records (failed == true) or clears (failed == false) that the single-key remap
-    // key-down injection for sourceKey was blocked and the original key-down was passed
-    // through to the foreground app.
-    void SetSingleKeyRemapInjectionFailed(const DWORD sourceKey, const bool failed);
+    const SingleKeyRemapPressState* GetSingleKeyRemapPressState(DWORD sourceKey) const noexcept;
+    SingleKeyRemapPressState* GetSingleKeyRemapPressState(DWORD sourceKey) noexcept;
+    void SetSingleKeyRemapPassthrough(DWORD sourceKey);
+    void SetSingleKeyRemapSuppressed(DWORD sourceKey);
+    void SetSingleKeyRemapTarget(DWORD sourceKey, std::vector<INPUT> repeatEvents, std::vector<INPUT> releaseEvents);
+    void SetSingleKeyRemapReleasePending(DWORD sourceKey);
+    void SetSingleKeyRemapSuppressedPhysicalPressHeld(DWORD sourceKey, bool held);
+    void ClearSingleKeyRemapPressState(DWORD sourceKey);
+    void ClearSingleKeyRemapPressStates();
+    bool HasSingleKeyRemapPressState(DWORD sourceKey) const noexcept;
+    std::vector<DWORD> GetSingleKeyRemapReleasePendingKeys() const;
 
-    // Returns true and clears the marker if sourceKey's single-key remap key-down
-    // injection was previously blocked, indicating that its key-up should be passed
-    // through as well.
-    bool ConsumeSingleKeyRemapInjectionFailed(const DWORD sourceKey);
+    void QueuePendingInputCleanup(std::vector<INPUT> cleanupEvents);
+    void PrependPendingInputCleanup(std::vector<INPUT> cleanupEvents);
+    std::vector<INPUT> TakePendingInputCleanup();
+    void ClearPendingInputCleanup();
+    bool HasPendingInputCleanup() const;
 };

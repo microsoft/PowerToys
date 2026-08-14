@@ -12,13 +12,15 @@ namespace TestHelpers
         input.SetHookProc(nullptr);
         input.SetSendVirtualInputTestHandler(nullptr);
         input.SetSendVirtualInputShouldFail(nullptr);
+        input.SetSendVirtualInputInjectedCount(nullptr);
         input.SetForegroundProcess(L"");
         state.ClearSingleKeyRemaps();
         state.ClearOSLevelShortcuts();
         state.ClearAppSpecificShortcuts();
         state.ClearSingleKeyToTextRemaps();
         state.ClearTextReplacements();
-        state.singleKeyRemapActiveKeys.clear();
+        state.ClearSingleKeyRemapPressStates();
+        state.ClearPendingInputCleanup();
         state.textReplacementBuffer.clear();
         state.textReplacementProcessId = 0;
         state.textReplacementWindow = nullptr;
@@ -26,6 +28,7 @@ namespace TestHelpers
         state.textReplacementDeadKeyPending = false;
         state.textReplacementCapsLockOn = false;
         state.textReplacementSuppressedTriggerKeys.clear();
+        state.textReplacementTriggerKeysDown.clear();
         state.textReplacementObservedContextEpoch = 0;
         state.textReplacementContextEpoch.store(1, std::memory_order_relaxed);
         state.textReplacementContextTrackingEnabled.store(false, std::memory_order_relaxed);

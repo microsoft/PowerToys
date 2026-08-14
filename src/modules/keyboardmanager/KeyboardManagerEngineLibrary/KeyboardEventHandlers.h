@@ -1,15 +1,44 @@
 #pragma once
 
 #include <common/hooks/LowlevelKeyboardEvent.h>
+#include <functional>
 #include "State.h"
 
 namespace KeyboardManagerInput
 {
     class InputInterface;
+    struct SendVirtualInputResult;
 }
 
 namespace KeyboardEventHandlers
 {
+    enum class TextReplacementPreparationResult
+    {
+        // Preparation did not touch the target UI. The physical trigger may pass through.
+        NotPrepared,
+        // The exact verified suffix is selected and ready to be replaced.
+        Prepared,
+        // Preparation may have changed target selection but could not establish a safe
+        // replacement transaction. The physical trigger must be swallowed.
+        CommittedFailure,
+    };
+
+    struct TextReplacementTransactionCallbacks
+    {
+        std::function<TextReplacementPreparationResult(std::wstring_view trigger, bool targetContainsNewline)> prepare;
+        // Restores and verifies the original collapsed caret after a prepared target input
+        // failed before any event was injected. Returns true only when pass-through is safe.
+        std::function<bool()> rollback;
+        // Side-effect-free check that the prepared selection token, focus and context epoch
+        // still own the target immediately before each SendInput batch.
+        std::function<bool()> isCurrent;
+        // Releases the prepared selection token after completed or partially injected input.
+        std::function<void()> finish;
+    };
+
+    // Retries the exact key-up suffix left after a partial cleanup injection. Successfully
+    // inserted events are advanced by count; a zero-result leaves the ledger unchanged.
+    KeyboardManagerInput::SendVirtualInputResult RetryPendingInputCleanup(KeyboardManagerInput::InputInterface& ii, State& state) noexcept;
 
     struct ResetChordsResults
     {
@@ -26,7 +55,7 @@ namespace KeyboardEventHandlers
     */
 
     // Function to handle a shortcut remap
-    intptr_t HandleShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp = std::nullopt) noexcept;
+    intptr_t HandleShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp = std::nullopt, bool allowNewRemappings = true) noexcept;
 
     // Function to reset chord matching
     void ResetAllStartedChords(State& state, const std::optional<std::wstring>& activatedApp);
@@ -79,6 +108,14 @@ namespace KeyboardEventHandlers
     // Function to handle an app-specific shortcut remap
     intptr_t HandleAppSpecificShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
 
+    // Continues a single-key press that already chose an owner. This never starts a new
+    // remap, but it also retries pending target releases on later physical input.
+    intptr_t HandleActiveSingleKeyRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
+
+    // Continues an already-invoked shortcut in exactly one table. It never activates a
+    // fresh shortcut while the editor is open.
+    intptr_t HandleActiveShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp = std::nullopt) noexcept;
+
     // Continues only remaps that already own output state while the editor is open.
     intptr_t HandleActiveRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
 
@@ -86,7 +123,7 @@ namespace KeyboardEventHandlers
     intptr_t HandleSingleKeyToTextRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state);
 
     // Function to replace recently typed text with configured replacement text
-    intptr_t HandleTextReplacementEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state);
+    intptr_t HandleTextReplacementEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const TextReplacementTransactionCallbacks& transactionCallbacks);
 
     // Suppresses repeats and the matching key-up for a text replacement trigger key
     // whose initial key-down was already consumed.
@@ -100,5 +137,5 @@ namespace KeyboardEventHandlers
     void UpdateTextReplacementToggleKeyState(const LowlevelKeyboardEvent* data, bool eventSuppressed, State& state) noexcept;
 
     // Function to ensure Ctrl/Shift/Alt modifier key state is not detected as pressed down by applications which detect keys at a lower level than hooks when it is remapped for scenarios where its required
-    void ResetIfModifierKeyForLowerLevelKeyHandlers(KeyboardManagerInput::InputInterface& ii, DWORD key, DWORD target);
+    KeyboardManagerInput::SendVirtualInputResult ResetIfModifierKeyForLowerLevelKeyHandlers(KeyboardManagerInput::InputInterface& ii, DWORD key, DWORD target);
 };

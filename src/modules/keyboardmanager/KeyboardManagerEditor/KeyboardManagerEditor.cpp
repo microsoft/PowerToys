@@ -12,6 +12,8 @@
 
 #include <trace.h>
 
+#include <stdexcept>
+
 #include <keyboardmanager/common/KeyboardEventHandlers.h>
 
 #include <EditKeyboardWindow.h>
@@ -137,7 +139,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
     }
 
-    editor = std::make_unique<KeyboardManagerEditor>(hInstance);
+    try
+    {
+        editor = std::make_unique<KeyboardManagerEditor>(hInstance);
+    }
+    catch (const std::exception&)
+    {
+        Logger::error(L"Keyboard Manager Editor refused to open because settings could not be loaded completely");
+        Trace::UnregisterProvider();
+        return -1;
+    }
+
     if (!editor->StartLowLevelKeyboardHook())
     {
         DWORD errorCode = GetLastError();
@@ -160,13 +172,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 KeyboardManagerEditor::KeyboardManagerEditor(HINSTANCE hInst) :
     hInstance(hInst)
 {
-    bool loadedSuccessful = mappingConfiguration.LoadSettings();
-    if (!loadedSuccessful)
+    auto loadResult = mappingConfiguration.LoadSettingsWithResult();
+    if (loadResult != MappingConfigurationLoadResult::Success)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         // retry once
-        mappingConfiguration.LoadSettings();
+        loadResult = mappingConfiguration.LoadSettingsWithResult();
+    }
+
+    // The classic editor has no secondary metadata file from which skipped mappings can be
+    // recovered. Opening after a partial load would therefore delete them on the next save.
+    if (loadResult != MappingConfigurationLoadResult::Success)
+    {
+        throw std::runtime_error("mapping settings could not be loaded completely");
     }
 
     StartLowLevelKeyboardHook();

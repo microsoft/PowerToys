@@ -480,6 +480,12 @@
   <data name="Validation_InvalidTextReplacementTriggerText_Message" xml:space="preserve">
     <value>Text triggers cannot contain control characters or invalid Unicode.</value>
   </data>
+  <data name="Validation_InvalidTextReplacementTargetText_Title" xml:space="preserve">
+    <value>Unsupported replacement text</value>
+  </data>
+  <data name="Validation_InvalidTextReplacementTargetText_Message" xml:space="preserve">
+    <value>Replacement text can contain regular text and line breaks, but not tabs, other control characters, or invalid Unicode.</value>
+  </data>
   <data name="Validation_TextTriggerTooLong_Title" xml:space="preserve">
     <value>Text trigger is too long</value>
   </data>

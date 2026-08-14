@@ -18,6 +18,8 @@ namespace KeyboardManagerEditorUI.Interop
         private IntPtr _configHandle;
         private bool _disposed;
 
+        public MappingConfigurationLoadResult LoadResult { get; }
+
         public KeyboardMappingService()
         {
             _configHandle = KeyboardManagerInterop.CreateMappingConfiguration();
@@ -27,12 +29,25 @@ namespace KeyboardManagerEditorUI.Interop
                 throw new InvalidOperationException("Failed to create mapping configuration");
             }
 
-            if (!KeyboardManagerInterop.LoadMappingSettings(_configHandle))
+            int nativeLoadResult = KeyboardManagerInterop.LoadMappingSettingsWithResult(_configHandle);
+            LoadResult = nativeLoadResult switch
+            {
+                (int)MappingConfigurationLoadResult.Success => MappingConfigurationLoadResult.Success,
+                (int)MappingConfigurationLoadResult.Partial => MappingConfigurationLoadResult.Partial,
+                _ => MappingConfigurationLoadResult.Failure,
+            };
+
+            if (LoadResult == MappingConfigurationLoadResult.Failure)
             {
                 KeyboardManagerInterop.DestroyMappingConfiguration(_configHandle);
                 _configHandle = IntPtr.Zero;
                 Logger.LogError("Failed to load mapping settings");
                 throw new InvalidOperationException("Failed to load mapping settings");
+            }
+
+            if (LoadResult == MappingConfigurationLoadResult.Partial)
+            {
+                Logger.LogWarning("Some invalid mappings were skipped while loading; editing and saving are disabled to preserve the original profile.");
             }
         }
 
@@ -227,6 +242,7 @@ namespace KeyboardManagerEditorUI.Interop
                 string.IsNullOrEmpty(targetText) ||
                 trigger.Contains('\0') ||
                 targetText.Contains('\0') ||
+                !TextReplacementTextValidator.IsValidTarget(targetText) ||
                 !TextReplacementTriggerKeyHelper.IsAllowed(triggerKey))
             {
                 return false;
@@ -243,6 +259,7 @@ namespace KeyboardManagerEditorUI.Interop
                 originalTrigger.Contains('\0') ||
                 newTrigger.Contains('\0') ||
                 targetText.Contains('\0') ||
+                !TextReplacementTextValidator.IsValidTarget(targetText) ||
                 !TextReplacementTriggerKeyHelper.IsAllowed(triggerKey))
             {
                 return false;
@@ -314,7 +331,8 @@ namespace KeyboardManagerEditorUI.Interop
 
         public bool SaveSettings()
         {
-            return KeyboardManagerInterop.SaveMappingSettings(_configHandle);
+            return LoadResult == MappingConfigurationLoadResult.Success &&
+                   KeyboardManagerInterop.SaveMappingSettings(_configHandle);
         }
 
         public bool DeleteSingleKeyMapping(int originalKey)

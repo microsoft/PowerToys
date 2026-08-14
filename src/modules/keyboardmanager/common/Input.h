@@ -11,16 +11,11 @@ namespace KeyboardManagerInput
     class Input : public InputInterface
     {
     public:
-        // Function to simulate input. Returns false only when nothing could be injected
-        // (the call was fully blocked); returns true on full or partial success. A partial
-        // injection means some remap events already reached the system, so passing the
-        // original key through on top of them would corrupt the input stream (e.g. leave a
-        // modifier stuck). In that rare case we suppress the original and log a warning.
-        bool SendVirtualInput(const std::vector<INPUT>& inputs)
+        SendVirtualInputResult SendVirtualInput(const std::vector<INPUT>& inputs) override
         {
             if (inputs.empty())
             {
-                return true;
+                return { SendVirtualInputStatus::Complete, 0 };
             }
 
             std::vector<INPUT> copy = inputs;
@@ -32,20 +27,18 @@ namespace KeyboardManagerInput
                 Logger::error(
                     L"Failed to send input events. {}",
                     get_last_error_or_default(GetLastError()));
-                return false;
+                return { SendVirtualInputStatus::None, 0 };
             }
             if (eventCount != copy.size())
             {
-                // Partial injection: SendInput stopped after some events. Report success so
-                // the caller suppresses the original event rather than layering it on top of
-                // a half-applied remap, which could strand a key or modifier down.
                 Logger::warn(
                     L"Partially sent input events ({} of {}). {}",
                     eventCount,
                     static_cast<UINT>(copy.size()),
                     get_last_error_or_default(GetLastError()));
+                return { SendVirtualInputStatus::Partial, eventCount };
             }
-            return true;
+            return { SendVirtualInputStatus::Complete, eventCount };
         }
 
         // Function to get the state of a particular key

@@ -24,6 +24,7 @@ namespace KeyboardManagerEditorUI.Helpers
         EmptyTargetText,
         EmptyTriggerText,
         InvalidTextReplacementTriggerText,
+        InvalidTextReplacementTargetText,
         TextTriggerTooLong,
         TargetTextTooLong,
         InvalidTextReplacementTriggerKey,

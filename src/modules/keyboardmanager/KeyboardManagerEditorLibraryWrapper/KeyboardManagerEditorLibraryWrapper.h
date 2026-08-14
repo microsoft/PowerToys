@@ -47,6 +47,7 @@ extern "C"
     __declspec(dllexport) void* CreateMappingConfiguration();
     __declspec(dllexport) void DestroyMappingConfiguration(void* config);
     __declspec(dllexport) bool LoadMappingSettings(void* config);
+    __declspec(dllexport) int LoadMappingSettingsWithResult(void* config);
     __declspec(dllexport) bool SaveMappingSettings(void* config);
 
     __declspec(dllexport) int GetSingleKeyRemapCount(void* config);

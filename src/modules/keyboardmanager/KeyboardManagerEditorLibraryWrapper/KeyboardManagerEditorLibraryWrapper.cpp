@@ -24,7 +24,24 @@ extern "C"
 
     bool LoadMappingSettings(void* config)
     {
-        return static_cast<MappingConfiguration*>(config)->LoadSettings();
+        return config != nullptr && static_cast<MappingConfiguration*>(config)->LoadSettings();
+    }
+
+    int LoadMappingSettingsWithResult(void* config)
+    {
+        if (config == nullptr)
+        {
+            return static_cast<int>(MappingConfigurationLoadResult::Failure);
+        }
+
+        try
+        {
+            return static_cast<int>(static_cast<MappingConfiguration*>(config)->LoadSettingsWithResult());
+        }
+        catch (...)
+        {
+            return static_cast<int>(MappingConfigurationLoadResult::Failure);
+        }
     }
 
     bool SaveMappingSettings(void* config)

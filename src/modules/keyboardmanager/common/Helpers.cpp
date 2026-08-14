@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Helpers.h"
+#include <iterator>
 #include <sstream>
 
 #include <common/interop/shared_constants.h>
@@ -314,8 +315,59 @@ namespace Helpers
     // Shift+Enter. Each character is sent individually to avoid a synchronization
     // error across key-down and key-up events that causes repeated or dropped characters
     // when large batches of KEYEVENTF_UNICODE events are sent at once.
-    void SendTextInput(const std::wstring& text, KeyboardManagerInput::InputInterface& ii)
+    KeyboardManagerInput::SendVirtualInputResult SendTextInput(const std::wstring& text, KeyboardManagerInput::InputInterface& ii, std::vector<INPUT>& pendingInputCleanup)
     {
+        size_t injectedEventCount = 0;
+
+        const auto sendPair = [&ii, &injectedEventCount, &pendingInputCleanup](const std::vector<INPUT>& inputs) {
+            const auto result = ii.SendVirtualInput(inputs);
+            injectedEventCount += result.injectedEventCount;
+            if (result.status == KeyboardManagerInput::SendVirtualInputStatus::Partial)
+            {
+                std::vector<INPUT> pendingKeyUps;
+                for (size_t index = 0; index < result.injectedEventCount; ++index)
+                {
+                    const INPUT& input = inputs[index];
+                    if (input.type != INPUT_KEYBOARD)
+                    {
+                        continue;
+                    }
+
+                    if ((input.ki.dwFlags & KEYEVENTF_KEYUP) == 0)
+                    {
+                        INPUT keyUp = input;
+                        keyUp.ki.dwFlags |= KEYEVENTF_KEYUP;
+                        pendingKeyUps.push_back(keyUp);
+                    }
+                    else
+                    {
+                        const auto matchingDown = std::find_if(pendingKeyUps.rbegin(), pendingKeyUps.rend(), [&input](const INPUT& candidate) {
+                            return candidate.ki.wVk == input.ki.wVk && candidate.ki.wScan == input.ki.wScan;
+                        });
+                        if (matchingDown != pendingKeyUps.rend())
+                        {
+                            pendingKeyUps.erase(std::next(matchingDown).base());
+                        }
+                    }
+                }
+
+                std::reverse(pendingKeyUps.begin(), pendingKeyUps.end());
+                if (!pendingKeyUps.empty())
+                {
+                    const auto cleanupResult = ii.SendVirtualInput(pendingKeyUps);
+                    const size_t completedCount = (std::min)(cleanupResult.injectedEventCount, pendingKeyUps.size());
+                    if (completedCount < pendingKeyUps.size())
+                    {
+                        pendingInputCleanup.insert(
+                            pendingInputCleanup.end(),
+                            std::make_move_iterator(pendingKeyUps.begin() + completedCount),
+                            std::make_move_iterator(pendingKeyUps.end()));
+                    }
+                }
+            }
+            return result;
+        };
+
         for (size_t i = 0; i < text.size(); ++i)
         {
             wchar_t c = text[i];
@@ -328,10 +380,6 @@ namespace Helpers
 
             if (c == L'\r' || c == L'\n')
             {
-                // Send Shift+Enter instead of bare Enter so that chat apps
-                // (Teams, Slack, Discord, etc.) insert a new line rather than
-                // submitting the message. In plain text editors both behave
-                // the same.
                 INPUT returnInputs[4]{};
 
                 // Shift down
@@ -360,7 +408,11 @@ namespace Helpers
                 returnInputs[3].ki.wScan = static_cast<WORD>(MapVirtualKey(VK_SHIFT, MAPVK_VK_TO_VSC));
                 returnInputs[3].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
 
-                ii.SendVirtualInput(std::vector<INPUT>(returnInputs, returnInputs + ARRAYSIZE(returnInputs)));
+                const auto result = sendPair(std::vector<INPUT>(returnInputs, returnInputs + ARRAYSIZE(returnInputs)));
+                if (!result.IsComplete())
+                {
+                    return { injectedEventCount == 0 ? KeyboardManagerInput::SendVirtualInputStatus::None : KeyboardManagerInput::SendVirtualInputStatus::Partial, injectedEventCount };
+                }
                 continue;
             }
 
@@ -375,8 +427,14 @@ namespace Helpers
             charInputs[1].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
             charInputs[1].ki.wScan = c;
 
-            ii.SendVirtualInput(std::vector<INPUT>(charInputs, charInputs + ARRAYSIZE(charInputs)));
+            const auto result = sendPair(std::vector<INPUT>(charInputs, charInputs + ARRAYSIZE(charInputs)));
+            if (!result.IsComplete())
+            {
+                return { injectedEventCount == 0 ? KeyboardManagerInput::SendVirtualInputStatus::None : KeyboardManagerInput::SendVirtualInputStatus::Partial, injectedEventCount };
+            }
         }
+
+        return { KeyboardManagerInput::SendVirtualInputStatus::Complete, injectedEventCount };
     }
 
     // Function to filter the key codes for artificial key codes

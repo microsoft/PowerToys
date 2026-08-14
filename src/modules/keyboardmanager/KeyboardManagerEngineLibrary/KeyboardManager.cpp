@@ -11,8 +11,8 @@
 #include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/common/KeyboardEventHandlers.h>
 #include <ctime>
+#include <limits>
 #include <UIAutomation.h>
-#include <wrl/implements.h>
 
 #include "KeyboardEventHandlers.h"
 #include "trace.h"
@@ -26,23 +26,6 @@ namespace
 {
     DWORD mainThreadId = {};
     constexpr wchar_t editorInstanceMutexName[] = L"Local\\PowerToys_KBMEditor_InstanceMutex";
-
-    class TextReplacementFocusChangedEventHandler final : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, IUIAutomationFocusChangedEventHandler>
-    {
-    public:
-        explicit TextReplacementFocusChangedEventHandler(State& state) : state(state)
-        {
-        }
-
-        HRESULT STDMETHODCALLTYPE HandleFocusChangedEvent(IUIAutomationElement*) override
-        {
-            state.InvalidateTextReplacementContext();
-            return S_OK;
-        }
-
-    private:
-        State& state;
-    };
 
     HWND GetFocusedTextReplacementWindow()
     {
@@ -94,8 +77,13 @@ namespace
             return false;
         }
 
+        SetLastError(ERROR_SUCCESS);
         const LONG_PTR style = GetWindowLongPtrW(window, GWL_STYLE);
-        return (style & ES_READONLY) == 0;
+        if (style == 0 && GetLastError() != ERROR_SUCCESS)
+        {
+            return false;
+        }
+        return (style & (ES_READONLY | ES_PASSWORD)) == 0;
     }
 
     bool TryGetBoolProperty(IUIAutomationElement* element, const PROPERTYID propertyId, bool& value)
@@ -176,9 +164,11 @@ namespace
         return SUCCEEDED(selections->GetElement(0, selection.put())) && IsWritableTextRange(selection.get());
     }
 
+    bool IsKnownTerminalWindow(HWND window);
+
     bool IsWritableAutomationTextControl(IUIAutomation* automation, const HWND expectedWindow, const DWORD expectedProcessId)
     {
-        if (!automation || !expectedWindow || !expectedProcessId)
+        if (!automation || !expectedWindow || !expectedProcessId || IsKnownTerminalWindow(expectedWindow))
         {
             return false;
         }
@@ -192,32 +182,323 @@ namespace
         bool hasKeyboardFocus = false;
         bool keyboardFocusable = false;
         bool enabled = false;
+        bool isPassword = true;
+        bool textEditPatternAvailable = false;
         int processId = 0;
         int controlType = 0;
         if (!TryGetBoolProperty(element.get(), UIA_HasKeyboardFocusPropertyId, hasKeyboardFocus) || !hasKeyboardFocus ||
             !TryGetBoolProperty(element.get(), UIA_IsKeyboardFocusablePropertyId, keyboardFocusable) || !keyboardFocusable ||
             !TryGetBoolProperty(element.get(), UIA_IsEnabledPropertyId, enabled) || !enabled ||
+            !TryGetBoolProperty(element.get(), UIA_IsPasswordPropertyId, isPassword) || isPassword ||
+            !TryGetBoolProperty(element.get(), UIA_IsTextEditPatternAvailablePropertyId, textEditPatternAvailable) || !textEditPatternAvailable ||
             !TryGetIntProperty(element.get(), UIA_ProcessIdPropertyId, processId) || static_cast<DWORD>(processId) != expectedProcessId ||
             !TryGetIntProperty(element.get(), UIA_ControlTypePropertyId, controlType))
         {
             return false;
         }
 
-        if (controlType == UIA_EditControlTypeId)
-        {
-            bool valuePatternAvailable = false;
-            if (TryGetBoolProperty(element.get(), UIA_IsValuePatternAvailablePropertyId, valuePatternAvailable) && valuePatternAvailable)
-            {
-                bool readOnly = true;
-                return TryGetBoolProperty(element.get(), UIA_ValueIsReadOnlyPropertyId, readOnly) && !readOnly;
-            }
+        return (controlType == UIA_EditControlTypeId || controlType == UIA_DocumentControlTypeId || controlType == UIA_TextControlTypeId) &&
+               IsWritableTextControl(element.get());
+    }
 
-            bool textEditPatternAvailable = false;
-            return TryGetBoolProperty(element.get(), UIA_IsTextEditPatternAvailablePropertyId, textEditPatternAvailable) && textEditPatternAvailable;
+    bool IsTextReplacementMultilineTarget(const HWND window)
+    {
+        if (!IsKnownNativeEditClass(window))
+        {
+            return false;
         }
 
-        return (controlType == UIA_DocumentControlTypeId || controlType == UIA_TextControlTypeId) &&
-               IsWritableTextControl(element.get());
+        SetLastError(ERROR_SUCCESS);
+        const LONG_PTR style = GetWindowLongPtrW(window, GWL_STYLE);
+        if (style == 0 && GetLastError() != ERROR_SUCCESS)
+        {
+            return false;
+        }
+        return (style & ES_MULTILINE) != 0 && (style & ES_WANTRETURN) != 0;
+    }
+
+    bool HasTerminalWindowClass(const HWND window)
+    {
+        wchar_t className[128]{};
+        if (!window || GetClassNameW(window, className, static_cast<int>(std::size(className))) == 0)
+        {
+            return false;
+        }
+
+        return _wcsicmp(className, L"ConsoleWindowClass") == 0 ||
+               _wcsicmp(className, L"CASCADIA_HOSTING_WINDOW_CLASS") == 0;
+    }
+
+    bool IsKnownTerminalWindow(const HWND window)
+    {
+        return HasTerminalWindowClass(window) || HasTerminalWindowClass(GetAncestor(window, GA_ROOT));
+    }
+
+    bool IsCollapsedTextRange(IUIAutomationTextRange* range)
+    {
+        if (!range)
+        {
+            return false;
+        }
+
+        int comparison = 0;
+        return SUCCEEDED(range->CompareEndpoints(
+                   TextPatternRangeEndpoint_Start,
+                   range,
+                   TextPatternRangeEndpoint_End,
+                   &comparison)) &&
+               comparison == 0;
+    }
+
+    bool AreTextRangesEqual(IUIAutomationTextRange* left, IUIAutomationTextRange* right);
+
+    bool TryGetCollapsedCaretRange(IUIAutomationElement* element, winrt::com_ptr<IUIAutomationTextRange>& caretRange)
+    {
+        winrt::com_ptr<IUIAutomationTextPattern> textPattern;
+        if (FAILED(element->GetCurrentPatternAs(UIA_TextPatternId, __uuidof(IUIAutomationTextPattern), textPattern.put_void())) || !textPattern)
+        {
+            return false;
+        }
+
+        SupportedTextSelection supportedSelection = SupportedTextSelection_None;
+        if (FAILED(textPattern->get_SupportedTextSelection(&supportedSelection)) || supportedSelection == SupportedTextSelection_None)
+        {
+            return false;
+        }
+
+        winrt::com_ptr<IUIAutomationTextRangeArray> selections;
+        if (FAILED(textPattern->GetSelection(selections.put())) || !selections)
+        {
+            return false;
+        }
+
+        int selectionCount = 0;
+        if (FAILED(selections->get_Length(&selectionCount)) || selectionCount != 1 ||
+            FAILED(selections->GetElement(0, caretRange.put())) || !IsCollapsedTextRange(caretRange.get()))
+        {
+            return false;
+        }
+
+        winrt::com_ptr<IUIAutomationTextPattern2> textPattern2;
+        if (SUCCEEDED(element->GetCurrentPatternAs(UIA_TextPattern2Id, __uuidof(IUIAutomationTextPattern2), textPattern2.put_void())) && textPattern2)
+        {
+            BOOL caretActive = FALSE;
+            winrt::com_ptr<IUIAutomationTextRange> providerCaretRange;
+            if (FAILED(textPattern2->GetCaretRange(&caretActive, providerCaretRange.put())) || !caretActive ||
+                !IsCollapsedTextRange(providerCaretRange.get()) || !AreTextRangesEqual(caretRange.get(), providerCaretRange.get()))
+            {
+                caretRange = nullptr;
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool HasNoActiveComposition(IUIAutomationElement* element)
+    {
+        bool textEditPatternAvailable = false;
+        if (!TryGetBoolProperty(element, UIA_IsTextEditPatternAvailablePropertyId, textEditPatternAvailable) || !textEditPatternAvailable)
+        {
+            // Without TextEditPattern there is no provider-independent way to prove
+            // that the caret is not inside an IME composition. Stay fail-closed.
+            return false;
+        }
+
+        winrt::com_ptr<IUIAutomationTextEditPattern> textEditPattern;
+        if (FAILED(element->GetCurrentPatternAs(UIA_TextEditPatternId, __uuidof(IUIAutomationTextEditPattern), textEditPattern.put_void())) || !textEditPattern)
+        {
+            return false;
+        }
+
+        winrt::com_ptr<IUIAutomationTextRange> activeComposition;
+        return SUCCEEDED(textEditPattern->GetActiveComposition(activeComposition.put())) && !activeComposition;
+    }
+
+    bool TryReadTextRange(IUIAutomationTextRange* range, std::wstring& text)
+    {
+        BSTR value = nullptr;
+        const HRESULT result = range->GetText(-1, &value);
+        if (FAILED(result) || !value)
+        {
+            SysFreeString(value);
+            return false;
+        }
+
+        text.assign(value, SysStringLen(value));
+        SysFreeString(value);
+        return true;
+    }
+
+    bool TryCreateTriggerSelection(
+        IUIAutomation* automation,
+        const HWND expectedWindow,
+        const DWORD expectedProcessId,
+        const std::wstring_view trigger,
+        const bool targetHasNewline,
+        winrt::com_ptr<IUIAutomationTextRange>& triggerRange,
+        winrt::com_ptr<IUIAutomationTextRange>& rollbackCaretRange)
+    {
+        if (!automation || !expectedWindow || !expectedProcessId || trigger.empty() || IsKnownTerminalWindow(expectedWindow) ||
+            GetFocusedTextReplacementWindow() != expectedWindow || GetWindowProcessId(expectedWindow) != expectedProcessId ||
+            (targetHasNewline && !IsTextReplacementMultilineTarget(expectedWindow)))
+        {
+            return false;
+        }
+
+        winrt::com_ptr<IUIAutomationElement> element;
+        if (FAILED(automation->GetFocusedElement(element.put())) || !element)
+        {
+            return false;
+        }
+
+        bool hasKeyboardFocus = false;
+        bool keyboardFocusable = false;
+        bool enabled = false;
+        bool isPassword = true;
+        int processId = 0;
+        int controlType = 0;
+        if (!TryGetBoolProperty(element.get(), UIA_HasKeyboardFocusPropertyId, hasKeyboardFocus) || !hasKeyboardFocus ||
+            !TryGetBoolProperty(element.get(), UIA_IsKeyboardFocusablePropertyId, keyboardFocusable) || !keyboardFocusable ||
+            !TryGetBoolProperty(element.get(), UIA_IsEnabledPropertyId, enabled) || !enabled ||
+            !TryGetBoolProperty(element.get(), UIA_IsPasswordPropertyId, isPassword) || isPassword ||
+            !TryGetIntProperty(element.get(), UIA_ProcessIdPropertyId, processId) || static_cast<DWORD>(processId) != expectedProcessId ||
+            !TryGetIntProperty(element.get(), UIA_ControlTypePropertyId, controlType) ||
+            (controlType != UIA_EditControlTypeId && controlType != UIA_DocumentControlTypeId && controlType != UIA_TextControlTypeId) ||
+            !HasNoActiveComposition(element.get()))
+        {
+            return false;
+        }
+
+        winrt::com_ptr<IUIAutomationTextRange> caretRange;
+        if (!TryGetCollapsedCaretRange(element.get(), caretRange) || !IsWritableTextRange(caretRange.get()) ||
+            FAILED(caretRange->Clone(triggerRange.put())) || !triggerRange)
+        {
+            return false;
+        }
+
+        int moved = 0;
+        const int requestedUnits = -static_cast<int>((std::min)(trigger.size(), static_cast<size_t>((std::numeric_limits<int>::max)())));
+        if (FAILED(triggerRange->MoveEndpointByUnit(TextPatternRangeEndpoint_Start, TextUnit_Character, requestedUnits, &moved)) || moved == 0)
+        {
+            return false;
+        }
+
+        BSTR triggerText = SysAllocStringLen(trigger.data(), static_cast<UINT>(trigger.size()));
+        if (!triggerText)
+        {
+            return false;
+        }
+
+        winrt::com_ptr<IUIAutomationTextRange> foundRange;
+        const HRESULT findResult = triggerRange->FindText(triggerText, TRUE, FALSE, foundRange.put());
+        SysFreeString(triggerText);
+        if (FAILED(findResult) || !foundRange)
+        {
+            return false;
+        }
+
+        int endComparison = 0;
+        std::wstring actualText;
+        if (FAILED(foundRange->CompareEndpoints(
+                TextPatternRangeEndpoint_End,
+                caretRange.get(),
+                TextPatternRangeEndpoint_End,
+                &endComparison)) ||
+            endComparison != 0 || !TryReadTextRange(foundRange.get(), actualText) || actualText != trigger)
+        {
+            return false;
+        }
+
+        triggerRange = std::move(foundRange);
+
+        if (FAILED(triggerRange->Clone(rollbackCaretRange.put())) || !rollbackCaretRange ||
+            FAILED(rollbackCaretRange->MoveEndpointByRange(
+                TextPatternRangeEndpoint_Start,
+                triggerRange.get(),
+                TextPatternRangeEndpoint_End)))
+        {
+            return false;
+        }
+
+        return IsCollapsedTextRange(rollbackCaretRange.get());
+    }
+
+    bool AreTextRangesEqual(IUIAutomationTextRange* left, IUIAutomationTextRange* right)
+    {
+        if (!left || !right)
+        {
+            return false;
+        }
+
+        int startComparison = 0;
+        int endComparison = 0;
+        return SUCCEEDED(left->CompareEndpoints(
+                   TextPatternRangeEndpoint_Start,
+                   right,
+                   TextPatternRangeEndpoint_Start,
+                   &startComparison)) &&
+               startComparison == 0 &&
+               SUCCEEDED(left->CompareEndpoints(
+                   TextPatternRangeEndpoint_End,
+                   right,
+                   TextPatternRangeEndpoint_End,
+                   &endComparison)) &&
+               endComparison == 0;
+    }
+
+    bool IsCurrentAutomationSelection(
+        IUIAutomation* automation,
+        const HWND expectedWindow,
+        const DWORD expectedProcessId,
+        IUIAutomationTextRange* expectedRange,
+        const bool expectedCollapsed)
+    {
+        if (!automation || !expectedRange || GetFocusedTextReplacementWindow() != expectedWindow ||
+            GetWindowProcessId(expectedWindow) != expectedProcessId)
+        {
+            return false;
+        }
+
+        winrt::com_ptr<IUIAutomationElement> element;
+        winrt::com_ptr<IUIAutomationTextPattern> textPattern;
+        winrt::com_ptr<IUIAutomationTextRangeArray> selections;
+        if (FAILED(automation->GetFocusedElement(element.put())) || !element ||
+            FAILED(element->GetCurrentPatternAs(UIA_TextPatternId, __uuidof(IUIAutomationTextPattern), textPattern.put_void())) || !textPattern ||
+            FAILED(textPattern->GetSelection(selections.put())) || !selections)
+        {
+            return false;
+        }
+
+        int processId = 0;
+        int selectionCount = 0;
+        winrt::com_ptr<IUIAutomationTextRange> currentSelection;
+        return TryGetIntProperty(element.get(), UIA_ProcessIdPropertyId, processId) &&
+               static_cast<DWORD>(processId) == expectedProcessId &&
+               SUCCEEDED(selections->get_Length(&selectionCount)) && selectionCount == 1 &&
+               SUCCEEDED(selections->GetElement(0, currentSelection.put())) && currentSelection &&
+               IsCollapsedTextRange(currentSelection.get()) == expectedCollapsed &&
+               AreTextRangesEqual(currentSelection.get(), expectedRange);
+    }
+
+    bool HasCollapsedCurrentAutomationSelection(
+        IUIAutomation* automation,
+        const HWND expectedWindow,
+        const DWORD expectedProcessId)
+    {
+        if (!automation || GetFocusedTextReplacementWindow() != expectedWindow ||
+            GetWindowProcessId(expectedWindow) != expectedProcessId)
+        {
+            return false;
+        }
+
+        winrt::com_ptr<IUIAutomationElement> element;
+        int processId = 0;
+        winrt::com_ptr<IUIAutomationTextRange> caretRange;
+        return SUCCEEDED(automation->GetFocusedElement(element.put())) && element &&
+               TryGetIntProperty(element.get(), UIA_ProcessIdPropertyId, processId) &&
+               static_cast<DWORD>(processId) == expectedProcessId &&
+               TryGetCollapsedCaretRange(element.get(), caretRange);
     }
 }
 
@@ -235,7 +516,15 @@ KeyboardManager::KeyboardManager()
     // accessibility callbacks can signal refresh without racing a CloseHandle call.
     textReplacementContextStopEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
     textReplacementContextRefreshEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
-    if (!textReplacementContextStopEvent || !textReplacementContextRefreshEvent)
+    textReplacementContextRequestEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+    textReplacementContextReadyEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    textReplacementContextCommitEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+    textReplacementContextCancelEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    textReplacementContextFinishedEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    if (!textReplacementContextStopEvent || !textReplacementContextRefreshEvent ||
+        !textReplacementContextRequestEvent || !textReplacementContextReadyEvent ||
+        !textReplacementContextCommitEvent || !textReplacementContextCancelEvent ||
+        !textReplacementContextFinishedEvent)
     {
         Logger::error(L"Failed to create text replacement context tracker events. {}", get_last_error_or_default(GetLastError()));
     }
@@ -276,6 +565,31 @@ KeyboardManager::~KeyboardManager()
     {
         CloseHandle(textReplacementContextStopEvent);
         textReplacementContextStopEvent = nullptr;
+    }
+    if (textReplacementContextRequestEvent)
+    {
+        CloseHandle(textReplacementContextRequestEvent);
+        textReplacementContextRequestEvent = nullptr;
+    }
+    if (textReplacementContextReadyEvent)
+    {
+        CloseHandle(textReplacementContextReadyEvent);
+        textReplacementContextReadyEvent = nullptr;
+    }
+    if (textReplacementContextCommitEvent)
+    {
+        CloseHandle(textReplacementContextCommitEvent);
+        textReplacementContextCommitEvent = nullptr;
+    }
+    if (textReplacementContextCancelEvent)
+    {
+        CloseHandle(textReplacementContextCancelEvent);
+        textReplacementContextCancelEvent = nullptr;
+    }
+    if (textReplacementContextFinishedEvent)
+    {
+        CloseHandle(textReplacementContextFinishedEvent);
+        textReplacementContextFinishedEvent = nullptr;
     }
     if (editorIsRunningEvent)
     {
@@ -351,7 +665,18 @@ LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const
         event.wParam = wParam;
         event.lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event.lParam->vkCode, event.lParam->flags & LLKHF_EXTENDED);
 
+        const std::wstring textReplacementBufferBeforeEvent = keyboardManagerObjectPtr->state.textReplacementBuffer;
         const intptr_t hookResult = keyboardManagerObjectPtr->HandleKeyboardHookEvent(&event);
+        const bool physicalKeyDown = (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) &&
+                                     event.lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG &&
+                                     event.lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG &&
+                                     event.lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG;
+        if (hookResult == 0 && physicalKeyDown && textReplacementBufferBeforeEvent != keyboardManagerObjectPtr->state.textReplacementBuffer)
+        {
+            keyboardManagerObjectPtr->textReplacementIgnoredSelectionEventWindow.store(GetFocusedTextReplacementWindow(), std::memory_order_release);
+            keyboardManagerObjectPtr->textReplacementIgnoredSelectionEventExpires.store(GetTickCount() + 100, std::memory_order_release);
+            keyboardManagerObjectPtr->textReplacementIgnoreNextSelectionEvent.store(true, std::memory_order_release);
+        }
         keyboardManagerObjectPtr->QueueDeferredSettingsReloadIfReady();
         KeyboardEventHandlers::UpdateTextReplacementToggleKeyState(&event, hookResult == 1, keyboardManagerObjectPtr->state);
         if (hookResult == 1)
@@ -431,10 +756,19 @@ LRESULT CALLBACK KeyboardManager::MouseHookProc(const int nCode, const WPARAM wP
     return CallNextHookEx(nullptr, nCode, wParam, lParam);
 }
 
-void CALLBACK KeyboardManager::TextReplacementWinEventProc(HWINEVENTHOOK, DWORD, HWND, LONG, LONG, DWORD, DWORD)
+void CALLBACK KeyboardManager::TextReplacementWinEventProc(HWINEVENTHOOK, const DWORD event, const HWND window, LONG, LONG, DWORD, const DWORD eventTime)
 {
     if (keyboardManagerObjectPtr)
     {
+        if (event == EVENT_OBJECT_TEXTSELECTIONCHANGED &&
+            window == keyboardManagerObjectPtr->textReplacementIgnoredSelectionEventWindow.load(std::memory_order_acquire) &&
+            static_cast<LONG>(keyboardManagerObjectPtr->textReplacementIgnoredSelectionEventExpires.load(std::memory_order_acquire) - eventTime) >= 0 &&
+            keyboardManagerObjectPtr->textReplacementIgnoreNextSelectionEvent.exchange(false, std::memory_order_acq_rel))
+        {
+            keyboardManagerObjectPtr->textReplacementIgnoredSelectionEventWindow.store(nullptr, std::memory_order_release);
+            keyboardManagerObjectPtr->textReplacementIgnoredSelectionEventExpires.store(0, std::memory_order_release);
+            return;
+        }
         keyboardManagerObjectPtr->state.InvalidateTextReplacementContext();
     }
 }
@@ -446,7 +780,10 @@ void KeyboardManager::StartTextReplacementContextTracking()
         return;
     }
 
-    if (!textReplacementContextStopEvent || !textReplacementContextRefreshEvent)
+    if (!textReplacementContextStopEvent || !textReplacementContextRefreshEvent ||
+        !textReplacementContextRequestEvent || !textReplacementContextReadyEvent ||
+        !textReplacementContextCommitEvent || !textReplacementContextCancelEvent ||
+        !textReplacementContextFinishedEvent)
     {
         state.textReplacementContextStatus.store(TextReplacementContextStatus::Blocked, std::memory_order_release);
         state.textReplacementClassifiedContextEpoch.store(state.textReplacementContextEpoch.load(std::memory_order_acquire), std::memory_order_release);
@@ -461,6 +798,16 @@ void KeyboardManager::StartTextReplacementContextTracking()
     textReplacementForegroundHook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, nullptr, TextReplacementWinEventProc, 0, 0, winEventFlags);
     textReplacementFocusHook = SetWinEventHook(EVENT_OBJECT_FOCUS, EVENT_OBJECT_FOCUS, nullptr, TextReplacementWinEventProc, 0, 0, winEventFlags);
     textReplacementDesktopHook = SetWinEventHook(EVENT_SYSTEM_DESKTOPSWITCH, EVENT_SYSTEM_DESKTOPSWITCH, nullptr, TextReplacementWinEventProc, 0, 0, winEventFlags);
+    textReplacementSelectionHook = SetWinEventHook(EVENT_OBJECT_TEXTSELECTIONCHANGED, EVENT_OBJECT_TEXTSELECTIONCHANGED, nullptr, TextReplacementWinEventProc, 0, 0, winEventFlags);
+    textReplacementSelectionTrackingAvailable.store(textReplacementSelectionHook != nullptr, std::memory_order_release);
+
+    if (!textReplacementSelectionHook)
+    {
+        Logger::error(L"Failed to install the text selection WinEvent hook. Text replacement is blocked for safety.");
+        state.textReplacementContextStatus.store(TextReplacementContextStatus::Blocked, std::memory_order_release);
+        state.textReplacementClassifiedContextEpoch.store(state.textReplacementContextEpoch.load(std::memory_order_acquire), std::memory_order_release);
+        return;
+    }
 
     if (!textReplacementForegroundHook || !textReplacementFocusHook || !textReplacementDesktopHook)
     {
@@ -472,9 +819,26 @@ void KeyboardManager::StartTextReplacementContextTracking()
 
 void KeyboardManager::StopTextReplacementContextTracking() noexcept
 {
+    textReplacementSelectionTrackingAvailable.store(false, std::memory_order_release);
     state.textReplacementContextTrackingEnabled.store(false, std::memory_order_release);
     state.textReplacementContextStatus.store(TextReplacementContextStatus::Blocked, std::memory_order_release);
     state.textReplacementClassifiedContextEpoch.store(0, std::memory_order_release);
+
+    {
+        std::scoped_lock lock(textReplacementContextRequestMutex);
+        if (textReplacementContextRequestInFlight)
+        {
+            textReplacementContextRequest.canceled = true;
+        }
+    }
+    if (textReplacementContextStopEvent)
+    {
+        SetEvent(textReplacementContextStopEvent);
+    }
+    if (textReplacementContextCancelEvent)
+    {
+        SetEvent(textReplacementContextCancelEvent);
+    }
 
     if (textReplacementForegroundHook)
     {
@@ -491,10 +855,10 @@ void KeyboardManager::StopTextReplacementContextTracking() noexcept
         UnhookWinEvent(textReplacementDesktopHook);
         textReplacementDesktopHook = nullptr;
     }
-
-    if (textReplacementContextStopEvent)
+    if (textReplacementSelectionHook)
     {
-        SetEvent(textReplacementContextStopEvent);
+        UnhookWinEvent(textReplacementSelectionHook);
+        textReplacementSelectionHook = nullptr;
     }
 
     const DWORD workerThreadId = textReplacementContextThreadId.load(std::memory_order_acquire);
@@ -507,6 +871,11 @@ void KeyboardManager::StopTextReplacementContextTracking() noexcept
     {
         textReplacementContextThread.join();
     }
+    {
+        std::scoped_lock lock(textReplacementContextRequestMutex);
+        textReplacementContextRequestInFlight = false;
+        textReplacementContextRequestPhase = TextReplacementContextRequestPhase::Idle;
+    }
 
     if (textReplacementContextStopEvent)
     {
@@ -515,6 +884,26 @@ void KeyboardManager::StopTextReplacementContextTracking() noexcept
     if (textReplacementContextRefreshEvent)
     {
         ResetEvent(textReplacementContextRefreshEvent);
+    }
+    if (textReplacementContextRequestEvent)
+    {
+        ResetEvent(textReplacementContextRequestEvent);
+    }
+    if (textReplacementContextReadyEvent)
+    {
+        ResetEvent(textReplacementContextReadyEvent);
+    }
+    if (textReplacementContextCommitEvent)
+    {
+        ResetEvent(textReplacementContextCommitEvent);
+    }
+    if (textReplacementContextCancelEvent)
+    {
+        ResetEvent(textReplacementContextCancelEvent);
+    }
+    if (textReplacementContextFinishedEvent)
+    {
+        ResetEvent(textReplacementContextFinishedEvent);
     }
 }
 
@@ -547,22 +936,23 @@ void KeyboardManager::TextReplacementContextThreadProc()
         automationResult = CoCreateInstance(CLSID_CUIAutomation, nullptr, CLSCTX_INPROC_SERVER, IID_IUIAutomation, automation.put_void());
     }
 
+    bool providerTimeoutsConfigured = false;
     if (automation)
     {
         if (auto automation6 = automation.try_as<IUIAutomation6>())
         {
-            constexpr DWORD providerTimeoutMilliseconds = 250;
-            automation6->put_ConnectionTimeout(providerTimeoutMilliseconds);
-            automation6->put_TransactionTimeout(providerTimeoutMilliseconds);
+            // Keep every provider RPC well below the low-level hook timeout. A slow
+            // provider causes a fail-closed missed replacement, never hook removal.
+            constexpr DWORD providerTimeoutMilliseconds = 40;
+            providerTimeoutsConfigured = SUCCEEDED(automation6->put_ConnectionTimeout(providerTimeoutMilliseconds)) &&
+                                         SUCCEEDED(automation6->put_TransactionTimeout(providerTimeoutMilliseconds));
         }
     }
 
-    auto focusChangedHandler = Microsoft::WRL::Make<TextReplacementFocusChangedEventHandler>(state);
-    const bool focusHandlerRegistered = focusChangedHandler && SUCCEEDED(automationResult) &&
-                                        SUCCEEDED(automation->AddFocusChangedEventHandler(nullptr, focusChangedHandler.Get()));
-    if (!focusHandlerRegistered)
+    const bool automationReady = SUCCEEDED(automationResult) && providerTimeoutsConfigured;
+    if (!automationReady)
     {
-        Logger::error(L"Failed to register the UI Automation focus handler. Text replacement is blocked for safety.");
+        Logger::error(L"Failed to configure bounded UI Automation access. Text replacement is blocked for safety.");
         state.textReplacementContextStatus.store(TextReplacementContextStatus::Blocked, std::memory_order_release);
         state.textReplacementClassifiedContextEpoch.store(state.textReplacementContextEpoch.load(std::memory_order_acquire), std::memory_order_release);
     }
@@ -571,44 +961,674 @@ void KeyboardManager::TextReplacementContextThreadProc()
         state.InvalidateTextReplacementContext();
     }
 
-    const HANDLE events[] = { textReplacementContextStopEvent, textReplacementContextRefreshEvent };
-    while (focusHandlerRegistered && WaitForMultipleObjects(static_cast<DWORD>(std::size(events)), events, FALSE, INFINITE) == WAIT_OBJECT_0 + 1)
+    winrt::com_ptr<IUIAutomationTextRange> preparedRollbackCaretRange;
+    HWND preparedWindow = nullptr;
+    DWORD preparedProcessId = 0;
+    uint64_t preparedContextEpoch = 0;
+    uint64_t preparedRequestId = 0;
+    const auto publishRecoveryGuardLocked = [this](const uint64_t requestId, const bool blockInput, const HWND window, const DWORD processId) {
+        if (blockInput)
+        {
+            textReplacementRecoveryGuardRequestId = requestId;
+            textReplacementRecoveryWindow.store(window, std::memory_order_release);
+            textReplacementRecoveryProcessId.store(processId, std::memory_order_release);
+            textReplacementRecoveryBlocksInput.store(true, std::memory_order_release);
+        }
+        else if (textReplacementRecoveryGuardRequestId == requestId)
+        {
+            textReplacementRecoveryGuardRequestId = 0;
+            textReplacementRecoveryWindow.store(nullptr, std::memory_order_release);
+            textReplacementRecoveryProcessId.store(0, std::memory_order_release);
+            textReplacementRecoveryBlocksInput.store(false, std::memory_order_release);
+        }
+    };
+
+    const HANDLE events[] = { textReplacementContextStopEvent, textReplacementContextRequestEvent, textReplacementContextRefreshEvent };
+    while (automationReady)
     {
-        // Focus providers often update after the mouse-down WinEvent. Debounce outside
-        // the input hook so a stale editable snapshot can never authorize the next key.
-        if (WaitForSingleObject(textReplacementContextStopEvent, 20) == WAIT_OBJECT_0)
+        const DWORD waitResult = WaitForMultipleObjects(static_cast<DWORD>(std::size(events)), events, FALSE, INFINITE);
+        if (waitResult == WAIT_OBJECT_0)
         {
             break;
         }
 
-        const uint64_t requestedEpoch = state.textReplacementContextEpoch.load(std::memory_order_acquire);
-        const HWND focusedWindow = GetFocusedTextReplacementWindow();
-        const DWORD processId = GetWindowProcessId(focusedWindow);
-        bool editable = IsWritableNativeEdit(focusedWindow);
-        if (!editable && SUCCEEDED(automationResult))
+        if (waitResult == WAIT_OBJECT_0 + 1)
         {
-            editable = IsWritableAutomationTextControl(automation.get(), focusedWindow, processId);
+            TextReplacementContextRequest request;
+            {
+                std::scoped_lock lock(textReplacementContextRequestMutex);
+                request = textReplacementContextRequest;
+            }
+
+            if (request.kind == TextReplacementContextRequestKind::Rollback)
+            {
+                const HWND recoveryWindow = preparedWindow;
+                const DWORD recoveryProcessId = preparedProcessId;
+                const uint64_t restoredSelectionRequestId = preparedRequestId;
+                const uint64_t lastPreparedSelectionRequestId = textReplacementLastPreparedSelectionRequestId.load(std::memory_order_acquire);
+                bool selectionAlreadyFinished = false;
+                {
+                    std::scoped_lock lock(textReplacementContextRequestMutex);
+                    selectionAlreadyFinished = (preparedRequestId != 0 && textReplacementContextFinishedSelectionId >= preparedRequestId) ||
+                                               (lastPreparedSelectionRequestId != 0 && textReplacementLastSuccessfullyRestoredRequestId >= lastPreparedSelectionRequestId);
+                }
+                const bool restored = selectionAlreadyFinished ||
+                                      (preparedRollbackCaretRange && preparedWindow && preparedProcessId &&
+                                       GetFocusedTextReplacementWindow() == preparedWindow &&
+                                       SUCCEEDED(preparedRollbackCaretRange->Select()) &&
+                                       IsCurrentAutomationSelection(
+                                           automation.get(),
+                                           preparedWindow,
+                                           preparedProcessId,
+                                           preparedRollbackCaretRange.get(),
+                                           true));
+                const bool recoveryMustBlock = !restored;
+                if (restored)
+                {
+                    preparedRollbackCaretRange = nullptr;
+                    preparedWindow = nullptr;
+                    preparedProcessId = 0;
+                    preparedContextEpoch = 0;
+                    preparedRequestId = 0;
+                    textReplacementPreparedSelectionRequestId.store(0, std::memory_order_release);
+                }
+                {
+                    std::scoped_lock lock(textReplacementContextRequestMutex);
+                    if (textReplacementContextRequest.id == request.id)
+                    {
+                        textReplacementContextCompletedRequestId = request.id;
+                        textReplacementContextPreparationOutcome = restored ? TextReplacementPreparationOutcome::Prepared : TextReplacementPreparationOutcome::CommittedFailure;
+                        if (restored && restoredSelectionRequestId != 0)
+                        {
+                            textReplacementLastSuccessfullyRestoredRequestId = (std::max)(
+                                textReplacementLastSuccessfullyRestoredRequestId,
+                                restoredSelectionRequestId);
+                        }
+                        textReplacementContextRequestInFlight = false;
+                        textReplacementContextRequestPhase = TextReplacementContextRequestPhase::Idle;
+                        publishRecoveryGuardLocked(request.id, recoveryMustBlock, recoveryWindow, recoveryProcessId);
+                    }
+                }
+                SetEvent(textReplacementContextFinishedEvent);
+                continue;
+            }
+
+            preparedRollbackCaretRange = nullptr;
+            preparedWindow = nullptr;
+            preparedProcessId = 0;
+            preparedContextEpoch = 0;
+            preparedRequestId = 0;
+            winrt::com_ptr<IUIAutomationTextRange> triggerRange;
+            winrt::com_ptr<IUIAutomationTextRange> rollbackCaretRange;
+            const bool candidateReady = request.expectedContextEpoch == state.textReplacementContextEpoch.load(std::memory_order_acquire) &&
+                                        TryCreateTriggerSelection(
+                                            automation.get(),
+                                            request.expectedWindow,
+                                            request.expectedProcessId,
+                                            request.trigger,
+                                            request.targetHasNewline,
+                                            triggerRange,
+                                            rollbackCaretRange);
+            {
+                std::scoped_lock lock(textReplacementContextRequestMutex);
+                if (textReplacementContextRequest.id == request.id)
+                {
+                    textReplacementContextCompletedRequestId = request.id;
+                    textReplacementContextCandidateReady = candidateReady;
+                    textReplacementContextPreparationOutcome = TextReplacementPreparationOutcome::NotPrepared;
+                    if (!candidateReady)
+                    {
+                        textReplacementContextRequestInFlight = false;
+                        textReplacementContextRequestPhase = TextReplacementContextRequestPhase::Idle;
+                    }
+                }
+            }
+            SetEvent(textReplacementContextReadyEvent);
+            if (!candidateReady)
+            {
+                continue;
+            }
+
+            const HANDLE decisionEvents[] = { textReplacementContextStopEvent, textReplacementContextCancelEvent, textReplacementContextCommitEvent };
+            const DWORD decision = WaitForMultipleObjects(static_cast<DWORD>(std::size(decisionEvents)), decisionEvents, FALSE, INFINITE);
+            if (decision == WAIT_OBJECT_0)
+            {
+                break;
+            }
+            if (decision != WAIT_OBJECT_0 + 2)
+            {
+                std::scoped_lock lock(textReplacementContextRequestMutex);
+                if (textReplacementContextRequest.id == request.id)
+                {
+                    textReplacementContextRequestInFlight = false;
+                    textReplacementContextRequestPhase = TextReplacementContextRequestPhase::Idle;
+                }
+                continue;
+            }
+
+            // Re-read the caret immediately before the only mutating selection call. The
+            // first pass bounded the hook wait; this pass closes focus/caret races.
+            triggerRange = nullptr;
+            rollbackCaretRange = nullptr;
+            const auto requestWasCanceled = [this, requestId = request.id] {
+                std::scoped_lock lock(textReplacementContextRequestMutex);
+                return textReplacementContextRequest.id != requestId || textReplacementContextRequest.canceled;
+            };
+            const bool stillValid = !requestWasCanceled() &&
+                                    request.expectedContextEpoch == state.textReplacementContextEpoch.load(std::memory_order_acquire) &&
+                                    TryCreateTriggerSelection(
+                                        automation.get(),
+                                        request.expectedWindow,
+                                        request.expectedProcessId,
+                                        request.trigger,
+                                        request.targetHasNewline,
+                                        triggerRange,
+                                        rollbackCaretRange);
+
+            TextReplacementPreparationOutcome outcome = TextReplacementPreparationOutcome::NotPrepared;
+            bool recoveryMustBlock = false;
+            bool selectionAuthorized = false;
+            if (stillValid)
+            {
+                std::scoped_lock lock(textReplacementContextRequestMutex);
+                if (textReplacementContextRequest.id == request.id && !textReplacementContextRequest.canceled)
+                {
+                    textReplacementContextRequestPhase = TextReplacementContextRequestPhase::SelectingOrSelected;
+                    selectionAuthorized = true;
+                }
+            }
+            if (selectionAuthorized)
+            {
+                textReplacementIgnoredSelectionEventWindow.store(request.expectedWindow, std::memory_order_release);
+                textReplacementIgnoredSelectionEventExpires.store(GetTickCount() + 100, std::memory_order_release);
+                textReplacementIgnoreNextSelectionEvent.store(true, std::memory_order_release);
+                std::wstring selectedText;
+                const bool selected = SUCCEEDED(triggerRange->Select()) &&
+                                      request.expectedContextEpoch == state.textReplacementContextEpoch.load(std::memory_order_acquire) &&
+                                      GetFocusedTextReplacementWindow() == request.expectedWindow &&
+                                      GetWindowProcessId(request.expectedWindow) == request.expectedProcessId &&
+                                      IsCurrentAutomationSelection(
+                                          automation.get(),
+                                          request.expectedWindow,
+                                          request.expectedProcessId,
+                                          triggerRange.get(),
+                                          false) &&
+                                      TryReadTextRange(triggerRange.get(), selectedText) && selectedText == request.trigger &&
+                                      request.expectedContextEpoch == state.textReplacementContextEpoch.load(std::memory_order_acquire);
+                const bool abandoned = requestWasCanceled();
+                if (selected && !abandoned)
+                {
+                    preparedRollbackCaretRange = std::move(rollbackCaretRange);
+                    preparedWindow = request.expectedWindow;
+                    preparedProcessId = request.expectedProcessId;
+                    preparedContextEpoch = request.expectedContextEpoch;
+                    preparedRequestId = request.id;
+                    textReplacementPreparedSelectionRequestId.store(request.id, std::memory_order_release);
+                    textReplacementLastPreparedSelectionRequestId.store(request.id, std::memory_order_release);
+                    outcome = TextReplacementPreparationOutcome::Prepared;
+                }
+                else
+                {
+                    // Selection may mutate provider state even when it reports failure.
+                    // Restore the original collapsed caret before allowing passthrough.
+                    const bool restored = rollbackCaretRange &&
+                                          SUCCEEDED(rollbackCaretRange->Select()) &&
+                                          IsCurrentAutomationSelection(
+                                              automation.get(),
+                                              request.expectedWindow,
+                                              request.expectedProcessId,
+                                              rollbackCaretRange.get(),
+                                              true);
+                    outcome = restored ? TextReplacementPreparationOutcome::NotPrepared : TextReplacementPreparationOutcome::CommittedFailure;
+                    recoveryMustBlock = !restored;
+                    if (!restored)
+                    {
+                        preparedRollbackCaretRange = std::move(rollbackCaretRange);
+                        preparedWindow = request.expectedWindow;
+                        preparedProcessId = request.expectedProcessId;
+                        preparedContextEpoch = request.expectedContextEpoch;
+                        preparedRequestId = request.id;
+                        textReplacementPreparedSelectionRequestId.store(request.id, std::memory_order_release);
+                        textReplacementLastPreparedSelectionRequestId.store(request.id, std::memory_order_release);
+                    }
+                    textReplacementIgnoreNextSelectionEvent.store(false, std::memory_order_release);
+                    textReplacementIgnoredSelectionEventWindow.store(nullptr, std::memory_order_release);
+                    textReplacementIgnoredSelectionEventExpires.store(0, std::memory_order_release);
+                }
+            }
+            else if (requestWasCanceled())
+            {
+                // Cancellation before Select guarantees that this request made no UI
+                // mutation, so no recovery guard is required.
+                recoveryMustBlock = false;
+            }
+
+            bool lateCancellationRequiresRollback = false;
+            {
+                std::scoped_lock lock(textReplacementContextRequestMutex);
+                if (textReplacementContextRequest.id == request.id)
+                {
+                    lateCancellationRequiresRollback = outcome == TextReplacementPreparationOutcome::Prepared && textReplacementContextRequest.canceled;
+                    if (!lateCancellationRequiresRollback)
+                    {
+                        textReplacementContextCompletedRequestId = request.id;
+                        textReplacementContextPreparationOutcome = outcome;
+                        textReplacementContextRequestInFlight = false;
+                        textReplacementContextRequestPhase = TextReplacementContextRequestPhase::Idle;
+                        publishRecoveryGuardLocked(request.id, recoveryMustBlock, request.expectedWindow, request.expectedProcessId);
+                    }
+                }
+            }
+            if (lateCancellationRequiresRollback)
+            {
+                const uint64_t restoredSelectionRequestId = preparedRequestId;
+                const bool restored = preparedRollbackCaretRange &&
+                                      SUCCEEDED(preparedRollbackCaretRange->Select()) &&
+                                      IsCurrentAutomationSelection(
+                                          automation.get(),
+                                          preparedWindow,
+                                          preparedProcessId,
+                                          preparedRollbackCaretRange.get(),
+                                          true);
+                recoveryMustBlock = !restored;
+                if (restored)
+                {
+                    preparedRollbackCaretRange = nullptr;
+                    preparedWindow = nullptr;
+                    preparedProcessId = 0;
+                    preparedContextEpoch = 0;
+                    preparedRequestId = 0;
+                    textReplacementPreparedSelectionRequestId.store(0, std::memory_order_release);
+                }
+                outcome = restored ? TextReplacementPreparationOutcome::NotPrepared : TextReplacementPreparationOutcome::CommittedFailure;
+                textReplacementIgnoreNextSelectionEvent.store(false, std::memory_order_release);
+                textReplacementIgnoredSelectionEventWindow.store(nullptr, std::memory_order_release);
+                textReplacementIgnoredSelectionEventExpires.store(0, std::memory_order_release);
+                std::scoped_lock lock(textReplacementContextRequestMutex);
+                if (textReplacementContextRequest.id == request.id)
+                {
+                    textReplacementContextCompletedRequestId = request.id;
+                    textReplacementContextPreparationOutcome = outcome;
+                    if (restored && restoredSelectionRequestId != 0)
+                    {
+                        textReplacementLastSuccessfullyRestoredRequestId = (std::max)(
+                            textReplacementLastSuccessfullyRestoredRequestId,
+                            restoredSelectionRequestId);
+                    }
+                    textReplacementContextRequestInFlight = false;
+                    textReplacementContextRequestPhase = TextReplacementContextRequestPhase::Idle;
+                    publishRecoveryGuardLocked(request.id, recoveryMustBlock, request.expectedWindow, request.expectedProcessId);
+                }
+            }
+            SetEvent(textReplacementContextFinishedEvent);
+            continue;
         }
 
-        if (requestedEpoch == state.textReplacementContextEpoch.load(std::memory_order_acquire))
+        if (waitResult == WAIT_OBJECT_0 + 2)
         {
-            state.textReplacementContextWindow.store(focusedWindow, std::memory_order_release);
-            state.textReplacementContextProcessId.store(processId, std::memory_order_release);
-            state.textReplacementContextStatus.store(editable ? TextReplacementContextStatus::Editable : TextReplacementContextStatus::Blocked, std::memory_order_release);
-            // Publish this last. The hook authorizes the snapshot only when it matches
-            // the latest invalidation epoch, preventing a stale query from reviving it.
-            state.textReplacementClassifiedContextEpoch.store(requestedEpoch, std::memory_order_release);
+            // Focus providers often update after the mouse-down WinEvent. Debounce outside
+            // the input hook so a stale editable snapshot can never authorize the next key.
+            if (WaitForSingleObject(textReplacementContextStopEvent, 20) == WAIT_OBJECT_0)
+            {
+                break;
+            }
+
+            bool preparedSelectionAbandoned = false;
+            {
+                std::scoped_lock lock(textReplacementContextRequestMutex);
+                preparedSelectionAbandoned = preparedRequestId != 0 && textReplacementContextFinishedSelectionId >= preparedRequestId;
+            }
+            if (preparedSelectionAbandoned)
+            {
+                preparedRollbackCaretRange = nullptr;
+                preparedWindow = nullptr;
+                preparedProcessId = 0;
+                preparedContextEpoch = 0;
+                preparedRequestId = 0;
+            }
+            else if (preparedRollbackCaretRange && GetFocusedTextReplacementWindow() == preparedWindow)
+            {
+                const bool caretAlreadyReset = HasCollapsedCurrentAutomationSelection(automation.get(), preparedWindow, preparedProcessId);
+                const bool restored = caretAlreadyReset ||
+                                      (SUCCEEDED(preparedRollbackCaretRange->Select()) &&
+                                       IsCurrentAutomationSelection(
+                                           automation.get(),
+                                           preparedWindow,
+                                           preparedProcessId,
+                                           preparedRollbackCaretRange.get(),
+                                           true));
+                if (restored)
+                {
+                    const uint64_t restoredSelectionRequestId = preparedRequestId;
+                    preparedRollbackCaretRange = nullptr;
+                    preparedWindow = nullptr;
+                    preparedProcessId = 0;
+                    preparedContextEpoch = 0;
+                    preparedRequestId = 0;
+                    textReplacementPreparedSelectionRequestId.store(0, std::memory_order_release);
+                    std::scoped_lock lock(textReplacementContextRequestMutex);
+                    if (restoredSelectionRequestId != 0)
+                    {
+                        textReplacementLastSuccessfullyRestoredRequestId = (std::max)(
+                            textReplacementLastSuccessfullyRestoredRequestId,
+                            restoredSelectionRequestId);
+                    }
+                    textReplacementRecoveryGuardRequestId = 0;
+                    textReplacementRecoveryWindow.store(nullptr, std::memory_order_release);
+                    textReplacementRecoveryProcessId.store(0, std::memory_order_release);
+                    textReplacementRecoveryBlocksInput.store(false, std::memory_order_release);
+                }
+            }
+
+            const uint64_t requestedEpoch = state.textReplacementContextEpoch.load(std::memory_order_acquire);
+            const HWND focusedWindow = GetFocusedTextReplacementWindow();
+            const DWORD processId = GetWindowProcessId(focusedWindow);
+            bool editable = IsWritableNativeEdit(focusedWindow);
+            if (!editable && SUCCEEDED(automationResult))
+            {
+                editable = IsWritableAutomationTextControl(automation.get(), focusedWindow, processId);
+            }
+
+            if (requestedEpoch == state.textReplacementContextEpoch.load(std::memory_order_acquire))
+            {
+                state.textReplacementContextWindow.store(focusedWindow, std::memory_order_release);
+                state.textReplacementContextProcessId.store(processId, std::memory_order_release);
+                state.textReplacementContextStatus.store(editable ? TextReplacementContextStatus::Editable : TextReplacementContextStatus::Blocked, std::memory_order_release);
+                // Publish this last. The hook authorizes the snapshot only when it matches
+                // the latest invalidation epoch, preventing a stale query from reviving it.
+                state.textReplacementClassifiedContextEpoch.store(requestedEpoch, std::memory_order_release);
+            }
         }
     }
 
-    if (focusHandlerRegistered)
+    bool selectionAlreadyFinished = false;
     {
-        automation->RemoveFocusChangedEventHandler(focusChangedHandler.Get());
+        std::scoped_lock lock(textReplacementContextRequestMutex);
+        selectionAlreadyFinished = preparedRequestId != 0 && textReplacementContextFinishedSelectionId >= preparedRequestId;
     }
-    focusChangedHandler.Reset();
+    bool shutdownRecoveryComplete = selectionAlreadyFinished || !preparedRollbackCaretRange;
+    if (!shutdownRecoveryComplete)
+    {
+        // This is the only provider call allowed after stop is requested. The mandatory
+        // IUIAutomation6 transaction timeout bounds it before the keyboard hook is removed.
+        shutdownRecoveryComplete = SUCCEEDED(preparedRollbackCaretRange->Select()) &&
+                                   IsCurrentAutomationSelection(
+                                       automation.get(),
+                                       preparedWindow,
+                                       preparedProcessId,
+                                       preparedRollbackCaretRange.get(),
+                                       true);
+    }
+    if (!shutdownRecoveryComplete)
+    {
+        Logger::error(L"Unable to restore a prepared text replacement selection before stopping context tracking.");
+    }
+    else
+    {
+        std::scoped_lock lock(textReplacementContextRequestMutex);
+        textReplacementRecoveryGuardRequestId = 0;
+        textReplacementRecoveryWindow.store(nullptr, std::memory_order_release);
+        textReplacementRecoveryProcessId.store(0, std::memory_order_release);
+        textReplacementRecoveryBlocksInput.store(false, std::memory_order_release);
+    }
+    textReplacementPreparedSelectionRequestId.store(0, std::memory_order_release);
+    textReplacementIgnoreNextSelectionEvent.store(false, std::memory_order_release);
+    textReplacementIgnoredSelectionEventWindow.store(nullptr, std::memory_order_release);
+    textReplacementIgnoredSelectionEventExpires.store(0, std::memory_order_release);
+    preparedRollbackCaretRange = nullptr;
+
     automation = nullptr;
     CoDisableCallCancellation(nullptr);
     CoUninitialize();
+}
+
+KeyboardManager::TextReplacementPreparationOutcome KeyboardManager::PrepareTextReplacement(
+    const std::wstring_view trigger,
+    const bool targetHasNewline) noexcept
+{
+    constexpr ULONGLONG maximumHookTransactionMilliseconds = 125;
+    textReplacementTransactionDeadline = GetTickCount64() + maximumHookTransactionMilliseconds;
+    const auto remainingTransactionTime = [this]() -> DWORD {
+        const ULONGLONG now = GetTickCount64();
+        if (now >= textReplacementTransactionDeadline)
+        {
+            return 0;
+        }
+        return static_cast<DWORD>(textReplacementTransactionDeadline - now);
+    };
+
+    if (trigger.empty() || HasActiveRemap() || !state.textReplacementSuppressedTriggerKeys.empty() ||
+        !textReplacementSelectionTrackingAvailable.load(std::memory_order_acquire) ||
+        !state.textReplacementContextTrackingEnabled.load(std::memory_order_acquire) ||
+        !textReplacementContextThread.joinable())
+    {
+        return TextReplacementPreparationOutcome::NotPrepared;
+    }
+
+    const uint64_t contextEpoch = state.textReplacementContextEpoch.load(std::memory_order_acquire);
+    const HWND focusedWindow = GetFocusedTextReplacementWindow();
+    const DWORD processId = GetWindowProcessId(focusedWindow);
+    if (!focusedWindow || !processId ||
+        state.textReplacementClassifiedContextEpoch.load(std::memory_order_acquire) != contextEpoch ||
+        state.textReplacementContextStatus.load(std::memory_order_acquire) != TextReplacementContextStatus::Editable ||
+        state.textReplacementContextWindow.load(std::memory_order_acquire) != focusedWindow ||
+        state.textReplacementContextProcessId.load(std::memory_order_acquire) != processId)
+    {
+        return TextReplacementPreparationOutcome::NotPrepared;
+    }
+
+    uint64_t requestId = 0;
+    {
+        std::scoped_lock lock(textReplacementContextRequestMutex);
+        if (textReplacementContextRequestInFlight)
+        {
+            return TextReplacementPreparationOutcome::NotPrepared;
+        }
+
+        requestId = ++textReplacementContextNextRequestId;
+        textReplacementContextRequest = {
+            .id = requestId,
+            .kind = TextReplacementContextRequestKind::Prepare,
+            .trigger = std::wstring{ trigger },
+            .expectedWindow = focusedWindow,
+            .expectedProcessId = processId,
+            .expectedContextEpoch = contextEpoch,
+            .targetHasNewline = targetHasNewline,
+            .canceled = false,
+        };
+        textReplacementContextCompletedRequestId = 0;
+        textReplacementContextCandidateReady = false;
+        textReplacementContextPreparationOutcome = TextReplacementPreparationOutcome::NotPrepared;
+        textReplacementContextRequestInFlight = true;
+        textReplacementContextRequestPhase = TextReplacementContextRequestPhase::Querying;
+    }
+
+    ResetEvent(textReplacementContextReadyEvent);
+    ResetEvent(textReplacementContextCommitEvent);
+    ResetEvent(textReplacementContextCancelEvent);
+    ResetEvent(textReplacementContextFinishedEvent);
+    if (!SetEvent(textReplacementContextRequestEvent))
+    {
+        std::scoped_lock lock(textReplacementContextRequestMutex);
+        textReplacementContextRequestInFlight = false;
+        textReplacementContextRequestPhase = TextReplacementContextRequestPhase::Idle;
+        return TextReplacementPreparationOutcome::NotPrepared;
+    }
+
+    const HANDLE readyEvents[] = { textReplacementContextReadyEvent, textReplacementContextStopEvent };
+    const DWORD readyResult = WaitForMultipleObjects(static_cast<DWORD>(std::size(readyEvents)), readyEvents, FALSE, remainingTransactionTime());
+    if (readyResult != WAIT_OBJECT_0)
+    {
+        {
+            std::scoped_lock lock(textReplacementContextRequestMutex);
+            if (textReplacementContextRequest.id == requestId && textReplacementContextRequestInFlight)
+            {
+                textReplacementContextRequest.canceled = true;
+            }
+        }
+        SetEvent(textReplacementContextCancelEvent);
+        return TextReplacementPreparationOutcome::NotPrepared;
+    }
+
+    {
+        std::scoped_lock lock(textReplacementContextRequestMutex);
+        if (textReplacementContextCompletedRequestId != requestId || !textReplacementContextCandidateReady)
+        {
+            return TextReplacementPreparationOutcome::NotPrepared;
+        }
+    }
+
+    // The query phase is cancellable and has not changed the target. Once committed,
+    // wait for an explicit Select result so a late provider call cannot mutate UI after
+    // the physical activation key has been passed through.
+    if (!SetEvent(textReplacementContextCommitEvent))
+    {
+        SetEvent(textReplacementContextCancelEvent);
+        return TextReplacementPreparationOutcome::NotPrepared;
+    }
+
+    const HANDLE finishedEvents[] = { textReplacementContextFinishedEvent, textReplacementContextStopEvent };
+    if (WaitForMultipleObjects(static_cast<DWORD>(std::size(finishedEvents)), finishedEvents, FALSE, remainingTransactionTime()) != WAIT_OBJECT_0)
+    {
+        {
+            std::scoped_lock lock(textReplacementContextRequestMutex);
+            if (textReplacementContextRequest.id == requestId && textReplacementContextRequestInFlight)
+            {
+                // The worker checks this immediately before and after Select. If the
+                // provider call finishes late, it restores the old collapsed caret.
+                textReplacementContextRequest.canceled = true;
+                if (textReplacementContextRequestPhase == TextReplacementContextRequestPhase::SelectingOrSelected)
+                {
+                    textReplacementRecoveryGuardRequestId = requestId;
+                    textReplacementRecoveryWindow.store(focusedWindow, std::memory_order_release);
+                    textReplacementRecoveryProcessId.store(processId, std::memory_order_release);
+                    textReplacementRecoveryBlocksInput.store(true, std::memory_order_release);
+                }
+            }
+        }
+        SetEvent(textReplacementContextCancelEvent);
+        return TextReplacementPreparationOutcome::CommittedFailure;
+    }
+
+    std::scoped_lock lock(textReplacementContextRequestMutex);
+    return textReplacementContextCompletedRequestId == requestId ? textReplacementContextPreparationOutcome : TextReplacementPreparationOutcome::CommittedFailure;
+}
+
+bool KeyboardManager::RollbackPreparedTextReplacement() noexcept
+{
+    const auto remainingTransactionTime = [this]() -> DWORD {
+        const ULONGLONG now = GetTickCount64();
+        if (now >= textReplacementTransactionDeadline)
+        {
+            return 0;
+        }
+        return static_cast<DWORD>(textReplacementTransactionDeadline - now);
+    };
+
+    const uint64_t selectionRequestId = textReplacementLastPreparedSelectionRequestId.load(std::memory_order_acquire);
+    uint64_t requestId = 0;
+    {
+        std::scoped_lock lock(textReplacementContextRequestMutex);
+        if (selectionRequestId != 0 && textReplacementLastSuccessfullyRestoredRequestId >= selectionRequestId)
+        {
+            return true;
+        }
+        if (textReplacementContextRequestInFlight || !textReplacementContextThread.joinable())
+        {
+            return false;
+        }
+
+        HWND recoveryWindow = textReplacementRecoveryWindow.load(std::memory_order_acquire);
+        DWORD recoveryProcessId = textReplacementRecoveryProcessId.load(std::memory_order_acquire);
+        if (!recoveryWindow && textReplacementContextRequest.kind == TextReplacementContextRequestKind::Prepare)
+        {
+            recoveryWindow = textReplacementContextRequest.expectedWindow;
+            recoveryProcessId = textReplacementContextRequest.expectedProcessId;
+        }
+
+        requestId = ++textReplacementContextNextRequestId;
+        textReplacementContextRequest = {
+            .id = requestId,
+            .kind = TextReplacementContextRequestKind::Rollback,
+        };
+        textReplacementContextCompletedRequestId = 0;
+        textReplacementContextPreparationOutcome = TextReplacementPreparationOutcome::CommittedFailure;
+        textReplacementContextRequestInFlight = true;
+        textReplacementContextRequestPhase = TextReplacementContextRequestPhase::SelectingOrSelected;
+        textReplacementRecoveryGuardRequestId = requestId;
+        textReplacementRecoveryWindow.store(recoveryWindow, std::memory_order_release);
+        textReplacementRecoveryProcessId.store(recoveryProcessId, std::memory_order_release);
+        textReplacementRecoveryBlocksInput.store(true, std::memory_order_release);
+    }
+
+    ResetEvent(textReplacementContextFinishedEvent);
+    if (!SetEvent(textReplacementContextRequestEvent))
+    {
+        std::scoped_lock lock(textReplacementContextRequestMutex);
+        textReplacementContextRequestInFlight = false;
+        textReplacementContextRequestPhase = TextReplacementContextRequestPhase::Idle;
+        return false;
+    }
+
+    const HANDLE finishedEvents[] = { textReplacementContextFinishedEvent, textReplacementContextStopEvent };
+    if (WaitForMultipleObjects(static_cast<DWORD>(std::size(finishedEvents)), finishedEvents, FALSE, remainingTransactionTime()) != WAIT_OBJECT_0)
+    {
+        return false;
+    }
+
+    std::scoped_lock lock(textReplacementContextRequestMutex);
+    return textReplacementContextCompletedRequestId == requestId &&
+           textReplacementContextPreparationOutcome == TextReplacementPreparationOutcome::Prepared;
+}
+
+void KeyboardManager::FinishPreparedTextReplacement() noexcept
+{
+    {
+        std::scoped_lock lock(textReplacementContextRequestMutex);
+        textReplacementContextFinishedSelectionId = (std::max)(
+            textReplacementContextFinishedSelectionId,
+            textReplacementContextCompletedRequestId);
+        textReplacementRecoveryGuardRequestId = 0;
+        textReplacementRecoveryWindow.store(nullptr, std::memory_order_release);
+        textReplacementRecoveryProcessId.store(0, std::memory_order_release);
+        textReplacementRecoveryBlocksInput.store(false, std::memory_order_release);
+    }
+    textReplacementPreparedSelectionRequestId.store(0, std::memory_order_release);
+    textReplacementIgnoreNextSelectionEvent.store(false, std::memory_order_release);
+    textReplacementIgnoredSelectionEventWindow.store(nullptr, std::memory_order_release);
+    textReplacementIgnoredSelectionEventExpires.store(0, std::memory_order_release);
+    // Releasing the worker-owned COM range is not part of the input transaction and
+    // must never extend the low-level hook callback. The worker replaces or clears it
+    // on the next context request and on shutdown.
+}
+
+bool KeyboardManager::IsPreparedTextReplacementCurrent() const noexcept
+{
+    HWND expectedWindow = nullptr;
+    DWORD expectedProcessId = 0;
+    uint64_t expectedContextEpoch = 0;
+    {
+        std::scoped_lock lock(textReplacementContextRequestMutex);
+        if (textReplacementContextRequestInFlight ||
+            textReplacementContextPreparationOutcome != TextReplacementPreparationOutcome::Prepared ||
+            textReplacementContextCompletedRequestId == 0 ||
+            textReplacementContextCompletedRequestId != textReplacementContextRequest.id ||
+            textReplacementPreparedSelectionRequestId.load(std::memory_order_acquire) != textReplacementContextCompletedRequestId ||
+            textReplacementContextRequest.kind != TextReplacementContextRequestKind::Prepare)
+        {
+            return false;
+        }
+
+        expectedWindow = textReplacementContextRequest.expectedWindow;
+        expectedProcessId = textReplacementContextRequest.expectedProcessId;
+        expectedContextEpoch = textReplacementContextRequest.expectedContextEpoch;
+    }
+
+    return textReplacementSelectionTrackingAvailable.load(std::memory_order_acquire) &&
+           !textReplacementRecoveryBlocksInput.load(std::memory_order_acquire) &&
+           state.textReplacementContextEpoch.load(std::memory_order_acquire) == expectedContextEpoch &&
+           GetFocusedTextReplacementWindow() == expectedWindow &&
+           GetWindowProcessId(expectedWindow) == expectedProcessId;
 }
 
 void KeyboardManager::StartLowlevelKeyboardHook()
@@ -664,6 +1684,17 @@ void KeyboardManager::StartLowlevelKeyboardHook()
 
 void KeyboardManager::StopLowlevelKeyboardHook()
 {
+    // Give any exact cleanup suffix left by a partial SendInput one final chance while
+    // the hook is still installed and can suppress the generated events.
+    if (state.HasPendingInputCleanup())
+    {
+        KeyboardEventHandlers::RetryPendingInputCleanup(inputHandler, state);
+    }
+
+    // Cancel, restore any prepared selection, and join the bounded provider worker
+    // while the keyboard hook is still present to protect generated cleanup input.
+    StopTextReplacementContextTracking();
+
     if (hookHandle)
     {
         UnhookWindowsHookEx(hookHandle);
@@ -677,14 +1708,34 @@ void KeyboardManager::StopLowlevelKeyboardHook()
         mouseHookHandle = nullptr;
     }
 
-    StopTextReplacementContextTracking();
 }
 
 bool KeyboardManager::HasActiveRemap() const
 {
-    if (!state.singleKeyRemapActiveKeys.empty())
+    if (!state.singleKeyRemapActiveKeys.empty() || state.HasPendingInputCleanup())
     {
         return true;
+    }
+
+    const HWND focusedWindow = GetFocusedTextReplacementWindow();
+    const DWORD focusedProcessId = GetWindowProcessId(focusedWindow);
+    if (textReplacementRecoveryBlocksInput.load(std::memory_order_acquire))
+    {
+        const HWND recoveryWindow = textReplacementRecoveryWindow.load(std::memory_order_acquire);
+        if (recoveryWindow && IsWindow(recoveryWindow) && focusedWindow == recoveryWindow &&
+            focusedProcessId == textReplacementRecoveryProcessId.load(std::memory_order_acquire))
+        {
+            return true;
+        }
+    }
+    {
+        std::scoped_lock lock(textReplacementContextRequestMutex);
+        const bool selectionTransactionActive = textReplacementContextRequestInFlight ||
+                                                textReplacementPreparedSelectionRequestId.load(std::memory_order_acquire) != 0;
+        if (selectionTransactionActive)
+        {
+            return true;
+        }
     }
 
     if (std::any_of(state.osLevelShortcutReMap.begin(), state.osLevelShortcutReMap.end(), [](const auto& mapping) { return mapping.second.isShortcutInvoked; }))
@@ -721,12 +1772,75 @@ bool KeyboardManager::HasRegisteredRemappings() const
 
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
+    // Internal cleanup events must never reach the editor gate or the foreground app.
+    if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+    {
+        return 1;
+    }
+
+    const bool generatedByKeyboardManager =
+        data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG ||
+        data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG;
+    if (!generatedByKeyboardManager && state.HasPendingInputCleanup())
+    {
+        // Cleanup owns only its generated suffix. The physical event still proceeds
+        // through the normal pipeline so its down/up pairing is never disrupted.
+        KeyboardEventHandlers::RetryPendingInputCleanup(inputHandler, state);
+    }
+
     // Once a trigger-key key-down has been swallowed, its repeats and matching
     // key-up must be swallowed before editor suspension or any fresh remap can
     // reinterpret the physical key.
     if (KeyboardEventHandlers::HandleTextReplacementSuppressedKeyEvent(data, state) == 1)
     {
         return 1;
+    }
+
+    const bool isKeyDown = data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN;
+    // Preparation is allowed only with zero KBM output owners. During recovery every
+    // key-down is blocked so it cannot overwrite the protected selection; key-ups pass
+    // through so an existing physical press outside KBM is never stranded.
+    if (textReplacementRecoveryBlocksInput.load(std::memory_order_acquire) && isKeyDown)
+    {
+        bool cancelInFlightSelection = false;
+        const HWND recoveryWindow = textReplacementRecoveryWindow.load(std::memory_order_acquire);
+        const DWORD recoveryProcessId = textReplacementRecoveryProcessId.load(std::memory_order_acquire);
+        const HWND focusedWindow = GetFocusedTextReplacementWindow();
+        if (recoveryWindow && IsWindow(recoveryWindow) && focusedWindow == recoveryWindow &&
+            GetWindowProcessId(focusedWindow) == recoveryProcessId)
+        {
+            return 1;
+        }
+
+        // The protected selection is no longer the active input context. Do not turn
+        // recovery into a global keyboard lock; abandon the old token and let the worker
+        // release its COM range without changing the newly focused control.
+        {
+            std::scoped_lock lock(textReplacementContextRequestMutex);
+            const uint64_t selectionRequestId = textReplacementLastPreparedSelectionRequestId.load(std::memory_order_acquire);
+            textReplacementContextFinishedSelectionId = (std::max)(textReplacementContextFinishedSelectionId, selectionRequestId);
+            textReplacementRecoveryGuardRequestId = 0;
+            textReplacementRecoveryWindow.store(nullptr, std::memory_order_release);
+            textReplacementRecoveryProcessId.store(0, std::memory_order_release);
+            textReplacementRecoveryBlocksInput.store(false, std::memory_order_release);
+            textReplacementPreparedSelectionRequestId.store(0, std::memory_order_release);
+            if (textReplacementContextRequestInFlight)
+            {
+                textReplacementContextRequest.canceled = true;
+                cancelInFlightSelection = true;
+            }
+        }
+        textReplacementIgnoreNextSelectionEvent.store(false, std::memory_order_release);
+        textReplacementIgnoredSelectionEventWindow.store(nullptr, std::memory_order_release);
+        textReplacementIgnoredSelectionEventExpires.store(0, std::memory_order_release);
+        if (textReplacementContextRefreshEvent)
+        {
+            SetEvent(textReplacementContextRefreshEvent);
+        }
+        if (cancelInFlightSelection && textReplacementContextCancelEvent)
+        {
+            SetEvent(textReplacementContextCancelEvent);
+        }
     }
 
     // Suspend remapping if remap key/shortcut window is opened
@@ -740,12 +1854,6 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
             KeyboardEventHandlers::ResetTextReplacementRuntimeState(state);
         }
         return activeRemapResult;
-    }
-
-    // If key has suppress flag, then suppress it
-    if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
-    {
-        return 1;
     }
 
     // Remap a key
@@ -790,7 +1898,23 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
         return 1;
     }
 
-    intptr_t TextReplacementResult = KeyboardEventHandlers::HandleTextReplacementEvent(inputHandler, data, state);
+    const KeyboardEventHandlers::TextReplacementTransactionCallbacks textReplacementTransaction{
+        .prepare = [this](const std::wstring_view trigger, const bool targetContainsNewline) {
+            switch (PrepareTextReplacement(trigger, targetContainsNewline))
+            {
+            case TextReplacementPreparationOutcome::Prepared:
+                return KeyboardEventHandlers::TextReplacementPreparationResult::Prepared;
+            case TextReplacementPreparationOutcome::CommittedFailure:
+                return KeyboardEventHandlers::TextReplacementPreparationResult::CommittedFailure;
+            default:
+                return KeyboardEventHandlers::TextReplacementPreparationResult::NotPrepared;
+            }
+        },
+        .rollback = [this] { return RollbackPreparedTextReplacement(); },
+        .isCurrent = [this] { return IsPreparedTextReplacementCurrent(); },
+        .finish = [this] { FinishPreparedTextReplacement(); },
+    };
+    intptr_t TextReplacementResult = KeyboardEventHandlers::HandleTextReplacementEvent(inputHandler, data, state, textReplacementTransaction);
 
     if (TextReplacementResult == 1)
     {

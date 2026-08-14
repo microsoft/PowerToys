@@ -31,6 +31,7 @@ namespace KeyboardManagerEditorUI.Helpers
             { ValidationErrorType.EmptyTargetText, (ResourceHelper.GetString("Validation_EmptyTargetText_Title"), ResourceHelper.GetString("Validation_EmptyTargetText_Message")) },
             { ValidationErrorType.EmptyTriggerText, (ResourceHelper.GetString("Validation_EmptyTriggerText_Title"), ResourceHelper.GetString("Validation_EmptyTriggerText_Message")) },
             { ValidationErrorType.InvalidTextReplacementTriggerText, (ResourceHelper.GetString("Validation_InvalidTextReplacementTriggerText_Title"), ResourceHelper.GetString("Validation_InvalidTextReplacementTriggerText_Message")) },
+            { ValidationErrorType.InvalidTextReplacementTargetText, (ResourceHelper.GetString("Validation_InvalidTextReplacementTargetText_Title"), ResourceHelper.GetString("Validation_InvalidTextReplacementTargetText_Message")) },
             { ValidationErrorType.TextTriggerTooLong, (ResourceHelper.GetString("Validation_TextTriggerTooLong_Title"), ResourceHelper.GetString("Validation_TextTriggerTooLong_Message")) },
             { ValidationErrorType.TargetTextTooLong, (ResourceHelper.GetString("Validation_TargetTextTooLong_Title"), ResourceHelper.GetString("Validation_TargetTextTooLong_Message")) },
             { ValidationErrorType.InvalidTextReplacementTriggerKey, (ResourceHelper.GetString("Validation_InvalidTextReplacementTriggerKey_Title"), ResourceHelper.GetString("Validation_InvalidTextReplacementTriggerKey_Message")) },
@@ -194,6 +195,11 @@ namespace KeyboardManagerEditorUI.Helpers
             if (!IsValidTextReplacementTrigger(triggerText))
             {
                 return ValidationErrorType.InvalidTextReplacementTriggerText;
+            }
+
+            if (!TextReplacementTextValidator.IsValidTarget(textContent))
+            {
+                return ValidationErrorType.InvalidTextReplacementTargetText;
             }
 
             if (triggerText.Length > MaxTextReplacementTriggerLength)

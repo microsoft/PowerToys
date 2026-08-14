@@ -25,6 +25,9 @@ namespace KeyboardManagerEditorUI.Interop
         internal static extern bool LoadMappingSettings(IntPtr config);
 
         [DllImport(DllName, CallingConvention = Convention)]
+        internal static extern int LoadMappingSettingsWithResult(IntPtr config);
+
+        [DllImport(DllName, CallingConvention = Convention)]
         [return: MarshalAs(UnmanagedType.I1)]
         internal static extern bool SaveMappingSettings(IntPtr config);
 

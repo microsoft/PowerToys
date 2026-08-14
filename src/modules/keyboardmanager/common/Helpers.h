@@ -7,6 +7,7 @@ class LayoutMap;
 namespace KeyboardManagerInput
 {
     class InputInterface;
+    struct SendVirtualInputResult;
 }
 
 namespace Helpers
@@ -46,7 +47,7 @@ namespace Helpers
     // Function to send text input directly, with multiline support.
     // Sends each line via KEYEVENTF_UNICODE and newlines via VK_RETURN
     // as separate SendInput calls to avoid mixing event types.
-    void SendTextInput(const std::wstring& text, KeyboardManagerInput::InputInterface& ii);
+    KeyboardManagerInput::SendVirtualInputResult SendTextInput(const std::wstring& text, KeyboardManagerInput::InputInterface& ii, std::vector<INPUT>& pendingInputCleanup);
 
     // Function to return window handle for a full screen UWP app
     HWND GetFullscreenUWPWindowHandle();

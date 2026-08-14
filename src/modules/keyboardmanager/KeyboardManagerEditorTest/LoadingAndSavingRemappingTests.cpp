@@ -13,6 +13,45 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
+namespace
+{
+    json::JsonObject CreateEmptyMappingProfile()
+    {
+        json::JsonObject profile;
+
+        json::JsonObject remapKeys;
+        remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, json::JsonArray{});
+        profile.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
+
+        json::JsonObject remapKeysToText;
+        remapKeysToText.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, json::JsonArray{});
+        profile.SetNamedValue(KeyboardManagerConstants::RemapKeysToTextSettingName, remapKeysToText);
+
+        json::JsonObject textReplacements;
+        textReplacements.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, json::JsonArray{});
+        profile.SetNamedValue(KeyboardManagerConstants::TextReplacementsSettingName, textReplacements);
+
+        for (const auto& sectionName : { KeyboardManagerConstants::RemapShortcutsSettingName, KeyboardManagerConstants::RemapShortcutsToTextSettingName })
+        {
+            json::JsonObject shortcuts;
+            shortcuts.SetNamedValue(KeyboardManagerConstants::GlobalRemapShortcutsSettingName, json::JsonArray{});
+            shortcuts.SetNamedValue(KeyboardManagerConstants::AppSpecificRemapShortcutsSettingName, json::JsonArray{});
+            profile.SetNamedValue(sectionName, shortcuts);
+        }
+
+        return profile;
+    }
+
+    json::JsonObject CreateTextReplacementJson(const std::wstring& trigger, const std::wstring& target, DWORD triggerKey)
+    {
+        json::JsonObject replacement;
+        replacement.SetNamedValue(KeyboardManagerConstants::TriggerTextSettingName, json::value(trigger));
+        replacement.SetNamedValue(KeyboardManagerConstants::NewTextSettingName, json::value(target));
+        replacement.SetNamedValue(KeyboardManagerConstants::TextReplacementTriggerKeySettingName, json::value(triggerKey));
+        return replacement;
+    }
+}
+
 namespace RemappingUITests
 {
     // Tests for methods in the LoadingAndSavingRemappingHelper namespace
@@ -24,6 +63,108 @@ namespace RemappingUITests
     public:
         TEST_METHOD_INITIALIZE(InitializeTestEnv)
         {
+        }
+
+        TEST_METHOD (SaveSettingsToFileWithResult_ShouldSeparateCommittedResult_WhenReloadNotificationFails)
+        {
+            bool writerCalled = false;
+            bool notifierCalled = false;
+            MappingConfiguration configuration{
+                [&writerCalled](const std::wstring&, const json::JsonObject&) {
+                    writerCalled = true;
+                    return true;
+                },
+                [&notifierCalled]() {
+                    notifierCalled = true;
+                    return false;
+                },
+                [](const std::wstring&) {
+                    return L"test-settings.json";
+                }
+            };
+
+            const auto saveResult = configuration.SaveSettingsToFileWithResult();
+            Assert::IsTrue(saveResult.settingsCommitted);
+            Assert::IsFalse(saveResult.reloadNotified);
+            Assert::IsTrue(writerCalled);
+            Assert::IsTrue(notifierCalled);
+            Assert::IsTrue(configuration.SaveSettingsToFile());
+        }
+
+        TEST_METHOD (SaveSettingsToFileWithResult_ShouldNotNotify_WhenCommitFails)
+        {
+            bool notifierCalled = false;
+            MappingConfiguration configuration{
+                [](const std::wstring&, const json::JsonObject&) {
+                    return false;
+                },
+                [&notifierCalled]() {
+                    notifierCalled = true;
+                    return true;
+                },
+                [](const std::wstring&) {
+                    return L"test-settings.json";
+                }
+            };
+
+            const auto saveResult = configuration.SaveSettingsToFileWithResult();
+            Assert::IsFalse(saveResult.settingsCommitted);
+            Assert::IsFalse(saveResult.reloadNotified);
+            Assert::IsFalse(notifierCalled);
+        }
+
+        TEST_METHOD (LoadSettingsFromJson_ShouldReportPartialAndKeepFirstDuplicateEntries)
+        {
+            json::JsonObject profile = CreateEmptyMappingProfile();
+            json::JsonArray keyRemaps = profile.GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName)
+                                                   .GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName);
+            for (const wchar_t* target : { L"66", L"67" })
+            {
+                json::JsonObject remap;
+                remap.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(L"65"));
+                remap.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(target));
+                keyRemaps.Append(remap);
+            }
+
+            json::JsonArray replacements = profile.GetNamedObject(KeyboardManagerConstants::TextReplacementsSettingName)
+                                               .GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName);
+            replacements.Append(CreateTextReplacementJson(L"hello", L"short", VK_SPACE));
+            replacements.Append(CreateTextReplacementJson(L"hello world", L"long", VK_RETURN));
+            replacements.Append(CreateTextReplacementJson(L"invalid-target", L"bad\ttarget", VK_TAB));
+
+            MappingConfiguration configuration;
+            const auto loadResult = configuration.LoadSettingsFromJson(profile);
+
+            Assert::AreEqual(static_cast<int>(MappingConfigurationLoadResult::Partial), static_cast<int>(loadResult));
+            Assert::AreEqual(static_cast<size_t>(1), configuration.singleKeyReMap.size());
+            Assert::AreEqual(static_cast<DWORD>(66), std::get<DWORD>(configuration.singleKeyReMap.at(65)));
+            Assert::AreEqual(static_cast<size_t>(1), configuration.textReplacements.size());
+            Assert::AreEqual(std::wstring(L"short"), configuration.textReplacements.at(L"hello").text);
+        }
+
+        TEST_METHOD (LoadSettingsFromJson_ShouldTreatRunProgramAsOneMutuallyExclusiveAppMapping)
+        {
+            json::JsonObject profile = CreateEmptyMappingProfile();
+            json::JsonArray appShortcuts = profile.GetNamedObject(KeyboardManagerConstants::RemapShortcutsSettingName)
+                                               .GetNamedArray(KeyboardManagerConstants::AppSpecificRemapShortcutsSettingName);
+            json::JsonObject remap;
+            remap.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(L"17;65"));
+            remap.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(L"17;66"));
+            remap.SetNamedValue(KeyboardManagerConstants::TargetAppSettingName, json::value(L"Example.exe"));
+            remap.SetNamedValue(KeyboardManagerConstants::ShortcutOperationType, json::value(1));
+            remap.SetNamedValue(KeyboardManagerConstants::RunProgramFilePathSettingName, json::value(L"C:\\example.exe"));
+            appShortcuts.Append(remap);
+
+            MappingConfiguration configuration;
+            const auto loadResult = configuration.LoadSettingsFromJson(profile);
+
+            Assert::AreEqual(static_cast<int>(MappingConfigurationLoadResult::Success), static_cast<int>(loadResult));
+            Assert::AreEqual(static_cast<size_t>(1), configuration.appSpecificShortcutReMap.at(L"example.exe").size());
+            const auto& target = configuration.appSpecificShortcutReMap.at(L"example.exe").begin()->second.targetShortcut;
+            Assert::AreEqual(static_cast<size_t>(1), target.index());
+            Assert::AreEqual(
+                static_cast<int>(Shortcut::OperationType::RunProgram),
+                static_cast<int>(std::get<Shortcut>(target).operationType));
         }
 
         // Test if the CheckIfRemappingsAreValid method is successful when no remaps are passed
@@ -594,7 +735,7 @@ namespace RemappingUITests
             Assert::AreEqual(false, testShortcuts.AddTextReplacement(L"modifier", L"invalid", VK_CONTROL));
         }
 
-        TEST_METHOD (AddTextReplacement_ShouldEnforceLengthLimitsAndRejectInvalidTriggerText)
+        TEST_METHOD (AddTextReplacement_ShouldEnforceLengthLimitsAndRejectInvalidText)
         {
             MappingConfiguration atLimit;
             const std::wstring maximumTrigger(KeyboardManagerConstants::MaxTextReplacementTriggerLength, L't');
@@ -631,7 +772,16 @@ namespace RemappingUITests
             Assert::AreEqual(false, surrogatePairs.AddTextReplacement(loneLowSurrogate, L"text", VK_SPACE));
 
             MappingConfiguration multilineTarget;
-            Assert::AreEqual(true, multilineTarget.AddTextReplacement(L"multiline", L"first line\nsecond line", VK_SPACE));
+            Assert::AreEqual(true, multilineTarget.AddTextReplacement(L"multiline", L"first line\r\nsecond line", VK_SPACE));
+
+            MappingConfiguration targetValidation;
+            Assert::AreEqual(false, targetValidation.AddTextReplacement(L"backspace", std::wstring{ L'a', L'\b', L'b' }, VK_SPACE));
+            Assert::AreEqual(false, targetValidation.AddTextReplacement(L"tab", L"a\tb", VK_SPACE));
+            Assert::AreEqual(false, targetValidation.AddTextReplacement(L"delete", std::wstring{ L'a', static_cast<wchar_t>(0x7F), L'b' }, VK_SPACE));
+            Assert::AreEqual(false, targetValidation.AddTextReplacement(L"c1", std::wstring{ L'a', static_cast<wchar_t>(0x85), L'b' }, VK_SPACE));
+            Assert::AreEqual(false, targetValidation.AddTextReplacement(L"high", loneHighSurrogate, VK_SPACE));
+            Assert::AreEqual(false, targetValidation.AddTextReplacement(L"low", loneLowSurrogate, VK_SPACE));
+            Assert::AreEqual(true, targetValidation.AddTextReplacement(L"emoji", validPair, VK_SPACE));
         }
 
         TEST_METHOD (UpdateAndDeleteTextReplacement_ShouldBeAtomicAndRecalculateMaximumTriggerLength)
@@ -652,6 +802,7 @@ namespace RemappingUITests
 
             Assert::AreEqual(false, testShortcuts.UpdateTextReplacement(L"star", L"moon", L"conflict", VK_SPACE));
             Assert::AreEqual(false, testShortcuts.UpdateTextReplacement(L"star", L"renamed", L"conflict", L'A'));
+            Assert::AreEqual(false, testShortcuts.UpdateTextReplacement(L"star", L"renamed", L"bad\ttarget", VK_SPACE));
             Assert::AreEqual(std::wstring(L"updated text"), testShortcuts.textReplacements.at(L"star").text);
             Assert::AreEqual(static_cast<DWORD>(VK_TAB), testShortcuts.textReplacements.at(L"star").triggerKey);
             Assert::AreEqual(static_cast<size_t>(0), testShortcuts.textReplacements.count(L"renamed"));

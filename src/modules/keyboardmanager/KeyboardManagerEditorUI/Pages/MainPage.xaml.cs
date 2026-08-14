@@ -121,6 +121,16 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
+            if (_mappingService.LoadResult == MappingConfigurationLoadResult.Partial)
+            {
+                Logger.LogError("Cannot safely edit a partially loaded profile.");
+                _mappingService.Dispose();
+                _mappingService = null;
+                IsServiceRunning = false;
+                MappingState = "Error";
+                return;
+            }
+
             if (_mappingService != null)
             {
                 LoadAllMappings();

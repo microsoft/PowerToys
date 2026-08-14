@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <fstream>
+#include <utility>
 
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
@@ -53,6 +54,29 @@ namespace
         return true;
     }
 
+    constexpr bool IsValidTextReplacementTarget(const std::wstring_view text)
+    {
+        for (size_t index = 0; index < text.size(); ++index)
+        {
+            const auto codeUnit = static_cast<uint16_t>(text[index]);
+            if (IsHighSurrogate(text[index]))
+            {
+                if (++index >= text.size() || !IsLowSurrogate(text[index]))
+                {
+                    return false;
+                }
+            }
+            else if (IsLowSurrogate(text[index]) ||
+                     (codeUnit < 0x20 && codeUnit != L'\r' && codeUnit != L'\n') ||
+                     (codeUnit >= 0x7F && codeUnit <= 0x9F))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     constexpr bool HasSpaceDelimiterPrefixConflict(
         const std::wstring_view shorterTrigger,
         const DWORD shorterTriggerKey,
@@ -76,6 +100,7 @@ namespace
             trigger.find(L'\0') != std::wstring_view::npos ||
             text.find(L'\0') != std::wstring_view::npos ||
             !IsValidTextReplacementTrigger(trigger) ||
+            !IsValidTextReplacementTarget(text) ||
             trigger.size() > KeyboardManagerConstants::MaxTextReplacementTriggerLength ||
             text.size() > KeyboardManagerConstants::MaxTextReplacementTextLength ||
             !IsValidTextReplacementTriggerKey(triggerKey))
@@ -134,6 +159,45 @@ namespace
         }
     }
 
+    bool SignalSettingsReload()
+    {
+        const HANDLE event = CreateEvent(nullptr, false, false, KeyboardManagerConstants::SettingsEventName.c_str());
+        if (!event)
+        {
+            return false;
+        }
+
+        const bool signaled = SetEvent(event) != FALSE;
+        CloseHandle(event);
+        return signaled;
+    }
+
+    std::wstring GetSettingsFilePath(const std::wstring& configurationName)
+    {
+        return PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + configurationName + L".json";
+    }
+
+}
+
+MappingConfiguration::MappingConfiguration(SettingsWriter writer, SettingsReloadNotifier notifier, SettingsPathProvider pathProvider) :
+    settingsWriter(std::move(writer)),
+    settingsReloadNotifier(std::move(notifier)),
+    settingsPathProvider(std::move(pathProvider))
+{
+    if (!settingsWriter)
+    {
+        settingsWriter = WriteJsonAtomically;
+    }
+
+    if (!settingsReloadNotifier)
+    {
+        settingsReloadNotifier = SignalSettingsReload;
+    }
+
+    if (!settingsPathProvider)
+    {
+        settingsPathProvider = GetSettingsFilePath;
+    }
 }
 
 // Function to clear the OS Level shortcut remapping table
@@ -327,15 +391,22 @@ bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
                     auto newRemapKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
 
                     // If remapped to a shortcut
+                    bool added = false;
                     if (std::wstring(newRemapKey).find(L";") != std::string::npos)
                     {
-                        AddSingleKeyRemap(std::stoul(originalKey.c_str()), Shortcut(newRemapKey.c_str()));
+                        added = AddSingleKeyRemap(std::stoul(originalKey.c_str()), Shortcut(newRemapKey.c_str()));
                     }
 
                     // If remapped to a key
                     else
                     {
-                        AddSingleKeyRemap(std::stoul(originalKey.c_str()), std::stoul(newRemapKey.c_str()));
+                        added = AddSingleKeyRemap(std::stoul(originalKey.c_str()), std::stoul(newRemapKey.c_str()));
+                    }
+
+                    if (!added)
+                    {
+                        Logger::error(L"Invalid or duplicate single key remap. Try the next remap.");
+                        result = false;
                     }
                 }
                 catch (...)
@@ -380,10 +451,14 @@ bool MappingConfiguration::LoadSingleKeyToTextRemaps(const json::JsonObject& jso
                 // undo dummy data for backwards compatibility
                 if (newText == L"*Unsupported*")
                 {
-                    newText == L"";
+                    newText = L"";
                 }
 
-                AddSingleKeyToTextRemap(std::stoul(originalKey.c_str()), newText.c_str());
+                if (!AddSingleKeyToTextRemap(std::stoul(originalKey.c_str()), newText.c_str()))
+                {
+                    Logger::error(L"Invalid or duplicate single key to text remap. Try the next remap.");
+                    result = false;
+                }
             }
             catch (...)
             {
@@ -487,9 +562,10 @@ bool MappingConfiguration::LoadAppSpecificShortcutRemaps(const json::JsonObject&
                 // undo dummy data for backwards compatibility
                 if (newRemapText == L"*Unsupported*")
                 {
-                    newRemapText == L"";
+                    newRemapText = L"";
                 }
 
+                bool added = false;
                 // check Shortcut::OperationType
                 if (operationType == 1)
                 {
@@ -509,7 +585,7 @@ bool MappingConfiguration::LoadAppSpecificShortcutRemaps(const json::JsonObject&
                     tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction);
                     tempShortcut.startWindowType = static_cast<Shortcut::StartWindowType>(runProgramStartWindowType);
 
-                    AddAppSpecificShortcut(targetApp.c_str(), originalShortcut, tempShortcut);
+                    added = AddAppSpecificShortcut(targetApp.c_str(), originalShortcut, tempShortcut);
                 }
                 else if (operationType == 2)
                 {
@@ -517,26 +593,31 @@ bool MappingConfiguration::LoadAppSpecificShortcutRemaps(const json::JsonObject&
                     tempShortcut.operationType = Shortcut::OperationType::OpenURI;
                     tempShortcut.uriToOpen = it.GetObjectW().GetNamedString(KeyboardManagerConstants::ShortcutOpenURI, L"");
 
-                    AddAppSpecificShortcut(targetApp.c_str(), originalShortcut, tempShortcut);
+                    added = AddAppSpecificShortcut(targetApp.c_str(), originalShortcut, tempShortcut);
                 }
-
-                if (!newRemapKeys.empty())
+                else if (!newRemapKeys.empty())
                 {
                     // If remapped to a shortcut
                     if (std::wstring(newRemapKeys).find(L";") != std::string::npos)
                     {
-                        AddAppSpecificShortcut(targetApp.c_str(), originalShortcut, Shortcut(newRemapKeys.c_str()));
+                        added = AddAppSpecificShortcut(targetApp.c_str(), originalShortcut, Shortcut(newRemapKeys.c_str()));
                     }
 
                     // If remapped to a key
                     else
                     {
-                        AddAppSpecificShortcut(targetApp.c_str(), originalShortcut, std::stoul(newRemapKeys.c_str()));
+                        added = AddAppSpecificShortcut(targetApp.c_str(), originalShortcut, std::stoul(newRemapKeys.c_str()));
                     }
                 }
                 else
                 {
-                    AddAppSpecificShortcut(targetApp.c_str(), originalShortcut, newRemapText.c_str());
+                    added = AddAppSpecificShortcut(targetApp.c_str(), originalShortcut, newRemapText.c_str());
+                }
+
+                if (!added)
+                {
+                    Logger::error(L"Invalid or duplicate app-specific shortcut remap. Try the next shortcut.");
+                    result = false;
                 }
             }
             catch (...)
@@ -582,9 +663,10 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                         // undo dummy data for backwards compatibility
                         if (newRemapText == L"*Unsupported*")
                         {
-                            newRemapText == L"";
+                            newRemapText = L"";
                         }
 
+                        bool added = false;
                         // check Shortcut::OperationType
                         if (operationType == 1)
                         {
@@ -604,7 +686,7 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                             tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction);
                             tempShortcut.startWindowType = static_cast<Shortcut::StartWindowType>(runProgramStartWindowType);
 
-                            AddOSLevelShortcut(originalShortcut, tempShortcut);
+                            added = AddOSLevelShortcut(originalShortcut, tempShortcut);
                         }
                         else if (operationType == 2)
                         {
@@ -612,24 +694,30 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                             tempShortcut.operationType = Shortcut::OperationType::OpenURI;
                             tempShortcut.uriToOpen = it.GetObjectW().GetNamedString(KeyboardManagerConstants::ShortcutOpenURI, L"");
 
-                            AddOSLevelShortcut(originalShortcut, tempShortcut);
+                            added = AddOSLevelShortcut(originalShortcut, tempShortcut);
                         }
                         else if (!newRemapKeys.empty())
                         {
                             // If remapped to a shortcut
                             if (std::wstring(newRemapKeys).find(L";") != std::string::npos)
                             {
-                                AddOSLevelShortcut(originalShortcut, Shortcut(newRemapKeys.c_str()));
+                                added = AddOSLevelShortcut(originalShortcut, Shortcut(newRemapKeys.c_str()));
                             }
                             // If remapped to a key
                             else
                             {
-                                AddOSLevelShortcut(originalShortcut, std::stoul(newRemapKeys.c_str()));
+                                added = AddOSLevelShortcut(originalShortcut, std::stoul(newRemapKeys.c_str()));
                             }
                         }
                         else
                         {
-                            AddOSLevelShortcut(originalShortcut, newRemapText.c_str());
+                            added = AddOSLevelShortcut(originalShortcut, newRemapText.c_str());
+                        }
+
+                        if (!added)
+                        {
+                            Logger::error(L"Invalid or duplicate OS-level shortcut remap. Try the next shortcut.");
+                            result = false;
                         }
                     }
                     catch (...)
@@ -646,7 +734,8 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
             }
 
             // Load app specific shortcut remaps
-            result = result && LoadAppSpecificShortcutRemaps(remapShortcutsData);
+            const bool appSpecificResult = LoadAppSpecificShortcutRemaps(remapShortcutsData);
+            result = appSpecificResult && result;
         }
     }
     catch (...)
@@ -660,6 +749,23 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
 
 bool MappingConfiguration::LoadSettings()
 {
+    return LoadSettingsWithResult() == MappingConfigurationLoadResult::Success;
+}
+
+MappingConfigurationLoadResult MappingConfiguration::LoadSettingsFromJson(const json::JsonObject& configFile)
+{
+    bool result = LoadSingleKeyRemaps(configFile);
+    ClearOSLevelShortcuts();
+    ClearAppSpecificShortcuts();
+    result = LoadShortcutRemaps(configFile, KeyboardManagerConstants::RemapShortcutsSettingName) && result;
+    result = LoadShortcutRemaps(configFile, KeyboardManagerConstants::RemapShortcutsToTextSettingName) && result;
+    result = LoadSingleKeyToTextRemaps(configFile) && result;
+    result = LoadTextReplacements(configFile) && result;
+    return result ? MappingConfigurationLoadResult::Success : MappingConfigurationLoadResult::Partial;
+}
+
+MappingConfigurationLoadResult MappingConfiguration::LoadSettingsWithResult()
+{
     Logger::trace(L"SettingsHelper::LoadSettings()");
     try
     {
@@ -668,7 +774,7 @@ bool MappingConfiguration::LoadSettings()
 
         if (!current_config)
         {
-            return false;
+            return MappingConfigurationLoadResult::Failure;
         }
 
         currentConfig = *current_config;
@@ -677,29 +783,26 @@ bool MappingConfiguration::LoadSettings()
         auto configFile = json::from_file(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + *current_config + L".json");
         if (!configFile)
         {
-            return false;
+            return MappingConfigurationLoadResult::Failure;
         }
 
-        bool result = LoadSingleKeyRemaps(*configFile);
-        ClearOSLevelShortcuts();
-        ClearAppSpecificShortcuts();
-        result = LoadShortcutRemaps(*configFile, KeyboardManagerConstants::RemapShortcutsSettingName) && result;
-        result = LoadShortcutRemaps(*configFile, KeyboardManagerConstants::RemapShortcutsToTextSettingName) && result;
-        result = LoadSingleKeyToTextRemaps(*configFile) && result;
-        result = LoadTextReplacements(*configFile) && result;
-
-        return result;
+        return LoadSettingsFromJson(*configFile);
     }
     catch (...)
     {
         Logger::error(L"SettingsHelper::LoadSettings() failed");
     }
 
-    return false;
+    return MappingConfigurationLoadResult::Failure;
 }
 
 // Save the updated configuration.
-bool MappingConfiguration::SaveSettingsToFile() try
+bool MappingConfiguration::SaveSettingsToFile()
+{
+    return SaveSettingsToFileWithResult().settingsCommitted;
+}
+
+MappingConfigurationSaveResult MappingConfiguration::SaveSettingsToFileWithResult() try
 {
     bool result = true;
     json::JsonObject configJson;
@@ -904,8 +1007,8 @@ bool MappingConfiguration::SaveSettingsToFile() try
 
     try
     {
-        const std::wstring settingsFilePath = PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + currentConfig + L".json";
-        if (!WriteJsonAtomically(settingsFilePath, configJson))
+        const std::wstring settingsFilePath = settingsPathProvider(currentConfig);
+        if (!settingsWriter(settingsFilePath, configJson))
         {
             result = false;
             Logger::error(L"Failed to save the settings");
@@ -917,34 +1020,35 @@ bool MappingConfiguration::SaveSettingsToFile() try
         Logger::error(L"Failed to save the settings");
     }
 
-    if (result)
+    if (!result)
     {
-        auto hEvent = CreateEvent(nullptr, false, false, KeyboardManagerConstants::SettingsEventName.c_str());
-        if (hEvent)
-        {
-            if (SetEvent(hEvent))
-            {
-                Logger::trace(L"Signaled {} event", KeyboardManagerConstants::SettingsEventName);
-            }
-            else
-            {
-                result = false;
-                Logger::error(L"Failed to signal {} event", KeyboardManagerConstants::SettingsEventName);
-            }
+        return {};
+    }
 
-            CloseHandle(hEvent);
+    // The file is committed at this point. Reload notification is best effort; returning false
+    // after a successful commit would make callers roll back memory while leaving disk changed.
+    bool reloadNotified = false;
+    try
+    {
+        reloadNotified = settingsReloadNotifier();
+        if (reloadNotified)
+        {
+            Logger::trace(L"Signaled {} event", KeyboardManagerConstants::SettingsEventName);
         }
         else
         {
-            result = false;
             Logger::error(L"Failed to signal {} event", KeyboardManagerConstants::SettingsEventName);
         }
     }
+    catch (...)
+    {
+        Logger::error(L"Failed to signal {} event", KeyboardManagerConstants::SettingsEventName);
+    }
 
-    return result;
+    return { true, reloadNotified };
 }
 catch (...)
 {
     Logger::error(L"Failed to serialize or save the settings");
-    return false;
+    return {};
 }

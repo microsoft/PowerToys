@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/utils/json.h>
+#include <functional>
 #include <string_view>
 
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
@@ -30,16 +31,43 @@ struct TextReplacementValue
 
 using TextReplacementTable = std::map<std::wstring, TextReplacementValue, TextReplacementTriggerCompare>;
 
+enum class MappingConfigurationLoadResult
+{
+    Success = 0,
+    Partial = 1,
+    Failure = 2,
+};
+
+struct MappingConfigurationSaveResult
+{
+    bool settingsCommitted = false;
+    bool reloadNotified = false;
+};
+
 class MappingConfiguration
 {
 public:
+    using SettingsWriter = std::function<bool(const std::wstring&, const json::JsonObject&)>;
+    using SettingsReloadNotifier = std::function<bool()>;
+    using SettingsPathProvider = std::function<std::wstring(const std::wstring&)>;
+
+    explicit MappingConfiguration(SettingsWriter settingsWriter = {}, SettingsReloadNotifier settingsReloadNotifier = {}, SettingsPathProvider settingsPathProvider = {});
     ~MappingConfiguration() = default;
 
     // Load the configuration.
     bool LoadSettings();
 
+    // Load while distinguishing rejected entries from a file-level failure.
+    MappingConfigurationLoadResult LoadSettingsWithResult();
+
+    // Load an already parsed profile. Invalid entries are skipped and reported as Partial.
+    MappingConfigurationLoadResult LoadSettingsFromJson(const json::JsonObject& configFile);
+
     // Save the updated configuration.
     bool SaveSettingsToFile();
+
+    // Save with separate persistence and live-reload notification outcomes.
+    MappingConfigurationSaveResult SaveSettingsToFileWithResult();
 
     // Function to clear the OS Level shortcut remapping table
     void ClearOSLevelShortcuts();
@@ -105,6 +133,10 @@ public:
     std::wstring currentConfig = KeyboardManagerConstants::DefaultConfiguration;
 
 private:
+    SettingsWriter settingsWriter;
+    SettingsReloadNotifier settingsReloadNotifier;
+    SettingsPathProvider settingsPathProvider;
+
     bool LoadSingleKeyRemaps(const json::JsonObject& jsonData);
     bool LoadSingleKeyToTextRemaps(const json::JsonObject& jsonData);
     bool LoadTextReplacements(const json::JsonObject& jsonData);

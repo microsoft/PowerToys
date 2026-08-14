@@ -144,6 +144,51 @@ namespace RemappingLogicTests
             Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x42));
         }
 
+        TEST_METHOD (RemappedKey_ShouldKeepOriginalOwnership_WhenInitialInjectionFailsButRepeatCouldSucceed)
+        {
+            testState.AddSingleKeyRemap(0x41, static_cast<DWORD>(0x42));
+
+            bool failFirstTargetDown = true;
+            mockedInputHandler.SetSendVirtualInputShouldFail([&failFirstTargetDown](const std::vector<INPUT>& inputs) {
+                const bool isTargetInjection = std::any_of(inputs.begin(), inputs.end(), [](const INPUT& input) {
+                    return input.ki.dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG;
+                });
+                if (failFirstTargetDown && isTargetInjection)
+                {
+                    failFirstTargetDown = false;
+                    return true;
+                }
+                return false;
+            });
+
+            const std::vector<INPUT> keyDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
+            mockedInputHandler.SendVirtualInput(keyDown);
+
+            const auto* press = testState.GetSingleKeyRemapPressState(0x41);
+            Assert::IsNotNull(press);
+            Assert::IsTrue(press->owner == SingleKeyRemapPressOwner::OriginalPassthrough);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x41));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x42));
+
+            // The repeat injection would now succeed, but ownership cannot switch in the
+            // middle of one physical press. The original repeat must still pass through.
+            mockedInputHandler.SendVirtualInput(keyDown);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x41));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x42));
+            Assert::IsTrue(testState.GetSingleKeyRemapPressState(0x41)->owner == SingleKeyRemapPressOwner::OriginalPassthrough);
+
+            const std::vector<INPUT> keyUp{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A', .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(keyUp);
+
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x41));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x42));
+            Assert::IsNull(testState.GetSingleKeyRemapPressState(0x41));
+        }
+
         TEST_METHOD (RemappedKey_ShouldReleaseTarget_WhenRepeatInjectionFailsAfterInitialKeyDownSucceeds)
         {
             testState.AddSingleKeyRemap(0x41, static_cast<DWORD>(0x42));
@@ -154,6 +199,7 @@ namespace RemappingLogicTests
             mockedInputHandler.SendVirtualInput(keyDown);
 
             Assert::IsTrue(testState.singleKeyRemapActiveKeys.contains(0x41));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x41));
             Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x42));
 
             // The first target key-down succeeded. Fail only a later injected key-down,
@@ -175,6 +221,224 @@ namespace RemappingLogicTests
             mockedInputHandler.SendVirtualInput(keyUp);
 
             Assert::IsTrue(testState.singleKeyRemapActiveKeys.empty());
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x41));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x42));
+        }
+
+        TEST_METHOD (RemappedKey_ShouldRetryTargetRelease_WhenInitialReleaseInjectionFails)
+        {
+            testState.AddSingleKeyRemap(0x41, static_cast<DWORD>(0x42));
+
+            const std::vector<INPUT> keyDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
+            mockedInputHandler.SendVirtualInput(keyDown);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x42));
+
+            mockedInputHandler.SetSendVirtualInputShouldFail([](const std::vector<INPUT>& inputs) {
+                return std::any_of(inputs.begin(), inputs.end(), [](const INPUT& input) {
+                    return input.ki.dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG &&
+                           (input.ki.dwFlags & KEYEVENTF_KEYUP) != 0;
+                });
+            });
+
+            const std::vector<INPUT> keyUp{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A', .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(keyUp);
+
+            const auto* pendingPress = testState.GetSingleKeyRemapPressState(0x41);
+            Assert::IsNotNull(pendingPress);
+            Assert::IsTrue(pendingPress->releasePending);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x41));
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x42));
+
+            mockedInputHandler.SetSendVirtualInputShouldFail(nullptr);
+            const std::vector<INPUT> unrelatedKeyDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'C' } },
+            };
+            mockedInputHandler.SendVirtualInput(unrelatedKeyDown);
+
+            Assert::IsNull(testState.GetSingleKeyRemapPressState(0x41));
+            Assert::IsTrue(testState.singleKeyRemapActiveKeys.empty());
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x42));
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x43));
+        }
+
+        TEST_METHOD (RemappedKey_ShouldSuppressSecondPhysicalPress_UntilPendingReleaseCompletes)
+        {
+            testState.AddSingleKeyRemap(0x41, static_cast<DWORD>(0x42));
+
+            const std::vector<INPUT> keyDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
+            mockedInputHandler.SendVirtualInput(keyDown);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x42));
+
+            mockedInputHandler.SetSendVirtualInputShouldFail([](const std::vector<INPUT>& inputs) {
+                return std::any_of(inputs.begin(), inputs.end(), [](const INPUT& input) {
+                    return input.ki.dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG &&
+                           (input.ki.dwFlags & KEYEVENTF_KEYUP) != 0;
+                });
+            });
+            const std::vector<INPUT> keyUp{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A', .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(keyUp);
+            Assert::IsTrue(testState.GetSingleKeyRemapPressState(0x41)->releasePending);
+
+            // A second physical press arrives before the old target can be released. It
+            // must be swallowed as a complete pair, not mistaken for a repeat of press 1.
+            mockedInputHandler.SendVirtualInput(keyDown);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x41));
+            Assert::IsTrue(testState.GetSingleKeyRemapPressState(0x41)->suppressedPhysicalPressHeld);
+
+            mockedInputHandler.SetSendVirtualInputShouldFail(nullptr);
+            const std::vector<INPUT> unrelatedKeyDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'C' } },
+            };
+            mockedInputHandler.SendVirtualInput(unrelatedKeyDown);
+
+            const auto* suppressedPress = testState.GetSingleKeyRemapPressState(0x41);
+            Assert::IsNotNull(suppressedPress);
+            Assert::IsTrue(suppressedPress->owner == SingleKeyRemapPressOwner::Suppressed);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x42));
+
+            mockedInputHandler.SendVirtualInput(keyUp);
+            Assert::IsNull(testState.GetSingleKeyRemapPressState(0x41));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x41));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x42));
+        }
+
+        TEST_METHOD (RemappedModifier_ShouldSuppressWholePress_WhenAuxiliaryKeyUpLandsButTargetDownFails)
+        {
+            testState.AddSingleKeyRemap(VK_LCONTROL, static_cast<DWORD>(0x41));
+            mockedInputHandler.SetKeyboardState(VK_CONTROL, true);
+            mockedInputHandler.SetKeyboardState(VK_LCONTROL, true);
+            mockedInputHandler.SetSendVirtualInputShouldFail([](const std::vector<INPUT>& inputs) {
+                return std::any_of(inputs.begin(), inputs.end(), [](const INPUT& input) {
+                    return input.ki.dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG;
+                });
+            });
+
+            const std::vector<INPUT> modifierDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL } },
+            };
+            mockedInputHandler.SendVirtualInput(modifierDown);
+
+            const auto* suppressedPress = testState.GetSingleKeyRemapPressState(VK_LCONTROL);
+            Assert::IsNotNull(suppressedPress);
+            Assert::IsTrue(suppressedPress->owner == SingleKeyRemapPressOwner::Suppressed);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_CONTROL));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x41));
+
+            const std::vector<INPUT> modifierUp{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(modifierUp);
+
+            Assert::IsNull(testState.GetSingleKeyRemapPressState(VK_LCONTROL));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_CONTROL));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x41));
+        }
+
+        TEST_METHOD (RemappedKeyToShortcut_ShouldSuppressPressAndReleaseOnlyInjectedPrefix_AfterPartialKeyDown)
+        {
+            Shortcut targetShortcut;
+            targetShortcut.SetKey(VK_CONTROL);
+            targetShortcut.SetKey(0x42);
+            testState.AddSingleKeyRemap(0x41, targetShortcut);
+
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* event) {
+                return event->lParam->vkCode == 0x42 &&
+                       (event->wParam == WM_KEYUP || event->wParam == WM_SYSKEYUP);
+            });
+
+            bool truncateTargetDown = true;
+            mockedInputHandler.SetSendVirtualInputInjectedCount([&truncateTargetDown](const std::vector<INPUT>& inputs) {
+                const bool isTargetInjection = std::any_of(inputs.begin(), inputs.end(), [](const INPUT& input) {
+                    return input.ki.dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG;
+                });
+                if (truncateTargetDown && isTargetInjection && inputs.size() > 1)
+                {
+                    truncateTargetDown = false;
+                    return static_cast<size_t>(1);
+                }
+                return inputs.size();
+            });
+
+            const std::vector<INPUT> keyDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
+            mockedInputHandler.SendVirtualInput(keyDown);
+
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x41));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_CONTROL));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x42));
+            Assert::IsTrue(testState.singleKeyRemapActiveKeys.empty());
+            const auto* suppressedPress = testState.GetSingleKeyRemapPressState(0x41);
+            Assert::IsNotNull(suppressedPress);
+            Assert::IsTrue(suppressedPress->owner == SingleKeyRemapPressOwner::Suppressed);
+
+            const std::vector<INPUT> keyUp{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A', .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(keyUp);
+
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_CONTROL));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x42));
+            Assert::IsNull(testState.GetSingleKeyRemapPressState(0x41));
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
+
+        TEST_METHOD (RemappedKeyToShortcut_ShouldRetryFullRelease_AfterPartialKeyUp)
+        {
+            Shortcut targetShortcut;
+            targetShortcut.SetKey(VK_CONTROL);
+            targetShortcut.SetKey(0x42);
+            testState.AddSingleKeyRemap(0x41, targetShortcut);
+
+            const std::vector<INPUT> keyDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
+            mockedInputHandler.SendVirtualInput(keyDown);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_CONTROL));
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x42));
+
+            bool truncateTargetRelease = true;
+            mockedInputHandler.SetSendVirtualInputInjectedCount([&truncateTargetRelease](const std::vector<INPUT>& inputs) {
+                const bool isTargetRelease = std::any_of(inputs.begin(), inputs.end(), [](const INPUT& input) {
+                    return input.ki.dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG &&
+                           (input.ki.dwFlags & KEYEVENTF_KEYUP) != 0;
+                });
+                if (truncateTargetRelease && isTargetRelease && inputs.size() > 1)
+                {
+                    truncateTargetRelease = false;
+                    return static_cast<size_t>(1);
+                }
+                return inputs.size();
+            });
+
+            const std::vector<INPUT> keyUp{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A', .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(keyUp);
+
+            const auto* pendingPress = testState.GetSingleKeyRemapPressState(0x41);
+            Assert::IsNotNull(pendingPress);
+            Assert::IsTrue(pendingPress->releasePending);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x42));
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_CONTROL));
+
+            const std::vector<INPUT> unrelatedKeyDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'C' } },
+            };
+            mockedInputHandler.SendVirtualInput(unrelatedKeyDown);
+
+            Assert::IsNull(testState.GetSingleKeyRemapPressState(0x41));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_CONTROL));
             Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x42));
         }
 
@@ -241,7 +505,121 @@ namespace RemappingLogicTests
             Assert::IsTrue(testState.singleKeyRemapActiveKeys.empty());
         }
 
-        TEST_METHOD (HandleActiveRemapEvent_ShouldReleaseAppSpecificAndOSLevelMappings)
+        TEST_METHOD (HandleActiveRemapEvent_ShouldNotStartAnotherSingleKeyRemap_WhileOneIsActive)
+        {
+            testState.AddSingleKeyRemap(0x41, static_cast<DWORD>(0x42));
+            testState.AddSingleKeyRemap(0x43, static_cast<DWORD>(0x44));
+
+            const std::vector<INPUT> firstKeyDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
+            mockedInputHandler.SendVirtualInput(firstKeyDown);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x42));
+
+            mockedInputHandler.SetHookProc(std::bind(
+                &KeyboardEventHandlers::HandleActiveRemapEvent,
+                std::ref(mockedInputHandler),
+                std::placeholders::_1,
+                std::ref(testState)));
+
+            const std::vector<INPUT> unrelatedMappedKeyDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'C' } },
+            };
+            mockedInputHandler.SendVirtualInput(unrelatedMappedKeyDown);
+
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x43));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x44));
+            Assert::IsFalse(testState.HasSingleKeyRemapPressState(0x43));
+            Assert::IsTrue(testState.HasSingleKeyRemapPressState(0x41));
+        }
+
+        TEST_METHOD (HandleActiveRemapEvent_ShouldReleaseChainedShortcut_FromGeneratedSingleKeyUp)
+        {
+            testState.AddSingleKeyRemap(0x41, static_cast<DWORD>(0x42));
+
+            Shortcut sourceShortcut;
+            sourceShortcut.SetKey(VK_CONTROL);
+            sourceShortcut.SetKey(0x42);
+            testState.AddOSLevelShortcut(sourceShortcut, static_cast<DWORD>(0x43));
+
+            // Normal routing is needed to establish the chain A -> B -> Ctrl+B -> C.
+            mockedInputHandler.SetHookProc([this](LowlevelKeyboardEvent* event) {
+                if (KeyboardEventHandlers::HandleSingleKeyRemapEvent(mockedInputHandler, event, testState) == 1)
+                {
+                    return static_cast<intptr_t>(1);
+                }
+                return KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(mockedInputHandler, event, testState);
+            });
+
+            const std::vector<INPUT> controlDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL } },
+            };
+            mockedInputHandler.SendVirtualInput(controlDown);
+
+            const std::vector<INPUT> sourceDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
+            mockedInputHandler.SendVirtualInput(sourceDown);
+
+            auto& chainedMapping = testState.osLevelShortcutReMap.at(sourceShortcut);
+            Assert::IsTrue(chainedMapping.isShortcutInvoked);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x43));
+
+            mockedInputHandler.SetHookProc(std::bind(
+                &KeyboardEventHandlers::HandleActiveRemapEvent,
+                std::ref(mockedInputHandler),
+                std::placeholders::_1,
+                std::ref(testState)));
+
+            const std::vector<INPUT> sourceUp{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A', .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(sourceUp);
+
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x43));
+            Assert::IsFalse(testState.HasSingleKeyRemapPressState(0x41));
+
+            const std::vector<INPUT> controlUp{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(controlUp);
+            Assert::IsFalse(chainedMapping.isShortcutInvoked);
+        }
+
+        TEST_METHOD (HandleActiveRemapEvent_ShouldNotTransitionToFreshShortcut)
+        {
+            Shortcut activeSource;
+            activeSource.SetKey(VK_CONTROL);
+            activeSource.SetKey(0x41);
+            Shortcut inactiveSource;
+            inactiveSource.SetKey(VK_CONTROL);
+            inactiveSource.SetKey(0x43);
+            testState.AddOSLevelShortcut(activeSource, static_cast<DWORD>(0x42));
+            testState.AddOSLevelShortcut(inactiveSource, static_cast<DWORD>(0x44));
+
+            auto& activeMapping = testState.osLevelShortcutReMap.at(activeSource);
+            activeMapping.isShortcutInvoked = true;
+            activeMapping.modifierKeysInvoked.ctrlKey = ModifierKey::Left;
+            auto& inactiveMapping = testState.osLevelShortcutReMap.at(inactiveSource);
+            mockedInputHandler.SetKeyboardState(VK_CONTROL, true);
+            mockedInputHandler.SetKeyboardState(VK_LCONTROL, true);
+            mockedInputHandler.SetKeyboardState(0x42, true);
+            mockedInputHandler.SetHookProc(std::bind(
+                &KeyboardEventHandlers::HandleActiveRemapEvent,
+                std::ref(mockedInputHandler),
+                std::placeholders::_1,
+                std::ref(testState)));
+
+            const std::vector<INPUT> inactiveActionDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'C' } },
+            };
+            mockedInputHandler.SendVirtualInput(inactiveActionDown);
+
+            Assert::IsFalse(inactiveMapping.isShortcutInvoked);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x44));
+        }
+
+        TEST_METHOD (HandleActiveRemapEvent_ShouldReleaseAllStaleOwners_OnOnePhysicalKeyUp)
         {
             const std::wstring appName = L"testprocess.exe";
             Shortcut sourceShortcut;
@@ -357,6 +735,127 @@ namespace RemappingLogicTests
             Assert::IsTrue(mapping.modifierKeysInvoked.ctrlKey == ModifierKey::Left);
             Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_MENU));
             Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x56));
+        }
+
+        TEST_METHOD (ShortcutCase5_ShouldRollbackShortcutTransition_WhenSendInputIsPartial)
+        {
+            Shortcut activeSource;
+            activeSource.SetKey(VK_CONTROL);
+            activeSource.SetKey(0x41);
+            Shortcut activeTarget;
+            activeTarget.SetKey(VK_MENU);
+            activeTarget.SetKey(0x42);
+            Shortcut nextSource;
+            nextSource.SetKey(VK_CONTROL);
+            nextSource.SetKey(0x43);
+            Shortcut nextTarget;
+            nextTarget.SetKey(VK_SHIFT);
+            nextTarget.SetKey(0x44);
+            testState.AddOSLevelShortcut(activeSource, activeTarget);
+            testState.AddOSLevelShortcut(nextSource, nextTarget);
+
+            auto& activeMapping = testState.osLevelShortcutReMap.at(activeSource);
+            activeMapping.isShortcutInvoked = true;
+            activeMapping.modifierKeysInvoked.ctrlKey = ModifierKey::Left;
+            activeMapping.isOriginalActionKeyPressed = true;
+            const RemapShortcut activeSnapshot = activeMapping;
+            const bool activeOriginalActionSnapshot = activeMapping.isOriginalActionKeyPressed;
+            auto& nextMapping = testState.osLevelShortcutReMap.at(nextSource);
+            const RemapShortcut nextSnapshot = nextMapping;
+
+            mockedInputHandler.SetKeyboardState(VK_MENU, true);
+            mockedInputHandler.SetKeyboardState(VK_LMENU, true);
+            mockedInputHandler.SetKeyboardState(0x42, true);
+            mockedInputHandler.SetHookProc(std::bind(
+                &KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent,
+                std::ref(mockedInputHandler),
+                std::placeholders::_1,
+                std::ref(testState)));
+
+            bool truncateTransition = true;
+            mockedInputHandler.SetSendVirtualInputInjectedCount([&truncateTransition](const std::vector<INPUT>& inputs) {
+                const bool isTransition = std::any_of(inputs.begin(), inputs.end(), [](const INPUT& input) {
+                    return input.ki.dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+                });
+                if (truncateTransition && isTransition && inputs.size() > 1)
+                {
+                    truncateTransition = false;
+                    return (std::min)(static_cast<size_t>(3), inputs.size() - 1);
+                }
+                return inputs.size();
+            });
+
+            const std::vector<INPUT> nextActionDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'C' } },
+            };
+            mockedInputHandler.SendVirtualInput(nextActionDown);
+
+            Assert::IsTrue(activeMapping == activeSnapshot);
+            Assert::AreEqual(activeOriginalActionSnapshot, activeMapping.isOriginalActionKeyPressed);
+            Assert::IsTrue(nextMapping == nextSnapshot);
+            Assert::IsFalse(nextMapping.isShortcutInvoked);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x43));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_SHIFT));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x44));
+            Assert::IsFalse(testState.HasPendingInputCleanup());
+        }
+
+        TEST_METHOD (ShortcutCase5_ShouldRollbackKeyTransition_WhenSendInputIsPartial)
+        {
+            Shortcut activeSource;
+            activeSource.SetKey(VK_CONTROL);
+            activeSource.SetKey(0x41);
+            Shortcut nextSource;
+            nextSource.SetKey(VK_CONTROL);
+            nextSource.SetKey(0x43);
+            testState.AddOSLevelShortcut(activeSource, static_cast<DWORD>(0x42));
+            testState.AddOSLevelShortcut(nextSource, static_cast<DWORD>(0x44));
+
+            auto& activeMapping = testState.osLevelShortcutReMap.at(activeSource);
+            activeMapping.isShortcutInvoked = true;
+            activeMapping.modifierKeysInvoked.ctrlKey = ModifierKey::Left;
+            activeMapping.isOriginalActionKeyPressed = true;
+            const RemapShortcut activeSnapshot = activeMapping;
+            const bool activeOriginalActionSnapshot = activeMapping.isOriginalActionKeyPressed;
+            auto& nextMapping = testState.osLevelShortcutReMap.at(nextSource);
+            const RemapShortcut nextSnapshot = nextMapping;
+
+            mockedInputHandler.SetKeyboardState(VK_CONTROL, false);
+            mockedInputHandler.SetKeyboardState(VK_LCONTROL, false);
+            mockedInputHandler.SetKeyboardState(0x42, false);
+            mockedInputHandler.SetHookProc(std::bind(
+                &KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent,
+                std::ref(mockedInputHandler),
+                std::placeholders::_1,
+                std::ref(testState)));
+
+            bool truncateTransition = true;
+            mockedInputHandler.SetSendVirtualInputInjectedCount([&truncateTransition](const std::vector<INPUT>& inputs) {
+                const bool isTransition = std::any_of(inputs.begin(), inputs.end(), [](const INPUT& input) {
+                    return input.ki.dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+                });
+                if (truncateTransition && isTransition && inputs.size() > 1)
+                {
+                    truncateTransition = false;
+                    return static_cast<size_t>(1);
+                }
+                return inputs.size();
+            });
+
+            const std::vector<INPUT> nextActionDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'C' } },
+            };
+            mockedInputHandler.SendVirtualInput(nextActionDown);
+
+            Assert::IsTrue(activeMapping == activeSnapshot);
+            Assert::AreEqual(activeOriginalActionSnapshot, activeMapping.isOriginalActionKeyPressed);
+            Assert::IsTrue(nextMapping == nextSnapshot);
+            Assert::IsFalse(nextMapping.isShortcutInvoked);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x43));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_CONTROL));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x44));
+            Assert::IsFalse(testState.HasPendingInputCleanup());
         }
 
         // Test if key is suppressed if a key is disabled by single key remap
@@ -796,6 +1295,38 @@ namespace RemappingLogicTests
     private:
         KeyboardManagerInput::MockedInput mockedInputHandler;
         State testState;
+        KeyboardEventHandlers::TextReplacementPreparationResult preparationResult = KeyboardEventHandlers::TextReplacementPreparationResult::Prepared;
+        bool rollbackResult = true;
+        size_t prepareCallCount = 0;
+        size_t rollbackCallCount = 0;
+        size_t isCurrentCallCount = 0;
+        size_t currentCheckLimit = static_cast<size_t>(-1);
+        size_t finishCallCount = 0;
+        std::wstring preparedTrigger;
+        bool preparedTargetContainsNewline = false;
+
+        KeyboardEventHandlers::TextReplacementTransactionCallbacks TransactionCallbacks()
+        {
+            return {
+                .prepare = [this](const std::wstring_view trigger, const bool targetContainsNewline) {
+                    ++prepareCallCount;
+                    preparedTrigger.assign(trigger);
+                    preparedTargetContainsNewline = targetContainsNewline;
+                    return preparationResult;
+                },
+                .rollback = [this]() {
+                    ++rollbackCallCount;
+                    return rollbackResult;
+                },
+                .isCurrent = [this]() {
+                    ++isCurrentCallCount;
+                    return isCurrentCallCount <= currentCheckLimit;
+                },
+                .finish = [this]() {
+                    ++finishCallCount;
+                },
+            };
+        }
 
         intptr_t HandleTextReplacementKey(
             const DWORD vkCode,
@@ -813,7 +1344,7 @@ namespace RemappingLogicTests
             LowlevelKeyboardEvent keyEvent{};
             keyEvent.wParam = message;
             keyEvent.lParam = &lParam;
-            return KeyboardEventHandlers::HandleTextReplacementEvent(mockedInputHandler, &keyEvent, testState);
+            return KeyboardEventHandlers::HandleTextReplacementEvent(mockedInputHandler, &keyEvent, testState, TransactionCallbacks());
         }
 
         void PrimeTextReplacementContext()
@@ -849,6 +1380,15 @@ namespace RemappingLogicTests
         TEST_METHOD_INITIALIZE(InitializeTestEnv)
         {
             TestHelpers::ResetTestEnv(mockedInputHandler, testState);
+            preparationResult = KeyboardEventHandlers::TextReplacementPreparationResult::Prepared;
+            rollbackResult = true;
+            prepareCallCount = 0;
+            rollbackCallCount = 0;
+            isCurrentCallCount = 0;
+            currentCheckLimit = static_cast<size_t>(-1);
+            finishCallCount = 0;
+            preparedTrigger.clear();
+            preparedTargetContainsNewline = false;
         }
 
         TEST_METHOD (ResetTextReplacementRuntimeState_ShouldPreserveDeadAndSuppressedKeyState)
@@ -860,6 +1400,7 @@ namespace RemappingLogicTests
             testState.textReplacementDeadKeyPending = true;
             testState.textReplacementCapsLockOn = true;
             testState.textReplacementSuppressedTriggerKeys.insert(VK_SPACE);
+            testState.textReplacementTriggerKeysDown.insert(VK_SPACE);
             testState.textReplacementObservedContextEpoch = 7;
             testState.textReplacementContextEpoch.store(8, std::memory_order_relaxed);
 
@@ -872,6 +1413,7 @@ namespace RemappingLogicTests
             Assert::IsTrue(testState.textReplacementDeadKeyPending);
             Assert::IsTrue(testState.textReplacementCapsLockOn);
             Assert::IsTrue(testState.textReplacementSuppressedTriggerKeys.find(VK_SPACE) != testState.textReplacementSuppressedTriggerKeys.end());
+            Assert::IsTrue(testState.textReplacementTriggerKeysDown.find(VK_SPACE) != testState.textReplacementTriggerKeysDown.end());
             Assert::AreEqual(static_cast<uint64_t>(8), testState.textReplacementObservedContextEpoch);
         }
 
@@ -914,6 +1456,45 @@ namespace RemappingLogicTests
 
             Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
             Assert::AreEqual(std::wstring(L"expanded"), mockedInputHandler.GetInjectedUnicodeText());
+            Assert::AreEqual(static_cast<size_t>(1), prepareCallCount);
+            Assert::AreEqual(std::wstring(L"a"), preparedTrigger);
+            Assert::IsFalse(preparedTargetContainsNewline);
+            Assert::AreEqual(static_cast<size_t>(1), finishCallCount);
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldPassTrigger_WhenVerifiedSuffixDoesNotMatch)
+        {
+            AddTextReplacement(L"abc", L"expanded");
+            PrimeTextReplacementContext();
+            testState.textReplacementBuffer = L"abc";
+            preparationResult = KeyboardEventHandlers::TextReplacementPreparationResult::NotPrepared;
+
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(static_cast<size_t>(1), prepareCallCount);
+            Assert::AreEqual(std::wstring(L"abc"), preparedTrigger);
+            Assert::AreEqual(static_cast<size_t>(0), rollbackCallCount);
+            Assert::AreEqual(static_cast<size_t>(0), finishCallCount);
+            Assert::AreEqual(static_cast<size_t>(0), mockedInputHandler.GetSendVirtualInputBatchCount());
+            Assert::IsTrue(testState.textReplacementSuppressedTriggerKeys.empty());
+
+            // A failed ES_NUMBER/caret verification did not mutate the control, so the
+            // physical trigger pair remains owned by the application.
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_SPACE, 0, WM_KEYUP, LLKHF_UP)));
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldSuppressTrigger_WhenPreparationMayHaveChangedSelection)
+        {
+            AddTextReplacement(L"abc", L"expanded");
+            PrimeTextReplacementContext();
+            testState.textReplacementBuffer = L"abc";
+            preparationResult = KeyboardEventHandlers::TextReplacementPreparationResult::CommittedFailure;
+
+            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(static_cast<size_t>(1), prepareCallCount);
+            Assert::AreEqual(static_cast<size_t>(1), rollbackCallCount);
+            Assert::AreEqual(static_cast<size_t>(0), finishCallCount);
+            Assert::AreEqual(static_cast<size_t>(0), mockedInputHandler.GetSendVirtualInputBatchCount());
+            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE, 0, WM_KEYUP, LLKHF_UP)));
         }
 
         TEST_METHOD (HandleTextReplacementEvent_ShouldUsePerMappingTriggerKeyAndPassNoMatch)
@@ -968,6 +1549,30 @@ namespace RemappingLogicTests
             Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_SPACE, 0, WM_KEYUP, LLKHF_UP)));
         }
 
+        TEST_METHOD (HandleTextReplacementEvent_ShouldNotActivateFromAutoRepeat_AfterInitialTriggerWasPassed)
+        {
+            AddTextReplacement(L"foo ", L"expanded", VK_SPACE);
+            PrimeTextReplacementContext();
+            testState.textReplacementBuffer = L"foo";
+
+            // The first Space is ordinary trigger text, so it is passed through and added
+            // to the prediction buffer. Its repeat must not retroactively consume this pair.
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(std::wstring(L"foo "), testState.textReplacementBuffer);
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(static_cast<size_t>(0), prepareCallCount);
+            Assert::IsTrue(testState.textReplacementSuppressedTriggerKeys.empty());
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_SPACE, 0, WM_KEYUP, LLKHF_UP)));
+
+            // Once the old physical pair has ended, a fresh down may activate an exact
+            // suffix. Resetting the buffer models a new exact suffix after the repeated
+            // spaces have been edited/retyped.
+            testState.textReplacementBuffer = L"foo ";
+            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(static_cast<size_t>(1), prepareCallCount);
+            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE, 0, WM_KEYUP, LLKHF_UP)));
+        }
+
         TEST_METHOD (HandleTextReplacementEvent_ShouldPairNumpadEnterWithItsOwnKeyUp)
         {
             AddTextReplacement(L"a", L"expanded", VK_RETURN);
@@ -1003,17 +1608,75 @@ namespace RemappingLogicTests
             Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_SPACE, 0, WM_KEYUP, LLKHF_UP)));
             Assert::IsTrue(testState.textReplacementSuppressedTriggerKeys.empty());
             Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
+            Assert::AreEqual(static_cast<size_t>(1), prepareCallCount);
+            Assert::AreEqual(static_cast<size_t>(1), rollbackCallCount);
+            Assert::AreEqual(static_cast<size_t>(0), finishCallCount);
         }
 
-        TEST_METHOD (HandleTextReplacementEvent_ShouldKeepTriggerPairSuppressed_WhenInjectionFailsAfterMutation)
+        TEST_METHOD (HandleTextReplacementEvent_ShouldSuppressTrigger_WhenBlockedInputCannotRollbackSelection)
         {
             AddTextReplacement(L"a", L"expanded");
             PrimeTextReplacementContext();
             HandleTextReplacementKey(VK_PACKET, L'a');
-            size_t attempt = 0;
-            mockedInputHandler.SetSendVirtualInputShouldFail([&attempt](const std::vector<INPUT>&) { return ++attempt == 2; });
+            rollbackResult = false;
+            mockedInputHandler.SetSendVirtualInputShouldFail([](const std::vector<INPUT>&) { return true; });
 
             Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(static_cast<size_t>(1), prepareCallCount);
+            Assert::AreEqual(static_cast<size_t>(1), rollbackCallCount);
+            Assert::AreEqual(static_cast<size_t>(0), finishCallCount);
+            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE, 0, WM_KEYUP, LLKHF_UP)));
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldKeepTriggerPairSuppressed_WhenTargetInjectionIsPartial)
+        {
+            AddTextReplacement(L"a", L"expanded");
+            PrimeTextReplacementContext();
+            HandleTextReplacementKey(VK_PACKET, L'a');
+            bool truncateTarget = true;
+            mockedInputHandler.SetSendVirtualInputInjectedCount([&truncateTarget](const std::vector<INPUT>& inputs) {
+                if (truncateTarget)
+                {
+                    truncateTarget = false;
+                    return static_cast<size_t>(1);
+                }
+                return inputs.size();
+            });
+
+            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE, 0, WM_KEYUP, LLKHF_UP)));
+            Assert::AreEqual(static_cast<size_t>(0), rollbackCallCount);
+            Assert::AreEqual(static_cast<size_t>(1), finishCallCount);
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldRollbackAndPassTrigger_WhenTransactionIsStaleBeforeFirstBatch)
+        {
+            AddTextReplacement(L"a", L"expanded");
+            PrimeTextReplacementContext();
+            HandleTextReplacementKey(VK_PACKET, L'a');
+            currentCheckLimit = 0;
+
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(static_cast<size_t>(1), isCurrentCallCount);
+            Assert::AreEqual(static_cast<size_t>(1), rollbackCallCount);
+            Assert::AreEqual(static_cast<size_t>(0), finishCallCount);
+            Assert::AreEqual(std::wstring(), mockedInputHandler.GetInjectedUnicodeText());
+            Assert::IsTrue(testState.textReplacementSuppressedTriggerKeys.empty());
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldStopAndSuppress_WhenTransactionBecomesStaleAfterMutation)
+        {
+            const std::wstring replacement(20, L'x'); // More than one bounded input batch.
+            AddTextReplacement(L"a", replacement);
+            PrimeTextReplacementContext();
+            HandleTextReplacementKey(VK_PACKET, L'a');
+            currentCheckLimit = 1;
+
+            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(static_cast<size_t>(2), isCurrentCallCount);
+            Assert::AreEqual(static_cast<size_t>(0), rollbackCallCount);
+            Assert::AreEqual(static_cast<size_t>(1), finishCallCount);
+            Assert::AreEqual(std::wstring(16, L'x'), mockedInputHandler.GetInjectedUnicodeText());
             Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE, 0, WM_KEYUP, LLKHF_UP)));
         }
 
@@ -1095,6 +1758,32 @@ namespace RemappingLogicTests
 
             Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
             Assert::AreEqual(replacement, mockedInputHandler.GetInjectedUnicodeText());
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldUseBareEnterOnly_ForPreparedMultilineTarget)
+        {
+            AddTextReplacement(L"a", L"first line\nsecond line");
+            PrimeTextReplacementContext();
+            HandleTextReplacementKey(VK_PACKET, L'a');
+
+            size_t shiftEventCount = 0;
+            size_t enterEventCount = 0;
+            mockedInputHandler.SetSendVirtualInputTestHandler([&shiftEventCount, &enterEventCount](LowlevelKeyboardEvent* event) {
+                if (event->lParam->vkCode == VK_SHIFT)
+                {
+                    ++shiftEventCount;
+                }
+                if (event->lParam->vkCode == VK_RETURN)
+                {
+                    ++enterEventCount;
+                }
+                return false;
+            });
+
+            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::IsTrue(preparedTargetContainsNewline);
+            Assert::AreEqual(static_cast<size_t>(0), shiftEventCount);
+            Assert::AreEqual(static_cast<size_t>(2), enterEventCount);
         }
 
         TEST_METHOD (HandleTextReplacementEvent_ShouldSplitLongReplacementAcrossBoundedInputBatches)
@@ -1193,8 +1882,41 @@ namespace RemappingLogicTests
             Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_PACKET, 0xDE00)));
             Assert::AreEqual(emoji, testState.textReplacementBuffer);
             Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
-            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
             Assert::AreEqual(std::wstring(L"expanded"), mockedInputHandler.GetInjectedUnicodeText());
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldSelectEmojiZwjSuffix_WithoutBackspaceFallback)
+        {
+            std::wstring familyEmoji;
+            familyEmoji.push_back(static_cast<wchar_t>(0xD83D));
+            familyEmoji.push_back(static_cast<wchar_t>(0xDC68));
+            familyEmoji.push_back(static_cast<wchar_t>(0x200D));
+            familyEmoji.push_back(static_cast<wchar_t>(0xD83D));
+            familyEmoji.push_back(static_cast<wchar_t>(0xDC69));
+            familyEmoji.push_back(static_cast<wchar_t>(0x200D));
+            familyEmoji.push_back(static_cast<wchar_t>(0xD83D));
+            familyEmoji.push_back(static_cast<wchar_t>(0xDC67));
+            familyEmoji.push_back(static_cast<wchar_t>(0x200D));
+            familyEmoji.push_back(static_cast<wchar_t>(0xD83D));
+            familyEmoji.push_back(static_cast<wchar_t>(0xDC66));
+
+            AddTextReplacement(familyEmoji, L"family");
+            PrimeTextReplacementContext();
+            for (const wchar_t unit : familyEmoji)
+            {
+                Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_PACKET, unit)));
+            }
+            Assert::AreEqual(familyEmoji, testState.textReplacementBuffer);
+
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* event) {
+                return event->lParam->vkCode == VK_BACK;
+            });
+
+            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(familyEmoji, preparedTrigger);
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+            Assert::AreEqual(std::wstring(L"family"), mockedInputHandler.GetInjectedUnicodeText());
         }
 
         TEST_METHOD (HandleTextReplacementEvent_ShouldRejectMalformedPacketSurrogateSequence)
