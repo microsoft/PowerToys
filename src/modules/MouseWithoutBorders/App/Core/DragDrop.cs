@@ -52,7 +52,9 @@ namespace MouseWithoutBorders.Core;
 
 internal static class DragDrop
 {
+    private static readonly object DragActivationLock = new();
     private static bool isDragging;
+    private static volatile bool mouseDown;
     private static long transientDragValidationGeneration;
 
     internal static bool IsDragging
@@ -219,17 +221,26 @@ internal static class DragDrop
 
             if (LocalPathLease.TryCreate(dragFileName, out LocalPathLease lease))
             {
-                if (Clipboard.TrySetValidatedTransientDragFile(validationGeneration, dragFileName, lease))
+                bool activated = false;
+                lock (DragActivationLock)
                 {
-                    /*
-                     * possibleDropMachineID is used as desID sent in DragDropStep06();
-                     * */
-                    if (MachineStuff.dropMachineID == ID.NONE)
+                    if (MouseDown && Clipboard.TrySetValidatedTransientDragFile(validationGeneration, dragFileName, lease))
                     {
-                        MachineStuff.dropMachineID = MachineStuff.newDesMachineID;
-                    }
+                        /*
+                         * possibleDropMachineID is used as desID sent in DragDropStep06();
+                         * */
+                        if (MachineStuff.dropMachineID == ID.NONE)
+                        {
+                            MachineStuff.dropMachineID = MachineStuff.newDesMachineID;
+                        }
 
-                    DragDropStep06();
+                        DragDropStep06();
+                        activated = true;
+                    }
+                }
+
+                if (activated)
+                {
                     Logger.LogDebug("DragDropStep05: File dragging: " + dragFileName);
                     _ = NativeMethods.PostMessage(Common.MainForm.Handle, NativeMethods.WM_HIDE_DD_HELPER, (IntPtr)1, (IntPtr)0);
                     Logger.LogDebug("DragDropStep05: WM_HIDE_DDHelper sent");
@@ -299,14 +310,21 @@ internal static class DragDrop
             {
                 // Hide form, get data
                 DragDropStep10();
+                Clipboard.RequestLastDragDropFileReleaseAfterSend();
             }
-            else if (IsDragging)
+            else
             {
-                IsDragging = false;
-                Clipboard.LastIDWithClipboardData = ID.NONE;
-            }
+                lock (DragActivationLock)
+                {
+                    if (IsDragging)
+                    {
+                        IsDragging = false;
+                        Clipboard.LastIDWithClipboardData = ID.NONE;
+                    }
 
-            Clipboard.RequestLastDragDropFileReleaseAfterSend();
+                    Clipboard.RequestLastDragDropFileReleaseAfterSend();
+                }
+            }
         }
     }
 
@@ -435,5 +453,9 @@ internal static class DragDrop
         set => DragDrop.isDropping = value;
     }
 
-    internal static bool MouseDown { get; set; }
+    internal static bool MouseDown
+    {
+        get => mouseDown;
+        set => mouseDown = value;
+    }
 }
