@@ -96,13 +96,85 @@ public static class EditorUiTestHelper
 
         Step(testBase, "Waiting for the monitor list");
         Assert.IsTrue(
-            session.WaitForElement(By.AccessibilityId(AccessibilityId.Monitors), 60_000),
+            WaitForFreshElement(session, By.AccessibilityId(AccessibilityId.Monitors), 60_000),
             "The editor opened but did not render its monitor list.");
 
         Step(testBase, "Waiting for the new-layout button");
         Assert.IsTrue(
-            session.WaitForElement(By.AccessibilityId(AccessibilityId.NewLayoutButton), 60_000),
+            WaitForFreshElement(session, By.AccessibilityId(AccessibilityId.NewLayoutButton), 60_000),
             "The editor opened but did not render the new-layout button.");
+    }
+
+    public static Element FindLayoutCard(Session session, string layoutName, int timeoutMS = 30_000)
+    {
+        Element? card = null;
+        var found = session.WaitFor(() => (card = TryFindLayoutCard(session, layoutName)) is not null, timeoutMS, 250);
+
+        Assert.IsTrue(found && card is not null, $"Layout card '{layoutName}' was not ready for interaction.");
+        return card!;
+    }
+
+    public static AppliedLayouts.AppliedLayoutsListWrapper ApplyLayoutAndWait(
+        UITestBase testBase,
+        Session session,
+        string layoutName,
+        Func<AppliedLayouts.AppliedLayoutsListWrapper, bool> expectedState,
+        string expectedStateDescription)
+    {
+        const int attempts = 3;
+        for (var attempt = 1; attempt <= attempts; attempt++)
+        {
+            EnsureForeground(testBase, session, $"applying layout '{layoutName}'");
+            Step(testBase, $"Attempt {attempt}/{attempts}: applying layout '{layoutName}'");
+            FindLayoutCard(session, layoutName).Click(msPostAction: 500, timeoutMS: 10_000);
+
+            var result = WaitForAppliedLayouts(
+                testBase,
+                expectedState,
+                expectedStateDescription,
+                timeoutMS: 15_000,
+                assertOnTimeout: false);
+            if (result.HasValue)
+            {
+                Assert.IsTrue(
+                    session.WaitFor(() => TryFindLayoutCard(session, layoutName)?.Selected == true, 10_000, 250),
+                    $"Layout '{layoutName}' was persisted but its card never became selected.");
+                return result.Value;
+            }
+        }
+
+        Assert.Fail($"Layout '{layoutName}' was not applied after {attempts} attempts. Expected {expectedStateDescription}.");
+        return default;
+    }
+
+    public static AppliedLayouts.AppliedLayoutsListWrapper WaitForAppliedLayouts(
+        UITestBase testBase,
+        Func<AppliedLayouts.AppliedLayoutsListWrapper, bool> expectedState,
+        string expectedStateDescription,
+        int timeoutMS = 30_000)
+    {
+        var result = WaitForAppliedLayouts(testBase, expectedState, expectedStateDescription, timeoutMS, assertOnTimeout: true);
+        return result!.Value;
+    }
+
+    public static LayoutHotkeys.LayoutHotkeysWrapper WaitForLayoutHotkeys(
+        UITestBase testBase,
+        Func<LayoutHotkeys.LayoutHotkeysWrapper, bool> expectedState,
+        string expectedStateDescription,
+        int timeoutMS = 30_000)
+    {
+        Step(testBase, $"Waiting for layout-hotkeys.json: {expectedStateDescription}");
+        var result = WaitHelper.WaitForStable(
+            observe: TryReadLayoutHotkeys,
+            isMatch: data => data.HasValue && expectedState(data.Value),
+            timeoutMS,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 200);
+
+        Assert.IsTrue(
+            result.Succeeded && result.LastObservation.HasValue,
+            $"layout-hotkeys.json did not reach the expected state: {expectedStateDescription}.");
+        return result.LastObservation!.Value;
     }
 
     public static void EnsureForeground(UITestBase testBase, Session session, string reason)
@@ -114,13 +186,47 @@ public static class EditorUiTestHelper
 
     public static void SelectMonitor(UITestBase testBase, Session session, string monitorName)
     {
-        EnsureForeground(testBase, session, $"selecting {monitorName}");
-        Step(testBase, $"Selecting {monitorName}");
+        const int attempts = 3;
+        for (var attempt = 1; attempt <= attempts; attempt++)
+        {
+            EnsureForeground(testBase, session, $"selecting {monitorName}");
+            var monitor = FindMonitorCard(session, monitorName);
+            if (monitor.Selected)
+            {
+                return;
+            }
 
-        var monitors = session.Find<Element>(By.AccessibilityId(AccessibilityId.Monitors));
-        var monitor = monitors.Find<Element>(monitorName);
-        monitor.Click();
+            Step(testBase, $"Attempt {attempt}/{attempts}: selecting {monitorName}");
+            monitor.Click(msPostAction: 500, timeoutMS: 10_000);
+            if (session.WaitFor(() => TryFindMonitorCard(session, monitorName)?.Selected == true, 10_000, 250))
+            {
+                return;
+            }
+        }
+
+        Assert.Fail($"Monitor '{monitorName}' was not selected after {attempts} attempts.");
     }
+
+    private static Element FindMonitorCard(Session session, string monitorName, int timeoutMS = 30_000)
+    {
+        Element? monitor = null;
+        var found = session.WaitFor(() => (monitor = TryFindMonitorCard(session, monitorName)) is not null, timeoutMS, 250);
+
+        Assert.IsTrue(found && monitor is not null, $"Monitor card '{monitorName}' was not ready for interaction.");
+        return monitor!;
+    }
+
+    private static Element? TryFindLayoutCard(Session session, string layoutName) =>
+        session.FindAll<Element>(By.Name(layoutName), 0)
+            .FirstOrDefault(element =>
+                string.Equals(element.Name, layoutName, StringComparison.Ordinal) &&
+                string.Equals(element.ControlType, "ListItem", StringComparison.OrdinalIgnoreCase));
+
+    private static Element? TryFindMonitorCard(Session session, string monitorName) =>
+        session.FindAll<Element>(By.Name(monitorName), 0)
+            .FirstOrDefault(element =>
+                string.Equals(element.Name, monitorName, StringComparison.Ordinal) &&
+                string.Equals(element.ControlType, "ListItem", StringComparison.OrdinalIgnoreCase));
 
     public static void OpenEditLayoutDialog(UITestBase testBase, Session session, string layoutName)
     {
@@ -251,6 +357,58 @@ public static class EditorUiTestHelper
     {
         var templates = new LayoutTemplates();
         return templates.Read(templates.File);
+    }
+
+    private static bool WaitForFreshElement(Session session, By selector, int timeoutMS) =>
+        session.WaitFor(() => session.FindAll<Element>(selector, 0).Count > 0, timeoutMS, 250);
+
+    private static AppliedLayouts.AppliedLayoutsListWrapper? WaitForAppliedLayouts(
+        UITestBase testBase,
+        Func<AppliedLayouts.AppliedLayoutsListWrapper, bool> expectedState,
+        string expectedStateDescription,
+        int timeoutMS,
+        bool assertOnTimeout)
+    {
+        Step(testBase, $"Waiting for applied-layouts.json: {expectedStateDescription}");
+        var result = WaitHelper.WaitForStable(
+            observe: TryReadAppliedLayouts,
+            isMatch: data => data.HasValue && expectedState(data.Value),
+            timeoutMS,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 200);
+
+        if (assertOnTimeout)
+        {
+            Assert.IsTrue(
+                result.Succeeded && result.LastObservation.HasValue,
+                $"applied-layouts.json did not reach the expected state: {expectedStateDescription}.");
+        }
+
+        return result.Succeeded ? result.LastObservation : null;
+    }
+
+    private static AppliedLayouts.AppliedLayoutsListWrapper? TryReadAppliedLayouts()
+    {
+        try
+        {
+            return ReadAppliedLayouts();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static LayoutHotkeys.LayoutHotkeysWrapper? TryReadLayoutHotkeys()
+    {
+        try
+        {
+            return ReadLayoutHotkeys();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        {
+            return null;
+        }
     }
 
     public static TextBox FindEditLayoutNameTextBox(UITestBase testBase, Session session)

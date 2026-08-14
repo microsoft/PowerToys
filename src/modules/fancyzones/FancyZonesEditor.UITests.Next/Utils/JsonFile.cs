@@ -11,6 +11,7 @@ public sealed class JsonFile
 
     private readonly string path;
     private readonly string? originalContent;
+    private string? stagedContent;
 
     public JsonFile(string path)
     {
@@ -31,7 +32,19 @@ public sealed class JsonFile
 
     public bool Exists => File.Exists(path);
 
-    public void Write(string data) => Retry(() => File.WriteAllText(path, data));
+    public void Write(string data)
+    {
+        stagedContent = data;
+        WriteRaw(data);
+    }
+
+    public void Restage()
+    {
+        if (stagedContent is not null)
+        {
+            WriteRaw(stagedContent);
+        }
+    }
 
     public string Read()
     {
@@ -48,9 +61,11 @@ public sealed class JsonFile
         }
         else
         {
-            Write(originalContent);
+            WriteRaw(originalContent);
         }
     }
+
+    private void WriteRaw(string data) => Retry(() => File.WriteAllText(path, data));
 
     private static void Retry(Action action)
     {
