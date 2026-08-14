@@ -533,6 +533,17 @@ def existing_input_hash(comments):
 
 def should_process(event, report_comment):
     action = event.get("action")
+    issue = event.get("issue") or {}
+    issue_labels = {
+        (label.get("name", "") if isinstance(label, dict) else str(label)).lower()
+        for label in (issue.get("labels") or [])
+    }
+    # Never triage the automated dedupe-digest issue. It is bot-authored and
+    # aggregates untrusted text from many issues, so re-triaging it wastes AI
+    # credits and creates a prompt-injection surface. See
+    # .github/workflows/dedupe-digest.yml (DIGEST_LABEL).
+    if "dedupe-digest" in issue_labels:
+        return False, False
     if "comment" not in event:
         if (
             action == "reopened"
