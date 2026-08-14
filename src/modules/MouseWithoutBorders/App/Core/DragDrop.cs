@@ -256,19 +256,20 @@ internal static class DragDrop
                 _ = NativeMethods.PostMessage(Common.MainForm.Handle, NativeMethods.WM_SHOW_DRAG_DROP, (IntPtr)0, (IntPtr)0);
             });
         }
-        else if (wParam == WM.WM_LBUTTONUP && (IsDropping || IsDragging))
+        else if (wParam == WM.WM_LBUTTONUP)
         {
             if (IsDropping)
             {
                 // Hide form, get data
                 DragDropStep10();
             }
-            else
+            else if (IsDragging)
             {
                 IsDragging = false;
                 Clipboard.LastIDWithClipboardData = ID.NONE;
-                Clipboard.RequestLastDragDropFileReleaseAfterSend();
             }
+
+            Clipboard.RequestLastDragDropFileReleaseAfterSend();
         }
     }
 
