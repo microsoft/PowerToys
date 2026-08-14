@@ -8,6 +8,7 @@ using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
@@ -55,6 +56,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     INotifyPropertyChanged,
     IDisposable
 {
+    private const double QuickAccessShelfButtonWidth = 44;
+    private const double QuickAccessShelfSpacing = 4;
+
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
 
     private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
@@ -70,9 +74,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private readonly ISettingsService _settingsService;
 
-    // The last compact-mode setting we reacted to. Lets us ignore hot-reloads of unrelated
-    // settings and only re-evaluate the layout when compact mode itself changes.
+    // The last compact-layout settings we reacted to. Lets us ignore hot-reloads of unrelated
+    // settings and only re-evaluate the layout when one of these settings changes.
     private bool _compactMode;
+    private bool _quickAccessShelfEnabled;
 
     private SettingsWindow? _settingsWindow;
     private DockWindowManager? _dockWindowManager;
@@ -90,6 +95,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private bool _isDisposed;
 
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
+
+    public QuickAccessShelfViewModel QuickAccessShelf { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -121,16 +128,29 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public bool ExpandedMode { get; set; }
 
+    public bool IsQuickAccessShelfVisible =>
+        _compactMode &&
+        _quickAccessShelfEnabled &&
+        !ExpandedMode &&
+        (ViewModel.CurrentPage?.IsRootPage ?? false) &&
+        QuickAccessShelf.HasItems;
+
     // Item keybindings act on the selected item, which is hidden while collapsed — only honor them when expanded.
     private bool ItemActionsAllowed => !_compactMode || ExpandedMode;
 
     public ShellPage()
     {
         _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
-        _compactMode = _settingsService.Settings.CompactMode;
+        var settings = _settingsService.Settings;
+        _compactMode = settings.CompactMode;
+        _quickAccessShelfEnabled = settings.ShowQuickAccessShelf;
         this.ExpandedMode = !_compactMode;
 
+        QuickAccessShelf = new(App.Current.Services.GetRequiredService<TopLevelCommandManager>(), _mainTaskScheduler);
+        QuickAccessShelf.PropertyChanged += QuickAccessShelf_PropertyChanged;
+
         this.InitializeComponent();
+        UpdateQuickAccessShelfOverflowButton();
 
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
@@ -950,8 +970,89 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
+    private void QuickAccessShelfItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: QuickAccessShelfItem item })
+        {
+            InvokeQuickAccessShelfItem(item);
+        }
+    }
+
+    private static void InvokeQuickAccessShelfItem(QuickAccessShelfItem item)
+    {
+        WeakReferenceMessenger.Default.Send(item.Command.GetPerformCommandMessage());
+    }
+
+    private void QuickAccessShelfItemsHost_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        QuickAccessShelf.UpdateVisibleCapacity(e.NewSize.Width, QuickAccessShelfButtonWidth, QuickAccessShelfSpacing);
+    }
+
+    private void UpdateQuickAccessShelfCapacity()
+    {
+        QuickAccessShelf.UpdateVisibleCapacity(QuickAccessShelfItemsHost.ActualWidth, QuickAccessShelfButtonWidth, QuickAccessShelfSpacing);
+    }
+
+    private void QuickAccessOverflowFlyout_Opening(object sender, object e)
+    {
+        RebuildQuickAccessOverflowMenu();
+    }
+
+    private void RebuildQuickAccessOverflowMenu()
+    {
+        QuickAccessOverflowFlyout.Items.Clear();
+
+        foreach (var item in QuickAccessShelf.OverflowItems)
+        {
+            var iconBox = new IconBox
+            {
+                Width = 16,
+                Height = 16,
+                SourceKey = item.Command.IconViewModel,
+            };
+            iconBox.SourceRequested += IconProvider.SourceRequested16;
+
+            var menuItem = new MenuFlyoutItem
+            {
+                Text = item.Command.Title,
+                Tag = item,
+                Icon = new ContentIcon { Content = iconBox },
+            };
+            menuItem.Click += QuickAccessOverflowItem_Click;
+            QuickAccessOverflowFlyout.Items.Add(menuItem);
+        }
+    }
+
+    private void UpdateQuickAccessShelfOverflowButton()
+    {
+        QuickAccessOverflowButton.Margin = QuickAccessShelf.HasOverflow && QuickAccessShelf.VisibleItemCount > 0
+            ? new Thickness(QuickAccessShelfSpacing, 0, 0, 0)
+            : default;
+    }
+
+    private void QuickAccessOverflowItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuFlyoutItem { Tag: QuickAccessShelfItem snapshotItem })
+        {
+            return;
+        }
+
+        // The flyout is a stable snapshot while open. If commands refresh in the background,
+        // invoke the current view model for the same command rather than the stale snapshot.
+        foreach (var currentItem in QuickAccessShelf.Items)
+        {
+            if (currentItem.Command.CommandProviderId == snapshotItem.Command.CommandProviderId &&
+                currentItem.Command.Id == snapshotItem.Command.Id)
+            {
+                InvokeQuickAccessShelfItem(currentItem);
+                return;
+            }
+        }
+    }
+
     private static void ShellPage_OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
+        var shellPage = (ShellPage)sender;
         var modifiers = KeyModifiers.GetCurrent();
 
         switch (e.Key)
@@ -969,15 +1070,35 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 e.Handled = true;
                 break;
             case VirtualKey.F when modifiers.OnlyAlt: // Alt+F: toggle filter focus
-                ((ShellPage)sender).ToggleFilterFocus();
+                shellPage.ToggleFilterFocus();
                 e.Handled = true;
                 break;
             case VirtualKey.Down when modifiers.None:
+                // In a collapsed compact palette, Down reveals the top-level items. Only swallow
+                // the key when we actually expand; otherwise retain normal list navigation.
+                if (shellPage.TryExpandCollapsedCompact())
+                {
+                    e.Handled = true;
+                }
+
+                break;
+            case VirtualKey.Down when modifiers.OnlyAlt:
+                if (shellPage.TryExpandCollapsedCompact())
+                {
+                    e.Handled = true;
+                }
+                else
+                {
+                    // Outside collapsed compact mode, Alt+Down remains available to requested
+                    // command keybindings just like every other unreserved chord.
+                    goto default;
+                }
+
+                break;
             case VirtualKey.Tab when modifiers.None:
-                // In a collapsed compact palette, Down/Tab reveals the top-level items so the
-                // user can browse and discover them. Only swallow the key when we actually
-                // expand; otherwise let it fall through to normal list navigation / focus move.
-                if (((ShellPage)sender).TryExpandCollapsedCompact())
+                // When the shelf is present, Tab must be allowed to enter its icon buttons.
+                // Without a shelf, retain compact mode's existing Tab-to-expand behavior.
+                if (!shellPage.IsQuickAccessShelfVisible && shellPage.TryExpandCollapsedCompact())
                 {
                     e.Handled = true;
                 }
@@ -986,7 +1107,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             default:
                 {
                     // The CommandBar handles item keybindings; skip them while collapsed so a chord can't hit the hidden selection.
-                    if (((ShellPage)sender).ItemActionsAllowed)
+                    if (shellPage.ItemActionsAllowed)
                     {
                         TryCommandKeybindingMessage msg = new(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key);
                         WeakReferenceMessenger.Default.Send(msg);
@@ -1079,20 +1200,53 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void OnSettingsChanged(ISettingsService sender, SettingsModel args)
     {
-        // Only the compact-mode setting affects the expanded/collapsed layout, so ignore
-        // hot-reloads that leave it unchanged. Comparing and updating _compactMode on the UI
-        // thread keeps it single-threaded regardless of which thread raises the event.
+        // Comparing and updating the compact-layout settings on the UI thread keeps the
+        // state single-threaded regardless of which thread raises the event.
         var compactMode = args.CompactMode;
+        var quickAccessShelfEnabled = args.ShowQuickAccessShelf;
         this.DispatcherQueue.TryEnqueue(() =>
         {
-            if (compactMode == _compactMode)
+            var compactModeChanged = compactMode != _compactMode;
+            var quickAccessShelfChanged = quickAccessShelfEnabled != _quickAccessShelfEnabled;
+            if (!compactModeChanged && !quickAccessShelfChanged)
             {
                 return;
             }
 
             _compactMode = compactMode;
-            UpdateCompactModeForCurrentPage();
+            _quickAccessShelfEnabled = quickAccessShelfEnabled;
+
+            if (compactModeChanged)
+            {
+                UpdateCompactModeForCurrentPage();
+            }
+            else
+            {
+                NotifyQuickAccessShelfVisibilityChanged();
+            }
         });
+    }
+
+    private void QuickAccessShelf_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(QuickAccessShelfViewModel.HasItems):
+                NotifyQuickAccessShelfVisibilityChanged();
+                break;
+            case nameof(QuickAccessShelfViewModel.ItemCount):
+                UpdateQuickAccessShelfCapacity();
+                break;
+            case nameof(QuickAccessShelfViewModel.HasOverflow):
+            case nameof(QuickAccessShelfViewModel.VisibleItemCount):
+                UpdateQuickAccessShelfOverflowButton();
+                break;
+        }
+    }
+
+    private void NotifyQuickAccessShelfVisibilityChanged()
+    {
+        PropertyChanged?.Invoke(this, new(nameof(IsQuickAccessShelfVisible)));
     }
 
     private void HandleExpandCompactOnUiThread(bool expanded)
@@ -1110,10 +1264,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         this.ExpandedMode = newExpanded;
         PropertyChanged?.Invoke(this, new(nameof(ExpandedMode)));
+        NotifyQuickAccessShelfVisibilityChanged();
     }
 
     /// <summary>
-    /// Expands a collapsed compact palette on demand (via Down/Tab) so the user can browse the
+    /// Expands a collapsed compact palette on demand (via Down/Alt+Down/Tab) so the user can browse the
     /// top-level items. Returns <see langword="false"/> and does nothing unless compact mode is
     /// on and the palette is currently collapsed, letting the caller keep the key's normal
     /// meaning (list navigation / focus traversal) in every other case.
@@ -1144,7 +1299,19 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         this.ExpandedMode = false;
         PropertyChanged?.Invoke(this, new(nameof(ExpandedMode)));
+        NotifyQuickAccessShelfVisibilityChanged();
         this.UpdateLayout();
+    }
+
+    /// <summary>
+    /// Gets the vertical center of the collapsed search row in shell coordinates. The compact
+    /// host uses this rather than the entire card height so enabling the shelf does not move the
+    /// search box away from the user's configured screen position.
+    /// </summary>
+    public double GetCompactSearchRowCenterY()
+    {
+        TopBarSurface.UpdateLayout();
+        return TopBarSurface.ActualHeight / 2.0;
     }
 
     public void Dispose()
@@ -1157,6 +1324,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _isDisposed = true;
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _settingsService.SettingsChanged -= OnSettingsChanged;
+        QuickAccessShelf.PropertyChanged -= QuickAccessShelf_PropertyChanged;
+        QuickAccessShelf.Dispose();
 
         if (_hostWindow is not null)
         {
