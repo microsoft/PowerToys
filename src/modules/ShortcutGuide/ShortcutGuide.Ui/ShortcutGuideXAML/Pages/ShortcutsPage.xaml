@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="ShortcutGuide.Pages.ShortcutsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -42,12 +42,24 @@
             ShortcutTemplate="{StaticResource ShortcutTemplate}"
             SubtitleTemplate="{StaticResource SubtitleTemplate}" />
     </Page.Resources>
-    <ScrollViewer>
-        <ItemsRepeater
-            x:Name="MainItemsRepeater"
-            Margin="0,0,0,24"
-            ElementClearing="MainItemsRepeater_ElementClearing"
-            ItemTemplate="{StaticResource RowTemplateSelector}"
-            ItemsSource="{x:Bind Rows, Mode=OneWay}" />
-    </ScrollViewer>
+    <Grid>
+        <ScrollViewer>
+            <ItemsRepeater
+                x:Name="MainItemsRepeater"
+                Margin="0,0,0,24"
+                ElementClearing="MainItemsRepeater_ElementClearing"
+                ItemTemplate="{StaticResource RowTemplateSelector}"
+                ItemsSource="{x:Bind Rows, Mode=OneWay}" />
+        </ScrollViewer>
+        <TextBlock
+            x:Name="NoResultsTextBlock"
+            Margin="16,16,16,8"
+            VerticalAlignment="Top"
+            AutomationProperties.AutomationId="ShortcutGuide_NoSearchResults"
+            AutomationProperties.LiveSetting="Polite"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            IsHitTestVisible="False"
+            TextWrapping="Wrap"
+            Visibility="Collapsed" />
+    </Grid>
 </Page>
