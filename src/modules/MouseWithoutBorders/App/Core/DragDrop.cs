@@ -191,7 +191,7 @@ internal static class DragDrop
         {
             if (LocalPathLease.TryCreate(dragFileName, out LocalPathLease lease))
             {
-                Clipboard.SetLastDragDropFile(dragFileName, lease);
+                Clipboard.SetLastDragDropFile(dragFileName, lease, isTransient: true);
                 /*
                  * possibleDropMachineID is used as desID sent in DragDropStep06();
                  * */
@@ -267,6 +267,7 @@ internal static class DragDrop
             {
                 IsDragging = false;
                 Clipboard.LastIDWithClipboardData = ID.NONE;
+                Clipboard.RequestLastDragDropFileReleaseAfterSend();
             }
         }
     }

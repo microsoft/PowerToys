@@ -1681,7 +1681,10 @@ namespace MouseWithoutBorders.Class
             const int CLOSE_TIMEOUT = 10;
             byte[] header = new byte[1024];
             string headerString = string.Empty;
-            if (Clipboard.TryAcquireLastDragDropFile(out string lastDragDropFile, out LocalPathLease pathLease))
+            if (Clipboard.TryAcquireLastDragDropFile(
+                out string lastDragDropFile,
+                out LocalPathLease pathLease,
+                out bool isDirectory))
             {
                 using (pathLease)
                 {
@@ -1690,7 +1693,11 @@ namespace MouseWithoutBorders.Class
 
                     try
                     {
-                        if (pathLease != null)
+                        if (isDirectory)
+                        {
+                            headerString = $"{0}*{lastDragDropFile} - Folder is not supported, zip it first!";
+                        }
+                        else if (pathLease != null)
                         {
                             if (pathLease.IsDirectory)
                             {

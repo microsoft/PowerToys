@@ -50,6 +50,10 @@ internal static class Clipboard
     private static string lastMachineWithClipboardData;
     private static string lastDragDropFile;
     private static LocalPathLease lastDragDropFileLease;
+    private static bool lastDragDropFileIsDirectory;
+    private static bool lastDragDropFileIsTransient;
+    private static bool lastDragDropFileReleaseRequested;
+    private static bool lastDragDropFileSendStarted;
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
     internal static long clipboardCopiedTime;
 #pragma warning restore SA1307
@@ -69,7 +73,11 @@ internal static class Clipboard
         set => SetLastDragDropFile(value, null);
     }
 
-    internal static void SetLastDragDropFile(string path, LocalPathLease lease)
+    internal static void SetLastDragDropFile(
+        string path,
+        LocalPathLease lease,
+        bool isDirectory = false,
+        bool isTransient = false)
     {
         LocalPathLease previousLease;
 
@@ -78,19 +86,73 @@ internal static class Clipboard
             previousLease = lastDragDropFileLease;
             lastDragDropFile = path;
             lastDragDropFileLease = lease;
+            lastDragDropFileIsDirectory = isDirectory;
+            lastDragDropFileIsTransient = isTransient;
+            lastDragDropFileReleaseRequested = false;
+            lastDragDropFileSendStarted = false;
         }
 
         previousLease?.Dispose();
     }
 
-    internal static bool TryAcquireLastDragDropFile(out string path, out LocalPathLease lease)
+    internal static bool TryAcquireLastDragDropFile(
+        out string path,
+        out LocalPathLease lease,
+        out bool isDirectory)
     {
+        LocalPathLease ownerLeaseToRelease = null;
+
         lock (LastDragDropFileLock)
         {
             path = lastDragDropFile;
             lease = lastDragDropFileLease?.Acquire();
-            return path != null;
+            isDirectory = lastDragDropFileIsDirectory;
+
+            if (lease != null)
+            {
+                lastDragDropFileSendStarted = true;
+                if (lastDragDropFileIsTransient && lastDragDropFileReleaseRequested)
+                {
+                    ownerLeaseToRelease = ClearLastDragDropFileLocked();
+                }
+            }
         }
+
+        ownerLeaseToRelease?.Dispose();
+        return path != null;
+    }
+
+    internal static void RequestLastDragDropFileReleaseAfterSend()
+    {
+        LocalPathLease ownerLeaseToRelease = null;
+
+        lock (LastDragDropFileLock)
+        {
+            if (!lastDragDropFileIsTransient)
+            {
+                return;
+            }
+
+            lastDragDropFileReleaseRequested = true;
+            if (lastDragDropFileSendStarted)
+            {
+                ownerLeaseToRelease = ClearLastDragDropFileLocked();
+            }
+        }
+
+        ownerLeaseToRelease?.Dispose();
+    }
+
+    private static LocalPathLease ClearLastDragDropFileLocked()
+    {
+        LocalPathLease ownerLease = lastDragDropFileLease;
+        lastDragDropFile = null;
+        lastDragDropFileLease = null;
+        lastDragDropFileIsDirectory = false;
+        lastDragDropFileIsTransient = false;
+        lastDragDropFileReleaseRequested = false;
+        lastDragDropFileSendStarted = false;
+        return ownerLease;
     }
 
     internal static string LastMachineWithClipboardData
@@ -198,7 +260,8 @@ internal static class Clipboard
                         if (lease.IsDirectory)
                         {
                             Logger.LogDebug("Clipboard contains a directory: " + filePath);
-                            SetLastDragDropFile(filePath, lease);
+                            lease.Dispose();
+                            SetLastDragDropFile(filePath, null, isDirectory: true);
                             Common.SendClipboardBeat();
                         }
                         else
