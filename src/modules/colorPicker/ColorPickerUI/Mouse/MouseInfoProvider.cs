@@ -106,20 +106,30 @@ namespace ColorPicker.Mouse
 
         internal bool TryUpdateMouseInfo()
         {
-            if (!_screenColorSampler.TrySample(out ScreenColorSample sample, out ScreenColorSamplingFailure failure))
+            if (!_screenColorSampler.TryGetCursorPosition(out System.Windows.Point position, out ScreenColorSamplingFailure failure))
             {
-                InvalidateSample();
-                _timer.Interval = SamplingRetryInterval;
-                LogSamplingFailure(failure);
-                return false;
+                return HandleSamplingFailure(failure);
             }
 
             bool hadValidSample = HasValidSample;
-            bool positionChanged = !hadValidSample || _previousMousePosition != sample.Position;
-            bool colorChanged = !hadValidSample || _previousColor != sample.Color || _colorFormatChanged;
+            bool positionChanged = !hadValidSample || _previousMousePosition != position;
 
-            _previousMousePosition = sample.Position;
-            _previousColor = sample.Color;
+            if (positionChanged)
+            {
+                // Move the picker away from the cursor before capturing the pixel so the picker
+                // cannot become part of its own sample.
+                MousePositionChanged?.Invoke(this, position);
+            }
+
+            if (!_screenColorSampler.TrySampleColor(position, out Color color, out failure))
+            {
+                return HandleSamplingFailure(failure);
+            }
+
+            bool colorChanged = !hadValidSample || _previousColor != color || _colorFormatChanged;
+
+            _previousMousePosition = position;
+            _previousColor = color;
             _colorFormatChanged = false;
             SetSampleValidity(true);
             _timer.Interval = _normalSamplingInterval;
@@ -130,17 +140,20 @@ namespace ColorPicker.Mouse
                 _samplingFailureLogged = false;
             }
 
-            if (positionChanged)
-            {
-                MousePositionChanged?.Invoke(this, sample.Position);
-            }
-
             if (colorChanged)
             {
-                MouseColorChanged?.Invoke(this, sample.Color);
+                MouseColorChanged?.Invoke(this, color);
             }
 
             return true;
+        }
+
+        private bool HandleSamplingFailure(ScreenColorSamplingFailure failure)
+        {
+            InvalidateSample();
+            _timer.Interval = SamplingRetryInterval;
+            LogSamplingFailure(failure);
+            return false;
         }
 
         private static double GetMainDisplayRefreshRate()

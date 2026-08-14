@@ -13,11 +13,11 @@ namespace ColorPicker.Mouse
 {
     internal sealed class ScreenColorSampler : IScreenColorSampler
     {
-        public bool TrySample(out ScreenColorSample sample, out ScreenColorSamplingFailure failure)
+        public bool TryGetCursorPosition(out System.Windows.Point position, out ScreenColorSamplingFailure failure)
         {
             if (!GetCursorPos(out PointInter cursorPosition))
             {
-                sample = default;
+                position = default;
                 failure = new ScreenColorSamplingFailure(
                     ScreenColorSamplingFailureReason.CursorUnavailable,
                     Marshal.GetLastWin32Error(),
@@ -25,16 +25,22 @@ namespace ColorPicker.Mouse
                 return false;
             }
 
-            var position = (System.Windows.Point)cursorPosition;
+            position = (System.Windows.Point)cursorPosition;
+            failure = default;
+            return true;
+        }
+
+        public bool TrySampleColor(System.Windows.Point position, out Color color, out ScreenColorSamplingFailure failure)
+        {
             try
             {
-                sample = new ScreenColorSample(position, GetPixelColor(position));
+                color = GetPixelColor(position);
                 failure = default;
                 return true;
             }
             catch (Win32Exception ex)
             {
-                sample = default;
+                color = default;
                 failure = new ScreenColorSamplingFailure(
                     ScreenColorSamplingFailureReason.ScreenCaptureFailed,
                     ex.NativeErrorCode,

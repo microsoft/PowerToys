@@ -30,19 +30,21 @@ namespace ColorPicker.UnitTests.Mouse
 
             var provider = CreateProvider(sampler);
 
-            Assert.AreEqual(0, sampler.CallCount);
+            Assert.AreEqual(0, sampler.PositionCallCount);
+            Assert.AreEqual(0, sampler.ColorSampleCallCount);
             Assert.IsFalse(provider.HasValidSample);
             Assert.AreEqual(Color.Transparent, provider.CurrentColor);
             Assert.AreEqual(new System.Windows.Point(-1, 1), provider.CurrentPosition);
         }
 
         [TestMethod]
-        public void TryUpdateMouseInfo_TransientWin32FailuresThenSuccess_Recovers()
+        public void TryUpdateMouseInfo_TransientScreenCaptureFailuresThenSuccess_Recovers()
         {
             var sampler = new TestScreenColorSampler();
-            sampler.EnqueueWin32Failure(6);
-            sampler.EnqueueWin32Failure(6);
-            sampler.EnqueueSuccess(new System.Windows.Point(12, 34), Color.Red);
+            var position = new System.Windows.Point(12, 34);
+            sampler.EnqueueScreenCaptureFailure(position, 6);
+            sampler.EnqueueScreenCaptureFailure(position, 6);
+            sampler.EnqueueSuccess(position, Color.Red);
             var provider = CreateProvider(sampler);
             int colorChangeCount = 0;
             int positionChangeCount = 0;
@@ -55,15 +57,35 @@ namespace ColorPicker.UnitTests.Mouse
             Assert.IsFalse(provider.TryUpdateMouseInfo());
             Assert.IsFalse(provider.HasValidSample);
             Assert.AreEqual(0, colorChangeCount);
-            Assert.AreEqual(0, positionChangeCount);
+            Assert.AreEqual(2, positionChangeCount);
 
             Assert.IsTrue(provider.TryUpdateMouseInfo());
             Assert.IsTrue(provider.HasValidSample);
             Assert.AreEqual(Color.Red, provider.CurrentColor);
-            Assert.AreEqual(new System.Windows.Point(12, 34), provider.CurrentPosition);
+            Assert.AreEqual(position, provider.CurrentPosition);
             Assert.AreEqual(1, colorChangeCount);
-            Assert.AreEqual(1, positionChangeCount);
+            Assert.AreEqual(3, positionChangeCount);
             CollectionAssert.AreEqual(ValidSampleSequence, validityChanges);
+        }
+
+        [TestMethod]
+        public void TryUpdateMouseInfo_CursorFailure_DoesNotSampleColorOrRaiseEvents()
+        {
+            var sampler = new TestScreenColorSampler();
+            sampler.EnqueueCursorFailure(6);
+            var provider = CreateProvider(sampler);
+            int positionChangeCount = 0;
+            int colorChangeCount = 0;
+            provider.MousePositionChanged += (_, _) => positionChangeCount++;
+            provider.MouseColorChanged += (_, _) => colorChangeCount++;
+
+            Assert.IsFalse(provider.TryUpdateMouseInfo());
+
+            Assert.AreEqual(1, sampler.PositionCallCount);
+            Assert.AreEqual(0, sampler.ColorSampleCallCount);
+            Assert.AreEqual(0, positionChangeCount);
+            Assert.AreEqual(0, colorChangeCount);
+            Assert.IsFalse(provider.HasValidSample);
         }
 
         [TestMethod]
@@ -72,7 +94,7 @@ namespace ColorPicker.UnitTests.Mouse
             var sampler = new TestScreenColorSampler();
             var initialPosition = new System.Windows.Point(40, 50);
             sampler.EnqueueSuccess(initialPosition, Color.Blue);
-            sampler.EnqueueWin32Failure(6);
+            sampler.EnqueueScreenCaptureFailure(initialPosition, 6);
             var provider = CreateProvider(sampler);
             int confirmationCount = 0;
             provider.OnPrimaryMouseDown += (_, _) => confirmationCount++;
@@ -118,8 +140,9 @@ namespace ColorPicker.UnitTests.Mouse
         public void TryUpdateMouseInfo_FailureInvalidatesCachedViewAndPositionState()
         {
             var sampler = new TestScreenColorSampler();
-            sampler.EnqueueSuccess(new System.Windows.Point(80, 90), Color.Blue);
-            sampler.EnqueueWin32Failure(6);
+            var position = new System.Windows.Point(80, 90);
+            sampler.EnqueueSuccess(position, Color.Blue);
+            sampler.EnqueueScreenCaptureFailure(position, 6);
             var provider = CreateProvider(sampler);
             string displayedColor = string.Empty;
             bool hasCachedPosition = false;
@@ -168,11 +191,40 @@ namespace ColorPicker.UnitTests.Mouse
         }
 
         [TestMethod]
+        public void TryUpdateMouseInfo_RaisesPositionChangedBeforeSamplingColor()
+        {
+            var initialPosition = new System.Windows.Point(100, 200);
+            var expectedPosition = new System.Windows.Point(120, 240);
+            var sampler = new TestScreenColorSampler();
+            sampler.EnqueueSuccess(initialPosition, Color.Blue);
+            sampler.EnqueueSuccess(expectedPosition, Color.Red);
+            var provider = CreateProvider(sampler);
+            Assert.IsTrue(provider.TryUpdateMouseInfo());
+
+            bool positionChangedRaised = false;
+            int colorSampleCountBeforeMove = sampler.ColorSampleCallCount;
+            sampler.BeforeColorSample = position =>
+            {
+                Assert.AreEqual(expectedPosition, position);
+                Assert.IsTrue(positionChangedRaised);
+            };
+            provider.MousePositionChanged += (_, position) =>
+            {
+                Assert.AreEqual(expectedPosition, position);
+                positionChangedRaised = true;
+            };
+
+            Assert.IsTrue(provider.TryUpdateMouseInfo());
+            Assert.IsTrue(positionChangedRaised);
+            Assert.AreEqual(colorSampleCountBeforeMove + 1, sampler.ColorSampleCallCount);
+        }
+
+        [TestMethod]
         public void TryUpdateMouseInfo_NonRecoverableSamplerException_IsNotSwallowed()
         {
             var sampler = new TestScreenColorSampler
             {
-                ExceptionToThrow = new InvalidOperationException("Non-recoverable test exception"),
+                PositionExceptionToThrow = new InvalidOperationException("Non-recoverable test exception"),
             };
             var provider = CreateProvider(sampler);
 
@@ -185,53 +237,105 @@ namespace ColorPicker.UnitTests.Mouse
         private sealed class TestScreenColorSampler : IScreenColorSampler
         {
             private readonly Queue<SampleResult> _results = new Queue<SampleResult>();
+            private SampleResult? _pendingResult;
 
-            public int CallCount { get; private set; }
+            public int PositionCallCount { get; private set; }
 
-            public Exception? ExceptionToThrow { get; set; }
+            public int ColorSampleCallCount { get; private set; }
+
+            public Action<System.Windows.Point>? BeforeColorSample { get; set; }
+
+            public Exception? PositionExceptionToThrow { get; set; }
 
             public void EnqueueSuccess(System.Windows.Point position, Color color)
                 => _results.Enqueue(SampleResult.Success(position, color));
 
-            public void EnqueueWin32Failure(int nativeErrorCode)
-                => _results.Enqueue(SampleResult.Failure(nativeErrorCode));
+            public void EnqueueCursorFailure(int nativeErrorCode)
+                => _results.Enqueue(SampleResult.CursorFailure(nativeErrorCode));
 
-            public bool TrySample(out ScreenColorSample sample, out ScreenColorSamplingFailure failure)
+            public void EnqueueScreenCaptureFailure(System.Windows.Point position, int nativeErrorCode)
+                => _results.Enqueue(SampleResult.ScreenCaptureFailure(position, nativeErrorCode));
+
+            public bool TryGetCursorPosition(out System.Windows.Point position, out ScreenColorSamplingFailure failure)
             {
-                CallCount++;
-                if (ExceptionToThrow != null)
+                PositionCallCount++;
+                if (PositionExceptionToThrow != null)
                 {
-                    throw ExceptionToThrow;
+                    throw PositionExceptionToThrow;
                 }
 
-                SampleResult result = _results.Dequeue();
-                sample = result.Sample;
-                failure = result.SamplingFailure;
-                return result.Succeeded;
+                SampleResult result = _results.Peek();
+                if (result.SamplingFailure.Reason == ScreenColorSamplingFailureReason.CursorUnavailable)
+                {
+                    _results.Dequeue();
+                    position = default;
+                    failure = result.SamplingFailure;
+                    return false;
+                }
+
+                _pendingResult = result;
+                position = result.Position;
+                failure = default;
+                return true;
+            }
+
+            public bool TrySampleColor(System.Windows.Point position, out Color color, out ScreenColorSamplingFailure failure)
+            {
+                ColorSampleCallCount++;
+                if (!_pendingResult.HasValue)
+                {
+                    throw new InvalidOperationException("A cursor position must be read before sampling its color.");
+                }
+
+                SampleResult result = _pendingResult.Value;
+                _pendingResult = null;
+                _results.Dequeue();
+                Assert.AreEqual(result.Position, position);
+                BeforeColorSample?.Invoke(position);
+
+                if (result.SamplingFailure.Reason == ScreenColorSamplingFailureReason.ScreenCaptureFailed)
+                {
+                    color = default;
+                    failure = result.SamplingFailure;
+                    return false;
+                }
+
+                color = result.Color;
+                failure = default;
+                return true;
             }
         }
 
         private readonly struct SampleResult
         {
-            private SampleResult(bool succeeded, ScreenColorSample sample, ScreenColorSamplingFailure samplingFailure)
+            private SampleResult(System.Windows.Point position, Color color, ScreenColorSamplingFailure samplingFailure)
             {
-                Succeeded = succeeded;
-                Sample = sample;
+                Position = position;
+                Color = color;
                 SamplingFailure = samplingFailure;
             }
 
-            public bool Succeeded { get; }
+            public System.Windows.Point Position { get; }
 
-            public ScreenColorSample Sample { get; }
+            public Color Color { get; }
 
             public ScreenColorSamplingFailure SamplingFailure { get; }
 
             public static SampleResult Success(System.Windows.Point position, Color color)
-                => new SampleResult(true, new ScreenColorSample(position, color), default);
+                => new SampleResult(position, color, default);
 
-            public static SampleResult Failure(int nativeErrorCode)
+            public static SampleResult CursorFailure(int nativeErrorCode)
                 => new SampleResult(
-                    false,
+                    default,
+                    default,
+                    new ScreenColorSamplingFailure(
+                        ScreenColorSamplingFailureReason.CursorUnavailable,
+                        nativeErrorCode,
+                        "GetCursorPos failed."));
+
+            public static SampleResult ScreenCaptureFailure(System.Windows.Point position, int nativeErrorCode)
+                => new SampleResult(
+                    position,
                     default,
                     new ScreenColorSamplingFailure(
                         ScreenColorSamplingFailureReason.ScreenCaptureFailed,

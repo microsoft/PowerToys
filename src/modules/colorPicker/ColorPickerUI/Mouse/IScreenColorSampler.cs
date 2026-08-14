@@ -8,20 +8,9 @@ namespace ColorPicker.Mouse
 {
     internal interface IScreenColorSampler
     {
-        bool TrySample(out ScreenColorSample sample, out ScreenColorSamplingFailure failure);
-    }
+        bool TryGetCursorPosition(out System.Windows.Point position, out ScreenColorSamplingFailure failure);
 
-    internal readonly struct ScreenColorSample
-    {
-        public ScreenColorSample(System.Windows.Point position, Color color)
-        {
-            Position = position;
-            Color = color;
-        }
-
-        public System.Windows.Point Position { get; }
-
-        public Color Color { get; }
+        bool TrySampleColor(System.Windows.Point position, out Color color, out ScreenColorSamplingFailure failure);
     }
 
     internal enum ScreenColorSamplingFailureReason
