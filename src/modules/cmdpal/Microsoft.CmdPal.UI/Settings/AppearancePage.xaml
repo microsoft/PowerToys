@@ -294,7 +294,6 @@
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard
                                 x:Uid="Settings_GeneralPage_QuickAccessShelf_SettingsCard"
-                                HeaderIcon="{ui:FontIcon Glyph=&#xE840;}"
                                 IsEnabled="{x:Bind ViewModel.CompactMode, Mode=OneWay}">
                                 <ToggleSwitch
                                     AutomationProperties.AutomationId="CmdPal_GeneralPage_QuickAccessShelf"
