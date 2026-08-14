@@ -52,6 +52,7 @@ internal static class Clipboard
     private static string lastDragDropFile;
     private static LocalPathLease lastDragDropFileLease;
     private static bool lastDragDropFileIsDirectory;
+    private static bool lastDragDropFileRequiresLease;
     private static bool lastDragDropFileIsTransient;
     private static bool lastDragDropFileReleaseRequested;
     private static bool lastDragDropFileTransferCompleted;
@@ -82,10 +83,16 @@ internal static class Clipboard
         set => SetLastDragDropFile(value, null);
     }
 
+    internal static bool IsClipboardFileSizeSupported(long length)
+    {
+        return length <= MAX_CLIPBOARD_FILE_SIZE_CAN_BE_SENT;
+    }
+
     internal static void SetLastDragDropFile(
         string path,
         LocalPathLease lease,
         bool isDirectory = false,
+        bool requiresLease = false,
         bool isTransient = false)
     {
         LocalPathLease previousLease;
@@ -99,6 +106,7 @@ internal static class Clipboard
             lastDragDropFile = path;
             lastDragDropFileLease = lease;
             lastDragDropFileIsDirectory = isDirectory;
+            lastDragDropFileRequiresLease = requiresLease;
             lastDragDropFileIsTransient = isTransient;
             lastDragDropFileReleaseRequested = false;
             lastDragDropFileTransferCompleted = false;
@@ -152,6 +160,7 @@ internal static class Clipboard
             lastDragDropFile = path;
             lastDragDropFileLease = lease;
             lastDragDropFileIsDirectory = false;
+            lastDragDropFileRequiresLease = false;
             lastDragDropFileIsTransient = true;
             lastDragDropFileReleaseRequested = false;
             lastDragDropFileTransferCompleted = false;
@@ -179,13 +188,15 @@ internal static class Clipboard
     internal static bool TryAcquireLastDragDropFile(
         out string path,
         out LocalPathLease lease,
-        out bool isDirectory)
+        out bool isDirectory,
+        out bool requiresLease)
     {
         lock (LastDragDropFileLock)
         {
             path = lastDragDropFile;
             lease = lastDragDropFileLease?.Acquire();
             isDirectory = lastDragDropFileIsDirectory;
+            requiresLease = lastDragDropFileRequiresLease;
 
             if (lease != null && lastDragDropFileIsTransient)
             {
@@ -292,6 +303,7 @@ internal static class Clipboard
         lastDragDropFile = null;
         lastDragDropFileLease = null;
         lastDragDropFileIsDirectory = false;
+        lastDragDropFileRequiresLease = false;
         lastDragDropFileIsTransient = false;
         lastDragDropFileReleaseRequested = false;
         lastDragDropFileTransferCompleted = false;
@@ -396,7 +408,8 @@ internal static class Clipboard
                     else if (!lease.IsDirectory && lease.Length <= MAX_CLIPBOARD_FILE_SIZE_CAN_BE_SENT)
                     {
                         Logger.LogDebug("Clipboard contains: " + filePath);
-                        SetLastDragDropFile(filePath, lease);
+                        lease.Dispose();
+                        SetLastDragDropFile(filePath, null, requiresLease: true);
                         Common.SendClipboardBeat();
                         Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE] { Common.ICON_BIG_CLIPBOARD, -1, Common.ICON_BIG_CLIPBOARD, -1 });
                     }

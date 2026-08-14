@@ -107,9 +107,9 @@ public sealed class ClipboardHelperTests
     {
         string directory = Directory.CreateTempSubdirectory().FullName;
         string sourceDirectory = Path.Combine(directory, "source");
-        string movedDirectory = Path.Combine(directory, "moved");
         Directory.CreateDirectory(sourceDirectory);
         string path = Path.Combine(sourceDirectory, "file.txt");
+        string movedPath = Path.Combine(sourceDirectory, "moved.txt");
         File.WriteAllText(path, "content");
 
         try
@@ -127,11 +127,10 @@ public sealed class ClipboardHelperTests
     }
 
     [TestMethod]
-    public void LocalPathLease_AcquiredReferencePreventsPathReplacementUntilReleased()
+    public void LocalPathLease_AcquiredReferenceKeepsFinalHandleAlive()
     {
         string directory = Directory.CreateTempSubdirectory().FullName;
         string sourceDirectory = Path.Combine(directory, "source");
-        string movedDirectory = Path.Combine(directory, "moved");
         Directory.CreateDirectory(sourceDirectory);
         string path = Path.Combine(sourceDirectory, "file.txt");
         File.WriteAllText(path, "content");
@@ -147,11 +146,11 @@ public sealed class ClipboardHelperTests
 
             lease.Dispose();
             lease = null;
-            Assert.IsFalse(TryMoveDirectory(sourceDirectory, movedDirectory));
+            Assert.IsFalse(acquiredLease.IsDisposed);
 
             acquiredLease.Dispose();
+            Assert.IsTrue(acquiredLease.IsDisposed);
             acquiredLease = null;
-            Directory.Move(sourceDirectory, movedDirectory);
         }
         finally
         {
@@ -162,13 +161,13 @@ public sealed class ClipboardHelperTests
     }
 
     [TestMethod]
-    public void LocalPathLease_AllowsFileReadWhilePreventingReplacement()
+    public void LocalPathLease_TransferStreamTemporarilyPreventsMutation()
     {
         string directory = Directory.CreateTempSubdirectory().FullName;
         string sourceDirectory = Path.Combine(directory, "source");
-        string movedDirectory = Path.Combine(directory, "moved");
         Directory.CreateDirectory(sourceDirectory);
         string path = Path.Combine(sourceDirectory, "file.txt");
+        string movedPath = Path.Combine(sourceDirectory, "moved.txt");
         File.WriteAllText(path, "content");
 
         try
@@ -176,12 +175,46 @@ public sealed class ClipboardHelperTests
             using LocalPathLease lease = LocalPathLease.TryCreateForCurrentUser(path);
             Assert.IsNotNull(lease);
 
-            Assert.IsFalse(TryOpenForWrite(path));
+            Assert.IsTrue(TryOpenForWrite(path));
+            using (FileStream stream = lease.OpenReadStream(4096))
+            {
+                Assert.IsNotNull(stream);
+                Assert.IsFalse(TryOpenForWrite(path));
+                using StreamReader reader = new(stream);
+                Assert.AreEqual("content", reader.ReadToEnd());
+            }
+
+            Assert.IsTrue(TryOpenForWrite(path));
+            File.Move(path, movedPath);
+        }
+        finally
+        {
+            Directory.Delete(directory, true);
+        }
+    }
+
+    [TestMethod]
+    public void LocalPathLease_FinalHandleSurvivesPathReplacement()
+    {
+        string directory = Directory.CreateTempSubdirectory().FullName;
+        string sourceDirectory = Path.Combine(directory, "source");
+        Directory.CreateDirectory(sourceDirectory);
+        string path = Path.Combine(sourceDirectory, "file.txt");
+        string movedPath = Path.Combine(sourceDirectory, "moved.txt");
+        File.WriteAllText(path, "original");
+
+        try
+        {
+            using LocalPathLease lease = LocalPathLease.TryCreateForCurrentUser(path);
+            Assert.IsNotNull(lease);
+
+            File.Move(path, movedPath);
+            File.WriteAllText(path, "replacement");
+
             using FileStream stream = lease.OpenReadStream(4096);
             Assert.IsNotNull(stream);
             using StreamReader reader = new(stream);
-            Assert.AreEqual("content", reader.ReadToEnd());
-            Assert.IsFalse(TryMoveDirectory(sourceDirectory, movedDirectory));
+            Assert.AreEqual("original", reader.ReadToEnd());
         }
         finally
         {
@@ -250,10 +283,12 @@ public sealed class ClipboardHelperTests
             Assert.IsTrue(Clipboard.TryAcquireLastDragDropFile(
                 out string storedPath,
                 out LocalPathLease storedLease,
-                out bool isDirectory));
+                out bool isDirectory,
+                out bool requiresLease));
             Assert.AreEqual(directory, storedPath);
             Assert.IsNull(storedLease);
             Assert.IsTrue(isDirectory);
+            Assert.IsFalse(requiresLease);
 
             Directory.Move(directory, movedDirectory);
         }
@@ -273,6 +308,39 @@ public sealed class ClipboardHelperTests
     }
 
     [TestMethod]
+    public void Clipboard_FileStateRevalidatesWithoutRetainingHandles()
+    {
+        string directory = Directory.CreateTempSubdirectory().FullName;
+        string sourceDirectory = Path.Combine(directory, "source");
+        string movedDirectory = Path.Combine(directory, "moved");
+        Directory.CreateDirectory(sourceDirectory);
+        string path = Path.Combine(sourceDirectory, "file.txt");
+        File.WriteAllText(path, "content");
+
+        try
+        {
+            Clipboard.SetLastDragDropFile(path, null, requiresLease: true);
+
+            Assert.IsTrue(Clipboard.TryAcquireLastDragDropFile(
+                out string storedPath,
+                out LocalPathLease storedLease,
+                out bool isDirectory,
+                out bool requiresLease));
+            Assert.AreEqual(path, storedPath);
+            Assert.IsNull(storedLease);
+            Assert.IsFalse(isDirectory);
+            Assert.IsTrue(requiresLease);
+
+            Directory.Move(sourceDirectory, movedDirectory);
+        }
+        finally
+        {
+            Clipboard.LastDragDropFile = null;
+            Directory.Delete(directory, true);
+        }
+    }
+
+    [TestMethod]
     public void Clipboard_TransientLeaseStaysAliveDuringTransferAndReleasesAfterCompletion()
     {
         string directory = Directory.CreateTempSubdirectory().FullName;
@@ -284,36 +352,40 @@ public sealed class ClipboardHelperTests
 
         TimeSpan originalTimeout = Clipboard.TransientLeaseReleaseTimeout;
         LocalPathLease? acquiredLease = null;
+        LocalPathLease? leaseReference = null;
         try
         {
             Clipboard.TransientLeaseReleaseTimeout = TimeSpan.FromMilliseconds(50);
             LocalPathLease? lease = LocalPathLease.TryCreateForCurrentUser(path);
             Assert.IsNotNull(lease);
+            leaseReference = lease;
             long validationGeneration = Clipboard.BeginTransientDragFileValidation();
             Assert.IsTrue(Clipboard.TrySetValidatedTransientDragFile(validationGeneration, path, lease));
             Clipboard.RequestLastDragDropFileReleaseAfterSend();
 
-            Assert.IsFalse(TryMoveDirectory(sourceDirectory, movedDirectory));
             Assert.IsTrue(Clipboard.TryAcquireLastDragDropFile(
                 out string storedPath,
                 out acquiredLease,
-                out bool isDirectory));
+                out bool isDirectory,
+                out bool requiresLease));
             Assert.AreEqual(path, storedPath);
             Assert.IsNotNull(acquiredLease);
             Assert.IsFalse(isDirectory);
+            Assert.IsFalse(requiresLease);
 
             System.Threading.Thread.Sleep(200);
             Assert.AreEqual(path, Clipboard.LastDragDropFile);
-            Assert.IsFalse(TryMoveDirectory(sourceDirectory, movedDirectory));
+            Assert.IsFalse(leaseReference.IsDisposed);
 
             LocalPathLease completedLease = acquiredLease;
             Clipboard.CompleteLastDragDropFileSend(completedLease);
 
             Assert.IsNull(Clipboard.LastDragDropFile);
-            Assert.IsFalse(TryMoveDirectory(sourceDirectory, movedDirectory));
+            Assert.IsFalse(leaseReference.IsDisposed);
 
             acquiredLease.Dispose();
             acquiredLease = null;
+            Assert.IsTrue(leaseReference.IsDisposed);
             Directory.Move(sourceDirectory, movedDirectory);
         }
         finally
@@ -333,17 +405,19 @@ public sealed class ClipboardHelperTests
         File.WriteAllText(path, "content");
 
         TimeSpan originalTimeout = Clipboard.TransientLeaseReleaseTimeout;
+        LocalPathLease? leaseReference = null;
         try
         {
             Clipboard.TransientLeaseReleaseTimeout = TimeSpan.FromMilliseconds(50);
             LocalPathLease? lease = LocalPathLease.TryCreateForCurrentUser(path);
             Assert.IsNotNull(lease);
+            leaseReference = lease;
             long validationGeneration = Clipboard.BeginTransientDragFileValidation();
             Assert.IsTrue(Clipboard.TrySetValidatedTransientDragFile(validationGeneration, path, lease));
             Clipboard.RequestLastDragDropFileReleaseAfterSend();
 
-            Assert.IsFalse(TryOpenForWrite(path));
-            Assert.IsTrue(SpinWait.SpinUntil(() => TryOpenForWrite(path), TimeSpan.FromSeconds(5)));
+            Assert.IsFalse(leaseReference.IsDisposed);
+            Assert.IsTrue(SpinWait.SpinUntil(() => leaseReference.IsDisposed, TimeSpan.FromSeconds(5)));
             Assert.IsNull(Clipboard.LastDragDropFile);
         }
         finally
@@ -362,11 +436,13 @@ public sealed class ClipboardHelperTests
         File.WriteAllText(path, "content");
 
         TimeSpan originalTimeout = Clipboard.TransientLeaseReleaseTimeout;
+        LocalPathLease? leaseReference = null;
         try
         {
             Clipboard.TransientLeaseReleaseTimeout = TimeSpan.FromMilliseconds(500);
             LocalPathLease? lease = LocalPathLease.TryCreateForCurrentUser(path);
             Assert.IsNotNull(lease);
+            leaseReference = lease;
             long validationGeneration = Clipboard.BeginTransientDragFileValidation();
             Assert.IsTrue(Clipboard.TrySetValidatedTransientDragFile(validationGeneration, path, lease));
             Clipboard.RequestLastDragDropFileReleaseAfterSend();
@@ -374,7 +450,7 @@ public sealed class ClipboardHelperTests
             System.Threading.Thread.Sleep(350);
             Clipboard.RequestLastDragDropFileReleaseAfterSend();
 
-            Assert.IsTrue(SpinWait.SpinUntil(() => TryOpenForWrite(path), TimeSpan.FromMilliseconds(300)));
+            Assert.IsTrue(SpinWait.SpinUntil(() => leaseReference.IsDisposed, TimeSpan.FromMilliseconds(300)));
             Assert.IsNull(Clipboard.LastDragDropFile);
         }
         finally
@@ -456,11 +532,11 @@ public sealed class ClipboardHelperTests
             LocalPathLease? lease = LocalPathLease.TryCreateForCurrentUser(path);
             Assert.IsNotNull(lease);
             Clipboard.SetLastDragDropFile(path, lease, isTransient: true);
-            Assert.IsFalse(TryOpenForWrite(path));
+            Assert.IsFalse(lease.IsDisposed);
 
             Clipboard.LastDragDropFile = null;
 
-            Assert.IsTrue(TryOpenForWrite(path));
+            Assert.IsTrue(lease.IsDisposed);
         }
         finally
         {

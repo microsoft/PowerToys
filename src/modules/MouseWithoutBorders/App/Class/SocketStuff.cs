@@ -1684,8 +1684,30 @@ namespace MouseWithoutBorders.Class
             if (Clipboard.TryAcquireLastDragDropFile(
                 out string lastDragDropFile,
                 out LocalPathLease pathLease,
-                out bool isDirectory))
+                out bool isDirectory,
+                out bool requiresLease))
             {
+                string leaseValidationHeader = null;
+                if (requiresLease)
+                {
+                    if (!LocalPathLease.TryCreate(lastDragDropFile, out pathLease))
+                    {
+                        leaseValidationHeader = $"{0}*{lastDragDropFile} not found or unavailable!";
+                    }
+                    else if (pathLease.IsDirectory)
+                    {
+                        pathLease.Dispose();
+                        pathLease = null;
+                        leaseValidationHeader = $"{0}*{lastDragDropFile} - Folder is not supported, zip it first!";
+                    }
+                    else if (!Clipboard.IsClipboardFileSizeSupported(pathLease.Length))
+                    {
+                        pathLease.Dispose();
+                        pathLease = null;
+                        leaseValidationHeader = $"{0}*{lastDragDropFile} - File too big (greater than 100MB), please drag and drop the file instead!";
+                    }
+                }
+
                 using (pathLease)
                 {
                     string fileName = null;
@@ -1693,7 +1715,11 @@ namespace MouseWithoutBorders.Class
 
                     try
                     {
-                        if (isDirectory)
+                        if (leaseValidationHeader != null)
+                        {
+                            headerString = leaseValidationHeader;
+                        }
+                        else if (isDirectory)
                         {
                             headerString = $"{0}*{lastDragDropFile} - Folder is not supported, zip it first!";
                         }

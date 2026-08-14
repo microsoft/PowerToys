@@ -16,6 +16,8 @@ namespace MouseWithoutBorders;
 internal sealed class LocalPathLease : IDisposable
 {
     private const uint FileShareRead = 0x00000001;
+    private const uint FileShareWrite = 0x00000002;
+    private const uint FileShareDelete = 0x00000004;
     private const uint GenericRead = 0x80000000;
     private const uint FileReadAttributes = 0x00000080;
     private const uint OpenExisting = 3;
@@ -47,6 +49,17 @@ internal sealed class LocalPathLease : IDisposable
     internal bool IsDirectory { get; }
 
     internal long Length { get; }
+
+    internal bool IsDisposed
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _referenceCount == 0;
+            }
+        }
+    }
 
     internal LocalPathLease Acquire()
     {
@@ -145,7 +158,13 @@ internal sealed class LocalPathLease : IDisposable
             }
 
             string currentPath = deviceRoot + Path.DirectorySeparatorChar;
-            if (!TryOpenComponent(currentPath, FileReadAttributes, handles, out FileAttributes attributes, out _)
+            if (!TryOpenComponent(
+                currentPath,
+                FileReadAttributes,
+                FileShareRead | FileShareWrite,
+                handles,
+                out FileAttributes attributes,
+                out _)
                 || (attributes & FileAttributes.ReparsePoint) != 0)
             {
                 return null;
@@ -162,7 +181,16 @@ internal sealed class LocalPathLease : IDisposable
                 currentPath = Path.Combine(currentPath, components[index]);
                 bool isLast = index == components.Length - 1;
                 uint desiredAccess = isLast ? GenericRead : FileReadAttributes;
-                if (!TryOpenComponent(currentPath, desiredAccess, handles, out attributes, out long componentLength)
+                uint shareMode = isLast
+                    ? FileShareRead | FileShareWrite | FileShareDelete
+                    : FileShareRead | FileShareWrite;
+                if (!TryOpenComponent(
+                    currentPath,
+                    desiredAccess,
+                    shareMode,
+                    handles,
+                    out attributes,
+                    out long componentLength)
                     || (attributes & FileAttributes.ReparsePoint) != 0)
                 {
                     return null;
@@ -181,6 +209,16 @@ internal sealed class LocalPathLease : IDisposable
 
             bool isDirectory = (attributes & FileAttributes.Directory) != 0;
             SafeFileHandle fileHandle = handles[^1];
+
+            // Parent handles prevent component replacement while the final handle is
+            // opened and verified. The final handle is identity-stable, so release
+            // the parents afterward to preserve normal rename/delete behavior.
+            for (int index = 0; index < handles.Count - 1; index++)
+            {
+                handles[index].Dispose();
+            }
+
+            handles = new List<SafeFileHandle> { fileHandle };
             LocalPathLease lease = new(displayPath, isDirectory, length, handles, fileHandle);
             handles = null;
             return lease;
@@ -290,6 +328,7 @@ internal sealed class LocalPathLease : IDisposable
     private static bool TryOpenComponent(
         string path,
         uint desiredAccess,
+        uint shareMode,
         List<SafeFileHandle> handles,
         out FileAttributes attributes,
         out long length)
@@ -300,7 +339,7 @@ internal sealed class LocalPathLease : IDisposable
         SafeFileHandle handle = CreateFile(
             path,
             desiredAccess,
-            FileShareRead,
+            shareMode,
             IntPtr.Zero,
             OpenExisting,
             FileFlagBackupSemantics | FileFlagOpenReparsePoint,
