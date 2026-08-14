@@ -6,35 +6,6 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 internal static class QuickAccessShelfResolver
 {
-    internal static IReadOnlyList<TCommand> Resolve<TCommand>(
-        IEnumerable<PinnedCommandSettings> pinnedCommands,
-        IEnumerable<TCommand> availableCommands,
-        Func<TCommand, string> providerIdSelector,
-        Func<TCommand, string> commandIdSelector,
-        Func<TCommand, bool> isEligible)
-        where TCommand : class
-    {
-        var commandsById = new Dictionary<(string ProviderId, string CommandId), TCommand>();
-        foreach (var command in availableCommands)
-        {
-            if (isEligible(command))
-            {
-                commandsById.TryAdd((providerIdSelector(command), commandIdSelector(command)), command);
-            }
-        }
-
-        var resolvedCommands = new List<TCommand>();
-        foreach (var pinnedCommand in pinnedCommands)
-        {
-            if (commandsById.TryGetValue((pinnedCommand.ProviderId, pinnedCommand.CommandId), out var command))
-            {
-                resolvedCommands.Add(command);
-            }
-        }
-
-        return resolvedCommands;
-    }
-
     internal static string IndexToShortcutDigit(int index)
     {
         return index switch

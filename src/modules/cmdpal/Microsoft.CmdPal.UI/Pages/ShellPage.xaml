@@ -479,36 +479,48 @@
                     </ItemsRepeater.Layout>
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="viewModels:QuickAccessShelfItem">
-                            <Button
+                            <Grid
                                 Width="44"
-                                Height="40"
-                                Padding="8"
-                                AccessKey="{x:Bind ShortcutDigit, Mode=OneTime}"
-                                AutomationProperties.Name="{x:Bind Command.Title, Mode=OneWay}"
-                                Click="QuickAccessShelfItem_Click"
-                                Style="{StaticResource SubtleButtonStyle}"
-                                Tag="{x:Bind}"
-                                UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}">
-                                <ToolTipService.ToolTip>
-                                    <ToolTip>
-                                        <StackPanel Spacing="2">
-                                            <TextBlock Text="{x:Bind Command.Title, Mode=OneWay}" />
-                                            <TextBlock
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Style="{StaticResource CaptionTextBlockStyle}"
-                                                Text="{x:Bind ShortcutDigit, Mode=OneTime, Converter={StaticResource QuickAccessShortcutTextConverter}}"
-                                                Visibility="{x:Bind ShortcutDigit, Mode=OneTime, Converter={StaticResource StringNotEmptyToVisibilityConverter}}" />
-                                        </StackPanel>
-                                    </ToolTip>
-                                </ToolTipService.ToolTip>
-                                <cpcontrols:IconBox
-                                    Width="20"
-                                    Height="20"
-                                    AutomationProperties.AccessibilityView="Raw"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    SourceKey="{x:Bind Command.IconViewModel, Mode=OneWay}"
-                                    SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
-                            </Button>
+                                Height="40">
+                                <Button
+                                    Width="44"
+                                    Height="40"
+                                    Padding="8"
+                                    AccessKey="{x:Bind ShortcutDigit, Mode=OneTime}"
+                                    AutomationProperties.Name="{x:Bind Title, Mode=OneTime}"
+                                    Click="QuickAccessShelfItem_Click"
+                                    Style="{StaticResource SubtleButtonStyle}"
+                                    Tag="{x:Bind}"
+                                    UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip>
+                                            <StackPanel Spacing="2">
+                                                <TextBlock Text="{x:Bind Title, Mode=OneTime}" />
+                                                <TextBlock
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                    Text="{x:Bind ShortcutDigit, Mode=OneTime, Converter={StaticResource QuickAccessShortcutTextConverter}}"
+                                                    Visibility="{x:Bind ShortcutDigit, Mode=OneTime, Converter={StaticResource StringNotEmptyToVisibilityConverter}}" />
+                                            </StackPanel>
+                                        </ToolTip>
+                                    </ToolTipService.ToolTip>
+                                    <cpcontrols:IconBox
+                                        Width="20"
+                                        Height="20"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        SourceKey="{x:Bind Icon, Mode=OneTime}"
+                                        SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
+                                </Button>
+                                <Border
+                                    Width="1"
+                                    Height="24"
+                                    Margin="-2,0,0,0"
+                                    HorizontalAlignment="Left"
+                                    Background="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
+                                    IsHitTestVisible="False"
+                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(StartsRecentSection), Mode=OneTime}" />
+                            </Grid>
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
