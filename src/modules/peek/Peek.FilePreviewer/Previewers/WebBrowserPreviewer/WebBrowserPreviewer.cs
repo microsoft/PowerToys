@@ -137,18 +137,19 @@ namespace Peek.FilePreviewer.Previewers
                         // Simple html file to preview. Shouldn't do things like enabling scripts or using a virtual mapped directory.
                         Preview = new Uri(File.Path);
                     }
-                    else if (MonacoHelper.SupportedMonacoFileTypes.Contains(extension))
+                    else if (extension == ".pdf")
                     {
-                        // Source code files use Monaco editor
+                        Preview = new Uri(File.Path);
+                    }
+                    else
+                    {
+                        // Source code files use Monaco editor. Extensions Monaco doesn't recognize
+                        // (including files with no extension, sniffed as text by IsTextFallbackSupported)
+                        // fall back to plaintext highlighting.
                         IsDevFilePreview = true;
                         CustomContextMenu = true;
                         var raw = await ReadHelper.Read(File.Path.ToString());
                         Preview = new Uri(MonacoHelper.PreviewTempFile(raw, extension, TempFolderPath.Path, _previewSettings.SourceCodeTryFormat, _previewSettings.SourceCodeWrapText, _previewSettings.SourceCodeStickyScroll, _previewSettings.SourceCodeFontSize, _previewSettings.SourceCodeMinimap));
-                    }
-                    else
-                    {
-                        // Fallback for other supported file types (e.g., PDF)
-                        Preview = new Uri(File.Path);
                     }
                 });
             });
@@ -166,6 +167,16 @@ namespace Peek.FilePreviewer.Previewers
         public static bool IsItemSupported(IFileSystemItem item)
         {
             return _supportedFileTypes.Contains(item.Extension) || MonacoHelper.SupportedMonacoFileTypes.Contains(item.Extension);
+        }
+
+        /// <summary>
+        /// Last-resort check for files with no extension, or an extension Peek doesn't otherwise
+        /// recognize, whose content is sniffed to be text. Should only be consulted after every
+        /// other previewer (including the shell preview handler) has declined the item.
+        /// </summary>
+        public static bool IsTextFallbackSupported(IFileSystemItem item)
+        {
+            return item is FileItem && !IsItemSupported(item) && TextFileHelper.IsTextFile(item.Path);
         }
 
         private bool HasFailedLoadingPreview()

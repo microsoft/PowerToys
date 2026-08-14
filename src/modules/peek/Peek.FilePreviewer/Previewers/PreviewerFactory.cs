@@ -57,6 +57,11 @@ namespace Peek.FilePreviewer.Previewers
             {
                 return new SpecialFolderPreviewer(item);
             }
+            else if (WebBrowserPreviewer.IsTextFallbackSupported(item))
+            {
+                // No recognized extension, but the content was sniffed as text - preview it as plain text.
+                return new WebBrowserPreviewer(item, _previewSettings);
+            }
 
             // Other previewer types check their supported file types here
             return CreateDefaultPreviewer(item);
