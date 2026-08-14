@@ -32,7 +32,13 @@ HICON LoadThemeAdaptiveTrayIcon(
         }
     }
 
-    return LoadIcon(fallbackInstance, fallbackResourceName);
+    return static_cast<HICON>(LoadImage(
+        fallbackInstance,
+        fallbackResourceName,
+        IMAGE_ICON,
+        0,
+        0,
+        LR_DEFAULTSIZE));
 }
 
 HRESULT GetIconIndexFromPath(_In_ PCWSTR path, _Out_ int* index)
