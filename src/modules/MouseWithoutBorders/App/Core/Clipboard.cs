@@ -22,6 +22,7 @@ using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Exceptions;
 
 using SystemClipboard = System.Windows.Forms.Clipboard;
+using ThreadingTimer = System.Threading.Timer;
 
 // <summary>
 //     Clipboard related routines.
@@ -53,10 +54,15 @@ internal static class Clipboard
     private static bool lastDragDropFileIsDirectory;
     private static bool lastDragDropFileIsTransient;
     private static bool lastDragDropFileReleaseRequested;
-    private static bool lastDragDropFileSendStarted;
+    private static bool lastDragDropFileTransferCompleted;
+    private static int lastDragDropFileActiveTransfers;
+    private static long lastDragDropFileGeneration;
+    private static ThreadingTimer lastDragDropFileReleaseTimer;
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
     internal static long clipboardCopiedTime;
 #pragma warning restore SA1307
+
+    internal static TimeSpan TransientLeaseReleaseTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
     internal static ID LastIDWithClipboardData { get; set; }
 
@@ -80,18 +86,24 @@ internal static class Clipboard
         bool isTransient = false)
     {
         LocalPathLease previousLease;
+        ThreadingTimer previousTimer;
 
         lock (LastDragDropFileLock)
         {
             previousLease = lastDragDropFileLease;
+            previousTimer = lastDragDropFileReleaseTimer;
+            lastDragDropFileGeneration++;
             lastDragDropFile = path;
             lastDragDropFileLease = lease;
             lastDragDropFileIsDirectory = isDirectory;
             lastDragDropFileIsTransient = isTransient;
             lastDragDropFileReleaseRequested = false;
-            lastDragDropFileSendStarted = false;
+            lastDragDropFileTransferCompleted = false;
+            lastDragDropFileActiveTransfers = 0;
+            lastDragDropFileReleaseTimer = null;
         }
 
+        previousTimer?.Dispose();
         previousLease?.Dispose();
     }
 
@@ -100,31 +112,25 @@ internal static class Clipboard
         out LocalPathLease lease,
         out bool isDirectory)
     {
-        LocalPathLease ownerLeaseToRelease = null;
-
         lock (LastDragDropFileLock)
         {
             path = lastDragDropFile;
             lease = lastDragDropFileLease?.Acquire();
             isDirectory = lastDragDropFileIsDirectory;
 
-            if (lease != null)
+            if (lease != null && lastDragDropFileIsTransient)
             {
-                lastDragDropFileSendStarted = true;
-                if (lastDragDropFileIsTransient && lastDragDropFileReleaseRequested)
-                {
-                    ownerLeaseToRelease = ClearLastDragDropFileLocked();
-                }
+                lastDragDropFileActiveTransfers++;
             }
         }
 
-        ownerLeaseToRelease?.Dispose();
         return path != null;
     }
 
     internal static void RequestLastDragDropFileReleaseAfterSend()
     {
         LocalPathLease ownerLeaseToRelease = null;
+        ThreadingTimer timerToDispose = null;
 
         lock (LastDragDropFileLock)
         {
@@ -134,24 +140,90 @@ internal static class Clipboard
             }
 
             lastDragDropFileReleaseRequested = true;
-            if (lastDragDropFileSendStarted)
+            if (lastDragDropFileTransferCompleted && lastDragDropFileActiveTransfers == 0)
             {
-                ownerLeaseToRelease = ClearLastDragDropFileLocked();
+                ownerLeaseToRelease = ClearLastDragDropFileLocked(out timerToDispose);
+            }
+            else
+            {
+                timerToDispose = lastDragDropFileReleaseTimer;
+                long generation = lastDragDropFileGeneration;
+                lastDragDropFileReleaseTimer = new ThreadingTimer(
+                    ReleaseExpiredTransientDragFile,
+                    generation,
+                    TransientLeaseReleaseTimeout,
+                    Timeout.InfiniteTimeSpan);
             }
         }
 
+        timerToDispose?.Dispose();
         ownerLeaseToRelease?.Dispose();
     }
 
-    private static LocalPathLease ClearLastDragDropFileLocked()
+    internal static void CompleteLastDragDropFileSend(LocalPathLease lease)
+    {
+        if (lease == null)
+        {
+            return;
+        }
+
+        LocalPathLease ownerLeaseToRelease = null;
+        ThreadingTimer timerToDispose = null;
+
+        lock (LastDragDropFileLock)
+        {
+            if (!lastDragDropFileIsTransient
+                || !ReferenceEquals(lastDragDropFileLease, lease)
+                || lastDragDropFileActiveTransfers == 0)
+            {
+                return;
+            }
+
+            lastDragDropFileActiveTransfers--;
+            lastDragDropFileTransferCompleted = true;
+            if (lastDragDropFileReleaseRequested && lastDragDropFileActiveTransfers == 0)
+            {
+                ownerLeaseToRelease = ClearLastDragDropFileLocked(out timerToDispose);
+            }
+        }
+
+        timerToDispose?.Dispose();
+        ownerLeaseToRelease?.Dispose();
+    }
+
+    private static void ReleaseExpiredTransientDragFile(object state)
+    {
+        long generation = (long)state;
+        LocalPathLease ownerLeaseToRelease = null;
+        ThreadingTimer timerToDispose = null;
+
+        lock (LastDragDropFileLock)
+        {
+            if (generation == lastDragDropFileGeneration
+                && lastDragDropFileIsTransient
+                && lastDragDropFileReleaseRequested
+                && lastDragDropFileActiveTransfers == 0)
+            {
+                ownerLeaseToRelease = ClearLastDragDropFileLocked(out timerToDispose);
+            }
+        }
+
+        timerToDispose?.Dispose();
+        ownerLeaseToRelease?.Dispose();
+    }
+
+    private static LocalPathLease ClearLastDragDropFileLocked(out ThreadingTimer timer)
     {
         LocalPathLease ownerLease = lastDragDropFileLease;
+        timer = lastDragDropFileReleaseTimer;
         lastDragDropFile = null;
         lastDragDropFileLease = null;
         lastDragDropFileIsDirectory = false;
         lastDragDropFileIsTransient = false;
         lastDragDropFileReleaseRequested = false;
-        lastDragDropFileSendStarted = false;
+        lastDragDropFileTransferCompleted = false;
+        lastDragDropFileActiveTransfers = 0;
+        lastDragDropFileReleaseTimer = null;
         return ownerLease;
     }
 

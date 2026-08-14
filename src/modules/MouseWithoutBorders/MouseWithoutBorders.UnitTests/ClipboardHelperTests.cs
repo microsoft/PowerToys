@@ -8,6 +8,7 @@ using MouseWithoutBorders.Core;
 namespace MouseWithoutBorders.UnitTests;
 
 [TestClass]
+[DoNotParallelize]
 public sealed class ClipboardHelperTests
 {
     [DataTestMethod]
@@ -272,7 +273,7 @@ public sealed class ClipboardHelperTests
     }
 
     [TestMethod]
-    public void Clipboard_TransientLeaseReleasesAfterSendAcquiresReference()
+    public void Clipboard_TransientLeaseStaysAliveDuringTransferAndReleasesAfterCompletion()
     {
         string directory = Directory.CreateTempSubdirectory().FullName;
         string sourceDirectory = Path.Combine(directory, "source");
@@ -281,9 +282,11 @@ public sealed class ClipboardHelperTests
         string path = Path.Combine(sourceDirectory, "file.txt");
         File.WriteAllText(path, "content");
 
+        TimeSpan originalTimeout = Clipboard.TransientLeaseReleaseTimeout;
         LocalPathLease? acquiredLease = null;
         try
         {
+            Clipboard.TransientLeaseReleaseTimeout = TimeSpan.FromMilliseconds(50);
             LocalPathLease? lease = LocalPathLease.TryCreateForCurrentUser(path);
             Assert.IsNotNull(lease);
             Clipboard.SetLastDragDropFile(path, lease, isTransient: true);
@@ -297,6 +300,14 @@ public sealed class ClipboardHelperTests
             Assert.AreEqual(path, storedPath);
             Assert.IsNotNull(acquiredLease);
             Assert.IsFalse(isDirectory);
+
+            System.Threading.Thread.Sleep(200);
+            Assert.AreEqual(path, Clipboard.LastDragDropFile);
+            Assert.IsFalse(TryMoveDirectory(sourceDirectory, movedDirectory));
+
+            LocalPathLease completedLease = acquiredLease;
+            Clipboard.CompleteLastDragDropFileSend(completedLease);
+
             Assert.IsNull(Clipboard.LastDragDropFile);
             Assert.IsFalse(TryMoveDirectory(sourceDirectory, movedDirectory));
 
@@ -307,6 +318,60 @@ public sealed class ClipboardHelperTests
         finally
         {
             acquiredLease?.Dispose();
+            Clipboard.LastDragDropFile = null;
+            Clipboard.TransientLeaseReleaseTimeout = originalTimeout;
+            Directory.Delete(directory, true);
+        }
+    }
+
+    [TestMethod]
+    public void Clipboard_TransientLeaseExpiresWhenNoDestinationAcquiresIt()
+    {
+        string directory = Directory.CreateTempSubdirectory().FullName;
+        string path = Path.Combine(directory, "file.txt");
+        File.WriteAllText(path, "content");
+
+        TimeSpan originalTimeout = Clipboard.TransientLeaseReleaseTimeout;
+        try
+        {
+            Clipboard.TransientLeaseReleaseTimeout = TimeSpan.FromMilliseconds(50);
+            LocalPathLease? lease = LocalPathLease.TryCreateForCurrentUser(path);
+            Assert.IsNotNull(lease);
+            Clipboard.SetLastDragDropFile(path, lease, isTransient: true);
+            Clipboard.RequestLastDragDropFileReleaseAfterSend();
+
+            Assert.IsFalse(TryOpenForWrite(path));
+            Assert.IsTrue(SpinWait.SpinUntil(() => TryOpenForWrite(path), TimeSpan.FromSeconds(5)));
+            Assert.IsNull(Clipboard.LastDragDropFile);
+        }
+        finally
+        {
+            Clipboard.LastDragDropFile = null;
+            Clipboard.TransientLeaseReleaseTimeout = originalTimeout;
+            Directory.Delete(directory, true);
+        }
+    }
+
+    [TestMethod]
+    public void Clipboard_CancellingTransientLeaseReleasesImmediately()
+    {
+        string directory = Directory.CreateTempSubdirectory().FullName;
+        string path = Path.Combine(directory, "file.txt");
+        File.WriteAllText(path, "content");
+
+        try
+        {
+            LocalPathLease? lease = LocalPathLease.TryCreateForCurrentUser(path);
+            Assert.IsNotNull(lease);
+            Clipboard.SetLastDragDropFile(path, lease, isTransient: true);
+            Assert.IsFalse(TryOpenForWrite(path));
+
+            Clipboard.LastDragDropFile = null;
+
+            Assert.IsTrue(TryOpenForWrite(path));
+        }
+        finally
+        {
             Clipboard.LastDragDropFile = null;
             Directory.Delete(directory, true);
         }

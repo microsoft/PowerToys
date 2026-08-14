@@ -1791,6 +1791,7 @@ namespace MouseWithoutBorders.Class
                     finally
                     {
                         leasedFileStream?.Dispose();
+                        Clipboard.CompleteLastDragDropFileSend(pathLease);
                     }
                 }
             }
