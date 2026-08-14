@@ -68,13 +68,13 @@ internal sealed partial class JSFallbackCommandItemAdapter : BaseObservable, IFa
 
     public string DisplayTitle => _displayTitleOverride ?? JSModelMapper.GetString(_data, "displayTitle") ?? Title;
 
-    public string Id => JSModelMapper.GetString(_data, "id") ?? string.Empty;
+    public string Id => JSModelMapper.GetString(_data, "id") ?? Command?.Id ?? string.Empty;
 
     public IFallbackHandler FallbackHandler
     {
         get
         {
-            _fallbackHandler ??= new JSFallbackHandler(_connection, Id);
+            _fallbackHandler ??= new JSFallbackHandler(_connection, Command?.Id ?? Id);
             return _fallbackHandler;
         }
     }

@@ -18,28 +18,24 @@ namespace Microsoft.CmdPal.UI.ViewModels.Models;
 /// <see cref="IInvokableCommand"/>. Invoking sends a <c>command/invoke</c>
 /// request and maps the response to a toolkit command result.
 /// </summary>
-internal sealed partial class JSInvokableCommandAdapter : BaseObservable, IInvokableCommand
+internal sealed partial class JSInvokableCommandAdapter : JSObservableProxyBase, IInvokableCommand
 {
-    private readonly JsonElement _data;
-    private readonly JsonRpcConnection _connection;
-
     public JSInvokableCommandAdapter(JsonElement data, JsonRpcConnection connection)
+        : base(JSModelMapper.GetString(data, "id") ?? string.Empty, connection, data)
     {
-        _data = data;
-        _connection = connection;
     }
 
-    public string Name => JSModelMapper.GetString(_data, "displayName") ?? JSModelMapper.GetString(_data, "name") ?? string.Empty;
+    public string Name => JSModelMapper.GetString(Data, "displayName") ?? JSModelMapper.GetString(Data, "name") ?? string.Empty;
 
-    public string Id => JSModelMapper.GetString(_data, "id") ?? string.Empty;
+    public string Id => JSModelMapper.GetString(Data, "id") ?? string.Empty;
 
-    public IIconInfo Icon => JSModelMapper.GetIcon(_data, "icon", "Icon");
+    public IIconInfo Icon => JSModelMapper.GetIcon(Data, "icon", "Icon");
 
     public ICommandResult Invoke(object? sender)
     {
         try
         {
-            var response = _connection.SendRequestAsync(
+            var response = Connection.SendRequestAsync(
                 "command/invoke",
                 new JsonObject { ["commandId"] = Id },
                 CancellationToken.None).GetAwaiter().GetResult();
@@ -50,7 +46,7 @@ internal sealed partial class JSInvokableCommandAdapter : BaseObservable, IInvok
                 return CommandResult.KeepOpen();
             }
 
-            return JSCommandResultParser.ParseCommandResult(response.Result, _connection);
+            return JSCommandResultParser.ParseCommandResult(response.Result, Connection);
         }
         catch (Exception ex)
         {
@@ -60,4 +56,10 @@ internal sealed partial class JSInvokableCommandAdapter : BaseObservable, IInvok
     }
 
     public ICommandResult Invoke() => Invoke(this);
+
+    protected override bool SupportsProperty(string propertyName) => propertyName switch
+    {
+        "id" or "name" or "icon" => true,
+        _ => false,
+    };
 }

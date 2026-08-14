@@ -21,7 +21,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Models;
 /// provider calls over JSON-RPC. Fallback display titles, host status messages,
 /// log messages and clipboard requests raised by the extension are handled here.
 /// </summary>
-public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposable
+public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposable
 {
     private readonly JsonRpcConnection _connection;
     private readonly JSExtensionManifest _manifest;
@@ -200,6 +200,39 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
         }
     }
 
+    public ICommandItem? GetCommandItem(string id)
+    {
+        try
+        {
+            var response = _connection.SendRequestAsync(
+                "provider/getCommandItem",
+                new JsonObject { ["commandId"] = id },
+                CancellationToken.None).GetAwaiter().GetResult();
+
+            if (response.Error != null)
+            {
+                Logger.LogWarning($"GetCommandItem error for {id}: {response.Error.Message}");
+                return null;
+            }
+
+            if (!response.Result.HasValue || response.Result.Value.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            return new JSCommandItemAdapter(response.Result.Value, _connection);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"Failed to get command item {id}: {ex.Message}");
+            return null;
+        }
+    }
+
+    public object[] GetApiExtensionStubs() => [];
+
+    public ICommandItem[]? GetDockBands() => null;
+
     public void InitializeWithHost(IExtensionHost host)
     {
         ArgumentNullException.ThrowIfNull(host);
@@ -369,6 +402,8 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
 
         try
         {
+            JSPropertyChangeRegistry.Dispatch(_connection, paramsElement);
+
             var commandId = JSModelMapper.GetString(paramsElement, "commandId") ?? string.Empty;
             if (string.IsNullOrEmpty(commandId) ||
                 !_fallbackAdapters.TryGetValue(commandId, out var fallbackAdapter))
@@ -716,9 +751,14 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
                 return (StatusContext)contextProp.GetInt32();
             }
 
-            if (contextProp.ValueKind == JsonValueKind.String && contextProp.GetString() == "page")
+            if (contextProp.ValueKind == JsonValueKind.String)
             {
-                return StatusContext.Page;
+                return contextProp.GetString() switch
+                {
+                    "page" => StatusContext.Page,
+                    "extension" => StatusContext.Extension,
+                    _ => StatusContext.Extension,
+                };
             }
         }
 
