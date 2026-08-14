@@ -86,15 +86,40 @@ public class JSAdapterProxyTests
         Assert.AreEqual(CommandResultKind.GoToPage, goToPage.Kind);
         Assert.AreEqual("target-page", ((IGoToPageArgs)goToPage.Args).PageId);
 
-        fake.OnResult("command/invoke", """{ "Kind": 6, "Args": { "message": "toasted" } }""");
+        fake.OnResult(
+            "command/invoke",
+            """{ "Kind": 6, "Args": { "message": "toasted", "icon": { "light": { "icon": "\uE700" } }, "command": { "id": "undo", "name": "Undo" } } }""");
         var toast = invokable.Invoke(null);
         Assert.AreEqual(CommandResultKind.ShowToast, toast.Kind);
         Assert.AreEqual("toasted", ((IToastArgs)toast.Args).Message);
+        var toastArgs2 = (IToastArgs2)toast.Args;
+        Assert.AreEqual("\uE700", toastArgs2.Icon.Light.Icon);
+        Assert.AreEqual("undo", toastArgs2.Command.Id);
+        Assert.AreEqual("Undo", toastArgs2.Command.Name);
 
         fake.OnResult("command/invoke", """{ "Kind": 7, "Args": { "title": "Are you sure?" } }""");
         var confirm = invokable.Invoke(null);
         Assert.AreEqual(CommandResultKind.Confirm, confirm.Kind);
         Assert.AreEqual("Are you sure?", ((IConfirmationArgs)confirm.Args).Title);
+    }
+
+    [TestMethod]
+    public void GetCommandItem_MapsFullCommandItem()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult(
+            "provider/getCommandItem",
+            """{ "id": "pinned", "title": "Pinned", "subtitle": "From anywhere", "command": { "id": "pinned", "name": "Pinned" }, "moreCommands": [] }""");
+
+        var provider = CreateProvider(fake);
+        var item = ((ICommandProvider4)provider).GetCommandItem("pinned");
+
+        Assert.IsNotNull(item);
+        Assert.AreEqual("Pinned", item.Title);
+        Assert.AreEqual("From anywhere", item.Subtitle);
+        Assert.IsNotNull(item.Command);
+        Assert.AreEqual("pinned", item.Command.Id);
+        Assert.AreEqual("Pinned", item.Command.Name);
     }
 
     [TestMethod]
@@ -268,6 +293,34 @@ public class JSAdapterProxyTests
     }
 
     [TestMethod]
+    public async Task ContentPage_NotificationRaisesItemsChangedAndRefreshesContent()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult("provider/getCommand", """{ "id": "content-refresh", "pageType": "contentPage", "name": "Content" }""");
+
+        var contentBody = "initial";
+        fake.OnRequest("contentPage/getContent", _ => new JsonArray(
+            new JsonObject { ["type"] = "plainText", ["text"] = contentBody }));
+
+        var provider = CreateProvider(fake);
+        var page = (IContentPage)provider.GetCommand("content-refresh")!;
+        var initial = (IPlainTextContent)page.GetContent()[0];
+        Assert.AreEqual("initial", initial.Text);
+
+        var raised = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        page.ItemsChanged += (_, args) => raised.TrySetResult(args.TotalItems);
+
+        contentBody = "updated";
+        await fake.PushNotificationAsync(
+            "contentPage/itemsChanged",
+            new JsonObject { ["pageId"] = "content-refresh" });
+
+        Assert.AreEqual(-1, await raised.Task.WaitAsync(TimeSpan.FromSeconds(10)));
+        var refreshed = (IPlainTextContent)page.GetContent()[0];
+        Assert.AreEqual("updated", refreshed.Text);
+    }
+
+    [TestMethod]
     public async Task FallbackCommands_UpdateDisplayTitleOnPropChanged()
     {
         using var fake = new JSFakeExtension();
@@ -362,22 +415,56 @@ public class JSAdapterProxyTests
         using var fake = new JSFakeExtension();
         fake.OnResult(
             "provider/getFallbackCommands",
-            """[ { "id": "fb-req", "displayTitle": "Initial", "title": "T" } ]""");
+            """[ { "id": "fallback-item", "displayTitle": "Initial", "title": "T", "command": { "id": "fallback-command", "name": "T" } } ]""");
 
         var received = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
         fake.OnRequest("fallback/updateQuery", element =>
         {
-            received.TrySetResult(element.GetProperty("query").GetString() ?? string.Empty);
+            received.TrySetResult(
+                $"{element.GetProperty("commandId").GetString()}|{element.GetProperty("query").GetString()}");
             return null;
         });
 
         var provider = CreateProvider(fake);
         var fallback = provider.FallbackCommands()![0];
 
+        Assert.IsInstanceOfType(fallback, typeof(IFallbackCommandItem2));
+        Assert.AreEqual("fallback-item", ((IFallbackCommandItem2)fallback).Id);
+
         await Task.Run(() => fallback.FallbackHandler.UpdateQuery("typed"));
 
-        var query = await received.Task.WaitAsync(Timeout);
-        Assert.AreEqual("typed", query);
+        var request = await received.Task.WaitAsync(Timeout);
+        Assert.AreEqual("fallback-command|typed", request);
+    }
+
+    [TestMethod]
+    public async Task CommandPropChanged_UpdatesPageStateAndRaisesAbiProperty()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult(
+            "provider/getCommand",
+            """{ "id": "live-page", "pageType": "listPage", "name": "Page", "title": "Old", "isLoading": false }""");
+
+        var provider = CreateProvider(fake);
+        var page = (IListPage)provider.GetCommand("live-page")!;
+        var changed = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        ((INotifyPropChanged)page).PropChanged += (_, args) => changed.TrySetResult(args.PropertyName);
+
+        await fake.PushNotificationAsync(
+            "command/propChanged",
+            new JsonObject
+            {
+                ["commandId"] = "live-page",
+                ["properties"] = new JsonObject
+                {
+                    ["isLoading"] = true,
+                    ["title"] = "New",
+                },
+            });
+
+        Assert.AreEqual("IsLoading", await changed.Task.WaitAsync(Timeout));
+        Assert.IsTrue(page.IsLoading);
+        Assert.AreEqual("New", page.Title);
     }
 
     private static void AssertKind(JSFakeExtension fake, IInvokableCommand invokable, string resultJson, CommandResultKind expected)

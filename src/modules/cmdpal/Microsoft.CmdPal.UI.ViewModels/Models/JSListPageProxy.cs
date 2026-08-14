@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -23,7 +24,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Models;
 /// Items are fetched with <c>listPage/getItems</c> and the extension can push
 /// <c>listPage/itemsChanged</c> notifications to refresh the view.
 /// </summary>
-internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisposable
+internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
 {
     // Routing is scoped per connection so that identical page ids from different
     // extensions never collide. Each page id maps to the set of live proxies that
@@ -34,18 +35,15 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
     private static readonly ConditionalWeakTable<JsonRpcConnection, PageRegistry> Registries = new();
 
     private readonly string _pageId;
-    private readonly JsonRpcConnection _connection;
-    private readonly JsonElement _pageData;
     private readonly PageRegistry _registry;
     private readonly object _stateLock = new();
     private bool? _hasMoreItemsState;
     private bool _disposed;
 
     public JSListPageProxy(string pageId, JsonRpcConnection connection, JsonElement pageData = default)
+        : base(pageId, connection, pageData)
     {
         _pageId = pageId ?? throw new ArgumentNullException(nameof(pageId));
-        _connection = connection ?? throw new ArgumentNullException(nameof(connection));
-        _pageData = pageData;
 
         // Establish the retained registry first. The factory must stay free of
         // side effects: ConditionalWeakTable can invoke it on a thread that then
@@ -54,8 +52,8 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
         // that is thrown away while proxies register into a different one. The
         // handler is wired exactly once below, against the registry actually
         // retained.
-        _registry = Registries.GetValue(_connection, static _ => new PageRegistry());
-        _registry.EnsureSubscribed(_connection);
+        _registry = Registries.GetValue(Connection, static _ => new PageRegistry());
+        _registry.EnsureSubscribed(Connection);
 
         var list = _registry.Pages.GetOrAdd(_pageId, static _ => new List<WeakReference<JSListPageProxy>>());
         lock (list)
@@ -68,37 +66,37 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
 
     public string Id => _pageId;
 
-    public string Name => JSModelMapper.GetString(_pageData, "name") ?? string.Empty;
+    public string Name => JSModelMapper.GetString(Data, "name") ?? string.Empty;
 
-    public IIconInfo Icon => JSModelMapper.GetIcon(_pageData, "icon", "Icon");
+    public IIconInfo Icon => JSModelMapper.GetIcon(Data, "icon", "Icon");
 
-    public string Title => JSModelMapper.GetString(_pageData, "title") ?? Name;
+    public string Title => JSModelMapper.GetString(Data, "title") ?? Name;
 
-    public bool IsLoading => JSModelMapper.GetBool(_pageData, "isLoading", false);
+    public bool IsLoading => JSModelMapper.GetBool(Data, "isLoading", false);
 
-    public OptionalColor AccentColor => JSModelMapper.ParseColor(_pageData, "accentColor", "AccentColor");
+    public OptionalColor AccentColor => JSModelMapper.ParseColor(Data, "accentColor", "AccentColor");
 
-    public string SearchText => JSModelMapper.GetString(_pageData, "searchText") ?? string.Empty;
+    public string SearchText => JSModelMapper.GetString(Data, "searchText") ?? string.Empty;
 
-    public string PlaceholderText => JSModelMapper.GetString(_pageData, "placeholderText") ?? string.Empty;
+    public string PlaceholderText => JSModelMapper.GetString(Data, "placeholderText") ?? string.Empty;
 
-    public bool ShowDetails => JSModelMapper.GetBool(_pageData, "showDetails", false);
+    public bool ShowDetails => JSModelMapper.GetBool(Data, "showDetails", false);
 
     public IFilters? Filters
     {
         get
         {
-            if (JSModelMapper.TryGetAnyCase(_pageData, "filters", "Filters", out var filtersProp) &&
+            if (JSModelMapper.TryGetAnyCase(Data, "filters", "Filters", out var filtersProp) &&
                 filtersProp.ValueKind == JsonValueKind.Object)
             {
-                return new JSFiltersAdapter(filtersProp, _connection, _pageId);
+                return new JSFiltersAdapter(filtersProp, Connection, _pageId);
             }
 
             return null;
         }
     }
 
-    public IGridProperties? GridProperties => JSModelMapper.ParseGridProperties(_pageData);
+    public IGridProperties? GridProperties => JSModelMapper.ParseGridProperties(Data);
 
     // Pagination state is mutable: the extension reports whether more pages
     // remain via the getItems / loadMore responses and itemsChanged
@@ -110,7 +108,7 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
         {
             lock (_stateLock)
             {
-                return _hasMoreItemsState ?? JSModelMapper.GetBool(_pageData, "hasMoreItems", false);
+                return _hasMoreItemsState ?? JSModelMapper.GetBool(Data, "hasMoreItems", false);
             }
         }
     }
@@ -119,10 +117,10 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
     {
         get
         {
-            if (JSModelMapper.TryGetAnyCase(_pageData, "emptyContent", "EmptyContent", out var emptyProp) &&
+            if (JSModelMapper.TryGetAnyCase(Data, "emptyContent", "EmptyContent", out var emptyProp) &&
                 emptyProp.ValueKind == JsonValueKind.Object)
             {
-                return new JSCommandItemAdapter(emptyProp, _connection);
+                return new JSCommandItemAdapter(emptyProp, Connection);
             }
 
             return null;
@@ -133,7 +131,7 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
     {
         try
         {
-            var response = _connection.SendRequestAsync(
+            var response = Connection.SendRequestAsync(
                 "listPage/getItems",
                 new JsonObject { ["pageId"] = _pageId },
                 CancellationToken.None).GetAwaiter().GetResult();
@@ -167,7 +165,7 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
 
         try
         {
-            var response = _connection.SendRequestAsync(
+            var response = Connection.SendRequestAsync(
                 "listPage/loadMore",
                 new JsonObject { ["pageId"] = _pageId },
                 CancellationToken.None).GetAwaiter().GetResult();
@@ -316,7 +314,7 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
         ItemsChanged?.Invoke(this, new ItemsChangedEventArgs(totalItems));
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         if (_disposed)
         {
@@ -324,6 +322,8 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
         }
 
         _disposed = true;
+
+        base.Dispose();
 
         if (_registry.Pages.TryGetValue(_pageId, out var list))
         {
@@ -399,6 +399,28 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
         }
     }
 
+    protected override bool SupportsProperty(string propertyName) => propertyName switch
+    {
+        "id" or "name" or "icon" or "title" or "isLoading" or "accentColor" or
+        "searchText" or "placeholderText" or "showDetails" or "filters" or
+        "gridProperties" or "hasMoreItems" or "emptyContent" => true,
+        _ => false,
+    };
+
+    protected override void OnPropertyChangesApplied(IReadOnlyList<string> propertyNames)
+    {
+        if (!propertyNames.Contains("hasMoreItems"))
+        {
+            return;
+        }
+
+        var value = JSModelMapper.GetBool(Data, "hasMoreItems", false);
+        lock (_stateLock)
+        {
+            _hasMoreItemsState = value;
+        }
+    }
+
     private IListItem[] ParseListItems(JsonElement? result)
     {
         if (!result.HasValue)
@@ -428,7 +450,7 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
             }
             else
             {
-                items.Add(new JSListItemAdapter(element, _connection));
+                items.Add(new JSListItemAdapter(element, Connection));
             }
         }
 

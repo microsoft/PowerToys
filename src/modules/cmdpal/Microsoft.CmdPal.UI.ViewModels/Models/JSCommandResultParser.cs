@@ -94,6 +94,23 @@ internal static class JSCommandResultParser
 
         var toastArgs = new ToastArgs { Message = message };
 
+        if (args.ValueKind == JsonValueKind.Object &&
+            JSModelMapper.TryGetAnyCase(args, "icon", "Icon", out var iconProp))
+        {
+            toastArgs.Icon = JSModelMapper.ParseIconInfo(iconProp);
+        }
+
+        // Action commands require the live connection used by the command
+        // adapter. If parsing is used without one, keep the toast usable and
+        // omit only the unavailable action.
+        if (connection != null &&
+            args.ValueKind == JsonValueKind.Object &&
+            JSModelMapper.TryGetAnyCase(args, "command", "Command", out var commandProp) &&
+            commandProp.ValueKind == JsonValueKind.Object)
+        {
+            toastArgs.Command = JSCommandFactory.CreateCommandFromJson(commandProp, connection);
+        }
+
         // A toast can carry a nested continuation result that the shell executes
         // after the toast is shown. Parse it recursively so every nested kind
         // (including confirm, which needs the connection for its primary command,

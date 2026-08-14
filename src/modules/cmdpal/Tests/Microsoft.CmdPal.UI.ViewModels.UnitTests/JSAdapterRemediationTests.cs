@@ -92,6 +92,21 @@ public partial class JSAdapterRemediationTests
         Assert.AreEqual(CommandResultKind.GoHome, toastArgs.Result!.Kind);
     }
 
+    [TestMethod]
+    public void Toast_ParsesIconAndGracefullyOmitsActionWithoutConnection()
+    {
+        using var document = JsonDocument.Parse(
+            """{ "Kind": 6, "Args": { "Message": "Saved", "Icon": { "light": { "icon": "\uE700" } }, "Command": { "id": "undo", "name": "Undo" } } }""");
+
+        var result = JSCommandResultParser.ParseCommandResult(document.RootElement, null);
+        var toastArgs = (IToastArgs2)result.Args;
+
+        Assert.AreEqual(CommandResultKind.ShowToast, result.Kind);
+        Assert.AreEqual("Saved", toastArgs.Message);
+        Assert.AreEqual("\uE700", toastArgs.Icon.Light.Icon);
+        Assert.IsNull(toastArgs.Command);
+    }
+
     // p3-03: two references to the same pageId both receive items-changed.
     [TestMethod]
     public async Task ListPage_DuplicatePageReferencesBothReceiveNotifications()
