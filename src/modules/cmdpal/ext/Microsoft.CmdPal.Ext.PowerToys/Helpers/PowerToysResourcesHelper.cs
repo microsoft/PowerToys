@@ -35,6 +35,7 @@ internal static class PowerToysResourcesHelper
             SettingsWindow.EnvironmentVariables => "EnvironmentVariables.png",
             SettingsWindow.Awake => "Awake.png",
             SettingsWindow.PowerRename => "PowerRename.png",
+            SettingsWindow.Run => "PowerToysRun.png",
             SettingsWindow.ImageResizer => "ImageResizer.png",
             SettingsWindow.KBM => "KeyboardManager.png",
             SettingsWindow.MouseUtils => "MouseUtils.png",
@@ -52,6 +53,7 @@ internal static class PowerToysResourcesHelper
             SettingsWindow.MouseWithoutBorders => "MouseWithoutBorders.png",
             SettingsWindow.PowerAccent => "QuickAccent.png",
             SettingsWindow.PowerLauncher => "PowerToysRun.png",
+            SettingsWindow.PowerPreview => "FileExplorerPreview.png",
             SettingsWindow.Overview => "PowerToys.png",
             SettingsWindow.Dashboard => "PowerToys.png",
             _ => "PowerToys.png",
@@ -75,6 +77,7 @@ internal static class PowerToysResourcesHelper
             SettingsWindow.EnvironmentVariables => "Environment Variables",
             SettingsWindow.Awake => "Awake",
             SettingsWindow.PowerRename => "PowerRename",
+            SettingsWindow.Run => "PowerToys Run",
             SettingsWindow.ImageResizer => "Image Resizer",
             SettingsWindow.KBM => "Keyboard Manager",
             SettingsWindow.MouseUtils => "Mouse Utilities",
@@ -94,6 +97,7 @@ internal static class PowerToysResourcesHelper
             SettingsWindow.Overview => "General",
             SettingsWindow.Dashboard => "Dashboard",
             SettingsWindow.PowerLauncher => "PowerToys Run",
+            SettingsWindow.PowerPreview => "File Explorer Add-ons",
             _ => module.ToString(),
         };
     }
