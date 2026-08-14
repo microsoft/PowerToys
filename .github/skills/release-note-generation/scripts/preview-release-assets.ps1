@@ -14,6 +14,40 @@ function Test-PreviewReleaseAssetBuildMarker {
     return [int]$marker.buildId -eq $BuildId -and [string]$marker.version -eq $Version
 }
 
+function Assert-PreviewReleaseZipReadable {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$Path)
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $archive = [System.IO.Compression.ZipFile]::OpenRead($Path)
+    try {
+        if ($archive.Entries.Count -eq 0) {
+            throw "ZIP archive '$Path' is empty."
+        }
+
+        $buffer = [byte[]]::new(81920)
+        foreach ($entry in $archive.Entries) {
+            if ([string]::IsNullOrEmpty($entry.Name)) {
+                continue
+            }
+
+            $stream = $entry.Open()
+            try {
+                while ($stream.Read($buffer, 0, $buffer.Length) -gt 0) {
+                }
+            }
+            finally {
+                $stream.Dispose()
+            }
+        }
+
+        return @($archive.Entries | ForEach-Object { $_.FullName.Replace("\", "/") })
+    }
+    finally {
+        $archive.Dispose()
+    }
+}
+
 function Get-PreviewReleaseAssets {
     [CmdletBinding()]
     param(

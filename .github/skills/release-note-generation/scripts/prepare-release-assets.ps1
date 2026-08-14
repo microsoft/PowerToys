@@ -156,22 +156,6 @@ function Get-RemoteHash {
     }
 }
 
-function Assert-ZipReadable {
-    param([Parameter(Mandatory)][string]$Path)
-
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    $archive = [System.IO.Compression.ZipFile]::OpenRead($Path)
-    try {
-        if ($archive.Entries.Count -eq 0) {
-            throw "ZIP archive '$Path' is empty."
-        }
-        return @($archive.Entries | ForEach-Object { $_.FullName.Replace("\", "/") })
-    }
-    finally {
-        $archive.Dispose()
-    }
-}
-
 # -----------------------------------------------------------------------------
 
 # Work around broken az extensions: if the default extension dir has
@@ -331,7 +315,7 @@ if ((Test-Path -LiteralPath $gpoPath) -and -not $sameBuild) {
 }
 elseif (Test-Path -LiteralPath $gpoPath) {
     try {
-        Assert-ZipReadable -Path $gpoPath | Out-Null
+        Assert-PreviewReleaseZipReadable -Path $gpoPath | Out-Null
     }
     catch {
         Write-Host "[update] $gpoFileName is corrupt and will be downloaded again" -ForegroundColor Yellow
@@ -357,7 +341,7 @@ foreach ($s in $symbolTargets) {
     }
     elseif (Test-Path -LiteralPath $finalZip) {
         try {
-            Assert-ZipReadable -Path $finalZip | Out-Null
+            Assert-PreviewReleaseZipReadable -Path $finalZip | Out-Null
         }
         catch {
             Write-Host "[update] symbols-$($s.Arch).zip is corrupt and will be downloaded again" -ForegroundColor Yellow
@@ -475,7 +459,7 @@ foreach ($t in $targets) {
     }
 }
 
-$gpoEntries = @(Assert-ZipReadable -Path $gpoPath)
+$gpoEntries = @(Assert-PreviewReleaseZipReadable -Path $gpoPath)
 if (-not ($gpoEntries | Where-Object { $_ -match "(^|/)PowerToys\.admx$" })) {
     throw "GPO archive '$gpoFileName' does not contain PowerToys.admx."
 }
@@ -485,7 +469,7 @@ if (-not ($gpoEntries | Where-Object { $_ -match "(^|/)en-US/PowerToys\.adml$" }
 
 foreach ($zipName in @($gpoFileName, "symbols-x64.zip", "symbols-arm64.zip")) {
     $path = Join-Path $destFolder $zipName
-    $entries = @(Assert-ZipReadable -Path $path)
+    $entries = @(Assert-PreviewReleaseZipReadable -Path $path)
     $file = Get-Item -LiteralPath $path
     if ($file.Length -le 0) {
         throw "Archive '$zipName' is empty."

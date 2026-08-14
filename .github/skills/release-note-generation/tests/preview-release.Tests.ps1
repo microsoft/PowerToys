@@ -148,6 +148,42 @@ Describe "preview release asset build marker" {
     }
 }
 
+Describe "preview release ZIP validation" {
+    BeforeAll {
+        . (Join-Path $scripts "preview-release-assets.ps1")
+    }
+
+    It "reads valid entry payloads" {
+        $zipPath = Join-Path $TestDrive "valid.zip"
+        $filePath = Join-Path $TestDrive "payload.txt"
+        "PowerToys preview release payload" | Set-Content -LiteralPath $filePath
+        Compress-Archive -LiteralPath $filePath -DestinationPath $zipPath
+
+        $entries = @(Assert-PreviewReleaseZipReadable -Path $zipPath)
+
+        $entries.Count | Should Be 1
+        $entries[0] | Should Be "payload.txt"
+    }
+
+    It "rejects a corrupt compressed payload with an intact directory" {
+        $zipPath = Join-Path $TestDrive "corrupt.zip"
+        $filePath = Join-Path $TestDrive "corrupt-payload.txt"
+        ("PowerToys preview release payload " * 100) | Set-Content -LiteralPath $filePath
+        Compress-Archive -LiteralPath $filePath -DestinationPath $zipPath
+
+        $bytes = [System.IO.File]::ReadAllBytes($zipPath)
+        $fileNameLength = [BitConverter]::ToUInt16($bytes, 26)
+        $extraLength = [BitConverter]::ToUInt16($bytes, 28)
+        $payloadOffset = 30 + $fileNameLength + $extraLength
+        $bytes[$payloadOffset] = 0xFF
+        [System.IO.File]::WriteAllBytes($zipPath, $bytes)
+
+        Assert-Throws {
+            Assert-PreviewReleaseZipReadable -Path $zipPath
+        }
+    }
+}
+
 Describe "preview release build metadata" {
     It "supports a main-branch candidate regardless of release intent" {
         $buildPath = Join-Path $TestDrive "build.json"
