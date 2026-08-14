@@ -36,6 +36,7 @@ public sealed class SettingsLinkResolver : ISettingsLinkResolver
         CreateTarget(SettingsLinkIds.Appearance.DisableAnimations, SettingsPageTags.Appearance, "disable-animations"),
         CreateTarget(SettingsLinkIds.Appearance.Layout, SettingsPageTags.Appearance, "layout-section"),
         CreateTarget(SettingsLinkIds.Appearance.CompactMode, SettingsPageTags.Appearance, "compact-mode"),
+        CreateTarget(SettingsLinkIds.Appearance.HomeRecentCommands, SettingsPageTags.Appearance, "home-recent-commands"),
         CreateTarget(SettingsLinkIds.Appearance.LaunchPosition, SettingsPageTags.Appearance, "launch-position"),
         CreateTarget(SettingsLinkIds.Appearance.ToastPosition, SettingsPageTags.Appearance, "toast-position"),
         CreateTarget(SettingsLinkIds.Appearance.Interaction, SettingsPageTags.Appearance, "interaction-section"),
