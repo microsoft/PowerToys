@@ -188,8 +188,6 @@ internal static class DragDrop
     {
         Logger.LogDebug("DragDropStep05 called.");
 
-        _ = Interlocked.Exchange(ref dragDropStep05ExCalledByIpc, 1);
-
         if (Common.RunOnLogonDesktop || Common.RunOnScrSaverDesktop)
         {
             return;
@@ -208,6 +206,8 @@ internal static class DragDrop
                 Logger.LogDebug("DragDropStep05: Ignoring a stale drag validation callback.");
                 return;
             }
+
+            _ = Interlocked.Exchange(ref dragDropStep05ExCalledByIpc, 1);
 
             if (!MouseDown)
             {
