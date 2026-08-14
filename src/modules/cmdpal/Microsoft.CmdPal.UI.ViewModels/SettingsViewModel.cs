@@ -160,6 +160,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         {
             _settingsService.UpdateSettings(s => s with { CompactMode = value });
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactMode)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanConfigureQuickAccessShelf)));
         }
     }
 
@@ -169,6 +170,27 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         set
         {
             _settingsService.UpdateSettings(s => s with { ShowQuickAccessShelf = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanConfigureQuickAccessShelf)));
+        }
+    }
+
+    public bool CanConfigureQuickAccessShelf => CompactMode && ShowQuickAccessShelf;
+
+    public bool ShowRecentCommandsInQuickAccessShelf
+    {
+        get => _settingsService.Settings.ShowRecentCommandsInQuickAccessShelf;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { ShowRecentCommandsInQuickAccessShelf = value });
+        }
+    }
+
+    public int RecentCommandsOnHomeIndex
+    {
+        get => (int)_settingsService.Settings.RecentCommandsOnHome;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { RecentCommandsOnHome = (HomeRecentCommandsPlacement)value });
         }
     }
 

@@ -299,6 +299,13 @@
                                     AutomationProperties.AutomationId="CmdPal_GeneralPage_QuickAccessShelf"
                                     IsOn="{x:Bind ViewModel.ShowQuickAccessShelf, Mode=TwoWay}" />
                             </controls:SettingsCard>
+                            <controls:SettingsCard
+                                x:Uid="Settings_GeneralPage_QuickAccessShelfRecentCommands_SettingsCard"
+                                IsEnabled="{x:Bind ViewModel.CanConfigureQuickAccessShelf, Mode=OneWay}">
+                                <ToggleSwitch
+                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_QuickAccessShelfRecentCommands"
+                                    IsOn="{x:Bind ViewModel.ShowRecentCommandsInQuickAccessShelf, Mode=TwoWay}" />
+                            </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="Settings_GeneralPage_CompactCenterHeight_SettingsCard" IsEnabled="{x:Bind ViewModel.CompactMode, Mode=OneWay}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -313,6 +320,19 @@
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
+
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_HomeRecentCommands_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE81C;}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="CmdPal_GeneralPage_HomeRecentCommands"
+                            SelectedIndex="{x:Bind ViewModel.RecentCommandsOnHomeIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_HomeRecentCommands_Hidden" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_HomeRecentCommands_BeforePinned" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_HomeRecentCommands_AfterPinned" />
+                        </ComboBox>
+                    </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
                         <ComboBox

@@ -57,13 +57,17 @@ public sealed partial class MainListPage : DynamicListPage,
     // Stable separator instances so that the VM cache and InPlaceUpdateList
     // recognise them across successive GetItems() calls
     private readonly Separator _pinnedSeparator = new(Resources.home_sections_pinned_title);
+    private readonly Separator _recentSeparator = new(Resources.home_sections_recent_title);
     private readonly Separator _resultsSeparator = new(Resources.results);
     private readonly Separator _fallbacksSeparator = new(Resources.fallbacks);
     private readonly Separator _commandsSeparator = new(Resources.home_sections_commands_title);
 
-    private TopLevelViewModel[]? _cachedPinnedViewModels;
-    private TopLevelViewModel[]? _cachedRegularViewModels;
+    private IListItem[]? _cachedPinnedViewModels;
+    private IListItem[]? _cachedRecentViewModels;
+    private IListItem[]? _cachedRegularViewModels;
     private bool _defaultViewDirty = true;
+    private volatile RecentCommandsManager _recentCommands;
+    private HomeRecentCommandsPlacement _recentCommandsOnHome;
 
     private RoScored<IListItem>[]? _filteredItems;
     private RoScored<IListItem>[]? _filteredApps;
@@ -121,6 +125,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _settingsService = settingsService;
         _aliasManager = aliasManager;
         _appStateService = appStateService;
+        _recentCommands = _appStateService.State.RecentCommands;
         _tlcManager = topLevelCommandManager;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
         _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateService.State.RecentCommands, _fuzzyMatcherProvider.Current, ResolveProviderSearchWeight);
@@ -165,6 +170,7 @@ public sealed partial class MainListPage : DynamicListPage,
             RaiseItemsChangedThrottle);
 
         _fallbackUpdateManager = new FallbackUpdateManager(() => RequestRefresh(fullRefresh: false));
+        _appStateService.StateChanged += AppStateService_StateChanged;
 
         // The all apps page will kick off a BG thread to start loading apps.
         // We just want to know when it is done.
@@ -194,6 +200,11 @@ public sealed partial class MainListPage : DynamicListPage,
         if (e.PropertyName == nameof(AllAppsCommandProvider.Page.IsLoading))
         {
             IsLoading = ActuallyLoading();
+            if (!AllAppsCommandProvider.Page.IsLoading && _recentCommandsOnHome != HomeRecentCommandsPlacement.Hidden)
+            {
+                _defaultViewDirty = true;
+                RequestRefresh(fullRefresh: false);
+            }
         }
     }
 
@@ -213,6 +224,21 @@ public sealed partial class MainListPage : DynamicListPage,
         }
         else
         {
+            RequestRefresh(fullRefresh: false);
+        }
+    }
+
+    private void AppStateService_StateChanged(IAppStateService sender, AppStateModel args)
+    {
+        if (ReferenceEquals(_recentCommands, args.RecentCommands))
+        {
+            return;
+        }
+
+        _recentCommands = args.RecentCommands;
+        if (_recentCommandsOnHome != HomeRecentCommandsPlacement.Hidden)
+        {
+            _defaultViewDirty = true;
             RequestRefresh(fullRefresh: false);
         }
     }
@@ -274,9 +300,14 @@ public sealed partial class MainListPage : DynamicListPage,
 
     public override IListItem[] GetItems()
     {
+        if (string.IsNullOrWhiteSpace(SearchText))
+        {
+            return GetDefaultViewItems();
+        }
+
         lock (_tlcManager.TopLevelCommands)
         {
-            return string.IsNullOrWhiteSpace(SearchText) ? GetDefaultViewItems() : GetSearchViewItems();
+            return GetSearchViewItems();
         }
     }
 
@@ -411,70 +442,78 @@ public sealed partial class MainListPage : DynamicListPage,
         }
 
         var pinned = _cachedPinnedViewModels!;
+        var recent = _cachedRecentViewModels!;
         var regular = _cachedRegularViewModels!;
         var pinnedCount = pinned.Length;
+        var recentCount = recent.Length;
         var regularCount = regular.Length;
 
-        var sectionCount = (pinnedCount > 0 ? 1 : 0) + (regularCount > 0 ? 1 : 0);
+        var sectionCount =
+            (pinnedCount > 0 ? 1 : 0) +
+            (recentCount > 0 ? 1 : 0) +
+            (regularCount > 0 ? 1 : 0);
         if (sectionCount == 0)
         {
             return [];
         }
 
-        var result = new IListItem[pinnedCount + regularCount + sectionCount];
+        var result = new IListItem[pinnedCount + recentCount + regularCount + sectionCount];
         var writeIndex = 0;
-        if (pinnedCount > 0)
+
+        void AppendSection(Separator separator, IListItem[] items)
         {
-            result[writeIndex++] = _pinnedSeparator;
-            Array.Copy(pinned, 0, result, writeIndex, pinnedCount);
-            writeIndex += pinnedCount;
+            if (items.Length == 0)
+            {
+                return;
+            }
+
+            result[writeIndex++] = separator;
+            Array.Copy(items, 0, result, writeIndex, items.Length);
+            writeIndex += items.Length;
         }
 
-        if (regularCount > 0)
+        if (_recentCommandsOnHome == HomeRecentCommandsPlacement.BeforePinned)
         {
-            result[writeIndex++] = _commandsSeparator;
-            Array.Copy(regular, 0, result, writeIndex, regularCount);
+            AppendSection(_recentSeparator, recent);
+            AppendSection(_pinnedSeparator, pinned);
         }
+        else
+        {
+            AppendSection(_pinnedSeparator, pinned);
+            AppendSection(_recentSeparator, recent);
+        }
+
+        AppendSection(_commandsSeparator, regular);
 
         return result;
     }
 
     private void RebuildDefaultViewCache()
     {
-        var allCommands = _tlcManager.TopLevelCommands;
-        var pinnedSettings = _tlcManager.PinnedCommands;
-
-        // Resolve pinned VMs in settings order
-        var pinned = new List<TopLevelViewModel>(pinnedSettings.Count);
-        for (var i = 0; i < pinnedSettings.Count; i++)
+        PinnedCommandSettings[] pinnedSettings;
+        lock (_tlcManager.PinnedCommands)
         {
-            var s = pinnedSettings[i];
-            for (var j = 0; j < allCommands.Count; j++)
-            {
-                var cmd = allCommands[j];
-                if (TopLevelCommandEligibility.IsEligibleForHome(cmd) &&
-                    cmd.CommandProviderId == s.ProviderId &&
-                    cmd.Id == s.CommandId)
-                {
-                    pinned.Add(cmd);
-                    break;
-                }
-            }
+            pinnedSettings = [.. _tlcManager.PinnedCommands];
         }
 
-        // Single pass for regular items
-        var regular = new List<TopLevelViewModel>(allCommands.Count);
-        for (var i = 0; i < allCommands.Count; i++)
+        TopLevelViewModel[] allCommands;
+        lock (_tlcManager.TopLevelCommands)
         {
-            var candidate = allCommands[i];
-            if (TopLevelCommandEligibility.IsEligibleForHome(candidate) && !_tlcManager.IsPinned(candidate.CommandProviderId, candidate.Id))
-            {
-                regular.Add(candidate);
-            }
+            allCommands = [.. _tlcManager.TopLevelCommands];
         }
 
-        _cachedPinnedViewModels = [.. pinned];
-        _cachedRegularViewModels = [.. regular];
+        IEnumerable<string> recentCommandIds = _recentCommandsOnHome == HomeRecentCommandsPlacement.Hidden
+            ? []
+            : _recentCommands.EnumerateRecentCommandIds();
+        var sections = TopLevelCommandResolver.Resolve(
+            pinnedSettings,
+            recentCommandIds,
+            allCommands,
+            includeApps: _includeApps);
+
+        _cachedPinnedViewModels = [.. sections.Pinned];
+        _cachedRecentViewModels = [.. sections.Recent];
+        _cachedRegularViewModels = [.. sections.Regular];
         _defaultViewDirty = false;
     }
 
@@ -1017,6 +1056,13 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         ShowDetails = settings.ShowAppDetails;
 
+        if (_recentCommandsOnHome != settings.RecentCommandsOnHome)
+        {
+            _recentCommandsOnHome = settings.RecentCommandsOnHome;
+            _defaultViewDirty = true;
+            RequestRefresh(fullRefresh: false);
+        }
+
         // A per-provider search-weight change has to reorder the query that is already on screen.
         // Scoring reads the weight live, but scored results are cached, so without an explicit
         // re-score the active query keeps its old order until the next keystroke. Detect a weight
@@ -1083,6 +1129,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
         _tlcManager.PinnedCommands.CollectionChanged -= PinnedCommands_CollectionChanged;
+        _appStateService.StateChanged -= AppStateService_StateChanged;
 
         AllAppsCommandProvider.Page.PropChanged -= AllApps_PropChanged;
 
