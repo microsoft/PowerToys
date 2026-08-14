@@ -100,18 +100,27 @@ public class SettingsServiceTests
 
         Assert.IsNotNull(settings);
         Assert.IsFalse(settings.ShowQuickAccessShelf);
+        Assert.IsFalse(settings.ShowRecentCommandsInQuickAccessShelf);
+        Assert.AreEqual(HomeRecentCommandsPlacement.Hidden, settings.RecentCommandsOnHome);
     }
 
     [TestMethod]
     public void QuickAccessShelf_ExplicitValueRoundTrips()
     {
-        var source = CreateMinimalSettingsModel() with { ShowQuickAccessShelf = true };
+        var source = CreateMinimalSettingsModel() with
+        {
+            ShowQuickAccessShelf = true,
+            ShowRecentCommandsInQuickAccessShelf = true,
+            RecentCommandsOnHome = HomeRecentCommandsPlacement.BeforePinned,
+        };
 
         var json = System.Text.Json.JsonSerializer.Serialize(source, JsonSerializationContext.Default.SettingsModel);
         var settings = System.Text.Json.JsonSerializer.Deserialize(json, JsonSerializationContext.Default.SettingsModel);
 
         Assert.IsNotNull(settings);
         Assert.IsTrue(settings.ShowQuickAccessShelf);
+        Assert.IsTrue(settings.ShowRecentCommandsInQuickAccessShelf);
+        Assert.AreEqual(HomeRecentCommandsPlacement.BeforePinned, settings.RecentCommandsOnHome);
     }
 
     [TestMethod]

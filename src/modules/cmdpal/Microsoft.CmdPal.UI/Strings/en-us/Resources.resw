@@ -413,7 +413,28 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Quick access shelf</value>
   </data>
   <data name="Settings_GeneralPage_QuickAccessShelf_SettingsCard.Description" xml:space="preserve">
-    <value>Shows pinned home commands below the search box while compact mode is collapsed. Use Alt+1 through Alt+9 for the first nine visible commands and Alt+0 for overflow.</value>
+    <value>Shows pinned home commands below the search box while compact mode is collapsed. Use Alt+1 through Alt+9 for the first nine visible pinned commands and Alt+0 for overflow.</value>
+  </data>
+  <data name="Settings_GeneralPage_QuickAccessShelfRecentCommands_SettingsCard.Header" xml:space="preserve">
+    <value>Include recent commands</value>
+  </data>
+  <data name="Settings_GeneralPage_QuickAccessShelfRecentCommands_SettingsCard.Description" xml:space="preserve">
+    <value>Adds up to five recently used home commands after pinned commands on the quick access shelf.</value>
+  </data>
+  <data name="Settings_GeneralPage_HomeRecentCommands_SettingsCard.Header" xml:space="preserve">
+    <value>Recent commands on Home</value>
+  </data>
+  <data name="Settings_GeneralPage_HomeRecentCommands_SettingsCard.Description" xml:space="preserve">
+    <value>Show up to five recently used commands before or after the Pinned section.</value>
+  </data>
+  <data name="Settings_GeneralPage_HomeRecentCommands_Hidden.Content" xml:space="preserve">
+    <value>Don't show</value>
+  </data>
+  <data name="Settings_GeneralPage_HomeRecentCommands_BeforePinned.Content" xml:space="preserve">
+    <value>Before pinned</value>
+  </data>
+  <data name="Settings_GeneralPage_HomeRecentCommands_AfterPinned.Content" xml:space="preserve">
+    <value>After pinned</value>
   </data>
   <data name="QuickAccessShelfSurface.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Quick access</value>

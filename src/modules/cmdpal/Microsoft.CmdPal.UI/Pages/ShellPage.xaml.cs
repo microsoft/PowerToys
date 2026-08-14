@@ -146,7 +146,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _quickAccessShelfEnabled = settings.ShowQuickAccessShelf;
         this.ExpandedMode = !_compactMode;
 
-        QuickAccessShelf = new(App.Current.Services.GetRequiredService<TopLevelCommandManager>(), _mainTaskScheduler);
+        QuickAccessShelf = new(
+            App.Current.Services.GetRequiredService<TopLevelCommandManager>(),
+            App.Current.Services.GetRequiredService<IAppStateService>(),
+            settings.ShowQuickAccessShelf && settings.ShowRecentCommandsInQuickAccessShelf,
+            _mainTaskScheduler);
         QuickAccessShelf.PropertyChanged += QuickAccessShelf_PropertyChanged;
 
         this.InitializeComponent();
@@ -980,7 +984,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private static void InvokeQuickAccessShelfItem(QuickAccessShelfItem item)
     {
-        WeakReferenceMessenger.Default.Send(item.Command.GetPerformCommandMessage());
+        WeakReferenceMessenger.Default.Send(item.GetPerformCommandMessage());
     }
 
     private void QuickAccessShelfItemsHost_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -1004,17 +1008,22 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         foreach (var item in QuickAccessShelf.OverflowItems)
         {
+            if (item.StartsRecentSection && QuickAccessOverflowFlyout.Items.Count > 0)
+            {
+                QuickAccessOverflowFlyout.Items.Add(new MenuFlyoutSeparator());
+            }
+
             var iconBox = new IconBox
             {
                 Width = 16,
                 Height = 16,
-                SourceKey = item.Command.IconViewModel,
+                SourceKey = item.Icon,
             };
             iconBox.SourceRequested += IconProvider.SourceRequested16;
 
             var menuItem = new MenuFlyoutItem
             {
-                Text = item.Command.Title,
+                Text = item.Title,
                 Tag = item,
                 Icon = new ContentIcon { Content = iconBox },
             };
@@ -1041,8 +1050,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // invoke the current view model for the same command rather than the stale snapshot.
         foreach (var currentItem in QuickAccessShelf.Items)
         {
-            if (currentItem.Command.CommandProviderId == snapshotItem.Command.CommandProviderId &&
-                currentItem.Command.Id == snapshotItem.Command.Id)
+            if (currentItem.ProviderId == snapshotItem.ProviderId &&
+                currentItem.CommandId == snapshotItem.CommandId)
             {
                 InvokeQuickAccessShelfItem(currentItem);
                 return;
@@ -1204,8 +1213,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // state single-threaded regardless of which thread raises the event.
         var compactMode = args.CompactMode;
         var quickAccessShelfEnabled = args.ShowQuickAccessShelf;
+        var includeRecentCommands = args.ShowQuickAccessShelf && args.ShowRecentCommandsInQuickAccessShelf;
         this.DispatcherQueue.TryEnqueue(() =>
         {
+            QuickAccessShelf.SetIncludeRecentCommands(includeRecentCommands);
+
             var compactModeChanged = compactMode != _compactMode;
             var quickAccessShelfChanged = quickAccessShelfEnabled != _quickAccessShelfEnabled;
             if (!compactModeChanged && !quickAccessShelfChanged)

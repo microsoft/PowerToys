@@ -52,6 +52,10 @@ public record SettingsModel
 
     public bool ShowQuickAccessShelf { get; init; }
 
+    public bool ShowRecentCommandsInQuickAccessShelf { get; init; }
+
+    public HomeRecentCommandsPlacement RecentCommandsOnHome { get; init; }
+
     // When compact mode is on and the palette is centered on launch, this is the relative
     // height from the bottom of the screen (as a percentage) at which the collapsed search
     // box is vertically centered. 75 places it in the upper portion of the display. Ignored
@@ -478,4 +482,11 @@ public enum EscapeKeyBehavior
     AlwaysGoBack = 1,
     AlwaysDismiss = 2,
     AlwaysHide = 3,
+}
+
+public enum HomeRecentCommandsPlacement
+{
+    Hidden = 0,
+    BeforePinned = 1,
+    AfterPinned = 2,
 }
