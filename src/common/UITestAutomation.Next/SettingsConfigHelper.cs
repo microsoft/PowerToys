@@ -15,6 +15,43 @@ namespace Microsoft.PowerToys.UITest.Next;
 public static class SettingsConfigHelper
 {
     private static readonly JsonSerializerOptions Indented = new() { WriteIndented = true };
+    private static readonly string[] KnownModuleNames =
+    [
+        "AdvancedPaste",
+        "AlwaysOnTop",
+        "Awake",
+        "CmdNotFound",
+        "CmdPal",
+        "ColorPicker",
+        "CropAndLock",
+        "CursorWrap",
+        "EnvironmentVariables",
+        "FancyZones",
+        "File Explorer Preview",
+        "File Locksmith",
+        "FindMyMouse",
+        "GrabAndMove",
+        "Hosts",
+        "Image Resizer",
+        "Keyboard Manager",
+        "LightSwitch",
+        "Measure Tool",
+        "MouseHighlighter",
+        "MouseJump",
+        "MousePointerCrosshairs",
+        "MouseWithoutBorders",
+        "NewPlus",
+        "Peek",
+        "PowerDisplay",
+        "PowerRename",
+        "PowerToys Run",
+        "QuickAccent",
+        "RegistryPreview",
+        "Shortcut Guide",
+        "TextExtractor",
+        "Workspaces",
+        "ZoomIt",
+    ];
 
     /// <summary>Root of the per-user PowerToys settings: <c>%LocalAppData%\Microsoft\PowerToys</c>.</summary>
     public static string PowerToysSettingsRoot => Path.Combine(
@@ -25,9 +62,25 @@ public static class SettingsConfigHelper
     private static string GlobalSettingsPath => Path.Combine(PowerToysSettingsRoot, "settings.json");
 
     /// <summary>
+    /// Snapshot a module's <c>settings.json</c> and restore its exact bytes on disposal, deleting the
+    /// file instead when the test created it. Use before a suite mutates persistent profile settings.
+    /// </summary>
+    public static IDisposable PreserveModuleSettings(string moduleName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(moduleName);
+        return PreserveFile(Path.Combine(PowerToysSettingsRoot, moduleName, "settings.json"));
+    }
+
+    internal static IDisposable PreserveFile(string path)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        return new FileSnapshot(path);
+    }
+
+    /// <summary>
     /// Enable exactly the named modules in the global <c>settings.json</c> and disable every other
-    /// module already listed. Module names are the keys under <c>"enabled"</c> (e.g. "FancyZones",
-    /// "ColorPicker", "Peek"). Creates the file and keys when missing.
+    /// known or already-listed module. Module names are the keys under <c>"enabled"</c>
+    /// (e.g. "FancyZones", "ColorPicker", "Peek"). Creates the file and keys when missing.
     /// </summary>
     public static void ConfigureGlobalModuleSettings(params string[]? modulesToEnable)
     {
@@ -38,25 +91,34 @@ public static class SettingsConfigHelper
             ? (JsonNode.Parse(File.ReadAllText(GlobalSettingsPath)) as JsonObject) ?? new JsonObject()
             : new JsonObject();
 
+        ConfigureGlobalModuleSettings(root, modulesToEnable);
+        File.WriteAllText(GlobalSettingsPath, root.ToJsonString(Indented));
+    }
+
+    internal static void ConfigureGlobalModuleSettings(JsonObject root, params string[] modulesToEnable)
+    {
         if (root["enabled"] is not JsonObject enabled)
         {
             enabled = new JsonObject();
             root["enabled"] = enabled;
         }
 
-        // Flip every already-listed module based on membership (disables the rest).
+        var requestedModules = modulesToEnable.ToHashSet(StringComparer.Ordinal);
+
         foreach (var key in enabled.Select(kv => kv.Key).ToList())
         {
-            enabled[key] = modulesToEnable.Any(m => string.Equals(m, key, StringComparison.Ordinal));
+            enabled[key] = requestedModules.Contains(key);
         }
 
-        // Ensure the requested modules are present and enabled even if not previously listed.
-        foreach (var module in modulesToEnable)
+        foreach (var module in KnownModuleNames)
+        {
+            enabled[module] = requestedModules.Contains(module);
+        }
+
+        foreach (var module in requestedModules)
         {
             enabled[module] = true;
         }
-
-        File.WriteAllText(GlobalSettingsPath, root.ToJsonString(Indented));
     }
 
     /// <summary>
@@ -134,5 +196,39 @@ public static class SettingsConfigHelper
         updateSettingsAction(settings);
 
         File.WriteAllText(settingsPath, settings.ToJsonString(Indented));
+    }
+
+    private sealed class FileSnapshot : IDisposable
+    {
+        private readonly string path;
+        private readonly bool existed;
+        private readonly byte[]? content;
+        private bool disposed;
+
+        public FileSnapshot(string path)
+        {
+            this.path = path;
+            existed = File.Exists(path);
+            content = existed ? File.ReadAllBytes(path) : null;
+        }
+
+        public void Dispose()
+        {
+            if (disposed)
+            {
+                return;
+            }
+
+            disposed = true;
+            if (existed)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                File.WriteAllBytes(path, content!);
+            }
+            else
+            {
+                File.Delete(path);
+            }
+        }
     }
 }
