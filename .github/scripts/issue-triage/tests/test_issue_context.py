@@ -338,6 +338,17 @@ class IssueContextTests(unittest.TestCase):
         }
         self.assertEqual(CONTEXT.should_process(event, None), (False, False))
 
+    def test_dedupe_digest_issue_is_never_triaged(self):
+        event = {
+            "action": "opened",
+            "sender": {"login": "github-actions[bot]"},
+            "issue": {
+                "number": 11,
+                "labels": [{"name": "dedupe-digest"}],
+            },
+        }
+        self.assertEqual(CONTEXT.should_process(event, None), (False, False))
+
     def test_unrelated_comment_writes_noop(self):
         event = {
             "action": "created",
