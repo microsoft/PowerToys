@@ -119,6 +119,9 @@ function serializeToast(
 ): Record<string, unknown> {
   const typed = args as Partial<ToastArgs>;
   const wire: Record<string, unknown> = { Message: requireString('showToast', args, 'message') };
+  if (typed.icon !== undefined) {
+    wire.Icon = typed.icon;
+  }
   if (typed.result !== undefined) {
     if (!isRecord(typed.result) || typeof (typed.result as CommandResult).kind !== 'string') {
       throw new InvalidCommandResultError(
@@ -126,6 +129,14 @@ function serializeToast(
       );
     }
     wire.Result = serializeCommandResult(typed.result, serializeCommand);
+  }
+  if (typed.command !== undefined) {
+    if (!isCommand(typed.command)) {
+      throw new InvalidCommandResultError(
+        'Command result "showToast" requires a valid "command" argument.',
+      );
+    }
+    wire.Command = serializeCommand(typed.command);
   }
   return wire;
 }

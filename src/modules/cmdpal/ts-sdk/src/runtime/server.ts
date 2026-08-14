@@ -14,6 +14,7 @@ import type {
   IExtensionHost,
   MessageState,
   ProgressState,
+  StatusContext,
 } from '../types.js';
 import { encodeMessage, MessageFramer } from './framing.js';
 import { JSONRPC_VERSION, isNotification, isRequest, type JsonRpcMessage } from './jsonrpc.js';
@@ -182,7 +183,7 @@ const ExtensionHostBridgeProxy: IExtensionHost = {
   log: (message, state) => {
     ExtensionHost.log(message, state);
   },
-  showStatus: (message, state, progress) => ExtensionHost.showStatus(message, state, progress),
+  showStatus: (message, state, progress, context) => ExtensionHost.showStatus(message, state, progress, context),
   updateStatus: (statusId, message, state, progress) => {
     ExtensionHost.updateStatus(statusId, message, state, progress);
   },
@@ -198,6 +199,7 @@ interface TrackedStatus {
   message: string;
   state: MessageState;
   progress?: ProgressState;
+  context: StatusContext;
 }
 
 /**
@@ -221,7 +223,7 @@ export function createHostBridge(
       statusId,
       message: { Message: tracked.message, State: MESSAGE_STATE_VALUE[tracked.state] },
       progress: tracked.progress,
-      context: 'extension',
+      context: tracked.context,
     });
   };
 
@@ -229,10 +231,15 @@ export function createHostBridge(
     log(message: string, state: MessageState = 'info'): void {
       notify('host/logMessage', { message, state: MESSAGE_STATE_VALUE[state] });
     },
-    showStatus(message: string, state: MessageState = 'info', progress?: ProgressState): string {
+    showStatus(
+      message: string,
+      state: MessageState = 'info',
+      progress?: ProgressState,
+      context: StatusContext = 'extension',
+    ): string {
       statusCounter += 1;
       const statusId = `status-${String(statusCounter)}`;
-      const tracked: TrackedStatus = { message, state, progress };
+      const tracked: TrackedStatus = { message, state, progress, context };
       statuses.set(statusId, tracked);
       sendStatus(statusId, tracked);
       return statusId;
@@ -243,7 +250,12 @@ export function createHostBridge(
       state: MessageState = 'info',
       progress?: ProgressState,
     ): void {
-      const tracked: TrackedStatus = { message, state, progress };
+      const tracked: TrackedStatus = {
+        message,
+        state,
+        progress,
+        context: statuses.get(statusId)?.context ?? 'extension',
+      };
       statuses.set(statusId, tracked);
       sendStatus(statusId, tracked);
     },

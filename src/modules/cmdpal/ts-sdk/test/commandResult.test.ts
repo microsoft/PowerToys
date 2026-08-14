@@ -80,6 +80,30 @@ describe('CommandResult kind mapping', () => {
     });
   });
 
+  it('serializes a toast icon and action command', () => {
+    const result: CommandResult = {
+      kind: 'showToast',
+      args: {
+        message: 'Saved',
+        icon: { light: { icon: '\uE700' } },
+        command: { id: 'undo', name: 'Undo', icon: { light: { icon: '\uE74D' } } },
+      },
+    };
+    const wire = serializeCommandResult(result, (command) => ({
+      id: command.id,
+      name: command.name,
+      icon: command.icon,
+    }));
+    expect(wire).toEqual({
+      Kind: 6,
+      Args: {
+        Message: 'Saved',
+        Icon: { light: { icon: '\uE700' } },
+        Command: { id: 'undo', name: 'Undo', icon: { light: { icon: '\uE74D' } } },
+      },
+    });
+  });
+
   it('serializes confirm arguments and its primary command', () => {
     const result: CommandResult = {
       kind: 'confirm',

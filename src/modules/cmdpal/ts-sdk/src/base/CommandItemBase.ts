@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 import type { ContextItem, ICommand, ICommandItem, IconInfo } from '../types.js';
+import { ObservableBase } from './ObservableBase.js';
 
 /** Options for constructing a {@link CommandItemBase}. */
 export interface CommandItemOptions {
@@ -19,9 +20,12 @@ export interface CommandItemOptions {
 }
 
 /** A concrete, ready-to-use {@link ICommandItem} built from a plain options bag. */
-export class CommandItemBase implements ICommandItem {
+export class CommandItemBase extends ObservableBase implements ICommandItem {
   /** The command run when the item is activated. */
   command: ICommand;
+  protected get notificationId(): string {
+    return this.command.id;
+  }
   /** Primary text shown for the item. */
   title: string;
   /** Secondary text shown below the title. */
@@ -37,6 +41,7 @@ export class CommandItemBase implements ICommandItem {
    * @param options Values copied onto the new item.
    */
   constructor(options: CommandItemOptions) {
+    super();
     this.command = options.command;
     this.title = options.title;
     this.subtitle = options.subtitle;

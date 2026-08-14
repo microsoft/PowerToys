@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-import type { IExtensionHost, MessageState, ProgressState } from '../types.js';
+import type { IExtensionHost, MessageState, ProgressState, StatusContext } from '../types.js';
 
 /**
  * Static bridge for talking to the Command Palette host from anywhere in an
@@ -47,6 +47,7 @@ export class ExtensionHost {
    * @param message Text to display.
    * @param state Severity of the message. Defaults to `info`.
    * @param progress Optional progress shown alongside the message.
+   * @param context Scope of the status message. Defaults to `extension`.
    * @returns A stable status id for later {@link ExtensionHost.updateStatus} or
    * {@link ExtensionHost.hideStatus} calls, or an empty string when no host is
    * installed yet.
@@ -55,8 +56,9 @@ export class ExtensionHost {
     message: string,
     state: MessageState = 'info',
     progress?: ProgressState,
+    context?: StatusContext,
   ): string {
-    return ExtensionHost.instance?.showStatus(message, state, progress) ?? '';
+    return ExtensionHost.instance?.showStatus(message, state, progress, context) ?? '';
   }
 
   /**

@@ -119,6 +119,31 @@ export interface KeyChord {
 
 // === Commands ===
 
+/** Property names that can be raised through the CmdPal observable ABI. */
+export type ObservablePropertyName =
+  | 'id'
+  | 'name'
+  | 'icon'
+  | 'title'
+  | 'isLoading'
+  | 'accentColor'
+  | 'searchText'
+  | 'placeholderText'
+  | 'showDetails'
+  | 'filters'
+  | 'gridProperties'
+  | 'hasMoreItems'
+  | 'emptyContent'
+  | 'command'
+  | 'moreCommands'
+  | 'subtitle'
+  | 'tags'
+  | 'details'
+  | 'section'
+  | 'textToSuggest'
+  | 'displayTitle'
+  | 'commands';
+
 /** The base contract for every command and page. */
 export interface ICommand {
   /** Unique identifier. */
@@ -162,6 +187,10 @@ export interface ToastArgs {
   message: string;
   /** What the host should do after the toast is dismissed. */
   result?: CommandResult;
+  /** Optional icon shown in the toast. */
+  icon?: IconInfo | null;
+  /** Optional command invoked by the toast action button. */
+  command?: ICommand;
 }
 
 /** Arguments for a `confirm` {@link CommandResult}. */
@@ -253,6 +282,8 @@ export interface IFallbackHandler {
 
 /** A command that receives the user's search query in real time. */
 export interface IFallbackCommandItem extends ICommandItem {
+  /** Identity of the fallback item, defaulting to the nested command id. */
+  id?: string;
   /** Handler notified as the user types so the item can update itself. */
   fallbackHandler?: IFallbackHandler;
   /** Dynamic title that updates as the user types. */
@@ -541,11 +572,17 @@ export interface IExtensionHost {
    * @param message Text to display.
    * @param state Severity of the message. Defaults to `info`.
    * @param progress Optional progress shown alongside the message.
+   * @param context Scope of the status message. Defaults to `extension`.
    * @returns A stable status id minted by the SDK. Pass it to
    * {@link IExtensionHost.updateStatus} or {@link IExtensionHost.hideStatus} to
    * update or hide this exact status later.
    */
-  showStatus(message: string, state?: MessageState, progress?: ProgressState): string;
+  showStatus(
+    message: string,
+    state?: MessageState,
+    progress?: ProgressState,
+    context?: StatusContext,
+  ): string;
   /**
    * Updates a status shown earlier without creating a duplicate.
    *
@@ -611,6 +648,13 @@ export interface ICommandProvider {
    * @returns The command, or `null` when it is not found.
    */
   getCommand?(id: string): ICommand | null | Promise<ICommand | null>;
+  /**
+   * Resolves a full command item by id, including its display metadata.
+   *
+   * @param id Identifier of the command item to resolve.
+   * @returns The command item, or `null` when it is not found.
+   */
+  getCommandItem?(id: string): ICommandItem | null | Promise<ICommandItem | null>;
   /**
    * Receives the host bridge once, before any commands are requested.
    *

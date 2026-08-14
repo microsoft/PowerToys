@@ -68,8 +68,8 @@ function assign(target: Record<string, unknown>, key: string, value: unknown): v
 
 /**
  * Serializes host-facing values while registering every command it encounters
- * so the runtime can resolve later `command/invoke` and `provider/getCommand`
- * requests.
+ * so the runtime can resolve later `command/invoke`, `provider/getCommand`, and
+ * `provider/getCommandItem` requests.
  */
 export class WireSerializer {
   private readonly register: (command: ICommand) => void;
@@ -100,8 +100,9 @@ export class WireSerializer {
   }
 
   commandItem(item: ICommandItem): Record<string, unknown> {
+    const fallbackItem = item as IFallbackCommandItem;
     const result: Record<string, unknown> = {
-      id: item.command.id,
+      id: fallbackItem.id ?? item.command.id,
       title: item.title,
       displayName: item.title,
     };
@@ -109,7 +110,7 @@ export class WireSerializer {
     assign(result, 'icon', item.icon ?? undefined);
     result.command = this.command(item.command);
 
-    const displayTitle = (item as IFallbackCommandItem).displayTitle;
+    const displayTitle = fallbackItem.displayTitle;
     assign(result, 'displayTitle', displayTitle);
 
     if (item.moreCommands && item.moreCommands.length > 0) {

@@ -10,6 +10,8 @@ import type {
   IconInfo,
   OptionalColor,
 } from '../types.js';
+import { sendNotification } from '../runtime/notifications.js';
+import { ObservableBase } from './ObservableBase.js';
 
 /**
  * Base class for a page that displays rich content such as markdown, forms,
@@ -28,13 +30,16 @@ import type {
  * }
  * ```
  */
-export abstract class ContentPageBase implements IContentPage {
+export abstract class ContentPageBase extends ObservableBase implements IContentPage {
   /** Unique identifier for the page. */
   abstract readonly id: string;
   /** Internal name of the page. */
   abstract readonly name: string;
   /** Title shown at the top of the page. */
   abstract readonly title: string;
+  protected get notificationId(): string {
+    return this.id;
+  }
 
   /** Icon shown for the page. */
   icon?: IconInfo | null = null;
@@ -53,4 +58,11 @@ export abstract class ContentPageBase implements IContentPage {
    * @returns The page's {@link Content} blocks, synchronously or as a promise.
    */
   abstract getContent(): Content[] | Promise<Content[]>;
+
+  /**
+   * Tells the host that this page's content has changed and should be re-fetched.
+   */
+  protected notifyItemsChanged(): void {
+    sendNotification('contentPage/itemsChanged', { pageId: this.id });
+  }
 }

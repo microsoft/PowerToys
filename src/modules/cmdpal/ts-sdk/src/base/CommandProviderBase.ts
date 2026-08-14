@@ -76,6 +76,17 @@ export abstract class CommandProviderBase implements ICommandProvider {
   }
 
   /**
+   * Resolves a full command item by id. Returns `null` by default; override
+   * when the provider exposes pinned commands that are not returned up front.
+   *
+   * @param _id Identifier of the command item to resolve.
+   * @returns The command item, or `null` when it is not found.
+   */
+  getCommandItem(_id: string): ICommandItem | null | Promise<ICommandItem | null> {
+    return null;
+  }
+
+  /**
    * Captures the host bridge for later use. Override to run additional setup,
    * calling `super.initializeWithHost(host)` to keep {@link CommandProviderBase.host} set.
    *

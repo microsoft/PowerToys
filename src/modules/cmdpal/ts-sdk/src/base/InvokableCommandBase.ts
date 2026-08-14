@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 import type { CommandResult, IInvokableCommand, IconInfo } from '../types.js';
+import { ObservableBase } from './ObservableBase.js';
 
 /**
  * Base class for a command that performs an action when invoked.
@@ -19,11 +20,14 @@ import type { CommandResult, IInvokableCommand, IconInfo } from '../types.js';
  * }
  * ```
  */
-export abstract class InvokableCommandBase implements IInvokableCommand {
+export abstract class InvokableCommandBase extends ObservableBase implements IInvokableCommand {
   /** Unique identifier for the command. */
   abstract readonly id: string;
   /** Display name of the command. */
   abstract readonly name: string;
+  protected get notificationId(): string {
+    return this.id;
+  }
 
   /** Icon shown for the command. */
   icon?: IconInfo | null = null;
