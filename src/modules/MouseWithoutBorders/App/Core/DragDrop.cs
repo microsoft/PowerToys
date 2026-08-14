@@ -53,6 +53,7 @@ namespace MouseWithoutBorders.Core;
 internal static class DragDrop
 {
     private static bool isDragging;
+    private static long transientDragValidationGeneration;
 
     internal static bool IsDragging
     {
@@ -69,6 +70,9 @@ internal static class DragDrop
 
         if (wParam == WM.WM_LBUTTONDOWN)
         {
+            _ = Interlocked.Exchange(
+                ref transientDragValidationGeneration,
+                Clipboard.BeginTransientDragFileValidation());
             MouseDown = true;
             DragMachine = MachineStuff.desMachineID;
             MachineStuff.dropMachineID = ID.NONE;
@@ -189,7 +193,16 @@ internal static class DragDrop
 
         if (!IsDropping)
         {
-            long validationGeneration = Clipboard.BeginTransientDragFileValidation();
+            long validationGeneration = Interlocked.Exchange(ref transientDragValidationGeneration, 0);
+            if (validationGeneration == 0 || !MouseDown)
+            {
+                Clipboard.CancelTransientDragFileValidation(validationGeneration);
+                Logger.LogDebug("DragDropStep05: Drag ended before path validation started.");
+                _ = NativeMethods.PostMessage(Common.MainForm.Handle, NativeMethods.WM_HIDE_DD_HELPER, (IntPtr)0, (IntPtr)0);
+                MouseDown = false;
+                return;
+            }
+
             if (LocalPathLease.TryCreate(dragFileName, out LocalPathLease lease))
             {
                 if (Clipboard.TrySetValidatedTransientDragFile(validationGeneration, dragFileName, lease))
