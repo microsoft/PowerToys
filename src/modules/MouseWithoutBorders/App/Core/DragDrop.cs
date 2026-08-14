@@ -202,12 +202,18 @@ internal static class DragDrop
                     ref transientDragValidationGeneration,
                     0,
                     validationGeneration) == validationGeneration;
-            if (!isCurrentValidation || !MouseDown)
+            if (!isCurrentValidation)
+            {
+                Clipboard.CancelTransientDragFileValidation(validationGeneration);
+                Logger.LogDebug("DragDropStep05: Ignoring a stale drag validation callback.");
+                return;
+            }
+
+            if (!MouseDown)
             {
                 Clipboard.CancelTransientDragFileValidation(validationGeneration);
                 Logger.LogDebug("DragDropStep05: Drag ended before path validation started.");
                 _ = NativeMethods.PostMessage(Common.MainForm.Handle, NativeMethods.WM_HIDE_DD_HELPER, (IntPtr)0, (IntPtr)0);
-                MouseDown = false;
                 return;
             }
 
