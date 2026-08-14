@@ -385,6 +385,35 @@ public sealed class ClipboardHelperTests
     }
 
     [TestMethod]
+    public void Clipboard_StaleValidationCannotClaimNewGesture()
+    {
+        string directory = Directory.CreateTempSubdirectory().FullName;
+        string path = Path.Combine(directory, "file.txt");
+        File.WriteAllText(path, "content");
+
+        LocalPathLease? lease = null;
+        try
+        {
+            long staleGeneration = Clipboard.BeginTransientDragFileValidation();
+            long currentGeneration = Clipboard.BeginTransientDragFileValidation();
+            lease = LocalPathLease.TryCreateForCurrentUser(path);
+            Assert.IsNotNull(lease);
+
+            Assert.IsFalse(Clipboard.TrySetValidatedTransientDragFile(staleGeneration, path, lease));
+            Assert.IsNull(Clipboard.LastDragDropFile);
+            Assert.IsTrue(Clipboard.TrySetValidatedTransientDragFile(currentGeneration, path, lease));
+            lease = null;
+            Assert.AreEqual(path, Clipboard.LastDragDropFile);
+        }
+        finally
+        {
+            lease?.Dispose();
+            Clipboard.LastDragDropFile = null;
+            Directory.Delete(directory, true);
+        }
+    }
+
+    [TestMethod]
     public void Clipboard_CancellingTransientLeaseReleasesImmediately()
     {
         string directory = Directory.CreateTempSubdirectory().FullName;

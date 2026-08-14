@@ -140,6 +140,10 @@ internal static class DragDrop
             if (h.ToInt32() > 0)
             {
                 _ = Interlocked.Exchange(ref dragDropStep05ExCalledByIpc, 0);
+                _ = Helper.SendMessageToHelper(
+                    SharedConst.SET_DRAG_VALIDATION_GENERATION_CMD,
+                    checked((IntPtr)Interlocked.Read(ref transientDragValidationGeneration)),
+                    IntPtr.Zero);
 
                 Common.MainForm.Hide();
                 Common.MainFormVisible = false;
@@ -180,7 +184,7 @@ internal static class DragDrop
         Logger.LogDebug("DragDropStep04: Got WM_CHECK_EXPLORER_DRAG_DROP, done with processing jump to DragDropStep05...");
     }
 
-    internal static void DragDropStep05Ex(string dragFileName)
+    internal static void DragDropStep05Ex(string dragFileName, long validationGeneration)
     {
         Logger.LogDebug("DragDropStep05 called.");
 
@@ -193,8 +197,12 @@ internal static class DragDrop
 
         if (!IsDropping)
         {
-            long validationGeneration = Interlocked.Exchange(ref transientDragValidationGeneration, 0);
-            if (validationGeneration == 0 || !MouseDown)
+            bool isCurrentValidation = validationGeneration != 0
+                && Interlocked.CompareExchange(
+                    ref transientDragValidationGeneration,
+                    0,
+                    validationGeneration) == validationGeneration;
+            if (!isCurrentValidation || !MouseDown)
             {
                 Clipboard.CancelTransientDragFileValidation(validationGeneration);
                 Logger.LogDebug("DragDropStep05: Drag ended before path validation started.");
