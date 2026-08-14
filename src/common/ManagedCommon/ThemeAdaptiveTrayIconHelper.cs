@@ -15,11 +15,20 @@ namespace ManagedCommon
         private const uint LrLoadFromFile = 0x00000010;
         private const uint LrDefaultSize = 0x00000040;
 
+        /// <summary>
+        /// Loads an icon handle owned by the caller. The returned handle can be released with
+        /// <see cref="DestroyIconHandle"/>.
+        /// </summary>
+        /// <param name="themeAdaptive">Whether to load an icon matching the current system theme.</param>
+        /// <param name="whiteIconPath">Path to the icon used with a dark system theme.</param>
+        /// <param name="darkIconPath">Path to the icon used with a light system theme.</param>
+        /// <param name="fallbackLoadOwnedIcon">Loads an owned fallback handle that can be passed to DestroyIcon.</param>
+        /// <returns>An owned icon handle, or <see cref="IntPtr.Zero"/> when no icon could be loaded.</returns>
         public static IntPtr LoadIconHandle(
             bool themeAdaptive,
             string whiteIconPath,
             string darkIconPath,
-            Func<IntPtr> fallbackLoadIcon)
+            Func<IntPtr> fallbackLoadOwnedIcon)
         {
             if (themeAdaptive)
             {
@@ -34,7 +43,7 @@ namespace ManagedCommon
                 }
             }
 
-            return fallbackLoadIcon();
+            return fallbackLoadOwnedIcon();
         }
 
         public static void DestroyIconHandle(IntPtr iconHandle)
