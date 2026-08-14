@@ -77,8 +77,7 @@ namespace ImageResizer.Cli
         {
             var batch = ResizeBatch.FromCliOptionsWithDiagnostics(Console.In, cliOptions);
             if (batch.Files.Count == 0 &&
-                batch.InputErrors.Count == 0 &&
-                string.IsNullOrEmpty(cliOptions.PipeName))
+                batch.InputErrors.Count == 0)
             {
                 Console.WriteLine(Resources.CLI_NoInputFiles);
                 CliOptions.PrintUsage();

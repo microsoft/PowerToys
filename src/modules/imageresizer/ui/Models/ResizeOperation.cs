@@ -62,6 +62,9 @@ namespace ImageResizer.Models
 
         public async Task ExecuteAsync()
         {
+            var originalLastWriteTimeUtc = _settings.KeepDateModified
+                ? _fileSystem.File.GetLastWriteTimeUtc(_file)
+                : (DateTime?)null;
             string path;
 
             using (var inputStream = _fileSystem.File.OpenRead(_file))
@@ -143,15 +146,21 @@ namespace ImageResizer.Models
                 }
             }
 
-            if (_settings.KeepDateModified)
-            {
-                _fileSystem.File.SetLastWriteTimeUtc(path, _fileSystem.File.GetLastWriteTimeUtc(_file));
-            }
-
+            string backup = null;
             if (_settings.Replace)
             {
-                var backup = GetBackupPath();
+                backup = GetBackupPath();
                 _fileSystem.File.Replace(path, _file, backup, ignoreMetadataErrors: true);
+                path = _file;
+            }
+
+            if (originalLastWriteTimeUtc.HasValue)
+            {
+                _fileSystem.File.SetLastWriteTimeUtc(path, originalLastWriteTimeUtc.Value);
+            }
+
+            if (backup != null)
+            {
                 FileSystem.DeleteFile(backup, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
             }
         }
@@ -480,21 +489,26 @@ namespace ImageResizer.Models
             uint scaledHeight = GetValidatedScaledDimension(originalHeight * scaleY);
 
             // Apply the centered crop for Fill mode, if necessary.
-            if (_settings.SelectedSize.Fit == ResizeFit.Fill
-                && (scaledWidth > (uint)width || scaledHeight > (uint)height))
+            if (_settings.SelectedSize.Fit == ResizeFit.Fill)
             {
-                uint cropX = (uint)(((originalWidth * scaleX) - width) / 2);
-                uint cropY = (uint)(((originalHeight * scaleY) - height) / 2);
+                uint targetWidth = GetValidatedScaledDimension(width);
+                uint targetHeight = GetValidatedScaledDimension(height);
 
-                var cropBounds = new BitmapBounds
+                if (scaledWidth > targetWidth || scaledHeight > targetHeight)
                 {
-                    X = cropX,
-                    Y = cropY,
-                    Width = (uint)width,
-                    Height = (uint)height,
-                };
+                    uint cropX = (scaledWidth - targetWidth) / 2;
+                    uint cropY = (scaledHeight - targetHeight) / 2;
 
-                return (scaledWidth, scaledHeight, cropBounds, false);
+                    var cropBounds = new BitmapBounds
+                    {
+                        X = cropX,
+                        Y = cropY,
+                        Width = targetWidth,
+                        Height = targetHeight,
+                    };
+
+                    return (scaledWidth, scaledHeight, cropBounds, false);
+                }
             }
 
             return (scaledWidth, scaledHeight, null, false);

@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Globalization;
-
 namespace ImageResizer.Cli.Options
 {
     internal static class DimensionOptionValidator
@@ -15,8 +13,7 @@ namespace ImageResizer.Cli.Options
                 return null;
             }
 
-            if (!double.TryParse(valueText, NumberStyles.Float, CultureInfo.CurrentCulture, out var value) &&
-                !double.TryParse(valueText, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+            if (!double.TryParse(valueText, out var value))
             {
                 // Leave type-conversion errors to System.CommandLine.
                 return null;

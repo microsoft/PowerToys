@@ -12,11 +12,13 @@ using System.IO;
 using System.IO.Abstractions;
 using System.IO.Pipes;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ImageResizer.Properties;
 using ImageResizer.Services;
+using Microsoft.Win32.SafeHandles;
 
 namespace ImageResizer.Models
 {
@@ -24,7 +26,7 @@ namespace ImageResizer.Models
     {
         private readonly IFileSystem _fileSystem = new FileSystem();
         private readonly List<ResizeError> _inputErrors = [];
-        private readonly HashSet<string> _resolvedInputPaths = new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _resolvedInputPaths = new(StringComparer.Ordinal);
         private static IAISuperResolutionService _aiSuperResolutionService;
 
         public string DestinationDirectory { get; set; }
@@ -143,8 +145,13 @@ namespace ImageResizer.Models
                         // Read file paths from the named pipe
                         while ((file = sr.ReadLine()) != null)
                         {
-                            if (IsValidImagePath(file))
+                            if (reportInvalidInputs)
                             {
+                                AddStrictInput(batch, file);
+                            }
+                            else if (IsValidImagePath(file))
+                            {
+                                // Preserve the legacy GUI/context-menu behavior for named-pipe input.
                                 batch.Files.Add(file);
                             }
                         }
@@ -238,10 +245,138 @@ namespace ImageResizer.Models
                 return;
             }
 
-            if (batch._resolvedInputPaths.Add(normalizedPath))
+            if (batch.TryAddResolvedInput(normalizedPath))
             {
                 batch.Files.Add(normalizedPath);
             }
+        }
+
+        private bool TryAddResolvedInput(string path)
+            => _resolvedInputPaths.Add(GetCanonicalPathKey(path));
+
+        private static string GetCanonicalPathKey(string path)
+        {
+            var fullPath = Path.GetFullPath(path);
+            var apiPath = AddExtendedPathPrefix(fullPath);
+            var finalPath = TryGetFinalPath(apiPath);
+            if (finalPath != null)
+            {
+                return finalPath;
+            }
+
+            var longPath = TryGetLongPath(fullPath) ?? TryGetLongPath(apiPath) ?? fullPath;
+
+            return RemoveExtendedPathPrefix(longPath);
+        }
+
+        private static string AddExtendedPathPrefix(string path)
+        {
+            const string extendedPathPrefix = @"\\?\";
+            const string devicePathPrefix = @"\\.\";
+
+            if (path.StartsWith(extendedPathPrefix, StringComparison.Ordinal) ||
+                path.StartsWith(devicePathPrefix, StringComparison.Ordinal))
+            {
+                return path;
+            }
+
+            if (path.StartsWith(@"\\", StringComparison.Ordinal))
+            {
+                return string.Concat(@"\\?\UNC\", path.AsSpan(2));
+            }
+
+            return path.Length >= 3 &&
+                   char.IsAsciiLetter(path[0]) &&
+                   path[1] == ':' &&
+                   path[2] == '\\'
+                ? extendedPathPrefix + path
+                : path;
+        }
+
+        private static string TryGetLongPath(string path)
+        {
+            var buffer = new StringBuilder(path.Length + 1);
+            while (true)
+            {
+                var length = GetLongPathNameW(path, buffer, (uint)buffer.Capacity);
+                if (length == 0)
+                {
+                    return null;
+                }
+
+                if (length < buffer.Capacity)
+                {
+                    return buffer.ToString();
+                }
+
+                buffer.EnsureCapacity(checked((int)length));
+            }
+        }
+
+        private static string TryGetFinalPath(string path)
+        {
+            const uint fileShareRead = 0x00000001;
+            const uint fileShareWrite = 0x00000002;
+            const uint fileShareDelete = 0x00000004;
+            const uint openExisting = 3;
+            const uint fileFlagOpenReparsePoint = 0x00200000;
+            const uint volumeNameNt = 0x00000002;
+
+            // Resolve parent-directory aliases and filesystem casing while preserving the
+            // final directory entry (for example, a hard link or symbolic link) as distinct.
+            using SafeFileHandle handle = CreateFileW(
+                path,
+                0,
+                fileShareRead | fileShareWrite | fileShareDelete,
+                IntPtr.Zero,
+                openExisting,
+                fileFlagOpenReparsePoint,
+                IntPtr.Zero);
+            if (handle.IsInvalid)
+            {
+                return null;
+            }
+
+            var buffer = new StringBuilder(path.Length + 1);
+            while (true)
+            {
+                var length = GetFinalPathNameByHandleW(handle, buffer, (uint)buffer.Capacity, volumeNameNt);
+                if (length == 0)
+                {
+                    return null;
+                }
+
+                if (length < buffer.Capacity)
+                {
+                    return buffer.ToString();
+                }
+
+                buffer.EnsureCapacity(checked((int)length));
+            }
+        }
+
+        private static string RemoveExtendedPathPrefix(string path)
+        {
+            const string extendedUncPrefix = @"\\?\UNC\";
+            const string extendedPathPrefix = @"\\?\";
+
+            if (path.StartsWith(extendedUncPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return string.Concat(@"\\", path.AsSpan(extendedUncPrefix.Length));
+            }
+
+            if (path.Length >= extendedPathPrefix.Length + 3 &&
+                path.StartsWith(extendedPathPrefix, StringComparison.OrdinalIgnoreCase) &&
+                char.IsAsciiLetter(path[extendedPathPrefix.Length]) &&
+                path[extendedPathPrefix.Length + 1] == ':' &&
+                path[extendedPathPrefix.Length + 2] == '\\')
+            {
+                path = path.Substring(extendedPathPrefix.Length);
+            }
+
+            return path.Length >= 2 && path[1] == ':'
+                ? char.ToUpperInvariant(path[0]) + path.Substring(1)
+                : path;
         }
 
         private static void AddInputError(ResizeBatch batch, string input, string message)
@@ -316,5 +451,28 @@ namespace ImageResizer.Models
             var aiService = _aiSuperResolutionService ?? NoOpAiSuperResolutionService.Instance;
             await new ResizeOperation(file, DestinationDirectory, settings, aiService).ExecuteAsync();
         }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+        private static extern SafeFileHandle CreateFileW(
+            string fileName,
+            uint desiredAccess,
+            uint shareMode,
+            IntPtr securityAttributes,
+            uint creationDisposition,
+            uint flagsAndAttributes,
+            IntPtr templateFile);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+        private static extern uint GetFinalPathNameByHandleW(
+            SafeFileHandle fileHandle,
+            StringBuilder filePath,
+            uint filePathLength,
+            uint flags);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+        private static extern uint GetLongPathNameW(
+            string shortPath,
+            StringBuilder longPath,
+            uint bufferLength);
     }
 }

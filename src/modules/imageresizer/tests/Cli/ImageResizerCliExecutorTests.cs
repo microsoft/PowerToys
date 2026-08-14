@@ -2,8 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
+using System.IO.Pipes;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 using ImageResizer.Models;
 using ImageResizer.Properties;
@@ -121,12 +125,39 @@ namespace ImageResizer.Cli
             Assert.AreEqual(1, directory.FileNames.Count());
         }
 
+        [TestMethod]
+        [Timeout(10000)]
+        public async Task Run_WithEmptyNamedPipe_ReturnsError()
+        {
+            var pipeName = $"ImageResizer-{Guid.NewGuid():N}";
+            using var pipe = new NamedPipeServerStream(
+                pipeName,
+                PipeDirection.Out,
+                1,
+                PipeTransmissionMode.Byte,
+                PipeOptions.Asynchronous);
+            var writeTask = CompleteEmptyPipeAsync(pipe);
+            var executor = new ImageResizerCliExecutor();
+
+            var exitCode = executor.Run([$@"\\.\pipe\{pipeName}"]);
+            await writeTask;
+
+            Assert.AreEqual(1, exitCode);
+            Assert.AreEqual("error", executor.CommandName);
+        }
+
         private static Settings SettingsWithSize(ResizeUnit unit)
         {
             var settings = new Settings();
             settings.CustomSize.Unit = unit;
             settings.SelectedSizeIndex = settings.Sizes.Count;
             return settings;
+        }
+
+        private static async Task CompleteEmptyPipeAsync(NamedPipeServerStream pipe)
+        {
+            await pipe.WaitForConnectionAsync().ConfigureAwait(false);
+            using var writer = new StreamWriter(pipe, Encoding.Unicode);
         }
     }
 }

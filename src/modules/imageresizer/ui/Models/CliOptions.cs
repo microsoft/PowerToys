@@ -293,6 +293,12 @@ namespace ImageResizer.Models
                     }
 
                     consumedFlag = true;
+                    if (bool.TryParse(arg.AsSpan(index + 1), out _))
+                    {
+                        // System.CommandLine accepts an explicit boolean value attached to a
+                        // short option (for example, -rtrue). The value consumes the remainder.
+                        break;
+                    }
                 }
             }
         }

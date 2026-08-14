@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using ImageResizer.Cli.Commands;
@@ -446,6 +447,19 @@ namespace ImageResizer.Tests.Models
             CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
         }
 
+        [DataTestMethod]
+        [DataRow("-rtrue")]
+        [DataRow("-rTRUE")]
+        public void Parse_WithAttachedTrueBooleanValue_PreservesCompatibility(string argument)
+        {
+            var options = CliOptions.ParseForCli([argument, "-q85", "photo.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual(true, options.Replace);
+            Assert.AreEqual(85, options.JpegQualityLevel);
+            CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
+        }
+
         [TestMethod]
         public void Parse_WithBundledEmptyValue_DoesNotSkipFollowingInvalidBundle()
         {
@@ -496,6 +510,26 @@ namespace ImageResizer.Tests.Models
             var options = CliOptions.Parse(["--width", "2147483648", "--height", "100", "test.jpg"]);
 
             Assert.AreEqual(1, options.ParseErrors.Count);
+        }
+
+        [DataTestMethod]
+        [DataRow("en-US")]
+        [DataRow("en-HK")]
+        public void Parse_WithGroupedDimensionAboveInt32Range_ReturnsError(string cultureName)
+        {
+            var originalCulture = CultureInfo.CurrentCulture;
+            try
+            {
+                CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
+
+                var options = CliOptions.Parse(["--width", "2,147,483,648", "--height", "100", "test.jpg"]);
+
+                Assert.AreEqual(1, options.ParseErrors.Count);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+            }
         }
     }
 }
