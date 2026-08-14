@@ -79,16 +79,23 @@ namespace KeyboardEventHandlers
     // Function to handle an app-specific shortcut remap
     intptr_t HandleAppSpecificShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
 
+    // Continues only remaps that already own output state while the editor is open.
+    intptr_t HandleActiveRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
+
     // Function to generate a unicode string in response to a single keypress
     intptr_t HandleSingleKeyToTextRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state);
 
     // Function to replace recently typed text with configured replacement text
     intptr_t HandleTextReplacementEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state);
 
+    // Suppresses repeats and the matching key-up for a text replacement trigger key
+    // whose initial key-down was already consumed.
+    intptr_t HandleTextReplacementSuppressedKeyEvent(LowlevelKeyboardEvent* data, State& state) noexcept;
+
     // Clears text replacement state that is tied to the current input context.
     void ResetTextReplacementRuntimeState(State& state) noexcept;
 
-    // Refreshes and updates toggle keys independently from the hook thread keyboard queue.
+    // Refreshes and updates Caps Lock independently from the hook thread keyboard queue.
     void InitializeTextReplacementToggleKeyState(State& state) noexcept;
     void UpdateTextReplacementToggleKeyState(const LowlevelKeyboardEvent* data, bool eventSuppressed, State& state) noexcept;
 

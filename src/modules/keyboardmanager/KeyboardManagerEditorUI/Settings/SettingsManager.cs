@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
 
 namespace KeyboardManagerEditorUI.Settings
@@ -66,7 +67,13 @@ namespace KeyboardManagerEditorUI.Settings
                 }
 
                 string json = File.ReadAllText(_settingsFilePath);
-                return JsonSerializer.Deserialize<EditorSettings>(json, _jsonOptions) ?? new EditorSettings();
+                EditorSettings settings = JsonSerializer.Deserialize<EditorSettings>(json, _jsonOptions) ?? new EditorSettings();
+                if (MigrateLegacyTextReplacementTriggerKeys(settings))
+                {
+                    WriteSettings(settings);
+                }
+
+                return settings;
             }
             catch (Exception)
             {
@@ -92,6 +99,31 @@ namespace KeyboardManagerEditorUI.Settings
         }
 
         public static bool WriteSettings() => WriteSettings(EditorSettings);
+
+        private static bool MigrateLegacyTextReplacementTriggerKeys(EditorSettings settings)
+        {
+            bool changed = false;
+            foreach (ShortcutSettings shortcutSettings in settings.ShortcutSettingsDictionary.Values)
+            {
+                ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
+                if (mapping.OperationType != ShortcutOperationType.RemapText ||
+                    string.IsNullOrEmpty(mapping.TriggerText) ||
+                    mapping.TriggerKey != 0)
+                {
+                    continue;
+                }
+
+                mapping.TriggerKey = TextReplacementTriggerKeyHelper.DefaultTriggerKey;
+                if (mapping.TriggerText.Length > 1 && mapping.TriggerText.EndsWith(' '))
+                {
+                    mapping.TriggerText = mapping.TriggerText[..^1];
+                }
+
+                changed = true;
+            }
+
+            return changed;
+        }
 
         private static EditorSettings CreateSettingsFromKeyboardManagerService()
         {
@@ -135,6 +167,7 @@ namespace KeyboardManagerEditorUI.Settings
                 {
                     OperationType = ShortcutOperationType.RemapText,
                     TriggerText = mapping.Trigger,
+                    TriggerKey = mapping.TriggerKey,
                     TargetKeys = mapping.TargetText,
                     TargetText = mapping.TargetText,
                 };
@@ -204,12 +237,14 @@ namespace KeyboardManagerEditorUI.Settings
                 if (!EditorSettings.ShortcutSettingsDictionary.Values.Any(settings =>
                     settings.Shortcut.OperationType == ShortcutOperationType.RemapText &&
                     string.Equals(settings.Shortcut.TriggerText, mapping.Trigger, StringComparison.Ordinal) &&
+                    settings.Shortcut.TriggerKey == mapping.TriggerKey &&
                     string.Equals(settings.Shortcut.TargetText, mapping.TargetText, StringComparison.Ordinal)))
                 {
                     AddShortcutMapping(EditorSettings, new ShortcutKeyMapping
                     {
                         OperationType = ShortcutOperationType.RemapText,
                         TriggerText = mapping.Trigger,
+                        TriggerKey = mapping.TriggerKey,
                         TargetKeys = mapping.TargetText,
                         TargetText = mapping.TargetText,
                     });
@@ -366,6 +401,7 @@ namespace KeyboardManagerEditorUI.Settings
             return EditorSettings.ShortcutSettingsDictionary.Values.Any(s =>
                 s.Shortcut.OperationType == mapping.OperationType &&
                 s.Shortcut.TriggerText == mapping.TriggerText &&
+                s.Shortcut.TriggerKey == mapping.TriggerKey &&
                 s.Shortcut.OriginalKeys == mapping.OriginalKeys &&
                 s.Shortcut.TargetKeys == mapping.TargetKeys);
         }
@@ -381,6 +417,7 @@ namespace KeyboardManagerEditorUI.Settings
             {
                 return textReplacementMappings.Any(m =>
                     m.Trigger == shortcutSettings.Shortcut.TriggerText &&
+                    m.TriggerKey == shortcutSettings.Shortcut.TriggerKey &&
                     m.TargetText == shortcutSettings.Shortcut.TargetText);
             }
 

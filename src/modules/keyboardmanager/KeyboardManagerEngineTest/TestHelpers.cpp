@@ -18,16 +18,14 @@ namespace TestHelpers
         state.ClearAppSpecificShortcuts();
         state.ClearSingleKeyToTextRemaps();
         state.ClearTextReplacements();
+        state.singleKeyRemapActiveKeys.clear();
         state.textReplacementBuffer.clear();
         state.textReplacementProcessId = 0;
         state.textReplacementWindow = nullptr;
         state.textReplacementPendingPacketHighSurrogate = L'\0';
         state.textReplacementDeadKeyPending = false;
-        state.textReplacementDeadKeyMustPassThrough = false;
-        state.textReplacementDeadKeyThreadId = 0;
-        state.textReplacementDeadKeyLayout = nullptr;
         state.textReplacementCapsLockOn = false;
-        state.textReplacementNumLockOn = false;
+        state.textReplacementSuppressedTriggerKeys.clear();
         state.textReplacementObservedContextEpoch = 0;
         state.textReplacementContextEpoch.store(1, std::memory_order_relaxed);
         state.textReplacementContextTrackingEnabled.store(false, std::memory_order_relaxed);

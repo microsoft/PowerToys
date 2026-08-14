@@ -133,7 +133,7 @@
     <value>Text</value>
   </data>
   <data name="TextTriggerDisplayFormat" xml:space="preserve">
-    <value>Text: {0}</value>
+    <value>Text: {0}, then {1}</value>
   </data>
   <data name="ProgramsHeader.Text" xml:space="preserve">
     <value>Programs</value>
@@ -232,10 +232,25 @@
     <value>Enter the text to replace when typed</value>
   </data>
   <data name="TextTriggerBox.AutomationProperties.HelpText" xml:space="preserve">
-    <value>Replacements happen immediately. Input from IME, voice typing, handwriting, and paste is not supported.</value>
+    <value>Type the text, then press the selected trigger key. Input from IME, voice typing, handwriting, and paste is not supported.</value>
   </data>
   <data name="TextTriggerBox.Description" xml:space="preserve">
-    <value>Replacements happen immediately. Include a trailing space in both fields to require a word boundary.</value>
+    <value>The replacement runs after you press the selected trigger key.</value>
+  </data>
+  <data name="TextReplacementTriggerKeyLabel.Text" xml:space="preserve">
+    <value>Trigger key</value>
+  </data>
+  <data name="TextReplacementTriggerKeyDropDown.KeyName" xml:space="preserve">
+    <value>Space</value>
+  </data>
+  <data name="TextReplacementTriggerKeyDropDown.AutomationProperties.Name" xml:space="preserve">
+    <value>Trigger key</value>
+  </data>
+  <data name="TextReplacementTriggerKeyDropDown.AutomationProperties.HelpText" xml:space="preserve">
+    <value>Choose Space, Enter, or Tab to activate the text replacement.</value>
+  </data>
+  <data name="TextReplacementTriggerKey_Space" xml:space="preserve">
+    <value>Space</value>
   </data>
   <data name="ActionKeyPlaceholder.Text" xml:space="preserve">
     <value>Press to start recording keys</value>
@@ -459,6 +474,12 @@
   <data name="Validation_EmptyTriggerText_Message" xml:space="preserve">
     <value>Please enter the text to replace.</value>
   </data>
+  <data name="Validation_InvalidTextReplacementTriggerText_Title" xml:space="preserve">
+    <value>Unsupported text trigger</value>
+  </data>
+  <data name="Validation_InvalidTextReplacementTriggerText_Message" xml:space="preserve">
+    <value>Text triggers cannot contain control characters or invalid Unicode.</value>
+  </data>
   <data name="Validation_TextTriggerTooLong_Title" xml:space="preserve">
     <value>Text trigger is too long</value>
   </data>
@@ -471,11 +492,17 @@
   <data name="Validation_TargetTextTooLong_Message" xml:space="preserve">
     <value>Replacement text can contain at most 256 characters.</value>
   </data>
-  <data name="Validation_TextTriggerPrefixConflict_Title" xml:space="preserve">
+  <data name="Validation_InvalidTextReplacementTriggerKey_Title" xml:space="preserve">
+    <value>Unsupported trigger key</value>
+  </data>
+  <data name="Validation_InvalidTextReplacementTriggerKey_Message" xml:space="preserve">
+    <value>Choose Space, Enter, or Tab as the trigger key.</value>
+  </data>
+  <data name="Validation_TextTriggerDelimiterConflict_Title" xml:space="preserve">
     <value>Conflicting text trigger</value>
   </data>
-  <data name="Validation_TextTriggerPrefixConflict_Message" xml:space="preserve">
-    <value>This trigger is a prefix of another text trigger, or another trigger is a prefix of this one. Use distinct triggers so every replacement can be reached.</value>
+  <data name="Validation_TextTriggerDelimiterConflict_Message" xml:space="preserve">
+    <value>A Space-activated trigger cannot also be the first word or phrase of a longer trigger. Change one trigger or choose Enter or Tab.</value>
   </data>
   <data name="Validation_EmptyUrl_Title" xml:space="preserve">
     <value>Missing URL</value>

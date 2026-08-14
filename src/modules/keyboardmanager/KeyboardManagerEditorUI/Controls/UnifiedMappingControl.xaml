@@ -135,15 +135,25 @@
                 </tkcontrols:Case>
                 <!--  Text Trigger  -->
                 <tkcontrols:Case Value="Text">
-                    <TextBox
-                        x:Name="TextTriggerBox"
-                        x:Uid="TextTriggerBox"
-                        MinHeight="86"
-                        Background="{ThemeResource TextControlBackgroundFocused}"
-                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-                        GotFocus="TextTriggerBox_GotFocus"
-                        TextChanged="TextTriggerBox_TextChanged"
-                        TextWrapping="Wrap" />
+                    <StackPanel Orientation="Vertical" Spacing="8">
+                        <TextBox
+                            x:Name="TextTriggerBox"
+                            x:Uid="TextTriggerBox"
+                            MinHeight="86"
+                            Background="{ThemeResource TextControlBackgroundFocused}"
+                            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                            GotFocus="TextTriggerBox_GotFocus"
+                            TextChanged="TextTriggerBox_TextChanged"
+                            TextWrapping="Wrap" />
+                        <TextBlock
+                            x:Uid="TextReplacementTriggerKeyLabel"
+                            FontWeight="SemiBold" />
+                        <local:KeyDropDownButton
+                            x:Name="TextReplacementTriggerKeyDropDown"
+                            x:Uid="TextReplacementTriggerKeyDropDown"
+                            HorizontalAlignment="Left"
+                            IsShortcut="False" />
+                    </StackPanel>
                 </tkcontrols:Case>
             </tkcontrols:SwitchPresenter>
             <CheckBox

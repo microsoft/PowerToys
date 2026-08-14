@@ -144,6 +144,21 @@ namespace
         return winPressed || (ctrlOrAltPressed && !IsAltGrPressed(ii));
     }
 
+    bool IsTextReplacementActivationModifierPressed(KeyboardManagerInput::InputInterface& ii)
+    {
+        return IsModifierPressed(ii, VK_SHIFT, VK_LSHIFT, VK_RSHIFT) ||
+               IsModifierPressed(ii, VK_CONTROL, VK_LCONTROL, VK_RCONTROL) ||
+               IsModifierPressed(ii, VK_MENU, VK_LMENU, VK_RMENU) ||
+               ii.GetVirtualKeyState(VK_LWIN) ||
+               ii.GetVirtualKeyState(VK_RWIN) ||
+               ii.GetVirtualKeyState(CommonSharedConstants::VK_WIN_BOTH);
+    }
+
+    constexpr bool IsTextReplacementTriggerKey(const DWORD key)
+    {
+        return key == VK_SPACE || key == VK_RETURN || key == VK_TAB;
+    }
+
     HWND GetTextReplacementWindow()
     {
         GUITHREADINFO guiThreadInfo{};
@@ -266,26 +281,29 @@ namespace
     {
         KeyboardTextEventKind kind = KeyboardTextEventKind::None;
         std::wstring text;
-        std::array<BYTE, 256> keyState{};
-        DWORD vkCode = 0;
-        UINT scanCode = 0;
-        HKL layout = nullptr;
-        DWORD foregroundThreadId = 0;
-        bool packetHighSurrogateAlreadyDelivered = false;
         bool resetBufferBeforeText = false;
-        bool consumesPendingDeadKey = false;
     };
 
     KeyboardTextEvent GetTextFromKeyboardEvent(KeyboardManagerInput::InputInterface& ii, const LowlevelKeyboardEvent* data, State& state)
     {
         KeyboardTextEvent event;
-        event.vkCode = Helpers::ClearKeyNumpadOrigin(data->lParam->vkCode);
-        if (event.vkCode == VK_PACKET)
+        const DWORD vkCode = Helpers::ClearKeyNumpadOrigin(data->lParam->vkCode);
+        if (vkCode == VK_PACKET)
         {
             const wchar_t packetUnit = static_cast<wchar_t>(data->lParam->scanCode & 0xFFFF);
             if (IsHighSurrogate(packetUnit))
             {
-                state.textReplacementPendingPacketHighSurrogate = packetUnit;
+                if (state.textReplacementPendingPacketHighSurrogate != L'\0')
+                {
+                    // Two leading surrogates cannot form one scalar. Stop tracking the
+                    // malformed packet sequence so it cannot bridge an existing suffix.
+                    state.textReplacementPendingPacketHighSurrogate = L'\0';
+                    state.textReplacementBuffer.clear();
+                }
+                else
+                {
+                    state.textReplacementPendingPacketHighSurrogate = packetUnit;
+                }
                 event.kind = KeyboardTextEventKind::PacketHighSurrogate;
                 return event;
             }
@@ -295,7 +313,6 @@ namespace
                 event.text.push_back(state.textReplacementPendingPacketHighSurrogate);
                 event.text.push_back(packetUnit);
                 state.textReplacementPendingPacketHighSurrogate = L'\0';
-                event.packetHighSurrogateAlreadyDelivered = true;
                 event.kind = KeyboardTextEventKind::Text;
                 return event;
             }
@@ -319,38 +336,28 @@ namespace
         }
 
         const HWND foregroundWindow = GetForegroundWindow();
-        event.foregroundThreadId = foregroundWindow ? GetWindowThreadProcessId(foregroundWindow, nullptr) : 0;
-        event.layout = GetKeyboardLayout(event.foregroundThreadId);
-        event.scanCode = data->lParam->scanCode ? data->lParam->scanCode : MapVirtualKeyExW(event.vkCode, MAPVK_VK_TO_VSC, event.layout);
+        const DWORD foregroundThreadId = foregroundWindow ? GetWindowThreadProcessId(foregroundWindow, nullptr) : 0;
+        const HKL layout = GetKeyboardLayout(foregroundThreadId);
+        const UINT scanCode = data->lParam->scanCode ? data->lParam->scanCode : MapVirtualKeyExW(vkCode, MAPVK_VK_TO_VSC, layout);
+        std::array<BYTE, 256> keyState{};
 
-        if (!GetKeyboardState(event.keyState.data()))
+        if (!GetKeyboardState(keyState.data()))
         {
             return event;
         }
 
-        SetKeyboardStateModifier(ii, event.keyState.data(), VK_SHIFT, VK_LSHIFT, VK_RSHIFT);
-        SetKeyboardStateModifier(ii, event.keyState.data(), VK_CONTROL, VK_LCONTROL, VK_RCONTROL);
-        SetKeyboardStateModifier(ii, event.keyState.data(), VK_MENU, VK_LMENU, VK_RMENU);
-        SetKeyboardStateToggle(event.keyState.data(), VK_CAPITAL, state.textReplacementCapsLockOn);
-        SetKeyboardStateToggle(event.keyState.data(), VK_NUMLOCK, state.textReplacementNumLockOn);
-        event.keyState[event.vkCode] |= 0x80;
-
-        if (state.textReplacementDeadKeyPending &&
-            (state.textReplacementDeadKeyThreadId != event.foregroundThreadId || state.textReplacementDeadKeyLayout != event.layout))
-        {
-            // Do not carry a pending composition across input contexts.
-            state.textReplacementDeadKeyMustPassThrough = true;
-        }
+        SetKeyboardStateModifier(ii, keyState.data(), VK_SHIFT, VK_LSHIFT, VK_RSHIFT);
+        SetKeyboardStateModifier(ii, keyState.data(), VK_CONTROL, VK_LCONTROL, VK_RCONTROL);
+        SetKeyboardStateModifier(ii, keyState.data(), VK_MENU, VK_LMENU, VK_RMENU);
+        SetKeyboardStateToggle(keyState.data(), VK_CAPITAL, state.textReplacementCapsLockOn);
+        keyState[vkCode] |= 0x80;
 
         wchar_t output[8]{};
         constexpr UINT toUnicodeFlags = 1u << 2; // Do not change keyboard state.
-        const int result = ToUnicodeEx(event.vkCode, event.scanCode, event.keyState.data(), output, static_cast<int>(std::size(output)), toUnicodeFlags, event.layout);
+        const int result = ToUnicodeEx(vkCode, scanCode, keyState.data(), output, static_cast<int>(std::size(output)), toUnicodeFlags, layout);
         if (result < 0)
         {
             state.textReplacementDeadKeyPending = true;
-            state.textReplacementDeadKeyMustPassThrough = false;
-            state.textReplacementDeadKeyThreadId = event.foregroundThreadId;
-            state.textReplacementDeadKeyLayout = event.layout;
             event.kind = KeyboardTextEventKind::DeadKey;
             return event;
         }
@@ -367,7 +374,6 @@ namespace
             return event;
         }
 
-        event.consumesPendingDeadKey = state.textReplacementDeadKeyPending;
         event.kind = KeyboardTextEventKind::Text;
         return event;
     }
@@ -464,47 +470,10 @@ namespace
         return SendInputBatch(ii, inputs, inputStreamMutated);
     }
 
-    TextReplacementInputResult SendTextReplacementInput(KeyboardManagerInput::InputInterface& ii, const size_t backspaceCount, std::wstring_view preservedCurrentText, const std::wstring& replacement)
+    TextReplacementInputResult SendTextReplacementInput(KeyboardManagerInput::InputInterface& ii, const size_t backspaceCount, const std::wstring& replacement)
     {
         bool inputStreamMutated = false;
-        std::vector<DWORD> pressedShiftKeys;
-        std::vector<INPUT> modifierInputs;
-        modifierInputs.reserve(2);
-
-        if (ii.GetVirtualKeyState(VK_LSHIFT))
-        {
-            pressedShiftKeys.push_back(VK_LSHIFT);
-            Helpers::SetKeyEvent(modifierInputs, INPUT_KEYBOARD, VK_LSHIFT, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-        }
-        if (ii.GetVirtualKeyState(VK_RSHIFT))
-        {
-            pressedShiftKeys.push_back(VK_RSHIFT);
-            Helpers::SetKeyEvent(modifierInputs, INPUT_KEYBOARD, VK_RSHIFT, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-        }
-        if (pressedShiftKeys.empty() && ii.GetVirtualKeyState(VK_SHIFT))
-        {
-            pressedShiftKeys.push_back(VK_SHIFT);
-            Helpers::SetKeyEvent(modifierInputs, INPUT_KEYBOARD, VK_SHIFT, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-        }
-        TextReplacementInputResult batchResult = SendInputBatch(ii, modifierInputs, inputStreamMutated);
-        if (batchResult != TextReplacementInputResult::Completed)
-        {
-            return batchResult;
-        }
-
-        const auto restorePressedShiftKeys = [&]() {
-            modifierInputs.clear();
-            for (const DWORD shiftKey : pressedShiftKeys)
-            {
-                Helpers::SetKeyEvent(modifierInputs, INPUT_KEYBOARD, static_cast<WORD>(shiftKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-            }
-            return SendInputBatch(ii, modifierInputs, inputStreamMutated);
-        };
-
-        const auto finishWithShiftRestored = [&](const TextReplacementInputResult result) {
-            const TextReplacementInputResult restoreResult = restorePressedShiftKeys();
-            return result == TextReplacementInputResult::Completed ? restoreResult : result;
-        };
+        TextReplacementInputResult batchResult = TextReplacementInputResult::Completed;
 
         constexpr size_t backspacesPerBatch = maximumTextReplacementInputsPerBatch / 2;
         for (size_t firstBackspace = 0; firstBackspace < backspaceCount; firstBackspace += backspacesPerBatch)
@@ -521,52 +490,22 @@ namespace
             batchResult = SendInputBatch(ii, backspaceInputs, inputStreamMutated);
             if (batchResult != TextReplacementInputResult::Completed)
             {
-                return finishWithShiftRestored(batchResult);
+                return batchResult;
             }
         }
 
-        batchResult = SendTextInputInSmallBatches(ii, preservedCurrentText, inputStreamMutated);
-        if (batchResult != TextReplacementInputResult::Completed)
-        {
-            return finishWithShiftRestored(batchResult);
-        }
-        batchResult = SendTextInputInSmallBatches(ii, replacement, inputStreamMutated);
-        return finishWithShiftRestored(batchResult);
-    }
-
-    void CommitKeyboardTextEvent(const KeyboardTextEvent& event)
-    {
-        if (!event.consumesPendingDeadKey)
-        {
-            return;
-        }
-
-        wchar_t output[8]{};
-        ToUnicodeEx(event.vkCode, event.scanCode, event.keyState.data(), output, static_cast<int>(std::size(output)), 0, event.layout);
+        return SendTextInputInSmallBatches(ii, replacement, inputStreamMutated);
     }
 
     void ClearDeadKeyTracking(State& state)
     {
         state.textReplacementDeadKeyPending = false;
-        state.textReplacementDeadKeyMustPassThrough = false;
-        state.textReplacementDeadKeyThreadId = 0;
-        state.textReplacementDeadKeyLayout = nullptr;
     }
 
     void ClearTextReplacementBuffer(State& state)
     {
         state.textReplacementBuffer.clear();
         state.textReplacementPendingPacketHighSurrogate = L'\0';
-        if (state.textReplacementDeadKeyPending)
-        {
-            state.textReplacementDeadKeyMustPassThrough = true;
-        }
-    }
-
-    void ClearTextReplacementSequence(State& state)
-    {
-        ClearTextReplacementBuffer(state);
-        ClearDeadKeyTracking(state);
     }
 
 }
@@ -683,11 +622,20 @@ namespace KeyboardEventHandlers
                     // passed through instead of being swallowed, leaving no dead key. For a
                     // key-down, remember that we passed it through so the matching key-up is
                     // passed through too (handled above), preventing a key stranded DOWN.
-                    if (!isKeyUp)
+                    if (!isKeyUp && !state.singleKeyRemapActiveKeys.contains(sourceKey))
                     {
                         state.SetSingleKeyRemapInjectionFailed(sourceKey, true);
                     }
                     return 0;
+                }
+
+                if (isKeyUp)
+                {
+                    state.singleKeyRemapActiveKeys.erase(sourceKey);
+                }
+                else
+                {
+                    state.singleKeyRemapActiveKeys.insert(sourceKey);
                 }
 
                 // Injection succeeded; drop any stale passthrough marker for this key so its
@@ -1078,18 +1026,19 @@ namespace KeyboardEventHandlers
                         Helpers::SendTextInput(remapping, ii);
                     }
 
-                    it->second.isShortcutInvoked = true;
-                    // If app specific shortcut is invoked, store the target application
-                    if (activatedApp)
-                    {
-                        state.SetActivatedApp(*activatedApp);
-                    }
-
                     Logger::trace(L"ChordKeyboardHandler:keyEventList.size:{}", keyEventList.size());
 
                     if (!ii.SendVirtualInput(keyEventList))
                     {
                         return 0;
+                    }
+
+                    it->second.isShortcutInvoked = true;
+                    // If app specific shortcut is invoked, store the target application
+                    // only after the target input was accepted.
+                    if (activatedApp)
+                    {
+                        state.SetActivatedApp(*activatedApp);
                     }
                     if (activatedApp.has_value())
                     {
@@ -1218,20 +1167,20 @@ namespace KeyboardEventHandlers
                         Helpers::SetDummyKeyEvent(keyEventList, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                     }
 
-                    // Reset the remap state
+                    if (!ii.SendVirtualInput(keyEventList))
+                    {
+                        return 0;
+                    }
+
+                    // Commit the ownership transition only after the target release was accepted.
                     it->second.isShortcutInvoked = false;
                     it->second.modifierKeysInvoked.Reset();
                     it->second.isOriginalActionKeyPressed = false;
 
-                    // If app specific shortcut has finished invoking, reset the target application
+                    // If app specific shortcut has finished invoking, reset the target application.
                     if (activatedApp)
                     {
                         state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
-                    }
-
-                    if (!ii.SendVirtualInput(keyEventList))
-                    {
-                        return 0;
                     }
                     return 1;
                 }
@@ -1277,6 +1226,8 @@ namespace KeyboardEventHandlers
                     if (!remapToText && ((!it->first.HasChord() && data->lParam->vkCode == it->first.GetActionKey()) || (it->first.HasChord() && data->lParam->vkCode == it->first.GetSecondKey())) && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
                     {
                         std::vector<INPUT> keyEventList;
+                        bool resetRemapStateAfterInput = false;
+                        bool resetActivatedAppAfterInput = false;
                         if (remapToShortcut && !it->first.HasChord())
                         {
                             // Just lift the action key for no chords.
@@ -1295,16 +1246,8 @@ namespace KeyboardEventHandlers
                             // Set old shortcut key down state
                             Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut));
 
-                            // Reset the remap state
-                            it->second.isShortcutInvoked = false;
-                            it->second.modifierKeysInvoked.Reset();
-                            it->second.isOriginalActionKeyPressed = false;
-
-                            // If app specific shortcut has finished invoking, reset the target application
-                            if (activatedApp)
-                            {
-                                state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
-                            }
+                            resetRemapStateAfterInput = true;
+                            resetActivatedAppAfterInput = activatedApp.has_value();
                         }
                         else if (std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED)
                         {
@@ -1342,23 +1285,27 @@ namespace KeyboardEventHandlers
 
                                 if (!isAltRightKeyInvoked)
                                 {
-                                    // Reset the remap state
-                                    it->second.isShortcutInvoked = false;
-                                    it->second.modifierKeysInvoked.Reset();
-                                    it->second.isOriginalActionKeyPressed = false;
+                                    resetRemapStateAfterInput = true;
                                 }
 
-                                // If app specific shortcut has finished invoking, reset the target application
-                                if (activatedApp != KeyboardManagerConstants::NoActivatedApp)
-                                {
-                                    state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
-                                }
+                                resetActivatedAppAfterInput = activatedApp.has_value();
                             }
                         }
 
                         if (!ii.SendVirtualInput(keyEventList))
                         {
                             return 0;
+                        }
+
+                        if (resetRemapStateAfterInput)
+                        {
+                            it->second.isShortcutInvoked = false;
+                            it->second.modifierKeysInvoked.Reset();
+                            it->second.isOriginalActionKeyPressed = false;
+                        }
+                        if (resetActivatedAppAfterInput)
+                        {
+                            state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
                         }
                         return 1;
                     }
@@ -1390,6 +1337,11 @@ namespace KeyboardEventHandlers
                     {
                         if (remapToShortcut)
                         {
+                            const RemapShortcut previousRemapState = it->second;
+                            const std::wstring previousActivatedApp = state.GetActivatedApp();
+                            RemapShortcut* newlyInvokedRemapping = nullptr;
+                            std::optional<RemapShortcut> previousNewRemapState;
+
                             // Modifier state reset might be required for this key depending on the target shortcut action key - ex: Ctrl+A -> Win+Caps, Shift is pressed. System should not see Shift and Caps pressed together
                             if (std::get<Shortcut>(it->second.targetShortcut).GetCtrlKey(it->second.modifierKeysInvoked.ctrlKey) == NULL && std::get<Shortcut>(it->second.targetShortcut).GetAltKey(it->second.modifierKeysInvoked.altKey) == NULL && std::get<Shortcut>(it->second.targetShortcut).GetShiftKey(it->second.modifierKeysInvoked.shiftKey) == NULL)
                             {
@@ -1437,6 +1389,8 @@ namespace KeyboardEventHandlers
                                         Helpers::SetModifierKeyEvents(to, it->second.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, from);
                                     }
                                     Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(to.actionKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                    newlyInvokedRemapping = &newRemapping;
+                                    previousNewRemapState = newRemapping;
                                     newRemapping.isShortcutInvoked = true;
                                 }
                             }
@@ -1486,7 +1440,18 @@ namespace KeyboardEventHandlers
 
                             if (!ii.SendVirtualInput(keyEventList))
                             {
+                                it->second = previousRemapState;
+                                if (newlyInvokedRemapping && previousNewRemapState)
+                                {
+                                    *newlyInvokedRemapping = *previousNewRemapState;
+                                }
+                                state.SetActivatedApp(previousActivatedApp);
                                 return 0;
+                            }
+
+                            if (newlyInvokedRemapping && activatedApp)
+                            {
+                                state.SetActivatedApp(*activatedApp);
                             }
                             return 1;
                         }
@@ -1522,6 +1487,8 @@ namespace KeyboardEventHandlers
 
                             if (isRemapToDisable || !isOriginalActionKeyPressed)
                             {
+                                const RemapShortcut previousRemapState = it->second;
+                                const std::wstring previousActivatedApp = state.GetActivatedApp();
                                 std::vector<INPUT> keyEventList;
 
                                 if (!isAltRightKeyInvoked)
@@ -1558,6 +1525,8 @@ namespace KeyboardEventHandlers
 
                                 if (!ii.SendVirtualInput(keyEventList))
                                 {
+                                    it->second = previousRemapState;
+                                    state.SetActivatedApp(previousActivatedApp);
                                     return 0;
                                 }
                                 return 1;
@@ -2311,6 +2280,41 @@ namespace KeyboardEventHandlers
         return 0;
     }
 
+    intptr_t HandleActiveRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
+    {
+        if (GeneratedByKBM(data))
+        {
+            return 0;
+        }
+
+        bool eventSuppressed = false;
+        if (state.singleKeyRemapActiveKeys.contains(data->lParam->vkCode))
+        {
+            eventSuppressed = HandleSingleKeyRemapEvent(ii, data, state) == 1;
+        }
+
+        for (const auto& [appName, mappings] : state.appSpecificShortcutReMap)
+        {
+            const bool hasInvokedMapping = std::any_of(mappings.begin(), mappings.end(), [](const auto& mapping) {
+                return mapping.second.isShortcutInvoked;
+            });
+            if (hasInvokedMapping)
+            {
+                eventSuppressed = HandleShortcutRemapEvent(ii, data, state, std::optional<std::wstring>{ appName }) == 1 || eventSuppressed;
+            }
+        }
+
+        const bool hasInvokedOSMapping = std::any_of(state.osLevelShortcutReMap.begin(), state.osLevelShortcutReMap.end(), [](const auto& mapping) {
+            return mapping.second.isShortcutInvoked;
+        });
+        if (hasInvokedOSMapping)
+        {
+            eventSuppressed = HandleShortcutRemapEvent(ii, data, state) == 1 || eventSuppressed;
+        }
+
+        return eventSuppressed ? 1 : 0;
+    }
+
     // Function to ensure Ctrl/Shift/Alt modifier key state is not detected as pressed down by applications which detect keys at a lower level than hooks when it is remapped for scenarios where its required
     void ResetIfModifierKeyForLowerLevelKeyHandlers(KeyboardManagerInput::InputInterface& ii, DWORD key, DWORD target)
     {
@@ -2391,12 +2395,47 @@ namespace KeyboardEventHandlers
         return 1;
     }
 
-    intptr_t HandleTextReplacementEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state)
+    intptr_t HandleTextReplacementSuppressedKeyEvent(LowlevelKeyboardEvent* data, State& state) noexcept
     {
         if (GeneratedByKBM(data))
         {
             return 0;
         }
+
+        // Pair the exact physical key identity so main Enter and numpad Enter do
+        // not consume each other's repeat or key-up.
+        const DWORD vkCode = data->lParam->vkCode;
+        if (const auto suppressedKey = state.textReplacementSuppressedTriggerKeys.find(vkCode);
+            suppressedKey != state.textReplacementSuppressedTriggerKeys.end())
+        {
+            if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+            {
+                state.textReplacementSuppressedTriggerKeys.erase(suppressedKey);
+                return 1;
+            }
+
+            if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
+            {
+                return 1;
+            }
+        }
+
+        return 0;
+    }
+
+    intptr_t HandleTextReplacementEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state)
+    {
+        if (HandleTextReplacementSuppressedKeyEvent(data, state) == 1)
+        {
+            return 1;
+        }
+
+        if (GeneratedByKBM(data))
+        {
+            return 0;
+        }
+
+        const DWORD vkCode = Helpers::ClearKeyNumpadOrigin(data->lParam->vkCode);
 
         if (state.textReplacements.empty())
         {
@@ -2423,7 +2462,12 @@ namespace KeyboardEventHandlers
             state.textReplacementWindow = foregroundWindow;
         }
 
-        if (state.textReplacementContextTrackingEnabled.load(std::memory_order_acquire))
+        if (!state.textReplacementContextTrackingEnabled.load(std::memory_order_acquire))
+        {
+            ClearTextReplacementBuffer(state);
+            return 0;
+        }
+
         {
             const uint64_t authorizationEpoch = state.textReplacementContextEpoch.load(std::memory_order_acquire);
             const uint64_t classifiedEpoch = state.textReplacementClassifiedContextEpoch.load(std::memory_order_acquire);
@@ -2456,7 +2500,6 @@ namespace KeyboardEventHandlers
             }
         }
 
-        const DWORD vkCode = Helpers::ClearKeyNumpadOrigin(data->lParam->vkCode);
         if (Helpers::IsModifierKey(vkCode))
         {
             return 0;
@@ -2491,15 +2534,65 @@ namespace KeyboardEventHandlers
             return 0;
         }
 
+        const bool canActivate = IsTextReplacementTriggerKey(vkCode) &&
+                                 !IsTextReplacementActivationModifierPressed(ii) &&
+                                 !state.textReplacementDeadKeyPending &&
+                                 state.textReplacementPendingPacketHighSurrogate == L'\0';
+        if (canActivate)
+        {
+            const std::wstring_view textReplacementBufferView{ state.textReplacementBuffer };
+            for (size_t length = textReplacementBufferView.length(); length != 0; --length)
+            {
+                const std::wstring_view trigger = textReplacementBufferView.substr(textReplacementBufferView.length() - length);
+                if (IsLowSurrogate(trigger.front()))
+                {
+                    continue;
+                }
+
+                const auto replacement = state.textReplacements.find(trigger);
+                if (replacement == state.textReplacements.end() || replacement->second.triggerKey != vkCode)
+                {
+                    continue;
+                }
+
+                const TextReplacementInputResult inputResult = SendTextReplacementInput(ii, Utf16ScalarCount(trigger), replacement->second.text);
+                if (inputResult == TextReplacementInputResult::FailedBeforeMutation)
+                {
+                    ResetTextReplacementRuntimeState(state);
+                    return 0;
+                }
+
+                ClearTextReplacementBuffer(state);
+                ClearDeadKeyTracking(state);
+                state.textReplacementSuppressedTriggerKeys.insert(data->lParam->vkCode);
+                if (inputResult == TextReplacementInputResult::FailedAfterMutation)
+                {
+                    Logger::error(L"Text replacement input failed after modifying the input stream; the trigger key was suppressed to avoid further corruption.");
+                }
+                return 1;
+            }
+        }
+
         if (IsTextReplacementShortcutModifierPressed(ii))
         {
             ClearTextReplacementBuffer(state);
             return 0;
         }
 
+        if (state.textReplacementDeadKeyPending && vkCode == VK_PACKET)
+        {
+            ClearTextReplacementBuffer(state);
+            return 0;
+        }
+
+        const bool deadKeyWasPending = state.textReplacementDeadKeyPending;
         const auto textEvent = GetTextFromKeyboardEvent(ii, data, state);
         if (textEvent.kind == KeyboardTextEventKind::DeadKey || textEvent.kind == KeyboardTextEventKind::PacketHighSurrogate)
         {
+            if (textEvent.kind == KeyboardTextEventKind::DeadKey)
+            {
+                ClearTextReplacementBuffer(state);
+            }
             return 0;
         }
 
@@ -2509,66 +2602,20 @@ namespace KeyboardEventHandlers
             return 0;
         }
 
-        if (textEvent.resetBufferBeforeText)
-        {
-            ClearTextReplacementBuffer(state);
-        }
-
-        if (textEvent.consumesPendingDeadKey && state.textReplacementDeadKeyMustPassThrough)
+        if (deadKeyWasPending)
         {
             ClearTextReplacementBuffer(state);
             ClearDeadKeyTracking(state);
             return 0;
         }
 
+        if (textEvent.resetBufferBeforeText)
+        {
+            ClearTextReplacementBuffer(state);
+        }
+
         state.textReplacementBuffer.append(textEvent.text);
         TrimUtf16Buffer(state.textReplacementBuffer, state.maxTextReplacementTriggerLength);
-
-        const std::wstring_view textReplacementBufferView{ state.textReplacementBuffer };
-        for (size_t length = textReplacementBufferView.length(); length != 0; --length)
-        {
-            const std::wstring_view trigger = textReplacementBufferView.substr(textReplacementBufferView.length() - length);
-            if (IsLowSurrogate(trigger.front()))
-            {
-                continue;
-            }
-
-            if (const auto replacement = state.textReplacements.find(trigger); replacement != state.textReplacements.end())
-            {
-                const size_t currentTextUsed = (std::min)(trigger.size(), textEvent.text.size());
-                const std::wstring_view preservedCurrentText{ textEvent.text.data(), textEvent.text.size() - currentTextUsed };
-                const std::wstring_view previouslyDisplayedTriggerText = trigger.substr(0, trigger.size() - currentTextUsed);
-                size_t backspaceCount = Utf16ScalarCount(previouslyDisplayedTriggerText);
-                if (textEvent.packetHighSurrogateAlreadyDelivered)
-                {
-                    ++backspaceCount;
-                }
-
-                const TextReplacementInputResult inputResult = SendTextReplacementInput(ii, backspaceCount, preservedCurrentText, replacement->second);
-                if (inputResult == TextReplacementInputResult::FailedBeforeMutation)
-                {
-                    ResetTextReplacementRuntimeState(state);
-                    if (textEvent.consumesPendingDeadKey)
-                    {
-                        ClearDeadKeyTracking(state);
-                    }
-                    return 0;
-                }
-
-                CommitKeyboardTextEvent(textEvent);
-                ClearTextReplacementSequence(state);
-                if (inputResult == TextReplacementInputResult::FailedAfterMutation)
-                {
-                    Logger::error(L"Text replacement input failed after modifying the input stream; the original key was suppressed to avoid further corruption.");
-                }
-                return 1;
-            }
-        }
-
-        if (textEvent.consumesPendingDeadKey)
-        {
-            ClearDeadKeyTracking(state);
-        }
 
         return 0;
     }
@@ -2584,7 +2631,6 @@ namespace KeyboardEventHandlers
     void InitializeTextReplacementToggleKeyState(State& state) noexcept
     {
         state.textReplacementCapsLockOn = (GetKeyState(VK_CAPITAL) & 0x1) != 0;
-        state.textReplacementNumLockOn = (GetKeyState(VK_NUMLOCK) & 0x1) != 0;
     }
 
     void UpdateTextReplacementToggleKeyState(const LowlevelKeyboardEvent* data, const bool eventSuppressed, State& state) noexcept
@@ -2594,14 +2640,9 @@ namespace KeyboardEventHandlers
             return;
         }
 
-        switch (Helpers::ClearKeyNumpadOrigin(data->lParam->vkCode))
+        if (Helpers::ClearKeyNumpadOrigin(data->lParam->vkCode) == VK_CAPITAL)
         {
-        case VK_CAPITAL:
             state.textReplacementCapsLockOn = !state.textReplacementCapsLockOn;
-            break;
-        case VK_NUMLOCK:
-            state.textReplacementNumLockOn = !state.textReplacementNumLockOn;
-            break;
         }
     }
 }

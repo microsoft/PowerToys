@@ -23,6 +23,11 @@ private:
     std::unordered_set<DWORD> singleKeyRemapInjectionFailedKeys;
 
 public:
+    // Source keys whose remapped target key/shortcut is currently held down by
+    // Keyboard Manager. Settings reload waits for these physical keys to release
+    // before replacing the configuration that owns their matching key-up.
+    std::unordered_set<DWORD> singleKeyRemapActiveKeys;
+
     // Stores typed characters for text replacement matching.
     std::wstring textReplacementBuffer;
 
@@ -35,19 +40,17 @@ public:
     // Runtime state used only by the serialized low-level input hook thread.
     wchar_t textReplacementPendingPacketHighSurrogate = L'\0';
     bool textReplacementDeadKeyPending = false;
-    bool textReplacementDeadKeyMustPassThrough = false;
-    DWORD textReplacementDeadKeyThreadId = 0;
-    HKL textReplacementDeadKeyLayout = nullptr;
     bool textReplacementCapsLockOn = false;
-    bool textReplacementNumLockOn = false;
+    // Activation key-downs that fired a replacement. Repeats and the matching key-up
+    // must remain suppressed even if the input context changes in the meantime.
+    std::unordered_set<DWORD> textReplacementSuppressedTriggerKeys;
     uint64_t textReplacementObservedContextEpoch = 0;
 
     // Other threads only request invalidation. The hook thread observes these atomics
     // and performs all std::wstring mutations itself.
     std::atomic_uint64_t textReplacementContextEpoch = 1;
 
-    // The accessibility classifier publishes a fail-closed snapshot here. Unit tests
-    // that invoke the event handler directly leave tracking disabled.
+    // The accessibility classifier publishes a fail-closed snapshot here.
     std::atomic_bool textReplacementContextTrackingEnabled = false;
     std::atomic<TextReplacementContextStatus> textReplacementContextStatus = TextReplacementContextStatus::Pending;
     std::atomic<HWND> textReplacementContextWindow = nullptr;

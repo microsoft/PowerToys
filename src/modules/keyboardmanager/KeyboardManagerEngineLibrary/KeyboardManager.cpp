@@ -284,7 +284,7 @@ KeyboardManager::~KeyboardManager()
     keyboardManagerObjectPtr = nullptr;
 }
 
-void KeyboardManager::LoadSettings()
+bool KeyboardManager::LoadSettings()
 {
     KeyboardEventHandlers::ResetTextReplacementRuntimeState(state);
     bool loadedSuccessful = state.LoadSettings();
@@ -293,7 +293,7 @@ void KeyboardManager::LoadSettings()
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         // retry once
-        state.LoadSettings();
+        loadedSuccessful = state.LoadSettings();
     }
     try
     {
@@ -313,10 +313,19 @@ void KeyboardManager::LoadSettings()
 
         }
     }
+
+    return loadedSuccessful;
 }
 
 void KeyboardManager::ReloadSettings()
 {
+    if (HasActiveRemap() || !state.textReplacementSuppressedTriggerKeys.empty())
+    {
+        settingsReloadDeferred = true;
+        return;
+    }
+
+    settingsReloadDeferred = false;
     StopLowlevelKeyboardHook();
     try
     {
@@ -326,6 +335,7 @@ void KeyboardManager::ReloadSettings()
     {
         Logger::error("Failed to load settings");
     }
+    state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
     if (HasRegisteredRemappings())
     {
         StartLowlevelKeyboardHook();
@@ -342,6 +352,7 @@ LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const
         event.lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event.lParam->vkCode, event.lParam->flags & LLKHF_EXTENDED);
 
         const intptr_t hookResult = keyboardManagerObjectPtr->HandleKeyboardHookEvent(&event);
+        keyboardManagerObjectPtr->QueueDeferredSettingsReloadIfReady();
         KeyboardEventHandlers::UpdateTextReplacementToggleKeyState(&event, hookResult == 1, keyboardManagerObjectPtr->state);
         if (hookResult == 1)
         {
@@ -641,7 +652,7 @@ void KeyboardManager::StartLowlevelKeyboardHook()
         mouseHookHandle = nullptr;
     }
 
-    if (hookHandle && hasTextReplacements)
+    if (hookHandle && hasTextReplacements && mouseHookHandle)
     {
         StartTextReplacementContextTracking();
     }
@@ -653,7 +664,12 @@ void KeyboardManager::StartLowlevelKeyboardHook()
 
 void KeyboardManager::StopLowlevelKeyboardHook()
 {
-    StopTextReplacementContextTracking();
+    if (hookHandle)
+    {
+        UnhookWindowsHookEx(hookHandle);
+        hookHandle = nullptr;
+        hookHandleCopy = nullptr;
+    }
 
     if (mouseHookHandle)
     {
@@ -661,11 +677,40 @@ void KeyboardManager::StopLowlevelKeyboardHook()
         mouseHookHandle = nullptr;
     }
 
-    if (hookHandle)
+    StopTextReplacementContextTracking();
+}
+
+bool KeyboardManager::HasActiveRemap() const
+{
+    if (!state.singleKeyRemapActiveKeys.empty())
     {
-        UnhookWindowsHookEx(hookHandle);
-        hookHandle = nullptr;
-        hookHandleCopy = nullptr;
+        return true;
+    }
+
+    if (std::any_of(state.osLevelShortcutReMap.begin(), state.osLevelShortcutReMap.end(), [](const auto& mapping) { return mapping.second.isShortcutInvoked; }))
+    {
+        return true;
+    }
+
+    return std::any_of(state.appSpecificShortcutReMap.begin(), state.appSpecificShortcutReMap.end(), [](const auto& appMappings) {
+        return std::any_of(appMappings.second.begin(), appMappings.second.end(), [](const auto& mapping) { return mapping.second.isShortcutInvoked; });
+    });
+}
+
+void KeyboardManager::QueueDeferredSettingsReloadIfReady()
+{
+    if (!settingsReloadDeferred || HasActiveRemap() || !state.textReplacementSuppressedTriggerKeys.empty())
+    {
+        return;
+    }
+
+    if (PostThreadMessageW(mainThreadId, ReloadSettingsMessageID, 0, 0))
+    {
+        settingsReloadDeferred = false;
+    }
+    else
+    {
+        Logger::error(L"Failed to post the deferred Keyboard Manager settings reload message. {}", get_last_error_or_default(GetLastError()));
     }
 }
 
@@ -676,10 +721,25 @@ bool KeyboardManager::HasRegisteredRemappings() const
 
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
+    // Once a trigger-key key-down has been swallowed, its repeats and matching
+    // key-up must be swallowed before editor suspension or any fresh remap can
+    // reinterpret the physical key.
+    if (KeyboardEventHandlers::HandleTextReplacementSuppressedKeyEvent(data, state) == 1)
+    {
+        return 1;
+    }
+
     // Suspend remapping if remap key/shortcut window is opened
     if (IsEditorRunning())
     {
-        return 0;
+        // Do not start fresh remaps while the editor is open, but continue every
+        // remap that already owns output state until its input sequence is complete.
+        const intptr_t activeRemapResult = KeyboardEventHandlers::HandleActiveRemapEvent(inputHandler, data, state);
+        if (activeRemapResult == 1)
+        {
+            KeyboardEventHandlers::ResetTextReplacementRuntimeState(state);
+        }
+        return activeRemapResult;
     }
 
     // If key has suppress flag, then suppress it
@@ -721,6 +781,15 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
         return 1;
     }
 
+    // Handle an OS-level shortcut before typed text replacement so a configured
+    // shortcut always wins when both mappings match the same physical input.
+    const intptr_t osLevelShortcutRemapResult = KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(inputHandler, data, state);
+    if (osLevelShortcutRemapResult == 1)
+    {
+        KeyboardEventHandlers::ResetTextReplacementRuntimeState(state);
+        return 1;
+    }
+
     intptr_t TextReplacementResult = KeyboardEventHandlers::HandleTextReplacementEvent(inputHandler, data, state);
 
     if (TextReplacementResult == 1)
@@ -728,11 +797,5 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
         return 1;
     }
 
-    // Handle an os-level shortcut remapping
-    const intptr_t osLevelShortcutRemapResult = KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(inputHandler, data, state);
-    if (osLevelShortcutRemapResult == 1)
-    {
-        KeyboardEventHandlers::ResetTextReplacementRuntimeState(state);
-    }
-    return osLevelShortcutRemapResult;
+    return 0;
 }

@@ -57,6 +57,8 @@ private:
     void StopTextReplacementContextTracking() noexcept;
     void TextReplacementContextThreadProc();
     bool IsEditorRunning();
+    bool HasActiveRemap() const;
+    void QueueDeferredSettingsReloadIfReady();
 
     HWINEVENTHOOK textReplacementForegroundHook = nullptr;
     HWINEVENTHOOK textReplacementFocusHook = nullptr;
@@ -65,9 +67,10 @@ private:
     HANDLE textReplacementContextRefreshEvent = nullptr;
     std::thread textReplacementContextThread;
     std::atomic<DWORD> textReplacementContextThreadId = 0;
+    bool settingsReloadDeferred = false;
 
     // Load settings from the file.
-    void LoadSettings();
+    bool LoadSettings();
 
     // Function called by the hook procedure to handle the events. This is the starting point function for remapping
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;

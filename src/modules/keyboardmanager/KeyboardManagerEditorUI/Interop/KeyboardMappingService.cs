@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using KeyboardManagerEditorUI.Helpers;
 using ManagedCommon;
 
 namespace KeyboardManagerEditorUI.Interop
@@ -26,7 +27,13 @@ namespace KeyboardManagerEditorUI.Interop
                 throw new InvalidOperationException("Failed to create mapping configuration");
             }
 
-            KeyboardManagerInterop.LoadMappingSettings(_configHandle);
+            if (!KeyboardManagerInterop.LoadMappingSettings(_configHandle))
+            {
+                KeyboardManagerInterop.DestroyMappingConfiguration(_configHandle);
+                _configHandle = IntPtr.Zero;
+                Logger.LogError("Failed to load mapping settings");
+                throw new InvalidOperationException("Failed to load mapping settings");
+            }
         }
 
         public List<KeyMapping> GetSingleKeyMappings()
@@ -140,6 +147,7 @@ namespace KeyboardManagerEditorUI.Interop
                     {
                         Trigger = KeyboardManagerInterop.GetStringAndFree(mapping.Trigger),
                         TargetText = KeyboardManagerInterop.GetStringAndFree(mapping.TargetText),
+                        TriggerKey = mapping.TriggerKey,
                     });
                 }
             }
@@ -213,29 +221,34 @@ namespace KeyboardManagerEditorUI.Interop
             return KeyboardManagerInterop.AddSingleKeyToTextRemap(_configHandle, originalKey, targetText);
         }
 
-        public bool AddTextReplacementMapping(string trigger, string targetText)
+        public bool AddTextReplacementMapping(string trigger, string targetText, int triggerKey)
         {
-            if (string.IsNullOrEmpty(trigger) || string.IsNullOrEmpty(targetText) || trigger.Contains('\0') || targetText.Contains('\0'))
+            if (string.IsNullOrEmpty(trigger) ||
+                string.IsNullOrEmpty(targetText) ||
+                trigger.Contains('\0') ||
+                targetText.Contains('\0') ||
+                !TextReplacementTriggerKeyHelper.IsAllowed(triggerKey))
             {
                 return false;
             }
 
-            return KeyboardManagerInterop.AddTextReplacement(_configHandle, trigger, targetText);
+            return KeyboardManagerInterop.AddTextReplacement(_configHandle, trigger, targetText, triggerKey);
         }
 
-        public bool UpdateTextReplacementMapping(string originalTrigger, string newTrigger, string targetText)
+        public bool UpdateTextReplacementMapping(string originalTrigger, string newTrigger, string targetText, int triggerKey)
         {
             if (string.IsNullOrEmpty(originalTrigger) ||
                 string.IsNullOrEmpty(newTrigger) ||
                 string.IsNullOrEmpty(targetText) ||
                 originalTrigger.Contains('\0') ||
                 newTrigger.Contains('\0') ||
-                targetText.Contains('\0'))
+                targetText.Contains('\0') ||
+                !TextReplacementTriggerKeyHelper.IsAllowed(triggerKey))
             {
                 return false;
             }
 
-            return KeyboardManagerInterop.UpdateTextReplacement(_configHandle, originalTrigger, newTrigger, targetText);
+            return KeyboardManagerInterop.UpdateTextReplacement(_configHandle, originalTrigger, newTrigger, targetText, triggerKey);
         }
 
         public bool AddShortcutMapping(string originalKeys, string targetKeys, string targetApp = "", ShortcutOperationType operationType = ShortcutOperationType.RemapShortcut)

@@ -48,6 +48,9 @@ namespace KeyboardManagerConstants
     // Name of the property use to store typed text replacement triggers.
     inline const std::wstring TriggerTextSettingName = L"trigger";
 
+    // Name of the property used to store the key that activates a text replacement.
+    inline const std::wstring TextReplacementTriggerKeySettingName = L"triggerKey";
+
     // Name of the property use to store new remap keys.
     inline const std::wstring NewRemapKeysSettingName = L"newRemapKeys";
 

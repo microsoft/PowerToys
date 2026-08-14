@@ -21,6 +21,29 @@
 std::unique_ptr<KeyboardManagerEditor> editor = nullptr;
 const std::wstring instanceMutexName = L"Local\\PowerToys_KBMEditor_InstanceMutex";
 
+namespace
+{
+    class OwnedMutex final
+    {
+    public:
+        explicit OwnedMutex(HANDLE handle) noexcept : handle(handle) {}
+        OwnedMutex(const OwnedMutex&) = delete;
+        OwnedMutex& operator=(const OwnedMutex&) = delete;
+
+        ~OwnedMutex()
+        {
+            if (handle)
+            {
+                ReleaseMutex(handle);
+                CloseHandle(handle);
+            }
+        }
+
+    private:
+        HANDLE handle;
+    };
+}
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                       _In_opt_ HINSTANCE /*hPrevInstance*/,
                       _In_ LPWSTR /*lpCmdLine*/,
@@ -37,21 +60,22 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     InitUnhandledExceptionHandler();
     Trace::RegisterProvider();
 
-    auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
-    if (mutex == nullptr)
+    HANDLE mutex = CreateMutexW(nullptr, TRUE, instanceMutexName.c_str());
+    const DWORD mutexError = GetLastError();
+    if (!mutex)
     {
-        Logger::error(L"Failed to create mutex. {}", get_last_error_or_default(GetLastError()));
+        Logger::error(L"Failed to create the KBM editor instance mutex. {}", get_last_error_or_default(mutexError));
+        return 0;
     }
-    else
+    if (mutexError == ERROR_ALREADY_EXISTS)
     {
-        Logger::trace(L"Created/Opened {} mutex", instanceMutexName);
-    }
-
-    if (GetLastError() == ERROR_ALREADY_EXISTS)
-    {
+        CloseHandle(mutex);
         Logger::info(L"KBM editor instance is already running");
         return 0;
     }
+
+    const OwnedMutex mutexOwner{ mutex };
+    Logger::trace(L"Created {} mutex", instanceMutexName);
 
     int numArgs;
     LPWSTR* cmdArgs = CommandLineToArgvW(GetCommandLineW(), &numArgs);

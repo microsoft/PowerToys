@@ -16,6 +16,10 @@ namespace KeyboardManagerEditorUI.Interop
 
         public string TriggerText { get; set; } = string.Empty;
 
+        // Zero is retained as a deserialization sentinel for editorSettings.json files
+        // written before typed replacements had an explicit activation key.
+        public int TriggerKey { get; set; }
+
         public string TargetKeys { get; set; } = string.Empty;
 
         public string TargetApp { get; set; } = string.Empty;
@@ -72,6 +76,7 @@ namespace KeyboardManagerEditorUI.Interop
 
             return OriginalKeys == other.OriginalKeys &&
                    TriggerText == other.TriggerText &&
+                   TriggerKey == other.TriggerKey &&
                    TargetKeys == other.TargetKeys &&
                    TargetApp == other.TargetApp &&
                    OperationType == other.OperationType &&
@@ -90,6 +95,7 @@ namespace KeyboardManagerEditorUI.Interop
             HashCode hash = default(HashCode);
             hash.Add(OriginalKeys);
             hash.Add(TriggerText);
+            hash.Add(TriggerKey);
             hash.Add(TargetKeys);
             hash.Add(TargetApp);
             hash.Add(OperationType);

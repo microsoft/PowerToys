@@ -1,6 +1,9 @@
 ﻿#include "pch.h"
 #include "MappingConfiguration.h"
 
+#include <cstdint>
+#include <fstream>
+
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/logger/logger.h>
@@ -12,23 +15,70 @@
 
 namespace
 {
-    constexpr bool IsPrefixOf(std::wstring_view prefix, std::wstring_view value)
+    constexpr bool IsValidTextReplacementTriggerKey(const DWORD triggerKey)
     {
-        return prefix.size() <= value.size() && value.compare(0, prefix.size(), prefix) == 0;
+        return triggerKey == VK_TAB || triggerKey == VK_RETURN || triggerKey == VK_SPACE;
+    }
+
+    constexpr bool IsHighSurrogate(const wchar_t value)
+    {
+        const auto codeUnit = static_cast<uint16_t>(value);
+        return codeUnit >= 0xD800 && codeUnit <= 0xDBFF;
+    }
+
+    constexpr bool IsLowSurrogate(const wchar_t value)
+    {
+        const auto codeUnit = static_cast<uint16_t>(value);
+        return codeUnit >= 0xDC00 && codeUnit <= 0xDFFF;
+    }
+
+    constexpr bool IsValidTextReplacementTrigger(const std::wstring_view trigger)
+    {
+        for (size_t index = 0; index < trigger.size(); ++index)
+        {
+            const auto codeUnit = static_cast<uint16_t>(trigger[index]);
+            if (IsHighSurrogate(trigger[index]))
+            {
+                if (++index >= trigger.size() || !IsLowSurrogate(trigger[index]))
+                {
+                    return false;
+                }
+            }
+            else if (IsLowSurrogate(trigger[index]) || codeUnit < 0x20 || (codeUnit >= 0x7F && codeUnit <= 0x9F))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    constexpr bool HasSpaceDelimiterPrefixConflict(
+        const std::wstring_view shorterTrigger,
+        const DWORD shorterTriggerKey,
+        const std::wstring_view longerTrigger)
+    {
+        return shorterTriggerKey == VK_SPACE &&
+               longerTrigger.size() > shorterTrigger.size() &&
+               longerTrigger.compare(0, shorterTrigger.size(), shorterTrigger) == 0 &&
+               longerTrigger[shorterTrigger.size()] == L' ';
     }
 
     bool IsValidTextReplacement(
         const TextReplacementTable& replacements,
         std::wstring_view trigger,
         std::wstring_view text,
+        const DWORD triggerKey,
         std::wstring_view excludedTrigger = {})
     {
         if (trigger.empty() ||
             text.empty() ||
             trigger.find(L'\0') != std::wstring_view::npos ||
             text.find(L'\0') != std::wstring_view::npos ||
+            !IsValidTextReplacementTrigger(trigger) ||
             trigger.size() > KeyboardManagerConstants::MaxTextReplacementTriggerLength ||
-            text.size() > KeyboardManagerConstants::MaxTextReplacementTextLength)
+            text.size() > KeyboardManagerConstants::MaxTextReplacementTextLength ||
+            !IsValidTextReplacementTriggerKey(triggerKey))
         {
             return false;
         }
@@ -41,14 +91,47 @@ namespace
                 continue;
             }
 
-            const auto& existingTrigger = replacement->first;
-            if (IsPrefixOf(existingTrigger, trigger) || IsPrefixOf(trigger, existingTrigger))
+            if (replacement->first == trigger ||
+                HasSpaceDelimiterPrefixConflict(replacement->first, replacement->second.triggerKey, trigger) ||
+                HasSpaceDelimiterPrefixConflict(trigger, triggerKey, replacement->first))
             {
                 return false;
             }
         }
 
         return true;
+    }
+
+    bool WriteJsonAtomically(const std::wstring& filePath, const json::JsonObject& value)
+    {
+        const std::wstring temporaryFilePath = filePath + L".tmp";
+        try
+        {
+            const std::string serializedValue = winrt::to_string(value.Stringify());
+
+            std::ofstream temporaryFile;
+            temporaryFile.exceptions(std::ios::failbit | std::ios::badbit);
+            temporaryFile.open(temporaryFilePath.c_str(), std::ios::binary | std::ios::trunc);
+            temporaryFile.write(serializedValue.data(), static_cast<std::streamsize>(serializedValue.size()));
+            temporaryFile.flush();
+            temporaryFile.close();
+
+            if (!MoveFileExW(
+                    temporaryFilePath.c_str(),
+                    filePath.c_str(),
+                    MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+            {
+                DeleteFileW(temporaryFilePath.c_str());
+                return false;
+            }
+
+            return true;
+        }
+        catch (...)
+        {
+            DeleteFileW(temporaryFilePath.c_str());
+            return false;
+        }
     }
 
 }
@@ -139,14 +222,14 @@ bool MappingConfiguration::AddSingleKeyToTextRemap(const DWORD originalKey, cons
     }
 }
 
-bool MappingConfiguration::AddTextReplacement(const std::wstring& trigger, const std::wstring& text)
+bool MappingConfiguration::AddTextReplacement(const std::wstring& trigger, const std::wstring& text, const DWORD triggerKey)
 {
-    if (!IsValidTextReplacement(textReplacements, trigger, text))
+    if (!IsValidTextReplacement(textReplacements, trigger, text, triggerKey))
     {
         return false;
     }
 
-    textReplacements.emplace(trigger, text);
+    textReplacements.emplace(trigger, TextReplacementValue{ text, triggerKey });
     maxTextReplacementTriggerLength = (std::max)(maxTextReplacementTriggerLength, trigger.length());
     return true;
 }
@@ -162,22 +245,22 @@ bool MappingConfiguration::DeleteTextReplacement(const std::wstring& trigger)
     return true;
 }
 
-bool MappingConfiguration::UpdateTextReplacement(const std::wstring& oldTrigger, const std::wstring& newTrigger, const std::wstring& newText)
+bool MappingConfiguration::UpdateTextReplacement(const std::wstring& oldTrigger, const std::wstring& newTrigger, const std::wstring& newText, const DWORD triggerKey)
 {
     const auto oldReplacement = textReplacements.find(oldTrigger);
     if (oldReplacement == textReplacements.end() ||
-        !IsValidTextReplacement(textReplacements, newTrigger, newText, oldTrigger))
+        !IsValidTextReplacement(textReplacements, newTrigger, newText, triggerKey, oldTrigger))
     {
         return false;
     }
 
     if (oldTrigger == newTrigger)
     {
-        oldReplacement->second = newText;
+        oldReplacement->second = TextReplacementValue{ newText, triggerKey };
     }
     else
     {
-        textReplacements.emplace(newTrigger, newText);
+        textReplacements.emplace(newTrigger, TextReplacementValue{ newText, triggerKey });
         textReplacements.erase(oldReplacement);
     }
 
@@ -340,10 +423,27 @@ bool MappingConfiguration::LoadTextReplacements(const json::JsonObject& jsonData
                 const auto replacement = inProcessTextReplacements.GetAt(index).GetObjectW();
                 const auto triggerValue = replacement.GetNamedString(KeyboardManagerConstants::TriggerTextSettingName);
                 const auto textValue = replacement.GetNamedString(KeyboardManagerConstants::NewTextSettingName);
-                const std::wstring trigger{ triggerValue.c_str(), triggerValue.size() };
+                std::wstring trigger{ triggerValue.c_str(), triggerValue.size() };
                 const std::wstring text{ textValue.c_str(), textValue.size() };
+                DWORD triggerKey = VK_SPACE;
+                if (replacement.HasKey(KeyboardManagerConstants::TextReplacementTriggerKeySettingName))
+                {
+                    const double triggerKeyValue = replacement.GetNamedNumber(KeyboardManagerConstants::TextReplacementTriggerKeySettingName);
+                    if (triggerKeyValue != VK_TAB && triggerKeyValue != VK_RETURN && triggerKeyValue != VK_SPACE)
+                    {
+                        Logger::error(L"Invalid text replacement trigger key at index {}. Try the next replacement.", index);
+                        result = false;
+                        continue;
+                    }
 
-                if (!AddTextReplacement(trigger, text))
+                    triggerKey = static_cast<DWORD>(triggerKeyValue);
+                }
+                else if (trigger.length() > 1 && trigger.back() == L' ')
+                {
+                    trigger.pop_back();
+                }
+
+                if (!AddTextReplacement(trigger, text, triggerKey))
                 {
                     Logger::error(L"Invalid text replacement at index {}. Try the next replacement.", index);
                     result = false;
@@ -599,7 +699,7 @@ bool MappingConfiguration::LoadSettings()
 }
 
 // Save the updated configuration.
-bool MappingConfiguration::SaveSettingsToFile()
+bool MappingConfiguration::SaveSettingsToFile() try
 {
     bool result = true;
     json::JsonObject configJson;
@@ -648,11 +748,12 @@ bool MappingConfiguration::SaveSettingsToFile()
         inProcessRemapKeysToTextArray.Append(keys);
     }
 
-    for (const auto& [trigger, text] : textReplacements)
+    for (const auto& [trigger, value] : textReplacements)
     {
         json::JsonObject replacement;
         replacement.SetNamedValue(KeyboardManagerConstants::TriggerTextSettingName, json::value(trigger));
-        replacement.SetNamedValue(KeyboardManagerConstants::NewTextSettingName, json::value(text));
+        replacement.SetNamedValue(KeyboardManagerConstants::NewTextSettingName, json::value(value.text));
+        replacement.SetNamedValue(KeyboardManagerConstants::TextReplacementTriggerKeySettingName, json::value(value.triggerKey));
         inProcessTextReplacementsArray.Append(replacement);
     }
 
@@ -803,7 +904,12 @@ bool MappingConfiguration::SaveSettingsToFile()
 
     try
     {
-        json::to_file((PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + currentConfig + L".json"), configJson);
+        const std::wstring settingsFilePath = PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + currentConfig + L".json";
+        if (!WriteJsonAtomically(settingsFilePath, configJson))
+        {
+            result = false;
+            Logger::error(L"Failed to save the settings");
+        }
     }
     catch (...)
     {
@@ -816,14 +922,29 @@ bool MappingConfiguration::SaveSettingsToFile()
         auto hEvent = CreateEvent(nullptr, false, false, KeyboardManagerConstants::SettingsEventName.c_str());
         if (hEvent)
         {
-            SetEvent(hEvent);
-            Logger::trace(L"Signaled {} event", KeyboardManagerConstants::SettingsEventName);
+            if (SetEvent(hEvent))
+            {
+                Logger::trace(L"Signaled {} event", KeyboardManagerConstants::SettingsEventName);
+            }
+            else
+            {
+                result = false;
+                Logger::error(L"Failed to signal {} event", KeyboardManagerConstants::SettingsEventName);
+            }
+
+            CloseHandle(hEvent);
         }
         else
         {
+            result = false;
             Logger::error(L"Failed to signal {} event", KeyboardManagerConstants::SettingsEventName);
         }
     }
 
     return result;
+}
+catch (...)
+{
+    Logger::error(L"Failed to serialize or save the settings");
+    return false;
 }

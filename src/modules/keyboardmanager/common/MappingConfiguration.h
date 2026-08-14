@@ -22,7 +22,13 @@ struct TextReplacementTriggerCompare
     }
 };
 
-using TextReplacementTable = std::map<std::wstring, std::wstring, TextReplacementTriggerCompare>;
+struct TextReplacementValue
+{
+    std::wstring text;
+    DWORD triggerKey = VK_SPACE;
+};
+
+using TextReplacementTable = std::map<std::wstring, TextReplacementValue, TextReplacementTriggerCompare>;
 
 class MappingConfiguration
 {
@@ -57,13 +63,13 @@ public:
     bool AddSingleKeyToTextRemap(const DWORD originalKey, const std::wstring& text);
 
     // Function to add a new typed text replacement
-    bool AddTextReplacement(const std::wstring& trigger, const std::wstring& text);
+    bool AddTextReplacement(const std::wstring& trigger, const std::wstring& text, DWORD triggerKey);
 
     // Function to delete a typed text replacement
     bool DeleteTextReplacement(const std::wstring& trigger);
 
     // Function to atomically update a typed text replacement
-    bool UpdateTextReplacement(const std::wstring& oldTrigger, const std::wstring& newTrigger, const std::wstring& newText);
+    bool UpdateTextReplacement(const std::wstring& oldTrigger, const std::wstring& newTrigger, const std::wstring& newText, DWORD triggerKey);
 
     // Function to add a new OS level shortcut remapping
     bool AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutTextUnion& newSC);

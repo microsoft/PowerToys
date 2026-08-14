@@ -30,9 +30,11 @@ namespace KeyboardManagerEditorUI.Helpers
             { ValidationErrorType.SelfMapping, (ResourceHelper.GetString("Validation_SelfMapping_Title"), ResourceHelper.GetString("Validation_SelfMapping_Message")) },
             { ValidationErrorType.EmptyTargetText, (ResourceHelper.GetString("Validation_EmptyTargetText_Title"), ResourceHelper.GetString("Validation_EmptyTargetText_Message")) },
             { ValidationErrorType.EmptyTriggerText, (ResourceHelper.GetString("Validation_EmptyTriggerText_Title"), ResourceHelper.GetString("Validation_EmptyTriggerText_Message")) },
+            { ValidationErrorType.InvalidTextReplacementTriggerText, (ResourceHelper.GetString("Validation_InvalidTextReplacementTriggerText_Title"), ResourceHelper.GetString("Validation_InvalidTextReplacementTriggerText_Message")) },
             { ValidationErrorType.TextTriggerTooLong, (ResourceHelper.GetString("Validation_TextTriggerTooLong_Title"), ResourceHelper.GetString("Validation_TextTriggerTooLong_Message")) },
             { ValidationErrorType.TargetTextTooLong, (ResourceHelper.GetString("Validation_TargetTextTooLong_Title"), ResourceHelper.GetString("Validation_TargetTextTooLong_Message")) },
-            { ValidationErrorType.TextTriggerPrefixConflict, (ResourceHelper.GetString("Validation_TextTriggerPrefixConflict_Title"), ResourceHelper.GetString("Validation_TextTriggerPrefixConflict_Message")) },
+            { ValidationErrorType.InvalidTextReplacementTriggerKey, (ResourceHelper.GetString("Validation_InvalidTextReplacementTriggerKey_Title"), ResourceHelper.GetString("Validation_InvalidTextReplacementTriggerKey_Message")) },
+            { ValidationErrorType.TextTriggerDelimiterConflict, (ResourceHelper.GetString("Validation_TextTriggerDelimiterConflict_Title"), ResourceHelper.GetString("Validation_TextTriggerDelimiterConflict_Message")) },
             { ValidationErrorType.EmptyUrl, (ResourceHelper.GetString("Validation_EmptyUrl_Title"), ResourceHelper.GetString("Validation_EmptyUrl_Message")) },
             { ValidationErrorType.EmptyProgramPath, (ResourceHelper.GetString("Validation_EmptyProgramPath_Title"), ResourceHelper.GetString("Validation_EmptyProgramPath_Message")) },
             { ValidationErrorType.OneKeyMapping, (ResourceHelper.GetString("Validation_OneKeyMapping_Title"), ResourceHelper.GetString("Validation_OneKeyMapping_Message")) },
@@ -176,6 +178,7 @@ namespace KeyboardManagerEditorUI.Helpers
         public static ValidationErrorType ValidateTextReplacementMapping(
             string triggerText,
             string textContent,
+            int triggerKey,
             string editingMappingId = "")
         {
             if (string.IsNullOrEmpty(triggerText))
@@ -188,6 +191,11 @@ namespace KeyboardManagerEditorUI.Helpers
                 return ValidationErrorType.EmptyTargetText;
             }
 
+            if (!IsValidTextReplacementTrigger(triggerText))
+            {
+                return ValidationErrorType.InvalidTextReplacementTriggerText;
+            }
+
             if (triggerText.Length > MaxTextReplacementTriggerLength)
             {
                 return ValidationErrorType.TextTriggerTooLong;
@@ -198,6 +206,11 @@ namespace KeyboardManagerEditorUI.Helpers
                 return ValidationErrorType.TargetTextTooLong;
             }
 
+            if (!TextReplacementTriggerKeyHelper.IsAllowed(triggerKey))
+            {
+                return ValidationErrorType.InvalidTextReplacementTriggerKey;
+            }
+
             var existingTextReplacements = SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values
                 .Where(settings =>
                     settings.Id != editingMappingId &&
@@ -205,19 +218,49 @@ namespace KeyboardManagerEditorUI.Helpers
                     !string.IsNullOrEmpty(settings.Shortcut.TriggerText))
                 .ToList();
 
-            if (existingTextReplacements.Any(settings => string.Equals(settings.Shortcut.TriggerText, triggerText, StringComparison.Ordinal)))
+            if (existingTextReplacements.Any(settings =>
+                    string.Equals(settings.Shortcut.TriggerText, triggerText, StringComparison.Ordinal)))
             {
                 return ValidationErrorType.DuplicateMapping;
             }
 
             if (existingTextReplacements.Any(settings =>
-                settings.Shortcut.TriggerText.StartsWith(triggerText, StringComparison.Ordinal) ||
-                triggerText.StartsWith(settings.Shortcut.TriggerText, StringComparison.Ordinal)))
+                    HasSpaceDelimiterPrefixConflict(settings.Shortcut.TriggerText, settings.Shortcut.TriggerKey, triggerText) ||
+                    HasSpaceDelimiterPrefixConflict(triggerText, triggerKey, settings.Shortcut.TriggerText)))
             {
-                return ValidationErrorType.TextTriggerPrefixConflict;
+                return ValidationErrorType.TextTriggerDelimiterConflict;
             }
 
             return ValidationErrorType.NoError;
+        }
+
+        private static bool HasSpaceDelimiterPrefixConflict(string shorterTrigger, int shorterTriggerKey, string longerTrigger)
+        {
+            return shorterTriggerKey == TextReplacementTriggerKeyHelper.SpaceKey &&
+                   longerTrigger.Length > shorterTrigger.Length &&
+                   longerTrigger.StartsWith(shorterTrigger, StringComparison.Ordinal) &&
+                   longerTrigger[shorterTrigger.Length] == ' ';
+        }
+
+        private static bool IsValidTextReplacementTrigger(string triggerText)
+        {
+            for (int index = 0; index < triggerText.Length; ++index)
+            {
+                char value = triggerText[index];
+                if (char.IsHighSurrogate(value))
+                {
+                    if (++index >= triggerText.Length || !char.IsLowSurrogate(triggerText[index]))
+                    {
+                        return false;
+                    }
+                }
+                else if (char.IsLowSurrogate(value) || value < '\u0020' || (value >= '\u007F' && value <= '\u009F'))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public static ValidationErrorType ValidateUrlMapping(

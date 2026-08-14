@@ -16,6 +16,10 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public string TriggerText { get; set; } = string.Empty;
 
+        public int TriggerKey { get; set; } = TextReplacementTriggerKeyHelper.DefaultTriggerKey;
+
+        public string TriggerKeyDisplayName { get; set; } = string.Empty;
+
         public string Text { get; set; } = string.Empty;
 
         public bool IsAllApps { get; set; } = true;

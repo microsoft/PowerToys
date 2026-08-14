@@ -244,6 +244,7 @@ namespace KeyboardManagerEditorUI.Pages
                 UnifiedMappingControl.SetTriggerType(UnifiedMappingControl.TriggerType.Text);
                 UnifiedMappingControl.SetTriggerTypeSelectionEnabled(false);
                 UnifiedMappingControl.SetTriggerText(textMapping.TriggerText);
+                UnifiedMappingControl.SetTextReplacementTriggerKey(textMapping.TriggerKey, textMapping.TriggerKeyDisplayName);
             }
 
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.Text);
@@ -451,6 +452,7 @@ namespace KeyboardManagerEditorUI.Pages
                     ValidationHelper.ValidateTextReplacementMapping(
                         UnifiedMappingControl.GetTriggerText(),
                         UnifiedMappingControl.GetTextContent(),
+                        UnifiedMappingControl.GetTextReplacementTriggerKey(),
                         _isEditMode && _editingItem?.Item is TextMapping textMapping ? textMapping.Id : string.Empty),
                 UnifiedMappingControl.ActionType.KeyOrShortcut => ValidationHelper.ValidateKeyMapping(
                     triggerKeys, UnifiedMappingControl.GetActionKeys(), isAppSpecific, appName, _mappingService!, _isEditMode, editingRemapping),
@@ -595,7 +597,10 @@ namespace KeyboardManagerEditorUI.Pages
 
             if (UnifiedMappingControl.CurrentTriggerType == UnifiedMappingControl.TriggerType.Text)
             {
-                return SaveTextReplacementMapping(UnifiedMappingControl.GetTriggerText(), textContent);
+                return SaveTextReplacementMapping(
+                    UnifiedMappingControl.GetTriggerText(),
+                    textContent,
+                    UnifiedMappingControl.GetTextReplacementTriggerKey());
             }
 
             return triggerKeys.Count == 1
@@ -603,12 +608,13 @@ namespace KeyboardManagerEditorUI.Pages
                 : SaveShortcutToTextMapping(triggerKeys, textContent, isAppSpecific, appName);
         }
 
-        private bool SaveTextReplacementMapping(string triggerText, string textContent)
+        private bool SaveTextReplacementMapping(string triggerText, string textContent, int triggerKey)
         {
             var shortcutKeyMapping = new ShortcutKeyMapping
             {
                 OperationType = ShortcutOperationType.RemapText,
                 TriggerText = triggerText,
+                TriggerKey = triggerKey,
                 TargetKeys = textContent,
                 TargetText = textContent,
             };
@@ -616,7 +622,7 @@ namespace KeyboardManagerEditorUI.Pages
             if (_isEditMode && _editingItem?.Item is TextMapping { TriggerText.Length: > 0 } existingMapping)
             {
                 if (existingMapping.IsActive &&
-                    !_mappingService!.UpdateTextReplacementMapping(existingMapping.TriggerText, triggerText, textContent))
+                    !_mappingService!.UpdateTextReplacementMapping(existingMapping.TriggerText, triggerText, textContent, triggerKey))
                 {
                     return false;
                 }
@@ -640,7 +646,7 @@ namespace KeyboardManagerEditorUI.Pages
                 return false;
             }
 
-            if (!_mappingService!.AddTextReplacementMapping(triggerText, textContent))
+            if (!_mappingService!.AddTextReplacementMapping(triggerText, textContent, triggerKey))
             {
                 return false;
             }
@@ -666,7 +672,7 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void RestoreUpdatedTextReplacement(string currentTrigger, TextMapping originalMapping)
         {
-            if (!_mappingService!.UpdateTextReplacementMapping(currentTrigger, originalMapping.TriggerText, originalMapping.Text) ||
+            if (!_mappingService!.UpdateTextReplacementMapping(currentTrigger, originalMapping.TriggerText, originalMapping.Text, originalMapping.TriggerKey) ||
                 !_mappingService.SaveSettings())
             {
                 Logger.LogError("Failed to roll back a text replacement update.");
@@ -882,12 +888,12 @@ namespace KeyboardManagerEditorUI.Pages
 
             if (!_mappingService.SaveSettings())
             {
-                _mappingService.AddTextReplacementMapping(textReplacement.TriggerText, textReplacement.Text);
+                _mappingService.AddTextReplacementMapping(textReplacement.TriggerText, textReplacement.Text, textReplacement.TriggerKey);
                 return;
             }
 
             if (!SettingsManager.RemoveShortcutKeyMappingFromSettings(textReplacement.Id) &&
-                (!_mappingService.AddTextReplacementMapping(textReplacement.TriggerText, textReplacement.Text) || !_mappingService.SaveSettings()))
+                (!_mappingService.AddTextReplacementMapping(textReplacement.TriggerText, textReplacement.Text, textReplacement.TriggerKey) || !_mappingService.SaveSettings()))
             {
                 Logger.LogError("Failed to roll back text replacement deletion.");
             }
@@ -949,7 +955,7 @@ namespace KeyboardManagerEditorUI.Pages
         private bool SetTextReplacementActiveState(TextMapping textReplacement, bool isActive)
         {
             bool nativeUpdated = isActive
-                ? _mappingService!.AddTextReplacementMapping(textReplacement.TriggerText, textReplacement.Text)
+                ? _mappingService!.AddTextReplacementMapping(textReplacement.TriggerText, textReplacement.Text, textReplacement.TriggerKey)
                 : _mappingService!.DeleteTextReplacementMapping(textReplacement.TriggerText);
             if (!nativeUpdated)
             {
@@ -963,7 +969,7 @@ namespace KeyboardManagerEditorUI.Pages
 
             bool restored = isActive
                 ? _mappingService.DeleteTextReplacementMapping(textReplacement.TriggerText)
-                : _mappingService.AddTextReplacementMapping(textReplacement.TriggerText, textReplacement.Text);
+                : _mappingService.AddTextReplacementMapping(textReplacement.TriggerText, textReplacement.Text, textReplacement.TriggerKey);
             if (!restored || !_mappingService.SaveSettings())
             {
                 Logger.LogError("Failed to roll back text replacement state.");
@@ -993,7 +999,7 @@ namespace KeyboardManagerEditorUI.Pages
 
             ShortcutKeyMapping shortcutKeyMapping = SettingsManager.EditorSettings.ShortcutSettingsDictionary[shortcut.Id].Shortcut;
             bool saved = shortcut is TextMapping { TriggerText.Length: > 0 } textReplacement
-                ? _mappingService!.AddTextReplacementMapping(textReplacement.TriggerText, shortcutKeyMapping.TargetText)
+                ? _mappingService!.AddTextReplacementMapping(textReplacement.TriggerText, shortcutKeyMapping.TargetText, textReplacement.TriggerKey)
                 : shortcut.Shortcut.Count == 1
                 ? _mappingService!.AddSingleKeyToTextMapping(_mappingService.GetKeyCodeFromName(shortcut.Shortcut[0]), shortcutKeyMapping.TargetText)
                 : shortcutKeyMapping.OperationType == ShortcutOperationType.RemapText
@@ -1138,14 +1144,19 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 ShortcutSettings shortcutSettings = SettingsManager.EditorSettings.ShortcutSettingsDictionary[id];
                 ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
+                string triggerKeyDisplayName = string.IsNullOrEmpty(mapping.TriggerText)
+                    ? string.Empty
+                    : _mappingService!.GetKeyDisplayName(mapping.TriggerKey);
                 var originalKeyNames = string.IsNullOrEmpty(mapping.TriggerText)
                     ? ParseKeyCodes(mapping.OriginalKeys)
-                    : new List<string> { GetTextTriggerDisplayName(mapping.TriggerText) };
+                    : new List<string> { GetTextTriggerDisplayName(mapping.TriggerText, triggerKeyDisplayName) };
 
                 TextMappings.Add(new TextMapping
                 {
                     Shortcut = originalKeyNames,
                     TriggerText = mapping.TriggerText,
+                    TriggerKey = mapping.TriggerKey,
+                    TriggerKeyDisplayName = triggerKeyDisplayName,
                     Text = mapping.TargetText,
                     IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
                     AppName = mapping.TargetApp ?? string.Empty,
@@ -1155,9 +1166,9 @@ namespace KeyboardManagerEditorUI.Pages
             }
         }
 
-        private static string GetTextTriggerDisplayName(string triggerText)
+        private static string GetTextTriggerDisplayName(string triggerText, string triggerKeyDisplayName)
         {
-            return string.Format(CultureInfo.CurrentCulture, _textTriggerDisplayFormat, triggerText);
+            return string.Format(CultureInfo.CurrentCulture, _textTriggerDisplayFormat, triggerText, triggerKeyDisplayName);
         }
 
         private void LoadProgramShortcuts()

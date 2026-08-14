@@ -55,6 +55,8 @@ namespace KeyboardManagerEditorUI.Controls
             set => SetValue(UseAccentStyleProperty, value);
         }
 
+        internal IReadOnlySet<int>? AllowedKeyCodes { get; set; }
+
         public event EventHandler<KeyChangedEventArgs>? KeyChanged;
 
         public KeyDropDownButton()
@@ -114,15 +116,18 @@ namespace KeyboardManagerEditorUI.Controls
                 }
             }
 
-            return cached;
+            List<KeyNameEntry> keyList = cached!;
+            return AllowedKeyCodes is null
+                ? keyList
+                : keyList.Where(entry => AllowedKeyCodes.Contains(entry.KeyCode)).ToList();
         }
 
         internal void RefreshKeyList()
         {
-            KeyListView.ItemsSource = GetKeyList();
+            var list = GetKeyList();
+            KeyListView.ItemsSource = list;
 
             // Scroll to current key if possible
-            var list = GetKeyList();
             for (int i = 0; i < list.Count; i++)
             {
                 if (string.Equals(list[i].DisplayName, KeyName, StringComparison.Ordinal))

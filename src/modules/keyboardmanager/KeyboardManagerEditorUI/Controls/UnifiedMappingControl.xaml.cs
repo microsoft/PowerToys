@@ -34,6 +34,7 @@ namespace KeyboardManagerEditorUI.Controls
         private readonly ObservableCollection<string> _triggerKeys = new();
         private readonly ObservableCollection<string> _actionKeys = new();
 
+        private int _textReplacementTriggerKey = TextReplacementTriggerKeyHelper.DefaultTriggerKey;
         private bool _disposed;
         private bool _internalUpdate;
         private bool _isControlInitialized;
@@ -152,6 +153,8 @@ namespace KeyboardManagerEditorUI.Controls
             this.InitializeComponent();
 
             TextTriggerBox.MaxLength = ValidationHelper.MaxTextReplacementTriggerLength;
+            TextReplacementTriggerKeyDropDown.AllowedKeyCodes = TextReplacementTriggerKeyHelper.AllowedTriggerKeys;
+            TextReplacementTriggerKeyDropDown.KeyChanged += TextReplacementTriggerKeyDropDown_KeyChanged;
             TriggerKeys.ItemsSource = _triggerKeys;
             ActionKeys.ItemsSource = _actionKeys;
 
@@ -640,6 +643,19 @@ namespace KeyboardManagerEditorUI.Controls
             RaiseValidationStateChanged();
         }
 
+        private void TextReplacementTriggerKeyDropDown_KeyChanged(object? sender, KeyChangedEventArgs e)
+        {
+            if (sender is not KeyDropDownButton dropDown || !TextReplacementTriggerKeyHelper.IsAllowed(e.NewKeyCode))
+            {
+                ShowValidationErrorFromType(ValidationErrorType.InvalidTextReplacementTriggerKey);
+                return;
+            }
+
+            _textReplacementTriggerKey = e.NewKeyCode;
+            dropDown.KeyName = e.NewKeyName;
+            RaiseValidationStateChanged();
+        }
+
         private void UrlPathInput_GotFocus(object sender, RoutedEventArgs e)
         {
             CleanupKeyboardHook();
@@ -778,6 +794,11 @@ namespace KeyboardManagerEditorUI.Controls
         public string GetTriggerText() => TextTriggerBox?.Text ?? string.Empty;
 
         /// <summary>
+        /// Gets the key that activates a text replacement.
+        /// </summary>
+        public int GetTextReplacementTriggerKey() => _textReplacementTriggerKey;
+
+        /// <summary>
         /// Gets the selected mouse trigger.
         /// </summary>
         public MouseButton? GetMouseTrigger()
@@ -873,6 +894,11 @@ namespace KeyboardManagerEditorUI.Controls
                 {
                     return false;
                 }
+
+                if (!TextReplacementTriggerKeyHelper.IsAllowed(_textReplacementTriggerKey))
+                {
+                    return false;
+                }
             }
             else if (_triggerKeys.Count == 0)
             {
@@ -955,6 +981,16 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 TextTriggerBox.Text = text;
             }
+        }
+
+        /// <summary>
+        /// Sets the key that activates a text replacement.
+        /// </summary>
+        public void SetTextReplacementTriggerKey(int keyCode, string displayName)
+        {
+            _textReplacementTriggerKey = keyCode;
+            TextReplacementTriggerKeyDropDown.KeyName = displayName;
+            RaiseValidationStateChanged();
         }
 
         /// <summary>
@@ -1247,6 +1283,12 @@ namespace KeyboardManagerEditorUI.Controls
             if (TextTriggerBox != null)
             {
                 TextTriggerBox.Text = string.Empty;
+            }
+
+            _textReplacementTriggerKey = TextReplacementTriggerKeyHelper.DefaultTriggerKey;
+            if (TextReplacementTriggerKeyDropDown != null)
+            {
+                TextReplacementTriggerKeyDropDown.KeyName = ResourceHelper.GetString("TextReplacementTriggerKey_Space");
             }
 
             // Reset text inputs

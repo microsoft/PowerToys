@@ -9,5 +9,7 @@ namespace KeyboardManagerEditorUI.Interop
         public string Trigger { get; set; } = string.Empty;
 
         public string TargetText { get; set; } = string.Empty;
+
+        public int TriggerKey { get; set; } = 0x20;
     }
 }

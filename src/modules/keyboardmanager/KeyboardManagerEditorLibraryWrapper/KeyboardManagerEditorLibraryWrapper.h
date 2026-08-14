@@ -27,6 +27,7 @@ struct TextReplacementMapping
 {
     wchar_t* trigger;
     wchar_t* targetText;
+    int triggerKey;
 };
 
 struct ShortcutMapping
@@ -65,8 +66,8 @@ extern "C"
 
     __declspec(dllexport) bool AddSingleKeyRemap(void* config, int originalKey, int targetKey);
     __declspec(dllexport) bool AddSingleKeyToTextRemap(void* config, int originalKey, const wchar_t* text);
-    __declspec(dllexport) bool AddTextReplacement(void* config, const wchar_t* trigger, const wchar_t* text);
-    __declspec(dllexport) bool UpdateTextReplacement(void* config, const wchar_t* oldTrigger, const wchar_t* newTrigger, const wchar_t* newText);
+    __declspec(dllexport) bool AddTextReplacement(void* config, const wchar_t* trigger, const wchar_t* text, int triggerKey);
+    __declspec(dllexport) bool UpdateTextReplacement(void* config, const wchar_t* oldTrigger, const wchar_t* newTrigger, const wchar_t* newText, int triggerKey);
     __declspec(dllexport) bool AddSingleKeyToShortcutRemap(void* config,
                                                            int originalKey,
                                                            const wchar_t* targetKeys);

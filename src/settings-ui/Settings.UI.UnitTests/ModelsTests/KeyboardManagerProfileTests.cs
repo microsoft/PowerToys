@@ -20,6 +20,7 @@ namespace CommonLibTest
             {
                 Trigger = "café",
                 NewRemapString = "café 🌟",
+                TriggerKey = 0x0D,
             });
 
             var json = profile.ToJsonString();
@@ -30,6 +31,7 @@ namespace CommonLibTest
 
             Assert.AreEqual("café", serializedReplacement.GetProperty("trigger").GetString());
             Assert.AreEqual("café 🌟", serializedReplacement.GetProperty("unicodeText").GetString());
+            Assert.AreEqual(0x0D, serializedReplacement.GetProperty("triggerKey").GetInt32());
 
             var roundTripped = JsonSerializer.Deserialize(json, SettingsSerializationContext.Default.KeyboardManagerProfile);
 
@@ -37,6 +39,7 @@ namespace CommonLibTest
             Assert.AreEqual(1, roundTripped.TextReplacements.InProcessTextReplacements.Count);
             Assert.AreEqual("café", roundTripped.TextReplacements.InProcessTextReplacements[0].Trigger);
             Assert.AreEqual("café 🌟", roundTripped.TextReplacements.InProcessTextReplacements[0].NewRemapString);
+            Assert.AreEqual(0x0D, roundTripped.TextReplacements.InProcessTextReplacements[0].TriggerKey);
         }
 
         [TestMethod]
@@ -49,6 +52,40 @@ namespace CommonLibTest
             Assert.IsNotNull(profile);
             Assert.IsNotNull(profile.TextReplacements);
             Assert.AreEqual(0, profile.TextReplacements.InProcessTextReplacements.Count);
+        }
+
+        [TestMethod]
+        public void RoundTrip_LegacyTextReplacementWithoutTriggerKey_ShouldDefaultToSpaceAndStripOneTrailingSpace()
+        {
+            const string LegacyProfile = "{\"textReplacements\":{\"inProcess\":[{\"trigger\":\"brb \",\"unicodeText\":\"be right back \"}]}}";
+
+            var profile = JsonSerializer.Deserialize(LegacyProfile, SettingsSerializationContext.Default.KeyboardManagerProfile);
+
+            Assert.IsNotNull(profile);
+            Assert.AreEqual(1, profile.TextReplacements.InProcessTextReplacements.Count);
+            TextReplacementDataModel replacement = profile.TextReplacements.InProcessTextReplacements[0];
+            Assert.AreEqual("brb", replacement.Trigger);
+            Assert.AreEqual("be right back ", replacement.NewRemapString);
+            Assert.AreEqual(0x20, replacement.TriggerKey);
+
+            using var document = JsonDocument.Parse(profile.ToJsonString());
+            JsonElement serializedReplacement = document.RootElement
+                .GetProperty("textReplacements")
+                .GetProperty("inProcess")[0];
+            Assert.AreEqual("brb", serializedReplacement.GetProperty("trigger").GetString());
+            Assert.AreEqual(0x20, serializedReplacement.GetProperty("triggerKey").GetInt32());
+        }
+
+        [TestMethod]
+        public void Deserialize_TextReplacementWithExplicitTriggerKey_ShouldNotStripTrailingSpace()
+        {
+            const string Profile = "{\"textReplacements\":{\"inProcess\":[{\"trigger\":\"brb \",\"unicodeText\":\"be right back\",\"triggerKey\":32}]}}";
+
+            var profile = JsonSerializer.Deserialize(Profile, SettingsSerializationContext.Default.KeyboardManagerProfile);
+
+            Assert.IsNotNull(profile);
+            Assert.AreEqual("brb ", profile.TextReplacements.InProcessTextReplacements[0].Trigger);
+            Assert.AreEqual(0x20, profile.TextReplacements.InProcessTextReplacements[0].TriggerKey);
         }
     }
 }

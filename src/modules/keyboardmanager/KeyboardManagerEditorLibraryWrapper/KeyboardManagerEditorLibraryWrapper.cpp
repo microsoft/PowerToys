@@ -29,7 +29,19 @@ extern "C"
 
     bool SaveMappingSettings(void* config)
     {
-        return static_cast<MappingConfiguration*>(config)->SaveSettingsToFile();
+        if (config == nullptr)
+        {
+            return false;
+        }
+
+        try
+        {
+            return static_cast<MappingConfiguration*>(config)->SaveSettingsToFile();
+        }
+        catch (...)
+        {
+            return false;
+        }
     }
 
     wchar_t* AllocateAndCopyString(const std::wstring& str)
@@ -131,6 +143,7 @@ extern "C"
 
         mapping->trigger = nullptr;
         mapping->targetText = nullptr;
+        mapping->triggerKey = 0;
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
 
         if (index < 0 || index >= mappingConfig->textReplacements.size())
@@ -142,7 +155,8 @@ extern "C"
         std::advance(it, index);
 
         mapping->trigger = AllocateAndCopyString(it->first);
-        mapping->targetText = AllocateAndCopyString(it->second);
+        mapping->targetText = AllocateAndCopyString(it->second.text);
+        mapping->triggerKey = static_cast<int>(it->second.triggerKey);
 
         return true;
     }
@@ -544,24 +558,24 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         return mappingConfig->AddSingleKeyToTextRemap(static_cast<DWORD>(originalKey), text);
     }
 
-    bool AddTextReplacement(void* config, const wchar_t* trigger, const wchar_t* text)
+    bool AddTextReplacement(void* config, const wchar_t* trigger, const wchar_t* text, int triggerKey)
     {
         if (config == nullptr || trigger == nullptr || text == nullptr)
         {
             return false;
         }
 
-        return static_cast<MappingConfiguration*>(config)->AddTextReplacement(trigger, text);
+        return static_cast<MappingConfiguration*>(config)->AddTextReplacement(trigger, text, static_cast<DWORD>(triggerKey));
     }
 
-    bool UpdateTextReplacement(void* config, const wchar_t* oldTrigger, const wchar_t* newTrigger, const wchar_t* newText)
+    bool UpdateTextReplacement(void* config, const wchar_t* oldTrigger, const wchar_t* newTrigger, const wchar_t* newText, int triggerKey)
     {
         if (config == nullptr || oldTrigger == nullptr || newTrigger == nullptr || newText == nullptr)
         {
             return false;
         }
 
-        return static_cast<MappingConfiguration*>(config)->UpdateTextReplacement(oldTrigger, newTrigger, newText);
+        return static_cast<MappingConfiguration*>(config)->UpdateTextReplacement(oldTrigger, newTrigger, newText, static_cast<DWORD>(triggerKey));
     }
 
     bool AddSingleKeyToShortcutRemap(void* config, int originalKey, const wchar_t* targetKeys)
