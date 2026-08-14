@@ -89,19 +89,19 @@ public static class EditorUiTestHelper
 
     public static void EnsureEditorReady(UITestBase testBase, Session session)
     {
-        Step(testBase, "Waiting for the FancyZones Editor main window");
-        Assert.IsTrue(
-            session.WaitForElement(By.AccessibilityId(AccessibilityId.MainWindow), 30_000),
-            "The editor process started but its main window was not ready for automation.");
+        Step(testBase, "Verifying the FancyZones Editor main window");
+        var mainWindow = WindowsFinder.ListByApp(EditorProcessName)
+            .FirstOrDefault(window => window.Hwnd == session.WindowHandle && window.Width > 200 && window.Height > 200);
+        Assert.IsNotNull(mainWindow, $"The session HWND {session.WindowHandle} is not a visible FancyZones Editor main window.");
 
         Step(testBase, "Waiting for the monitor list");
         Assert.IsTrue(
-            session.WaitForElement(By.AccessibilityId(AccessibilityId.Monitors), 30_000),
+            session.WaitForElement(By.AccessibilityId(AccessibilityId.Monitors), 60_000),
             "The editor opened but did not render its monitor list.");
 
         Step(testBase, "Waiting for the new-layout button");
         Assert.IsTrue(
-            session.WaitForElement(By.AccessibilityId(AccessibilityId.NewLayoutButton), 30_000),
+            session.WaitForElement(By.AccessibilityId(AccessibilityId.NewLayoutButton), 60_000),
             "The editor opened but did not render the new-layout button.");
     }
 

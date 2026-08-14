@@ -48,8 +48,10 @@ public class CreateLayoutTests : FancyZonesEditorTestBase
         Session.Find<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.NewLayoutButton)).Click();
 
         EditorUiTestHelper.Step(this, $"Setting custom layout name to '{name}'");
-        var input = Session.Find<TextBox>(By.Name("Name"));
-        Assert.IsNotNull(input);
+        Assert.IsTrue(
+            Session.WaitForElement(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.LayoutNameText), 30_000),
+            "The new-layout dialog opened but its name field was not ready for automation.");
+        var input = Session.Find<TextBox>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.LayoutNameText), 0);
         input.SetText(name);
 
         EditorUiTestHelper.Step(this, "Confirming layout type selection");

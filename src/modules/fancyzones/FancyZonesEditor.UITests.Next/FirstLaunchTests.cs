@@ -20,14 +20,6 @@ public class FirstLaunchTests : FancyZonesEditorTestBase
     [TestCategory("FancyZonesEditor")]
     public void FirstLaunch()
     {
-        Assert.IsTrue(
-            Session.WaitForElement(By.AccessibilityId("MainWindow1"), 30_000),
-            "The editor process started but its main window was not ready for automation.");
-        Assert.IsTrue(
-            Session.WaitForElement(By.AccessibilityId("Monitors"), 30_000),
-            "The editor opened but did not render its monitor list.");
-        Assert.IsTrue(
-            Session.WaitForElement(By.AccessibilityId("NewLayoutButton"), 30_000),
-            "The editor opened but did not render the new-layout button.");
+        EditorUiTestHelper.EnsureEditorReady(this, Session);
     }
 }
