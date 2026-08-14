@@ -25,6 +25,10 @@ permissions:
   contents: read
   issues: read
   copilot-requests: write
+tools:
+  bash: false
+  edit: true
+  github: false
 steps:
   - name: Set up Python
     uses: actions/setup-python@v7.0.0
@@ -52,9 +56,12 @@ safe-outputs:
     publish-triage-summary:
       description: Create or update the canonical triage summary for the triggering issue.
       runs-on: ubuntu-slim
-      if: needs.detection.result == 'success'
+      if: >-
+        needs.detection.result == 'success' &&
+        needs.detection.outputs.detection_success == 'true'
       output: The canonical triage summary was published.
       permissions:
+        contents: read
         issues: write
       inputs:
         summary:
@@ -124,8 +131,41 @@ safe-outputs:
           type: choice
           options: [ENGLISH, NON_ENGLISH, UNCERTAIN]
       steps:
+        - name: Check out trusted workflow source
+          uses: actions/checkout@v7.0.1
+          with:
+            ref: ${{ github.sha }}
+            persist-credentials: false
+        - name: Set up Python
+          uses: actions/setup-python@v7.0.0
+          with:
+            python-version: "3.12"
+        - name: Rebuild current deterministic evidence
+          env:
+            GITHUB_TOKEN: ${{ github.token }}
+            ISSUE_TRIAGE_FORCE_EVIDENCE: "true"
+          run: >-
+            python .github/scripts/issue-triage/issue-context.py
+            "$GITHUB_EVENT_PATH"
+            "$RUNNER_TEMP/verified-issue-context.md"
+            "$RUNNER_TEMP/verified-triage-event.json"
+            "$RUNNER_TEMP/verified-evidence.json"
+        - name: Rebuild sanitized bug report context
+          run: >-
+            python .github/scripts/issue-triage/bug-report-analyzer.py
+            "$RUNNER_TEMP/verified-triage-event.json"
+            "$RUNNER_TEMP/verified-bug-report-context.md"
+        - name: Verify agent output against current evidence
+          run: >-
+            python .github/scripts/issue-triage/verify-agent-output.py
+            "$GH_AW_AGENT_OUTPUT"
+            "$RUNNER_TEMP/verified-evidence.json"
+            "$RUNNER_TEMP/verified-bug-report-context.md"
+            "$RUNNER_TEMP/verified-triage-output.json"
         - name: Upsert canonical triage summary
           uses: actions/github-script@v9.0.0
+          env:
+            ISSUE_TRIAGE_VERIFIED_OUTPUT: ${{ runner.temp }}/verified-triage-output.json
           with:
             script: |
               const fs = require('fs');
@@ -145,6 +185,12 @@ safe-outputs:
                 core.setFailed('The agent did not provide a triage summary');
                 return;
               }
+              const verifiedPath = process.env.ISSUE_TRIAGE_VERIFIED_OUTPUT;
+              if (!verifiedPath || !fs.existsSync(verifiedPath)) {
+                core.setFailed('Verified triage output is unavailable');
+                return;
+              }
+              const verified = JSON.parse(fs.readFileSync(verifiedPath, 'utf8'));
 
               const bounded = (value, max, fallback) => {
                 if (typeof value !== 'string') return fallback;
@@ -193,25 +239,12 @@ safe-outputs:
                 .replace(/\b(?:machine|computer|user)(?:name)?\b\s*[:=]\s*[^\s,;]+/gi, '<identity>=<redacted>');
 
               const summary = bounded(item.summary, 800, 'The issue needs maintainer review.');
-              const inputSha256 = String(item.input_sha256 || '').toLowerCase();
-              if (!/^[0-9a-f]{64}$/.test(inputSha256)) {
-                core.setFailed('input_sha256 is invalid');
-                return;
-              }
-              const area = bounded(item.suggested_area, 100, 'Unknown');
-              const requestedProductLabel = bounded(item.product_label, 100, 'None');
-              const issueBody = String(context.payload.issue?.body || '');
-              const versionSection = issueBody.match(
-                /###\s+Microsoft PowerToys version\s*\r?\n+([\s\S]*?)(?=\r?\n###|\s*$)/i
-              )?.[1] || '';
-              const reportedVersion = versionSection.match(
-                /\b(?:v)?(\d+(?:\.\d+){1,3}(?:-[A-Za-z0-9.-]+)?)\b/
-              )?.[1];
-              const powertoysVersion = reportedVersion || bounded(
-                item.powertoys_version,
-                50,
-                'Not provided'
-              );
+              const inputSha256 = verified.input_sha256;
+              const area = verified.suggested_area;
+              const requestedProductLabel = verified.product_label;
+              const powertoysVersion = verified.powertoys_version;
+              const reportedVersion =
+                powertoysVersion === 'Not provided' ? null : powertoysVersion;
               const numericVersion = value => {
                 const match = String(value || '').match(
                   /\b(?:v)?(\d+(?:\.\d+){1,3})(?:-[A-Za-z0-9.-]+)?\b/
@@ -268,10 +301,7 @@ safe-outputs:
                 800,
                 hasMissingInformation ? 'Additional investigation details are needed.' : 'None'
               );
-              const requestedIssueKind = String(item.issue_kind || '').toUpperCase();
-              const issueKind = ['BUG', 'OTHER'].includes(requestedIssueKind)
-                ? requestedIssueKind
-                : 'OTHER';
+              const issueKind = verified.issue_kind;
               if (
                 issueKind === 'OTHER' &&
                 /\b(?:bug report|report ZIP|ZIP file)\b/i.test(missingInformation)
@@ -279,30 +309,9 @@ safe-outputs:
                 hasMissingInformation = false;
                 missingInformation = 'None';
               }
-              const requestedReproductionQuality = String(
-                item.reproduction_quality || ''
-              ).toUpperCase();
-              const reproductionQuality = [
-                'SUFFICIENT', 'INSUFFICIENT', 'NOT_APPLICABLE'
-              ].includes(requestedReproductionQuality)
-                ? requestedReproductionQuality
-                : 'NOT_APPLICABLE';
-              const requestedBugReportRequirement = String(
-                item.bug_report_requirement || ''
-              ).toUpperCase();
-              const bugReportRequirement = [
-                'REQUIRED', 'RECOMMENDED', 'OPTIONAL', 'NOT_APPLICABLE'
-              ].includes(requestedBugReportRequirement)
-                ? requestedBugReportRequirement
-                : issueKind === 'BUG' ? 'RECOMMENDED' : 'NOT_APPLICABLE';
-              const requestedBugReportStatus = String(
-                item.bug_report_status || ''
-              ).toUpperCase();
-              const bugReportStatus = [
-                'ANALYZED', 'NOT_FOUND', 'REJECTED', 'NOT_APPLICABLE'
-              ].includes(requestedBugReportStatus)
-                ? requestedBugReportStatus
-                : 'NOT_APPLICABLE';
+              const reproductionQuality = verified.reproduction_quality;
+              const bugReportRequirement = verified.bug_report_requirement;
+              const bugReportStatus = verified.bug_report_status;
               const requestedBugReportConfidence = String(
                 item.bug_report_confidence || ''
               ).toUpperCase();
@@ -363,12 +372,16 @@ safe-outputs:
               }
 
               const issueNumber = context.issue.number;
+              const allowedDuplicateNumbers = new Set(
+                verified.requested_duplicate_numbers
+              );
               const verifiedDuplicates = [];
               const seen = new Set();
               for (const candidate of requestedDuplicates) {
                 const number = Number(candidate?.number);
                 if (!Number.isSafeInteger(number) || number <= 0 ||
-                    number === issueNumber || seen.has(number)) {
+                    number === issueNumber || seen.has(number) ||
+                    !allowedDuplicateNumbers.has(number)) {
                   continue;
                 }
                 seen.add(number);
@@ -409,7 +422,7 @@ safe-outputs:
                     ].join('\n')
                   ).join('\n\n')
                 : '';
-              const author = context.payload.issue?.user?.login;
+              const author = verified.issue_author;
               const authorActions = [];
               if (hasMissingInformation) {
                 authorActions.push(
@@ -594,9 +607,7 @@ safe-outputs:
               const needsAuthorFeedback =
                 needsEnglishTranslation || hasMissingInformation;
               const currentLabels = new Set(
-                (context.payload.issue?.labels || [])
-                  .map(label => typeof label === 'string' ? label : label?.name)
-                  .filter(Boolean)
+                verified.current_labels
               );
               if (needsAuthorFeedback && !currentLabels.has('Needs-Author-Feedback')) {
                 await github.rest.issues.addLabels({
@@ -772,13 +783,8 @@ Call `publish_triage_summary` exactly once with:
 - `summary`: a factual one- or two-sentence summary.
 - `suggested_area`: copy `Detected area` from the deterministic evidence.
 - `product_label`: copy `Candidate product label` from the deterministic
-  evidence. When the evidence says `None`, you may select the single
-  best-matching label from the `Available product labels` list if the issue
-  clearly concerns that product (for example a `[Module]` title prefix or
-  unambiguous references in the title or body); send that exact label string.
-  If no listed product clearly applies, send the literal string `None`. Never
-  send JSON null and never invent a label that is absent from
-  `Available product labels`.
+  evidence. When it says `None`, you may select one exact label from
+  `Allowed product label candidates`, or send `None`. Never invent a label.
 - `powertoys_version`: copy `PowerToys version` from the deterministic evidence.
 
 The deterministic publisher independently verifies the latest stable release.

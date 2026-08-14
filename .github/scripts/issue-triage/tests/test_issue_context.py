@@ -45,9 +45,16 @@ _No response_
 class FakeApi:
     repository = "owner/repo"
 
-    def __init__(self, results=None, comments=None, latest_release=None):
+    def __init__(
+        self,
+        results=None,
+        comments=None,
+        latest_release=None,
+        current_issue=None,
+    ):
         self.results = results or []
         self.comments = comments or []
+        self.current_issue = current_issue
         self.latest_release = latest_release or {
             "tag_name": "v0.100.2",
             "prerelease": False,
@@ -56,6 +63,9 @@ class FakeApi:
 
     def list_comments(self, _issue_number):
         return self.comments
+
+    def get_issue(self, _issue_number):
+        return self.current_issue
 
     def list_labels(self):
         return [{"name": "Product-Keyboard Manager"}]
@@ -303,6 +313,22 @@ class IssueContextTests(unittest.TestCase):
             ["Product-Awake", "Product-Screen Ruler"],
         )
 
+    def test_allowed_product_labels_require_explicit_issue_text(self):
+        labels = [
+            {"name": "Product-Screen Ruler"},
+            {"name": "Product-FancyZones"},
+            {"name": "Product-General"},
+        ]
+        self.assertEqual(
+            CONTEXT.allowed_product_labels(
+                "Ruler settings problem",
+                "The Screen Ruler overlay is misplaced.",
+                labels,
+                "None",
+            ),
+            ["Product-Screen Ruler"],
+        )
+
     def test_prepare_labels_bracketed_title_without_area_section(self):
         issue = {
             "number": 42,
@@ -326,7 +352,10 @@ class IssueContextTests(unittest.TestCase):
         self.assertTrue(should_process)
         self.assertIn("Detected area: Screen Ruler", context)
         self.assertIn("Candidate product label: Product-Screen Ruler", context)
-        self.assertIn("Available product labels: Product-Screen Ruler", context)
+        self.assertIn(
+            "Allowed product label candidates: Product-Screen Ruler",
+            context,
+        )
 
     def test_context_redacts_report_attachment_urls(self):
         context = CONTEXT.render_context(
@@ -457,6 +486,38 @@ class IssueContextTests(unittest.TestCase):
         self.assertIn("Author body status: PRESENT", context)
         self.assertEqual(normalized["issue"]["number"], 10)
         self.assertTrue(should_process)
+
+    def test_force_evidence_uses_current_issue_and_emits_allowlists(self):
+        stale_issue = {
+            "number": 10,
+            "title": "Old title",
+            "body": "",
+            "user": {"login": "alice"},
+            "labels": [],
+        }
+        current_issue = {
+            "number": 10,
+            "title": "Screen Ruler overlay problem",
+            "body": "The Screen Ruler overlay is misplaced.",
+            "user": {"login": "alice"},
+            "labels": [],
+        }
+
+        class VerificationApi(FakeApi):
+            def list_labels(self):
+                return [{"name": "Product-Screen Ruler"}]
+
+        _, normalized, should_process, evidence = CONTEXT.prepare_with_evidence(
+            {"action": "edited", "issue": stale_issue},
+            VerificationApi(current_issue=current_issue),
+            force_evidence=True,
+        )
+        self.assertTrue(should_process)
+        self.assertEqual(normalized["issue"]["title"], current_issue["title"])
+        self.assertEqual(
+            evidence["allowed_product_labels"],
+            ["Product-Screen Ruler"],
+        )
 
     def test_candidate_retrieval_only_returns_older_issues(self):
         issue = {
