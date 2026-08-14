@@ -58,6 +58,9 @@ internal static class Clipboard
     private static int lastDragDropFileActiveTransfers;
     private static long lastDragDropFileGeneration;
     private static ThreadingTimer lastDragDropFileReleaseTimer;
+    private static long nextTransientDragValidationGeneration;
+    private static long pendingTransientDragValidationGeneration;
+    private static bool pendingTransientDragReleaseRequested;
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
     internal static long clipboardCopiedTime;
 #pragma warning restore SA1307
@@ -101,10 +104,76 @@ internal static class Clipboard
             lastDragDropFileTransferCompleted = false;
             lastDragDropFileActiveTransfers = 0;
             lastDragDropFileReleaseTimer = null;
+            pendingTransientDragValidationGeneration = 0;
+            pendingTransientDragReleaseRequested = false;
         }
 
         previousTimer?.Dispose();
         previousLease?.Dispose();
+    }
+
+    internal static long BeginTransientDragFileValidation()
+    {
+        lock (LastDragDropFileLock)
+        {
+            pendingTransientDragValidationGeneration = ++nextTransientDragValidationGeneration;
+            pendingTransientDragReleaseRequested = false;
+            return pendingTransientDragValidationGeneration;
+        }
+    }
+
+    internal static bool TrySetValidatedTransientDragFile(
+        long validationGeneration,
+        string path,
+        LocalPathLease lease)
+    {
+        LocalPathLease previousLease = null;
+        ThreadingTimer previousTimer = null;
+
+        lock (LastDragDropFileLock)
+        {
+            if (pendingTransientDragValidationGeneration != validationGeneration
+                || pendingTransientDragReleaseRequested)
+            {
+                if (pendingTransientDragValidationGeneration == validationGeneration)
+                {
+                    pendingTransientDragValidationGeneration = 0;
+                    pendingTransientDragReleaseRequested = false;
+                }
+
+                return false;
+            }
+
+            previousLease = lastDragDropFileLease;
+            previousTimer = lastDragDropFileReleaseTimer;
+            pendingTransientDragValidationGeneration = 0;
+            pendingTransientDragReleaseRequested = false;
+            lastDragDropFileGeneration++;
+            lastDragDropFile = path;
+            lastDragDropFileLease = lease;
+            lastDragDropFileIsDirectory = false;
+            lastDragDropFileIsTransient = true;
+            lastDragDropFileReleaseRequested = false;
+            lastDragDropFileTransferCompleted = false;
+            lastDragDropFileActiveTransfers = 0;
+            lastDragDropFileReleaseTimer = null;
+        }
+
+        previousTimer?.Dispose();
+        previousLease?.Dispose();
+        return true;
+    }
+
+    internal static void CancelTransientDragFileValidation(long validationGeneration)
+    {
+        lock (LastDragDropFileLock)
+        {
+            if (pendingTransientDragValidationGeneration == validationGeneration)
+            {
+                pendingTransientDragValidationGeneration = 0;
+                pendingTransientDragReleaseRequested = false;
+            }
+        }
     }
 
     internal static bool TryAcquireLastDragDropFile(
@@ -134,6 +203,11 @@ internal static class Clipboard
 
         lock (LastDragDropFileLock)
         {
+            if (pendingTransientDragValidationGeneration != 0)
+            {
+                pendingTransientDragReleaseRequested = true;
+            }
+
             if (!lastDragDropFileIsTransient)
             {
                 return;

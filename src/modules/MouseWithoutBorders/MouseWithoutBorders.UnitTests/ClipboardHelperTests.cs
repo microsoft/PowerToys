@@ -289,7 +289,8 @@ public sealed class ClipboardHelperTests
             Clipboard.TransientLeaseReleaseTimeout = TimeSpan.FromMilliseconds(50);
             LocalPathLease? lease = LocalPathLease.TryCreateForCurrentUser(path);
             Assert.IsNotNull(lease);
-            Clipboard.SetLastDragDropFile(path, lease, isTransient: true);
+            long validationGeneration = Clipboard.BeginTransientDragFileValidation();
+            Assert.IsTrue(Clipboard.TrySetValidatedTransientDragFile(validationGeneration, path, lease));
             Clipboard.RequestLastDragDropFileReleaseAfterSend();
 
             Assert.IsFalse(TryMoveDirectory(sourceDirectory, movedDirectory));
@@ -337,7 +338,8 @@ public sealed class ClipboardHelperTests
             Clipboard.TransientLeaseReleaseTimeout = TimeSpan.FromMilliseconds(50);
             LocalPathLease? lease = LocalPathLease.TryCreateForCurrentUser(path);
             Assert.IsNotNull(lease);
-            Clipboard.SetLastDragDropFile(path, lease, isTransient: true);
+            long validationGeneration = Clipboard.BeginTransientDragFileValidation();
+            Assert.IsTrue(Clipboard.TrySetValidatedTransientDragFile(validationGeneration, path, lease));
             Clipboard.RequestLastDragDropFileReleaseAfterSend();
 
             Assert.IsFalse(TryOpenForWrite(path));
@@ -348,6 +350,36 @@ public sealed class ClipboardHelperTests
         {
             Clipboard.LastDragDropFile = null;
             Clipboard.TransientLeaseReleaseTimeout = originalTimeout;
+            Directory.Delete(directory, true);
+        }
+    }
+
+    [TestMethod]
+    public void Clipboard_TransientValidationDoesNotPublishAfterButtonUp()
+    {
+        string directory = Directory.CreateTempSubdirectory().FullName;
+        string path = Path.Combine(directory, "file.txt");
+        File.WriteAllText(path, "content");
+
+        LocalPathLease? lease = null;
+        try
+        {
+            long validationGeneration = Clipboard.BeginTransientDragFileValidation();
+            Clipboard.RequestLastDragDropFileReleaseAfterSend();
+
+            lease = LocalPathLease.TryCreateForCurrentUser(path);
+            Assert.IsNotNull(lease);
+            Assert.IsFalse(Clipboard.TrySetValidatedTransientDragFile(validationGeneration, path, lease));
+            Assert.IsNull(Clipboard.LastDragDropFile);
+
+            lease.Dispose();
+            lease = null;
+            Assert.IsTrue(TryOpenForWrite(path));
+        }
+        finally
+        {
+            lease?.Dispose();
+            Clipboard.LastDragDropFile = null;
             Directory.Delete(directory, true);
         }
     }
