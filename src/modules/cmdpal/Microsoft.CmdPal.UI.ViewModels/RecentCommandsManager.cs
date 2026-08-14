@@ -106,6 +106,18 @@ public record RecentCommandsManager : IRecentCommandsManager
     /// </summary>
     public void PrewarmIndex() => _ = Index;
 
+    /// <summary>
+    /// Enumerates command ids from most recently used to least recently used without copying the
+    /// persisted history. Consumers can stop as soon as they have resolved enough visible items.
+    /// </summary>
+    public IEnumerable<string> EnumerateRecentCommandIds()
+    {
+        foreach (var item in History)
+        {
+            yield return item.CommandId;
+        }
+    }
+
     public int GetCommandHistoryWeight(string commandId)
         => GetCommandHistoryWeight(commandId, DateTimeOffset.UtcNow);
 

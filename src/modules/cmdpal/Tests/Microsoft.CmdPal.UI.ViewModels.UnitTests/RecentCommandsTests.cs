@@ -49,6 +49,18 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
+    public void RecentCommandIdsAreMostRecentFirstAndCanBeBoundedByConsumer()
+    {
+        var history = CreateHistory(["oldest", "middle", "newest"]);
+        string[] expected = ["newest", "middle"];
+
+        CollectionAssert.AreEqual(
+            expected,
+            history.EnumerateRecentCommandIds().Take(2).ToArray());
+        Assert.AreEqual(3, history.EnumerateRecentCommandIds().Count());
+    }
+
+    [TestMethod]
     public void ValidateHistoryWeighting()
     {
         // Build history with explicit, strictly-increasing timestamps so time-decay is

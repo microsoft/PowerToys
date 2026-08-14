@@ -1195,6 +1195,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Recent.
+        /// </summary>
+        public static string home_sections_recent_title {
+            get {
+                return ResourceManager.GetString("home_sections_recent_title", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Pinned.
         /// </summary>
         public static string PinnedItemSuffix {
