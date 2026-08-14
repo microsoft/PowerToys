@@ -678,17 +678,23 @@ def render_context(issue, facts, queries, candidates, digest):
 
 def collect_evidence(issue, report_comment, api):
     labels = api.list_labels()
-    area = parse_area(issue.get("body", ""), issue.get("title", ""))
+    body = issue.get("body", "")
+    title = issue.get("title", "")
+    area_section = extract_section(body, "Area(s) with issue?")
+    has_explicit_area = bool(
+        area_section
+        and area_section.lower() not in {"_no response_", "no response", "n/a"}
+    )
+    area = parse_area(body, title)
     desired_label = product_label(area, labels)
-    if desired_label == "None":
-        title_label = title_product_label(issue.get("title", ""), labels)
-        if title_label != "None":
-            desired_label = title_label
-            if area == "Unknown":
-                area = title_label[len("Product-"):]
+    title_label = title_product_label(title, labels)
+    if title_label != "None" and (desired_label == "None" or not has_explicit_area):
+        desired_label = title_label
+        if area == "Unknown" or not has_explicit_area:
+            area = title_label[len("Product-"):]
     product_candidates = allowed_product_labels(
-        issue.get("title", ""),
-        issue.get("body", ""),
+        title,
+        body,
         labels,
         desired_label,
     )

@@ -357,6 +357,55 @@ class IssueContextTests(unittest.TestCase):
             context,
         )
 
+    def test_title_prefix_overrides_inferred_area_without_template_selection(self):
+        issue = {
+            "number": 42,
+            "title": "[Screen Ruler] FancyZones-style overlay is misplaced",
+            "body": "The FancyZones overlay comparison shows the ruler is misplaced.",
+            "user": {"login": "alice"},
+            "labels": [],
+        }
+
+        class ProductApi(FakeApi):
+            def list_labels(self):
+                return [
+                    {"name": "Product-FancyZones"},
+                    {"name": "Product-Screen Ruler"},
+                ]
+
+        context, _, _ = CONTEXT.prepare(
+            {"action": "opened", "issue": issue},
+            ProductApi(),
+        )
+        self.assertIn("Detected area: Screen Ruler", context)
+        self.assertIn("Candidate product label: Product-Screen Ruler", context)
+
+    def test_explicit_template_area_takes_precedence_over_title_prefix(self):
+        issue = {
+            "number": 42,
+            "title": "[Screen Ruler] FancyZones editor issue",
+            "body": (
+                "### Area(s) with issue?\n\nFancyZones\n\n"
+                "### Description\n\nThe FancyZones editor is misplaced."
+            ),
+            "user": {"login": "alice"},
+            "labels": [],
+        }
+
+        class ProductApi(FakeApi):
+            def list_labels(self):
+                return [
+                    {"name": "Product-FancyZones"},
+                    {"name": "Product-Screen Ruler"},
+                ]
+
+        context, _, _ = CONTEXT.prepare(
+            {"action": "opened", "issue": issue},
+            ProductApi(),
+        )
+        self.assertIn("Detected area: FancyZones", context)
+        self.assertIn("Candidate product label: Product-FancyZones", context)
+
     def test_context_redacts_report_attachment_urls(self):
         context = CONTEXT.render_context(
             {
