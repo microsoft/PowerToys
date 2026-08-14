@@ -299,7 +299,7 @@
                                     x:Name="ShowThemeAdaptiveTrayIconCard"
                                     x:Uid="ShowThemeAdaptiveTrayIcon"
                                     IsEnabled="{x:Bind ViewModel.ShowSysTrayIcon, Mode=OneWay}">
-                                    <ToggleSwitch IsOn="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
+                                    <ToggleSwitch AutomationProperties.Name="{Binding ElementName=ShowThemeAdaptiveTrayIconCard, Path=Header}" IsOn="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
