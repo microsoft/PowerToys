@@ -362,11 +362,11 @@ public sealed partial class MainWindow : WindowEx,
         {
             var finalRect = rect.Value;
 
-            // In compact mode, center the *visible collapsed card* (the search box) on the
-            // display, not the much larger transparent HWND. The card is anchored to the top
-            // of the HWND, so we offset the HWND upward by the card's center so that growing
-            // the card downward (when results appear) keeps the search box where it was.
-            if (TryGetCompactCardCenterOffsetPhysical(windowDpi, out var cardCenterFromHwndTop))
+            // In compact mode, center the visible collapsed search row on the display, not
+            // the much larger transparent HWND. The card is anchored to the top of the HWND,
+            // so we offset the HWND upward by the search row's center. Growing the card
+            // downward (from the shelf or expanded results) keeps the search box in place.
+            if (TryGetCompactSearchRowCenterOffsetPhysical(windowDpi, out var searchRowCenterFromHwndTop))
             {
                 var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
                 var workArea = displayArea.WorkArea;
@@ -375,7 +375,7 @@ public sealed partial class MainWindow : WindowEx,
                 // so a larger percentage places the search box higher up the display.
                 var fractionFromTop = GetCompactCenterFractionFromTop(settings);
                 var desiredCardCenterY = workArea.Y + (int)Math.Round(workArea.Height * fractionFromTop);
-                finalRect.Y = desiredCardCenterY - cardCenterFromHwndTop;
+                finalRect.Y = desiredCardCenterY - searchRowCenterFromHwndTop;
 
                 if (finalRect.Y < workArea.Y)
                 {
@@ -390,13 +390,14 @@ public sealed partial class MainWindow : WindowEx,
     /// <summary>
     /// When the palette is in compact mode and is being centered on launch, computes the
     /// distance (in physical pixels) from the top of the HWND to the vertical center of the
-    /// collapsed card, so the caller can position the HWND such that the card is centered.
+    /// collapsed search row, so the caller can position the HWND such that the search box is
+    /// centered at the configured height.
     /// Returns false when the card should not be re-centered (compact mode off, or a summon
     /// behavior that restores the last position).
     /// </summary>
-    private bool TryGetCompactCardCenterOffsetPhysical(int windowDpi, out int cardCenterFromHwndTop)
+    private bool TryGetCompactSearchRowCenterOffsetPhysical(int windowDpi, out int searchRowCenterFromHwndTop)
     {
-        cardCenterFromHwndTop = 0;
+        searchRowCenterFromHwndTop = 0;
 
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
         if (!settings.CompactMode || !IsCenteringSummon(settings))
@@ -404,18 +405,27 @@ public sealed partial class MainWindow : WindowEx,
             return false;
         }
 
-        // Make sure the card is actually collapsed before we measure it.
-        (RootElement.MainContent as ShellPage)?.EnsureCompactLayout();
+        // Make sure the card is actually collapsed before we measure it. Anchor positioning
+        // to the search row, not the entire card: the optional quick-access shelf makes the
+        // collapsed card taller but should not move the search box on screen.
+        var shellPage = RootElement.MainContent as ShellPage;
+        shellPage?.EnsureCompactLayout();
 
-        var cardHeightDip = RootElement.GetCardHeight();
-        if (cardHeightDip <= 0)
+        var searchRowCenterDip = shellPage?.GetCompactSearchRowCenterY() ?? 0;
+        if (searchRowCenterDip <= 0)
         {
-            return false;
+            var cardHeightDip = RootElement.GetCardHeight();
+            if (cardHeightDip <= 0)
+            {
+                return false;
+            }
+
+            searchRowCenterDip = cardHeightDip / 2.0;
         }
 
         var scale = windowDpi / 96.0;
         var cardTopDip = RootElement.ShadowPadding.Top;
-        cardCenterFromHwndTop = (int)Math.Round((cardTopDip + (cardHeightDip / 2.0)) * scale);
+        searchRowCenterFromHwndTop = (int)Math.Round((cardTopDip + searchRowCenterDip) * scale);
         return true;
     }
 
@@ -1700,6 +1710,14 @@ public sealed partial class MainWindow : WindowEx,
             // Prevent the window from maximizing when double-clicking the title bar area
             case PInvoke.WM_NCLBUTTONDBLCLK:
                 return (LRESULT)IntPtr.Zero;
+
+            // LOAD BEARING:
+            // This is necessary to prevent rapid deceleration of the machine running CmdPal.
+            // Handle unmatched menu characters here instead of letting DefWindowProc ignore
+            // them and play the system chime. Repeated chimes may otherwise cause the machine
+            // to experience sudden contact with the floor and subsequent rapid disassembly.
+            case PInvoke.WM_MENUCHAR:
+                return (LRESULT)(1 << 16); // MAKELRESULT(0, MNC_CLOSE)
 
             // When restoring a saved position across monitors with different DPIs,
             // MoveAndResize already sets the correctly-scaled size. Suppress the

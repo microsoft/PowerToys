@@ -92,6 +92,29 @@ public class SettingsServiceTests
     }
 
     [TestMethod]
+    public void QuickAccessShelf_DefaultsOffWhenSettingIsOmitted()
+    {
+        var settings = System.Text.Json.JsonSerializer.Deserialize(
+            "{}",
+            JsonSerializationContext.Default.SettingsModel);
+
+        Assert.IsNotNull(settings);
+        Assert.IsFalse(settings.ShowQuickAccessShelf);
+    }
+
+    [TestMethod]
+    public void QuickAccessShelf_ExplicitValueRoundTrips()
+    {
+        var source = CreateMinimalSettingsModel() with { ShowQuickAccessShelf = true };
+
+        var json = System.Text.Json.JsonSerializer.Serialize(source, JsonSerializationContext.Default.SettingsModel);
+        var settings = System.Text.Json.JsonSerializer.Deserialize(json, JsonSerializationContext.Default.SettingsModel);
+
+        Assert.IsNotNull(settings);
+        Assert.IsTrue(settings.ShowQuickAccessShelf);
+    }
+
+    [TestMethod]
     public void Save_DelegatesToPersistenceService()
     {
         // Arrange
