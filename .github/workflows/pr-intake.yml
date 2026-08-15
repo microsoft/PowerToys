@@ -19,6 +19,7 @@ on:
       - synchronize
       - reopened
       - ready_for_review
+      - converted_to_draft
 
 permissions:
   contents: read
@@ -31,7 +32,7 @@ concurrency:
 
 jobs:
   pr-intake:
-    if: ${{ github.event.pull_request.draft == false }}
+    if: ${{ github.event.pull_request.draft == false || github.event.action == 'converted_to_draft' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout base ref

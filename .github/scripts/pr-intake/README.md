@@ -26,8 +26,8 @@ all pull request data through the GitHub API.
 
 Missing issue references are advisory. Explicitly invalid references, merge
 conflicts, unknown mergeability, and missing required visual evidence block
-readiness. Draft PR events skip the intake job; marking a draft ready triggers
-intake.
+readiness. Draft PR events skip normal intake; conversion to draft runs only
+lifecycle-label cleanup, and marking a draft ready triggers full intake.
 
 The existing resource-management policy closes PRs that retain
 `Needs-Author-Feedback` for seven inactive days. PR synchronization is handled

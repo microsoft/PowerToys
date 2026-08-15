@@ -12,7 +12,37 @@ user-rate-limit:
 concurrency:
   group: issue-triage-${{ github.event.issue.number }}
   cancel-in-progress: true
-engine: copilot
+engine:
+  id: copilot
+  args:
+    - "--deny-tool"
+    - "write"
+    - "--deny-tool"
+    - "shell(cat)"
+    - "--deny-tool"
+    - "shell(date)"
+    - "--deny-tool"
+    - "shell(echo)"
+    - "--deny-tool"
+    - "shell(grep)"
+    - "--deny-tool"
+    - "shell(head)"
+    - "--deny-tool"
+    - "shell(ls)"
+    - "--deny-tool"
+    - "shell(printf)"
+    - "--deny-tool"
+    - "shell(pwd)"
+    - "--deny-tool"
+    - "shell(sort)"
+    - "--deny-tool"
+    - "shell(tail)"
+    - "--deny-tool"
+    - "shell(uniq)"
+    - "--deny-tool"
+    - "shell(wc)"
+    - "--deny-tool"
+    - "shell(yq)"
 model: small
 max-turns: 5
 max-ai-credits: 10
@@ -24,7 +54,7 @@ permissions:
   issues: read
   copilot-requests: write
 tools:
-  bash: false
+  bash: [safeoutputs]
   edit: false
   github: false
   cli-proxy: true
@@ -40,14 +70,14 @@ steps:
       GH_AW_SAFE_OUTPUTS: ${{ runner.temp }}/gh-aw/safeoutputs/outputs.jsonl
     run: >-
       python .github/scripts/issue-triage/issue-context.py "$GITHUB_EVENT_PATH"
-      "$RUNNER_TEMP/gh-aw/issue-context.md"
-      "$RUNNER_TEMP/gh-aw/triage-event.json"
+      "/tmp/gh-aw/issue-context.md"
+      "/tmp/gh-aw/triage-event.json"
   - name: Prepare sanitized bug report context
     if: steps.prepare.outputs.should_process == 'true'
     run: >-
       python .github/scripts/issue-triage/bug-report-analyzer.py
-      "$RUNNER_TEMP/gh-aw/triage-event.json"
-      "$RUNNER_TEMP/gh-aw/bug-report-context.md"
+      "/tmp/gh-aw/triage-event.json"
+      "/tmp/gh-aw/bug-report-context.md"
 safe-outputs:
   report-failure-as-issue: false
   noop:

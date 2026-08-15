@@ -61,8 +61,10 @@ that retain `Needs-Author-Feedback` for seven days without activity.
   issue; comments and reopen events do not trigger it.
 - Per-user rate limits, daily AI-credit limits, and per-issue concurrency bound
   repeated issue creation or edits.
-- The agent has no general shell or GitHub API tools. Its only external
-  publication mechanism is the structured safe-output CLI proxy.
+- The agent has no general shell or GitHub API tools. Its only shell command is
+  the structured safe-output CLI proxy, and Copilot's file-write tool is
+  explicitly denied to work around gh-aw v0.86.2 treating `edit: false` as
+  writable.
 - Threat detection fails closed; publication requires an explicit successful
   detection result.
 - The publishing job rebuilds evidence from the current issue and accepts only

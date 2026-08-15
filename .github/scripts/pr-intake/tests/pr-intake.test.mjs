@@ -40,16 +40,19 @@ function botComment(id, body) {
   };
 }
 
-test('workflow skips drafts and uses the ready-for-review event', () => {
+test('workflow skips normal draft intake and handles draft transitions', () => {
   const workflow = fs.readFileSync(
     new URL('../../../workflows/pr-intake.yml', import.meta.url),
     'utf8',
   );
 
   assert.equal(READY_FOR_REVIEW_LABEL, 'Ready for review');
-  assert.match(workflow, /if: \$\{\{ github\.event\.pull_request\.draft == false \}\}/);
+  assert.match(
+    workflow,
+    /if: \$\{\{ github\.event\.pull_request\.draft == false \|\| github\.event\.action == 'converted_to_draft' \}\}/,
+  );
   assert.match(workflow, /- ready_for_review/);
-  assert.doesNotMatch(workflow, /- converted_to_draft/);
+  assert.match(workflow, /- converted_to_draft/);
 });
 
 class MockApi {
@@ -72,6 +75,7 @@ class MockApi {
     this.removedLabels = [];
     this.getIssueCalls = 0;
     this.getPullRequestCalls = 0;
+    this.listPullRequestFilesCalls = 0;
     this.nextCommentId = 1000;
   }
 
@@ -119,6 +123,7 @@ class MockApi {
   }
 
   async listPullRequestFiles(_pullNumber, page) {
+    this.listPullRequestFilesCalls += 1;
     return page === 1 ? this.files : [];
   }
 
@@ -636,6 +641,39 @@ test('runPullRequestIntake stays silent on a clean PR with no prior comment', as
   assert.equal(api.created, 0);
   assert.equal(api.updated, 0);
   assert.deepEqual(result.labelPlan.add, [READY_FOR_REVIEW_LABEL]);
+});
+
+test('converted draft removes lifecycle labels without running intake', async () => {
+  const api = new MockApi({
+    issues: [{
+      number: 100,
+      labels: [READY_FOR_REVIEW_LABEL, NEEDS_AUTHOR_FEEDBACK_LABEL, 'Product-FancyZones'],
+      title: 'Draft PR',
+    }],
+    pullRequests: [{
+      number: 100,
+      draft: true,
+      mergeable: true,
+      mergeable_state: 'clean',
+      body: '',
+      base: { ref: 'main' },
+      user: { login: 'alice' },
+    }],
+  });
+
+  const result = await runPullRequestIntake({
+    api,
+    event: intakeEvent({ action: 'converted_to_draft' }),
+  });
+
+  assert.equal(result.skippedDraft, true);
+  assert.deepEqual(result.labelPlan, {
+    add: [],
+    remove: [NEEDS_AUTHOR_FEEDBACK_LABEL, READY_FOR_REVIEW_LABEL],
+  });
+  assert.equal(api.listPullRequestFilesCalls, 0);
+  assert.equal(api.created, 0);
+  assert.equal(api.updated, 0);
 });
 
 test('runPullRequestIntake replaces a stale comment with an all-clear note when the PR is clean', async () => {

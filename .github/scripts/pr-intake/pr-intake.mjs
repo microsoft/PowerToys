@@ -734,9 +734,27 @@ export async function runPullRequestIntake({ api, event }) {
   );
   const issueNumber = pullNumber;
 
+  const issue = await api.getIssue(issueNumber);
+  if (pullRequest.draft === true) {
+    const labelPlan = planManagedLabelChanges(
+      parseIssueLabels(issue),
+      [],
+      [
+        READY_FOR_REVIEW_LABEL,
+        NEEDS_AUTHOR_FEEDBACK_LABEL,
+        LEGACY_READY_FOR_REVIEW_LABEL,
+      ],
+    );
+    await syncManagedLabels(api, issueNumber, labelPlan);
+    return {
+      issueNumber,
+      skippedDraft: true,
+      labelPlan,
+    };
+  }
+
   const fileDetails = await listAllPullRequestFileDetails(api, issueNumber);
   const changedPaths = changedPathsFromFileDetails(fileDetails);
-  const issue = await api.getIssue(issueNumber);
   const closingReferenceVerification = await verifyClosingIssueReferences({
     api,
     repositoryFullName: event.repository.full_name,
