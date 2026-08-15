@@ -5,8 +5,10 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -17,6 +19,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly IAppStateService _appStateService;
+    private readonly ISettingsService _settingsService;
     private readonly TaskScheduler _scheduler;
     private readonly Lock _observedItemsLock = new();
     private readonly List<INotifyPropChanged> _observedItems = [];
@@ -36,6 +39,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
     public QuickAccessShelfViewModel(
         TopLevelCommandManager topLevelCommandManager,
         IAppStateService appStateService,
+        ISettingsService settingsService,
         RecentCommandsPlacement recentCommandsPlacement,
         int pinnedCommandLimit,
         int recentCommandLimit,
@@ -43,6 +47,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
     {
         _topLevelCommandManager = topLevelCommandManager;
         _appStateService = appStateService;
+        _settingsService = settingsService;
         _recentCommands = _appStateService.State.RecentCommands;
         _configuration = CreateConfiguration(recentCommandsPlacement, pinnedCommandLimit, recentCommandLimit);
         _scheduler = scheduler;
@@ -97,6 +102,116 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
     public void UpdateVisibleCapacity(double availableWidth, double itemWidth, double spacing)
     {
         SetVisibleCapacity(QuickAccessShelfResolver.CalculateVisibleCapacity(Items.Count, availableWidth, itemWidth, spacing));
+    }
+
+    public bool TryPlacePinnedItem(QuickAccessShelfItem source, QuickAccessShelfItem target, bool placeAfter)
+    {
+        if (!target.IsPinned ||
+            (source.ProviderId == target.ProviderId && source.CommandId == target.CommandId))
+        {
+            return false;
+        }
+
+        var settings = _settingsService.Settings;
+        if (!settings.IsCommandPinned(target.ProviderId, target.CommandId))
+        {
+            return false;
+        }
+
+        var promoted = false;
+        if (!settings.IsCommandPinned(source.ProviderId, source.CommandId))
+        {
+            if (!source.CanPin)
+            {
+                return false;
+            }
+
+            WeakReferenceMessenger.Default.Send(new PinCommandItemMessage(source.ProviderId, source.CommandId));
+            promoted = _settingsService.Settings.IsCommandPinned(source.ProviderId, source.CommandId);
+            if (!promoted)
+            {
+                return false;
+            }
+        }
+
+        var currentSettings = _settingsService.Settings;
+        var preview = currentSettings.TryPlacePinnedCommand(
+            source.ProviderId,
+            source.CommandId,
+            target.ProviderId,
+            target.CommandId,
+            placeAfter);
+        var placementChanged = !ReferenceEquals(preview, currentSettings);
+        if (placementChanged)
+        {
+            _settingsService.UpdateSettings(
+                settings => settings.TryPlacePinnedCommand(
+                    source.ProviderId,
+                    source.CommandId,
+                    target.ProviderId,
+                    target.CommandId,
+                    placeAfter),
+                hotReload: false);
+        }
+
+        if (!promoted && !placementChanged)
+        {
+            return false;
+        }
+
+        _topLevelCommandManager.RebuildPinnedCache();
+        return true;
+    }
+
+    public bool TryRemoveItem(QuickAccessShelfItem item)
+    {
+        // Remove from the section the user dragged from. A pinned command may also have a
+        // history entry, but unpinning it must not erase that history or its search frecency.
+        if (item.IsPinned)
+        {
+            if (!_settingsService.Settings.IsCommandPinned(item.ProviderId, item.CommandId))
+            {
+                return false;
+            }
+
+            WeakReferenceMessenger.Default.Send(new UnpinCommandItemMessage(item.ProviderId, item.CommandId));
+
+            // The provider can disappear while an item is being dragged. Keep the persisted
+            // pin removable even if there is no wrapper left to process the message.
+            if (_settingsService.Settings.IsCommandPinned(item.ProviderId, item.CommandId))
+            {
+                _settingsService.UpdateSettings(
+                    settings => settings.TryUnpinCommand(item.ProviderId, item.CommandId),
+                    hotReload: false);
+            }
+
+            _topLevelCommandManager.RebuildPinnedCache();
+            return true;
+        }
+
+        var recentCommands = _appStateService.State.RecentCommands;
+        var withoutItem = recentCommands.WithoutHistoryItem(item.CommandId);
+        if (ReferenceEquals(recentCommands, withoutItem))
+        {
+            return false;
+        }
+
+        _appStateService.UpdateState(state => state with
+        {
+            RecentCommands = state.RecentCommands.WithoutHistoryItem(item.CommandId),
+        });
+        return true;
+    }
+
+    public bool TryPinItem(QuickAccessShelfItem item)
+    {
+        if (!item.CanPin || _settingsService.Settings.IsCommandPinned(item.ProviderId, item.CommandId))
+        {
+            return false;
+        }
+
+        WeakReferenceMessenger.Default.Send(new PinCommandItemMessage(item.ProviderId, item.CommandId));
+        return _settingsService.Settings.IsCommandPinned(item.ProviderId, item.CommandId);
     }
 
     private void Commands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -205,11 +320,20 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
         // Observe first so a fast load cannot leave the shelf showing the placeholder icon.
         UpdateObservedItems(observedItems);
         return resolvedItems.Select(
-            item => QuickAccessShelfItem.CreateOrReuse(
-                existingItems,
-                item.Item,
-                item.ShortcutIndex,
-                item.StartsNewSection)).ToArray();
+            item =>
+            {
+                var provider = _topLevelCommandManager.LookupProvider(TopLevelCommandResolver.GetProviderId(item.Item));
+                var canPin = !item.IsPinned &&
+                    provider is not null &&
+                    (item.Item is TopLevelViewModel || provider.SupportsPinning);
+                return QuickAccessShelfItem.CreateOrReuse(
+                    existingItems,
+                    item.Item,
+                    item.ShortcutIndex,
+                    item.StartsNewSection,
+                    item.IsPinned,
+                    canPin);
+            }).ToArray();
     }
 
     private void CompleteRebuild(int rebuildVersion, Task<QuickAccessShelfItem[]> task)

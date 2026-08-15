@@ -413,11 +413,47 @@ public record SettingsModel
         return WithPinnedCommands(pinnedCommands);
     }
 
-    private int FindPinnedCommandIndex(string providerId, string commandId)
+    public SettingsModel TryPlacePinnedCommand(
+        string providerId,
+        string commandId,
+        string targetProviderId,
+        string targetCommandId,
+        bool placeAfter)
     {
-        for (var i = 0; i < PinnedCommands.Count; i++)
+        var sourceIndex = FindPinnedCommandIndex(providerId, commandId);
+        var targetIndex = FindPinnedCommandIndex(targetProviderId, targetCommandId);
+        if (sourceIndex < 0 || targetIndex < 0 || sourceIndex == targetIndex)
         {
-            var pinnedCommand = PinnedCommands[i];
+            return this;
+        }
+
+        var pinnedCommand = PinnedCommands[sourceIndex];
+        var pinnedCommands = PinnedCommands.RemoveAt(sourceIndex);
+
+        targetIndex = FindPinnedCommandIndex(pinnedCommands, targetProviderId, targetCommandId);
+        if (targetIndex < 0)
+        {
+            return this;
+        }
+
+        var insertionIndex = targetIndex + (placeAfter ? 1 : 0);
+        pinnedCommands = pinnedCommands.Insert(insertionIndex, pinnedCommand);
+        return PinnedCommands.SequenceEqual(pinnedCommands)
+            ? this
+            : WithPinnedCommands(pinnedCommands);
+    }
+
+    private int FindPinnedCommandIndex(string providerId, string commandId)
+        => FindPinnedCommandIndex(PinnedCommands, providerId, commandId);
+
+    private static int FindPinnedCommandIndex(
+        IReadOnlyList<PinnedCommandSettings> pinnedCommands,
+        string providerId,
+        string commandId)
+    {
+        for (var i = 0; i < pinnedCommands.Count; i++)
+        {
+            var pinnedCommand = pinnedCommands[i];
             if (pinnedCommand.ProviderId == providerId &&
                 pinnedCommand.CommandId == commandId)
             {
