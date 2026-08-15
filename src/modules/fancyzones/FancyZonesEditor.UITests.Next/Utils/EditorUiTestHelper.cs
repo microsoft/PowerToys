@@ -264,6 +264,19 @@ public static class EditorUiTestHelper
         return WaitForZoneEditorWindow(testBase, knownEditorWindows, expectedEditorWindowName);
     }
 
+    public static Session ConfirmNewLayoutAndOpenEditor(UITestBase testBase, Session session, string expectedEditorWindowName)
+    {
+        var knownEditorWindows = WindowsFinder.ListByApp(EditorProcessName)
+            .Select(window => window.Hwnd)
+            .ToHashSet();
+
+        EnsureForeground(testBase, session, $"confirming the new layout type for '{expectedEditorWindowName}'");
+        Step(testBase, $"Confirming the new layout type and opening '{expectedEditorWindowName}'");
+        session.Find<Button>(By.AccessibilityId(AccessibilityId.PrimaryButton)).Invoke();
+
+        return WaitForZoneEditorWindow(testBase, knownEditorWindows, expectedEditorWindowName);
+    }
+
     public static Session EnterZoneEditModeFromContextMenu(UITestBase testBase, Session session, string layoutName, string expectedEditorWindowName)
     {
         var editZonesItem = OpenContextMenuAndFindItem(testBase, session, layoutName, ElementName.EditZones);
@@ -487,7 +500,11 @@ public static class EditorUiTestHelper
         Step(testBase, "Discovering zone editor top-level window via Win32 process-window enumeration");
         var zoneEditor = WindowsFinder.WaitForWindowByApp(
             EditorProcessName,
-            window => !knownEditorWindows.Contains(window.Hwnd) && window.Width >= 150 && window.Height >= 150,
+            window =>
+                !knownEditorWindows.Contains(window.Hwnd) &&
+                !string.Equals(window.Title, LayoutOverlayTitle, StringComparison.Ordinal) &&
+                window.Width >= 150 &&
+                window.Height >= 150,
             timeoutMS: 10_000,
             pollIntervalMS: 100);
 

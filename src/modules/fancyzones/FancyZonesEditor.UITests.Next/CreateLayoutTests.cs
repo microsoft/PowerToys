@@ -25,10 +25,9 @@ public class CreateLayoutTests : FancyZonesEditorTestBase
 
         EditorUiTestHelper.Step(this, "Opening the new layout dialog");
         Session.Find<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.NewLayoutButton)).Click();
-        EditorUiTestHelper.Step(this, "Confirming layout type selection");
-        Session.Find<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.PrimaryButton)).Click();
+        var layoutEditor = EditorUiTestHelper.ConfirmNewLayoutAndOpenEditor(this, Session, EditorUiTestHelper.ElementName.GridLayoutEditor);
         EditorUiTestHelper.Step(this, "Saving the new layout");
-        Session.Find<Button>(EditorUiTestHelper.ElementName.Save).Click();
+        layoutEditor.Find<Button>(EditorUiTestHelper.ElementName.Save).Click();
 
         Assert.IsNotNull(Session.Find<Element>(name));
 
@@ -54,10 +53,9 @@ public class CreateLayoutTests : FancyZonesEditorTestBase
         var input = Session.Find<TextBox>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.LayoutNameText), 0);
         input.SetText(name);
 
-        EditorUiTestHelper.Step(this, "Confirming layout type selection");
-        Session.Find<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.PrimaryButton)).Click();
+        var layoutEditor = EditorUiTestHelper.ConfirmNewLayoutAndOpenEditor(this, Session, EditorUiTestHelper.ElementName.GridLayoutEditor);
         EditorUiTestHelper.Step(this, "Saving the new layout");
-        Session.Find<Button>(EditorUiTestHelper.ElementName.Save).Click();
+        layoutEditor.Find<Button>(EditorUiTestHelper.ElementName.Save).Click();
 
         Assert.IsNotNull(Session.Find<Element>(name));
 
@@ -77,10 +75,9 @@ public class CreateLayoutTests : FancyZonesEditorTestBase
         Session.Find<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.NewLayoutButton)).Click();
         EditorUiTestHelper.Step(this, "Selecting Grid layout type");
         Session.Find<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.GridRadioButton)).Click();
-        EditorUiTestHelper.Step(this, "Confirming layout type selection");
-        Session.Find<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.PrimaryButton)).Click();
+        var layoutEditor = EditorUiTestHelper.ConfirmNewLayoutAndOpenEditor(this, Session, EditorUiTestHelper.ElementName.GridLayoutEditor);
         EditorUiTestHelper.Step(this, "Saving the new layout");
-        Session.Find<Button>(EditorUiTestHelper.ElementName.Save).Click();
+        layoutEditor.Find<Button>(EditorUiTestHelper.ElementName.Save).Click();
 
         var data = EditorUiTestHelper.ReadCustomLayouts();
         Assert.AreEqual(1, data.CustomLayouts.Count);
@@ -98,10 +95,9 @@ public class CreateLayoutTests : FancyZonesEditorTestBase
         Session.Find<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.NewLayoutButton)).Click();
         EditorUiTestHelper.Step(this, "Selecting Canvas layout type");
         Session.Find<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.CanvasRadioButton)).Click();
-        EditorUiTestHelper.Step(this, "Confirming layout type selection");
-        Session.Find<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.PrimaryButton)).Click();
+        var layoutEditor = EditorUiTestHelper.ConfirmNewLayoutAndOpenEditor(this, Session, EditorUiTestHelper.ElementName.CanvasLayoutEditor);
         EditorUiTestHelper.Step(this, "Saving the new layout");
-        Session.Find<Button>(EditorUiTestHelper.ElementName.Save).Click();
+        layoutEditor.Find<Button>(EditorUiTestHelper.ElementName.Save).Click();
 
         var data = EditorUiTestHelper.ReadCustomLayouts();
         Assert.AreEqual(1, data.CustomLayouts.Count);
@@ -118,10 +114,9 @@ public class CreateLayoutTests : FancyZonesEditorTestBase
         Session.Find<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.NewLayoutButton)).Click();
         EditorUiTestHelper.Step(this, "Selecting Grid layout type");
         Session.Find<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.GridRadioButton)).Click();
-        EditorUiTestHelper.Step(this, "Confirming layout type selection");
-        Session.Find<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.PrimaryButton)).Click();
+        var layoutEditor = EditorUiTestHelper.ConfirmNewLayoutAndOpenEditor(this, Session, EditorUiTestHelper.ElementName.GridLayoutEditor);
         EditorUiTestHelper.Step(this, "Cancelling layout creation");
-        Session.Find<Button>(EditorUiTestHelper.ElementName.Cancel).Click();
+        layoutEditor.Find<Button>(EditorUiTestHelper.ElementName.Cancel).Click();
 
         var data = EditorUiTestHelper.ReadCustomLayouts();
         Assert.AreEqual(0, data.CustomLayouts.Count);
@@ -137,10 +132,9 @@ public class CreateLayoutTests : FancyZonesEditorTestBase
         Session.Find<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.NewLayoutButton)).Click();
         EditorUiTestHelper.Step(this, "Selecting Canvas layout type");
         Session.Find<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.CanvasRadioButton)).Click();
-        EditorUiTestHelper.Step(this, "Confirming layout type selection");
-        Session.Find<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.PrimaryButton)).Click();
+        var layoutEditor = EditorUiTestHelper.ConfirmNewLayoutAndOpenEditor(this, Session, EditorUiTestHelper.ElementName.CanvasLayoutEditor);
         EditorUiTestHelper.Step(this, "Cancelling layout creation");
-        Session.Find<Button>(EditorUiTestHelper.ElementName.Cancel).Click();
+        layoutEditor.Find<Button>(EditorUiTestHelper.ElementName.Cancel).Click();
 
         var data = EditorUiTestHelper.ReadCustomLayouts();
         Assert.AreEqual(0, data.CustomLayouts.Count);
