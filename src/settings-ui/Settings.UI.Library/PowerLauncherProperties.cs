@@ -141,8 +141,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowPluginsOverview = 0;
             TitleFontSize = 16;
             EnableAudibleFeedback = false;
-            EnableOpeningSound = false;
-            EnableClosingSound = false;
+            EnableOpeningSound = true;
+            EnableClosingSound = true;
         }
     }
 }

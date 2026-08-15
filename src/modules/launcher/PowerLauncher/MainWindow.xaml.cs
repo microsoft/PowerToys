@@ -49,11 +49,10 @@ namespace PowerLauncher
         private bool _coldStateHotkeyPressed;
         private bool _disposedValue;
 
-        [DllImport("winmm.dll", CharSet = CharSet.Unicode)]
-        private static extern bool PlaySound(string lpszName, IntPtr hModule, uint dwFlags);
-
-        private static readonly uint SndFilename = 0x00020000;
-        private static readonly uint SndAsync = 0x00000001;
+        private static readonly string OpenSoundPath = Path.Combine(AppContext.BaseDirectory, "Sounds", "open.wav");
+        private static readonly string CloseSoundPath = Path.Combine(AppContext.BaseDirectory, "Sounds", "close.wav");
+        private static readonly Lazy<byte[]> OpenSoundBytes = new Lazy<byte[]>(() => LoadSoundBytes(OpenSoundPath));
+        private static readonly Lazy<byte[]> CloseSoundBytes = new Lazy<byte[]>(() => LoadSoundBytes(CloseSoundPath));
 
         private IDisposable _reactiveSubscription;
         private Point _mouseDownPosition;
@@ -847,26 +846,35 @@ namespace PowerLauncher
                 return;
             }
 
+            string soundPath = isOpening ? OpenSoundPath : CloseSoundPath;
+            byte[] soundBytes = isOpening ? OpenSoundBytes.Value : CloseSoundBytes.Value;
+
+            if (soundBytes == null)
+            {
+                Log.Info($"Sound file not found: {soundPath}", GetType());
+                return;
+            }
+
             try
             {
-                string fileName = isOpening ? "open.wav" : "close.wav";
-                string soundPath = Path.Combine(AppContext.BaseDirectory, "Sounds", fileName);
-
-                Log.Info($"Attempting to play sound: {soundPath}, Exists: {File.Exists(soundPath)}", GetType());
-
-                if (File.Exists(soundPath))
-                {
-                    PlaySound(soundPath, IntPtr.Zero, SndFilename | SndAsync);
-                    Log.Info($"Playing sound: {soundPath}", GetType());
-                }
-                else
-                {
-                    Log.Info($"Sound file not found: {soundPath}", GetType());
-                }
+                NativeMethods.PlaySound(soundBytes, IntPtr.Zero, NativeMethods.SndMemory | NativeMethods.SndAsync | NativeMethods.SndNoDefault);
             }
             catch (Exception ex)
             {
                 Log.Exception("Failed to play audible feedback", ex, GetType());
+            }
+        }
+
+        private static byte[] LoadSoundBytes(string path)
+        {
+            try
+            {
+                return File.Exists(path) ? File.ReadAllBytes(path) : null;
+            }
+            catch (Exception ex)
+            {
+                Log.Exception($"Failed to load sound file: {path}", ex, typeof(MainWindow));
+                return null;
             }
         }
 
