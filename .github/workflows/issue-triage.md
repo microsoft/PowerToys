@@ -4,7 +4,7 @@ name: AI Issue Triage
 description: Maintain one concise issue summary with likely duplicates and missing-information guidance.
 on:
   issues:
-    types: [opened]
+    types: [opened, edited]
   roles: all
 user-rate-limit:
   max-runs-per-window: 5
@@ -697,7 +697,7 @@ safe-outputs:
 
 ## Task
 
-A GitHub issue was opened. Read `/tmp/gh-aw/issue-context.md` and
+A GitHub issue was opened or edited. Read `/tmp/gh-aw/issue-context.md` and
 `/tmp/gh-aw/bug-report-context.md` exactly once.
 They contain deterministic, bounded issue facts, ranked duplicate candidates,
 redacted diagnostics, and a coarse language signal. Never download attachments

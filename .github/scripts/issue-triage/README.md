@@ -1,8 +1,8 @@
 # AI-assisted issue triage
 
 The workflow in `.github/workflows/issue-triage.md` maintains one canonical
-triage comment when an issue is opened. It combines deterministic preprocessing
-with one bounded GitHub Copilot pass.
+triage comment when an issue is opened or its original title/body is edited. It
+combines deterministic preprocessing with one bounded GitHub Copilot pass.
 
 ## Rules
 
@@ -56,9 +56,10 @@ that retain `Needs-Author-Feedback` for seven days without activity.
 ## Cost and safety controls
 
 - The `small` model alias is limited to five turns and 10 AI credits per run.
-- The workflow does not subscribe to issue comments, edits, or reopen events.
+- The workflow subscribes only to issue creation and edits to the original
+  issue; comments and reopen events do not trigger it.
 - Per-user rate limits, daily AI-credit limits, and per-issue concurrency bound
-  repeated issue creation.
+  repeated issue creation or edits.
 - The agent has no general shell or GitHub API tools. Its only external
   publication mechanism is the structured safe-output CLI proxy.
 - Threat detection fails closed; publication requires an explicit successful
