@@ -17,6 +17,13 @@ public record SettingsModel
 
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
+    internal const int MinQuickAccessShelfPinnedCommandLimit = 0;
+    internal const int MaxQuickAccessShelfPinnedCommandLimit = 9;
+    internal const int DefaultQuickAccessShelfPinnedCommandLimit = 9;
+    internal const int MinRecentCommandsDisplayLimit = 1;
+    internal const int MaxRecentCommandsDisplayLimit = 10;
+    internal const int DefaultRecentCommandsDisplayLimit = 5;
+
     public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
 
     /// <summary>
@@ -80,9 +87,31 @@ public record SettingsModel
 
     public bool ShowQuickAccessShelf { get; init; }
 
-    public bool ShowRecentCommandsInQuickAccessShelf { get; init; }
+    public RecentCommandsPlacement RecentCommandsOnQuickAccessShelf { get; init; }
 
-    public HomeRecentCommandsPlacement RecentCommandsOnHome { get; init; }
+    public RecentCommandsPlacement RecentCommandsOnHome { get; init; }
+
+    private int _quickAccessShelfPinnedCommandLimit = DefaultQuickAccessShelfPinnedCommandLimit;
+
+    public int QuickAccessShelfPinnedCommandLimit
+    {
+        get => _quickAccessShelfPinnedCommandLimit;
+        init => _quickAccessShelfPinnedCommandLimit = Math.Clamp(
+            value,
+            MinQuickAccessShelfPinnedCommandLimit,
+            MaxQuickAccessShelfPinnedCommandLimit);
+    }
+
+    private int _recentCommandsDisplayLimit = DefaultRecentCommandsDisplayLimit;
+
+    public int RecentCommandsDisplayLimit
+    {
+        get => _recentCommandsDisplayLimit;
+        init => _recentCommandsDisplayLimit = Math.Clamp(
+            value,
+            MinRecentCommandsDisplayLimit,
+            MaxRecentCommandsDisplayLimit);
+    }
 
     // When compact mode is on and the palette is centered on launch, this is the relative
     // height from the bottom of the screen (as a percentage) at which the collapsed search
@@ -209,7 +238,9 @@ public record SettingsModel
           string[]? fallbackRanks = null,
           ImmutableDictionary<string, CommandAlias>? aliases = null,
           ImmutableList<TopLevelHotkey>? commandHotkeys = null,
-          bool enableExternalCommandLinks = true)
+          bool enableExternalCommandLinks = true,
+          int quickAccessShelfPinnedCommandLimit = DefaultQuickAccessShelfPinnedCommandLimit,
+          int recentCommandsDisplayLimit = DefaultRecentCommandsDisplayLimit)
     {
         PinnedCommands = pinnedCommands ?? ImmutableList<PinnedCommandSettings>.Empty;
         ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
@@ -217,6 +248,8 @@ public record SettingsModel
         Aliases = aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
         CommandHotkeys = commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
         EnableExternalCommandLinks = enableExternalCommandLinks;
+        QuickAccessShelfPinnedCommandLimit = quickAccessShelfPinnedCommandLimit;
+        RecentCommandsDisplayLimit = recentCommandsDisplayLimit;
     }
 
     public SettingsModel()
@@ -514,7 +547,7 @@ public enum EscapeKeyBehavior
     AlwaysHide = 3,
 }
 
-public enum HomeRecentCommandsPlacement
+public enum RecentCommandsPlacement
 {
     Hidden = 0,
     BeforePinned = 1,
