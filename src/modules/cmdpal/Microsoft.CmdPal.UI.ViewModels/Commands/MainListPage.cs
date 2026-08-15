@@ -67,7 +67,8 @@ public sealed partial class MainListPage : DynamicListPage,
     private IListItem[]? _cachedRegularViewModels;
     private bool _defaultViewDirty = true;
     private volatile RecentCommandsManager _recentCommands;
-    private HomeRecentCommandsPlacement _recentCommandsOnHome;
+    private RecentCommandsPlacement _recentCommandsOnHome;
+    private int _recentCommandsDisplayLimit = SettingsModel.DefaultRecentCommandsDisplayLimit;
 
     private RoScored<IListItem>[]? _filteredItems;
     private RoScored<IListItem>[]? _filteredApps;
@@ -200,7 +201,7 @@ public sealed partial class MainListPage : DynamicListPage,
         if (e.PropertyName == nameof(AllAppsCommandProvider.Page.IsLoading))
         {
             IsLoading = ActuallyLoading();
-            if (!AllAppsCommandProvider.Page.IsLoading && _recentCommandsOnHome != HomeRecentCommandsPlacement.Hidden)
+            if (!AllAppsCommandProvider.Page.IsLoading && _recentCommandsOnHome != RecentCommandsPlacement.Hidden)
             {
                 _defaultViewDirty = true;
                 RequestRefresh(fullRefresh: false);
@@ -236,7 +237,7 @@ public sealed partial class MainListPage : DynamicListPage,
         }
 
         _recentCommands = args.RecentCommands;
-        if (_recentCommandsOnHome != HomeRecentCommandsPlacement.Hidden)
+        if (_recentCommandsOnHome != RecentCommandsPlacement.Hidden)
         {
             _defaultViewDirty = true;
             RequestRefresh(fullRefresh: false);
@@ -472,7 +473,7 @@ public sealed partial class MainListPage : DynamicListPage,
             writeIndex += items.Length;
         }
 
-        if (_recentCommandsOnHome == HomeRecentCommandsPlacement.BeforePinned)
+        if (_recentCommandsOnHome == RecentCommandsPlacement.BeforePinned)
         {
             AppendSection(_recentSeparator, recent);
             AppendSection(_pinnedSeparator, pinned);
@@ -502,17 +503,25 @@ public sealed partial class MainListPage : DynamicListPage,
             allCommands = [.. _tlcManager.TopLevelCommands];
         }
 
-        IEnumerable<string> recentCommandIds = _recentCommandsOnHome == HomeRecentCommandsPlacement.Hidden
+        IEnumerable<string> recentCommandIds = _recentCommandsOnHome == RecentCommandsPlacement.Hidden
             ? []
             : _recentCommands.EnumerateRecentCommandIds();
         var sections = TopLevelCommandResolver.Resolve(
             pinnedSettings,
             recentCommandIds,
             allCommands,
-            includeApps: _includeApps);
+            includeApps: _includeApps,
+            recentCommandLimit: _recentCommandsDisplayLimit,
+            recentCommandsFirst: _recentCommandsOnHome == RecentCommandsPlacement.BeforePinned);
 
+        var previousRecentViewModels = _cachedRecentViewModels;
         _cachedPinnedViewModels = [.. sections.Pinned];
-        _cachedRecentViewModels = [.. sections.Recent];
+        _cachedRecentViewModels = sections.Recent
+            .Select(item => (IListItem)RecentCommandListItem.CreateOrReuse(
+                previousRecentViewModels,
+                item,
+                IdForTopLevelOrAppItem(item)))
+            .ToArray();
         _cachedRegularViewModels = [.. sections.Regular];
         _defaultViewDirty = false;
     }
@@ -1000,9 +1009,13 @@ public sealed partial class MainListPage : DynamicListPage,
         _searchTelemetry.ReportSelection(topLevelOrAppItem, _resultsSeparator, _fallbacksSeparator);
     }
 
-    private static string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
+    internal static string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
     {
-        if (topLevelOrAppItem is TopLevelViewModel topLevel)
+        if (topLevelOrAppItem is RecentCommandListItem recentItem)
+        {
+            return recentItem.CommandId;
+        }
+        else if (topLevelOrAppItem is TopLevelViewModel topLevel)
         {
             return topLevel.Id;
         }
@@ -1056,9 +1069,11 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         ShowDetails = settings.ShowAppDetails;
 
-        if (_recentCommandsOnHome != settings.RecentCommandsOnHome)
+        if (_recentCommandsOnHome != settings.RecentCommandsOnHome ||
+            _recentCommandsDisplayLimit != settings.RecentCommandsDisplayLimit)
         {
             _recentCommandsOnHome = settings.RecentCommandsOnHome;
+            _recentCommandsDisplayLimit = settings.RecentCommandsDisplayLimit;
             _defaultViewDirty = true;
             RequestRefresh(fullRefresh: false);
         }

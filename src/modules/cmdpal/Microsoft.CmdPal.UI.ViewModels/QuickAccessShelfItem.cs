@@ -22,31 +22,63 @@ public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
 
     public string CommandId { get; }
 
-    public bool StartsRecentSection { get; }
+    public bool StartsNewSection { get; }
 
     public string ShortcutDigit => QuickAccessShelfResolver.IndexToShortcutDigit(_shortcutIndex);
 
-    public QuickAccessShelfItem(IListItem item, int shortcutIndex, bool startsRecentSection)
+    private QuickAccessShelfItem(
+        IListItem item,
+        string title,
+        object? sourceIcon,
+        IconInfoViewModel icon,
+        int shortcutIndex,
+        bool startsNewSection)
     {
         _item = item;
-        Title = item.Title;
+        Title = title;
+        _sourceIcon = sourceIcon;
+        Icon = icon;
         _shortcutIndex = shortcutIndex;
-        StartsRecentSection = startsRecentSection;
+        StartsNewSection = startsNewSection;
         ProviderId = TopLevelCommandResolver.GetProviderId(item);
         CommandId = TopLevelCommandResolver.GetCommandId(item);
+    }
 
+    // Accessing extension properties and initializing IconInfoViewModel must stay off the UI thread.
+    internal static QuickAccessShelfItem CreateOrReuse(
+        IReadOnlyList<QuickAccessShelfItem> existingItems,
+        IListItem item,
+        int shortcutIndex,
+        bool startsNewSection)
+    {
+        var title = item.Title;
+        object? sourceIcon;
+        IconInfoViewModel? icon = null;
         if (item is TopLevelViewModel topLevel)
         {
-            Icon = topLevel.IconViewModel;
-            _sourceIcon = Icon;
+            sourceIcon = topLevel.IconViewModel;
+            icon = topLevel.IconViewModel;
         }
         else
         {
-            var sourceIcon = item.Icon;
-            _sourceIcon = sourceIcon;
-            Icon = new IconInfoViewModel(sourceIcon);
-            Icon.InitializeProperties();
+            sourceIcon = item.Icon;
         }
+
+        foreach (var existingItem in existingItems)
+        {
+            if (existingItem.Matches(item, title, sourceIcon, shortcutIndex, startsNewSection))
+            {
+                return existingItem;
+            }
+        }
+
+        if (icon is null)
+        {
+            icon = new IconInfoViewModel((IIconInfo?)sourceIcon);
+            icon.InitializeProperties();
+        }
+
+        return new QuickAccessShelfItem(item, title, sourceIcon, icon, shortcutIndex, startsNewSection);
     }
 
     public PerformCommandMessage GetPerformCommandMessage()
@@ -68,9 +100,21 @@ public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
         ReferenceEquals(_sourceIcon, other._sourceIcon) &&
         string.Equals(Title, other.Title, StringComparison.Ordinal) &&
         _shortcutIndex == other._shortcutIndex &&
-        StartsRecentSection == other.StartsRecentSection;
+        StartsNewSection == other.StartsNewSection;
 
     public override bool Equals(object? obj) => Equals(obj as QuickAccessShelfItem);
 
-    public override int GetHashCode() => HashCode.Combine(_item, _sourceIcon, Title, _shortcutIndex, StartsRecentSection);
+    public override int GetHashCode() => HashCode.Combine(_item, _sourceIcon, Title, _shortcutIndex, StartsNewSection);
+
+    private bool Matches(
+        IListItem item,
+        string title,
+        object? sourceIcon,
+        int shortcutIndex,
+        bool startsNewSection) =>
+        ReferenceEquals(_item, item) &&
+        ReferenceEquals(_sourceIcon, sourceIcon) &&
+        string.Equals(Title, title, StringComparison.Ordinal) &&
+        _shortcutIndex == shortcutIndex &&
+        StartsNewSection == startsNewSection;
 }

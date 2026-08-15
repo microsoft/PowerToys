@@ -5,6 +5,7 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
@@ -17,29 +18,39 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly IAppStateService _appStateService;
     private readonly TaskScheduler _scheduler;
+    private readonly Lock _observedItemsLock = new();
     private readonly List<INotifyPropChanged> _observedItems = [];
     private volatile RecentCommandsManager _recentCommands;
-    private volatile bool _includeRecentCommands;
+    private volatile ShelfConfiguration _configuration;
+    private volatile QuickAccessShelfItem[] _itemSnapshot = [];
     private volatile bool _isDisposed;
-    private int _rebuildQueued;
+    private int _rebuildVersion;
+    private int _rebuildRunning;
     private int _visibleCapacity = int.MaxValue;
+
+    private sealed record ShelfConfiguration(
+        RecentCommandsPlacement RecentCommandsPlacement,
+        int PinnedCommandLimit,
+        int RecentCommandLimit);
 
     public QuickAccessShelfViewModel(
         TopLevelCommandManager topLevelCommandManager,
         IAppStateService appStateService,
-        bool includeRecentCommands,
+        RecentCommandsPlacement recentCommandsPlacement,
+        int pinnedCommandLimit,
+        int recentCommandLimit,
         TaskScheduler scheduler)
     {
         _topLevelCommandManager = topLevelCommandManager;
         _appStateService = appStateService;
         _recentCommands = _appStateService.State.RecentCommands;
-        _includeRecentCommands = includeRecentCommands;
+        _configuration = CreateConfiguration(recentCommandsPlacement, pinnedCommandLimit, recentCommandLimit);
         _scheduler = scheduler;
         _topLevelCommandManager.PinnedCommands.CollectionChanged += Commands_CollectionChanged;
         _topLevelCommandManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
         _appStateService.StateChanged += AppStateService_StateChanged;
         AllAppsCommandProvider.Page.PropChanged += AllApps_PropChanged;
-        RebuildItems();
+        QueueRebuild();
     }
 
     public ObservableCollection<QuickAccessShelfItem> Items { get; } = [];
@@ -56,14 +67,18 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
 
     public int VisibleItemCount => VisibleItems.Count;
 
-    public void SetIncludeRecentCommands(bool includeRecentCommands)
+    public void SetItemConfiguration(
+        RecentCommandsPlacement recentCommandsPlacement,
+        int pinnedCommandLimit,
+        int recentCommandLimit)
     {
-        if (_includeRecentCommands == includeRecentCommands)
+        var configuration = CreateConfiguration(recentCommandsPlacement, pinnedCommandLimit, recentCommandLimit);
+        if (_configuration == configuration)
         {
             return;
         }
 
-        _includeRecentCommands = includeRecentCommands;
+        _configuration = configuration;
         QueueRebuild();
     }
 
@@ -97,7 +112,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
         }
 
         _recentCommands = args.RecentCommands;
-        if (_includeRecentCommands)
+        if (IncludesRecentCommands(_configuration.RecentCommandsPlacement))
         {
             QueueRebuild();
         }
@@ -105,7 +120,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
 
     private void AllApps_PropChanged(object? sender, IPropChangedEventArgs args)
     {
-        if (_includeRecentCommands &&
+        if (IncludesRecentCommands(_configuration.RecentCommandsPlacement) &&
             args.PropertyName == nameof(AllAppsCommandProvider.Page.IsLoading) &&
             !AllAppsCommandProvider.Page.IsLoading)
         {
@@ -123,29 +138,35 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
 
     private void QueueRebuild()
     {
-        if (_isDisposed || Interlocked.Exchange(ref _rebuildQueued, 1) != 0)
+        if (_isDisposed)
         {
             return;
         }
 
-        _ = Task.Factory.StartNew(
-            () =>
-            {
-                Interlocked.Exchange(ref _rebuildQueued, 0);
-                if (!_isDisposed)
-                {
-                    RebuildItems();
-                }
-            },
+        Interlocked.Increment(ref _rebuildVersion);
+        TryStartRebuild();
+    }
+
+    private void TryStartRebuild()
+    {
+        if (_isDisposed || Interlocked.CompareExchange(ref _rebuildRunning, 1, 0) != 0)
+        {
+            return;
+        }
+
+        var rebuildVersion = Volatile.Read(ref _rebuildVersion);
+        var existingItems = _itemSnapshot;
+        _ = Task.Run(() => BuildItems(existingItems)).ContinueWith(
+            task => CompleteRebuild(rebuildVersion, task),
             CancellationToken.None,
-            TaskCreationOptions.None,
+            TaskContinuationOptions.None,
             _scheduler);
     }
 
-    private void RebuildItems()
+    private QuickAccessShelfItem[] BuildItems(IReadOnlyList<QuickAccessShelfItem> existingItems)
     {
-        var hadItems = HasItems;
-        var previousItemCount = ItemCount;
+        var configuration = _configuration;
+        var includeRecentCommands = IncludesRecentCommands(configuration.RecentCommandsPlacement);
 
         PinnedCommandSettings[] pinnedCommands;
         lock (_topLevelCommandManager.PinnedCommands)
@@ -159,26 +180,66 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
             availableCommands = [.. _topLevelCommandManager.TopLevelCommands];
         }
 
-        IEnumerable<string> recentCommandIds = _includeRecentCommands
+        IEnumerable<string> recentCommandIds = includeRecentCommands
             ? _recentCommands.EnumerateRecentCommandIds()
             : [];
         var sections = TopLevelCommandResolver.Resolve(
             pinnedCommands,
             recentCommandIds,
             availableCommands,
-            includeApps: _includeRecentCommands && _topLevelCommandManager.IsProviderActive(AllAppsCommandProvider.WellKnownId),
-            includeRegular: false);
+            includeApps: includeRecentCommands && _topLevelCommandManager.IsProviderActive(AllAppsCommandProvider.WellKnownId),
+            pinnedCommandLimit: configuration.PinnedCommandLimit,
+            recentCommandLimit: configuration.RecentCommandLimit,
+            includeRegular: false,
+            recentCommandsFirst: configuration.RecentCommandsPlacement == RecentCommandsPlacement.BeforePinned);
 
-        UpdateObservedItems(sections.Pinned.Concat(sections.Recent));
+        var resolvedItems = QuickAccessShelfResolver.ComposeSections(
+            sections.Pinned,
+            sections.Recent,
+            configuration.RecentCommandsPlacement);
+        var observedItems = resolvedItems.Select(item => item.Item).ToArray();
 
-        var shelfItems = sections.Pinned.Select(
-            (command, index) => new QuickAccessShelfItem(command, index, startsRecentSection: false))
-            .Concat(sections.Recent.Select(
-                (command, index) => new QuickAccessShelfItem(
-                    command,
-                    shortcutIndex: -1,
-                    startsRecentSection: index == 0 && sections.Pinned.Count > 0)));
+        // AppListItem.Icon can publish an async update immediately after it is read below.
+        // Observe first so a fast load cannot leave the shelf showing the placeholder icon.
+        UpdateObservedItems(observedItems);
+        return resolvedItems.Select(
+            item => QuickAccessShelfItem.CreateOrReuse(
+                existingItems,
+                item.Item,
+                item.ShortcutIndex,
+                item.StartsNewSection)).ToArray();
+    }
+
+    private void CompleteRebuild(int rebuildVersion, Task<QuickAccessShelfItem[]> task)
+    {
+        try
+        {
+            if (task.IsFaulted)
+            {
+                CoreLogger.LogError("Failed to rebuild quick access shelf", task.Exception.GetBaseException());
+            }
+            else if (!_isDisposed && rebuildVersion == Volatile.Read(ref _rebuildVersion))
+            {
+                ApplyRebuild(task.Result);
+            }
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _rebuildRunning, 0);
+            if (!_isDisposed && rebuildVersion != Volatile.Read(ref _rebuildVersion))
+            {
+                TryStartRebuild();
+            }
+        }
+    }
+
+    private void ApplyRebuild(IReadOnlyList<QuickAccessShelfItem> shelfItems)
+    {
+        var hadItems = HasItems;
+        var previousItemCount = ItemCount;
+
         ListHelpers.InPlaceUpdateList(Items, shelfItems);
+        _itemSnapshot = [.. Items];
         RepartitionItems();
 
         if (hadItems != HasItems)
@@ -192,20 +253,54 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
         }
     }
 
-    private void UpdateObservedItems(IEnumerable<IListItem> items)
+    private static ShelfConfiguration CreateConfiguration(
+        RecentCommandsPlacement recentCommandsPlacement,
+        int pinnedCommandLimit,
+        int recentCommandLimit)
     {
-        foreach (var item in _observedItems)
+        if (recentCommandsPlacement is not
+            (RecentCommandsPlacement.BeforePinned or RecentCommandsPlacement.AfterPinned))
         {
-            item.PropChanged -= ObservedItem_PropChanged;
+            recentCommandsPlacement = RecentCommandsPlacement.Hidden;
         }
 
-        _observedItems.Clear();
-        foreach (var item in items)
+        return new ShelfConfiguration(
+            recentCommandsPlacement,
+            Math.Clamp(
+                pinnedCommandLimit,
+                SettingsModel.MinQuickAccessShelfPinnedCommandLimit,
+                SettingsModel.MaxQuickAccessShelfPinnedCommandLimit),
+            Math.Clamp(
+                recentCommandLimit,
+                SettingsModel.MinRecentCommandsDisplayLimit,
+                SettingsModel.MaxRecentCommandsDisplayLimit));
+    }
+
+    private static bool IncludesRecentCommands(RecentCommandsPlacement recentCommandsPlacement) =>
+        recentCommandsPlacement is RecentCommandsPlacement.BeforePinned or RecentCommandsPlacement.AfterPinned;
+
+    private void UpdateObservedItems(IEnumerable<IListItem> items)
+    {
+        lock (_observedItemsLock)
         {
-            if (item is INotifyPropChanged observable)
+            foreach (var item in _observedItems)
             {
-                observable.PropChanged += ObservedItem_PropChanged;
-                _observedItems.Add(observable);
+                item.PropChanged -= ObservedItem_PropChanged;
+            }
+
+            _observedItems.Clear();
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            foreach (var item in items)
+            {
+                if (item is INotifyPropChanged observable)
+                {
+                    observable.PropChanged += ObservedItem_PropChanged;
+                    _observedItems.Add(observable);
+                }
             }
         }
     }
