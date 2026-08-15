@@ -176,12 +176,27 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
 
     public bool CanConfigureQuickAccessShelf => CompactMode && ShowQuickAccessShelf;
 
-    public bool ShowRecentCommandsInQuickAccessShelf
+    public double QuickAccessShelfPinnedCommandLimit
     {
-        get => _settingsService.Settings.ShowRecentCommandsInQuickAccessShelf;
+        get => _settingsService.Settings.QuickAccessShelfPinnedCommandLimit;
         set
         {
-            _settingsService.UpdateSettings(s => s with { ShowRecentCommandsInQuickAccessShelf = value });
+            if (double.IsNaN(value))
+            {
+                return;
+            }
+
+            var limit = (int)Math.Round(value, MidpointRounding.AwayFromZero);
+            _settingsService.UpdateSettings(s => s with { QuickAccessShelfPinnedCommandLimit = limit });
+        }
+    }
+
+    public int RecentCommandsOnQuickAccessShelfIndex
+    {
+        get => (int)_settingsService.Settings.RecentCommandsOnQuickAccessShelf;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { RecentCommandsOnQuickAccessShelf = (RecentCommandsPlacement)value });
         }
     }
 
@@ -190,7 +205,22 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         get => (int)_settingsService.Settings.RecentCommandsOnHome;
         set
         {
-            _settingsService.UpdateSettings(s => s with { RecentCommandsOnHome = (HomeRecentCommandsPlacement)value });
+            _settingsService.UpdateSettings(s => s with { RecentCommandsOnHome = (RecentCommandsPlacement)value });
+        }
+    }
+
+    public double RecentCommandsDisplayLimit
+    {
+        get => _settingsService.Settings.RecentCommandsDisplayLimit;
+        set
+        {
+            if (double.IsNaN(value))
+            {
+                return;
+            }
+
+            var limit = (int)Math.Round(value, MidpointRounding.AwayFromZero);
+            _settingsService.UpdateSettings(s => s with { RecentCommandsDisplayLimit = limit });
         }
     }
 
