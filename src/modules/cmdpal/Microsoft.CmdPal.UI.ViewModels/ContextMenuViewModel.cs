@@ -70,10 +70,14 @@ public partial class ContextMenuViewModel : ObservableObject,
 
     public void UpdateContextItems()
     {
+        ContextMenuStack.Clear();
         if (SelectedItem is not null)
         {
-            ContextMenuStack.Clear();
             PushContextStack(SelectedItem.AllCommands);
+        }
+        else
+        {
+            ListHelpers.InPlaceUpdateList(FilteredItems, []);
         }
     }
 
