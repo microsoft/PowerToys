@@ -835,6 +835,15 @@ namespace Microsoft.CmdPal.Ext.System {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Couldn't start the Windows update. Please try again..
+        /// </summary>
+        public static string Microsoft_plugin_sys_update_failed {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_update_failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to WINS servers.
         /// </summary>
         public static string Microsoft_plugin_sys_Wins {

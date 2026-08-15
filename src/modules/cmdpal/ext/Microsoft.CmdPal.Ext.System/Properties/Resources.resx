@@ -398,6 +398,10 @@
     <value>Install pending Windows updates and shut down the computer</value>
     <comment>This should align to the "Update and shut down" entry in the Windows Start menu power flyout.</comment>
   </data>
+  <data name="Microsoft_plugin_sys_update_failed" xml:space="preserve">
+    <value>Couldn't start the Windows update. Please try again.</value>
+    <comment>Error shown when the "Update and restart"/"Update and shut down" command fails to start.</comment>
+  </data>
   <data name="Microsoft_plugin_sys_Wins" xml:space="preserve">
     <value>WINS servers</value>
   </data>

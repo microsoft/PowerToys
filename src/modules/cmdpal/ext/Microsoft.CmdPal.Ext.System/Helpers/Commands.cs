@@ -30,6 +30,20 @@ internal static class Commands
     private static DateTime timeOfLastNetworkQuery;
 
     /// <summary>
+    /// Runs the "update and restart"/"update and shut down" action and turns the outcome
+    /// into a <see cref="CommandResult"/>. When the shutdown can't be started we keep the
+    /// palette open and show a localized error instead of silently dismissing.
+    /// </summary>
+    private static CommandResult UpdateShutdownResult(bool restart)
+        => WindowsUpdateHelper.InitiateUpdateShutdown(restart)
+            ? CommandResult.Dismiss()
+            : CommandResult.ShowToast(new ToastArgs
+            {
+                Message = Resources.Microsoft_plugin_sys_update_failed,
+                Result = CommandResult.KeepOpen(),
+            });
+
+    /// <summary>
     /// Returns a list with all system command results
     /// </summary>
     /// <param name="isUefi">Value indicating if the system is booted in uefi mode</param>
@@ -70,7 +84,7 @@ internal static class Commands
             results.AddRange(new[]
             {
                 new ListItem(
-                    new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_shutdown, confirmCommands, Resources.Microsoft_plugin_sys_update_and_shutdown_confirmation, () => WindowsUpdateHelper.InitiateUpdateShutdown(restart: false))
+                    new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_shutdown, confirmCommands, Resources.Microsoft_plugin_sys_update_and_shutdown_confirmation, () => UpdateShutdownResult(restart: false))
                     {
                         Id = "com.microsoft.cmdpal.builtin.system.update_shutdown",
                     })
@@ -80,7 +94,7 @@ internal static class Commands
                     Icon = Icons.ShutdownIcon,
                 },
                 new ListItem(
-                    new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_restart, confirmCommands, Resources.Microsoft_plugin_sys_update_and_restart_confirmation, () => WindowsUpdateHelper.InitiateUpdateShutdown(restart: true))
+                    new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_restart, confirmCommands, Resources.Microsoft_plugin_sys_update_and_restart_confirmation, () => UpdateShutdownResult(restart: true))
                     {
                         Id = "com.microsoft.cmdpal.builtin.system.update_restart",
                     })
