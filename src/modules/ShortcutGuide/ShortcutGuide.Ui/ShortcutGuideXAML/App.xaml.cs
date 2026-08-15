@@ -91,6 +91,7 @@ namespace ShortcutGuide
                 catch (Exception ex)
                 {
                     Logger.LogError($"Failed to open existing event '{Constants.ShortcutGuideTriggerEvent()}': {ex.Message}");
+                    _launchedEvent = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShortcutGuideTriggerEvent());
                 }
 
                 _listenForLaunchedEventThread = new Thread(ListenForLaunchedEvents)
@@ -222,6 +223,22 @@ namespace ShortcutGuide
                                 OverlayWindow.ShowOverlay();
                                 OverlayWindow.UpdateTaskbarPaneLayout();
                                 OverlayWindow.TaskbarPaneControl.Visibility = Visibility.Visible;
+                                return;
+                            }
+
+                            if (winKeyDown && ShortcutGuideProperties.WindowsKeyAction.Value == (int)ShortcutGuideWindowsKeyAction.OpenShortcutGuide)
+                            {
+                                if (OverlayWindow.AppWindow.IsVisible)
+                                {
+                                    return;
+                                }
+
+                                OverlayWindow.MainPaneControl.Visibility = Visibility.Collapsed;
+                                OverlayWindow.ShowOverlay();
+                                await OverlayWindow.MainPaneControl.Open();
+                                OverlayWindow.UpdateTaskbarPaneLayout();
+                                OverlayWindow.MainPaneControl.Visibility = Visibility.Visible;
+                                OverlayWindow.MainPaneControl.FocusSearch();
                                 return;
                             }
 

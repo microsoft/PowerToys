@@ -91,7 +91,7 @@ public:
         if (!_enabled)
         {
             _enabled = true;
-            StartProcess();
+            EnsureProcessRuns();
         }
         else
         {
@@ -150,10 +150,7 @@ public:
             return;
         }
 
-        if (!IsProcessActive())
-        {
-            StartProcess();
-        }
+        EnsureProcessRuns();
 
         SetEvent(triggerEvent);
     }
@@ -161,13 +158,13 @@ public:
     virtual void send_settings_telemetry() override
     {
         Logger::trace("Send settings telemetry");
-        if (!StartProcess(L"telemetry"))
+        if (!EnsureProcessRuns(L"telemetry"))
         {
             Logger::error("Failed to create a process to send settings telemetry");
         }
     }
     virtual bool keep_track_of_pressed_win_key() override { return true; }
-    virtual UINT milliseconds_win_key_must_be_pressed() override { return m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts; }
+    virtual UINT milliseconds_win_key_must_be_pressed() override { return 900; }
 
 private:
     std::wstring app_name;
@@ -188,8 +185,14 @@ private:
     HANDLE triggerEvent;
     HANDLE exitEvent;
 
-    bool StartProcess(std::wstring args = L"")
+    bool EnsureProcessRuns(std::wstring args = L"")
     {
+        if (IsProcessActive())
+        {
+            Logger::trace(L"SG process is already running with pid={}", GetProcessId(m_hProcess));
+            return true;
+        }
+
         if (exitEvent)
         {
             ResetEvent(exitEvent);
@@ -301,30 +304,6 @@ private:
             {
                 Logger::warn("Failed to initialize Shortcut Guide start shortcut");
             }
-
-try
-            {
-                auto propertiesObject = settingsObject.GetNamedObject(L"properties");
-                if (propertiesObject.HasKey(L"press_time"))
-                {
-                    auto jsonDurationObject = propertiesObject.GetNamedObject(L"press_time");
-                    if (jsonDurationObject.HasKey(L"value"))
-                    {
-                        auto pressTime = static_cast<UINT>(jsonDurationObject.GetNamedNumber(L"value"));
-                        if (pressTime < 100)
-                        {
-                            pressTime = 100;
-                        }
-                        else if (pressTime > 5000)
-                        {
-                            pressTime = 5000;
-                        }
-
-                        m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts = pressTime;
-                    }
-                }
-            }
-            catch (...) { /* Keep defaults */ }
         }
         else
         {
@@ -336,14 +315,6 @@ try
             Logger::info("Shortcut Guide is going to use default shortcut");
             m_hotkey.modifiersMask = MOD_SHIFT | MOD_WIN;
             m_hotkey.vkCode = VK_OEM_2;
-        }
-    }
-
-    void WindowsKeyPressBehavior()
-    {
-        if (IsProcessActive())
-        {
-            TerminateProcess(m_hProcess, 0);
         }
     }
 };
