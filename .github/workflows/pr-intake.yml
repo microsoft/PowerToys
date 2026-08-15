@@ -2,7 +2,7 @@
 #
 # Deterministic pull request intake. Runs on every pull request and posts a
 # single canonical comment (only when there is something for the author to act
-# on or consider), keeps the Needs-Review / Needs-Author-Feedback lifecycle
+# on or consider), keeps the Ready for review / Needs-Author-Feedback lifecycle
 # labels in sync, and nudges for visual evidence on product UI changes.
 #
 # This workflow does not run any code from the pull request head. The Node
@@ -19,7 +19,6 @@ on:
       - synchronize
       - reopened
       - ready_for_review
-      - converted_to_draft
 
 permissions:
   contents: read
@@ -32,6 +31,7 @@ concurrency:
 
 jobs:
   pr-intake:
+    if: ${{ github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout base ref

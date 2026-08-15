@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -38,6 +39,18 @@ function botComment(id, body) {
     },
   };
 }
+
+test('workflow skips drafts and uses the ready-for-review event', () => {
+  const workflow = fs.readFileSync(
+    new URL('../../../workflows/pr-intake.yml', import.meta.url),
+    'utf8',
+  );
+
+  assert.equal(READY_FOR_REVIEW_LABEL, 'Ready for review');
+  assert.match(workflow, /if: \$\{\{ github\.event\.pull_request\.draft == false \}\}/);
+  assert.match(workflow, /- ready_for_review/);
+  assert.doesNotMatch(workflow, /- converted_to_draft/);
+});
 
 class MockApi {
   constructor({
@@ -303,6 +316,19 @@ test('label plan removes only managed lifecycle labels', () => {
   assert.deepEqual(plan, {
     add: [READY_FOR_REVIEW_LABEL],
     remove: [NEEDS_AUTHOR_FEEDBACK_LABEL],
+  });
+});
+
+test('label plan migrates the legacy review label', () => {
+  const plan = planManagedLabelChanges(
+    ['Product-FancyZones', 'Needs-Review'],
+    [READY_FOR_REVIEW_LABEL],
+    [READY_FOR_REVIEW_LABEL, NEEDS_AUTHOR_FEEDBACK_LABEL, 'Needs-Review'],
+  );
+
+  assert.deepEqual(plan, {
+    add: [READY_FOR_REVIEW_LABEL],
+    remove: ['Needs-Review'],
   });
 });
 

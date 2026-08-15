@@ -5,8 +5,9 @@ import { fileURLToPath } from 'node:url';
 export const CANONICAL_MARKER = '<!-- powertoys-pr-intake:canonical:v1 -->';
 export const ACTIONS_BOT_LOGIN = 'github-actions[bot]';
 export const ACTIONS_BOT_ID = 41898282;
-export const READY_FOR_REVIEW_LABEL = 'Needs-Review';
+export const READY_FOR_REVIEW_LABEL = 'Ready for review';
 export const NEEDS_AUTHOR_FEEDBACK_LABEL = 'Needs-Author-Feedback';
+const LEGACY_READY_FOR_REVIEW_LABEL = 'Needs-Review';
 export const FEEDBACK_SINCE_MARKER = 'powertoys-pr-intake:feedback-since';
 export const STALE_FEEDBACK_DAYS = 7;
 
@@ -772,6 +773,7 @@ export async function runPullRequestIntake({ api, event }) {
     [
       READY_FOR_REVIEW_LABEL,
       NEEDS_AUTHOR_FEEDBACK_LABEL,
+      LEGACY_READY_FOR_REVIEW_LABEL,
     ],
   );
 
