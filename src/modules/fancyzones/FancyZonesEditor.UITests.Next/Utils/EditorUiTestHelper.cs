@@ -14,6 +14,7 @@ namespace FancyZonesEditor.UITests.Utils;
 public static class EditorUiTestHelper
 {
     private const string EditorProcessName = "PowerToys.FancyZonesEditor";
+    private const string EditorMainWindowTitle = "FancyZones Editor";
     private const string LayoutOverlayTitle = "FancyZones Layout";
 
     public static class AccessibilityId
@@ -91,8 +92,14 @@ public static class EditorUiTestHelper
     {
         Step(testBase, "Verifying the FancyZones Editor main window");
         var mainWindow = WindowsFinder.ListByApp(EditorProcessName)
-            .FirstOrDefault(window => window.Hwnd == session.WindowHandle && window.Width > 200 && window.Height > 200);
-        Assert.IsNotNull(mainWindow, $"The session HWND {session.WindowHandle} is not a visible FancyZones Editor main window.");
+            .FirstOrDefault(window =>
+                window.Hwnd == session.WindowHandle &&
+                string.Equals(window.Title, EditorMainWindowTitle, StringComparison.Ordinal) &&
+                window.Width > 200 &&
+                window.Height > 200);
+        Assert.IsNotNull(
+            mainWindow,
+            $"The session HWND {session.WindowHandle} is not the '{EditorMainWindowTitle}' main window; it may be bound to the '{LayoutOverlayTitle}' overlay.");
 
         Step(testBase, "Waiting for the monitor list");
         Assert.IsTrue(
