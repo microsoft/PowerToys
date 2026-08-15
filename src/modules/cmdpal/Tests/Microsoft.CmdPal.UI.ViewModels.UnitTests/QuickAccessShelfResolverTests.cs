@@ -49,6 +49,33 @@ public partial class QuickAccessShelfResolverTests
     }
 
     [TestMethod]
+    public void CreateOrReuse_PinStateChangeCreatesUpdatedShelfItem()
+    {
+        var item = new ListItem { Title = "Recent" };
+        var recent = QuickAccessShelfItem.CreateOrReuse(
+            [],
+            item,
+            shortcutIndex: 0,
+            startsNewSection: false,
+            isPinned: false,
+            canPin: true);
+
+        var pinned = QuickAccessShelfItem.CreateOrReuse(
+            [recent],
+            item,
+            shortcutIndex: 0,
+            startsNewSection: false,
+            isPinned: true,
+            canPin: false);
+
+        Assert.AreNotSame(recent, pinned);
+        Assert.IsFalse(recent.IsPinned);
+        Assert.IsTrue(recent.CanPin);
+        Assert.IsTrue(pinned.IsPinned);
+        Assert.IsFalse(pinned.CanPin);
+    }
+
+    [TestMethod]
     public void ComposeSections_PinnedFirstAssignsRowShortcuts()
     {
         var result = QuickAccessShelfResolver.ComposeSections(
