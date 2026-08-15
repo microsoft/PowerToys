@@ -59,7 +59,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     INotifyPropertyChanged,
     IDisposable
 {
-    private const double QuickAccessShelfButtonWidth = 44;
+    private const double QuickAccessShelfButtonWidth = 40;
     private const double QuickAccessShelfSpacing = 4;
 
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
@@ -176,11 +176,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _compactMode = settings.CompactMode;
         _quickAccessShelfEnabled = settings.ShowQuickAccessShelf;
         this.ExpandedMode = !_compactMode;
+        var recentCommandsOnQuickAccessShelf = settings.ShowQuickAccessShelf
+            ? settings.RecentCommandsOnQuickAccessShelf
+            : RecentCommandsPlacement.Hidden;
 
         QuickAccessShelf = new(
             App.Current.Services.GetRequiredService<TopLevelCommandManager>(),
             App.Current.Services.GetRequiredService<IAppStateService>(),
-            settings.ShowQuickAccessShelf && settings.ShowRecentCommandsInQuickAccessShelf,
+            recentCommandsOnQuickAccessShelf,
+            settings.QuickAccessShelfPinnedCommandLimit,
+            settings.RecentCommandsDisplayLimit,
             _mainTaskScheduler);
         QuickAccessShelf.PropertyChanged += QuickAccessShelf_PropertyChanged;
 
@@ -1066,7 +1071,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         foreach (var item in QuickAccessShelf.OverflowItems)
         {
-            if (item.StartsRecentSection && QuickAccessOverflowFlyout.Items.Count > 0)
+            if (item.StartsNewSection && QuickAccessOverflowFlyout.Items.Count > 0)
             {
                 QuickAccessOverflowFlyout.Items.Add(new MenuFlyoutSeparator());
             }
@@ -1281,10 +1286,17 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // state single-threaded regardless of which thread raises the event.
         var compactMode = args.CompactMode;
         var quickAccessShelfEnabled = args.ShowQuickAccessShelf;
-        var includeRecentCommands = args.ShowQuickAccessShelf && args.ShowRecentCommandsInQuickAccessShelf;
+        var recentCommandsPlacement = args.ShowQuickAccessShelf
+            ? args.RecentCommandsOnQuickAccessShelf
+            : RecentCommandsPlacement.Hidden;
+        var pinnedCommandLimit = args.QuickAccessShelfPinnedCommandLimit;
+        var recentCommandLimit = args.RecentCommandsDisplayLimit;
         this.DispatcherQueue.TryEnqueue(() =>
         {
-            QuickAccessShelf.SetIncludeRecentCommands(includeRecentCommands);
+            QuickAccessShelf.SetItemConfiguration(
+                recentCommandsPlacement,
+                pinnedCommandLimit,
+                recentCommandLimit);
 
             var compactModeChanged = compactMode != _compactMode;
             var quickAccessShelfChanged = quickAccessShelfEnabled != _quickAccessShelfEnabled;

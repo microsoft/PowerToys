@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema
@@ -413,28 +413,52 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Quick access shelf</value>
   </data>
   <data name="Settings_GeneralPage_QuickAccessShelf_SettingsCard.Description" xml:space="preserve">
-    <value>Shows pinned home commands below the search box while compact mode is collapsed. Use Alt+1 through Alt+9 for the first nine visible pinned commands and Alt+0 for overflow.</value>
+    <value>Shows quick access commands below the search box while compact mode is collapsed. Use Alt+1 through Alt+9 for visible items, starting from the left, and Alt+0 for overflow.</value>
+  </data>
+  <data name="Settings_GeneralPage_QuickAccessShelfPinnedCommandLimit_SettingsCard.Header" xml:space="preserve">
+    <value>Maximum pinned commands</value>
+  </data>
+  <data name="Settings_GeneralPage_QuickAccessShelfPinnedCommandLimit_SettingsCard.Description" xml:space="preserve">
+    <value>Choose how many pinned commands appear on the shelf. Set this to 0 to omit pinned commands.</value>
   </data>
   <data name="Settings_GeneralPage_QuickAccessShelfRecentCommands_SettingsCard.Header" xml:space="preserve">
-    <value>Include recent commands</value>
+    <value>Recent items</value>
   </data>
   <data name="Settings_GeneralPage_QuickAccessShelfRecentCommands_SettingsCard.Description" xml:space="preserve">
-    <value>Adds up to five recently used home commands after pinned commands on the quick access shelf.</value>
+    <value>Choose whether recently used commands and launched apps appear before or after pinned commands on the shelf.</value>
   </data>
   <data name="Settings_GeneralPage_HomeRecentCommands_SettingsCard.Header" xml:space="preserve">
-    <value>Recent commands on Home</value>
+    <value>Recent items on Home</value>
   </data>
   <data name="Settings_GeneralPage_HomeRecentCommands_SettingsCard.Description" xml:space="preserve">
-    <value>Show up to five recently used commands before or after the Pinned section.</value>
+    <value>Choose whether recently used commands and launched apps appear before or after the Pinned section.</value>
   </data>
-  <data name="Settings_GeneralPage_HomeRecentCommands_Hidden.Content" xml:space="preserve">
+  <data name="Settings_GeneralPage_RecentCommands_Hidden.Content" xml:space="preserve">
     <value>Don't show</value>
   </data>
-  <data name="Settings_GeneralPage_HomeRecentCommands_BeforePinned.Content" xml:space="preserve">
+  <data name="Settings_GeneralPage_RecentCommands_BeforePinned.Content" xml:space="preserve">
     <value>Before pinned</value>
   </data>
-  <data name="Settings_GeneralPage_HomeRecentCommands_AfterPinned.Content" xml:space="preserve">
+  <data name="Settings_GeneralPage_RecentCommands_AfterPinned.Content" xml:space="preserve">
     <value>After pinned</value>
+  </data>
+  <data name="Settings_GeneralPage_RecentCommandsDisplayLimit_SettingsCard.Header" xml:space="preserve">
+    <value>Maximum recent items</value>
+  </data>
+  <data name="Settings_GeneralPage_RecentCommandsDisplayLimit_SettingsCard.Description" xml:space="preserve">
+    <value>Choose how many recently used commands and launched apps, from 1 through 10, can appear on Home and the quick access shelf.</value>
+  </data>
+  <data name="Settings_GeneralPage_ClearRecentCommands_SettingsCard.Header" xml:space="preserve">
+    <value>Recent history</value>
+  </data>
+  <data name="Settings_GeneralPage_ClearRecentCommands_SettingsCard.Description" xml:space="preserve">
+    <value>Remove all recently used commands and launched apps from Command Palette history.</value>
+  </data>
+  <data name="Settings_GeneralPage_ClearRecentCommandsButton.Content" xml:space="preserve">
+    <value>Clear recent history</value>
+  </data>
+  <data name="recent_commands_remove_name" xml:space="preserve">
+    <value>Remove from recent</value>
   </data>
   <data name="QuickAccessShelfSurface.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Quick access</value>

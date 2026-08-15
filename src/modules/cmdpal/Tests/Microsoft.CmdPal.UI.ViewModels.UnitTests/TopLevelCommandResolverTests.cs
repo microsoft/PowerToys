@@ -41,6 +41,69 @@ public class TopLevelCommandResolverTests
     }
 
     [TestMethod]
+    public void Resolve_PinnedLimitCountsResolvedPinsAndLetsDroppedPinsAppearInRecent()
+    {
+        var pins = new[]
+        {
+            new PinnedCommandSettings("missing", "missing"),
+            new PinnedCommandSettings("provider-a", "first"),
+            new PinnedCommandSettings("provider-b", "second"),
+        };
+        var commands = new[]
+        {
+            new TestCommand("provider-a", "first", IsEligible: true),
+            new TestCommand("provider-b", "second", IsEligible: true),
+        };
+
+        var sections = TopLevelCommandResolver.Resolve(
+            pins,
+            ["second", "first"],
+            commands,
+            static command => command.ProviderId,
+            static command => command.CommandId,
+            static command => command.IsEligible,
+            pinnedCommandLimit: 1,
+            recentCommandLimit: 2);
+
+        CollectionAssert.AreEqual(new[] { commands[0] }, sections.Pinned.ToArray());
+        CollectionAssert.AreEqual(new[] { commands[1] }, sections.Recent.ToArray());
+        Assert.AreEqual(0, sections.Regular.Count);
+    }
+
+    [TestMethod]
+    public void Resolve_RecentFirstExcludesRecentItemsFromPinsAndBackfillsPinnedLimit()
+    {
+        var pins = new[]
+        {
+            new PinnedCommandSettings("provider-a", "recent-pin"),
+            new PinnedCommandSettings("provider-b", "second"),
+            new PinnedCommandSettings("provider-c", "third"),
+        };
+        var commands = new[]
+        {
+            new TestCommand("provider-a", "recent-pin", IsEligible: true),
+            new TestCommand("provider-b", "second", IsEligible: true),
+            new TestCommand("provider-c", "third", IsEligible: true),
+            new TestCommand("provider-d", "recent-only", IsEligible: true),
+        };
+
+        var sections = TopLevelCommandResolver.Resolve(
+            pins,
+            ["recent-pin", "recent-only"],
+            commands,
+            static command => command.ProviderId,
+            static command => command.CommandId,
+            static command => command.IsEligible,
+            pinnedCommandLimit: 2,
+            recentCommandLimit: 2,
+            recentCommandsFirst: true);
+
+        CollectionAssert.AreEqual(new[] { commands[0], commands[3] }, sections.Recent.ToArray());
+        CollectionAssert.AreEqual(new[] { commands[1], commands[2] }, sections.Pinned.ToArray());
+        Assert.AreEqual(0, sections.Regular.Count);
+    }
+
+    [TestMethod]
     public void Resolve_RecentCommandsFollowHistoryAndExcludePinsAndMissingCommands()
     {
         var commands = new[]

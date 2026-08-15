@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.AppearancePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -300,11 +300,28 @@
                                     IsOn="{x:Bind ViewModel.ShowQuickAccessShelf, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard
+                                x:Uid="Settings_GeneralPage_QuickAccessShelfPinnedCommandLimit_SettingsCard"
+                                IsEnabled="{x:Bind ViewModel.CanConfigureQuickAccessShelf, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_QuickAccessShelfPinnedCommandLimit"
+                                    Maximum="9"
+                                    Minimum="0"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.QuickAccessShelfPinnedCommandLimit, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard
                                 x:Uid="Settings_GeneralPage_QuickAccessShelfRecentCommands_SettingsCard"
                                 IsEnabled="{x:Bind ViewModel.CanConfigureQuickAccessShelf, Mode=OneWay}">
-                                <ToggleSwitch
+                                <ComboBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     AutomationProperties.AutomationId="CmdPal_GeneralPage_QuickAccessShelfRecentCommands"
-                                    IsOn="{x:Bind ViewModel.ShowRecentCommandsInQuickAccessShelf, Mode=TwoWay}" />
+                                    SelectedIndex="{x:Bind ViewModel.RecentCommandsOnQuickAccessShelfIndex, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_Hidden" />
+                                    <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_BeforePinned" />
+                                    <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_AfterPinned" />
+                                </ComboBox>
                             </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="Settings_GeneralPage_CompactCenterHeight_SettingsCard" IsEnabled="{x:Bind ViewModel.CompactMode, Mode=OneWay}">
                                 <Slider
@@ -328,10 +345,32 @@
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AutomationProperties.AutomationId="CmdPal_GeneralPage_HomeRecentCommands"
                             SelectedIndex="{x:Bind ViewModel.RecentCommandsOnHomeIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_HomeRecentCommands_Hidden" />
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_HomeRecentCommands_BeforePinned" />
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_HomeRecentCommands_AfterPinned" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_Hidden" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_BeforePinned" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_AfterPinned" />
                         </ComboBox>
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_RecentCommandsDisplayLimit_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE81C;}">
+                        <NumberBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="CmdPal_GeneralPage_RecentCommandsDisplayLimit"
+                            Maximum="10"
+                            Minimum="1"
+                            SmallChange="1"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{x:Bind ViewModel.RecentCommandsDisplayLimit, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_ClearRecentCommands_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE74D;}">
+                        <Button
+                            x:Uid="Settings_GeneralPage_ClearRecentCommandsButton"
+                            AutomationProperties.AutomationId="CmdPal_GeneralPage_ClearRecentCommands"
+                            Click="ClearRecentCommands_Click" />
                     </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
