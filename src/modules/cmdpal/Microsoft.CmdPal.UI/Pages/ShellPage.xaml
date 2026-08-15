@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Pages.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -438,7 +438,7 @@
             x:Uid="QuickAccessShelfSurface"
             Grid.Row="1"
             MinHeight="48"
-            Padding="12,4"
+            Padding="10,4"
             AutomationProperties.LandmarkType="Custom"
             Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}"
             BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
@@ -480,10 +480,10 @@
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="viewModels:QuickAccessShelfItem">
                             <Grid
-                                Width="44"
+                                Width="40"
                                 Height="40">
                                 <Button
-                                    Width="44"
+                                    Width="40"
                                     Height="40"
                                     Padding="8"
                                     AccessKey="{x:Bind ShortcutDigit, Mode=OneTime}"
@@ -519,7 +519,7 @@
                                     HorizontalAlignment="Left"
                                     Background="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
                                     IsHitTestVisible="False"
-                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(StartsRecentSection), Mode=OneTime}" />
+                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(StartsNewSection), Mode=OneTime}" />
                             </Grid>
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
@@ -529,7 +529,7 @@
                     x:Name="QuickAccessOverflowButton"
                     x:Uid="QuickAccessOverflowButton"
                     Grid.Column="1"
-                    Width="44"
+                    Width="40"
                     Height="40"
                     Padding="8"
                     AccessKey="0"

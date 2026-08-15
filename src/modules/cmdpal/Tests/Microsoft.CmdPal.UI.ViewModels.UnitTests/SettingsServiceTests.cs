@@ -100,8 +100,10 @@ public class SettingsServiceTests
 
         Assert.IsNotNull(settings);
         Assert.IsFalse(settings.ShowQuickAccessShelf);
-        Assert.IsFalse(settings.ShowRecentCommandsInQuickAccessShelf);
-        Assert.AreEqual(HomeRecentCommandsPlacement.Hidden, settings.RecentCommandsOnHome);
+        Assert.AreEqual(RecentCommandsPlacement.Hidden, settings.RecentCommandsOnQuickAccessShelf);
+        Assert.AreEqual(RecentCommandsPlacement.Hidden, settings.RecentCommandsOnHome);
+        Assert.AreEqual(SettingsModel.DefaultQuickAccessShelfPinnedCommandLimit, settings.QuickAccessShelfPinnedCommandLimit);
+        Assert.AreEqual(SettingsModel.DefaultRecentCommandsDisplayLimit, settings.RecentCommandsDisplayLimit);
     }
 
     [TestMethod]
@@ -110,8 +112,10 @@ public class SettingsServiceTests
         var source = CreateMinimalSettingsModel() with
         {
             ShowQuickAccessShelf = true,
-            ShowRecentCommandsInQuickAccessShelf = true,
-            RecentCommandsOnHome = HomeRecentCommandsPlacement.BeforePinned,
+            RecentCommandsOnQuickAccessShelf = RecentCommandsPlacement.AfterPinned,
+            RecentCommandsOnHome = RecentCommandsPlacement.BeforePinned,
+            QuickAccessShelfPinnedCommandLimit = 4,
+            RecentCommandsDisplayLimit = 7,
         };
 
         var json = System.Text.Json.JsonSerializer.Serialize(source, JsonSerializationContext.Default.SettingsModel);
@@ -119,8 +123,28 @@ public class SettingsServiceTests
 
         Assert.IsNotNull(settings);
         Assert.IsTrue(settings.ShowQuickAccessShelf);
-        Assert.IsTrue(settings.ShowRecentCommandsInQuickAccessShelf);
-        Assert.AreEqual(HomeRecentCommandsPlacement.BeforePinned, settings.RecentCommandsOnHome);
+        Assert.AreEqual(RecentCommandsPlacement.AfterPinned, settings.RecentCommandsOnQuickAccessShelf);
+        Assert.AreEqual(RecentCommandsPlacement.BeforePinned, settings.RecentCommandsOnHome);
+        Assert.AreEqual(4, settings.QuickAccessShelfPinnedCommandLimit);
+        Assert.AreEqual(7, settings.RecentCommandsDisplayLimit);
+    }
+
+    [DataTestMethod]
+    [DataRow(-1, 0, 0, 1)]
+    [DataRow(100, 100, 9, 10)]
+    public void QuickAccessLimits_OutOfRangePersistedValuesAreClamped(
+        int pinnedCommandLimit,
+        int recentCommandLimit,
+        int expectedPinnedCommandLimit,
+        int expectedRecentCommandLimit)
+    {
+        var json = $"{{ \"QuickAccessShelfPinnedCommandLimit\": {pinnedCommandLimit}, " +
+            $"\"RecentCommandsDisplayLimit\": {recentCommandLimit} }}";
+        var settings = System.Text.Json.JsonSerializer.Deserialize(json, JsonSerializationContext.Default.SettingsModel);
+
+        Assert.IsNotNull(settings);
+        Assert.AreEqual(expectedPinnedCommandLimit, settings.QuickAccessShelfPinnedCommandLimit);
+        Assert.AreEqual(expectedRecentCommandLimit, settings.RecentCommandsDisplayLimit);
     }
 
     [TestMethod]

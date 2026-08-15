@@ -9,8 +9,6 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 internal static class TopLevelCommandResolver
 {
-    internal const int RecentCommandLimit = 5;
-
     internal sealed record Sections<TCommand>(
         IReadOnlyList<TCommand> Pinned,
         IReadOnlyList<TCommand> Recent,
@@ -21,8 +19,10 @@ internal static class TopLevelCommandResolver
         IEnumerable<string> recentCommandIds,
         IEnumerable<TopLevelViewModel> availableCommands,
         bool includeApps,
-        int recentCommandLimit = RecentCommandLimit,
-        bool includeRegular = true)
+        int pinnedCommandLimit = int.MaxValue,
+        int recentCommandLimit = SettingsModel.DefaultRecentCommandsDisplayLimit,
+        bool includeRegular = true,
+        bool recentCommandsFirst = false)
     {
         static IListItem? ResolveRecentApp(string commandId) =>
             AllAppsCommandProvider.Page.TryGetCurrentItem(commandId, out var item) ? item : null;
@@ -36,8 +36,10 @@ internal static class TopLevelCommandResolver
             GetCommandId,
             IsEligibleForHome,
             additionalRecentResolver,
+            pinnedCommandLimit,
             recentCommandLimit,
-            includeRegular);
+            includeRegular,
+            recentCommandsFirst);
     }
 
     internal static string GetProviderId(IListItem command) =>
@@ -59,8 +61,10 @@ internal static class TopLevelCommandResolver
         Func<TCommand, string> commandIdSelector,
         Func<TCommand, bool> isEligible,
         Func<string, TCommand?>? resolveAdditionalRecentCommand = null,
-        int recentCommandLimit = RecentCommandLimit,
-        bool includeRegular = true)
+        int pinnedCommandLimit = int.MaxValue,
+        int recentCommandLimit = SettingsModel.DefaultRecentCommandsDisplayLimit,
+        bool includeRegular = true,
+        bool recentCommandsFirst = false)
         where TCommand : class
     {
         var eligibleCommands = new List<TCommand>();
@@ -91,22 +95,37 @@ internal static class TopLevelCommandResolver
         var featuredCommandKeys = new HashSet<(string ProviderId, string CommandId)>();
         var featuredCommandIds = new HashSet<string>(StringComparer.Ordinal);
         var pinned = new List<TCommand>();
-        foreach (var pinnedCommand in pinnedCommands)
+        var recent = new List<TCommand>();
+
+        void ResolvePinnedCommands()
         {
-            var key = (pinnedCommand.ProviderId, pinnedCommand.CommandId);
-            if (commandsByProviderAndId.TryGetValue(key, out var command) && featuredCommandKeys.Add(key))
+            var effectivePinnedCommandLimit = Math.Max(0, pinnedCommandLimit);
+            foreach (var pinnedCommand in pinnedCommands)
             {
-                pinned.Add(command);
-                if (!string.IsNullOrEmpty(pinnedCommand.CommandId))
+                if (pinned.Count >= effectivePinnedCommandLimit)
                 {
-                    featuredCommandIds.Add(pinnedCommand.CommandId);
+                    break;
+                }
+
+                var key = (pinnedCommand.ProviderId, pinnedCommand.CommandId);
+                if (commandsByProviderAndId.TryGetValue(key, out var command) && featuredCommandKeys.Add(key))
+                {
+                    pinned.Add(command);
+                    if (!string.IsNullOrEmpty(pinnedCommand.CommandId))
+                    {
+                        featuredCommandIds.Add(pinnedCommand.CommandId);
+                    }
                 }
             }
         }
 
-        var recent = new List<TCommand>();
-        if (recentCommandLimit > 0)
+        void ResolveRecentCommands()
         {
+            if (recentCommandLimit <= 0)
+            {
+                return;
+            }
+
             foreach (var commandId in recentCommandIds)
             {
                 if (recent.Count == recentCommandLimit)
@@ -135,6 +154,19 @@ internal static class TopLevelCommandResolver
                     featuredCommandIds.Add(commandId);
                 }
             }
+        }
+
+        // Resolve in presentation order so the first section owns duplicates and the second
+        // section can continue scanning to fill its configured limit with distinct items.
+        if (recentCommandsFirst)
+        {
+            ResolveRecentCommands();
+            ResolvePinnedCommands();
+        }
+        else
+        {
+            ResolvePinnedCommands();
+            ResolveRecentCommands();
         }
 
         IReadOnlyList<TCommand> regular = [];
