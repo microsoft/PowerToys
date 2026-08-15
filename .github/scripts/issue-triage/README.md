@@ -1,8 +1,8 @@
 # AI-assisted issue triage
 
 The workflow in `.github/workflows/issue-triage.md` maintains one canonical
-triage comment for newly opened, edited, or reopened issues. It combines
-deterministic preprocessing with one bounded GitHub Copilot pass.
+triage comment when an issue is opened or its original title/body is edited. It
+combines deterministic preprocessing with one bounded GitHub Copilot pass.
 
 ## Rules
 
@@ -49,18 +49,22 @@ that retain `Needs-Author-Feedback` for seven days without activity.
 
 - An author comment removes `Needs-Author-Feedback` and returns the item to
   team triage.
-- A PR push reruns PR intake, which recalculates `Needs-Author-Feedback`.
+- A push to a non-draft PR reruns PR intake, which recalculates
+  `Needs-Author-Feedback`.
 - Manual label removal immediately makes the item ineligible for scheduled
   closure.
 
 ## Cost and safety controls
 
 - The `small` model alias is limited to five turns and 10 AI credits per run.
-- A content hash skips unchanged edits and unrelated comments.
+- The workflow subscribes only to issue creation and edits to the original
+  issue; comments and reopen events do not trigger it.
 - Per-user rate limits, daily AI-credit limits, and per-issue concurrency bound
-  repeated execution.
-- The agent has no shell or GitHub API tools. It can only read the checked-out
-  repository and call the structured safe-output tool.
+  repeated issue creation or edits.
+- The agent has no general shell or GitHub API tools. Its only shell command is
+  the structured safe-output CLI proxy, and Copilot's file-write tool is
+  explicitly denied to work around gh-aw v0.86.2 treating `edit: false` as
+  writable.
 - Threat detection fails closed; publication requires an explicit successful
   detection result.
 - The publishing job rebuilds evidence from the current issue and accepts only

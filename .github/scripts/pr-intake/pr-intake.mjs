@@ -5,8 +5,9 @@ import { fileURLToPath } from 'node:url';
 export const CANONICAL_MARKER = '<!-- powertoys-pr-intake:canonical:v1 -->';
 export const ACTIONS_BOT_LOGIN = 'github-actions[bot]';
 export const ACTIONS_BOT_ID = 41898282;
-export const READY_FOR_REVIEW_LABEL = 'Needs-Review';
+export const READY_FOR_REVIEW_LABEL = 'Ready for review';
 export const NEEDS_AUTHOR_FEEDBACK_LABEL = 'Needs-Author-Feedback';
+const LEGACY_READY_FOR_REVIEW_LABEL = 'Needs-Review';
 export const FEEDBACK_SINCE_MARKER = 'powertoys-pr-intake:feedback-since';
 export const STALE_FEEDBACK_DAYS = 7;
 
@@ -733,9 +734,27 @@ export async function runPullRequestIntake({ api, event }) {
   );
   const issueNumber = pullNumber;
 
+  const issue = await api.getIssue(issueNumber);
+  if (pullRequest.draft === true) {
+    const labelPlan = planManagedLabelChanges(
+      parseIssueLabels(issue),
+      [],
+      [
+        READY_FOR_REVIEW_LABEL,
+        NEEDS_AUTHOR_FEEDBACK_LABEL,
+        LEGACY_READY_FOR_REVIEW_LABEL,
+      ],
+    );
+    await syncManagedLabels(api, issueNumber, labelPlan);
+    return {
+      issueNumber,
+      skippedDraft: true,
+      labelPlan,
+    };
+  }
+
   const fileDetails = await listAllPullRequestFileDetails(api, issueNumber);
   const changedPaths = changedPathsFromFileDetails(fileDetails);
-  const issue = await api.getIssue(issueNumber);
   const closingReferenceVerification = await verifyClosingIssueReferences({
     api,
     repositoryFullName: event.repository.full_name,
@@ -772,6 +791,7 @@ export async function runPullRequestIntake({ api, event }) {
     [
       READY_FOR_REVIEW_LABEL,
       NEEDS_AUTHOR_FEEDBACK_LABEL,
+      LEGACY_READY_FOR_REVIEW_LABEL,
     ],
   );
 

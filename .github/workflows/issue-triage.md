@@ -4,9 +4,7 @@ name: AI Issue Triage
 description: Maintain one concise issue summary with likely duplicates and missing-information guidance.
 on:
   issues:
-    types: [opened, edited, reopened]
-  issue_comment:
-    types: [created]
+    types: [opened, edited]
   roles: all
 user-rate-limit:
   max-runs-per-window: 5
@@ -14,7 +12,37 @@ user-rate-limit:
 concurrency:
   group: issue-triage-${{ github.event.issue.number }}
   cancel-in-progress: true
-engine: copilot
+engine:
+  id: copilot
+  args:
+    - "--deny-tool"
+    - "write"
+    - "--deny-tool"
+    - "shell(cat)"
+    - "--deny-tool"
+    - "shell(date)"
+    - "--deny-tool"
+    - "shell(echo)"
+    - "--deny-tool"
+    - "shell(grep)"
+    - "--deny-tool"
+    - "shell(head)"
+    - "--deny-tool"
+    - "shell(ls)"
+    - "--deny-tool"
+    - "shell(printf)"
+    - "--deny-tool"
+    - "shell(pwd)"
+    - "--deny-tool"
+    - "shell(sort)"
+    - "--deny-tool"
+    - "shell(tail)"
+    - "--deny-tool"
+    - "shell(uniq)"
+    - "--deny-tool"
+    - "shell(wc)"
+    - "--deny-tool"
+    - "shell(yq)"
 model: small
 max-turns: 5
 max-ai-credits: 10
@@ -26,9 +54,10 @@ permissions:
   issues: read
   copilot-requests: write
 tools:
-  bash: false
-  edit: true
+  bash: [safeoutputs]
+  edit: false
   github: false
+  cli-proxy: true
 steps:
   - name: Set up Python
     uses: actions/setup-python@v7.0.0
@@ -41,13 +70,14 @@ steps:
       GH_AW_SAFE_OUTPUTS: ${{ runner.temp }}/gh-aw/safeoutputs/outputs.jsonl
     run: >-
       python .github/scripts/issue-triage/issue-context.py "$GITHUB_EVENT_PATH"
-      ".github/issue-context.md" ".github/triage-event.json"
+      "/tmp/gh-aw/issue-context.md"
+      "/tmp/gh-aw/triage-event.json"
   - name: Prepare sanitized bug report context
     if: steps.prepare.outputs.should_process == 'true'
     run: >-
       python .github/scripts/issue-triage/bug-report-analyzer.py
-      ".github/triage-event.json"
-      ".github/bug-report-context.md"
+      "/tmp/gh-aw/triage-event.json"
+      "/tmp/gh-aw/bug-report-context.md"
 safe-outputs:
   report-failure-as-issue: false
   noop:
@@ -697,9 +727,8 @@ safe-outputs:
 
 ## Task
 
-A GitHub issue was opened, edited, reopened, received a new author bug report,
-or received `/triage refresh` from a maintainer. Read
-`.github/issue-context.md` and `.github/bug-report-context.md` exactly once.
+A GitHub issue was opened or edited. Read `/tmp/gh-aw/issue-context.md` and
+`/tmp/gh-aw/bug-report-context.md` exactly once.
 They contain deterministic, bounded issue facts, ranked duplicate candidates,
 redacted diagnostics, and a coarse language signal. Never download attachments
 or search GitHub yourself. Judge the supplied candidates, summarize the issue,
@@ -719,7 +748,7 @@ duplicate exists, and no author action is needed.
 
 ## Duplicate judgment
 
-- Consider only candidates supplied in `.github/issue-context.md`.
+- Consider only candidates supplied in `/tmp/gh-aw/issue-context.md`.
 - The deterministic retrieval score is not a duplicate verdict.
 - Exclude the triggering issue.
 - Return at most five candidates and only include high-confidence matches.
@@ -779,7 +808,7 @@ the rest of triage from running.
 Call `publish_triage_summary` exactly once with:
 
 - `input_sha256`: copy the exact `Input SHA-256` value from
-  `.github/issue-context.md`.
+  `/tmp/gh-aw/issue-context.md`.
 - `summary`: a factual one- or two-sentence summary.
 - `suggested_area`: copy `Detected area` from the deterministic evidence.
 - `product_label`: copy `Candidate product label` from the deterministic
