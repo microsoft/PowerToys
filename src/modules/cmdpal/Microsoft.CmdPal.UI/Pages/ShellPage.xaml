@@ -481,7 +481,12 @@
                         <DataTemplate x:DataType="viewModels:QuickAccessShelfItem">
                             <Grid
                                 Width="40"
-                                Height="40">
+                                Height="40"
+                                AllowDrop="True"
+                                DragLeave="QuickAccessShelfItem_DragLeave"
+                                DragOver="QuickAccessShelfItem_DragOver"
+                                Drop="QuickAccessShelfItem_Drop"
+                                Tag="{x:Bind}">
                                 <Button
                                     Width="40"
                                     Height="40"
@@ -489,6 +494,8 @@
                                     AccessKey="{x:Bind ShortcutDigit, Mode=OneWay}"
                                     AutomationProperties.Name="{x:Bind Title, Mode=OneTime}"
                                     Click="QuickAccessShelfItem_Click"
+                                    DragStarting="QuickAccessShelfItem_DragStarting"
+                                    DropCompleted="QuickAccessShelfItem_DropCompleted"
                                     Style="{StaticResource SubtleButtonStyle}"
                                     Tag="{x:Bind}"
                                     UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}">
@@ -520,6 +527,15 @@
                                     Background="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
                                     IsHitTestVisible="False"
                                     Visibility="{x:Bind help:BindTransformers.BoolToVisibility(StartsNewSection), Mode=OneTime}" />
+                                <Border
+                                    Width="2"
+                                    Height="32"
+                                    HorizontalAlignment="Left"
+                                    Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                    Canvas.ZIndex="2"
+                                    IsHitTestVisible="False"
+                                    Tag="QuickAccessShelfDropIndicator"
+                                    Visibility="Collapsed" />
                             </Grid>
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
@@ -541,6 +557,53 @@
                     </Button.Flyout>
                     <FontIcon Glyph="&#xE712;" />
                 </Button>
+
+                <Border
+                    x:Name="QuickAccessShelfPinDropTarget"
+                    x:Uid="QuickAccessShelfPinDropTarget"
+                    Grid.ColumnSpan="2"
+                    Width="40"
+                    Height="40"
+                    Margin="0,0,44,0"
+                    HorizontalAlignment="Right"
+                    AllowDrop="True"
+                    Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                    BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+                    BorderThickness="1"
+                    Canvas.ZIndex="3"
+                    CornerRadius="4"
+                    DragLeave="QuickAccessShelfPinDropTarget_DragLeave"
+                    DragOver="QuickAccessShelfPinDropTarget_DragOver"
+                    Drop="QuickAccessShelfPinDropTarget_Drop"
+                    Visibility="Collapsed">
+                    <FontIcon
+                        FontSize="16"
+                        Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                        Glyph="&#xE840;" />
+                </Border>
+
+                <Border
+                    x:Name="QuickAccessShelfRemoveDropTarget"
+                    x:Uid="QuickAccessShelfRemoveDropTarget"
+                    Grid.ColumnSpan="2"
+                    Width="40"
+                    Height="40"
+                    HorizontalAlignment="Right"
+                    AllowDrop="True"
+                    Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                    BorderBrush="{ThemeResource SystemFillColorCriticalBrush}"
+                    BorderThickness="1"
+                    Canvas.ZIndex="3"
+                    CornerRadius="4"
+                    DragLeave="QuickAccessShelfRemoveDropTarget_DragLeave"
+                    DragOver="QuickAccessShelfRemoveDropTarget_DragOver"
+                    Drop="QuickAccessShelfRemoveDropTarget_Drop"
+                    Visibility="Collapsed">
+                    <FontIcon
+                        FontSize="16"
+                        Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                        Glyph="&#xE74D;" />
+                </Border>
             </Grid>
         </Grid>
 

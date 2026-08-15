@@ -26,7 +26,10 @@ using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using VirtualKey = Windows.System.VirtualKey;
 
@@ -58,6 +61,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 {
     private const double QuickAccessShelfButtonWidth = 40;
     private const double QuickAccessShelfSpacing = 4;
+    private const double QuickAccessShelfDragThreshold = 4;
+    private const string QuickAccessShelfDragProperty = "Microsoft.CmdPal.UI.QuickAccessShelfItem";
+    private const string QuickAccessShelfDropIndicatorTag = "QuickAccessShelfDropIndicator";
 
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
 
@@ -92,6 +98,15 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     // one-shot flag suppresses that select for the expand-driven load.
     private bool _suppressSelectOnNextLoad;
     private bool _pendingTopBarFocusRestore;
+    private QuickAccessShelfItem? _draggedQuickAccessShelfItem;
+    private string? _quickAccessShelfDragToken;
+    private Grid? _quickAccessShelfDropTarget;
+    private bool _quickAccessShelfDropAfter;
+    private bool _quickAccessShelfDragStarted;
+    private Button? _quickAccessShelfPendingDragSource;
+    private uint? _quickAccessShelfPendingDragPointerId;
+    private Point _quickAccessShelfPendingDragStart;
+    private bool _quickAccessShelfStartDragPending;
     private bool _isDisposed;
 
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
@@ -152,6 +167,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         QuickAccessShelf = new(
             App.Current.Services.GetRequiredService<TopLevelCommandManager>(),
             App.Current.Services.GetRequiredService<IAppStateService>(),
+            _settingsService,
             recentCommandsOnQuickAccessShelf,
             settings.QuickAccessShelfPinnedCommandLimit,
             settings.RecentCommandsDisplayLimit,
@@ -193,6 +209,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
+        AddHandler(PointerMovedEvent, new PointerEventHandler(ShellPage_OnPointerMoved), true);
+        AddHandler(PointerReleasedEvent, new PointerEventHandler(ShellPage_OnPointerReleased), true);
+        AddHandler(PointerCanceledEvent, new PointerEventHandler(ShellPage_OnPointerCanceled), true);
+        AddHandler(PointerCaptureLostEvent, new PointerEventHandler(ShellPage_OnPointerCaptureLost), true);
 
         RootFrame.Navigate(typeof(LoadingPage), new AsyncNavigationRequest(ViewModel, CancellationToken.None));
 
@@ -987,6 +1007,217 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
+    private void QuickAccessShelfItem_DragStarting(UIElement sender, DragStartingEventArgs args)
+    {
+        try
+        {
+            if (sender is not Button { Tag: QuickAccessShelfItem item })
+            {
+                args.Cancel = true;
+                return;
+            }
+
+            _draggedQuickAccessShelfItem = item;
+            _quickAccessShelfDragToken = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+            args.Data.Properties[QuickAccessShelfDragProperty] = _quickAccessShelfDragToken;
+            args.Data.SetData(QuickAccessShelfDragProperty, _quickAccessShelfDragToken);
+            args.Data.RequestedOperation = DataPackageOperation.Move;
+
+            QuickAccessShelfRemoveDropTarget.BorderThickness = new Thickness(1);
+            QuickAccessShelfRemoveDropTarget.Visibility = Visibility.Visible;
+            QuickAccessShelfPinDropTarget.BorderThickness = new Thickness(1);
+            QuickAccessShelfPinDropTarget.Visibility = item.CanPin && !QuickAccessShelf.VisibleItems.Any(visibleItem => visibleItem.IsPinned)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            _quickAccessShelfDragStarted = true;
+            WeakReferenceMessenger.Default.Send(new DragStartedMessage());
+        }
+        catch (Exception ex)
+        {
+            args.Cancel = true;
+            CompleteQuickAccessShelfDrag();
+            Logger.LogError("Failed to start dragging a quick access item", ex);
+        }
+    }
+
+    private void QuickAccessShelfItem_DropCompleted(UIElement sender, DropCompletedEventArgs args)
+    {
+        CompleteQuickAccessShelfDrag();
+    }
+
+    private void QuickAccessShelfItem_DragOver(object sender, DragEventArgs e)
+    {
+        if (sender is not Grid { Tag: QuickAccessShelfItem target } targetGrid ||
+            !TryGetDraggedQuickAccessShelfItem(e, out var source) ||
+            !target.IsPinned ||
+            (!source.IsPinned && !source.CanPin) ||
+            (source.ProviderId == target.ProviderId && source.CommandId == target.CommandId))
+        {
+            return;
+        }
+
+        var placeAfter = e.GetPosition(targetGrid).X >= targetGrid.ActualWidth / 2;
+        SetQuickAccessShelfDropTarget(targetGrid, placeAfter);
+        e.AcceptedOperation = DataPackageOperation.Move;
+        e.Handled = true;
+    }
+
+    private void QuickAccessShelfItem_DragLeave(object sender, DragEventArgs e)
+    {
+        if (ReferenceEquals(sender, _quickAccessShelfDropTarget))
+        {
+            SetQuickAccessShelfDropTarget(null, placeAfter: false);
+        }
+    }
+
+    private void QuickAccessShelfItem_Drop(object sender, DragEventArgs e)
+    {
+        if (sender is not Grid { Tag: QuickAccessShelfItem target } targetGrid ||
+            !TryGetDraggedQuickAccessShelfItem(e, out var source) ||
+            !target.IsPinned ||
+            (!source.IsPinned && !source.CanPin))
+        {
+            return;
+        }
+
+        var placeAfter = e.GetPosition(targetGrid).X >= targetGrid.ActualWidth / 2;
+        if (QuickAccessShelf.TryPlacePinnedItem(source, target, placeAfter))
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+        }
+
+        SetQuickAccessShelfDropTarget(null, placeAfter: false);
+        e.Handled = true;
+    }
+
+    private void QuickAccessShelfRemoveDropTarget_DragOver(object sender, DragEventArgs e)
+    {
+        if (!TryGetDraggedQuickAccessShelfItem(e, out _))
+        {
+            return;
+        }
+
+        QuickAccessShelfRemoveDropTarget.BorderThickness = new Thickness(2);
+        e.AcceptedOperation = DataPackageOperation.Move;
+        e.Handled = true;
+    }
+
+    private void QuickAccessShelfPinDropTarget_DragOver(object sender, DragEventArgs e)
+    {
+        if (!TryGetDraggedQuickAccessShelfItem(e, out var item) || !item.CanPin)
+        {
+            return;
+        }
+
+        QuickAccessShelfPinDropTarget.BorderThickness = new Thickness(2);
+        e.AcceptedOperation = DataPackageOperation.Move;
+        e.Handled = true;
+    }
+
+    private void QuickAccessShelfPinDropTarget_DragLeave(object sender, DragEventArgs e)
+    {
+        QuickAccessShelfPinDropTarget.BorderThickness = new Thickness(1);
+    }
+
+    private void QuickAccessShelfPinDropTarget_Drop(object sender, DragEventArgs e)
+    {
+        if (!TryGetDraggedQuickAccessShelfItem(e, out var item) || !item.CanPin)
+        {
+            return;
+        }
+
+        if (QuickAccessShelf.TryPinItem(item))
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+        }
+
+        e.Handled = true;
+    }
+
+    private void QuickAccessShelfRemoveDropTarget_DragLeave(object sender, DragEventArgs e)
+    {
+        QuickAccessShelfRemoveDropTarget.BorderThickness = new Thickness(1);
+    }
+
+    private void QuickAccessShelfRemoveDropTarget_Drop(object sender, DragEventArgs e)
+    {
+        if (!TryGetDraggedQuickAccessShelfItem(e, out var item))
+        {
+            return;
+        }
+
+        if (QuickAccessShelf.TryRemoveItem(item))
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+        }
+
+        e.Handled = true;
+    }
+
+    private bool TryGetDraggedQuickAccessShelfItem(DragEventArgs e, out QuickAccessShelfItem item)
+    {
+        item = null!;
+        if (_draggedQuickAccessShelfItem is null ||
+            _quickAccessShelfDragToken is null ||
+            !e.DataView.Properties.TryGetValue(QuickAccessShelfDragProperty, out var token) ||
+            token is not string tokenText ||
+            !string.Equals(tokenText, _quickAccessShelfDragToken, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        item = _draggedQuickAccessShelfItem;
+        return true;
+    }
+
+    private void SetQuickAccessShelfDropTarget(Grid? target, bool placeAfter)
+    {
+        if (ReferenceEquals(_quickAccessShelfDropTarget, target) &&
+            (_quickAccessShelfDropTarget is null || _quickAccessShelfDropAfter == placeAfter))
+        {
+            return;
+        }
+
+        if (_quickAccessShelfDropTarget is not null)
+        {
+            GetQuickAccessShelfDropIndicator(_quickAccessShelfDropTarget).Visibility = Visibility.Collapsed;
+        }
+
+        _quickAccessShelfDropTarget = target;
+        _quickAccessShelfDropAfter = placeAfter;
+        if (target is not null)
+        {
+            var indicator = GetQuickAccessShelfDropIndicator(target);
+            indicator.HorizontalAlignment = placeAfter ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+            indicator.Visibility = Visibility.Visible;
+        }
+    }
+
+    private static Border GetQuickAccessShelfDropIndicator(Grid target)
+    {
+        return target.Children
+            .OfType<Border>()
+            .First(border => string.Equals(border.Tag as string, QuickAccessShelfDropIndicatorTag, StringComparison.Ordinal));
+    }
+
+    private void CompleteQuickAccessShelfDrag()
+    {
+        SetQuickAccessShelfDropTarget(null, placeAfter: false);
+        QuickAccessShelfPinDropTarget.Visibility = Visibility.Collapsed;
+        QuickAccessShelfPinDropTarget.BorderThickness = new Thickness(1);
+        QuickAccessShelfRemoveDropTarget.Visibility = Visibility.Collapsed;
+        QuickAccessShelfRemoveDropTarget.BorderThickness = new Thickness(1);
+        _draggedQuickAccessShelfItem = null;
+        _quickAccessShelfDragToken = null;
+
+        if (_quickAccessShelfDragStarted)
+        {
+            _quickAccessShelfDragStarted = false;
+            WeakReferenceMessenger.Default.Send(new DragCompletedMessage());
+        }
+    }
+
     private static void InvokeQuickAccessShelfItem(QuickAccessShelfItem item)
     {
         WeakReferenceMessenger.Default.Send(item.GetPerformCommandMessage());
@@ -1179,19 +1410,116 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         try
         {
             var ptr = e.Pointer;
+            var ptrPt = e.GetCurrentPoint(this);
             if (ptr.PointerDeviceType == PointerDeviceType.Mouse)
             {
-                var ptrPt = e.GetCurrentPoint(this);
                 if (ptrPt.Properties.IsXButton1Pressed)
                 {
                     WeakReferenceMessenger.Default.Send(new NavigateBackMessage());
+                    return;
                 }
+            }
+
+            var isPrimaryPointerPressed = ptr.PointerDeviceType == PointerDeviceType.Mouse
+                ? ptrPt.Properties.IsLeftButtonPressed
+                : ptrPt.IsInContact;
+            if (IsQuickAccessShelfVisible &&
+                isPrimaryPointerPressed &&
+                FindQuickAccessShelfDragSource(e.OriginalSource as DependencyObject) is Button dragSource)
+            {
+                _quickAccessShelfPendingDragSource = dragSource;
+                _quickAccessShelfPendingDragPointerId = ptr.PointerId;
+                _quickAccessShelfPendingDragStart = ptrPt.Position;
             }
         }
         catch (Exception ex)
         {
             Logger.LogError("Error handling mouse button press event", ex);
         }
+    }
+
+    private void ShellPage_OnPointerMoved(object sender, PointerRoutedEventArgs e)
+    {
+        if (_quickAccessShelfStartDragPending ||
+            _quickAccessShelfPendingDragSource is not Button dragSource ||
+            _quickAccessShelfPendingDragPointerId != e.Pointer.PointerId)
+        {
+            return;
+        }
+
+        var pointerPoint = e.GetCurrentPoint(this);
+        var isPrimaryPointerPressed = e.Pointer.PointerDeviceType == PointerDeviceType.Mouse
+            ? pointerPoint.Properties.IsLeftButtonPressed
+            : pointerPoint.IsInContact;
+        if (!isPrimaryPointerPressed)
+        {
+            ClearQuickAccessShelfPendingDrag();
+            return;
+        }
+
+        var dragDistanceX = Math.Abs(pointerPoint.Position.X - _quickAccessShelfPendingDragStart.X);
+        var dragDistanceY = Math.Abs(pointerPoint.Position.Y - _quickAccessShelfPendingDragStart.Y);
+        if (dragDistanceX < QuickAccessShelfDragThreshold && dragDistanceY < QuickAccessShelfDragThreshold)
+        {
+            return;
+        }
+
+        var dragPointerPoint = e.GetCurrentPoint(dragSource);
+        ClearQuickAccessShelfPendingDrag();
+        _quickAccessShelfStartDragPending = true;
+        e.Handled = true;
+        _ = StartQuickAccessShelfDragAsync(dragSource, dragPointerPoint);
+    }
+
+    private void ShellPage_OnPointerReleased(object sender, PointerRoutedEventArgs e) => ClearQuickAccessShelfPendingDrag(e.Pointer.PointerId);
+
+    private void ShellPage_OnPointerCanceled(object sender, PointerRoutedEventArgs e) => ClearQuickAccessShelfPendingDrag(e.Pointer.PointerId);
+
+    private void ShellPage_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e) => ClearQuickAccessShelfPendingDrag(e.Pointer.PointerId);
+
+    private async Task StartQuickAccessShelfDragAsync(Button dragSource, PointerPoint pointerPoint)
+    {
+        try
+        {
+            await dragSource.StartDragAsync(pointerPoint);
+        }
+        catch (Exception ex)
+        {
+            CompleteQuickAccessShelfDrag();
+            Logger.LogError("Failed to initiate dragging a quick access item", ex);
+        }
+        finally
+        {
+            _quickAccessShelfStartDragPending = false;
+            ClearQuickAccessShelfPendingDrag();
+        }
+    }
+
+    private static Button? FindQuickAccessShelfDragSource(DependencyObject? source)
+    {
+        for (var current = source; current is not null; current = VisualTreeHelper.GetParent(current))
+        {
+            if (current is Button { Tag: QuickAccessShelfItem } button)
+            {
+                return button;
+            }
+        }
+
+        return null;
+    }
+
+    private void ClearQuickAccessShelfPendingDrag(uint pointerId)
+    {
+        if (_quickAccessShelfPendingDragPointerId == pointerId)
+        {
+            ClearQuickAccessShelfPendingDrag();
+        }
+    }
+
+    private void ClearQuickAccessShelfPendingDrag()
+    {
+        _quickAccessShelfPendingDragSource = null;
+        _quickAccessShelfPendingDragPointerId = null;
     }
 
     public void Receive(ExpandCompactModeMessage message)
@@ -1346,6 +1674,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
 
         _isDisposed = true;
+        if (_quickAccessShelfDragStarted)
+        {
+            CompleteQuickAccessShelfDrag();
+        }
+
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _settingsService.SettingsChanged -= OnSettingsChanged;
         QuickAccessShelf.PropertyChanged -= QuickAccessShelf_PropertyChanged;
