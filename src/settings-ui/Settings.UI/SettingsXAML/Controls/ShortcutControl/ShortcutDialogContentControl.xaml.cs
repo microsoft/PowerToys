@@ -69,7 +69,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             set
             {
-                if (Keys != null || !JudgeIfKeyValueSame(value))
+if (!JudgeIfKeyValueSame(value))
                 {
                     SetValue(KeysProperty, value);
                 }
