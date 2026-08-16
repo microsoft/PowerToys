@@ -5,6 +5,8 @@ from pathlib import Path
 GITHUB_DIR = Path(__file__).resolve().parents[3]
 WORKFLOW_SOURCE = GITHUB_DIR / "workflows" / "issue-triage.md"
 WORKFLOW_LOCK = GITHUB_DIR / "workflows" / "issue-triage.lock.yml"
+DEDUPE_DIGEST = GITHUB_DIR / "workflows" / "dedupe-digest.yml"
+MANUAL_DEDUPE = GITHUB_DIR / "workflows" / "manual-batch-issue-deduplication.yml"
 
 
 class WorkflowContractTests(unittest.TestCase):
@@ -42,6 +44,18 @@ class WorkflowContractTests(unittest.TestCase):
             "yq",
         ):
             self.assertIn(f"--deny-tool '\\''shell({command})'\\''", generated)
+
+    def test_dedupe_workflows_restrict_canonical_candidates_to_open_issues(self):
+        digest = DEDUPE_DIGEST.read_text(encoding="utf-8")
+        manual = MANUAL_DEDUPE.read_text(encoding="utf-8")
+
+        self.assertIn("resolveOpenIssueCandidates", digest)
+        self.assertIn("live.pull_request || live.state !== 'open'", digest)
+        self.assertIn(
+            "const candidates = await resolveOpenIssueCandidates(",
+            digest,
+        )
+        self.assertIn("state: open", manual)
 
 
 if __name__ == "__main__":

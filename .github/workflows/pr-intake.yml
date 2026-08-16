@@ -32,7 +32,6 @@ concurrency:
 
 jobs:
   pr-intake:
-    if: ${{ github.event.pull_request.draft == false || github.event.action == 'converted_to_draft' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout base ref
