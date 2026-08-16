@@ -87,6 +87,8 @@ public record SettingsModel
 
     public bool ShowQuickAccessShelf { get; init; }
 
+    public AltNumberShortcutBehavior ListItemAltNumberBehavior { get; init; }
+
     public RecentCommandsPlacement RecentCommandsOnQuickAccessShelf { get; init; }
 
     public RecentCommandsPlacement RecentCommandsOnHome { get; init; }
@@ -588,4 +590,10 @@ public enum RecentCommandsPlacement
     Hidden = 0,
     BeforePinned = 1,
     AfterPinned = 2,
+}
+
+public enum AltNumberShortcutBehavior
+{
+    Run = 0,
+    Select = 1,
 }

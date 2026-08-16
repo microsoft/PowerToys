@@ -1639,6 +1639,33 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         return true;
     }
 
+    private bool TryHandleListPageNumberedShortcut(KeyRoutedEventArgs e, KeyModifiers modifiers)
+    {
+        var plainAltAction = _settingsService.Settings.ListItemAltNumberBehavior == AltNumberShortcutBehavior.Select
+            ? NumberedItemShortcuts.ShortcutAction.Select
+            : NumberedItemShortcuts.ShortcutAction.Invoke;
+        var shortcut = NumberedItemShortcuts.Resolve(
+            e.Key,
+            modifiers.Ctrl,
+            modifiers.Alt,
+            modifiers.Shift,
+            modifiers.Win,
+            plainAltAction);
+
+        if (shortcut is null ||
+            !ItemActionsAllowed ||
+            RootFrame.Content is not ListPage listPage)
+        {
+            return false;
+        }
+
+        // Reserve numbered ListPage chords even when the projected list has no matching
+        // item, so they cannot fall through to a requested shortcut on the current item.
+        e.Handled = true;
+        listPage.HandleNumberedShortcut(shortcut.Value);
+        return true;
+    }
+
     private void QuickAccessShelfItemsHost_SizeChanged(object sender, SizeChangedEventArgs e)
     {
         QuickAccessShelf.UpdateVisibleCapacity(e.NewSize.Width, QuickAccessShelfButtonWidth, QuickAccessShelfSpacing);
@@ -1773,6 +1800,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             default:
                 {
                     if (shellPage.TryHandleQuickAccessShelfItemKeyDown(e, modifiers))
+                    {
+                        break;
+                    }
+
+                    if (shellPage.TryHandleListPageNumberedShortcut(e, modifiers))
                     {
                         break;
                     }

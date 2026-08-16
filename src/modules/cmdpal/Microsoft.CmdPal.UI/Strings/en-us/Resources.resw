@@ -415,6 +415,18 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_QuickAccessShelf_SettingsCard.Description" xml:space="preserve">
     <value>Shows quick access commands below the search box while compact mode is collapsed. Use Alt+1 through Alt+9 to run visible items, Alt+Shift+1 through Alt+Shift+9 to select them, and Alt+0 for overflow.</value>
   </data>
+  <data name="Settings_GeneralPage_ListItemAltNumberBehavior_SettingsCard.Header" xml:space="preserve">
+    <value>Alt+number shortcuts in lists</value>
+  </data>
+  <data name="Settings_GeneralPage_ListItemAltNumberBehavior_SettingsCard.Description" xml:space="preserve">
+    <value>Choose whether Alt+1 through Alt+9 runs or selects the corresponding list item. Alt+Shift+1 through Alt+Shift+9 always selects.</value>
+  </data>
+  <data name="Settings_GeneralPage_ListItemAltNumberBehavior_Run.Content" xml:space="preserve">
+    <value>Run item</value>
+  </data>
+  <data name="Settings_GeneralPage_ListItemAltNumberBehavior_Select.Content" xml:space="preserve">
+    <value>Select item</value>
+  </data>
   <data name="Settings_GeneralPage_QuickAccessShelfPinnedCommandLimit_SettingsCard.Header" xml:space="preserve">
     <value>Maximum pinned commands</value>
   </data>

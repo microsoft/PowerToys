@@ -42,6 +42,7 @@ public static class SettingsLinkIds
         public const string LaunchPosition = "launch-position";
         public const string ToastPosition = "toast-position";
         public const string Interaction = "appearance-interaction";
+        public const string ListItemAltNumberBehavior = "list-item-alt-number-behavior";
         public const string SingleClickActivation = "single-click-activation";
         public const string ShowAppDetails = "show-app-details";
         public const string BackspaceGoesBack = "backspace-goes-back";
