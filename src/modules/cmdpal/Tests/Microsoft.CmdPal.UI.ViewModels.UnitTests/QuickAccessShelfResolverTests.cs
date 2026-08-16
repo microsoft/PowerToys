@@ -9,6 +9,7 @@ using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
@@ -16,6 +17,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 public partial class QuickAccessShelfResolverTests
 {
     [DataTestMethod]
+    [DataRow(-1, "")]
     [DataRow(0, "1")]
     [DataRow(8, "9")]
     [DataRow(9, "")]
@@ -23,6 +25,63 @@ public partial class QuickAccessShelfResolverTests
     public void IndexToShortcutDigit_MapsFirstNineItems(int index, string expectedDigit)
     {
         Assert.AreEqual(expectedDigit, QuickAccessShelfResolver.IndexToShortcutDigit(index));
+    }
+
+    [DataTestMethod]
+    [DataRow((int)VirtualKey.Number1, 0)]
+    [DataRow((int)VirtualKey.Number5, 4)]
+    [DataRow((int)VirtualKey.Number9, 8)]
+    [DataRow((int)VirtualKey.Number0, -1)]
+    [DataRow((int)VirtualKey.NumberPad1, -1)]
+    public void GetTopRowShortcutIndex_MapsOnlyOneThroughNine(int key, int expectedIndex)
+    {
+        Assert.AreEqual(expectedIndex, QuickAccessShelfShortcuts.GetTopRowShortcutIndex((VirtualKey)key));
+    }
+
+    [TestMethod]
+    public void IsSelectionShortcut_RequiresOnlyAltShiftAndNumberedKey()
+    {
+        Assert.IsTrue(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: true, shift: true, win: false));
+        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: true, alt: true, shift: true, win: false));
+        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: false, shift: true, win: false));
+        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: true, shift: false, win: false));
+        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number4, ctrl: false, alt: true, shift: true, win: true));
+        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionShortcut(VirtualKey.Number0, ctrl: false, alt: true, shift: true, win: false));
+    }
+
+    [DataTestMethod]
+    [DataRow((int)VirtualKey.Number4, false, true, true, false, 4, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.Visible)]
+    [DataRow((int)VirtualKey.Number4, false, true, true, false, 3, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.Unavailable)]
+    [DataRow((int)VirtualKey.Number9, false, true, true, false, 0, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.Unavailable)]
+    [DataRow((int)VirtualKey.Number4, true, true, true, false, 3, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.None)]
+    [DataRow((int)VirtualKey.Number0, false, true, true, false, 0, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.None)]
+    public void ResolveSelectionShortcut_ReservesUnavailableTargets(
+        int key,
+        bool ctrl,
+        bool alt,
+        bool shift,
+        bool win,
+        int visibleItemCount,
+        int expectedTarget)
+    {
+        var target = QuickAccessShelfShortcuts.ResolveSelectionShortcut(
+            (VirtualKey)key,
+            ctrl,
+            alt,
+            shift,
+            win,
+            visibleItemCount);
+
+        Assert.AreEqual((QuickAccessShelfShortcuts.SelectionShortcutTarget)expectedTarget, target);
+    }
+
+    [TestMethod]
+    public void IsSelectionAccessKey_RequiresShiftWithoutCtrlOrWin()
+    {
+        Assert.IsTrue(QuickAccessShelfShortcuts.IsSelectionAccessKey(ctrl: false, shift: true, win: false));
+        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionAccessKey(ctrl: false, shift: false, win: false));
+        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionAccessKey(ctrl: true, shift: true, win: false));
+        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionAccessKey(ctrl: false, shift: true, win: true));
     }
 
     [TestMethod]
