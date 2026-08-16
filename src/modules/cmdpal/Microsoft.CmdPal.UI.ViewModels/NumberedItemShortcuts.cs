@@ -25,10 +25,13 @@ public static class NumberedItemShortcuts
         bool alt,
         bool shift,
         bool win,
-        ShortcutAction plainAltAction)
+        ShortcutAction plainAltAction,
+        bool isAccessKeyModeActive = false)
     {
         var index = GetTopRowShortcutIndex(key);
-        if (index < 0 || !alt || ctrl || win)
+        var isDirectAltChord = alt && !ctrl && !win;
+        var isAccessKeySequence = isAccessKeyModeActive && !alt && !ctrl && !win;
+        if (index < 0 || (!isDirectAltChord && !isAccessKeySequence))
         {
             return null;
         }
@@ -60,6 +63,36 @@ public static class NumberedItemShortcuts
         }
 
         return targets;
+    }
+
+    public static int GetShortcutIndex<T>(IReadOnlyList<T> items, int itemIndex, Func<T, bool> isEligible)
+    {
+        if (itemIndex < 0 || itemIndex >= items.Count)
+        {
+            return -1;
+        }
+
+        var shortcutIndex = 0;
+        for (var index = 0; index <= itemIndex; index++)
+        {
+            if (!isEligible(items[index]))
+            {
+                continue;
+            }
+
+            if (index == itemIndex)
+            {
+                return shortcutIndex < ShortcutCount ? shortcutIndex : -1;
+            }
+
+            shortcutIndex++;
+            if (shortcutIndex == ShortcutCount)
+            {
+                return -1;
+            }
+        }
+
+        return -1;
     }
 
     public static string IndexToShortcutDigit(int index) =>
