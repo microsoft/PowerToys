@@ -36,8 +36,11 @@ public sealed partial class ListItemsView : UserControl,
     IRecipient<NavigatePageDownCommand>,
     IRecipient<NavigatePageUpCommand>,
     IRecipient<ActivateSelectedListItemMessage>,
-    IRecipient<ActivateSecondaryCommandMessage>
+    IRecipient<ActivateSecondaryCommandMessage>,
+    IRecipient<NumberedShortcutCuesVisibilityChangedMessage>
 {
+    private const double ListShortcutCueHorizontalOffset = -16;
+
     private readonly Dictionary<SelectorItem, (ListViewBase Owner, ListItemRealizationRegistration Registration)> _realizedItems = new(64);
 
     private InputSource _lastInputSource;
@@ -63,6 +66,14 @@ public sealed partial class ListItemsView : UserControl,
     private bool _isMessengerRegistered;
     private ScrollViewer? _itemsScrollViewer;
     private ListViewBase? _itemsScrollViewerOwner;
+    private bool _areNumberedShortcutCuesVisible;
+    private bool _numberedShortcutCueUpdatePending;
+    private Border[]? _numberedShortcutCues;
+    private RectangleGeometry? _numberedShortcutCueClip;
+    private ListViewBase? _numberedShortcutCueTrackedView;
+    private ScrollViewer? _numberedShortcutCueScrollViewer;
+
+    public bool ShowNumberedShortcutCues { get; set; }
 
     public ListViewModel? ViewModel
     {
@@ -94,11 +105,17 @@ public sealed partial class ListItemsView : UserControl,
         SynchronizeGridItems();
         RegisterMessenger();
         RegisterExistingRealizedItems();
+        _areNumberedShortcutCuesVisible = false;
+        StopNumberedShortcutCueTracking();
+        HideNumberedShortcutCues();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         _isLoaded = false;
+        _areNumberedShortcutCuesVisible = false;
+        StopNumberedShortcutCueTracking();
+        HideNumberedShortcutCues();
 
         // Release before the native panel tears down. A reattached grid rebuilds
         // its groups from the source, which is what it does after any teardown.
@@ -125,6 +142,7 @@ public sealed partial class ListItemsView : UserControl,
         WeakReferenceMessenger.Default.Register<NavigatePageUpCommand>(this);
         WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
+        WeakReferenceMessenger.Default.Register<NumberedShortcutCuesVisibilityChangedMessage>(this);
         _isMessengerRegistered = true;
     }
 
@@ -143,6 +161,7 @@ public sealed partial class ListItemsView : UserControl,
         WeakReferenceMessenger.Default.Unregister<NavigatePageUpCommand>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
+        WeakReferenceMessenger.Default.Unregister<NumberedShortcutCuesVisibilityChangedMessage>(this);
         _isMessengerRegistered = false;
     }
 
@@ -897,6 +916,12 @@ public sealed partial class ListItemsView : UserControl,
             {
                 Logger.LogDebug("cleared view model");
             }
+
+            if (@this._areNumberedShortcutCuesVisible)
+            {
+                @this.EnsureNumberedShortcutCueTracking();
+                @this.QueueNumberedShortcutCueUpdate();
+            }
         }
     }
 
@@ -924,6 +949,8 @@ public sealed partial class ListItemsView : UserControl,
         {
             CancelPendingGridActions();
         }
+
+        QueueNumberedShortcutCueUpdate();
 
         // Latch: once any update requests force-first, keep it until consumed.
         _forceFirstPending |= args.ForceFirstItem;
@@ -956,6 +983,279 @@ public sealed partial class ListItemsView : UserControl,
 
                 TrySetSelectionAfterUpdate(sender, version, forceFirstItem, ensureSelectionVisible);
             });
+    }
+
+    public void Receive(NumberedShortcutCuesVisibilityChangedMessage message)
+    {
+        if (!ReferenceEquals(XamlRoot, message.XamlRoot))
+        {
+            return;
+        }
+
+        var isVisible = ShowNumberedShortcutCues && message.IsVisible;
+        if (_areNumberedShortcutCuesVisible == isVisible)
+        {
+            return;
+        }
+
+        _areNumberedShortcutCuesVisible = isVisible;
+        if (isVisible)
+        {
+            EnsureNumberedShortcutCues();
+            EnsureNumberedShortcutCueTracking();
+            UpdateNumberedShortcutCues();
+        }
+        else
+        {
+            StopNumberedShortcutCueTracking();
+            HideNumberedShortcutCues();
+        }
+    }
+
+    private void NumberedShortcutCueTrackedView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        QueueNumberedShortcutCueUpdate();
+    }
+
+    private void QueueNumberedShortcutCueUpdate()
+    {
+        if (!_areNumberedShortcutCuesVisible || _numberedShortcutCueUpdatePending)
+        {
+            return;
+        }
+
+        _numberedShortcutCueUpdatePending = true;
+        if (!DispatcherQueue.TryEnqueue(
+                Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+                () =>
+                {
+                    _numberedShortcutCueUpdatePending = false;
+                    if (_areNumberedShortcutCuesVisible)
+                    {
+                        UpdateNumberedShortcutCues();
+                    }
+                }))
+        {
+            _numberedShortcutCueUpdatePending = false;
+        }
+    }
+
+    private void EnsureNumberedShortcutCues()
+    {
+        if (_numberedShortcutCues is not null)
+        {
+            return;
+        }
+
+        var borderStyle = (Style)Resources["NumberedShortcutCueBorderStyle"];
+        var textStyle = (Style)Resources["NumberedShortcutCueTextStyle"];
+        var cues = new Border[NumberedItemShortcuts.ShortcutCount];
+        for (var index = 0; index < cues.Length; index++)
+        {
+            var cue = new Border
+            {
+                Style = borderStyle,
+                Child = new TextBlock
+                {
+                    Style = textStyle,
+                    Text = NumberedItemShortcuts.IndexToShortcutDigit(index),
+                },
+            };
+
+            cues[index] = cue;
+            NumberedShortcutCueOverlay.Children.Add(cue);
+        }
+
+        _numberedShortcutCues = cues;
+        _numberedShortcutCueClip = new RectangleGeometry();
+        NumberedShortcutCueOverlay.Clip = _numberedShortcutCueClip;
+    }
+
+    private void EnsureNumberedShortcutCueTracking()
+    {
+        var itemView = _areNumberedShortcutCuesVisible && ShowNumberedShortcutCues && ViewModel is not null
+            ? ItemView
+            : null;
+        if (ReferenceEquals(_numberedShortcutCueTrackedView, itemView))
+        {
+            if (itemView is not null && _numberedShortcutCueScrollViewer is null)
+            {
+                AttachNumberedShortcutCueScrollViewer(FindScrollViewer(itemView));
+            }
+
+            return;
+        }
+
+        StopNumberedShortcutCueTracking();
+        if (itemView is null)
+        {
+            return;
+        }
+
+        _numberedShortcutCueTrackedView = itemView;
+        itemView.ContainerContentChanging += NumberedShortcutCueTrackedView_ContainerContentChanging;
+        itemView.Loaded += NumberedShortcutCueTrackedView_Loaded;
+        itemView.SizeChanged += NumberedShortcutCueTrackedView_SizeChanged;
+        AttachNumberedShortcutCueScrollViewer(FindScrollViewer(itemView));
+    }
+
+    private void StopNumberedShortcutCueTracking()
+    {
+        if (_numberedShortcutCueTrackedView is not null)
+        {
+            _numberedShortcutCueTrackedView.ContainerContentChanging -= NumberedShortcutCueTrackedView_ContainerContentChanging;
+            _numberedShortcutCueTrackedView.Loaded -= NumberedShortcutCueTrackedView_Loaded;
+            _numberedShortcutCueTrackedView.SizeChanged -= NumberedShortcutCueTrackedView_SizeChanged;
+            _numberedShortcutCueTrackedView = null;
+        }
+
+        AttachNumberedShortcutCueScrollViewer(null);
+    }
+
+    private void AttachNumberedShortcutCueScrollViewer(ScrollViewer? scrollViewer)
+    {
+        if (ReferenceEquals(_numberedShortcutCueScrollViewer, scrollViewer))
+        {
+            return;
+        }
+
+        if (_numberedShortcutCueScrollViewer is not null)
+        {
+            _numberedShortcutCueScrollViewer.ViewChanged -= NumberedShortcutCueScrollViewer_ViewChanged;
+        }
+
+        _numberedShortcutCueScrollViewer = scrollViewer;
+        if (_numberedShortcutCueScrollViewer is not null)
+        {
+            _numberedShortcutCueScrollViewer.ViewChanged += NumberedShortcutCueScrollViewer_ViewChanged;
+        }
+    }
+
+    private void NumberedShortcutCueTrackedView_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is ListViewBase itemView && ReferenceEquals(itemView, _numberedShortcutCueTrackedView))
+        {
+            AttachNumberedShortcutCueScrollViewer(FindScrollViewer(itemView));
+            QueueNumberedShortcutCueUpdate();
+        }
+    }
+
+    private void NumberedShortcutCueTrackedView_SizeChanged(object sender, SizeChangedEventArgs e) =>
+        QueueNumberedShortcutCueUpdate();
+
+    private void NumberedShortcutCueScrollViewer_ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e) =>
+        QueueNumberedShortcutCueUpdate();
+
+    private void UpdateNumberedShortcutCues()
+    {
+        if (!_areNumberedShortcutCuesVisible || !ShowNumberedShortcutCues || ViewModel is null)
+        {
+            HideNumberedShortcutCues();
+            return;
+        }
+
+        EnsureNumberedShortcutCues();
+        EnsureNumberedShortcutCueTracking();
+
+        var itemView = ItemView;
+        if (!TryUpdateNumberedShortcutCueClip(itemView))
+        {
+            HideNumberedShortcutCues();
+            return;
+        }
+
+        var cueIndex = 0;
+        foreach (var item in ViewModel.FilteredItems)
+        {
+            if (!item.IsInteractive)
+            {
+                continue;
+            }
+
+            var cue = _numberedShortcutCues![cueIndex];
+            if (itemView.ContainerFromItem(item) is SelectorItem container &&
+                container.ContentTemplateRoot is FrameworkElement anchor)
+            {
+                PositionNumberedShortcutCue(cue, anchor, itemView);
+            }
+            else
+            {
+                cue.Visibility = Visibility.Collapsed;
+            }
+
+            cueIndex++;
+            if (cueIndex == _numberedShortcutCues.Length)
+            {
+                break;
+            }
+        }
+
+        for (; cueIndex < _numberedShortcutCues!.Length; cueIndex++)
+        {
+            _numberedShortcutCues[cueIndex].Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private bool TryUpdateNumberedShortcutCueClip(ListViewBase itemView)
+    {
+        if (_numberedShortcutCueClip is null ||
+            itemView.XamlRoot is null ||
+            !ReferenceEquals(itemView.XamlRoot, NumberedShortcutCueOverlay.XamlRoot))
+        {
+            return false;
+        }
+
+        try
+        {
+            var origin = itemView.TransformToVisual(NumberedShortcutCueOverlay).TransformPoint(default);
+            _numberedShortcutCueClip.Rect = new Rect(
+                origin.X,
+                origin.Y,
+                Math.Max(0, itemView.ActualWidth),
+                Math.Max(0, itemView.ActualHeight));
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+    }
+
+    private void PositionNumberedShortcutCue(Border cue, FrameworkElement anchor, ListViewBase itemView)
+    {
+        try
+        {
+            var origin = anchor.TransformToVisual(NumberedShortcutCueOverlay).TransformPoint(default);
+            var left = origin.X + (ReferenceEquals(itemView, ItemsList) ? ListShortcutCueHorizontalOffset : 0);
+            if (Canvas.GetLeft(cue) != left)
+            {
+                Canvas.SetLeft(cue, left);
+            }
+
+            if (Canvas.GetTop(cue) != origin.Y)
+            {
+                Canvas.SetTop(cue, origin.Y);
+            }
+
+            cue.Visibility = Visibility.Visible;
+        }
+        catch (ArgumentException)
+        {
+            cue.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private void HideNumberedShortcutCues()
+    {
+        if (_numberedShortcutCues is null)
+        {
+            return;
+        }
+
+        foreach (var cue in _numberedShortcutCues)
+        {
+            cue.Visibility = Visibility.Collapsed;
+        }
     }
 
     /// <summary>

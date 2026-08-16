@@ -61,6 +61,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ShowPinToDockDialogMessage>,
     IRecipient<ExpandCompactModeMessage>,
     IRecipient<CloseContextMenuMessage>,
+    IRecipient<NumberedShortcutCuesVisibilityChangedMessage>,
     INotifyPropertyChanged,
     IDisposable
 {
@@ -127,6 +128,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private uint? _quickAccessShelfPendingDragPointerId;
     private Point _quickAccessShelfPendingDragStart;
     private bool _quickAccessShelfStartDragPending;
+    private bool _isNumberedShortcutCueModeActive;
     private bool _isDisposed;
     private IHostWindow? _hostWindow;
 
@@ -253,6 +255,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
         WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
+        WeakReferenceMessenger.Default.Register<NumberedShortcutCuesVisibilityChangedMessage>(this);
 
         // The compact-mode setting can be toggled while the palette is open. React to the
         // hot-reload so the expanded/collapsed layout updates immediately instead of waiting
@@ -302,6 +305,14 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
                 PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnEsc());
             }
+        }
+    }
+
+    public void Receive(NumberedShortcutCuesVisibilityChangedMessage message)
+    {
+        if (ReferenceEquals(XamlRoot, message.XamlRoot))
+        {
+            _isNumberedShortcutCueModeActive = message.IsVisible;
         }
     }
 
@@ -1773,7 +1784,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             modifiers.Alt,
             modifiers.Shift,
             modifiers.Win,
-            plainAltAction);
+            plainAltAction,
+            _isNumberedShortcutCueModeActive);
 
         if (shortcut is null ||
             !ItemActionsAllowed ||
