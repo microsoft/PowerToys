@@ -12,6 +12,7 @@
 // </history>
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing.Printing;
@@ -19,6 +20,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Authentication.ExtendedProtection;
 using System.Security.Principal;
 using System.ServiceProcess;
@@ -378,8 +380,69 @@ namespace MouseWithoutBorders.Class
         {
             var serverTaskCancellationSource = new CancellationTokenSource();
             CancellationToken cancellationToken = serverTaskCancellationSource.Token;
+            using var currentIdentity = WindowsIdentity.GetCurrent();
+            var processUserSid = currentIdentity.User;
+            if (processUserSid == null)
+            {
+                Logger.Log("Settings IPC v2 cannot determine the process user SID.");
+                return;
+            }
 
-            IpcChannel<SettingsSyncHelper>.StartIpcServer("MouseWithoutBorders/SettingsSync", cancellationToken);
+            var sessionId = Process.GetCurrentProcess().SessionId;
+            SecurityIdentifier currentUserSid;
+            try
+            {
+                currentUserSid = ResolveSettingsIpcUserSid(processUserSid, sessionId, GetInteractiveSessionUserSid);
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Settings IPC v2 cannot determine the interactive user SID: {e.Message}");
+                return;
+            }
+
+            var settingsPath = Path.Combine(AppContext.BaseDirectory, "WinUI3Apps", "PowerToys.Settings.exe");
+            var clientPolicy = MouseWithoutBordersIpcPolicy.CreateSettingsClientPolicy(settingsPath, sessionId, currentUserSid.Value);
+
+            IpcChannel<SettingsSyncHelper>.StartAuthenticatedIpcServer(
+                MouseWithoutBordersIpc.GetSettingsSyncPipeName(sessionId),
+                currentUserSid,
+                clientPolicy,
+                cancellationToken);
+        }
+
+        internal static SecurityIdentifier ResolveSettingsIpcUserSid(
+            SecurityIdentifier processUserSid,
+            int sessionId,
+            Func<int, SecurityIdentifier> interactiveUserSidResolver)
+        {
+            ArgumentNullException.ThrowIfNull(processUserSid);
+            ArgumentNullException.ThrowIfNull(interactiveUserSidResolver);
+
+            return processUserSid.IsWellKnown(WellKnownSidType.LocalSystemSid)
+                ? interactiveUserSidResolver(sessionId) ?? throw new InvalidOperationException("The interactive session has no user SID.")
+                : processUserSid;
+        }
+
+        private static SecurityIdentifier GetInteractiveSessionUserSid(int sessionId)
+        {
+            IntPtr userToken = IntPtr.Zero;
+            try
+            {
+                if (NativeMethods.WTSQueryUserToken(unchecked((uint)sessionId), ref userToken) == 0)
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                }
+
+                using var interactiveIdentity = new WindowsIdentity(userToken);
+                return interactiveIdentity.User ?? throw new InvalidOperationException("The interactive session token has no user SID.");
+            }
+            finally
+            {
+                if (userToken != IntPtr.Zero)
+                {
+                    _ = NativeMethods.CloseHandle(userToken);
+                }
+            }
         }
 
         internal static void StartInputCallbackThread()

@@ -17,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.VisualStudio.Threading;
 using MouseWithoutBorders.Core;
 using Newtonsoft.Json;
@@ -204,6 +205,62 @@ WellKnownSidType.AuthenticatedUserSid, null);
 #else
                         Logger.Log(e);
 #endif
+                    }
+                },
+                cancellationToken,
+                TaskCreationOptions.None,
+                TaskScheduler.Default);
+
+            return default(T);
+        }
+
+        public static T StartAuthenticatedIpcServer(
+            string pipeName,
+            SecurityIdentifier allowedUser,
+            NamedPipePeerPolicy clientPolicy,
+            CancellationToken cancellationToken)
+        {
+            var authenticator = new NamedPipePeerAuthenticator(
+                new WindowsNamedPipePeerIdentityProvider(new MicrosoftMachineRootSignatureVerifier()));
+
+            _ = Task.Factory.StartNew(
+                async () =>
+                {
+                    while (!cancellationToken.IsCancellationRequested)
+                    {
+                        try
+                        {
+                            using var serverChannel = RestrictedNamedPipeServer.Create(pipeName, allowedUser);
+                            await serverChannel.WaitForConnectionAsync(cancellationToken);
+
+                            JsonRpc taskRpc = null;
+                            var authentication = authenticator.AuthenticateClientAndExecute(
+                                serverChannel,
+                                clientPolicy,
+                                () => taskRpc = JsonRpc.Attach(serverChannel, new T()));
+                            if (!authentication.Accepted)
+                            {
+#if !MM_HELPER
+                                Logger.Log($"Rejected Settings IPC client: {authentication.ReasonCode}");
+#endif
+                                serverChannel.Disconnect();
+                                continue;
+                            }
+
+                            await taskRpc.Completion;
+                        }
+                        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                        {
+                            break;
+                        }
+                        catch (Exception e)
+                        {
+#if MM_HELPER
+                            _ = e;
+#else
+                            Logger.Log(e);
+#endif
+                        }
                     }
                 },
                 cancellationToken,
