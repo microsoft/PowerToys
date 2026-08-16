@@ -22,6 +22,7 @@
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
+#include <common/utils/secure_named_pipe.h>
 #include <Helpers.h>
 #include <Settings.h>
 #include <trace.h>
@@ -163,26 +164,20 @@ protected:
 
 private:
 
-    HRESULT StartNamedPipeServerAndSendData(std::wstring pipe_name)
+    HRESULT CreateNamedPipeServer(const std::wstring& pipe_name)
     {
-        hPipe = CreateNamedPipe(
-            pipe_name.c_str(),
-            PIPE_ACCESS_DUPLEX |
-                WRITE_DAC,
-            PIPE_TYPE_MESSAGE |
-                PIPE_READMODE_MESSAGE |
-                PIPE_WAIT,
-            PIPE_UNLIMITED_INSTANCES,
-            BUFSIZE,
-            BUFSIZE,
-            0,
-            NULL);
+        hPipe = secure_named_pipe::create_outbound_server(pipe_name, BUFSIZE, false);
 
-        if (hPipe == NULL || hPipe == INVALID_HANDLE_VALUE)
+        if (hPipe == INVALID_HANDLE_VALUE)
         {
             return E_FAIL;
         }
 
+        return S_OK;
+    }
+
+    HRESULT WaitForNamedPipeClient()
+    {
         // This call blocks until a client process connects to the pipe
         BOOL connected = ConnectNamedPipe(hPipe, NULL);
         if (!connected)
@@ -194,6 +189,7 @@ private:
             else
             {
                 CloseHandle(hPipe);
+                hPipe = INVALID_HANDLE_VALUE;
             }
             return E_FAIL;
         }
@@ -232,9 +228,28 @@ private:
                 RpcStringFree(reinterpret_cast<RPC_WSTR*>(&uuid_chars));
                 uuid_chars = nullptr;
             }
-            create_pipe_thread = std::thread(&PowerRenameContextMenuCommand::StartNamedPipeServerAndSendData, this, pipe_name);
-            RunNonElevatedEx(path.c_str(), pipe_name, get_module_folderpath(g_hInst));
-            create_pipe_thread.join();
+            else
+            {
+                return E_FAIL;
+            }
+
+            if (CreateNamedPipeServer(pipe_name) != S_OK)
+            {
+                return E_FAIL;
+            }
+
+            // Claim and secure the pipe name before exposing it on the child command line.
+            if (!RunNonElevatedEx(path.c_str(), pipe_name, get_module_folderpath(g_hInst)))
+            {
+                CloseHandle(hPipe);
+                hPipe = INVALID_HANDLE_VALUE;
+                return E_FAIL;
+            }
+
+            if (WaitForNamedPipeClient() != S_OK)
+            {
+                return E_FAIL;
+            }
 
             if (hPipe != INVALID_HANDLE_VALUE)
             {
@@ -258,6 +273,7 @@ private:
                     writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
                 }
                 writePipe.Close();
+                hPipe = INVALID_HANDLE_VALUE;
             }
         }
         Trace::InvokedRet(S_OK);
@@ -268,8 +284,6 @@ private:
         return S_OK;
     }
 
-
-    std::thread create_pipe_thread;
     HANDLE hPipe = INVALID_HANDLE_VALUE;
     std::wstring context_menu_caption = GET_RESOURCE_STRING_FALLBACK(IDS_POWERRENAME_CONTEXT_MENU_ENTRY, L"Rename with PowerRename");
 };
