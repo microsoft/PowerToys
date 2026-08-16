@@ -112,15 +112,7 @@ public sealed class SecureDirectoryRoot : IDisposable
         try
         {
             FileHandleMetadata metadata = GetMetadata(rootHandle);
-            if (!metadata.IsDirectory)
-            {
-                throw new IOException($"Security root is not a directory: {path}");
-            }
-
-            if (metadata.IsReparsePoint)
-            {
-                throw new IOException($"Security root must not be a reparse point: {path}");
-            }
+            ValidateMetadata(metadata, expectDirectory: true, rejectHardLinks: false);
 
             return new SecureDirectoryRoot(rootHandle, GetFinalPath(rootHandle));
         }
@@ -168,6 +160,21 @@ public sealed class SecureDirectoryRoot : IDisposable
         ThrowIfDisposed();
         string normalized = SecurePath.NormalizeRelative(relativePath);
         using SafeFileHandle directory = OpenDirectoryChain(normalized.Split('\\'), createMissing: true, exclusiveLast: false);
+    }
+
+    internal bool DirectoryExists(string relativePath)
+    {
+        ThrowIfDisposed();
+        string normalized = SecurePath.NormalizeRelative(relativePath);
+        try
+        {
+            using SafeFileHandle directory = OpenDirectoryChain(normalized.Split('\\'), createMissing: false, exclusiveLast: false);
+            return true;
+        }
+        catch (Win32Exception exception) when (exception.NativeErrorCode is 2 or 3)
+        {
+            return false;
+        }
     }
 
     /// <summary>
@@ -689,6 +696,20 @@ public sealed class SecureDirectoryRoot : IDisposable
     private string ValidateOpenedHandle(SafeFileHandle openedHandle, bool expectDirectory, bool rejectHardLinks)
     {
         FileHandleMetadata metadata = GetMetadata(openedHandle);
+        ValidateMetadata(metadata, expectDirectory, rejectHardLinks);
+
+        string finalPath = GetFinalPath(openedHandle);
+        string currentRootPath = GetFinalPath(handle);
+        if (!SecurePath.IsContained(currentRootPath, finalPath))
+        {
+            throw new IOException($"Opened handle escaped its root: {finalPath}");
+        }
+
+        return finalPath;
+    }
+
+    internal static void ValidateMetadata(FileHandleMetadata metadata, bool expectDirectory, bool rejectHardLinks)
+    {
         if (metadata.IsDirectory != expectDirectory)
         {
             throw new IOException(expectDirectory ? "Expected a directory." : "Expected a file.");
@@ -703,15 +724,6 @@ public sealed class SecureDirectoryRoot : IDisposable
         {
             throw new IOException($"Existing target has {metadata.LinkCount} hard links; overwrite rejected before truncation.");
         }
-
-        string finalPath = GetFinalPath(openedHandle);
-        string currentRootPath = GetFinalPath(handle);
-        if (!SecurePath.IsContained(currentRootPath, finalPath))
-        {
-            throw new IOException($"Opened handle escaped its root: {finalPath}");
-        }
-
-        return finalPath;
     }
 
     private static SafeFileHandle OpenRelative(

@@ -29,6 +29,52 @@ public sealed class SecureFileSystemTests
     }
 
     [TestMethod]
+    public void UncFinalPathCanonicalizationDoesNotRequireShareAccess()
+    {
+        const string extendedUnc = @"\\?\UNC\server.example\PowerToysBackup\module\settings.json";
+        const string canonicalUnc = @"\\server.example\PowerToysBackup\module\settings.json";
+        const string root = @"\\server.example\PowerToysBackup";
+
+        Assert.AreEqual(canonicalUnc, SecurePath.NormalizeFinalPath(extendedUnc), ignoreCase: true, CultureInfo.InvariantCulture);
+        Assert.IsTrue(SecurePath.IsContained(root, canonicalUnc));
+        Assert.IsFalse(SecurePath.IsContained(root, @"\\server.example\PowerToysBackup-suffix\settings.json"));
+    }
+
+    [TestMethod]
+    public void CloudPlaceholderMetadataFailsClosedWithoutHydration()
+    {
+        const uint cloudReparseTag = 0x9000001A;
+        FileHandleMetadata placeholder = new(
+            IsDirectory: false,
+            IsReparsePoint: true,
+            ReparseTag: cloudReparseTag,
+            LinkCount: 1,
+            Length: 0);
+
+        IOException exception = Assert.ThrowsException<IOException>(() =>
+            SecureDirectoryRoot.ValidateMetadata(placeholder, expectDirectory: false, rejectHardLinks: false));
+
+        StringAssert.Contains(exception.Message, $"0x{cloudReparseTag:X8}");
+    }
+
+    [TestMethod]
+    public void MissingSingleLinkMetadataFailsClosedBeforeOverwrite()
+    {
+        FileHandleMetadata metadataWithoutLinkSupport = new(
+            IsDirectory: false,
+            IsReparsePoint: false,
+            ReparseTag: 0,
+            LinkCount: 0,
+            Length: 10);
+
+        IOException exception = Assert.ThrowsException<IOException>(() =>
+            SecureDirectoryRoot.ValidateMetadata(metadataWithoutLinkSupport, expectDirectory: false, rejectHardLinks: true));
+
+        StringAssert.Contains(exception.Message, "0 hard links");
+        StringAssert.Contains(exception.Message, "before truncation");
+    }
+
+    [TestMethod]
     public void StagingValidationFailureDeletesNewDirectoryAndPreservesOriginalException()
     {
         using TestDirectory test = new();

@@ -162,40 +162,65 @@ public sealed class SettingsBackupRestoreEngine
 
             staging = BackupRestoreArchive.ExtractToExclusiveStaging(archiveFile, stagingParent);
             HashSet<string> currentPaths = new(settingsRoot.EnumerateFiles(fileFilter: IsIncludedJson), WindowsPathComparer.Instance);
-            bool changed = false;
-            foreach (string relativePath in staging.EnumerateFiles(fileFilter: IsJsonOrManifest))
+            List<RestoreWriteOperation> operations = [];
+            try
             {
-                if (relativePath.Equals("manifest.json", StringComparison.OrdinalIgnoreCase) || !policy.ShouldInclude(relativePath))
+                foreach (string relativePath in staging.EnumerateFiles(fileFilter: IsJsonOrManifest))
                 {
-                    continue;
-                }
-
-                using SecureFile backupFile = staging.OpenFileForRead(relativePath);
-                string restoreJson = policy.CreateExportVersion(relativePath, backupFile.ReadAllText());
-                if (currentPaths.Contains(relativePath))
-                {
-                    using SecureFile currentFile = settingsRoot.OpenFileForOverwrite(relativePath);
-                    string currentJson = policy.CreateExportVersion(relativePath, currentFile.ReadAllText());
-                    if (JsonEquivalent(currentJson, restoreJson))
+                    if (relativePath.Equals("manifest.json", StringComparison.OrdinalIgnoreCase) || !policy.ShouldInclude(relativePath))
                     {
                         continue;
                     }
 
-                    string contents = policy.GetRestoreMode(relativePath) == RestoreMode.Overwrite
-                        ? restoreJson
-                        : JsonSettingsMerge.Merge(currentFile.ReadAllText(), restoreJson);
-                    currentFile.OverwriteAllText(contents);
+                    using SecureFile backupFile = staging.OpenFileForRead(relativePath);
+                    string restoreJson = policy.CreateExportVersion(relativePath, backupFile.ReadAllText());
+                    if (currentPaths.Contains(relativePath))
+                    {
+                        SecureFile currentFile = settingsRoot.OpenFileForOverwrite(relativePath);
+                        try
+                        {
+                            string originalJson = currentFile.ReadAllText();
+                            string currentJson = policy.CreateExportVersion(relativePath, originalJson);
+                            if (JsonEquivalent(currentJson, restoreJson))
+                            {
+                                currentFile.Dispose();
+                                continue;
+                            }
+
+                            string contents = policy.GetRestoreMode(relativePath) == RestoreMode.Overwrite
+                                ? restoreJson
+                                : JsonSettingsMerge.Merge(originalJson, restoreJson);
+                            operations.Add(new RestoreWriteOperation(relativePath, contents, originalJson, currentFile, isNew: false));
+                        }
+                        catch
+                        {
+                            currentFile.Dispose();
+                            throw;
+                        }
+                    }
+                    else
+                    {
+                        operations.Add(new RestoreWriteOperation(relativePath, restoreJson, originalContents: null, targetFile: null, isNew: true));
+                    }
                 }
-                else
+            }
+            catch
+            {
+                foreach (RestoreWriteOperation operation in operations)
                 {
-                    using SecureFile newFile = settingsRoot.CreateNewFile(relativePath);
-                    newFile.OverwriteAllText(restoreJson);
+                    operation.Dispose();
                 }
 
-                changed = true;
+                throw;
             }
 
-            return new RestoreOperationResult(changed, changed && policy.RestartAfterRestore);
+            if (operations.Count == 0)
+            {
+                return new RestoreOperationResult(false, false);
+            }
+
+            ApplyRestoreOperations(settingsRoot, operations);
+            return new RestoreOperationResult(true, policy.RestartAfterRestore);
         }
         finally
         {
@@ -430,6 +455,135 @@ public sealed class SettingsBackupRestoreEngine
         finally
         {
             staging.Dispose();
+        }
+    }
+
+    private static void ApplyRestoreOperations(SecureDirectoryRoot settingsRoot, List<RestoreWriteOperation> operations)
+    {
+        List<string> createdFiles = [];
+        SortedSet<string> createdDirectories = new(WindowsPathComparer.Instance);
+        List<RestoreWriteOperation> overwritten = [];
+        try
+        {
+            foreach (RestoreWriteOperation operation in operations.Where(operation => operation.IsNew))
+            {
+                foreach (string directory in GetParentDirectories(operation.RelativePath))
+                {
+                    if (!settingsRoot.DirectoryExists(directory))
+                    {
+                        createdDirectories.Add(directory);
+                    }
+                }
+
+                operation.TargetFile = settingsRoot.CreateNewFile(operation.RelativePath);
+                createdFiles.Add(operation.RelativePath);
+            }
+
+            foreach (RestoreWriteOperation operation in operations)
+            {
+                if (!operation.IsNew)
+                {
+                    overwritten.Add(operation);
+                }
+
+                operation.TargetFile!.OverwriteAllText(operation.NewContents);
+            }
+        }
+        catch (Exception restoreException)
+        {
+            List<Exception> rollbackErrors = [];
+            for (int index = overwritten.Count - 1; index >= 0; index--)
+            {
+                TryRollback(
+                    () => overwritten[index].TargetFile!.OverwriteAllText(overwritten[index].OriginalContents!),
+                    rollbackErrors);
+            }
+
+            foreach (RestoreWriteOperation operation in operations.Where(operation => operation.IsNew))
+            {
+                operation.TargetFile?.Dispose();
+                operation.TargetFile = null;
+            }
+
+            for (int index = createdFiles.Count - 1; index >= 0; index--)
+            {
+                string path = createdFiles[index];
+                TryRollback(() => settingsRoot.DeleteEntry(path, isDirectory: false), rollbackErrors);
+            }
+
+            foreach (string directory in createdDirectories.OrderByDescending(path => path.Length))
+            {
+                TryRollback(() => settingsRoot.DeleteEntry(directory, isDirectory: true), rollbackErrors);
+            }
+
+            if (rollbackErrors.Count > 0)
+            {
+                restoreException.Data["RestoreRollbackErrors"] = rollbackErrors.ToArray();
+            }
+
+            throw;
+        }
+        finally
+        {
+            foreach (RestoreWriteOperation operation in operations)
+            {
+                operation.Dispose();
+            }
+        }
+    }
+
+    private static IEnumerable<string> GetParentDirectories(string relativePath)
+    {
+        int separatorIndex = relativePath.IndexOf('\\');
+        while (separatorIndex >= 0)
+        {
+            yield return relativePath[..separatorIndex];
+            separatorIndex = relativePath.IndexOf('\\', separatorIndex + 1);
+        }
+    }
+
+    private static void TryRollback(Action rollback, List<Exception> rollbackErrors)
+    {
+        try
+        {
+            rollback();
+        }
+        catch (Exception exception)
+        {
+            rollbackErrors.Add(exception);
+        }
+    }
+
+    private sealed class RestoreWriteOperation : IDisposable
+    {
+        internal RestoreWriteOperation(
+            string relativePath,
+            string newContents,
+            string? originalContents,
+            SecureFile? targetFile,
+            bool isNew)
+        {
+            RelativePath = relativePath;
+            NewContents = newContents;
+            OriginalContents = originalContents;
+            TargetFile = targetFile;
+            IsNew = isNew;
+        }
+
+        internal string RelativePath { get; }
+
+        internal string NewContents { get; }
+
+        internal string? OriginalContents { get; }
+
+        internal SecureFile? TargetFile { get; set; }
+
+        internal bool IsNew { get; }
+
+        public void Dispose()
+        {
+            TargetFile?.Dispose();
+            TargetFile = null;
         }
     }
 }

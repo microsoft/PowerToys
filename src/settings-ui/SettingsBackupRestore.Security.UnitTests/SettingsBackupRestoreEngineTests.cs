@@ -225,4 +225,66 @@ public sealed class SettingsBackupRestoreEngineTests
         Assert.AreEqual(1, preview.Items.Count);
         Assert.AreEqual("settings.json", preview.Items[0].SettingsPath);
     }
+
+    [TestMethod]
+    public void UnsafeArchiveFailsClosedBeforePreviewOrRestoreWrites()
+    {
+        using TestDirectory test = new();
+        string target = test.CreateDirectory("target");
+        string backups = test.CreateDirectory("backups");
+        string staging = test.CreateDirectory("staging");
+        string targetSettings = test.CreateFile(@"target\settings.json", """{"value":"current"}""");
+        string archivePath = Path.Combine(backups, $"settings_{DateTime.UtcNow.ToFileTimeUtc()}.ptb");
+        using (FileStream stream = new(archivePath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None))
+        using (ZipArchive archive = new(stream, ZipArchiveMode.Create))
+        using (StreamWriter writer = new(archive.CreateEntry("../settings.json").Open()))
+        {
+            writer.Write("""{"value":"untrusted"}""");
+        }
+
+        SettingsBackupRestoreEngine engine = new(PolicyJson);
+
+        Assert.ThrowsException<InvalidDataException>(() => engine.CreateRestorePreview(target, backups, staging));
+        Assert.ThrowsException<InvalidDataException>(() => engine.Restore(target, backups, staging));
+        Assert.AreEqual("""{"value":"current"}""", File.ReadAllText(targetSettings));
+        Assert.AreEqual(0, Directory.GetFileSystemEntries(staging).Length);
+    }
+
+    [TestMethod]
+    public void MalformedLaterEntryDoesNotPartiallyApplyRestore()
+    {
+        using TestDirectory test = new();
+        string target = test.CreateDirectory("target");
+        string backups = test.CreateDirectory("backups");
+        string staging = test.CreateDirectory("staging");
+        string firstTarget = test.CreateFile(@"target\A\settings.json", """{"value":"current-a"}""");
+        string secondTarget = test.CreateFile(@"target\Z\settings.json", """{"value":"current-z"}""");
+        string archivePath = Path.Combine(backups, $"settings_{DateTime.UtcNow.ToFileTimeUtc()}.ptb");
+        using (FileStream stream = new(archivePath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None))
+        using (ZipArchive archive = new(stream, ZipArchiveMode.Create))
+        {
+            using (StreamWriter first = new(archive.CreateEntry("A/settings.json").Open()))
+            {
+                first.Write("""{"value":"backup-a"}""");
+            }
+
+            using StreamWriter second = new(archive.CreateEntry("Z/settings.json").Open());
+            second.Write("""{"value":""");
+        }
+
+        SettingsBackupRestoreEngine engine = new(PolicyJson);
+
+        try
+        {
+            engine.Restore(target, backups, staging);
+            Assert.Fail("Malformed restore JSON should fail before writes.");
+        }
+        catch (JsonException)
+        {
+        }
+
+        Assert.AreEqual("""{"value":"current-a"}""", File.ReadAllText(firstTarget));
+        Assert.AreEqual("""{"value":"current-z"}""", File.ReadAllText(secondTarget));
+        Assert.AreEqual(0, Directory.GetFileSystemEntries(staging).Length);
+    }
 }
