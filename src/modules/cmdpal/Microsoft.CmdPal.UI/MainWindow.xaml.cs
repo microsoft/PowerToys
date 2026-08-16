@@ -83,6 +83,11 @@ public sealed partial class MainWindow : WindowEx,
     private bool _allowBreakthroughShortcut;
     private bool _suppressDpiChange;
     private bool _themeServiceInitialized;
+    private bool _areNumberedShortcutCuesVisible;
+    private bool _isAltKeyDown;
+    private bool _isAltTapCandidate;
+    private bool _wereNumberedShortcutCuesVisibleOnAltDown;
+    private bool _numberedShortcutCueDismissPending;
 
     // The snapshot of settings last consumed by HotReloadSettings. Used to skip redundant
     // hot-reloads when a SettingsChanged notification touches settings this window doesn't
@@ -226,6 +231,7 @@ public sealed partial class MainWindow : WindowEx,
 
         _localKeyboardListener = new LocalKeyboardListener();
         _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
+        _localKeyboardListener.KeyStateChanged += LocalKeyboardListener_OnKeyStateChanged;
         _localKeyboardListener.Start();
 
         // Force window to be created, and then cloaked. This will offset initial animation when the window is shown.
@@ -285,6 +291,94 @@ public sealed partial class MainWindow : WindowEx,
             WeakReferenceMessenger.Default.Send(new GoBackMessage());
         }
     }
+
+    private void LocalKeyboardListener_OnKeyStateChanged(object? sender, LocalKeyboardListenerKeyStateChangedEventArgs e)
+    {
+        if (IsAltKey(e.Key))
+        {
+            HandleAltKeyStateChanged(e.IsDown);
+            return;
+        }
+
+        if (!e.IsDown)
+        {
+            return;
+        }
+
+        if (_isAltKeyDown)
+        {
+            _isAltTapCandidate = false;
+        }
+
+        // Keep the latched cues visible while a modifier is pressed so Alt, then
+        // Shift+number can still select an item. Dismiss after the actual access key
+        // has passed through WinUI's input routing.
+        if (_areNumberedShortcutCuesVisible && !IsModifierKey(e.Key))
+        {
+            QueueNumberedShortcutCueDismissal();
+        }
+    }
+
+    private void HandleAltKeyStateChanged(bool isDown)
+    {
+        if (isDown)
+        {
+            var isMainWindowForeground = PInvoke.GetForegroundWindow() == _hwnd;
+            var modifiers = KeyModifiers.GetCurrent();
+
+            _isAltKeyDown = isMainWindowForeground;
+            _isAltTapCandidate = isMainWindowForeground && !modifiers.Ctrl && !modifiers.Shift && !modifiers.Win;
+            _wereNumberedShortcutCuesVisibleOnAltDown = _areNumberedShortcutCuesVisible;
+            return;
+        }
+
+        var shouldToggleCues =
+            _isAltKeyDown &&
+            _isAltTapCandidate &&
+            PInvoke.GetForegroundWindow() == _hwnd;
+        var wereCuesVisible = _wereNumberedShortcutCuesVisibleOnAltDown;
+        ResetAltTapState();
+
+        if (shouldToggleCues)
+        {
+            SetNumberedShortcutCuesVisibility(!wereCuesVisible);
+        }
+    }
+
+    private void QueueNumberedShortcutCueDismissal()
+    {
+        if (_numberedShortcutCueDismissPending)
+        {
+            return;
+        }
+
+        _numberedShortcutCueDismissPending = true;
+        if (!DispatcherQueue.TryEnqueue(() =>
+        {
+            _numberedShortcutCueDismissPending = false;
+            SetNumberedShortcutCuesVisibility(false);
+        }))
+        {
+            _numberedShortcutCueDismissPending = false;
+            SetNumberedShortcutCuesVisibility(false);
+        }
+    }
+
+    private void ResetAltTapState()
+    {
+        _isAltKeyDown = false;
+        _isAltTapCandidate = false;
+        _wereNumberedShortcutCuesVisibleOnAltDown = false;
+    }
+
+    private static bool IsAltKey(VirtualKey key) =>
+        key is VirtualKey.Menu or VirtualKey.LeftMenu or VirtualKey.RightMenu;
+
+    private static bool IsModifierKey(VirtualKey key) =>
+        key is VirtualKey.Shift or VirtualKey.LeftShift or VirtualKey.RightShift or
+            VirtualKey.Control or VirtualKey.LeftControl or VirtualKey.RightControl or
+            VirtualKey.Menu or VirtualKey.LeftMenu or VirtualKey.RightMenu or
+            VirtualKey.LeftWindows or VirtualKey.RightWindows;
 
     private void SettingsChangedHandler(ISettingsService sender, SettingsModel args)
     {
@@ -1146,6 +1240,12 @@ public sealed partial class MainWindow : WindowEx,
 
     private void SetIsVisibleToUser(bool isVisibleToUser)
     {
+        if (!isVisibleToUser)
+        {
+            ResetAltTapState();
+            SetNumberedShortcutCuesVisibility(false);
+        }
+
         if (IsVisibleToUser == isVisibleToUser)
         {
             return;
@@ -1153,6 +1253,17 @@ public sealed partial class MainWindow : WindowEx,
 
         IsVisibleToUser = isVisibleToUser;
         IsVisibleToUserChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void SetNumberedShortcutCuesVisibility(bool isVisible)
+    {
+        if (_areNumberedShortcutCuesVisible == isVisible)
+        {
+            return;
+        }
+
+        _areNumberedShortcutCuesVisible = isVisible;
+        WeakReferenceMessenger.Default.Send(new NumberedShortcutCuesVisibilityChangedMessage(RootElement.XamlRoot, isVisible));
     }
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
@@ -1395,6 +1506,9 @@ public sealed partial class MainWindow : WindowEx,
 
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
+            ResetAltTapState();
+            SetNumberedShortcutCuesVisibility(false);
+
             // Save the current window position before hiding the window
             // but not when opened from dock — preserve the pre-dock size.
             if (!_isLoadedFromDock)
@@ -1707,6 +1821,11 @@ public sealed partial class MainWindow : WindowEx,
     {
         switch (uMsg)
         {
+            case PInvoke.WM_ACTIVATEAPP when wParam.Value == 0:
+                ResetAltTapState();
+                SetNumberedShortcutCuesVisibility(false);
+                break;
+
             // Prevent the window from maximizing when double-clicking the title bar area
             case PInvoke.WM_NCLBUTTONDBLCLK:
                 return (LRESULT)IntPtr.Zero;
