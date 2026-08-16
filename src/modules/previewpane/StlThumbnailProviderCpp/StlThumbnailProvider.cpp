@@ -2,8 +2,6 @@
 #include "StlThumbnailProvider.h"
 
 #include <filesystem>
-#include <fstream>
-#include <shellapi.h>
 #include <Shlwapi.h>
 #include <string>
 
@@ -13,12 +11,13 @@
 #include <common/logger/logger.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/process_path.h>
+#include <common/utils/thumbnail_provider.h>
 
 extern HINSTANCE g_hInst;
 extern long g_cDllRef;
 
 StlThumbnailProvider::StlThumbnailProvider() :
-    m_cRef(1), m_pStream(NULL), m_process(NULL)
+    m_cRef(1), m_pStream(NULL)
 {
     std::filesystem::path logFilePath(PTSettingsHelper::get_local_low_folder_location());
     logFilePath.append(LogSettings::stlThumbLogPath);
@@ -29,6 +28,7 @@ StlThumbnailProvider::StlThumbnailProvider() :
 
 StlThumbnailProvider::~StlThumbnailProvider()
 {
+    thumbnail_provider::release_stream(m_pStream);
     InterlockedDecrement(&g_cDllRef);
 }
 
@@ -72,11 +72,7 @@ IFACEMETHODIMP StlThumbnailProvider::Initialize(IStream* pStream, DWORD grfMode)
     {
         // Initialize can be called more than once, so release existing valid
         // m_pStream.
-        if (m_pStream)
-        {
-            m_pStream->Release();
-            m_pStream = NULL;
-        }
+        thumbnail_provider::release_stream(m_pStream);
 
         m_pStream = pStream;
         m_pStream->AddRef();
@@ -91,10 +87,6 @@ IFACEMETHODIMP StlThumbnailProvider::Initialize(IStream* pStream, DWORD grfMode)
 
 IFACEMETHODIMP StlThumbnailProvider::GetThumbnail(UINT cx, HBITMAP* phbmp, WTS_ALPHATYPE* pdwAlpha)
 {
-    // Read stream into the buffer
-    char buffer[4096];
-    ULONG cbRead;
-
     Logger::trace(L"Begin");
 
     GUID guid;
@@ -104,7 +96,7 @@ IFACEMETHODIMP StlThumbnailProvider::GetThumbnail(UINT cx, HBITMAP* phbmp, WTS_A
         if (SUCCEEDED(StringFromCLSID(guid, &guidString)))
         {
             Logger::info(L"Read stream and save to tmp file.");
-            
+
             // {CLSID} -> CLSID
             std::wstring guid = std::wstring(guidString.get()).substr(1, std::wstring(guidString.get()).size() - 2);
             std::wstring filePath = PTSettingsHelper::get_local_low_folder_location() + L"\\StlThumbnail-Temp\\";
@@ -114,53 +106,48 @@ IFACEMETHODIMP StlThumbnailProvider::GetThumbnail(UINT cx, HBITMAP* phbmp, WTS_A
             }
 
             std::wstring fileName = filePath + guid + L".stl";
+            std::wstring fileNameBmp = filePath + guid + L".bmp";
 
-            // Write data to tmp file
-            std::fstream file;
-            file.open(fileName, std::ios_base::out | std::ios_base::binary);
+            const auto copyResult = thumbnail_provider::copy_stream_to_file(m_pStream, fileName);
+            thumbnail_provider::release_stream(m_pStream);
 
-            if (!file.is_open())
+            if (FAILED(copyResult))
             {
-                return 0;
+                std::error_code error;
+                std::filesystem::remove(fileName, error);
+                return copyResult;
             }
-
-            while (true)
-            {
-                auto result = m_pStream->Read(buffer, 4096, &cbRead);
-
-                file.write(buffer, cbRead);
-                if (result == S_FALSE)
-                {
-                    break;
-                }
-            }
-            file.close();
-
-            m_pStream->Release();
-            m_pStream = NULL;
 
             try
             {
                 Logger::info(L"Start StlThumbnailProvider.exe");
-                
-                STARTUPINFO info = { sizeof(info) };
+
                 std::wstring cmdLine{ L"\"" + fileName + L"\"" };
                 cmdLine += L" ";
                 cmdLine += std::to_wstring(cx);
 
                 std::wstring appPath = get_module_folderpath(g_hInst) + L"\\PowerToys.StlThumbnailProvider.exe";
+                const auto timeoutMs = thumbnail_provider::get_timeout_ms();
+                const auto launchResult = thumbnail_provider::launch_in_job(appPath, cmdLine, timeoutMs);
 
-                SHELLEXECUTEINFO sei{ sizeof(sei) };
-                sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-                sei.lpFile = appPath.c_str();
-                sei.lpParameters = cmdLine.c_str();
-                sei.nShow = SW_SHOWDEFAULT;
-                ShellExecuteEx(&sei);
-                m_process = sei.hProcess;
-                WaitForSingleObject(m_process, INFINITE);
-                std::filesystem::remove(fileName);
+                std::error_code error;
+                std::filesystem::remove(fileName, error);
 
-                std::wstring fileNameBmp = filePath + guid + L".bmp";
+                if (launchResult.status != thumbnail_provider::launch_status::completed)
+                {
+                    if (launchResult.status == thumbnail_provider::launch_status::timed_out)
+                    {
+                        Logger::error(L"Stl thumbnail provider timed out after {} ms.", timeoutMs);
+                    }
+                    else
+                    {
+                        Logger::error(L"Failed to launch Stl thumbnail provider. Error: {}", launchResult.error);
+                    }
+
+                    std::filesystem::remove(fileNameBmp, error);
+                    return HRESULT_FROM_WIN32(launchResult.error == ERROR_SUCCESS ? ERROR_PROCESS_ABORTED : launchResult.error);
+                }
+
                 if (std::filesystem::exists(fileNameBmp))
                 {
                     *phbmp = static_cast<HBITMAP>(LoadImage(NULL, fileNameBmp.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE));
@@ -177,16 +164,15 @@ IFACEMETHODIMP StlThumbnailProvider::GetThumbnail(UINT cx, HBITMAP* phbmp, WTS_A
             {
                 std::wstring errorMessage = std::wstring{ winrt::to_hstring(e.what()) };
                 Logger::error(L"Failed to start StlThumbnailProvider.exe. Error: {}", errorMessage);
+                std::error_code error;
+                std::filesystem::remove(fileName, error);
+                std::filesystem::remove(fileNameBmp, error);
             }
         }
     }
 
     // ensure releasing the stream (not all if branches contain it)
-    if (m_pStream)
-    {
-        m_pStream->Release();
-        m_pStream = NULL;
-    }
+    thumbnail_provider::release_stream(m_pStream);
 
     return S_OK;
 }
