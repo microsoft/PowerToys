@@ -36,6 +36,11 @@ public sealed partial class ListPage : Page
         this.NavigationCacheMode = NavigationCacheMode.Disabled;
     }
 
+    internal void HandleNumberedShortcut(NumberedItemShortcuts.Shortcut shortcut)
+    {
+        ListView.HandleNumberedShortcut(shortcut);
+    }
+
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         if (e.Parameter is not AsyncNavigationRequest navigationRequest)
