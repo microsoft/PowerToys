@@ -25,6 +25,10 @@ namespace ImageResizer.Utilities
             [new Guid("1f8a5601-7d4d-4cbd-9c82-1bc8d4eeb9a5")] = BitmapEncoder.GifEncoderId,
         };
 
+        // WinRT Encoder ID to WIC container format GUID.
+        private static readonly Dictionary<Guid, Guid> EncoderIdToContainerFormatGuid =
+            LegacyGuidToEncoderId.ToDictionary(pair => pair.Value, pair => pair.Key);
+
         // WinRT Decoder ID -> WinRT Encoder ID
         private static readonly Dictionary<Guid, Guid> DecoderIdToEncoderId = new()
         {
@@ -55,6 +59,15 @@ namespace ImageResizer.Utilities
             => LegacyGuidToEncoderId.TryGetValue(containerFormatGuid, out var id)
                 ? id
                 : BitmapEncoder.PngEncoderId;
+
+        /// <summary>
+        /// Gets the WIC container format GUID for a WinRT encoder ID.
+        /// Returns null if the encoder is not mapped to a legacy WIC container GUID.
+        /// </summary>
+        public static Guid? GetContainerFormatGuidForEncoderId(Guid encoderId)
+            => EncoderIdToContainerFormatGuid.TryGetValue(encoderId, out var containerFormatGuid)
+                ? containerFormatGuid
+                : null;
 
         /// <summary>
         /// Gets the WinRT encoder ID that matches the given decoder's codec.
