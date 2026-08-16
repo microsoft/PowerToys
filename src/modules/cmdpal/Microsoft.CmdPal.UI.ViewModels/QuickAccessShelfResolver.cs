@@ -9,13 +9,7 @@ internal static class QuickAccessShelfResolver
     internal sealed record ResolvedItem<T>(T Item, bool IsPinned, int ShortcutIndex, bool StartsNewSection);
 
     internal static string IndexToShortcutDigit(int index)
-    {
-        return index switch
-        {
-            >= 0 and < QuickAccessShelfShortcuts.NumberedShortcutCount => (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture),
-            _ => string.Empty,
-        };
-    }
+        => NumberedItemShortcuts.IndexToShortcutDigit(index);
 
     internal static int CalculateVisibleCapacity(
         int itemCount,
