@@ -184,6 +184,40 @@ public sealed partial class ListItemsView : UserControl,
         });
     }
 
+    internal void HandleNumberedShortcut(NumberedItemShortcuts.Shortcut shortcut)
+    {
+        var viewModel = ViewModel;
+        if (viewModel is null)
+        {
+            return;
+        }
+
+        var targets = NumberedItemShortcuts.GetTargets(viewModel.FilteredItems, static item => item.IsInteractive);
+        if (shortcut.Index >= targets.Count)
+        {
+            return;
+        }
+
+        var item = targets[shortcut.Index];
+        if (shortcut.Action == NumberedItemShortcuts.ShortcutAction.Invoke)
+        {
+            viewModel.InvokeItemCommand.Execute(item);
+            return;
+        }
+
+        MarkKeyboardNavigation();
+        if (!ReferenceEquals(ItemView.SelectedItem, item))
+        {
+            _scrollOnNextSelectionChange = true;
+            ItemView.SelectedItem = item;
+        }
+        else
+        {
+            ScrollToItem(item);
+            PushSelectionToVm();
+        }
+    }
+
     /// <summary>
     /// Finds the index of the first item in the list that is not a separator.
     /// Returns -1 if the list is empty or only contains separators.

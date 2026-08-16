@@ -176,6 +176,15 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
 
     public bool CanConfigureQuickAccessShelf => CompactMode && ShowQuickAccessShelf;
 
+    public int ListItemAltNumberBehaviorIndex
+    {
+        get => (int)_settingsService.Settings.ListItemAltNumberBehavior;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { ListItemAltNumberBehavior = (AltNumberShortcutBehavior)value });
+        }
+    }
+
     public double QuickAccessShelfPinnedCommandLimit
     {
         get => _settingsService.Settings.QuickAccessShelfPinnedCommandLimit;
