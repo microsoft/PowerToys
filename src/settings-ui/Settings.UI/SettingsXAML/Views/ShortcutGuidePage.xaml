@@ -19,7 +19,7 @@
                         Name="ShortcutGuideEnable"
                         x:Uid="ShortcutGuide_Enable"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShortcutGuide.png}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" AutomationProperties.AutomationId="Toggle_ShortcutGuide" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
