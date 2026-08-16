@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.ListPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -9,5 +9,8 @@
     Background="Transparent"
     mc:Ignorable="d">
 
-    <cmdpalUI:ListItemsView x:Name="ListView" ViewModel="{x:Bind ViewModel, Mode=OneWay}" />
+    <cmdpalUI:ListItemsView
+        x:Name="ListView"
+        ShowNumberedShortcutCues="True"
+        ViewModel="{x:Bind ViewModel, Mode=OneWay}" />
 </Page>

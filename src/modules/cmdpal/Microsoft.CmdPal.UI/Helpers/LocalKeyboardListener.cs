@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -20,6 +20,11 @@ internal sealed partial class LocalKeyboardListener : IDisposable
     /// Event that is raised when a key is pressed down.
     /// </summary>
     public event EventHandler<LocalKeyboardListenerKeyPressedEventArgs>? KeyPressed;
+
+    /// <summary>
+    /// Event that is raised when a key changes between its pressed and released states.
+    /// </summary>
+    public event EventHandler<LocalKeyboardListenerKeyStateChangedEventArgs>? KeyStateChanged;
 
     private bool _disposed;
     private UnhookWindowsHookExSafeHandle? _handle;
@@ -110,18 +115,33 @@ internal sealed partial class LocalKeyboardListener : IDisposable
         return ((lParam.Value >> 30) & 1) == 0;
     }
 
+    private static bool IsKeyUpHook(LPARAM lParam)
+    {
+        // The 31st bit is 1 when the key is being released.
+        // For more info see https://learn.microsoft.com/windows/win32/winmsg/keyboardproc#lparam-in
+        return ((lParam.Value >> 31) & 1) != 0;
+    }
+
     private LRESULT KeyEventHook(int nCode, WPARAM wParam, LPARAM lParam)
     {
         try
         {
-            if (nCode >= 0 && IsKeyDownHook(lParam))
+            if (nCode >= 0)
             {
-                InvokeKeyDown((VirtualKey)wParam.Value);
+                var virtualKey = (VirtualKey)wParam.Value;
+                if (IsKeyDownHook(lParam))
+                {
+                    InvokeKeyDown(virtualKey);
+                }
+                else if (IsKeyUpHook(lParam))
+                {
+                    InvokeKeyUp(virtualKey);
+                }
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError("Failed when invoking key down keyboard hook event", ex);
+            Logger.LogError("Failed when invoking keyboard hook event", ex);
         }
 
         // Call next hook in chain - pass null as first parameter for current hook
@@ -133,6 +153,15 @@ internal sealed partial class LocalKeyboardListener : IDisposable
         if (!_disposed)
         {
             KeyPressed?.Invoke(this, new LocalKeyboardListenerKeyPressedEventArgs(virtualKey));
+            KeyStateChanged?.Invoke(this, new LocalKeyboardListenerKeyStateChangedEventArgs(virtualKey, true));
+        }
+    }
+
+    private void InvokeKeyUp(VirtualKey virtualKey)
+    {
+        if (!_disposed)
+        {
+            KeyStateChanged?.Invoke(this, new LocalKeyboardListenerKeyStateChangedEventArgs(virtualKey, false));
         }
     }
 
