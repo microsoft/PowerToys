@@ -492,6 +492,7 @@
 
             <Grid
                 x:Name="QuickAccessShelfItemsHost"
+                KeyTipPlacementMode="Bottom"
                 SizeChanged="QuickAccessShelfItemsHost_SizeChanged">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -517,6 +518,8 @@
                                     Height="40"
                                     Padding="8"
                                     AccessKey="{x:Bind ShortcutDigit, Mode=OneTime}"
+                                    AccessKeyInvoked="QuickAccessShelfItem_AccessKeyInvoked"
+                                    AutomationProperties.HelpText="{x:Bind ShortcutDigit, Mode=OneTime, Converter={StaticResource QuickAccessShortcutTextConverter}}"
                                     AutomationProperties.Name="{x:Bind Title, Mode=OneTime}"
                                     Click="QuickAccessShelfItem_Click"
                                     ContextCanceled="QuickAccessShelfItem_ContextCanceled"
