@@ -6,13 +6,14 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 [TestClass]
-public class CommandItemViewModelTests
+public partial class CommandItemViewModelTests
 {
     private sealed class TestPageContext : IPageContext
     {
@@ -23,6 +24,15 @@ public class CommandItemViewModelTests
         public void ShowException(Exception ex, string? extensionHint = null)
         {
             throw new AssertFailedException($"Unexpected exception from view model: {ex}");
+        }
+    }
+
+    private sealed partial class ThrowingFiltersListPage : ListPage
+    {
+        public override IFilters? Filters
+        {
+            get => throw new AssertFailedException("Command shape detection must not access filters.");
+            set => throw new AssertFailedException("Command shape detection must not access filters.");
         }
     }
 
@@ -95,6 +105,27 @@ public class CommandItemViewModelTests
         Assert.AreEqual(1, viewModel.AllCommands.Count);
         Assert.IsTrue(viewModel.CanOpenContextMenu);
         Assert.AreEqual("Primary", ((CommandContextItemViewModel)viewModel.AllCommands[0]).Name);
+        Assert.IsTrue(viewModel.Command.IsInvokableCommand);
+        Assert.IsFalse(viewModel.Command.IsPage);
+        Assert.IsFalse(viewModel.Command.IsListPage);
+    }
+
+    [TestMethod]
+    public void FastInitializeProperties_CachesListPageShapeWithoutAccessingFilters()
+    {
+        var pageContext = new TestPageContext();
+        var page = new ThrowingFiltersListPage
+        {
+            Name = "List page",
+        };
+        var item = new CommandItem(page) { Title = page.Name };
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+
+        viewModel.FastInitializeProperties();
+
+        Assert.IsTrue(viewModel.Command.IsPage);
+        Assert.IsTrue(viewModel.Command.IsListPage);
+        Assert.IsFalse(viewModel.Command.IsInvokableCommand);
     }
 
     [TestMethod]

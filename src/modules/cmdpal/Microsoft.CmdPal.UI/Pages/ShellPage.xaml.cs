@@ -441,14 +441,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             return;
         }
 
-        var commandModel = command.CommandViewModel.Model.Unsafe;
-        if (commandModel is not IPage && commandModel is not IInvokableCommand)
-        {
-            await ShowExternalCommandUnavailableAsync();
-            return;
-        }
-
-        if (!TryValidateListPageOptions(commandModel, executeCommand.ListPageOptions, out var filterName))
+        var commandViewModel = command.CommandViewModel;
+        if (!CanExecuteExternalCommand(commandViewModel, executeCommand.ListPageOptions))
         {
             await ShowExternalCommandUnavailableAsync();
             return;
@@ -464,7 +458,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             string.IsNullOrWhiteSpace(command.Title) ? command.Id : command.Title,
             string.IsNullOrWhiteSpace(provider?.DisplayName) ? command.CommandProviderId : provider.DisplayName);
 
-        var isPage = commandModel is IPage;
+        var isPage = commandViewModel.IsPage;
         var canRemember = !(executeCommand.ListPageOptions?.RequiresOneTimeConsent ?? false);
         var isRemembered = canRemember && await _externalCommandPermissionStore.IsAllowedAsync(permission.Key);
         if (!isRemembered &&
@@ -474,7 +468,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 isPage,
                 isReload: false,
                 executeCommand.ListPageOptions,
-                filterName,
                 canRemember,
                 command.IconViewModel))
         {
@@ -489,13 +482,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // Re-resolve so consent cannot transfer across a provider reload.
         command = _topLevelCommandManager.LookupCommand(executeCommand.ProviderId, executeCommand.CommandId);
         provider = _topLevelCommandManager.LookupProvider(executeCommand.ProviderId);
-        commandModel = command?.CommandViewModel.Model.Unsafe;
+        commandViewModel = command?.CommandViewModel;
         if (command is null ||
             provider is null ||
+            commandViewModel is null ||
             permission.Key.PackageFamilyName != (provider.Extension?.PackageFamilyName ?? string.Empty) ||
-            (commandModel is not IPage && commandModel is not IInvokableCommand) ||
-            (commandModel is IPage) != isPage ||
-            !TryValidateListPageOptions(commandModel, executeCommand.ListPageOptions, out _))
+            commandViewModel.IsPage != isPage ||
+            !CanExecuteExternalCommand(commandViewModel, executeCommand.ListPageOptions))
         {
             await ShowExternalCommandUnavailableAsync();
             return;
@@ -512,46 +505,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Send(performMessage);
     }
 
-    private bool TryValidateListPageOptions(
-        ICommand? command,
-        ListPageLaunchOptions? options,
-        out string? filterName)
+    private static bool CanExecuteExternalCommand(
+        CommandViewModel command,
+        ListPageLaunchOptions? options)
     {
-        filterName = null;
-        if (options is null)
-        {
-            return true;
-        }
-
-        if (options.IsEmpty || command is not IListPage listPage)
-        {
-            return false;
-        }
-
-        if (options.FilterId is not { } filterId)
-        {
-            return true;
-        }
-
-        try
-        {
-            var filter = listPage.Filters?.GetFilters()?
-                .OfType<IFilter>()
-                .FirstOrDefault(candidate => string.Equals(candidate.Id, filterId, StringComparison.Ordinal));
-            if (filter is null)
-            {
-                return false;
-            }
-
-            var resolvedFilterName = filter.Name;
-            filterName = string.IsNullOrWhiteSpace(resolvedFilterName) ? filterId : resolvedFilterName;
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Failed to validate the filter requested by an external command link.", ex);
-            return false;
-        }
+        return (command.IsPage || command.IsInvokableCommand) &&
+            (options is null || (!options.IsEmpty && command.IsListPage));
     }
 
     private async Task<TopLevelViewModel?> ResolveExternalCommandAsync(CmdPalProtocolRoute.ExecuteCommand route)
@@ -587,7 +546,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         bool isPage,
         bool isReload,
         ListPageLaunchOptions? listPageOptions = null,
-        string? filterName = null,
         bool canRemember = true,
         IconInfoViewModel? icon = null)
     {
@@ -603,7 +561,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             permission,
             isReload,
             listPageOptions,
-            filterName,
             icon);
 
         var dialog = new ContentDialog
@@ -668,7 +625,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         ExternalCommandPermission permission,
         bool isReload,
         ListPageLaunchOptions? listPageOptions,
-        string? filterName,
         IconInfoViewModel? icon)
     {
         var content = new StackPanel { Spacing = 12 };
@@ -691,7 +647,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 state.Add(string.Format(
                     CultureInfo.CurrentCulture,
                     _externalCommandLinkPageFilterDescription,
-                    filterName ?? filterId,
                     filterId));
             }
 
@@ -1183,13 +1138,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 var topLevelCommand = tlcManager.LookupCommand(commandId);
                 if (topLevelCommand is not null)
                 {
-                    var command = topLevelCommand.CommandViewModel.Model.Unsafe;
-                    var isPage = command is not IInvokableCommand;
-
                     // If the bound command is an invokable command, then
                     // we don't want to open the window at all - we want to
                     // just do it.
-                    if (isPage)
+                    if (topLevelCommand.CommandViewModel.IsPage)
                     {
                         // If we're here, then the bound command was a page
                         // of some kind. Reset to root (clearing any transient dock state),

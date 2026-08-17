@@ -104,15 +104,21 @@ text uses the existing search surface and may use a persistent grant.
 1. Queue consent-gated routes; cap the queue at 16, coalesce identical pending routes, and serialize dialogs.
 1. Resolve commands by provider and command ID. If top-level loading is active, wait for
    that phase for at most 15 seconds, then perform one lookup. Do not await late providers.
-1. Require `IPage` or `IInvokableCommand` and validate page options before navigation.
+1. Require a cached `IPage` or `IInvokableCommand` shape and ensure page options target a
+   cached list-page shape without calling extension objects on the UI thread.
 1. Authorize with a remembered permission or the consent dialog.
-1. Before dispatch, re-resolve and revalidate command, provider, package identity,
-   command shape, and page options.
+1. Before dispatch, re-resolve and revalidate command, provider, package identity, and
+   cached command shape.
+1. Validate and apply filter options during background page initialization before the first
+   item fetch.
 
 Queue limits, duplicate coalescing, serialized dialogs, and waiting only for the current
 loading phase keep activation work bounded and connected to the user's initiating action.
 Commands are re-resolved because a provider can reload or replace command wrappers while
 the consent dialog is open; authorization must apply to the object that will execute.
+Filter existence is deliberately not resolved before consent because enumerating filters is
+an extension RPC. The dialog shows the exact filter ID; background page initialization
+rejects a missing filter without fetching unfiltered results.
 
 Activation is fire-and-forget; the caller receives no execution result. The queue is FIFO,
 exact duplicates are coalesced only while pending, and the same link can run again after the
@@ -120,8 +126,8 @@ previous request completes. Queue overflow and consent-gated routes received whi
 feature is disabled are dropped without user feedback.
 
 Malformed or unknown protocol activations are not dispatched. They currently fall through
-the normal launch path and summon CmdPal. An unavailable command or invalid page option
-instead summons CmdPal and shows an error dialog.
+the normal launch path and summon CmdPal. An unavailable command shows an error dialog; an
+invalid filter is reported by the linked page and prevents its initial item fetch.
 
 Consent and error dialogs are serialized and default to **Cancel**. Page links use normal
 forward navigation and preserve the existing back stack. Consent, errors, and page links

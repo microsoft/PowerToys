@@ -640,7 +640,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Page state:</value>
   </data>
   <data name="ExternalCommandLink_PageFilter_Description" xml:space="preserve">
-    <value>Filter: {0} ({1})</value>
+    <value>Filter: {0}</value>
   </data>
   <data name="ExternalCommandLink_PageQuery_Description" xml:space="preserve">
     <value>Search: {0}</value>
