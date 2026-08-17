@@ -38,6 +38,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
+    <VcpkgEnabled>false</VcpkgEnabled>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\tests\UnitTestsCommonUtils\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
