@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
@@ -249,6 +250,8 @@ public partial class App : Application, IDisposable
         services.AddSingleton<IExternalCommandPermissionStore, ExternalCommandPermissionStore>();
 
         // Services
+        services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+        services.AddSingleton<ExternalCommandLinkCoordinatorFactory>();
         services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();

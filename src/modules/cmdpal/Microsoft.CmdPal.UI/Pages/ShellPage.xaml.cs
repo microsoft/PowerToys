@@ -8,7 +8,6 @@ using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
-using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
@@ -16,7 +15,6 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
@@ -58,11 +56,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     INotifyPropertyChanged,
     IDisposable
 {
-    private const int MaximumQueuedExternalCommandLinks = 16;
-    private static readonly TimeSpan ExternalCommandResolutionTimeout = TimeSpan.FromSeconds(15);
-    private static readonly TimeSpan ExternalCommandLoadingDelay = TimeSpan.FromMilliseconds(250);
-    private static readonly TimeSpan XamlRootWaitTimeout = TimeSpan.FromSeconds(5);
-
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
 
     private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
@@ -75,27 +68,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly ToastWindow _toast = new();
 
     private readonly CompositeFormat _pageNavigatedAnnouncement;
-    private readonly string _externalCommandLinkReloadConsentDescription;
-    private readonly string _externalCommandLinkCommandConsentDescription;
-    private readonly string _externalCommandLinkPageConsentDescription;
-    private readonly string _externalCommandLinkOriginWarningDescription;
-    private readonly string _externalCommandLinkPageStateLabel;
-    private readonly string _externalCommandLinkShowMoreButtonText;
-    private readonly string _externalCommandLinkShowLessButtonText;
-    private readonly string _externalCommandLinkLoadingTitle;
-    private readonly string _externalCommandLinkLoadingDescription;
-    private readonly CompositeFormat _externalCommandLinkLinkDescription;
-    private readonly CompositeFormat _externalCommandLinkPageFilterDescription;
-    private readonly CompositeFormat _externalCommandLinkPageQueryDescription;
 
     private readonly ISettingsService _settingsService;
-    private readonly IExternalCommandPermissionStore _externalCommandPermissionStore;
-    private readonly TopLevelCommandManager _topLevelCommandManager;
-    private readonly ICmdPalProtocolActivation _protocolActivation;
-    private readonly Queue<CmdPalProtocolRoute> _externalCommandLinkQueue = [];
-    private readonly HashSet<CmdPalProtocolRoute> _pendingExternalCommandLinks = [];
-    private readonly CancellationTokenSource _lifetimeCts = new();
-    private readonly SemaphoreSlim _contentDialogGate = new(1, 1);
+    private readonly ShellContentDialogHost _dialogHost;
+    private readonly ExternalCommandLinkCoordinator _externalCommandLinks;
 
     // The last compact-mode setting we reacted to. Lets us ignore hot-reloads of unrelated
     // settings and only re-evaluate the layout when compact mode itself changes.
@@ -114,14 +90,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     // one-shot flag suppresses that select for the expand-driven load.
     private bool _suppressSelectOnNextLoad;
     private bool _pendingTopBarFocusRestore;
-    private bool _isProcessingExternalCommandLinks;
     private bool _isDisposed;
+    private IHostWindow? _hostWindow;
 
     public ShellViewModel ViewModel { get; private set; }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    private IHostWindow? _hostWindow;
 
     public IHostWindow? HostWindow
     {
@@ -153,34 +125,44 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private bool ItemActionsAllowed => !_compactMode || ExpandedMode;
 
     // Ignore shell shortcuts while a ContentDialog is active.
-    private bool IsContentDialogActive => !_isDisposed && _contentDialogGate.CurrentCount == 0;
+    private bool IsContentDialogActive => _dialogHost.IsDialogActive;
+
+    /// <summary>
+    /// Gets the default page animation, depending on the settings
+    /// </summary>
+    private NavigationTransitionInfo DefaultPageAnimation
+    {
+        get
+        {
+            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+            return settings.DisableAnimations ? _noAnimation : _slideRightTransition;
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     public ShellPage()
         : this(
             App.Current.Services.GetRequiredService<ShellViewModel>(),
             App.Current.Services.GetRequiredService<ISettingsService>(),
-            App.Current.Services.GetRequiredService<IExternalCommandPermissionStore>(),
-            App.Current.Services.GetRequiredService<TopLevelCommandManager>(),
-            App.Current.Services.GetRequiredService<ICmdPalProtocolActivation>())
+            App.Current.Services.GetRequiredService<ExternalCommandLinkCoordinatorFactory>())
     {
     }
 
     internal ShellPage(
         ShellViewModel viewModel,
         ISettingsService settingsService,
-        IExternalCommandPermissionStore externalCommandPermissionStore,
-        TopLevelCommandManager topLevelCommandManager,
-        ICmdPalProtocolActivation protocolActivation)
+        ExternalCommandLinkCoordinatorFactory externalCommandLinkCoordinatorFactory)
     {
         ViewModel = viewModel;
         _settingsService = settingsService;
-        _externalCommandPermissionStore = externalCommandPermissionStore;
-        _topLevelCommandManager = topLevelCommandManager;
-        _protocolActivation = protocolActivation;
         _compactMode = _settingsService.Settings.CompactMode;
         this.ExpandedMode = !_compactMode;
 
         this.InitializeComponent();
+
+        _dialogHost = new ShellContentDialogHost(this, SetContentDialogMode);
+        _externalCommandLinks = externalCommandLinkCoordinatorFactory.Create(_dialogHost, DispatcherQueue);
 
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
@@ -220,38 +202,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         var pageAnnouncementFormat = ResourceLoaderInstance.GetString("ScreenReader_Announcement_NavigatedToPage0");
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
-        _externalCommandLinkReloadConsentDescription = ResourceLoaderInstance.GetString("ExternalCommandLink_ReloadConsent_Description");
-        _externalCommandLinkCommandConsentDescription = ResourceLoaderInstance.GetString("ExternalCommandLink_CommandConsent_Description");
-        _externalCommandLinkPageConsentDescription = ResourceLoaderInstance.GetString("ExternalCommandLink_PageConsent_Description");
-        _externalCommandLinkOriginWarningDescription = ResourceLoaderInstance.GetString("ExternalCommandLink_OriginWarning_Description");
-        _externalCommandLinkPageStateLabel = ResourceLoaderInstance.GetString("ExternalCommandLink_PageState_Label");
-        _externalCommandLinkShowMoreButtonText = ResourceLoaderInstance.GetString("ExternalCommandLink_ShowMore_Button");
-        _externalCommandLinkShowLessButtonText = ResourceLoaderInstance.GetString("ExternalCommandLink_ShowLess_Button");
-        _externalCommandLinkLoadingTitle = ResourceLoaderInstance.GetString("ExternalCommandLink_Loading_Title");
-        _externalCommandLinkLoadingDescription = ResourceLoaderInstance.GetString("ExternalCommandLink_Loading_Description");
-        _externalCommandLinkLinkDescription = CompositeFormat.Parse(
-            ResourceLoaderInstance.GetString("ExternalCommandLink_Link_Description"));
-        _externalCommandLinkPageFilterDescription = CompositeFormat.Parse(
-            ResourceLoaderInstance.GetString("ExternalCommandLink_PageFilter_Description"));
-        _externalCommandLinkPageQueryDescription = CompositeFormat.Parse(
-            ResourceLoaderInstance.GetString("ExternalCommandLink_PageQuery_Description"));
 
         if (App.Current.Services.GetRequiredService<ISettingsService>().Settings.EnableDock)
         {
             _dockWindowManager = App.Current.Services.GetService<DockWindowManager>();
             _dockWindowManager?.ShowDocks();
-        }
-    }
-
-    /// <summary>
-    /// Gets the default page animation, depending on the settings
-    /// </summary>
-    private NavigationTransitionInfo DefaultPageAnimation
-    {
-        get
-        {
-            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
-            return settings.DisableAnimations ? _noAnimation : _slideRightTransition;
         }
     }
 
@@ -327,793 +282,18 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         });
     }
 
-    public void Receive(ExternalCommandLinkRequestedMessage message)
+    public void Receive(ExternalCommandLinkRequestedMessage message) => _externalCommandLinks.Enqueue(message.Route);
+
+    private void SetContentDialogMode(bool active)
     {
-        var route = message.Route;
-        _ = DispatcherQueue.TryEnqueue(() =>
+        WeakReferenceMessenger.Default.Send(new MaximizeForDialogMessage(active));
+        if (active)
         {
-            if (_isDisposed)
-            {
-                return;
-            }
-
-            if (_externalCommandLinkQueue.Count >= MaximumQueuedExternalCommandLinks)
-            {
-                Logger.LogWarning("Dropping an external command link because the consent queue is full.");
-                return;
-            }
-
-            if (!_pendingExternalCommandLinks.Add(route))
-            {
-                Logger.LogInfo("Ignoring a duplicate external command link that is already being handled.");
-                return;
-            }
-
-            _externalCommandLinkQueue.Enqueue(route);
-            _ = ProcessExternalCommandLinksAsync();
-        });
-    }
-
-    private async Task ProcessExternalCommandLinksAsync()
-    {
-        if (_isProcessingExternalCommandLinks)
-        {
-            return;
-        }
-
-        _isProcessingExternalCommandLinks = true;
-        try
-        {
-            while (!_isDisposed && _externalCommandLinkQueue.TryDequeue(out var route))
-            {
-                try
-                {
-                    await HandleExternalCommandLinkAsync(route);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError("Failed to handle an external command link.", ex);
-                }
-                finally
-                {
-                    _pendingExternalCommandLinks.Remove(route);
-                }
-            }
-        }
-        finally
-        {
-            _isProcessingExternalCommandLinks = false;
-        }
-    }
-
-    private async Task HandleExternalCommandLinkAsync(CmdPalProtocolRoute route)
-    {
-        if (!_settingsService.Settings.EnableExternalCommandLinks)
-        {
-            Logger.LogInfo("Ignoring an external command link because command links are disabled.");
-            return;
-        }
-
-        switch (route)
-        {
-            case CmdPalProtocolRoute.Reload:
-                await HandleExternalReloadAsync(route);
-                break;
-
-            case CmdPalProtocolRoute.ExecuteCommand executeCommand:
-                await HandleExternalCommandAsync(route, executeCommand);
-                break;
-
-            default:
-                Logger.LogWarning("Ignoring a non-executable route sent to the external command link handler.");
-                break;
-        }
-    }
-
-    private async Task HandleExternalReloadAsync(CmdPalProtocolRoute route)
-    {
-        var permission = new ExternalCommandPermission(
-            ExternalCommandPermissionKey.Reload,
-            ResourceLoaderInstance.GetString("ExternalCommandLink_Reload_Name"),
-            ResourceLoaderInstance.GetString("ExternalCommandLink_CommandPalette_Name"));
-
-        if (await _externalCommandPermissionStore.IsAllowedAsync(permission.Key) ||
-            await RequestExternalCommandConsentAsync(
-                route,
-                permission,
-                isPage: false,
-                isReload: true,
-                icon: CreateReloadExtensionsIcon()))
-        {
-            if (!_settingsService.Settings.EnableExternalCommandLinks)
-            {
-                return;
-            }
-
-            Logger.LogInfo("External command link triggered an extension reload.");
-            WeakReferenceMessenger.Default.Send(new ReloadCommandsMessage());
-        }
-    }
-
-    private async Task HandleExternalCommandAsync(
-        CmdPalProtocolRoute route,
-        CmdPalProtocolRoute.ExecuteCommand executeCommand)
-    {
-        var authorization = await AuthorizeExternalCommandAsync(route, executeCommand);
-        if (authorization is not { } authorized)
-        {
-            return;
-        }
-
-        if (!_settingsService.Settings.EnableExternalCommandLinks)
-        {
-            return;
-        }
-
-        // Re-resolve so consent cannot transfer across a provider reload.
-        using var refreshedResolution = await ResolveExternalCommandAsync(executeCommand);
-        var refreshedCommand = refreshedResolution?.Command;
-        var refreshedProvider = refreshedResolution?.Provider;
-        var refreshedCommandViewModel = refreshedCommand?.CommandViewModel;
-        if (refreshedCommand is null ||
-            refreshedProvider is null ||
-            refreshedCommandViewModel is null ||
-            authorized.Permission.Key.PackageFamilyName != (refreshedProvider.Extension?.PackageFamilyName ?? string.Empty) ||
-            refreshedCommandViewModel.IsPage != authorized.IsPage ||
-            !CanExecuteExternalCommand(refreshedCommandViewModel, executeCommand.ListPageOptions))
-        {
-            await ShowExternalCommandUnavailableAsync(authorized.ShouldSummonForExecution);
-            return;
-        }
-
-        var performMessage = refreshedCommand.GetPerformCommandMessage();
-        performMessage.WithAnimation = false;
-        performMessage.ShowWindowIfPage = authorized.ShouldSummonForExecution;
-        performMessage.ListPageOptions = executeCommand.ListPageOptions;
-        if (authorized.ShouldSummonForExecution)
-        {
-            performMessage.OnBeforeShowConfirmation = () =>
-                WeakReferenceMessenger.Default.Send(new ShowWindowMessage(IntPtr.Zero));
-        }
-
-        // Avoid ResetToHome, which leaves a canceled root page on the back stack.
-        WeakReferenceMessenger.Default.Send(performMessage);
-    }
-
-    private async Task<(ExternalCommandPermission Permission, bool IsPage, bool ShouldSummonForExecution)?> AuthorizeExternalCommandAsync(
-        CmdPalProtocolRoute route,
-        CmdPalProtocolRoute.ExecuteCommand executeCommand)
-    {
-        using var resolutionCancellation = new CancellationTokenSource();
-        var resolutionTask = ResolveExternalCommandAsync(executeCommand, resolutionCancellation.Token);
-        if (await Task.WhenAny(resolutionTask, Task.Delay(ExternalCommandLoadingDelay, _lifetimeCts.Token)) == resolutionTask)
-        {
-            using var resolution = await resolutionTask;
-            return await AuthorizeResolvedExternalCommandAsync(route, executeCommand, resolution, windowWasSummoned: false);
-        }
-
-        if (_isDisposed)
-        {
-            await CancelExternalCommandResolutionAsync(resolutionCancellation, resolutionTask);
-            return null;
-        }
-
-        WeakReferenceMessenger.Default.Send(new ShowWindowMessage(IntPtr.Zero));
-        if (!await WaitForXamlRootAsync())
-        {
-            await CancelExternalCommandResolutionAsync(resolutionCancellation, resolutionTask);
-            return null;
-        }
-
-        var dialogLease = await AcquireContentDialogAsync();
-        if (dialogLease is null)
-        {
-            await CancelExternalCommandResolutionAsync(resolutionCancellation, resolutionTask);
-            return null;
-        }
-
-        if (resolutionTask.IsCompleted)
-        {
-            dialogLease.Dispose();
-            using var resolution = await resolutionTask;
-            return await AuthorizeResolvedExternalCommandAsync(route, executeCommand, resolution, windowWasSummoned: true);
-        }
-
-        using (dialogLease)
-        {
-            var dialog = CreateExternalCommandDialog();
-            ConfigureExternalCommandLoadingDialog(dialog);
-
-            WeakReferenceMessenger.Default.Send(new MaximizeForDialogMessage(true));
             HandleExpandCompactOnUiThread(true);
-
-            var dialogResultTask = ShowContentDialogAsync(dialog);
-            try
-            {
-                if (await Task.WhenAny(resolutionTask, dialogResultTask) == dialogResultTask)
-                {
-                    await CancelExternalCommandResolutionAsync(resolutionCancellation, resolutionTask);
-                    return null;
-                }
-
-                using var resolution = await resolutionTask;
-                return await AuthorizeResolvedExternalCommandAsync(
-                    route,
-                    executeCommand,
-                    resolution,
-                    windowWasSummoned: true,
-                    activeDialog: dialog,
-                    activeDialogResultTask: dialogResultTask);
-            }
-            finally
-            {
-                if (!dialogResultTask.IsCompleted)
-                {
-                    dialog.Hide();
-                }
-
-                try
-                {
-                    _ = await dialogResultTask;
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError("Failed to close the external command link dialog.", ex);
-                }
-
-                WeakReferenceMessenger.Default.Send(new MaximizeForDialogMessage(false));
-                UpdateCompactModeForCurrentPage();
-            }
         }
-    }
-
-    private async Task<(ExternalCommandPermission Permission, bool IsPage, bool ShouldSummonForExecution)?> AuthorizeResolvedExternalCommandAsync(
-        CmdPalProtocolRoute route,
-        CmdPalProtocolRoute.ExecuteCommand executeCommand,
-        CommandResolution? resolution,
-        bool windowWasSummoned,
-        ContentDialog? activeDialog = null,
-        Task<ContentDialogResult>? activeDialogResultTask = null)
-    {
-        if (_isDisposed)
+        else
         {
-            return null;
-        }
-
-        if (activeDialogResultTask?.IsCompleted == true)
-        {
-            _ = await activeDialogResultTask;
-            return null;
-        }
-
-        if (resolution is null ||
-            !CanExecuteExternalCommand(resolution.Command.CommandViewModel, executeCommand.ListPageOptions))
-        {
-            if (activeDialog is null)
-            {
-                await ShowExternalCommandUnavailableAsync(!windowWasSummoned);
-            }
-            else
-            {
-                ConfigureExternalCommandUnavailableDialog(activeDialog);
-                _ = await activeDialogResultTask!;
-            }
-
-            return null;
-        }
-
-        var command = resolution.Command;
-        var provider = resolution.Provider;
-        var permission = new ExternalCommandPermission(
-            new ExternalCommandPermissionKey(
-                ExternalCommandKind.Command,
-                provider.Extension?.PackageFamilyName ?? string.Empty,
-                command.CommandProviderId,
-                command.Id),
-            string.IsNullOrWhiteSpace(command.Title) ? command.Id : command.Title,
-            string.IsNullOrWhiteSpace(provider.DisplayName) ? command.CommandProviderId : provider.DisplayName);
-
-        var isPage = command.CommandViewModel.IsPage;
-        var canRemember = !(executeCommand.ListPageOptions?.RequiresOneTimeConsent ?? false);
-        var isRemembered = canRemember && await _externalCommandPermissionStore.IsAllowedAsync(permission.Key);
-        if (_isDisposed)
-        {
-            return null;
-        }
-
-        // The loading dialog has only a cancel action, so an early result rejects the request.
-        if (activeDialogResultTask?.IsCompleted == true)
-        {
-            _ = await activeDialogResultTask;
-            return null;
-        }
-
-        if (!isRemembered)
-        {
-            bool isAllowed;
-            if (activeDialog is null)
-            {
-                isAllowed = await RequestExternalCommandConsentAsync(
-                    route,
-                    permission,
-                    isPage,
-                    isReload: false,
-                    executeCommand.ListPageOptions,
-                    canRemember,
-                    command.IconViewModel,
-                    summonWindow: !windowWasSummoned);
-            }
-            else
-            {
-                ConfigureExternalCommandConsentDialog(
-                    activeDialog,
-                    route,
-                    permission,
-                    isPage,
-                    isReload: false,
-                    executeCommand.ListPageOptions,
-                    canRemember,
-                    command.IconViewModel);
-                isAllowed = await ApplyExternalCommandConsentResultAsync(
-                    await activeDialogResultTask!,
-                    permission,
-                    canRemember);
-            }
-
-            if (!isAllowed)
-            {
-                return null;
-            }
-
-            windowWasSummoned = true;
-        }
-        else if (activeDialog is not null)
-        {
-            activeDialog.Hide();
-            _ = await activeDialogResultTask!;
-        }
-
-        return (permission, isPage, !windowWasSummoned);
-    }
-
-    private static async Task CancelExternalCommandResolutionAsync(
-        CancellationTokenSource cancellation,
-        Task<CommandResolution?> resolutionTask)
-    {
-        cancellation.Cancel();
-        using var resolution = await resolutionTask;
-    }
-
-    private static bool CanExecuteExternalCommand(
-        CommandViewModel command,
-        ListPageLaunchOptions? options)
-    {
-        return (command.IsPage || command.IsInvokableCommand) &&
-            (options is null || (!options.IsEmpty && command.IsListPage));
-    }
-
-    private async Task<CommandResolution?> ResolveExternalCommandAsync(
-        CmdPalProtocolRoute.ExecuteCommand route,
-        CancellationToken cancellationToken = default)
-    {
-        using var resolutionCts = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeCts.Token, cancellationToken);
-        resolutionCts.CancelAfter(ExternalCommandResolutionTimeout);
-        try
-        {
-            if (_topLevelCommandManager.IsLoading)
-            {
-                await _topLevelCommandManager.WaitForCurrentLoadAsync(resolutionCts.Token);
-            }
-
-            if (_isDisposed)
-            {
-                return null;
-            }
-
-            // Do not wait for late providers after the current load finishes.
-            return await _topLevelCommandManager.ResolveCommandAsync(route.ProviderId, route.CommandId, resolutionCts.Token);
-        }
-        catch (OperationCanceledException) when (_lifetimeCts.IsCancellationRequested || cancellationToken.IsCancellationRequested)
-        {
-            return null;
-        }
-        catch (OperationCanceledException)
-        {
-            Logger.LogWarning("Timed out resolving an external command link.");
-        }
-
-        return null;
-    }
-
-    private async Task<bool> RequestExternalCommandConsentAsync(
-        CmdPalProtocolRoute route,
-        ExternalCommandPermission permission,
-        bool isPage,
-        bool isReload,
-        ListPageLaunchOptions? listPageOptions = null,
-        bool canRemember = true,
-        IconInfoViewModel? icon = null,
-        bool summonWindow = true)
-    {
-        if (summonWindow)
-        {
-            WeakReferenceMessenger.Default.Send(new ShowWindowMessage(IntPtr.Zero));
-        }
-
-        if (!await WaitForXamlRootAsync())
-        {
-            return false;
-        }
-
-        var dialog = CreateExternalCommandDialog();
-        ConfigureExternalCommandConsentDialog(
-            dialog,
-            route,
-            permission,
-            isPage,
-            isReload,
-            listPageOptions,
-            canRemember,
-            icon);
-
-        var result = await ShowExternalCommandDialogAsync(dialog);
-        return result is not null &&
-            await ApplyExternalCommandConsentResultAsync(result.Value, permission, canRemember);
-    }
-
-    private void ConfigureExternalCommandConsentDialog(
-        ContentDialog dialog,
-        CmdPalProtocolRoute route,
-        ExternalCommandPermission permission,
-        bool isPage,
-        bool isReload,
-        ListPageLaunchOptions? listPageOptions,
-        bool canRemember,
-        IconInfoViewModel? icon)
-    {
-        var link = _protocolActivation.CreateUri(route).AbsoluteUri;
-        dialog.Title = ResourceLoaderInstance.GetString("ExternalCommandLink_Consent_Title");
-        dialog.Content = CreateExternalCommandConsentContent(link, permission, isReload, listPageOptions, icon);
-        dialog.PrimaryButtonText = ResourceLoaderInstance.GetString(
-            isReload ? "ExternalCommandLink_ReloadOnce_Button" :
-            isPage ? "ExternalCommandLink_OpenOnce_Button" : "ExternalCommandLink_RunOnce_Button");
-        dialog.SecondaryButtonText = canRemember
-            ? ResourceLoaderInstance.GetString("ExternalCommandLink_AlwaysAllow_Button")
-            : string.Empty;
-        dialog.CloseButtonText = ResourceLoaderInstance.GetString("ExternalCommandLink_Cancel_Button");
-        dialog.DefaultButton = ContentDialogButton.Close;
-    }
-
-    private async Task<bool> ApplyExternalCommandConsentResultAsync(
-        ContentDialogResult result,
-        ExternalCommandPermission permission,
-        bool canRemember)
-    {
-        if (result is ContentDialogResult.Primary or ContentDialogResult.Secondary &&
-            !_settingsService.Settings.EnableExternalCommandLinks)
-        {
-            return false;
-        }
-
-        if (result == ContentDialogResult.Secondary && canRemember)
-        {
-            if (!await _externalCommandPermissionStore.RememberAsync(permission))
-            {
-                Logger.LogWarning("The external command link permission could not be remembered; allowing this request once.");
-            }
-
-            return true;
-        }
-
-        return result == ContentDialogResult.Primary;
-    }
-
-    private ContentDialog CreateExternalCommandDialog()
-    {
-        var dialog = new ContentDialog
-        {
-            DefaultButton = ContentDialogButton.Close,
-            XamlRoot = XamlRoot,
-        };
-
-        dialog.AddHandler(
-            UIElement.KeyDownEvent,
-            new KeyEventHandler((_, args) =>
-            {
-                if (args.Key == VirtualKey.Escape)
-                {
-                    args.Handled = true;
-                    dialog.Hide();
-                }
-            }),
-            handledEventsToo: true);
-        return dialog;
-    }
-
-    private void ConfigureExternalCommandLoadingDialog(ContentDialog dialog)
-    {
-        var content = new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            Spacing = 12,
-        };
-        content.Children.Add(new ProgressRing
-        {
-            IsActive = true,
-            Width = 24,
-            Height = 24,
-            VerticalAlignment = VerticalAlignment.Center,
-        });
-        content.Children.Add(new TextBlock
-        {
-            Text = _externalCommandLinkLoadingDescription,
-            TextWrapping = TextWrapping.Wrap,
-            VerticalAlignment = VerticalAlignment.Center,
-        });
-
-        dialog.Title = _externalCommandLinkLoadingTitle;
-        dialog.Content = content;
-        dialog.PrimaryButtonText = string.Empty;
-        dialog.SecondaryButtonText = string.Empty;
-        dialog.CloseButtonText = ResourceLoaderInstance.GetString("ExternalCommandLink_Cancel_Button");
-        dialog.DefaultButton = ContentDialogButton.Close;
-    }
-
-    private static void ConfigureExternalCommandUnavailableDialog(ContentDialog dialog)
-    {
-        dialog.Title = ResourceLoaderInstance.GetString("ExternalCommandLink_Unavailable_Title");
-        dialog.Content = ResourceLoaderInstance.GetString("ExternalCommandLink_Unavailable_Description");
-        dialog.PrimaryButtonText = string.Empty;
-        dialog.SecondaryButtonText = string.Empty;
-        dialog.CloseButtonText = ResourceLoaderInstance.GetString("ExternalCommandLink_Close_Button");
-        dialog.DefaultButton = ContentDialogButton.Close;
-    }
-
-    private FrameworkElement CreateExternalCommandConsentContent(
-        string link,
-        ExternalCommandPermission permission,
-        bool isReload,
-        ListPageLaunchOptions? listPageOptions,
-        IconInfoViewModel? icon)
-    {
-        var content = new StackPanel { Spacing = 12 };
-        var requestDescription = isReload
-            ? _externalCommandLinkReloadConsentDescription
-            : listPageOptions is null
-                ? _externalCommandLinkCommandConsentDescription
-                : _externalCommandLinkPageConsentDescription;
-        content.Children.Add(CreateExternalCommandConsentText(requestDescription));
-
-        var preview = new CommandPreviewBox();
-        preview.Configure(permission.CommandName, permission.ProviderName, icon);
-        content.Children.Add(preview);
-
-        if (listPageOptions is not null)
-        {
-            var state = new List<string>(3);
-            if (listPageOptions.FilterId is { } filterId)
-            {
-                state.Add(string.Format(
-                    CultureInfo.CurrentCulture,
-                    _externalCommandLinkPageFilterDescription,
-                    filterId));
-            }
-
-            if (listPageOptions.Query is { } query)
-            {
-                state.Add(string.Format(
-                    CultureInfo.CurrentCulture,
-                    _externalCommandLinkPageQueryDescription,
-                    query));
-            }
-
-            if (listPageOptions.RequiresOneTimeConsent)
-            {
-                state.Add(ResourceLoaderInstance.GetString("ExternalCommandLink_FilterOneTime_Description"));
-            }
-
-            content.Children.Add(CreateExternalCommandConsentText(
-                $"{_externalCommandLinkPageStateLabel}{Environment.NewLine}{string.Join(Environment.NewLine, state)}",
-                isTextSelectionEnabled: true));
-        }
-
-        var originWarning = CreateExternalCommandConsentText(_externalCommandLinkOriginWarningDescription);
-        originWarning.Style = (Style)Resources["ExternalCommandLinkWarningTextBlockStyle"];
-        content.Children.Add(originWarning);
-        content.Children.Add(CreateExternalCommandLinkDisclosure(link));
-        return content;
-    }
-
-    private FrameworkElement CreateExternalCommandLinkDisclosure(string link)
-    {
-        var linkText = CreateExternalCommandConsentText(
-            string.Format(CultureInfo.CurrentCulture, _externalCommandLinkLinkDescription, link),
-            isTextSelectionEnabled: true);
-        linkText.Visibility = Visibility.Collapsed;
-
-        var toggle = new HyperlinkButton
-        {
-            Content = _externalCommandLinkShowMoreButtonText,
-            HorizontalAlignment = HorizontalAlignment.Left,
-            Padding = default,
-        };
-
-        var isExpanded = false;
-        toggle.Click += (_, _) =>
-        {
-            isExpanded = !isExpanded;
-            linkText.Visibility = isExpanded ? Visibility.Visible : Visibility.Collapsed;
-            toggle.Content = isExpanded ? _externalCommandLinkShowLessButtonText : _externalCommandLinkShowMoreButtonText;
-        };
-
-        var disclosure = new StackPanel { Spacing = 4 };
-        disclosure.Children.Add(toggle);
-        disclosure.Children.Add(linkText);
-        return disclosure;
-    }
-
-    private static TextBlock CreateExternalCommandConsentText(string text, bool isTextSelectionEnabled = false)
-    {
-        return new TextBlock
-        {
-            Text = text,
-            TextWrapping = TextWrapping.Wrap,
-            IsTextSelectionEnabled = isTextSelectionEnabled,
-        };
-    }
-
-    private static IconInfoViewModel CreateReloadExtensionsIcon()
-    {
-        var reloadCommand = new ReloadExtensionsCommand();
-        var icon = new IconInfoViewModel(reloadCommand.Icon);
-
-        icon.InitializeProperties();
-        return icon;
-    }
-
-    private async Task ShowExternalCommandUnavailableAsync(bool summonWindow = true)
-    {
-        if (_isDisposed)
-        {
-            return;
-        }
-
-        if (summonWindow)
-        {
-            WeakReferenceMessenger.Default.Send(new ShowWindowMessage(IntPtr.Zero));
-        }
-
-        if (!await WaitForXamlRootAsync())
-        {
-            return;
-        }
-
-        var dialog = CreateExternalCommandDialog();
-        ConfigureExternalCommandUnavailableDialog(dialog);
-
-        _ = await ShowExternalCommandDialogAsync(dialog);
-    }
-
-    private async Task<ContentDialogResult?> ShowExternalCommandDialogAsync(ContentDialog dialog)
-    {
-        using var dialogLease = await AcquireContentDialogAsync();
-        if (dialogLease is null)
-        {
-            return null;
-        }
-
-        WeakReferenceMessenger.Default.Send(new MaximizeForDialogMessage(true));
-        HandleExpandCompactOnUiThread(true);
-
-        try
-        {
-            return await ShowContentDialogAsync(dialog);
-        }
-        finally
-        {
-            WeakReferenceMessenger.Default.Send(new MaximizeForDialogMessage(false));
             UpdateCompactModeForCurrentPage();
-        }
-    }
-
-    private static async Task<ContentDialogResult> ShowContentDialogAsync(ContentDialog dialog) => await dialog.ShowAsync();
-
-    private async Task<ContentDialogLease?> AcquireContentDialogAsync()
-    {
-        if (_isDisposed)
-        {
-            return null;
-        }
-
-        try
-        {
-            await _contentDialogGate.WaitAsync(_lifetimeCts.Token);
-        }
-        catch (OperationCanceledException) when (_isDisposed)
-        {
-            return null;
-        }
-        catch (ObjectDisposedException) when (_isDisposed)
-        {
-            return null;
-        }
-
-        if (_isDisposed)
-        {
-            _contentDialogGate.Release();
-            return null;
-        }
-
-        return new ContentDialogLease(_contentDialogGate);
-    }
-
-    private async Task DisposeContentDialogGateWhenIdleAsync()
-    {
-        try
-        {
-            // Acquire the gate after cancellation so active leases and waiters finish first.
-            await _contentDialogGate.WaitAsync().ConfigureAwait(false);
-            _contentDialogGate.Dispose();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Failed to dispose the content-dialog gate.", ex);
-        }
-    }
-
-    private async Task<bool> WaitForXamlRootAsync()
-    {
-        if (XamlRoot is not null)
-        {
-            return true;
-        }
-
-        if (_isDisposed)
-        {
-            return false;
-        }
-
-        var loaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        void OnLoaded(object sender, RoutedEventArgs args)
-        {
-            if (XamlRoot is not null)
-            {
-                loaded.TrySetResult();
-            }
-        }
-
-        Loaded += OnLoaded;
-        try
-        {
-            // Loaded may have fired between the initial XamlRoot check and subscribing.
-            if (XamlRoot is not null)
-            {
-                return true;
-            }
-
-            try
-            {
-                await loaded.Task.WaitAsync(XamlRootWaitTimeout, _lifetimeCts.Token);
-            }
-            catch (TimeoutException)
-            {
-                Logger.LogError("Could not display external command link consent because the shell was not loaded.");
-                return false;
-            }
-            catch (OperationCanceledException) when (_isDisposed)
-            {
-                return false;
-            }
-            catch (ObjectDisposedException) when (_isDisposed)
-            {
-                return false;
-            }
-
-            return XamlRoot is not null;
-        }
-        finally
-        {
-            Loaded -= OnLoaded;
         }
     }
 
@@ -1143,7 +323,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private async Task HandlePinToDockDialogOnUiThread(ShowPinToDockDialogMessage message)
     {
         (ContentDialogResult Result, PinToDockDialogContent Content) dialogResult;
-        using (var dialogLease = await AcquireContentDialogAsync())
+        using (var dialogLease = await _dialogHost.AcquireAsync())
         {
             if (dialogLease is null)
             {
@@ -1227,32 +407,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // };
         }
 
-        // In compact mode the palette may be collapsed to just the search box. The confirmation
-        // dialog renders in the host window's popup layer, which is clipped to the card's HWND
-        // region, so merely expanding our own content isn't enough - the card must fill the whole
-        // window or the dialog is clipped. Ask the host window to maximize the card while the
-        // dialog is up (and expand our own content to match), then restore the normal compact
-        // behavior once it closes.
+        // Dialog mode expands the compact card so the popup is not clipped by its HWND region.
         ContentDialogResult result;
-        using (var dialogLease = await AcquireContentDialogAsync())
+        using (var dialogLease = await _dialogHost.AcquireAsync(enterDialogMode: true))
         {
             if (dialogLease is null)
             {
                 return;
             }
 
-            WeakReferenceMessenger.Default.Send(new MaximizeForDialogMessage(true));
-            HandleExpandCompactOnUiThread(true);
-
-            try
-            {
-                result = await dialog.ShowAsync();
-            }
-            finally
-            {
-                WeakReferenceMessenger.Default.Send(new MaximizeForDialogMessage(false));
-                UpdateCompactModeForCurrentPage();
-            }
+            result = await dialog.ShowAsync();
         }
 
         if (result == ContentDialogResult.Primary)
@@ -2036,10 +1200,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
 
         _isDisposed = true;
-        _lifetimeCts.Cancel();
-        _ = DisposeContentDialogGateWhenIdleAsync();
-        _externalCommandLinkQueue.Clear();
-        _pendingExternalCommandLinks.Clear();
+        _externalCommandLinks.Dispose();
+        _dialogHost.Dispose();
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _settingsService.SettingsChanged -= OnSettingsChanged;
 
@@ -2053,22 +1215,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _focusAfterLoadedCts?.Dispose();
         _focusAfterLoadedCts = null;
 
-        _lifetimeCts.Dispose();
-
         var dockWindowManager = _dockWindowManager;
         _dockWindowManager = null;
         dockWindowManager?.Dispose();
 
         GC.SuppressFinalize(this);
-    }
-
-    private sealed partial class ContentDialogLease(SemaphoreSlim gate) : IDisposable
-    {
-        private SemaphoreSlim? _gate = gate;
-
-        public void Dispose()
-        {
-            Interlocked.Exchange(ref _gate, null)?.Release();
-        }
     }
 }
