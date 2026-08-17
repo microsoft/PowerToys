@@ -160,4 +160,12 @@
   <data name="FilePickerParameterRun_PlaceholderText" xml:space="preserve">
     <value>Select file</value>
   </data>
+  <data name="Setting_UnsupportedByHost" xml:space="preserve">
+    <value>"{0}" needs a newer version of Command Palette to be edited here.</value>
+    <comment>Shown in place of a setting whose input control the installed Command Palette does not support. {0} is the setting label.</comment>
+  </data>
+  <data name="Setting_UnsupportedByHostNoLabel" xml:space="preserve">
+    <value>This setting needs a newer version of Command Palette to be edited here.</value>
+    <comment>Shown in place of a setting that has no label and whose input control the installed Command Palette does not support.</comment>
+  </data>
 </root>
