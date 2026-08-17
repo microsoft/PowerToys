@@ -171,12 +171,9 @@
         </RegistryKey>
         <File Id="FancyZonesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.FancyZonesEditor.resources.dll" />
       </Component>
-      <Component Id="ColorPicker_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER" Guid="$(var.CompGUIDPrefix)03">
-        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="ColorPicker_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes" />
-        </RegistryKey>
-        <File Id="ColorPicker_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.ColorPickerUI.resources.dll" />
-      </Component>
+      <!-- ColorPicker satellite resources removed during the WinUI 3 migration: the WinUI 3
+           ColorPicker localizes via the .pri compiled from Strings\*\Resources.resw, so no
+           PowerToys.ColorPickerUI.resources.dll is produced (referencing it broke the harvest). -->
       <Component Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER" Guid="$(var.CompGUIDPrefix)04">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes" />

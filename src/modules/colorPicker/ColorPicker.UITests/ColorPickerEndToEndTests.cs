@@ -11,7 +11,7 @@ namespace Microsoft.ColorPicker.UITests;
 
 /// <summary>
 /// Full end-to-end Color Picker scenario, driven entirely through the Settings UI:
-///   1. From the Settings app, navigate to the Color Picker page via the utilities stack.
+///   1. From the Settings app, expand System Tools and navigate to the Color Picker page.
 ///   2. On the page, toggle the module OFF and verify <c>PowerToys.ColorPickerUI</c> exits.
 ///   3. Toggle it back ON and verify <c>PowerToys.ColorPickerUI</c> respawns.
 ///   4. Read the activation shortcut from the page's <c>ShortcutControl</c> (the EditButton
@@ -19,23 +19,138 @@ namespace Microsoft.ColorPicker.UITests;
 ///   5. Clear the clipboard, move the cursor, send the shortcut chord.
 ///   6. Wait for the picker overlay window and read the displayed HEX from the overlay's
 ///      automation-peer TextBlock (AutomationId="ColorHexAutomationPeer").
-///   7. Left-click to capture. ColorPicker writes the captured color to the clipboard.
-///   8. Read the captured value from the clipboard and assert it matches the overlay HEX.
-///   9. Wait for the editor window and assert the captured value appears in its tree.
+///   7. Zoom to 4x and 8x, then move across the highlighted source pixel and verify its color is unchanged.
+///   8. Left-click to capture. ColorPicker writes the captured color to the clipboard.
+///   9. Read the captured value from the clipboard and assert it matches the overlay HEX.
+///  10. Wait for the editor window and assert the captured value appears in its tree.
 /// </summary>
 /// <remarks>
-/// The overlay's visible ColorTextBlock has <c>AutomationProperties.Name="{Binding ColorName}"</c>
-/// so UIA exposes the friendly color name (e.g. "White"), not the HEX. To work around that,
-/// MainView.xaml carries a hidden sibling TextBlock bound to <c>ColorText</c> with
+/// The overlay's visible ColorTextBlock uses its accessible name for screen-reader announcements,
+/// which can include the friendly color name (e.g. "White"), not just the HEX. To keep the raw
+/// value stable for UI automation, ColorPickerView.xaml carries a hidden sibling TextBlock with
 /// <c>AutomationId="ColorHexAutomationPeer"</c> — a test-only UIA hook that lets us read the
 /// actually-displayed HEX value without affecting the visual layout or accessibility UX.
 /// </remarks>
 [TestClass]
 public class ColorPickerEndToEndTests : UITestBase
 {
+    // Enum wire values used by the settings schema: OpenColorPicker = 1 and
+    // PickColorThenEditor = 0. The fixed shortcut keeps the Runner and UI test in sync.
+    private const string DeterministicColorPickerSettings = """
+        {
+          "name": "ColorPicker",
+          "version": "2.1",
+          "properties": {
+            "ActivationShortcut": {
+              "win": true,
+              "ctrl": false,
+              "alt": false,
+              "shift": true,
+              "code": 67,
+              "key": ""
+            },
+            "copiedcolorrepresentation": "HEX",
+            "activationaction": 1,
+            "primaryclickaction": 0,
+            "colorhistorylimit": 20,
+            "visiblecolorformats": {
+              "HEX": {
+                "Key": true,
+                "Value": "%Rex%Grx%Blx"
+              }
+            }
+          }
+        }
+        """;
+
+    private static readonly string ColorPickerSettingsDirectory = Path.Combine(
+        SettingsConfigHelper.PowerToysSettingsRoot,
+        "ColorPicker");
+
+    private static readonly string ColorPickerSettingsPath = Path.Combine(
+        ColorPickerSettingsDirectory,
+        "settings.json");
+
+    private static readonly string ColorPickerHistoryPath = Path.Combine(
+        ColorPickerSettingsDirectory,
+        "colorHistory.json");
+
+    private static readonly string[] EnabledModules = ["ColorPicker"];
+
+    private static byte[]? originalSettingsContent;
+    private static byte[]? originalHistoryContent;
+    private static bool snapshotsCaptured;
+
     public ColorPickerEndToEndTests()
-        : base(PowerToysModule.PowerToysSettings, enableModules: new[] { "ColorPicker" })
+        : base(PowerToysModule.PowerToysSettings, enableModules: EnabledModules)
     {
+    }
+
+    [ClassInitialize]
+    public static void PrepareColorPickerState(TestContext testContext)
+    {
+        ArgumentNullException.ThrowIfNull(testContext);
+        StopPowerToysProcesses();
+
+        originalSettingsContent = ReadFileIfPresent(ColorPickerSettingsPath);
+        originalHistoryContent = ReadFileIfPresent(ColorPickerHistoryPath);
+        snapshotsCaptured = true;
+
+        try
+        {
+            Directory.CreateDirectory(ColorPickerSettingsDirectory);
+            File.WriteAllText(ColorPickerSettingsPath, DeterministicColorPickerSettings);
+            File.WriteAllText(ColorPickerHistoryPath, "[]");
+        }
+        catch (Exception setupError)
+        {
+            try
+            {
+                RestoreOriginalColorPickerFiles();
+            }
+            catch (Exception restoreError)
+            {
+                throw new AggregateException(
+                    "Could not prepare or restore the Color Picker test state.",
+                    setupError,
+                    restoreError);
+            }
+
+            throw;
+        }
+    }
+
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    public static void RestoreColorPickerState()
+    {
+        if (!snapshotsCaptured)
+        {
+            return;
+        }
+
+        Exception? cleanupError = null;
+        try
+        {
+            StopPowerToysProcesses();
+        }
+        catch (Exception ex)
+        {
+            cleanupError = ex;
+        }
+
+        try
+        {
+            RestoreOriginalColorPickerFiles();
+        }
+        catch (Exception ex)
+        {
+            cleanupError = cleanupError is null ? ex : new AggregateException(cleanupError, ex);
+        }
+
+        if (cleanupError is not null)
+        {
+            throw new IOException("Could not clean up the Color Picker test state.", cleanupError);
+        }
     }
 
     [TestMethod]
@@ -59,41 +174,19 @@ public class ColorPickerEndToEndTests : UITestBase
 
     private void RunTest()
     {
-        // -- 1. Navigate via the utilities stack on the right of the dashboard ----------------
-        // The Dashboard's right-side ModuleList renders each utility as a clickable SettingsCard
-        // whose header is a TextBlock with the module's Label (e.g. "Color Picker"). The
-        // SettingsCard itself isn't surfaced by name "Color Picker" in winappcli's search — only
-        // its inner TextBlock label is — and the TextBlock has no InvokePattern (the click is
-        // handled by the SettingsCard's OnSettingsCardClick).
-        //
-        // A "Color Picker" search returns 4 elements: the Quick-Access tile (Button) and its
-        // label (TextBlock with invokableAncestor) on the left, plus the utility-stack label
-        // (TextBlock) and ToggleSwitch on the right. We pick the rightmost TextBlock (largest
-        // X coordinate) — that's the utility-stack label — and mouse-click it (winapp ui click
-        // uses real mouse simulation, which triggers the ancestor SettingsCard's click).
-        var matches = Session.FindAll<Element>(By.Name("Color Picker"));
-        TestContext.WriteLine($"'Color Picker' search returned {matches.Count} elements:");
-        foreach (var m in matches)
+        // -- 1. Navigate through the stable NavigationView automation contract ----------------
+        // System Tools is collapsed by default, so expand it only when Color Picker is not yet
+        // present in the UIA tree. These IDs are independent of display text and dashboard layout.
+        if (!Session.Has(By.AccessibilityId("ColorPickerNavItem"), timeoutMS: 500))
         {
-            TestContext.WriteLine($"  [{m.ControlType,-10}] class='{m.ClassName}' at ({m.X},{m.Y}) {m.Width}x{m.Height} sel='{m.Selector}'");
+            Find<NavigationViewItem>(By.AccessibilityId("SystemToolsNavItem"), timeoutMS: 5_000).Click(msPostAction: 500);
         }
 
-        var utilityItem = matches
-            .Where(m => m.ClassName.Equals("TextBlock", StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(m => m.X)
-            .FirstOrDefault();
-        Assert.IsNotNull(
-            utilityItem,
-            "Could not find a 'Color Picker' TextBlock to click. Is the dashboard visible? See element dump above.");
-        TestContext.WriteLine($"Clicking utility-stack 'Color Picker' TextBlock at x={utilityItem!.X}, y={utilityItem.Y}");
-        utilityItem.MouseClick(msPostAction: 800);
-        TestContext.WriteLine("Navigated to Color Picker page (clicked utility-stack item).");
+        Find<NavigationViewItem>(By.AccessibilityId("ColorPickerNavItem"), timeoutMS: 5_000).Click(msPostAction: 800);
+        TestContext.WriteLine("Navigated to the Color Picker settings page.");
 
         // -- 2. Find the page-level enable toggle ---------------------------------------------
-        // After navigation, the dashboard is gone and the page's enable toggle is the only
-        // "Color Picker" ToggleSwitch in the tree. The ToggleSwitch wrapper pins
-        // ClassName="ToggleSwitch" so the search is unambiguous.
-        var toggle = Find<ToggleSwitch>(By.Name("Color Picker"));
+        var toggle = Find<ToggleSwitch>(By.AccessibilityId("Toggle_ColorPicker"), timeoutMS: 5_000);
         var initialIsOn = toggle.IsOn;
         TestContext.WriteLine($"Initial toggle state: IsOn={initialIsOn}");
 
@@ -216,7 +309,7 @@ public class ColorPickerEndToEndTests : UITestBase
             TestContext.WriteLine($"Picker overlay appeared: hwnd={overlay!.WindowHandle}");
 
             // -- 9. Read the displayed HEX from the overlay's automation-peer TextBlock -----
-            // The peer is a Visibility=Visible, Opacity=0 TextBlock added to MainView.xaml
+            // The peer is a Visibility=Visible, Opacity=0 TextBlock added to ColorPickerView.xaml
             // specifically so UIA-driven tests can read the live HEX value. It is bound to
             // the same `ColorText` source as the visible TextBlock, so it always matches
             // what the user sees.
@@ -236,29 +329,97 @@ public class ColorPickerEndToEndTests : UITestBase
                 string.IsNullOrEmpty(overlayHex),
                 "Failed to read the overlay's HEX value from the ColorHexAutomationPeer TextBlock.");
 
-            // -- 10. Click to capture; ColorPicker writes the configured format to clipboard
+            // -- 10. Zoom without moving the cursor; the magnifier must not alter the sample --
+            // Establish the baseline from the factor-1 magnifier after its captured image is on
+            // screen. This avoids comparing against desktop content that may redraw between the
+            // initial UIA read and the first zoom capture.
+            MouseHelper.ScrollUp();
+
+            var zoomWindow = WindowsFinder.WaitForWindowByApp(
+                "PowerToys.ColorPickerUI",
+                w => w.Width > 300 && w.Height > 300,
+                timeoutMS: 2_500);
+            Assert.IsNotNull(zoomWindow, "The zoom magnifier window did not appear after scrolling.");
+            long zoomWindowHandle = zoomWindow!.WindowHandle;
+            var (zoomLeft, _, zoomRight, _) = WindowHelper.GetWindowBounds(new IntPtr(zoomWindowHandle));
+            Assert.IsTrue(zoomRight > zoomLeft, "Could not resolve the zoom window bounds.");
+            double zoomDpiScale = (zoomRight - zoomLeft) / 430.0;
+            (int zoomAnchorX, int zoomAnchorY) = MouseHelper.GetMousePosition();
+
+            Thread.Sleep(750); // Window show/layout plus at least one color-sampling timer tick.
+            string factorOneHex = ReadOverlayColor(overlay);
+            Assert.IsFalse(string.IsNullOrEmpty(factorOneHex), "The factor-1 magnifier exposed no sampled color.");
+
+            // Two more ticks reach factor 4, where the grid and center highlight appear.
+            // The sampled color must still be the captured center pixel rather than that overlay.
+            MouseHelper.ScrollUp();
+            MouseHelper.ScrollUp();
+            Thread.Sleep(750); // 200ms resize animation plus color-sampling timer ticks.
+            string factorFourHex = ReadOverlayColor(overlay);
+            Assert.AreEqual(
+                factorOneHex,
+                factorFourHex,
+                "The 4x magnifier changed the color sampled at the stationary cursor.");
+
+            // At factor 4 the center source cell is four DIPs wide. Moving +3 DIPs stays
+            // inside that same source pixel but lands on the old static highlight's right stroke.
+            MouseHelper.MoveTo(zoomAnchorX + (int)Math.Ceiling(3 * zoomDpiScale), zoomAnchorY);
+            Thread.Sleep(750);
+            string factorFourMovedHex = ReadOverlayColor(overlay);
+            Assert.AreEqual(
+                factorOneHex,
+                factorFourMovedHex,
+                "The 4x magnifier sampled its grid/highlight after the cursor moved.");
+
+            MouseHelper.MoveTo(zoomAnchorX, zoomAnchorY);
+            Thread.Sleep(750);
+
+            MouseHelper.ScrollUp();
+            Thread.Sleep(750);
+            string factorEightHex = ReadOverlayColor(overlay);
+            Assert.AreEqual(
+                factorOneHex,
+                factorEightHex,
+                "The 8x magnifier changed the color sampled at the stationary cursor.");
+
+            // The equivalent regression point at factor 8 is +7 DIPs within the same source cell.
+            MouseHelper.MoveTo(zoomAnchorX + (int)Math.Ceiling(7 * zoomDpiScale), zoomAnchorY);
+            Thread.Sleep(750);
+            string factorEightMovedHex = ReadOverlayColor(overlay);
+            Assert.AreEqual(
+                factorOneHex,
+                factorEightMovedHex,
+                "The 8x magnifier sampled its grid/highlight after the cursor moved.");
+            TestContext.WriteLine("Overlay color remained stable at 4x and 8x zoom, including pointer movement.");
+
+            // Use the latest displayed value for the clipboard cross-check below.
+            overlayHex = factorEightMovedHex;
+
+            // -- 11. Click to capture; ColorPicker writes the configured format to clipboard
             MouseHelper.LeftClick();
             TestContext.WriteLine("Sent left-click to capture color.");
 
             var capturedColor = ClipboardHelper.WaitForText(ignoredValue: string.Empty, timeoutMS: 3_000);
+            const string captureFailureMessage =
+                "Nothing was written to the clipboard within 3s after the click. " +
+                "Did the picker actually capture? (Check that left-click is mapped to a 'PickColor' action.)";
             Assert.IsFalse(
                 string.IsNullOrEmpty(capturedColor),
-                "Nothing was written to the clipboard within 3s after the click. " +
-                "Did the picker actually capture? (Check that left-click is mapped to a 'PickColor' action.)");
+                captureFailureMessage);
             TestContext.WriteLine($"Captured color (clipboard): '{capturedColor}'");
 
             // Cross-check: the clipboard value should be the same HEX the overlay was showing.
             // Both come from `ColorText` in MainViewModel, just routed differently (overlay
-            // binding vs. ColorPickerHelper.CopyToClipboard on Picker_MouseDown).
+            // binding vs. ManagedCommon.ClipboardHelper.TrySetText in HandleMouseClickAction).
             Assert.IsTrue(
                 ContainsIgnoringHash(capturedColor, overlayHex) || ContainsIgnoringHash(overlayHex, capturedColor),
                 $"Overlay HEX '{overlayHex}' and clipboard '{capturedColor}' don't match.");
             TestContext.WriteLine("Overlay HEX matches clipboard value.");
 
-            // -- 11. Wait for the editor window ---------------------------------------------
+            // -- 12. Wait for the editor window ---------------------------------------------
             var editor = WindowsFinder.WaitForWindowByApp(
                 "PowerToys.ColorPickerUI",
-                w => w.Width > 300 && w.Height > 300,
+                w => w.Hwnd != zoomWindowHandle && w.Width > 300 && w.Height > 300,
                 timeoutMS: 10_000);
 
             if (editor is null)
@@ -275,12 +436,11 @@ public class ColorPickerEndToEndTests : UITestBase
 
             TestContext.WriteLine($"Editor window: hwnd={editor!.WindowHandle} title='{editor.WindowTitle}'");
 
-            // -- 12. Find the captured color inside the editor's tree ------------------------
+            // -- 13. Find the captured color inside the editor's tree ------------------------
             // From ColorEditorView.xaml the format list is populated from `ColorRepresentations`.
-            // Each format renders as a ColorFormatControl (DataItem in the UIA tree) that
-            // contains a TextBox holding the formatted color string. The captured clipboard
-            // value will be ONE of those formats — we just need to find any element whose Name
-            // or Value contains it.
+            // Each format renders a selectable TextBlock whose visible text must also be its UIA
+            // Name. Unlike the WPF TextBox it replaced, a TextBlock has no ValuePattern fallback,
+            // so accepting the value only through UIA Value would miss an accessibility regression.
             var tree = editor.Inspect(depth: 12);
             var values = new List<(string Type, string Name, string Value)>();
             WalkElements(tree, values);
@@ -293,23 +453,16 @@ public class ColorPickerEndToEndTests : UITestBase
 
             Assert.IsTrue(values.Count > 0, "Editor reported no readable elements via inspect --json.");
 
-            // Match: find any element whose Name or Value contains the clipboard text
-            // case-insensitively. If the clipboard had a '#' prefix (e.g. "#FFFFFF") and the
-            // editor renders without it, also try the bare-hex form.
+            // Match the clipboard text through UIA Name, ignoring an optional leading '#'.
             var needle = capturedColor.Trim();
-            var needleBareHex = needle.TrimStart('#');
-
             var match = values.FirstOrDefault(v =>
-                v.Name.Contains(needle, StringComparison.OrdinalIgnoreCase) ||
-                v.Value.Contains(needle, StringComparison.OrdinalIgnoreCase) ||
-                (needleBareHex.Length > 0 &&
-                    (v.Name.Contains(needleBareHex, StringComparison.OrdinalIgnoreCase) ||
-                     v.Value.Contains(needleBareHex, StringComparison.OrdinalIgnoreCase))));
+                v.Type.Equals("Text", StringComparison.OrdinalIgnoreCase) &&
+                ContainsIgnoringHash(v.Name, needle));
 
-            if (string.IsNullOrEmpty(match.Name) && string.IsNullOrEmpty(match.Value))
+            if (string.IsNullOrEmpty(match.Name))
             {
                 Assert.Fail(
-                    $"Captured color '{capturedColor}' not found in editor tree." + Environment.NewLine +
+                    $"Captured color '{capturedColor}' was not exposed through the formatted color TextBlock's UIA Name." + Environment.NewLine +
                     "  See element dump above.");
             }
 
@@ -331,6 +484,11 @@ public class ColorPickerEndToEndTests : UITestBase
             {
             }
         }
+    }
+
+    private static string ReadOverlayColor(Session overlay)
+    {
+        return overlay.Find(By.AccessibilityId("ColorHexAutomationPeer"), timeoutMS: 2_000).Name;
     }
 
     /// <summary>
@@ -388,7 +546,20 @@ public class ColorPickerEndToEndTests : UITestBase
         var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
         while (DateTime.UtcNow < deadline)
         {
-            var running = Process.GetProcessesByName(name).Length > 0;
+            var processes = Process.GetProcessesByName(name);
+            bool running;
+            try
+            {
+                running = processes.Length > 0;
+            }
+            finally
+            {
+                foreach (Process process in processes)
+                {
+                    process.Dispose();
+                }
+            }
+
             if (running == expected)
             {
                 return true;
@@ -398,6 +569,100 @@ public class ColorPickerEndToEndTests : UITestBase
         }
 
         return false;
+    }
+
+    private static void StopPowerToysProcesses()
+    {
+        string[] processNames =
+        {
+            "PowerToys",
+            "PowerToys.Settings",
+            "PowerToys.ColorPickerUI",
+        };
+
+        foreach (string processName in processNames)
+        {
+            WindowControl.TryKillProcessByName(processName);
+        }
+
+        foreach (string processName in processNames)
+        {
+            if (!WaitForProcess(processName, expected: false, timeoutMS: 5_000))
+            {
+                throw new InvalidOperationException($"Could not stop '{processName}' before changing the Color Picker test state.");
+            }
+        }
+    }
+
+    private static byte[]? ReadFileIfPresent(string path)
+    {
+        return File.Exists(path) ? File.ReadAllBytes(path) : null;
+    }
+
+    private static void RestoreOriginalColorPickerFiles()
+    {
+        if (!snapshotsCaptured)
+        {
+            return;
+        }
+
+        Exception? restoreError = null;
+        try
+        {
+            RestoreFile(ColorPickerSettingsPath, originalSettingsContent);
+        }
+        catch (Exception ex)
+        {
+            restoreError = ex;
+        }
+
+        try
+        {
+            RestoreFile(ColorPickerHistoryPath, originalHistoryContent);
+        }
+        catch (Exception ex)
+        {
+            restoreError = restoreError is null ? ex : new AggregateException(restoreError, ex);
+        }
+
+        if (restoreError is not null)
+        {
+            throw new IOException("Could not restore the original Color Picker test files.", restoreError);
+        }
+
+        snapshotsCaptured = false;
+        originalSettingsContent = null;
+        originalHistoryContent = null;
+    }
+
+    private static void RestoreFile(string path, byte[]? originalContent)
+    {
+        const int maxAttempts = 5;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                if (originalContent is null)
+                {
+                    File.Delete(path);
+                }
+                else
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                    File.WriteAllBytes(path, originalContent);
+                }
+
+                return;
+            }
+            catch (IOException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(100);
+            }
+            catch (UnauthorizedAccessException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(100);
+            }
+        }
     }
 
     /// <summary>
