@@ -836,11 +836,9 @@ public sealed partial class MainListPage : DynamicListPage,
         return allApps.IsLoading || _tlcManager.IsLoading;
     }
 
-    // Almost verbatim ListHelpers.ScoreListItem. Fallbacks are tiered by the same lexical
-    // relationship as any other item (their dynamic title reflects the query), so a fallback
-    // whose title matches the query well ranks with the equivalent real matches. A fallback that
-    // did not match at all floors to FallbackFloor (see MainListRanker.ClassifyTier) rather than
-    // dropping, so always-available handlers keep showing without dominating the top.
+    // Almost verbatim ListHelpers.ScoreListItem. Fallbacks tier by the same title match as any
+    // other item, except a non-match floors to FallbackFloor (see MainListRanker.ClassifyTier) so
+    // the handler stays available instead of dropping.
     internal static int ScoreTopLevelItem(
         in FuzzyQuery query,
         IListItem topLevelOrAppItem,

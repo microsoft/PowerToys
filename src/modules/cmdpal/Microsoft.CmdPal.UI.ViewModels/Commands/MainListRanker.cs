@@ -86,10 +86,8 @@ internal static class MainListRanker
     /// </summary>
     /// <param name="query">The raw query text.</param>
     /// <param name="title">The item's title.</param>
-    /// <param name="isFallback">Whether the item is a fallback. A fallback is tiered by the same
-    /// lexical relationship as any other item (its dynamic title reflects the query), but is
-    /// floored to <see cref="RankTier.FallbackFloor"/> when nothing matched so an always-available
-    /// handler is never dropped.</param>
+    /// <param name="isFallback">Whether the item is a fallback. A fallback tiers like any other
+    /// item, but floors to <see cref="RankTier.FallbackFloor"/> when nothing matches so it's never dropped.</param>
     /// <param name="isAliasExact">Whether the query exactly equals the item's alias.</param>
     /// <param name="isAliasSubstringMatch">Whether the item's alias starts with the query
     /// (a partial alias match). An alias is an explicit, user-assigned shortcut and may be
@@ -112,10 +110,8 @@ internal static class MainListRanker
 
         var lexicalTier = ClassifyLexicalTier(query, title, isAliasSubstringMatch, matchedLexically);
 
-        // A fallback earns whatever tier its title relationship deserves - a fallback whose
-        // dynamic title exactly matches the query is a genuine top result. But because a fallback
-        // is an always-available handler, a non-match floors to FallbackFloor rather than dropping
-        // it, so handlers like "Run command" and web search keep showing.
+        // A fallback's title reflects the query, so tier it like anything else. Floor a non-match
+        // instead of dropping it, so handlers like Run command and web search keep showing.
         if (isFallback)
         {
             return lexicalTier == RankTier.None ? RankTier.FallbackFloor : lexicalTier;
@@ -125,8 +121,8 @@ internal static class MainListRanker
     }
 
     /// <summary>
-    /// Classifies the lexical relationship between the query and the title into a tier, with no
-    /// fallback flooring. Returns <see cref="RankTier.None"/> when nothing matched.
+    /// Tiers the query-to-title match with no fallback flooring. Returns
+    /// <see cref="RankTier.None"/> when nothing matched.
     /// </summary>
     private static RankTier ClassifyLexicalTier(
         string query,
@@ -271,10 +267,8 @@ public enum RankTier
     /// <summary>No match. The item should be filtered out.</summary>
     None = 0,
 
-    /// <summary>A fallback whose title had no lexical relationship to the query. Fallbacks are
-    /// always-available handlers, so instead of dropping they floor here and appear after
-    /// direct command/app matches. A fallback whose dynamic title <i>does</i> match the query is
-    /// tiered by that relationship like any other item, not floored here.</summary>
+    /// <summary>A fallback that didn't match the query. It floors here instead of dropping so the
+    /// handler stays available, while a fallback whose title does match is tiered like any other item.</summary>
     FallbackFloor = 1,
 
     /// <summary>The query matched as a fuzzy subsequence of the title, subtitle, or
