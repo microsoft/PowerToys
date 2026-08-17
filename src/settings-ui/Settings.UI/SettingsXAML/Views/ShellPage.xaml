@@ -172,8 +172,11 @@
                         <InfoBadge
                             x:Name="UpdateInfoBadge"
                             Margin="0,0,2,0"
+                            AutomationProperties.AccessibilityView="Content"
+                            AutomationProperties.AutomationId="UpdateNavigationBadge"
+                            AutomationProperties.Name="{x:Bind UpdateViewModel.StatusTitle, Mode=OneWay}"
                             Style="{StaticResource UpdateInfoBadgeStyle}"
-                            Visibility="Collapsed" />
+                            Visibility="{x:Bind UpdateViewModel.ShowUpdateBadge, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                     </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
                 <NavigationViewItemSeparator />
@@ -463,6 +466,14 @@
             </i:Interaction.Behaviors>
             <Frame x:Name="shellFrame" />
         </NavigationView>
+        <controls:UpdateActivityControl
+            x:Name="UpdateActivity"
+            Grid.Row="1"
+            Margin="12"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Canvas.ZIndex="2"
+            ViewModel="{x:Bind UpdateViewModel, Mode=OneWay}" />
         <ContentDialog
             x:Name="CloseDialog"
             x:Uid="CloseDialog"

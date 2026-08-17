@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.UpdateActivityControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="Root"
+    mc:Ignorable="d">
+
+    <Grid x:Name="ShadowHost" Padding="12">
+        <Border
+            x:Name="ActivitySurface"
+            Width="440"
+            MaxHeight="600"
+            Padding="20"
+            AutomationProperties.AutomationId="UpdateActivitySurface"
+            AutomationProperties.Name="{x:Bind ViewModel.StatusTitle, Mode=OneWay}"
+            Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Translation="0,0,12"
+            Visibility="{x:Bind ViewModel.IsActivityVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+            <Border.Shadow>
+                <ThemeShadow />
+            </Border.Shadow>
+            <local:UpdateStatusControl x:Name="UpdateStatus" ViewModel="{Binding ViewModel, ElementName=Root}" />
+        </Border>
+    </Grid>
+</UserControl>
