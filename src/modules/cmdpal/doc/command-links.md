@@ -107,8 +107,9 @@ text uses the existing search surface and may use a persistent grant.
 1. Queue consent-gated routes; cap the queue at 16, coalesce identical pending routes, and serialize dialogs.
 1. Resolve commands by provider and command ID. If top-level loading is active, wait for
    that phase for at most 15 seconds. Check loaded top-level and dock items, then perform one
-   `ICommandProvider4.GetCommandItem` lookup on a worker thread. Require an exact ID match and
-   do not await late providers.
+   `ICommandProvider4.GetCommandItem` lookup on a worker thread. After 250 ms, show a
+   cancellable loading dialog that transitions in place to consent or unavailable. Require
+   an exact ID match and do not await late providers.
 1. Require a cached `IPage` or `IInvokableCommand` shape and ensure page options target a
    cached list-page shape without calling extension objects on the UI thread.
 1. Authorize with a remembered permission or the consent dialog.
@@ -126,6 +127,9 @@ Filter existence is deliberately not resolved before consent because enumerating
 an extension RPC. The dialog shows the exact filter ID; background page initialization
 rejects a missing filter without fetching unfiltered results.
 
+Canceling the loading dialog stops waiting for resolution. Provider work that cannot be
+canceled may finish in the background; its result is discarded and cleaned up.
+
 Activation is fire-and-forget; the caller receives no execution result. The queue is FIFO,
 exact duplicates are coalesced only while pending, and the same link can run again after the
 previous request completes. Queue overflow and consent-gated routes received while the
@@ -135,10 +139,10 @@ Malformed or unknown protocol activations are not dispatched. They currently fal
 the normal launch path and summon CmdPal. An unavailable command shows an error dialog; an
 invalid filter is reported by the linked page and prevents its initial item fetch.
 
-Consent and error dialogs are serialized and default to **Cancel**. Page links use normal
-forward navigation and preserve the existing back stack. Consent, errors, and page links
-raise the window; a remembered reload or invokable command can run without raising it unless
-the command presents its own confirmation.
+Loading and consent dialogs are serialized and default to **Cancel**; error dialogs expose
+only **Close**. Page links use normal forward navigation and preserve the existing back stack.
+Consent, errors, and page links raise the window; a remembered reload or invokable command
+can run without raising it unless the command presents its own confirmation.
 
 ## 5 Configuration and permissions
 

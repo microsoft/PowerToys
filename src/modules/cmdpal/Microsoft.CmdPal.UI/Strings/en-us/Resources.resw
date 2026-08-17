@@ -630,6 +630,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="ExternalCommandLink_Consent_Title" xml:space="preserve">
     <value>Allow this command link?</value>
   </data>
+  <data name="ExternalCommandLink_Loading_Title" xml:space="preserve">
+    <value>Opening command link</value>
+  </data>
+  <data name="ExternalCommandLink_Loading_Description" xml:space="preserve">
+    <value>Loading command information...</value>
+  </data>
   <data name="ExternalCommandLink_CommandConsent_Description" xml:space="preserve">
     <value>An external link is requesting this command.</value>
   </data>
