@@ -30,14 +30,29 @@ internal static class Commands
     private static DateTime timeOfLastNetworkQuery;
 
     /// <summary>
+    /// Runs the "update and restart"/"update and shut down" action and turns the outcome
+    /// into a <see cref="CommandResult"/>. When the shutdown can't be started we keep the
+    /// palette open and show a localized error instead of silently dismissing.
+    /// </summary>
+    private static CommandResult UpdateShutdownResult(bool restart)
+        => WindowsUpdateHelper.InitiateUpdateShutdown(restart)
+            ? CommandResult.Dismiss()
+            : CommandResult.ShowToast(new ToastArgs
+            {
+                Message = Resources.Microsoft_plugin_sys_update_failed,
+                Result = CommandResult.KeepOpen(),
+            });
+
+    /// <summary>
     /// Returns a list with all system command results
     /// </summary>
     /// <param name="isUefi">Value indicating if the system is booted in uefi mode</param>
+    /// <param name="isUpdatePending">Value indicating if Windows Update is waiting for a restart to install updates.</param>
     /// <param name="hideEmptyRecycleBin">Value indicating if we should hide the Empty Recycle Bin command.</param>
     /// <param name="confirmCommands">A value indicating if the user should confirm the system commands</param>
     /// <param name="emptyRBSuccessMessage">Show a success message after empty Recycle Bin.</param>
     /// <returns>A list of all results</returns>
-    public static List<IListItem> GetSystemCommands(bool isUefi, bool hideEmptyRecycleBin, bool confirmCommands, bool emptyRBSuccessMessage)
+    public static List<IListItem> GetSystemCommands(bool isUefi, bool isUpdatePending, bool hideEmptyRecycleBin, bool confirmCommands, bool emptyRBSuccessMessage)
     {
         var results = new List<IListItem>();
         results.AddRange(new[]
@@ -60,6 +75,39 @@ internal static class Commands
                 Title = Resources.Microsoft_plugin_sys_restart_computer,
                 Icon = Icons.RestartIcon,
             },
+        });
+
+        // Update and restart/shut down commands. Only available while Windows Update
+        // is waiting for a restart to finish installing updates (mirrors the Start menu).
+        if (isUpdatePending)
+        {
+            results.AddRange(new[]
+            {
+                new ListItem(
+                    new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_shutdown, confirmCommands, Resources.Microsoft_plugin_sys_update_and_shutdown_confirmation, () => UpdateShutdownResult(restart: false))
+                    {
+                        Id = "com.microsoft.cmdpal.builtin.system.update_shutdown",
+                    })
+                {
+                    Title = Resources.Microsoft_plugin_sys_update_and_shutdown,
+                    Subtitle = Resources.Microsoft_plugin_sys_update_and_shutdown_description,
+                    Icon = Icons.ShutdownIcon,
+                },
+                new ListItem(
+                    new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_restart, confirmCommands, Resources.Microsoft_plugin_sys_update_and_restart_confirmation, () => UpdateShutdownResult(restart: true))
+                    {
+                        Id = "com.microsoft.cmdpal.builtin.system.update_restart",
+                    })
+                {
+                    Title = Resources.Microsoft_plugin_sys_update_and_restart,
+                    Subtitle = Resources.Microsoft_plugin_sys_update_and_restart_description,
+                    Icon = Icons.RestartIcon,
+                },
+            });
+        }
+
+        results.AddRange(new[]
+        {
             new ListItem(
                 new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_signout, confirmCommands, Resources.Microsoft_plugin_sys_sign_out_confirmation, () => NativeMethods.ExitWindowsEx(EWXLOGOFF, 0))
                 {
@@ -242,13 +290,14 @@ internal static class Commands
         var networkConnectionResults = Commands.GetNetworkConnectionResults(manager);
 
         var isBootedInUefiMode = manager.GetSystemFirmwareType() == FirmwareType.Uefi;
+        var isUpdatePending = manager.IsUpdatePending();
 
         var hideEmptyRB = manager.HideEmptyRecycleBin();
         var confirmSystemCommands = manager.ShowDialogToConfirmCommand();
         var showSuccessOnEmptyRB = manager.ShowSuccessMessageAfterEmptyingRecycleBin();
 
         // normal system commands are fast and can be returned immediately
-        var systemCommands = Commands.GetSystemCommands(isBootedInUefiMode, hideEmptyRB, confirmSystemCommands, showSuccessOnEmptyRB);
+        var systemCommands = Commands.GetSystemCommands(isBootedInUefiMode, isUpdatePending, hideEmptyRB, confirmSystemCommands, showSuccessOnEmptyRB);
         list.AddRange(systemCommands);
         list.AddRange(networkConnectionResults);
 

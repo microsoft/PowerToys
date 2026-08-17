@@ -11,7 +11,18 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <CsWin32RunAsBuildTask>true</CsWin32RunAsBuildTask>
+  </PropertyGroup>
+
   <!-- WASDK, WebView2, CmdPal Toolkit references now included via Common.ExtDependencies.props -->
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWin32">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
