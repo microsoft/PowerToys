@@ -198,7 +198,7 @@ namespace Peek.FilePreviewer
             }
 
             // Keep image preview visible while the next image is loading so the previous frame
-            // remains on screen until we either cross-fade (same size) or instantly swap (different size).
+            // remains on screen until we can swap.
             if (previewer is IImagePreviewer imagePreviewer && MatchPreviewState(state, PreviewState.Loading) && imagePreviewer.Preview is not null)
             {
                 return Visibility.Visible;
