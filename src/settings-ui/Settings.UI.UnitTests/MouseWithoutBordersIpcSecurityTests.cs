@@ -32,6 +32,37 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         }
 
         [TestMethod]
+        public void PackagedExecutablePathsMatchInstallerLayout()
+        {
+            var installDirectory = Path.GetFullPath(Path.Combine("TestInstall", $"PowerToys-{Guid.NewGuid():N}"));
+            var settingsDirectory = Path.Combine(installDirectory, "WinUI3Apps");
+
+            Assert.AreEqual(
+                Path.Combine(settingsDirectory, "PowerToys.Settings.exe"),
+                MouseWithoutBordersIpc.GetSettingsExecutablePath(installDirectory));
+            Assert.AreEqual(
+                Path.Combine(installDirectory, "PowerToys.MouseWithoutBorders.exe"),
+                MouseWithoutBordersIpc.GetMouseWithoutBordersExecutablePath(settingsDirectory + Path.DirectorySeparatorChar));
+            Assert.ThrowsException<ArgumentException>(
+                () => MouseWithoutBordersIpc.GetMouseWithoutBordersExecutablePath(installDirectory));
+        }
+
+        [TestMethod]
+        public void PolicyCapturesExpectedExecutablePathAndVersion()
+        {
+            var identity = GetCurrentIdentity();
+
+            var policy = MouseWithoutBordersIpcPolicy.CreateMwbServerPolicy(
+                identity.ImagePath,
+                identity.SessionId,
+                identity.UserSid,
+                allowLocalSystem: false);
+
+            Assert.AreEqual(Path.GetFullPath(identity.ImagePath), policy.ExpectedImagePath);
+            Assert.AreEqual(identity.FileVersion, policy.ExpectedFileVersion);
+        }
+
+        [TestMethod]
         public async Task LegitimateSameSessionConnectionIsAccepted()
         {
             var pair = await CreateConnectedPairAsync();

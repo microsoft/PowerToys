@@ -327,9 +327,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     var sessionId = Process.GetCurrentProcess().SessionId;
                     using var currentIdentity = WindowsIdentity.GetCurrent();
                     var currentUserSid = currentIdentity.User?.Value ?? throw new InvalidOperationException("Settings process has no user SID.");
-                    var settingsDirectory = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
-                    var installDirectory = Directory.GetParent(settingsDirectory)?.FullName ?? settingsDirectory;
-                    var mwbPath = Path.Combine(installDirectory, "PowerToys.MouseWithoutBorders.exe");
+                    var mwbPath = MouseWithoutBordersIpc.GetMouseWithoutBordersExecutablePath(AppContext.BaseDirectory);
                     var serverPolicy = MouseWithoutBordersIpcPolicy.CreateMwbServerPolicy(
                         mwbPath,
                         sessionId,

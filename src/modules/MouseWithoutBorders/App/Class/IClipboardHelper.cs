@@ -260,6 +260,10 @@ WellKnownSidType.AuthenticatedUserSid, null);
 #else
                             Logger.Log(e);
 #endif
+                            if (!cancellationToken.IsCancellationRequested)
+                            {
+                                await Task.Delay(250);
+                            }
                         }
                     }
                 },

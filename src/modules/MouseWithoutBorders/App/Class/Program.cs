@@ -400,7 +400,7 @@ namespace MouseWithoutBorders.Class
                 return;
             }
 
-            var settingsPath = Path.Combine(AppContext.BaseDirectory, "WinUI3Apps", "PowerToys.Settings.exe");
+            var settingsPath = MouseWithoutBordersIpc.GetSettingsExecutablePath(AppContext.BaseDirectory);
             var clientPolicy = MouseWithoutBordersIpcPolicy.CreateSettingsClientPolicy(settingsPath, sessionId, currentUserSid.Value);
 
             IpcChannel<SettingsSyncHelper>.StartAuthenticatedIpcServer(
