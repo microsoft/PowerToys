@@ -1021,6 +1021,21 @@ VideoRecordingSession::VideoRecordingSession(
     RecDiag( L"Constructor: audio generator received (init %s)\n",
              m_audioInitAction ? L"pending" : L"none" );
 
+    // If the rest of construction throws, member destruction would run
+    // ~AudioSampleGenerator -> Stop(), which waits on m_asyncInitialized.  That
+    // event is only signalled by the still-pending InitializeAsync
+    // continuation, and on an STA that continuation is queued back to this very
+    // thread - so the wait would never be satisfied.  Hand the generator to the
+    // async disposer instead; the guard runs before any member destructor.
+    auto disposeAudioGenerator = wil::scope_exit( [this]
+    {
+        if( m_audioGenerator )
+        {
+            AudioSampleGenerator::DisposeAsync( std::move( m_audioGenerator ), m_audioInitAction );
+            m_audioInitAction = nullptr;
+        }
+    } );
+
     m_device = device;
     m_d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(m_device);
     m_d3dDevice->GetImmediateContext(m_d3dContext.put());
@@ -1227,6 +1242,8 @@ VideoRecordingSession::VideoRecordingSession(
         }
     }
     RecDiag( L"Constructor: exit\n" );
+
+    disposeAudioGenerator.release();
 }
 
 
@@ -1336,6 +1353,18 @@ void VideoRecordingSession::Close()
 {
     RecDiag( L"Close: totalVideoFrames=%d totalAudioSamples=%d\n",
              s_diagVideoCount, s_diagAudioCount );
+
+    // If audio initialization never completed, dispose of the generator
+    // asynchronously.  Stop() - called below from CloseInternal, or later from
+    // the member destructor - would otherwise block on m_asyncInitialized,
+    // which only the still-pending InitializeAsync continuation can signal.
+    // Nothing can be consuming samples in this state: StartAsync creates the
+    // MediaStreamSource only after that initialization has completed.
+    if( m_audioGenerator && m_audioInitAction )
+    {
+        AudioSampleGenerator::DisposeAsync( std::move( m_audioGenerator ), m_audioInitAction );
+        m_audioInitAction = nullptr;
+    }
 
     // Stop webcam capture before closing the main session.
     if( m_webcamCapture )
