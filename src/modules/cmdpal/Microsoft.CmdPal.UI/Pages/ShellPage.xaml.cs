@@ -436,6 +436,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         ExternalCommandPermission permission;
         bool isPage;
+        var shouldSummonForExecution = true;
         using (var resolution = await ResolveExternalCommandAsync(executeCommand))
         {
             if (resolution is null)
@@ -465,17 +466,22 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             isPage = commandViewModel.IsPage;
             var canRemember = !(executeCommand.ListPageOptions?.RequiresOneTimeConsent ?? false);
             var isRemembered = canRemember && await _externalCommandPermissionStore.IsAllowedAsync(permission.Key);
-            if (!isRemembered &&
-                !await RequestExternalCommandConsentAsync(
-                    route,
-                    permission,
-                    isPage,
-                    isReload: false,
-                    executeCommand.ListPageOptions,
-                    canRemember,
-                    command.IconViewModel))
+            if (!isRemembered)
             {
-                return;
+                if (!await RequestExternalCommandConsentAsync(
+                        route,
+                        permission,
+                        isPage,
+                        isReload: false,
+                        executeCommand.ListPageOptions,
+                        canRemember,
+                        command.IconViewModel))
+                {
+                    return;
+                }
+
+                // Consent already summoned the palette; do not reposition it for execution.
+                shouldSummonForExecution = false;
             }
         }
 
@@ -502,10 +508,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         var performMessage = refreshedCommand.GetPerformCommandMessage();
         performMessage.WithAnimation = false;
-        performMessage.ShowWindowIfPage = true;
+        performMessage.ShowWindowIfPage = shouldSummonForExecution;
         performMessage.ListPageOptions = executeCommand.ListPageOptions;
-        performMessage.OnBeforeShowConfirmation = () =>
-            WeakReferenceMessenger.Default.Send(new ShowWindowMessage(IntPtr.Zero));
+        if (shouldSummonForExecution)
+        {
+            performMessage.OnBeforeShowConfirmation = () =>
+                WeakReferenceMessenger.Default.Send(new ShowWindowMessage(IntPtr.Zero));
+        }
 
         // Avoid ResetToHome, which leaves a canceled root page on the back stack.
         WeakReferenceMessenger.Default.Send(performMessage);
@@ -600,15 +609,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             }),
             handledEventsToo: true);
 
-        ContentDialogResult result;
-        using (var dialogLease = await AcquireContentDialogAsync())
+        var result = await ShowExternalCommandDialogAsync(dialog);
+        if (result is null)
         {
-            if (dialogLease is null)
-            {
-                return false;
-            }
-
-            result = await dialog.ShowAsync();
+            return false;
         }
 
         if (result is ContentDialogResult.Primary or ContentDialogResult.Secondary &&
@@ -754,13 +758,29 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             XamlRoot = XamlRoot,
         };
 
+        _ = await ShowExternalCommandDialogAsync(dialog);
+    }
+
+    private async Task<ContentDialogResult?> ShowExternalCommandDialogAsync(ContentDialog dialog)
+    {
         using var dialogLease = await AcquireContentDialogAsync();
         if (dialogLease is null)
         {
-            return;
+            return null;
         }
 
-        await dialog.ShowAsync();
+        WeakReferenceMessenger.Default.Send(new MaximizeForDialogMessage(true));
+        HandleExpandCompactOnUiThread(true);
+
+        try
+        {
+            return await dialog.ShowAsync();
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.Send(new MaximizeForDialogMessage(false));
+            UpdateCompactModeForCurrentPage();
+        }
     }
 
     private async Task<ContentDialogLease?> AcquireContentDialogAsync()
