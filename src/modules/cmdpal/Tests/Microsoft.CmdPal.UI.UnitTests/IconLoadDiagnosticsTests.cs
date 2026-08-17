@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.UI.Dispatching;
@@ -38,8 +41,11 @@ public class IconLoadDiagnosticsTests
         StartWorker(load);
         var preparationStartedAt = load.BeginBackgroundPreparation();
         load.CompleteBackgroundPreparation(preparationStartedAt);
-        var dispatcherEnqueuedAt = load.BeginDispatcherWait();
+        var dispatcherEnqueuedAt = load.BeginDispatcherWait(IconDispatcherMaterializationKind.Binary);
         var dispatcherStartedAt = load.DispatcherStarted(dispatcherEnqueuedAt);
+        load.DispatcherUiSliceCompleted(
+            dispatcherStartedAt,
+            IconDispatcherUiSliceKind.SynchronousCallback);
         load.DispatcherCompleted(dispatcherStartedAt);
         load.SetResult(null);
         load.Complete();
@@ -72,6 +78,9 @@ public class IconLoadDiagnosticsTests
         StringAssert.Contains(report.Text, "Empty: 1");
         StringAssert.Contains(report.Text, "Maximum low queue depth: 1");
         StringAssert.Contains(report.Text, "Dispatcher wait: count=1");
+        StringAssert.Contains(report.Text, "Dispatcher materialization");
+        StringAssert.Contains(report.Text, "Measured STA execution slices: count=1");
+        StringAssert.Contains(report.Text, "    Binary");
         StringAssert.Contains(report.Text, "Load demand");
         StringAssert.Contains(report.Text, "Requests linked to session loads: 1");
         StringAssert.Contains(report.Text, "    Completed: 1");
@@ -202,6 +211,126 @@ public class IconLoadDiagnosticsTests
         StringAssert.Contains(report.Text, "Enqueue to completion: no samples");
         StringAssert.Contains(report.Text, "New-load result kinds");
         StringAssert.Contains(report.Text, "Empty: 1");
+    }
+
+    [TestMethod]
+    public void CacheReportTracksLookupsOccupancyAndRemovalReasons()
+    {
+        IconLoadDiagnostics.Start();
+        var size = new global::Windows.Foundation.Size(20, 20);
+        IconLoadDiagnostics.RecordCacheLookup(size, capacity: 16, hit: false);
+        IconLoadDiagnostics.RecordCacheEntryAdded(size, capacity: 16, entryCount: 1);
+        IconLoadDiagnostics.RecordCacheLookup(size, capacity: 16, hit: true);
+        IconLoadDiagnostics.RecordCacheEntryRemoved(
+            size,
+            capacity: 16,
+            entryCount: 0,
+            AdaptiveCacheRemovalReason.Explicit);
+
+        var report = IconLoadDiagnostics.StopAndCreateReport();
+
+        Assert.IsNotNull(report);
+        var expectedHeader =
+            $"Icon caches{Environment.NewLine}" +
+            $"  Definition: each entry is a cached IconSource task; counts are approximate concurrent observations. Eviction only drops the cache reference.{Environment.NewLine}" +
+            $"  A request coalesced with an in-flight load is a cache miss; see Provider resolution for in-flight reuse.{Environment.NewLine}" +
+            $"  Capacity means the cache was over its limit when removal was attempted and takes precedence over LowScore; LowScore means score alone caused removal.{Environment.NewLine}" +
+            "  20x20, capacity 16";
+        StringAssert.Contains(report.Text, expectedHeader);
+        StringAssert.Contains(report.Text, "    Lookups: 2");
+        StringAssert.Contains(report.Text, "    Hits: 1");
+        StringAssert.Contains(report.Text, "    Misses: 1");
+        StringAssert.Contains(report.Text, "    Hit rate: 50 %");
+        StringAssert.Contains(report.Text, "    Maximum observed entries: 1");
+        var expectedRemovalReason =
+            $"    Removal reasons{Environment.NewLine}" +
+            "      Explicit: 1";
+        StringAssert.Contains(report.Text, expectedRemovalReason);
+    }
+
+    [TestMethod]
+    public void DispatcherReportSeparatesUiExecutionFromAsyncSuspensionAndSamplesLiveDemand()
+    {
+        IconLoadDiagnostics.Start();
+        var request = IconLoadDiagnostics.BeginRequest(IconRequestReason.SourceChanged, 1.0);
+        var load = IconLoadDiagnostics.CreateLoad(
+            request,
+            "bitmap.png",
+            hasStream: false,
+            width: 20,
+            height: 20,
+            scale: 1.0);
+
+        Assert.IsNotNull(load);
+        request.RecordProviderResolution(IconProviderResolution.NewLoad, load);
+        load.Enqueued(IconLoadPriority.Low);
+        StartWorker(load);
+        var dispatcherEnqueuedAt = load.BeginDispatcherWait(IconDispatcherMaterializationKind.BitmapStream);
+
+        // The enqueue is demanded, but callback phases should observe the invalidated request
+        // without taking the demand-state lock on the dispatcher thread.
+        request.Invalidate();
+        var dispatcherStartedAt = load.DispatcherStarted(dispatcherEnqueuedAt);
+        var artificialOutlierStart = Stopwatch.GetTimestamp() - (Stopwatch.Frequency / 50);
+        _ = load.DispatcherUiSliceCompleted(
+            artificialOutlierStart,
+            IconDispatcherUiSliceKind.BeforeAsyncSuspension);
+        var continuationStartedAt = load.DispatcherAsyncSuspensionCompleted(artificialOutlierStart);
+        load.DispatcherUiSliceCompleted(
+            continuationStartedAt,
+            IconDispatcherUiSliceKind.AsyncContinuation);
+        load.DispatcherCompleted(dispatcherStartedAt);
+        load.SetResult(null);
+        load.Complete();
+        request.Complete(IconRequestStatus.Stale);
+
+        var report = IconLoadDiagnostics.StopAndCreateReport();
+
+        Assert.IsNotNull(report);
+        StringAssert.Contains(report.Text, "Dispatcher materialization");
+        StringAssert.Contains(report.Text, "    Enqueued demanded: 1");
+        StringAssert.Contains(report.Text, "    Callbacks started speculative: 1");
+        StringAssert.Contains(report.Text, "    Callbacks completed speculative: 1");
+        StringAssert.Contains(report.Text, "    Measured STA execution slices: count=2");
+        StringAssert.Contains(report.Text, "    Asynchronous materialization suspension: count=1");
+        StringAssert.Contains(report.Text, "    BitmapStream");
+        StringAssert.Contains(report.Text, "phase=UiEntry");
+        StringAssert.Contains(report.Text, "phase=AsyncSuspension");
+        StringAssert.Contains(report.Text, "materialization=BitmapStream");
+        StringAssert.Contains(report.Text, "demand=Speculative");
+    }
+
+    [TestMethod]
+    public void DispatcherEnqueueFailureClosesTheWaitAtCurrentDemand()
+    {
+        IconLoadDiagnostics.Start();
+        var request = IconLoadDiagnostics.BeginRequest(IconRequestReason.SourceChanged, 1.0);
+        var load = IconLoadDiagnostics.CreateLoad(
+            request,
+            "failed.png",
+            hasStream: false,
+            width: 20,
+            height: 20,
+            scale: 1.0);
+
+        Assert.IsNotNull(load);
+        request.RecordProviderResolution(IconProviderResolution.NewLoad, load);
+        load.Enqueued(IconLoadPriority.Low);
+        StartWorker(load);
+        var dispatcherEnqueuedAt = load.BeginDispatcherWait(IconDispatcherMaterializationKind.BitmapUri);
+        request.Invalidate();
+        load.DispatcherWaitFailed(dispatcherEnqueuedAt);
+        load.Fail();
+        request.Complete(IconRequestStatus.Failed);
+
+        var report = IconLoadDiagnostics.StopAndCreateReport();
+
+        Assert.IsNotNull(report);
+        StringAssert.Contains(report.Text, "    Enqueued demanded: 1");
+        StringAssert.Contains(report.Text, "    Dispatcher enqueue failures: 1");
+        StringAssert.Contains(
+            report.Text,
+            $"    Speculative{Environment.NewLine}      Low-priority dispatcher wait: count=1");
     }
 
     [TestMethod]
@@ -605,6 +734,39 @@ public class IconLoadDiagnosticsTests
         Assert.IsEmpty(IconLoadDiagnostics.GetReports());
     }
 
+    [TestMethod]
+    public void ExternalEtwListenerActivatesMeasurementsWithoutCreatingATextReport()
+    {
+        using (var listener = new EnablingEventListener())
+        {
+            Assert.IsFalse(IconLoadDiagnostics.IsRecording);
+            Assert.IsNull(IconLoadDiagnostics.ActiveSessionId);
+
+            var request = IconLoadDiagnostics.BeginRequest(IconRequestReason.SourceChanged, 1.0);
+            var load = IconLoadDiagnostics.CreateLoad(
+                request,
+                "icon.png",
+                hasStream: false,
+                width: 20,
+                height: 20,
+                scale: 1.0);
+
+            Assert.IsNotNull(request.Session);
+            Assert.IsNotNull(load);
+            request.RecordProviderResolution(IconProviderResolution.NewLoad, load);
+            request.Invalidate();
+            request.Complete(IconRequestStatus.Stale);
+
+            CollectionAssert.Contains(listener.EventIds.ToArray(), 1);
+            CollectionAssert.Contains(listener.EventIds.ToArray(), 4);
+        }
+
+        var inactiveRequest = IconLoadDiagnostics.BeginRequest(IconRequestReason.SourceChanged, 1.0);
+        Assert.IsNull(inactiveRequest.Session);
+        Assert.IsNull(IconLoadDiagnostics.StopAndCreateReport());
+        Assert.IsEmpty(IconLoadDiagnostics.GetReports());
+    }
+
     private static int CountOccurrences(string value, string text)
     {
         var count = 0;
@@ -623,5 +785,23 @@ public class IconLoadDiagnosticsTests
         var workerStart = load.WorkerStartingAsync(workerCount).AsTask();
         Assert.IsTrue(workerStart.IsCompletedSuccessfully);
         Assert.IsTrue(workerStart.GetAwaiter().GetResult());
+    }
+
+    private sealed class EnablingEventListener : EventListener
+    {
+        internal ConcurrentQueue<int> EventIds { get; } = new();
+
+        protected override void OnEventSourceCreated(EventSource eventSource)
+        {
+            if (eventSource.Name == "Microsoft.PowerToys.CmdPal.IconLoading")
+            {
+                EnableEvents(eventSource, EventLevel.Verbose, EventKeywords.All);
+            }
+        }
+
+        protected override void OnEventWritten(EventWrittenEventArgs eventData)
+        {
+            EventIds.Enqueue(eventData.EventId);
+        }
     }
 }
