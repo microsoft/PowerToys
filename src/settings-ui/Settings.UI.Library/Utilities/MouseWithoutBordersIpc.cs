@@ -58,6 +58,59 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
                 ?? throw new ArgumentException("The Settings directory must have a parent directory.", nameof(settingsDirectory));
             return Path.Combine(installDirectory, "PowerToys.MouseWithoutBorders.exe");
         }
+
+        public static void GrantCurrentProcessQueryAccess(SecurityIdentifier allowedUser)
+        {
+            ArgumentNullException.ThrowIfNull(allowedUser);
+
+            using var processToken = OpenCurrentProcessTokenForDaclUpdate();
+            SetKernelObjectDacl(
+                processToken.DangerousGetHandle(),
+                $"D:P(A;;0x{MwbIpcNativeMethods.TokenQuery:X};;;{allowedUser.Value})(A;;GA;;;SY)(A;;GA;;;BA)");
+            SetKernelObjectDacl(
+                MwbIpcNativeMethods.GetCurrentProcess(),
+                $"D:P(A;;0x{MwbIpcNativeMethods.ProcessQueryLimitedInformation:X};;;{allowedUser.Value})(A;;GA;;;SY)(A;;GA;;;BA)");
+        }
+
+        private static SafeAccessTokenHandle OpenCurrentProcessTokenForDaclUpdate()
+        {
+            if (!MwbIpcNativeMethods.OpenCurrentProcessToken(
+                    MwbIpcNativeMethods.GetCurrentProcess(),
+                    MwbIpcNativeMethods.TokenQuery | MwbIpcNativeMethods.ReadControl | MwbIpcNativeMethods.WriteDac,
+                    out var processToken))
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+
+            return processToken;
+        }
+
+        private static void SetKernelObjectDacl(IntPtr handle, string sddl)
+        {
+            if (!MwbIpcNativeMethods.ConvertStringSecurityDescriptorToSecurityDescriptor(
+                    sddl,
+                    MwbIpcNativeMethods.SddlRevision1,
+                    out var securityDescriptor,
+                    out _))
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+
+            try
+            {
+                if (!MwbIpcNativeMethods.SetKernelObjectSecurity(
+                        handle,
+                        MwbIpcNativeMethods.DaclSecurityInformation,
+                        securityDescriptor))
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                }
+            }
+            finally
+            {
+                MwbIpcNativeMethods.LocalFree(securityDescriptor);
+            }
+        }
     }
 
     public sealed class NamedPipePeerIdentity
@@ -508,6 +561,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
     {
         internal const uint ProcessQueryLimitedInformation = 0x1000;
         internal const uint TokenQuery = 0x0008;
+        internal const uint ReadControl = 0x00020000;
+        internal const uint WriteDac = 0x00040000;
         internal const uint PipeAccessDuplex = 0x00000003;
         internal const uint FileFlagFirstPipeInstance = 0x00080000;
         internal const uint FileFlagOverlapped = 0x40000000;
@@ -516,6 +571,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
         internal const uint PipeWait = 0x00000000;
         internal const uint PipeRejectRemoteClients = 0x00000008;
         internal const uint SddlRevision1 = 1;
+        internal const uint DaclSecurityInformation = 0x00000004;
         private const uint WtdUiNone = 2;
         private const uint WtdRevokeNone = 0;
         private const uint WtdChoiceFile = 1;
@@ -595,6 +651,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
         [DllImport("kernel32.dll")]
         internal static extern IntPtr LocalFree(IntPtr memory);
 
+        [DllImport("kernel32.dll")]
+        internal static extern IntPtr GetCurrentProcess();
+
+        [DllImport("advapi32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool SetKernelObjectSecurity(
+            IntPtr handle,
+            uint securityInformation,
+            IntPtr securityDescriptor);
+
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GetNamedPipeClientProcessId(SafePipeHandle pipe, out uint clientProcessId);
@@ -622,6 +688,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
         [DllImport("advapi32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool OpenProcessToken(SafeProcessHandle processHandle, uint desiredAccess, out SafeAccessTokenHandle tokenHandle);
+
+        [DllImport("advapi32.dll", EntryPoint = "OpenProcessToken", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool OpenCurrentProcessToken(IntPtr processHandle, uint desiredAccess, out SafeAccessTokenHandle tokenHandle);
 
         [DllImport("kernel32.dll", EntryPoint = "QueryFullProcessImageNameW", CharSet = CharSet.Unicode, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]

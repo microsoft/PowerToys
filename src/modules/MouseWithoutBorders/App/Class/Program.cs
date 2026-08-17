@@ -400,6 +400,19 @@ namespace MouseWithoutBorders.Class
                 return;
             }
 
+            try
+            {
+                GrantSettingsIpcProcessQueryAccessIfNeeded(
+                    processUserSid,
+                    currentUserSid,
+                    MouseWithoutBordersIpc.GrantCurrentProcessQueryAccess);
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Settings IPC v2 cannot grant process query access to the interactive user: {e.Message}");
+                return;
+            }
+
             var settingsPath = MouseWithoutBordersIpc.GetSettingsExecutablePath(AppContext.BaseDirectory);
             var clientPolicy = MouseWithoutBordersIpcPolicy.CreateSettingsClientPolicy(settingsPath, sessionId, currentUserSid.Value);
 
@@ -421,6 +434,21 @@ namespace MouseWithoutBorders.Class
             return processUserSid.IsWellKnown(WellKnownSidType.LocalSystemSid)
                 ? interactiveUserSidResolver(sessionId) ?? throw new InvalidOperationException("The interactive session has no user SID.")
                 : processUserSid;
+        }
+
+        internal static void GrantSettingsIpcProcessQueryAccessIfNeeded(
+            SecurityIdentifier processUserSid,
+            SecurityIdentifier interactiveUserSid,
+            Action<SecurityIdentifier> grantAccess)
+        {
+            ArgumentNullException.ThrowIfNull(processUserSid);
+            ArgumentNullException.ThrowIfNull(interactiveUserSid);
+            ArgumentNullException.ThrowIfNull(grantAccess);
+
+            if (processUserSid.IsWellKnown(WellKnownSidType.LocalSystemSid))
+            {
+                grantAccess(interactiveUserSid);
+            }
         }
 
         private static SecurityIdentifier GetInteractiveSessionUserSid(int sessionId)

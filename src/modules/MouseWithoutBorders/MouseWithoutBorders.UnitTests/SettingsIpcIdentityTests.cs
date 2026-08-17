@@ -55,6 +55,29 @@ public sealed class SettingsIpcIdentityTests
     }
 
     [TestMethod]
+    public void SystemProcessGrantsInteractiveUserQueryAccess()
+    {
+        var systemSid = new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null);
+        var interactiveSid = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null);
+        SecurityIdentifier? grantedSid = null;
+
+        Program.GrantSettingsIpcProcessQueryAccessIfNeeded(systemSid, interactiveSid, sid => grantedSid = sid);
+
+        Assert.AreEqual(interactiveSid, grantedSid);
+    }
+
+    [TestMethod]
+    public void UserProcessKeepsItsExistingProcessDacl()
+    {
+        var userSid = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null);
+        var grantCount = 0;
+
+        Program.GrantSettingsIpcProcessQueryAccessIfNeeded(userSid, userSid, _ => grantCount++);
+
+        Assert.AreEqual(0, grantCount);
+    }
+
+    [TestMethod]
     public async Task ProductionAuthenticatedServerAcceptsReconnect()
     {
         var pipeName = $"PowerToys.MWB.v2.UnitTest.{Environment.ProcessId}.{Guid.NewGuid():N}";
