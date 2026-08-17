@@ -87,6 +87,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
         bool HasTrustedMicrosoftSignature(string imagePath);
     }
 
+    public interface IDeferredProcessSignatureVerifier
+    {
+        bool HasTrustedMicrosoftSignature(NamedPipePeerIdentity identity);
+    }
+
     public sealed class NamedPipePeerPolicy
     {
         public int ExpectedSessionId { get; init; }
@@ -219,7 +224,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             return result;
         }
 
-        private static NamedPipePeerAuthenticationResult Evaluate(NamedPipePeerIdentity identity, NamedPipePeerPolicy policy)
+        private NamedPipePeerAuthenticationResult Evaluate(NamedPipePeerIdentity identity, NamedPipePeerPolicy policy)
         {
             if (identity.SessionId != policy.ExpectedSessionId)
             {
@@ -247,7 +252,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
                 return NamedPipePeerAuthenticationResult.Reject("wrong-version", identity);
             }
 
-            if (policy.RequireMicrosoftSignature && !identity.HasTrustedMicrosoftSignature)
+            if (policy.RequireMicrosoftSignature &&
+                !(identityProvider is IDeferredProcessSignatureVerifier deferredSignatureVerifier
+                    ? deferredSignatureVerifier.HasTrustedMicrosoftSignature(identity)
+                    : identity.HasTrustedMicrosoftSignature))
             {
                 return NamedPipePeerAuthenticationResult.Reject("untrusted-signature", identity);
             }
@@ -270,7 +278,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
         private readonly record struct CacheKey(int ProcessId, long CreationTimeUtcTicks, string PolicyFingerprint);
     }
 
-    public sealed class WindowsNamedPipePeerIdentityProvider : INamedPipePeerIdentityProvider
+    public sealed class WindowsNamedPipePeerIdentityProvider : INamedPipePeerIdentityProvider, IDeferredProcessSignatureVerifier
     {
         private readonly IProcessSignatureVerifier signatureVerifier;
 
@@ -320,8 +328,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
                 UserSid = userSid,
                 ImagePath = imagePath,
                 FileVersion = fileVersion,
-                HasTrustedMicrosoftSignature = signatureVerifier.HasTrustedMicrosoftSignature(imagePath),
             };
+        }
+
+        public bool HasTrustedMicrosoftSignature(NamedPipePeerIdentity identity)
+        {
+            ArgumentNullException.ThrowIfNull(identity);
+
+            return signatureVerifier.HasTrustedMicrosoftSignature(identity.ImagePath);
         }
     }
 

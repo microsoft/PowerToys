@@ -97,16 +97,28 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         {
             var pipeName = UniquePipeName();
             using var currentIdentity = WindowsIdentity.GetCurrent();
-            await using var fakeServer = RestrictedNamedPipeServer.Create(pipeName, currentIdentity.User!);
-
-            Assert.ThrowsException<Win32Exception>(() => RestrictedNamedPipeServer.Create(pipeName, currentIdentity.User!));
-
-            var waitTask = fakeServer.WaitForConnectionAsync();
             var identity = GetCurrentIdentity();
-            var policy = CopyPolicy(CreatePolicy(identity), expectedImagePath: Path.Combine(Path.GetDirectoryName(identity.ImagePath)!, "PowerToys.MouseWithoutBorders.exe"));
-            await Assert.ThrowsExceptionAsync<UnauthorizedAccessException>(
-                () => AuthenticatedNamedPipeClient.ConnectAsync(pipeName, policy, CreateRealAuthenticator(), 5000));
-            await waitTask;
+
+            await using (var fakeServer = RestrictedNamedPipeServer.Create(pipeName, currentIdentity.User!))
+            {
+                Assert.ThrowsException<Win32Exception>(() => RestrictedNamedPipeServer.Create(pipeName, currentIdentity.User!));
+
+                var waitTask = fakeServer.WaitForConnectionAsync();
+                var policy = CopyPolicy(CreatePolicy(identity), expectedImagePath: Path.Combine(Path.GetDirectoryName(identity.ImagePath)!, "PowerToys.MouseWithoutBorders.exe"));
+                await Assert.ThrowsExceptionAsync<UnauthorizedAccessException>(
+                    () => AuthenticatedNamedPipeClient.ConnectAsync(pipeName, policy, CreateRealAuthenticator(), 5000));
+                await waitTask;
+            }
+
+            await using var legitimateServer = RestrictedNamedPipeServer.Create(pipeName, currentIdentity.User!);
+            var legitimateWaitTask = legitimateServer.WaitForConnectionAsync();
+            await using var legitimateClient = await AuthenticatedNamedPipeClient.ConnectAsync(
+                pipeName,
+                CreatePolicy(identity),
+                CreateRealAuthenticator(),
+                5000);
+            await legitimateWaitTask;
+            Assert.IsTrue(legitimateClient.IsConnected);
         }
 
         [TestMethod]
@@ -229,19 +241,34 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         {
             var identity = GetCurrentIdentity();
             var policy = CreatePolicy(identity);
-            var authenticator = new NamedPipePeerAuthenticator(new FakeIdentityProvider
+            var provider = new DeferredSignatureIdentityProvider
             {
                 Identity = CopyIdentity(
                     identity,
                     sessionId: identity.SessionId + 1,
                     userSid: new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null).Value,
                     hasTrustedMicrosoftSignature: false),
-            });
+            };
+            var authenticator = new NamedPipePeerAuthenticator(provider);
 
             var result = authenticator.Authenticate(identity.ProcessId, CopyPolicy(policy, requireMicrosoftSignature: true));
 
             Assert.IsFalse(result.Accepted);
             Assert.AreEqual("wrong-session", result.ReasonCode);
+            Assert.AreEqual(0, provider.SignatureVerificationCount);
+        }
+
+        [TestMethod]
+        public void AcceptedProcessInstanceCachesDeferredSignatureResult()
+        {
+            var identity = CopyIdentity(GetCurrentIdentity(), hasTrustedMicrosoftSignature: true);
+            var provider = new DeferredSignatureIdentityProvider { Identity = identity };
+            var authenticator = new NamedPipePeerAuthenticator(provider);
+            var policy = CopyPolicy(CreatePolicy(identity), requireMicrosoftSignature: true);
+
+            Assert.IsTrue(authenticator.Authenticate(identity.ProcessId, policy).Accepted);
+            Assert.IsTrue(authenticator.Authenticate(identity.ProcessId, policy).Accepted);
+            Assert.AreEqual(1, provider.SignatureVerificationCount);
         }
 
         [TestMethod]
@@ -342,6 +369,21 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             public NamedPipePeerIdentity Identity { get; set; }
 
             public NamedPipePeerIdentity GetIdentity(int processId) => Identity;
+        }
+
+        private sealed class DeferredSignatureIdentityProvider : INamedPipePeerIdentityProvider, IDeferredProcessSignatureVerifier
+        {
+            public NamedPipePeerIdentity Identity { get; set; }
+
+            public int SignatureVerificationCount { get; private set; }
+
+            public NamedPipePeerIdentity GetIdentity(int processId) => Identity;
+
+            public bool HasTrustedMicrosoftSignature(NamedPipePeerIdentity identity)
+            {
+                SignatureVerificationCount++;
+                return identity.HasTrustedMicrosoftSignature;
+            }
         }
     }
 }
