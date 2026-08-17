@@ -33,20 +33,30 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CompatibilityTextExpansionBackend.h" />
+    <ClInclude Include="ITextExpansionBackend.h" />
+    <ClInclude Include="ITextExpansionTextContext.h" />
     <ClInclude Include="KeyboardEventHandlers.h" />
     <ClInclude Include="KeyboardManager.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="State.h" />
+    <ClInclude Include="TextExpansionController.h" />
+    <ClInclude Include="TextExpansionTypes.h" />
     <ClInclude Include="trace.h" />
+    <ClInclude Include="UIAutomationTextExpansionContext.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CompatibilityTextExpansionBackend.cpp" />
     <ClCompile Include="KeyboardEventHandlers.cpp" />
     <ClCompile Include="KeyboardManager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="State.cpp" />
+    <ClCompile Include="TextExpansionController.cpp" />
+    <ClCompile Include="TextExpansionTypes.cpp" />
     <ClCompile Include="trace.cpp" />
+    <ClCompile Include="UIAutomationTextExpansionContext.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\common\KeyboardManagerCommon.vcxproj">

@@ -23,6 +23,11 @@ public:
     }
 
     bool StartLowLevelKeyboardHook();
+    bool IsConfigurationLoaded() const noexcept
+    {
+        return configurationLoaded;
+    }
+
     void OpenEditorWindow(KeyboardManagerEditorType type, std::wstring keysForShortcutToEdit, std::wstring action);
 
     // Function called by the hook procedure to handle the events. This is the starting point function for remapping
@@ -36,6 +41,7 @@ private:
 
     KBMEditor::KeyboardManagerState keyboardManagerState;
     MappingConfiguration mappingConfiguration;
+    bool configurationLoaded = false;
 
     // Object of class which implements InputInterface. Required for calling library functions while enabling testing
     KeyboardManagerInput::Input inputHandler;

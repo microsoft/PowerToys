@@ -2,6 +2,10 @@
 
 #include <common/utils/json.h>
 
+#include <functional>
+#include <string_view>
+#include <vector>
+
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/common/Shortcut.h>
 #include <keyboardmanager/common/RemapShortcut.h>
@@ -11,16 +15,57 @@ using SingleKeyToTextRemapTable = SingleKeyRemapTable;
 using ShortcutRemapTable = std::map<Shortcut, RemapShortcut>;
 using AppSpecificShortcutRemapTable = std::map<std::wstring, ShortcutRemapTable>;
 
+struct TextExpansionRule
+{
+    std::wstring id;
+    std::wstring sourceText;
+    Shortcut activation;
+    std::wstring replacementText;
+    bool enabled = true;
+};
+
+using TextExpansionTable = std::vector<TextExpansionRule>;
+
+enum class MappingConfigurationLoadResult
+{
+    Success = 0,
+    Partial = 1,
+    Failure = 2,
+};
+
+struct MappingConfigurationSaveResult
+{
+    bool settingsCommitted = false;
+    bool reloadNotified = false;
+};
+
 class MappingConfiguration
 {
 public:
+    using SettingsWriter = std::function<bool(const std::wstring&, const json::JsonObject&)>;
+    using SettingsReloadNotifier = std::function<bool()>;
+    using SettingsPathProvider = std::function<std::wstring(const std::wstring&)>;
+
+    explicit MappingConfiguration(SettingsWriter settingsWriter = {}, SettingsReloadNotifier settingsReloadNotifier = {}, SettingsPathProvider settingsPathProvider = {});
     ~MappingConfiguration() = default;
 
     // Load the configuration.
     bool LoadSettings();
 
+    // Load while distinguishing rejected entries from a file-level failure.
+    MappingConfigurationLoadResult LoadSettingsWithResult();
+
+    // Load an already parsed profile. Invalid entries are rejected and reported as Partial.
+    MappingConfigurationLoadResult LoadSettingsFromJson(const json::JsonObject& configFile);
+
+    // Load a named profile file. A profile that has not been created yet is a valid empty snapshot.
+    MappingConfigurationLoadResult LoadSettingsFromFile(const std::wstring& configurationName, const std::wstring& filePath);
+
     // Save the updated configuration.
     bool SaveSettingsToFile();
+
+    // Save with separate persistence and live-reload notification outcomes.
+    MappingConfigurationSaveResult SaveSettingsToFileWithResult();
 
     // Function to clear the OS Level shortcut remapping table
     void ClearOSLevelShortcuts();
@@ -31,6 +76,9 @@ public:
     // Function to clear the Keys to text remapping table
     void ClearSingleKeyToTextRemaps();
 
+    // Function to clear text expansion rules.
+    void ClearTextExpansions();
+
     // Function to clear the App specific shortcut remapping table
     void ClearAppSpecificShortcuts();
 
@@ -39,6 +87,12 @@ public:
 
     // Function to add a new single key to unicode string remapping
     bool AddSingleKeyToTextRemap(const DWORD originalKey, const std::wstring& text);
+
+    // Text expansion CRUD uses the stable GUID as the rule identity.
+    bool AddTextExpansion(const TextExpansionRule& rule);
+    bool UpdateTextExpansion(std::wstring_view id, const std::wstring& sourceText, const Shortcut& activation, const std::wstring& replacementText, bool enabled);
+    bool DeleteTextExpansion(std::wstring_view id);
+    bool SetTextExpansionEnabled(std::wstring_view id, bool enabled);
 
     // Function to add a new OS level shortcut remapping
     bool AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutTextUnion& newSC);
@@ -58,6 +112,9 @@ public:
     // Stores single key to text remappings
     SingleKeyToTextRemapTable singleKeyToTextReMap;
 
+    // Stores text expansions in profile order. Duplicate content is allowed; GUIDs are unique.
+    TextExpansionTable textExpansions;
+
     // Stores the os level shortcut remappings
     ShortcutRemapTable osLevelShortcutReMap;
     std::vector<Shortcut> osLevelShortcutReMapSortedKeys;
@@ -70,8 +127,13 @@ public:
     std::wstring currentConfig = KeyboardManagerConstants::DefaultConfiguration;
 
 private:
+    SettingsWriter settingsWriter;
+    SettingsReloadNotifier settingsReloadNotifier;
+    SettingsPathProvider settingsPathProvider;
+
     bool LoadSingleKeyRemaps(const json::JsonObject& jsonData);
     bool LoadSingleKeyToTextRemaps(const json::JsonObject& jsonData);
+    bool LoadTextExpansions(const json::JsonObject& jsonData);
     bool LoadShortcutRemaps(const json::JsonObject& jsonData, const std::wstring& objectName);
     bool LoadAppSpecificShortcutRemaps(const json::JsonObject& remapShortcutsData);
 };

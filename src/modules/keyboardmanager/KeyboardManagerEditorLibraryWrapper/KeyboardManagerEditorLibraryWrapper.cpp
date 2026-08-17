@@ -2,14 +2,75 @@
 #include "KeyboardManagerEditorLibraryWrapper.h"
 #include <algorithm>
 #include <cstring>
-#include <vector>
-#include <string>
 #include <memory>
+#include <optional>
+#include <sstream>
+#include <string>
+#include <unordered_set>
+#include <vector>
 
 #include <common/utils/logger_helper.h>
+#include <common/interop/shared_constants.h>
 #include <keyboardmanager/KeyboardManagerEditor/KeyboardManagerEditor.h>
 #include <keyboardmanager/KeyboardManagerEditorLibrary/EditorHelpers.h>
 #include <common/interop/keyboard_layout.h>
+
+namespace
+{
+    std::optional<Shortcut> ParseTextExpansionActivation(const wchar_t* activationKeys)
+    {
+        if (activationKeys == nullptr || *activationKeys == L'\0')
+        {
+            return std::nullopt;
+        }
+
+        try
+        {
+            const std::wstring activationText{ activationKeys };
+            if (activationText.front() == L';' || activationText.back() == L';' || activationText.find(L";;") != std::wstring::npos)
+            {
+                return std::nullopt;
+            }
+
+            std::vector<int32_t> keys;
+            std::unordered_set<uint32_t> uniqueKeys;
+            std::wstringstream stream{ activationText };
+            std::wstring token;
+            while (std::getline(stream, token, L';'))
+            {
+                if (token.empty() || std::any_of(token.begin(), token.end(), [](const wchar_t character) {
+                        return character < L'0' || character > L'9';
+                    }))
+                {
+                    return std::nullopt;
+                }
+
+                size_t parsedCharacters = 0;
+                const auto parsedKey = std::stoul(token, &parsedCharacters);
+                if (parsedCharacters != token.size() || parsedKey == 0 ||
+                    (parsedKey > 0xFF && parsedKey != CommonSharedConstants::VK_WIN_BOTH) ||
+                    !uniqueKeys.insert(static_cast<uint32_t>(parsedKey)).second)
+                {
+                    return std::nullopt;
+                }
+
+                keys.push_back(static_cast<int32_t>(parsedKey));
+            }
+
+            Shortcut activation{ keys };
+            if (activation.actionKey == 0 || activation.HasChord() || activation.GetKeyCodes().size() != keys.size())
+            {
+                return std::nullopt;
+            }
+
+            return activation;
+        }
+        catch (...)
+        {
+            return std::nullopt;
+        }
+    }
+}
 
 extern "C"
 {
@@ -26,6 +87,16 @@ extern "C"
     bool LoadMappingSettings(void* config)
     {
         return static_cast<MappingConfiguration*>(config)->LoadSettings();
+    }
+
+    int LoadMappingSettingsWithResult(void* config)
+    {
+        if (config == nullptr)
+        {
+            return static_cast<int>(MappingConfigurationLoadResult::Failure);
+        }
+
+        return static_cast<int>(static_cast<MappingConfiguration*>(config)->LoadSettingsWithResult());
     }
 
     bool SaveMappingSettings(void* config)
@@ -110,6 +181,51 @@ extern "C"
         mapping->targetText = AllocateAndCopyString(text);
 
         return true;
+    }
+
+    int GetTextExpansionCount(void* config)
+    {
+        if (config == nullptr)
+        {
+            return 0;
+        }
+
+        return static_cast<int>(static_cast<MappingConfiguration*>(config)->textExpansions.size());
+    }
+
+    bool GetTextExpansion(void* config, int index, TextExpansionMapping* mapping)
+    {
+        if (config == nullptr || mapping == nullptr)
+        {
+            return false;
+        }
+
+        const auto& expansions = static_cast<MappingConfiguration*>(config)->textExpansions;
+        if (index < 0 || static_cast<size_t>(index) >= expansions.size())
+        {
+            return false;
+        }
+
+        try
+        {
+            const auto& rule = expansions[static_cast<size_t>(index)];
+            auto activation = rule.activation;
+            std::unique_ptr<wchar_t[]> id{ AllocateAndCopyString(rule.id) };
+            std::unique_ptr<wchar_t[]> sourceText{ AllocateAndCopyString(rule.sourceText) };
+            std::unique_ptr<wchar_t[]> activationKeys{ AllocateAndCopyString(activation.ToHstringVK().c_str()) };
+            std::unique_ptr<wchar_t[]> replacementText{ AllocateAndCopyString(rule.replacementText) };
+
+            mapping->id = id.release();
+            mapping->sourceText = sourceText.release();
+            mapping->activationKeys = activationKeys.release();
+            mapping->replacementText = replacementText.release();
+            mapping->enabled = rule.enabled;
+            return true;
+        }
+        catch (...)
+        {
+            return false;
+        }
     }
 
     int GetShortcutRemapCountByType(void* config, int operationType)
@@ -509,6 +625,56 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         return mappingConfig->AddSingleKeyToTextRemap(static_cast<DWORD>(originalKey), text);
     }
 
+    bool AddTextExpansion(
+        void* config,
+        const wchar_t* id,
+        const wchar_t* sourceText,
+        const wchar_t* activationKeys,
+        const wchar_t* replacementText,
+        bool enabled)
+    {
+        if (config == nullptr || id == nullptr || sourceText == nullptr || activationKeys == nullptr || replacementText == nullptr)
+        {
+            return false;
+        }
+
+        const auto activation = ParseTextExpansionActivation(activationKeys);
+        if (!activation)
+        {
+            return false;
+        }
+
+        return static_cast<MappingConfiguration*>(config)->AddTextExpansion(
+            TextExpansionRule{ id, sourceText, *activation, replacementText, enabled });
+    }
+
+    bool UpdateTextExpansion(
+        void* config,
+        const wchar_t* id,
+        const wchar_t* sourceText,
+        const wchar_t* activationKeys,
+        const wchar_t* replacementText,
+        bool enabled)
+    {
+        if (config == nullptr || id == nullptr || sourceText == nullptr || activationKeys == nullptr || replacementText == nullptr)
+        {
+            return false;
+        }
+
+        const auto activation = ParseTextExpansionActivation(activationKeys);
+        if (!activation)
+        {
+            return false;
+        }
+
+        return static_cast<MappingConfiguration*>(config)->UpdateTextExpansion(
+            id,
+            sourceText,
+            *activation,
+            replacementText,
+            enabled);
+    }
+
     bool AddSingleKeyToShortcutRemap(void* config, int originalKey, const wchar_t* targetKeys)
     {
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
@@ -676,6 +842,26 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             return true;
         }
         return false;
+    }
+
+    bool DeleteTextExpansion(void* config, const wchar_t* id)
+    {
+        if (config == nullptr || id == nullptr)
+        {
+            return false;
+        }
+
+        return static_cast<MappingConfiguration*>(config)->DeleteTextExpansion(id);
+    }
+
+    bool SetTextExpansionEnabled(void* config, const wchar_t* id, bool enabled)
+    {
+        if (config == nullptr || id == nullptr)
+        {
+            return false;
+        }
+
+        return static_cast<MappingConfiguration*>(config)->SetTextExpansionEnabled(id, enabled);
     }
 
     // Function to delete a shortcut remapping

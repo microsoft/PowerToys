@@ -97,6 +97,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(ImageResizerProperties))]
     [JsonSerializable(typeof(KeyboardManagerProperties))]
     [JsonSerializable(typeof(KeyboardManagerProfile))]
+    [JsonSerializable(typeof(TextExpansionDataModel))]
+    [JsonSerializable(typeof(TextExpansionsDataModel))]
     [JsonSerializable(typeof(LightSwitchProperties))]
     [JsonSerializable(typeof(MeasureToolProperties))]
     [JsonSerializable(typeof(MouseHighlighterProperties))]
