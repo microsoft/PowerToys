@@ -7,6 +7,7 @@ using System.ComponentModel.Composition.Hosting;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("UnitTest-ColorPickerUI")]
+[assembly: InternalsVisibleTo("ColorPickerUI.UnitTests")]
 
 namespace ColorPicker
 {
