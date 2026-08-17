@@ -101,7 +101,7 @@ namespace Peek.FilePreviewer
 
                     if (Previewer is not IUnsupportedFilePreviewer)
                     {
-                        Previewer = previewerFactory.CreateDefaultPreviewer(Item);
+                        Previewer = PreviewerFactory.CreateDefaultPreviewer(Item);
                         await UpdatePreviewAsync(_cancellationTokenSource.Token);
                     }
                 }
@@ -187,8 +187,24 @@ namespace Peek.FilePreviewer
 
         public Visibility IsPreviewVisible(IPreviewer? previewer, PreviewState? state)
         {
-            var isValidPreview = previewer != null && MatchPreviewState(state, PreviewState.Loaded);
-            return isValidPreview ? Visibility.Visible : Visibility.Collapsed;
+            if (previewer is null)
+            {
+                return Visibility.Collapsed;
+            }
+
+            if (MatchPreviewState(state, PreviewState.Loaded))
+            {
+                return Visibility.Visible;
+            }
+
+            // Keep image preview visible while the next image is loading so the previous frame
+            // remains on screen until we either cross-fade (same size) or instantly swap (different size).
+            if (previewer is IImagePreviewer imagePreviewer && MatchPreviewState(state, PreviewState.Loading) && imagePreviewer.Preview is not null)
+            {
+                return Visibility.Visible;
+            }
+
+            return Visibility.Collapsed;
         }
 
         public Visibility IsWarningMessageVisible(IPreviewer? previewer, PreviewState? state)
@@ -219,37 +235,60 @@ namespace Peek.FilePreviewer
             return isValidPreview ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        private void ClearAllPreviews()
+        {
+            (Previewer as IDisposable)?.Dispose();
+            Previewer = null;
+            HideAllPreviewControls();
+        }
+
+        private void HideAllPreviewControls()
+        {
+            ImagePreview.Visibility = Visibility.Collapsed;
+            VideoPreview.Visibility = Visibility.Collapsed;
+            AudioPreview.Visibility = Visibility.Collapsed;
+            BrowserPreview.Visibility = Visibility.Collapsed;
+            ArchivePreview.Visibility = Visibility.Collapsed;
+            DrivePreview.Visibility = Visibility.Collapsed;
+            UnsupportedFilePreview.Visibility = Visibility.Collapsed;
+        }
+
+        private void UpdatePreviewerItem()
+        {
+            if (Previewer is IReusablePreviewer reusablePreviewer)
+            {
+                reusablePreviewer.Rebind(Item, ScalingFactor);
+            }
+        }
+
         private async Task OnItemPropertyChanged()
         {
             // Cancel previous loading task
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource = new();
 
-            // Clear up any unmanaged resources before creating a new previewer instance.
-            (Previewer as IDisposable)?.Dispose();
-
             NoMoreFiles.Visibility = NumberOfFiles == 0 ? Visibility.Visible : Visibility.Collapsed;
 
-            if (Item == null)
+            if (Item is null)
             {
-                Previewer = null;
-                ImagePreview.Visibility = Visibility.Collapsed;
-                VideoPreview.Visibility = Visibility.Collapsed;
-                AudioPreview.Visibility = Visibility.Collapsed;
-                BrowserPreview.Visibility = Visibility.Collapsed;
-                ArchivePreview.Visibility = Visibility.Collapsed;
-                DrivePreview.Visibility = Visibility.Collapsed;
-                UnsupportedFilePreview.Visibility = Visibility.Collapsed;
-
+                ClearAllPreviews();
                 return;
             }
 
-            Previewer = previewerFactory.Create(Item);
-            if (Previewer is IImagePreviewer imagePreviewer)
+            var neededType = previewerFactory.GetCompatiblePreviewerType(Item);
+
+            // Reuse the existing previewer when the type matches and supports in-place item updates,
+            // avoiding control teardown which would cause a visible white flash between images.
+            bool canReuse = Previewer is IReusablePreviewer && Previewer.GetType() == neededType;
+
+            if (!canReuse)
             {
-                imagePreviewer.ScalingFactor = ScalingFactor;
+                // Clear up any unmanaged resources before creating a new previewer instance.
+                (Previewer as IDisposable)?.Dispose();
+                Previewer = previewerFactory.Create(Item);
             }
 
+            UpdatePreviewerItem();
             await UpdatePreviewAsync(_cancellationTokenSource.Token);
         }
 
@@ -267,32 +306,55 @@ namespace Peek.FilePreviewer
             }
         }
 
+        private async Task UpdateImagePreviewAsync(CancellationToken cancellationToken)
+        {
+            if (Previewer is IImagePreviewer)
+            {
+                await Previewer.LoadPreviewAsync(cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await UpdatePreviewSizeAsync(cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                ImagePreview.InstantSwap();
+            }
+        }
+
         private async Task UpdatePreviewAsync(CancellationToken cancellationToken)
         {
-            if (Previewer != null)
+            if (Previewer is null)
             {
-                try
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    await UpdatePreviewSizeAsync(cancellationToken);
+                return;
+            }
 
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (Previewer is IImagePreviewer)
+                {
+                    await UpdateImagePreviewAsync(cancellationToken);
+                }
+                else
+                {
+                    await UpdatePreviewSizeAsync(cancellationToken);
                     cancellationToken.ThrowIfCancellationRequested();
                     await Previewer.LoadPreviewAsync(cancellationToken);
+                }
 
-                    cancellationToken.ThrowIfCancellationRequested();
-                    await UpdateTooltipAsync(cancellationToken);
-                }
-                catch (OperationCanceledException)
-                {
-                    // TODO: Log task cancelled exception?
-                }
-                catch (Exception ex)
-                {
-                    // Fall back to Default previewer
-                    PowerToysTelemetry.Log.WriteEvent(new ErrorEvent() { HResult = (Common.Models.HResult)ex.HResult, Message = ex.Message, Failure = ErrorEvent.FailureType.PreviewFail });
-                    Logger.LogError("Error in UpdatePreviewAsync, falling back to default previewer: " + ex.Message);
-                    Previewer.State = PreviewState.Error;
-                }
+                cancellationToken.ThrowIfCancellationRequested();
+                await UpdateTooltipAsync(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected during navigation.
+            }
+            catch (Exception ex)
+            {
+                // Fall back to Default previewer.
+                PowerToysTelemetry.Log.WriteEvent(new ErrorEvent() { HResult = (Common.Models.HResult)ex.HResult, Message = ex.Message, Failure = ErrorEvent.FailureType.PreviewFail });
+                Logger.LogError("Error in UpdatePreviewAsync, falling back to default previewer: " + ex.Message);
+                Previewer.State = PreviewState.Error;
             }
         }
 

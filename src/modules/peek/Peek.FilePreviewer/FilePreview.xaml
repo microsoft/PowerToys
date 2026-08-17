@@ -12,7 +12,7 @@
     xmlns:previewers="using:Peek.FilePreviewer.Previewers"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
         <ProgressRing
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
@@ -25,7 +25,7 @@
             HandlerVisibility="{x:Bind IsPreviewVisible(ShellPreviewHandlerPreviewer, Previewer.State), Mode=OneWay}"
             Source="{x:Bind ShellPreviewHandlerPreviewer.Preview, Mode=OneWay}" />
 
-        <Image
+        <controls:DoubleBufferedImageControl
             x:Name="ImagePreview"
             MaxWidth="{x:Bind ImagePreviewer.MaxImageSize.Width, Mode=OneWay}"
             MaxHeight="{x:Bind ImagePreviewer.MaxImageSize.Height, Mode=OneWay}"
@@ -35,7 +35,7 @@
             <ToolTipService.ToolTip>
                 <ToolTip Content="{x:Bind InfoTooltip, Mode=OneWay}" />
             </ToolTipService.ToolTip>
-        </Image>
+        </controls:DoubleBufferedImageControl>
 
         <MediaPlayerElement
             x:Name="VideoPreview"

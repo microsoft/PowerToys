@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using ManagedCommon;
 using Microsoft.PowerToys.FilePreviewCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
@@ -18,7 +17,6 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
-using Peek.FilePreviewer.Exceptions;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
 using Peek.FilePreviewer.Previewers.Interfaces;
@@ -27,7 +25,7 @@ using Windows.Graphics.Imaging;
 
 namespace Peek.FilePreviewer.Previewers
 {
-    public partial class ImagePreviewer : ObservableObject, IImagePreviewer
+    public partial class ImagePreviewer : ObservableObject, IImagePreviewer, IReusablePreviewer
     {
         [ObservableProperty]
         private ImageSource? preview;
@@ -50,7 +48,13 @@ namespace Peek.FilePreviewer.Previewers
             Dispatcher = DispatcherQueue.GetForCurrentThread();
         }
 
-        private IFileSystemItem Item { get; }
+        public IFileSystemItem Item { get; private set; }
+
+        public void Rebind(IFileSystemItem item, double scalingFactor)
+        {
+            Item = item;
+            ScalingFactor = scalingFactor;
+        }
 
         private bool IsPng() => Item.Extension == ".png";
 
@@ -176,8 +180,9 @@ namespace Peek.FilePreviewer.Previewers
                     else
                     {
                         using FileStream stream = ReadHelper.OpenReadOnly(Item.Path);
-                        Preview = new BitmapImage();
-                        await ((BitmapImage)Preview).SetSourceAsync(stream.AsRandomAccessStream());
+                        var bmp = new BitmapImage();
+                        await bmp.SetSourceAsync(stream.AsRandomAccessStream());
+                        Preview = bmp;
                     }
                 });
             });

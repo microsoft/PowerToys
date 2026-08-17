@@ -8,15 +8,24 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>PowerToys.Peek.Common.UnitTests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
   <ItemGroup>
       <PRIResource Include="..\Peek.UI\Strings\en-US\Resources.resw" Link="Strings\en-US\Resources.resw">
           <SubType>Designer</SubType>
       </PRIResource>
   </ItemGroup>
+
   <ItemGroup>
     <None Remove="Controls\ArchiveControl.xaml" />
     <None Remove="Controls\AudioControl.xaml" />
     <None Remove="Controls\BrowserControl.xaml" />
+    <None Remove="Controls\DoubleBufferedImageControl.xaml" />
     <None Remove="Controls\DriveControl.xaml" />
     <None Remove="Controls\ShellPreviewHandlerControl.xaml" />
     <None Remove="Controls\SpecialFolderPreview\SpecialFolderInformationalPreviewControl.xaml" />
@@ -66,6 +75,12 @@
     <ProjectReference Include="..\..\..\common\FilePreviewCommon\FilePreviewCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Peek.Common\Peek.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\DoubleBufferedImageControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

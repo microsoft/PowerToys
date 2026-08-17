@@ -18,11 +18,12 @@ using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
+using Peek.FilePreviewer.Previewers.Interfaces;
 using Windows.Foundation;
 
 namespace Peek.FilePreviewer.Previewers
 {
-    public partial class UnsupportedFilePreviewer : ObservableObject, IUnsupportedFilePreviewer
+    public partial class UnsupportedFilePreviewer : ObservableObject, IUnsupportedFilePreviewer, IReusablePreviewer
     {
         /// <summary>
         /// The number of files to scan between updates when calculating folder size.
@@ -61,7 +62,12 @@ namespace Peek.FilePreviewer.Previewers
             Dispatcher = DispatcherQueue.GetForCurrentThread();
         }
 
-        private IFileSystemItem Item { get; }
+        public IFileSystemItem Item { get; private set; }
+
+        public void Rebind(IFileSystemItem item, double scalingFactor)
+        {
+            Item = item;
+        }
 
         private DispatcherQueue Dispatcher { get; }
 
