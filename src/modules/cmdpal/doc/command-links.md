@@ -28,14 +28,17 @@ and other applications through the Windows activation model.
 Initial scope:
 - fixed built-in routes,
 - consent-gated reload,
-- top-level command invocation.
+- command invocation for loaded top-level or dock items and items reconstructible through
+  `ICommandProvider4.GetCommandItem`.
 
 What is not supported yet:
-- nested command traversal,
+- fallback commands,
+- context-menu actions that are not independently pinnable and addressable,
 - parameter-page values -- parameters currently lack stable IDs.
 
-Top-level commands are the initial boundary because they already have global provider and
-command identities. Nested and contextual commands may be dynamic or lack durable IDs.
+Provider and command IDs form the route identity. A nested command is addressable when its
+provider can reconstruct it by ID using the same contract as pinning; CmdPal does not traverse
+page contents to discover commands.
 
 CmdPal generates **Copy command link** only for top-level items that are not fallback or
 dock items and have IDs accepted by the protocol. Generated links identify the command;
@@ -50,7 +53,7 @@ page query and filter state must be added explicitly.
 | `x-cmdpal://extensions/gallery`                  | Built-in      | Open the extension gallery.                         |
 | `x-cmdpal://extensions/gallery/{extension-id}`   | Built-in      | Open extension details.                             |
 | `x-cmdpal://reload`                              | Consent       | Reload extensions.                                  |
-| `x-cmdpal://commands/{provider-id}/{command-id}` | Consent       | Resolve and execute a registered top-level command. |
+| `x-cmdpal://commands/{provider-id}/{command-id}` | Consent       | Resolve and execute an addressable command.          |
 
 The built-in allowlist is intentionally small. Reviewed routes such as Settings and the
 extension gallery navigate within CmdPal without executing extension commands. Reload and
@@ -103,7 +106,9 @@ text uses the existing search surface and may use a persistent grant.
 
 1. Queue consent-gated routes; cap the queue at 16, coalesce identical pending routes, and serialize dialogs.
 1. Resolve commands by provider and command ID. If top-level loading is active, wait for
-   that phase for at most 15 seconds, then perform one lookup. Do not await late providers.
+   that phase for at most 15 seconds. Check loaded top-level and dock items, then perform one
+   `ICommandProvider4.GetCommandItem` lookup on a worker thread. Require an exact ID match and
+   do not await late providers.
 1. Require a cached `IPage` or `IInvokableCommand` shape and ensure page options target a
    cached list-page shape without calling extension objects on the UI thread.
 1. Authorize with a remembered permission or the consent dialog.
@@ -116,6 +121,7 @@ Queue limits, duplicate coalescing, serialized dialogs, and waiting only for the
 loading phase keep activation work bounded and connected to the user's initiating action.
 Commands are re-resolved because a provider can reload or replace command wrappers while
 the consent dialog is open; authorization must apply to the object that will execute.
+Provider-resolved commands use the same top-level wrapper and provider context as pinning.
 Filter existence is deliberately not resolved before consent because enumerating filters is
 an extension RPC. The dialog shows the exact filter ID; background page initialization
 rejects a missing filter without fetching unfiltered results.

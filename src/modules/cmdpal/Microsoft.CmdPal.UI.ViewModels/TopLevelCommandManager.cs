@@ -743,6 +743,68 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         return null;
     }
 
+    public async Task<CommandResolution?> ResolveCommandAsync(
+        string providerId,
+        string commandId,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var provider = LookupProvider(providerId);
+        if (provider is null)
+        {
+            return null;
+        }
+
+        var command = LookupCommand(providerId, commandId) ?? LookupDockBand(providerId, commandId);
+        if (command is not null && ReferenceEquals(command.ProviderContext, provider))
+        {
+            return new(command, provider, ownsCommand: false);
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        var resolutionTask = Task.Run(() => provider.ResolveCommandItem(commandId, _serviceProvider));
+        try
+        {
+            command = await resolutionTask.WaitAsync(cancellationToken).ConfigureAwait(false);
+            return command is null ? null : new(command, provider, ownsCommand: true);
+        }
+        catch (OperationCanceledException)
+        {
+            // Release a result that arrives after the caller stops waiting.
+            _ = resolutionTask.ContinueWith(
+                static task =>
+                {
+                    if (task.Status == TaskStatus.RanToCompletion)
+                    {
+                        task.Result?.Cleanup();
+                    }
+                    else if (task.IsFaulted)
+                    {
+                        _ = task.Exception;
+                    }
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.None,
+                TaskScheduler.Default);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to resolve command {commandId} from provider {providerId}.", ex);
+            return null;
+        }
+    }
+
+    private TopLevelViewModel? LookupDockBand(string providerId, string commandId)
+    {
+        lock (_dockBandsLock)
+        {
+            return DockBands.FirstOrDefault(command =>
+                string.Equals(command.CommandProviderId, providerId, StringComparison.Ordinal) &&
+                string.Equals(command.Id, commandId, StringComparison.Ordinal));
+        }
+    }
+
     /// <summary>Waits for the command load active at call time, excluding late provider continuations.</summary>
     public async Task WaitForCurrentLoadAsync(CancellationToken cancellationToken = default)
     {

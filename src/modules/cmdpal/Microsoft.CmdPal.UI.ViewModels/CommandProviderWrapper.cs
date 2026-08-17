@@ -270,15 +270,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         var contextMenuFactory = serviceProvider.GetService<IContextMenuFactory>()!;
         var providerSettings = GetProviderSettings(settings);
         var ourContext = GetProviderContext();
-        WeakReference<IPageContext> pageContext = new(this.TopLevelPageContext);
         var make = (ICommandItem? i, TopLevelType t) =>
-        {
-            CommandItemViewModel commandItemViewModel = new(new(i), pageContext, contextMenuFactory: contextMenuFactory);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, t, ExtensionHost, ourContext, providerSettings, serviceProvider, i, contextMenuFactory: contextMenuFactory);
-            topLevelViewModel.InitializeProperties();
-
-            return topLevelViewModel;
-        };
+            CreateTopLevelViewModel(i, t, serviceProvider, providerSettings, contextMenuFactory, ourContext);
 
         var topLevelList = new List<TopLevelViewModel>();
 
@@ -394,6 +387,67 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         }
 
         DockBandItems = bands.ToArray();
+    }
+
+    internal TopLevelViewModel? ResolveCommandItem(string commandId, IServiceProvider serviceProvider)
+    {
+        if (!isValid || !IsActive || _commandProvider.Unsafe is not ICommandProvider4 provider)
+        {
+            return null;
+        }
+
+        var item = provider.GetCommandItem(commandId);
+        if (item is null)
+        {
+            return null;
+        }
+
+        var settings = serviceProvider.GetRequiredService<ISettingsService>().Settings;
+        var contextMenuFactory = serviceProvider.GetService<IContextMenuFactory>();
+        var resolved = CreateTopLevelViewModel(
+            item,
+            TopLevelType.Normal,
+            serviceProvider,
+            GetProviderSettings(settings),
+            contextMenuFactory,
+            GetProviderContext());
+
+        if (string.Equals(resolved.Id, commandId, StringComparison.Ordinal))
+        {
+            return resolved;
+        }
+
+        Logger.LogWarning($"Provider {ProviderId} returned command {resolved.Id} when resolving {commandId}.");
+        resolved.Cleanup();
+        return null;
+    }
+
+    private TopLevelViewModel CreateTopLevelViewModel(
+        ICommandItem? item,
+        TopLevelType type,
+        IServiceProvider serviceProvider,
+        ProviderSettings providerSettings,
+        IContextMenuFactory? contextMenuFactory,
+        ICommandProviderContext providerContext)
+    {
+        CommandItemViewModel commandItemViewModel = new(new(item), new(TopLevelPageContext), contextMenuFactory);
+        TopLevelViewModel? topLevelViewModel = null;
+        try
+        {
+            topLevelViewModel = new(commandItemViewModel, type, ExtensionHost, providerContext, providerSettings, serviceProvider, item, contextMenuFactory);
+            topLevelViewModel.InitializeProperties();
+            return topLevelViewModel;
+        }
+        catch
+        {
+            topLevelViewModel?.Cleanup();
+            if (topLevelViewModel is null)
+            {
+                commandItemViewModel.SafeCleanup();
+            }
+
+            throw;
+        }
     }
 
     private TopLevelViewModel? LookupTopLevelCommand(string commandId)

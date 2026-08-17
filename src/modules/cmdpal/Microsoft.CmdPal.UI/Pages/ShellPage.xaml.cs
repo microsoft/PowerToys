@@ -434,44 +434,49 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         CmdPalProtocolRoute route,
         CmdPalProtocolRoute.ExecuteCommand executeCommand)
     {
-        var command = await ResolveExternalCommandAsync(executeCommand);
-        if (command is null)
+        ExternalCommandPermission permission;
+        bool isPage;
+        using (var resolution = await ResolveExternalCommandAsync(executeCommand))
         {
-            await ShowExternalCommandUnavailableAsync();
-            return;
-        }
+            if (resolution is null)
+            {
+                await ShowExternalCommandUnavailableAsync();
+                return;
+            }
 
-        var commandViewModel = command.CommandViewModel;
-        if (!CanExecuteExternalCommand(commandViewModel, executeCommand.ListPageOptions))
-        {
-            await ShowExternalCommandUnavailableAsync();
-            return;
-        }
+            var command = resolution.Command;
+            var commandViewModel = command.CommandViewModel;
+            if (!CanExecuteExternalCommand(commandViewModel, executeCommand.ListPageOptions))
+            {
+                await ShowExternalCommandUnavailableAsync();
+                return;
+            }
 
-        var provider = _topLevelCommandManager.LookupProvider(command.CommandProviderId);
-        var permission = new ExternalCommandPermission(
-            new ExternalCommandPermissionKey(
-                ExternalCommandKind.Command,
-                provider?.Extension?.PackageFamilyName ?? string.Empty,
-                command.CommandProviderId,
-                command.Id),
-            string.IsNullOrWhiteSpace(command.Title) ? command.Id : command.Title,
-            string.IsNullOrWhiteSpace(provider?.DisplayName) ? command.CommandProviderId : provider.DisplayName);
+            var provider = resolution.Provider;
+            permission = new ExternalCommandPermission(
+                new ExternalCommandPermissionKey(
+                    ExternalCommandKind.Command,
+                    provider.Extension?.PackageFamilyName ?? string.Empty,
+                    command.CommandProviderId,
+                    command.Id),
+                string.IsNullOrWhiteSpace(command.Title) ? command.Id : command.Title,
+                string.IsNullOrWhiteSpace(provider.DisplayName) ? command.CommandProviderId : provider.DisplayName);
 
-        var isPage = commandViewModel.IsPage;
-        var canRemember = !(executeCommand.ListPageOptions?.RequiresOneTimeConsent ?? false);
-        var isRemembered = canRemember && await _externalCommandPermissionStore.IsAllowedAsync(permission.Key);
-        if (!isRemembered &&
-            !await RequestExternalCommandConsentAsync(
-                route,
-                permission,
-                isPage,
-                isReload: false,
-                executeCommand.ListPageOptions,
-                canRemember,
-                command.IconViewModel))
-        {
-            return;
+            isPage = commandViewModel.IsPage;
+            var canRemember = !(executeCommand.ListPageOptions?.RequiresOneTimeConsent ?? false);
+            var isRemembered = canRemember && await _externalCommandPermissionStore.IsAllowedAsync(permission.Key);
+            if (!isRemembered &&
+                !await RequestExternalCommandConsentAsync(
+                    route,
+                    permission,
+                    isPage,
+                    isReload: false,
+                    executeCommand.ListPageOptions,
+                    canRemember,
+                    command.IconViewModel))
+            {
+                return;
+            }
         }
 
         if (!_settingsService.Settings.EnableExternalCommandLinks)
@@ -480,21 +485,22 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
 
         // Re-resolve so consent cannot transfer across a provider reload.
-        command = _topLevelCommandManager.LookupCommand(executeCommand.ProviderId, executeCommand.CommandId);
-        provider = _topLevelCommandManager.LookupProvider(executeCommand.ProviderId);
-        commandViewModel = command?.CommandViewModel;
-        if (command is null ||
-            provider is null ||
-            commandViewModel is null ||
-            permission.Key.PackageFamilyName != (provider.Extension?.PackageFamilyName ?? string.Empty) ||
-            commandViewModel.IsPage != isPage ||
-            !CanExecuteExternalCommand(commandViewModel, executeCommand.ListPageOptions))
+        using var refreshedResolution = await ResolveExternalCommandAsync(executeCommand);
+        var refreshedCommand = refreshedResolution?.Command;
+        var refreshedProvider = refreshedResolution?.Provider;
+        var refreshedCommandViewModel = refreshedCommand?.CommandViewModel;
+        if (refreshedCommand is null ||
+            refreshedProvider is null ||
+            refreshedCommandViewModel is null ||
+            permission.Key.PackageFamilyName != (refreshedProvider.Extension?.PackageFamilyName ?? string.Empty) ||
+            refreshedCommandViewModel.IsPage != isPage ||
+            !CanExecuteExternalCommand(refreshedCommandViewModel, executeCommand.ListPageOptions))
         {
             await ShowExternalCommandUnavailableAsync();
             return;
         }
 
-        var performMessage = command.GetPerformCommandMessage();
+        var performMessage = refreshedCommand.GetPerformCommandMessage();
         performMessage.WithAnimation = false;
         performMessage.ShowWindowIfPage = true;
         performMessage.ListPageOptions = executeCommand.ListPageOptions;
@@ -513,31 +519,35 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             (options is null || (!options.IsEmpty && command.IsListPage));
     }
 
-    private async Task<TopLevelViewModel?> ResolveExternalCommandAsync(CmdPalProtocolRoute.ExecuteCommand route)
+    private async Task<CommandResolution?> ResolveExternalCommandAsync(CmdPalProtocolRoute.ExecuteCommand route)
     {
-        var command = _topLevelCommandManager.LookupCommand(route.ProviderId, route.CommandId);
-        if (command is not null || !_topLevelCommandManager.IsLoading || _isDisposed)
-        {
-            return command;
-        }
-
         using var resolutionCts = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeCts.Token);
         resolutionCts.CancelAfter(ExternalCommandResolutionTimeout);
         try
         {
-            await _topLevelCommandManager.WaitForCurrentLoadAsync(resolutionCts.Token);
+            if (_topLevelCommandManager.IsLoading)
+            {
+                await _topLevelCommandManager.WaitForCurrentLoadAsync(resolutionCts.Token);
+            }
+
+            if (_isDisposed)
+            {
+                return null;
+            }
+
+            // Do not wait for late providers after the current load finishes.
+            return await _topLevelCommandManager.ResolveCommandAsync(route.ProviderId, route.CommandId, resolutionCts.Token);
         }
         catch (OperationCanceledException) when (!_lifetimeCts.IsCancellationRequested)
         {
-            Logger.LogWarning("Timed out waiting for commands to finish loading for an external command link.");
+            Logger.LogWarning("Timed out resolving an external command link.");
         }
         catch (OperationCanceledException)
         {
             return null;
         }
 
-        // Do not wait for late providers after the current load finishes.
-        return _topLevelCommandManager.LookupCommand(route.ProviderId, route.CommandId);
+        return null;
     }
 
     private async Task<bool> RequestExternalCommandConsentAsync(
@@ -1797,7 +1807,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         GC.SuppressFinalize(this);
     }
 
-    private sealed class ContentDialogLease(SemaphoreSlim gate) : IDisposable
+    private sealed partial class ContentDialogLease(SemaphoreSlim gate) : IDisposable
     {
         private SemaphoreSlim? _gate = gate;
 
