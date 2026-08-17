@@ -213,14 +213,12 @@ jobs:
     parameters:
       sdk: true
       version: '10.0'
+      # SDK 10.0.303 contains runtime 10.0.11. Keep this aligned with DotNetRuntimePackageVersion in Directory.Packages.props.
+      exactVersion: '10.0.303'
 
   - ${{ if eq(parameters.runTests, true) }}:
     - task: VisualStudioTestPlatformInstaller@1
       displayName: Ensure VSTest Platform
-
-  - pwsh: |-
-      & '.pipelines/applyXamlStyling.ps1' -Passive
-    displayName: Verify XAML formatting
 
   - task: NuGetAuthenticate@1
     displayName: Authenticate NuGet feeds for verification

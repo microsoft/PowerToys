@@ -255,6 +255,9 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
     private static PropertyChangedEventArgs Args(string name) => new(name);
 
     protected void DoOnUiThread(Action action)
+        => _ = TryDoOnUiThread(action);
+
+    protected bool TryDoOnUiThread(Action action)
     {
         if (PageContext.TryGetTarget(out var pageContext))
         {
@@ -263,7 +266,10 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 pageContext.Scheduler);
+            return true;
         }
+
+        return false;
     }
 
     protected virtual void UnsafeCleanup()
