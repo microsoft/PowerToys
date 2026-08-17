@@ -72,6 +72,14 @@ public class UITestBase : IDisposable
     /// </summary>
     protected virtual bool ReuseScopeAcrossTests => false;
 
+    /// <summary>
+    /// Prepare test-owned state after stale processes have stopped and immediately before the scope
+    /// launches. Override when constructor-created fixtures can be overwritten during process cleanup.
+    /// </summary>
+    protected virtual void PrepareTestState()
+    {
+    }
+
     /// <param name="scope">Module whose window the test drives.</param>
     /// <param name="size">Optional fixed window size applied once the window appears.</param>
     /// <param name="enableModules">
@@ -122,6 +130,8 @@ public class UITestBase : IDisposable
                 {
                     SettingsConfigHelper.ConfigureGlobalModuleSettings(enableModules);
                 }
+
+                PrepareTestState();
             }
 
             // Start the 1s screenshot timer + FFmpeg recording before the UI work so the artifacts
