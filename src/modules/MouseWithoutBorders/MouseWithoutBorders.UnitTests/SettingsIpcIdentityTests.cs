@@ -108,6 +108,44 @@ public sealed class SettingsIpcIdentityTests
         cancellation.Cancel();
     }
 
+    [TestMethod]
+    public async Task ProductionServerRecoversAfterPipeNameBecomesAvailable()
+    {
+        var pipeName = $"PowerToys.MWB.v2.UnitTest.{Environment.ProcessId}.{Guid.NewGuid():N}";
+        using var identity = WindowsIdentity.GetCurrent();
+        var peerIdentity = new WindowsNamedPipePeerIdentityProvider(new AcceptSignatureVerifier()).GetIdentity(Environment.ProcessId);
+        var policy = new NamedPipePeerPolicy
+        {
+            ExpectedSessionId = peerIdentity.SessionId,
+            ExpectedUserSid = peerIdentity.UserSid,
+            ExpectedImagePath = peerIdentity.ImagePath,
+            ExpectedFileVersion = peerIdentity.FileVersion,
+            RequireMicrosoftSignature = false,
+        };
+        using var cancellation = new CancellationTokenSource();
+        var initialCreationFailure = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await using (var occupyingServer = RestrictedNamedPipeServer.Create(pipeName, identity.User!))
+        {
+            IpcChannel<TestRpcTarget>.StartAuthenticatedIpcServer(
+                pipeName,
+                identity.User,
+                policy,
+                _ => initialCreationFailure.TrySetResult(),
+                cancellation.Token);
+            await initialCreationFailure.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+
+        await using var client = await AuthenticatedNamedPipeClient.ConnectAsync(
+            pipeName,
+            policy,
+            new NamedPipePeerAuthenticator(new WindowsNamedPipePeerIdentityProvider(new AcceptSignatureVerifier())),
+            5000);
+
+        Assert.IsTrue(client.IsConnected);
+        cancellation.Cancel();
+    }
+
     private sealed class AcceptSignatureVerifier : IProcessSignatureVerifier
     {
         public bool HasTrustedMicrosoftSignature(string imagePath) => true;

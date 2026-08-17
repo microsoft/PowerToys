@@ -93,6 +93,26 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         }
 
         [TestMethod]
+        public async Task RealProcessTokenWithUnexpectedSidIsRejectedBeforeDispatch()
+        {
+            var pair = await CreateConnectedPairAsync();
+            await using var server = pair.Server;
+            await using var client = pair.Client;
+
+            var identity = GetCurrentIdentity();
+            var policy = CopyPolicy(
+                CreatePolicy(identity),
+                expectedUserSid: new SecurityIdentifier(WellKnownSidType.AnonymousSid, null).Value);
+            var dispatchCount = 0;
+
+            var result = CreateRealAuthenticator().AuthenticateClientAndExecute(server, policy, () => dispatchCount++);
+
+            Assert.IsFalse(result.Accepted);
+            Assert.AreEqual("wrong-user", result.ReasonCode);
+            Assert.AreEqual(0, dispatchCount);
+        }
+
+        [TestMethod]
         public async Task FakeServerAndPipeSquattingAreRejected()
         {
             var pipeName = UniquePipeName();
@@ -303,6 +323,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         private static NamedPipePeerPolicy CopyPolicy(
             NamedPipePeerPolicy policy,
             int? expectedSessionId = null,
+            string expectedUserSid = null,
             string expectedImagePath = null,
             bool? allowLocalSystem = null,
             bool? requireMicrosoftSignature = null)
@@ -310,7 +331,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             return new NamedPipePeerPolicy
             {
                 ExpectedSessionId = expectedSessionId ?? policy.ExpectedSessionId,
-                ExpectedUserSid = policy.ExpectedUserSid,
+                ExpectedUserSid = expectedUserSid ?? policy.ExpectedUserSid,
                 ExpectedImagePath = expectedImagePath ?? policy.ExpectedImagePath,
                 ExpectedFileVersion = policy.ExpectedFileVersion,
                 AllowLocalSystem = allowLocalSystem ?? policy.AllowLocalSystem,

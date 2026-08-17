@@ -180,7 +180,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
                 PipeAccessRights.ReadWrite | PipeAccessRights.CreateNewInstance,
                 AccessControlType.Allow));
 
-            _ = Task.Factory.StartNew(
+            _ = Task.Run(
                 async () =>
                 {
                     try
@@ -207,9 +207,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
 #endif
                     }
                 },
-                cancellationToken,
-                TaskCreationOptions.None,
-                TaskScheduler.Default);
+                cancellationToken);
 
             return default(T);
         }
@@ -220,10 +218,20 @@ WellKnownSidType.AuthenticatedUserSid, null);
             NamedPipePeerPolicy clientPolicy,
             CancellationToken cancellationToken)
         {
+            return StartAuthenticatedIpcServer(pipeName, allowedUser, clientPolicy, null, cancellationToken);
+        }
+
+        internal static T StartAuthenticatedIpcServer(
+            string pipeName,
+            SecurityIdentifier allowedUser,
+            NamedPipePeerPolicy clientPolicy,
+            Action<Exception> serverErrorObserver,
+            CancellationToken cancellationToken)
+        {
             var authenticator = new NamedPipePeerAuthenticator(
                 new WindowsNamedPipePeerIdentityProvider(new MicrosoftMachineRootSignatureVerifier()));
 
-            _ = Task.Factory.StartNew(
+            _ = Task.Run(
                 async () =>
                 {
                     while (!cancellationToken.IsCancellationRequested)
@@ -255,6 +263,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
                         }
                         catch (Exception e)
                         {
+                            serverErrorObserver?.Invoke(e);
 #if MM_HELPER
                             _ = e;
 #else
@@ -267,9 +276,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
                         }
                     }
                 },
-                cancellationToken,
-                TaskCreationOptions.None,
-                TaskScheduler.Default);
+                cancellationToken);
 
             return default(T);
         }
