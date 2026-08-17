@@ -15,13 +15,18 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
     private readonly AdaptiveCache<IconCacheKey, Task<IconSource?>> _cache;
     private readonly ConcurrentDictionary<IconCacheKey, Task<IconSource?>> _inFlight = new();
     private readonly Size _iconSize;
+    private readonly int _cacheSize;
     private readonly IIconLoaderService _loader;
 
     public CachedIconSourceProvider(IIconLoaderService loader, Size iconSize, int cacheSize)
     {
         _loader = loader;
         _iconSize = iconSize;
-        _cache = new AdaptiveCache<IconCacheKey, Task<IconSource?>>(cacheSize, TimeSpan.FromMinutes(60));
+        _cacheSize = cacheSize;
+        _cache = new AdaptiveCache<IconCacheKey, Task<IconSource?>>(
+            cacheSize,
+            TimeSpan.FromMinutes(60),
+            removalCallback: OnCacheEntryRemoved);
     }
 
     public CachedIconSourceProvider(IIconLoaderService loader, int iconSize, int cacheSize)
@@ -35,10 +40,12 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
 
         if (_cache.TryGet(key, out var existingTask))
         {
+            IconLoadDiagnostics.RecordCacheLookup(_iconSize, _cacheSize, hit: true);
             diagnostics.RecordProviderResolution(IconProviderResolution.CacheHit, existingTask);
             return existingTask;
         }
 
+        IconLoadDiagnostics.RecordCacheLookup(_iconSize, _cacheSize, hit: false);
         return GetOrCreateSlowPath(key, icon, scale, diagnostics);
     }
 
@@ -68,6 +75,10 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
                     if (completed.IsCompletedSuccessfully)
                     {
                         _cache.Add(key, completed);
+                        IconLoadDiagnostics.RecordCacheEntryAdded(
+                            _iconSize,
+                            _cacheSize,
+                            _cache.ApproximateCount);
                     }
                 }
                 finally
@@ -112,6 +123,22 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
         }
 
         return task;
+    }
+
+    private void OnCacheEntryRemoved(
+        IconCacheKey key,
+        Task<IconSource?> task,
+        AdaptiveCacheRemovalReason reason,
+        int remainingCount,
+        int capacity)
+    {
+        _ = key;
+        _ = task;
+        IconLoadDiagnostics.RecordCacheEntryRemoved(
+            _iconSize,
+            capacity,
+            remainingCount,
+            reason);
     }
 
     private readonly struct IconCacheKey : IEquatable<IconCacheKey>

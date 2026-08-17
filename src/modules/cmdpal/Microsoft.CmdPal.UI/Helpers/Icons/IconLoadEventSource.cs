@@ -2,17 +2,29 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 
 namespace Microsoft.CmdPal.UI.Helpers;
 
-[EventSource(Name = "Microsoft.PowerToys.CmdPal.IconLoading")]
+[EventSource(
+    Name = "Microsoft.PowerToys.CmdPal.IconLoading",
+    Guid = "AA068BA3-1767-5F92-7A9B-8F5DA0397413")]
 internal sealed partial class IconLoadEventSource : EventSource
 {
     public static IconLoadEventSource Log { get; } = new();
 
     private IconLoadEventSource()
     {
+    }
+
+    protected override void OnEventCommand(EventCommandEventArgs command)
+    {
+        base.OnEventCommand(command);
+        if (command.Command == EventCommand.Disable && !IsEnabled())
+        {
+            IconLoadDiagnostics.OnEtwDisabled();
+        }
     }
 
     [Event(1, Level = EventLevel.Informational)]
@@ -268,6 +280,50 @@ internal sealed partial class IconLoadEventSource : EventSource
             demandedBeyondCapacity);
     }
 
+    [Event(34, Level = EventLevel.Warning)]
+    public void DispatcherWaitFailed(long sessionId, long loadId, long elapsedMicroseconds)
+    {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        WriteEvent(34, sessionId, loadId, elapsedMicroseconds);
+    }
+
+    [Event(35, Level = EventLevel.Informational)]
+    public void DispatcherUiSliceCompleted(
+        long sessionId,
+        long loadId,
+        int materializationKind,
+        int sliceKind,
+        bool isDemanded,
+        long elapsedMicroseconds)
+    {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        WriteEvent(35, sessionId, loadId, materializationKind, sliceKind, isDemanded, elapsedMicroseconds);
+    }
+
+    [Event(36, Level = EventLevel.Informational)]
+    public void DispatcherAsyncSuspensionCompleted(
+        long sessionId,
+        long loadId,
+        int materializationKind,
+        bool isDemanded,
+        long elapsedMicroseconds)
+    {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        WriteEvent(36, sessionId, loadId, materializationKind, isDemanded, elapsedMicroseconds);
+    }
+
     // Event IDs follow the final grouped diagnostics schema and intentionally remain sparse so
     // independently reviewable layers can land without changing an event's published identity.
     [Event(37, Level = EventLevel.Informational)]
@@ -279,5 +335,226 @@ internal sealed partial class IconLoadEventSource : EventSource
         }
 
         WriteEvent(37, sessionId, elapsedMicroseconds);
+    }
+
+    // These exact overloads intentionally shadow EventSource.WriteEvent(params object?[]).
+    // The params overload allocates an array and boxes values while ETW is enabled, which
+    // would make the icon diagnostics measurably perturb the paths they are observing.
+    [NonEvent]
+    private new unsafe void WriteEvent(int eventId, long value1, long value2)
+    {
+        EventData* data = stackalloc EventData[2];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(long));
+        WritePrimitiveEvent(eventId, 2, data);
+    }
+
+    [NonEvent]
+    private unsafe void WriteEvent(int eventId, long value1, long value2, int value3)
+    {
+        EventData* data = stackalloc EventData[3];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(long));
+        SetEventData(&data[2], &value3, sizeof(int));
+        WritePrimitiveEvent(eventId, 3, data);
+    }
+
+    [NonEvent]
+    private new unsafe void WriteEvent(int eventId, long value1, long value2, long value3)
+    {
+        EventData* data = stackalloc EventData[3];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(long));
+        SetEventData(&data[2], &value3, sizeof(long));
+        WritePrimitiveEvent(eventId, 3, data);
+    }
+
+    [NonEvent]
+    private unsafe void WriteEvent(int eventId, long value1, long value2, int value3, double value4)
+    {
+        EventData* data = stackalloc EventData[4];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(long));
+        SetEventData(&data[2], &value3, sizeof(int));
+        SetEventData(&data[3], &value4, sizeof(double));
+        WritePrimitiveEvent(eventId, 4, data);
+    }
+
+    [NonEvent]
+    private unsafe void WriteEvent(int eventId, long value1, long value2, long value3, int value4)
+    {
+        EventData* data = stackalloc EventData[4];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(long));
+        SetEventData(&data[2], &value3, sizeof(long));
+        SetEventData(&data[3], &value4, sizeof(int));
+        WritePrimitiveEvent(eventId, 4, data);
+    }
+
+    [NonEvent]
+    private unsafe void WriteEvent(int eventId, long value1, long value2, int value3, long value4)
+    {
+        EventData* data = stackalloc EventData[4];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(long));
+        SetEventData(&data[2], &value3, sizeof(int));
+        SetEventData(&data[3], &value4, sizeof(long));
+        WritePrimitiveEvent(eventId, 4, data);
+    }
+
+    [NonEvent]
+    private unsafe void WriteEvent(int eventId, long value1, long value2, long value3, long value4)
+    {
+        EventData* data = stackalloc EventData[4];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(long));
+        SetEventData(&data[2], &value3, sizeof(long));
+        SetEventData(&data[3], &value4, sizeof(long));
+        WritePrimitiveEvent(eventId, 4, data);
+    }
+
+    [NonEvent]
+    private unsafe void WriteEvent(int eventId, long value1, int value2, bool value3, long value4)
+    {
+        var boolValue3 = value3 ? 1 : 0;
+        EventData* data = stackalloc EventData[4];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(int));
+        SetEventData(&data[2], &boolValue3, sizeof(int));
+        SetEventData(&data[3], &value4, sizeof(long));
+        WritePrimitiveEvent(eventId, 4, data);
+    }
+
+    [NonEvent]
+    private unsafe void WriteEvent(int eventId, long value1, long value2, int value3, int value4, long value5)
+    {
+        EventData* data = stackalloc EventData[5];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(long));
+        SetEventData(&data[2], &value3, sizeof(int));
+        SetEventData(&data[3], &value4, sizeof(int));
+        SetEventData(&data[4], &value5, sizeof(long));
+        WritePrimitiveEvent(eventId, 5, data);
+    }
+
+    [NonEvent]
+    private unsafe void WriteEvent(int eventId, long value1, long value2, long value3, int value4, int value5)
+    {
+        EventData* data = stackalloc EventData[5];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(long));
+        SetEventData(&data[2], &value3, sizeof(long));
+        SetEventData(&data[3], &value4, sizeof(int));
+        SetEventData(&data[4], &value5, sizeof(int));
+        WritePrimitiveEvent(eventId, 5, data);
+    }
+
+    [NonEvent]
+    private unsafe void WriteEvent(int eventId, long value1, long value2, int value3, long value4, long value5)
+    {
+        EventData* data = stackalloc EventData[5];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(long));
+        SetEventData(&data[2], &value3, sizeof(int));
+        SetEventData(&data[3], &value4, sizeof(long));
+        SetEventData(&data[4], &value5, sizeof(long));
+        WritePrimitiveEvent(eventId, 5, data);
+    }
+
+    [NonEvent]
+    private unsafe void WriteEvent(int eventId, long value1, long value2, int value3, bool value4, long value5)
+    {
+        var boolValue4 = value4 ? 1 : 0;
+        EventData* data = stackalloc EventData[5];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(long));
+        SetEventData(&data[2], &value3, sizeof(int));
+        SetEventData(&data[3], &boolValue4, sizeof(int));
+        SetEventData(&data[4], &value5, sizeof(long));
+        WritePrimitiveEvent(eventId, 5, data);
+    }
+
+    [NonEvent]
+    private unsafe void WriteEvent(int eventId, long value1, long value2, int value3, double value4, double value5, double value6)
+    {
+        EventData* data = stackalloc EventData[6];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(long));
+        SetEventData(&data[2], &value3, sizeof(int));
+        SetEventData(&data[3], &value4, sizeof(double));
+        SetEventData(&data[4], &value5, sizeof(double));
+        SetEventData(&data[5], &value6, sizeof(double));
+        WritePrimitiveEvent(eventId, 6, data);
+    }
+
+    [NonEvent]
+    private unsafe void WriteEvent(int eventId, long value1, long value2, int value3, int value4, bool value5, long value6)
+    {
+        var boolValue5 = value5 ? 1 : 0;
+        EventData* data = stackalloc EventData[6];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(long));
+        SetEventData(&data[2], &value3, sizeof(int));
+        SetEventData(&data[3], &value4, sizeof(int));
+        SetEventData(&data[4], &boolValue5, sizeof(int));
+        SetEventData(&data[5], &value6, sizeof(long));
+        WritePrimitiveEvent(eventId, 6, data);
+    }
+
+    [NonEvent]
+    private unsafe void WriteEvent(int eventId, long value1, long value2, long value3, int value4, string value5)
+    {
+        value5 ??= string.Empty;
+        fixed (char* value5Pointer = value5)
+        {
+            EventData* data = stackalloc EventData[5];
+            SetEventData(&data[0], &value1, sizeof(long));
+            SetEventData(&data[1], &value2, sizeof(long));
+            SetEventData(&data[2], &value3, sizeof(long));
+            SetEventData(&data[3], &value4, sizeof(int));
+            SetEventData(&data[4], value5Pointer, checked((value5.Length + 1) * sizeof(char)));
+            WritePrimitiveEvent(eventId, 5, data);
+        }
+    }
+
+    [NonEvent]
+    private unsafe void WriteEvent(
+        int eventId,
+        long value1,
+        long value2,
+        int value3,
+        long value4,
+        long value5,
+        long value6,
+        int value7,
+        long value8)
+    {
+        EventData* data = stackalloc EventData[8];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(long));
+        SetEventData(&data[2], &value3, sizeof(int));
+        SetEventData(&data[3], &value4, sizeof(long));
+        SetEventData(&data[4], &value5, sizeof(long));
+        SetEventData(&data[5], &value6, sizeof(long));
+        SetEventData(&data[6], &value7, sizeof(int));
+        SetEventData(&data[7], &value8, sizeof(long));
+        WritePrimitiveEvent(eventId, 8, data);
+    }
+
+    [NonEvent]
+    private static unsafe void SetEventData(EventData* eventData, void* value, int size)
+    {
+        eventData->DataPointer = (IntPtr)value;
+        eventData->Size = size;
+    }
+
+    [NonEvent]
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026",
+        Justification = "Payload descriptors reference only primitive values or an explicitly pinned string buffer; no object graph is serialized.")]
+    private unsafe void WritePrimitiveEvent(int eventId, int eventDataCount, EventData* data)
+    {
+        WriteEventCore(eventId, eventDataCount, data);
     }
 }
