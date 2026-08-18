@@ -676,4 +676,61 @@ namespace UpdatingUnitTests
             LocalFree(argv);
         }
     };
+
+    // Tests for IsSafeDownloadedInstallerFilename: the updater reads
+    // downloadedInstallerFilename from the persisted UpdateState.json and must only
+    // accept a plain filename so it never looks outside the Updates folder when the
+    // cached state is stale, corrupted, or otherwise unexpected.
+    TEST_CLASS(IsSafeDownloadedInstallerFilenameTests)
+    {
+    public:
+        // Normal installer asset names are bare filenames and must be accepted,
+        // so the regular update flow does not regress.
+        TEST_METHOD(NormalInstallerFilenamesAreAccepted)
+        {
+            Assert::IsTrue(updating::IsSafeDownloadedInstallerFilename(L"PowerToysSetup-0.95.0-x64.exe"));
+            Assert::IsTrue(updating::IsSafeDownloadedInstallerFilename(L"PowerToysUserSetup-0.95.0-arm64.exe"));
+            Assert::IsTrue(updating::IsSafeDownloadedInstallerFilename(L"PowerToysSetup-1.0.0-x64.msi"));
+        }
+
+        // Empty values must be rejected (no installer to run).
+        TEST_METHOD(EmptyFilenameIsRejected)
+        {
+            Assert::IsFalse(updating::IsSafeDownloadedInstallerFilename(L""));
+        }
+
+        // Relative parent-directory components must be rejected.
+        TEST_METHOD(ParentDirectoryComponentsAreRejected)
+        {
+            Assert::IsFalse(updating::IsSafeDownloadedInstallerFilename(L"..\\..\\setup.msi"));
+            Assert::IsFalse(updating::IsSafeDownloadedInstallerFilename(L"../../setup.exe"));
+            Assert::IsFalse(updating::IsSafeDownloadedInstallerFilename(L".."));
+            Assert::IsFalse(updating::IsSafeDownloadedInstallerFilename(L"."));
+        }
+
+        // Any directory component (even without "..") must be rejected — the value
+        // must be a single bare filename.
+        TEST_METHOD(NestedPathComponentsAreRejected)
+        {
+            Assert::IsFalse(updating::IsSafeDownloadedInstallerFilename(L"sub\\setup.exe"));
+            Assert::IsFalse(updating::IsSafeDownloadedInstallerFilename(L"sub/setup.exe"));
+        }
+
+        // Absolute paths, drive-relative paths and UNC paths must be rejected,
+        // because fs::path's operator/ would let them replace the Updates directory.
+        TEST_METHOD(AbsoluteAndUncPathsAreRejected)
+        {
+            Assert::IsFalse(updating::IsSafeDownloadedInstallerFilename(L"C:\\setup.msi"));
+            Assert::IsFalse(updating::IsSafeDownloadedInstallerFilename(L"C:setup.msi"));
+            Assert::IsFalse(updating::IsSafeDownloadedInstallerFilename(L"\\setup.msi"));
+            Assert::IsFalse(updating::IsSafeDownloadedInstallerFilename(L"\\\\server\\share\\setup.exe"));
+        }
+
+        // A bare filename that merely contains a ".." substring is rejected as a
+        // conservative measure (real asset names never contain "..").
+        TEST_METHOD(EmbeddedDotDotSubstringIsRejected)
+        {
+            Assert::IsFalse(updating::IsSafeDownloadedInstallerFilename(L"setup..name.exe"));
+        }
+    };
 }

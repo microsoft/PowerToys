@@ -42,4 +42,4 @@ In the PR that adds a new plugin, reference a new issue to track the work for fu
 
 - [ ] Add the resource folder to https://github.com/microsoft/PowerToys/blob/21247c0bb09a1bee3d14d6efa53d0c247f7236af/installer/PowerToysSetup/Product.wxs#L825
 - [ ] Add the resource files under the section https://github.com/microsoft/PowerToys/blob/21247c0bb09a1bee3d14d6efa53d0c247f7236af/installer/PowerToysSetup/Product.wxs#L882
-- [ ] Your plugin's executable file (DLL) has to have correct version informations after building it. (This version information will be shown on the settings page.)
+- [ ] Your plugin's executable file (DLL) has to have correct version information after building it. (This version information will be shown on the settings page.)

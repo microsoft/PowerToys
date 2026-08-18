@@ -1213,6 +1213,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Hide details.
+        /// </summary>
+        public static string HideDetailsCommand {
+            get {
+                return ResourceManager.GetString("HideDetailsCommand", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to {0} of {1}.
         /// </summary>
         public static string winget_operation_detail_progress {

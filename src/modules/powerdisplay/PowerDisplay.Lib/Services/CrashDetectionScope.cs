@@ -20,10 +20,22 @@ namespace PowerDisplay.Common.Services
     /// PowerDisplay.exe startup CrashRecovery detects the orphan and disables the module.
     ///
     /// On normal completion or .NET exception, Dispose() removes the lock.
+    ///
+    /// As a safety net for cooperative shutdowns (Runner's TerminateApp NamedPipe, Terminate
+    /// named event, tray-quit, Runner-exit detection, PowerToys upgrade), Begin() also
+    /// subscribes to <see cref="AppDomain.ProcessExit"/>. Those paths currently call
+    /// <see cref="Environment.Exit"/>, which terminates the process without unwinding
+    /// background-thread finally blocks — so without this hook the lock would orphan and
+    /// the next startup would false-positive. ProcessExit fires for Environment.Exit but
+    /// NOT for FailFast / BSOD / external TerminateProcess, which is exactly the partition
+    /// we want: cooperative exit → best-effort delete the lock; involuntary kill → leave the
+    /// lock for Phase 0 to detect.
     /// </summary>
     public sealed partial class CrashDetectionScope : IDisposable
     {
         private readonly string _lockPath;
+        private readonly IProcessExitHook _processExitHook;
+        private readonly EventHandler _processExitHandler;
         private int _disposedFlag;
 
         /// <summary>
@@ -35,9 +47,13 @@ namespace PowerDisplay.Common.Services
         /// </summary>
         /// <param name="lockPath">Override the default lock path. Defaults to
         /// <see cref="PathConstants.DiscoveryLockPath"/>. Test code passes a temp path.</param>
-        public static CrashDetectionScope Begin(string? lockPath = null)
+        /// <param name="processExitHook">Override the default <see cref="AppDomain.ProcessExit"/>
+        /// subscription. Test code passes a fake so it can simulate process exit without
+        /// terminating the test runner.</param>
+        public static CrashDetectionScope Begin(string? lockPath = null, IProcessExitHook? processExitHook = null)
         {
             var path = lockPath ?? PathConstants.DiscoveryLockPath;
+            var hook = processExitHook ?? AppDomainProcessExitHook.Instance;
 
             var dir = Path.GetDirectoryName(path);
             if (!string.IsNullOrEmpty(dir))
@@ -91,12 +107,39 @@ namespace PowerDisplay.Common.Services
             }
 
             Logger.LogInfo($"CrashDetectionScope: lock written at {path}");
-            return new CrashDetectionScope(path);
+            var scope = new CrashDetectionScope(path, hook);
+            hook.Subscribe(scope._processExitHandler);
+            return scope;
         }
 
-        private CrashDetectionScope(string lockPath)
+        private CrashDetectionScope(string lockPath, IProcessExitHook processExitHook)
         {
             _lockPath = lockPath;
+            _processExitHook = processExitHook;
+            _processExitHandler = OnProcessExit;
+        }
+
+        // Fired when the process is exiting cooperatively (Environment.Exit). Best-effort delete
+        // the lock so the next startup does not false-positive. Must not throw: ProcessExit
+        // handlers run inside the CLR shutdown sequence and any exception here disrupts it.
+        // Interlocked guards against a race with Dispose() — only one of the two wins and does
+        // the delete; the other returns early.
+        private void OnProcessExit(object? sender, EventArgs e)
+        {
+            if (Interlocked.Exchange(ref _disposedFlag, 1) != 0)
+            {
+                return;
+            }
+
+            try
+            {
+                File.Delete(_lockPath);
+            }
+            catch
+            {
+                // Worst case: false-positive on next start — same as today's behavior, so this
+                // hook is strictly an improvement.
+            }
         }
 
         public void Dispose()
@@ -105,6 +148,8 @@ namespace PowerDisplay.Common.Services
             {
                 return;
             }
+
+            _processExitHook.Unsubscribe(_processExitHandler);
 
             try
             {

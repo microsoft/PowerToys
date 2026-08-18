@@ -3,18 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Markup;
-using Windows.UI.Text;
-using static ShortcutGuide.Models.ShortcutEntry;
-using Orientation = Microsoft.UI.Xaml.Controls.Orientation;
 
 namespace ShortcutGuide.Models
 {

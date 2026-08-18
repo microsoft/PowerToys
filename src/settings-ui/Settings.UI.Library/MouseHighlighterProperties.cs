@@ -10,6 +10,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class MouseHighlighterProperties
     {
+        public const string DefaultLeftButtonClickColor = "#a6BFFF00";
+        public const string DefaultRightButtonClickColor = "#a600BFFF";
+
         [CmdConfigureIgnore]
         public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x48);
 
@@ -44,18 +47,42 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("spotlight_mode")]
         public BoolProperty SpotlightMode { get; set; }
 
+        [JsonPropertyName("ripple_mode")]
+        public BoolProperty RippleMode { get; set; }
+
+        [JsonPropertyName("ripple_size")]
+        public IntProperty RippleSize { get; set; }
+
+        [JsonPropertyName("ripple_intensity")]
+        public DoubleProperty RippleIntensity { get; set; }
+
+        [JsonPropertyName("ripple_duration_ms")]
+        public IntProperty RippleDurationMs { get; set; }
+
+        [JsonPropertyName("ripple_show_drag_trail")]
+        public BoolProperty RippleShowDragTrail { get; set; }
+
+        [JsonPropertyName("ripple_show_release_pulse")]
+        public BoolProperty RippleShowReleasePulse { get; set; }
+
         public MouseHighlighterProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
-            LeftButtonClickColor = new StringProperty("#a6FFFF00");
-            RightButtonClickColor = new StringProperty("#a60000FF");
+            LeftButtonClickColor = new StringProperty(DefaultLeftButtonClickColor);
+            RightButtonClickColor = new StringProperty(DefaultRightButtonClickColor);
             AlwaysColor = new StringProperty("#00FF0000");
             HighlightOpacity = new IntProperty(166); // for migration from <=1.1 to 1.2
-            HighlightRadius = new IntProperty(20);
-            HighlightFadeDelayMs = new IntProperty(500);
-            HighlightFadeDurationMs = new IntProperty(250);
+            HighlightRadius = new IntProperty(30);
+            HighlightFadeDelayMs = new IntProperty(400);
+            HighlightFadeDurationMs = new IntProperty(400);
             AutoActivate = new BoolProperty(false);
             SpotlightMode = new BoolProperty(false);
+            RippleMode = new BoolProperty(true);
+            RippleSize = new IntProperty(60);
+            RippleIntensity = new DoubleProperty(0.7);
+            RippleDurationMs = new IntProperty(480);
+            RippleShowDragTrail = new BoolProperty(true);
+            RippleShowReleasePulse = new BoolProperty(true);
         }
     }
 }

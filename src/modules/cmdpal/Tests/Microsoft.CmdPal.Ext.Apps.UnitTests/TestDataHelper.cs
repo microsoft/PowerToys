@@ -124,5 +124,10 @@ public static class TestDataHelper
         /// Gets or sets the installed location of the package.
         /// </summary>
         public string InstalledLocation { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the package is a non-removable system component.
+        /// </summary>
+        public bool IsNonRemovable { get; set; }
     }
 }

@@ -19,10 +19,16 @@ namespace ShortcutGuide
 {
     public sealed class Program
     {
+        public static Thread CopyAndIndexGenerationThread { get; private set; } = null!;
+
+        public static nint ForegroundWindowHandle { get; set; } = nint.Zero;
+
         [STAThread]
         public static void Main(string[] args)
         {
+            ForegroundWindowHandle = NativeMethods.GetForegroundWindow();
             Logger.InitializeLogger("\\ShortcutGuide\\Logs");
+            LogForegroundCapture(ForegroundWindowHandle);
 
             // The module interface passes: <powertoys_pid> [telemetry]
             if (args.Length >= 2 && args[1] == "telemetry")
@@ -30,6 +36,15 @@ namespace ShortcutGuide
                 Logger.LogInfo("Telemetry mode requested. Sending settings telemetry.");
                 SendSettingsTelemetry();
                 return;
+            }
+
+            if (args.Length >= 1 && int.TryParse(args[0], out int runnerPID))
+            {
+                RunnerHelper.WaitForPowerToysRunner(runnerPID, () =>
+                {
+                    Logger.LogInfo($"PowerToys runner process (PID={runnerPID}) exited. Exiting ShortcutGuide.");
+                    Environment.Exit(0);
+                });
             }
 
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredShortcutGuideEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
@@ -54,28 +69,60 @@ namespace ShortcutGuide
                 "ShortcutGuide",
                 "Manifests");
 
-            try
+            CopyAndIndexGenerationThread = new Thread(() =>
             {
-                foreach (string sourceFile in Directory.EnumerateFiles(sourceManifestFolder, "*.yml"))
+                try
                 {
-                    string destinationFile = Path.Combine(ManifestInterpreter.PathOfManifestFiles, Path.GetFileName(sourceFile));
-                    File.Copy(sourceFile, destinationFile, true);
+                    foreach (string sourceFile in Directory.EnumerateFiles(sourceManifestFolder, "*.yml"))
+                    {
+                        string destinationFile = Path.Combine(ManifestInterpreter.PathOfManifestFiles, Path.GetFileName(sourceFile));
+                        File.Copy(sourceFile, destinationFile, true);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to copy bundled shortcut manifests from '{sourceManifestFolder}'.", ex);
-            }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to copy bundled shortcut manifests from '{sourceManifestFolder}'.", ex);
+                }
 
-            Process indexGeneration = Process.Start(Path.GetDirectoryName(Environment.ProcessPath) + "\\PowerToys.ShortcutGuide.IndexYmlGenerator.exe");
-            indexGeneration.WaitForExit();
-            if (indexGeneration.ExitCode != 0)
-            {
-                Logger.LogError($"Index generation failed with exit code {indexGeneration.ExitCode}. There may be a corrupt shortcuts file in \"{ManifestInterpreter.PathOfManifestFiles}\".");
-                return;
-            }
+                string indexGeneratorPath = Path.Combine(
+                    Path.GetDirectoryName(Environment.ProcessPath)!,
+                    "PowerToys.ShortcutGuide.IndexYmlGenerator.exe");
 
-            PowerToysShortcutsPopulator.Populate();
+                try
+                {
+                    using Process? indexGeneration = Process.Start(indexGeneratorPath);
+
+                    if (indexGeneration is null)
+                    {
+                        Logger.LogError($"Failed to start index generation process '{indexGeneratorPath}'.");
+                        return;
+                    }
+
+                    indexGeneration.WaitForExit();
+
+                    if (indexGeneration.ExitCode != 0)
+                    {
+                        Logger.LogError($"Index generation failed with exit code {indexGeneration.ExitCode}. There may be a corrupt shortcuts file in \"{ManifestInterpreter.PathOfManifestFiles}\".");
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to start or wait for index generation process '{indexGeneratorPath}'.", ex);
+                    return;
+                }
+
+                try
+                {
+                    PowerToysShortcutsPopulator.Populate();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Failed to populate PowerToys shortcuts in manifest.", ex);
+                }
+            });
+            CopyAndIndexGenerationThread.IsBackground = true;
+            CopyAndIndexGenerationThread.Start();
 
             WinRT.ComWrappersSupport.InitializeComWrappers();
 
@@ -117,6 +164,48 @@ namespace ShortcutGuide
             catch (Exception ex)
             {
                 Logger.LogError("Failed to send settings telemetry.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Logs the foreground window captured at startup so we can see in
+        /// the SG log which app was foreground at the moment SG.exe began
+        /// running. The dictionary populated from this HWND drives the order
+        /// of nav items, so a wrong/empty capture surfaces as the wrong app
+        /// being auto-selected.
+        /// </summary>
+        private static void LogForegroundCapture(nint hwnd)
+        {
+            try
+            {
+                if (hwnd == nint.Zero)
+                {
+                    Logger.LogInfo("Foreground capture: HWND=0 (no foreground window).");
+                    return;
+                }
+
+                if (NativeMethods.GetWindowThreadProcessId(hwnd, out uint processId) == 0)
+                {
+                    Logger.LogInfo($"Foreground capture: HWND=0x{hwnd:X}; GetWindowThreadProcessId failed.");
+                    return;
+                }
+
+                string moduleName;
+                try
+                {
+                    using var proc = Process.GetProcessById((int)processId);
+                    moduleName = proc.MainModule?.ModuleName ?? "(null)";
+                }
+                catch (Exception ex)
+                {
+                    moduleName = $"(failed: {ex.GetType().Name})";
+                }
+
+                Logger.LogInfo($"Foreground capture: HWND=0x{hwnd:X}, PID={processId}, Module={moduleName}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to log foreground capture.", ex);
             }
         }
     }

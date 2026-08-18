@@ -1,9 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Project>
-	<ItemDefinitionGroup>
-		<ClCompile>
-			<AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-			<PreprocessorDefinitions>SPDLOG_WCHAR_TO_UTF8_SUPPORT;SPDLOG_COMPILED_LIB;SPDLOG_WCHAR_FILENAMES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-			<ForcedIncludeFiles>$(MSBuildThisFileDirectory)spdlog-msvc-fix\include\spdlog-msvc-fix.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-		</ClCompile>
-	</ItemDefinitionGroup>
+  <!--
+    SPDLOG_* preprocessor defines for spdlog consumers. The actual vcpkg
+    integration (VcpkgEnabled, VcpkgRoot, triplet, manifest install) lives
+    in Cpp.Build.props; this file just carries the defines that match how
+    the pre-vcpkg in-tree build was configured.
+  -->
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>SPDLOG_WCHAR_TO_UTF8_SUPPORT;SPDLOG_COMPILED_LIB;SPDLOG_WCHAR_FILENAMES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
 </Project>

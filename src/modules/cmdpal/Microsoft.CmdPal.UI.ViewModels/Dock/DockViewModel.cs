@@ -83,6 +83,11 @@ public sealed partial class DockViewModel : IDisposable
             return;
         }
 
+        if (_settings == settings)
+        {
+            return;
+        }
+
         _settings = settings;
         SetupBands();
     }
@@ -997,6 +1002,9 @@ public sealed partial class DockViewModel : IDisposable
     {
         var isDockEnabled = _settingsService.Settings.EnableDock;
         var dockSide = isDockEnabled ? GetEffectiveSide().ToString().ToLowerInvariant() : "none";
+        /*
+        // TODO: re-enable the collection of active bands at some point, if
+        // we ever get data flowing again.
 
         var (activeStart, activeCenter, activeEnd) = GetActiveBands();
 
@@ -1006,7 +1014,10 @@ public sealed partial class DockViewModel : IDisposable
         var startBands = isDockEnabled ? FormatBands(activeStart) : string.Empty;
         var centerBands = isDockEnabled ? FormatBands(activeCenter) : string.Empty;
         var endBands = isDockEnabled ? FormatBands(activeEnd) : string.Empty;
-
+        */
+        var startBands = string.Empty;
+        var centerBands = string.Empty;
+        var endBands = string.Empty;
         WeakReferenceMessenger.Default.Send(new TelemetryDockConfigurationMessage(
             isDockEnabled, dockSide, startBands, centerBands, endBands));
     }

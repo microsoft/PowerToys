@@ -49,6 +49,14 @@ public partial class ProviderSettingsViewModel : ObservableObject
 
     public string DisplayName => _provider.DisplayName;
 
+    /// <summary>
+    /// Stable, non-localized identifier from the underlying provider (e.g.
+    /// "com.microsoft.cmdpal.builtin.calculator"). Exposed for UI tests
+    /// to target the per-provider <see cref="ProviderSettingsViewModel"/>
+    /// row via <c>AutomationProperties.AutomationId</c>.
+    /// </summary>
+    public string Id => _provider.Id;
+
     public string ExtensionName => _provider.Extension?.ExtensionDisplayName ?? Resources.builtin_extension_name;
 
     public string ExtensionSubtext
@@ -112,7 +120,7 @@ public partial class ProviderSettingsViewModel : ObservableObject
                     ProviderSettings = s.ProviderSettings.SetItem(_provider.ProviderId, newSettings),
                 });
                 _providerSettings = newSettings;
-                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
+                WeakReferenceMessenger.Default.Send<ProviderEnabledStateChangedMessage>(new(_provider.ProviderId, value));
                 OnPropertyChanged(nameof(IsEnabled));
                 OnPropertyChanged(nameof(ExtensionSubtext));
                 OnPropertyChanged(nameof(Icon));
@@ -122,6 +130,41 @@ public partial class ProviderSettingsViewModel : ObservableObject
             {
                 _provider.CommandsChanged -= Provider_CommandsChanged;
                 _provider.CommandsChanged += Provider_CommandsChanged;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Per-provider search weight surfaced as a 0/1/2 ComboBox index (Lower / Normal /
+    /// Higher) so it can bind to <c>ComboBox.SelectedIndex</c> in the same style as the
+    /// other per-provider options. Persists to <see cref="ProviderSettings.SearchWeight"/>.
+    /// </summary>
+    public int SearchWeightIndex
+    {
+        get => _providerSettings.SearchWeight switch
+        {
+            ProviderSearchWeight.Lower => 0,
+            ProviderSearchWeight.Higher => 2,
+            _ => 1,
+        };
+        set
+        {
+            var newWeight = value switch
+            {
+                0 => ProviderSearchWeight.Lower,
+                2 => ProviderSearchWeight.Higher,
+                _ => ProviderSearchWeight.Normal,
+            };
+
+            if (newWeight != _providerSettings.SearchWeight)
+            {
+                var newSettings = _providerSettings with { SearchWeight = newWeight };
+                _settingsService.UpdateSettings(s => s with
+                {
+                    ProviderSettings = s.ProviderSettings.SetItem(_provider.ProviderId, newSettings),
+                });
+                _providerSettings = newSettings;
+                OnPropertyChanged(nameof(SearchWeightIndex));
             }
         }
     }

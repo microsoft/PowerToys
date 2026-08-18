@@ -45,6 +45,6 @@ internal sealed partial class FallbackExecuteSearchItem : FallbackCommandItem
         var isEmpty = string.IsNullOrEmpty(query);
         _executeItem.Name = isEmpty ? string.Empty : Resources.open_in_default_browser;
         Title = isEmpty ? string.Empty : UpdateBrowserName(_browserInfoService);
-        Subtitle = string.Format(CultureInfo.CurrentCulture, SubtitleText, query);
+        Subtitle = isEmpty ? string.Empty : string.Format(CultureInfo.CurrentCulture, SubtitleText, query);
     }
 }

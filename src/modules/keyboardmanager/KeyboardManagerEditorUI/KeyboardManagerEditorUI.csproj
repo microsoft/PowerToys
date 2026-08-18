@@ -15,6 +15,11 @@
     <ApplicationIcon>Assets\KeyboardManagerEditor\Keyboard.ico</ApplicationIcon>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <!-- Required alongside WindowsPackageType=None. Without it the Windows App SDK targets compile in the
+         MddBootstrap auto-initializer, and this app binds to the machine-wide Microsoft.WindowsAppRuntime
+         framework package instead of the app-local payload PowerToys ships in WinUI3Apps. Note that
+         Common.SelfContained.props above sets the unrelated .NET <SelfContained> property. See #49399. -->
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <AssemblyName>PowerToys.KeyboardManagerEditorUI</AssemblyName>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->

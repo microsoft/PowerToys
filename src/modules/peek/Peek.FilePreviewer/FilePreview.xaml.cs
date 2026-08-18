@@ -185,6 +185,16 @@ namespace Peek.FilePreviewer
             return value == stateToMatch;
         }
 
+        public Visibility IsLoadingIndicatorVisible(PreviewState? state)
+        {
+            return MatchPreviewState(state, PreviewState.Loading) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public string GetPreviewStateText(PreviewState? state)
+        {
+            return (state ?? PreviewState.Uninitialized).ToString();
+        }
+
         public Visibility IsPreviewVisible(IPreviewer? previewer, PreviewState? state)
         {
             var isValidPreview = previewer != null && MatchPreviewState(state, PreviewState.Loaded);
@@ -235,7 +245,6 @@ namespace Peek.FilePreviewer
                 Previewer = null;
                 ImagePreview.Visibility = Visibility.Collapsed;
                 VideoPreview.Visibility = Visibility.Collapsed;
-
                 AudioPreview.Visibility = Visibility.Collapsed;
                 BrowserPreview.Visibility = Visibility.Collapsed;
                 ArchivePreview.Visibility = Visibility.Collapsed;
@@ -320,6 +329,12 @@ namespace Peek.FilePreviewer
             {
                 value.PropertyChanged += Previewer_PropertyChanged;
             }
+        }
+
+        partial void OnPreviewerChanged(IPreviewer? value)
+        {
+            // Ensure the media transport controls are only present when viewing video media.
+            VideoPreview.MediaPlayer.CommandManager.IsEnabled = value is IVideoPreviewer;
         }
 
         private void BrowserPreview_DOMContentLoaded(Microsoft.Web.WebView2.Core.CoreWebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2DOMContentLoadedEventArgs args)

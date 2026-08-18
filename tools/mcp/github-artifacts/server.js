@@ -4,6 +4,7 @@ import { z } from "zod";
 import fs from "fs/promises";
 import path from "path";
 import { execFile } from "child_process";
+import { headersForUrl } from "./auth.js";
 
 const server = new McpServer({
   name: "issue-images",
@@ -52,23 +53,20 @@ function extractZipUrls(markdownOrHtml) {
 
 async function fetchJson(url, token) {
   const res = await fetch(url, {
-    headers: {
+    headers: headersForUrl(url, token, {
       "Accept": "application/vnd.github+json",
-      ...(token ? { "Authorization": `Bearer ${token}` } : {}),
-      "X-GitHub-Api-Version": "2022-11-28",
-      "User-Agent": "issue-images-mcp"
-    }
+      "X-GitHub-Api-Version": "2022-11-28"
+    })
   });
   if (!res.ok) throw new Error(`GitHub API failed: ${res.status} ${res.statusText}`);
   return await res.json();
 }
 
 async function downloadBytes(url, token) {
+  // URL comes from untrusted issue content: headersForUrl withholds the token
+  // unless the host is an allowlisted GitHub API host.
   const res = await fetch(url, {
-    headers: {
-      ...(token ? { "Authorization": `Bearer ${token}` } : {}),
-      "User-Agent": "issue-images-mcp"
-    }
+    headers: headersForUrl(url, token)
   });
   if (!res.ok) throw new Error(`Image download failed: ${res.status} ${res.statusText}`);
   const buf = new Uint8Array(await res.arrayBuffer());
@@ -79,34 +77,21 @@ async function downloadBytes(url, token) {
 async function downloadZipBytes(url, token) {
   const zipUrl = url.includes("?") ? url : `${url}?download=1`;
 
-  const tryFetch = async (useAuth) => {
-    const res = await fetch(zipUrl, {
-      headers: {
-        "Accept": "application/octet-stream",
-        ...(useAuth && token ? { "Authorization": `Bearer ${token}` } : {}),
-        "User-Agent": "issue-images-mcp"
-      },
-      redirect: "follow"
-    });
+  // URL comes from untrusted issue content: headersForUrl withholds the token
+  // unless the host is an allowlisted GitHub API host.
+  const res = await fetch(zipUrl, {
+    headers: headersForUrl(zipUrl, token, { "Accept": "application/octet-stream" }),
+    redirect: "follow"
+  });
 
-    if (!res.ok) throw new Error(`ZIP download failed: ${res.status} ${res.statusText}`);
+  if (!res.ok) throw new Error(`ZIP download failed: ${res.status} ${res.statusText}`);
 
-    const contentType = (res.headers.get("content-type") || "").toLowerCase();
-    const buf = new Uint8Array(await res.arrayBuffer());
+  const contentType = (res.headers.get("content-type") || "").toLowerCase();
+  const buf = new Uint8Array(await res.arrayBuffer());
 
-    return { buf, contentType };
-  };
-
-  let { buf, contentType } = await tryFetch(true);
   const isZip = buf.length >= 4 && buf[0] === 0x50 && buf[1] === 0x4b;
 
-  if (!isZip) {
-    ({ buf, contentType } = await tryFetch(false));
-  }
-
-  const isZipRetry = buf.length >= 4 && buf[0] === 0x50 && buf[1] === 0x4b;
-
-  if (!isZipRetry || contentType.includes("text/html") || buf.length < 100) {
+  if (!isZip || contentType.includes("text/html") || buf.length < 100) {
     throw new Error("ZIP download returned HTML or invalid data. Check permissions or rate limits.");
   }
 

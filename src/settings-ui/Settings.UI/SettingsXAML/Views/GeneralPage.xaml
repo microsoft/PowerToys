@@ -14,7 +14,6 @@
     mc:Ignorable="d">
 
     <local:NavigablePage.Resources>
-        <converters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
         <converters:StringToInfoBarSeverityConverter x:Key="StringToInfoBarSeverityConverter" />
     </local:NavigablePage.Resources>
 
@@ -22,40 +21,41 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <controls:SettingsGroup x:Uid="General_VersionAndUpdate" Margin="0,-32,0,0">
-                    <tkcontrols:SettingsExpander Header="{x:Bind ViewModel.PowerToysVersion, Mode=OneWay}" HeaderIcon="{ui:FontIcon Glyph=&#xE895;}">
+                    <tkcontrols:SettingsExpander HeaderIcon="{ui:FontIcon Glyph=&#xE895;}">
+                        <tkcontrols:SettingsExpander.Header>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock VerticalAlignment="Center" Text="{x:Bind ViewModel.PowerToysVersion, Mode=OneWay}" />
+                                <Border
+                                    Padding="6,2"
+                                    Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                    CornerRadius="4"
+                                    Visibility="{x:Bind ViewModel.IsCurrentVersionPreview, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock
+                                        x:Uid="General_PreviewBadge"
+                                        Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                                        Style="{StaticResource CaptionTextBlockStyle}" />
+                                </Border>
+                            </StackPanel>
+                        </tkcontrols:SettingsExpander.Header>
                         <tkcontrols:SettingsExpander.Description>
-                            <StackPanel Orientation="Vertical">
-                                <TextBlock Style="{StaticResource SecondaryTextStyle}">
-                                    <Run x:Uid="General_VersionLastChecked" />
-                                    <Run Text="{x:Bind ViewModel.UpdateCheckedDate, Mode=OneWay}" />
-                                </TextBlock>
-                                <HyperlinkButton
-                                    x:Uid="ReleaseNotes"
-                                    Margin="0,2,0,0"
-                                    Click="ReleaseNotesButton_Click"
-                                    FontWeight="SemiBold" />
-                            </StackPanel>
+                            <HyperlinkButton
+                                x:Uid="ReleaseNotes"
+                                Click="ReleaseNotesButton_Click"
+                                FontWeight="SemiBold" />
                         </tkcontrols:SettingsExpander.Description>
-                        <Grid Visibility="{x:Bind ViewModel.IsUpdatePanelVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <StackPanel
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <controls:UpdateStateBadgeControl
                                 VerticalAlignment="Center"
-                                Orientation="Horizontal"
-                                Spacing="18"
-                                Visibility="{x:Bind ViewModel.IsNewVersionDownloading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
-                                <ProgressRing Width="24" Height="24" />
-                                <TextBlock
-                                    x:Uid="General_CheckingForUpdates"
-                                    VerticalAlignment="Center"
-                                    FontWeight="SemiBold"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
+                                State="{x:Bind SharedUpdateViewModel.CurrentUpdateUIState, Mode=OneWay}"
+                                ToolTipService.ToolTip="{x:Bind SharedUpdateViewModel.StatusTitle, Mode=OneWay}"
+                                Visibility="{x:Bind SharedUpdateViewModel.ShowUpdateBadge, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                             <Button
+                                x:Name="GeneralPageCheckForUpdatesButton"
                                 x:Uid="GeneralPage_CheckForUpdates"
-                                HorizontalAlignment="Right"
-                                Command="{Binding CheckForUpdatesEventHandler}"
-                                IsEnabled="{Binding IsDownloadAllowed}"
-                                Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}" />
-                        </Grid>
+                                AutomationProperties.AutomationId="GeneralOpenUpdateSurfaceButton"
+                                Click="UpdateStatusCard_Click"
+                                Style="{StaticResource AccentButtonStyle}" />
+                        </StackPanel>
                         <tkcontrols:SettingsExpander.ItemsHeader>
                             <InfoBar
                                 x:Uid="GPO_SomeSettingsAreManaged"
@@ -86,127 +86,61 @@
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
 
-                    <StackPanel Orientation="Vertical">
-                        <InfoBar
-                            x:Uid="General_UpToDate"
-                            IsClosable="False"
-                            IsOpen="{x:Bind ViewModel.IsNewVersionCheckedAndUpToDate, Mode=OneWay}"
-                            IsTabStop="{x:Bind ViewModel.IsNewVersionCheckedAndUpToDate, Mode=OneWay}"
-                            Severity="Success" />
-
-                        <!--  Network error while checking for new version  -->
-                        <InfoBar
-                            x:Uid="General_CantCheck"
-                            IsClosable="False"
-                            IsOpen="{x:Bind ViewModel.IsNoNetwork, Mode=OneWay}"
-                            IsTabStop="{x:Bind ViewModel.IsNoNetwork, Mode=OneWay}"
-                            Severity="Error" />
-
-                        <!--  New version available  -->
-                        <InfoBar
-                            x:Uid="General_NewVersionAvailable"
-                            IsClosable="False"
-                            IsOpen="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToDownload}"
-                            IsTabStop="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToDownload}"
-                            Message="{x:Bind ViewModel.PowerToysNewAvailableVersion, Mode=OneWay}"
-                            Severity="Warning">
-
-                            <InfoBar.Content>
-                                <StackPanel Spacing="16">
-                                    <Button
-                                        x:Uid="General_DownloadAndInstall"
-                                        Margin="0,0,0,16"
-                                        Command="{Binding UpdateNowButtonEventHandler}"
-                                        IsEnabled="{Binding IsDownloadAllowed}"
-                                        Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}" />
-
-                                    <!--  In progress panel  -->
-                                    <StackPanel
-                                        Margin="0,0,0,16"
-                                        Orientation="Horizontal"
-                                        Spacing="18"
-                                        Visibility="{x:Bind ViewModel.IsNewVersionDownloading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
-                                        <ProgressRing Width="24" Height="24" />
-                                        <TextBlock
-                                            x:Uid="General_Downloading"
-                                            FontWeight="SemiBold"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                    </StackPanel>
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsIncludePrereleaseUpdatesGpoManaged, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander
+                            x:Uid="GeneralPage_UpdateChannel"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xF1AD;}"
+                            IsEnabled="{x:Bind ViewModel.IsIncludePrereleaseUpdatesCardEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsExpander.Description>
+                                <StackPanel Orientation="Vertical">
+                                    <ptcontrols:IsEnabledTextBlock x:Uid="GeneralPage_UpdateChannelDescription" Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
+                                    <HyperlinkButton
+                                        x:Uid="GeneralPage_UpdateChannelLearnMore"
+                                        Margin="0,2,0,0"
+                                        FontWeight="SemiBold"
+                                        NavigateUri="https://aka.ms/powertoys-insiders" />
                                 </StackPanel>
-                            </InfoBar.Content>
-                            <InfoBar.ActionButton>
-                                <HyperlinkButton
-                                    x:Uid="SeeWhatsNew"
-                                    HorizontalAlignment="Right"
-                                    NavigateUri="{Binding PowerToysNewAvailableVersionLink, Mode=OneWay}"
-                                    Style="{StaticResource TextButtonStyle}" />
-                            </InfoBar.ActionButton>
-                        </InfoBar>
-
-                        <!--  Ready to install  -->
-                        <InfoBar
-                            x:Uid="General_NewVersionReadyToInstall"
-                            IsClosable="False"
-                            IsOpen="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToInstall}"
-                            IsTabStop="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToInstall}"
-                            Message="{x:Bind ViewModel.PowerToysNewAvailableVersion, Mode=OneWay}"
-                            Severity="Warning">
-                            <InfoBar.Content>
-                                <Button
-                                    x:Uid="General_InstallNow"
-                                    Margin="0,0,0,16"
-                                    Command="{Binding UpdateNowButtonEventHandler}"
-                                    IsEnabled="{Binding IsDownloadAllowed}"
-                                    Style="{StaticResource AccentButtonStyle}" />
-                            </InfoBar.Content>
-                            <InfoBar.ActionButton>
-                                <HyperlinkButton
-                                    x:Uid="SeeWhatsNew"
-                                    HorizontalAlignment="Right"
-                                    NavigateUri="{Binding PowerToysNewAvailableVersionLink, Mode=OneWay}"
-                                    Style="{StaticResource TextButtonStyle}" />
-                            </InfoBar.ActionButton>
-                        </InfoBar>
-
-                        <!--  Install failed  -->
-                        <InfoBar
-                            x:Uid="General_FailedToDownloadTheNewVersion"
-                            IsClosable="False"
-                            IsOpen="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ErrorDownloading}"
-                            IsTabStop="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ErrorDownloading}"
-                            Message="{x:Bind ViewModel.PowerToysNewAvailableVersion, Mode=OneWay}"
-                            Severity="Error">
-                            <InfoBar.Content>
-                                <StackPanel Spacing="16">
-                                    <Button
-                                        x:Uid="General_TryAgainToDownloadAndInstall"
-                                        Command="{Binding UpdateNowButtonEventHandler}"
-                                        IsEnabled="{Binding IsDownloadAllowed}"
-                                        Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}" />
-
-                                    <!--  In progress panel  -->
-                                    <StackPanel
-                                        Margin="0,0,0,16"
-                                        Orientation="Horizontal"
-                                        Spacing="18"
-                                        Visibility="{x:Bind ViewModel.IsNewVersionDownloading, Converter={StaticResource BoolToVisibilityConverter}}">
-                                        <ProgressRing Width="24" Height="24" />
-                                        <TextBlock
-                                            x:Uid="General_Downloading"
-                                            FontWeight="SemiBold"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </tkcontrols:SettingsExpander.Description>
+                            <tkcontrols:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IncludePrereleaseUpdates, Mode=OneWay}">
+                                <tkcontrols:Case Value="True">
+                                    <ptcontrols:IsEnabledTextBlock x:Uid="GeneralPage_UpdateChannelInsiderStatus" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </tkcontrols:Case>
+                                <tkcontrols:Case Value="False">
+                                    <ptcontrols:IsEnabledTextBlock x:Uid="GeneralPage_UpdateChannelStableStatus" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </tkcontrols:Case>
+                            </tkcontrols:SwitchPresenter>
+                            <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard ContentAlignment="Left">
+                                    <StackPanel Orientation="Vertical" Spacing="12">
+                                        <RadioButton
+                                            AutomationProperties.AutomationId="StableUpdateChannelRadioButton"
+                                            GroupName="PowerToysUpdateChannel"
+                                            IsChecked="{x:Bind ViewModel.IncludePrereleaseUpdates, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}">
+                                            <StackPanel Orientation="Vertical" Spacing="4">
+                                                <TextBlock x:Uid="GeneralPage_UpdateChannelStableTitle" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                                <TextBlock
+                                                    x:Uid="GeneralPage_UpdateChannelStableDescription"
+                                                    Style="{StaticResource SecondaryTextStyle}"
+                                                    TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </RadioButton>
+                                        <RadioButton
+                                            AutomationProperties.AutomationId="InsiderUpdateChannelRadioButton"
+                                            GroupName="PowerToysUpdateChannel"
+                                            IsChecked="{x:Bind ViewModel.IncludePrereleaseUpdates, Mode=TwoWay}">
+                                            <StackPanel Orientation="Vertical" Spacing="4">
+                                                <TextBlock x:Uid="GeneralPage_UpdateChannelInsiderTitle" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                                <TextBlock
+                                                    x:Uid="GeneralPage_UpdateChannelInsiderDescription"
+                                                    Style="{StaticResource SecondaryTextStyle}"
+                                                    TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </RadioButton>
                                     </StackPanel>
-                                </StackPanel>
-                            </InfoBar.Content>
-                            <InfoBar.ActionButton>
-                                <HyperlinkButton
-                                    x:Uid="SeeWhatsNew"
-                                    HorizontalAlignment="Right"
-                                    NavigateUri="{Binding PowerToysNewAvailableVersionLink, Mode=OneWay}"
-                                    Style="{StaticResource TextButtonStyle}" />
-                            </InfoBar.ActionButton>
-                        </InfoBar>
-                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
+                    </controls:GPOInfoControl>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="StartupAndPermissions">

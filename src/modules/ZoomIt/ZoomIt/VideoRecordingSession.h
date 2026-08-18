@@ -27,9 +27,8 @@ public:
         winrt::GraphicsCaptureItem const& item,
         RECT const& cropRect,
         uint32_t frameRate,
-        bool captureAudio,
-        bool captureSystemAudio,
-        bool micMonoMix,
+        std::unique_ptr<AudioSampleGenerator> audioGenerator,
+        winrt::Windows::Foundation::IAsyncAction audioInitAction,
         winrt::Streams::IRandomAccessStream const& stream);
     ~VideoRecordingSession();
 
@@ -150,12 +149,42 @@ public:
         HFONT hTimeLabelFont{ nullptr };
 
         // Mouse tracking for timeline
-        enum DragMode { None, TrimStart, Position, TrimEnd };
+        enum DragMode { None, TrimStart, Position, TrimEnd, DeleteStart, DeleteEnd };
         DragMode dragMode{ None };
         bool isDragging{ false };
+
+        // Interior "cut from the middle" editing. A pending delete region is
+        // selected on the timeline (right-drag or by dragging its red grips) and
+        // then committed with the Delete Region button or the Delete key, which
+        // removes that interval from the composition and stitches the halves.
+        bool hasPendingDelete{ false };
+        winrt::Windows::Foundation::TimeSpan pendingDeleteStart{ 0 };
+        winrt::Windows::Foundation::TimeSpan pendingDeleteEnd{ 0 };
+        winrt::Windows::Foundation::TimeSpan pendingDeleteAnchor{ 0 }; // Fixed endpoint during a delete-region drag
+        bool hasDeletes{ false };  // TRUE once any interior delete has been committed
+        std::vector<winrt::Windows::Foundation::TimeSpan> deleteJoinMarkers; // Stitch points
+
+        // Undo snapshots for committed delete edits (most recent last).
+        struct EditorUndoSnapshot
+        {
+            winrt::Windows::Media::Editing::MediaComposition composition{ nullptr };
+            winrt::Windows::Foundation::TimeSpan videoDuration{ 0 };
+            winrt::Windows::Foundation::TimeSpan trimStart{ 0 };
+            winrt::Windows::Foundation::TimeSpan trimEnd{ 0 };
+            winrt::Windows::Foundation::TimeSpan currentPosition{ 0 };
+            std::vector<ClipBoundary> clipBoundaries;
+            std::vector<winrt::Windows::Foundation::TimeSpan> deleteJoinMarkers;
+            bool hasDeletes{ false };
+        };
+        std::vector<EditorUndoSnapshot> undoStack;
+
         int lastPlayheadX{ -1 }; // Track last playhead pixel position for efficient invalidation
         MMRESULT mmTimerId{ 0 }; // Multimedia timer for smooth MP4 playback
         bool standaloneMode{ false }; // When true, OK becomes "Save As" and handles file saving directly
+        // Non-standalone (post-recording) mode: on OK the editor renders its edited
+        // composition (honoring interior deletes/appends and outer trim) to this temp
+        // file, which the outer save flow then moves to the user's chosen destination.
+        std::wstring renderedOutputPath;
 
         // Helper to convert time to pixel position
         int TimeToPixel(winrt::Windows::Foundation::TimeSpan time, int timelineWidth) const
@@ -187,7 +216,8 @@ public:
         const std::wstring& videoPath,
         winrt::Windows::Foundation::TimeSpan& trimStart,
         winrt::Windows::Foundation::TimeSpan& trimEnd,
-        bool standaloneMode = false);
+        bool standaloneMode = false,
+        std::wstring* pRenderedPath = nullptr);
 
 private:
     static INT_PTR CALLBACK TrimDialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
@@ -199,7 +229,8 @@ private:
     static winrt::Windows::Foundation::IAsyncOperation<winrt::hstring> RenderCompositionAsync(
         winrt::Windows::Media::Editing::MediaComposition composition,
         winrt::Windows::Foundation::TimeSpan trimTimeStart,
-        winrt::Windows::Foundation::TimeSpan trimTimeEnd);
+        winrt::Windows::Foundation::TimeSpan trimTimeEnd,
+        const std::wstring& sourceVideoPath);
     static winrt::Windows::Foundation::IAsyncOperation<winrt::hstring> TrimGifAsync(
         const std::wstring& sourceGifPath,
         winrt::Windows::Foundation::TimeSpan trimTimeStart,
@@ -209,7 +240,8 @@ private:
         const std::wstring& videoPath,
         winrt::Windows::Foundation::TimeSpan& trimStart,
         winrt::Windows::Foundation::TimeSpan& trimEnd,
-        bool standaloneMode = false);
+        bool standaloneMode = false,
+        std::wstring* pRenderedPath = nullptr);
 
 private:
     VideoRecordingSession(
@@ -217,9 +249,8 @@ private:
         winrt::Capture::GraphicsCaptureItem const& item,
         RECT const cropRect,
         uint32_t frameRate,
-        bool captureAudio,
-        bool captureSystemAudio,
-        bool micMonoMix,
+        std::unique_ptr<AudioSampleGenerator> audioGenerator,
+        winrt::Windows::Foundation::IAsyncAction audioInitAction,
         winrt::Streams::IRandomAccessStream const& stream);
     void CloseInternal();
 
@@ -279,5 +310,9 @@ private:
     LARGE_INTEGER m_qpcFreq{};
     LARGE_INTEGER m_qpcRecordingStart{};    // QPC at first sample
     int64_t m_startSystemRelativeTime = 0; // SystemRelativeTime of first frame
+    int64_t m_adjustedStartSRT = 0;        // QPC-based current SRT set in OnStarting
     bool m_hasQpcOrigin = false;
+
+    // Audio initialization started in the constructor, awaited in StartAsync.
+    winrt::Windows::Foundation::IAsyncAction m_audioInitAction{ nullptr };
 };

@@ -675,6 +675,51 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return string.Join(System.Environment.NewLine, lines);
         }
 
+        public string GetDiagnosticsAsText()
+        {
+            var lines = new List<string>();
+
+            lines.Add("Power Display monitor diagnostics");
+            lines.Add($"Generated: {DateTimeOffset.Now:u}");
+            lines.Add(string.Empty);
+
+            lines.Add("Monitor");
+            lines.Add(new string('-', 50));
+            lines.Add($"Name: {Name}");
+            lines.Add($"Display name: {DisplayName}");
+            lines.Add($"Monitor number: {MonitorNumber}");
+            lines.Add($"Monitor ID: {Id}");
+            lines.Add($"Communication method: {CommunicationMethod}");
+            lines.Add(string.Empty);
+
+            lines.Add("Current values");
+            lines.Add(new string('-', 50));
+            lines.Add($"Brightness: {CurrentBrightness}");
+            lines.Add($"Contrast: {Contrast}");
+            lines.Add($"Volume: {Volume}");
+            lines.Add($"Color temperature VCP: 0x{ColorTemperatureVcp:X2}");
+            lines.Add(string.Empty);
+
+            lines.Add("Detected support");
+            lines.Add(new string('-', 50));
+            lines.Add($"Supports brightness: {SupportsBrightness}");
+            lines.Add($"Supports contrast: {SupportsContrast}");
+            lines.Add($"Supports volume: {SupportsVolume}");
+            lines.Add($"Supports input source: {SupportsInputSource}");
+            lines.Add($"Supports color temperature: {SupportsColorTemperature}");
+            lines.Add($"Supports power state: {SupportsPowerState}");
+            lines.Add(string.Empty);
+
+            lines.Add("Raw capabilities");
+            lines.Add(new string('-', 50));
+            lines.Add(string.IsNullOrWhiteSpace(CapabilitiesRaw) ? "No raw capabilities detected" : CapabilitiesRaw);
+            lines.Add(string.Empty);
+
+            lines.Add(GetVcpCodesAsText());
+
+            return string.Join(Environment.NewLine, lines);
+        }
+
         /// <summary>
         /// Update this monitor's properties from another MonitorInfo instance.
         /// This preserves the object reference while updating all properties.

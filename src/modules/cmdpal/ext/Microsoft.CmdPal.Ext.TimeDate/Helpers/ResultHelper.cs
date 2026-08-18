@@ -17,7 +17,7 @@ internal static class ResultHelper
     /// <param name="stringId">Id of the string. (Example: `MyString` for `MyString` and `MyStringNow`)</param>
     /// <param name="stringIdNow">Optional string id for now case</param>
     /// <returns>The string from the resource file, or <see cref="string.Empty"/> otherwise.</returns>
-    internal static string SelectStringFromResources(bool isSystemTimeDate, string stringId, string stringIdNow = default)
+    internal static string SelectStringFromResources(bool isSystemTimeDate, string stringId, string? stringIdNow = default)
     {
         return !isSystemTimeDate
             ? Resources.ResourceManager.GetString(stringId, CultureInfo.CurrentUICulture) ?? string.Empty

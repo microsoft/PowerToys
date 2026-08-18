@@ -158,11 +158,13 @@ public partial class ListItemViewModel : CommandItemViewModel
                 UpdateProperty(nameof(Type), nameof(IsInteractive));
                 break;
             case nameof(Details):
+                var existingReference = Details;
                 var extensionDetails = model.Details;
                 Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
                 Details?.InitializeProperties();
                 UpdateProperty(nameof(Details), nameof(HasDetails));
                 UpdateShowDetailsCommand();
+                existingReference?.SafeCleanup();
                 break;
             case nameof(model.MoreCommands):
                 AddShowDetailsCommands();
@@ -208,7 +210,10 @@ public partial class ListItemViewModel : CommandItemViewModel
                                                   contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId))
                 {
                     var showDetailsCommand = new ShowDetailsCommand(Details);
-                    var showDetailsContextItem = new CommandContextItem(showDetailsCommand);
+                    var showDetailsContextItem = new CommandContextItem(showDetailsCommand)
+                    {
+                        Icon = showDetailsCommand.Icon,
+                    };
                     var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
                     showDetailsContextItemViewModel.SlowInitializeProperties();
                     UnsafeMoreCommands.Add(showDetailsContextItemViewModel);
@@ -249,7 +254,10 @@ public partial class ListItemViewModel : CommandItemViewModel
                 }
 
                 var showDetailsCommand = new ShowDetailsCommand(Details);
-                var showDetailsContextItem = new CommandContextItem(showDetailsCommand);
+                var showDetailsContextItem = new CommandContextItem(showDetailsCommand)
+                {
+                    Icon = showDetailsCommand.Icon,
+                };
                 var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
                 showDetailsContextItemViewModel.SlowInitializeProperties();
                 UnsafeMoreCommands.Add(showDetailsContextItemViewModel);

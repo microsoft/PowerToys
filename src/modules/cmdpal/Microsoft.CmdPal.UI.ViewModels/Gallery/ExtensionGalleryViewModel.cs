@@ -13,6 +13,7 @@ using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Common.WinGet.Models;
 using Microsoft.CmdPal.Common.WinGet.Services;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.Logging;
 
@@ -50,7 +51,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
             "Failed to check WinGet package status");
 
     private readonly IExtensionGalleryService _galleryService;
-    private readonly IExtensionService _extensionService;
+    private readonly IEnumerable<IExtensionService> _extensionServices;
     private readonly ILogger<ExtensionGalleryViewModel> _logger;
     private readonly ExtensionGalleryItemViewModelFactory _galleryExtensionViewModelFactory;
     private readonly IWinGetPackageManagerService? _winGetPackageManagerService;
@@ -162,7 +163,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
 
     public ExtensionGalleryViewModel(
         IExtensionGalleryService galleryService,
-        IExtensionService extensionService,
+        IEnumerable<IExtensionService> extensionServices,
         ILogger<ExtensionGalleryViewModel> logger,
         ExtensionGalleryItemViewModelFactory galleryExtensionViewModelFactory,
         IWinGetPackageManagerService? winGetPackageManagerService = null,
@@ -171,7 +172,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         TaskScheduler? uiScheduler = null)
     {
         _galleryService = galleryService;
-        _extensionService = extensionService;
+        _extensionServices = extensionServices;
         _logger = logger;
         _galleryExtensionViewModelFactory = galleryExtensionViewModelFactory;
         _winGetPackageManagerService = winGetPackageManagerService;
@@ -218,6 +219,19 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
     public async Task LoadAsync()
     {
         await FetchCoreAsync(_galleryService.FetchExtensionsAsync, refreshInstallationStatus: false);
+    }
+
+    public ExtensionGalleryItemViewModel? FindById(string extensionId)
+    {
+        if (string.IsNullOrWhiteSpace(extensionId))
+        {
+            return null;
+        }
+
+        lock (_entriesLock)
+        {
+            return _allEntries.Find(entry => string.Equals(entry.Id, extensionId, StringComparison.OrdinalIgnoreCase));
+        }
     }
 
     private async Task RefreshAsync()
@@ -347,17 +361,23 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         List<ExtensionGalleryItemViewModel> snapshot;
         try
         {
-            var installedExtensions = refreshInstalledExtensions
-                ? await RunInBackgroundAsync(
-                    () => _extensionService.RefreshInstalledExtensionsAsync(includeDisabledExtensions: true),
-                    cancellationToken)
-                : await RunInBackgroundAsync(
-                    () => _extensionService.GetInstalledExtensionsAsync(includeDisabledExtensions: true),
-                    cancellationToken);
+            var allInstalledExtensions = new List<IExtensionWrapper>();
+            foreach (var service in _extensionServices)
+            {
+                var extensions = refreshInstalledExtensions
+                    ? await RunInBackgroundAsync(
+                        () => service.RefreshInstalledExtensionsAsync(includeDisabledExtensions: true),
+                        cancellationToken)
+                    : await RunInBackgroundAsync(
+                        () => service.GetInstalledExtensionsAsync(includeDisabledExtensions: true),
+                        cancellationToken);
+                allInstalledExtensions.AddRange(extensions);
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             var installedPfns = new HashSet<string>(
-                installedExtensions
+                allInstalledExtensions
                     .Select(e => e.PackageFamilyName)
                     .Where(pfn => !string.IsNullOrEmpty(pfn)),
                 StringComparer.OrdinalIgnoreCase);

@@ -51,9 +51,13 @@ public class CmdPalDockConfiguration : EventBase, IEvent
         EventName = "CmdPal_DockConfiguration";
         IsDockEnabled = isDockEnabled;
         DockSide = dockSide;
-        StartBands = startBands;
-        CenterBands = centerBands;
-        EndBands = endBands;
+
+        // TODO: We're not seeing this event in the backend. As a guess, we're
+        // gonna try disabling the data about the enabled bands, just to see
+        // if that helps.
+        StartBands = string.Empty; // startBands;
+        CenterBands = string.Empty; // centerBands;
+        EndBands = string.Empty; // endBands;
     }
 
     public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;

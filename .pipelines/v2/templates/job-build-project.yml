@@ -65,6 +65,9 @@ parameters:
   - name: versionNumber
     type: string
     default: '0.0.1'
+  - name: resolvedVersionNumber
+    type: string
+    default: ''
   - name: useLatestWinAppSDK
     type: boolean
     default: false
@@ -140,6 +143,10 @@ jobs:
     JobOutputDirectory: $(Build.ArtifactStagingDirectory)
     LogOutputDirectory: $(Build.ArtifactStagingDirectory)\logs
     JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
+    ${{ if eq(parameters.resolvedVersionNumber, '') }}:
+      EffectiveVersionNumber: ${{ parameters.versionNumber }}
+    ${{ if ne(parameters.resolvedVersionNumber, '') }}:
+      EffectiveVersionNumber: ${{ parameters.resolvedVersionNumber }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
     ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
@@ -171,6 +178,11 @@ jobs:
     fetchTags: false
     fetchDepth: 1
 
+  # Checkout to surface a missing import before full build.
+  - pwsh: |-
+      & '.pipelines/verifyCommonProps.ps1' -sourceDir '$(build.sourcesdirectory)\src'
+    displayName: Audit shared common props for CSharp projects in src sub-folder
+
   - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
     - pwsh: |-
         $MSBuildCacheParameters = ""
@@ -201,14 +213,12 @@ jobs:
     parameters:
       sdk: true
       version: '10.0'
+      # SDK 10.0.303 contains runtime 10.0.11. Keep this aligned with DotNetRuntimePackageVersion in Directory.Packages.props.
+      exactVersion: '10.0.303'
 
   - ${{ if eq(parameters.runTests, true) }}:
     - task: VisualStudioTestPlatformInstaller@1
       displayName: Ensure VSTest Platform
-
-  - pwsh: |-
-      & '.pipelines/applyXamlStyling.ps1' -Passive
-    displayName: Verify XAML formatting
 
   - task: NuGetAuthenticate@1
     displayName: Authenticate NuGet feeds for verification
@@ -266,9 +276,48 @@ jobs:
         VCWhereExtraVersionTarget: '-prerelease'
 
   - ${{ if eq(parameters.official, true) }}:
+    # M.W.T.V Setup.ps1 sets the pipeline-level XES_APPXMANIFESTVERSION env var
+    # from the supplied -ProjectDirectory's custom.props. Whichever invocation
+    # runs last wins. cmdpal MUST run last because $(CmdPalVersion) (used by the
+    # VNext installer and CmdPal's AppxPackageTestDir) falls back to that env
+    # var; if AP wins, CmdPal's folder name and MSIX filename disagree on
+    # VersionMinor and the installer fails with WIX0103. Each project's own
+    # custom.props is still applied at MSBuild time, so AP versioning is
+    # unaffected by the order.
+    - template: .\steps-setup-versioning.yml
+      parameters:
+        directory: $(build.sourcesdirectory)\src\modules\AdvancedPaste
     - template: .\steps-setup-versioning.yml
       parameters:
         directory: $(build.sourcesdirectory)\src\modules\cmdpal
+
+  # --- vcpkg detection + binary cache --------------------------------------
+  # PowerToys consumes spdlog (and, over time, other native deps) via vcpkg in
+  # manifest mode. steps-install-vcpkg.yml prefers the vcpkg shipped with
+  # Visual Studio (Microsoft.VisualStudio.Component.Vcpkg) and falls back to a
+  # fresh clone of microsoft/vcpkg into deps/vcpkg if VS doesn't have it.
+  # Either way it sets the VCPKG_ROOT pipeline variable; MSBuild integration
+  # is wired globally from Cpp.Build.props (with vcpkg.targets in
+  # Cpp.Build.targets) using the three-tier VcpkgRoot fallback
+  # (env var > VS-shipped > deps/vcpkg runtime clone).
+  #
+  # Vcpkg's MSBuild integration runs `vcpkg install` once per project, so the
+  # binary cache below saves ~3-5 minutes per triplet on cache hits.
+  - template: .\steps-install-vcpkg.yml
+    parameters:
+      useVSPreview: ${{ parameters.useVSPreview }}
+
+  - ${{ if eq(parameters.enablePackageCaching, true) }}:
+    - task: Cache@2
+      displayName: 'Cache vcpkg binary archives'
+      inputs:
+        # Key on the inputs vcpkg uses to compute its package ABI: the manifest,
+        # configuration, every overlay-port file, and the agent OS.
+        key: '"vcpkg" | "$(Agent.OS)" | vcpkg.json | vcpkg-configuration.json | deps/vcpkg-overlays/**'
+        restoreKeys: |
+           "vcpkg" | "$(Agent.OS)"
+           "vcpkg"
+        path: $(LOCALAPPDATA)\vcpkg\archives
 
 
 
@@ -436,11 +485,6 @@ jobs:
       flattenFolders: True
       OverWrite: True
 
-  # Check if all projects (located in src sub-folder) import common props
-  - pwsh: |-
-      & '.pipelines/verifyCommonProps.ps1' -sourceDir '$(build.sourcesdirectory)\src'
-    displayName: Audit shared common props for CSharp projects in src sub-folder
-
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-
       & '.pipelines/verifyDepsJsonLibraryVersions.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
@@ -571,7 +615,7 @@ jobs:
     parameters:
       codeSign: ${{ parameters.codeSign }}
       signingIdentity: ${{ parameters.signingIdentity }}
-      versionNumber: ${{ parameters.versionNumber }}
+      versionNumber: $(EffectiveVersionNumber)
       additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
 
   # This saves ~1GiB per architecture. We won't need these later.
@@ -635,7 +679,7 @@ jobs:
 
   # Publishing the GPO files
   - pwsh: |-
-      $GpoArchive = "$(JobOutputDirectory)\GroupPolicyObjectFiles-${{ parameters.versionNumber }}.zip"
+      $GpoArchive = "$(JobOutputDirectory)\GroupPolicyObjectFiles-$(EffectiveVersionNumber).zip"
       tar -c -v --format=zip -C .\src\gpo\assets -f $GpoArchive *
     displayName: Stage GPO files
 

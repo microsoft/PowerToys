@@ -16,7 +16,7 @@ using namespace registry::install_scope;
 namespace // Strings in this namespace should not be localized
 {
     const wchar_t LATEST_RELEASE_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/releases/latest";
-    const wchar_t ALL_RELEASES_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/releases";
+    const wchar_t ALL_RELEASES_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/releases?per_page=100";
 
     const wchar_t LOCAL_BUILD_ERROR[] = L"Local build cannot be updated";
     const wchar_t NETWORK_ERROR[] = L"Network error";
@@ -82,34 +82,29 @@ namespace updating
 // prevent the warning that may show up depend on the value of the constants (#defines)
 #pragma warning(push)
 #pragma warning(disable : 4702)
-    wil::task<github_version_result> get_github_version_info_async(const bool prerelease)
+    wil::task<github_version_result> get_github_version_info_async(const bool include_prerelease)
     {
         // If the current version starts with 0.0.*, it means we're on a local build from a farm and shouldn't check for updates.
         if constexpr (VERSION_MAJOR == 0 && VERSION_MINOR == 0)
         {
-#if USE_STD_EXPECTED
             co_return std::unexpected(LOCAL_BUILD_ERROR);
-#else
-            co_return nonstd::make_unexpected(LOCAL_BUILD_ERROR);
-#endif
         }
 
         try
         {
             http::HttpClient client;
             json::JsonObject release_object;
-            const VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
+            const VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION, VERSION_BUILD);
             VersionHelper github_version = current_version;
 
-            if (prerelease)
+            if (include_prerelease)
             {
                 const auto body = co_await client.request(Uri{ ALL_RELEASES_ENDPOINT });
                 for (const auto& json : json::JsonValue::Parse(body).GetArray())
                 {
                     auto potential_release_object = json.GetObjectW();
-                    const bool is_prerelease = potential_release_object.GetNamedBoolean(L"prerelease", false);
                     auto extracted_version = extract_version_from_release_object(potential_release_object);
-                    if (!is_prerelease || !extracted_version || *extracted_version <= github_version)
+                    if (!extracted_version || *extracted_version <= github_version)
                     {
                         continue;
                     }
@@ -138,16 +133,13 @@ namespace updating
             co_return new_version_download_info{ extract_release_page_url(release_object),
                                                  std::move(github_version),
                                                  std::move(installer_download_url),
-                                                 std::move(installer_filename) };
+                                                 std::move(installer_filename),
+                                                 release_object.GetNamedBoolean(L"prerelease", false) };
         }
         catch (...)
         {
         }
-#if USE_STD_EXPECTED
         co_return std::unexpected(NETWORK_ERROR);
-#else
-        co_return nonstd::make_unexpected(NETWORK_ERROR);
-#endif
     }
 #pragma warning(pop)
 
