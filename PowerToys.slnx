@@ -1219,6 +1219,7 @@
     <File Path="src/.editorconfig" />
     <File Path="src/Common.Dotnet.AotCompatibility.props" />
     <File Path="src/Common.Dotnet.CsWinRT.props" />
+    <File Path="src/Common.Dotnet.props" />
     <File Path="src/Common.SelfContained.props" />
     <File Path="src/Monaco.props" />
     <File Path="src/Solution.props" />
