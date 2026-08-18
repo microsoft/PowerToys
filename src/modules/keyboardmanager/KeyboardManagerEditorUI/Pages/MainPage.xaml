@@ -225,6 +225,7 @@
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
                                                                     VerticalAlignment="Center"
+                                                                    AutomationProperties.AutomationId="MappingMenuButton"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
                                                                     Style="{StaticResource SubtleButtonStyle}">
@@ -313,6 +314,7 @@
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
                                                                     VerticalAlignment="Center"
+                                                                    AutomationProperties.AutomationId="MappingMenuButton"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
                                                                     Style="{StaticResource SubtleButtonStyle}">
@@ -431,6 +433,7 @@
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
                                                                     VerticalAlignment="Center"
+                                                                    AutomationProperties.AutomationId="MappingMenuButton"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
                                                                     Style="{StaticResource SubtleButtonStyle}">
@@ -519,6 +522,7 @@
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
                                                                     VerticalAlignment="Center"
+                                                                    AutomationProperties.AutomationId="MappingMenuButton"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
                                                                     Style="{StaticResource SubtleButtonStyle}">
@@ -588,6 +592,7 @@
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
                                                                     VerticalAlignment="Center"
+                                                                    AutomationProperties.AutomationId="MappingMenuButton"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
                                                                     Style="{StaticResource SubtleButtonStyle}">
