@@ -359,7 +359,7 @@ namespace
         }
     }
 
-    [[nodiscard]] std::filesystem::path staged_package_directory(const std::wstring& fullName)
+    [[nodiscard]] std::filesystem::path package_directory(const std::wstring& fullName)
     {
         if (!ptlsmr::is_allowed_package_full_name(fullName))
         {
@@ -372,15 +372,19 @@ namespace
             throw ptlsmr::win32_error("SHGetKnownFolderPath(FOLDERID_ProgramFiles)", HRESULT_CODE(result));
         }
         ptlsmr::local_memory memory(programFiles);
-        const std::filesystem::path location =
-            std::filesystem::path(programFiles) / L"WindowsApps" / fullName;
+        return std::filesystem::path(programFiles) / L"WindowsApps" / fullName;
+    }
+
+    [[nodiscard]] std::filesystem::path staged_package_directory(const std::wstring& fullName)
+    {
+        const std::filesystem::path location = package_directory(fullName);
         const std::filesystem::path executable = location / ptlsmr::RuntimeExe;
         if (!std::filesystem::is_regular_file(executable))
         {
             throw ptlsmr::win32_error("registered runtime executable", ERROR_FILE_NOT_FOUND);
         }
         std::wstring expectedPrefix = std::filesystem::weakly_canonical(
-            std::filesystem::path(programFiles) / L"WindowsApps").wstring();
+            location.parent_path()).wstring();
         if (!expectedPrefix.ends_with(L"\\"))
         {
             expectedPrefix += L"\\";
@@ -581,16 +585,32 @@ namespace
 
     void upgrade()
     {
-        ensure_package_staged(2);
-        const auto currentPackageDirectory =
-            staged_package_directory(ptlsmr::expected_package_full_name(1));
-        const auto targetPackageDirectory =
-            staged_package_directory(ptlsmr::expected_package_full_name(2));
         auto scm = open_scm();
         const auto owners = read_owners();
         if (owners.empty())
         {
             throw ptlsmr::win32_error("upgrade has no managed runtime instances", ERROR_NOT_FOUND);
+        }
+        const auto currentExecutable =
+            package_directory(ptlsmr::expected_package_full_name(1)) / ptlsmr::RuntimeExe;
+        for (const auto& owner : owners)
+        {
+            const auto names = ptlsmr::instance_names(owner);
+            service_handle service(OpenServiceW(
+                scm.get(),
+                names.serviceName.c_str(),
+                SERVICE_QUERY_STATUS | SERVICE_QUERY_CONFIG | SERVICE_CHANGE_CONFIG |
+                    SERVICE_START | SERVICE_STOP));
+            if (!service)
+            {
+                throw ptlsmr::win32_error("OpenServiceW(validate upgrade runtime)", GetLastError());
+            }
+            verify_or_repath_runtime_service(
+                service.get(),
+                currentExecutable,
+                currentExecutable,
+                names,
+                false);
         }
         for (const auto& owner : owners)
         {
@@ -605,10 +625,26 @@ namespace
                 throw ptlsmr::win32_error("OpenServiceW(upgrade runtime)", GetLastError());
             }
             stop_service(service.get());
+        }
+        ensure_package_staged(2);
+        const auto targetExecutable =
+            staged_package_directory(ptlsmr::expected_package_full_name(2)) / ptlsmr::RuntimeExe;
+        for (const auto& owner : owners)
+        {
+            const auto names = ptlsmr::instance_names(owner);
+            service_handle service(OpenServiceW(
+                scm.get(),
+                names.serviceName.c_str(),
+                SERVICE_QUERY_STATUS | SERVICE_QUERY_CONFIG | SERVICE_CHANGE_CONFIG |
+                    SERVICE_START | SERVICE_STOP));
+            if (!service)
+            {
+                throw ptlsmr::win32_error("OpenServiceW(repath runtime)", GetLastError());
+            }
             verify_or_repath_runtime_service(
                 service.get(),
-                currentPackageDirectory / ptlsmr::RuntimeExe,
-                targetPackageDirectory / ptlsmr::RuntimeExe,
+                currentExecutable,
+                targetExecutable,
                 names,
                 true);
         }

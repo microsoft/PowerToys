@@ -339,9 +339,25 @@ namespace ptlsmr
             throw win32_error("ConvertStringSidToSidW(token membership)", GetLastError());
         }
         local_memory memory(sid);
-        BOOL member = FALSE;
-        check_bool(CheckTokenMembership(token, sid, &member), "CheckTokenMembership");
-        return member != FALSE;
+        DWORD bytes = 0;
+        GetTokenInformation(token, TokenGroups, nullptr, 0, &bytes);
+        if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+        {
+            throw win32_error("GetTokenInformation(TokenGroups size)", GetLastError());
+        }
+        std::vector<BYTE> buffer(bytes);
+        check_bool(
+            GetTokenInformation(token, TokenGroups, buffer.data(), bytes, &bytes),
+            "GetTokenInformation(TokenGroups)");
+        const auto* groups = reinterpret_cast<const TOKEN_GROUPS*>(buffer.data());
+        for (DWORD index = 0; index < groups->GroupCount; ++index)
+        {
+            if (EqualSid(groups->Groups[index].Sid, sid))
+            {
+                return true;
+            }
+        }
+        return current_token_user_sid(token) == text;
     }
 
     bool token_is_administrator(HANDLE token)

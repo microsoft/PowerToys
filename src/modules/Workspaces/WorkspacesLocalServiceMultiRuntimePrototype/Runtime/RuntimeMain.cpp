@@ -145,13 +145,31 @@ namespace
             throw ptlsmr::win32_error("runtime service SID token policy", ERROR_ACCESS_DENIED);
         }
 
-        const std::wstring packageFullName = current_package_full_name();
+        const auto executablePath = std::filesystem::path(module_path());
+        std::wstring packageFullName;
+        std::wstring packageFamilyName;
+        std::filesystem::path packagePath;
+        bool packageIdentityPresent = false;
+        try
+        {
+            packageFullName = current_package_full_name();
+            packageFamilyName = current_package_family_name();
+            packagePath = std::filesystem::path(current_package_path());
+            packageIdentityPresent = true;
+        }
+        catch (const ptlsmr::win32_error& error)
+        {
+            if (error.code() != APPMODEL_ERROR_NO_PACKAGE)
+            {
+                throw;
+            }
+            packagePath = executablePath.parent_path();
+            packageFullName = packagePath.filename().wstring();
+        }
         if (!ptlsmr::is_allowed_package_full_name(packageFullName))
         {
-            throw ptlsmr::win32_error("runtime package identity policy", ERROR_INVALID_DATA);
+            throw ptlsmr::win32_error("runtime package path identity policy", ERROR_INVALID_DATA);
         }
-        const auto packagePath = std::filesystem::path(current_package_path());
-        const auto executablePath = std::filesystem::path(module_path());
         if (!path_is_under(executablePath, packagePath) ||
             !std::filesystem::equivalent(executablePath, packagePath / ptlsmr::RuntimeExe))
         {
@@ -170,8 +188,9 @@ namespace
         evidence << L"tokenUserSid=" << tokenUserSid << L"\r\n";
         evidence << L"serviceSid=" << expectedServiceSid << L"\r\n";
         evidence << L"serviceSidPresent=" << (hasServiceSid ? L"true" : L"false") << L"\r\n";
+        evidence << L"packageIdentityPresent=" << (packageIdentityPresent ? L"true" : L"false") << L"\r\n";
         evidence << L"packageFullName=" << packageFullName << L"\r\n";
-        evidence << L"packageFamilyName=" << current_package_family_name() << L"\r\n";
+        evidence << L"packageFamilyName=" << packageFamilyName << L"\r\n";
         evidence << L"packageVersion=" << ptlsmr::package_major_version(packageFullName) << L".0.0.0\r\n";
         evidence << L"packageInstalledLocation=" << packagePath.wstring() << L"\r\n";
         evidence << L"executablePath=" << executablePath.wstring() << L"\r\n";

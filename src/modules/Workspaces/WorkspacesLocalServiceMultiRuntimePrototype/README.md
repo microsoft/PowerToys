@@ -1,112 +1,96 @@
-# LocalSystem dynamic multi-runtime variant
+# LocalSystem dynamic direct-WindowsApps runtime prototype
 
-This isolated native prototype tests:
+This isolated native prototype validates:
 
 ```text
 LocalSystem PtLsmrUpdater
-  -> CreateService per owner SID
-  -> SCM directly starts the WindowsApps PtLsmrRuntime.exe as LocalSystem
+  -> dynamically creates PtLsmrRuntime_<owner SID hash>
+  -> SCM directly launches the versioned WindowsApps EXE as LocalSystem
 ```
 
-There is no per-owner launcher/child split. `PtLsmrUpdater` provisions, repaths,
-starts, stops, and deletes services, but it does not remain in a runtime launch
-chain. Each `PtLsmrRuntime_<SID hash>` is itself the SCM service executable and
-implements `ServiceMain`.
+There is no launcher, packaged-service manifest declaration, per-owner account,
+or runtime EXE copy. The updater is a management-plane service; it is not in the
+runtime process chain.
 
-The branch intentionally reuses the package identity, service names, and storage
-roots from the preceding LocalService prototype and therefore must not coexist
-with it on one machine.
+## Important identity distinction
 
-## Identity and routing
+The runtime executable is physically supplied and protected by an MSIX package,
+but the dynamically created classic service process has **no package identity**:
 
-- Package: `Microsoft.PowerToys.WsLocalSvcMultiRt`, x64 versions `1.0.0.0` and
-  `2.0.0.0`.
-- Manifest: ordinary `runFullTrust` application with
-  `SupportsMultipleInstances="true"`; it has no `desktop6:Service`.
-- Updater: persistent `PtLsmrUpdater`, LocalSystem (`S-1-5-18`).
-- Runtime: dynamically named `PtLsmrRuntime_<SHA256(owner SID)[0..15]>`,
-  LocalSystem (`S-1-5-18`), `SERVICE_SID_TYPE_UNRESTRICTED`.
-- The owner SID is validated routing metadata, not the runtime's primary token.
-- Each runtime would receive a distinct `NT SERVICE\<service name>` SID for its
-  protected store even though all runtime primary tokens are LocalSystem.
-
-The package is staged by the updater. The final test deliberately does not try
-to register it as a normal app for SYSTEM: an initial
-`RegisterPackageByFullNameAsync` attempt under `S-1-5-18` returned Win32 87
-(`ERROR_INVALID_PARAMETER`). Staging still places the verified payload at its
-exact WindowsApps path, which is sufficient to test raw SCM process creation.
-
-## Commands
-
-```powershell
-.\Build.ps1 -Configuration Release -Clean
-.\Package.ps1 -Configuration Release -TrustMachine
-.\Lifecycle.ps1 -Verb bootstrap
-.\Lifecycle.ps1 -Verb provision-two
-.\Lifecycle.ps1 -Verb status
-.\Lifecycle.ps1 -Verb cleanup
-.\Teardown.ps1
+```text
+GetCurrentPackageFullName -> APPMODEL_ERROR_NO_PACKAGE (15700)
+packageIdentityPresent=false
 ```
 
-Bootstrap is the only elevated controller action. Later requests go to the
-already-installed SYSTEM updater through an administrator-only named pipe. The
-controller cannot supply a service name, executable path, package identity, or
-destination path; the updater derives and validates all of them.
+It is an ordinary Win32 service process executing an immutable file from the
+verified WindowsApps package directory. It cannot rely on package-identity APIs,
+manifest capabilities, package virtualization, or AppModel activation.
 
-When the last managed owner is removed, the updater calls the current-user
-`RemovePackageAsync` overload as SYSTEM. This clears the `S-1-5-18: Staged`
-reference; `RemoveForAllUsers` alone only removed registrations and left the
-SYSTEM staging reference.
+This is acceptable only if the requirement is “use the protected MSIX payload
+without another EXE copy.” It does not satisfy a requirement that the runtime
+process itself be a packaged process.
+
+## Identity and isolation
+
+- Updater primary SID: LocalSystem, `S-1-5-18`.
+- Runtime primary SID: LocalSystem, `S-1-5-18`.
+- Runtime name: `PtLsmrRuntime_<SHA256(owner SID)[0..15]>`.
+- Each service receives a distinct `NT SERVICE\<name>` service SID.
+- The owner SID is validated routing metadata, not a logon identity.
+- Each store is SYSTEM-owned and grants access only to SYSTEM, Administrators,
+  and the matching service SID.
+
+Because every runtime is LocalSystem, compromise of any runtime is machine
+compromise. Service SIDs still separate store/pipe ACLs and routing mistakes,
+but they do not reduce LocalSystem privileges.
+
+## Servicing
+
+The already-installed SYSTEM updater owns package staging and SCM repathing:
+
+1. validate every managed service's exact v1 command line;
+2. stop all runtimes;
+3. stage v2;
+4. verify the exact v2 WindowsApps executable;
+5. repoint every SCM `ImagePath`;
+6. restart every runtime.
+
+The ordering matters. Staging v2 can remove the v1 package directory, so the
+updater must validate/capture v1 SCM paths before staging the replacement.
 
 ## Validation record
 
 Validated on Windows 11 build 26200 on 2026-08-18.
 
-1. **PASS** — Release x64 `/WX` build completed. v1 and v2 MSIX packages were
-   packed, SHA-256 signed, and verified.
-2. **EXPECTED REJECTION** — staging v1 as SYSTEM succeeded, but attempting
-   `RegisterPackageByFullNameAsync` as SYSTEM returned Win32 87. The package
-   state was `S-1-5-18: Staged`; no runtime service had yet been created.
-3. **NO-GO, decisive stage-only gate** — provisioning only owner `...-1122`
-   created:
+1. **PASS** — Release x64 `/WX` build; v1/v2 MSIX pack, sign, and verification.
+2. **PASS** — two future-owner SIDs dynamically produced two distinct
+   LocalSystem services without manifest-declared names.
+3. **PASS** — both services ran concurrently from the same v1 WindowsApps EXE
+   in Session 0 with distinct nonzero PIDs and distinct service SIDs.
+4. **PASS** — both tokens had primary SID `S-1-5-18` and their own service SID.
+5. **EXPECTED** — both processes reported `packageIdentityPresent=false`;
+   `GetCurrentPackageFullName` returned 15700.
+6. **PASS** — the SYSTEM updater stopped both v1 processes, staged v2, repointed
+   both SCM paths, restarted them with new PIDs, and obtained v2 evidence.
+7. **PASS** — cleanup left zero matching services, packages, roots, and test
+   certificates.
 
-   ```text
-   service:   PtLsmrRuntime_d286468376b3cbc8
-   StartName: LocalSystem
-   ImagePath: "C:\Program Files\WindowsApps\
-              Microsoft.PowerToys.WsLocalSvcMultiRt_1.0.0.0_x64__tb2xrd195j0e6\
-              PtLsmrRuntime.exe" --service-name ... --owner-sid ...
-   ```
+## Corrected 1309 interpretation
 
-   SCM immediately stopped it with `Win32ExitCode=1309`
-   (`ERROR_NO_IMPERSONATION_TOKEN`), PID 0, and service exit 1309. Event 7023:
+The earlier prototype verdict incorrectly attributed error 1309 to SCM/AppModel.
+The process had reached `ServiceMain`; the prototype then called
+`CheckTokenMembership` with a primary token. That API path returned
+`ERROR_NO_IMPERSONATION_TOKEN` before evidence was written.
 
-   > An attempt has been made to operate on an impersonation token by a thread
-   > that is not currently impersonating a client.
-
-   No `evidence.txt` was created, proving that the process did not reach
-   `ServiceMain`. The package payload and exact EXE existed at the quoted path.
-4. **NOT RUN** — a second owner and v2 update are invalid after the individual
-   process-creation prerequisite failed.
-5. **PASS** — exact cleanup left zero `PtLsmr*` services, matching packages,
-   prototype roots, and test certificates.
+The helper now enumerates `TokenGroups`, matching the already-correct alias
+prototype. After that correction, the real package-related result was 15700,
+not 1309.
 
 ## Verdict
 
-**LocalSystem for both updater and runtime does not fix the direct-WindowsApps
-dynamic-service failure.** It produces the same 1309, at the same pre-process
-boundary, as the LocalService runtime test.
+**GO for dynamic per-SID LocalSystem ordinary services that execute a verified
+WindowsApps payload without an extra runtime copy.**
 
-This rules out LocalService privilege or `S-1-5-19` registration as the root
-cause. A classic `CreateService` entry still supplies only an account and raw
-`ImagePath`; changing that account to LocalSystem does not add the package-owned
-activation metadata produced by a signed `desktop6:Service` declaration.
-
-Therefore:
-
-- dynamic per-SID classic services remain viable with a protected payload
-  outside WindowsApps;
-- direct WindowsApps execution remains viable through fixed manifest-declared
-  packaged services;
-- dynamic per-SID services pointing directly into WindowsApps remain **NO-GO**,
-  including when both updater and runtime use LocalSystem.
+**NO-GO if the runtime must itself have package identity.** For that requirement,
+use a fixed manifest-declared packaged service or another supported activation
+model.
