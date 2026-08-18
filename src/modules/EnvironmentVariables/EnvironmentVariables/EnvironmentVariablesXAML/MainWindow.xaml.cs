@@ -25,6 +25,10 @@ namespace EnvironmentVariables
         {
             this.InitializeComponent();
 
+            const string fallbackTitle = "Environment Variables";
+            Title = fallbackTitle;
+            titleBar.Title = fallbackTitle;
+
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
             AppWindow.SetIcon("Assets/EnvironmentVariables/EnvironmentVariables.ico");
@@ -40,7 +44,7 @@ namespace EnvironmentVariables
             // window title populated.
             if (string.IsNullOrEmpty(title))
             {
-                title = "Environment Variables";
+                title = fallbackTitle;
             }
 
             Title = title;
