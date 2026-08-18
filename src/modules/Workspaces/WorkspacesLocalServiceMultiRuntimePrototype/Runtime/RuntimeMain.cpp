@@ -129,9 +129,9 @@ namespace
             throw ptlsmr::win32_error("runtime store missing", ERROR_PATH_NOT_FOUND);
         }
         const std::wstring tokenUserSid = ptlsmr::current_token_user_sid();
-        if (tokenUserSid != L"S-1-5-19")
+        if (tokenUserSid != L"S-1-5-18")
         {
-            throw ptlsmr::win32_error("runtime LocalService token policy", ERROR_ACCESS_DENIED);
+            throw ptlsmr::win32_error("runtime LocalSystem token policy", ERROR_ACCESS_DENIED);
         }
         const std::wstring expectedServiceSid = ptlsmr::service_sid(g_serviceName);
         HANDLE rawToken = nullptr;

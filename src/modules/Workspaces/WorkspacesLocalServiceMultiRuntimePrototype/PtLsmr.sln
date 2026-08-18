@@ -6,8 +6,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PtLsmrCommon", "Common\PtLs
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PtLsmrRuntime", "Runtime\PtLsmrRuntime.vcxproj", "{AE1D2494-54EE-4C18-8114-0F262A2445EF}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PtLsmrRegistrar", "Registrar\PtLsmrRegistrar.vcxproj", "{1823DD13-619B-4BB6-8692-47C208FBEC69}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PtLsmrUpdater", "Updater\PtLsmrUpdater.vcxproj", "{4B473F5C-BDFC-462E-8A05-7EE2D8CCEB4F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PtLsmrController", "Controller\PtLsmrController.vcxproj", "{46F1D6E7-96C4-4EF6-903E-480A6D1A9EF3}"
@@ -26,10 +24,6 @@ Global
 		{AE1D2494-54EE-4C18-8114-0F262A2445EF}.Debug|x64.Build.0 = Debug|x64
 		{AE1D2494-54EE-4C18-8114-0F262A2445EF}.Release|x64.ActiveCfg = Release|x64
 		{AE1D2494-54EE-4C18-8114-0F262A2445EF}.Release|x64.Build.0 = Release|x64
-		{1823DD13-619B-4BB6-8692-47C208FBEC69}.Debug|x64.ActiveCfg = Debug|x64
-		{1823DD13-619B-4BB6-8692-47C208FBEC69}.Debug|x64.Build.0 = Debug|x64
-		{1823DD13-619B-4BB6-8692-47C208FBEC69}.Release|x64.ActiveCfg = Release|x64
-		{1823DD13-619B-4BB6-8692-47C208FBEC69}.Release|x64.Build.0 = Release|x64
 		{4B473F5C-BDFC-462E-8A05-7EE2D8CCEB4F}.Debug|x64.ActiveCfg = Debug|x64
 		{4B473F5C-BDFC-462E-8A05-7EE2D8CCEB4F}.Debug|x64.Build.0 = Debug|x64
 		{4B473F5C-BDFC-462E-8A05-7EE2D8CCEB4F}.Release|x64.ActiveCfg = Release|x64

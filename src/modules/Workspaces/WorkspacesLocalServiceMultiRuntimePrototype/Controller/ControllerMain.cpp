@@ -175,7 +175,6 @@ namespace
         const auto installDirectory = ptlsmr::installed_updater_root();
         std::filesystem::create_directories(installDirectory);
         copy_fixed_file(binaryDirectory / L"PtLsmrUpdater.exe", installDirectory / L"PtLsmrUpdater.exe");
-        copy_fixed_file(binaryDirectory / L"PtLsmrRegistrar.exe", installDirectory / L"PtLsmrRegistrar.exe");
         std::filesystem::create_directories(installDirectory / L"Packages");
         copy_fixed_file(packageDirectory / L"PtLsmrRuntime-v1.msix", installDirectory / L"Packages\\PtLsmrRuntime-v1.msix");
         copy_fixed_file(packageDirectory / L"PtLsmrRuntime-v2.msix", installDirectory / L"Packages\\PtLsmrRuntime-v2.msix");

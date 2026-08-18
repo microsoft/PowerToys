@@ -1,7 +1,5 @@
 #include "../Common/LsmrCommon.h"
 
-#include <tlhelp32.h>
-#include <userenv.h>
 #include <sddl.h>
 #include <shellapi.h>
 #include <shlobj_core.h>
@@ -21,7 +19,6 @@
 
 #pragma comment(lib, "advapi32.lib")
 #pragma comment(lib, "shell32.lib")
-#pragma comment(lib, "userenv.lib")
 
 namespace
 {
@@ -337,151 +334,6 @@ namespace
         wait_for_state(service, SERVICE_STOPPED);
     }
 
-    void enable_privilege(const wchar_t* privilege)
-    {
-        HANDLE rawToken = nullptr;
-        ptlsmr::check_bool(
-            OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &rawToken),
-            "OpenProcessToken(enable privilege)");
-        ptlsmr::unique_handle token(rawToken);
-        LUID luid{};
-        ptlsmr::check_bool(LookupPrivilegeValueW(nullptr, privilege, &luid), "LookupPrivilegeValueW");
-        TOKEN_PRIVILEGES privileges{};
-        privileges.PrivilegeCount = 1;
-        privileges.Privileges[0].Luid = luid;
-        privileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-        ptlsmr::check_bool(
-            AdjustTokenPrivileges(token.get(), FALSE, &privileges, 0, nullptr, nullptr) &&
-                GetLastError() == ERROR_SUCCESS,
-            "AdjustTokenPrivileges");
-    }
-
-    [[nodiscard]] ptlsmr::unique_handle local_service_primary_token()
-    {
-        ptlsmr::unique_handle snapshot(CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0));
-        if (!snapshot)
-        {
-            throw ptlsmr::win32_error("CreateToolhelp32Snapshot", GetLastError());
-        }
-        PROCESSENTRY32W entry{};
-        entry.dwSize = sizeof(entry);
-        if (!Process32FirstW(snapshot.get(), &entry))
-        {
-            throw ptlsmr::win32_error("Process32FirstW", GetLastError());
-        }
-        do
-        {
-            ptlsmr::unique_handle process(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, entry.th32ProcessID));
-            if (!process)
-            {
-                continue;
-            }
-            HANDLE rawToken = nullptr;
-            if (!OpenProcessToken(process.get(), TOKEN_QUERY | TOKEN_DUPLICATE, &rawToken))
-            {
-                continue;
-            }
-            ptlsmr::unique_handle token(rawToken);
-            try
-            {
-                if (ptlsmr::current_token_user_sid(token.get()) != L"S-1-5-19")
-                {
-                    continue;
-                }
-                DWORD session = 0;
-                DWORD bytes = 0;
-                if (!GetTokenInformation(
-                        token.get(),
-                        TokenSessionId,
-                        &session,
-                        sizeof(session),
-                        &bytes) ||
-                    session != 0)
-                {
-                    continue;
-                }
-                HANDLE duplicate = nullptr;
-                if (!DuplicateTokenEx(
-                        token.get(),
-                        TOKEN_ASSIGN_PRIMARY | TOKEN_DUPLICATE | TOKEN_QUERY | TOKEN_ADJUST_DEFAULT,
-                        nullptr,
-                        SecurityImpersonation,
-                        TokenPrimary,
-                        &duplicate))
-                {
-                    continue;
-                }
-                return ptlsmr::unique_handle(duplicate);
-            }
-            catch (...)
-            {
-                continue;
-            }
-        } while (Process32NextW(snapshot.get(), &entry));
-        throw ptlsmr::win32_error("find LocalService session-0 token", ERROR_NOT_FOUND);
-    }
-
-    void run_registrar(const std::wstring& fullName, bool remove)
-    {
-        const auto registrar = ptlsmr::installed_updater_root() / L"PtLsmrRegistrar.exe";
-        if (!std::filesystem::is_regular_file(registrar))
-        {
-            throw ptlsmr::win32_error("registrar binary policy", ERROR_FILE_NOT_FOUND);
-        }
-        enable_privilege(SE_ASSIGNPRIMARYTOKEN_NAME);
-        enable_privilege(SE_INCREASE_QUOTA_NAME);
-        auto token = local_service_primary_token();
-        LPVOID environment = nullptr;
-        ptlsmr::check_bool(
-            CreateEnvironmentBlock(&environment, token.get(), FALSE),
-            "CreateEnvironmentBlock(LocalService)");
-        struct environment_guard
-        {
-            LPVOID value;
-            ~environment_guard()
-            {
-                if (value)
-                {
-                    DestroyEnvironmentBlock(value);
-                }
-            }
-        } environmentGuard{ environment };
-        std::wstring commandLine = ptlsmr::quote_argument(registrar.wstring()) +
-            (remove ? L" --remove-package " : L" --register-package ") +
-            ptlsmr::quote_argument(fullName);
-        STARTUPINFOW startup{};
-        startup.cb = sizeof(startup);
-        PROCESS_INFORMATION process{};
-        if (!CreateProcessAsUserW(
-                token.get(),
-                registrar.c_str(),
-                commandLine.data(),
-                nullptr,
-                nullptr,
-                FALSE,
-                CREATE_NO_WINDOW | CREATE_UNICODE_ENVIRONMENT,
-                environment,
-                nullptr,
-                &startup,
-                &process))
-        {
-            throw ptlsmr::win32_error("CreateProcessAsUserW(LocalService registrar)", GetLastError());
-        }
-        ptlsmr::unique_handle processHandle(process.hProcess);
-        ptlsmr::unique_handle threadHandle(process.hThread);
-        if (WaitForSingleObject(processHandle.get(), 90000) != WAIT_OBJECT_0)
-        {
-            TerminateProcess(processHandle.get(), ERROR_TIMEOUT);
-            throw ptlsmr::win32_error("LocalService registrar timeout", ERROR_TIMEOUT);
-        }
-        DWORD exitCode = ERROR_GEN_FAILURE;
-        ptlsmr::check_bool(GetExitCodeProcess(processHandle.get(), &exitCode), "GetExitCodeProcess(registrar)");
-        if (exitCode != ERROR_SUCCESS)
-        {
-            throw ptlsmr::win32_error("LocalService registrar failed", exitCode);
-        }
-    }
-
     void stage_exact_package(uint16_t major)
     {
         const std::filesystem::path packagePath =
@@ -507,11 +359,11 @@ namespace
         }
     }
 
-    [[nodiscard]] std::filesystem::path registered_package_directory(const std::wstring& fullName)
+    [[nodiscard]] std::filesystem::path staged_package_directory(const std::wstring& fullName)
     {
         if (!ptlsmr::is_allowed_package_full_name(fullName))
         {
-            throw ptlsmr::win32_error("LocalService package registration policy", ERROR_INVALID_DATA);
+            throw ptlsmr::win32_error("staged package identity policy", ERROR_INVALID_DATA);
         }
         PWSTR programFiles = nullptr;
         const HRESULT result = SHGetKnownFolderPath(FOLDERID_ProgramFiles, 0, nullptr, &programFiles);
@@ -566,7 +418,7 @@ namespace
             nullptr,
             nullptr,
             nullptr,
-            L"NT AUTHORITY\\LocalService",
+            nullptr,
             nullptr);
         if (raw)
         {
@@ -598,9 +450,12 @@ namespace
     {
         const auto buffer = query_service_config(service);
         const auto* config = reinterpret_cast<const QUERY_SERVICE_CONFIGW*>(buffer.data());
+        const bool isLocalSystem =
+            config->lpServiceStartName &&
+            (_wcsicmp(config->lpServiceStartName, L"LocalSystem") == 0 ||
+             _wcsicmp(config->lpServiceStartName, L"NT AUTHORITY\\SYSTEM") == 0);
         if (config->dwServiceType != SERVICE_WIN32_OWN_PROCESS ||
-            !config->lpServiceStartName ||
-            _wcsicmp(config->lpServiceStartName, L"NT AUTHORITY\\LocalService") != 0)
+            !isLocalSystem)
         {
             throw ptlsmr::win32_error("runtime service account policy", ERROR_ACCESS_DENIED);
         }
@@ -661,19 +516,32 @@ namespace
         wait_for_state(service, SERVICE_RUNNING);
     }
 
-    void ensure_package_registered(uint16_t major)
+    void ensure_package_staged(uint16_t major)
     {
         const auto fullName = ptlsmr::expected_package_full_name(major);
         stage_exact_package(major);
-        run_registrar(fullName, false);
-        (void)registered_package_directory(fullName);
+        (void)staged_package_directory(fullName);
+    }
+
+    void remove_exact_package(uint16_t major)
+    {
+        winrt::Windows::Management::Deployment::PackageManager manager;
+        const auto result = manager.RemovePackageAsync(
+            ptlsmr::expected_package_full_name(major))
+                                .get();
+        const HRESULT error = result.ExtendedErrorCode();
+        if (FAILED(error) &&
+            error != HRESULT_FROM_WIN32(ERROR_INSTALL_PACKAGE_NOT_FOUND))
+        {
+            throw winrt::hresult_error(error, L"RemovePackageAsync");
+        }
     }
 
     void provision(const std::wstring& owner)
     {
-        ensure_package_registered(1);
+        ensure_package_staged(1);
         const auto names = ptlsmr::instance_names(owner);
-        const auto packageDirectory = registered_package_directory(ptlsmr::expected_package_full_name(1));
+        const auto packageDirectory = staged_package_directory(ptlsmr::expected_package_full_name(1));
         auto scm = open_scm();
         bool created = false;
         auto service = create_or_open_runtime_service(
@@ -713,11 +581,11 @@ namespace
 
     void upgrade()
     {
-        ensure_package_registered(2);
+        ensure_package_staged(2);
         const auto currentPackageDirectory =
-            registered_package_directory(ptlsmr::expected_package_full_name(1));
+            staged_package_directory(ptlsmr::expected_package_full_name(1));
         const auto targetPackageDirectory =
-            registered_package_directory(ptlsmr::expected_package_full_name(2));
+            staged_package_directory(ptlsmr::expected_package_full_name(2));
         auto scm = open_scm();
         const auto owners = read_owners();
         if (owners.empty())
@@ -804,6 +672,11 @@ namespace
             std::filesystem::remove_all(names.storeDirectory);
         }
         remove_owner(owner);
+        if (read_owners().empty())
+        {
+            remove_exact_package(1);
+            remove_exact_package(2);
+        }
     }
 
     [[nodiscard]] bool is_request_admin(HANDLE pipe)
