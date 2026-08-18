@@ -58,7 +58,7 @@ namespace CentralizedHotkeys
                 ids[shortcut] = nextId++;
             }
 
-            if (!RegisterHotKey(runnerWindow, ids[shortcut], shortcut.modifiersMask, shortcut.vkCode))
+            if (!RegisterHotKey(runnerWindow, ids[shortcut], shortcut.modifiersMask | MOD_NOREPEAT, shortcut.vkCode))
             {
                 Logger::warn(L"Failed to add {} shortcut. {}", ToWstring(shortcut), get_last_error_or_default(GetLastError()));
                 return false;

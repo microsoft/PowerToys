@@ -212,6 +212,29 @@ namespace CentralizedKeyboardHook
         pressedKeyDescriptors.insert({ .virtualKey = vk, .moduleName = moduleName, .action = std::move(action), .idTimer = timerId, .millisecondsToPress = milliseconds });
     }
 
+    void ClearPressedKeyActions(const std::wstring& moduleName) noexcept
+    {
+        Logger::trace(L"UnRegister pressed key action for {}", moduleName);
+        std::unique_lock lock{ pressedKeyMutex };
+        auto it = pressedKeyDescriptors.begin();
+        while (it != pressedKeyDescriptors.end())
+        {
+            if (it->moduleName == moduleName)
+            {
+                if (it->idTimer != 0)
+                {
+                    KillTimer(runnerWindow, it->idTimer);
+                }
+
+                it = pressedKeyDescriptors.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+    }
+
     void ClearModuleHotkeys(const std::wstring& moduleName) noexcept
     {
         Logger::trace(L"UnRegister hotkey action for {}", moduleName);
@@ -230,21 +253,7 @@ namespace CentralizedKeyboardHook
                 }
             }
         }
-        {
-            std::unique_lock lock{ pressedKeyMutex };
-            auto it = pressedKeyDescriptors.begin();
-            while (it != pressedKeyDescriptors.end())
-            {
-                if (it->moduleName == moduleName)
-                {
-                    it = pressedKeyDescriptors.erase(it);
-                }
-                else
-                {
-                    ++it;
-                }
-            }
-        }
+        ClearPressedKeyActions(moduleName);
     }
 
     void Start() noexcept
