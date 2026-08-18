@@ -146,12 +146,11 @@ namespace ShortcutGuide
 
             this.Activated += OnActivated;
 
-            // Esc closes the overlay regardless of which pseudo-window has
-            // keyboard focus (handled at the Window.Content root because the
-            // event bubbles up from whichever inner element has focus).
+            // Handle Esc before focused controls such as AutoSuggestBox can
+            // consume it, so search is cleared before the overlay closes.
             if (this.Content is UIElement contentRoot)
             {
-                contentRoot.KeyUp += OnContentKeyUp;
+                contentRoot.PreviewKeyDown += OnContentPreviewKeyDown;
             }
 
             ApplyThemeFromSettings();
@@ -223,12 +222,25 @@ namespace ShortcutGuide
             }
         }
 
-        private void OnContentKeyUp(object sender, KeyRoutedEventArgs e)
+        private void OnContentPreviewKeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == VirtualKey.Escape)
             {
+                if (e.KeyStatus.WasKeyDown)
+                {
+                    e.Handled = true;
+                    return;
+                }
+
+                if (this.MainPane.TryClearSearch())
+                {
+                    e.Handled = true;
+                    return;
+                }
+
                 _closeType = "Escape";
                 CloseAnimated();
+                e.Handled = true;
             }
         }
 

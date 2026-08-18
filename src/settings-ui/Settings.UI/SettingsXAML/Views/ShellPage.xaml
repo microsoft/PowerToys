@@ -172,8 +172,11 @@
                         <InfoBadge
                             x:Name="UpdateInfoBadge"
                             Margin="0,0,2,0"
+                            AutomationProperties.AccessibilityView="Content"
+                            AutomationProperties.AutomationId="UpdateNavigationBadge"
+                            AutomationProperties.Name="{x:Bind UpdateViewModel.StatusTitle, Mode=OneWay}"
                             Style="{StaticResource UpdateInfoBadgeStyle}"
-                            Visibility="Collapsed" />
+                            Visibility="{x:Bind UpdateViewModel.ShowUpdateBadge, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                     </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
                 <NavigationViewItemSeparator />
@@ -233,11 +236,7 @@
                             x:Uid="Shell_ShortcutGuide"
                             helpers:NavHelper.NavigateTo="views:ShortcutGuidePage"
                             AutomationProperties.AutomationId="ShortcutGuideNavItem"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShortcutGuide.png}">
-                            <NavigationViewItem.InfoBadge>
-                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
-                            </NavigationViewItem.InfoBadge>
-                        </NavigationViewItem>
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShortcutGuide.png}" />
                         <NavigationViewItem
                             x:Name="TextExtractorNavigationItem"
                             x:Uid="Shell_TextExtractor"
@@ -251,9 +250,6 @@
                             AutomationProperties.AutomationId="ZoomItNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}" />
                     </NavigationViewItem.MenuItems>
-                    <NavigationViewItem.InfoBadge>
-                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
-                    </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
 
                 <!--  Windowing & Layouts  -->
@@ -263,6 +259,9 @@
                     AutomationProperties.AutomationId="WindowingAndLayoutsNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowingAndLayouts.png}"
                     SelectsOnInvoked="False">
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Name="AlwaysOnTopNavigationItem"
@@ -293,7 +292,11 @@
                             x:Uid="Shell_AltWindowCycle"
                             helpers:NavHelper.NavigateTo="views:AltWindowCyclePage"
                             AutomationProperties.AutomationId="AltWindowCycleNavItem"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowHopper.png}" />
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowHopper.png}">
+                            <NavigationViewItem.InfoBadge>
+                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                            </NavigationViewItem.InfoBadge>
+                        </NavigationViewItem>
                         <NavigationViewItem
                             x:Name="WorkspacesNavigationItem"
                             x:Uid="Shell_Workspaces"
@@ -463,6 +466,14 @@
             </i:Interaction.Behaviors>
             <Frame x:Name="shellFrame" />
         </NavigationView>
+        <controls:UpdateActivityControl
+            x:Name="UpdateActivity"
+            Grid.Row="1"
+            Margin="12"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Canvas.ZIndex="2"
+            ViewModel="{x:Bind UpdateViewModel, Mode=OneWay}" />
         <ContentDialog
             x:Name="CloseDialog"
             x:Uid="CloseDialog"

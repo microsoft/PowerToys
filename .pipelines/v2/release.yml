@@ -20,6 +20,15 @@ parameters:
     type: string
     default: 'auto'
 
+  - name: releaseIntent
+    displayName: "Release Intent"
+    type: string
+    default: auto
+    values:
+      - auto
+      - preview-release
+      - stable-release
+
   - name: buildConfigurations
     displayName: "Build Configurations"
     type: object
@@ -120,6 +129,7 @@ extends:
                 - pwsh: |-
                     $metadata = .pipelines/resolveBuildMetadata.ps1 `
                       -VersionOverride '${{ parameters.versionNumber }}' `
+                      -ReleaseIntent '${{ parameters.releaseIntent }}' `
                       -BuildDate '$(versionDate)' `
                       -DailyVersionSequence '$(dailyVersionSequence)'
                     $publishSymbolsToPublic = $${{ parameters.publishSymbolsToPublic }}
@@ -137,6 +147,25 @@ extends:
                     Write-Host "##vso[task.setvariable variable=ResolvedBuildIntent]$($metadata.Intent)"
                     Write-Host "##vso[task.setvariable variable=ShouldPublishPreview]$($metadata.ShouldPublishPreview)"
                   displayName: Prepare versioning
+
+                - pwsh: |-
+                    $path = Join-Path '$(Build.ArtifactStagingDirectory)' 'release-metadata.json'
+                    .pipelines/writeReleaseMetadata.ps1 `
+                      -DefinitionId '$(System.DefinitionId)' `
+                      -BuildId '$(Build.BuildId)' `
+                      -BuildNumber '$(Build.BuildNumber)' `
+                      -Version '$(ResolvedVersionNumber)' `
+                      -Channel '$(ResolvedReleaseChannel)' `
+                      -Intent '$(ResolvedBuildIntent)' `
+                      -SourceBranch '$(Build.SourceBranch)' `
+                      -SourceCommit '$(Build.SourceVersion)' `
+                      -BuildReason '$(Build.Reason)' `
+                      -ShouldPublishPreview '$(ShouldPublishPreview)' `
+                      -QueuedAt '$(Build.QueuedTime)' `
+                      -StartedAt '$(System.PipelineStartTime)' `
+                      -OutputPath $path | Out-Null
+                    Write-Host "Staged release metadata: $path"
+                  displayName: Stage release metadata
 
                 # Prepare the localizations and telemetry config before the release build
                 - template: .pipelines/v2/templates/steps-fetch-and-prepare-localizations.yml@self
@@ -181,6 +210,7 @@ extends:
           - template: .pipelines/v2/templates/job-publish-symbols-using-symbolrequestprod-api.yml@self
             parameters:
               versionNumber: ${{ parameters.versionNumber }}
+              releaseIntent: ${{ parameters.releaseIntent }}
               includePublicSymbolServer: ${{ parameters.publishSymbolsToPublic }}
               ${{ if ne(parameters.publishSymbolsToPublic, true) }}:
                 symbolExpiryTime: 10 # For private builds, expire symbols within 10 days. The default is 100 years.

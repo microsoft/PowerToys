@@ -38,9 +38,9 @@ namespace ViewModelTests
                 bool isAdmin,
                 Func<string, int> ipcMSGCallBackFunc,
                 Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc,
-                Func<string, int> ipcMSGCheckForUpdatesCallBackFunc,
+                Action checkForUpdatesAction,
                 string configFileSubfolder = "")
-                : base(settingsRepository, runAsAdminText, runAsUserText, isElevated, isAdmin, ipcMSGCallBackFunc, ipcMSGRestartAsAdminMSGCallBackFunc, ipcMSGCheckForUpdatesCallBackFunc, configFileSubfolder)
+                : base(settingsRepository, runAsAdminText, runAsUserText, isElevated, isAdmin, ipcMSGCallBackFunc, ipcMSGRestartAsAdminMSGCallBackFunc, checkForUpdatesAction, configFileSubfolder)
             {
             }
 
@@ -70,7 +70,7 @@ namespace ViewModelTests
             // Arrange
             Func<string, int> sendMockIPCConfigMSG = msg => 0;
             Func<string, int> sendRestartAdminIPCMessage = msg => 0;
-            Func<string, int> sendCheckForUpdatesIPCMessage = msg => 0;
+            Action checkForUpdates = () => { };
             var viewModel = new TestGeneralViewModel(
                 settingsRepository: generalSettingsRepository,
                 runAsAdminText: "GeneralSettings_RunningAsAdminText",
@@ -79,7 +79,7 @@ namespace ViewModelTests
                 isAdmin: false,
                 ipcMSGCallBackFunc: sendMockIPCConfigMSG,
                 ipcMSGRestartAsAdminMSGCallBackFunc: sendRestartAdminIPCMessage,
-                ipcMSGCheckForUpdatesCallBackFunc: sendCheckForUpdatesIPCMessage,
+                checkForUpdatesAction: checkForUpdates,
                 configFileSubfolder: string.Empty);
 
             // Verify that the old settings persisted
@@ -98,7 +98,7 @@ namespace ViewModelTests
         public void IncludePrereleaseUpdatesShouldSendUpdatedSettingWhenSuccessful()
         {
             bool sawExpectedIpcPayload = false;
-            bool sawExpectedUpdateCheckPayload = false;
+            bool updateCheckRequested = false;
             Func<string, int> sendMockIPCConfigMSG = msg =>
             {
                 if (string.IsNullOrWhiteSpace(msg))
@@ -118,24 +118,7 @@ namespace ViewModelTests
             };
 
             Func<string, int> sendRestartAdminIPCMessage = msg => { return 0; };
-            Func<string, int> sendCheckForUpdatesIPCMessage = msg =>
-            {
-                if (string.IsNullOrWhiteSpace(msg))
-                {
-                    return 0;
-                }
-
-                GeneralSettingsCustomAction action = JsonSerializer.Deserialize<GeneralSettingsCustomAction>(msg);
-                if (action?.GeneralSettingsAction?.GeneralSettings is null)
-                {
-                    return 0;
-                }
-
-                Assert.IsTrue(action.GeneralSettingsAction.GeneralSettings.IncludePrereleaseUpdates);
-                Assert.AreEqual("check_for_updates", action.GeneralSettingsAction.GeneralSettings.CustomActionName);
-                sawExpectedUpdateCheckPayload = true;
-                return 0;
-            };
+            Action checkForUpdates = () => updateCheckRequested = true;
             GeneralViewModel viewModel = new TestGeneralViewModel(
                 settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
@@ -144,7 +127,7 @@ namespace ViewModelTests
                 false,
                 sendMockIPCConfigMSG,
                 sendRestartAdminIPCMessage,
-                sendCheckForUpdatesIPCMessage,
+                checkForUpdates,
                 GeneralSettingsFileName);
 
             Assert.IsFalse(viewModel.IncludePrereleaseUpdates);
@@ -152,7 +135,7 @@ namespace ViewModelTests
             viewModel.IncludePrereleaseUpdates = true;
 
             Assert.IsTrue(sawExpectedIpcPayload);
-            Assert.IsTrue(sawExpectedUpdateCheckPayload);
+            Assert.IsTrue(updateCheckRequested);
         }
 
         [TestMethod]
@@ -161,7 +144,7 @@ namespace ViewModelTests
             // Arrange
             Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
             Func<string, int> sendRestartAdminIPCMessage = msg => { return 0; };
-            Func<string, int> sendCheckForUpdatesIPCMessage = msg => { return 0; };
+            Action sendCheckForUpdatesIPCMessage = () => { };
             GeneralViewModel viewModel = new TestGeneralViewModel(
                 settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
@@ -209,7 +192,7 @@ namespace ViewModelTests
 
             // Arrange
             Func<string, int> sendRestartAdminIPCMessage = msg => { return 0; };
-            Func<string, int> sendCheckForUpdatesIPCMessage = msg => { return 0; };
+            Action sendCheckForUpdatesIPCMessage = () => { };
             GeneralViewModel viewModel = new TestGeneralViewModel(
                 settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
@@ -251,7 +234,7 @@ namespace ViewModelTests
             };
 
             Func<string, int> sendRestartAdminIPCMessage = msg => { return 0; };
-            Func<string, int> sendCheckForUpdatesIPCMessage = msg => { return 0; };
+            Action sendCheckForUpdatesIPCMessage = () => { };
 
             // Arrange
             GeneralViewModel viewModel = new TestGeneralViewModel(
@@ -299,7 +282,7 @@ namespace ViewModelTests
             };
 
             Func<string, int> sendRestartAdminIPCMessage = msg => { return 0; };
-            Func<string, int> sendCheckForUpdatesIPCMessage = msg => { return 0; };
+            Action sendCheckForUpdatesIPCMessage = () => { };
             viewModel = new TestGeneralViewModel(
                 settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
@@ -341,7 +324,7 @@ namespace ViewModelTests
             };
 
             Func<string, int> sendRestartAdminIPCMessage = msg => { return 0; };
-            Func<string, int> sendCheckForUpdatesIPCMessage = msg => { return 0; };
+            Action sendCheckForUpdatesIPCMessage = () => { };
             GeneralViewModel viewModel = new TestGeneralViewModel(
                 settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
@@ -383,7 +366,7 @@ namespace ViewModelTests
             };
 
             Func<string, int> sendRestartAdminIPCMessage = msg => { return 0; };
-            Func<string, int> sendCheckForUpdatesIPCMessage = msg => { return 0; };
+            Action sendCheckForUpdatesIPCMessage = () => { };
             GeneralViewModel viewModel = new TestGeneralViewModel(
                 settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",

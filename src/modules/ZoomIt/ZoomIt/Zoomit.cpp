@@ -7069,6 +7069,21 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         audioInitAction = audioGenerator->InitializeAsync();
     }
 
+    // audioGenerator must never be destroyed by stack unwinding while
+    // InitializeAsync is still pending: ~AudioSampleGenerator -> Stop() would
+    // block this (STA) thread on the event that only the pending continuation
+    // can set, and that continuation needs this thread to pump.  Hand ownership
+    // to the async disposer instead.  On the success path the generator has
+    // already been moved into the recording session, so this is a no-op.
+    auto disposeAudioGenerator = wil::scope_exit( [&]
+    {
+        if( audioGenerator )
+        {
+            AudioSampleGenerator::DisposeAsync( std::move( audioGenerator ), audioInitAction );
+            audioInitAction = nullptr;
+        }
+    } );
+
     auto tempFolderPath = std::filesystem::temp_directory_path().wstring();
     auto tempFolder = co_await winrt::StorageFolder::GetFolderFromPathAsync( tempFolderPath );
     auto appFolder = co_await tempFolder.CreateFolderAsync( L"ZoomIt", winrt::CreationCollisionOption::OpenIfExists );
