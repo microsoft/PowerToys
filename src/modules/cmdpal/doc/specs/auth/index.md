@@ -190,7 +190,7 @@ There are two layers. Most extensions only ever touch the Toolkit.
 The contract lives in `Microsoft.CommandPalette.Extensions.idl`. A host that speaks
 the new flow implements `IExtensionHost2`, which extends `IExtensionHost`.
 
-```
+```c++
 enum AuthorizationRedirectKind
 {
     Loopback = 0,      // http://127.0.0.1:{ephemeral-port}/  (RFC 8252)
@@ -234,12 +234,6 @@ page in `IAuthorizationRequest.SignedInPage` when you start the flow. The host c
 that the page belongs to your extension and holds onto it. After your token exchange
 succeeds, the Toolkit tells the host the sign-in worked, and the host foregrounds the
 palette and navigates to the page you already named.
-
-Notice what's missing: there is no public method that takes an arbitrary page and
-navigates to it. That's on purpose. An extension can't send a user to another
-extension's pages, and it can't navigate the palette outside the sign-in it started.
-Navigation is a host-owned capability that only fires as the tail end of a flow you
-kicked off, to a page you already declared.
 
 ### Toolkit
 
@@ -324,7 +318,7 @@ Storing a token is optional, and it happens in your process. The Toolkit gives y
   Manager. Tokens are encrypted at rest per user. Use a distinct key per provider or
   account so they don't collide.
 
-Here's the honest caveat. The Credential Manager caps a stored secret at a few
+There's an important thing to note though: the Credential Manager caps a stored secret at a few
 kilobytes. That's plenty for typical access and refresh tokens, but a very large JWT
 can blow past it. Guard `Save` in a try/catch and treat storage as best effort. If you
 routinely carry large tokens, a DPAPI-backed store is a reasonable future addition.
@@ -341,51 +335,3 @@ is small and the risk of leaving half-finished secrets on disk is not.
 
 The Toolkit doesn't care who your provider is, as long as it speaks Authorization Code
 with PKCE and lets you register a public client.
-
-### GitHub, over loopback
-
-GitHub supports Authorization Code and works well with the loopback redirect. It does
-not support custom-scheme redirect URIs, so use `Loopback`.
-
-1. Create an OAuth app in GitHub Developer settings. Register a loopback callback such
-   as `http://127.0.0.1/`. GitHub matches on host and path, and the broker fills in the
-   ephemeral port.
-2. Configure the client:
-
-   ```csharp
-   var github = new OAuthClient
-   {
-       ClientId = "<your client id>",
-       AuthorizationEndpoint = "https://github.com/login/oauth/authorize",
-       TokenEndpoint = "https://github.com/login/oauth/access_token",
-       Scopes = ["read:user"],
-       RedirectKind = AuthorizationRedirectKind.Loopback,
-       DisplayName = "My extension",
-   };
-
-   var token = await github.AuthorizeAsync(new MySignedInPage());
-   ```
-
-GitHub's token endpoint returns form-encoded data by default, so the Toolkit sends
-`Accept: application/json` to get JSON back. Personal OAuth apps don't issue refresh
-tokens. If you need refresh, use a GitHub App with expiring user tokens, which follows
-the same Authorization Code shape.
-
-Always confirm your provider's exact endpoints, redirect support, and scope names from
-its own docs before you ship.
-
-## Open questions
-
-- **Completion handshake.** The recommended shape has the Toolkit tell the host
-  "sign-in succeeded" after the exchange, and the host navigates to the page you named
-  in the request. The alternative is to navigate the moment the redirect is captured
-  and let the landing page show a "finishing sign-in" state while the exchange runs.
-  The first keeps navigation gated on a real token. We're going with it unless the
-  loading-state approach proves nicer in practice.
-- **Device-code open-URL helper.** Exact shape of the host's open-URL facilitation
-  (a dedicated method versus reusing an existing launch path) is still open.
-- **Large-token storage.** Whether to ship a DPAPI-backed `ITokenStore` alongside the
-  Credential Manager one, or leave it to extensions.
-- **Custom-scheme provider matrix.** We should keep a short list of which common
-  providers actually allow `cmdpal://`-style redirects, so people don't pick it and
-  hit a wall.
