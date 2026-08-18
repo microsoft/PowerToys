@@ -23,8 +23,13 @@ namespace Microsoft.CmdPal.UI.Settings;
 /// </summary>
 public sealed partial class AppearancePage : Page
 {
+    internal const string QuickAccessShelfSettingsElementTag = "QuickAccessShelf";
+
+    private const int SettingsExpanderAnimationDurationMs = 250;
+
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-    private readonly IAppStateService _appStateService;
+
+    private bool _quickAccessShelfNavigationPending;
 
     internal SettingsViewModel ViewModel { get; }
 
@@ -35,22 +40,60 @@ public sealed partial class AppearancePage : Page
         var themeService = App.Current.Services.GetRequiredService<IThemeService>();
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
-        _appStateService = App.Current.Services.GetRequiredService<IAppStateService>();
         ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
+        Loaded += AppearancePage_Loaded;
     }
 
-    private void ClearRecentCommands_Click(object sender, RoutedEventArgs e)
+    internal bool TryNavigateToSettingsElement(string elementTag)
     {
-        var current = _appStateService.State.RecentCommands;
-        if (current.IsEmpty)
+        if (!string.Equals(elementTag, QuickAccessShelfSettingsElementTag, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        _quickAccessShelfNavigationPending = true;
+        NavigateToPendingSettingsElement();
+        return true;
+    }
+
+    private void AppearancePage_Loaded(object sender, RoutedEventArgs e)
+    {
+        NavigateToPendingSettingsElement();
+    }
+
+    private void NavigateToPendingSettingsElement()
+    {
+        if (!_quickAccessShelfNavigationPending || !IsLoaded)
         {
             return;
         }
 
-        _appStateService.UpdateState(state => state with
+        _quickAccessShelfNavigationPending = false;
+        CompactModeSettingsExpander.IsExpanded = true;
+        _ = BringQuickAccessShelfSettingsIntoViewAsync();
+    }
+
+    private async Task BringQuickAccessShelfSettingsIntoViewAsync()
+    {
+        await Task.Delay(SettingsExpanderAnimationDurationMs);
+        if (!IsLoaded)
         {
-            RecentCommands = state.RecentCommands.ClearHistory(),
+            return;
+        }
+
+        QuickAccessShelfSettingsCard.StartBringIntoView(new BringIntoViewOptions
+        {
+            AnimationDesired = true,
+            VerticalOffset = -20,
         });
+        _ = QuickAccessShelfToggle.Focus(FocusState.Programmatic);
+    }
+
+    private void OpenRecentItemsSettings_Click(object sender, RoutedEventArgs e)
+    {
+        WeakReferenceMessenger.Default.Send(new OpenSettingsMessage(
+            "General",
+            SettingsPageElementTag: GeneralPage.RecentItemsSettingsElementTag));
     }
 
     private async void PickBackgroundImage_Click(object sender, RoutedEventArgs e)

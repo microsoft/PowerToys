@@ -17,14 +17,18 @@ namespace Microsoft.CmdPal.UI.Settings;
 
 public sealed partial class GeneralPage : Page, INotifyPropertyChanged
 {
+    internal const string RecentItemsSettingsElementTag = "RecentItems";
+
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
     private readonly SettingsViewModel? viewModel;
     private readonly IApplicationInfoService _appInfoService;
+    private readonly IAppStateService _appStateService;
     private readonly ISettingsService _settingsService;
     private readonly DispatcherTimer _notificationStateTimer;
 
     private bool _isNotificationStateSuppressing;
+    private bool _recentItemsNavigationPending;
     private string _notificationStateMessage = string.Empty;
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -37,6 +41,7 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
         _appInfoService = App.Current.Services.GetRequiredService<IApplicationInfoService>();
+        _appStateService = App.Current.Services.GetRequiredService<IAppStateService>();
         viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, _settingsService);
 
         _notificationStateTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
@@ -82,17 +87,60 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
         }
     }
 
+    private void ClearRecentCommands_Click(object sender, RoutedEventArgs e)
+    {
+        var current = _appStateService.State.RecentCommands;
+        if (current.IsEmpty)
+        {
+            return;
+        }
+
+        _appStateService.UpdateState(state => state with
+        {
+            RecentCommands = state.RecentCommands.ClearHistory(),
+        });
+    }
+
     private void GeneralPage_Loaded(object sender, RoutedEventArgs e)
     {
         _settingsService.SettingsChanged += SettingsService_SettingsChanged;
         UpdateNotificationState();
         _notificationStateTimer.Start();
+        NavigateToPendingSettingsElement();
     }
 
     private void GeneralPage_Unloaded(object sender, RoutedEventArgs e)
     {
         _notificationStateTimer.Stop();
         _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
+    }
+
+    internal bool TryNavigateToSettingsElement(string elementTag)
+    {
+        if (!string.Equals(elementTag, RecentItemsSettingsElementTag, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        _recentItemsNavigationPending = true;
+        NavigateToPendingSettingsElement();
+        return true;
+    }
+
+    private void NavigateToPendingSettingsElement()
+    {
+        if (!_recentItemsNavigationPending || !IsLoaded)
+        {
+            return;
+        }
+
+        _recentItemsNavigationPending = false;
+        HomeRecentCommandsSettingsCard.StartBringIntoView(new BringIntoViewOptions
+        {
+            AnimationDesired = true,
+            VerticalOffset = -20,
+        });
+        _ = HomeRecentCommandsComboBox.Focus(FocusState.Programmatic);
     }
 
     private void NotificationStateTimer_Tick(object? sender, object e)
