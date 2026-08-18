@@ -57,6 +57,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [QuickAI](https://github.com/ruslanlap/PowerToysRun-QuickAi) | [ruslanlap](https://github.com/ruslanlap) | AI-powered assistance with instant, smart responses from multiple providers (Groq, Together, Fireworks, OpenRouter, Cohere) |
 | [Launchy](https://github.com/PsychodelEKS/PowerToysRun-Launchy) | [PsychodelEKS](https://github.com/PsychodelEKS) | Index and launch files from configured folders |
 | [DevDocs](https://github.com/jan-jaros/PowerToys-Run-DevDocs) | [jan-jaros](https://github.com/jan-jaros) | Search programming documentation from DevDocs.io |
+| [PoetSearch](https://github.com/Greyaircraft/PowerToysRun-PoetSearch) | [Greyaircraft](https://github.com/Greyaircraft) | Search 78,581 classical Chinese poems (全唐诗 + 全宋词) |
 
 ## Extending software plugins
 
