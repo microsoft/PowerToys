@@ -85,12 +85,18 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         save = FindExact<Button>(editorProcess, "Save", timeoutMS: 5_000);
         Assert.IsNotNull(save, "The edit dialog did not expose Save.");
         save!.Click(msPostAction: 500);
+
+        Step("Closing and reopening the editor to verify the edited mapping persisted");
+        CloseEditor();
+        editor = OpenEditor();
+        editorProcess = Session.FromProcess(KeyboardManagerTestConstants.EditorProcessName);
+        Assert.IsNotNull(FindExact<Element>(editorProcess, "A", timeoutMS: 5_000), "The reopened editor did not show source key A after editing.");
         Assert.IsTrue(
-            editor.WaitFor(
-                () => ProfileContainsSingleKeyMapping(A, C),
-                timeoutMS: 10_000,
-                pollIntervalMS: 250),
-            "Editing the mapping did not replace A to B with A to C.");
+            editorProcess.FindAll<Element>(By.Name("C"), timeoutMS: 5_000)
+                .Any(element => element.Name.Equals("C", StringComparison.OrdinalIgnoreCase)),
+            "The reopened editor did not show target key C after editing.");
+        Assert.IsTrue(ProfileContainsSingleKeyMapping(A, C), "The reopened editor did not persist the exact A to C mapping.");
+        Assert.IsFalse(ProfileContainsSingleKeyMapping(A, B), "The original A to B mapping remained after editing.");
 
         Step("Deleting the edited mapping through its row menu");
         editorProcess.Find<Button>(By.AccessibilityId("MappingMenuButton"), timeoutMS: 5_000).Click(msPostAction: 300);
@@ -147,27 +153,39 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         var keyButtons = VisibleKeyButtons(editorProcess);
         Assert.AreEqual(2, keyButtons.Count, "A single-key mapping should expose one trigger and one action key dropdown.");
 
-        Step("Changing the trigger dropdown from A to B with the mouse");
+        Step("Scrolling the trigger dropdown and selecting numeric key 1 with the mouse");
         keyButtons[0].Click(msPostAction: 300);
         var keyList = editorProcess.Find<Element>(By.AccessibilityId("KeyListView"), timeoutMS: 5_000);
-        var triggerChoice = FindExactChild(keyList, "B", timeoutMS: 5_000);
-        Assert.IsNotNull(triggerChoice, "The trigger key dropdown did not expose B.");
+        keyList.Scroll(ScrollDirection.Down);
+        keyList.ScrollToEdge(toBottom: false);
+        var triggerChoice = FindExact<Element>(editorProcess, "1", timeoutMS: 5_000);
+        Assert.IsNotNull(triggerChoice, "The trigger key dropdown did not expose numeric key 1 after returning to the top of the list.");
         triggerChoice!.MouseClick(msPostAction: 300);
 
-        Step("Changing the action dropdown from C to D with keyboard navigation");
+        Step("Changing the action dropdown from C to numeric key 2 with keyboard navigation");
         keyButtons = VisibleKeyButtons(editorProcess);
         keyButtons[^1].Focus();
         KeyboardHelper.SendKey(Key.Enter);
         Assert.IsTrue(editorProcess.WaitForElement(By.AccessibilityId("KeyListView"), timeoutMS: 5_000), "The action key dropdown did not open from Enter.");
-        KeyboardHelper.SendKey((Key)D);
+        KeyboardHelper.SendKey(Key.Down);
+        KeyboardHelper.SendKey(Key.Down);
         KeyboardHelper.SendKey(Key.Enter);
 
-        keyButtons = VisibleKeyButtons(editorProcess);
-        Assert.AreEqual("B", keyButtons[0].Name, "Mouse selection did not update the trigger key to B.");
-        Assert.AreEqual("D", keyButtons[^1].Name, "Keyboard selection did not update the action key to D.");
+        Step("Saving the dropdown-created 1 to 2 mapping");
+        save = FindExact<Button>(editorProcess, "Save", timeoutMS: 5_000);
+        Assert.IsNotNull(save, "The dropdown-created mapping did not expose Save.");
+        save!.Click(msPostAction: 500);
+        Assert.IsTrue(
+            editor.WaitFor(
+                () => ProfileContainsSingleKeyMapping((int)Key.Num1, (int)Key.Num2),
+                timeoutMS: 10_000,
+                pollIntervalMS: 250),
+            "Mouse and keyboard dropdown selection did not persist the expected 1 to 2 mapping.");
 
-        Step("Replacing the trigger with Ctrl+B and enabling app-specific scope");
+        Step("Opening a fresh dialog for Ctrl+B to D app-specific validation");
+        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Click(msPostAction: 300);
         RecordKeys(editorProcess, "TriggerKeyToggleBtn", LeftControl, B);
+        RecordKeys(editorProcess, "ActionKeyToggleBtn", D);
         appSpecific = editorProcess.Find<CheckBox>(By.AccessibilityId("AppSpecificCheckBox"), timeoutMS: 5_000);
         Assert.IsTrue(appSpecific.IsEnabled, "App-specific scope did not enable after the trigger became Ctrl+B.");
         appSpecific.Click(msPostAction: 300);
@@ -233,30 +251,6 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
             .Where(button => button.Displayed && button.Width > 0 && button.Height > 0)
             .OrderBy(button => button.X)
             .ToList();
-
-    private static Element? FindExactChild(Element parent, string name, int timeoutMS)
-    {
-        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMS);
-        do
-        {
-            try
-            {
-                var child = parent.Find<Element>(By.Name(name), timeoutMS: 300);
-                if (child.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
-                {
-                    return child;
-                }
-            }
-            catch (Exception)
-            {
-            }
-
-            Thread.Sleep(100);
-        }
-        while (DateTime.UtcNow < deadline);
-
-        return null;
-    }
 
     private static bool ProfileContainsSingleKeyMapping(int source, int target) =>
         SingleKeyMappings().Any(mapping =>

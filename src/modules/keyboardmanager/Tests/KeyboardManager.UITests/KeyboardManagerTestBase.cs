@@ -25,6 +25,18 @@ public abstract class KeyboardManagerTestBase : UITestBase
         Key.F4,
         Key.F11,
         Key.F12,
+        (Key)0x7C,
+        (Key)0x7D,
+        (Key)0x7E,
+        (Key)0x7F,
+        (Key)0x80,
+        (Key)0x81,
+        (Key)0x82,
+        (Key)0x83,
+        (Key)0x84,
+        (Key)0x85,
+        (Key)0x86,
+        (Key)0x87,
         Key.Tab,
         (Key)0xA2,
         (Key)0xA4,
@@ -109,11 +121,7 @@ public abstract class KeyboardManagerTestBase : UITestBase
 
     internal static void CloseEditor()
     {
-        if (WindowControl.TryCloseByApp(KeyboardManagerTestConstants.EditorProcessName, timeoutMS: 5_000))
-        {
-            return;
-        }
-
+        WindowControl.TryCloseByApp(KeyboardManagerTestConstants.EditorProcessName, timeoutMS: 5_000);
         WindowControl.TryKillProcessTreeByNameAndWait(KeyboardManagerTestConstants.EditorProcessName, timeoutMS: 10_000);
     }
 

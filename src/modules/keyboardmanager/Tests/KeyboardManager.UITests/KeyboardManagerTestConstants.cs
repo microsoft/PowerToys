@@ -12,6 +12,8 @@ internal static class KeyboardManagerTestConstants
     public const ulong SingleKeyInjectedFlag = 0x11;
     public const ulong ShortcutInjectedFlag = 0x101;
     public const int DisabledKey = 0x100;
-    public const int LoadProbeSourceKey = 0x7B;
-    public const int LoadProbeTargetKey = 0x7A;
+    public const int LoadProbeBaseKey = 0x7C;
+    public const int LoadProbeKeyCount = 12;
+    public const int LoadProbeSourceKey = LoadProbeBaseKey;
+    public const int LoadProbeTargetKey = LoadProbeBaseKey + 1;
 }
