@@ -496,8 +496,6 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
                                 entry.IsInstalledStateKnown = true;
                             }
                         }
-
-
                     }
 
                     QueueApplyFilter();
