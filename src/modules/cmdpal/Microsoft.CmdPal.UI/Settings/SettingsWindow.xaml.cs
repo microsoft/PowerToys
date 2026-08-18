@@ -139,7 +139,10 @@ public sealed partial class SettingsWindow : WindowEx,
         Navigate((selectedItem.Tag as string)!);
     }
 
-    internal void Navigate(string page, string? extensionGalleryId = null)
+    internal void Navigate(
+        string page,
+        string? extensionGalleryId = null,
+        string? settingsPageElementTag = null)
     {
         Type? pageType;
         switch (page)
@@ -185,16 +188,14 @@ public sealed partial class SettingsWindow : WindowEx,
             return;
         }
 
-        if (NavFrame.Content?.GetType() == pageType)
+        if (NavFrame.Content?.GetType() != pageType)
         {
-            return;
-        }
+            NavFrame.Navigate(pageType);
 
-        NavFrame.Navigate(pageType);
-
-        if (openGalleryExtension && NavFrame.Content is ExtensionGalleryPage galleryPage)
-        {
-            galleryPage.OpenExtension(extensionGalleryId!);
+            if (openGalleryExtension && NavFrame.Content is ExtensionGalleryPage galleryPage)
+            {
+                galleryPage.OpenExtension(extensionGalleryId!);
+            }
         }
 
         // Now, make sure to actually select the correct menu item too
@@ -203,6 +204,20 @@ public sealed partial class SettingsWindow : WindowEx,
             if (obj is NavigationViewItem item && item.Tag is string s && s == page)
             {
                 NavView.SelectedItem = item;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(settingsPageElementTag))
+        {
+            var navigatedToSettingsElement = NavFrame.Content switch
+            {
+                AppearancePage appearancePage => appearancePage.TryNavigateToSettingsElement(settingsPageElementTag),
+                GeneralPage generalPage => generalPage.TryNavigateToSettingsElement(settingsPageElementTag),
+                _ => false,
+            };
+            if (!navigatedToSettingsElement)
+            {
+                Logger.LogError($"Unknown settings element tag '{settingsPageElementTag}' for page '{page}'");
             }
         }
     }

@@ -289,19 +289,22 @@
                     </controls:SettingsCard>
 
                     <TextBlock x:Uid="Settings_AppearancePage_LayoutSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
-                    <controls:SettingsExpander x:Uid="Settings_GeneralPage_CompactMode_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE73F;}">
+                    <controls:SettingsExpander
+                        x:Name="CompactModeSettingsExpander"
+                        x:Uid="Settings_GeneralPage_CompactMode_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE73F;}">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_CompactMode" IsOn="{x:Bind ViewModel.CompactMode, Mode=TwoWay}" />
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard
+                                x:Name="QuickAccessShelfSettingsCard"
                                 x:Uid="Settings_GeneralPage_QuickAccessShelf_SettingsCard"
                                 IsEnabled="{x:Bind ViewModel.CompactMode, Mode=OneWay}">
                                 <ToggleSwitch
+                                    x:Name="QuickAccessShelfToggle"
                                     AutomationProperties.AutomationId="CmdPal_GeneralPage_QuickAccessShelf"
                                     IsOn="{x:Bind ViewModel.ShowQuickAccessShelf, Mode=TwoWay}" />
                             </controls:SettingsCard>
-                            <controls:SettingsCard
-                                x:Uid="Settings_GeneralPage_QuickAccessShelfPinnedCommandLimit_SettingsCard"
-                                IsEnabled="{x:Bind ViewModel.CanConfigureQuickAccessShelf, Mode=OneWay}">
+                            <controls:SettingsCard x:Uid="Settings_GeneralPage_QuickAccessShelfPinnedCommandLimit_SettingsCard" IsEnabled="{x:Bind ViewModel.CanConfigureQuickAccessShelf, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     AutomationProperties.AutomationId="CmdPal_GeneralPage_QuickAccessShelfPinnedCommandLimit"
@@ -311,15 +314,19 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.QuickAccessShelfPinnedCommandLimit, Mode=TwoWay}" />
                             </controls:SettingsCard>
-                            <controls:SettingsCard
-                                x:Uid="Settings_GeneralPage_QuickAccessShelfRecentCommands_SettingsCard"
-                                IsEnabled="{x:Bind ViewModel.CanConfigureQuickAccessShelf, Mode=OneWay}">
+                            <controls:SettingsCard x:Uid="Settings_GeneralPage_QuickAccessShelfRecentCommands_SettingsCard" IsEnabled="{x:Bind ViewModel.CanConfigureQuickAccessShelf, Mode=OneWay}">
+                                <controls:SettingsCard.Description>
+                                    <HyperlinkButton
+                                        x:Uid="Settings_GeneralPage_QuickAccessShelfRecentCommands_OpenRecentItemsSettings_Hyperlink"
+                                        Padding="0"
+                                        Click="OpenRecentItemsSettings_Click" />
+                                </controls:SettingsCard.Description>
                                 <ComboBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     AutomationProperties.AutomationId="CmdPal_GeneralPage_QuickAccessShelfRecentCommands"
                                     SelectedIndex="{x:Bind ViewModel.RecentCommandsOnQuickAccessShelfIndex, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_Hidden" />
-                                    <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_BeforePinned" />
+                                    <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_BeforePinned" Visibility="Collapsed" />
                                     <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_AfterPinned" />
                                 </ComboBox>
                             </controls:SettingsCard>
@@ -337,41 +344,6 @@
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
-
-                    <controls:SettingsCard
-                        x:Uid="Settings_GeneralPage_HomeRecentCommands_SettingsCard"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE81C;}">
-                        <ComboBox
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            AutomationProperties.AutomationId="CmdPal_GeneralPage_HomeRecentCommands"
-                            SelectedIndex="{x:Bind ViewModel.RecentCommandsOnHomeIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_Hidden" />
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_BeforePinned" />
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_AfterPinned" />
-                        </ComboBox>
-                    </controls:SettingsCard>
-
-                    <controls:SettingsCard
-                        x:Uid="Settings_GeneralPage_RecentCommandsDisplayLimit_SettingsCard"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE81C;}">
-                        <NumberBox
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            AutomationProperties.AutomationId="CmdPal_GeneralPage_RecentCommandsDisplayLimit"
-                            Maximum="10"
-                            Minimum="1"
-                            SmallChange="1"
-                            SpinButtonPlacementMode="Compact"
-                            Value="{x:Bind ViewModel.RecentCommandsDisplayLimit, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-
-                    <controls:SettingsCard
-                        x:Uid="Settings_GeneralPage_ClearRecentCommands_SettingsCard"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE74D;}">
-                        <Button
-                            x:Uid="Settings_GeneralPage_ClearRecentCommandsButton"
-                            AutomationProperties.AutomationId="CmdPal_GeneralPage_ClearRecentCommands"
-                            Click="ClearRecentCommands_Click" />
-                    </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
                         <ComboBox
