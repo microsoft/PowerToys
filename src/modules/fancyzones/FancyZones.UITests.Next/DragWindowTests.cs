@@ -120,7 +120,13 @@ public class DragWindowTests : UITestBase
         Arrange(shiftDrag: false, mouseSwitch: true, transparent: false);
 
         Assert.IsTrue(StartDrag(), "Could not start the title-bar drag.");
+        Assert.IsTrue(
+            FancyZonesTestHelper.WaitForZonesOverlayVisible(),
+            "The drag never activated the zones overlay, so the non-primary click had no active state to toggle.");
         ClickNonPrimaryButton();
+        Assert.IsTrue(
+            FancyZonesTestHelper.WaitForZonesOverlayHidden(),
+            "The zones overlay remained visible after the non-primary mouse click.");
         Drop();
 
         AssertSnapped(false, "A non-primary mouse click during the drag should deactivate the zones.");

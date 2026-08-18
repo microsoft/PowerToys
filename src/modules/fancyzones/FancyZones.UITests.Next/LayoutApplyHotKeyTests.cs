@@ -286,7 +286,34 @@ public class LayoutApplyHotKeyTests : UITestBase
             FancyZonesTestHelper.Step(this, "Creating a new grid layout");
             editor.Find<Element>(By.AccessibilityId(Id.NewLayoutButton), FancyZonesTestHelper.FindTimeoutMs).Click(msPostAction: 500);
             editor.Find<Element>(By.AccessibilityId(Id.PrimaryButton), FancyZonesTestHelper.FindTimeoutMs).Click(msPostAction: 800);
-            editor.Find<Button>(SaveButtonName, FancyZonesTestHelper.FindTimeoutMs).Click(msPostAction: 1000);
+
+            Session? gridEditor = null;
+            Assert.IsTrue(
+                editor.WaitFor(
+                    () =>
+                    {
+                        foreach (var window in WindowsFinder.ListByApp(FancyZonesTestHelper.EditorProcess))
+                        {
+                            var candidate = WindowsFinder.WaitForWindowByApp(
+                                FancyZonesTestHelper.EditorProcess,
+                                current => current.Hwnd == window.Hwnd,
+                                timeoutMS: 100,
+                                pollIntervalMS: 25);
+                            if (candidate is not null &&
+                                candidate.FindAll<Element>(By.Name("Grid layout editor"), 0)
+                                    .Any(element => string.Equals(element.Name, "Grid layout editor", StringComparison.Ordinal) && element.Displayed))
+                            {
+                                gridEditor = candidate;
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    },
+                    FancyZonesTestHelper.FindTimeoutMs,
+                    100),
+                "The newly opened grid layout editor window did not become automation-ready.");
+            gridEditor!.Find<Button>(SaveButtonName, FancyZonesTestHelper.FindTimeoutMs).Click(msPostAction: 1000);
 
             Assert.IsNotNull(
                 editor.Find<Element>(By.Name(NewLayoutName), FancyZonesTestHelper.FindTimeoutMs),

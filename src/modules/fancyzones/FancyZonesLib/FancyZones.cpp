@@ -296,6 +296,7 @@ public:
     void MoveSizeStart(HWND window, HMONITOR monitor);
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen);
     void MoveSizeEnd();
+    void AbortMoveSize();
 
     void WindowCreated(HWND window) noexcept;
     void ToggleEditor() noexcept;
@@ -514,6 +515,17 @@ void FancyZones::MoveSizeEnd()
 
     // Always disable dragging state, even if m_windowMouseSnapper was already null.
     // This prevents stuck drag state when a window is destroyed mid-drag.
+    m_draggingState.Disable();
+}
+
+void FancyZones::AbortMoveSize()
+{
+    if (m_windowMouseSnapper)
+    {
+        m_windowMouseSnapper->Abort();
+        m_windowMouseSnapper = nullptr;
+    }
+
     m_draggingState.Disable();
 }
 
@@ -980,9 +992,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
             if (m_windowMouseSnapper && m_windowMouseSnapper->GetDraggedWindow() == hwnd)
             {
                 Logger::info(L"Window destroyed during drag - aborting drag");
-                m_windowMouseSnapper->Abort();
-                m_windowMouseSnapper = nullptr;
-                m_draggingState.Disable();
+                AbortMoveSize();
             }
         }
         else if (message == WM_PRIV_LAYOUT_HOTKEYS_FILE_UPDATE)
@@ -1164,9 +1174,9 @@ void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
             // every unique_ptr<WorkArea> (and hence the inner ZonesOverlay and
             // its std::mutex). If a drag is in flight, the next MoveSizeUpdate
             // would dereference that dangling WorkArea* and lock the freed
-            // mutex. Drain the active drag first so subsequent drag messages
+            // mutex. Abort the active drag first so subsequent drag messages
             // hit the snapper's `if (m_windowMouseSnapper)` guard and no-op.
-            MoveSizeEnd();
+            AbortMoveSize();
             m_workAreaConfiguration.Clear();
 
             FancyZonesDataTypes::WorkAreaId workAreaId;
@@ -1184,7 +1194,7 @@ void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
         if (ShouldWorkAreasBeRecreated(monitors, currentVirtualDesktop, workAreas))
         {
             // See comment above the matching Clear() in the span-zones branch.
-            MoveSizeEnd();
+            AbortMoveSize();
             m_workAreaConfiguration.Clear();
             for (const auto& monitor : monitors)
             {
@@ -1577,7 +1587,7 @@ void FancyZones::SettingsUpdate(SettingId id)
     {
         // See UpdateWorkAreas() — same WindowMouseSnap dangling-WorkArea*
         // hazard if the user toggles this setting mid-drag.
-        MoveSizeEnd();
+        AbortMoveSize();
         m_workAreaConfiguration.Clear();
         PostMessageW(m_window, WM_PRIV_INIT, NULL, NULL);
     }

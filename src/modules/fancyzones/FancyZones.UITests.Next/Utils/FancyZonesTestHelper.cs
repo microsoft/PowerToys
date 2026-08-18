@@ -309,15 +309,15 @@ public static class FancyZonesTestHelper
     }
 
     /// <summary>
-    /// Open a layout card's edit dialog and wait until <paramref name="requiredControl"/> is present.
+    /// Open a layout card's edit dialog and wait until <paramref name="requiredControl"/> is actionable.
     /// </summary>
     /// <remarks>
     /// Two traps here. The card's edit button is picked by GEOMETRY rather than by a card-scoped
     /// <c>Find</c>: every card exposes an <c>EditLayoutButton</c> with the same AutomationId and the
     /// scoped search can return another card's, which silently opens the wrong dialog — observed as
     /// "Edit 'Focus'" offering <c>createFromTemplateLayoutButton</c> instead of the custom layout's
-    /// delete/hotkey controls. And readiness is gated on the control the caller needs, not the dialog
-    /// title, because the title element is in the window's tree even while the dialog is closed.
+    /// delete/hotkey controls. Readiness requires both the visible dialog identity and the actionable
+    /// control the caller needs because both remain in the automation tree while the dialog is closed.
     /// </remarks>
     public static void OpenEditLayoutDialog(UITestBase testBase, Session editor, string layoutCardId, By requiredControl)
     {
@@ -336,7 +336,27 @@ public static class FancyZonesTestHelper
             Step(testBase, $"Attempt {attempt}/{attempts}: opening the edit dialog for {layoutCardId} via the button at ({editButton!.X},{editButton.Y})");
             editButton.Click(msPostAction: 1000);
 
-            if (editor.Has(requiredControl, 5_000))
+            var dialogReady = editor.WaitFor(
+                () =>
+                {
+                    var dialogIdentity = editor.FindAll<Element>(By.AccessibilityId(AccessibilityId.EditLayoutDialogTitle), 0)
+                        .FirstOrDefault(element =>
+                            element.Displayed &&
+                            element.Width > 0 &&
+                            element.Height > 0 &&
+                            !string.IsNullOrWhiteSpace(element.Name));
+                    var requiredElement = editor.FindAll<Element>(requiredControl, 0)
+                        .FirstOrDefault(element =>
+                            element.Displayed &&
+                            element.IsEnabled &&
+                            element.Width > 0 &&
+                            element.Height > 0);
+                    return dialogIdentity is not null && requiredElement is not null;
+                },
+                5_000,
+                100);
+
+            if (dialogReady)
             {
                 return;
             }

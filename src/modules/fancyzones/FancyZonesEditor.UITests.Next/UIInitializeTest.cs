@@ -173,6 +173,25 @@ public class UIInitializeEditorParamsSpanAcrossMonitorsTests : UIInitializeTestB
 
         var parameters = new EditorParameters().Read(new EditorParameters().File);
         Assert.IsTrue(parameters.SpanZonesAcrossMonitors, "Expected SpanZonesAcrossMonitors to remain true.");
+
+        var editorWindow = new IntPtr(Session.WindowHandle);
+        WindowHelper.RestoreWindow(editorWindow);
+
+        var (displayWidth, _) = WindowHelper.GetDisplaySize();
+        var expectedCenter = displayWidth / 2.0;
+        var centered = WaitHelper.WaitForStable(
+            observe: () =>
+            {
+                var (left, _, right, _) = WindowHelper.GetWindowBounds(editorWindow);
+                return (left + right) / 2.0;
+            },
+            isMatch: actualCenter => Math.Abs(actualCenter - expectedCenter) <= 2.0,
+            timeoutMS: 5_000,
+            requiredConsecutiveMatches: 3,
+            pollIntervalMS: 100);
+        Assert.IsTrue(
+            centered.Succeeded,
+            $"Span-across-monitors mode should center the editor on the combined desktop. Expected center {expectedCenter}, actual {centered.LastObservation}.");
     }
 }
 

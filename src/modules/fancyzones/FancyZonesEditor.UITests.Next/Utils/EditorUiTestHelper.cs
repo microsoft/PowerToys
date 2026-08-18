@@ -16,6 +16,7 @@ public static class EditorUiTestHelper
     private const string EditorProcessName = "PowerToys.FancyZonesEditor";
     private const string EditorMainWindowTitle = "FancyZones Editor";
     private const string LayoutOverlayTitle = "FancyZones Layout";
+    private const string DeleteDialogTitle = "Are you sure?";
 
     public static class AccessibilityId
     {
@@ -300,6 +301,12 @@ public static class EditorUiTestHelper
             pollIntervalMS: 100);
 
         Assert.IsNotNull(surface, $"The zone editor surface '{LayoutOverlayTitle}' did not become visible.");
+        Assert.IsTrue(
+            surface!.WaitFor(
+                () => ContainsZoneEditorMarker(surface.Inspect(depth: 12, hideOffscreen: true)),
+                10_000,
+                100),
+            $"The '{LayoutOverlayTitle}' window never entered canvas or grid edit mode.");
         return surface!;
     }
 
@@ -339,14 +346,124 @@ public static class EditorUiTestHelper
 
     public static void RespondToDeleteDialog(UITestBase testBase, Session session, bool confirm)
     {
-        Assert.IsTrue(
-            session.WaitForElement(By.AccessibilityId(AccessibilityId.PrimaryButton), 10_000),
-            "Delete confirmation dialog did not appear.");
-
         var buttonId = confirm ? AccessibilityId.PrimaryButton : AccessibilityId.SecondaryButton;
+        var buttonName = confirm ? ElementName.Delete : ElementName.Cancel;
+        Element? dialogTitle = null;
+        Button? responseButton = null;
+        Assert.IsTrue(
+            session.WaitFor(
+                () =>
+                {
+                    dialogTitle = session.FindAll<Element>(By.Name(DeleteDialogTitle), 0)
+                        .FirstOrDefault(element =>
+                            string.Equals(element.Name, DeleteDialogTitle, StringComparison.Ordinal) &&
+                            element.Width > 0 &&
+                            element.Height > 0);
+                    if (dialogTitle is null)
+                    {
+                        return false;
+                    }
+
+                    responseButton = session.FindAll<Button>(By.AccessibilityId(buttonId), 0)
+                        .Where(button =>
+                            string.Equals(button.Name, buttonName, StringComparison.Ordinal) &&
+                            button.IsEnabled &&
+                            button.Width > 0 &&
+                            button.Height > 0)
+                        .OrderBy(button => Math.Abs(button.Y - dialogTitle.Y))
+                        .FirstOrDefault();
+                    return responseButton is not null;
+                },
+                10_000,
+                100),
+            "Delete confirmation dialog did not expose an actionable response button.");
+
         var action = confirm ? "Confirming layout deletion" : "Cancelling layout deletion";
-        Step(testBase, action);
-        session.Find<Button>(By.AccessibilityId(buttonId)).Click();
+        Step(
+            testBase,
+            $"{action} with '{responseButton!.Name}' at ({responseButton.X},{responseButton.Y}) {responseButton.Width}x{responseButton.Height}, selector '{responseButton.Selector}'");
+
+        var before = ReadCustomLayouts();
+        var beforeHotkeys = TryReadLayoutHotkeys();
+        var beforeIds = before.CustomLayouts
+            .Select(layout => layout.Uuid)
+            .OrderBy(uuid => uuid, StringComparer.Ordinal)
+            .ToArray();
+        responseButton.Click();
+
+        Assert.IsTrue(
+            session.WaitFor(
+                () => session.FindAll<Element>(By.Name(DeleteDialogTitle), 0)
+                    .All(element => !string.Equals(element.Name, DeleteDialogTitle, StringComparison.Ordinal)),
+                10_000,
+                100),
+            "Delete confirmation dialog did not close after the response.");
+
+        var expectedState = WaitHelper.WaitForStable(
+            observe: () =>
+            {
+                try
+                {
+                    return (CustomLayouts.CustomLayoutListWrapper?)ReadCustomLayouts();
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+                {
+                    return null;
+                }
+            },
+            isMatch: current =>
+            {
+                if (!current.HasValue)
+                {
+                    return false;
+                }
+
+                if (confirm)
+                {
+                    return current.Value.CustomLayouts.Count == before.CustomLayouts.Count - 1;
+                }
+
+                var currentIds = current.Value.CustomLayouts
+                    .Select(layout => layout.Uuid)
+                    .OrderBy(uuid => uuid, StringComparer.Ordinal);
+                return currentIds.SequenceEqual(beforeIds, StringComparer.Ordinal);
+            },
+            timeoutMS: 10_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 100);
+        Assert.IsTrue(
+            expectedState.Succeeded,
+            confirm
+                ? "The custom-layout collection did not shrink after confirming deletion."
+                : "The custom-layout collection changed after cancelling deletion.");
+
+        if (beforeHotkeys.HasValue && expectedState.LastObservation.HasValue)
+        {
+            var remainingLayoutIds = expectedState.LastObservation.Value.CustomLayouts
+                .Select(layout => layout.Uuid)
+                .ToHashSet(StringComparer.Ordinal);
+            var expectedHotkeys = beforeHotkeys.Value.LayoutHotkeys
+                .Where(hotkey => remainingLayoutIds.Contains(hotkey.LayoutId))
+                .OrderBy(hotkey => hotkey.LayoutId, StringComparer.Ordinal)
+                .ThenBy(hotkey => hotkey.Key)
+                .Select(hotkey => (hotkey.LayoutId, hotkey.Key))
+                .ToArray();
+            var hotkeyState = WaitHelper.WaitForStable(
+                observe: TryReadLayoutHotkeys,
+                isMatch: current => current.HasValue && current.Value.LayoutHotkeys
+                    .OrderBy(hotkey => hotkey.LayoutId, StringComparer.Ordinal)
+                    .ThenBy(hotkey => hotkey.Key)
+                    .Select(hotkey => (hotkey.LayoutId, hotkey.Key))
+                    .SequenceEqual(expectedHotkeys),
+                timeoutMS: 10_000,
+                requiredConsecutiveMatches: 2,
+                pollIntervalMS: 100);
+            Assert.IsTrue(
+                hotkeyState.Succeeded,
+                confirm
+                    ? "Layout hotkeys were not updated after confirming deletion."
+                    : "Layout hotkeys changed after cancelling deletion.");
+        }
     }
 
     public static CustomLayouts.CustomLayoutListWrapper ReadCustomLayouts()
@@ -564,6 +681,24 @@ public static class EditorUiTestHelper
 
         return element.ValueKind == JsonValueKind.Array &&
                element.EnumerateArray().Any(item => ContainsExactName(item, expectedName));
+    }
+
+    private static bool ContainsZoneEditorMarker(JsonElement element)
+    {
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            if (element.TryGetProperty("className", out var className) &&
+                (string.Equals(className.GetString(), ClassName.CanvasZone, StringComparison.Ordinal) ||
+                 string.Equals(className.GetString(), ClassName.GridZone, StringComparison.Ordinal)))
+            {
+                return true;
+            }
+
+            return element.EnumerateObject().Any(property => ContainsZoneEditorMarker(property.Value));
+        }
+
+        return element.ValueKind == JsonValueKind.Array &&
+               element.EnumerateArray().Any(ContainsZoneEditorMarker);
     }
 
     private static bool CenterIsInside(Element child, Element parent)

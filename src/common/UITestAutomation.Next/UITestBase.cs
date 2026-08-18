@@ -43,6 +43,7 @@ public class UITestBase : IDisposable
 
     private SessionHelper? sessionHelper;
     private ScreenRecording? screenRecording;
+    private IDisposable? firstRunSettingsSnapshot;
     private string? recordingDirectory;
     private bool artifactsCaptured;
     private bool disposed;
@@ -123,6 +124,7 @@ public class UITestBase : IDisposable
                     DisplayHelper.LogMonitors(TestContext);
                 }
 
+                firstRunSettingsSnapshot = SettingsConfigHelper.PreserveFirstRunSettings();
                 PreTestHygiene();
 
                 // Seed a deterministic module on/off baseline before the runner reads settings.json.
@@ -160,31 +162,6 @@ public class UITestBase : IDisposable
             // media here (e.g. the window never appeared) before propagating — otherwise an init
             // failure would attach no diagnostics at all.
             await CaptureFailureArtifactsAsync();
-            throw;
-        }
-    }
-
-    [TestCleanup]
-    public async Task TestCleanup()
-    {
-        var failed = TestContext.CurrentTestOutcome is
-            UnitTestOutcome.Failed or UnitTestOutcome.Error or UnitTestOutcome.Unknown;
-
-        if (failed)
-        {
-            await CaptureFailureArtifactsAsync();
-        }
-        else if (isInPipeline)
-        {
-            // Passing test: stop the capture and discard the (now uninteresting) recording.
-            await StopPipelineCaptureAsync();
-            CleanupRecordingDirectory();
-        }
-
-        // Tear the scope down only when each test owns its launch. With a class-shared scope the
-        // window must survive for the next test; the inherited ClassCleanup stops it at class end.
-        if (!ReuseScopeAcrossTests)
-        {
             try
             {
                 sessionHelper?.StopIfStarted();
@@ -192,9 +169,56 @@ public class UITestBase : IDisposable
             catch
             {
             }
-        }
 
-        Dispose();
+            try
+            {
+                Dispose();
+            }
+            catch (Exception ex)
+            {
+                TestContext.WriteLine($"Failed to restore PowerToys settings after test initialization failed: {ex.Message}");
+            }
+
+            throw;
+        }
+    }
+
+    [TestCleanup]
+    public async Task TestCleanup()
+    {
+        try
+        {
+            var failed = TestContext.CurrentTestOutcome is
+                UnitTestOutcome.Failed or UnitTestOutcome.Error or UnitTestOutcome.Unknown;
+
+            if (failed)
+            {
+                await CaptureFailureArtifactsAsync();
+            }
+            else if (isInPipeline)
+            {
+                // Passing test: stop the capture and discard the (now uninteresting) recording.
+                await StopPipelineCaptureAsync();
+                CleanupRecordingDirectory();
+            }
+
+            // Tear the scope down only when each test owns its launch. With a class-shared scope the
+            // window must survive for the next test; the inherited ClassCleanup stops it at class end.
+            if (!ReuseScopeAcrossTests)
+            {
+                try
+                {
+                    sessionHelper?.StopIfStarted();
+                }
+                catch
+                {
+                }
+            }
+        }
+        finally
+        {
+            Dispose();
+        }
     }
 
     /// <summary>
@@ -529,7 +553,16 @@ public class UITestBase : IDisposable
         }
 
         disposed = true;
-        screenRecording?.Dispose();
-        GC.SuppressFinalize(this);
+        try
+        {
+            var snapshot = firstRunSettingsSnapshot;
+            firstRunSettingsSnapshot = null;
+            snapshot?.Dispose();
+        }
+        finally
+        {
+            screenRecording?.Dispose();
+            GC.SuppressFinalize(this);
+        }
     }
 }

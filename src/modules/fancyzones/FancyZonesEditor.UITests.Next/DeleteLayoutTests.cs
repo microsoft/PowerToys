@@ -149,9 +149,12 @@ public class DeleteLayoutTests : FancyZonesEditorTestBase
 
         EditorUiTestHelper.Step(this, "Dismissing the layout shortcut popup");
         KeyboardHelper.SendKeys(Key.Esc);
-        if (Session.WaitForElement(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.DialogTitle), 500))
+        var visibleDialog = Session.FindAll<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.DialogTitle), 500)
+            .Any(element => element.Displayed && element.Width > 0 && element.Height > 0);
+        if (visibleDialog)
         {
-            var cancelButton = Session.FindAll<Button>(By.Name(EditorUiTestHelper.ElementName.Cancel), 500).FirstOrDefault();
+            var cancelButton = Session.FindAll<Button>(By.Name(EditorUiTestHelper.ElementName.Cancel), 500)
+                .FirstOrDefault(button => button.Displayed && button.IsEnabled && button.Width > 0 && button.Height > 0);
             cancelButton?.Invoke();
         }
 
