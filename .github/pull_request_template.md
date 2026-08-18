@@ -16,6 +16,8 @@
    - [ ] [YML for CI pipeline](https://github.com/microsoft/PowerToys/blob/main/.pipelines/ci/templates/build-powertoys-steps.yml) for new test projects
    - [ ] [YML for signed pipeline](https://github.com/microsoft/PowerToys/blob/main/.pipelines/release.yml)
 - [ ] **Documentation updated:** If checked, please file a pull request on [our docs repo](https://github.com/MicrosoftDocs/windows-uwp/tree/docs/hub/powertoys) and link it here: #xxx
+- [ ] **AI assistance:** If AI coding tools (e.g. Copilot, Claude, Codex, Cursor) authored part or all of this PR, I've disclosed it in the description below
+- [ ] **Verified:** I've read and understand every change, and have run/verified the new behavior myself (not relied on tool or AI output alone)
 
 <!-- Provide a more detailed description of the PR, other things fixed, or any additional comments/features here -->
 ## Detailed Description of the Pull Request / Additional comments
