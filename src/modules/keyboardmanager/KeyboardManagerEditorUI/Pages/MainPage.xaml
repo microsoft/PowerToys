@@ -68,6 +68,12 @@
             x:Key="StringVisibilityConverter"
             EmptyValue="Collapsed"
             NotEmptyValue="Visible" />
+        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <Style x:Key="ExactMatchBadgeStyle" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+        </Style>
     </Page.Resources>
 
     <Grid>
@@ -76,16 +82,33 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!--  Service Down Banner  -->
-        <InfoBar
-            x:Name="ServiceDownBanner"
-            x:Uid="ServiceDownBanner"
-            Grid.Row="0"
-            Margin="16,16,16,0"
-            IsClosable="False"
-            IsOpen="True"
-            Severity="Error"
-            Visibility="Collapsed" />
+        <StackPanel Grid.Row="0">
+            <!--  Service Down Banner  -->
+            <InfoBar
+                x:Name="ServiceDownBanner"
+                x:Uid="ServiceDownBanner"
+                Margin="16,16,16,0"
+                IsClosable="False"
+                IsOpen="True"
+                Severity="Error"
+                Visibility="Collapsed" />
+
+            <!--  Orphaned-key notice (non-blocking, shown after a single-key remap)  -->
+            <InfoBar
+                x:Name="OrphanedKeyBanner"
+                Margin="16,16,16,0"
+                IsClosable="True"
+                IsOpen="False"
+                Severity="Informational" />
+
+            <!--  Engine configuration could not be read; saving is blocked  -->
+            <InfoBar
+                x:Name="ConfigLoadFailedBanner"
+                Margin="16,16,16,0"
+                IsClosable="False"
+                IsOpen="False"
+                Severity="Error" />
+        </StackPanel>
 
         <ContentControl
             x:Name="MainContentControl"
@@ -214,16 +237,22 @@
                                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                                     <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
                                                                 </StackPanel>
+                                                                <TextBlock
+                                                                    x:Uid="ExactMatchBadge"
+                                                                    Style="{StaticResource ExactMatchBadgeStyle}"
+                                                                    Visibility="{x:Bind ExactMatch, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                             </StackPanel>
                                                             <StackPanel
                                                                 Grid.Column="1"
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    x:Uid="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
+                                                                    x:Uid="MappingOverflowButton"
                                                                     VerticalAlignment="Center"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
@@ -302,16 +331,22 @@
                                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                                     <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
                                                                 </StackPanel>
+                                                                <TextBlock
+                                                                    x:Uid="ExactMatchBadge"
+                                                                    Style="{StaticResource ExactMatchBadgeStyle}"
+                                                                    Visibility="{x:Bind ExactMatch, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                             </StackPanel>
                                                             <StackPanel
                                                                 Grid.Column="1"
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    x:Uid="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
+                                                                    x:Uid="MappingOverflowButton"
                                                                     VerticalAlignment="Center"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
@@ -419,6 +454,10 @@
                                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                                     <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
                                                                 </StackPanel>
+                                                                <TextBlock
+                                                                    x:Uid="ExactMatchBadge"
+                                                                    Style="{StaticResource ExactMatchBadgeStyle}"
+                                                                    Visibility="{x:Bind ExactMatch, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                             </StackPanel>
                                                             <StackPanel
                                                                 Grid.Column="1"
@@ -426,10 +465,12 @@
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    x:Uid="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
+                                                                    x:Uid="MappingOverflowButton"
                                                                     VerticalAlignment="Center"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
@@ -508,16 +549,22 @@
                                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                                     <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
                                                                 </StackPanel>
+                                                                <TextBlock
+                                                                    x:Uid="ExactMatchBadge"
+                                                                    Style="{StaticResource ExactMatchBadgeStyle}"
+                                                                    Visibility="{x:Bind ExactMatch, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                             </StackPanel>
                                                             <StackPanel
                                                                 Grid.Column="1"
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    x:Uid="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
+                                                                    x:Uid="MappingOverflowButton"
                                                                     VerticalAlignment="Center"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
@@ -577,16 +624,22 @@
                                                                         </DataTemplate>
                                                                     </ItemsControl.ItemTemplate>
                                                                 </ItemsControl>
+                                                                <TextBlock
+                                                                    x:Uid="ExactMatchBadge"
+                                                                    Style="{StaticResource ExactMatchBadgeStyle}"
+                                                                    Visibility="{x:Bind ExactMatch, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                             </StackPanel>
                                                             <StackPanel
                                                                 Grid.Column="1"
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    x:Uid="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
+                                                                    x:Uid="MappingOverflowButton"
                                                                     VerticalAlignment="Center"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"

@@ -31,6 +31,13 @@
 	<EnableXamlJitOptimization>true</EnableXamlJitOptimization>
   </PropertyGroup>
 
+  <!-- Generate the C# projection for the GPOWrapper WinRT component, so the editor can honour the
+       Keyboard Manager policy the same way the classic editor does. Mirrors AdvancedPaste. -->
+  <PropertyGroup>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="Assets\KeyboardManagerEditor\Keyboard.ico" />
     <None Remove="Styles\Colors.xaml" />
@@ -68,6 +75,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />

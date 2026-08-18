@@ -44,9 +44,37 @@ namespace KeyboardManagerEditorUI
             // at all - which is exactly what happened in #49399.
             Logger.InitializeLogger("\\Keyboard Manager\\WinUI3Editor\\Logs");
 
+            // The editor is a standalone executable a user can start directly, so it has to honour
+            // the policy itself - the classic editor does the same check in wWinMain. Without it,
+            // an administrator disabling Keyboard Manager by GPO does not stop anyone from
+            // rewriting default.json through this window.
+            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredKeyboardManagerEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+                Environment.Exit(0);
+            }
+
+            // Before anything touches the configuration: a second instance would race the first one
+            // on default.json and editorSettings.json.
+            if (!SingleInstanceGuard.TryAcquire())
+            {
+                Logger.LogInfo("Another Keyboard Manager editor is already running, activating it and exiting");
+                SingleInstanceGuard.ActivateExistingInstance();
+                Environment.Exit(0);
+            }
+
             this.InitializeComponent();
 
             UnhandledException += App_UnhandledException;
+
+            // Stop the engine from applying the existing remappings while the editor is open, so
+            // recording a trigger captures the physical key rather than what it is remapped to.
+            // Released in MainWindow_Closed. The classic editor does the same via EventLocker.
+            EditorWindowEventLock.Acquire();
+
+            // Backstop for exit paths that do not go through MainWindow_Closed: the event is
+            // manual-reset and outlives this process, so leaving it set would disable the engine.
+            AppDomain.CurrentDomain.ProcessExit += (_, _) => EditorWindowEventLock.Release();
 
             SettingsManager.CorrelateServiceAndEditorMappings();
         }
@@ -71,6 +99,11 @@ namespace KeyboardManagerEditorUI
             });
 
             Logger.LogInfo("keyboard-manager WinUI3 editor window is launched");
+
+            // Close with whichever launcher started us, so an orphaned editor cannot hold the
+            // engine-suspend event set for the rest of the session.
+            ParentProcessWatcher.CloseWhenParentExits(
+                () => MainWindow.DispatcherQueue.TryEnqueue(() => MainWindow.Close()));
         }
 
         /// <summary>
@@ -79,6 +112,10 @@ namespace KeyboardManagerEditorUI
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             Logger.LogError("Unhandled exception", e.Exception);
+
+            // This handler leaves e.Handled false, so the process is about to go down. Leaving the
+            // suspend event set would keep the engine disabled until it is restarted.
+            EditorWindowEventLock.Release();
         }
 
         internal static MainWindow MainWindow { get; private set; } = null!;

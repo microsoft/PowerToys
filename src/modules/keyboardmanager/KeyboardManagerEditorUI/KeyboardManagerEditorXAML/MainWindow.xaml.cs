@@ -57,6 +57,10 @@ namespace KeyboardManagerEditorUI
         private void MainWindow_Closed(object sender, WindowEventArgs args)
         {
             KeyboardHookHelper.Instance.Dispose();
+
+            // Let the engine apply remappings again. Acquired in App's constructor.
+            EditorWindowEventLock.Release();
+
             this.Activated -= MainWindow_Activated;
             this.Closed -= MainWindow_Closed;
         }
