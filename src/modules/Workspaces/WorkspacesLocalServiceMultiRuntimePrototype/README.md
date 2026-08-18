@@ -48,7 +48,7 @@ Bootstrap is the only elevated installation action. Later provisioning, status, 
 
 1. **PASS** — `.\Build.ps1 -Configuration Release -Clean` completed with `/WX`; v1 and v2 were packed, SHA-256 signed, and verified.
 2. **PASS** — The LocalSystem updater started. Stop completed promptly and its process exited both while idle and while an elevated `NamedPipeClientStream` was connected but sent no request.
-3. **NO-GO, decisive individual gate** — provisioning only `...-1122` created one direct LocalService service, while `...-1123` did not exist. The first stopped immediately with `Win32ExitCode=1309` (`ERROR_CANNOT_IMPERSONATE`), PID 0, and service exit 1309.
+3. **NO-GO, decisive individual gate** — provisioning only `...-1122` created one direct LocalService service, while `...-1123` did not exist. The first stopped immediately with `Win32ExitCode=1309` (`ERROR_NO_IMPERSONATION_TOKEN`), PID 0, and service exit 1309.
 4. **NO-GO, two-owner integration** — from a clean state, `Lifecycle.ps1 -Verb provision-two` deliberately attempted both SIDs. One LocalSystem updater remained Running; both deterministic runtime services were created with LocalService and direct image paths:
 
    ```text
@@ -57,7 +57,18 @@ Bootstrap is the only elevated installation action. Later provisioning, status, 
    "C:\Program Files\WindowsApps\Microsoft.PowerToys.WsLocalSvcMultiRt_1.0.0.0_x64__tb2xrd195j0e6\PtLsmrRuntime.exe" ...
    ```
 
-   Neither remained Running. Each stopped immediately with `Win32ExitCode=1309` (`ERROR_CANNOT_IMPERSONATE`), PID 0, service exit 1309. SCM Event 7023 gives the exact message: *“An attempt has been made to operate on an impersonation token by a thread that is not currently impersonating a client.”* The v1 package was present at the quoted WindowsApps `ImagePath`, `PtLsmrRuntime.exe` existed there, and `PackageUserInformation` showed the LocalService (`S-1-5-19`) registration as `Installed(pending removal)`. Successful controller replies with the service exit prove this was not an updater-pipe race. No runtime `evidence.txt` exists because the process did not reach `ServiceMain`, so there is no runtime token/session evidence to collect. The exact quoted executable and fixed `--service-name`/`--owner-sid` arguments rule out a malformed ImagePath or arguments; package registration and executable presence rule out missing registration or payload.
+   Neither remained Running. Each stopped immediately with `Win32ExitCode=1309` (`ERROR_NO_IMPERSONATION_TOKEN`), PID 0, service exit 1309. SCM Event 7023 gives the exact message: *“An attempt has been made to operate on an impersonation token by a thread that is not currently impersonating a client.”* The v1 package was present at the quoted WindowsApps `ImagePath`, `PtLsmrRuntime.exe` existed there, and `PackageUserInformation` showed the LocalService (`S-1-5-19`) registration as `Installed(pending removal)`. Successful controller replies with the service exit prove this was not an updater-pipe race. No runtime `evidence.txt` exists because the process did not reach `ServiceMain`, so there is no runtime token/session evidence to collect. The exact quoted executable and fixed `--service-name`/`--owner-sid` arguments rule out a malformed ImagePath or arguments; package registration and executable presence rule out missing registration or payload.
+
+   Decimal 1309 must not be confused with `ERROR_CANNOT_IMPERSONATE`, which is
+   decimal 1368. Error 1309 means that an internal startup path tried to obtain
+   or use the current thread's impersonation token, but the thread was not
+   impersonating a client. The prototype does not identify the undocumented
+   internal AppModel/SCM function that returns the error. The supported
+   architectural interpretation is that a classic `CreateService` registration
+   supplies only an account logon token and raw `ImagePath`; it does not supply
+   the package-aware service activation metadata created by a manifest-declared
+   `desktop6:Service`. Merely executing an EXE from WindowsApps does not turn a
+   classic service start into packaged-service activation.
 5. **NOT RUN** — v2 repath/restart concurrency is conditional on the preceding gate and is invalid after the direct launch failure.
 6. **PASS** — exact `Lifecycle.ps1 -Verb cleanup` followed by `Teardown.ps1` removed all `PtLsmr*` services, package registrations, prototype install/store roots, and the machine test certificate.
 
