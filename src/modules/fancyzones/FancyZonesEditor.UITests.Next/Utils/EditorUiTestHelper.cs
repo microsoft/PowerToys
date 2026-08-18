@@ -440,11 +440,36 @@ public static class EditorUiTestHelper
     public static int NudgeSliderAndRead(UITestBase testBase, Session session, string sliderId, Key direction, string reason)
     {
         var slider = session.Find<Element>(By.AccessibilityId(sliderId));
+        var initialValue = ReadSliderValueAsInt(testBase, slider, sliderId);
         Step(testBase, $"Focusing '{sliderId}' before {reason}");
         slider.Focus();
         KeyboardHelper.SendKeys(direction);
-        slider = session.Find<Element>(By.AccessibilityId(sliderId));
-        return ReadSliderValueAsInt(testBase, slider, sliderId);
+
+        var changed = WaitHelper.WaitForStable(
+            observe: () => ReadSliderValueAsInt(
+                testBase,
+                session.Find<Element>(By.AccessibilityId(sliderId)),
+                sliderId),
+            isMatch: value => value != initialValue,
+            timeoutMS: 5000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 100);
+        Assert.IsTrue(changed.Succeeded, $"The '{sliderId}' slider did not change from {initialValue} while {reason}.");
+
+        Step(testBase, $"Moving focus from '{sliderId}' to Save after {reason}");
+        session.Find<Button>(ElementName.Save).Focus();
+
+        var committed = WaitHelper.WaitForStable(
+            observe: () => ReadSliderValueAsInt(
+                testBase,
+                session.Find<Element>(By.AccessibilityId(sliderId)),
+                sliderId),
+            isMatch: value => value == changed.LastObservation,
+            timeoutMS: 5000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 100);
+        Assert.IsTrue(committed.Succeeded, $"The '{sliderId}' slider did not remain at {changed.LastObservation} after focus changed.");
+        return committed.LastObservation;
     }
 
     public static int ReadSliderValueAsInt(UITestBase testBase, Element slider, string sliderId)
