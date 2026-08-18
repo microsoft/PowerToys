@@ -1,10 +1,13 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -21,33 +24,43 @@ namespace ColorPicker.Mouse
     [PartCreationPolicy(CreationPolicy.Shared)]
     public class MouseInfoProvider : IMouseInfoProvider
     {
+        internal delegate bool TryGetCursorPositionDelegate(out System.Windows.Point position, out int nativeErrorCode);
+
+        internal delegate bool TrySampleColorDelegate(System.Windows.Point position, out Color color, out int nativeErrorCode);
+
         private const double DefaultDisplayRefreshRate = 60.0;
         private static readonly TimeSpan SamplingRetryInterval = TimeSpan.FromMilliseconds(250);
+        private static readonly System.Windows.Point InvalidMousePosition = new System.Windows.Point(-1, 1);
 
         private readonly DispatcherTimer _timer = new DispatcherTimer();
         private readonly MouseHook _mouseHook;
-        private readonly IScreenColorSampler _screenColorSampler;
+        private readonly TryGetCursorPositionDelegate _tryGetCursorPosition;
+        private readonly TrySampleColorDelegate _trySampleColor;
         private readonly IUserSettings _userSettings;
         private TimeSpan _normalSamplingInterval = TimeSpan.FromMilliseconds(1000.0 / DefaultDisplayRefreshRate);
-        private System.Windows.Point _previousMousePosition = new System.Windows.Point(-1, 1);
+        private System.Windows.Point _previousMousePosition = InvalidMousePosition;
         private Color _previousColor = Color.Transparent;
         private bool _colorFormatChanged;
-        private bool _isDispatchingMouseAction;
+        private bool _hasValidSample;
         private bool _samplingFailureLogged;
 
         [ImportingConstructor]
         public MouseInfoProvider(AppStateHandler appStateMonitor, IUserSettings userSettings)
-            : this(appStateMonitor, userSettings, new ScreenColorSampler())
+            : this(appStateMonitor, userSettings, TryGetCursorPosition, TrySampleColor)
         {
         }
 
-        internal MouseInfoProvider(AppStateHandler appStateMonitor, IUserSettings userSettings, IScreenColorSampler screenColorSampler)
+        internal MouseInfoProvider(
+            AppStateHandler appStateMonitor,
+            IUserSettings userSettings,
+            TryGetCursorPositionDelegate tryGetCursorPosition,
+            TrySampleColorDelegate trySampleColor)
         {
             ArgumentNullException.ThrowIfNull(userSettings);
-            ArgumentNullException.ThrowIfNull(screenColorSampler);
+            ArgumentNullException.ThrowIfNull(tryGetCursorPosition);
+            ArgumentNullException.ThrowIfNull(trySampleColor);
 
-            // Screen access is intentionally deferred until the picker is shown. The Runner can start
-            // while an RDP session does not have a capturable desktop.
+            // Cursor and screen access is intentionally deferred until the picker is shown.
             _timer.Interval = _normalSamplingInterval;
             _timer.Tick += Timer_Tick;
 
@@ -56,10 +69,12 @@ namespace ColorPicker.Mouse
                 appStateMonitor.AppShown += AppStateMonitor_AppShown;
                 appStateMonitor.AppClosed += AppStateMonitor_AppClosed;
                 appStateMonitor.AppHidden += AppStateMonitor_AppClosed;
+                appStateMonitor.EnterPressed += AppStateMonitor_EnterPressed;
             }
 
             _mouseHook = new MouseHook();
-            _screenColorSampler = screenColorSampler;
+            _tryGetCursorPosition = tryGetCursorPosition;
+            _trySampleColor = trySampleColor;
             _userSettings = userSettings;
             _userSettings.CopiedColorRepresentation.PropertyChanged += CopiedColorRepresentation_PropertyChanged;
         }
@@ -68,7 +83,7 @@ namespace ColorPicker.Mouse
 
         public event EventHandler<System.Windows.Point> MousePositionChanged;
 
-        public event EventHandler<bool> SampleValidityChanged;
+        public event EventHandler SampleUnavailable;
 
         public event EventHandler<Tuple<System.Windows.Point, bool>> OnMouseWheel;
 
@@ -94,44 +109,31 @@ namespace ColorPicker.Mouse
             }
         }
 
-        public bool HasValidSample { get; private set; }
-
-        public bool TryPrepareForColorSelection()
-            => TryUpdateMouseInfo();
-
-        private void Timer_Tick(object sender, EventArgs e)
+        internal bool TryRefreshSample()
         {
-            _ = TryUpdateMouseInfo();
-        }
-
-        internal bool TryUpdateMouseInfo()
-        {
-            if (!_screenColorSampler.TryGetCursorPosition(out System.Windows.Point position, out ScreenColorSamplingFailure failure))
+            if (!_tryGetCursorPosition(out System.Windows.Point position, out int nativeErrorCode))
             {
-                return HandleSamplingFailure(failure);
+                return HandleSamplingFailure("GetCursorPos", nativeErrorCode);
             }
 
-            bool hadValidSample = HasValidSample;
-            bool positionChanged = !hadValidSample || _previousMousePosition != position;
-
+            bool positionChanged = !_hasValidSample || _previousMousePosition != position;
             if (positionChanged)
             {
-                // Move the picker away from the cursor before capturing the pixel so the picker
-                // cannot become part of its own sample.
+                // Move the picker away before capturing so it cannot become part of its own sample.
                 MousePositionChanged?.Invoke(this, position);
             }
 
-            if (!_screenColorSampler.TrySampleColor(position, out Color color, out failure))
+            if (!_trySampleColor(position, out Color color, out nativeErrorCode))
             {
-                return HandleSamplingFailure(failure);
+                return HandleSamplingFailure("CopyFromScreen", nativeErrorCode);
             }
 
-            bool colorChanged = !hadValidSample || _previousColor != color || _colorFormatChanged;
+            bool colorChanged = !_hasValidSample || _previousColor != color || _colorFormatChanged;
 
             _previousMousePosition = position;
             _previousColor = color;
             _colorFormatChanged = false;
-            SetSampleValidity(true);
+            _hasValidSample = true;
             _timer.Interval = _normalSamplingInterval;
 
             if (_samplingFailureLogged)
@@ -148,48 +150,38 @@ namespace ColorPicker.Mouse
             return true;
         }
 
-        private bool HandleSamplingFailure(ScreenColorSamplingFailure failure)
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            _ = TryRefreshSample();
+        }
+
+        private bool HandleSamplingFailure(string operation, int nativeErrorCode)
         {
             InvalidateSample();
             _timer.Interval = SamplingRetryInterval;
-            LogSamplingFailure(failure);
-            return false;
-        }
 
-        private static double GetMainDisplayRefreshRate()
-        {
-            double refreshRate = DefaultDisplayRefreshRate;
-
-            foreach (var monitor in MonitorResolutionHelper.AllMonitors)
+            if (!_samplingFailureLogged)
             {
-                if (monitor.IsPrimary && EnumDisplaySettingsW(monitor.Name, ENUM_CURRENT_SETTINGS, out DEVMODEW lpDevMode))
-                {
-                    refreshRate = GetDisplayRefreshRateOrDefault(lpDevMode.dmDisplayFrequency);
-                    break;
-                }
+                Logger.LogWarning(
+                    $"Screen color sampling is temporarily unavailable. Operation={operation}, nativeErrorCode={nativeErrorCode}. Color Picker will retry while active.");
+                _samplingFailureLogged = true;
             }
 
-            return refreshRate;
+            return false;
         }
-
-        // EnumDisplaySettings uses 0 and 1 to represent the hardware default refresh rate.
-        internal static double GetDisplayRefreshRateOrDefault(uint displayFrequency)
-            => displayFrequency > 1 ? displayFrequency : DefaultDisplayRefreshRate;
 
         private void AppStateMonitor_AppClosed(object sender, EventArgs e)
         {
             DisposeHook();
-            if (!_isDispatchingMouseAction)
-            {
-                InvalidateSample();
-            }
+            InvalidateSample();
+            _samplingFailureLogged = false;
         }
 
         private void AppStateMonitor_AppShown(object sender, EventArgs e)
         {
             _normalSamplingInterval = TimeSpan.FromMilliseconds(1000.0 / GetMainDisplayRefreshRate());
             _timer.Interval = _normalSamplingInterval;
-            _ = TryUpdateMouseInfo();
+            _ = TryRefreshSample();
             if (!_timer.IsEnabled)
             {
                 _timer.Start();
@@ -206,14 +198,14 @@ namespace ColorPicker.Mouse
             }
         }
 
+        private void AppStateMonitor_EnterPressed(object sender, EventArgs e)
+        {
+            _ = TryHandlePrimaryMouseDown(IntPtr.Zero);
+        }
+
         private void MouseHook_OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (e.Delta == 0)
-            {
-                return;
-            }
-
-            if (!TryUpdateMouseInfo())
+            if (e.Delta == 0 || !TryRefreshSample())
             {
                 return;
             }
@@ -248,28 +240,16 @@ namespace ColorPicker.Mouse
                 () => OnMiddleMouseDown?.Invoke(this, wParam));
         }
 
-        private bool CanHandleAction(ColorPickerClickAction action)
-            => action == ColorPickerClickAction.Close || TryPrepareForColorSelection();
-
         private bool TryDispatchMouseAction(ColorPickerClickAction action, Action dispatchAction)
         {
-            if (!CanHandleAction(action))
+            if (action != ColorPickerClickAction.Close && !TryRefreshSample())
             {
                 return false;
             }
 
             DisposeHook();
-            _isDispatchingMouseAction = true;
-            try
-            {
-                dispatchAction();
-                return true;
-            }
-            finally
-            {
-                _isDispatchingMouseAction = false;
-                InvalidateSample();
-            }
+            dispatchAction();
+            return true;
         }
 
         private void CopiedColorRepresentation_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -297,32 +277,79 @@ namespace ColorPicker.Mouse
 
         private void InvalidateSample()
         {
-            _previousMousePosition = new System.Windows.Point(-1, 1);
+            bool hadValidSample = _hasValidSample;
+            _previousMousePosition = InvalidMousePosition;
             _previousColor = Color.Transparent;
-            SetSampleValidity(false);
+            _hasValidSample = false;
+
+            if (hadValidSample)
+            {
+                SampleUnavailable?.Invoke(this, EventArgs.Empty);
+            }
         }
 
-        private void SetSampleValidity(bool isValid)
+        private static bool TryGetCursorPosition(out System.Windows.Point position, out int nativeErrorCode)
         {
-            if (HasValidSample == isValid)
+            if (!GetCursorPos(out PointInter cursorPosition))
             {
-                return;
+                position = default;
+                nativeErrorCode = Marshal.GetLastWin32Error();
+                return false;
             }
 
-            HasValidSample = isValid;
-            SampleValidityChanged?.Invoke(this, isValid);
+            position = (System.Windows.Point)cursorPosition;
+            nativeErrorCode = 0;
+            return true;
         }
 
-        private void LogSamplingFailure(ScreenColorSamplingFailure failure)
+        private static bool TrySampleColor(System.Windows.Point position, out Color color, out int nativeErrorCode)
         {
-            if (_samplingFailureLogged)
+            try
             {
-                return;
+                color = GetPixelColor(position);
+                nativeErrorCode = 0;
+                return true;
+            }
+            catch (Win32Exception ex)
+            {
+                color = default;
+                nativeErrorCode = ex.NativeErrorCode;
+                return false;
+            }
+        }
+
+        private static Color GetPixelColor(System.Windows.Point mousePosition)
+        {
+            var rect = new Rectangle((int)mousePosition.X, (int)mousePosition.Y, 1, 1);
+            using (var bmp = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb))
+            {
+                using (var graphics = Graphics.FromImage(bmp))
+                {
+                    graphics.CopyFromScreen(rect.Left, rect.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
+                }
+
+                return bmp.GetPixel(0, 0);
+            }
+        }
+
+        private static double GetMainDisplayRefreshRate()
+        {
+            double refreshRate = DefaultDisplayRefreshRate;
+
+            foreach (var monitor in MonitorResolutionHelper.AllMonitors)
+            {
+                if (monitor.IsPrimary && EnumDisplaySettingsW(monitor.Name, ENUM_CURRENT_SETTINGS, out DEVMODEW lpDevMode))
+                {
+                    refreshRate = GetDisplayRefreshRateOrDefault(lpDevMode.dmDisplayFrequency);
+                    break;
+                }
             }
 
-            Logger.LogWarning(
-                $"Screen color sampling is temporarily unavailable. Reason={failure.Reason}, nativeErrorCode={failure.NativeErrorCode}, message={failure.Message}. Color Picker will retry while active.");
-            _samplingFailureLogged = true;
+            return refreshRate;
         }
+
+        // EnumDisplaySettings uses 0 and 1 to represent the hardware default refresh rate.
+        internal static double GetDisplayRefreshRateOrDefault(uint displayFrequency)
+            => displayFrequency > 1 ? displayFrequency : DefaultDisplayRefreshRate;
     }
 }
