@@ -15,6 +15,7 @@ public static class SettingsLinkIds
         public const string AutoGoHome = "auto-go-home";
         public const string KeepPreviousQuery = "keep-previous-query";
         public const string HighlightSearch = "highlight-search";
+        public const string RecentItems = "recent-items";
         public const string AppBehavior = "app-behavior";
         public const string SystemTrayIcon = "system-tray-icon";
         public const string AltF4 = "alt-f4";
@@ -36,6 +37,7 @@ public static class SettingsLinkIds
         public const string DisableAnimations = "disable-animations";
         public const string Layout = "appearance-layout";
         public const string CompactMode = "compact-mode";
+        public const string QuickAccessShelf = "quick-access-shelf";
         public const string HomeRecentCommands = "home-recent-commands";
         public const string RecentCommandsDisplayLimit = "recent-commands-display-limit";
         public const string ClearRecentCommands = "clear-recent-commands";

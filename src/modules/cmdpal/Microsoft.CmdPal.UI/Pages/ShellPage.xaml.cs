@@ -1131,6 +1131,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
+    private void QuickAccessShelfSettings_Click(object sender, RoutedEventArgs e)
+    {
+        OpenSettings(new OpenSettingsMessage(SettingsLinkId: SettingsLinkIds.Appearance.QuickAccessShelf));
+    }
+
+    private void QuickAccessShelfHide_Click(object sender, RoutedEventArgs e)
+    {
+        _settingsService.UpdateSettings(settings => settings with { ShowQuickAccessShelf = false });
+    }
+
     private void QuickAccessShelfItem_GotFocus(object sender, RoutedEventArgs e)
     {
         if (sender is Button { Tag: QuickAccessShelfItem item } button)

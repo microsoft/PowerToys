@@ -26,6 +26,7 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
 
     private readonly SettingsViewModel? viewModel;
     private readonly IApplicationInfoService _appInfoService;
+    private readonly IAppStateService _appStateService;
     private readonly ISettingsService _settingsService;
     private readonly IExternalCommandPermissionStore _externalCommandPermissionStore;
     private readonly DispatcherTimer _notificationStateTimer;
@@ -48,6 +49,7 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
         _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
         _externalCommandPermissionStore = App.Current.Services.GetRequiredService<IExternalCommandPermissionStore>();
         _appInfoService = App.Current.Services.GetRequiredService<IApplicationInfoService>();
+        _appStateService = App.Current.Services.GetRequiredService<IAppStateService>();
         var languageService = App.Current.Services.GetRequiredService<ILanguageService>();
         viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, _settingsService, languageService);
 
@@ -135,6 +137,20 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
             var version = _appInfoService.AppVersion;
             return string.Format(CultureInfo.CurrentCulture, versionNo, version);
         }
+    }
+
+    private void ClearRecentCommands_Click(object sender, RoutedEventArgs e)
+    {
+        var current = _appStateService.State.RecentCommands;
+        if (current.IsEmpty)
+        {
+            return;
+        }
+
+        _appStateService.UpdateState(state => state with
+        {
+            RecentCommands = state.RecentCommands.ClearHistory(),
+        });
     }
 
     private void GeneralPage_Loaded(object sender, RoutedEventArgs e)
