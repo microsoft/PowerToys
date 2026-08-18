@@ -112,7 +112,6 @@ internal static class ModuleEnablementService
         SettingsWindow.Peek => "Peek",
         SettingsWindow.PowerAccent => "QuickAccent",
         SettingsWindow.PowerLauncher => "PowerToys Run",
-        SettingsWindow.Run => "PowerToys Run",
         SettingsWindow.PowerRename => "PowerRename",
         SettingsWindow.PowerOCR => "TextExtractor",
         SettingsWindow.RegistryPreview => "RegistryPreview",

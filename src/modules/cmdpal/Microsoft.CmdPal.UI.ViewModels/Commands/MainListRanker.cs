@@ -31,6 +31,23 @@ internal static class MainListRanker
     // exact alias, which gets its own top tier). Mirrors the previous +1-before-x10 boost.
     internal const double AliasSubstringBonus = 10.0;
 
+    // Magnitude of the per-provider within-tier nudge. Deliberately small - half a point of
+    // lexical quality (LexicalScale = 10) - so a Higher/Lower provider only breaks near-ties
+    // and reorders items that already share a tier. It can NEVER move an item across a tier
+    // boundary because the packed within-tier score is clamped to a single tier's band.
+    internal const double ProviderWeightBonus = 5.0;
+
+    /// <summary>
+    /// Maps a per-provider <see cref="ProviderSearchWeight"/> to an additive within-tier
+    /// bonus. Lower subtracts, Normal is neutral, Higher adds. The enum's underlying value is
+    /// the sign of the nudge, so the result is simply the weight times
+    /// <see cref="ProviderWeightBonus"/>. Note the nudge is slightly asymmetric at the tier
+    /// floor: <see cref="Pack"/> clamps the within-tier score to a non-negative band, so a
+    /// Lower nudge on an item already scoring near 0 (weak match, no history) can clamp to 0
+    /// and read the same as Normal, whereas Higher always applies.
+    /// </summary>
+    public static double ProviderBonus(ProviderSearchWeight weight) => (int)weight * ProviderWeightBonus;
+
     /// <summary>
     /// Packs a tier and within-tier score into a single descending-sortable integer.
     /// Returns 0 for <see cref="RankTier.None"/> so non-matches are filtered by the
@@ -69,7 +86,8 @@ internal static class MainListRanker
     /// </summary>
     /// <param name="query">The raw query text.</param>
     /// <param name="title">The item's title.</param>
-    /// <param name="isFallback">Whether the item is a fallback (always ranked at the floor).</param>
+    /// <param name="isFallback">Whether the item is a fallback. A fallback tiers like any other
+    /// item, but floors to <see cref="RankTier.FallbackFloor"/> when nothing matches so it's never dropped.</param>
     /// <param name="isAliasExact">Whether the query exactly equals the item's alias.</param>
     /// <param name="isAliasSubstringMatch">Whether the item's alias starts with the query
     /// (a partial alias match). An alias is an explicit, user-assigned shortcut and may be
@@ -90,13 +108,28 @@ internal static class MainListRanker
             return RankTier.AliasExact;
         }
 
-        // Fallbacks always live at the floor so dynamic matches (e.g. RDP hosts) appear
-        // after direct command and app matches.
+        var lexicalTier = ClassifyLexicalTier(query, title, isAliasSubstringMatch, matchedLexically);
+
+        // A fallback's title reflects the query, so tier it like anything else. Floor a non-match
+        // instead of dropping it, so handlers like Run command and web search keep showing.
         if (isFallback)
         {
-            return RankTier.FallbackFloor;
+            return lexicalTier == RankTier.None ? RankTier.FallbackFloor : lexicalTier;
         }
 
+        return lexicalTier;
+    }
+
+    /// <summary>
+    /// Tiers the query-to-title match with no fallback flooring. Returns
+    /// <see cref="RankTier.None"/> when nothing matched.
+    /// </summary>
+    private static RankTier ClassifyLexicalTier(
+        string query,
+        string title,
+        bool isAliasSubstringMatch,
+        bool matchedLexically)
+    {
         // A partial alias match is enough to keep the item visible even when nothing else
         // matched. It only floors to Fuzzy; a stronger title relationship below still wins.
         var matchedOrAlias = matchedLexically || isAliasSubstringMatch;
@@ -234,9 +267,8 @@ public enum RankTier
     /// <summary>No match. The item should be filtered out.</summary>
     None = 0,
 
-    /// <summary>The item only matched because it is an always-present fallback, or a
-    /// fallback whose dynamic title matched. Fallbacks live at the floor so they appear
-    /// after direct command/app matches.</summary>
+    /// <summary>A fallback that didn't match the query. It floors here instead of dropping so the
+    /// handler stays available, while a fallback whose title does match is tiered like any other item.</summary>
     FallbackFloor = 1,
 
     /// <summary>The query matched as a fuzzy subsequence of the title, subtitle, or

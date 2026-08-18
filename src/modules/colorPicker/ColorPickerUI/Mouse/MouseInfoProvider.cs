@@ -158,22 +158,23 @@ namespace ColorPicker.Mouse
 
         private static double GetMainDisplayRefreshRate()
         {
-            double refreshRate = 60.0;
+            double refreshRate = DefaultDisplayRefreshRate;
 
             foreach (var monitor in MonitorResolutionHelper.AllMonitors)
             {
                 if (monitor.IsPrimary && EnumDisplaySettingsW(monitor.Name, ENUM_CURRENT_SETTINGS, out DEVMODEW lpDevMode))
                 {
-                    if (lpDevMode.dmDisplayFrequency > 0)
-                    {
-                        refreshRate = lpDevMode.dmDisplayFrequency;
-                        break;
-                    }
+                    refreshRate = GetDisplayRefreshRateOrDefault(lpDevMode.dmDisplayFrequency);
+                    break;
                 }
             }
 
             return refreshRate;
         }
+
+        // EnumDisplaySettings uses 0 and 1 to represent the hardware default refresh rate.
+        internal static double GetDisplayRefreshRateOrDefault(uint displayFrequency)
+            => displayFrequency > 1 ? displayFrequency : DefaultDisplayRefreshRate;
 
         private void AppStateMonitor_AppClosed(object sender, EventArgs e)
         {
