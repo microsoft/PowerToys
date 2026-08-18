@@ -22,7 +22,10 @@
     <winuiex:WindowEx.SystemBackdrop>
         <MicaBackdrop />
     </winuiex:WindowEx.SystemBackdrop>
-    <Grid x:Name="RootElement">
+    <Grid
+        x:Name="RootElement"
+        ContextCanceled="RootElement_ContextCanceled"
+        ContextRequested="RootElement_ContextRequested">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -95,6 +98,7 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid x:Name="BreadcrumbContainer" Padding="16,0">
@@ -118,7 +122,13 @@
                         </BreadcrumbBar.Resources>
                     </BreadcrumbBar>
                 </Grid>
-                <Grid Grid.Row="1" Grid.Column="0">
+                <InfoBar
+                    x:Name="SettingsLinkFallbackInfoBar"
+                    Grid.Row="1"
+                    Margin="16,0,16,0"
+                    IsClosable="True"
+                    Severity="Informational" />
+                <Grid Grid.Row="2" Grid.Column="0">
                     <Grid.Transitions>
                         <TransitionCollection>
                             <RepositionThemeTransition />

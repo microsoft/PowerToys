@@ -10,6 +10,7 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Gallery;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
@@ -31,24 +32,19 @@ public sealed partial class SettingsWindow : WindowEx,
     IRecipient<OpenExtensionGalleryScreenshotViewerMessage>,
     IRecipient<QuitMessage>
 {
-    // Navigation tags; must match the Tag values of NavigationViewItems in SettingsWindow.xaml
-    private static class PageTags
-    {
-        public const string General = "General";
-        public const string Appearance = "Appearance";
-        public const string Extensions = "Extensions";
-        public const string Gallery = "Gallery";
-        public const string Dock = "Dock";
-        public const string Internal = "Internal";
-    }
-
     private readonly LocalKeyboardListener _localKeyboardListener;
-
     private readonly NavigationViewItem? _internalNavItem;
+    private readonly SettingsLinkContextMenuService _settingsLinkContextMenuService;
+    private readonly ISettingsLinkResolver _settingsLinkResolver;
+    private readonly ISettingsService _settingsService;
+    private readonly SettingsTargetHighlighter _settingsTargetHighlighter = new();
+    private readonly TopLevelCommandManager _topLevelCommandManager;
 
     private Storyboard? _breadcrumbStoryboard;
     private IReadOnlyList<ExtensionGalleryScreenshotViewModel> _currentScreenshotSet = [];
     private ExtensionGalleryScreenshotViewModel? _currentScreenshot;
+    private CancellationTokenSource? _extensionSettingsNavigationCts;
+    private CancellationTokenSource? _settingsTargetNavigationCts;
 
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
 
@@ -62,8 +58,22 @@ public sealed partial class SettingsWindow : WindowEx,
             ? string.Empty
             : $"{GetCurrentScreenshotIndex() + 1} / {_currentScreenshotSet.Count}";
 
-    public SettingsWindow()
+    public SettingsWindow(
+        TopLevelCommandManager topLevelCommandManager,
+        ISettingsLinkResolver settingsLinkResolver,
+        SettingsLinkContextMenuService settingsLinkContextMenuService,
+        ISettingsService settingsService)
     {
+        ArgumentNullException.ThrowIfNull(topLevelCommandManager);
+        ArgumentNullException.ThrowIfNull(settingsLinkResolver);
+        ArgumentNullException.ThrowIfNull(settingsLinkContextMenuService);
+        ArgumentNullException.ThrowIfNull(settingsService);
+
+        _settingsLinkContextMenuService = settingsLinkContextMenuService;
+        _settingsLinkResolver = settingsLinkResolver;
+        _settingsService = settingsService;
+        _topLevelCommandManager = topLevelCommandManager;
+
         this.InitializeComponent();
         this.ExtendsContentIntoTitleBar = true;
         this.SetIcon();
@@ -91,7 +101,7 @@ public sealed partial class SettingsWindow : WindowEx,
             {
                 Content = "Internal Tools",
                 Icon = new FontIcon { Glyph = "\uEC7A" },
-                Tag = PageTags.Internal,
+                Tag = SettingsPageTags.Internal,
             };
             NavView.FooterMenuItems.Add(_internalNavItem);
         }
@@ -100,7 +110,7 @@ public sealed partial class SettingsWindow : WindowEx,
             _internalNavItem = null;
         }
 
-        Navigate(PageTags.General);
+        Navigate(SettingsPageTags.General);
     }
 
     private void SettingsWindow_Closed(object sender, WindowEventArgs args)
@@ -140,27 +150,105 @@ public sealed partial class SettingsWindow : WindowEx,
         Navigate((selectedItem.Tag as string)!);
     }
 
-    internal void Navigate(string page, string? extensionGalleryId = null)
+    private void RootElement_ContextRequested(UIElement sender, ContextRequestedEventArgs args)
     {
+        if (_settingsLinkContextMenuService.TryShow(args, NavFrame.Content as Page))
+        {
+            args.Handled = true;
+        }
+    }
+
+    private void RootElement_ContextCanceled(UIElement sender, RoutedEventArgs args)
+    {
+        _settingsLinkContextMenuService.Hide();
+    }
+
+    internal void Navigate(OpenSettingsMessage message)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        Navigate(
+            message.SettingsPageTag,
+            message.ExtensionGalleryId,
+            message.SettingsLinkId,
+            message.ExtensionProviderId);
+    }
+
+    internal void Navigate(
+        string page,
+        string? extensionGalleryId = null,
+        string? settingsLinkId = null,
+        string? extensionProviderId = null)
+    {
+        CancelSettingsNavigation();
+        SettingsLinkFallbackInfoBar.IsOpen = false;
+
+        string? settingsTarget = null;
+        var settingsAction = SettingsLinkAction.None;
+        var settingsLinkFallback = SettingsLinkFallback.None;
+        if (settingsLinkId is not null)
+        {
+            if (page != string.Empty ||
+                extensionGalleryId is not null)
+            {
+                Logger.LogError($"Invalid settings link navigation for '{settingsLinkId}'.");
+                return;
+            }
+
+            var resolution = _settingsLinkResolver.Resolve(settingsLinkId, extensionProviderId);
+            var destination = resolution.Destination;
+            if (extensionProviderId is not null &&
+                !destination.RequiresExtensionProvider)
+            {
+                Logger.LogError($"Invalid settings link navigation for '{settingsLinkId}'.");
+                return;
+            }
+
+            settingsLinkFallback = resolution.Fallback;
+            page = destination.PageTag;
+            settingsTarget = destination.ElementId;
+            settingsAction = destination.Action;
+            if (!destination.RequiresExtensionProvider)
+            {
+                extensionProviderId = null;
+            }
+        }
+        else if (extensionProviderId is not null)
+        {
+            Logger.LogError("Extension settings navigation requires a settings link ID.");
+            return;
+        }
+
+        if (extensionProviderId is not null)
+        {
+            if (settingsAction != SettingsLinkAction.None)
+            {
+                Logger.LogError($"Settings action '{settingsAction}' cannot target an extension provider.");
+                return;
+            }
+
+            NavigateToExtensionSettings(extensionProviderId, settingsTarget, settingsLinkId!, settingsLinkFallback);
+            return;
+        }
+
         Type? pageType;
         switch (page)
         {
-            case PageTags.General:
+            case SettingsPageTags.General:
                 pageType = typeof(GeneralPage);
                 break;
-            case PageTags.Appearance:
+            case SettingsPageTags.Appearance:
                 pageType = typeof(AppearancePage);
                 break;
-            case PageTags.Extensions:
+            case SettingsPageTags.Extensions:
                 pageType = typeof(ExtensionsPage);
                 break;
-            case PageTags.Gallery:
+            case SettingsPageTags.Gallery:
                 pageType = typeof(ExtensionGalleryPage);
                 break;
-            case PageTags.Dock:
+            case SettingsPageTags.Dock:
                 pageType = typeof(DockSettingsPage);
                 break;
-            case PageTags.Internal:
+            case SettingsPageTags.Internal:
                 pageType = typeof(InternalPage);
                 break;
             case "":
@@ -186,17 +274,32 @@ public sealed partial class SettingsWindow : WindowEx,
             return;
         }
 
-        if (NavFrame.Content?.GetType() == pageType)
+        if (pageType == typeof(ExtensionsPage) && TryReturnToExtensionsPage())
         {
+            NavigateToSettingsTarget(settingsTarget, settingsAction, settingsLinkId);
+            ShowSettingsLinkFallback(settingsLinkFallback);
             return;
         }
 
-        NavFrame.Navigate(pageType);
+        if (NavFrame.Content?.GetType() == pageType)
+        {
+            NavigateToSettingsTarget(settingsTarget, settingsAction, settingsLinkId);
+            ShowSettingsLinkFallback(settingsLinkFallback);
+            return;
+        }
+
+        if (!NavFrame.Navigate(pageType))
+        {
+            Logger.LogWarning($"Could not open settings page '{pageType.Name}'.");
+            return;
+        }
 
         if (openGalleryExtension && NavFrame.Content is ExtensionGalleryPage galleryPage)
         {
             galleryPage.OpenExtension(extensionGalleryId!);
         }
+
+        NavigateToSettingsTarget(settingsTarget, settingsAction, settingsLinkId);
 
         // Now, make sure to actually select the correct menu item too
         foreach (var obj in NavView.MenuItems)
@@ -206,6 +309,246 @@ public sealed partial class SettingsWindow : WindowEx,
                 NavView.SelectedItem = item;
             }
         }
+
+        ShowSettingsLinkFallback(settingsLinkFallback);
+    }
+
+    private void NavigateToSettingsTarget(
+        string? settingsTarget,
+        SettingsLinkAction settingsAction = SettingsLinkAction.None,
+        string? settingsLinkId = null)
+    {
+        if (settingsTarget is null && settingsAction == SettingsLinkAction.None)
+        {
+            return;
+        }
+
+        if (NavFrame.Content is not FrameworkElement page)
+        {
+            Logger.LogWarning($"Settings target '{settingsTarget}' has no active page.");
+            return;
+        }
+
+        var cancellation = new CancellationTokenSource();
+        _settingsTargetNavigationCts = cancellation;
+        _ = NavigateToSettingsTargetAsync(page, settingsTarget, settingsAction, settingsLinkId, cancellation);
+    }
+
+    private void ShowSettingsLinkFallback(SettingsLinkFallback fallback)
+    {
+        if (fallback == SettingsLinkFallback.None)
+        {
+            return;
+        }
+
+        var resource = fallback switch
+        {
+            SettingsLinkFallback.UnknownLink => "SettingsLink_Fallback_UnknownLink",
+            SettingsLinkFallback.UnknownProvider => "SettingsLink_Fallback_UnknownProvider",
+            SettingsLinkFallback.HiddenTarget => "SettingsLink_Fallback_HiddenTarget",
+            SettingsLinkFallback.MissingTarget => "SettingsLink_Fallback_MissingTarget",
+            SettingsLinkFallback.DisabledProvider => "SettingsLink_Fallback_DisabledProvider",
+            _ => "SettingsLink_Fallback_Other",
+        };
+        SettingsLinkFallbackInfoBar.Title = RS_.GetString(
+            fallback is SettingsLinkFallback.HiddenTarget or SettingsLinkFallback.MissingTarget or SettingsLinkFallback.DisabledProvider
+                ? "SettingsLink_Fallback_UnavailableTitle"
+                : "SettingsLink_Fallback_RedirectedTitle");
+        SettingsLinkFallbackInfoBar.Message = RS_.GetString(resource);
+        SettingsLinkFallbackInfoBar.IsOpen = true;
+    }
+
+    private void NavigateToExtensionSettings(string providerId, string? settingsTarget, string settingsLinkId, SettingsLinkFallback fallback)
+    {
+        var cancellation = new CancellationTokenSource();
+        _extensionSettingsNavigationCts = cancellation;
+        _ = NavigateToExtensionSettingsAsync(providerId, settingsTarget, settingsLinkId, fallback, cancellation);
+    }
+
+    private async Task NavigateToExtensionSettingsAsync(
+        string providerId,
+        string? settingsTarget,
+        string settingsLinkId,
+        SettingsLinkFallback fallback,
+        CancellationTokenSource cancellation)
+    {
+        try
+        {
+            if (_topLevelCommandManager.IsLoading)
+            {
+                await _topLevelCommandManager.WaitForCurrentLoadAsync(cancellation.Token);
+            }
+
+            cancellation.Token.ThrowIfCancellationRequested();
+            if (!ReferenceEquals(_extensionSettingsNavigationCts, cancellation))
+            {
+                return;
+            }
+
+            _extensionSettingsNavigationCts = null;
+            OpenExtensionSettings(providerId, settingsTarget, settingsLinkId, fallback);
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to navigate to extension settings for '{providerId}'.", ex);
+        }
+        finally
+        {
+            if (ReferenceEquals(_extensionSettingsNavigationCts, cancellation))
+            {
+                _extensionSettingsNavigationCts = null;
+            }
+
+            cancellation.Dispose();
+        }
+    }
+
+    private void OpenExtensionSettings(string providerId, string? settingsTarget, string settingsLinkId, SettingsLinkFallback fallback)
+    {
+        if (NavFrame.Content is ExtensionPage extensionPage)
+        {
+            if (string.Equals(extensionPage.ViewModel?.ProviderId, providerId, StringComparison.Ordinal))
+            {
+                NavigateToSettingsTarget(settingsTarget, settingsLinkId: settingsLinkId);
+                ShowSettingsLinkFallback(fallback);
+                return;
+            }
+
+            _ = TryReturnToExtensionsPage();
+        }
+
+        if (NavFrame.Content is not ExtensionsPage)
+        {
+            NavFrame.Navigate(typeof(ExtensionsPage));
+        }
+
+        if (NavFrame.Content is not ExtensionsPage extensionsPage)
+        {
+            Logger.LogWarning($"Could not open the Extensions page for provider '{providerId}'.");
+            return;
+        }
+
+        var extension = extensionsPage.FindProvider(providerId);
+        if (extension is null)
+        {
+            Logger.LogWarning($"Unknown extension settings provider '{providerId}'.");
+            ShowSettingsLinkFallback(SettingsLinkFallback.UnknownProvider);
+            return;
+        }
+
+        if (!NavFrame.Navigate(typeof(ExtensionPage), extension))
+        {
+            Logger.LogWarning($"Could not open the settings page for provider '{providerId}'.");
+            return;
+        }
+
+        NavigateToSettingsTarget(settingsTarget, settingsLinkId: settingsLinkId);
+        ShowSettingsLinkFallback(fallback);
+    }
+
+    private bool TryReturnToExtensionsPage()
+    {
+        if (NavFrame.Content is ExtensionsPage)
+        {
+            return true;
+        }
+
+        if (NavFrame.Content is not ExtensionPage ||
+            !NavFrame.CanGoBack ||
+            NavFrame.BackStack.Count == 0 ||
+            NavFrame.BackStack[NavFrame.BackStack.Count - 1].SourcePageType != typeof(ExtensionsPage))
+        {
+            return false;
+        }
+
+        NavFrame.GoBack();
+        NavFrame.ForwardStack.Clear();
+        return NavFrame.Content is ExtensionsPage;
+    }
+
+    private async Task NavigateToSettingsTargetAsync(
+        FrameworkElement page,
+        string? settingsTarget,
+        SettingsLinkAction settingsAction,
+        string? settingsLinkId,
+        CancellationTokenSource cancellation)
+    {
+        try
+        {
+            if (settingsTarget is not null)
+            {
+                var (target, isHidden) = await SettingsPageTarget.NavigateAsync(page, settingsTarget, cancellation.Token);
+                if (target is null)
+                {
+                    Logger.LogWarning($"Unavailable settings target '{settingsTarget}' for page '{page.GetType().Name}'.");
+                    if (settingsLinkId is not null)
+                    {
+                        var fallback = _settingsLinkResolver.ClassifyUnavailableTarget(
+                            isHidden,
+                            page is ExtensionPage { ViewModel.IsEnabled: false });
+                        ShowSettingsLinkFallback(fallback);
+                    }
+
+                    return;
+                }
+
+                _settingsTargetHighlighter.Highlight(target, !_settingsService.Settings.DisableAnimations);
+            }
+            else
+            {
+                await SettingsPageTarget.WaitForLoadedAsync(page, cancellation.Token);
+            }
+
+            await InvokeSettingsLinkActionAsync(page, settingsAction, cancellation.Token);
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to navigate to settings target '{settingsTarget}'.", ex);
+        }
+        finally
+        {
+            if (ReferenceEquals(_settingsTargetNavigationCts, cancellation))
+            {
+                _settingsTargetNavigationCts = null;
+            }
+
+            cancellation.Dispose();
+        }
+    }
+
+    private static async Task InvokeSettingsLinkActionAsync(
+        FrameworkElement page,
+        SettingsLinkAction settingsAction,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        switch (settingsAction)
+        {
+            case SettingsLinkAction.None:
+                return;
+            case SettingsLinkAction.OpenFallbackOrder when page is ExtensionsPage extensionsPage:
+                await extensionsPage.ShowFallbackOrderDialogAsync();
+                return;
+            default:
+                throw new InvalidOperationException(
+                    $"Settings action '{settingsAction}' is invalid for page '{page.GetType().Name}'.");
+        }
+    }
+
+    private void CancelSettingsNavigation()
+    {
+        _extensionSettingsNavigationCts?.Cancel();
+        _extensionSettingsNavigationCts = null;
+        _settingsTargetNavigationCts?.Cancel();
+        _settingsTargetNavigationCts = null;
+        _settingsTargetHighlighter.Clear();
     }
 
     private bool TryOpenGallery(string? extensionId)
@@ -440,59 +783,65 @@ public sealed partial class SettingsWindow : WindowEx,
 
     public void Dispose()
     {
+        CancelSettingsNavigation();
+        _settingsLinkContextMenuService.Hide();
         CloseScreenshotViewer();
+        _settingsTargetHighlighter.Close();
         WinGetOperationsButtonControl?.Dispose();
         _localKeyboardListener?.Dispose();
     }
 
     private void NavFrame_OnNavigated(object sender, NavigationEventArgs e)
     {
+        CancelSettingsNavigation();
+        SettingsLinkFallbackInfoBar.IsOpen = false;
+
         BreadCrumbs.Clear();
         ShowBreadcrumb();
 
         if (e.SourcePageType == typeof(GeneralPage))
         {
             NavView.SelectedItem = GeneralPageNavItem;
-            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_GeneralPage"), PageTags.General));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_GeneralPage"), SettingsPageTags.General));
         }
         else if (e.SourcePageType == typeof(AppearancePage))
         {
             NavView.SelectedItem = AppearancePageNavItem;
-            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_AppearancePage"), PageTags.Appearance));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_AppearancePage"), SettingsPageTags.Appearance));
         }
         else if (e.SourcePageType == typeof(ExtensionsPage))
         {
             NavView.SelectedItem = ExtensionPageNavItem;
-            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_ExtensionsPage"), PageTags.Extensions));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_ExtensionsPage"), SettingsPageTags.Extensions));
         }
         else if (e.SourcePageType == typeof(ExtensionGalleryPage))
         {
             NavView.SelectedItem = GalleryPageNavItem;
             HideBreadcrumb();
-            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_GalleryPage"), PageTags.Gallery));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_GalleryPage"), SettingsPageTags.Gallery));
         }
         else if (e.SourcePageType == typeof(ExtensionGalleryItemPage) && e.Parameter is ExtensionGalleryItemViewModel galleryExtension)
         {
             NavView.SelectedItem = GalleryPageNavItem;
             HideBreadcrumb();
-            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_GalleryPage"), PageTags.Gallery));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_GalleryPage"), SettingsPageTags.Gallery));
             BreadCrumbs.Add(new(galleryExtension.Title, galleryExtension));
         }
         else if (e.SourcePageType == typeof(DockSettingsPage))
         {
             NavView.SelectedItem = DockSettingsPageNavItem;
-            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_DockPage"), PageTags.Dock));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_DockPage"), SettingsPageTags.Dock));
         }
         else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is ProviderSettingsViewModel vm)
         {
             NavView.SelectedItem = ExtensionPageNavItem;
-            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_ExtensionsPage"), PageTags.Extensions));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_ExtensionsPage"), SettingsPageTags.Extensions));
             BreadCrumbs.Add(new(vm.DisplayName, vm));
         }
         else if (e.SourcePageType == typeof(InternalPage) && _internalNavItem is not null)
         {
             NavView.SelectedItem = _internalNavItem;
-            BreadCrumbs.Add(new(PageTags.Internal, PageTags.Internal));
+            BreadCrumbs.Add(new(SettingsPageTags.Internal, SettingsPageTags.Internal));
         }
         else
         {

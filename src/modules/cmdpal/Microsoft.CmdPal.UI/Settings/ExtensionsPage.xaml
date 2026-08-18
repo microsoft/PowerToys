@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.ExtensionsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -42,6 +42,7 @@
                             x:Name="SearchBox"
                             x:Uid="Settings_ExtensionsPage_SearchBox_Placeholder"
                             HorizontalAlignment="Stretch"
+                            local:SettingsPageTarget.Id="search"
                             Text="{x:Bind viewModel.Extensions.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                             <AutoSuggestBox.QueryIcon>
                                 <SymbolIcon Symbol="Find" />
@@ -82,6 +83,7 @@
                             <Button
                                 x:Name="MoreButton"
                                 x:Uid="Settings_ExtensionsPage_More_Button"
+                                local:SettingsPageTarget.Id="more"
                                 Style="{StaticResource SubtleButtonStyle}">
                                 <Button.Flyout>
                                     <MenuFlyout Placement="BottomEdgeAlignedRight">
@@ -130,6 +132,7 @@
                         x:Name="ProvidersRepeater"
                         x:Load="{x:Bind viewModel.Extensions.HasResults, Mode=OneWay}"
                         ItemsSource="{x:Bind viewModel.Extensions.FilteredProviders, Mode=OneWay}"
+                        local:SettingsPageTarget.Id="providers"
                         Layout="{StaticResource VerticalStackLayout}">
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="viewModels:ProviderSettingsViewModel">

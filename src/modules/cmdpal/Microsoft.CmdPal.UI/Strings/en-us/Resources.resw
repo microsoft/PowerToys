@@ -627,6 +627,45 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="CommandLink_Toast_Copied" xml:space="preserve">
     <value>Command link copied to clipboard</value>
   </data>
+  <data name="SettingsLink_CopyPage_Name" xml:space="preserve">
+    <value>Copy link to page</value>
+  </data>
+  <data name="SettingsLink_CopySetting_Name" xml:space="preserve">
+    <value>Copy link to setting</value>
+  </data>
+  <data name="SettingsLink_CopyExtensionSettings_Name" xml:space="preserve">
+    <value>Copy link to extension settings</value>
+  </data>
+  <data name="SettingsLink_CopyFallbackOrder_Name" xml:space="preserve">
+    <value>Copy link to fallback order</value>
+  </data>
+  <data name="SettingsLink_Copied_Announcement" xml:space="preserve">
+    <value>Settings link copied to clipboard</value>
+  </data>
+  <data name="SettingsLink_Fallback_RedirectedTitle" xml:space="preserve">
+    <value>Settings link redirected</value>
+  </data>
+  <data name="SettingsLink_Fallback_UnavailableTitle" xml:space="preserve">
+    <value>Setting unavailable</value>
+  </data>
+  <data name="SettingsLink_Fallback_UnknownLink" xml:space="preserve">
+    <value>This settings link is no longer available. Opened the closest settings page.</value>
+  </data>
+  <data name="SettingsLink_Fallback_UnknownProvider" xml:space="preserve">
+    <value>The extension provider is missing or unavailable. Opened the Extensions page.</value>
+  </data>
+  <data name="SettingsLink_Fallback_HiddenTarget" xml:space="preserve">
+    <value>This setting is currently hidden. Opened its settings page.</value>
+  </data>
+  <data name="SettingsLink_Fallback_MissingTarget" xml:space="preserve">
+    <value>This setting isn't available on this page. Opened its settings page.</value>
+  </data>
+  <data name="SettingsLink_Fallback_DisabledProvider" xml:space="preserve">
+    <value>This setting is unavailable while the extension is disabled. Opened its settings page.</value>
+  </data>
+  <data name="SettingsLink_Fallback_Other" xml:space="preserve">
+    <value>Opened the closest available settings page.</value>
+  </data>
   <data name="ExternalCommandLink_Consent_Title" xml:space="preserve">
     <value>Allow this command link?</value>
   </data>

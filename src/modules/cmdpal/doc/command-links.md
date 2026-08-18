@@ -10,7 +10,8 @@
   - [1 Scope](#1-scope)
   - [2 Routes](#2-routes)
   - [3 Parsing](#3-parsing)
-    - [3.1 Arguments and page options](#31-arguments-and-page-options)
+    - [3.1 Settings destinations](#31-settings-destinations)
+    - [3.2 Arguments and page options](#32-arguments-and-page-options)
   - [4 Activation pipeline](#4-activation-pipeline)
   - [5 Configuration and permissions](#5-configuration-and-permissions)
   - [6 Security and risks](#6-security-and-risks)
@@ -50,6 +51,10 @@ page query and filter state must be added explicitly.
 | ------------------------------------------------ | ------------- | --------------------------------------------------- |
 | `x-cmdpal://background`                          | Built-in      | Start without showing a window.                     |
 | `x-cmdpal://settings`                            | Built-in      | Open Settings.                                      |
+| `x-cmdpal://settings/{destination-id}`           | Built-in      | Open a mapped Settings destination.                 |
+| `x-cmdpal://settings/fallback-order`              | Built-in      | Open the extension fallback-order dialog.           |
+| `x-cmdpal://settings/extension/{provider-id}`    | Built-in      | Open an extension's settings page.                  |
+| `x-cmdpal://settings/extension/{provider-id}/{target-id}` | Built-in | Open and position an extension's settings page. |
 | `x-cmdpal://extensions/gallery`                  | Built-in      | Open the extension gallery.                         |
 | `x-cmdpal://extensions/gallery/{extension-id}`   | Built-in      | Open extension details.                             |
 | `x-cmdpal://reload`                              | Consent       | Reload extensions.                                  |
@@ -67,7 +72,7 @@ behalf of an external caller. New routes must be explicitly classified.
 - Match route literals case-insensitively.
 - Split the escaped path before decoding. Each ID occupies one segment.
 - Reject decoded `/`, `\`, control characters, and leading or trailing whitespace.
-- Maximum decoded ID lengths: extension 256, provider 256, command 512.
+- Maximum decoded ID lengths: settings-link segment 64, extension 256, provider 256, command 512.
 - Reject unknown routes and incorrect segment counts.
 - Treat query parameters as route-specific. Command routes accept only the parameters
   defined below; built-in routes currently ignore the query string.
@@ -79,7 +84,32 @@ The protocol is currently unversioned. Existing route meanings are therefore a c
 surface; new behavior should use new route shapes or route-specific parameters instead of
 reinterpreting an existing route.
 
-### 3.1 Arguments and page options
+### 3.1 Settings destinations
+
+| Area | Stable destination IDs |
+| ---- | ---------------------- |
+| Page roots | `general`, `appearance`, `extensions`, `dock` |
+| General | `activation`, `activation-key`, `auto-go-home`, `keep-previous-query`, `highlight-search`, `app-behavior`, `system-tray-icon`, `alt-f4`, `external-links`, `external-command-links`, `about-section`, `about`, `send-feedback` |
+| Appearance | `appearance-visuals`, `appearance-theme`, `appearance-backdrop`, `appearance-background`, `disable-animations`, `appearance-layout`, `compact-mode`, `launch-position`, `toast-position`, `appearance-interaction`, `single-click-activation`, `show-app-details`, `backspace-goes-back`, `escape-key-behavior` |
+| Extensions | `extensions-search`, `fallback-order`, `extensions-more`, `extension-providers` |
+| Dock | `dock-enabled`, `dock-appearance`, `dock-position`, `dock-size`, `dock-theme`, `dock-backdrop`, `dock-background`, `dock-behavior`, `dock-always-on-top`, `dock-auto-hide`, `dock-monitors` |
+| Extension target IDs | `enabled`, `search-weight`, `commands`, `fallbacks`, `settings` |
+
+- App destinations use one stable ID segment after `settings/`; the current page is not encoded in the URI.
+- Extension settings use the scoped `settings/extension/{provider-id}/{target-id}` route.
+- `SettingsLinkIds` defines public IDs. `SettingsLinkResolver` maps each ID to the current page tag and XAML element ID.
+- Stable IDs name settings or feature areas, regardless of their current page or section. If a target moves or disappears, keep its ID and map it to the new target or closest available page.
+- Add a new ID as an alias when a new link name is useful; never recycle an existing ID for different behavior.
+- Destination and extension target IDs contain 1-64 ASCII letters, digits, or hyphens; parsing normalizes them to lowercase.
+- `SettingsPageTarget.Id` declares the current XAML anchor. It and `x:Uid` are implementation details, not protocol identities.
+- Navigation waits for page load, expands target expanders and ancestors, focuses the first focusable control, and brings the target into view. `fallback-order` then opens the existing dialog.
+- Settings navigation items, registered section headers and targets, and provider cards expose context menus for copying their links.
+- A later Settings navigation cancels pending target positioning. Well-formed unknown link IDs open Settings with a redirect notice. Hidden or missing targets open their page with a notice.
+- Extension settings use the exact, case-sensitive command-provider ID. The `extension` path literal prevents provider IDs from colliding with Extensions-page targets.
+- If the provider is still loading, navigation waits for the active load. A missing provider leaves the Extensions page open and shows a redirect notice.
+- `settings` targets the extension-provided settings container. Elements inside its dynamic content are not addressable until the extension API defines stable external IDs.
+
+### 3.2 Arguments and page options
 
 ```
 x-cmdpal://commands/{provider-id}/{command-id}?filter=running&query=ssh

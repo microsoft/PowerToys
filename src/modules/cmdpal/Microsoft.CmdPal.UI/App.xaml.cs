@@ -31,6 +31,7 @@ using Microsoft.CmdPal.Ext.WinGet;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Services;
+using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
@@ -245,7 +246,9 @@ public partial class App : Application, IDisposable
         services.AddSingleton<IPersistenceService, PersistenceService>();
         services.AddSingleton<ISettingsService, SettingsService>();
         services.AddSingleton<IAppStateService, AppStateService>();
+        services.AddSingleton<ISettingsLinkResolver, SettingsLinkResolver>();
         services.AddSingleton<ICmdPalProtocolActivation, CmdPalProtocolActivation>();
+        services.AddTransient<SettingsLinkContextMenuService>();
         services.AddSingleton<IAtRestDataProtector, CurrentUserDataProtector>();
         services.AddSingleton<IExternalCommandPermissionStore, ExternalCommandPermissionStore>();
 

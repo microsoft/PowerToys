@@ -57,6 +57,9 @@ public partial class ProviderSettingsViewModel : ObservableObject
     /// </summary>
     public string Id => _provider.Id;
 
+    /// <summary>Provider key used by command links and persisted settings.</summary>
+    public string ProviderId => _provider.ProviderId;
+
     public string ExtensionName => _provider.Extension?.ExtensionDisplayName ?? Resources.builtin_extension_name;
 
     public string ExtensionSubtext

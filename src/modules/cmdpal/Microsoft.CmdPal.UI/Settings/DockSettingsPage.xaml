@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.DockSettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -45,15 +45,23 @@
                         FontWeight="SemiBold"
                         NavigateUri="https://aka.ms/cmdpal-dock" />
                     <!--  Enable Dock  -->
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_EnableDock_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xF596;}">
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_EnableDock_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xF596;}"
+                        local:SettingsPageTarget.Id="enabled">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_DockSettingsPage_EnableDock" IsOn="{x:Bind ViewModel.EnableDock, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <!--  Appearance Section  -->
-                    <TextBlock x:Uid="DockAppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <TextBlock
+                        x:Uid="DockAppearanceSettingsHeader"
+                        local:SettingsPageTarget.Id="appearance-section"
+                        Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <!--  Dock Position  -->
-                    <controls:SettingsCard x:Uid="DockAppearance_DockPosition_SettingsCard">
+                    <controls:SettingsCard
+                        x:Uid="DockAppearance_DockPosition_SettingsCard"
+                        local:SettingsPageTarget.Id="position">
                         <controls:SettingsCard.HeaderIcon>
                             <SymbolIcon Symbol="MoveToFolder" />
                         </controls:SettingsCard.HeaderIcon>
@@ -72,7 +80,8 @@
                     <controls:SettingsCard
                         x:Name="DockSizeSettingsCard"
                         x:Uid="DockAppearance_DockSize_SettingsCard"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE799;}">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE799;}"
+                        local:SettingsPageTarget.Id="size">
                         <ComboBox
                             x:Name="DockSizeComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -82,7 +91,10 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="DockAppearance_AppTheme_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE793;}">
+                    <controls:SettingsCard
+                        x:Uid="DockAppearance_AppTheme_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE793;}"
+                        local:SettingsPageTarget.Id="theme">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AutomationProperties.AutomationId="CmdPal_DockSettingsPage_Theme"
@@ -112,7 +124,10 @@
                     </controls:SettingsCard>
 
                     <!--  Backdrop Style  -->
-                    <controls:SettingsCard x:Uid="DockAppearance_Backdrop_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xF5EF;}">
+                    <controls:SettingsCard
+                        x:Uid="DockAppearance_Backdrop_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xF5EF;}"
+                        local:SettingsPageTarget.Id="backdrop">
                         <ComboBox
                             x:Name="BackdropComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -126,7 +141,8 @@
                     <controls:SettingsExpander
                         x:Uid="DockAppearance_Background_SettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
-                        IsExpanded="{x:Bind ViewModel.DockAppearance.IsColorizationDetailsExpanded, Mode=TwoWay}">
+                        IsExpanded="{x:Bind ViewModel.DockAppearance.IsColorizationDetailsExpanded, Mode=TwoWay}"
+                        local:SettingsPageTarget.Id="background">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AutomationProperties.AutomationId="CmdPal_DockSettingsPage_ColorizationMode"
@@ -243,13 +259,22 @@
                     </controls:SettingsExpander>
 
                     <!--  Behavior Section  -->
-                    <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <TextBlock
+                        x:Uid="BehaviorSettingsHeader"
+                        local:SettingsPageTarget.Id="behavior-section"
+                        Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
-                    <controls:SettingsCard x:Uid="DockBehavior_AlwaysOnTop_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE840;}">
+                    <controls:SettingsCard
+                        x:Uid="DockBehavior_AlwaysOnTop_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE840;}"
+                        local:SettingsPageTarget.Id="always-on-top">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_DockSettingsPage_AlwaysOnTop" IsOn="{x:Bind ViewModel.Dock_AlwaysOnTop, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="DockBehavior_AutoHide_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE70A;}">
+                    <controls:SettingsCard
+                        x:Uid="DockBehavior_AutoHide_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE70A;}"
+                        local:SettingsPageTarget.Id="auto-hide">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_DockSettingsPage_AutoHide" IsOn="{x:Bind ViewModel.Dock_AutoHide, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
@@ -260,45 +285,51 @@
                         Severity="Warning" />
 
                     <!--  Monitors Section  -->
-                    <TextBlock x:Uid="DockMonitors_Header" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <StackPanel
+                        local:SettingsPageTarget.Id="monitors"
+                        Spacing="{StaticResource SettingsCardSpacing}">
+                        <TextBlock
+                            x:Uid="DockMonitors_Header"
+                            Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
-                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.MonitorConfigs, Mode=OneWay}">
-                        <ItemsRepeater.Layout>
-                            <StackLayout Spacing="{StaticResource SettingsCardSpacing}" />
-                        </ItemsRepeater.Layout>
-                        <ItemsRepeater.ItemTemplate>
-                            <DataTemplate x:DataType="dockVm:DockMonitorConfigViewModel">
-                                <controls:SettingsExpander
-                                    AutomationProperties.AutomationId="{x:Bind DeviceId, Mode=OneWay}"
-                                    Description="{x:Bind Resolution, Mode=OneWay}"
-                                    Header="{x:Bind DisplayName, Mode=OneWay}"
-                                    HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
-                                    IsExpanded="False">
-                                    <!--
-                                        AutomationId on the inner ToggleSwitch / ComboBox is intentionally
-                                        omitted because the parent SettingsExpander already exposes a
-                                        per-monitor unique AutomationId (DeviceId), so tests can locate
-                                        each control relative to its monitor without ambiguity.
-                                    -->
-                                    <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
-                                    <controls:SettingsExpander.Items>
-                                        <controls:SettingsCard x:Uid="DockMonitor_Position_SettingsCard">
-                                            <ComboBox
-                                                MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
-                                                SelectedIndex="{x:Bind SideOverrideIndex, Mode=TwoWay}">
-                                                <ComboBoxItem x:Uid="DockMonitor_Position_UseDefault" />
-                                                <ComboBoxItem x:Uid="DockMonitor_Position_Left" />
-                                                <ComboBoxItem x:Uid="DockMonitor_Position_Top" />
-                                                <ComboBoxItem x:Uid="DockMonitor_Position_Right" />
-                                                <ComboBoxItem x:Uid="DockMonitor_Position_Bottom" />
-                                            </ComboBox>
-                                        </controls:SettingsCard>
-                                    </controls:SettingsExpander.Items>
-                                </controls:SettingsExpander>
-                            </DataTemplate>
-                        </ItemsRepeater.ItemTemplate>
-                    </ItemsRepeater>
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.MonitorConfigs, Mode=OneWay}">
+                            <ItemsRepeater.Layout>
+                                <StackLayout Spacing="{StaticResource SettingsCardSpacing}" />
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="dockVm:DockMonitorConfigViewModel">
+                                    <controls:SettingsExpander
+                                        AutomationProperties.AutomationId="{x:Bind DeviceId, Mode=OneWay}"
+                                        Description="{x:Bind Resolution, Mode=OneWay}"
+                                        Header="{x:Bind DisplayName, Mode=OneWay}"
+                                        HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
+                                        IsExpanded="False">
+                                        <!--
+                                            AutomationId on the inner ToggleSwitch / ComboBox is intentionally
+                                            omitted because the parent SettingsExpander already exposes a
+                                            per-monitor unique AutomationId (DeviceId), so tests can locate
+                                            each control relative to its monitor without ambiguity.
+                                        -->
+                                        <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+                                        <controls:SettingsExpander.Items>
+                                            <controls:SettingsCard x:Uid="DockMonitor_Position_SettingsCard">
+                                                <ComboBox
+                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                    IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
+                                                    SelectedIndex="{x:Bind SideOverrideIndex, Mode=TwoWay}">
+                                                    <ComboBoxItem x:Uid="DockMonitor_Position_UseDefault" />
+                                                    <ComboBoxItem x:Uid="DockMonitor_Position_Left" />
+                                                    <ComboBoxItem x:Uid="DockMonitor_Position_Top" />
+                                                    <ComboBoxItem x:Uid="DockMonitor_Position_Right" />
+                                                    <ComboBoxItem x:Uid="DockMonitor_Position_Bottom" />
+                                                </ComboBox>
+                                            </controls:SettingsCard>
+                                        </controls:SettingsExpander.Items>
+                                    </controls:SettingsExpander>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </StackPanel>
 
                     <!--  Bands Section  -->
                     <!--  <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
