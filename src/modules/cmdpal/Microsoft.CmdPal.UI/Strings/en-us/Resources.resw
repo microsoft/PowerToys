@@ -413,7 +413,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Quick access shelf</value>
   </data>
   <data name="Settings_GeneralPage_QuickAccessShelf_SettingsCard.Description" xml:space="preserve">
-    <value>Shows quick access commands below the search box while compact mode is collapsed. Use Alt+1 through Alt+9 to run visible items, Alt+Shift+1 through Alt+Shift+9 to select them, and Alt+0 for overflow.</value>
+    <value>Show pinned and recent items below the search box while compact mode is collapsed.</value>
   </data>
   <data name="Settings_GeneralPage_ListItemAltNumberBehavior_SettingsCard.Header" xml:space="preserve">
     <value>Alt+number shortcuts in lists</value>
@@ -428,22 +428,23 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Select item</value>
   </data>
   <data name="Settings_GeneralPage_QuickAccessShelfPinnedCommandLimit_SettingsCard.Header" xml:space="preserve">
-    <value>Maximum pinned commands</value>
+    <value>Maximum pinned items</value>
   </data>
   <data name="Settings_GeneralPage_QuickAccessShelfPinnedCommandLimit_SettingsCard.Description" xml:space="preserve">
-    <value>Choose how many pinned commands appear on the shelf. Set this to 0 to omit pinned commands.</value>
+    <value>Use 0 to hide pinned items.</value>
   </data>
   <data name="Settings_GeneralPage_QuickAccessShelfRecentCommands_SettingsCard.Header" xml:space="preserve">
     <value>Recent items</value>
   </data>
-  <data name="Settings_GeneralPage_QuickAccessShelfRecentCommands_SettingsCard.Description" xml:space="preserve">
-    <value>Choose whether recently used commands and launched apps appear before or after pinned commands on the shelf.</value>
+  <data name="Settings_GeneralPage_QuickAccessShelfRecentCommands_OpenRecentItemsSettings_Hyperlink.Content" xml:space="preserve">
+    <value>Manage recent items</value>
+    <comment>Link from the compact-mode shelf settings to the full Recent items section on the General settings page</comment>
+  </data>
+  <data name="Settings_GeneralPage_RecentItemsSettingsHeader.Text" xml:space="preserve">
+    <value>Recent items</value>
   </data>
   <data name="Settings_GeneralPage_HomeRecentCommands_SettingsCard.Header" xml:space="preserve">
-    <value>Recent items on Home</value>
-  </data>
-  <data name="Settings_GeneralPage_HomeRecentCommands_SettingsCard.Description" xml:space="preserve">
-    <value>Choose whether recently used commands and launched apps appear before or after the Pinned section.</value>
+    <value>Show on Home</value>
   </data>
   <data name="Settings_GeneralPage_RecentCommands_Hidden.Content" xml:space="preserve">
     <value>Don't show</value>
@@ -455,25 +456,28 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>After pinned</value>
   </data>
   <data name="Settings_GeneralPage_RecentCommandsDisplayLimit_SettingsCard.Header" xml:space="preserve">
-    <value>Maximum recent items</value>
+    <value>Maximum items</value>
   </data>
   <data name="Settings_GeneralPage_RecentCommandsDisplayLimit_SettingsCard.Description" xml:space="preserve">
-    <value>Choose how many recently used commands and launched apps, from 1 through 10, can appear on Home and the quick access shelf.</value>
+    <value>Applies to Home and the shelf.</value>
   </data>
   <data name="Settings_GeneralPage_ClearRecentCommands_SettingsCard.Header" xml:space="preserve">
-    <value>Recent history</value>
-  </data>
-  <data name="Settings_GeneralPage_ClearRecentCommands_SettingsCard.Description" xml:space="preserve">
-    <value>Remove all recently used commands and launched apps from Command Palette history.</value>
+    <value>History</value>
   </data>
   <data name="Settings_GeneralPage_ClearRecentCommandsButton.Content" xml:space="preserve">
-    <value>Clear recent history</value>
+    <value>Clear history</value>
   </data>
   <data name="recent_commands_remove_name" xml:space="preserve">
     <value>Remove from recent</value>
   </data>
   <data name="QuickAccessShelfSurface.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Quick access</value>
+  </data>
+  <data name="QuickAccessShelf_ContextMenu_Settings.Text" xml:space="preserve">
+    <value>Shelf settings</value>
+  </data>
+  <data name="QuickAccessShelf_ContextMenu_Hide.Text" xml:space="preserve">
+    <value>Hide shelf</value>
   </data>
   <data name="QuickAccessShelfShortcutTextFormat" xml:space="preserve">
     <value>Alt+{0} to run; Alt+Shift+{0} to select</value>
@@ -617,6 +621,14 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="SearchBoxContextMenu_Settings" xml:space="preserve">
     <value>Settings</value>
     <comment>Context menu item in the search box that opens the Command Palette settings</comment>
+  </data>
+  <data name="SearchBoxContextMenu_ShowShelf" xml:space="preserve">
+    <value>Show shelf</value>
+    <comment>Context menu item in the search box that enables the quick access shelf</comment>
+  </data>
+  <data name="SearchBoxContextMenu_HideShelf" xml:space="preserve">
+    <value>Hide shelf</value>
+    <comment>Context menu item in the search box that disables the quick access shelf</comment>
   </data>
   <data name="SearchBoxContextMenu_Settings_Shortcut" xml:space="preserve">
     <value>Ctrl+,</value>

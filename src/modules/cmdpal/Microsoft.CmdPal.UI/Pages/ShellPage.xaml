@@ -470,6 +470,21 @@
             BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
             BorderThickness="0,1,0,0"
             Visibility="{x:Bind IsQuickAccessShelfVisible, Mode=OneWay}">
+            <Grid.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem x:Uid="QuickAccessShelf_ContextMenu_Hide" Click="QuickAccessShelfHide_Click">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="&#xED1A;" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem x:Uid="QuickAccessShelf_ContextMenu_Settings" Click="QuickAccessShelfSettings_Click">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="&#xE713;" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                </MenuFlyout>
+            </Grid.ContextFlyout>
             <animations:Implicit.ShowAnimations>
                 <animations:OpacityAnimation
                     From="0"

@@ -60,6 +60,8 @@ public sealed partial class SearchBar : UserControl,
     private bool _tokenSearchEnabled;
 
     private AppBarSeparator? _menuSeparator;
+    private AppBarSeparator? _quickAccessShelfMenuSeparator;
+    private AppBarButton? _quickAccessShelfMenuItem;
     private AppBarButton? _settingsMenuItem;
     private AppBarButton? _helpMenuItem;
 
@@ -390,9 +392,23 @@ public sealed partial class SearchBar : UserControl,
             return;
         }
 
-        if (_settingsMenuItem is null || _helpMenuItem is null)
+        if (_quickAccessShelfMenuItem is null || _settingsMenuItem is null || _helpMenuItem is null)
         {
             _menuSeparator = new AppBarSeparator();
+            _quickAccessShelfMenuSeparator = new AppBarSeparator();
+
+            _quickAccessShelfMenuItem = new AppBarButton
+            {
+                Icon = new FontIcon(),
+            };
+            _quickAccessShelfMenuItem.Click += (_, _) =>
+            {
+                var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+                settingsService.UpdateSettings(settings => settings with
+                {
+                    ShowQuickAccessShelf = !settings.ShowQuickAccessShelf,
+                });
+            };
 
             _settingsMenuItem = new AppBarButton
             {
@@ -410,23 +426,35 @@ public sealed partial class SearchBar : UserControl,
             _helpMenuItem.Click += (_, _) => WeakReferenceMessenger.Default.Send(new LaunchUriMessage(new Uri("https://aka.ms/PowerToysOverview_CmdPal")));
         }
 
-        // Only add the separator when the flyout populated built-in secondary commands above us.
-        if (_menuSeparator is not null &&
-            flyout.SecondaryCommands.Count > 0 &&
-            !flyout.SecondaryCommands.Contains(_menuSeparator))
+        // Normalize our cached commands on every open. TextCommandBarFlyout normally rebuilds
+        // its commands, but explicitly removing ours also preserves ordering if it retains them.
+        _ = flyout.SecondaryCommands.Remove(_menuSeparator!);
+        _ = flyout.SecondaryCommands.Remove(_quickAccessShelfMenuSeparator!);
+        _ = flyout.SecondaryCommands.Remove(_quickAccessShelfMenuItem!);
+        _ = flyout.SecondaryCommands.Remove(_settingsMenuItem!);
+        _ = flyout.SecondaryCommands.Remove(_helpMenuItem!);
+
+        if (flyout.SecondaryCommands.Count > 0)
         {
-            flyout.SecondaryCommands.Add(_menuSeparator);
+            flyout.SecondaryCommands.Add(_menuSeparator!);
         }
 
-        if (!flyout.SecondaryCommands.Contains(_settingsMenuItem))
+        var settings = Settings;
+        if (settings.CompactMode && CurrentPageViewModel?.IsRootPage == true)
         {
-            flyout.SecondaryCommands.Add(_settingsMenuItem);
+            _quickAccessShelfMenuItem!.Label = RS_.GetString(
+                settings.ShowQuickAccessShelf
+                    ? "SearchBoxContextMenu_HideShelf"
+                    : "SearchBoxContextMenu_ShowShelf");
+            ((FontIcon)_quickAccessShelfMenuItem.Icon).Glyph = settings.ShowQuickAccessShelf
+                ? "\uED1A"
+                : "\uE75B";
+            flyout.SecondaryCommands.Add(_quickAccessShelfMenuItem);
+            flyout.SecondaryCommands.Add(_quickAccessShelfMenuSeparator!);
         }
 
-        if (!flyout.SecondaryCommands.Contains(_helpMenuItem))
-        {
-            flyout.SecondaryCommands.Add(_helpMenuItem);
-        }
+        flyout.SecondaryCommands.Add(_settingsMenuItem!);
+        flyout.SecondaryCommands.Add(_helpMenuItem!);
     }
 
     private void FilterBox_PreviewKeyUp(object sender, KeyRoutedEventArgs e)

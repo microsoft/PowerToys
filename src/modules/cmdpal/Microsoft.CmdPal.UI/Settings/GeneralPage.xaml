@@ -107,6 +107,42 @@
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_HighlightSearch" IsOn="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
+                    <!--  'Recent items' section  -->
+
+                    <TextBlock x:Uid="Settings_GeneralPage_RecentItemsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <controls:SettingsCard
+                        x:Name="HomeRecentCommandsSettingsCard"
+                        x:Uid="Settings_GeneralPage_HomeRecentCommands_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
+                        <ComboBox
+                            x:Name="HomeRecentCommandsComboBox"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="CmdPal_GeneralPage_HomeRecentCommands"
+                            SelectedIndex="{x:Bind viewModel.RecentCommandsOnHomeIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_Hidden" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_BeforePinned" Visibility="Collapsed" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_AfterPinned" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_RecentCommandsDisplayLimit_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8FD;}">
+                        <NumberBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="CmdPal_GeneralPage_RecentCommandsDisplayLimit"
+                            Maximum="10"
+                            Minimum="1"
+                            SmallChange="1"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{x:Bind viewModel.RecentCommandsDisplayLimit, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ClearRecentCommands_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE74D;}">
+                        <Button
+                            x:Uid="Settings_GeneralPage_ClearRecentCommandsButton"
+                            AutomationProperties.AutomationId="CmdPal_GeneralPage_ClearRecentCommands"
+                            Click="ClearRecentCommands_Click" />
+                    </controls:SettingsCard>
+
                     <!--  'Behavior' section  -->
 
                     <TextBlock x:Uid="Settings_GeneralPage_AppBehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
