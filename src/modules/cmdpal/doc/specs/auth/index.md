@@ -1,8 +1,7 @@
 ---
 author: Michael Jolley
 created on: 2026-08-17
-last updated: 2026-08-17
-issue id: n/a
+last updated: 2026-08-18
 ---
 
 # Command Palette authentication
@@ -28,8 +27,7 @@ piece you can't do safely from inside your extension: the browser redirect.
 
 - You already have a working sign-in and no reason to move. This is not a mandate.
 - You need a confidential client with a shipped secret. Don't. An installed extension
-  is a public client, and a secret in a package is a secret you gave away. See
-  [Non-goals](#non-goals).
+  is a public client, and a secret in a package is a secret you gave away.
 - You need machine-to-machine auth with no human in the loop. Client-credentials is
   out of scope for this pass.
 
