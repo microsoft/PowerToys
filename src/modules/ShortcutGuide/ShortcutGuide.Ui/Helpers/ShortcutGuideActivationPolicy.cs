@@ -45,7 +45,8 @@ public static class ShortcutGuideActivationPolicy
 
         if (activationSource == ShortcutGuideActivationSource.RegularHotkey)
         {
-            if (activeSurface == ShortcutGuideOverlaySurface.TaskbarIndicators ||
+            if (activeSource == ShortcutGuideActivationSource.WindowsKeyHold ||
+                activeSurface == ShortcutGuideOverlaySurface.TaskbarIndicators ||
                 activeSurface == ShortcutGuideOverlaySurface.Hidden)
             {
                 return ShortcutGuideActivationAction.ShowFullGuide;

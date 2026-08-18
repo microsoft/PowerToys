@@ -59,7 +59,7 @@ public sealed class ShortcutGuideActivationPolicyTests
     }
 
     [TestMethod]
-    public void GetActivationAction_RegularHotkey_ClosesHoldGuide()
+    public void GetActivationAction_RegularHotkey_TakesOwnershipOfHoldGuide()
     {
         var action = ShortcutGuideActivationPolicy.GetActivationAction(
             ShortcutGuideActivationSource.RegularHotkey,
@@ -68,7 +68,7 @@ public sealed class ShortcutGuideActivationPolicyTests
             ShortcutGuideOverlaySurface.FullGuide,
             ShortcutGuideWindowsKeyAction.OpenShortcutGuide);
 
-        Assert.AreEqual(ShortcutGuideActivationAction.Close, action);
+        Assert.AreEqual(ShortcutGuideActivationAction.ShowFullGuide, action);
     }
 
     [TestMethod]

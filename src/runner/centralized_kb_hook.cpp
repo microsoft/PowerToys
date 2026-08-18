@@ -216,11 +216,14 @@ namespace CentralizedKeyboardHook
     {
         Logger::trace(L"UnRegister pressed key action for {}", moduleName);
         std::unique_lock lock{ pressedKeyMutex };
+        const DWORD trackedKey = vkCodePressed.load();
+        bool removedTrackedKey = false;
         auto it = pressedKeyDescriptors.begin();
         while (it != pressedKeyDescriptors.end())
         {
             if (it->moduleName == moduleName)
             {
+                removedTrackedKey |= it->virtualKey == trackedKey;
                 if (it->idTimer != 0)
                 {
                     KillTimer(runnerWindow, it->idTimer);
@@ -231,6 +234,16 @@ namespace CentralizedKeyboardHook
             else
             {
                 ++it;
+            }
+        }
+
+        if (removedTrackedKey)
+        {
+            PressedKeyDescriptor trackedKeyDescriptor{ .virtualKey = trackedKey };
+            const auto [first, last] = pressedKeyDescriptors.equal_range(trackedKeyDescriptor);
+            if (first == last)
+            {
+                vkCodePressed = VK_DISABLED;
             }
         }
     }

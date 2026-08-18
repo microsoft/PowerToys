@@ -240,22 +240,38 @@ namespace ShortcutGuide
                 switch (action)
                 {
                     case ShortcutGuideActivationAction.ShowTaskbarIndicators:
+                        if (!TryBeginActivation(activationSource, ShortcutGuideOverlaySurface.TaskbarIndicators))
+                        {
+                            break;
+                        }
+
                         Program.ForegroundWindowHandle = NativeMethods.GetForegroundWindow();
                         OverlayWindow.MainPaneControl.Visibility = Visibility.Collapsed;
-                        SetActivationState(activationSource, ShortcutGuideOverlaySurface.TaskbarIndicators);
                         OverlayWindow.ShowOverlay();
                         OverlayWindow.UpdateTaskbarPaneLayout();
                         OverlayWindow.TaskbarPaneControl.Visibility = Visibility.Visible;
                         break;
 
                     case ShortcutGuideActivationAction.ShowFullGuide:
+                        bool isFullGuideVisible = isOverlayVisible && activeSurface == ShortcutGuideOverlaySurface.FullGuide;
+                        if (!TryBeginActivation(activationSource, ShortcutGuideOverlaySurface.FullGuide))
+                        {
+                            break;
+                        }
+
+                        if (isFullGuideVisible)
+                        {
+                            OverlayWindow.MainPaneControl.Visibility = Visibility.Visible;
+                            OverlayWindow.MainPaneControl.FocusSearch();
+                            break;
+                        }
+
                         if (!isOverlayVisible)
                         {
                             Program.ForegroundWindowHandle = NativeMethods.GetForegroundWindow();
                         }
 
                         OverlayWindow.MainPaneControl.Visibility = Visibility.Collapsed;
-                        SetActivationState(activationSource, ShortcutGuideOverlaySurface.FullGuide);
                         OverlayWindow.ShowOverlay();
                         await OverlayWindow.MainPaneControl.Open();
                         if ((ShortcutGuideActivationSource)Volatile.Read(ref _activeSource) != activationSource ||
@@ -299,6 +315,26 @@ namespace ShortcutGuide
         private void ResetActivationState()
         {
             SetActivationState(ShortcutGuideActivationSource.None, ShortcutGuideOverlaySurface.Hidden);
+        }
+
+        private bool TryBeginActivation(ShortcutGuideActivationSource source, ShortcutGuideOverlaySurface surface)
+        {
+            SetActivationState(source, surface);
+            if (source != ShortcutGuideActivationSource.WindowsKeyHold || IsWindowsKeyPressed())
+            {
+                return true;
+            }
+
+            ResetActivationState();
+            return false;
+        }
+
+        private static bool IsWindowsKeyPressed()
+        {
+            const int VirtualKeyLeftWindows = 0x5B;
+            const int VirtualKeyRightWindows = 0x5C;
+            return (NativeMethods.GetAsyncKeyState(VirtualKeyLeftWindows) & 0x8000) != 0 ||
+                   (NativeMethods.GetAsyncKeyState(VirtualKeyRightWindows) & 0x8000) != 0;
         }
 
         private void LoadData()

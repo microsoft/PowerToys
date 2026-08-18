@@ -97,11 +97,13 @@ namespace CentralizedHotkeys
 
     void PopulateHotkey(Shortcut shortcut)
     {
-        if (!actions.empty())
+        shortcut.modifiersMask &= static_cast<WORD>(~MOD_NOREPEAT);
+        const auto actionIt = actions.find(shortcut);
+        if (actionIt != actions.end() && !actionIt->second.empty())
         {
             try
             {
-                actions[shortcut].begin()->action(shortcut.modifiersMask, shortcut.vkCode);
+                actionIt->second.begin()->action(shortcut.modifiersMask, shortcut.vkCode);
             }
             catch(std::exception& ex)
             {
