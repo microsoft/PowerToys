@@ -47,14 +47,12 @@
             <!--  Backdrop requires ShouldConstrainToRootBounds="False"  -->
             <Flyout
                 x:Name="QuickAccessShelfContextMenuFlyout"
-                FlyoutPresenterStyle="{StaticResource QuickAccessShelfContextMenuFlyoutStyle}"
                 Closed="QuickAccessShelfContextMenuFlyout_Closed"
+                FlyoutPresenterStyle="{StaticResource QuickAccessShelfContextMenuFlyoutStyle}"
                 Opened="QuickAccessShelfContextMenuFlyout_Opened"
                 ShouldConstrainToRootBounds="False"
                 SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
-                <cpcontrols:ContextMenu
-                    x:Name="QuickAccessShelfContextControl"
-                    SubscribeToCommandBar="False" />
+                <cpcontrols:ContextMenu x:Name="QuickAccessShelfContextControl" SubscribeToCommandBar="False" />
             </Flyout>
 
             <cmdpalUI:DetailsDataTemplateSelector
@@ -469,6 +467,21 @@
             BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
             BorderThickness="0,1,0,0"
             Visibility="{x:Bind IsQuickAccessShelfVisible, Mode=OneWay}">
+            <Grid.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem x:Uid="QuickAccessShelf_ContextMenu_Hide" Click="QuickAccessShelfHide_Click">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="&#xED1A;" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem x:Uid="QuickAccessShelf_ContextMenu_Settings" Click="QuickAccessShelfSettings_Click">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="&#xE713;" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                </MenuFlyout>
+            </Grid.ContextFlyout>
             <animations:Implicit.ShowAnimations>
                 <animations:OpacityAnimation
                     From="0"
@@ -780,13 +793,13 @@
 
         <!--
             Horrifying: You may ask yourself - why is there a Background on this InfoBar?
-            
+
             Well, as it turns out, the Informational InfoBar has a transparent
             background. It just cannot be bothered. So, we need to manually give
             it one to actually obscure the text beneath it. And you can't just give
             the InfoBar itself a Background, because then the other Severity's
             won't get colorized.
-            
+
             See https://github.com/microsoft/microsoft-ui-xaml/issues/5741
         -->
         <StackPanel
