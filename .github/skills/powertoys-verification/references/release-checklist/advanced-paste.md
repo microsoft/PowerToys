@@ -22,7 +22,7 @@ Each item is annotated with two metadata tags:
 
 ---
 
-## Advanced Paste (32 items)
+## Advanced Paste (36 items)
 
 ### Plain text / Markdown / JSON (baseline)
 
@@ -37,11 +37,11 @@ Each item is annotated with two metadata tags:
 - [ ] **[ADMIN: NO]** (L874) Open Settings, set the Paste-as-Markdown direct hotkey - chord saved to settings.json
 - [ ] **[ADMIN: NO]** (L876) Copy HTML (Markdown-convertible); paste with the set hotkey - converted to Markdown
 - [ ] **[ADMIN: NO]** (L878) Copy HTML; open AP, click "Paste as markdown" - converted to Markdown
-- [ ] **[ADMIN: NO]** (L880) Copy HTML; open AP, press Ctrl+2 - converted to Markdown
+- [ ] **[ADMIN: NO]** (L880) Copy HTML; open AP, press Ctrl+3 - converted to Markdown
 - [ ] **[ADMIN: NO]** (L882) Open Settings, set the Paste-as-JSON direct hotkey - chord saved to settings.json
 - [ ] **[ADMIN: NO]** (L884) Copy XML or CSV; paste with the set hotkey - converted to JSON
 - [ ] **[ADMIN: NO]** (L886) Copy XML or CSV; open AP, click "Paste as JSON" - converted to JSON
-- [ ] **[ADMIN: NO]** (L888) Copy XML or CSV; open AP, press Ctrl+3 - converted to JSON
+- [ ] **[ADMIN: NO]** (L888) Copy XML or CSV; open AP, press Ctrl+4 - converted to JSON
 
 ### AI custom format (baseline)
 
@@ -60,6 +60,11 @@ Each item is annotated with two metadata tags:
 - [ ] **[ADMIN: NO]** (L901) Disable Advanced Paste, then press its hotkeys - nothing happens (AP window does not open; no process spawned)
 
 ### New / updated since v0.96 (PR-derived)
+
+- [ ] **[ADMIN: NO]** (#49647) Open Settings, set the Paste-as-Single-Line direct hotkey - chord saved to settings.json
+- [ ] **[ADMIN: NO]** (#49647) Copy multiline text; paste with the set hotkey - line breaks and surrounding line whitespace are replaced with single spaces
+- [ ] **[ADMIN: NO]** (#49647) Copy multiline text; open AP, click "Paste as single line" - text is pasted on one line
+- [ ] **[ADMIN: NO]** (#49647) Copy multiline text; open AP, press Ctrl+2 - text is pasted on one line
 
 - [ ] **[ADMIN: NO]** (#43990) Copy a hex color string (e.g. `#3478F6`), open Clipboard history in AP - that entry shows an RGB color-swatch preview next to the value
 - [ ] **[ADMIN: NO]** (#44021) Copy an image to the clipboard, open AP - image is accepted as input (image-input handling); a custom/AI action can run on it (image preview shown, no error)

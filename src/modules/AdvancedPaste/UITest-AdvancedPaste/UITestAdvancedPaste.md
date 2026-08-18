@@ -10,6 +10,14 @@
    - [x] Open Advanced Paste window using hotkey, click Paste as Plain Text button and confirm that plain text without any formatting is pasted.
    - [x] Copy some rich text again.
    - [x] Open Advanced Paste window using hotkey, press Ctrl + 1 and confirm that plain text without any formatting is pasted.
+ * Paste As Single Line
+   - [] Open Settings and set Paste as single line directly hotkey
+   - [] Copy multiline text
+   - [] Paste the text using the set hotkey and confirm that line breaks are replaced with single spaces
+   - [] Copy multiline text again
+   - [] Open Advanced Paste window using hotkey, click Paste as single line and confirm that the text is pasted on one line
+   - [] Copy multiline text again
+   - [] Open Advanced Paste window using hotkey, press Ctrl + 2 and confirm that the text is pasted on one line
  * Paste As Markdown
    - [] Open Settings and set Paste as Markdown directly hotkey
    - [x] Copy some text (e.g. some HTML text - convertible to Markdown)
@@ -17,15 +25,15 @@
    - [x] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted Markdown text will be picked up from clipboard and converted again to nested Markdown).
    - [x] Open Advanced Paste window using hotkey, click Paste as markdown button and confirm that pasted text is converted to markdown
    - [x] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted Markdown text will be picked up from clipboard and converted again to nested Markdown).
-   - [x] Open Advanced Paste window using hotkey, press Ctrl + 2 and confirm that pasted text is converted to markdown
+   - [x] Open Advanced Paste window using hotkey, press Ctrl + 3 and confirm that pasted text is converted to markdown
  * Paste As JSON
    - [] Open Settings and set Paste as JSON directly hotkey
    - [x] Copy some XML or CSV text (or any other text, it will be converted to simple JSON object)
    - [x] Paste the text using set hotkey and confirm that pasted text is converted to JSON
    - [x] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted JSON text will be picked up from clipboard and converted again to nested JSON).
-   - [x] Open Advanced Paste window using hotkey, click Paste as markdown button and confirm that pasted text is converted to markdown
+   - [x] Open Advanced Paste window using hotkey, click Paste as JSON button and confirm that pasted text is converted to JSON
    - [x] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted JSON text will be picked up from clipboard and converted again to nested JSON).
-   - [x] Open Advanced Paste window using hotkey, press Ctrl + 3 and confirm that pasted text is converted to markdown
+   - [x] Open Advanced Paste window using hotkey, press Ctrl + 4 and confirm that pasted text is converted to JSON
  * Paste as custom format using AI
    - [] Open Settings, navigate to Enable Paste with AI and set OpenAI key.
    - [] Copy some text to clipboard. Any text.
