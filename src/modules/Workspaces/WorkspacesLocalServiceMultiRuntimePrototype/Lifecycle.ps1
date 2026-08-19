@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('bootstrap', 'provision-two', 'status', 'upgrade', 'cleanup')]
+    [ValidateSet('bootstrap', 'provision-two', 'status', 'cleanup', 'validate')]
     [string]$Verb,
     [string]$FirstOwnerSid = 'S-1-5-21-1959867211-618815089-525172305-1122',
     [string]$SecondOwnerSid = 'S-1-5-21-1959867211-618815089-525172305-1123',
@@ -9,43 +9,219 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$controller = Join-Path $PSScriptRoot "artifacts\bin\x64\$Configuration\PtLsmrController.exe"
+$root = $PSScriptRoot
+$controller = Join-Path $root "artifacts\bin\x64\$Configuration\PtPuvrController.exe"
+$metadataPath = Join-Path $root 'artifacts\packages\packages.json'
 if (-not (Test-Path $controller)) { throw "Controller is missing: $controller" }
+if (-not (Test-Path $metadataPath)) { throw "Package metadata is missing: $metadataPath" }
+$metadata = Get-Content $metadataPath -Raw | ConvertFrom-Json
 
-switch ($Verb) {
-    'bootstrap' {
-        & $controller --bootstrap-install
-    }
-    'provision-two' {
-        $failedOwners = @()
-        foreach ($owner in $FirstOwnerSid, $SecondOwnerSid) {
-            & $controller --provision-v1 --owner-sid $owner
-            if ($LASTEXITCODE -ne 0) {
-                $failedOwners += "${owner} (exit $LASTEXITCODE)"
-            }
+$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+$principal = [Security.Principal.WindowsPrincipal]::new($identity)
+if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    throw 'Lifecycle operations require an elevated administrator token.'
+}
+
+function Get-RuntimeServiceName([string]$ownerSid) {
+    $bytes = [Text.Encoding]::Unicode.GetBytes($ownerSid)
+    $digest = [Security.Cryptography.SHA256]::HashData($bytes)
+    return 'PtPuvrRuntime_' + ([Convert]::ToHexString($digest).ToLowerInvariant().Substring(0, 16))
+}
+
+function Read-Evidence([string]$path) {
+    if (-not (Test-Path $path)) { throw "Evidence is missing: $path" }
+    $result = [ordered]@{}
+    foreach ($line in Get-Content $path) {
+        $separator = $line.IndexOf('=')
+        if ($separator -gt 0) {
+            $result[$line.Substring(0, $separator)] = $line.Substring($separator + 1)
         }
-        if ($failedOwners.Count -ne 0) {
-            throw "Provision failed for: $($failedOwners -join '; ')"
-        }
     }
-    'status' {
-        & $controller --status --owner-sid $FirstOwnerSid
-        & $controller --status --owner-sid $SecondOwnerSid
-    }
-    'upgrade' {
-        & $controller --upgrade-v2
-    }
-    'cleanup' {
-        $failedOwners = @()
-        foreach ($owner in $FirstOwnerSid, $SecondOwnerSid) {
-            & $controller --cleanup --owner-sid $owner
-            if ($LASTEXITCODE -ne 0) {
-                $failedOwners += "${owner} (exit $LASTEXITCODE)"
-            }
-        }
-        if ($failedOwners.Count -ne 0) {
-            throw "Cleanup failed for: $($failedOwners -join '; ')"
-        }
+    return [pscustomobject]$result
+}
+
+function Assert-Equal($actual, $expected, [string]$label) {
+    if ([string]$actual -ne [string]$expected) {
+        throw "${label}: expected '$expected', actual '$actual'"
     }
 }
-if ($LASTEXITCODE -ne 0) { throw "$Verb failed: $LASTEXITCODE" }
+
+function Start-Updater {
+    $firstBundle = $metadata.simulatedBundles.'PowerToys-0.101'
+    $secondBundle = $metadata.simulatedBundles.'PowerToys-0.110'
+    Assert-Equal $firstBundle.updaterSha256 $secondBundle.updaterSha256 'shared updater bundle hash'
+    Assert-Equal $firstBundle.updaterSha256 $metadata.updater.sha256 'canonical updater hash'
+
+    $installed = Get-AppxPackage -AllUsers -Name $metadata.updater.packageName -ErrorAction SilentlyContinue |
+        Where-Object { $_.PackageFullName -eq $metadata.updater.fullName } |
+        Select-Object -First 1
+    if (-not $installed) {
+        Add-AppxPackage -Path $firstBundle.updaterPath -ForceApplicationShutdown
+    }
+    & $controller --start-updater
+    if ($LASTEXITCODE -ne 0) { throw "Starting updater failed: $LASTEXITCODE" }
+}
+
+function Provision-Two {
+    & $controller --provision --owner-sid $FirstOwnerSid --runtime-track 1 `
+        --runtime-package $metadata.simulatedBundles.'PowerToys-0.101'.runtimePath
+    if ($LASTEXITCODE -ne 0) { throw "First runtime provision failed: $LASTEXITCODE" }
+    & $controller --provision --owner-sid $SecondOwnerSid --runtime-track 2 `
+        --runtime-package $metadata.simulatedBundles.'PowerToys-0.110'.runtimePath
+    if ($LASTEXITCODE -ne 0) { throw "Second runtime provision failed: $LASTEXITCODE" }
+}
+
+function Show-Status {
+    & $controller --status --owner-sid $FirstOwnerSid
+    if ($LASTEXITCODE -ne 0) { throw "First runtime status failed: $LASTEXITCODE" }
+    & $controller --status --owner-sid $SecondOwnerSid
+    if ($LASTEXITCODE -ne 0) { throw "Second runtime status failed: $LASTEXITCODE" }
+}
+
+function Remove-All {
+    foreach ($owner in $FirstOwnerSid, $SecondOwnerSid) {
+        & $controller --cleanup --owner-sid $owner
+        if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 1060 -and $LASTEXITCODE -ne 1168) {
+            throw "Runtime cleanup failed for ${owner}: $LASTEXITCODE"
+        }
+    }
+    $updaterService = Get-Service -Name PtPuvrUpdater -ErrorAction SilentlyContinue
+    if ($updaterService -and $updaterService.Status -ne 'Stopped') {
+        Stop-Service -Name PtPuvrUpdater -Force
+        $updaterService.WaitForStatus('Stopped', [TimeSpan]::FromSeconds(30))
+    }
+    $updaterPackage = Get-AppxPackage -AllUsers -Name $metadata.updater.packageName -ErrorAction SilentlyContinue |
+        Where-Object { $_.PackageFullName -eq $metadata.updater.fullName }
+    foreach ($package in $updaterPackage) {
+        Remove-AppxPackage -Package $package.PackageFullName -AllUsers
+    }
+    $storeRoot = Join-Path $env:ProgramData 'Microsoft\PowerToys\WorkspacesPackagedUpdaterVirtualRuntimePrototype'
+    Remove-Item -LiteralPath $storeRoot -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+function Invoke-Validation {
+    $firstName = Get-RuntimeServiceName $FirstOwnerSid
+    $secondName = Get-RuntimeServiceName $SecondOwnerSid
+    $storeRoot = Join-Path $env:ProgramData 'Microsoft\PowerToys\WorkspacesPackagedUpdaterVirtualRuntimePrototype'
+    $resultPath = Join-Path $root 'artifacts\validation-result.json'
+    try {
+        Start-Updater
+        Provision-Two
+        Show-Status
+
+        $updaterService = Get-CimInstance Win32_Service -Filter "Name='PtPuvrUpdater'"
+        if (-not $updaterService) { throw 'Manifest-owned updater service is missing.' }
+        Assert-Equal $updaterService.StartName 'LocalSystem' 'updater account'
+        Assert-Equal $updaterService.State 'Running' 'updater state'
+        if ($updaterService.ProcessId -eq 0) { throw 'Updater PID is zero.' }
+        if ($updaterService.PathName -notlike "*\WindowsApps\$($metadata.updater.fullName)\PtPuvrUpdater.exe*") {
+            throw "Updater ImagePath is not package-owned: $($updaterService.PathName)"
+        }
+        $updaterEvidence = Read-Evidence (Join-Path $storeRoot 'updater-evidence.txt')
+        Assert-Equal $updaterEvidence.tokenUserSid 'S-1-5-18' 'updater token SID'
+        Assert-Equal $updaterEvidence.packageIdentityPresent 'true' 'updater package identity'
+        Assert-Equal $updaterEvidence.packageFullName $metadata.updater.fullName 'updater package full name'
+        Assert-Equal $updaterEvidence.packageVersion '5.0.0.0' 'updater package version'
+        Assert-Equal $updaterEvidence.fileVersion '5.0.0.0' 'updater file version'
+        $helperEvidence = Read-Evidence (Join-Path $storeRoot 'deployment-helper-evidence.txt')
+        Assert-Equal $helperEvidence.packageIdentityPresent 'false' 'deployment helper package identity'
+        Assert-Equal $helperEvidence.tokenUserSid 'S-1-5-18' 'deployment helper token SID'
+        if ($helperEvidence.executablePath -notlike "*\ProgramData\Microsoft\PowerToys\WorkspacesPackagedUpdaterVirtualRuntimePrototype\DeploymentHelper\5.0.0.0\PtPuvrDeploymentHelper.exe") {
+            throw "Deployment helper is not running from the protected updater cache: $($helperEvidence.executablePath)"
+        }
+
+        $runtimeResults = @()
+        $definitions = @(
+            [pscustomobject]@{
+                owner = $FirstOwnerSid
+                service = $firstName
+                track = 1
+                metadata = $metadata.runtimes.track1
+            },
+            [pscustomobject]@{
+                owner = $SecondOwnerSid
+                service = $secondName
+                track = 2
+                metadata = $metadata.runtimes.track2
+            }
+        )
+        foreach ($definition in $definitions) {
+            $service = Get-CimInstance Win32_Service -Filter "Name='$($definition.service)'"
+            if (-not $service) { throw "Runtime service is missing: $($definition.service)" }
+            Assert-Equal $service.StartName "NT SERVICE\$($definition.service)" 'runtime virtual account'
+            Assert-Equal $service.State 'Running' 'runtime state'
+            if ($service.ProcessId -eq 0) { throw "Runtime PID is zero: $($definition.service)" }
+            if ($service.PathName -notlike "*\WindowsApps\$($definition.metadata.fullName)\PtPuvrRuntime.exe*") {
+                throw "Runtime ImagePath is not package-owned: $($service.PathName)"
+            }
+            $suffix = $definition.service.Substring('PtPuvrRuntime_'.Length)
+            $evidence = Read-Evidence (Join-Path $storeRoot "$suffix\evidence.txt")
+            Assert-Equal $evidence.ownerSid $definition.owner 'runtime owner'
+            Assert-Equal $evidence.runtimeTrack $definition.track 'runtime track'
+            Assert-Equal $evidence.runtimeBinaryVersion "$($definition.track).0.0.0" 'runtime file version'
+            Assert-Equal $evidence.packageFullName $definition.metadata.fullName 'runtime package full name'
+            Assert-Equal $evidence.packageVersion "$($definition.track).0.0.0" 'runtime package version'
+            Assert-Equal $evidence.packageIdentityPresent 'false' 'runtime package process identity'
+            Assert-Equal $evidence.tokenUserSid $evidence.serviceSid 'virtual account primary SID'
+            Assert-Equal $evidence.serviceSidPresent 'true' 'runtime service SID membership'
+            if ($evidence.executablePath -notlike "*\WindowsApps\$($definition.metadata.fullName)\PtPuvrRuntime.exe") {
+                throw "Runtime executable is not the direct WindowsApps payload: $($evidence.executablePath)"
+            }
+            $runtimeResults += [pscustomobject]@{
+                ownerSid = $definition.owner
+                serviceName = $definition.service
+                processId = [uint32]$service.ProcessId
+                runtimeTrack = [uint16]$definition.track
+                packageFullName = $evidence.packageFullName
+                tokenUserSid = $evidence.tokenUserSid
+                serviceSid = $evidence.serviceSid
+                packageIdentityPresent = $evidence.packageIdentityPresent
+                executablePath = $evidence.executablePath
+            }
+        }
+        if ($runtimeResults[0].processId -eq $runtimeResults[1].processId) {
+            throw 'Runtime services unexpectedly share one PID.'
+        }
+        if ($runtimeResults[0].packageFullName -eq $runtimeResults[1].packageFullName) {
+            throw 'Runtime services unexpectedly share one package family/version.'
+        }
+        $installedRuntimeCopies = Get-ChildItem -LiteralPath $storeRoot -Filter PtPuvrRuntime.exe -Recurse -ErrorAction SilentlyContinue
+        if ($installedRuntimeCopies) {
+            throw 'A runtime EXE copy exists outside WindowsApps in the prototype store.'
+        }
+        $matchingUpdaterServices = @(Get-Service -Name 'PtPuvrUpdater' -ErrorAction SilentlyContinue)
+        Assert-Equal $matchingUpdaterServices.Count 1 'singleton updater service count'
+
+        $validation = [ordered]@{
+            timestamp = (Get-Date).ToString('o')
+            updater = [ordered]@{
+                serviceName = 'PtPuvrUpdater'
+                processId = [uint32]$updaterService.ProcessId
+                account = $updaterService.StartName
+                packageFullName = $updaterEvidence.packageFullName
+                packageVersion = $updaterEvidence.packageVersion
+                fileVersion = $updaterEvidence.fileVersion
+                packageIdentityPresent = $updaterEvidence.packageIdentityPresent
+                sharedBundleSha256 = $metadata.updater.sha256
+                deploymentHelperPackageIdentityPresent = $helperEvidence.packageIdentityPresent
+                deploymentHelperExecutablePath = $helperEvidence.executablePath
+            }
+            runtimes = $runtimeResults
+            simulatedPowerToysVersions = @('0.101', '0.110')
+            verdict = 'PASS'
+        }
+        $validation | ConvertTo-Json -Depth 8 | Set-Content $resultPath -Encoding utf8NoBOM
+        Write-Host "VALIDATION PASS: $resultPath"
+    }
+    finally {
+        Remove-All
+    }
+}
+
+switch ($Verb) {
+    'bootstrap' { Start-Updater }
+    'provision-two' { Provision-Two }
+    'status' { Show-Status }
+    'cleanup' { Remove-All }
+    'validate' { Invoke-Validation }
+}

@@ -111,9 +111,12 @@ namespace
         return value.str();
     }
 
-    [[nodiscard]] std::wstring package_string_from_id(bool family, uint16_t major)
+    [[nodiscard]] std::wstring package_string_from_id(
+        std::wstring_view packageName,
+        bool family,
+        uint16_t major)
     {
-        std::wstring name(ptlsmr::PackageName);
+        std::wstring name(packageName);
         std::wstring publisher(ptlsmr::PackagePublisher);
         PACKAGE_ID id{};
         id.processorArchitecture = PROCESSOR_ARCHITECTURE_AMD64;
@@ -398,7 +401,7 @@ namespace ptlsmr
         InstanceNames names;
         names.ownerSid = canonical_owner_sid(ownerSid);
         names.suffix = hex_digest(names.ownerSid).substr(0, 16);
-        names.serviceName = L"PtLsmrRuntime_" + names.suffix;
+        names.serviceName = L"PtPuvrRuntime_" + names.suffix;
         names.storeDirectory = program_data_root() / names.suffix;
         names.evidencePath = names.storeDirectory / L"evidence.txt";
         return names;
@@ -450,38 +453,59 @@ namespace ptlsmr
         return std::filesystem::path(path) / StoreRelativeRoot;
     }
 
-    std::filesystem::path installed_updater_root()
+    std::wstring runtime_package_name(uint16_t track)
     {
-        PWSTR path = nullptr;
-        const HRESULT result = SHGetKnownFolderPath(FOLDERID_ProgramFiles, 0, nullptr, &path);
-        if (FAILED(result))
+        switch (track)
         {
-            throw win32_error("SHGetKnownFolderPath(FOLDERID_ProgramFiles)", HRESULT_CODE(result));
+        case 1:
+            return RuntimePackageNameTrack1;
+        case 2:
+            return RuntimePackageNameTrack2;
+        default:
+            throw win32_error("runtime track policy", ERROR_INVALID_PARAMETER);
         }
-        local_memory memory(path);
-        return std::filesystem::path(path) / L"PowerToys\\WorkspacesLocalServiceMultiRuntimePrototype";
     }
 
-    std::wstring expected_package_full_name(uint16_t major)
+    std::wstring expected_runtime_package_full_name(uint16_t track)
     {
-        if (major != 1 && major != 2)
+        return package_string_from_id(runtime_package_name(track), false, track);
+    }
+
+    std::wstring expected_runtime_package_family_name(uint16_t track)
+    {
+        return package_string_from_id(runtime_package_name(track), true, track);
+    }
+
+    std::wstring expected_updater_package_full_name()
+    {
+        return package_string_from_id(UpdaterPackageName, false, UpdaterVersionMajor);
+    }
+
+    std::wstring expected_updater_package_family_name()
+    {
+        return package_string_from_id(UpdaterPackageName, true, UpdaterVersionMajor);
+    }
+
+    bool is_allowed_runtime_package_full_name(std::wstring_view value)
+    {
+        return value == expected_runtime_package_full_name(1) ||
+            value == expected_runtime_package_full_name(2);
+    }
+
+    uint16_t runtime_track_from_package_full_name(std::wstring_view fullName)
+    {
+        if (fullName == expected_runtime_package_full_name(1))
         {
-            throw win32_error("package version policy", ERROR_INVALID_PARAMETER);
+            return 1;
         }
-        return package_string_from_id(false, major);
+        if (fullName == expected_runtime_package_full_name(2))
+        {
+            return 2;
+        }
+        throw win32_error("runtime package identity policy", ERROR_INVALID_DATA);
     }
 
-    std::wstring expected_package_family_name()
-    {
-        return package_string_from_id(true, 0);
-    }
-
-    bool is_allowed_package_full_name(std::wstring_view value)
-    {
-        return value == expected_package_full_name(1) || value == expected_package_full_name(2);
-    }
-
-    uint16_t package_major_version(std::wstring_view fullName)
+    std::wstring package_version_string(std::wstring_view fullName)
     {
         std::wstring copy(fullName);
         UINT32 bytes = 0;
@@ -501,7 +525,12 @@ namespace ptlsmr
             throw win32_error("PackageIdFromFullName", static_cast<DWORD>(result));
         }
         const auto* id = reinterpret_cast<const PACKAGE_ID*>(buffer.data());
-        return id->version.Major;
+        std::wstringstream version;
+        version << id->version.Major << L"."
+                << id->version.Minor << L"."
+                << id->version.Build << L"."
+                << id->version.Revision;
+        return version.str();
     }
 
     std::wstring quote_argument(std::wstring_view value)

@@ -1,5 +1,7 @@
 #include "../Common/LsmrCommon.h"
 
+#include <shellapi.h>
+
 #include <algorithm>
 #include <filesystem>
 #include <iostream>
@@ -8,10 +10,9 @@ namespace
 {
     enum class command : uint16_t
     {
-        provision_v1 = 1,
-        upgrade_v2 = 2,
-        status = 3,
-        cleanup = 4,
+        provision = 1,
+        status = 2,
+        cleanup = 3,
     };
 
 #pragma pack(push, 1)
@@ -20,7 +21,10 @@ namespace
         uint32_t magic{};
         uint16_t version{};
         uint16_t command{};
+        uint16_t runtimeTrack{};
+        uint16_t reserved{};
         wchar_t ownerSid[ptlsmr::MaxOwnerSidChars]{};
+        wchar_t packagePath[ptlsmr::MaxPackagePathChars]{};
     };
 
     struct reply
@@ -110,32 +114,6 @@ namespace
         return elevation.TokenIsElevated != 0;
     }
 
-    [[nodiscard]] std::filesystem::path module_directory()
-    {
-        std::wstring path(32768, L'\0');
-        const DWORD characters = GetModuleFileNameW(
-            nullptr,
-            path.data(),
-            static_cast<DWORD>(path.size()));
-        if (characters == 0 || characters >= path.size())
-        {
-            throw ptlsmr::win32_error("GetModuleFileNameW(controller)", GetLastError());
-        }
-        path.resize(characters);
-        return std::filesystem::path(path).parent_path();
-    }
-
-    void copy_fixed_file(
-        const std::filesystem::path& source,
-        const std::filesystem::path& destination)
-    {
-        if (!std::filesystem::is_regular_file(source))
-        {
-            throw ptlsmr::win32_error("bootstrap source policy", ERROR_FILE_NOT_FOUND);
-        }
-        std::filesystem::copy_file(source, destination, std::filesystem::copy_options::overwrite_existing);
-    }
-
     void wait_for_service(SC_HANDLE service, DWORD expected)
     {
         for (DWORD elapsed = 0; elapsed < 30000; elapsed += 200)
@@ -163,58 +141,65 @@ namespace
         throw ptlsmr::win32_error("updater service start timeout", ERROR_TIMEOUT);
     }
 
-    void bootstrap_install()
+    void start_manifest_updater()
     {
         if (!elevated())
         {
-            throw ptlsmr::win32_error("bootstrap elevation policy", ERROR_ELEVATION_REQUIRED);
+            throw ptlsmr::win32_error("updater start elevation policy", ERROR_ELEVATION_REQUIRED);
         }
-        const auto binaryDirectory = module_directory();
-        const auto root = binaryDirectory.parent_path().parent_path().parent_path().parent_path();
-        const auto packageDirectory = root / L"artifacts\\packages";
-        const auto installDirectory = ptlsmr::installed_updater_root();
-        std::filesystem::create_directories(installDirectory);
-        copy_fixed_file(binaryDirectory / L"PtLsmrUpdater.exe", installDirectory / L"PtLsmrUpdater.exe");
-        std::filesystem::create_directories(installDirectory / L"Packages");
-        copy_fixed_file(packageDirectory / L"PtLsmrRuntime-v1.msix", installDirectory / L"Packages\\PtLsmrRuntime-v1.msix");
-        copy_fixed_file(packageDirectory / L"PtLsmrRuntime-v2.msix", installDirectory / L"Packages\\PtLsmrRuntime-v2.msix");
-        ptlsmr::protect_system_directory(installDirectory);
-
-        service_handle scm(OpenSCManagerW(nullptr, nullptr, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE));
+        service_handle scm(OpenSCManagerW(nullptr, nullptr, SC_MANAGER_CONNECT));
         if (!scm)
         {
-            throw ptlsmr::win32_error("OpenSCManagerW(bootstrap)", GetLastError());
+            throw ptlsmr::win32_error("OpenSCManagerW(updater start)", GetLastError());
         }
-        const std::wstring executable = ptlsmr::quote_argument(
-            (installDirectory / L"PtLsmrUpdater.exe").wstring());
-        service_handle service(CreateServiceW(
+        service_handle service(OpenServiceW(
             scm.get(),
             ptlsmr::UpdaterServiceName,
-            ptlsmr::UpdaterServiceName,
-            SERVICE_QUERY_STATUS | SERVICE_START | SERVICE_STOP | DELETE,
-            SERVICE_WIN32_OWN_PROCESS,
-            SERVICE_AUTO_START,
-            SERVICE_ERROR_NORMAL,
-            executable.c_str(),
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr));
+            SERVICE_QUERY_STATUS | SERVICE_QUERY_CONFIG | SERVICE_START));
         if (!service)
         {
-            if (GetLastError() != ERROR_SERVICE_EXISTS)
-            {
-                throw ptlsmr::win32_error("CreateServiceW(updater)", GetLastError());
-            }
-            service = service_handle(OpenServiceW(
-                scm.get(),
-                ptlsmr::UpdaterServiceName,
-                SERVICE_QUERY_STATUS | SERVICE_START | SERVICE_STOP | DELETE));
-            if (!service)
-            {
-                throw ptlsmr::win32_error("OpenServiceW(updater)", GetLastError());
-            }
+            throw ptlsmr::win32_error("OpenServiceW(manifest updater)", GetLastError());
+        }
+        DWORD configBytes = 0;
+        QueryServiceConfigW(service.get(), nullptr, 0, &configBytes);
+        if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+        {
+            throw ptlsmr::win32_error("QueryServiceConfigW(updater size)", GetLastError());
+        }
+        std::vector<BYTE> configBuffer(configBytes);
+        ptlsmr::check_bool(
+            QueryServiceConfigW(
+                service.get(),
+                reinterpret_cast<QUERY_SERVICE_CONFIGW*>(configBuffer.data()),
+                configBytes,
+                &configBytes),
+            "QueryServiceConfigW(updater)");
+        const auto* config =
+            reinterpret_cast<const QUERY_SERVICE_CONFIGW*>(configBuffer.data());
+        const bool isLocalSystem =
+            config->lpServiceStartName &&
+            (_wcsicmp(config->lpServiceStartName, L"LocalSystem") == 0 ||
+             _wcsicmp(config->lpServiceStartName, L"NT AUTHORITY\\SYSTEM") == 0);
+        int argumentCount = 0;
+        if (!config->lpBinaryPathName)
+        {
+            throw ptlsmr::win32_error("manifest updater ImagePath", ERROR_INVALID_DATA);
+        }
+        LPWSTR* rawArguments = CommandLineToArgvW(config->lpBinaryPathName, &argumentCount);
+        if (!rawArguments)
+        {
+            throw ptlsmr::win32_error("CommandLineToArgvW(updater ImagePath)", GetLastError());
+        }
+        ptlsmr::local_memory arguments(rawArguments);
+        const std::filesystem::path executablePath(rawArguments[0]);
+        if (!isLocalSystem ||
+            argumentCount != 1 ||
+            _wcsicmp(executablePath.filename().c_str(), ptlsmr::UpdaterExe) != 0 ||
+            _wcsicmp(
+                executablePath.parent_path().filename().c_str(),
+                ptlsmr::expected_updater_package_full_name().c_str()) != 0)
+        {
+            throw ptlsmr::win32_error("manifest updater SCM policy", ERROR_ACCESS_DENIED);
         }
         SERVICE_STATUS_PROCESS status{};
         DWORD bytes = 0;
@@ -225,7 +210,7 @@ namespace
                 reinterpret_cast<BYTE*>(&status),
                 sizeof(status),
                 &bytes),
-            "QueryServiceStatusEx(bootstrap)");
+            "QueryServiceStatusEx(updater start)");
         if (status.dwCurrentState != SERVICE_RUNNING)
         {
             if (!StartServiceW(service.get(), 0, nullptr) &&
@@ -315,13 +300,19 @@ namespace
         throw ptlsmr::win32_error("updater pipe connect timeout", ERROR_TIMEOUT);
     }
 
-    [[nodiscard]] reply send_command(command operation, std::wstring_view owner)
+    [[nodiscard]] reply send_command(
+        command operation,
+        std::wstring_view owner,
+        uint16_t runtimeTrack,
+        std::wstring_view packagePath)
     {
         request input{};
         input.magic = ptlsmr::ProtocolMagic;
         input.version = ptlsmr::ProtocolVersion;
         input.command = static_cast<uint16_t>(operation);
+        input.runtimeTrack = runtimeTrack;
         copy_bounded(input.ownerSid, ARRAYSIZE(input.ownerSid), owner);
+        copy_bounded(input.packagePath, ARRAYSIZE(input.packagePath), packagePath);
         auto pipe = connect_bound_pipe();
         DWORD transferred = 0;
         ptlsmr::check_bool(
@@ -364,9 +355,13 @@ namespace
         }
     }
 
-    int invoke(command operation, std::wstring_view owner)
+    int invoke(
+        command operation,
+        std::wstring_view owner,
+        uint16_t runtimeTrack = 0,
+        std::wstring_view packagePath = L"")
     {
-        const auto response = send_command(operation, owner);
+        const auto response = send_command(operation, owner, runtimeTrack, packagePath);
         print_reply(response);
         return (response.win32Status == ERROR_SUCCESS && response.hresult == S_OK) ? 0 : 1;
     }
@@ -377,21 +372,31 @@ int wmain()
     try
     {
         const auto arguments = ptlsmr::command_line_arguments();
-        if (std::find(arguments.begin(), arguments.end(), L"--bootstrap-install") != arguments.end())
+        if (std::find(arguments.begin(), arguments.end(), L"--start-updater") != arguments.end())
         {
-            bootstrap_install();
-            std::wcout << L"updater bootstrap installed and running\n";
+            start_manifest_updater();
+            std::wcout << L"manifest-owned updater is running\n";
             return 0;
         }
-        if (std::find(arguments.begin(), arguments.end(), L"--provision-v1") != arguments.end())
+        if (std::find(arguments.begin(), arguments.end(), L"--provision") != arguments.end())
         {
+            const auto trackText = ptlsmr::argument_value(arguments, L"--runtime-track");
+            if (trackText != L"1" && trackText != L"2")
+            {
+                throw ptlsmr::win32_error("runtime track argument", ERROR_INVALID_PARAMETER);
+            }
+            const uint16_t runtimeTrack = static_cast<uint16_t>(trackText[0] - L'0');
+            const auto suppliedPath = std::filesystem::weakly_canonical(
+                ptlsmr::argument_value(arguments, L"--runtime-package"));
+            if (!std::filesystem::is_regular_file(suppliedPath))
+            {
+                throw ptlsmr::win32_error("runtime package argument", ERROR_FILE_NOT_FOUND);
+            }
             return invoke(
-                command::provision_v1,
-                ptlsmr::canonical_owner_sid(ptlsmr::argument_value(arguments, L"--owner-sid")));
-        }
-        if (std::find(arguments.begin(), arguments.end(), L"--upgrade-v2") != arguments.end())
-        {
-            return invoke(command::upgrade_v2, L"");
+                command::provision,
+                ptlsmr::canonical_owner_sid(ptlsmr::argument_value(arguments, L"--owner-sid")),
+                runtimeTrack,
+                suppliedPath.wstring());
         }
         if (std::find(arguments.begin(), arguments.end(), L"--status") != arguments.end())
         {
@@ -405,8 +410,9 @@ int wmain()
                 command::cleanup,
                 ptlsmr::canonical_owner_sid(ptlsmr::argument_value(arguments, L"--owner-sid")));
         }
-        std::wcerr << L"usage: --bootstrap-install | --provision-v1 --owner-sid S-1-5-21-... | "
-                      L"--upgrade-v2 | --status --owner-sid ... | --cleanup --owner-sid ...\n";
+        std::wcerr << L"usage: --start-updater | --provision --owner-sid S-1-5-21-... "
+                      L"--runtime-track 1|2 --runtime-package path.msix | "
+                      L"--status --owner-sid ... | --cleanup --owner-sid ...\n";
         return ERROR_INVALID_PARAMETER;
     }
     catch (const ptlsmr::win32_error& error)

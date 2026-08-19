@@ -10,6 +10,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PtLsmrUpdater", "Updater\Pt
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PtLsmrController", "Controller\PtLsmrController.vcxproj", "{46F1D6E7-96C4-4EF6-903E-480A6D1A9EF3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PtPuvrDeploymentHelper", "DeploymentHelper\PtPuvrDeploymentHelper.vcxproj", "{56C49192-E298-49CF-B6F1-C25A9D81A30E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -32,5 +34,9 @@ Global
 		{46F1D6E7-96C4-4EF6-903E-480A6D1A9EF3}.Debug|x64.Build.0 = Debug|x64
 		{46F1D6E7-96C4-4EF6-903E-480A6D1A9EF3}.Release|x64.ActiveCfg = Release|x64
 		{46F1D6E7-96C4-4EF6-903E-480A6D1A9EF3}.Release|x64.Build.0 = Release|x64
+		{56C49192-E298-49CF-B6F1-C25A9D81A30E}.Debug|x64.ActiveCfg = Debug|x64
+		{56C49192-E298-49CF-B6F1-C25A9D81A30E}.Debug|x64.Build.0 = Debug|x64
+		{56C49192-E298-49CF-B6F1-C25A9D81A30E}.Release|x64.ActiveCfg = Release|x64
+		{56C49192-E298-49CF-B6F1-C25A9D81A30E}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 EndGlobal

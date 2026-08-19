@@ -6,6 +6,10 @@
 #include <filesystem>
 #include <sstream>
 
+#ifndef PT_RUNTIME_TRACK
+#define PT_RUNTIME_TRACK 1
+#endif
+
 namespace
 {
     SERVICE_STATUS_HANDLE g_statusHandle = nullptr;
@@ -13,6 +17,7 @@ namespace
     ptlsmr::unique_handle g_stopEvent;
     std::wstring g_ownerSid;
     std::wstring g_serviceName;
+    uint16_t g_runtimeTrack = 0;
 
     void report_status(DWORD state, DWORD win32ExitCode = NO_ERROR)
     {
@@ -129,11 +134,11 @@ namespace
             throw ptlsmr::win32_error("runtime store missing", ERROR_PATH_NOT_FOUND);
         }
         const std::wstring tokenUserSid = ptlsmr::current_token_user_sid();
-        if (tokenUserSid != L"S-1-5-18")
-        {
-            throw ptlsmr::win32_error("runtime LocalSystem token policy", ERROR_ACCESS_DENIED);
-        }
         const std::wstring expectedServiceSid = ptlsmr::service_sid(g_serviceName);
+        if (tokenUserSid != expectedServiceSid)
+        {
+            throw ptlsmr::win32_error("runtime virtual-account token policy", ERROR_ACCESS_DENIED);
+        }
         HANDLE rawToken = nullptr;
         ptlsmr::check_bool(
             OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &rawToken),
@@ -166,7 +171,8 @@ namespace
             packagePath = executablePath.parent_path();
             packageFullName = packagePath.filename().wstring();
         }
-        if (!ptlsmr::is_allowed_package_full_name(packageFullName))
+        if (!ptlsmr::is_allowed_runtime_package_full_name(packageFullName) ||
+            ptlsmr::runtime_track_from_package_full_name(packageFullName) != g_runtimeTrack)
         {
             throw ptlsmr::win32_error("runtime package path identity policy", ERROR_INVALID_DATA);
         }
@@ -186,12 +192,15 @@ namespace
         evidence << L"processId=" << GetCurrentProcessId() << L"\r\n";
         evidence << L"sessionId=" << sessionId << L"\r\n";
         evidence << L"tokenUserSid=" << tokenUserSid << L"\r\n";
+        evidence << L"virtualAccountName=NT SERVICE\\" << g_serviceName << L"\r\n";
         evidence << L"serviceSid=" << expectedServiceSid << L"\r\n";
         evidence << L"serviceSidPresent=" << (hasServiceSid ? L"true" : L"false") << L"\r\n";
+        evidence << L"runtimeTrack=" << g_runtimeTrack << L"\r\n";
+        evidence << L"runtimeBinaryVersion=" << PT_RUNTIME_TRACK << L".0.0.0\r\n";
         evidence << L"packageIdentityPresent=" << (packageIdentityPresent ? L"true" : L"false") << L"\r\n";
         evidence << L"packageFullName=" << packageFullName << L"\r\n";
         evidence << L"packageFamilyName=" << packageFamilyName << L"\r\n";
-        evidence << L"packageVersion=" << ptlsmr::package_major_version(packageFullName) << L".0.0.0\r\n";
+        evidence << L"packageVersion=" << ptlsmr::package_version_string(packageFullName) << L"\r\n";
         evidence << L"packageInstalledLocation=" << packagePath.wstring() << L"\r\n";
         evidence << L"executablePath=" << executablePath.wstring() << L"\r\n";
         ptlsmr::write_utf8_file_atomic(names.evidencePath, evidence.str());
@@ -257,6 +266,16 @@ int wmain()
         g_ownerSid = ptlsmr::canonical_owner_sid(
             ptlsmr::argument_value(arguments, L"--owner-sid"));
         g_serviceName = ptlsmr::argument_value(arguments, L"--service-name");
+        const auto runtimeTrackText = ptlsmr::argument_value(arguments, L"--runtime-track");
+        if (runtimeTrackText != L"1" && runtimeTrackText != L"2")
+        {
+            return ERROR_INVALID_PARAMETER;
+        }
+        g_runtimeTrack = static_cast<uint16_t>(runtimeTrackText[0] - L'0');
+        if (g_runtimeTrack != PT_RUNTIME_TRACK)
+        {
+            return ERROR_REVISION_MISMATCH;
+        }
         const auto names = ptlsmr::instance_names(g_ownerSid);
         if (g_serviceName != names.serviceName || g_serviceName.size() > 128)
         {

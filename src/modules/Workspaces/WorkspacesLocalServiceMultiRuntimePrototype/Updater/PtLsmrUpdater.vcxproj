@@ -10,8 +10,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration"><ConfigurationType>Application</ConfigurationType><UseDebugLibraries>false</UseDebugLibraries></PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\PtLsmr.Common.props" />
+  <PropertyGroup><TargetName>PtPuvrUpdater</TargetName></PropertyGroup>
   <ItemDefinitionGroup><Link><SubSystem>Console</SubSystem><AdditionalDependencies>windowsapp.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies></Link></ItemDefinitionGroup>
-  <ItemGroup><ClCompile Include="UpdaterMain.cpp" /></ItemGroup>
+  <ItemGroup><ClCompile Include="UpdaterMain.cpp" /><ResourceCompile Include="UpdaterVersion.rc" /></ItemGroup>
   <ItemGroup><ProjectReference Include="..\Common\PtLsmrCommon.vcxproj"><Project>{51EAD4A2-BB68-420C-8CFD-11891A654810}</Project></ProjectReference></ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

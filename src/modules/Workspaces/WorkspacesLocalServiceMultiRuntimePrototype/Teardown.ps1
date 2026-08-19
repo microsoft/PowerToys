@@ -13,41 +13,72 @@ if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administra
     throw 'Teardown requires an elevated administrator token.'
 }
 
-$controller = Join-Path $PSScriptRoot "artifacts\bin\x64\$Configuration\PtLsmrController.exe"
-if (Test-Path $controller) {
+function Get-RuntimeServiceName([string]$ownerSid) {
+    $bytes = [Text.Encoding]::Unicode.GetBytes($ownerSid)
+    $digest = [Security.Cryptography.SHA256]::HashData($bytes)
+    return 'PtPuvrRuntime_' + ([Convert]::ToHexString($digest).ToLowerInvariant().Substring(0, 16))
+}
+
+$controller = Join-Path $PSScriptRoot "artifacts\bin\x64\$Configuration\PtPuvrController.exe"
+$updater = Get-Service -Name PtPuvrUpdater -ErrorAction SilentlyContinue
+if ($updater -and $updater.Status -ne 'Running') {
+    try {
+        Start-Service -Name PtPuvrUpdater
+        $updater.WaitForStatus('Running', [TimeSpan]::FromSeconds(30))
+    }
+    catch {
+        Write-Warning "Could not start updater for managed cleanup: $($_.Exception.Message)"
+    }
+}
+
+if ((Get-Service -Name PtPuvrUpdater -ErrorAction SilentlyContinue).Status -eq 'Running' -and
+    (Test-Path $controller)) {
     foreach ($owner in $FirstOwnerSid, $SecondOwnerSid) {
         & $controller --cleanup --owner-sid $owner
-        if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 1060) {
-            throw "Updater cleanup failed for ${owner}: $LASTEXITCODE"
+        if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 1060 -and $LASTEXITCODE -ne 1168) {
+            Write-Warning "Updater cleanup failed for ${owner}: $LASTEXITCODE"
         }
     }
 }
 
-$updater = Get-Service -Name PtLsmrUpdater -ErrorAction SilentlyContinue
-if ($updater) {
-    if ($updater.Status -ne 'Stopped') {
-        Stop-Service -Name PtLsmrUpdater -Force
-        $updater.WaitForStatus('Stopped', [TimeSpan]::FromSeconds(30))
+foreach ($owner in $FirstOwnerSid, $SecondOwnerSid) {
+    $serviceName = Get-RuntimeServiceName $owner
+    $runtime = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+    if ($runtime) {
+        if ($runtime.Status -ne 'Stopped') {
+            Stop-Service -Name $serviceName -Force
+            $runtime.WaitForStatus('Stopped', [TimeSpan]::FromSeconds(30))
+        }
+        sc.exe delete $serviceName | Out-Host
     }
-    sc.exe delete PtLsmrUpdater | Out-Host
 }
 
-$packageName = 'Microsoft.PowerToys.WsLocalSvcMultiRt'
-Get-AppxPackage -AllUsers -Name $packageName -ErrorAction SilentlyContinue |
-    ForEach-Object {
-        try {
-            Remove-AppxPackage -Package $_.PackageFullName -AllUsers -ErrorAction Stop
-        }
-        catch {
-            Write-Warning "Exact package removal is pending or failed: $($_.Exception.Message)"
-        }
-    }
+$updater = Get-Service -Name PtPuvrUpdater -ErrorAction SilentlyContinue
+if ($updater -and $updater.Status -ne 'Stopped') {
+    Stop-Service -Name PtPuvrUpdater -Force
+    $updater.WaitForStatus('Stopped', [TimeSpan]::FromSeconds(30))
+}
 
-$installRoot = Join-Path $env:ProgramFiles 'PowerToys\WorkspacesLocalServiceMultiRuntimePrototype'
-$storeRoot = Join-Path $env:ProgramData 'Microsoft\PowerToys\WorkspacesLocalServiceMultiRuntimePrototype'
-Remove-Item $installRoot -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item $storeRoot -Recurse -Force -ErrorAction SilentlyContinue
-$certificateSubject = 'CN=PowerToys Workspaces LocalService Multi Runtime Prototype Test'
+$packageNames = @(
+    'Microsoft.PowerToys.WsPuvr.Updater',
+    'Microsoft.PowerToys.WsPuvr.Runtime1',
+    'Microsoft.PowerToys.WsPuvr.Runtime2'
+)
+foreach ($packageName in $packageNames) {
+    Get-AppxPackage -AllUsers -Name $packageName -ErrorAction SilentlyContinue |
+        ForEach-Object {
+            try {
+                Remove-AppxPackage -Package $_.PackageFullName -AllUsers -ErrorAction Stop
+            }
+            catch {
+                Write-Warning "Package removal failed for $($_.PackageFullName): $($_.Exception.Message)"
+            }
+        }
+}
+
+$storeRoot = Join-Path $env:ProgramData 'Microsoft\PowerToys\WorkspacesPackagedUpdaterVirtualRuntimePrototype'
+Remove-Item -LiteralPath $storeRoot -Recurse -Force -ErrorAction SilentlyContinue
+$certificateSubject = 'CN=PowerToys Workspaces Packaged Updater Virtual Runtime Prototype Test'
 foreach ($store in 'Cert:\CurrentUser\My', 'Cert:\CurrentUser\TrustedPeople',
          'Cert:\LocalMachine\My', 'Cert:\LocalMachine\TrustedPeople') {
     $certificates = @(Get-ChildItem $store -ErrorAction SilentlyContinue |
@@ -57,6 +88,13 @@ foreach ($store in 'Cert:\CurrentUser\My', 'Cert:\CurrentUser\TrustedPeople',
     }
 }
 
-Get-Service -Name 'PtLsmr*' -ErrorAction SilentlyContinue
-Get-AppxPackage -AllUsers -Name $packageName -ErrorAction SilentlyContinue |
-    Select-Object PackageFullName, PackageUserInformation
+$remainingServices = @(Get-Service -Name 'PtPuvr*' -ErrorAction SilentlyContinue)
+$remainingPackages = @(
+    foreach ($packageName in $packageNames) {
+        Get-AppxPackage -AllUsers -Name $packageName -ErrorAction SilentlyContinue
+    }
+)
+if ($remainingServices.Count -ne 0 -or $remainingPackages.Count -ne 0 -or (Test-Path $storeRoot)) {
+    throw 'Teardown verification failed; prototype state remains.'
+}
+Write-Host 'Teardown PASS: no prototype services, packages, stores, or trusted certificates remain.'

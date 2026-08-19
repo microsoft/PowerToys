@@ -1,0 +1,41 @@
+#include <windows.h>
+
+#ifndef PT_RUNTIME_TRACK
+#define PT_RUNTIME_TRACK 1
+#endif
+
+#define PT_STRINGIZE_DETAIL(value) #value
+#define PT_STRINGIZE(value) PT_STRINGIZE_DETAIL(value)
+#define PT_RUNTIME_VERSION_STRING PT_STRINGIZE(PT_RUNTIME_TRACK) ".0.0.0\0"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION PT_RUNTIME_TRACK,0,0,0
+ PRODUCTVERSION PT_RUNTIME_TRACK,0,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Microsoft Corporation\0"
+            VALUE "FileDescription", "PowerToys virtual-account runtime prototype\0"
+            VALUE "FileVersion", PT_RUNTIME_VERSION_STRING
+            VALUE "InternalName", "PtPuvrRuntime.exe\0"
+            VALUE "OriginalFilename", "PtPuvrRuntime.exe\0"
+            VALUE "ProductName", "PowerToys Workspaces runtime prototype\0"
+            VALUE "ProductVersion", PT_RUNTIME_VERSION_STRING
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
