@@ -11,6 +11,7 @@
 #include "../../../common/logger/logger.h"
 #include "../../../common/utils/logger_helper.h"
 #include "../../../common/interop/shared_constants.h"
+#include "../../../common/utils/game_mode.h"
 #include <atomic>
 #include <thread>
 #include <vector>
@@ -56,6 +57,7 @@ namespace
     const wchar_t JSON_KEY_WRAP_MODE[] = L"wrap_mode";
     const wchar_t JSON_KEY_ACTIVATION_MODE[] = L"activation_mode";
     const wchar_t JSON_KEY_DISABLE_ON_SINGLE_MONITOR[] = L"disable_cursor_wrap_on_single_monitor";
+    const wchar_t JSON_KEY_DISABLE_IN_GAME_MODE[] = L"disable_cursor_wrap_in_game_mode";
 }
 
 // The PowerToy name that will be shown in the settings.
@@ -83,12 +85,17 @@ private:
     bool m_autoActivate = false;
     bool m_disableWrapDuringDrag = true; // Default to true to prevent wrap during drag
     bool m_disableOnSingleMonitor = false; // Default to false
+    bool m_disableInGameMode = false; // Default to false: only disable wrapping in game mode when the user opts in
     int m_wrapMode = 0; // 0=Both (default), 1=VerticalOnly, 2=HorizontalOnly
     int m_activationMode = 0; // 0=Always (default), 1=HoldingCtrl (wraps only while held), 2=HoldingShift (wraps only while held)
     
     // Mouse hook
     HHOOK m_mouseHook = nullptr;
     std::atomic<bool> m_hookActive{ false };
+
+    // Cached game mode state, refreshed at most once per GAME_MODE_POLL_MS from the mouse hook to keep the hot path quiet.
+    std::atomic<bool> m_gameModeActive{ false };
+    std::atomic<ULONGLONG> m_lastGameModeCheckTick{ 0 };
     
     // Core wrapping engine (edge-based polygon model)
     CursorWrapCore m_core;
@@ -107,6 +114,7 @@ private:
     HDEVNOTIFY m_deviceNotify = nullptr;
     static constexpr UINT_PTR TIMER_UPDATE_MONITORS = 1;
     static constexpr UINT DEBOUNCE_DELAY_MS = 500;
+    static constexpr ULONGLONG GAME_MODE_POLL_MS = 1000; // Re-check game mode at most this often from the mouse hook
 
 public:
     // Constructor
@@ -461,6 +469,21 @@ private:
             {
                 Logger::warn("Failed to initialize CursorWrap disable on single monitor from settings. Will use default value (false)");
             }
+
+            try
+            {
+                // Parse disable in game mode
+                auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+                if (propertiesObject.HasKey(JSON_KEY_DISABLE_IN_GAME_MODE))
+                {
+                    auto disableInGameModeObject = propertiesObject.GetNamedObject(JSON_KEY_DISABLE_IN_GAME_MODE);
+                    m_disableInGameMode = disableInGameModeObject.GetNamedBoolean(JSON_KEY_VALUE);
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize CursorWrap disable in game mode from settings. Will use default value (false)");
+            }
         }
         else
         {
@@ -494,6 +517,10 @@ private:
         {
             m_hookActive = true;
             Logger::info("CursorWrap mouse hook started successfully");
+
+            // Force a fresh game mode check on the first mouse move after activation.
+            m_lastGameModeCheckTick = 0;
+            m_gameModeActive = false;
 #ifdef _DEBUG
             Logger::info(L"CursorWrap DEBUG: Hook installed");
 #endif
@@ -512,6 +539,8 @@ private:
             UnhookWindowsHookEx(m_mouseHook);
             m_mouseHook = nullptr;
             m_hookActive = false;
+            m_gameModeActive = false;
+            m_lastGameModeCheckTick = 0;
             Logger::info("CursorWrap mouse hook stopped");
 #ifdef _DEBUG
             Logger::info("CursorWrap DEBUG: Mouse hook stopped");
@@ -689,6 +718,23 @@ private:
             
             if (g_cursorWrapInstance && g_cursorWrapInstance->m_hookActive)
             {
+                // Don't wrap while a fullscreen game is running. The shell query is throttled to at most
+                // once per GAME_MODE_POLL_MS so the hot path stays quiet, and it's skipped entirely when disabled.
+                if (g_cursorWrapInstance->m_disableInGameMode)
+                {
+                    ULONGLONG now = GetTickCount64();
+                    if (now - g_cursorWrapInstance->m_lastGameModeCheckTick >= GAME_MODE_POLL_MS)
+                    {
+                        g_cursorWrapInstance->m_gameModeActive = detect_game_mode();
+                        g_cursorWrapInstance->m_lastGameModeCheckTick = now;
+                    }
+
+                    if (g_cursorWrapInstance->m_gameModeActive)
+                    {
+                        return CallNextHookEx(nullptr, nCode, wParam, lParam);
+                    }
+                }
+
                 // Check activation mode to determine if wrapping should happen.
                 // 0=Always, 1=HoldingCtrl (wraps only when Ctrl held), 2=HoldingShift (wraps only when Shift held)
                 int activationMode = g_cursorWrapInstance->m_activationMode;
