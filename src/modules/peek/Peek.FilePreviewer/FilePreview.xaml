@@ -13,6 +13,17 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
+        <TextBlock
+            x:Name="PreviewStateAutomationPeer"
+            Width="1"
+            Height="1"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            AutomationProperties.AutomationId="PreviewStateAutomationPeer"
+            IsHitTestVisible="False"
+            Opacity="0"
+            Text="{x:Bind GetPreviewStateText(Previewer.State), Mode=OneWay}" />
+
         <controls:ShellPreviewHandlerControl
             x:Name="ShellPreviewHandlerPreview"
             HandlerError="ShellPreviewHandlerPreview_HandlerError"
@@ -70,7 +81,6 @@
             </Paragraph>
         </RichTextBlock>
 
-
         <controls:AudioControl
             x:Name="AudioPreview"
             Source="{x:Bind AudioPreviewer.Preview, Mode=OneWay}"
@@ -125,8 +135,10 @@
             Visibility="Collapsed" />
 
         <ProgressRing
+            x:Name="LoadingIndicator"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
+            AutomationProperties.AutomationId="LoadingIndicator"
             Canvas.ZIndex="1"
             IsActive="{x:Bind IsLoadingIndicatorVisible, Mode=OneWay}"
             Visibility="{x:Bind IsLoadingIndicatorVisible, Mode=OneWay}" />

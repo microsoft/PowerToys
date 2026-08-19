@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -211,6 +211,11 @@ namespace KeyboardManagerEditorUI.Helpers
                     actionKey = key;
                 }
             }
+
+            // Sort modifier keys by the standard display order: Win → Ctrl → Alt → Shift
+            // This matches the old C++ GetKeyVector behavior where keys are always shown in
+            // canonical order regardless of the order the user pressed them.
+            RemappingHelper.SortModifierKeys(modifierKeys);
 
             foreach (var key in modifierKeys)
             {

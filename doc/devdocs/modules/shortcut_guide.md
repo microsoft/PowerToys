@@ -15,8 +15,20 @@ Shortcut Guide is a PowerToy that displays an overlay of available keyboard shor
 > The spec for the manifest files is in development and will be linked here once available.
 
 ## Usage
-- Press the user-defined hotkey to display the overlay
-- Press the hotkey again or press ESC to dismiss the overlay
+- Press the user-defined hotkey to display the full overlay.
+- Optionally, hold either Windows key to show taskbar indicators or the full overlay after a configurable delay.
+- Press the hotkey again or press ESC to dismiss the overlay. A full overlay opened by holding the Windows key can either close on key release or remain open, depending on the setting.
+
+The **Hold Windows key** setting is independent of the activation shortcut:
+
+- **Off** leaves the Windows key behavior unchanged.
+- **Show taskbar indicators** is the default and always hides the indicators when the Windows key is released.
+- **Open Shortcut Guide** can close on Windows-key release or remain open.
+
+- Use the title-bar search box to filter shortcuts on the selected application page
+- Press Ctrl+F to focus search. Escape clears an active search before dismissing the overlay
+- 
+The hold duration accepts values from 100 through 5,000 milliseconds and defaults to 900 milliseconds.
 
 ## Build and Debug Instructions
 
@@ -37,7 +49,7 @@ Shortcut Guide is a PowerToy that displays an overlay of available keyboard shor
 
 The Shortcut Guide module consists of the following 4 projects:
 
-### [`ShortcutGuide.Ui`](/src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuide.Ui.csproj
+### [`ShortcutGuide.Ui`](/src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuide.Ui.csproj)
 
 This is the main UI project for the Shortcut Guide module. Upon startup it does the following tasks:
 

@@ -233,6 +233,11 @@ namespace Peek.FilePreviewer
             return value == stateToMatch;
         }
 
+        public string GetPreviewStateText(PreviewState? state)
+        {
+            return (state ?? PreviewState.Uninitialized).ToString();
+        }
+
         public Visibility IsPreviewVisible(IPreviewer? previewer, PreviewState? state)
         {
             if (previewer is null)

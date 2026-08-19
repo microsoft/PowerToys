@@ -4,6 +4,7 @@
 
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
+using Microsoft.CmdPal.UI.Controls.AdaptiveCards;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
@@ -17,6 +18,7 @@ namespace Microsoft.CmdPal.UI.Controls;
 public sealed partial class ContentFormControl : UserControl
 {
     private static readonly AdaptiveCardRenderer _renderer;
+    private static bool _customElementsRegistered;
     private ContentFormViewModel? _viewModel;
 
     // LOAD-BEARING: if you don't hang onto a reference to the RenderedAdaptiveCard
@@ -37,6 +39,32 @@ public sealed partial class ContentFormControl : UserControl
         {
             OverrideStyles = null,
         };
+    }
+
+    internal static void RegisterCustomElements()
+    {
+        if (_customElementsRegistered)
+        {
+            return;
+        }
+
+        Register<AdaptiveStringListInputElement, AdaptiveStringListInputElementParser, AdaptiveStringListInputElementRenderer>();
+        Register<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementParser, AdaptiveFilePathListInputElementRenderer>();
+        Register<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementParser, AdaptiveKeyValueListInputElementRenderer>();
+        Register<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementParser, AdaptiveFilePathInputElementRenderer>();
+
+        _customElementsRegistered = true;
+
+        return;
+
+        static void Register<TElement, TParser, TRenderer>()
+            where TElement : IAdaptiveCardElement, ICustomAdaptiveCardElement
+            where TParser : IAdaptiveElementParser, new()
+            where TRenderer : IAdaptiveElementRenderer, new()
+        {
+            AdaptiveCardParserRegistrations.ElementParsers.Set(TElement.CustomInputType, new TParser());
+            _renderer.ElementRenderers.Set(TElement.CustomInputType, new TRenderer());
+        }
     }
 
     public ContentFormControl()
