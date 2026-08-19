@@ -495,9 +495,6 @@ safe-outputs:
               const productLabels = repositoryLabels
                 .map(label => label.name)
                 .filter(name => name.startsWith('Product-'));
-              const versionLabels = repositoryLabels
-                .map(label => label.name)
-                .filter(name => /^\d+\.\d+(?:\.\d+)?(?:-.+)?$/.test(name));
               const normalizeLabel = value => String(value)
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, '');
@@ -509,11 +506,6 @@ safe-outputs:
                 ) ||
                 productLabels.find(
                   label => label.toLowerCase() === requestedProductLabel.toLowerCase()
-                ) ||
-                null;
-              const desiredVersionLabel =
-                versionLabels.find(
-                  label => label.toLowerCase() === powertoysVersion.toLowerCase()
                 ) ||
                 null;
 
@@ -662,29 +654,6 @@ safe-outputs:
                   ...context.repo,
                   issue_number: issueNumber,
                   labels: [desiredProductLabel]
-                });
-              }
-              for (const currentLabel of currentLabels) {
-                if (
-                  versionLabels.includes(currentLabel) &&
-                  currentLabel !== desiredVersionLabel
-                ) {
-                  try {
-                    await github.rest.issues.removeLabel({
-                      ...context.repo,
-                      issue_number: issueNumber,
-                      name: currentLabel
-                    });
-                  } catch (error) {
-                    if (error.status !== 404) throw error;
-                  }
-                }
-              }
-              if (desiredVersionLabel && !currentLabels.has(desiredVersionLabel)) {
-                await github.rest.issues.addLabels({
-                  ...context.repo,
-                  issue_number: issueNumber,
-                  labels: [desiredVersionLabel]
                 });
               }
               if (verifiedDuplicates.length) {
@@ -849,6 +818,7 @@ documented literal such as `None`, `Not provided`, or a short status explanation
 instead of JSON null.
 
 Do not manage labels or issue state directly. The deterministic publisher
-manages `Needs-Author-Feedback`, product/version labels, and the pending native
-duplicate-close suggestion from this single output. Every close suggestion
-remains pending for a human to accept or decline.
+manages `Needs-Author-Feedback`, product labels, and the pending native
+duplicate-close suggestion from this single output. It never adds or removes
+version labels. Every close suggestion remains pending for a human to accept or
+decline.

@@ -43,6 +43,15 @@ class WorkflowContractTests(unittest.TestCase):
         ):
             self.assertIn(f"--deny-tool '\\''shell({command})'\\''", generated)
 
+    def test_workflow_never_manages_version_labels(self):
+        source = WORKFLOW_SOURCE.read_text(encoding="utf-8")
+        generated = WORKFLOW_LOCK.read_text(encoding="utf-8")
+
+        for workflow in (source, generated):
+            self.assertNotIn("versionLabels", workflow)
+            self.assertNotIn("desiredVersionLabel", workflow)
+        self.assertRegex(source, r"never adds or removes\s+version labels")
+
 
 if __name__ == "__main__":
     unittest.main()
