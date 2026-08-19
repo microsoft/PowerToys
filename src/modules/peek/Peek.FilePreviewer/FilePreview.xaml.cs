@@ -30,7 +30,14 @@ namespace Peek.FilePreviewer
     [INotifyPropertyChanged]
     public sealed partial class FilePreview : UserControl, IDisposable
     {
+        public const int LoadingDelayBeforeProgressSpinnerShownMs = 200;
+
         private readonly PreviewerFactory previewerFactory = new();
+
+        private readonly DispatcherTimer _loadingProgressTimer = new()
+        {
+            Interval = TimeSpan.FromMilliseconds(LoadingDelayBeforeProgressSpinnerShownMs),
+        };
 
         public event EventHandler<PreviewSizeChangedArgs>? PreviewSizeChanged;
 
@@ -76,23 +83,64 @@ namespace Peek.FilePreviewer
         [ObservableProperty]
         private string noMoreFilesText = ResourceLoaderInstance.ResourceLoader.GetString("NoMoreFiles");
 
+        [ObservableProperty]
+        private bool isLoadingIndicatorVisible;
+
         private CancellationTokenSource _cancellationTokenSource = new();
 
         public FilePreview()
         {
             InitializeComponent();
+            _loadingProgressTimer.Tick += LoadingProgressTimer_Tick;
         }
 
         public void Dispose()
         {
+            _loadingProgressTimer.Tick -= LoadingProgressTimer_Tick;
+            _loadingProgressTimer.Stop();
             _cancellationTokenSource.Dispose();
+        }
+
+        private void LoadingProgressTimer_Tick(object? sender, object e)
+        {
+            _loadingProgressTimer.Stop();
+
+            if (Previewer?.State == PreviewState.Loading)
+            {
+                IsLoadingIndicatorVisible = true;
+            }
+        }
+
+        private void StartLoadingProgressTimer()
+        {
+            // Do not reset the timer if it's already running or if the indicator is already visible.
+            // This prevents rapid key repeats from indefinitely delaying the spinner.
+            if (!_loadingProgressTimer.IsEnabled && !IsLoadingIndicatorVisible)
+            {
+                _loadingProgressTimer.Start();
+            }
+        }
+
+        private void StopLoadingProgressTimer()
+        {
+            _loadingProgressTimer.Stop();
+            IsLoadingIndicatorVisible = false;
         }
 
         private async void Previewer_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            // Fallback on DefaultPreviewer if we fail to load the correct Preview
             if (e.PropertyName == nameof(IPreviewer.State))
             {
+                if (Previewer?.State == PreviewState.Loading)
+                {
+                    StartLoadingProgressTimer();
+                }
+                else
+                {
+                    StopLoadingProgressTimer();
+                }
+
+                // Fallback on DefaultPreviewer if we fail to load the correct Preview
                 if (Previewer?.State == PreviewState.Error)
                 {
                     // Cancel previous loading task
@@ -207,6 +255,12 @@ namespace Peek.FilePreviewer
             return Visibility.Collapsed;
         }
 
+        public double GetImagePreviewOpacity(bool isLoadingIndicatorVisible)
+        {
+            // Dim front-buffer image when the loading progress indicator is shown
+            return isLoadingIndicatorVisible ? 0.4 : 1.0;
+        }
+
         public Visibility IsWarningMessageVisible(IPreviewer? previewer, PreviewState? state)
         {
             var shouldShow = previewer is IVideoPreviewer videoPreviewer && MatchPreviewState(state, PreviewState.Loaded) && !string.IsNullOrEmpty(videoPreviewer.MissingCodecName);
@@ -267,6 +321,9 @@ namespace Peek.FilePreviewer
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource = new();
 
+            // Ensure the loading timer is running so rapid skimming eventually shows the spinner.
+            StartLoadingProgressTimer();
+
             NoMoreFiles.Visibility = NumberOfFiles == 0 ? Visibility.Visible : Visibility.Collapsed;
 
             if (Item is null)
@@ -308,14 +365,16 @@ namespace Peek.FilePreviewer
 
         private async Task UpdateImagePreviewAsync(CancellationToken cancellationToken)
         {
-            if (Previewer is IImagePreviewer)
+            if (Previewer is IImagePreviewer imagePreviewer)
             {
+                var previewSize = await Previewer.GetPreviewSizeAsync(cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+
                 await Previewer.LoadPreviewAsync(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await UpdatePreviewSizeAsync(cancellationToken);
-                cancellationToken.ThrowIfCancellationRequested();
-
+                // Apply resize and image swap atomically on the UI thread once the image is ready.
+                PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(previewSize));
                 ImagePreview.InstantSwap();
             }
         }

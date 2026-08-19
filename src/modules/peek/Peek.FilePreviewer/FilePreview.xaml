@@ -13,11 +13,6 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
-        <ProgressRing
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            IsActive="{x:Bind MatchPreviewState(Previewer.State, previewers:PreviewState.Loading), Mode=OneWay}" />
-
         <controls:ShellPreviewHandlerControl
             x:Name="ShellPreviewHandlerPreview"
             HandlerError="ShellPreviewHandlerPreview_HandlerError"
@@ -29,6 +24,7 @@
             x:Name="ImagePreview"
             MaxWidth="{x:Bind ImagePreviewer.MaxImageSize.Width, Mode=OneWay}"
             MaxHeight="{x:Bind ImagePreviewer.MaxImageSize.Height, Mode=OneWay}"
+            Opacity="{x:Bind GetImagePreviewOpacity(IsLoadingIndicatorVisible), Mode=OneWay}"
             PointerMoved="ToolTipParentControl_PointerMoved"
             Source="{x:Bind ImagePreviewer.Preview, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(ImagePreviewer, Previewer.State), Mode=OneWay}">
@@ -127,6 +123,13 @@
             Foreground="{StaticResource TextFillColorSecondaryBrush}"
             TextWrapping="Wrap"
             Visibility="Collapsed" />
+
+        <ProgressRing
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Canvas.ZIndex="1"
+            IsActive="{x:Bind IsLoadingIndicatorVisible, Mode=OneWay}"
+            Visibility="{x:Bind IsLoadingIndicatorVisible, Mode=OneWay}" />
     </Grid>
     <UserControl.KeyboardAccelerators>
         <KeyboardAccelerator

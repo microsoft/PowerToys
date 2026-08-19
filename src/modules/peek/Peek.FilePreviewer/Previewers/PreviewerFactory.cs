@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Peek.Common.Extensions;
 using Peek.Common.Models;
@@ -13,7 +12,6 @@ using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Archives;
 using Peek.FilePreviewer.Previewers.Drive;
 using Peek.FilePreviewer.Previewers.MediaPreviewer;
-using Peek.UI.Telemetry.Events;
 
 namespace Peek.FilePreviewer.Previewers
 {
@@ -68,14 +66,10 @@ namespace Peek.FilePreviewer.Previewers
         /// <summary>
         /// Returns a new instance of the default previewer for unsupported file types. This is
         /// used when a file type is not supported by any of the registered previewers or a file
-        /// fails to load. It also logs a telemetry event.
+        /// fails to load.
         /// </summary>
         /// <param name="file">The file system item to create a default previewer for.</param>
         /// <returns>A new instance of the default previewer.</returns>
-        public static IPreviewer CreateDefaultPreviewer(IFileSystemItem file)
-        {
-            PowerToysTelemetry.Log.WriteEvent(new ErrorEvent() { Failure = ErrorEvent.FailureType.FileNotSupported });
-            return new UnsupportedFilePreviewer(file);
-        }
+        public static IPreviewer CreateDefaultPreviewer(IFileSystemItem file) => new UnsupportedFilePreviewer(file);
     }
 }
