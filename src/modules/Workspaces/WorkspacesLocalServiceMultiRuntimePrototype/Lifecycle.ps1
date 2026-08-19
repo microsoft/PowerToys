@@ -123,9 +123,38 @@ function Invoke-Validation {
         Assert-Equal $updaterEvidence.packageFullName $metadata.updater.fullName 'updater package full name'
         Assert-Equal $updaterEvidence.packageVersion '5.0.0.0' 'updater package version'
         Assert-Equal $updaterEvidence.fileVersion '5.0.0.0' 'updater file version'
+        $inheritedHelperEvidence = Read-Evidence (
+            Join-Path $storeRoot 'deployment-helper-inherited-evidence.txt')
+        Assert-Equal $inheritedHelperEvidence.packageIdentityPresent 'true' `
+            'default child inherited package identity'
+        Assert-Equal $inheritedHelperEvidence.launchMode 'default-child' `
+            'default child launch mode'
+        if ($inheritedHelperEvidence.executablePath -notlike "*\WindowsApps\$($metadata.updater.fullName)\PtPuvrDeploymentHelper.exe") {
+            throw "Default child is not running from the updater package: $($inheritedHelperEvidence.executablePath)"
+        }
+        $bridgeEvidence = Read-Evidence (
+            Join-Path $storeRoot 'deployment-helper-breakaway-bridge-evidence.txt')
+        Assert-Equal $bridgeEvidence.packageIdentityPresent 'true' `
+            'breakaway bridge package identity'
+        Assert-Equal $bridgeEvidence.launchMode `
+            'desktop-app-breakaway-enable-process-tree' 'breakaway bridge launch mode'
+        $breakawayEvidence = Read-Evidence (
+            Join-Path $storeRoot 'deployment-helper-breakaway-evidence.txt')
+        Assert-Equal $breakawayEvidence.packageIdentityPresent 'true' `
+            'breakaway descendant package identity'
+        Assert-Equal $breakawayEvidence.launchMode 'desktop-app-breakaway' `
+            'breakaway descendant launch mode'
+        if ($breakawayEvidence.executablePath -notlike "*\WindowsApps\$($metadata.updater.fullName)\PtPuvrDeploymentHelper.exe") {
+            throw "Breakaway descendant is not running from the updater package: $($breakawayEvidence.executablePath)"
+        }
+        $breakawayResult = Read-Evidence (Join-Path $storeRoot 'breakaway-stage-result.txt')
+        Assert-Equal $breakawayResult.hresult '0x80070520' 'breakaway Stage HRESULT'
+        Assert-Equal $breakawayResult.win32 '1312' 'breakaway Stage Win32 error'
         $helperEvidence = Read-Evidence (Join-Path $storeRoot 'deployment-helper-evidence.txt')
         Assert-Equal $helperEvidence.packageIdentityPresent 'false' 'deployment helper package identity'
         Assert-Equal $helperEvidence.tokenUserSid 'S-1-5-18' 'deployment helper token SID'
+        Assert-Equal $helperEvidence.launchMode 'protected-cache' `
+            'deployment helper launch mode'
         if ($helperEvidence.executablePath -notlike "*\ProgramData\Microsoft\PowerToys\WorkspacesPackagedUpdaterVirtualRuntimePrototype\DeploymentHelper\5.0.0.0\PtPuvrDeploymentHelper.exe") {
             throw "Deployment helper is not running from the protected updater cache: $($helperEvidence.executablePath)"
         }
@@ -203,7 +232,12 @@ function Invoke-Validation {
                 fileVersion = $updaterEvidence.fileVersion
                 packageIdentityPresent = $updaterEvidence.packageIdentityPresent
                 sharedBundleSha256 = $metadata.updater.sha256
+                defaultChildPackageIdentityPresent = $inheritedHelperEvidence.packageIdentityPresent
+                breakawayBridgePackageIdentityPresent = $bridgeEvidence.packageIdentityPresent
+                breakawayDescendantPackageIdentityPresent = $breakawayEvidence.packageIdentityPresent
+                breakawayStageHresult = $breakawayResult.hresult
                 deploymentHelperPackageIdentityPresent = $helperEvidence.packageIdentityPresent
+                deploymentHelperLaunchMode = $helperEvidence.launchMode
                 deploymentHelperExecutablePath = $helperEvidence.executablePath
             }
             runtimes = $runtimeResults

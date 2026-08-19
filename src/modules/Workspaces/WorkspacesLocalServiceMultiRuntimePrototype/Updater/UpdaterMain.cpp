@@ -16,6 +16,7 @@
 #include <array>
 #include <cstring>
 #include <filesystem>
+#include <memory>
 #include <sstream>
 #include <thread>
 
@@ -490,14 +491,20 @@ namespace
         wait_for_state(service, SERVICE_STOPPED);
     }
 
-    [[nodiscard]] std::filesystem::path cached_deployment_helper()
+    [[nodiscard]] std::filesystem::path packaged_deployment_helper()
     {
-        const std::filesystem::path sourcePath =
+        const std::filesystem::path helperPath =
             module_path().parent_path() / ptlsmr::DeploymentHelperExe;
-        if (!std::filesystem::is_regular_file(sourcePath))
+        if (!std::filesystem::is_regular_file(helperPath))
         {
             throw ptlsmr::win32_error("deployment helper missing", ERROR_FILE_NOT_FOUND);
         }
+        return helperPath;
+    }
+
+    [[nodiscard]] std::filesystem::path cached_deployment_helper()
+    {
+        const std::filesystem::path sourcePath = packaged_deployment_helper();
         const std::filesystem::path helperDirectory =
             ptlsmr::program_data_root() / L"DeploymentHelper" / L"5.0.0.0";
         ptlsmr::protect_system_directory(helperDirectory);
@@ -513,14 +520,93 @@ namespace
         return helperPath;
     }
 
-    void run_deployment_helper(std::wstring_view arguments)
+    class proc_thread_attribute_list
     {
-        const std::filesystem::path helperPath = cached_deployment_helper();
+    public:
+        explicit proc_thread_attribute_list(DWORD count)
+        {
+            SIZE_T bytes = 0;
+            if (InitializeProcThreadAttributeList(nullptr, count, 0, &bytes) ||
+                GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+            {
+                throw ptlsmr::win32_error(
+                    "InitializeProcThreadAttributeList(size)",
+                    GetLastError());
+            }
+            m_value = static_cast<LPPROC_THREAD_ATTRIBUTE_LIST>(
+                HeapAlloc(GetProcessHeap(), 0, bytes));
+            if (!m_value)
+            {
+                throw ptlsmr::win32_error(
+                    "HeapAlloc(PROC_THREAD_ATTRIBUTE_LIST)",
+                    ERROR_NOT_ENOUGH_MEMORY);
+            }
+            if (!InitializeProcThreadAttributeList(m_value, count, 0, &bytes))
+            {
+                const DWORD error = GetLastError();
+                HeapFree(GetProcessHeap(), 0, m_value);
+                m_value = nullptr;
+                throw ptlsmr::win32_error(
+                    "InitializeProcThreadAttributeList",
+                    error);
+            }
+        }
+
+        ~proc_thread_attribute_list()
+        {
+            if (m_value)
+            {
+                DeleteProcThreadAttributeList(m_value);
+                HeapFree(GetProcessHeap(), 0, m_value);
+            }
+        }
+
+        proc_thread_attribute_list(const proc_thread_attribute_list&) = delete;
+        proc_thread_attribute_list& operator=(const proc_thread_attribute_list&) = delete;
+
+        [[nodiscard]] LPPROC_THREAD_ATTRIBUTE_LIST get() const noexcept
+        {
+            return m_value;
+        }
+
+    private:
+        LPPROC_THREAD_ATTRIBUTE_LIST m_value{};
+    };
+
+    [[nodiscard]] DWORD run_helper(
+        const std::filesystem::path& helperPath,
+        std::wstring_view arguments,
+        bool desktopAppBreakaway)
+    {
         std::wstring commandLine =
             ptlsmr::quote_argument(helperPath.wstring()) + L" " + std::wstring(arguments);
         std::vector<wchar_t> mutableCommand(commandLine.begin(), commandLine.end());
         mutableCommand.push_back(L'\0');
-        STARTUPINFOW startup{ sizeof(startup) };
+        STARTUPINFOEXW startup{};
+        startup.StartupInfo.cb = sizeof(startup);
+        std::unique_ptr<proc_thread_attribute_list> attributes;
+        DWORD desktopAppPolicy =
+            PROCESS_CREATION_DESKTOP_APP_BREAKAWAY_ENABLE_PROCESS_TREE;
+        DWORD creationFlags = CREATE_NO_WINDOW;
+        if (desktopAppBreakaway)
+        {
+            attributes = std::make_unique<proc_thread_attribute_list>(1);
+            if (!UpdateProcThreadAttribute(
+                    attributes->get(),
+                    0,
+                    PROC_THREAD_ATTRIBUTE_DESKTOP_APP_POLICY,
+                    &desktopAppPolicy,
+                    sizeof(desktopAppPolicy),
+                    nullptr,
+                    nullptr))
+            {
+                throw ptlsmr::win32_error(
+                    "UpdateProcThreadAttribute(DESKTOP_APP_POLICY)",
+                    GetLastError());
+            }
+            startup.lpAttributeList = attributes->get();
+            creationFlags |= EXTENDED_STARTUPINFO_PRESENT;
+        }
         PROCESS_INFORMATION process{};
         if (!CreateProcessW(
                 helperPath.c_str(),
@@ -528,10 +614,10 @@ namespace
                 nullptr,
                 nullptr,
                 FALSE,
-                CREATE_NO_WINDOW,
+                creationFlags,
                 nullptr,
                 helperPath.parent_path().c_str(),
-                &startup,
+                &startup.StartupInfo,
                 &process))
         {
             throw ptlsmr::win32_error("CreateProcessW(deployment helper)", GetLastError());
@@ -553,6 +639,80 @@ namespace
         ptlsmr::check_bool(
             GetExitCodeProcess(processHandle.get(), &exitCode),
             "GetExitCodeProcess(deployment helper)");
+        return exitCode;
+    }
+
+    [[nodiscard]] DWORD run_packaged_helper(
+        std::wstring_view arguments,
+        bool desktopAppBreakaway)
+    {
+        return run_helper(
+            packaged_deployment_helper(),
+            arguments,
+            desktopAppBreakaway);
+    }
+
+    void verify_default_child_inherits_package_identity()
+    {
+        const DWORD exitCode = run_packaged_helper(
+            L"--probe-inherited-package-identity",
+            false);
+        if (exitCode != ERROR_SUCCESS)
+        {
+            throw ptlsmr::win32_error(
+                "packaged child identity control",
+                exitCode);
+        }
+    }
+
+    void write_breakaway_stage_result(DWORD exitCode)
+    {
+        std::wstringstream evidence;
+        evidence << L"hresult=0x"
+                 << std::hex << std::uppercase << exitCode << L"\r\n";
+        evidence << L"win32=" << std::dec << HRESULT_CODE(exitCode) << L"\r\n";
+        ptlsmr::write_utf8_file_atomic(
+            ptlsmr::program_data_root() / L"breakaway-stage-result.txt",
+            evidence.str());
+    }
+
+    void verify_breakaway_stage_failure(std::wstring_view arguments)
+    {
+        const DWORD exitCode = run_packaged_helper(
+            std::wstring(arguments) +
+                L" --launch-breakaway-child"
+                L" --launch-mode desktop-app-breakaway",
+            true);
+        write_breakaway_stage_result(exitCode);
+        constexpr DWORD expected = static_cast<DWORD>(
+            HRESULT_FROM_WIN32(ERROR_NO_SUCH_LOGON_SESSION));
+        if (exitCode == expected)
+        {
+            return;
+        }
+        if (exitCode == ERROR_SUCCESS)
+        {
+            throw ptlsmr::win32_error(
+                "breakaway Stage unexpectedly succeeded",
+                ERROR_INVALID_STATE);
+        }
+        if ((exitCode & 0x80000000U) != 0)
+        {
+            throw winrt::hresult_error(
+                static_cast<HRESULT>(exitCode),
+                L"breakaway Stage returned an unexpected error");
+        }
+        throw ptlsmr::win32_error(
+            "breakaway Stage returned an unexpected error",
+            exitCode);
+    }
+
+    void run_cached_deployment_helper(std::wstring_view arguments)
+    {
+        const DWORD exitCode = run_helper(
+            cached_deployment_helper(),
+            std::wstring(arguments) + L" --launch-mode protected-cache",
+            false);
         if (exitCode == ERROR_SUCCESS)
         {
             return;
@@ -561,9 +721,9 @@ namespace
         {
             throw winrt::hresult_error(
                 static_cast<HRESULT>(exitCode),
-                L"deployment helper failed");
+                L"cached deployment helper failed");
         }
-        throw ptlsmr::win32_error("deployment helper failed", exitCode);
+        throw ptlsmr::win32_error("cached deployment helper failed", exitCode);
     }
 
     void stage_exact_package(
@@ -584,9 +744,11 @@ namespace
         {
             throw ptlsmr::win32_error("runtime package extension policy", ERROR_INVALID_NAME);
         }
-        run_deployment_helper(
+        const std::wstring arguments =
             L"--stage --runtime-track " + std::to_wstring(runtimeTrack) +
-            L" --runtime-package " + ptlsmr::quote_argument(packagePath.wstring()));
+            L" --runtime-package " + ptlsmr::quote_argument(packagePath.wstring());
+        verify_breakaway_stage_failure(arguments);
+        run_cached_deployment_helper(arguments);
     }
 
     [[nodiscard]] std::filesystem::path package_directory(const std::wstring& fullName)
@@ -839,7 +1001,7 @@ namespace
 
     void remove_exact_package(uint16_t runtimeTrack)
     {
-        run_deployment_helper(
+        run_cached_deployment_helper(
             L"--remove --runtime-track " + std::to_wstring(runtimeTrack));
     }
 
@@ -1315,6 +1477,7 @@ namespace
             }
             ptlsmr::protect_system_directory(ptlsmr::program_data_root());
             write_updater_evidence();
+            verify_default_child_inherits_package_identity();
             g_stopEvent.reset(CreateEventW(nullptr, TRUE, FALSE, nullptr));
             if (!g_stopEvent)
             {
