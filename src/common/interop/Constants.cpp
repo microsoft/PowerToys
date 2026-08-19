@@ -167,6 +167,10 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT;
     }
+    hstring Constants::ShortcutGuideWinKeyHoldEvent()
+    {
+        return CommonSharedConstants::SHORTCUT_GUIDE_WIN_KEY_HOLD_EVENT;
+    }
     hstring Constants::RegistryPreviewTriggerEvent()
     {
         return CommonSharedConstants::REGISTRY_PREVIEW_TRIGGER_EVENT;
