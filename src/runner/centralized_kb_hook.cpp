@@ -237,7 +237,11 @@ namespace CentralizedKeyboardHook
             }
         }
 
-        if (removedTrackedKey)
+        if (pressedKeyDescriptors.empty())
+        {
+            vkCodePressed = VK_DISABLED;
+        }
+        else if (removedTrackedKey)
         {
             PressedKeyDescriptor trackedKeyDescriptor{ .virtualKey = trackedKey };
             const auto [first, last] = pressedKeyDescriptors.equal_range(trackedKeyDescriptor);
