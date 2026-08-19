@@ -26,7 +26,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
     private const int LeftWindows = 0x5B;
     private const int Tab = 0x09;
 
-    private static KeyboardManagerSettingsScope? settingsScope;
+    private static KeyboardInputFixtureLock? inputFixtureLock;
     private static int profileGeneration;
 
     protected override bool ReuseScopeAcrossTests => true;
@@ -35,14 +35,14 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
     public static void InitializeClass(TestContext testContext)
     {
         _ = testContext;
-        settingsScope = new KeyboardManagerSettingsScope();
+        inputFixtureLock = KeyboardInputFixtureLock.Acquire();
     }
 
     [ClassCleanup]
     public static void CleanupClass()
     {
-        settingsScope?.Dispose();
-        settingsScope = null;
+        inputFixtureLock?.Dispose();
+        inputFixtureLock = null;
     }
 
     [TestCleanup]
@@ -362,7 +362,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
         KeyboardHelper.SendKeys(Key.B);
         Assert.IsTrue(input.WaitForText("b", timeoutMS: 3_000), "Direct B input did not persist in the Notepad test file.");
         Assert.IsTrue(input.FocusInput(), "Notepad did not regain foreground before clearing the positive control.");
-        KeyboardHelper.SendKeys(Key.Ctrl, Key.A);
+        SendSourceShortcut(LeftControl, A, releaseModifierFirst: false);
         KeyboardHelper.SendKeys(Key.Backspace);
         Assert.IsTrue(input.WaitForText(string.Empty, timeoutMS: 3_000), "Notepad did not clear the positive-control text.");
 
@@ -424,9 +424,9 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
             Step($"Holding {modifierName}, then pressing D followed by E");
             KeyboardHelper.PressKey(ToKey(sourceModifier));
             Thread.Sleep(100);
-            SendHeldAction(sourceModifier, D);
+            SendHeldAction(D);
             Thread.Sleep(150);
-            SendHeldAction(sourceModifier, E);
+            SendHeldAction(E);
             KeyboardHelper.ReleaseKey(ToKey(sourceModifier));
 
             var expectedSequence = sourceModifier == LeftControl
@@ -508,17 +508,18 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
     [TestCategory("Keyboard Manager")]
     public void AltF4TargetClosesNotepadAndReleasesModifier()
     {
-        using (var controlInput = new NotepadInputWindow())
+        using (var controlInput = new CalculatorInputWindow())
         {
-            Assert.IsTrue(controlInput.FocusInput(), "Notepad did not own foreground before the direct Alt+F4 control.");
-            KeyboardHelper.SendKeys(Key.Alt, Key.F4);
+            Assert.IsTrue(controlInput.FocusInput(), "Calculator did not own foreground before the direct Alt+F4 control.");
+            using var controlLifecycle = new WindowShowWatcher(controlInput.ClassName, controlInput.Handle.ToInt64());
+            SendSourceShortcut(LeftAlt, KeyCode(Key.F4), releaseModifierFirst: false);
             Assert.IsTrue(
-                controlInput.WaitForClosed(timeoutMS: 10_000),
-                "The harness's direct Alt+F4 control did not close Notepad; remapped Alt+F4 cannot be evaluated on this desktop.");
+                controlLifecycle.WaitForHidden(timeoutMs: 10_000),
+                $"The harness's direct Alt+F4 control did not hide or destroy Calculator; remapped Alt+F4 cannot be evaluated on this desktop. Events: {string.Join(", ", controlLifecycle.Events)}.");
         }
 
         using var recorder = new KeyboardEventRecorder();
-        using var input = new NotepadInputWindow();
+        using var input = new CalculatorInputWindow();
         ApplyProfileAndVerify(
             input,
             recorder,
@@ -528,7 +529,8 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
                     new ShortcutRemap(new[] { LeftControl, W }, new[] { LeftAlt, KeyCode(Key.F4) }),
                 }));
         recorder.Clear();
-        Assert.IsTrue(input.FocusInput(), "Notepad did not own foreground before Alt+F4.");
+        Assert.IsTrue(input.FocusInput(), "Calculator did not own foreground before Alt+F4.");
+        using var inputLifecycle = new WindowShowWatcher(input.ClassName, input.Handle.ToInt64());
         SendSourceShortcut(LeftControl, W, releaseModifierFirst: false);
         Assert.IsTrue(
             recorder.WaitForSequence(
@@ -539,12 +541,14 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
                 new ExpectedKeyboardEvent(KeyCode(Key.F4), false),
                 new ExpectedKeyboardEvent(LeftAlt, false)),
             $"Alt+F4 target did not complete. Events: {recorder.DescribeGeneratedEvents()}.");
-        Assert.IsTrue(input.WaitForClosed(timeoutMS: 10_000), "Alt+F4 did not close the Notepad test document.");
+        Assert.IsTrue(
+            inputLifecycle.WaitForHidden(timeoutMs: 10_000),
+            $"Alt+F4 did not hide or destroy the tracked Notepad window. Events: {string.Join(", ", inputLifecycle.Events)}.");
         Assert.IsTrue(WaitForKeyState(LeftAlt, expected: false, timeoutMS: 1_000), "Alt remained down after Alt+F4.");
     }
 
     private void ApplyProfileAndVerify(
-        NotepadInputWindow input,
+        IKeyboardInputWindow input,
         KeyboardEventRecorder recorder,
         System.Text.Json.Nodes.JsonObject profile)
     {
@@ -653,17 +657,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
         }
     }
 
-    private static void SendHeldAction(int sourceModifier, int action)
-    {
-        if (sourceModifier == LeftWindows)
-        {
-            KeyboardHelper.SendKeys(ToKey(action));
-        }
-        else
-        {
-            KeyboardHelper.SendKey(ToKey(action));
-        }
-    }
+    private static void SendHeldAction(int action) => KeyboardHelper.SendKey(ToKey(action));
 
     private static Key ToKey(int virtualKey) => (Key)checked((byte)virtualKey);
 

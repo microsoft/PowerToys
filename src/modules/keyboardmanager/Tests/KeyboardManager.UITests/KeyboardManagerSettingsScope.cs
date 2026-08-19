@@ -42,7 +42,11 @@ internal sealed class KeyboardManagerSettingsScope : IDisposable
         }
 
         disposed = true;
-        KeyboardManagerTestBase.CloseEditor();
+        if (!KeyboardManagerTestBase.CloseEditor())
+        {
+            throw new InvalidOperationException("The Keyboard Manager editor process survived class cleanup; settings were not restored to avoid a write race.");
+        }
+
         RestoreSettings();
     }
 

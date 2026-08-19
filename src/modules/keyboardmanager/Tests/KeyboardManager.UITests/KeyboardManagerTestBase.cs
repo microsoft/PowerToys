@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -88,7 +89,7 @@ public abstract class KeyboardManagerTestBase : UITestBase
 
     protected Session OpenEditor()
     {
-        CloseEditor();
+        Assert.IsTrue(CloseEditor(), "A stale Keyboard Manager editor process remained before launch.");
         var settings = NavigateToKeyboardManagerSettings();
 
         Step("Launching the unified Keyboard Manager editor");
@@ -119,22 +120,96 @@ public abstract class KeyboardManagerTestBase : UITestBase
         session.FindAll<T>(By.Name(name), timeoutMS)
             .FirstOrDefault(element => element.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
-    internal static void CloseEditor()
+    internal static bool CloseEditor()
     {
         WindowControl.TryCloseByApp(KeyboardManagerTestConstants.EditorProcessName, timeoutMS: 5_000);
-        WindowControl.TryKillProcessTreeByNameAndWait(KeyboardManagerTestConstants.EditorProcessName, timeoutMS: 10_000);
+        WindowControl.TryKillProcessTreeByNameAndWait(KeyboardManagerTestConstants.EditorProcessName, timeoutMS: 5_000);
+
+        var deadline = DateTime.UtcNow.AddSeconds(10);
+        while (DateTime.UtcNow < deadline)
+        {
+            var processes = GetEditorProcesses();
+            if (processes.Count == 0)
+            {
+                return true;
+            }
+
+            try
+            {
+                foreach (var process in processes)
+                {
+                    try
+                    {
+                        process.Kill(entireProcessTree: true);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+            finally
+            {
+                foreach (var process in processes)
+                {
+                    process.Dispose();
+                }
+            }
+
+            Thread.Sleep(200);
+        }
+
+        var remainingProcesses = GetEditorProcesses();
+        try
+        {
+            return remainingProcesses.Count == 0;
+        }
+        finally
+        {
+            foreach (var process in remainingProcesses)
+            {
+                process.Dispose();
+            }
+        }
+    }
+
+    private static IReadOnlyList<Process> GetEditorProcesses()
+    {
+        var matches = new List<Process>();
+        foreach (var process in Process.GetProcesses())
+        {
+            try
+            {
+                if (process.ProcessName.Equals(KeyboardManagerTestConstants.EditorProcessName, StringComparison.OrdinalIgnoreCase))
+                {
+                    matches.Add(process);
+                    continue;
+                }
+            }
+            catch
+            {
+            }
+
+            process.Dispose();
+        }
+
+        return matches;
     }
 
     protected async Task CleanupKeyboardManagerTestAsync()
     {
         await CaptureFailureArtifactsBeforeCleanupAsync(TimeSpan.FromSeconds(2));
-        CloseEditor();
-        KeyboardManagerSettings.ResetToEmptyProfile();
+        bool editorClosed = CloseEditor();
+        if (editorClosed)
+        {
+            KeyboardManagerSettings.ResetToEmptyProfile();
+        }
+
         foreach (var key in KeysToRelease)
         {
             KeyboardHelper.ReleaseKey(key);
         }
 
         KeyboardHelper.SendKey(Key.Esc);
+        Assert.IsTrue(editorClosed, "The Keyboard Manager editor process survived test cleanup; settings were not reset to avoid a write race.");
     }
 }

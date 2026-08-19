@@ -121,6 +121,8 @@ internal static class KeyboardManagerSettings
 
     public static JsonObject ReadProfile() => ReadObject(ProfilePath);
 
+    public static JsonObject ReadEditorSettings() => ReadObject(EditorSettingsPath);
+
     public static void SignalSettingsChanged()
     {
         var eventHandle = OpenEvent(EventModifyState, false, KeyboardManagerTestConstants.SettingsChangedEventName);

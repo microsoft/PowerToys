@@ -60,25 +60,38 @@ FancyZonesEditor.UITests.Next
 `uiTestModules` must never be empty. Include only the UITest project or projects currently being
 worked on. Do not queue every UITest project as a convenience.
 
-## 2. Discover the pipeline and serialize runs
+## 2. Discover the pipeline and serialize runs by branch
 
 Use the remote MCP rather than assuming IDs:
 
 1. List pipeline definitions in project `Dart` filtered to `UI Test Automation`.
 2. Require exactly one enabled definition. Record its numeric ID. The known ID on 2026-08-17 was
    `161438`, but discovery remains authoritative.
-3. List recent builds for that definition and inspect their status.
-4. Treat `NotStarted`, `InProgress`, `Postponed`, and `Cancelling` as active/nonterminal.
+3. List builds for that definition with `branchName=<exact refs/heads/... target ref>` and a stable
+  descending `queryOrder`. Follow every returned `continuationToken` until the service returns no
+  token; never infer that the branch is clear from only the first page of newer runs.
+4. Inspect every returned build. Treat `NotStarted`, `InProgress`, `Postponed`, and `Cancelling` as
+  active/nonterminal, and still require each run's `sourceBranch` to equal the exact target ref.
 
-Only one `UI Test Automation` run may be active at a time. Do not queue while any active run exists.
-Choose one path:
+Only one `UI Test Automation` run for the target branch may be active at a time. Active runs on
+other branches do not block queueing and may continue in parallel; do not adopt, monitor, or cancel
+them as part of the current stabilization sequence.
 
-- **Wait:** Keep the current run as the tracked run and monitor it to a terminal state.
-- **Cancel:** Cancel only a relevant superseded run that the user owns or explicitly asked to stop.
+Do not adopt a run merely because its `sourceBranch` matches. It is the current stabilization run
+only when its `sourceVersion`, selected platforms, `uiTestModules`, `buildSource`, and reused build
+ID (when applicable) exactly match the persisted checkpoint. A nonterminal same-branch run with any
+other SHA or parameter remains a branch blocker, not an attempt in this sequence. If a same-branch
+blocker or exact matching run exists, choose one path:
+
+- **Wait:** Track an exact matching run, or wait for a mismatching same-branch blocker to become
+  terminal without treating its result as evidence for this sequence.
+- **Cancel:** Cancel only a relevant superseded run on the target branch that the user owns or
+  explicitly asked to stop.
   Use `pipelines_write` with `update_build_stage` and `Cancel` when the exact active stage is known.
   If the MCP cannot identify/cancel the whole active run safely, use the linked Azure DevOps UI.
-  Never cancel another person's unrelated run. Confirm the old run reports `status=Completed` with
-  `result=Canceled` before queueing. A `Cancelling` run still occupies the one-run slot.
+  Never cancel an unrelated run on another branch. Confirm the old run reports `status=Completed`
+  with `result=Canceled` before queueing. A `Cancelling` run still occupies the target branch's
+  one-run slot.
 
 A preview run does not count as active because it creates no build. An actual queued run always
 counts against the three-run ceiling, including an infrastructure-failed run.
@@ -96,7 +109,8 @@ Use this decision table for every actual run:
 
 For `specificBuildId`, prove all of the following:
 
-1. The previous run is terminal; it is no longer the active serialized run.
+1. The previous target-branch run is terminal; it is no longer the active serialized run for that
+  branch.
 2. Its product build stages succeeded for `x64` and `arm64`.
 3. Pipeline artifact listing contains both `build-x64-Release` and `build-arm64-Release`.
   An artifact named `build-<platform>-Release-failure-<attempt>` is diagnostic output, not a
@@ -166,9 +180,58 @@ Immediately record the returned build ID, build number, web link, branch, and so
 the new build by ID and require `sourceVersion` to equal the pushed SHA. If it differs, cancel the
 run before tests and stop to resolve the branch race.
 
+The active-run check and queue request are not atomic. Immediately after queueing, list all
+nonterminal runs with `branchName=<exact ref>` and the same stable descending `queryOrder`, following
+every `continuationToken` until null. Inspect every returned run's source version and template
+parameters. If more than one exists, the oldest matching run owns the branch slot. If the run just
+returned to this agent is younger, cancel that run, confirm it is terminal, and then either track the
+older run when it exactly matches the checkpoint or wait for it as a blocker. If this agent's run is
+the oldest, never cancel it merely because a younger run appeared and never cancel the younger run
+owned by someone else; stop and ask the user to resolve the duplicate. If safe whole-run
+cancellation is unavailable, stop and ask the user to resolve it in Azure DevOps. Every actual
+queued run still consumes one attempt, including a duplicate canceled by this reconciliation.
+
+### Persist the tracked-run checkpoint
+
+Once a real run is queued, store this checkpoint in the agent's session/task state, never in the
+repository:
+
+```text
+Pipeline: UI Test Automation / <definition ID>
+Build: <build ID> / <build number> / <web link>
+Branch: <exact refs/heads/... ref>
+Source SHA: <40-character commit>
+Attempt: <n>/3
+Build source: <buildNow|specificBuildId> [reused build ID]
+Platforms: arm64, x64
+Modules: [<exact project stems>]
+State: <NotStarted|InProgress|...>
+```
+
+Treat a nonterminal tracked run as unfinished work. Do not call a task-complete tool, remove the
+monitoring item from the task list, or claim a terminal result. After any interruption, context
+compaction, tool notification, or user message, the first Azure operation must query the
+checkpoint's exact build ID. Do not rediscover the run by taking the latest build, because another
+branch may have queued in parallel.
+
+The remote Azure DevOps MCP status operations are pull-only: skill text cannot wake an agent after
+the agent has ended its turn. True automatic continuation requires a host-provided, authenticated
+completion primitive that blocks or subscribes to the exact build ID (for example, a future
+`wait_for_completion` MCP action) and resumes the pending tool call when the build becomes terminal.
+When such a primitive is available, arm exactly one waiter after verifying the source SHA, keep the
+task non-final, and resume at section 5 when it fires.
+
+When no completion primitive exists, do not claim that monitoring will resume automatically and do
+not install a CLI, create a PAT, or add a webhook as a workaround. Preserve the checkpoint and keep
+the monitoring task active. A concise pending-status handoff may end the current turn; state that
+automatic wake-up is unavailable and re-enter section 5 from the exact build ID on the next agent
+turn. This handoff is not task completion. Within an active turn, requery only after meaningful
+stage progress; never busy-poll.
+
 ## 5. Monitor one run to completion
 
-Keep one tracked build ID. Do not start another monitor or queue operation in parallel.
+Keep one tracked build ID for this branch. Do not start another monitor or queue operation for that
+branch in parallel. Runs on unrelated branches may continue independently.
 
 Use the remote MCP in this order:
 
@@ -192,7 +255,7 @@ Status rules:
 
 | State | Action |
 |---|---|
-| `NotStarted`, `InProgress`, `Postponed`, `Cancelling` | Continue monitoring; do not queue another run |
+| `NotStarted`, `InProgress`, `Postponed`, `Cancelling` | Continue monitoring; do not queue another run for the same branch |
 | `Completed` + `Succeeded` | Verify selected tests actually executed and no non-passing outcomes exist |
 | `Completed` + `PartiallySucceeded` | Treat as failure until every warning and test outcome is understood |
 | `Completed` + `Failed` | Diagnose from tests, logs, screenshots, and recordings |

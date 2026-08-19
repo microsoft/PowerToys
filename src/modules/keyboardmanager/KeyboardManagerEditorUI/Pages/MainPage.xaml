@@ -220,6 +220,7 @@
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    AutomationProperties.AutomationId="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
@@ -309,6 +310,7 @@
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    AutomationProperties.AutomationId="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
@@ -428,6 +430,7 @@
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    AutomationProperties.AutomationId="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
@@ -517,6 +520,7 @@
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    AutomationProperties.AutomationId="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
@@ -587,6 +591,7 @@
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    AutomationProperties.AutomationId="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />

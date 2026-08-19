@@ -37,9 +37,9 @@ Do not use this skill for local execution. Complete
    architecture builds/guests required by `ui-tests-local-vm`.
 2. **Pushed revision.** Queue only a pushed branch. Record its exact commit and verify the queued
    run's `sourceVersion` matches it.
-3. **One run at a time.** Before queueing, discover active runs for `UI Test Automation`. Wait for the
-   current run to finish or cancel the relevant superseded run; never overlap runs and never cancel
-   another person's unrelated run.
+3. **One run per branch.** Before queueing, discover active runs for `UI Test Automation`. Wait for
+   or cancel a relevant superseded run on the target branch; runs on other branches may continue in
+   parallel. Never cancel another branch's unrelated run.
 4. **Always scope modules.** `uiTestModules` must be non-empty and contain the exact current UITest
    project stem, for example `[FancyZonesEditor.UITests.Next]`.
 5. **Three-run ceiling.** A CI stabilization sequence may queue at most three runs total. Keep an
@@ -47,6 +47,12 @@ Do not use this skill for local execution. Complete
    consecutive runs show no stabilization progress.
 6. **Evidence before edits.** Read the failed result, logs, screenshot, and recording before forming
    a fix hypothesis. Preserve assertions and classify infrastructure failures separately.
+7. **Tracked runs remain unfinished work.** After queueing, persist the build ID, branch, source SHA,
+   attempt number, and parameters in session/task state. Do not mark the task complete or claim a
+   terminal result while that build is nonterminal. If no completion waiter exists, a pending-status
+   handoff may end the turn, but the checkpoint and monitoring task remain active. On every resume,
+   notification, or user turn that continues the tracked CI task, query that exact build ID before
+   other Azure work and continue the agentic loop from its current state.
 
 ## Internal constants
 
@@ -69,6 +75,7 @@ contains:
 - `buildNow` versus `specificBuildId` decision rules.
 - Exact queue parameters and branch targeting.
 - Monitoring, failure evidence, and recording links.
+- Tracked-run continuation and the limits of automatic completion notifications.
 - The three-run stabilization ledger and stop conditions.
 
 ## Completion standard
@@ -77,7 +84,10 @@ A task is complete only when one of these is true:
 
 - The run is terminal `Succeeded`, all selected tests executed, and there are no failed, aborted,
   timed-out, error, or not-executed results.
-- The run is terminal but failed, and the report includes the controlling failure, relevant logs,
-  available recording/artifact links, and the next locally verified hypothesis.
+- For a monitor-only request, the run is terminal but failed, and the report includes the controlling
+   failure, relevant logs, and available recording/artifact links.
+- For a stabilization request, a terminal failed run is intermediate work. Continue the agentic loop
+   until a later attempt succeeds, a genuine blocker prevents the next verified attempt, or the
+   three-run/no-progress ceiling is reached.
 - The three-run ceiling or no-progress rule was reached, and the agent stopped and asked the user for
   assistance with the full attempt ledger and evidence links.
