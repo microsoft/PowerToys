@@ -164,11 +164,19 @@ if (-not $credentialValid) {
     finally {
         $random.Dispose()
     }
-    $plainPassword = ([BitConverter]::ToString($passwordBytes) -replace '-', '') + 'aA1!'
+    $plainPasswordBuilder = [Text.StringBuilder]::new(($passwordBytes.Length * 2) + 4)
     $securePassword = [Security.SecureString]::new()
-    foreach ($character in $plainPassword.ToCharArray()) {
+    foreach ($passwordByte in $passwordBytes) {
+        $hexPair = $passwordByte.ToString('X2')
+        [void]$plainPasswordBuilder.Append($hexPair)
+        $securePassword.AppendChar($hexPair[0])
+        $securePassword.AppendChar($hexPair[1])
+    }
+    foreach ($character in 'aA1!'.ToCharArray()) {
+        [void]$plainPasswordBuilder.Append($character)
         $securePassword.AppendChar($character)
     }
+    $plainPassword = $plainPasswordBuilder.ToString()
     $securePassword.MakeReadOnly()
     if ($null -eq $localUser) {
         New-LocalUser `
