@@ -66,6 +66,8 @@ namespace ShortcutGuide
 
         internal string CloseType => _closeType;
 
+        internal event EventHandler? ClosingStarted;
+
         public MainPaneControl MainPaneControl => this.MainPane;
 
         internal TaskbarPaneControl TaskbarPaneControl => this.TaskbarPane;
@@ -308,6 +310,7 @@ namespace ShortcutGuide
             }
 
             _isClosing = true;
+            ClosingStarted?.Invoke(this, EventArgs.Empty);
 
             // Collapse both pseudo-windows so their Implicit.HideAnimations play
             this.MainPane.Visibility = Visibility.Collapsed;
@@ -375,6 +378,7 @@ namespace ShortcutGuide
         /// </summary>
         public void ShowOverlay()
         {
+            _closeTimer?.Stop();
             _isClosing = false;
 
             RepositionToCursorMonitor();
