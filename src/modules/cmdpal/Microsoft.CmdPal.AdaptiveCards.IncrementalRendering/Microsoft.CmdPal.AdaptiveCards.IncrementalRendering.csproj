@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.CmdPal.AdaptiveCards.IncrementalRendering</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsAotCompatible>true</IsAotCompatible>
+    <NoWarn>$(NoWarn);CA1720;SA1402;SA1518;SA1649</NoWarn>
+    <OutputPath>..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\CmdPal\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+</Project>

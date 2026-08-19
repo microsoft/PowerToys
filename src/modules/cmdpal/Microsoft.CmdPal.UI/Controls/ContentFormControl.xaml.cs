@@ -4,6 +4,8 @@
 
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
+using ManagedCommon;
+using Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
@@ -16,7 +18,8 @@ namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class ContentFormControl : UserControl
 {
-    private static readonly AdaptiveCardRenderer _renderer;
+    private readonly AdaptiveCardRenderer _renderer;
+    private readonly LatestWinsUpdateQueue<CardUpdateRequest> _cardUpdateQueue;
     private ContentFormViewModel? _viewModel;
 
     // LOAD-BEARING: if you don't hang onto a reference to the RenderedAdaptiveCard
@@ -25,33 +28,25 @@ public sealed partial class ContentFormControl : UserControl
     // form will do seemingly nothing.
     private RenderedAdaptiveCard? _renderedCard;
     private AdaptiveCard? _adaptiveCard;
+    private IncrementalNodeSnapshot? _cardSnapshot;
+    private string? _cardJson;
+    private long _cardVersion;
+    private long _cardSessionGeneration;
 
     public ContentFormViewModel? ViewModel { get => _viewModel; set => AttachViewModel(value); }
-
-    static ContentFormControl()
-    {
-        // We can't use `CardOverrideStyles` here yet, because we haven't called InitializeComponent once.
-        // But also, the default value isn't `null` here. It's... some other default empty value.
-        // So clear it out so that we know when the first time we get created is
-        _renderer = new AdaptiveCardRenderer()
-        {
-            OverrideStyles = null,
-        };
-    }
 
     public ContentFormControl()
     {
         this.InitializeComponent();
         var lightTheme = ActualTheme == Microsoft.UI.Xaml.ElementTheme.Light;
-        _renderer.HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark;
-
-        // 5% BODGY: if we set this multiple times over the lifetime of the app,
-        // then the second call will explode, because "CardOverrideStyles is already the child of another element".
-        // SO only set this once.
-        if (_renderer.OverrideStyles is null)
+        _renderer = new AdaptiveCardRenderer()
         {
-            _renderer.OverrideStyles = CardOverrideStyles;
-        }
+            HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark,
+            OverrideStyles = CardOverrideStyles,
+        };
+        _cardUpdateQueue = new LatestWinsUpdateQueue<CardUpdateRequest>(
+            DisplayCardAsync,
+            ex => Logger.LogError("Unexpected incremental Adaptive Card update failure", ex));
 
         // TODO in the future, we should handle ActualThemeChanged and replace
         // our rendered card with one for that theme. But today is not that day
@@ -64,6 +59,8 @@ public sealed partial class ContentFormControl : UserControl
             _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
         }
 
+        ResetCard();
+
         _viewModel = vm;
 
         if (_viewModel is not null)
@@ -73,7 +70,7 @@ public sealed partial class ContentFormControl : UserControl
             var c = _viewModel.Card;
             if (c is not null)
             {
-                DisplayCard(c);
+                RequestDisplayCard(c);
             }
         }
     }
@@ -90,31 +87,149 @@ public sealed partial class ContentFormControl : UserControl
             var c = ViewModel.Card;
             if (c is not null)
             {
-                DisplayCard(c);
+                RequestDisplayCard(c);
             }
         }
     }
 
-    private void DisplayCard(AdaptiveCardParseResult result)
+    private void RequestDisplayCard(AdaptiveCardParseResult result)
     {
-        _renderedCard = _renderer.RenderAdaptiveCard(result.AdaptiveCard);
-        _adaptiveCard = result.AdaptiveCard;
-        ContentGrid.Children.Clear();
-        if (_renderedCard.FrameworkElement is not null)
+        _cardUpdateQueue.Enqueue(new CardUpdateRequest(result, _cardSessionGeneration));
+    }
+
+    private async Task DisplayCardAsync(CardUpdateRequest request)
+    {
+        var result = request.Result;
+        RenderedAdaptiveCard candidate;
+        try
         {
-            _renderedCard.FrameworkElement.KeyDown += OnFormKeyDown;
-            ContentGrid.Children.Add(_renderedCard.FrameworkElement);
-
-            // Use the Loaded event to ensure we focus after the card is in the visual tree
-            _renderedCard.FrameworkElement.Loaded += OnFrameworkElementLoaded;
-
-            // Use LayoutUpdated to fix accessibility after the full visual tree is materialized.
-            // Loaded fires too early — the Adaptive Card renderer may not have finished building
-            // the control tree by then.
-            _renderedCard.FrameworkElement.LayoutUpdated += OnFrameworkElementLayoutUpdated;
+            candidate = _renderer.RenderAdaptiveCard(result.AdaptiveCard);
+        }
+        catch
+        {
+            // A transient renderer failure must not blank a previously valid form.
+            return;
         }
 
-        _renderedCard.Action += Rendered_Action;
+        if (candidate.FrameworkElement is not FrameworkElement candidateRoot)
+        {
+            return;
+        }
+
+        var candidateSnapshot = IncrementalAdaptiveCardVisualTree.Build(candidateRoot, result.AdaptiveCard);
+        var candidateJson = result.AdaptiveCard.ToJson().Stringify();
+        if (request.SessionGeneration != _cardSessionGeneration)
+        {
+            return;
+        }
+
+        if (_renderedCard?.FrameworkElement is FrameworkElement currentRoot
+            && _cardSnapshot is not null)
+        {
+            var plan = IncrementalTreeDiffer.CreatePlan(_cardSnapshot, candidateSnapshot, _cardVersion);
+            var cardJsonChanged = !string.Equals(_cardJson, candidateJson, StringComparison.Ordinal);
+            var canRetainCurrentLease = plan.Disposition == IncrementalPlanDisposition.PatchInPlace
+                || (plan.Disposition == IncrementalPlanDisposition.NoChanges && !cardJsonChanged);
+
+            if (canRetainCurrentLease)
+            {
+                var applied = await IncrementalAdaptiveCardVisualTree.TryApplyAsync(
+                    currentRoot,
+                    plan,
+                    _cardVersion,
+                    () => request.SessionGeneration == _cardSessionGeneration);
+                if (applied
+                    && request.SessionGeneration == _cardSessionGeneration)
+                {
+                    _cardSnapshot = candidateSnapshot;
+                    _cardJson = candidateJson;
+                    _adaptiveCard = result.AdaptiveCard;
+                    _cardVersion++;
+                }
+
+                // Decode or validation failures retain the last good visible card. A newer request
+                // waits in the queue's single pending slot rather than cancelling this active update.
+                return;
+            }
+        }
+
+        if (request.SessionGeneration != _cardSessionGeneration)
+        {
+            return;
+        }
+
+        SwapCard(candidate, result.AdaptiveCard, candidateSnapshot, candidateJson, candidateRoot);
+    }
+
+    private void SwapCard(
+        RenderedAdaptiveCard candidate,
+        AdaptiveCard adaptiveCard,
+        IncrementalNodeSnapshot snapshot,
+        string cardJson,
+        FrameworkElement candidateRoot)
+    {
+        var oldRenderedCard = _renderedCard;
+        var oldRoot = oldRenderedCard?.FrameworkElement as FrameworkElement;
+
+        candidateRoot.KeyDown += OnFormKeyDown;
+        candidateRoot.Loaded += OnFrameworkElementLoaded;
+        candidateRoot.LayoutUpdated += OnFrameworkElementLayoutUpdated;
+        candidate.Action += Rendered_Action;
+
+        _renderedCard = candidate;
+        _adaptiveCard = adaptiveCard;
+        _cardSnapshot = snapshot;
+        _cardJson = cardJson;
+        _cardVersion++;
+
+        // The candidate is completely rendered before this single assignment. The stable host is never
+        // cleared, so unsupported changes cannot produce an intermediate empty frame.
+        CardHost.Child = candidateRoot;
+
+        if (oldRoot is not null)
+        {
+            oldRoot.KeyDown -= OnFormKeyDown;
+            oldRoot.Loaded -= OnFrameworkElementLoaded;
+            oldRoot.LayoutUpdated -= OnFrameworkElementLayoutUpdated;
+        }
+
+        if (oldRenderedCard is not null)
+        {
+            oldRenderedCard.Action -= Rendered_Action;
+        }
+    }
+
+    private void ResetCard()
+    {
+        _cardSessionGeneration++;
+        _cardUpdateQueue.ClearPending();
+
+        var oldRenderedCard = _renderedCard;
+        if (oldRenderedCard?.FrameworkElement is FrameworkElement oldRoot)
+        {
+            oldRoot.KeyDown -= OnFormKeyDown;
+            oldRoot.Loaded -= OnFrameworkElementLoaded;
+            oldRoot.LayoutUpdated -= OnFrameworkElementLayoutUpdated;
+        }
+
+        if (oldRenderedCard is not null)
+        {
+            oldRenderedCard.Action -= Rendered_Action;
+        }
+
+        CardHost.Child = null;
+        _renderedCard = null;
+        _adaptiveCard = null;
+        _cardSnapshot = null;
+        _cardJson = null;
+        _cardVersion++;
+    }
+
+    private sealed class CardUpdateRequest(AdaptiveCardParseResult result, long sessionGeneration)
+    {
+        public AdaptiveCardParseResult Result { get; } = result;
+
+        public long SessionGeneration { get; } = sessionGeneration;
     }
 
     private void OnFrameworkElementLayoutUpdated(object? sender, object e)
