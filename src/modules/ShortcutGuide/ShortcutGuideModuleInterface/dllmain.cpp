@@ -41,6 +41,12 @@ public:
             Logger::warn(L"Failed to create {} event. {}", CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT, get_last_error_or_default(GetLastError()));
         }
 
+        winKeyHoldEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::SHORTCUT_GUIDE_WIN_KEY_HOLD_EVENT);
+        if (!winKeyHoldEvent)
+        {
+            Logger::warn(L"Failed to create {} event. {}", CommonSharedConstants::SHORTCUT_GUIDE_WIN_KEY_HOLD_EVENT, get_last_error_or_default(GetLastError()));
+        }
+
         InitSettings();
     }
 
@@ -132,6 +138,10 @@ public:
         {
             CloseHandle(triggerEvent);
         }
+        if (winKeyHoldEvent)
+        {
+            CloseHandle(winKeyHoldEvent);
+        }
 
         delete this;
     }
@@ -144,18 +154,17 @@ public:
 
     virtual void OnHotkeyEx() override
     {
-        Logger::trace("OnHotkeyEx()");
-        if (!_enabled)
+        SignalEvent(triggerEvent, CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT, L"regular hotkey");
+    }
+
+    virtual bool on_hotkey(size_t hotkeyId) override
+    {
+        if (hotkeyId == PowertoyModuleIface::WIN_KEY_HOLD_HOTKEY_ID && m_windowsKeyAction != WindowsKeyAction::Off)
         {
-            return;
+            SignalEvent(winKeyHoldEvent, CommonSharedConstants::SHORTCUT_GUIDE_WIN_KEY_HOLD_EVENT, L"Windows key hold");
         }
 
-        if (!IsProcessActive())
-        {
-            StartProcess();
-        }
-
-        SetEvent(triggerEvent);
+        return false;
     }
 
     virtual void send_settings_telemetry() override
@@ -170,6 +179,13 @@ public:
     virtual UINT milliseconds_win_key_must_be_pressed() override { return m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts; }
 
 private:
+    enum class WindowsKeyAction
+    {
+        Off = 0,
+        TaskbarIndicators = 1,
+        OpenShortcutGuide = 2,
+    };
+
     std::wstring app_name;
     //contains the non localized key of the powertoy
     std::wstring app_key;
@@ -186,7 +202,28 @@ private:
     UINT m_millisecondsWinKeyPressTimeForTaskbarIconShortcuts = DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_TASKBAR_ICON_SHORTCUTS;
 
     HANDLE triggerEvent;
+    HANDLE winKeyHoldEvent;
     HANDLE exitEvent;
+    WindowsKeyAction m_windowsKeyAction = WindowsKeyAction::TaskbarIndicators;
+
+    void SignalEvent(HANDLE eventHandle, const wchar_t* eventName, const wchar_t* activationSource)
+    {
+        Logger::trace(L"Shortcut Guide was invoked by {}", activationSource);
+        if (!_enabled)
+        {
+            return;
+        }
+
+        if (!IsProcessActive() && !StartProcess())
+        {
+            return;
+        }
+
+        if (!SetEvent(eventHandle))
+        {
+            Logger::error(L"Failed to signal {}. {}", eventName, get_last_error_or_default(GetLastError()));
+        }
+    }
 
     bool StartProcess(std::wstring args = L"")
     {
@@ -198,6 +235,10 @@ private:
         if (triggerEvent)
         {
             ResetEvent(triggerEvent);
+        }
+        if (winKeyHoldEvent)
+        {
+            ResetEvent(winKeyHoldEvent);
         }
 
         unsigned long powertoys_pid = GetCurrentProcessId();
@@ -302,7 +343,7 @@ private:
                 Logger::warn("Failed to initialize Shortcut Guide start shortcut");
             }
 
-try
+            try
             {
                 auto propertiesObject = settingsObject.GetNamedObject(L"properties");
                 if (propertiesObject.HasKey(L"press_time"))
@@ -324,7 +365,34 @@ try
                     }
                 }
             }
-            catch (...) { /* Keep defaults */ }
+            catch (...)
+            { /* Keep defaults */
+            }
+
+            try
+            {
+                auto propertiesObject = settingsObject.GetNamedObject(L"properties");
+                if (propertiesObject.HasKey(L"win_key_action"))
+                {
+                    const auto value = static_cast<int>(propertiesObject.GetNamedObject(L"win_key_action").GetNamedNumber(L"value"));
+                    switch (value)
+                    {
+                    case static_cast<int>(WindowsKeyAction::Off):
+                        m_windowsKeyAction = WindowsKeyAction::Off;
+                        break;
+                    case static_cast<int>(WindowsKeyAction::OpenShortcutGuide):
+                        m_windowsKeyAction = WindowsKeyAction::OpenShortcutGuide;
+                        break;
+                    case static_cast<int>(WindowsKeyAction::TaskbarIndicators):
+                    default:
+                        m_windowsKeyAction = WindowsKeyAction::TaskbarIndicators;
+                        break;
+                    }
+                }
+            }
+            catch (...)
+            { /* Keep defaults */
+            }
         }
         else
         {
