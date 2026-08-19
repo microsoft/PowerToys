@@ -459,7 +459,7 @@ def allowed_product_labels(title, body, labels, deterministic_label):
 
 def build_queries(repository, title, body, label):
     technical, concepts = search_terms(title, body)
-    scope = f"repo:{repository} is:issue"
+    scope = f"repo:{repository} is:issue is:open"
     label_scope = f' label:"{label}"' if label != "None" else ""
     queries = []
     for identifier in technical[:2]:
@@ -527,6 +527,7 @@ def retrieve_candidates(api, issue, desired_label):
                 or number == issue.get("number")
                 or number > issue.get("number")
                 or candidate.get("pull_request")
+                or candidate.get("state") != "open"
             ):
                 continue
             candidates[number] = candidate

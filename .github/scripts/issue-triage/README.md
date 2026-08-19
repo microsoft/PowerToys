@@ -10,8 +10,10 @@ combines deterministic preprocessing with one bounded GitHub Copilot pass.
   quality, language, and diagnostic-report requirement before AI runs.
 - Compare the reported version with the latest stable PowerToys release.
   Older versions receive a non-blocking update-and-retest recommendation.
-- Retrieve a bounded set of older candidate issues using product labels,
-  technical identifiers, and focused title/body searches.
+- Retrieve a bounded set of older open candidate issues using product labels,
+  technical identifiers, and focused title/body searches. Search results are
+  also checked defensively so closed issues and pull requests cannot be
+  suggested as canonical duplicates.
 - Ask Copilot only to summarize the issue, judge supplied duplicate candidates,
   interpret sanitized diagnostics, and classify the author-written language.
 - Maintain one marked comment with separate sections for the issue author and
@@ -25,6 +27,9 @@ combines deterministic preprocessing with one bounded GitHub Copilot pass.
   accept or decline it; acceptance closes the issue as a duplicate and links
   it to the selected canonical issue.
 - Never close an issue directly from the model output.
+- The daily dedupe digest re-fetches parsed canonical candidates and keeps only
+  open issues, preserving candidate order so the strongest still-open candidate
+  becomes primary.
 
 ## Reproduction and diagnostics
 

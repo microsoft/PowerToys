@@ -259,6 +259,7 @@ class IssueContextTests(unittest.TestCase):
             "Product-Keyboard Manager",
         )
         rendered = "\n".join(queries)
+        self.assertIn("is:open", rendered)
         self.assertIn('label:"Product-Keyboard Manager"', rendered)
         self.assertIn('"0x8007007e"', rendered)
         self.assertIn('"example.dll"', rendered)
@@ -599,6 +600,29 @@ class IssueContextTests(unittest.TestCase):
             issue,
             "Product-Keyboard Manager",
         )
+        self.assertEqual([candidate["number"] for candidate in candidates], [3])
+
+    def test_candidate_retrieval_discards_closed_results_defensively(self):
+        issue = {
+            "number": 10,
+            "title": "Keyboard Manager editor exits",
+            "body": "Unable to load Example.dll with 0x8007007E",
+            "labels": [{"name": "Product-Keyboard Manager"}],
+        }
+        open_candidate = {
+            "number": 3,
+            "state": "open",
+            "title": "Keyboard Manager editor exits",
+            "body": "Unable to load Example.dll with 0x8007007E",
+            "labels": [{"name": "Product-Keyboard Manager"}],
+        }
+        closed_candidate = {**open_candidate, "number": 2, "state": "closed"}
+        queries, candidates = CONTEXT.retrieve_candidates(
+            FakeApi(results=[closed_candidate, open_candidate]),
+            issue,
+            "Product-Keyboard Manager",
+        )
+        self.assertTrue(all("is:open" in query for query in queries))
         self.assertEqual([candidate["number"] for candidate in candidates], [3])
 
 
