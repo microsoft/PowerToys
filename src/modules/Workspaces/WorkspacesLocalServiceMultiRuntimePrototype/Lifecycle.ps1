@@ -197,6 +197,14 @@ function Invoke-Validation {
         $breakawayResult = Read-Evidence (Join-Path $storeRoot 'breakaway-stage-result.txt')
         Assert-Equal $breakawayResult.hresult '0x80070520' 'breakaway Stage HRESULT'
         Assert-Equal $breakawayResult.win32 '1312' 'breakaway Stage Win32 error'
+        $addResults = @(
+            Read-Evidence (Join-Path $storeRoot 'packaged-add-result-track1.txt')
+            Read-Evidence (Join-Path $storeRoot 'packaged-add-result-track2.txt')
+        )
+        foreach ($addResult in $addResults) {
+            Assert-Equal $addResult.hresult '0x80070520' 'packaged Add HRESULT'
+            Assert-Equal $addResult.win32 '1312' 'packaged Add Win32 error'
+        }
         $helperEvidence = Read-Evidence (Join-Path $storeRoot 'deployment-helper-evidence.txt')
         Assert-Equal $helperEvidence.packageIdentityPresent 'false' 'deployment helper package identity'
         Assert-Equal $helperEvidence.tokenUserSid 'S-1-5-18' 'deployment helper token SID'
@@ -283,6 +291,14 @@ function Invoke-Validation {
                 breakawayBridgePackageIdentityPresent = $bridgeEvidence.packageIdentityPresent
                 breakawayDescendantPackageIdentityPresent = $breakawayEvidence.packageIdentityPresent
                 breakawayStageHresult = $breakawayResult.hresult
+                packagedAddResults = @(
+                    foreach ($addResult in $addResults) {
+                        [ordered]@{
+                            hresult = $addResult.hresult
+                            win32 = $addResult.win32
+                        }
+                    }
+                )
                 deploymentHelperPackageIdentityPresent = $helperEvidence.packageIdentityPresent
                 deploymentHelperLaunchMode = $helperEvidence.launchMode
                 deploymentHelperExecutablePath = $helperEvidence.executablePath

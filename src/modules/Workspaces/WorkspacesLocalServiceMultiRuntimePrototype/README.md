@@ -101,6 +101,25 @@ on the tested build. It also corrects the earlier child experiment: the old
 `5023` result came from the prototype's own package-identity guard before
 Stage was called; it was not an AppX deployment result.
 
+Calling `AddPackageAsync` instead of `StagePackageAsync` also does not avoid
+the boundary. The prototype calls `AddPackageAsync` directly inside the
+packaged LocalSystem updater, once for each independent runtime package. Both
+calls return the same:
+
+```text
+0x80070520 (ERROR_NO_SUCH_LOGON_SESSION)
+```
+
+AppX event 607 classifies the request as a Deployment Add operation running for
+user SID `S-1-5-18`. Events 648/401/404 report the same specific error and
+`SharedAppsRedirect`. Event 613 reports `Failed to reach state
+SharedAppsRedirect`; `Stage required`, `Machine register`, and `Registration`
+costs are all zero. Therefore Add fails in the shared early deployment path
+before its stage/register work, rather than bypassing the Stage failure.
+
+This narrows the boundary but still does not reveal the undocumented internal
+root cause.
+
 The working design therefore uses one validated mitigation: copy only the
 small updater-owned deployment helper to:
 
@@ -117,6 +136,29 @@ does not establish that a protected helper copy is the only possible
 mitigation; an ordinary unpackaged machine updater service or an external
 elevated installer/updater actor would also avoid this tested packaged caller
 context.
+
+### 2.1 Unpackaged updater alternative
+
+The earlier `D:\PowerToys-Workspaces-SystemMulti` prototype uses an ordinary
+LocalSystem updater service installed under a protected Program Files path.
+That updater has no package identity and successfully calls
+`StagePackageAsync` directly. Its LocalSystem runtimes are unrelated to the
+deployment result; the determining variable is the updater caller context.
+
+This gives three distinct choices:
+
+| Updater | Runtime | Deployment helper | WindowsApps runtime ACL |
+|---|---|---|---|
+| Packaged LocalSystem | Virtual account | Required by current evidence | Exact package-version service-SID ACE |
+| Unpackaged LocalSystem | Virtual account | Not required | Exact package-version service-SID ACE |
+| Unpackaged LocalSystem | LocalSystem | Not required | No extra runtime ACE observed |
+
+The unpackaged-updater variants still provide silent runtime updates after the
+one-time elevated service installation. Their tradeoff is updater servicing:
+the updater binary must live in a protected ordinary directory and needs its
+own signature, anti-downgrade, atomic replacement, rollback, and recovery
+design. Updating the updater itself still requires an external elevated/SYSTEM
+actor or an occasional UAC event.
 
 ### 3. Virtual accounts cannot initially execute arbitrary WindowsApps payloads
 
@@ -178,6 +220,8 @@ Validated on Windows `10.0.26200.0` on 2026-08-19.
   identity.
 - The breakaway descendant's real Stage call returned exact
   `0x80070520`.
+- Direct packaged-updater `AddPackageAsync` calls for both runtime families
+  returned exact `0x80070520` before stage or registration work.
 - The protected-cache helper had no package identity and staged the same
   runtime source successfully.
 - No runtime EXE existed in the ProgramData store.
@@ -240,6 +284,8 @@ This is a topology/mechanism prototype, not production updater code:
   last-uninstall reconciliation;
 - WindowsApps ACL mutation needs platform support confirmation;
 - the `SharedAppsRedirect` failure's internal root cause remains undocumented;
+- `AddPackageAsync` shares the same failing early deployment path and is not a
+  mitigation on the validated build;
 - updater self-update still needs an external elevated actor, but can remain a
   rare `MinimumUpdaterVersion` event.
 
@@ -253,6 +299,7 @@ different WindowsApps package families.
 **Conditional product GO:** the topology depends on a small unpackaged
 deployment helper copy and dynamic service-SID RX ACEs on each exact runtime
 package-version directory. Desktop-app breakaway did not remove the helper
-requirement on the tested build. Without approval for those two conditions,
-use an ordinary machine updater service, LocalSystem/LocalService runtimes, or
-a protected runtime payload outside WindowsApps instead.
+requirement on the tested build, and replacing Stage with Add produces the same
+error. Without approval for those two conditions, the cleanest equivalent is
+an ordinary unpackaged LocalSystem updater with virtual-account runtimes; use
+LocalSystem runtimes only if machine-compromise blast radius is acceptable.

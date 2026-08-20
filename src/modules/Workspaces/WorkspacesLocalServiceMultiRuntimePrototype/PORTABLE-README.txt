@@ -29,6 +29,7 @@ Important evidence in validation-result.json
 --------------------------------------------
 - updater.breakawayDescendantPackageIdentityPresent = true
 - updater.breakawayStageHresult = 0x80070520
+- updater.packagedAddResults contains two 0x80070520 results
 - updater.deploymentHelperPackageIdentityPresent = false
 - runtimes contains two concurrently validated virtual-account services
 - verdict = PASS

@@ -665,15 +665,41 @@ namespace
         }
     }
 
-    void write_breakaway_stage_result(DWORD exitCode)
+    void write_deployment_result(
+        const std::filesystem::path& fileName,
+        DWORD exitCode)
     {
         std::wstringstream evidence;
         evidence << L"hresult=0x"
                  << std::hex << std::uppercase << exitCode << L"\r\n";
         evidence << L"win32=" << std::dec << HRESULT_CODE(exitCode) << L"\r\n";
         ptlsmr::write_utf8_file_atomic(
-            ptlsmr::program_data_root() / L"breakaway-stage-result.txt",
+            ptlsmr::program_data_root() / fileName,
             evidence.str());
+    }
+
+    [[nodiscard]] DWORD probe_packaged_add_package(
+        const std::filesystem::path& packagePath)
+    {
+        std::wstring uriText = L"file:///";
+        uriText += packagePath.wstring();
+        std::replace(uriText.begin(), uriText.end(), L'\\', L'/');
+        try
+        {
+            winrt::Windows::Management::Deployment::PackageManager manager;
+            const auto dependencies =
+                winrt::single_threaded_vector<winrt::Windows::Foundation::Uri>().GetView();
+            const auto result = manager.AddPackageAsync(
+                winrt::Windows::Foundation::Uri(uriText),
+                dependencies,
+                winrt::Windows::Management::Deployment::DeploymentOptions::None)
+                                    .get();
+            return static_cast<DWORD>(result.ExtendedErrorCode());
+        }
+        catch (const winrt::hresult_error& error)
+        {
+            return static_cast<DWORD>(error.code());
+        }
     }
 
     void verify_breakaway_stage_failure(std::wstring_view arguments)
@@ -683,7 +709,7 @@ namespace
                 L" --launch-breakaway-child"
                 L" --launch-mode desktop-app-breakaway",
             true);
-        write_breakaway_stage_result(exitCode);
+        write_deployment_result(L"breakaway-stage-result.txt", exitCode);
         constexpr DWORD expected = static_cast<DWORD>(
             HRESULT_FROM_WIN32(ERROR_NO_SUCH_LOGON_SESSION));
         if (exitCode == expected)
@@ -747,6 +773,12 @@ namespace
         const std::wstring arguments =
             L"--stage --runtime-track " + std::to_wstring(runtimeTrack) +
             L" --runtime-package " + ptlsmr::quote_argument(packagePath.wstring());
+        const DWORD addResult = probe_packaged_add_package(packagePath);
+        write_deployment_result(
+            L"packaged-add-result-track" + std::to_wstring(runtimeTrack) + L".txt",
+            addResult);
+        run_cached_deployment_helper(
+            L"--remove --runtime-track " + std::to_wstring(runtimeTrack));
         verify_breakaway_stage_failure(arguments);
         run_cached_deployment_helper(arguments);
     }
