@@ -305,17 +305,8 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     private void BandItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
     {
         // Ignore clicks when in edit mode - allow drag behavior instead
-        if (IsEditMode)
+        if (TryInvokeBandItem(sender))
         {
-            return;
-        }
-
-        if (sender is DockItemControl dockItem && dockItem.DataContext is DockBandViewModel band && dockItem.Tag is DockItemViewModel item)
-        {
-            // Use the center of the border as the point to open at
-            var borderCenter = GetDockItemCenter(dockItem);
-
-            InvokeItem(item, borderCenter);
             e.Handled = true;
         }
     }
@@ -329,13 +320,28 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             return;
         }
 
-        if (sender is DockItemControl dockItem && dockItem.DataContext is DockBandViewModel band && dockItem.Tag is DockItemViewModel item)
+        if (TryInvokeBandItem(sender))
         {
-            var borderCenter = GetDockItemCenter(dockItem);
-
-            InvokeItem(item, borderCenter);
             e.Handled = true;
         }
+    }
+
+    private bool TryInvokeBandItem(object sender)
+    {
+        if (IsEditMode)
+        {
+            return false;
+        }
+
+        if (sender is not DockItemControl dockItem || dockItem.Tag is not DockItemViewModel item)
+        {
+            return false;
+        }
+
+        // Use the center of the border as the point to open at.
+        var borderCenter = GetDockItemCenter(dockItem);
+        InvokeItem(item, borderCenter);
+        return true;
     }
 
     private ContextMenuFilterLocation GetDockContextMenuFilterLocation()
