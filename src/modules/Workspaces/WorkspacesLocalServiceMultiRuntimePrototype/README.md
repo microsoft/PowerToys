@@ -203,6 +203,30 @@ Run from an elevated PowerShell:
 
 `Lifecycle.ps1 -Verb validate` always performs managed cleanup in `finally`.
 
+## Portable cross-machine validation
+
+Create a minimal ZIP containing the signed MSIX artifacts, controller, metadata,
+hash manifest, temporary test certificate, and one-command runner:
+
+```powershell
+.\Export-PortableArtifacts.ps1 -DestinationDirectory C:\Temp
+```
+
+On the other x64 Windows 11 machine, extract the ZIP and run from an elevated
+PowerShell:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File .\Run-PortableValidation.ps1
+```
+
+The runner resolves artifacts relative to the extraction directory, validates
+their SHA-256 hashes, temporarily trusts only the bundled test certificate,
+runs the full two-runtime validation, and guarantees teardown. It preserves an
+identical certificate if that certificate was already trusted before the run.
+The result is written to `artifacts\validation-result.json`; retain it and the
+console output when comparing different Windows builds.
+
 ## Product gaps
 
 This is a topology/mechanism prototype, not production updater code:

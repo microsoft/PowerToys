@@ -3,7 +3,8 @@ param(
     [string]$FirstOwnerSid = 'S-1-5-21-1959867211-618815089-525172305-1122',
     [string]$SecondOwnerSid = 'S-1-5-21-1959867211-618815089-525172305-1123',
     [ValidateSet('Debug', 'Release')]
-    [string]$Configuration = 'Release'
+    [string]$Configuration = 'Release',
+    [switch]$PreserveTrustedCertificates
 )
 
 $ErrorActionPreference = 'Stop'
@@ -78,13 +79,15 @@ foreach ($packageName in $packageNames) {
 
 $storeRoot = Join-Path $env:ProgramData 'Microsoft\PowerToys\WorkspacesPackagedUpdaterVirtualRuntimePrototype'
 Remove-Item -LiteralPath $storeRoot -Recurse -Force -ErrorAction SilentlyContinue
-$certificateSubject = 'CN=PowerToys Workspaces Packaged Updater Virtual Runtime Prototype Test'
-foreach ($store in 'Cert:\CurrentUser\My', 'Cert:\CurrentUser\TrustedPeople',
-         'Cert:\LocalMachine\My', 'Cert:\LocalMachine\TrustedPeople') {
-    $certificates = @(Get-ChildItem $store -ErrorAction SilentlyContinue |
-        Where-Object { $_.Subject -eq $certificateSubject })
-    foreach ($certificate in $certificates) {
-        Remove-Item -LiteralPath $certificate.PSPath -Force
+if (-not $PreserveTrustedCertificates) {
+    $certificateSubject = 'CN=PowerToys Workspaces Packaged Updater Virtual Runtime Prototype Test'
+    foreach ($store in 'Cert:\CurrentUser\My', 'Cert:\CurrentUser\TrustedPeople',
+             'Cert:\LocalMachine\My', 'Cert:\LocalMachine\TrustedPeople') {
+        $certificates = @(Get-ChildItem $store -ErrorAction SilentlyContinue |
+            Where-Object { $_.Subject -eq $certificateSubject })
+        foreach ($certificate in $certificates) {
+            Remove-Item -LiteralPath $certificate.PSPath -Force
+        }
     }
 }
 
@@ -97,4 +100,10 @@ $remainingPackages = @(
 if ($remainingServices.Count -ne 0 -or $remainingPackages.Count -ne 0 -or (Test-Path $storeRoot)) {
     throw 'Teardown verification failed; prototype state remains.'
 }
-Write-Host 'Teardown PASS: no prototype services, packages, stores, or trusted certificates remain.'
+$scope = if ($PreserveTrustedCertificates) {
+    'services, packages, or stores'
+}
+else {
+    'services, packages, stores, or trusted certificates'
+}
+Write-Host "Teardown PASS: no prototype $scope remain."

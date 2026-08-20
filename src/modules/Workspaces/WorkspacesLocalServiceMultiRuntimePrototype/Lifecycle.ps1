@@ -16,6 +16,53 @@ if (-not (Test-Path $controller)) { throw "Controller is missing: $controller" }
 if (-not (Test-Path $metadataPath)) { throw "Package metadata is missing: $metadataPath" }
 $metadata = Get-Content $metadataPath -Raw | ConvertFrom-Json
 
+function Resolve-ArtifactFile(
+    [string]$Directory,
+    [string]$RecordedPath,
+    [string]$ExpectedSha256
+) {
+    $fileName = [IO.Path]::GetFileName($RecordedPath)
+    if ([string]::IsNullOrWhiteSpace($fileName)) {
+        throw "Artifact metadata does not contain a file name: $RecordedPath"
+    }
+    $candidate = Join-Path $Directory $fileName
+    if (-not (Test-Path -LiteralPath $candidate -PathType Leaf)) {
+        throw "Artifact is missing: $candidate"
+    }
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedSha256)) {
+        $actualSha256 = (Get-FileHash -LiteralPath $candidate -Algorithm SHA256).Hash
+        if ($actualSha256 -ne $ExpectedSha256) {
+            throw "Artifact hash mismatch for ${candidate}: expected $ExpectedSha256, actual $actualSha256"
+        }
+    }
+    return (Resolve-Path -LiteralPath $candidate).Path
+}
+
+$packageRoot = Join-Path $root 'artifacts\packages'
+$bundleRoot = Join-Path $root 'artifacts\simulated-bundles'
+$metadata.updater.path = Resolve-ArtifactFile `
+    $packageRoot $metadata.updater.path $metadata.updater.sha256
+foreach ($runtimeName in 'track1', 'track2') {
+    $runtime = $metadata.runtimes.$runtimeName
+    $runtime.path = Resolve-ArtifactFile $packageRoot $runtime.path $runtime.sha256
+}
+foreach ($bundleName in 'PowerToys-0.101', 'PowerToys-0.110') {
+    $bundle = $metadata.simulatedBundles.$bundleName
+    $bundleDirectory = Join-Path $bundleRoot $bundleName
+    $bundle.updaterPath = Resolve-ArtifactFile `
+        $bundleDirectory $bundle.updaterPath $bundle.updaterSha256
+    $runtimeMetadata = $metadata.runtimes."track$($bundle.runtimeTrack)"
+    $bundle.runtimePath = Resolve-ArtifactFile `
+        $bundleDirectory $bundle.runtimePath $runtimeMetadata.sha256
+}
+$metadata.certificatePath = Resolve-ArtifactFile `
+    $packageRoot $metadata.certificatePath $null
+$metadataCertificate = [Security.Cryptography.X509Certificates.X509Certificate2]::new(
+    $metadata.certificatePath)
+if ($metadataCertificate.Thumbprint -ne $metadata.certificateThumbprint) {
+    throw "Test certificate thumbprint mismatch: expected $($metadata.certificateThumbprint), actual $($metadataCertificate.Thumbprint)"
+}
+
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
 $principal = [Security.Principal.WindowsPrincipal]::new($identity)
 if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
