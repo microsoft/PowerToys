@@ -18,11 +18,21 @@ namespace Peek.FilePreviewer.Previewers
         // Matches the sample size commonly used by tools like git to decide whether a file is text or binary.
         private const int SampleSize = 8000;
 
+        // Files larger than this are rejected outright, so an oversized file never reaches ReadHelper.Read
+        // and the Monaco/WebView pipeline, which load the full content into memory. See ReadHelper.MaxReadableFileSizeBytes,
+        // which enforces the same limit while actually reading a file's content.
+        private const long MaxFileSizeBytes = ReadHelper.MaxReadableFileSizeBytes;
+
         public static bool IsTextFile(string path)
         {
             try
             {
                 using var stream = ReadHelper.OpenReadOnly(path);
+                if (stream.Length > MaxFileSizeBytes)
+                {
+                    return false;
+                }
+
                 int bytesToRead = (int)Math.Min(SampleSize, stream.Length);
                 if (bytesToRead == 0)
                 {
