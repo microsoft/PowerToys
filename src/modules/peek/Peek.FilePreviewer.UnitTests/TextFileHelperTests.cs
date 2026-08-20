@@ -26,7 +26,7 @@ namespace Peek.FilePreviewer.UnitTests
         {
             if (File.Exists(_tempFilePath))
             {
-                // File.Delete(_tempFilePath);
+                File.Delete(_tempFilePath);
             }
         }
 
@@ -62,6 +62,38 @@ namespace Peek.FilePreviewer.UnitTests
         public void IsTextFile_Utf8WithBom_ShouldReturnTrue()
         {
             File.WriteAllText(_tempFilePath, "Text with a BOM", new UTF8Encoding(true));
+
+            Assert.IsTrue(TextFileHelper.IsTextFile(_tempFilePath));
+        }
+
+        [TestMethod]
+        public void IsTextFile_Utf16LeWithBom_ShouldReturnTrue()
+        {
+            File.WriteAllText(_tempFilePath, "Text with a UTF-16LE BOM", Encoding.Unicode);
+
+            Assert.IsTrue(TextFileHelper.IsTextFile(_tempFilePath));
+        }
+
+        [TestMethod]
+        public void IsTextFile_Utf16BeWithBom_ShouldReturnTrue()
+        {
+            File.WriteAllText(_tempFilePath, "Text with a UTF-16BE BOM", Encoding.BigEndianUnicode);
+
+            Assert.IsTrue(TextFileHelper.IsTextFile(_tempFilePath));
+        }
+
+        [TestMethod]
+        public void IsTextFile_Utf32LeWithBom_ShouldReturnTrue()
+        {
+            File.WriteAllText(_tempFilePath, "Text with a UTF-32LE BOM", new UTF32Encoding(bigEndian: false, byteOrderMark: true));
+
+            Assert.IsTrue(TextFileHelper.IsTextFile(_tempFilePath));
+        }
+
+        [TestMethod]
+        public void IsTextFile_Utf32BeWithBom_ShouldReturnTrue()
+        {
+            File.WriteAllText(_tempFilePath, "Text with a UTF-32BE BOM", new UTF32Encoding(bigEndian: true, byteOrderMark: true));
 
             Assert.IsTrue(TextFileHelper.IsTextFile(_tempFilePath));
         }

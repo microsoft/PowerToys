@@ -32,6 +32,12 @@ namespace Peek.FilePreviewer.Previewers
                 var buffer = new byte[bytesToRead];
                 int bytesRead = stream.Read(buffer, 0, bytesToRead);
 
+                // If the file starts with a Unicode BOM, we can assume it's a text file.
+                if (HasUnicodeBom(buffer, bytesRead))
+                {
+                    return true;
+                }
+
                 // A NUL byte in the sample is a strong signal of binary content.
                 for (int i = 0; i < bytesRead; i++)
                 {
@@ -48,6 +54,29 @@ namespace Peek.FilePreviewer.Previewers
                 Logger.LogError("Failed to determine if file is text: " + ex.Message);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Determines whether the given buffer contains a Unicode BOM (Byte Order Mark) for UTF-16 or UTF-32.
+        /// </summary>
+        /// <param name="buffer">The byte array to check for a BOM.</param>
+        /// <param name="bytesRead">The number of bytes read into the buffer.</param>
+        /// <returns>True if the buffer contains a Unicode BOM; otherwise, false.</returns>
+        private static bool HasUnicodeBom(byte[] buffer, int bytesRead)
+        {
+            // UTF-32 BOMs must be checked before UTF-16, since the UTF-32LE BOM (FF FE 00 00) starts with the UTF-16LE BOM (FF FE).
+            bool isUtf32 = bytesRead >= 4 &&
+                ((buffer[0] == 0xFF && buffer[1] == 0xFE && buffer[2] == 0x00 && buffer[3] == 0x00) ||
+                 (buffer[0] == 0x00 && buffer[1] == 0x00 && buffer[2] == 0xFE && buffer[3] == 0xFF));
+            if (isUtf32)
+            {
+                return true;
+            }
+
+            bool isUtf16 = bytesRead >= 2 &&
+                ((buffer[0] == 0xFF && buffer[1] == 0xFE) ||
+                 (buffer[0] == 0xFE && buffer[1] == 0xFF));
+            return isUtf16;
         }
     }
 }
