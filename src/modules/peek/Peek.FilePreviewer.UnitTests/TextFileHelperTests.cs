@@ -99,6 +99,20 @@ namespace Peek.FilePreviewer.UnitTests
         }
 
         [TestMethod]
+        public void IsTextFile_FileExceedsMaxSize_ShouldReturnFalse()
+        {
+            byte[] buffer = new byte[ReadHelper.MaxReadableFileSizeBytes + 1];
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                buffer[i] = (byte)'a';
+            }
+
+            File.WriteAllBytes(_tempFilePath, buffer);
+
+            Assert.IsFalse(TextFileHelper.IsTextFile(_tempFilePath));
+        }
+
+        [TestMethod]
         public void IsTextFile_NonExistentFile_ShouldReturnFalse()
         {
             string missingPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".missing");
