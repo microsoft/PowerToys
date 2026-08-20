@@ -96,13 +96,58 @@ namespace ZoomAnimationTests
             animation.Start(1.0f, 2.0f, 0, 280);
             const auto displayedZoom = animation.Sample(80);
 
-            animation.Start(displayedZoom, 4.0f, 80, 320);
+            animation.Retarget(4.0f, 80, 320);
             Assert::AreEqual(displayedZoom, animation.Sample(80));
 
             const auto higherZoomIntermediateFrame = animation.Sample(120);
             Assert::IsTrue(higherZoomIntermediateFrame > displayedZoom);
             Assert::IsTrue(higherZoomIntermediateFrame < 4.0f);
             Assert::AreEqual(4.0f, animation.Sample(400));
+        }
+
+        TEST_METHOD(InFlightRetargetPreservesVelocity)
+        {
+            ZoomAnimation animation;
+            animation.Start(1.0f, 2.0f, 0, 280);
+            const auto scaleBeforeRetarget = std::log(animation.Sample(79));
+            const auto scaleAtRetarget = std::log(animation.Retarget(4.0f, 80, 320));
+            const auto scaleAfterRetarget = std::log(animation.Sample(81));
+
+            const auto velocityBeforeRetarget = scaleAtRetarget - scaleBeforeRetarget;
+            const auto velocityAfterRetarget = scaleAfterRetarget - scaleAtRetarget;
+            Assert::AreEqual(velocityBeforeRetarget, velocityAfterRetarget, 0.0001f);
+        }
+
+        TEST_METHOD(DirectionReversalDoesNotContinueAwayFromTarget)
+        {
+            ZoomAnimation animation;
+            animation.Start(1.0f, 4.0f, 0, 400);
+            const auto zoomAtRetarget = animation.Retarget(1.0f, 100, 400);
+
+            Assert::IsTrue(animation.Sample(101) <= zoomAtRetarget);
+        }
+
+        TEST_METHOD(HighMagnificationZoomStartsWithoutLargeScaleJump)
+        {
+            ZoomAnimation animation;
+            animation.Start(8.0f, 16.0f, 0, 420);
+
+            const auto firstFrame = animation.Sample(10);
+
+            Assert::IsTrue(firstFrame > 8.0f);
+            Assert::IsTrue(firstFrame < 8.1f);
+        }
+
+        TEST_METHOD(EasingIsSymmetricAroundMidpoint)
+        {
+            ZoomAnimation animation;
+            animation.Start(1.0f, 16.0f, 0, 400);
+
+            const auto quarterScale = std::log(animation.Sample(100));
+            const auto threeQuarterScale = std::log(animation.Sample(300));
+            const auto midpointScale = std::log(4.0f);
+
+            Assert::AreEqual(midpointScale - quarterScale, threeQuarterScale - midpointScale, 0.0001f);
         }
 
         TEST_METHOD(ConfiguredZoomLevelsRemainExactEndpoints)

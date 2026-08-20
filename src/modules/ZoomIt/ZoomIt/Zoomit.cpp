@@ -1491,6 +1491,28 @@ void GetZoomedTopLeftCoordinates( float zoomLevel, POINT *cursorPos, int *x, int
     AdjustToMoveBoundary( zoomLevel, y, cursorPos->y, static_cast<int>(scaledHeight), height );
 }
 
+void GetAnimatedZoomSourceCoordinates( float zoomLevel, const POINT* cursorPos, int width, int height, float* x, float* y )
+{
+    const auto scaledWidth = static_cast<float>(width) / zoomLevel;
+    const auto scaledHeight = static_cast<float>(height) / zoomLevel;
+    *x = max(0.0f, min(static_cast<float>(width) - scaledWidth,
+                       static_cast<float>(cursorPos->x) - static_cast<float>(cursorPos->x) / static_cast<float>(width) * scaledWidth));
+    *y = max(0.0f, min(static_cast<float>(height) - scaledHeight,
+                       static_cast<float>(cursorPos->y) - static_cast<float>(cursorPos->y) / static_cast<float>(height) * scaledHeight));
+
+    const auto horizontalBoundary = scaledWidth / static_cast<float>(LIVEZOOM_MOVE_REGIONS);
+    if (static_cast<float>(cursorPos->x) - *x < horizontalBoundary)
+        *x = max(0.0f, static_cast<float>(cursorPos->x) - horizontalBoundary);
+    else if ((*x + scaledWidth) - static_cast<float>(cursorPos->x) < horizontalBoundary)
+        *x = min(static_cast<float>(cursorPos->x) + horizontalBoundary - scaledWidth, static_cast<float>(width) - scaledWidth);
+
+    const auto verticalBoundary = scaledHeight / static_cast<float>(LIVEZOOM_MOVE_REGIONS);
+    if (static_cast<float>(cursorPos->y) - *y < verticalBoundary)
+        *y = max(0.0f, static_cast<float>(cursorPos->y) - verticalBoundary);
+    else if ((*y + scaledHeight) - static_cast<float>(cursorPos->y) < verticalBoundary)
+        *y = min(static_cast<float>(cursorPos->y) + verticalBoundary - scaledHeight, static_cast<float>(height) - scaledHeight);
+}
+
 
 //----------------------------------------------------------------------------
 //
@@ -9257,8 +9279,8 @@ LRESULT APIENTRY MainWndProc(
                                     zoomTelescopeTarget = zoomTelescopeTarget * 2;
                                 }
                                 if( g_AnimateZoom )
-                                    zoomAnimation.Start( zoomLevel, zoomTelescopeTarget, GetTickCount64(),
-                                                         ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, true ) );
+                                    zoomLevel = zoomAnimation.Retarget( zoomTelescopeTarget, GetTickCount64(),
+                                                                      ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, true ) );
                                 else
                                 {
                                     zoomLevel = zoomTelescopeTarget;
@@ -9285,8 +9307,8 @@ LRESULT APIENTRY MainWndProc(
                                 zoomTelescopeTarget = zoomTelescopeTarget/2;
                             }
                             if( g_AnimateZoom )
-                                zoomAnimation.Start( zoomLevel, zoomTelescopeTarget, GetTickCount64(),
-                                                     ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, true ) );
+                                zoomLevel = zoomAnimation.Retarget( zoomTelescopeTarget, GetTickCount64(),
+                                                                  ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, true ) );
                             else
                             {
                                 zoomLevel = zoomTelescopeTarget;
@@ -11587,7 +11609,7 @@ LRESULT APIENTRY MainWndProc(
                             width/zoomLevel, height/zoomLevel );
             } else {
                 // do a fast, less accurate render (but use smooth if enabled)
-                SetStretchBltMode( hDc, g_SmoothImage ? HALFTONE : COLORONCOLOR );
+                SetStretchBltMode( hDc, g_SmoothImage && !zoomAnimation.IsActive() ? HALFTONE : COLORONCOLOR );
                 StretchBlt( ps.hdc,
                         0, 0,
                         bmp.bmWidth, bmp.bmHeight,
@@ -11600,8 +11622,8 @@ LRESULT APIENTRY MainWndProc(
 #if SCALE_HALFTONE
             SetStretchBltMode( hDc, zoomLevel == zoomTelescopeTarget ? HALFTONE : COLORONCOLOR );
 #else
-            // Use HALFTONE for better quality when smooth image is enabled
-            if (g_SmoothImage) {
+            // Filtering a changing scale causes temporal shimmer. Restore it on the final frame.
+            if (g_SmoothImage && !zoomAnimation.IsActive()) {
                 SetStretchBltMode( hDc, HALFTONE );
             } else {
                 SetStretchBltMode( hDc, COLORONCOLOR );
@@ -11793,6 +11815,7 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
     static float	zoomLevel;
     static float	zoomTelescopeTarget;
     static ZoomAnimation zoomAnimation;
+    static BOOLEAN animationSmoothingDisabled = FALSE;
     static BOOL		dwmEnabled = FALSE;
     static BOOLEAN	startedInPresentationMode = FALSE;
     MAGTRANSFORM matrix;
@@ -11838,6 +11861,10 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
     case WM_SHOWWINDOW:
         if( wParam == TRUE ) {
+
+            animationSmoothingDisabled = FALSE;
+            if( !g_fullScreenWorkaround && pMagSetLensUseBitmapSmoothing )
+                pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, g_SmoothImage );
 
             // Determine what monitor we're on
             lastCursorPos.x = -1;
@@ -11904,6 +11931,12 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
         } else {
 
             KillTimer( hWnd, 0 );
+            if( animationSmoothingDisabled ) {
+
+                animationSmoothingDisabled = FALSE;
+                if( pMagSetLensUseBitmapSmoothing )
+                    pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, TRUE );
+            }
 
             if( g_RecordToggle )
                 g_RecordingSession->EnableCursorCapture();
@@ -11928,6 +11961,10 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
     case WM_TIMER:
         switch( wParam ) {
         case 0: {
+            bool animationFrame = false;
+            float animatedSourceX = 0.0f;
+            float animatedSourceY = 0.0f;
+
             // if we're cropping, do not move
             if( g_RecordCropping == TRUE )
             {
@@ -11965,7 +12002,20 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             moveHeight = sourceRectHeight/LIVEZOOM_MOVE_REGIONS;
             if( zoomAnimation.IsActive() ) {
 
+                animationFrame = true;
+                if( g_SmoothImage && !g_fullScreenWorkaround && !animationSmoothingDisabled ) {
+
+                    animationSmoothingDisabled = TRUE;
+                    if( pMagSetLensUseBitmapSmoothing )
+                        pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, FALSE );
+                }
                 zoomLevel = zoomAnimation.Sample( GetTickCount64() );
+                if( animationSmoothingDisabled && !zoomAnimation.IsActive() ) {
+
+                    animationSmoothingDisabled = FALSE;
+                    if( pMagSetLensUseBitmapSmoothing )
+                        pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, TRUE );
+                }
                 // Time to exit zoom mode?
                 if( zoomTelescopeTarget == 1 && zoomLevel == 1 ) {
 
@@ -11990,14 +12040,11 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                 //
                 adjustedCursorPos.x = cursorPos.x - monInfo.rcMonitor.left;
                 adjustedCursorPos.y = cursorPos.y - monInfo.rcMonitor.top;
-                GetZoomedTopLeftCoordinates( zoomLevel, &adjustedCursorPos, reinterpret_cast<int *>(&zoomCenterPos.x), width,
-                                reinterpret_cast<int *>(&zoomCenterPos.y), height );
-
-                //
-                // Add back monitor boundary
-                //
-                zoomCenterPos.x += monInfo.rcMonitor.left + static_cast<LONG>(width/zoomLevel/2);
-                zoomCenterPos.y += monInfo.rcMonitor.top + static_cast<LONG>(height/zoomLevel/2);
+                GetAnimatedZoomSourceCoordinates( zoomLevel, &adjustedCursorPos, width, height, &animatedSourceX, &animatedSourceY );
+                animatedSourceX += static_cast<float>(monInfo.rcMonitor.left);
+                animatedSourceY += static_cast<float>(monInfo.rcMonitor.top);
+                zoomCenterPos.x = static_cast<LONG>(animatedSourceX + static_cast<float>(width) / zoomLevel / 2.0f);
+                zoomCenterPos.y = static_cast<LONG>(animatedSourceY + static_cast<float>(height) / zoomLevel / 2.0f);
 
             } else {
 
@@ -12060,6 +12107,14 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                     matrix.v[2][2] = 1.0f;
                 }
                 lastSourceRect = sourceRect;
+            }
+            if( animationFrame && !g_fullScreenWorkaround && !g_ZoomOnLiveZoom ) {
+
+                matrix.v[0][0] = zoomLevel;
+                matrix.v[0][2] = -animatedSourceX * zoomLevel;
+                matrix.v[1][1] = zoomLevel;
+                matrix.v[1][2] = -animatedSourceY * zoomLevel;
+                matrix.v[2][2] = 1.0f;
             }
             lastCursorPos = cursorPos;
 
@@ -12169,8 +12224,8 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             zoomAnimation.Stop( zoomLevel );
         } else {
 
-            zoomAnimation.Start( zoomLevel, zoomTelescopeTarget, GetTickCount64(),
-                                 ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, false ) );
+            zoomLevel = zoomAnimation.Retarget( zoomTelescopeTarget, GetTickCount64(),
+                                                ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, false ) );
         }
         }
         break;
@@ -12186,8 +12241,8 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                 zoomAnimation.Stop( zoomLevel );
             } else {
 
-                zoomAnimation.Start( zoomLevel, zoomTelescopeTarget, GetTickCount64(),
-                                     ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, false ) );
+                zoomLevel = zoomAnimation.Retarget( zoomTelescopeTarget, GetTickCount64(),
+                                                    ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, false ) );
             }
             break;
 
@@ -12203,6 +12258,9 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
         }
         break;
     case WM_DESTROY:
+        if( animationSmoothingDisabled && pMagSetLensUseBitmapSmoothing )
+            pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, TRUE );
+        animationSmoothingDisabled = FALSE;
         g_hWndLiveZoom = NULL;
         break;
 
