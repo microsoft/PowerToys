@@ -97,7 +97,8 @@ namespace Peek.FilePreviewer.Previewers
         {
             cancellationToken.ThrowIfCancellationRequested();
             State = PreviewState.Loading;
-            await LoadDisplayInfoAsync(cancellationToken);
+            DisplayInfoTask = LoadDisplayInfoAsync(cancellationToken);
+            await DisplayInfoTask; // Wait for the display info to load before checking for errors
 
             if (HasFailedLoadingPreview())
             {
@@ -111,10 +112,19 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                string extension = File.Extension;
+
+                // Items that reach the previewer as a fallback-candidate haven't had their content verified
+                // as text yet - that cheap check deliberately skips file I/O so it's safe to run
+                // synchronously on the UI thread.
+                bool needsContentSniff = !IsItemSupported(File);
+                if (needsContentSniff && !await TextFileHelper.IsTextFileAsync(File.Path, cancellationToken))
+                {
+                    throw new NotSupportedException($"'{File.Path}' has an unrecognized extension and its content was not sniffed as text.");
+                }
+
                 await Dispatcher.RunOnUiThread(async () =>
                 {
-                    string extension = File.Extension;
-
                     // Default: non-dev file preview with standard context menu
                     IsDevFilePreview = false;
                     CustomContextMenu = false;
@@ -144,8 +154,7 @@ namespace Peek.FilePreviewer.Previewers
                     else
                     {
                         // Source code files use Monaco editor. Extensions Monaco doesn't recognize
-                        // (including files with no extension, sniffed as text by IsTextFallbackSupported)
-                        // fall back to plaintext highlighting.
+                        // (including files with no extension) fall back to plaintext highlighting..
                         IsDevFilePreview = true;
                         CustomContextMenu = true;
                         var raw = await ReadHelper.Read(File.Path.ToString());
@@ -171,12 +180,13 @@ namespace Peek.FilePreviewer.Previewers
 
         /// <summary>
         /// Last-resort check for files with no extension, or an extension Peek doesn't otherwise
-        /// recognize, whose content is sniffed to be text. Should only be consulted after every
-        /// other previewer (including the shell preview handler) has declined the item.
+        /// recognize, whose content should be checked to confirm if it is text. Should only be
+        /// consulted after every other previewer (including the shell preview handler)
+        /// has declined the item.
         /// </summary>
-        public static bool IsTextFallbackSupported(IFileSystemItem item)
+        public static bool IsFallbackCandidate(IFileSystemItem item)
         {
-            return item is FileItem && !IsItemSupported(item) && TextFileHelper.IsTextFile(item.Path);
+            return item is FileItem && !IsItemSupported(item);
         }
 
         private bool HasFailedLoadingPreview()
