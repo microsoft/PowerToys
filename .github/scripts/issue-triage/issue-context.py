@@ -204,7 +204,8 @@ def reproduction_quality(body):
     action_markers = len(
         re.findall(
             r"(?:^|\s)(?:\d+[.)]|[-*])\s+|\b(?:open|launch|click|press|select|"
-            r"enable|disable|connect|disconnect|type|drag|run|choose|restart)\b",
+            r"enable|disable|connect|disconnect|type|drag|run|choose|restart|"
+            r"create|make|configure|remap|hold|use)\b",
             steps,
             re.IGNORECASE | re.MULTILINE,
         )
