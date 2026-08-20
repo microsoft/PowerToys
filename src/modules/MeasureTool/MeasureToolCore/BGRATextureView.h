@@ -118,7 +118,9 @@ struct BGRATextureView
         else
         {
             // Method 2: Test whether sum of all channel differences is smaller than tolerance
-            const int32_t score = _mm_cvtsi128_si32(_mm_sad_epu8(distances, _mm_setzero_si128())) & std::numeric_limits<uint8_t>::max();
+            // The 4 channel differences sum to at most 1020, so masking with 0xFF wrapped
+            // anything above 255 back down into the tolerance range.
+            const int32_t score = _mm_cvtsi128_si32(_mm_sad_epu8(distances, _mm_setzero_si128())) & std::numeric_limits<uint16_t>::max();
             return score <= tolerance;
         }
     }
