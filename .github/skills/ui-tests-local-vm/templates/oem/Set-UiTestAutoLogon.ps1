@@ -3,6 +3,10 @@
 # See the LICENSE file in the project root for more information.
 
 [CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSAvoidUsingConvertToSecureStringWithPlainText',
+    '',
+    Justification = 'The generated plaintext password is required by LogonUser and LSA APIs; SecureString is only needed for local-user cmdlets.')]
 param(
     [Parameter(Mandatory)]
     [string]$StandardUser,
@@ -164,20 +168,8 @@ if (-not $credentialValid) {
     finally {
         $random.Dispose()
     }
-    $plainPasswordBuilder = [Text.StringBuilder]::new(($passwordBytes.Length * 2) + 4)
-    $securePassword = [Security.SecureString]::new()
-    foreach ($passwordByte in $passwordBytes) {
-        $hexPair = $passwordByte.ToString('X2')
-        [void]$plainPasswordBuilder.Append($hexPair)
-        $securePassword.AppendChar($hexPair[0])
-        $securePassword.AppendChar($hexPair[1])
-    }
-    foreach ($character in 'aA1!'.ToCharArray()) {
-        [void]$plainPasswordBuilder.Append($character)
-        $securePassword.AppendChar($character)
-    }
-    $plainPassword = $plainPasswordBuilder.ToString()
-    $securePassword.MakeReadOnly()
+    $plainPassword = ([BitConverter]::ToString($passwordBytes) -replace '-', '') + 'aA1!'
+    $securePassword = ConvertTo-SecureString $plainPassword -AsPlainText -Force
     if ($null -eq $localUser) {
         New-LocalUser `
             -Name $StandardUser `
