@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 using ManagedCommon;
 
@@ -23,10 +25,18 @@ namespace Peek.FilePreviewer.Previewers
         // which enforces the same limit while actually reading a file's content.
         private const long MaxFileSizeBytes = ReadHelper.MaxReadableFileSizeBytes;
 
-        public static bool IsTextFile(string path)
+        /// <summary>
+        /// Determines whether the file at the given path is likely to be a text file, based on its size and content.
+        /// </summary>
+        /// <param name="path">The path to the file to check.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+        /// <returns>True if the file is likely to be a text file; otherwise, false.</returns>
+        public static async Task<bool> IsTextFileAsync(string path, CancellationToken cancellationToken)
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 using var stream = ReadHelper.OpenReadOnly(path);
                 if (stream.Length > MaxFileSizeBytes)
                 {
@@ -40,7 +50,7 @@ namespace Peek.FilePreviewer.Previewers
                 }
 
                 var buffer = new byte[bytesToRead];
-                int bytesRead = stream.Read(buffer, 0, bytesToRead);
+                int bytesRead = await stream.ReadAsync(buffer.AsMemory(0, bytesToRead), cancellationToken);
 
                 // If the file starts with a Unicode BOM, we can assume it's a text file.
                 if (HasUnicodeBom(buffer, bytesRead))
@@ -58,6 +68,11 @@ namespace Peek.FilePreviewer.Previewers
                 }
 
                 return true;
+            }
+            catch (OperationCanceledException)
+            {
+                // Let navigation cancellation propagate instead of being reported as "not text".
+                throw;
             }
             catch (Exception ex)
             {
