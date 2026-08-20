@@ -7,7 +7,7 @@
   IgnorableNamespaces="uap uap10 rescap">
   <Identity
     Name="@@PACKAGE_NAME@@"
-    Publisher="CN=PowerToys Workspaces Packaged Updater Virtual Runtime Prototype Test"
+    Publisher="CN=PowerToys Workspaces Unpackaged Updater Virtual Runtime Prototype Test"
     Version="@@VERSION@@"
     ProcessorArchitecture="x64" />
   <Properties>

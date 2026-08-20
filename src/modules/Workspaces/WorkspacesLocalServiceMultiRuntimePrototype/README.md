@@ -1,18 +1,23 @@
-# Packaged updater + virtual-account multi-runtime prototype
+# Unpackaged updater + virtual-account multi-runtime prototype
 
 This native prototype validates the following topology:
 
 ```text
 PowerToys 0.101 bundle ─┐
-                       ├─ byte-identical updater 5.0.0.0 MSIX
+                       ├─ byte-identical signed updater PE 5.0.0.0
 PowerToys 0.110 bundle ─┘
                                   │
-                                  ▼
-                manifest-owned PtPuvrUpdater service
-                    LocalSystem, packaged process
+                     one elevated bootstrap
                                   │
-                    transient deployment helper
-                 LocalSystem, ordinary process
+                                  ▼
+       %ProgramFiles%\PowerToys\WorkspacesUnpackagedUpdater...
+                       PtPuvrUpdater.exe
+                                  │
+               ordinary LocalSystem SCM service
+               packageIdentityPresent = false
+                                  │
+             direct StagePackageAsync / RemovePackageAsync
+                     no deployment helper process
                                   │
               ┌───────────────────┴───────────────────┐
               ▼                                       ▼
@@ -20,223 +25,150 @@ PtPuvrRuntime_<owner A hash>             PtPuvrRuntime_<owner B hash>
 NT SERVICE virtual account               NT SERVICE virtual account
 runtime track 1.0.0.0                     runtime track 2.0.0.0
 WindowsApps package family 1              WindowsApps package family 2
-ordinary unpackaged process               ordinary unpackaged process
+packageIdentityPresent = false            packageIdentityPresent = false
 ```
 
-The two owner SIDs represent two users with different PowerToys installations.
+The two owner SIDs represent users with different PowerToys installations.
+The updater is a machine-wide singleton with an independent servicing version.
 The runtime services are dynamically named and do not appear in a signed
 manifest.
 
+## What "unpackaged runtime" means
+
+The runtime EXE is still delivered by a signed MSIX and staged into an exact
+versioned WindowsApps directory. SCM directly starts that EXE as an ordinary
+classic service. The process therefore has no package identity:
+
+```text
+GetCurrentPackageFullName -> APPMODEL_ERROR_NO_PACKAGE (15700)
+```
+
+There is no runtime EXE copy. "Unpackaged runtime" describes the process
+identity and activation model, not the payload delivery format.
+
 ## Independent versions
 
-| Artifact | Package/File version |
+| Artifact | Version |
 |---|---:|
-| Singleton updater | `5.0.0.0` |
-| Runtime track 1 | `1.0.0.0` |
-| Runtime track 2 | `2.0.0.0` |
+| Singleton updater PE | `5.0.0.0` |
+| Runtime track 1 package/file | `1.0.0.0` |
+| Runtime track 2 package/file | `2.0.0.0` |
 | Management protocol | `2` |
 
 `Package.ps1` creates simulated `PowerToys-0.101` and `PowerToys-0.110`
-bundles. Both contain the exact same signed updater MSIX. The successful
-validation asserts that both copies have the same SHA-256; the generated value
-is recorded in `artifacts\validation-result.json`.
+bundles. Both contain byte-identical, Authenticode-signed
+`PtPuvrUpdater.exe` files. The validation asserts that both hashes equal the
+canonical standalone updater hash.
 
-The runtime packages intentionally use different package families. Exact
-side-by-side versions cannot safely share one package family because staging a
-new version can remove the old WindowsApps directory.
+The runtime tracks intentionally use different package families. That permits
+two users to retain different runtime versions side by side without one
+package-family update removing the other's exact WindowsApps directory.
 
-## Important findings
+## Helper elimination
 
-### 1. The packaged LocalSystem updater works
-
-The updater is declared by:
-
-```xml
-<desktop6:Service
-  Name="PtPuvrUpdater"
-  StartupType="manual"
-  StartAccount="localSystem" />
-```
-
-SCM launches it directly from its updater package. Evidence confirmed:
-
-- primary SID `S-1-5-18`;
-- package identity present;
-- package and PE file version `5.0.0.0`;
-- one singleton SCM service/process.
-
-### 2. The tested packaged SYSTEM call path cannot stage the runtime
-
-Calling `PackageManager.StagePackageAsync` inside the packaged LocalSystem
-service failed consistently on the validated Windows build:
+The earlier packaged-updater prototype observed:
 
 ```text
-AppX deployment user: S-1-5-18
-SharedAppsRedirect: 0x80070520 (ERROR_NO_SUCH_LOGON_SESSION)
+packaged LocalSystem updater
+  StagePackageAsync / AddPackageAsync
+  -> 0x80070520 at SharedAppsRedirect
 ```
 
-`0x80070520` is the specific deployment error
-`HRESULT_FROM_WIN32(ERROR_NO_SUCH_LOGON_SESSION)`. The outer AppX deployment
-event also reported `0x80073CF9`, and identified `SharedAppsRedirect` as the
-failing internal state handler. `SharedAppsRedirect` has no public contract
-that explains which caller property caused the failure, so this result does
-not prove that all packaged LocalSystem processes are categorically unable to
-stage packages.
+It used a transient unpackaged helper as a measured workaround. This variant
+makes the updater service itself an ordinary LocalSystem process. It calls
+`PackageManager.StagePackageAsync` and `RemovePackageAsync` directly.
 
-The prototype now runs a controlled child-process comparison:
-
-1. A default child launched from the updater package retains the updater
-   package identity. This control does not call `StagePackageAsync`.
-2. A bridge child is created with
-   `PROC_THREAD_ATTRIBUTE_DESKTOP_APP_POLICY` and
-   `PROCESS_CREATION_DESKTOP_APP_BREAKAWAY_ENABLE_PROCESS_TREE`.
-3. The bridge launches a descendant from the same WindowsApps helper path.
-   On Windows `10.0.26200.0`, the descendant still retains package identity and
-   a real `StagePackageAsync` call still returns `0x80070520`.
-4. The same helper bytes copied to a SYSTEM/Administrators-only ProgramData
-   cache run without package identity, and the same stage operation succeeds.
-
-This shows that desktop-app breakaway is not a mitigation for this call path
-on the tested build. It also corrects the earlier child experiment: the old
-`5023` result came from the prototype's own package-identity guard before
-Stage was called; it was not an AppX deployment result.
-
-Calling `AddPackageAsync` instead of `StagePackageAsync` also does not avoid
-the boundary. The prototype calls `AddPackageAsync` directly inside the
-packaged LocalSystem updater, once for each independent runtime package. Both
-calls return the same:
+For each runtime track, the updater writes evidence containing:
 
 ```text
-0x80070520 (ERROR_NO_SUCH_LOGON_SESSION)
+operation=StagePackageAsync
+callerProcessId=<updater service PID>
+callerTokenUserSid=S-1-5-18
+callerPackageIdentityPresent=false
+hresult=0x0
+win32=0
 ```
 
-AppX event 607 classifies the request as a Deployment Add operation running for
-user SID `S-1-5-18`. Events 648/401/404 report the same specific error and
-`SharedAppsRedirect`. Event 613 reports `Failed to reach state
-SharedAppsRedirect`; `Stage required`, `Machine register`, and `Registration`
-costs are all zero. Therefore Add fails in the shared early deployment path
-before its stage/register work, rather than bypassing the Stage failure.
+The lifecycle test compares `callerProcessId` with the SCM updater PID. The
+solution, package layout, Program Files install root, and ProgramData store
+contain no deployment-helper executable.
 
-This narrows the boundary but still does not reveal the undocumented internal
-root cause.
+This proves that the helper was required by the tested packaged caller context,
+not by LocalSystem or AppX deployment in general.
 
-The working design therefore uses one validated mitigation: copy only the
-small updater-owned deployment helper to:
+## Updater installation and servicing
+
+The elevated controller bootstrap:
+
+1. takes the signed updater PE from a simulated PowerToys bundle;
+2. copies it to:
+
+   ```text
+   %ProgramFiles%\PowerToys\
+     WorkspacesUnpackagedUpdaterVirtualRuntimePrototype\
+     PtPuvrUpdater.exe
+   ```
+
+3. applies a protected SYSTEM/Administrators-only DACL;
+4. creates one auto-start `PtPuvrUpdater` LocalSystem service;
+5. verifies the SCM account and exact protected ImagePath before starting it.
+
+The updater evidence must report:
 
 ```text
-%ProgramData%\Microsoft\PowerToys\
-  WorkspacesPackagedUpdaterVirtualRuntimePrototype\
-  DeploymentHelper\5.0.0.0\PtPuvrDeploymentHelper.exe
+tokenUserSid=S-1-5-18
+packageIdentityPresent=false
+packageIdentityError=15700
+updaterVersion=5.0.0.0
+deploymentMode=direct-unpackaged-package-manager
 ```
 
-That directory is SYSTEM/Administrators-only. The transient helper is
-unpackaged, runs as LocalSystem, stages/removes runtime MSIX packages, and then
-exits. It is not another service. No runtime EXE is copied. This experiment
-does not establish that a protected helper copy is the only possible
-mitigation; an ordinary unpackaged machine updater service or an external
-elevated installer/updater actor would also avoid this tested packaged caller
-context.
+The tradeoff is explicit: the updater no longer receives MSIX servicing.
+Updating it requires a trusted external SYSTEM/elevated actor to perform a
+stop, signature and anti-downgrade validation, atomic replacement, rollback,
+and restart. Because the updater version is independent of PowerToys, that can
+remain an occasional `MinimumUpdaterVersion` event rather than every product
+update.
 
-### 2.1 Unpackaged updater alternative
+## Why the updater is a singleton
 
-The earlier `D:\PowerToys-Workspaces-SystemMulti` prototype uses an ordinary
-LocalSystem updater service installed under a protected Program Files path.
-That updater has no package identity and successfully calls
-`StagePackageAsync` directly. Its LocalSystem runtimes are unrelated to the
-deployment result; the determining variable is the updater caller context.
+LocalSystem can run multiple service instances; that is not the reason for the
+singleton. Package deployment, WindowsApps inventory and ACLs, and SCM
+create/repath/remove operations are machine-wide state that require one
+coordinator.
 
-This gives three distinct choices:
+Multiple per-user updater services would all have the same `S-1-5-18` primary
+identity. They would provide no isolation while adding deployment and cleanup
+races. The singleton derives an explicit owner SID from an authenticated
+request and manages the corresponding per-user runtime.
 
-| Updater | Runtime | Deployment helper | WindowsApps runtime ACL |
-|---|---|---|---|
-| Packaged LocalSystem | Virtual account | Required by current evidence | Exact package-version service-SID ACE |
-| Unpackaged LocalSystem | Virtual account | Not required | Exact package-version service-SID ACE |
-| Unpackaged LocalSystem | LocalSystem | Not required | No extra runtime ACE observed |
+The runtimes remain per-user because they require distinct low-privilege
+writer identities, store ACLs, versions, and compromise boundaries.
 
-The unpackaged-updater variants still provide silent runtime updates after the
-one-time elevated service installation. Their tradeoff is updater servicing:
-the updater binary must live in a protected ordinary directory and needs its
-own signature, anti-downgrade, atomic replacement, rollback, and recovery
-design. Updating the updater itself still requires an external elevated/SYSTEM
-actor or an occasional UAC event.
+## Virtual-account runtime launch
 
-### 3. Virtual accounts cannot initially execute arbitrary WindowsApps payloads
-
-`CreateService` succeeds with:
+Each runtime service uses:
 
 ```text
 NT SERVICE\PtPuvrRuntime_<owner hash>
 ```
 
-The same virtual account can launch an EXE from a normal filesystem path.
-However, direct WindowsApps launch initially failed before process creation:
+After staging, the updater grants that exact service SID read/execute access
+to the exact runtime package-full-name/version directory and its
+`PtPuvrRuntime.exe`. It does not modify the WindowsApps root, unrelated
+packages, or future versions in the same family.
 
-```text
-StartServiceW -> ERROR_ACCESS_DENIED
-SCM event 7000 -> Access is denied
-```
+Every new version creates a new physical directory, so the updater must apply
+the scoped ACE again before repointing and starting the service.
 
-The package ACL explicitly grants LocalSystem, LocalService, NetworkService,
-and package capability SIDs, but not future dynamic service SIDs.
+This remains the primary productization risk. Modifying ACLs beneath
+WindowsApps requires an explicit Windows platform/support decision. If it is
+not supported, the exact combination
+`virtual account + direct WindowsApps + no runtime copy` remains NO-GO.
 
-The updater therefore adds an exact read/execute ACE for the runtime's service
-SID to one package-full-name/version directory and its exact
-`PtPuvrRuntime.exe` after staging and before starting the service. For example:
+## Build and validate
 
-```text
-C:\Program Files\WindowsApps\
-  Microsoft.PowerToys.WsPuvr.Runtime1_1.0.0.0_x64__...\
-```
-
-It does not modify the WindowsApps root, all versions of a package family, or
-unrelated packages. The directory ACE is inheritable within that one package
-directory, and the EXE also receives an explicit ACE. A new package version
-creates a new full-name directory, so the updater must repeat the operation
-for every staged version.
-
-This is the largest productization risk. The prototype proves the mechanism,
-but changing ACLs beneath WindowsApps needs an explicit Windows platform/support
-review before shipping. If such ACL changes are rejected, the exact
-`virtual account + direct WindowsApps + no runtime copy` combination is NO-GO.
-
-## Successful validation
-
-Validated on Windows `10.0.26200.0` on 2026-08-19.
-
-- Release x64 build completed with compiler warnings treated as errors.
-- Runtime 1/2 and updater MSIX packages were packed, signed, and verified.
-- Simulated PowerToys 0.101/0.110 bundles carried byte-identical updater MSIX.
-- One manifest-owned packaged LocalSystem updater ran from WindowsApps.
-- Two owner SIDs produced two dynamic runtime services.
-- Both SCM accounts were their exact `NT SERVICE\<service>` virtual accounts.
-- Both ran concurrently in Session 0 with distinct PIDs and primary SIDs.
-- Each primary token SID exactly equaled its service SID.
-- Owner A ran runtime/file/package version `1.0.0.0`.
-- Owner B ran runtime/file/package version `2.0.0.0`.
-- Runtime package families and WindowsApps directories were different.
-- Both runtime processes reported `APPMODEL_ERROR_NO_PACKAGE`.
-- The default updater child retained package identity.
-- The desktop-app-breakaway bridge and descendant both retained package
-  identity.
-- The breakaway descendant's real Stage call returned exact
-  `0x80070520`.
-- Direct packaged-updater `AddPackageAsync` calls for both runtime families
-  returned exact `0x80070520` before stage or registration work.
-- The protected-cache helper had no package identity and staged the same
-  runtime source successfully.
-- No runtime EXE existed in the ProgramData store.
-- Exact teardown removed all services, packages, stores, helper cache, and test
-  certificates.
-
-Machine-readable evidence is written to:
-
-```text
-artifacts\validation-result.json
-```
-
-## Build and run
-
-Run from an elevated PowerShell:
+Run from an elevated x64 PowerShell:
 
 ```powershell
 .\Build.ps1 -Configuration Release -Clean
@@ -245,18 +177,45 @@ Run from an elevated PowerShell:
 .\Teardown.ps1 -Configuration Release
 ```
 
-`Lifecycle.ps1 -Verb validate` always performs managed cleanup in `finally`.
+`Lifecycle.ps1 -Verb validate` always performs service, package, install-root,
+and store cleanup in `finally`. Machine-readable evidence is written to:
+
+```text
+artifacts\validation-result.json
+```
+
+If the updater service is unavailable during teardown, the controller runs its
+own existing executable once as a transient LocalSystem cleanup service and
+calls `RemovePackageAsync` by exact package full name. The temporary SCM entry
+is deleted immediately; this is validation/teardown recovery, not a shipped
+deployment helper or part of the updater deployment path.
+
+The expected updater section contains:
+
+```json
+{
+  "account": "LocalSystem",
+  "standaloneVersion": "5.0.0.0",
+  "packageIdentityPresent": "false",
+  "packageIdentityError": "15700",
+  "deploymentMode": "direct-unpackaged-package-manager",
+  "deploymentHelperPresent": false,
+  "directStageResults": [
+    { "runtimeTrack": 1, "hresult": "0x0" },
+    { "runtimeTrack": 2, "hresult": "0x0" }
+  ]
+}
+```
 
 ## Portable cross-machine validation
 
-Create a minimal ZIP containing the signed MSIX artifacts, controller, metadata,
-hash manifest, temporary test certificate, and one-command runner:
+After committing the worktree, create a minimal ZIP:
 
 ```powershell
 .\Export-PortableArtifacts.ps1 -DestinationDirectory C:\Temp
 ```
 
-On the other x64 Windows 11 machine, extract the ZIP and run from an elevated
+On another x64 Windows 11 machine, extract it and run from an elevated
 PowerShell:
 
 ```powershell
@@ -264,42 +223,33 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
   -File .\Run-PortableValidation.ps1
 ```
 
-The runner resolves artifacts relative to the extraction directory, validates
-their SHA-256 hashes, temporarily trusts only the bundled test certificate,
-runs the full two-runtime validation, and guarantees teardown. It preserves an
-identical certificate if that certificate was already trusted before the run.
-The result is written to `artifacts\validation-result.json`; retain it and the
-console output when comparing different Windows builds.
+The runner validates every file hash, temporarily trusts the exact test
+certificate, runs the complete two-runtime lifecycle, guarantees teardown,
+and removes the certificate if it was not already trusted.
 
 ## Product gaps
 
 This is a topology/mechanism prototype, not production updater code:
 
-- the named-pipe client is currently restricted to administrators;
+- the named-pipe client is intentionally restricted to administrators;
 - production requests need owner/install authorization, quotas, and replay
   protection;
-- runtime source MSIX paths need signature, exact identity, anti-downgrade, and
-  TOCTOU-safe protected caching;
-- updater inventory needs durable install leases, transaction recovery, and
-  last-uninstall reconciliation;
-- WindowsApps ACL mutation needs platform support confirmation;
-- the `SharedAppsRedirect` failure's internal root cause remains undocumented;
-- `AddPackageAsync` shares the same failing early deployment path and is not a
-  mitigation on the validated build;
-- updater self-update still needs an external elevated actor, but can remain a
-  rare `MinimumUpdaterVersion` event.
+- the privileged bootstrap/installer must verify the updater signer, exact
+  product identity, version floor, and anti-downgrade policy before copying;
+- runtime package sources need exact identity, signer, anti-downgrade, and
+  TOCTOU-safe intake rules;
+- updater inventory needs durable leases, crash recovery, and last-uninstall
+  reconciliation;
+- updater self-update needs an external trusted SYSTEM/elevated actor;
+- WindowsApps package-directory ACL changes need platform support approval.
 
 ## Verdict
 
-**Prototype GO:** different PowerToys versions can share one independently
-versioned packaged LocalSystem updater while two simulated users concurrently
-run different independently versioned virtual-account runtimes directly from
-different WindowsApps package families.
+**Prototype GO:** an ordinary protected LocalSystem updater directly stages
+and removes two independent runtime packages without a deployment helper.
+Two dynamic virtual-account runtime services run concurrently from their exact
+WindowsApps payloads with different versions and no package identity.
 
-**Conditional product GO:** the topology depends on a small unpackaged
-deployment helper copy and dynamic service-SID RX ACEs on each exact runtime
-package-version directory. Desktop-app breakaway did not remove the helper
-requirement on the tested build, and replacing Stage with Add produces the same
-error. Without approval for those two conditions, the cleanest equivalent is
-an ordinary unpackaged LocalSystem updater with virtual-account runtimes; use
-LocalSystem runtimes only if machine-compromise blast radius is acceptable.
+**Product conditional GO:** removing the helper simplifies the deployment
+chain, but the design still depends on per-version WindowsApps service-SID RX
+ACLs and on a separate secure servicing design for the updater PE.

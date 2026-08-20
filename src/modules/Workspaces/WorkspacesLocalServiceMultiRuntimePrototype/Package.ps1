@@ -24,32 +24,31 @@ $makeappx = Join-Path $sdk.FullName 'x64\makeappx.exe'
 $signtool = Join-Path $sdk.FullName 'x64\signtool.exe'
 $binRoot = Join-Path $root "artifacts\bin\x64\$Configuration"
 $updater = Join-Path $binRoot 'PtPuvrUpdater.exe'
-$deploymentHelper = Join-Path $binRoot 'PtPuvrDeploymentHelper.exe'
 $runtime1 = Join-Path $binRoot 'PtPuvrRuntime.exe'
 $runtime2 = Join-Path $binRoot 'runtime-track-2\PtPuvrRuntime.exe'
-foreach ($binary in $updater, $deploymentHelper, $runtime1, $runtime2) {
-    if (-not (Test-Path $binary)) {
+foreach ($binary in $updater, $runtime1, $runtime2) {
+    if (-not (Test-Path -LiteralPath $binary -PathType Leaf)) {
         throw "Build artifact is missing: $binary"
     }
 }
 
 $expectedVersions = @{
     $updater = '5.0.0.0'
-    $deploymentHelper = '5.0.0.0'
     $runtime1 = '1.0.0.0'
     $runtime2 = '2.0.0.0'
 }
 foreach ($entry in $expectedVersions.GetEnumerator()) {
-    $actual = (Get-Item $entry.Key).VersionInfo.FileVersion
+    $actual = (Get-Item -LiteralPath $entry.Key).VersionInfo.FileVersion
     if ($actual -ne $entry.Value) {
         throw "Unexpected FileVersion for $($entry.Key): expected $($entry.Value), actual $actual"
     }
 }
 
-$publisher = 'CN=PowerToys Workspaces Packaged Updater Virtual Runtime Prototype Test'
+$publisher = 'CN=PowerToys Workspaces Unpackaged Updater Virtual Runtime Prototype Test'
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
 $principal = [Security.Principal.WindowsPrincipal]::new($identity)
-if ($TrustMachine -and -not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+if ($TrustMachine -and
+    -not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     throw '-TrustMachine requires an elevated PowerShell session.'
 }
 $certificate = New-SelfSignedCertificate `
@@ -65,13 +64,19 @@ $certificate = New-SelfSignedCertificate `
 try {
     $packageRoot = Join-Path $root 'artifacts\packages'
     $bundleRoot = Join-Path $root 'artifacts\simulated-bundles'
+    Remove-Item -LiteralPath $packageRoot -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath $bundleRoot -Recurse -Force -ErrorAction SilentlyContinue
     New-Item -ItemType Directory -Path $packageRoot -Force | Out-Null
     New-Item -ItemType Directory -Path $bundleRoot -Force | Out-Null
     $cerPath = Join-Path $packageRoot 'PtPuvr-TestOnly.cer'
     Export-Certificate -Cert $certificate -FilePath $cerPath -Force | Out-Null
-    Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\CurrentUser\TrustedPeople | Out-Null
+    Import-Certificate `
+        -FilePath $cerPath `
+        -CertStoreLocation Cert:\CurrentUser\TrustedPeople | Out-Null
     if ($TrustMachine) {
-        Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\LocalMachine\TrustedPeople | Out-Null
+        Import-Certificate `
+            -FilePath $cerPath `
+            -CertStoreLocation Cert:\LocalMachine\TrustedPeople | Out-Null
     }
 
     if (-not ('PtPuvr.PackageIdentityNative' -as [type])) {
@@ -149,14 +154,30 @@ namespace PtPuvr {
 
     function New-SignedPackage([string]$stage, [string]$destination) {
         & $makeappx pack /o /d $stage /p $destination
-        if ($LASTEXITCODE -ne 0) { throw "makeappx failed for $destination." }
+        if ($LASTEXITCODE -ne 0) {
+            throw "makeappx failed for $destination."
+        }
         & $signtool sign /fd SHA256 /sha1 $certificate.Thumbprint /s My $destination
-        if ($LASTEXITCODE -ne 0) { throw "signtool failed for $destination." }
+        if ($LASTEXITCODE -ne 0) {
+            throw "signtool failed for $destination."
+        }
         & $signtool verify /pa /v $destination
         if ($LASTEXITCODE -ne 0 -and $TrustMachine) {
             throw "signtool verification failed for $destination."
         }
     }
+
+    $updaterArtifact = Join-Path $packageRoot 'PtPuvrUpdater.exe'
+    Copy-Item -LiteralPath $updater -Destination $updaterArtifact
+    & $signtool sign /fd SHA256 /sha1 $certificate.Thumbprint /s My $updaterArtifact
+    if ($LASTEXITCODE -ne 0) {
+        throw "signtool failed for $updaterArtifact."
+    }
+    & $signtool verify /pa /v $updaterArtifact
+    if ($LASTEXITCODE -ne 0 -and $TrustMachine) {
+        throw "signtool verification failed for $updaterArtifact."
+    }
+    $updaterHash = (Get-FileHash -LiteralPath $updaterArtifact -Algorithm SHA256).Hash
 
     $runtimeDefinitions = @(
         [ordered]@{
@@ -179,7 +200,14 @@ namespace PtPuvr {
 
     $metadata = [ordered]@{
         publisher = $publisher
-        updater = $null
+        updater = [ordered]@{
+            artifactType = 'unpackaged-pe'
+            standaloneVersion = '5.0.0.0'
+            fileVersion = (Get-Item -LiteralPath $updaterArtifact).VersionInfo.FileVersion
+            path = $updaterArtifact
+            sha256 = $updaterHash
+            signerSubject = $publisher
+        }
         runtimes = @{}
         simulatedBundles = @{}
         certificatePath = $cerPath
@@ -188,62 +216,52 @@ namespace PtPuvr {
 
     foreach ($definition in $runtimeDefinitions) {
         $stage = New-StageRoot "stage-runtime-track-$($definition.track)"
-        Copy-Item -LiteralPath $definition.binary -Destination (Join-Path $stage 'PtPuvrRuntime.exe')
+        Copy-Item `
+            -LiteralPath $definition.binary `
+            -Destination (Join-Path $stage 'PtPuvrRuntime.exe')
         $manifest = (Get-Content (Join-Path $root 'Packaging\AppxManifest.template.xml') -Raw).
             Replace('@@PACKAGE_NAME@@', $definition.packageName).
             Replace('@@VERSION@@', $definition.version).
             Replace('@@TRACK@@', [string]$definition.track)
-        Set-Content -Path (Join-Path $stage 'AppxManifest.xml') -Value $manifest -Encoding utf8NoBOM
+        Set-Content `
+            -Path (Join-Path $stage 'AppxManifest.xml') `
+            -Value $manifest `
+            -Encoding utf8NoBOM
         $msix = Join-Path $packageRoot $definition.packageFile
         New-SignedPackage $stage $msix
         $metadata.runtimes["track$($definition.track)"] = [ordered]@{
             packageName = $definition.packageName
             familyName = [PtPuvr.PackageIdentityNative]::FamilyName(
-                $definition.packageName, $publisher, [uint16]$definition.track)
+                $definition.packageName,
+                $publisher,
+                [uint16]$definition.track)
             fullName = [PtPuvr.PackageIdentityNative]::FullName(
-                $definition.packageName, $publisher, [uint16]$definition.track)
+                $definition.packageName,
+                $publisher,
+                [uint16]$definition.track)
             packageVersion = $definition.version
-            fileVersion = (Get-Item $definition.binary).VersionInfo.FileVersion
+            fileVersion = (Get-Item -LiteralPath $definition.binary).VersionInfo.FileVersion
             path = $msix
-            sha256 = (Get-FileHash -Algorithm SHA256 $msix).Hash
+            sha256 = (Get-FileHash -LiteralPath $msix -Algorithm SHA256).Hash
         }
-    }
-
-    $updaterStage = New-StageRoot 'stage-updater'
-    Copy-Item -LiteralPath $updater -Destination (Join-Path $updaterStage 'PtPuvrUpdater.exe')
-    Copy-Item -LiteralPath $deploymentHelper `
-        -Destination (Join-Path $updaterStage 'PtPuvrDeploymentHelper.exe')
-    Copy-Item -LiteralPath (Join-Path $root 'Packaging\UpdaterAppxManifest.template.xml') `
-        -Destination (Join-Path $updaterStage 'AppxManifest.xml')
-    $updaterMsix = Join-Path $packageRoot 'PtPuvrUpdater-5.0.0.0.msix'
-    New-SignedPackage $updaterStage $updaterMsix
-    $updaterHash = (Get-FileHash -Algorithm SHA256 $updaterMsix).Hash
-    $metadata.updater = [ordered]@{
-        packageName = 'Microsoft.PowerToys.WsPuvr.Updater'
-        familyName = [PtPuvr.PackageIdentityNative]::FamilyName(
-            'Microsoft.PowerToys.WsPuvr.Updater', $publisher, [uint16]5)
-        fullName = [PtPuvr.PackageIdentityNative]::FullName(
-            'Microsoft.PowerToys.WsPuvr.Updater', $publisher, [uint16]5)
-        packageVersion = '5.0.0.0'
-        fileVersion = (Get-Item $updater).VersionInfo.FileVersion
-        path = $updaterMsix
-        sha256 = $updaterHash
     }
 
     foreach ($definition in $runtimeDefinitions) {
-        $bundle = Join-Path $bundleRoot "PowerToys-$($definition.simulatedPowerToysVersion)"
-        Remove-Item -LiteralPath $bundle -Recurse -Force -ErrorAction SilentlyContinue
+        $bundleName = "PowerToys-$($definition.simulatedPowerToysVersion)"
+        $bundle = Join-Path $bundleRoot $bundleName
         New-Item -ItemType Directory -Path $bundle -Force | Out-Null
-        $updaterCopy = Join-Path $bundle 'PtPuvrUpdater-5.0.0.0.msix'
+        $updaterCopy = Join-Path $bundle 'PtPuvrUpdater.exe'
         $runtimeCopy = Join-Path $bundle $definition.packageFile
-        Copy-Item -LiteralPath $updaterMsix -Destination $updaterCopy
-        Copy-Item -LiteralPath (
-            $metadata.runtimes["track$($definition.track)"].path) -Destination $runtimeCopy
-        $copiedUpdaterHash = (Get-FileHash -Algorithm SHA256 $updaterCopy).Hash
+        Copy-Item -LiteralPath $updaterArtifact -Destination $updaterCopy
+        Copy-Item `
+            -LiteralPath $metadata.runtimes["track$($definition.track)"].path `
+            -Destination $runtimeCopy
+        $copiedUpdaterHash = (
+            Get-FileHash -LiteralPath $updaterCopy -Algorithm SHA256).Hash
         if ($copiedUpdaterHash -ne $updaterHash) {
-            throw "Updater artifact changed in simulated PowerToys $($definition.simulatedPowerToysVersion) bundle."
+            throw "Updater artifact changed in simulated $bundleName bundle."
         }
-        $metadata.simulatedBundles["PowerToys-$($definition.simulatedPowerToysVersion)"] = [ordered]@{
+        $metadata.simulatedBundles[$bundleName] = [ordered]@{
             updaterPath = $updaterCopy
             updaterSha256 = $copiedUpdaterHash
             runtimeTrack = $definition.track
@@ -251,11 +269,15 @@ namespace PtPuvr {
         }
     }
 
-    $metadata | ConvertTo-Json -Depth 8 |
+    $metadata |
+        ConvertTo-Json -Depth 8 |
         Set-Content (Join-Path $packageRoot 'packages.json') -Encoding utf8NoBOM
-    Write-Host 'Built updater 5.0.0.0 and independently versioned runtime tracks 1/2.'
-    Write-Host 'The simulated PowerToys 0.101 and 0.110 bundles contain byte-identical updater MSIX files.'
+    Write-Host 'Built an unpackaged updater PE 5.0.0.0 and runtime MSIX tracks 1/2.'
+    Write-Host 'The simulated PowerToys 0.101 and 0.110 bundles contain byte-identical updater EXEs.'
 }
 finally {
-    Remove-Item "Cert:\CurrentUser\My\$($certificate.Thumbprint)" -Force -ErrorAction SilentlyContinue
+    Remove-Item `
+        "Cert:\CurrentUser\My\$($certificate.Thumbprint)" `
+        -Force `
+        -ErrorAction SilentlyContinue
 }

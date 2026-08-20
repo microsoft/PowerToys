@@ -18,7 +18,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "Microsoft Corporation\0"
-            VALUE "FileDescription", "PowerToys packaged runtime updater prototype\0"
+            VALUE "FileDescription", "PowerToys unpackaged runtime updater prototype\0"
             VALUE "FileVersion", "5.0.0.0\0"
             VALUE "InternalName", "PtPuvrUpdater.exe\0"
             VALUE "OriginalFilename", "PtPuvrUpdater.exe\0"

@@ -453,6 +453,19 @@ namespace ptlsmr
         return std::filesystem::path(path) / StoreRelativeRoot;
     }
 
+    std::filesystem::path installed_updater_root()
+    {
+        PWSTR path = nullptr;
+        const HRESULT result = SHGetKnownFolderPath(FOLDERID_ProgramFiles, 0, nullptr, &path);
+        if (FAILED(result))
+        {
+            throw win32_error("SHGetKnownFolderPath(FOLDERID_ProgramFiles)", HRESULT_CODE(result));
+        }
+        local_memory memory(path);
+        return std::filesystem::path(path) /
+            L"PowerToys\\WorkspacesUnpackagedUpdaterVirtualRuntimePrototype";
+    }
+
     std::wstring runtime_package_name(uint16_t track)
     {
         switch (track)
@@ -474,16 +487,6 @@ namespace ptlsmr
     std::wstring expected_runtime_package_family_name(uint16_t track)
     {
         return package_string_from_id(runtime_package_name(track), true, track);
-    }
-
-    std::wstring expected_updater_package_full_name()
-    {
-        return package_string_from_id(UpdaterPackageName, false, UpdaterVersionMajor);
-    }
-
-    std::wstring expected_updater_package_family_name()
-    {
-        return package_string_from_id(UpdaterPackageName, true, UpdaterVersionMajor);
     }
 
     bool is_allowed_runtime_package_full_name(std::wstring_view value)

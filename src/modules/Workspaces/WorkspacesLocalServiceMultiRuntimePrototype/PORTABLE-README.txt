@@ -1,4 +1,4 @@
-PowerToys Workspaces packaged-updater / virtual-runtime prototype
+PowerToys Workspaces unpackaged-updater / virtual-runtime prototype
 Portable cross-machine validation bundle
 
 Requirements
@@ -9,9 +9,10 @@ Requirements
 
 The bundle contains a test-only self-signed certificate. The runner temporarily
 adds that exact certificate to LocalMachine\TrustedPeople, validates all bundle
-file hashes, runs the complete two-runtime test, removes all prototype services,
-packages, stores, and ACL-bearing package directories, and then removes the
-certificate if it was not already trusted before the test.
+file hashes, installs the signed ordinary updater PE into a protected Program
+Files directory, runs the complete two-runtime test, removes all prototype
+services, packages, install roots, stores, and ACL-bearing package directories,
+and then removes the certificate if it was not already trusted before the test.
 
 Run
 ---
@@ -27,10 +28,12 @@ PORTABLE VALIDATION PASS: <path>\artifacts\validation-result.json
 
 Important evidence in validation-result.json
 --------------------------------------------
-- updater.breakawayDescendantPackageIdentityPresent = true
-- updater.breakawayStageHresult = 0x80070520
-- updater.packagedAddResults contains two 0x80070520 results
-- updater.deploymentHelperPackageIdentityPresent = false
+- updater.packageIdentityPresent = false
+- updater.packageIdentityError = 15700
+- updater.deploymentMode = direct-unpackaged-package-manager
+- updater.deploymentHelperPresent = false
+- updater.directStageResults contains two 0x0 results whose callerProcessId
+  equals updater.processId
 - runtimes contains two concurrently validated virtual-account services
 - verdict = PASS
 

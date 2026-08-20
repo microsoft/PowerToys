@@ -17,7 +17,7 @@ if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($commit)) {
     throw 'Could not determine the prototype commit.'
 }
 
-$bundleName = "PtPuvr-Portable-$commit"
+$bundleName = "PtUuvr-Portable-$commit"
 $destination = [IO.Path]::GetFullPath($DestinationDirectory)
 $staging = Join-Path $destination $bundleName
 $archive = Join-Path $destination "$bundleName.zip"
@@ -37,12 +37,12 @@ $relativeFiles = @(
     'artifacts\bin\x64\Release\PtPuvrController.exe',
     'artifacts\packages\packages.json',
     'artifacts\packages\PtPuvr-TestOnly.cer',
-    'artifacts\packages\PtPuvrUpdater-5.0.0.0.msix',
+    'artifacts\packages\PtPuvrUpdater.exe',
     'artifacts\packages\PtPuvrRuntime-Track1-1.0.0.0.msix',
     'artifacts\packages\PtPuvrRuntime-Track2-2.0.0.0.msix',
-    'artifacts\simulated-bundles\PowerToys-0.101\PtPuvrUpdater-5.0.0.0.msix',
+    'artifacts\simulated-bundles\PowerToys-0.101\PtPuvrUpdater.exe',
     'artifacts\simulated-bundles\PowerToys-0.101\PtPuvrRuntime-Track1-1.0.0.0.msix',
-    'artifacts\simulated-bundles\PowerToys-0.110\PtPuvrUpdater-5.0.0.0.msix',
+    'artifacts\simulated-bundles\PowerToys-0.110\PtPuvrUpdater.exe',
     'artifacts\simulated-bundles\PowerToys-0.110\PtPuvrRuntime-Track2-2.0.0.0.msix'
 )
 
