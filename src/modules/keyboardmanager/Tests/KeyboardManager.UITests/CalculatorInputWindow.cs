@@ -17,9 +17,7 @@ internal sealed class CalculatorInputWindow : IKeyboardInputWindow, IDisposable
 
     public CalculatorInputWindow()
     {
-        var existingHandles = WindowControl.EnumerateAllWindows()
-            .Select(candidate => candidate.Hwnd.ToInt64())
-            .ToHashSet();
+        Assert.IsTrue(CloseCalculatorWindows(timeoutMS: 5_000), "A stale Calculator window could not be closed before launch.");
         Session? launchedWindow = null;
         try
         {
@@ -31,9 +29,7 @@ internal sealed class CalculatorInputWindow : IKeyboardInputWindow, IDisposable
             Assert.IsNotNull(process, "System Calculator could not be started.");
 
             launchedWindow = WindowsFinder.WaitForWindow(
-                candidate =>
-                    candidate.Title.Equals(WindowTitle, StringComparison.OrdinalIgnoreCase) &&
-                    !existingHandles.Contains(candidate.Hwnd),
+                IsCalculatorWindow,
                 timeoutMS: 30_000);
             window = launchedWindow ?? throw new AssertFailedException("A new Calculator window did not open.");
             ClassName = WindowsFinder.ListAll()
@@ -44,11 +40,7 @@ internal sealed class CalculatorInputWindow : IKeyboardInputWindow, IDisposable
         }
         catch
         {
-            if (launchedWindow is not null)
-            {
-                WindowControl.TryCloseWindow(launchedWindow.WindowHandle, timeoutMS: 3_000);
-            }
-
+            CloseCalculatorWindows(timeoutMS: 3_000);
             throw;
         }
     }
@@ -71,6 +63,19 @@ internal sealed class CalculatorInputWindow : IKeyboardInputWindow, IDisposable
         }
 
         disposed = true;
-        WindowControl.TryCloseWindow(window.WindowHandle, timeoutMS: 3_000);
+        CloseCalculatorWindows(timeoutMS: 3_000);
     }
+
+    private static bool CloseCalculatorWindows(int timeoutMS)
+    {
+        foreach (var candidate in WindowsFinder.ListAll().Where(IsCalculatorWindow))
+        {
+            WindowControl.TryCloseWindow(candidate.Hwnd, timeoutMS);
+        }
+
+        return !WindowsFinder.ListAll().Any(IsCalculatorWindow);
+    }
+
+    private static bool IsCalculatorWindow(WindowsFinder.WindowInfo candidate) =>
+        candidate.Title.Equals(WindowTitle, StringComparison.OrdinalIgnoreCase);
 }

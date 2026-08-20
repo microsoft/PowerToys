@@ -49,10 +49,10 @@ Do not use this skill for local execution. Complete
    a fix hypothesis. Preserve assertions and classify infrastructure failures separately.
 7. **Tracked runs remain unfinished work.** After queueing, persist the build ID, branch, source SHA,
    attempt number, and parameters in session/task state. Do not mark the task complete or claim a
-   terminal result while that build is nonterminal. If no completion waiter exists, a pending-status
-   handoff may end the turn, but the checkpoint and monitoring task remain active. On every resume,
-   notification, or user turn that continues the tracked CI task, query that exact build ID before
-   other Azure work and continue the agentic loop from its current state.
+   terminal result while that build is nonterminal. If no authenticated completion waiter exists,
+   arm the one-hour scheduled continuation in the agentic loop rather than relying on a passive
+   handoff. On every scheduled wake, resume, notification, or user turn that continues the tracked CI
+   task, query that exact build ID before other Azure work and continue from its current state.
 
 ## Internal constants
 
@@ -74,8 +74,8 @@ contains:
 - Local-signoff and active-run preflight.
 - `buildNow` versus `specificBuildId` decision rules.
 - Exact queue parameters and branch targeting.
-- Monitoring, failure evidence, and recording links.
-- Tracked-run continuation and the limits of automatic completion notifications.
+- Monitoring, failure evidence, direct Azure Test attachment downloads, and recording links.
+- Tracked-run continuation, one-hour scheduled polling, and completion-notification limits.
 - The three-run stabilization ledger and stop conditions.
 
 ## Completion standard

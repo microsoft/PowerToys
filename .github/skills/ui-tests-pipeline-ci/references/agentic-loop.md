@@ -31,9 +31,11 @@ Confirm the server exposes tools for:
 - Pipeline definitions, builds, logs, artifacts, and write operations.
 - Test results by build ID and test results by test run ID.
 
-Authentication must come from the remote MCP OAuth flow. Never request, print, store, or commit a
-PAT, token, cookie, or credential file. If the signed-in account cannot list the `Dart` project,
-stop with an FTE-access blocker.
+Pipeline and test discovery authenticate through the remote MCP OAuth flow. The direct Azure Test
+attachment download in section 6 may use an already-authorized Azure CLI session because the MCP
+does not currently expose result attachments. Never initiate an interactive CLI login, or request,
+print, store, or commit a PAT, token, cookie, or credential file. If neither authenticated path can
+access the `Dart` project, stop with an FTE-access blocker.
 
 ## 1. Prove the local gate
 
@@ -214,19 +216,56 @@ compaction, tool notification, or user message, the first Azure operation must q
 checkpoint's exact build ID. Do not rediscover the run by taking the latest build, because another
 branch may have queued in parallel.
 
-The remote Azure DevOps MCP status operations are pull-only: skill text cannot wake an agent after
-the agent has ended its turn. True automatic continuation requires a host-provided, authenticated
-completion primitive that blocks or subscribes to the exact build ID (for example, a future
-`wait_for_completion` MCP action) and resumes the pending tool call when the build becomes terminal.
-When such a primitive is available, arm exactly one waiter after verifying the source SHA, keep the
-task non-final, and resume at section 5 when it fires.
+The remote Azure DevOps MCP status operations are pull-only. Prefer a host-provided authenticated
+completion primitive that blocks or subscribes to the exact build ID. When one exists, arm exactly
+one waiter after verifying the source SHA, keep the task non-final, and resume at section 5 when it
+fires.
 
-When no completion primitive exists, do not claim that monitoring will resume automatically and do
-not install a CLI, create a PAT, or add a webhook as a workaround. Preserve the checkpoint and keep
-the monitoring task active. A concise pending-status handoff may end the current turn; state that
-automatic wake-up is unavailable and re-enter section 5 from the exact build ID on the next agent
-turn. This handoff is not task completion. Within an active turn, requery only after meaningful
-stage progress; never busy-poll.
+### One-hour scheduled continuation when no MCP waiter exists
+
+Do not leave a nonterminal build with only a passive handoff. PowerToys full-build UI-test runs
+normally take 60-90 minutes, while test-only validation commonly takes about 40 minutes, so use a
+one-hour polling cadence. Arm one **one-shot** host wake-up at a time; after each wake, query the exact
+checkpointed build ID first and re-arm for one hour only if the build remains nonterminal.
+
+The scheduled action must only wake the agent. Azure authentication and status reads still happen
+through the remote MCP after resume. Never place a PAT, cookie, Azure CLI command, build parameters,
+or other credentials in the scheduled action.
+
+When the host exposes a scheduled agent-continuation primitive, use it with this payload:
+
+```text
+Resume PowerToys UI Test Automation build <BUILD_ID>. Read the persisted checkpoint. The first
+Azure operation must query that exact build ID. If nonterminal, inspect meaningful stage/log
+progress and schedule the next one-shot continuation for one hour. If terminal, cancel any pending
+continuation and proceed with section 5 evidence collection.
+```
+
+On Windows hosts without a native agent scheduler, use a credential-free one-shot Task Scheduler
+alarm plus an event-based terminal watcher:
+
+1. Persist `BuildId`, a unique task name such as `PowerToys-CI-Poll-<BUILD_ID>`, the marker path under
+  `$env:TEMP`, the scheduled UTC/local time, and the watcher terminal ID in session state.
+2. Register a current-user, limited-privilege task for `(Get-Date).AddHours(1)`. Its only action is
+  to create the unique marker file. Use an encoded PowerShell command so path quoting is
+  deterministic. Do not use stored credentials or a privileged principal.
+3. Start one asynchronous `FileSystemWatcher` terminal for that marker. The watcher is event-based;
+  do not occupy a terminal with `Start-Sleep`, a timer loop, or repeated Azure requests. Handle the
+  marker already existing before the watcher starts.
+4. The terminal-completion notification resumes the agent. Delete the marker, unregister the
+  one-shot task, and query the checkpointed build ID before any other Azure operation.
+5. If the build is nonterminal, record meaningful stage/log progress and arm a fresh one-hour
+  one-shot alarm. If terminal, clean up the task, marker, and watcher state and continue section 5.
+
+Use one alarm and one watcher per tracked build. Never create a recurring task: re-arming only after
+an authenticated status query prevents overlapping polls and stale wake-ups. If VS Code or the host
+is shut down, the marker may be created without a live watcher; on the next resume, detect the
+persisted marker/checkpoint, clean up the task, and query the exact build immediately.
+
+If neither an authenticated waiter nor a host scheduler/event watcher is available, state that as a
+monitoring blocker. Preserve the checkpoint and keep the monitoring task active; a pending-status
+handoff is not task completion. Within an active turn, requery only after meaningful stage progress;
+never busy-poll.
 
 ## 5. Monitor one run to completion
 
@@ -350,6 +389,96 @@ Do not guess the platform from result ordering. Resolve it from the test job/log
 it remains unknown, label the link with the test run ID. Verify that the attachment pane contains a
 recording before calling the link a video link. If capture failed, state that explicitly and still
 link the screenshot/log attachments that exist.
+
+### Download Azure Test attachments without a browser or user handoff
+
+Do not stop at the attachments-pane link or ask the user to download evidence. When the remote MCP
+returns `(runId, resultId)` but has no result-attachment operation, use the Azure Test REST API with
+an existing authorized Azure CLI session. This path was verified on 2026-08-20 for screenshot, MP4,
+product-log, and `Standard_Console_Output.log` attachments.
+
+Download `Standard_Console_Output.log` for every failed UI test before forming a hypothesis. It
+contains the harness diagnostics and `TestContext` timeline that are not necessarily present in the
+product logs. List metadata first, then select evidence by exact filename or a narrow pattern; do not
+download every unrelated module log by default.
+
+```pwsh
+$organization = 'microsoft'
+$project = 'Dart'
+$buildId = <BUILD_ID>
+$runId = <RUN_ID>
+$resultId = <RESULT_ID>
+$destination = Join-Path $env:TEMP "PowerToys-CI-$buildId-$runId-$resultId"
+$azureDevOpsResource = '499b84ac-1321-427f-aa17-267ca6975798'
+
+New-Item -ItemType Directory -Path $destination -Force | Out-Null
+$token = $null
+$headers = $null
+try {
+  $token = (az account get-access-token `
+    --resource $azureDevOpsResource `
+    --query accessToken `
+    --output tsv `
+    --only-show-errors).Trim()
+  if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($token)) {
+    throw 'No existing authorized Azure CLI session is available for Azure DevOps.'
+  }
+
+  $headers = @{ Authorization = "Bearer $token" }
+  $resultBaseUri = "https://dev.azure.com/$organization/$project/_apis/test/Runs/$runId/Results/$resultId"
+  $attachments = @((Invoke-RestMethod `
+    -Uri "$resultBaseUri/attachments?api-version=7.1-preview.1" `
+    -Headers $headers).value)
+  if ($attachments.Count -eq 0) {
+    throw "Test run $runId result $resultId has no attachments."
+  }
+
+  $attachments |
+    Select-Object id, fileName, size, comment |
+    Format-Table -AutoSize
+
+  $selected = @($attachments | Where-Object {
+    $_.fileName -eq 'Standard_Console_Output.log' -or
+    $_.fileName -like 'failure-*.png' -or
+    $_.fileName -like 'recording_*.mp4'
+  })
+  if (-not ($selected.fileName -contains 'Standard_Console_Output.log')) {
+    throw 'Standard_Console_Output.log is missing from the failed test result.'
+  }
+
+  foreach ($attachment in $selected) {
+    $fileName = [IO.Path]::GetFileName([string]$attachment.fileName)
+    $targetPath = Join-Path $destination $fileName
+    Invoke-RestMethod `
+      -Uri "$resultBaseUri/Attachments/$($attachment.id)?api-version=7.1-preview.1" `
+      -Headers $headers `
+      -OutFile $targetPath
+
+    $file = Get-Item -LiteralPath $targetPath
+    [pscustomobject]@{
+      AttachmentId = $attachment.id
+      FileName = $file.Name
+      Bytes = $file.Length
+      Sha256 = (Get-FileHash -LiteralPath $targetPath -Algorithm SHA256).Hash
+      Path = $file.FullName
+    }
+  }
+}
+finally {
+  if ($headers) {
+    $headers.Clear()
+  }
+
+  $token = $null
+  Remove-Variable token, headers -ErrorAction SilentlyContinue
+}
+```
+
+Keep the token only in memory and never echo the authorization header, enable command tracing, or
+write either value to disk. If `get-access-token` fails, report the authentication blocker; do not
+run `az login`, request credentials, or fall back to asking the user to fetch the files. Save evidence
+under the temporary directory, read the console log and relevant product logs directly, inspect the
+screenshot/video, and record the downloaded byte count plus SHA-256. Never commit CI evidence.
 
 ### Pipeline artifact links
 

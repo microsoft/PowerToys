@@ -56,7 +56,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         Assert.IsNotNull(FindExact<Element>(editor, "D", timeoutMS: 5_000), "The editor did not load the unrelated D to E mapping baseline.");
 
         Step("Opening Add new remapping");
-        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Click(msPostAction: 300);
+        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Invoke(msPostAction: 300);
         var editorProcess = Session.FromProcess(KeyboardManagerTestConstants.EditorProcessName);
         Assert.IsTrue(
             editorProcess.WaitForElement(By.AccessibilityId("TriggerKeyToggleBtn"), timeoutMS: 15_000),
@@ -211,7 +211,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
             $"The editor did not reconcile retained D to E metadata as inactive after the native profile was removed. Editor settings: {KeyboardManagerSettings.ReadEditorSettings().ToJsonString()}");
 
         Step("Creating a fresh mapping after missing-profile recovery");
-        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Click(msPostAction: 300);
+        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Invoke(msPostAction: 300);
         editorProcess = Session.FromProcess(KeyboardManagerTestConstants.EditorProcessName);
         Assert.IsTrue(
             editorProcess.WaitForElement(By.AccessibilityId("TriggerKeyToggleBtn"), timeoutMS: 15_000),
@@ -236,7 +236,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
     public void DialogSupportsRecordingDropdownsKeyboardAndValidation()
     {
         var editor = OpenEditor();
-        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Click(msPostAction: 300);
+        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Invoke(msPostAction: 300);
         var editorProcess = Session.FromProcess(KeyboardManagerTestConstants.EditorProcessName);
 
         Step("Recording Ctrl+A in the trigger column and Ctrl+V in the action column");
@@ -261,7 +261,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         Assert.AreEqual(0, AppSpecificShortcutMappings().Count, "Escape cancellation persisted an unexpected shortcut mapping.");
 
         Step("Reopening the dialog to exercise mouse and keyboard dropdown selection");
-        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Click(msPostAction: 300);
+        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Invoke(msPostAction: 300);
         RecordKeys(editorProcess, "TriggerKeyToggleBtn", A);
         RecordKeys(editorProcess, "ActionKeyToggleBtn", C);
 
@@ -298,7 +298,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
             "Mouse and keyboard dropdown selection did not persist the expected 1 to 2 mapping.");
 
         Step("Opening a fresh dialog for Ctrl+B to D app-specific validation");
-        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Click(msPostAction: 300);
+        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Invoke(msPostAction: 300);
         RecordKeys(editorProcess, "TriggerKeyToggleBtn", LeftControl, B);
         RecordKeys(editorProcess, "ActionKeyToggleBtn", D);
         appSpecific = editorProcess.Find<CheckBox>(By.AccessibilityId("AppSpecificCheckBox"), timeoutMS: 5_000);
@@ -342,7 +342,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
 
         var editor = OpenEditor();
         Step("Creating Ctrl+A to Open URL");
-        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Click(msPostAction: 300);
+        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Invoke(msPostAction: 300);
         var editorProcess = Session.FromProcess(KeyboardManagerTestConstants.EditorProcessName);
         Assert.IsTrue(
             editorProcess.WaitForElement(By.AccessibilityId("TriggerKeyToggleBtn"), timeoutMS: 15_000),
@@ -362,7 +362,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
             $"The Open URL mapping did not persist canonically. Profile: {KeyboardManagerSettings.ReadProfile().ToJsonString()}; editor settings: {KeyboardManagerSettings.ReadEditorSettings().ToJsonString()}");
 
         Step("Creating Ctrl+B to Open app");
-        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Click(msPostAction: 300);
+        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Invoke(msPostAction: 300);
         editorProcess = Session.FromProcess(KeyboardManagerTestConstants.EditorProcessName);
         Assert.IsTrue(
             editorProcess.WaitForElement(By.AccessibilityId("TriggerKeyToggleBtn"), timeoutMS: 15_000),
@@ -384,7 +384,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
             $"The Open app mapping did not persist canonically. Profile: {KeyboardManagerSettings.ReadProfile().ToJsonString()}; editor settings: {KeyboardManagerSettings.ReadEditorSettings().ToJsonString()}");
 
         Step("Creating Ctrl+C to Insert text");
-        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Click(msPostAction: 300);
+        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Invoke(msPostAction: 300);
         editorProcess = Session.FromProcess(KeyboardManagerTestConstants.EditorProcessName);
         Assert.IsTrue(
             editorProcess.WaitForElement(By.AccessibilityId("TriggerKeyToggleBtn"), timeoutMS: 15_000),
