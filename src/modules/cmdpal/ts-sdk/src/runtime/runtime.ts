@@ -470,9 +470,9 @@ export class ExtensionRuntime {
       this.respond(id, null);
       return;
     }
-    // Serialize the full settings page (not just its id) so the host can render
-    // it without a second fetch. `serializer.command` registers the page via the
-    // active sink, so a later content/form request resolves it.
+    // Send the whole settings page so the host can render it without another fetch.
+    // `serializer.command` registers the page with the active sink, so later
+    // content/form requests can resolve it.
     this.respond(id, this.serializer.command(page));
   }
 
