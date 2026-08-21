@@ -118,8 +118,8 @@ function buildProgressButton(
  * The hero image is a local asset that ships with the sample, so it renders
  * without a network connection.
  *
- * The details `size` field (small, medium, or large) controls how wide the
- * details pane is; the metadata item below asks for a `large` pane.
+ * The details `size` field controls the pane width. The metadata item below asks
+ * for `large`, so reviewers can check that path in the host.
  */
 export class SampleListPageWithDetails extends ListPageBase {
   readonly id = 'sample-list-page-with-details';

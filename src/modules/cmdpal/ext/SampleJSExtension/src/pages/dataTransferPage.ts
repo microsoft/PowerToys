@@ -7,8 +7,8 @@ import type { IListItem } from '@microsoft/cmdpal-sdk';
 import { icon } from '../util.js';
 
 /**
- * A demo of clipboard integration. Mirrors the clipboard portion of the C#
- * `SampleDataTransferPage`. Each item exposes a copy command.
+ * Clipboard sample based on the C# `SampleDataTransferPage`. Each item copies
+ * its own value so you can test plain text transfer from the JS extension.
  */
 export class SampleDataTransferPage extends ListPageBase {
   readonly id = 'sample-data-transfer-page';

@@ -8,10 +8,9 @@ import { fileURLToPath } from 'node:url';
 import { icon } from '../util.js';
 
 /**
- * Absolute path to the image that ships with the sample. The build copies
- * `assets/` into `dist/assets/`, so this file sits next to the compiled output.
- * Resolving it from `import.meta.url` keeps the path relative to wherever the
- * extension is installed and avoids depending on a network fetch to render.
+ * Path to the bundled sample image. The build copies `assets/` next to the
+ * compiled output, and `import.meta.url` keeps the reference tied to the
+ * installed extension instead of the repo checkout.
  */
 const localImagePath = fileURLToPath(new URL('../assets/hero.png', import.meta.url));
 
@@ -114,8 +113,8 @@ export class SamplePlainTextContentPage extends ContentPageBase {
 /**
  * A page showing images. Mirrors the C# `SampleImageContentPage`.
  *
- * The image is a local asset that ships with the sample, so it renders without
- * a network connection (matching the hero image on the details page).
+ * The image ships with the sample, so the page works without a network
+ * connection and matches the details page.
  */
 export class SampleImageContentPage extends ContentPageBase {
   readonly id = 'sample-image-content-page';

@@ -10,11 +10,9 @@ import { icon } from '../util.js';
 let sectionPageCounter = 0;
 
 /**
- * Absolute path to the image asset that ships with the sample. Grid and gallery
- * layouts show each item's icon prominently, so the section items below carry a
- * committed local image the same way the C# `SampleListPageWithSections`
- * assigns bundled images to every item. Resolving it from `import.meta.url`
- * renders without a network fetch. See detailsPage.ts for the same pattern.
+ * Path to the bundled image used by the grid and gallery items. The C# sample
+ * gives every item a local image too, and `import.meta.url` keeps this working
+ * from the installed extension without a network fetch.
  */
 const sectionImagePath = fileURLToPath(new URL('../assets/hero.png', import.meta.url));
 
@@ -26,12 +24,10 @@ const sectionImagePath = fileURLToPath(new URL('../assets/hero.png', import.meta
  * `SampleListPageWithSections`, whose `Section` objects become titled separators
  * here.
  *
- * The host renders a titled `Separator` as heading text with no divider line and
- * a plain `Separator` (no title) as a horizontal line with no text; that is the
- * built-in behavior shared with the C# section pages. To give each group a
- * visible divider, a plain `Separator` line is emitted between sections in
- * addition to the titled heading. Every item also carries a local image icon so
- * the grid and gallery variants show pictures rather than empty tiles.
+ * A titled `Separator` renders as heading text. An untitled one renders as a
+ * divider line, so the sample emits both when it needs a visible break between
+ * groups. Items also keep a local image icon so grid and gallery pages show
+ * pictures instead of empty tiles.
  */
 export class SampleListPageWithSections extends ListPageBase {
   readonly id: string;

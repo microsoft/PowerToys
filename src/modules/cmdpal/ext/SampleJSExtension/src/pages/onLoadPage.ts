@@ -7,12 +7,11 @@ import type { IListItem } from '@microsoft/cmdpal-sdk';
 import { icon } from '../util.js';
 
 /**
- * A page that grows by one entry every time it is opened, demonstrating an
- * OnLoad-style refresh. Mirrors the load side of the C# `OnLoadPage`.
+ * A page that adds one entry each time it opens. It mirrors the load side of the
+ * C# `OnLoadPage`.
  *
- * Approximation: the JS protocol exposes no explicit page load event, so a
- * "Loaded" entry is appended each time the host fetches the items, which happens
- * on open.
+ * The JS protocol has no explicit page load event yet, so the sample appends a
+ * "Loaded" entry when the host asks for items during page open.
  */
 export class OnLoadPage extends ListPageBase {
   readonly id = 'on-load-page';
