@@ -8,9 +8,8 @@ using System.Threading.Tasks;
 namespace Microsoft.CmdPal.UI.ViewModels.Services;
 
 /// <summary>
-/// Abstracts the npm command line and the directory side effects the installer relies on. This
-/// is the seam that lets tests exercise the install/uninstall transaction without invoking npm
-/// or touching a real registry.
+/// Wraps npm and the directory changes the installer relies on. Tests use this seam to cover
+/// the install and uninstall flow without running npm or touching a real registry.
 /// </summary>
 public interface INpmCommandRunner
 {
@@ -21,10 +20,9 @@ public interface INpmCommandRunner
     bool IsNpmAvailable();
 
     /// <summary>
-    /// Installs the approved artifact into <paramref name="stagingDirectory"/> using npm. The exact
-    /// spec "name@version" is passed as a single argument, package lifecycle scripts are disabled, and
-    /// the exact version is pinned. On success the result carries the integrity value npm resolved for
-    /// the top-level package so the caller can verify it against the approved value before promoting.
+    /// Installs the approved artifact into <paramref name="stagingDirectory"/> using npm. The
+    /// "name@version" spec is passed as one argument, package lifecycle scripts are disabled, and the
+    /// result carries npm's resolved integrity so the caller can compare it before promoting.
     /// </summary>
     /// <param name="stagingDirectory">A directory outside the watched extensions root that npm installs into.</param>
     /// <param name="artifact">The validated artifact to install.</param>
@@ -34,9 +32,8 @@ public interface INpmCommandRunner
 
     /// <summary>
     /// Deletes <paramref name="targetDirectory"/> and everything under it. Refuses to delete when the
-    /// top-level directory is a symbolic link or junction (a reparse point), and retries briefly to
-    /// tolerate a file handle that is still being released. Safe to call when the directory does not
-    /// exist.
+    /// directory itself is a symbolic link or junction, and retries briefly when a file handle is still
+    /// being released. Safe to call when the directory does not exist.
     /// </summary>
     /// <param name="targetDirectory">The directory to remove.</param>
     /// <param name="cancellationToken">A token to cancel the retry loop between attempts.</param>
@@ -49,13 +46,13 @@ public interface INpmCommandRunner
 }
 
 /// <summary>
-/// The outcome of running an npm command.
+/// The result of running an npm command.
 /// </summary>
 /// <param name="Succeeded">Whether the command exited successfully.</param>
-/// <param name="ErrorMessage">A user-visible error message when the command failed; otherwise null.</param>
+/// <param name="ErrorMessage">A message to show when the command failed; otherwise null.</param>
 /// <param name="ResolvedIntegrity">
-/// The Subresource Integrity value npm resolved for the installed top-level package, read from the
-/// generated lockfile. Null when the command failed or the value could not be determined.
+/// The Subresource Integrity value npm resolved for the installed package, read from the generated
+/// lockfile. Null when the command failed or the value could not be found.
 /// </param>
 public readonly record struct NpmCommandResult(bool Succeeded, string? ErrorMessage, string? ResolvedIntegrity)
 {

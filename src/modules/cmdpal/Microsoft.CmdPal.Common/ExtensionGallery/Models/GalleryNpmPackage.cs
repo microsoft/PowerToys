@@ -5,8 +5,8 @@
 namespace Microsoft.CmdPal.Common.ExtensionGallery.Models;
 
 /// <summary>
-/// npm metadata for a JavaScript/TypeScript ("jsonrpc") gallery extension. Describes the
-/// package to install and, optionally, the registry it should be pulled from.
+/// npm package details for a JavaScript/TypeScript ("jsonrpc") gallery extension. Describes the
+/// package to install and the optional registry to use.
 /// </summary>
 public sealed class GalleryNpmPackage
 {
@@ -16,23 +16,21 @@ public sealed class GalleryNpmPackage
     public string Package { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the exact package version to install (for example, "1.4.2"). The install
-    /// flow requires an exact version; ranges and dist-tags (such as "latest") are rejected so
-    /// the artifact that is installed always matches the one the catalog approved.
+    /// Gets or sets the exact package version to install (for example, "1.4.2"). The installer
+    /// rejects ranges and dist tags such as "latest" so the installed artifact matches the catalog.
     /// </summary>
     public string Version { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the Subresource Integrity value (for example, "sha512-...") of the approved
-    /// package tarball. The install flow verifies the resolved package against this value before
+    /// Gets or sets the Subresource Integrity value (for example, "sha512-...") for the approved
+    /// package tarball. The installer checks npm's resolved package against this value before
     /// promoting it, so a registry that serves different bytes for the same version is rejected.
     /// </summary>
     public string Integrity { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the npm registry URL to install from. When null or empty, the default
-    /// registry configured on the machine is used. When present it must be an absolute HTTPS URL
-    /// on the approved allowlist.
+    /// Gets or sets the npm registry URL to install from. When null or empty, npm uses the
+    /// machine default. When present, it must be an absolute HTTPS URL on the approved allowlist.
     /// </summary>
     public string? Registry { get; set; }
 }

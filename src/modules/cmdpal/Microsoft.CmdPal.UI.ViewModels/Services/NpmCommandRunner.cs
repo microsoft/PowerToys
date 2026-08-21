@@ -20,54 +20,44 @@ using Microsoft.CmdPal.UI.ViewModels.Properties;
 namespace Microsoft.CmdPal.UI.ViewModels.Services;
 
 /// <summary>
-/// Default <see cref="INpmCommandRunner"/> that shells out to the npm executable found on PATH.
-/// The runner never installs the approved package as a dependency, because npm would then re-resolve
-/// its transitive semver ranges and ignore the publisher's embedded npm-shrinkwrap.json. Instead it
-/// downloads the exact tarball with <c>npm pack</c>, extracts it so the published package is the root
-/// project, requires the publisher to have shipped an npm-shrinkwrap.json that freezes the whole
-/// dependency closure, and runs <c>npm ci</c>, which installs that frozen closure verbatim and never
-/// re-resolves a range. npm is always invoked with lifecycle scripts disabled. The resolved package
-/// integrity is the Subresource Integrity of the downloaded tarball, and the frozen lockfile is
-/// re-checked so every resolved entry came from an approved registry over HTTPS with an integrity
-/// hash before the caller promotes the package.
+/// Default <see cref="INpmCommandRunner"/>. It finds node.exe on PATH and runs npm through
+/// npm-cli.js instead of npm.cmd. The runner uses <c>npm pack</c> to download the exact approved
+/// tarball, treats that package as the project root, requires a shipped npm-shrinkwrap.json, then
+/// runs <c>npm ci</c> with lifecycle scripts off. Before the installer promotes anything, the runner
+/// checks the tarball integrity and the frozen lockfile.
 /// </summary>
 public sealed class NpmCommandRunner : INpmCommandRunner
 {
-    // npm on Windows ships as an npm.cmd batch shim. Passing an argument that contains a shell
-    // metacharacter to a .cmd file can let cmd.exe reinterpret it, even through ProcessStartInfo's
-    // ArgumentList. To keep untrusted arguments off any batch/cmd command line, the runner instead
-    // resolves node.exe and npm's JavaScript entry point (npm-cli.js) and launches
-    // "node.exe npm-cli.js install ...". node.exe is a real executable, so its ArgumentList is passed
-    // verbatim with no shell in the middle.
+    // npm on Windows ships as an npm.cmd batch shim. A shell metacharacter passed to a .cmd file can
+    // be reinterpreted by cmd.exe, even through ProcessStartInfo.ArgumentList. Keep untrusted
+    // arguments off any batch command line by running node.exe with npm-cli.js directly.
     private const string NodeExecutableName = "node.exe";
 
     // npm-cli.js relative to a directory that contains node.exe, and to a global npm prefix.
     private static readonly string NpmCliRelativePath = Path.Combine("node_modules", "npm", "bin", "npm-cli.js");
 
-    // The directory (under the caller's staging directory) that the downloaded tarball is unpacked
-    // into. npm tarballs always root their entries under "package/", so the extracted project root is
-    // this well-known path and the installer promotes it directly.
+    // The directory under staging where the downloaded tarball is unpacked. npm tarballs root their
+    // entries under "package/", so the installer can promote this path directly.
     internal const string PackageRootDirectoryName = "package";
 
     // A private subdirectory of staging that only holds the downloaded .tgz, kept separate from the
     // extracted package root so a single tarball is easy to locate.
     internal const string PackDirectoryName = "__cmdpal_pack";
 
-    // The publisher-provided lockfile that must be present inside the package tarball. It freezes the
-    // full transitive dependency closure so npm ci installs an exact set rather than re-resolving
-    // mutable semver ranges at install time.
+    // The lockfile that must be present inside the package tarball. It freezes the full dependency
+    // closure so npm ci installs an exact set instead of resolving mutable ranges at install time.
     internal const string ShrinkwrapFileName = "npm-shrinkwrap.json";
 
-    // The lockfile npm consults, in precedence order. npm-shrinkwrap.json is the publishable form and
-    // takes precedence over package-lock.json.
+    // The lockfiles npm consults, in precedence order. npm-shrinkwrap.json is the publishable form
+    // and takes precedence over package-lock.json.
     private static readonly string[] LockfileNames = [ShrinkwrapFileName, "package-lock.json"];
 
-    // Upper bound on a single npm operation so the gallery cannot stay on "Installing..."
-    // forever when npm hangs (for example, an unreachable registry with no output).
+    // Upper bound on one npm operation so the gallery cannot stay on "Installing..." forever when
+    // npm hangs, such as an unreachable registry with no output.
     private static readonly TimeSpan InstallTimeout = TimeSpan.FromMinutes(5);
 
-    // A directory whose handles are still being released briefly rejects a delete; retry a few
-    // times with a short backoff before giving up so an uninstall does not fail spuriously.
+    // A directory with handles still closing can briefly reject a delete. Retry a few times so an
+    // uninstall does not fail just because the OS needed another moment.
     private const int DeleteAttempts = 5;
     private static readonly TimeSpan DeleteRetryDelay = TimeSpan.FromMilliseconds(100);
 
@@ -100,8 +90,8 @@ public sealed class NpmCommandRunner : INpmCommandRunner
 
         try
         {
-            // 1) Download the exact "name@version" tarball with no lifecycle scripts. npm pack fetches
-            //    the immutable published artifact; it does not resolve or install any dependency.
+            // 1) Download the exact "name@version" tarball with lifecycle scripts off. npm pack fetches
+            //    the published artifact without resolving dependencies.
             var packDirectory = Path.Combine(stagingDirectory, PackDirectoryName);
             Directory.CreateDirectory(packDirectory);
 
@@ -118,18 +108,15 @@ public sealed class NpmCommandRunner : INpmCommandRunner
                 return NpmCommandResult.Fail(Resources.npm_runner_extract_failed);
             }
 
-            // 2) The resolved integrity is the Subresource Integrity of the downloaded tarball. The
-            //    caller compares this to the catalog-approved integrity before promoting anything.
+            // 2) The caller compares this tarball hash to the catalog value before promotion.
             var resolvedIntegrity = ComputeTarballIntegrity(tarballPath);
             if (resolvedIntegrity is null)
             {
                 return NpmCommandResult.Fail(Resources.npm_runner_extract_failed);
             }
 
-            // 3) Treat the published package as the ROOT project by extracting its tarball. npm only
-            //    honors an embedded npm-shrinkwrap.json for the root project, not for a package
-            //    installed as a dependency, so this extraction is what makes the shrinkwrap
-            //    authoritative rather than silently ignored.
+            // 3) Make the published package the root project before npm ci runs. npm only honors an
+            //    embedded npm-shrinkwrap.json at the project root, not inside a dependency.
             var packageRoot = Path.Combine(stagingDirectory, PackageRootDirectoryName);
             var extractError = TryExtractPackage(tarballPath, packageRoot);
             if (extractError is not null)
@@ -137,9 +124,8 @@ public sealed class NpmCommandRunner : INpmCommandRunner
                 return NpmCommandResult.Fail(extractError);
             }
 
-            // 4) Fail closed unless the publisher shipped a shrinkwrap that freezes the full transitive
-            //    closure. Without it, npm ci would have nothing to install from deterministically and
-            //    the closure would still be resolved from mutable ranges.
+            // 4) Fail closed unless the publisher shipped a shrinkwrap that freezes the full dependency
+            //    closure. Without it, npm ci has no fixed tree to install.
             var shrinkwrapError = RequirePublisherShrinkwrap(packageRoot);
             if (shrinkwrapError is not null)
             {
@@ -147,19 +133,16 @@ public sealed class NpmCommandRunner : INpmCommandRunner
                 return NpmCommandResult.Fail(shrinkwrapError);
             }
 
-            // 5) npm ci installs the exact closure named in the shrinkwrap and never re-resolves a
-            //    semver range. It fails closed when the lockfile is missing or out of sync with
-            //    package.json, so the frozen tree is the only thing that can be installed.
+            // 5) npm ci installs the exact closure named in the shrinkwrap. It fails when the lockfile
+            //    is missing or out of sync with package.json.
             var ciResult = await RunNpmAsync(invocation.Value, BuildCiArguments(artifact), packageRoot, artifact.InstallSpec, cancellationToken).ConfigureAwait(false);
             if (!ciResult.Succeeded)
             {
                 return NpmCommandResult.Fail(ciResult.ErrorMessage ?? Resources.npm_runner_lockfile_untrusted);
             }
 
-            // 6) Second gate: every resolved entry in the frozen lockfile must come from an approved
-            //    registry over HTTPS and carry a Subresource Integrity hash. This fails closed: a
-            //    lockfile that is missing, malformed, or contains a file:/git:/http:/integrity-less
-            //    resolution is rejected.
+            // 6) Check every lockfile entry before promotion. Anything outside an approved HTTPS
+            //    registry, or missing a Subresource Integrity hash, is rejected.
             var lockfileError = VerifyLockfileIntegrity(packageRoot);
             if (lockfileError is not null)
             {
@@ -181,10 +164,9 @@ public sealed class NpmCommandRunner : INpmCommandRunner
     }
 
     /// <summary>
-    /// Builds the immutable <c>npm pack</c> argument list for an approved artifact. The first real
-    /// token is the validated "name@version" spec, passed through ArgumentList so npm can never read
-    /// it as a flag. The tarball is written to <paramref name="packDestination"/>, lifecycle scripts
-    /// are disabled, and a registry, when present, is passed only through its own flag pair.
+    /// Builds the <c>npm pack</c> arguments for an approved artifact. The validated "name@version"
+    /// spec goes through ArgumentList as one token so npm cannot read it as a flag. Lifecycle scripts
+    /// are disabled, and any registry is passed as its own flag value pair.
     /// </summary>
     internal static IReadOnlyList<string> BuildPackArguments(NpmArtifact artifact, string packDestination)
     {
@@ -210,10 +192,9 @@ public sealed class NpmCommandRunner : INpmCommandRunner
     }
 
     /// <summary>
-    /// Builds the immutable <c>npm ci</c> argument list. npm ci installs the exact closure named in
-    /// the project's npm-shrinkwrap.json/package-lock.json and never re-resolves a semver range, so it
-    /// takes no package spec. Lifecycle scripts are disabled, and a registry, when present, is passed
-    /// only through its own flag pair.
+    /// Builds the <c>npm ci</c> arguments. npm ci installs the exact closure named in the lockfile and
+    /// does not take a package spec, so it cannot resolve a range again. Lifecycle scripts are disabled,
+    /// and any registry is passed as its own flag value pair.
     /// </summary>
     internal static IReadOnlyList<string> BuildCiArguments(NpmArtifact artifact)
     {
@@ -236,10 +217,9 @@ public sealed class NpmCommandRunner : INpmCommandRunner
     }
 
     /// <summary>
-    /// Returns null when the extracted package root contains the publisher-provided
-    /// <c>npm-shrinkwrap.json</c> that freezes the whole dependency closure; otherwise returns a
-    /// localized error. This is the fail-closed gate that rejects any package whose publisher did not
-    /// freeze its transitive dependencies.
+    /// Returns null when the extracted package root contains the <c>npm-shrinkwrap.json</c> that
+    /// freezes the dependency closure; otherwise returns a localized error. This gate rejects packages
+    /// that did not freeze their transitive dependencies.
     /// </summary>
     internal static string? RequirePublisherShrinkwrap(string packageRoot)
     {
@@ -248,10 +228,9 @@ public sealed class NpmCommandRunner : INpmCommandRunner
     }
 
     /// <summary>
-    /// Computes the sha512 Subresource Integrity value ("sha512-" + base64 digest) of the tarball at
-    /// <paramref name="tarballPath"/>. This matches the integrity npm publishes for a registry
-    /// tarball, so the caller can compare it to the catalog-approved value. Returns null when the file
-    /// cannot be read.
+    /// Computes the sha512 Subresource Integrity value ("sha512-" + base64 digest) for the tarball at
+    /// <paramref name="tarballPath"/>. This matches the value npm publishes for a registry tarball, so
+    /// the caller can compare it to the catalog. Returns null when the file cannot be read.
     /// </summary>
     internal static string? ComputeTarballIntegrity(string tarballPath)
     {
@@ -269,9 +248,8 @@ public sealed class NpmCommandRunner : INpmCommandRunner
     }
 
     /// <summary>
-    /// Locates the single tarball <c>npm pack</c> wrote into <paramref name="packDirectory"/>. The
-    /// directory is created fresh per install, so exactly one .tgz is expected. Returns null when none
-    /// is found.
+    /// Locates the tarball <c>npm pack</c> wrote into <paramref name="packDirectory"/>. The directory
+    /// is new for each install, so one .tgz is expected. Returns null when none is found.
     /// </summary>
     internal static string? FindPackedTarball(string packDirectory)
     {
@@ -289,11 +267,11 @@ public sealed class NpmCommandRunner : INpmCommandRunner
     }
 
     /// <summary>
-    /// Extracts the gzip-compressed npm tarball at <paramref name="tarballPath"/> so the published
-    /// package becomes the root project at <paramref name="packageRoot"/>. npm tarballs root every
-    /// entry under "package/", so the archive is unpacked into a temporary directory and that inner
-    /// folder is moved to <paramref name="packageRoot"/>. Returns null on success, or a localized
-    /// error when the tarball cannot be read or does not contain a package root.
+    /// Extracts the gzip compressed npm tarball at <paramref name="tarballPath"/> so the published
+    /// package becomes the root project at <paramref name="packageRoot"/>. npm tarballs place entries
+    /// under "package/", so the archive is unpacked aside and that inner folder is moved into place.
+    /// Returns null on success, or a localized error when the tarball cannot be read or lacks a package
+    /// root.
     /// </summary>
     internal static string? TryExtractPackage(string tarballPath, string packageRoot)
     {
@@ -310,16 +288,16 @@ public sealed class NpmCommandRunner : INpmCommandRunner
             using (var fileStream = File.OpenRead(tarballPath))
             using (var gzipStream = new GZipStream(fileStream, CompressionMode.Decompress))
             {
-                // ExtractToDirectory refuses to write an entry outside extractRoot, so a malicious
-                // "../" path in the tarball cannot escape the staging tree.
+                // ExtractToDirectory refuses to write outside extractRoot, so a malicious "../" path in
+                // the tarball cannot escape staging.
                 TarFile.ExtractToDirectory(gzipStream, extractRoot, overwriteFiles: true);
             }
 
             var innerPackage = Path.Combine(extractRoot, PackageRootDirectoryName);
             if (!Directory.Exists(innerPackage))
             {
-                // Some publishers root the tarball under a different folder name; fall back to the
-                // single top-level directory when there is exactly one.
+                // Some publishers root the tarball under a different folder name. Use the single top
+                // level directory when there is exactly one.
                 innerPackage = ResolveSingleTopLevelDirectory(extractRoot) ?? string.Empty;
             }
 
@@ -375,10 +353,10 @@ public sealed class NpmCommandRunner : INpmCommandRunner
     }
 
     /// <summary>
-    /// Runs npm (through node.exe and npm-cli.js so the npm.cmd batch shim is never involved) with the
-    /// given arguments and working directory, bounding the wait so a hung npm cannot stall the UI.
-    /// Returns success, a timeout message, or the captured stderr on a non-zero exit. Rethrows
-    /// <see cref="OperationCanceledException"/> only for a caller-driven cancel, not the timeout.
+    /// Runs npm through node.exe and npm-cli.js so the npm.cmd batch shim stays out of the path.
+    /// Bounds the wait so a hung npm cannot stall the UI. Returns success, a timeout message, or the
+    /// captured stderr on a nonzero exit. Rethrows <see cref="OperationCanceledException"/> only for a
+    /// caller cancel, not the timeout.
     /// </summary>
     private static async Task<NpmProcessResult> RunNpmAsync(NpmInvocation invocation, IReadOnlyList<string> arguments, string workingDirectory, string installSpec, CancellationToken cancellationToken)
     {
@@ -392,9 +370,8 @@ public sealed class NpmCommandRunner : INpmCommandRunner
             WorkingDirectory = workingDirectory,
         };
 
-        // Launcher arguments first (npm-cli.js), so node.exe runs npm itself. These are trusted,
-        // runner-resolved paths. Every following argument is passed through ArgumentList (never string
-        // concatenation) so npm cannot reinterpret an untrusted token as a flag.
+        // Launcher arguments first so node.exe runs npm itself. These paths were resolved by the
+        // runner. Every untrusted argument goes through ArgumentList, not string concatenation.
         foreach (var launcherArgument in invocation.LauncherArguments)
         {
             psi.ArgumentList.Add(launcherArgument);
@@ -422,8 +399,8 @@ public sealed class NpmCommandRunner : INpmCommandRunner
         process.BeginErrorReadLine();
         process.BeginOutputReadLine();
 
-        // Bound the wait so a hung npm does not leave the UI stuck. A caller-driven cancel and the
-        // timeout share one linked source; the catch below tells the two apart.
+        // Bound the wait so a hung npm does not leave the UI stuck. The caller token and timeout share
+        // one linked source; the catch below tells them apart.
         using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeoutCts.CancelAfter(InstallTimeout);
 
@@ -456,7 +433,7 @@ public sealed class NpmCommandRunner : INpmCommandRunner
     }
 
     /// <summary>
-    /// The outcome of a single npm invocation: success, or a localized/captured error message.
+    /// The result of one npm invocation: success, or a localized or captured error message.
     /// </summary>
     private readonly record struct NpmProcessResult(bool Succeeded, string? ErrorMessage)
     {
@@ -472,8 +449,8 @@ public sealed class NpmCommandRunner : INpmCommandRunner
             return true;
         }
 
-        // Never recurse through a junction or symbolic link: deleting recursively could reach files
-        // outside the extensions tree. If the directory itself is a reparse point, refuse.
+        // Never recurse through a junction or symbolic link. Recursive delete could reach files outside
+        // the extensions tree, so refuse when the directory itself is a reparse point.
         if (IsReparsePoint(targetDirectory))
         {
             Logger.LogError($"Refusing to delete '{targetDirectory}' because it is a reparse point (junction or symbolic link).");
@@ -506,7 +483,7 @@ public sealed class NpmCommandRunner : INpmCommandRunner
 
     /// <summary>
     /// Resolves the lockfile npm consults inside <paramref name="projectRoot"/>, preferring the
-    /// publishable npm-shrinkwrap.json over package-lock.json. Returns null when neither exists.
+    /// publishable npm-shrinkwrap.json over package-lock.json. Returns null when neither file exists.
     /// </summary>
     private static string? ResolveLockfilePath(string projectRoot)
     {
@@ -530,8 +507,8 @@ public sealed class NpmCommandRunner : INpmCommandRunner
             {
                 process.Kill(entireProcessTree: true);
 
-                // Give the OS a bounded moment to tear the tree down so file handles are released
-                // before the staging directory is cleaned up.
+                // Give the OS a bounded moment to tear the tree down before staging cleanup tries to
+                // delete files that still have handles open.
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
                 await process.WaitForExitAsync(cts.Token).ConfigureAwait(false);
             }
@@ -550,24 +527,23 @@ public sealed class NpmCommandRunner : INpmCommandRunner
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or System.Security.SecurityException)
         {
-            // If the attributes cannot be read, err on the side of caution and treat it as unsafe.
+            // If the attributes cannot be read, play it safe and treat the path as unsafe.
             return true;
         }
     }
 
     /// <summary>
-    /// A resolved npm launcher: the executable to start (node.exe) and the leading arguments that
-    /// make it run npm (the path to npm-cli.js). The install spec and flags are appended after these.
+    /// A resolved npm launcher: node.exe plus the leading arguments that make it run npm. The install
+    /// spec and flags are appended after these.
     /// </summary>
     internal readonly record struct NpmInvocation(string FileName, IReadOnlyList<string> LauncherArguments);
 
     /// <summary>
-    /// Verifies that every resolved dependency in the frozen lockfile inside
-    /// <paramref name="projectRoot"/> was fetched from an approved registry over HTTPS and carries a
-    /// supported Subresource Integrity hash. The publisher's npm-shrinkwrap.json is preferred over
-    /// package-lock.json. Returns null when the whole tree is trusted, or a localized error message
-    /// describing the first untrusted resolution. Fails closed: a missing or unreadable lockfile is
-    /// treated as untrusted.
+    /// Verifies that every dependency in the frozen lockfile inside <paramref name="projectRoot"/>
+    /// came from an approved registry over HTTPS and carries a supported Subresource Integrity hash.
+    /// The publisher's npm-shrinkwrap.json is preferred over package-lock.json. Returns null when the
+    /// tree is trusted, or a localized error for the first untrusted resolution. A missing or unreadable
+    /// lockfile is treated as untrusted.
     /// </summary>
     internal static string? VerifyLockfileIntegrity(string projectRoot)
     {
@@ -583,9 +559,9 @@ public sealed class NpmCommandRunner : INpmCommandRunner
             using var document = JsonDocument.Parse(stream);
             var root = document.RootElement;
 
-            // lockfileVersion 2/3: a "packages" map keyed by install path. The root package has an
-            // empty key and no resolution of its own; a "link": true entry points at a local
-            // workspace and is skipped. Every other entry must carry a trusted resolved URL + hash.
+            // lockfileVersion 2 and 3 use a "packages" map keyed by install path. The root package has
+            // an empty key and no resolution of its own. A "link": true entry points at a local
+            // workspace and is skipped. Every other entry must carry a trusted resolved URL and hash.
             if (root.TryGetProperty("packages", out var packages) && packages.ValueKind == JsonValueKind.Object)
             {
                 foreach (var package in packages.EnumerateObject())
@@ -610,13 +586,13 @@ public sealed class NpmCommandRunner : INpmCommandRunner
                 return null;
             }
 
-            // lockfileVersion 1: a nested "dependencies" tree. Walk it recursively.
+            // lockfileVersion 1 uses a nested "dependencies" tree. Walk it recursively.
             if (root.TryGetProperty("dependencies", out var dependencies) && dependencies.ValueKind == JsonValueKind.Object)
             {
                 return VerifyLegacyDependencies(dependencies) ? null : Resources.npm_runner_lockfile_untrusted;
             }
 
-            // Neither shape present: nothing was pinned, so the tree cannot be trusted.
+            // Neither shape is present. Nothing was pinned, so the tree cannot be trusted.
             return Resources.npm_runner_lockfile_untrusted;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
@@ -636,8 +612,8 @@ public sealed class NpmCommandRunner : INpmCommandRunner
                 return false;
             }
 
-            // A "bundled" dependency ships inside its parent's tarball and has no resolution of its
-            // own; it was already covered by the parent's integrity. Anything else must be trusted.
+            // A "bundled" dependency ships inside its parent's tarball and has no resolution of its own.
+            // The parent's integrity already covers it. Anything else must be trusted.
             var isBundled = entry.TryGetProperty("bundled", out var bundled) && bundled.ValueKind == JsonValueKind.True;
             if (!isBundled && !IsTrustedResolution(entry))
             {
@@ -667,10 +643,9 @@ public sealed class NpmCommandRunner : INpmCommandRunner
     }
 
     /// <summary>
-    /// Resolves node.exe and npm's npm-cli.js so npm can be launched without the npm.cmd batch shim.
-    /// Probes PATH for node.exe, then looks for npm-cli.js next to node.exe (a standard Node.js
-    /// install) and under the global npm prefix reported by the environment. Returns null when either
-    /// piece cannot be located.
+    /// Resolves node.exe and npm-cli.js so npm can run without the npm.cmd batch shim. Probes PATH for
+    /// node.exe, then looks for npm-cli.js next to node.exe and under the global npm prefix reported by
+    /// the environment. Returns null when either piece cannot be found.
     /// </summary>
     internal static NpmInvocation? ResolveNpmInvocation() =>
         ResolveNpmInvocation(GetPathDirectories());
@@ -688,7 +663,7 @@ public sealed class NpmCommandRunner : INpmCommandRunner
             }
             catch (ArgumentException)
             {
-                // Malformed PATH entry; skip it.
+                // Malformed PATH entry. Skip it.
                 continue;
             }
 

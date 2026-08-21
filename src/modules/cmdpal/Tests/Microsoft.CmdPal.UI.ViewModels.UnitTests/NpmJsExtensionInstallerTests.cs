@@ -57,8 +57,8 @@ public class NpmJsExtensionInstallerTests
     [TestMethod]
     public async Task InstallAsync_FailsClosed_WhenPublisherShrinkwrapMissing()
     {
-        // r3-p5-01: a package whose publisher did not freeze the dependency closure with a published
-        // npm-shrinkwrap.json is rejected, and nothing is promoted into the watched root.
+        // r3-p5-01: reject a package that did not freeze its dependency closure with a published
+        // npm-shrinkwrap.json. Nothing should reach the watched root.
         var host = CreateHost();
         var runner = new FakeRunner { PublisherShipsShrinkwrap = false };
         var installer = new NpmJsExtensionInstaller(host, runner);
@@ -77,8 +77,8 @@ public class NpmJsExtensionInstallerTests
     [TestMethod]
     public async Task InstallAsync_PromotesPublisherFrozenClosure_WhenShrinkwrapPresent()
     {
-        // r3-p5-01: when the publisher shipped a shrinkwrap, the exact frozen tree the runner produced
-        // is what lands in the watched root, shrinkwrap and all, with no re-resolution by the installer.
+        // r3-p5-01: when the publisher ships a shrinkwrap, the frozen tree from the runner is what
+        // lands in the watched root. The installer does not resolve dependencies again.
         var host = CreateHost();
         var runner = new FakeRunner { HoistedDependencies = ["left-pad", "ms"] };
         var installer = new NpmJsExtensionInstaller(host, runner);
@@ -89,10 +89,10 @@ public class NpmJsExtensionInstallerTests
         var target = Path.Combine(host.ExtensionsRootPath, ExtensionName);
         Assert.IsTrue(File.Exists(Path.Combine(target, "package.json")));
 
-        // The publisher-frozen shrinkwrap travels with the promoted extension.
+        // The shrinkwrap travels with the promoted extension.
         Assert.IsTrue(File.Exists(Path.Combine(target, "npm-shrinkwrap.json")));
 
-        // The exact closure the publisher froze is installed under the package's own node_modules.
+        // The frozen dependency closure is installed under the package's own node_modules.
         Assert.IsTrue(Directory.Exists(Path.Combine(target, "node_modules", "left-pad")));
         Assert.IsTrue(Directory.Exists(Path.Combine(target, "node_modules", "ms")));
         AssertStagingEmpty(host);
@@ -111,7 +111,7 @@ public class NpmJsExtensionInstallerTests
         var target = Path.Combine(host.ExtensionsRootPath, ExtensionName);
         Assert.IsTrue(File.Exists(Path.Combine(target, "package.json")));
 
-        // The hoisted dependencies must sit under the promoted package's own node_modules.
+        // Hoisted dependencies must stay under the promoted package's own node_modules.
         Assert.IsTrue(Directory.Exists(Path.Combine(target, "node_modules", "left-pad")));
         Assert.IsTrue(Directory.Exists(Path.Combine(target, "node_modules", "ms")));
         AssertStagingEmpty(host);
@@ -141,7 +141,7 @@ public class NpmJsExtensionInstallerTests
         var runner = new FakeRunner();
         var installer = new NpmJsExtensionInstaller(host, runner);
 
-        // Missing version and integrity: never installable, npm is never invoked.
+        // Missing version and integrity means never installable, and npm is never invoked.
         var result = await installer.InstallAsync(ExtensionName, Package, null, null, null, CancellationToken.None);
 
         Assert.IsFalse(result.Succeeded);
@@ -370,9 +370,9 @@ public class NpmJsExtensionInstallerTests
         using var stopStarted = new ManualResetEventSlim(false);
         host.StopHook = token =>
         {
-            // Simulate the host blocking while it stops the provider, then observe the cancel that
-            // arrives after the operation has already begun. This mirrors the real host threading the
-            // uninstall token into its stop/delete steps.
+            // Simulate the host blocking while it stops the provider, then observe cancel after the
+            // operation has already begun. This matches the real host threading the uninstall token
+            // through stop and delete.
             stopStarted.Set();
             Assert.IsTrue(token.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)), "Cancellation was not observed during stop.");
             token.ThrowIfCancellationRequested();
@@ -452,7 +452,7 @@ public class NpmJsExtensionInstallerTests
         var host = CreateHost();
         host.OrderLog = order;
 
-        // Hold registration open long enough to cancel while the extension is already promoted.
+        // Hold registration open long enough to cancel after the extension is promoted.
         host.RegistrationDelay = TimeSpan.FromSeconds(30);
         using var registrationStarted = new ManualResetEventSlim(false);
         host.RegistrationStarted = registrationStarted;
@@ -470,7 +470,7 @@ public class NpmJsExtensionInstallerTests
 
         Assert.IsFalse(result.Succeeded, "A canceled install must not report success.");
 
-        // Rollback must stop the host before removing the promoted directory so nothing is left both
+        // Rollback must stop the host before removing the promoted directory so nothing is left
         // installed and running.
         var log = order.ToArray();
         Assert.IsTrue(log.Length >= 2, "Rollback did not run stop and remove.");
@@ -486,10 +486,10 @@ public class NpmJsExtensionInstallerTests
     [TestMethod]
     public async Task InstallAsync_PreservesMixedScopedAndUnscopedDependencies()
     {
-        // The publisher-frozen closure npm ci installs under the package's own node_modules, including
-        // @scope directories, survives promotion so scoped, unscoped, and mixed dependencies all land
-        // in the promoted extension. The scoped-merge discard defect lives only in the phase-6
-        // JsExtensionPackageLayout, which is absent from phase-5.
+        // The closure npm ci installs under the package's own node_modules, including @scope
+        // directories, survives promotion. Scoped, unscoped, and mixed dependencies all land in the
+        // promoted extension. The scoped merge discard defect lives only in the phase 6
+        // JsExtensionPackageLayout, which is absent from phase 5.
         var host = CreateHost();
         var runner = new FakeRunner
         {
@@ -544,8 +544,8 @@ public class NpmJsExtensionInstallerTests
             }
         }
 
-        // Serialization plus the block-if-exists upgrade policy means exactly one install runs npm and
-        // succeeds while the other is refused, and npm is invoked only once.
+        // Serialization plus the block if exists upgrade policy means exactly one install runs npm and
+        // succeeds while the other is refused. npm is invoked only once.
         Assert.AreEqual(1, succeeded);
         Assert.AreEqual(1, blocked);
         Assert.AreEqual(1, runner.InstallCallCount);
@@ -565,7 +565,7 @@ public class NpmJsExtensionInstallerTests
                 bothEntered.Signal();
 
                 // Block until both installs have entered npm. If the installer serialized different
-                // directories this would deadlock and the wait below would time out.
+                // directories, this would deadlock and the wait below would time out.
                 Assert.IsTrue(release.Wait(TimeSpan.FromSeconds(5), hookToken), "Second install did not run in parallel.");
                 return Task.CompletedTask;
             },
@@ -794,9 +794,9 @@ public class NpmJsExtensionInstallerTests
                 return forced;
             }
 
-            // The real runner rejects a package whose publisher did not freeze the dependency closure
-            // with a published npm-shrinkwrap.json. Model that fail-closed decision before any package
-            // is materialized so nothing can be promoted.
+            // The real runner rejects packages that did not freeze their dependency closure with a
+            // published npm-shrinkwrap.json. Model that decision before any package is materialized so
+            // nothing can be promoted.
             if (!PublisherShipsShrinkwrap)
             {
                 return NpmCommandResult.Fail(Microsoft.CmdPal.UI.ViewModels.Properties.Resources.npm_runner_shrinkwrap_required);
@@ -839,7 +839,7 @@ public class NpmJsExtensionInstallerTests
         {
             // The runner extracts the tarball so the published package is the root project at
             // <staging>\package, runs npm ci there, and leaves the frozen closure under its own
-            // node_modules. Mirror that layout so the installer promotes it verbatim.
+            // node_modules. Mirror that layout so the installer promotes it as is.
             var packageDirectory = Path.Combine(stagingDirectory, NpmCommandRunner.PackageRootDirectoryName);
             Directory.CreateDirectory(packageDirectory);
 
@@ -854,7 +854,7 @@ public class NpmJsExtensionInstallerTests
                 version);
             File.WriteAllText(Path.Combine(packageDirectory, "package.json"), manifest);
 
-            // The publisher-frozen shrinkwrap travels inside the promoted tree.
+            // The shrinkwrap travels inside the promoted tree.
             File.WriteAllText(
                 Path.Combine(packageDirectory, "npm-shrinkwrap.json"),
                 "{\"lockfileVersion\":3,\"packages\":{\"\":{\"name\":\"root\"}}}");

@@ -127,14 +127,11 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
             return;
         }
 
-        // Route through the per-directory gate so an uninstall serializes against any
-        // in-flight load, refresh, crash-restart, or hot-reload for the same directory
-        // and releases every resource (wrapper, process, source watcher, crash count,
-        // gate entry). The gallery calls this synchronously before deleting the
-        // directory, so block until the removal completes; all awaits on this path use
-        // ConfigureAwait(false) and the path is never entered from within a held gate,
-        // so there is no reentrant deadlock. The token lets an uninstall Cancel abandon
-        // the wait for a contended gate.
+        // Use the lifecycle gate so uninstall waits behind any load, refresh, restart, or hot reload
+        // for this directory and cleans every owned resource. The gallery calls this before deleting
+        // files, so wait synchronously. Awaited work on this path uses ConfigureAwait(false), and we
+        // never enter while holding the same gate, so we avoid a reentrant deadlock. The token lets
+        // Cancel stop waiting for a busy gate.
         var removed = RemoveExtensionByDirectoryGatedAsync(extensionDirectory, cancellationToken).GetAwaiter().GetResult();
         if (removed is not null)
         {
@@ -170,10 +167,8 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
 
         var directory = Path.Combine(ExtensionsPath, extensionName);
 
-        // Report installed when the extension is either live in the host or merely present on disk.
-        // A crash-disabled or corrupt install can leave the directory in place without a loaded
-        // provider; treating that as installed lets the gallery still offer Uninstall (and therefore
-        // repair-by-reinstall) instead of stranding the package with no way to remove it.
+        // Treat a directory on disk as installed even when the provider never loaded. That lets the
+        // gallery offer Uninstall for a crash disabled or corrupt install instead of stranding it.
         return IsExtensionLoadedInDirectory(directory) || IsExtensionPresentOnDisk(directory);
     }
 
@@ -201,9 +196,8 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
 
         try
         {
-            // Loading is awaited synchronously per directory through the lifecycle gate, so by the
-            // time this returns the promoted directory is either loaded and registered or it failed.
-            // Firing OnProviderAdded keeps the rest of the host (and the gallery) in sync.
+            // The lifecycle gate waits for the promoted directory to load or fail. Raise OnProviderAdded
+            // for anything that registered so the host and gallery see the same state.
             var added = await AddDiscoveredNotLoadedAsync(timeoutCts.Token).ConfigureAwait(false);
             foreach (var wrapper in added)
             {
