@@ -33,10 +33,16 @@ public static class ShortcutGuideActivationPolicy
     public static ShortcutGuideActivationAction GetActivationAction(
         ShortcutGuideActivationSource activationSource,
         bool isOverlayVisible,
+        bool isCurrentWindowExcluded,
         ShortcutGuideActivationSource activeSource,
         ShortcutGuideOverlaySurface activeSurface,
         ShortcutGuideWindowsKeyAction windowsKeyAction)
     {
+        if (!isOverlayVisible && isCurrentWindowExcluded)
+        {
+            return ShortcutGuideActivationAction.None;
+        }
+
         if (!isOverlayVisible)
         {
             activeSource = ShortcutGuideActivationSource.None;
