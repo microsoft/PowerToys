@@ -3,14 +3,37 @@
 #ifndef PT_RUNTIME_TRACK
 #define PT_RUNTIME_TRACK 1
 #endif
+#ifndef PT_RUNTIME_VERSION_MAJOR
+#define PT_RUNTIME_VERSION_MAJOR 1
+#endif
+#ifndef PT_RUNTIME_VERSION_MINOR
+#define PT_RUNTIME_VERSION_MINOR 0
+#endif
+#ifndef PT_RUNTIME_VERSION_BUILD
+#define PT_RUNTIME_VERSION_BUILD 0
+#endif
+#ifndef PT_RUNTIME_VERSION_REVISION
+#define PT_RUNTIME_VERSION_REVISION 0
+#endif
+#ifndef PT_RUNTIME_WRONG_PRODUCT
+#define PT_RUNTIME_WRONG_PRODUCT 0
+#endif
 
 #define PT_STRINGIZE_DETAIL(value) #value
 #define PT_STRINGIZE(value) PT_STRINGIZE_DETAIL(value)
-#define PT_RUNTIME_VERSION_STRING PT_STRINGIZE(PT_RUNTIME_TRACK) ".0.0.0\0"
+#define PT_RUNTIME_VERSION_STRING PT_STRINGIZE(PT_RUNTIME_VERSION_MAJOR) "." \
+    PT_STRINGIZE(PT_RUNTIME_VERSION_MINOR) "." PT_STRINGIZE(PT_RUNTIME_VERSION_BUILD) "." \
+    PT_STRINGIZE(PT_RUNTIME_VERSION_REVISION) "\0"
+
+#if PT_RUNTIME_WRONG_PRODUCT
+#define PT_RUNTIME_PRODUCT_NAME "PowerToys Workspaces incorrect runtime prototype\0"
+#else
+#define PT_RUNTIME_PRODUCT_NAME "PowerToys Workspaces protected runtime prototype\0"
+#endif
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION PT_RUNTIME_TRACK,0,0,0
- PRODUCTVERSION PT_RUNTIME_TRACK,0,0,0
+ FILEVERSION PT_RUNTIME_VERSION_MAJOR,PT_RUNTIME_VERSION_MINOR,PT_RUNTIME_VERSION_BUILD,PT_RUNTIME_VERSION_REVISION
+ PRODUCTVERSION PT_RUNTIME_VERSION_MAJOR,PT_RUNTIME_VERSION_MINOR,PT_RUNTIME_VERSION_BUILD,PT_RUNTIME_VERSION_REVISION
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -26,11 +49,11 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "Microsoft Corporation\0"
-            VALUE "FileDescription", "PowerToys virtual-account runtime prototype\0"
+            VALUE "FileDescription", "PowerToys protected virtual-account runtime prototype\0"
             VALUE "FileVersion", PT_RUNTIME_VERSION_STRING
             VALUE "InternalName", "PtPuvrRuntime.exe\0"
             VALUE "OriginalFilename", "PtPuvrRuntime.exe\0"
-            VALUE "ProductName", "PowerToys Workspaces runtime prototype\0"
+            VALUE "ProductName", PT_RUNTIME_PRODUCT_NAME
             VALUE "ProductVersion", PT_RUNTIME_VERSION_STRING
         END
     END

@@ -6,7 +6,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
-$metadataPath = Join-Path $root 'artifacts\packages\packages.json'
+$metadataPath = Join-Path $root 'artifacts\release\artifacts.json'
 $manifestPath = Join-Path $root 'artifact-manifest.json'
 $lifecycle = Join-Path $root 'Lifecycle.ps1'
 $teardown = Join-Path $root 'Teardown.ps1'
@@ -29,9 +29,7 @@ $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 $canonicalRoot = [IO.Path]::GetFullPath($root).TrimEnd('\') + '\'
 foreach ($entry in $manifest.files) {
     $candidate = [IO.Path]::GetFullPath((Join-Path $root $entry.path))
-    if (-not $candidate.StartsWith(
-            $canonicalRoot,
-            [StringComparison]::OrdinalIgnoreCase)) {
+    if (-not $candidate.StartsWith($canonicalRoot, [StringComparison]::OrdinalIgnoreCase)) {
         throw "Portable manifest path escapes the bundle root: $($entry.path)"
     }
     if (-not (Test-Path -LiteralPath $candidate -PathType Leaf)) {
@@ -44,48 +42,73 @@ foreach ($entry in $manifest.files) {
 }
 
 $metadata = Get-Content -LiteralPath $metadataPath -Raw | ConvertFrom-Json
-$certificatePath = Join-Path `
-    (Join-Path $root 'artifacts\packages') `
-    ([IO.Path]::GetFileName($metadata.certificatePath))
-$certificate = [Security.Cryptography.X509Certificates.X509Certificate2]::new(
-    $certificatePath)
-if ($certificate.Thumbprint -ne $metadata.certificateThumbprint) {
-    throw "Bundled certificate thumbprint mismatch: expected $($metadata.certificateThumbprint), actual $($certificate.Thumbprint)"
+$releaseRoot = Join-Path $root 'artifacts\release'
+$certificates = @(
+    [ordered]@{
+        role = 'primary'
+        file = $metadata.certificateFile
+        thumbprint = $metadata.certificateThumbprint
+    },
+    [ordered]@{
+        role = 'foreign'
+        file = $metadata.foreignSignerCertificateFile
+        thumbprint = $metadata.foreignSignerCertificateThumbprint
+    }
+)
+foreach ($certificate in $certificates) {
+    if ([string]::IsNullOrWhiteSpace($certificate.file) -or
+        [string]::IsNullOrWhiteSpace($certificate.thumbprint)) {
+        throw "Bundled certificate metadata is incomplete for $($certificate.role)."
+    }
+    $certificate.path = Join-Path $releaseRoot $certificate.file
+    if (-not (Test-Path -LiteralPath $certificate.path -PathType Leaf)) {
+        throw "Bundled certificate is missing: $($certificate.path)"
+    }
+    $parsed = [Security.Cryptography.X509Certificates.X509Certificate2]::new($certificate.path)
+    if ($parsed.Thumbprint -ne $certificate.thumbprint) {
+        throw "Bundled certificate thumbprint mismatch for $($certificate.role): expected $($certificate.thumbprint), actual $($parsed.Thumbprint)"
+    }
 }
 
-$trustedPath = "Cert:\LocalMachine\TrustedPeople\$($certificate.Thumbprint)"
-$certificateWasAlreadyTrusted = Test-Path -LiteralPath $trustedPath
+$preexistingTrust = @{}
+foreach ($certificate in $certificates) {
+    $trustedPath = "Cert:\LocalMachine\TrustedPeople\$($certificate.thumbprint)"
+    $preexistingTrust[$certificate.thumbprint] = Test-Path -LiteralPath $trustedPath
+}
 $validationFailure = $null
 $cleanupFailure = $null
 try {
-    if (-not $certificateWasAlreadyTrusted) {
-        Import-Certificate `
-            -FilePath $certificatePath `
-            -CertStoreLocation 'Cert:\LocalMachine\TrustedPeople' | Out-Null
+    foreach ($certificate in $certificates) {
+        $trustedPath = "Cert:\LocalMachine\TrustedPeople\$($certificate.thumbprint)"
+        if (-not $preexistingTrust[$certificate.thumbprint]) {
+            Import-Certificate -FilePath $certificate.path -CertStoreLocation 'Cert:\LocalMachine\TrustedPeople' | Out-Null
+        }
+        if (-not (Test-Path -LiteralPath $trustedPath)) {
+            throw "Could not establish machine trust for $($certificate.role) certificate."
+        }
     }
-    & $lifecycle `
-        -Verb validate `
-        -Configuration Release `
-        -FirstOwnerSid $FirstOwnerSid `
-        -SecondOwnerSid $SecondOwnerSid
+    & $lifecycle -Verb validate -Configuration Release -FirstOwnerSid $FirstOwnerSid -SecondOwnerSid $SecondOwnerSid -PreserveTrustedCertificates
 }
 catch {
     $validationFailure = $_
 }
 finally {
     try {
-        & $teardown `
-            -Configuration Release `
-            -FirstOwnerSid $FirstOwnerSid `
-            -SecondOwnerSid $SecondOwnerSid `
-            -PreserveTrustedCertificates
+        & $teardown -Configuration Release -FirstOwnerSid $FirstOwnerSid -SecondOwnerSid $SecondOwnerSid -PreserveTrustedCertificates
     }
     catch {
         $cleanupFailure = $_
     }
-    if (-not $certificateWasAlreadyTrusted -and
-        (Test-Path -LiteralPath $trustedPath)) {
-        Remove-Item -LiteralPath $trustedPath -Force
+    foreach ($certificate in $certificates) {
+        $trustedPath = "Cert:\LocalMachine\TrustedPeople\$($certificate.thumbprint)"
+        if (-not $preexistingTrust[$certificate.thumbprint] -and (Test-Path -LiteralPath $trustedPath)) {
+            Remove-Item -LiteralPath $trustedPath -Force
+        }
+        $actual = Test-Path -LiteralPath $trustedPath
+        if ($actual -ne $preexistingTrust[$certificate.thumbprint] -and -not $cleanupFailure) {
+            $cleanupFailure = [InvalidOperationException]::new(
+                "Portable certificate restoration failed for $($certificate.role) $($certificate.thumbprint).")
+        }
     }
 }
 

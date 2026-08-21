@@ -1,13 +1,26 @@
 #include "../Common/LsmrCommon.h"
 
-#include <appmodel.h>
-
-#include <atomic>
 #include <filesystem>
+#include <optional>
 #include <sstream>
 
 #ifndef PT_RUNTIME_TRACK
 #define PT_RUNTIME_TRACK 1
+#endif
+#ifndef PT_RUNTIME_VERSION_MAJOR
+#define PT_RUNTIME_VERSION_MAJOR 1
+#endif
+#ifndef PT_RUNTIME_VERSION_MINOR
+#define PT_RUNTIME_VERSION_MINOR 0
+#endif
+#ifndef PT_RUNTIME_VERSION_BUILD
+#define PT_RUNTIME_VERSION_BUILD 0
+#endif
+#ifndef PT_RUNTIME_VERSION_REVISION
+#define PT_RUNTIME_VERSION_REVISION 0
+#endif
+#ifndef PT_RUNTIME_FAIL_READINESS
+#define PT_RUNTIME_FAIL_READINESS 0
 #endif
 
 namespace
@@ -18,6 +31,8 @@ namespace
     std::wstring g_ownerSid;
     std::wstring g_serviceName;
     uint16_t g_runtimeTrack = 0;
+    ptlsmr::file_version g_runtimeVersion{};
+    std::optional<std::wstring> g_siblingOwner;
 
     void report_status(DWORD state, DWORD win32ExitCode = NO_ERROR)
     {
@@ -35,61 +50,7 @@ namespace
         }
     }
 
-    [[nodiscard]] std::wstring current_package_full_name()
-    {
-        UINT32 characters = 0;
-        LONG result = GetCurrentPackageFullName(&characters, nullptr);
-        if (result != ERROR_INSUFFICIENT_BUFFER)
-        {
-            throw ptlsmr::win32_error("GetCurrentPackageFullName(size)", static_cast<DWORD>(result));
-        }
-        std::wstring fullName(characters, L'\0');
-        result = GetCurrentPackageFullName(&characters, fullName.data());
-        if (result != ERROR_SUCCESS)
-        {
-            throw ptlsmr::win32_error("GetCurrentPackageFullName", static_cast<DWORD>(result));
-        }
-        fullName.resize(characters - 1);
-        return fullName;
-    }
-
-    [[nodiscard]] std::wstring current_package_path()
-    {
-        UINT32 characters = 0;
-        LONG result = GetCurrentPackagePath(&characters, nullptr);
-        if (result != ERROR_INSUFFICIENT_BUFFER)
-        {
-            throw ptlsmr::win32_error("GetCurrentPackagePath(size)", static_cast<DWORD>(result));
-        }
-        std::wstring path(characters, L'\0');
-        result = GetCurrentPackagePath(&characters, path.data());
-        if (result != ERROR_SUCCESS)
-        {
-            throw ptlsmr::win32_error("GetCurrentPackagePath", static_cast<DWORD>(result));
-        }
-        path.resize(characters - 1);
-        return path;
-    }
-
-    [[nodiscard]] std::wstring current_package_family_name()
-    {
-        UINT32 characters = 0;
-        LONG result = GetCurrentPackageFamilyName(&characters, nullptr);
-        if (result != ERROR_INSUFFICIENT_BUFFER)
-        {
-            throw ptlsmr::win32_error("GetCurrentPackageFamilyName(size)", static_cast<DWORD>(result));
-        }
-        std::wstring familyName(characters, L'\0');
-        result = GetCurrentPackageFamilyName(&characters, familyName.data());
-        if (result != ERROR_SUCCESS)
-        {
-            throw ptlsmr::win32_error("GetCurrentPackageFamilyName", static_cast<DWORD>(result));
-        }
-        familyName.resize(characters - 1);
-        return familyName;
-    }
-
-    [[nodiscard]] std::wstring module_path()
+    [[nodiscard]] std::filesystem::path module_path()
     {
         std::wstring path(32768, L'\0');
         const DWORD characters = GetModuleFileNameW(
@@ -98,35 +59,62 @@ namespace
             static_cast<DWORD>(path.size()));
         if (characters == 0 || characters >= path.size())
         {
-            throw ptlsmr::win32_error("GetModuleFileNameW", GetLastError());
+            throw ptlsmr::win32_error("GetModuleFileNameW(runtime)", GetLastError());
         }
         path.resize(characters);
         return path;
     }
 
-    [[nodiscard]] bool path_is_under(
-        const std::filesystem::path& child,
-        const std::filesystem::path& parent)
+    void require_denied_binary_write(const std::filesystem::path& executable)
     {
-        const auto canonicalChild = std::filesystem::weakly_canonical(child).wstring();
-        std::wstring canonicalParent = std::filesystem::weakly_canonical(parent).wstring();
-        if (!canonicalParent.ends_with(L"\\"))
+        HANDLE raw = CreateFileW(
+            executable.c_str(),
+            FILE_WRITE_DATA,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+            nullptr,
+            OPEN_EXISTING,
+            FILE_ATTRIBUTE_NORMAL,
+            nullptr);
+        if (raw != INVALID_HANDLE_VALUE)
         {
-            canonicalParent += L"\\";
+            CloseHandle(raw);
+            throw ptlsmr::win32_error("runtime self-binary write protection", ERROR_ACCESS_DENIED);
         }
-        if (canonicalChild.size() <= canonicalParent.size())
+        if (GetLastError() != ERROR_ACCESS_DENIED)
         {
-            return false;
+            throw ptlsmr::win32_error("runtime self-binary write probe", GetLastError());
         }
-        return CompareStringOrdinal(
-                   canonicalChild.c_str(),
-                   static_cast<int>(canonicalParent.size()),
-                   canonicalParent.c_str(),
-                   static_cast<int>(canonicalParent.size()),
-                   TRUE) == CSTR_EQUAL;
     }
 
-    void write_evidence()
+    void require_denied_sibling_store_write()
+    {
+        if (!g_siblingOwner)
+        {
+            return;
+        }
+        const auto sibling = ptlsmr::instance_names(*g_siblingOwner);
+        const auto probe = sibling.storeDirectory / L"runtime-write-probe.txt";
+        HANDLE raw = CreateFileW(
+            probe.c_str(),
+            GENERIC_WRITE,
+            0,
+            nullptr,
+            CREATE_NEW,
+            FILE_ATTRIBUTE_NORMAL,
+            nullptr);
+        if (raw != INVALID_HANDLE_VALUE)
+        {
+            CloseHandle(raw);
+            DeleteFileW(probe.c_str());
+            throw ptlsmr::win32_error("runtime sibling-store write protection", ERROR_ACCESS_DENIED);
+        }
+        if (GetLastError() != ERROR_ACCESS_DENIED)
+        {
+            throw ptlsmr::win32_error("runtime sibling-store write probe", GetLastError());
+        }
+    }
+
+    void write_evidence(bool ready)
     {
         const auto names = ptlsmr::instance_names(g_ownerSid);
         if (!std::filesystem::is_directory(names.storeDirectory))
@@ -144,65 +132,44 @@ namespace
             OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &rawToken),
             "OpenProcessToken(runtime)");
         ptlsmr::unique_handle token(rawToken);
-        const bool hasServiceSid = ptlsmr::token_contains_sid(token.get(), expectedServiceSid);
-        if (!hasServiceSid)
+        if (!ptlsmr::token_contains_sid(token.get(), expectedServiceSid))
         {
             throw ptlsmr::win32_error("runtime service SID token policy", ERROR_ACCESS_DENIED);
         }
 
-        const auto executablePath = std::filesystem::path(module_path());
-        std::wstring packageFullName;
-        std::wstring packageFamilyName;
-        std::filesystem::path packagePath;
-        bool packageIdentityPresent = false;
-        try
+        const auto executable = module_path();
+        const auto expectedExecutable = ptlsmr::runtime_executable_path(
+            g_runtimeTrack,
+            g_runtimeVersion);
+        if (!std::filesystem::equivalent(executable, expectedExecutable))
         {
-            packageFullName = current_package_full_name();
-            packageFamilyName = current_package_family_name();
-            packagePath = std::filesystem::path(current_package_path());
-            packageIdentityPresent = true;
+            throw ptlsmr::win32_error("runtime protected execution path policy", ERROR_ACCESS_DENIED);
         }
-        catch (const ptlsmr::win32_error& error)
-        {
-            if (error.code() != APPMODEL_ERROR_NO_PACKAGE)
-            {
-                throw;
-            }
-            packagePath = executablePath.parent_path();
-            packageFullName = packagePath.filename().wstring();
-        }
-        if (!ptlsmr::is_allowed_runtime_package_full_name(packageFullName) ||
-            ptlsmr::runtime_track_from_package_full_name(packageFullName) != g_runtimeTrack)
-        {
-            throw ptlsmr::win32_error("runtime package path identity policy", ERROR_INVALID_DATA);
-        }
-        if (!path_is_under(executablePath, packagePath) ||
-            !std::filesystem::equivalent(executablePath, packagePath / ptlsmr::RuntimeExe))
-        {
-            throw ptlsmr::win32_error("runtime direct package executable policy", ERROR_ACCESS_DENIED);
-        }
+        const auto packageFullNameResult = ptlsmr::require_no_package_identity();
+        require_denied_binary_write(executable);
+        require_denied_sibling_store_write();
 
-        DWORD sessionId = 0;
-        ptlsmr::check_bool(
-            ProcessIdToSessionId(GetCurrentProcessId(), &sessionId),
-            "ProcessIdToSessionId(runtime)");
         std::wstringstream evidence;
         evidence << L"serviceName=" << g_serviceName << L"\r\n";
         evidence << L"ownerSid=" << g_ownerSid << L"\r\n";
         evidence << L"processId=" << GetCurrentProcessId() << L"\r\n";
-        evidence << L"sessionId=" << sessionId << L"\r\n";
         evidence << L"tokenUserSid=" << tokenUserSid << L"\r\n";
         evidence << L"virtualAccountName=NT SERVICE\\" << g_serviceName << L"\r\n";
         evidence << L"serviceSid=" << expectedServiceSid << L"\r\n";
-        evidence << L"serviceSidPresent=" << (hasServiceSid ? L"true" : L"false") << L"\r\n";
+        evidence << L"serviceSidPresent=true\r\n";
         evidence << L"runtimeTrack=" << g_runtimeTrack << L"\r\n";
-        evidence << L"runtimeBinaryVersion=" << PT_RUNTIME_TRACK << L".0.0.0\r\n";
-        evidence << L"packageIdentityPresent=" << (packageIdentityPresent ? L"true" : L"false") << L"\r\n";
-        evidence << L"packageFullName=" << packageFullName << L"\r\n";
-        evidence << L"packageFamilyName=" << packageFamilyName << L"\r\n";
-        evidence << L"packageVersion=" << ptlsmr::package_version_string(packageFullName) << L"\r\n";
-        evidence << L"packageInstalledLocation=" << packagePath.wstring() << L"\r\n";
-        evidence << L"executablePath=" << executablePath.wstring() << L"\r\n";
+        evidence << L"runtimeVersion=" << ptlsmr::format_version(g_runtimeVersion) << L"\r\n";
+        evidence << L"packageFullNameResult=" << packageFullNameResult << L"\r\n";
+        evidence << L"packageIdentityPresent=false\r\n";
+        evidence << L"executablePath=" << executable.wstring() << L"\r\n";
+        evidence << L"selfBinaryWriteProbe=denied\r\n";
+        evidence << L"siblingStoreWriteProbe=" <<
+            (g_siblingOwner ? L"denied" : L"not-configured") << L"\r\n";
+        if (g_siblingOwner)
+        {
+            evidence << L"siblingOwnerSid=" << *g_siblingOwner << L"\r\n";
+        }
+        evidence << L"readiness=" << (ready ? L"ready" : L"intentional-failure") << L"\r\n";
         ptlsmr::write_utf8_file_atomic(names.evidencePath, evidence.str());
     }
 
@@ -238,7 +205,14 @@ namespace
             {
                 throw ptlsmr::win32_error("CreateEventW(runtime stop)", GetLastError());
             }
-            write_evidence();
+            constexpr bool failReadiness = PT_RUNTIME_FAIL_READINESS != 0;
+            write_evidence(!failReadiness);
+            if (failReadiness)
+            {
+                throw ptlsmr::win32_error(
+                    "intentional runtime readiness failure",
+                    ERROR_SERVICE_NOT_ACTIVE);
+            }
             report_status(SERVICE_RUNNING);
             const DWORD wait = WaitForSingleObject(g_stopEvent.get(), INFINITE);
             if (wait != WAIT_OBJECT_0)
@@ -263,16 +237,27 @@ int wmain()
     try
     {
         const auto arguments = ptlsmr::command_line_arguments();
+        const auto compiledVersion = ptlsmr::file_version{
+            PT_RUNTIME_VERSION_MAJOR,
+            PT_RUNTIME_VERSION_MINOR,
+            PT_RUNTIME_VERSION_BUILD,
+            PT_RUNTIME_VERSION_REVISION,
+        };
         g_ownerSid = ptlsmr::canonical_owner_sid(
             ptlsmr::argument_value(arguments, L"--owner-sid"));
         g_serviceName = ptlsmr::argument_value(arguments, L"--service-name");
-        const auto runtimeTrackText = ptlsmr::argument_value(arguments, L"--runtime-track");
-        if (runtimeTrackText != L"1" && runtimeTrackText != L"2")
+        const auto trackText = ptlsmr::argument_value(arguments, L"--runtime-track");
+        const auto versionText = ptlsmr::argument_value(arguments, L"--runtime-version");
+        if ((arguments.size() != 9 && arguments.size() != 11) ||
+            (trackText != L"1" && trackText != L"2"))
         {
             return ERROR_INVALID_PARAMETER;
         }
-        g_runtimeTrack = static_cast<uint16_t>(runtimeTrackText[0] - L'0');
-        if (g_runtimeTrack != PT_RUNTIME_TRACK)
+        g_runtimeTrack = static_cast<uint16_t>(trackText[0] - L'0');
+        g_runtimeVersion = ptlsmr::parse_version(versionText);
+        if (g_runtimeTrack != PT_RUNTIME_TRACK ||
+            !(g_runtimeVersion == compiledVersion) ||
+            g_runtimeVersion.major != g_runtimeTrack)
         {
             return ERROR_REVISION_MISMATCH;
         }
@@ -280,6 +265,18 @@ int wmain()
         if (g_serviceName != names.serviceName || g_serviceName.size() > 128)
         {
             return ERROR_INVALID_NAME;
+        }
+        if (arguments.size() == 11)
+        {
+            if (arguments[9] != L"--sibling-owner-sid")
+            {
+                return ERROR_INVALID_PARAMETER;
+            }
+            g_siblingOwner = ptlsmr::canonical_owner_sid(arguments[10]);
+            if (*g_siblingOwner == g_ownerSid)
+            {
+                return ERROR_INVALID_PARAMETER;
+            }
         }
         SERVICE_TABLE_ENTRYW table[] = {
             { g_serviceName.data(), service_main },

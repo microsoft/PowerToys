@@ -17,7 +17,7 @@ if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($commit)) {
     throw 'Could not determine the prototype commit.'
 }
 
-$bundleName = "PtUuvr-Portable-$commit"
+$bundleName = "PtPru-Portable-$commit"
 $destination = [IO.Path]::GetFullPath($DestinationDirectory)
 $staging = Join-Path $destination $bundleName
 $archive = Join-Path $destination "$bundleName.zip"
@@ -28,23 +28,47 @@ Remove-Item -LiteralPath $archive -Force -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath $hashFile -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Path $staging -Force | Out-Null
 
-$relativeFiles = @(
+$metadataPath = Join-Path $root 'artifacts\release\artifacts.json'
+if (-not (Test-Path -LiteralPath $metadataPath -PathType Leaf)) {
+    throw "Release metadata is missing: $metadataPath"
+}
+$metadata = Get-Content -LiteralPath $metadataPath -Raw | ConvertFrom-Json
+$relativeFiles = [System.Collections.Generic.HashSet[string]]::new(
+    [StringComparer]::OrdinalIgnoreCase)
+function Add-PortableFile([string]$RelativePath) {
+    if ([string]::IsNullOrWhiteSpace($RelativePath) -or
+        [IO.Path]::IsPathRooted($RelativePath) -or
+        $RelativePath.Split('\', '/').Contains('..')) {
+        throw "Portable artifact path is invalid: $RelativePath"
+    }
+    [void]$relativeFiles.Add($RelativePath)
+}
+
+@(
     'Run-PortableValidation.ps1',
     'Lifecycle.ps1',
     'Teardown.ps1',
     'PORTABLE-README.txt',
     'README.md',
     'artifacts\bin\x64\Release\PtPuvrController.exe',
-    'artifacts\packages\packages.json',
-    'artifacts\packages\PtPuvr-TestOnly.cer',
-    'artifacts\packages\PtPuvrUpdater.exe',
-    'artifacts\packages\PtPuvrRuntime-Track1-1.0.0.0.msix',
-    'artifacts\packages\PtPuvrRuntime-Track2-2.0.0.0.msix',
-    'artifacts\simulated-bundles\PowerToys-0.101\PtPuvrUpdater.exe',
-    'artifacts\simulated-bundles\PowerToys-0.101\PtPuvrRuntime-Track1-1.0.0.0.msix',
-    'artifacts\simulated-bundles\PowerToys-0.110\PtPuvrUpdater.exe',
-    'artifacts\simulated-bundles\PowerToys-0.110\PtPuvrRuntime-Track2-2.0.0.0.msix'
-)
+    'artifacts\release\artifacts.json'
+) | ForEach-Object { Add-PortableFile $_ }
+
+$releaseFiles = @(
+    $metadata.certificateFile,
+    $metadata.foreignSignerCertificateFile,
+    $metadata.updater.file
+) + @($metadata.runtimes | ForEach-Object { $_.file }) +
+    @($metadata.negativeCandidates.psobject.Properties | ForEach-Object { $_.Value.file })
+foreach ($file in $releaseFiles) {
+    Add-PortableFile (Join-Path 'artifacts\release' $file)
+}
+foreach ($bundle in $metadata.simulatedBundles) {
+    foreach ($file in $bundle.updaterFile, $bundle.runtimeFile) {
+        Add-PortableFile (Join-Path 'artifacts\simulated-bundles' $file)
+    }
+    Add-PortableFile (Join-Path 'artifacts\simulated-bundles' (Join-Path $bundle.name 'bundle.json'))
+}
 
 foreach ($relativePath in $relativeFiles) {
     $source = Join-Path $root $relativePath
@@ -77,10 +101,6 @@ $fileManifest = @(
 Compress-Archive -LiteralPath $staging -DestinationPath $archive -CompressionLevel Optimal
 Remove-Item -LiteralPath $staging -Recurse -Force
 $archiveHash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash
-Set-Content `
-    -LiteralPath $hashFile `
-    -Value "$archiveHash  $([IO.Path]::GetFileName($archive))" `
-    -Encoding ascii
+Set-Content -LiteralPath $hashFile -Value "$archiveHash  $([IO.Path]::GetFileName($archive))" -Encoding ascii
 Write-Host "Portable archive: $archive"
 Write-Host "SHA-256: $archiveHash"
-Write-Host "Checksum file: $hashFile"

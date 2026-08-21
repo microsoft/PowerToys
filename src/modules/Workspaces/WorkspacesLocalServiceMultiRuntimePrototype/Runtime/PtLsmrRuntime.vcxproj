@@ -13,17 +13,22 @@
   <PropertyGroup>
     <TargetName>PtPuvrRuntime</TargetName>
     <RuntimeTrack Condition="'$(RuntimeTrack)'==''">1</RuntimeTrack>
+    <RuntimeVersionMajor Condition="'$(RuntimeVersionMajor)'==''">1</RuntimeVersionMajor>
+    <RuntimeVersionMinor Condition="'$(RuntimeVersionMinor)'==''">0</RuntimeVersionMinor>
+    <RuntimeVersionBuild Condition="'$(RuntimeVersionBuild)'==''">0</RuntimeVersionBuild>
+    <RuntimeVersionRevision Condition="'$(RuntimeVersionRevision)'==''">0</RuntimeVersionRevision>
+    <RuntimeFailReadiness Condition="'$(RuntimeFailReadiness)'==''">0</RuntimeFailReadiness>
+    <RuntimeWrongProduct Condition="'$(RuntimeWrongProduct)'==''">0</RuntimeWrongProduct>
   </PropertyGroup>
   <ItemDefinitionGroup>
-    <ClCompile><PreprocessorDefinitions>PT_RUNTIME_TRACK=$(RuntimeTrack);%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ResourceCompile><PreprocessorDefinitions>PT_RUNTIME_TRACK=$(RuntimeTrack);%(PreprocessorDefinitions)</PreprocessorDefinitions></ResourceCompile>
+    <ClCompile><PreprocessorDefinitions>PT_RUNTIME_TRACK=$(RuntimeTrack);PT_RUNTIME_VERSION_MAJOR=$(RuntimeVersionMajor);PT_RUNTIME_VERSION_MINOR=$(RuntimeVersionMinor);PT_RUNTIME_VERSION_BUILD=$(RuntimeVersionBuild);PT_RUNTIME_VERSION_REVISION=$(RuntimeVersionRevision);PT_RUNTIME_FAIL_READINESS=$(RuntimeFailReadiness);PT_RUNTIME_WRONG_PRODUCT=$(RuntimeWrongProduct);%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
+    <ResourceCompile><PreprocessorDefinitions>PT_RUNTIME_TRACK=$(RuntimeTrack);PT_RUNTIME_VERSION_MAJOR=$(RuntimeVersionMajor);PT_RUNTIME_VERSION_MINOR=$(RuntimeVersionMinor);PT_RUNTIME_VERSION_BUILD=$(RuntimeVersionBuild);PT_RUNTIME_VERSION_REVISION=$(RuntimeVersionRevision);PT_RUNTIME_WRONG_PRODUCT=$(RuntimeWrongProduct);%(PreprocessorDefinitions)</PreprocessorDefinitions></ResourceCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies Condition="'$(RuntimeTrack)'!='2'">advapi32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(RuntimeTrack)'=='2'">$(OutDir)PtLsmrCommon.lib;advapi32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)PtLsmrCommon.lib;advapi32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup><ClCompile Include="RuntimeMain.cpp" /><ResourceCompile Include="RuntimeVersion.rc" /></ItemGroup>
-  <ItemGroup Condition="'$(RuntimeTrack)'!='2'"><ProjectReference Include="..\Common\PtLsmrCommon.vcxproj"><Project>{51EAD4A2-BB68-420C-8CFD-11891A654810}</Project></ProjectReference></ItemGroup>
+  <ItemGroup Condition="'$(BuildProjectReferences)'!='false'"><ProjectReference Include="..\Common\PtLsmrCommon.vcxproj"><Project>{51EAD4A2-BB68-420C-8CFD-11891A654810}</Project></ProjectReference></ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

@@ -1,4 +1,4 @@
-PowerToys Workspaces unpackaged-updater / virtual-runtime prototype
+PowerToys Workspaces protected ordinary-PE runtime prototype
 Portable cross-machine validation bundle
 
 Requirements
@@ -7,12 +7,13 @@ Requirements
 - An elevated 64-bit PowerShell session
 - No existing PtPuvr prototype installation
 
-The bundle contains a test-only self-signed certificate. The runner temporarily
-adds that exact certificate to LocalMachine\TrustedPeople, validates all bundle
-file hashes, installs the signed ordinary updater PE into a protected Program
-Files directory, runs the complete two-runtime test, removes all prototype
-services, packages, install roots, stores, and ACL-bearing package directories,
-and then removes the certificate if it was not already trusted before the test.
+The bundle contains primary and foreign test-only code-signing certificates.
+The runner checks every artifact hash, temporarily trusts both exact
+certificates in the machine store so the foreign-candidate rejection reaches
+the signer-pin check, runs the full signed-PE lifecycle, verifies the JSON
+result, and restores exact prior machine-trust presence for both thumbprints.
+It removes prototype services, protected roots, and stores without deleting
+unrelated or pre-existing certificates that merely share a subject.
 
 Run
 ---
@@ -26,18 +27,8 @@ Expected final line
 -------------------
 PORTABLE VALIDATION PASS: <path>\artifacts\validation-result.json
 
-Important evidence in validation-result.json
---------------------------------------------
-- updater.packageIdentityPresent = false
-- updater.packageIdentityError = 15700
-- updater.deploymentMode = direct-unpackaged-package-manager
-- updater.deploymentHelperPresent = false
-- updater.directStageResults contains two 0x0 results whose callerProcessId
-  equals updater.processId
-- runtimes contains two concurrently validated virtual-account services
-- verdict = PASS
-
-This test deliberately adds a read/execute ACE to each exact staged runtime
-package-version directory, never to the WindowsApps root. A different result on
-another OS build is valuable evidence; preserve validation-result.json and the
-full console output.
+The result covers LocalSystem bootstrap, two distinct virtual-account
+runtimes, protected Program Files/ProgramData ACLs, trusted-foreign signer
+pin rejection, anti-downgrade, update, readiness rollback, deterministic
+crash and ordinary cleanup-failure recovery, the 32-owner inventory limit,
+staging cleanup, exact SCM/runtime evidence, and final teardown.

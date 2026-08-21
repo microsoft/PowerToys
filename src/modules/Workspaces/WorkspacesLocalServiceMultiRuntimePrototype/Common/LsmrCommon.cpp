@@ -1,21 +1,30 @@
 #include "LsmrCommon.h"
 
-#include <appmodel.h>
 #include <aclapi.h>
+#include <appmodel.h>
 #include <bcrypt.h>
+#include <softpub.h>
 #include <sddl.h>
 #include <shellapi.h>
 #include <shlobj_core.h>
+#include <wincrypt.h>
+#include <wintrust.h>
 
+#include <algorithm>
 #include <array>
 #include <cstring>
 #include <fstream>
 #include <iomanip>
+#include <optional>
 #include <sstream>
+#include <tuple>
 
 #pragma comment(lib, "advapi32.lib")
 #pragma comment(lib, "bcrypt.lib")
+#pragma comment(lib, "crypt32.lib")
 #pragma comment(lib, "shell32.lib")
+#pragma comment(lib, "version.lib")
+#pragma comment(lib, "wintrust.lib")
 
 namespace
 {
@@ -33,12 +42,12 @@ namespace
     [[nodiscard]] std::wstring hex_digest(std::wstring_view input)
     {
         BCRYPT_ALG_HANDLE algorithm = nullptr;
-        NTSTATUS status = BCryptOpenAlgorithmProvider(
+        const NTSTATUS openStatus = BCryptOpenAlgorithmProvider(
             &algorithm,
             BCRYPT_SHA256_ALGORITHM,
             nullptr,
             0);
-        if (status < 0)
+        if (openStatus < 0)
         {
             throw std::runtime_error("BCryptOpenAlgorithmProvider(SHA256) failed");
         }
@@ -49,18 +58,18 @@ namespace
             {
                 BCryptCloseAlgorithmProvider(value, 0);
             }
-        } guard{ algorithm };
+        } algorithmGuard{ algorithm };
 
         DWORD objectBytes = 0;
         DWORD resultBytes = 0;
-        status = BCryptGetProperty(
+        const NTSTATUS propertyStatus = BCryptGetProperty(
             algorithm,
             BCRYPT_OBJECT_LENGTH,
             reinterpret_cast<PUCHAR>(&objectBytes),
             sizeof(objectBytes),
             &resultBytes,
             0);
-        if (status < 0)
+        if (propertyStatus < 0)
         {
             throw std::runtime_error("BCryptGetProperty(BCRYPT_OBJECT_LENGTH) failed");
         }
@@ -68,7 +77,7 @@ namespace
         std::array<UCHAR, 32> digest{};
         std::vector<wchar_t> inputCopy(input.begin(), input.end());
         BCRYPT_HASH_HANDLE hash = nullptr;
-        status = BCryptCreateHash(
+        const NTSTATUS createStatus = BCryptCreateHash(
             algorithm,
             &hash,
             object.data(),
@@ -76,7 +85,7 @@ namespace
             nullptr,
             0,
             0);
-        if (status < 0)
+        if (createStatus < 0)
         {
             throw std::runtime_error("BCryptCreateHash failed");
         }
@@ -88,17 +97,21 @@ namespace
                 BCryptDestroyHash(value);
             }
         } hashGuard{ hash };
-        status = BCryptHashData(
+        const NTSTATUS hashStatus = BCryptHashData(
             hash,
             reinterpret_cast<PUCHAR>(inputCopy.data()),
             static_cast<ULONG>(inputCopy.size() * sizeof(wchar_t)),
             0);
-        if (status < 0)
+        if (hashStatus < 0)
         {
             throw std::runtime_error("BCryptHashData failed");
         }
-        status = BCryptFinishHash(hash, digest.data(), static_cast<ULONG>(digest.size()), 0);
-        if (status < 0)
+        const NTSTATUS finishStatus = BCryptFinishHash(
+            hash,
+            digest.data(),
+            static_cast<ULONG>(digest.size()),
+            0);
+        if (finishStatus < 0)
         {
             throw std::runtime_error("BCryptFinishHash failed");
         }
@@ -111,48 +124,9 @@ namespace
         return value.str();
     }
 
-    [[nodiscard]] std::wstring package_string_from_id(
-        std::wstring_view packageName,
-        bool family,
-        uint16_t major)
-    {
-        std::wstring name(packageName);
-        std::wstring publisher(ptlsmr::PackagePublisher);
-        PACKAGE_ID id{};
-        id.processorArchitecture = PROCESSOR_ARCHITECTURE_AMD64;
-        id.version.Major = major;
-        id.name = name.data();
-        id.publisher = publisher.data();
-        UINT32 characters = 0;
-        LONG result = family
-            ? PackageFamilyNameFromId(&id, &characters, nullptr)
-            : PackageFullNameFromId(&id, &characters, nullptr);
-        if (result != ERROR_INSUFFICIENT_BUFFER)
-        {
-            throw ptlsmr::win32_error(
-                family ? "PackageFamilyNameFromId(size)" : "PackageFullNameFromId(size)",
-                static_cast<DWORD>(result));
-        }
-        std::wstring output(characters, L'\0');
-        result = family
-            ? PackageFamilyNameFromId(&id, &characters, output.data())
-            : PackageFullNameFromId(&id, &characters, output.data());
-        if (result != ERROR_SUCCESS)
-        {
-            throw ptlsmr::win32_error(
-                family ? "PackageFamilyNameFromId" : "PackageFullNameFromId",
-                static_cast<DWORD>(result));
-        }
-        output.resize(characters - 1);
-        return output;
-    }
-
     void protect_directory(const std::filesystem::path& directory, const std::wstring& sddl)
     {
-        if (!std::filesystem::exists(directory))
-        {
-            std::filesystem::create_directories(directory);
-        }
+        std::filesystem::create_directories(directory);
         PSECURITY_DESCRIPTOR descriptor = nullptr;
         if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(
                 sddl.c_str(),
@@ -197,6 +171,229 @@ namespace
         {
             throw ptlsmr::win32_error("SetNamedSecurityInfoW(directory)", result);
         }
+    }
+
+    void protect_with_owner_fallback(
+        const std::filesystem::path& directory,
+        const std::wstring& withOwner,
+        const std::wstring& daclOnly)
+    {
+        try
+        {
+            protect_directory(directory, withOwner);
+        }
+        catch (const ptlsmr::win32_error& error)
+        {
+            if (error.code() != ERROR_INVALID_OWNER)
+            {
+                throw;
+            }
+            protect_directory(directory, daclOnly);
+        }
+    }
+
+    [[nodiscard]] std::wstring certificate_sha256(PCCERT_CONTEXT certificate)
+    {
+        DWORD bytes = 0;
+        if (!CertGetCertificateContextProperty(
+                certificate,
+                CERT_SHA256_HASH_PROP_ID,
+                nullptr,
+                &bytes) ||
+            bytes != 32)
+        {
+            throw ptlsmr::win32_error(
+                "CertGetCertificateContextProperty(CERT_SHA256_HASH_PROP_ID size)",
+                GetLastError());
+        }
+        std::array<BYTE, 32> hash{};
+        if (!CertGetCertificateContextProperty(
+                certificate,
+                CERT_SHA256_HASH_PROP_ID,
+                hash.data(),
+                &bytes))
+        {
+            throw ptlsmr::win32_error(
+                "CertGetCertificateContextProperty(CERT_SHA256_HASH_PROP_ID)",
+                GetLastError());
+        }
+        std::wstringstream output;
+        for (const BYTE byte : hash)
+        {
+            output << std::hex << std::uppercase << std::setw(2) << std::setfill(L'0') <<
+                static_cast<unsigned int>(byte);
+        }
+        return output.str();
+    }
+
+    [[nodiscard]] std::wstring verified_leaf_signer_sha256(const std::filesystem::path& path)
+    {
+        WINTRUST_FILE_INFO fileInfo{};
+        fileInfo.cbStruct = sizeof(fileInfo);
+        std::wstring mutablePath = path.wstring();
+        fileInfo.pcwszFilePath = mutablePath.c_str();
+        WINTRUST_DATA trustData{};
+        trustData.cbStruct = sizeof(trustData);
+        trustData.dwUIChoice = WTD_UI_NONE;
+        trustData.fdwRevocationChecks = WTD_REVOKE_NONE;
+        trustData.dwUnionChoice = WTD_CHOICE_FILE;
+        trustData.pFile = &fileInfo;
+        trustData.dwStateAction = WTD_STATEACTION_VERIFY;
+        trustData.dwProvFlags = WTD_SAFER_FLAG;
+        GUID action = WINTRUST_ACTION_GENERIC_VERIFY_V2;
+        const LONG result = WinVerifyTrust(
+            static_cast<HWND>(INVALID_HANDLE_VALUE),
+            &action,
+            &trustData);
+        if (result != ERROR_SUCCESS)
+        {
+            trustData.dwStateAction = WTD_STATEACTION_CLOSE;
+            (void)WinVerifyTrust(
+                static_cast<HWND>(INVALID_HANDLE_VALUE),
+                &action,
+                &trustData);
+            throw ptlsmr::win32_error(
+                "WinVerifyTrust(LocalMachine Authenticode chain)",
+                static_cast<DWORD>(static_cast<uint32_t>(result)));
+        }
+
+        CRYPT_PROVIDER_DATA* provider = WTHelperProvDataFromStateData(
+            trustData.hWVTStateData);
+        if (!provider || provider->csSigners != 1)
+        {
+            trustData.dwStateAction = WTD_STATEACTION_CLOSE;
+            (void)WinVerifyTrust(
+                static_cast<HWND>(INVALID_HANDLE_VALUE),
+                &action,
+                &trustData);
+            throw ptlsmr::win32_error(
+                "WinVerifyTrust provider signer cardinality policy",
+                static_cast<DWORD>(static_cast<uint32_t>(TRUST_E_SUBJECT_NOT_TRUSTED)));
+        }
+        const CRYPT_PROVIDER_SGNR* signer = WTHelperGetProvSignerFromChain(
+            provider,
+            0,
+            FALSE,
+            0);
+        if (!signer ||
+            signer->dwError != ERROR_SUCCESS ||
+            signer->csCertChain == 0 ||
+            !signer->pasCertChain ||
+            !signer->pasCertChain[0].pCert)
+        {
+            trustData.dwStateAction = WTD_STATEACTION_CLOSE;
+            (void)WinVerifyTrust(
+                static_cast<HWND>(INVALID_HANDLE_VALUE),
+                &action,
+                &trustData);
+            throw ptlsmr::win32_error(
+                "WinVerifyTrust verified leaf signer policy",
+                static_cast<DWORD>(static_cast<uint32_t>(TRUST_E_SUBJECT_NOT_TRUSTED)));
+        }
+        const std::wstring pin = certificate_sha256(signer->pasCertChain[0].pCert);
+        trustData.dwStateAction = WTD_STATEACTION_CLOSE;
+        (void)WinVerifyTrust(
+            static_cast<HWND>(INVALID_HANDLE_VALUE),
+            &action,
+            &trustData);
+        return pin;
+    }
+
+    [[nodiscard]] std::wstring version_resource_string(
+        const std::filesystem::path& path,
+        std::wstring_view name)
+    {
+        const DWORD bytes = GetFileVersionInfoSizeW(path.c_str(), nullptr);
+        if (bytes == 0)
+        {
+            throw ptlsmr::win32_error("GetFileVersionInfoSizeW", GetLastError());
+        }
+        std::vector<BYTE> data(bytes);
+        if (!GetFileVersionInfoW(path.c_str(), 0, bytes, data.data()))
+        {
+            throw ptlsmr::win32_error("GetFileVersionInfoW", GetLastError());
+        }
+        const std::wstring query =
+            L"\\StringFileInfo\\040904b0\\" + std::wstring(name);
+        LPWSTR value = nullptr;
+        UINT characters = 0;
+        if (!VerQueryValueW(data.data(), query.c_str(), reinterpret_cast<void**>(&value), &characters) ||
+            !value ||
+            characters == 0)
+        {
+            throw ptlsmr::win32_error("VerQueryValueW(version resource string)", ERROR_RESOURCE_DATA_NOT_FOUND);
+        }
+        return std::wstring(value, characters - 1);
+    }
+
+    [[nodiscard]] ptlsmr::file_version fixed_file_version(const std::filesystem::path& path)
+    {
+        const DWORD bytes = GetFileVersionInfoSizeW(path.c_str(), nullptr);
+        if (bytes == 0)
+        {
+            throw ptlsmr::win32_error("GetFileVersionInfoSizeW", GetLastError());
+        }
+        std::vector<BYTE> data(bytes);
+        if (!GetFileVersionInfoW(path.c_str(), 0, bytes, data.data()))
+        {
+            throw ptlsmr::win32_error("GetFileVersionInfoW", GetLastError());
+        }
+        VS_FIXEDFILEINFO* value = nullptr;
+        UINT valueBytes = 0;
+        if (!VerQueryValueW(data.data(), L"\\", reinterpret_cast<void**>(&value), &valueBytes) ||
+            !value ||
+            valueBytes < sizeof(*value) ||
+            value->dwSignature != VS_FFI_SIGNATURE)
+        {
+            throw ptlsmr::win32_error("VerQueryValueW(VS_FIXEDFILEINFO)", ERROR_RESOURCE_DATA_NOT_FOUND);
+        }
+        return {
+            HIWORD(value->dwFileVersionMS),
+            LOWORD(value->dwFileVersionMS),
+            HIWORD(value->dwFileVersionLS),
+            LOWORD(value->dwFileVersionLS),
+        };
+    }
+
+    [[nodiscard]] ptlsmr::file_version validate_signed_executable(
+        const std::filesystem::path& path,
+        std::wstring_view expectedOriginalFilename,
+        std::wstring_view expectedProductName,
+        std::wstring_view expectedSignerPin)
+    {
+        if (!std::filesystem::is_regular_file(path))
+        {
+            throw ptlsmr::win32_error("candidate file policy", ERROR_FILE_NOT_FOUND);
+        }
+        DWORD binaryType = 0;
+        if (!GetBinaryTypeW(path.c_str(), &binaryType))
+        {
+            throw ptlsmr::win32_error("GetBinaryTypeW(candidate)", GetLastError());
+        }
+        if (binaryType != SCS_64BIT_BINARY)
+        {
+            throw ptlsmr::win32_error("candidate x64 PE policy", ERROR_EXE_MACHINE_TYPE_MISMATCH);
+        }
+        const auto signerPin = verified_leaf_signer_sha256(path);
+        if (signerPin != ptlsmr::canonical_signer_sha256(expectedSignerPin))
+        {
+            throw ptlsmr::win32_error(
+                "candidate WinVerifyTrust leaf signer pin policy",
+                static_cast<DWORD>(static_cast<uint32_t>(TRUST_E_SUBJECT_NOT_TRUSTED)));
+        }
+        if (version_resource_string(path, L"CompanyName") != ptlsmr::PrototypeCompanyName ||
+            version_resource_string(path, L"ProductName") != expectedProductName ||
+            version_resource_string(path, L"OriginalFilename") != expectedOriginalFilename)
+        {
+            throw ptlsmr::win32_error("candidate version-resource identity policy", ERROR_INVALID_DATA);
+        }
+        const auto version = fixed_file_version(path);
+        if (version_resource_string(path, L"FileVersion") != ptlsmr::format_version(version) ||
+            version_resource_string(path, L"ProductVersion") != ptlsmr::format_version(version))
+        {
+            throw ptlsmr::win32_error("candidate version-resource version policy", ERROR_INVALID_DATA);
+        }
+        return version;
     }
 }
 
@@ -301,6 +498,69 @@ namespace ptlsmr
         return m_value;
     }
 
+    bool operator==(const file_version& left, const file_version& right) noexcept
+    {
+        return left.major == right.major &&
+            left.minor == right.minor &&
+            left.build == right.build &&
+            left.revision == right.revision;
+    }
+
+    bool operator<(const file_version& left, const file_version& right) noexcept
+    {
+        return std::tie(left.major, left.minor, left.build, left.revision) <
+            std::tie(right.major, right.minor, right.build, right.revision);
+    }
+
+    std::wstring format_version(const file_version& value)
+    {
+        return std::to_wstring(value.major) + L"." +
+            std::to_wstring(value.minor) + L"." +
+            std::to_wstring(value.build) + L"." +
+            std::to_wstring(value.revision);
+    }
+
+    file_version parse_version(std::wstring_view value)
+    {
+        std::array<uint16_t, 4> values{};
+        size_t start = 0;
+        for (size_t index = 0; index < values.size(); ++index)
+        {
+            const size_t end = value.find(L'.', start);
+            if ((index < values.size() - 1 && end == std::wstring_view::npos) ||
+                (index == values.size() - 1 && end != std::wstring_view::npos))
+            {
+                throw win32_error("version format policy", ERROR_INVALID_DATA);
+            }
+            const auto token = value.substr(
+                start,
+                (end == std::wstring_view::npos ? value.size() : end) - start);
+            if (token.empty() || token.size() > 5 ||
+                !std::all_of(token.begin(), token.end(), [](wchar_t character) {
+                    return character >= L'0' && character <= L'9';
+                }))
+            {
+                throw win32_error("version component policy", ERROR_INVALID_DATA);
+            }
+            unsigned long component = 0;
+            try
+            {
+                component = std::stoul(std::wstring(token));
+            }
+            catch (const std::exception&)
+            {
+                throw win32_error("version range policy", ERROR_INVALID_DATA);
+            }
+            if (component > UINT16_MAX)
+            {
+                throw win32_error("version range policy", ERROR_INVALID_DATA);
+            }
+            values[index] = static_cast<uint16_t>(component);
+            start = end == std::wstring_view::npos ? value.size() : end + 1;
+        }
+        return { values[0], values[1], values[2], values[3] };
+    }
+
     void check_bool(BOOL result, const char* operation)
     {
         if (!result)
@@ -329,8 +589,7 @@ namespace ptlsmr
         check_bool(
             GetTokenInformation(token, TokenUser, buffer.data(), bytes, &bytes),
             "GetTokenInformation(TokenUser)");
-        const auto* user = reinterpret_cast<const TOKEN_USER*>(buffer.data());
-        return sid_to_string(user->User.Sid);
+        return sid_to_string(reinterpret_cast<const TOKEN_USER*>(buffer.data())->User.Sid);
     }
 
     bool token_contains_sid(HANDLE token, std::wstring_view sidText)
@@ -409,8 +668,7 @@ namespace ptlsmr
 
     std::wstring service_sid(std::wstring_view serviceName)
     {
-        std::wstring account = L"NT SERVICE\\";
-        account.append(serviceName);
+        const std::wstring account = L"NT SERVICE\\" + std::wstring(serviceName);
         DWORD sidBytes = 0;
         DWORD domainChars = 0;
         SID_NAME_USE use{};
@@ -453,7 +711,7 @@ namespace ptlsmr
         return std::filesystem::path(path) / StoreRelativeRoot;
     }
 
-    std::filesystem::path installed_updater_root()
+    std::filesystem::path installation_root()
     {
         PWSTR path = nullptr;
         const HRESULT result = SHGetKnownFolderPath(FOLDERID_ProgramFiles, 0, nullptr, &path);
@@ -462,78 +720,61 @@ namespace ptlsmr
             throw win32_error("SHGetKnownFolderPath(FOLDERID_ProgramFiles)", HRESULT_CODE(result));
         }
         local_memory memory(path);
-        return std::filesystem::path(path) /
-            L"PowerToys\\WorkspacesUnpackagedUpdaterVirtualRuntimePrototype";
+        return std::filesystem::path(path) / InstallRelativeRoot;
     }
 
-    std::wstring runtime_package_name(uint16_t track)
+    std::filesystem::path updater_install_directory(const file_version& version)
     {
-        switch (track)
+        return installation_root() / L"Updater" / format_version(version);
+    }
+
+    std::filesystem::path runtime_root()
+    {
+        return installation_root() / L"Runtimes";
+    }
+
+    std::filesystem::path runtime_install_directory(
+        uint16_t track,
+        const file_version& version)
+    {
+        if (track != 1 && track != 2)
         {
-        case 1:
-            return RuntimePackageNameTrack1;
-        case 2:
-            return RuntimePackageNameTrack2;
-        default:
             throw win32_error("runtime track policy", ERROR_INVALID_PARAMETER);
         }
+        return runtime_root() /
+            (L"Track" + std::to_wstring(track)) /
+            format_version(version);
     }
 
-    std::wstring expected_runtime_package_full_name(uint16_t track)
+    std::filesystem::path runtime_executable_path(
+        uint16_t track,
+        const file_version& version)
     {
-        return package_string_from_id(runtime_package_name(track), false, track);
+        return runtime_install_directory(track, version) / RuntimeExe;
     }
 
-    std::wstring expected_runtime_package_family_name(uint16_t track)
+    std::filesystem::path trusted_signer_pin_path()
     {
-        return package_string_from_id(runtime_package_name(track), true, track);
+        return program_data_root() / TrustedSignerPinFile;
     }
 
-    bool is_allowed_runtime_package_full_name(std::wstring_view value)
+    bool path_is_within(
+        const std::filesystem::path& child,
+        const std::filesystem::path& parent)
     {
-        return value == expected_runtime_package_full_name(1) ||
-            value == expected_runtime_package_full_name(2);
-    }
-
-    uint16_t runtime_track_from_package_full_name(std::wstring_view fullName)
-    {
-        if (fullName == expected_runtime_package_full_name(1))
+        const auto canonicalChild = std::filesystem::weakly_canonical(child).wstring();
+        std::wstring canonicalParent = std::filesystem::weakly_canonical(parent).wstring();
+        if (!canonicalParent.ends_with(L"\\"))
         {
-            return 1;
+            canonicalParent += L"\\";
         }
-        if (fullName == expected_runtime_package_full_name(2))
-        {
-            return 2;
-        }
-        throw win32_error("runtime package identity policy", ERROR_INVALID_DATA);
-    }
-
-    std::wstring package_version_string(std::wstring_view fullName)
-    {
-        std::wstring copy(fullName);
-        UINT32 bytes = 0;
-        LONG result = PackageIdFromFullName(copy.c_str(), 0, &bytes, nullptr);
-        if (result != ERROR_INSUFFICIENT_BUFFER)
-        {
-            throw win32_error("PackageIdFromFullName(size)", static_cast<DWORD>(result));
-        }
-        std::vector<BYTE> buffer(bytes);
-        result = PackageIdFromFullName(
-            copy.c_str(),
-            0,
-            &bytes,
-            buffer.data());
-        if (result != ERROR_SUCCESS)
-        {
-            throw win32_error("PackageIdFromFullName", static_cast<DWORD>(result));
-        }
-        const auto* id = reinterpret_cast<const PACKAGE_ID*>(buffer.data());
-        std::wstringstream version;
-        version << id->version.Major << L"."
-                << id->version.Minor << L"."
-                << id->version.Build << L"."
-                << id->version.Revision;
-        return version.str();
+        return canonicalChild.size() > canonicalParent.size() &&
+            CompareStringOrdinal(
+                canonicalChild.c_str(),
+                static_cast<int>(canonicalParent.size()),
+                canonicalParent.c_str(),
+                static_cast<int>(canonicalParent.size()),
+                TRUE) == CSTR_EQUAL;
     }
 
     std::wstring quote_argument(std::wstring_view value)
@@ -583,30 +824,194 @@ namespace ptlsmr
         return {};
     }
 
-    void protect_directory_for_service(
-        const std::filesystem::path& directory,
-        std::wstring_view serviceSid)
+    bool has_argument(
+        const std::vector<std::wstring>& arguments,
+        std::wstring_view name)
     {
-        const std::wstring sddl =
-            L"O:SYD:P(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)(A;OICI;FA;;;" +
-            std::wstring(serviceSid) + L")";
-        protect_directory(directory, sddl);
+        return std::find(arguments.begin(), arguments.end(), name) != arguments.end();
+    }
+
+    std::wstring canonical_signer_sha256(std::wstring_view value)
+    {
+        if (value.size() != 64)
+        {
+            throw win32_error("signer SHA-256 fingerprint length policy", ERROR_INVALID_DATA);
+        }
+        std::wstring normalized;
+        normalized.reserve(value.size());
+        for (const wchar_t character : value)
+        {
+            if ((character < L'0' || character > L'9') &&
+                (character < L'a' || character > L'f') &&
+                (character < L'A' || character > L'F'))
+            {
+                throw win32_error("signer SHA-256 fingerprint format policy", ERROR_INVALID_DATA);
+            }
+            normalized += static_cast<wchar_t>(towupper(character));
+        }
+        return normalized;
+    }
+
+    std::wstring read_trusted_signer_pin()
+    {
+        const auto path = trusted_signer_pin_path();
+        if (!std::filesystem::is_regular_file(path))
+        {
+            throw win32_error("trusted signer pin policy missing", ERROR_FILE_NOT_FOUND);
+        }
+        return canonical_signer_sha256(read_utf8_file(path, 128));
+    }
+
+    void write_trusted_signer_pin(std::wstring_view value)
+    {
+        const auto pin = canonical_signer_sha256(value);
+        const auto path = trusted_signer_pin_path();
+        if (std::filesystem::exists(path) && read_trusted_signer_pin() != pin)
+        {
+            throw win32_error("trusted signer pin rotation policy", ERROR_ACCESS_DENIED);
+        }
+        write_utf8_file_atomic(path, pin);
+    }
+
+    DWORD require_no_package_identity()
+    {
+        UINT32 length = 0;
+        const LONG result = GetCurrentPackageFullName(&length, nullptr);
+        if (result != APPMODEL_ERROR_NO_PACKAGE)
+        {
+            throw win32_error(
+                "GetCurrentPackageFullName ordinary-process policy",
+                static_cast<DWORD>(static_cast<uint32_t>(result)));
+        }
+        return static_cast<DWORD>(result);
     }
 
     void protect_system_directory(const std::filesystem::path& directory)
     {
-        try
+        protect_with_owner_fallback(
+            directory,
+            L"O:SYD:P(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)",
+            L"D:P(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)");
+    }
+
+    void protect_runtime_directory(
+        const std::filesystem::path& directory,
+        std::wstring_view serviceSid)
+    {
+        std::wstring dacl =
+            L"D:P(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)(A;OICI;GRGX;;;BU)";
+        if (!serviceSid.empty())
         {
-            protect_directory(directory, L"O:SYD:P(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)");
+            dacl += L"(A;OICI;GRGX;;;" + std::wstring(serviceSid) + L")";
         }
-        catch (const win32_error& error)
+        protect_with_owner_fallback(directory, L"O:SY" + dacl, dacl);
+    }
+
+    void protect_directory_for_service(
+        const std::filesystem::path& directory,
+        std::wstring_view serviceSid)
+    {
+        if (serviceSid.empty())
         {
-            if (error.code() != ERROR_INVALID_OWNER)
+            throw win32_error("service store SID policy", ERROR_INVALID_SID);
+        }
+        const std::wstring dacl =
+            L"D:P(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)(A;OICI;FA;;;" +
+            std::wstring(serviceSid) + L")";
+        protect_with_owner_fallback(directory, L"O:SY" + dacl, dacl);
+    }
+
+    std::filesystem::path create_protected_staging_directory(
+        const std::filesystem::path& parent,
+        std::wstring_view prefix)
+    {
+        protect_system_directory(parent);
+        std::array<UCHAR, 16> entropy{};
+        const NTSTATUS result = BCryptGenRandom(
+            nullptr,
+            entropy.data(),
+            static_cast<ULONG>(entropy.size()),
+            BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+        if (result < 0)
+        {
+            throw std::runtime_error("BCryptGenRandom(staging) failed");
+        }
+        std::wstringstream suffix;
+        for (const auto byte : entropy)
+        {
+            suffix << std::hex << std::setw(2) << std::setfill(L'0') <<
+                static_cast<unsigned int>(byte);
+        }
+        const auto directory = parent / (std::wstring(prefix) + L"-" + suffix.str());
+        if (!CreateDirectoryW(directory.c_str(), nullptr))
+        {
+            throw win32_error("CreateDirectoryW(protected staging)", GetLastError());
+        }
+        protect_system_directory(directory);
+        return directory;
+    }
+
+    void copy_file_to_protected_stage(
+        const std::filesystem::path& source,
+        const std::filesystem::path& stagedFile)
+    {
+        if (!std::filesystem::is_regular_file(source))
+        {
+            throw win32_error("candidate source policy", ERROR_FILE_NOT_FOUND);
+        }
+        if (!CopyFileW(source.c_str(), stagedFile.c_str(), TRUE))
+        {
+            throw win32_error("CopyFileW(protected staging)", GetLastError());
+        }
+    }
+
+    void move_file_atomically(
+        const std::filesystem::path& source,
+        const std::filesystem::path& destination)
+    {
+        if (!MoveFileExW(
+                source.c_str(),
+                destination.c_str(),
+                MOVEFILE_WRITE_THROUGH))
+        {
+            throw win32_error("MoveFileExW(atomic install)", GetLastError());
+        }
+    }
+
+    bool files_are_identical(
+        const std::filesystem::path& first,
+        const std::filesystem::path& second)
+    {
+        if (!std::filesystem::is_regular_file(first) ||
+            !std::filesystem::is_regular_file(second) ||
+            std::filesystem::file_size(first) != std::filesystem::file_size(second))
+        {
+            return false;
+        }
+        std::ifstream firstStream(first, std::ios::binary);
+        std::ifstream secondStream(second, std::ios::binary);
+        if (!firstStream || !secondStream)
+        {
+            throw win32_error("open file comparison", ERROR_OPEN_FAILED);
+        }
+        std::array<char, 64 * 1024> firstBuffer{};
+        std::array<char, 64 * 1024> secondBuffer{};
+        while (firstStream)
+        {
+            firstStream.read(firstBuffer.data(), firstBuffer.size());
+            secondStream.read(secondBuffer.data(), secondBuffer.size());
+            const auto firstBytes = firstStream.gcount();
+            const auto secondBytes = secondStream.gcount();
+            if (firstBytes != secondBytes ||
+                !std::equal(
+                    firstBuffer.begin(),
+                    firstBuffer.begin() + firstBytes,
+                    secondBuffer.begin()))
             {
-                throw;
+                return false;
             }
-            protect_directory(directory, L"D:P(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)");
         }
+        return firstStream.eof() && secondStream.eof();
     }
 
     void write_utf8_file_atomic(const std::filesystem::path& path, std::wstring_view value)
@@ -652,7 +1057,7 @@ namespace ptlsmr
             nullptr));
         if (!file)
         {
-            throw win32_error("CreateFileW(evidence)", GetLastError());
+            throw win32_error("CreateFileW(protected state)", GetLastError());
         }
         if (!utf8.empty())
         {
@@ -660,16 +1065,16 @@ namespace ptlsmr
             check_bool(
                 WriteFile(file.get(), utf8.data(), static_cast<DWORD>(utf8.size()), &written, nullptr) &&
                     written == utf8.size(),
-                "WriteFile(evidence)");
+                "WriteFile(protected state)");
         }
-        check_bool(FlushFileBuffers(file.get()), "FlushFileBuffers(evidence)");
+        check_bool(FlushFileBuffers(file.get()), "FlushFileBuffers(protected state)");
         file.reset();
         check_bool(
             MoveFileExW(
                 temporary.c_str(),
                 path.c_str(),
                 MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH),
-            "MoveFileExW(evidence)");
+            "MoveFileExW(protected state)");
     }
 
     std::wstring read_utf8_file(const std::filesystem::path& path, size_t maximumBytes)
@@ -677,7 +1082,7 @@ namespace ptlsmr
         const auto size = std::filesystem::file_size(path);
         if (size > maximumBytes)
         {
-            throw win32_error("evidence file size policy", ERROR_FILE_TOO_LARGE);
+            throw win32_error("protected state size policy", ERROR_FILE_TOO_LARGE);
         }
         if (size == 0)
         {
@@ -686,13 +1091,13 @@ namespace ptlsmr
         std::ifstream input(path, std::ios::binary);
         if (!input)
         {
-            throw win32_error("open UTF-8 file", ERROR_OPEN_FAILED);
+            throw win32_error("open protected state", ERROR_OPEN_FAILED);
         }
         std::string bytes(static_cast<size_t>(size), '\0');
         input.read(bytes.data(), static_cast<std::streamsize>(bytes.size()));
         if (!input && !input.eof())
         {
-            throw win32_error("read UTF-8 file", ERROR_READ_FAULT);
+            throw win32_error("read protected state", ERROR_READ_FAULT);
         }
         const int characters = MultiByteToWideChar(
             CP_UTF8,
@@ -705,17 +1110,60 @@ namespace ptlsmr
         {
             throw win32_error("MultiByteToWideChar(size)", GetLastError());
         }
-        std::wstring result(static_cast<size_t>(characters), L'\0');
+        std::wstring output(static_cast<size_t>(characters), L'\0');
         if (MultiByteToWideChar(
                 CP_UTF8,
                 MB_ERR_INVALID_CHARS,
                 bytes.data(),
                 static_cast<int>(bytes.size()),
-                result.data(),
+                output.data(),
                 characters) != characters)
         {
             throw win32_error("MultiByteToWideChar", GetLastError());
         }
-        return result;
+        return output;
+    }
+
+    file_version validate_updater_candidate(
+        const std::filesystem::path& path,
+        std::wstring_view expectedSignerPin)
+    {
+        const auto version = validate_signed_executable(
+            path,
+            UpdaterExe,
+            UpdaterProductName,
+            expectedSignerPin);
+        const auto expected = parse_version(UpdaterVersion);
+        if (!(version == expected))
+        {
+            throw win32_error("updater version policy", ERROR_REVISION_MISMATCH);
+        }
+        return version;
+    }
+
+    file_version validate_runtime_candidate(
+        const std::filesystem::path& path,
+        uint16_t expectedTrack,
+        std::wstring_view expectedSignerPin)
+    {
+        if (expectedTrack != 1 && expectedTrack != 2)
+        {
+            throw win32_error("runtime track policy", ERROR_INVALID_PARAMETER);
+        }
+        const auto version = validate_signed_executable(
+            path,
+            RuntimeExe,
+            RuntimeProductName,
+            expectedSignerPin);
+        if (version.major != expectedTrack)
+        {
+            throw win32_error("runtime track version policy", ERROR_REVISION_MISMATCH);
+        }
+        if ((expectedTrack == 1 && version.minor > 8) ||
+            (expectedTrack == 2 && version != file_version{ 2, 0, 0, 0 }))
+        {
+            throw win32_error("runtime release-train policy", ERROR_REVISION_MISMATCH);
+        }
+        return version;
     }
 }

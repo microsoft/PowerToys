@@ -10,23 +10,26 @@
 
 namespace ptlsmr
 {
-    inline constexpr wchar_t RuntimePackageNameTrack1[] =
-        L"Microsoft.PowerToys.WsPuvr.Runtime1";
-    inline constexpr wchar_t RuntimePackageNameTrack2[] =
-        L"Microsoft.PowerToys.WsPuvr.Runtime2";
-    inline constexpr wchar_t PackagePublisher[] =
-        L"CN=PowerToys Workspaces Unpackaged Updater Virtual Runtime Prototype Test";
+    inline constexpr wchar_t PrototypeCompanyName[] = L"Microsoft Corporation";
+    inline constexpr wchar_t UpdaterProductName[] =
+        L"PowerToys Workspaces protected runtime updater prototype";
+    inline constexpr wchar_t RuntimeProductName[] =
+        L"PowerToys Workspaces protected runtime prototype";
     inline constexpr wchar_t RuntimeExe[] = L"PtPuvrRuntime.exe";
     inline constexpr wchar_t UpdaterExe[] = L"PtPuvrUpdater.exe";
     inline constexpr wchar_t UpdaterServiceName[] = L"PtPuvrUpdater";
     inline constexpr wchar_t UpdaterPipeName[] = L"\\\\.\\pipe\\PtPuvrUpdater";
+    inline constexpr wchar_t TrustedSignerPinFile[] = L"trusted-signer-sha256.txt";
     inline constexpr wchar_t StoreRelativeRoot[] =
-        L"Microsoft\\PowerToys\\WorkspacesUnpackagedUpdaterVirtualRuntimePrototype";
+        L"Microsoft\\PowerToys\\WorkspacesProtectedRuntimeUpdaterPrototype";
+    inline constexpr wchar_t InstallRelativeRoot[] =
+        L"PowerToys\\WorkspacesProtectedRuntimeUpdaterPrototype";
     inline constexpr wchar_t UpdaterVersion[] = L"5.0.0.0";
     inline constexpr uint32_t ProtocolMagic = 0x52565550; // PUVR
-    inline constexpr uint16_t ProtocolVersion = 2;
+    inline constexpr uint16_t ProtocolVersion = 3;
     inline constexpr size_t MaxOwnerSidChars = 192;
-    inline constexpr size_t MaxPackagePathChars = 1024;
+    inline constexpr size_t MaxCandidatePathChars = 1024;
+    inline constexpr size_t MaxCrashPhaseChars = 48;
 
     class win32_error : public std::runtime_error
     {
@@ -73,6 +76,19 @@ namespace ptlsmr
         void* m_value{};
     };
 
+    struct file_version
+    {
+        uint16_t major{};
+        uint16_t minor{};
+        uint16_t build{};
+        uint16_t revision{};
+    };
+
+    [[nodiscard]] bool operator==(const file_version& left, const file_version& right) noexcept;
+    [[nodiscard]] bool operator<(const file_version& left, const file_version& right) noexcept;
+    [[nodiscard]] std::wstring format_version(const file_version& value);
+    [[nodiscard]] file_version parse_version(std::wstring_view value);
+
     struct InstanceNames
     {
         std::wstring ownerSid;
@@ -82,6 +98,40 @@ namespace ptlsmr
         std::filesystem::path evidencePath;
     };
 
+    enum class command : uint16_t
+    {
+        provision = 1,
+        status = 2,
+        cleanup = 3,
+    };
+
+#pragma pack(push, 1)
+    struct request
+    {
+        uint32_t magic{};
+        uint16_t version{};
+        uint16_t command{};
+        uint16_t runtimeTrack{};
+        uint16_t reserved{};
+        wchar_t ownerSid[MaxOwnerSidChars]{};
+        wchar_t candidatePath[MaxCandidatePathChars]{};
+        wchar_t crashPhase[MaxCrashPhaseChars]{};
+    };
+
+    struct reply
+    {
+        uint32_t magic{ ProtocolMagic };
+        uint16_t version{ ProtocolVersion };
+        uint16_t command{};
+        uint32_t win32Status{};
+        uint32_t scmState{};
+        uint32_t processId{};
+        uint32_t serviceExit{};
+        wchar_t runtimeVersion[64]{};
+        wchar_t detail[2048]{};
+    };
+#pragma pack(pop)
+
     void check_bool(BOOL result, const char* operation);
     [[nodiscard]] std::wstring current_token_user_sid(HANDLE token = nullptr);
     [[nodiscard]] bool token_contains_sid(HANDLE token, std::wstring_view sid);
@@ -90,22 +140,60 @@ namespace ptlsmr
     [[nodiscard]] InstanceNames instance_names(std::wstring_view ownerSid);
     [[nodiscard]] std::wstring service_sid(std::wstring_view serviceName);
     [[nodiscard]] std::filesystem::path program_data_root();
-    [[nodiscard]] std::filesystem::path installed_updater_root();
-    [[nodiscard]] std::wstring runtime_package_name(uint16_t track);
-    [[nodiscard]] std::wstring expected_runtime_package_full_name(uint16_t track);
-    [[nodiscard]] std::wstring expected_runtime_package_family_name(uint16_t track);
-    [[nodiscard]] bool is_allowed_runtime_package_full_name(std::wstring_view value);
-    [[nodiscard]] uint16_t runtime_track_from_package_full_name(std::wstring_view fullName);
-    [[nodiscard]] std::wstring package_version_string(std::wstring_view fullName);
+    [[nodiscard]] std::filesystem::path installation_root();
+    [[nodiscard]] std::filesystem::path updater_install_directory(
+        const file_version& version);
+    [[nodiscard]] std::filesystem::path runtime_root();
+    [[nodiscard]] std::filesystem::path runtime_install_directory(
+        uint16_t track,
+        const file_version& version);
+    [[nodiscard]] std::filesystem::path runtime_executable_path(
+        uint16_t track,
+        const file_version& version);
+    [[nodiscard]] std::filesystem::path trusted_signer_pin_path();
+    [[nodiscard]] bool path_is_within(
+        const std::filesystem::path& child,
+        const std::filesystem::path& parent);
     [[nodiscard]] std::wstring quote_argument(std::wstring_view value);
     [[nodiscard]] std::vector<std::wstring> command_line_arguments();
     [[nodiscard]] std::wstring argument_value(
         const std::vector<std::wstring>& arguments,
         std::wstring_view name);
+    [[nodiscard]] bool has_argument(
+        const std::vector<std::wstring>& arguments,
+        std::wstring_view name);
+    [[nodiscard]] std::wstring canonical_signer_sha256(std::wstring_view value);
+    [[nodiscard]] std::wstring read_trusted_signer_pin();
+    void write_trusted_signer_pin(std::wstring_view value);
+    [[nodiscard]] DWORD require_no_package_identity();
+
+    void protect_system_directory(const std::filesystem::path& directory);
+    void protect_runtime_directory(
+        const std::filesystem::path& directory,
+        std::wstring_view serviceSid = L"");
     void protect_directory_for_service(
         const std::filesystem::path& directory,
         std::wstring_view serviceSid);
-    void protect_system_directory(const std::filesystem::path& directory);
+    [[nodiscard]] std::filesystem::path create_protected_staging_directory(
+        const std::filesystem::path& parent,
+        std::wstring_view prefix);
+    void copy_file_to_protected_stage(
+        const std::filesystem::path& source,
+        const std::filesystem::path& stagedFile);
+    void move_file_atomically(
+        const std::filesystem::path& source,
+        const std::filesystem::path& destination);
+    [[nodiscard]] bool files_are_identical(
+        const std::filesystem::path& first,
+        const std::filesystem::path& second);
     void write_utf8_file_atomic(const std::filesystem::path& path, std::wstring_view value);
     [[nodiscard]] std::wstring read_utf8_file(const std::filesystem::path& path, size_t maximumBytes);
+
+    [[nodiscard]] file_version validate_updater_candidate(
+        const std::filesystem::path& path,
+        std::wstring_view expectedSignerPin);
+    [[nodiscard]] file_version validate_runtime_candidate(
+        const std::filesystem::path& path,
+        uint16_t expectedTrack,
+        std::wstring_view expectedSignerPin);
 }
