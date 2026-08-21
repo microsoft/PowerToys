@@ -21,10 +21,10 @@ const heroImagePath = fileURLToPath(new URL('../assets/hero.png', import.meta.ur
 
 /**
  * Builds the shared "metadata" rows demonstrated in both the details page and
- * the markdown-with-details page.
+ * the markdown with details page.
  *
  * Note: `DetailsLink` requires both a `link` and a `text` in the JS protocol.
- * The C# sample allows text-only or link-only rows; here an empty string is
+ * The C# sample allows rows with only text or only a link. Here an empty string is
  * used for the missing half.
  */
 export function sampleMetadata(): DetailsElement[] {
@@ -118,7 +118,7 @@ function buildProgressButton(
  * The hero image is a local asset that ships with the sample, so it renders
  * without a network connection.
  *
- * Not-yet-supported: the JS `Details` type has no `Size` (Small/Medium/Large),
+ * Not supported yet: the JS `Details` type has no `Size` (Small/Medium/Large),
  * so the C# size variants collapse into the single default size here.
  */
 export class SampleListPageWithDetails extends ListPageBase {

@@ -33,7 +33,7 @@ class KeepOpenToastCommand extends InvokableCommandBase {
  * Demonstrates `showToast` command results and lets the user send a custom
  * toast typed into the search box. Mirrors the C# `SampleToastsPage`.
  *
- * Not-yet-supported in the JS protocol: `ToastArgs` carries a `message` and an
+ * Not supported yet in the JS protocol: `ToastArgs` carries a `message` and an
  * optional follow-up `result` only. The C# toast icon and action button
  * (`IToastArgs2.Icon` / `IToastArgs2.Command`) have no JS equivalent, so those
  * variants are omitted.

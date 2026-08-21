@@ -32,11 +32,10 @@ function keyChord(modifiers: number, vkey: number): KeyChord {
  * messages, confirmation dialogs, and a nested context menu. Mirrors the C#
  * `SampleListPage`.
  *
- * Not-yet-supported in the JS protocol and therefore omitted here:
- *  - `IExtendedAttributesProvider` command properties (the C# "I have
- *    properties" items).
- *  - The Win32 foreground-window command (no P/Invoke from an isolated Node
- *    process).
+ * Not supported yet in the JS protocol, so this sample leaves out the
+ * `IExtendedAttributesProvider` command properties (the C# "I have properties"
+ * items) and the Win32 foreground window command (no P/Invoke from an isolated
+ * Node process).
  */
 export class SampleListPage extends ListPageBase {
   readonly id = 'sample-list-page';
@@ -82,7 +81,7 @@ export class SampleListPage extends ListPageBase {
     primaryContext.name = 'Primary command';
     primaryContext.icon = icon('\uF146');
 
-    // `moreCommands` on a context item nests a sub-menu, and each nested item
+    // `moreCommands` on a context item nests a submenu, and each nested item
     // can nest again. Here "We can go deeper..." opens a second level, which in
     // turn opens a third, demonstrating recursive context menus end to end.
     const moreCommands: ContextItem[] = [

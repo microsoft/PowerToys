@@ -9,10 +9,10 @@ import { icon } from '../util.js';
 /**
  * A demo of clipboard integration. Mirrors the C# `SampleDataTransferPage`.
  *
- * Not-yet-supported: the C# page attaches a `DataPackage` to each list item to
+ * Not supported yet: the C# page attaches a `DataPackage` to each list item to
  * enable drag and drop (including delayed and image payloads). `IListItem` in
  * the JS protocol has no `DataPackage`, so drag and drop is omitted and the
- * text items expose a copy-to-clipboard command instead.
+ * text items expose a copy to clipboard command instead.
  */
 export class SampleDataTransferPage extends ListPageBase {
   readonly id = 'sample-data-transfer-page';

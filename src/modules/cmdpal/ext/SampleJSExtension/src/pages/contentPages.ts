@@ -106,7 +106,7 @@ export class SamplePlainTextContentPage extends ContentPageBase {
  * A page showing images. Mirrors the C# `SampleImageContentPage`.
  *
  * Approximation: the C# page loads packaged JPG and SVG assets. This sample
- * ships no binary assets, so a web-hosted image URL stands in.
+ * ships no binary assets, so a hosted image URL stands in.
  */
 export class SampleImageContentPage extends ContentPageBase {
   readonly id = 'sample-image-content-page';

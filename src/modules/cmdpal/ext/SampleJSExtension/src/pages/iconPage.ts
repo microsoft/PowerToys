@@ -8,11 +8,11 @@ import { icon } from '../util.js';
 
 /*
  * Quick intro to Unicode in source code:
- * - Every character has a code point (for example U+0041 = 'A').
- * - Code points up to U+FFFF use \u1234 (four hex digits).
- * - Code points above that use \u{XXXXX} in JavaScript source.
- * - Some symbols (like many emojis) are built from multiple code points joined
- *   together (for example a waving hand plus a skin-tone modifier).
+ * Every character has a code point (for example U+0041 = 'A').
+ * Code points up to U+FFFF use \u1234 (four hex digits).
+ * Code points above that use \u{XXXXX} in JavaScript source.
+ * Some symbols, like many emojis, are built from multiple code points joined
+ * together (for example a waving hand plus a skin tone modifier).
  *
  * Mirrors the C# `SampleIconPage`.
  */

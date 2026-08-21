@@ -351,7 +351,7 @@ public sealed record JSExtensionManifest
             return string.Empty;
         }
 
-        // Lexical containment: the resolved icon must stay within the package directory.
+        // String path check: the resolved icon must stay within the package directory.
         var prefix = baseDirectory.EndsWith(Path.DirectorySeparatorChar)
             ? baseDirectory
             : baseDirectory + Path.DirectorySeparatorChar;
@@ -365,8 +365,8 @@ public sealed record JSExtensionManifest
             return string.Empty;
         }
 
-        // Real-filesystem containment: a symbolic link or junction must not redirect the icon out
-        // of the package, even when the lexical path stays within it.
+        // Real file system check: a symbolic link or junction must not redirect the icon out
+        // of the package, even when the string path stays within it.
         if (!IsEntryPointContainmentTrusted(extensionDirectory, resolved, out _))
         {
             return string.Empty;

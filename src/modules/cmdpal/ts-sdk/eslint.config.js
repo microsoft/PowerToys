@@ -29,7 +29,7 @@ export default tseslint.config(
     },
   },
   {
-    // Node-run maintenance scripts (for example the packed-SDK smoke test).
+    // Node maintenance scripts, such as the packed SDK smoke test.
     files: ['scripts/**/*.mjs'],
     languageOptions: {
       globals: {

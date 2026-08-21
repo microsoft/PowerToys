@@ -92,7 +92,7 @@ export class SampleMarkdownDetails extends ContentPageBase {
  *
  * Approximation: the C# page loads packaged PNG/SVG assets and embeds large
  * base64 data URLs. This sample ships no binary assets, so only the web URL and
- * the sizing query-string examples are reproduced, with a note about the rest.
+ * the sizing query string examples are reproduced, with a note about the rest.
  */
 export class SampleMarkdownImagesPage extends ContentPageBase {
   readonly id = 'sample-markdown-images-page';

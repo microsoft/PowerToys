@@ -264,7 +264,7 @@ describe('form identity and routing', () => {
       params: { pageId: 'page', formId: 'reply-form', inputs: 'first reply', data: '{}' },
     });
 
-    // Re-serialize: the form is now preceded by a markdown child, so a positional
+    // Serialize again: the form is now preceded by a markdown child, so a positional
     // fallback id would drift, but the stable formId must not.
     await runtime.handleRequest({
       jsonrpc: JSONRPC_VERSION,

@@ -54,13 +54,13 @@ const postTemplate = JSON.stringify({
  * retained on the model.
  *
  * Note on refresh: a content page's tree is serialized in full when the host
- * calls `contentPage/getContent`, and the host does not re-fetch that content in
+ * calls `contentPage/getContent`, and the host does not fetch that content again in
  * response to a form submit (the content-page proxy exposes no live
- * `ItemsChanged` channel, and expanding a tree branch does not re-query the
+ * `ItemsChanged` channel, and expanding a tree branch does not ask the
  * extension). A reply therefore does not appear in the thread that is already on
  * screen; it shows up the next time the page's content is loaded, which happens
- * when the user navigates away and reopens the page. This sample is deliberately
- * honest about that rather than claiming an on-screen refresh it cannot perform.
+ * when the user navigates away and reopens the page. This sample is honest about
+ * that rather than claiming a live refresh it cannot perform.
  */
 class Post implements TreeContent {
   readonly type = 'tree';
@@ -95,9 +95,8 @@ class Post implements TreeContent {
           if (reply) {
             this.replies.push(new Post(reply));
             // The reply is saved to the model, but the thread already on screen
-            // is not re-fetched (see the class note above), so the status is
-            // honest about when it will be visible instead of implying a live
-            // refresh.
+            // is not fetched again (see the class note above), so the status is
+            // honest about when it will be visible.
             ExtensionHost.showStatus('Reply saved. Reopen this page to see it.', 'success');
           }
         } catch {
