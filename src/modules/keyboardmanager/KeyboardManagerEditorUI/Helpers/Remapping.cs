@@ -28,6 +28,10 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public bool IsActive { get; set; } = true;
 
+        public IReadOnlyList<int> TriggerKeyCodes { get; set; } = Array.Empty<int>();
+
+        public string SearchableText { get; set; } = string.Empty;
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public bool IsEnabled
