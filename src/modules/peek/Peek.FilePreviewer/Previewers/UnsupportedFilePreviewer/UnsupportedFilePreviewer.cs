@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common.Extensions;
@@ -18,11 +19,13 @@ using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
+using Peek.FilePreviewer.Previewers.Interfaces;
+using Peek.UI.Telemetry.Events;
 using Windows.Foundation;
 
 namespace Peek.FilePreviewer.Previewers
 {
-    public partial class UnsupportedFilePreviewer : ObservableObject, IUnsupportedFilePreviewer
+    public partial class UnsupportedFilePreviewer : ObservableObject, IUnsupportedFilePreviewer, IReusablePreviewer
     {
         /// <summary>
         /// The number of files to scan between updates when calculating folder size.
@@ -61,7 +64,20 @@ namespace Peek.FilePreviewer.Previewers
             Dispatcher = DispatcherQueue.GetForCurrentThread();
         }
 
-        private IFileSystemItem Item { get; }
+        public IFileSystemItem Item { get; private set; }
+
+        public void Rebind(IFileSystemItem item, double scalingFactor)
+        {
+            Item = item;
+
+            // Update immediately-available metadata and clear async properties so stale
+            // values from the previous item are not displayed during navigation.
+            Preview.FileName = item.Name;
+            Preview.DateModified = item.DateModified?.ToString(CultureInfo.CurrentCulture);
+            Preview.FileType = null;
+            Preview.FileSize = null;
+            Preview.IconPreview = DefaultIcon;
+        }
 
         private DispatcherQueue Dispatcher { get; }
 
@@ -72,6 +88,14 @@ namespace Peek.FilePreviewer.Previewers
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (Item is not FolderItem)
+                {
+                    PowerToysTelemetry.Log.WriteEvent(
+                        new ErrorEvent() { Failure = ErrorEvent.FailureType.FileNotSupported });
+                }
+
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     Preview.FileName = Item.Name;

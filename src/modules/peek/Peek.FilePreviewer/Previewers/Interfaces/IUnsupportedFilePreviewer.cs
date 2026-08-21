@@ -4,10 +4,11 @@
 
 using Microsoft.UI.Xaml.Media;
 using Peek.FilePreviewer.Models;
+using Peek.FilePreviewer.Previewers.Interfaces;
 
 namespace Peek.FilePreviewer.Previewers
 {
-    public interface IUnsupportedFilePreviewer : IPreviewer
+    public interface IUnsupportedFilePreviewer : IPreviewer, IReusablePreviewer
     {
         public UnsupportedFilePreviewData? Preview { get; }
     }
