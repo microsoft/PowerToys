@@ -7,10 +7,12 @@
 #include <common/utils/ProcessWaiter.h>
 #include <common/utils/excluded_apps.h>
 #include <common/utils/game_mode.h>
+#include <common/interop/shared_constants.h>
 
 #include "resource.h"
 
 #include <dwmapi.h>
+#include <optional>
 
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
@@ -27,7 +29,6 @@ static ULONG_PTR g_gdiplusToken = 0; // GDI+ token for overlay border rendering
 static HHOOK g_hhkKeyboard = nullptr;
 static HHOOK g_hhkMouse = nullptr;
 static HWND g_hMsgWnd = nullptr;
-static bool g_systemSessionEnding = false;
 
 // 0 = Alt (default), 1 = Win
 enum class GrabAndMoveModifier
@@ -35,17 +36,103 @@ enum class GrabAndMoveModifier
     Alt = 0,
     Win = 1,
 };
-static GrabAndMoveModifier g_modifierKey = GrabAndMoveModifier::Alt;
 
-static bool g_altPressed = false;
-static bool g_winPressed = false;  // true while LWIN or RWIN is held (Win modifier mode)
-static bool g_ignoreModifier = false; // true if the user pressed the modifier then clicked the mouse without dragging
-static bool g_winAbsorbed = false; // true if we absorbed a Win keydown
-static bool g_dragging = false;
-static bool g_dragFirstMove = false; // true until first WM_MOUSEMOVE of a drag
-static HWND g_dragTarget = nullptr;
-static POINT g_dragStart = {};    // cursor pos at drag start
-static RECT g_dragWndRect = {};   // window rect at drag start
+enum class InteractionAction
+{
+    None,
+    Move,
+    Resize,
+};
+
+enum class InteractionPhase
+{
+    Idle,
+    Pending,
+    Active,
+};
+
+enum class MouseButton : unsigned int
+{
+    None = 0,
+    Left = 1,
+    Right = 2,
+};
+
+enum class HookDisposition
+{
+    Chain,
+    PassWithoutChaining,
+    Swallow,
+};
+
+enum class ModifierHoldDisposition
+{
+    Undecided,
+    Passthrough,
+    Activated,
+};
+
+// Resize handle identifiers
+enum class ResizeHandle
+{
+    None,
+    TopLeft,
+    Top,
+    TopRight,
+    Right,
+    BottomRight,
+    Bottom,
+    BottomLeft,
+    Left,
+};
+
+struct SettingsSnapshot
+{
+    GrabAndMoveModifier modifierKey = GrabAndMoveModifier::Alt;
+    bool shouldAbsorbAlt = true;
+    bool showGeometry = false;
+    bool doNotActivateOnGameMode = true;
+    bool useAltResize = true;
+    std::shared_ptr<const std::vector<std::wstring>> excludedApps =
+        std::make_shared<const std::vector<std::wstring>>();
+};
+
+struct CapturedKey
+{
+    DWORD vk = 0;
+    DWORD scanCode = 0;
+    DWORD flags = 0;
+};
+
+struct ModifierSession
+{
+    GrabAndMoveModifier modifier = GrabAndMoveModifier::Alt;
+    ModifierHoldDisposition disposition = ModifierHoldDisposition::Undecided;
+    CapturedKey key{};
+    bool pressed = false;
+    bool absorbed = false;
+    bool replayedDown = false;
+    bool consumed = false;
+};
+
+struct InteractionState
+{
+    InteractionPhase phase = InteractionPhase::Idle;
+    InteractionAction action = InteractionAction::None;
+    MouseButton button = MouseButton::None;
+    HWND target = nullptr;
+    POINT startPoint{};
+    POINT lastPoint{};
+    RECT windowRect{};
+    ResizeHandle resizeHandle = ResizeHandle::None;
+    bool firstUpdate = false;
+};
+
+static SettingsSnapshot g_settings;
+static ModifierSession g_modifierSession;
+static InteractionState g_interaction;
+static unsigned int g_swallowButtonUpMask = 0;
+static DWORD g_swallowNextModifierUpVk = 0;
 static HWND g_hOverlay = nullptr; // semi-transparent overlay during drag
 
 // Current target window rect for overlay info display
@@ -75,19 +162,6 @@ static constexpr int OVERLAY_BORDER_DIP = 4;
 // matching the prior overlay. ~40% opacity (premultiplied white = 0x66666666).
 static constexpr BYTE OVERLAY_FILL_ALPHA = 0x66;
 
-static bool g_shouldAbsorbAlt =
-    true; // true if we want to absorb Alt on the next keydown (set when Alt is pressed without dragging, cleared on next non-Alt key or Alt keyup)
-static bool g_altAbsorbed = false;     // true if we absorbed an Alt keydown
-static bool g_dragConsumedAlt = false; // true if a drag consumed the absorbed Alt
-static DWORD g_absorbedVk = 0;         // VK code of absorbed Alt key
-static DWORD g_absorbedScanCode = 0;   // scan code for replay
-static DWORD g_absorbedFlags = 0;      // flags for replay (extended key, etc.)
-
-static bool g_showGeometry = false;            // true if we want to draw the X, Y, W and H on the overlay on move and resize
-static bool g_doNotActivateOnGameMode = true; // true if GrabAndMove is suppressed when Windows Game Mode is active
-
-static bool g_useAltResize = true;      // This can be toggled from the settings. If false, Alt + right click does nothing.
-
 // Count of non-modifier keys currently held. Used to suppress GrabAndMove when the
 // modifier key is pressed while another key is already down (e.g. Q held, then modifier pressed).
 static int g_heldNonAltKeyCount = 0;
@@ -96,51 +170,6 @@ static int g_heldNonAltKeyCount = 0;
 // g_heldNonAltKeyCount; auto-repeat keydowns are ignored. This avoids relying
 // on KF_REPEAT which is not available in KBDLLHOOKSTRUCT::flags.
 static bool g_keyHeld[256] = {};
-
-// Resize handle identifiers
-enum ResizeHandle
-{
-    RESIZE_NONE,
-    RESIZE_TOP_LEFT,
-    RESIZE_TOP,
-    RESIZE_TOP_RIGHT,
-    RESIZE_RIGHT,
-    RESIZE_BOTTOM_RIGHT,
-    RESIZE_BOTTOM,
-    RESIZE_BOTTOM_LEFT,
-    RESIZE_LEFT
-};
-
-static bool g_resizing = false;
-static bool g_resizeFirstMove = false;
-static HWND g_resizeTarget = nullptr;
-static POINT g_resizeLast = {};   // cursor pos from previous frame
-static RECT g_resizeWndRect = {}; // current window rect (updated each frame)
-static ResizeHandle g_currentHandle = RESIZE_NONE;
-
-// Deferred activation state: a modifier+button press is held "pending" until the
-// cursor moves past the drag threshold (promoting it to a real drag/resize) or the
-// button is released first (replaying a normal modifier+click to the target).
-static bool g_pendingDrag = false;
-static bool g_pendingResize = false;
-static HWND g_pendingTarget = nullptr;
-static POINT g_pendingDownPt = {};
-
-// Set when a pending press was replayed to the target on modifier release while the
-// physical button was still down; the matching physical button-up is then swallowed.
-static bool g_swallowNextLButtonUp = false;
-static bool g_swallowNextRButtonUp = false;
-
-// Set once ReplayPendingClick has replayed the absorbed modifier key-down for a pending
-// click. The absorbed-modifier flags stay set so the keyboard hook still forwards the
-// real modifier key-up; this guard stops the key-down from being replayed a second time.
-static bool g_pendingModifierReplayed = false;
-
-// Set once a drag or resize has actually started during the current modifier hold.
-// While set, subsequent modifier+button presses skip the deferred/pending phase and
-// begin the drag/resize immediately - the user has already committed to Grab and Move.
-// Cleared when the modifier key is released.
-static bool g_activatedDuringHold = false;
 
 static const int MIN_WINDOW_WIDTH = 150;
 static const int MIN_WINDOW_HEIGHT = 50;
@@ -172,46 +201,85 @@ static HCURSOR g_curSizeWE = nullptr;
 // IsExcluded result cache keyed by HWND (cleared on foreground change / settings reload) – fix #4
 static std::unordered_map<HWND, bool> g_excludedCache;
 
-// Custom message: posted from the settings thread to invalidate g_excludedCache
-// on the main thread (where all other accesses occur), avoiding a data race.
-static constexpr UINT WM_INVALIDATE_EXCLUDED_CACHE = WM_APP + 1;
-
 static const wchar_t* const CLASS_NAME = L"GrabAndMove_MsgWnd";
 static const wchar_t* const OVERLAY_CLASS_NAME = L"GrabAndMove_Overlay";
 static const wchar_t* const APP_TITLE = L"GrabAndMove";
 
-// Must match CommonSharedConstants::GRABANDMOVE_REFRESH_SETTINGS_EVENT in shared_constants.h
-static const wchar_t* const GRABANDMOVE_REFRESH_SETTINGS_EVENT =
-    L"Local\\PowerToysGrabAndMove-RefreshSettingsEvent-a7b3c1d2-4e5f-6a7b-8c9d-0e1f2a3b4c5d";
-
-// Must match CommonSharedConstants::GRABANDMOVE_EXIT_EVENT in shared_constants.h
-static const wchar_t* const GRABANDMOVE_EXIT_EVENT =
-    L"Local\\PowerToysGrabAndMove-ExitEvent-b8c4d2e3-5f6a-7b8c-9d0e-1f2a3b4c5d6e";
-
-// Lock-free excluded apps list – readers use .load(), writer uses .store() (fix #5)
-static std::atomic<std::shared_ptr<const std::vector<std::wstring>>> g_excludedApps{
-    std::make_shared<const std::vector<std::wstring>>()};
-
 static HANDLE g_hReloadSettingsEvent = nullptr;
 static HANDLE g_hExitEvent = nullptr;
+static HANDLE g_hStopSettingsEvent = nullptr;
 static std::thread g_settingsThread;
-static bool g_running = true;
 static HWINEVENTHOOK g_hWinEventHook = nullptr;
+static HANDLE g_hInstanceMutex = nullptr;
+static bool g_traceRegistered = false;
 
-static void StopDragging();
-static void StopResizing();
+static std::mutex g_pendingSettingsMutex;
+static std::optional<SettingsSnapshot> g_pendingSettings;
 
-static void EndInteraction(bool endDrag, bool endResize)
+// Custom messages are handled only by the main message window.
+static constexpr UINT WM_APPLY_SETTINGS = WM_APP + 1;
+
+static constexpr unsigned int ButtonBit(MouseButton button)
 {
-    if (endDrag && g_dragging)
+    return static_cast<unsigned int>(button);
+}
+
+static void ValidateInputState() noexcept
+{
+#ifdef _DEBUG
+    const bool idleStateIsValid =
+        g_interaction.phase != InteractionPhase::Idle ||
+        (g_interaction.action == InteractionAction::None &&
+         g_interaction.button == MouseButton::None &&
+         g_interaction.target == nullptr);
+    const bool interactionStateIsValid =
+        g_interaction.phase == InteractionPhase::Idle ||
+        (g_interaction.action != InteractionAction::None &&
+         g_interaction.button != MouseButton::None &&
+         g_interaction.target != nullptr);
+    const bool replayStateIsValid =
+        !g_modifierSession.replayedDown || g_modifierSession.key.vk != 0;
+    const bool buttonMaskIsValid =
+        (g_swallowButtonUpMask & ~(ButtonBit(MouseButton::Left) | ButtonBit(MouseButton::Right))) == 0;
+
+    if (!idleStateIsValid ||
+        !interactionStateIsValid ||
+        !replayStateIsValid ||
+        !buttonMaskIsValid)
     {
-        StopDragging();
+        OutputDebugStringW(L"GrabAndMove input state invariant failed.\n");
+    }
+#endif
+}
+
+enum class ModifierReplay
+{
+    DownOnly,
+    UpOnly,
+    DownAndUp,
+};
+
+static void StopInteraction();
+static void FlushPendingClickOnModifierRelease();
+static void ReplayCapturedModifier(ModifierReplay replay);
+static void MarkButtonUpForSwallow(MouseButton button);
+
+static bool HasModifierSession()
+{
+    return g_modifierSession.pressed ||
+           g_modifierSession.absorbed ||
+           g_modifierSession.replayedDown ||
+           g_modifierSession.consumed;
+}
+
+static bool IsModifierPhysicallyHeld(GrabAndMoveModifier modifier)
+{
+    if (modifier == GrabAndMoveModifier::Win)
+    {
+        return ((GetAsyncKeyState(VK_LWIN) | GetAsyncKeyState(VK_RWIN)) & 0x8000) != 0;
     }
 
-    if (endResize && g_resizing)
-    {
-        StopResizing();
-    }
+    return ((GetAsyncKeyState(VK_LMENU) | GetAsyncKeyState(VK_RMENU)) & 0x8000) != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -237,29 +305,29 @@ static void CALLBACK WinEventProc(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, D
     // Only validate modifier state when there is actually something to reset.
     // Skipping here when all flags are clear prevents spurious resets that would
     // break continuous Alt-dragging between multiple drags.
-    if (!g_altPressed && !g_winPressed && !g_altAbsorbed && !g_winAbsorbed && !g_dragging && !g_resizing)
+    if (!HasModifierSession() && g_interaction.phase == InteractionPhase::Idle)
         return;
 
-    bool modActuallyHeld = (g_modifierKey == GrabAndMoveModifier::Win)
-        ? ((GetAsyncKeyState(VK_LWIN) | GetAsyncKeyState(VK_RWIN)) & 0x8000) != 0
-        : ((GetAsyncKeyState(VK_LMENU) | GetAsyncKeyState(VK_RMENU)) & 0x8000) != 0;
-
-    if (!modActuallyHeld)
+    const GrabAndMoveModifier modifier = HasModifierSession() ? g_modifierSession.modifier : g_settings.modifierKey;
+    if (!IsModifierPhysicallyHeld(modifier))
     {
-        g_altPressed = false;
-        g_winPressed = false;
-        g_winAbsorbed = false;
-        g_altAbsorbed = false;
-        g_dragConsumedAlt = false;
-        g_ignoreModifier = false;
-        g_activatedDuringHold = false;
-        g_pendingDrag = false;
-        g_pendingResize = false;
-        g_pendingTarget = nullptr;
-        g_swallowNextLButtonUp = false;
-        g_swallowNextRButtonUp = false;
-        g_pendingModifierReplayed = false;
-        EndInteraction(true, true);
+        if (g_interaction.phase == InteractionPhase::Pending)
+        {
+            FlushPendingClickOnModifierRelease();
+        }
+        else if (g_interaction.phase == InteractionPhase::Active)
+        {
+            MarkButtonUpForSwallow(g_interaction.button);
+        }
+
+        if (g_modifierSession.replayedDown)
+        {
+            ReplayCapturedModifier(ModifierReplay::UpOnly);
+            g_swallowNextModifierUpVk = g_modifierSession.key.vk;
+        }
+
+        StopInteraction();
+        g_modifierSession = {};
     }
 }
 
@@ -271,18 +339,13 @@ static bool IsSuppressedByGameMode()
         return false;
     }
 
-    return g_doNotActivateOnGameMode && detect_game_mode();
+    return g_settings.doNotActivateOnGameMode && detect_game_mode();
 }
 
 static bool IsActivationModifierPressed()
 {
-    if (g_ignoreModifier)
-    {
-        return false;
-    }
-    if (g_modifierKey == GrabAndMoveModifier::Win)
-        return g_winPressed;
-    return g_altPressed;
+    return g_modifierSession.pressed &&
+           g_modifierSession.disposition != ModifierHoldDisposition::Passthrough;
 }
 
 enum class GrabAndMoveShortcutAction
@@ -308,35 +371,36 @@ static void TraceShortcutUse(bool successful, GrabAndMoveShortcutAction action, 
 // ---------------------------------------------------------------------------
 // Settings file helpers
 // ---------------------------------------------------------------------------
-static void LoadSettingsFromFile()
+static bool TryLoadSettingsFromFile(const SettingsSnapshot& current, SettingsSnapshot& updated)
 {
     try
     {
+        updated = current;
         PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::load_from_settings_file(L"GrabAndMove");
 
         if (auto v = values.get_bool_value(L"shouldAbsorbAlt"))
         {
-            g_shouldAbsorbAlt = *v;
+            updated.shouldAbsorbAlt = *v;
         }
 
         if (auto v = values.get_bool_value(L"showGeometry"))
         {
-            g_showGeometry = *v;
+            updated.showGeometry = *v;
         }
 
         if (auto v = values.get_bool_value(L"doNotActivateOnGameMode"))
         {
-            g_doNotActivateOnGameMode = *v;
+            updated.doNotActivateOnGameMode = *v;
         }
 
         if (auto v = values.get_bool_value(L"useAltResize"))
         {
-            g_useAltResize = *v;
+            updated.useAltResize = *v;
         }
 
         if (auto v = values.get_int_value(L"modifierKey"))
         {
-            g_modifierKey = (*v == 1) ? GrabAndMoveModifier::Win : GrabAndMoveModifier::Alt;
+            updated.modifierKey = (*v == 1) ? GrabAndMoveModifier::Win : GrabAndMoveModifier::Alt;
         }
 
         if (auto v = values.get_string_value(L"excluded_apps"))
@@ -362,38 +426,51 @@ static void LoadSettingsFromFile()
                 view.remove_prefix(pos);
             }
 
-            g_excludedApps.store(
-                std::make_shared<const std::vector<std::wstring>>(std::move(apps)));
-            // Invalidate the cache on the main thread to avoid a data race –
-            // g_excludedCache is an unordered_map accessed from the hook/main thread.
-            if (g_hMsgWnd)
-                PostMessage(g_hMsgWnd, WM_INVALIDATE_EXCLUDED_CACHE, 0, 0);
+            updated.excludedApps =
+                std::make_shared<const std::vector<std::wstring>>(std::move(apps));
         }
+
+        return true;
     }
     catch (...)
     {
-        // Keep defaults on error
+        return false;
     }
 }
 
-static void SettingsWatcherThread(DWORD mainThreadId)
+static void PublishPendingSettings(SettingsSnapshot settings)
 {
-    HANDLE events[2] = { g_hReloadSettingsEvent, g_hExitEvent };
-    DWORD eventCount = g_hExitEvent ? 2 : 1;
-
-    while (g_running)
     {
-        DWORD wait = WaitForMultipleObjects(eventCount, events, FALSE, 1000);
-        if (!g_running)
-            break;
+        std::scoped_lock lock(g_pendingSettingsMutex);
+        g_pendingSettings = std::move(settings);
+    }
+
+    PostMessage(g_hMsgWnd, WM_APPLY_SETTINGS, 0, 0);
+}
+
+static void SettingsWatcherThread(SettingsSnapshot current)
+{
+    HANDLE events[] = { g_hReloadSettingsEvent, g_hExitEvent, g_hStopSettingsEvent };
+
+    for (;;)
+    {
+        const DWORD wait = WaitForMultipleObjects(ARRAYSIZE(events), events, FALSE, INFINITE);
         if (wait == WAIT_OBJECT_0)
         {
-            LoadSettingsFromFile();
+            SettingsSnapshot updated;
+            if (TryLoadSettingsFromFile(current, updated))
+            {
+                current = updated;
+                PublishPendingSettings(std::move(updated));
+            }
         }
         else if (wait == WAIT_OBJECT_0 + 1)
         {
-            // Exit event signaled by the module interface
-            PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
+            PostMessage(g_hMsgWnd, WM_CLOSE, 0, 0);
+            break;
+        }
+        else
+        {
             break;
         }
     }
@@ -534,31 +611,30 @@ static void RenderOverlayContent(HWND hwnd, int cw, int ch)
     if (!hwnd || cw <= 0 || ch <= 0)
         return;
 
-    BITMAPINFO bmi        = {};
-    bmi.bmiHeader.biSize        = sizeof(BITMAPINFOHEADER);
-    bmi.bmiHeader.biWidth       = cw;
-    bmi.bmiHeader.biHeight      = -ch; // top-down so (0,0) is top-left
-    bmi.bmiHeader.biPlanes      = 1;
-    bmi.bmiHeader.biBitCount    = 32;
+    BITMAPINFO bmi = {};
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = cw;
+    bmi.bmiHeader.biHeight = -ch; // top-down so (0,0) is top-left
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
     bmi.bmiHeader.biCompression = BI_RGB;
 
     HDC screenDC = GetDC(nullptr);
     DWORD* pBits = nullptr;
-    HBITMAP hDib = CreateDIBSection(screenDC, &bmi, DIB_RGB_COLORS,
-                                    reinterpret_cast<void**>(&pBits), nullptr, 0);
+    HBITMAP hDib = CreateDIBSection(screenDC, &bmi, DIB_RGB_COLORS, reinterpret_cast<void**>(&pBits), nullptr, 0);
     if (!hDib)
     {
         ReleaseDC(nullptr, screenDC);
         return;
     }
 
-    HDC     memDC   = CreateCompatibleDC(screenDC);
+    HDC memDC = CreateCompatibleDC(screenDC);
     HBITMAP hOldBmp = static_cast<HBITMAP>(SelectObject(memDC, hDib));
 
     // Start fully transparent.
     memset(pBits, 0, static_cast<size_t>(cw) * ch * sizeof(DWORD));
 
-    // We apply a translucent white rect with a gold border. 
+    // We apply a translucent white rect with a gold border.
     // The overlay window spans GetWindowRect, so inset by
     // the invisible-border margins so both hug the visible edge; Always On Top draws
     // its own border just outside that edge, giving a clean double layer.
@@ -602,30 +678,27 @@ static void RenderOverlayContent(HWND hwnd, int cw, int ch)
         graphics.Flush();
     }
 
-    if (g_showGeometry)
+    if (g_settings.showGeometry)
     {
         wchar_t text[128];
-        swprintf_s(text, L"X: %d  Y: %d\nW: %d  H: %d",
-                   g_overlayInfoX, g_overlayInfoY, g_overlayInfoW, g_overlayInfoH);
+        swprintf_s(text, L"X: %d  Y: %d\nW: %d  H: %d", g_overlayInfoX, g_overlayInfoY, g_overlayInfoW, g_overlayInfoH);
 
-        HFONT hFont    = static_cast<HFONT>(GetStockObject(DEFAULT_GUI_FONT));
+        HFONT hFont = static_cast<HFONT>(GetStockObject(DEFAULT_GUI_FONT));
         HFONT hOldFont = static_cast<HFONT>(SelectObject(memDC, hFont));
 
         RECT textRect = {};
         DrawTextW(memDC, text, -1, &textRect, DT_CALCRECT | DT_CENTER | DT_NOPREFIX);
 
-        const int pad  = 10;
+        const int pad = 10;
         const int boxW = (textRect.right - textRect.left) + pad * 2;
         const int boxH = (textRect.bottom - textRect.top) + pad * 2;
-        RECT boxRect   = {cw / 2 - boxW / 2, ch / 2 - boxH / 2,
-                          cw / 2 + boxW / 2, ch / 2 + boxH / 2};
+        RECT boxRect = { cw / 2 - boxW / 2, ch / 2 - boxH / 2, cw / 2 + boxW / 2, ch / 2 + boxH / 2 };
 
         HBRUSH hBlack = CreateSolidBrush(RGB(0, 0, 0));
         FillRect(memDC, &boxRect, hBlack);
         DeleteObject(hBlack);
 
-        RECT textDrawRect = {boxRect.left + pad, boxRect.top + pad,
-                             boxRect.right - pad, boxRect.bottom - pad};
+        RECT textDrawRect = { boxRect.left + pad, boxRect.top + pad, boxRect.right - pad, boxRect.bottom - pad };
         SetTextColor(memDC, RGB(255, 255, 255));
         SetBkMode(memDC, TRANSPARENT);
         DrawTextW(memDC, text, -1, &textDrawRect, DT_CENTER | DT_NOPREFIX);
@@ -644,9 +717,9 @@ static void RenderOverlayContent(HWND hwnd, int cw, int ch)
                 pBits[y * cw + x] |= 0xFF000000u;
     }
 
-    SIZE          sz    = {cw, ch};
-    POINT         ptSrc = {0, 0};
-    BLENDFUNCTION blend = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
+    SIZE sz = { cw, ch };
+    POINT ptSrc = { 0, 0 };
+    BLENDFUNCTION blend = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
     UpdateLayeredWindow(hwnd, screenDC, nullptr, &sz, memDC, &ptSrc, 0, &blend, ULW_ALPHA);
 
     SelectObject(memDC, hOldBmp);
@@ -669,7 +742,10 @@ static void EnsureOverlayWindow()
         OVERLAY_CLASS_NAME,
         nullptr,
         WS_POPUP, // initially hidden (no WS_VISIBLE)
-        0, 0, 1, 1,
+        0,
+        0,
+        1,
+        1,
         nullptr,
         nullptr,
         g_hInstance,
@@ -694,8 +770,7 @@ static void ShowOverlay(const RECT& rc, HCURSOR hCursor)
     g_overlayRenderedW = 0; // force re-render
     g_overlayRenderedH = 0;
 
-    SetWindowPos(g_hOverlay, HWND_TOPMOST, rc.left, rc.top, w, h,
-                 SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    SetWindowPos(g_hOverlay, HWND_TOPMOST, rc.left, rc.top, w, h, SWP_NOACTIVATE | SWP_SHOWWINDOW);
     RenderOverlayContent(g_hOverlay, w, h);
 }
 
@@ -712,12 +787,11 @@ static void RepositionOverlay(int x, int y, int w, int h)
     g_overlayInfoW = w;
     g_overlayInfoH = h;
 
-    SetWindowPos(g_hOverlay, HWND_TOPMOST, x, y, w, h,
-        SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    SetWindowPos(g_hOverlay, HWND_TOPMOST, x, y, w, h, SWP_NOACTIVATE | SWP_SHOWWINDOW);
 
     // Re-render only when the size changed or geometry text needs updating
     bool sizeChanged = (w != g_overlayRenderedW || h != g_overlayRenderedH);
-    if (sizeChanged || g_showGeometry)
+    if (sizeChanged || g_settings.showGeometry)
     {
         RenderOverlayContent(g_hOverlay, w, h);
     }
@@ -731,11 +805,9 @@ static void HideOverlay()
     }
 }
 
-static void StopDragging()
+static void StopInteraction()
 {
-    g_dragging = false;
-    g_dragFirstMove = false;
-    g_dragTarget = nullptr;
+    g_interaction = {};
     HideOverlay();
 }
 
@@ -750,17 +822,17 @@ static ResizeHandle GetClosestHandle(POINT pt, const RECT& rc)
         int y;
         ResizeHandle h;
     } handles[] = {
-        {rc.left, rc.top, RESIZE_TOP_LEFT},
-        {cx, rc.top, RESIZE_TOP},
-        {rc.right, rc.top, RESIZE_TOP_RIGHT},
-        {rc.right, cy, RESIZE_RIGHT},
-        {rc.right, rc.bottom, RESIZE_BOTTOM_RIGHT},
-        {cx, rc.bottom, RESIZE_BOTTOM},
-        {rc.left, rc.bottom, RESIZE_BOTTOM_LEFT},
-        {rc.left, cy, RESIZE_LEFT},
+        { rc.left, rc.top, ResizeHandle::TopLeft },
+        { cx, rc.top, ResizeHandle::Top },
+        { rc.right, rc.top, ResizeHandle::TopRight },
+        { rc.right, cy, ResizeHandle::Right },
+        { rc.right, rc.bottom, ResizeHandle::BottomRight },
+        { cx, rc.bottom, ResizeHandle::Bottom },
+        { rc.left, rc.bottom, ResizeHandle::BottomLeft },
+        { rc.left, cy, ResizeHandle::Left },
     };
 
-    ResizeHandle closest = RESIZE_BOTTOM_RIGHT;
+    ResizeHandle closest = ResizeHandle::BottomRight;
     LONG minDist = (std::numeric_limits<LONG>::max)();
     for (auto& e : handles)
     {
@@ -780,42 +852,45 @@ static HCURSOR CursorForHandle(ResizeHandle handle)
 {
     switch (handle)
     {
-    case RESIZE_TOP_LEFT:
-    case RESIZE_BOTTOM_RIGHT:
+    case ResizeHandle::TopLeft:
+    case ResizeHandle::BottomRight:
         return g_curSizeNWSE;
-    case RESIZE_TOP_RIGHT:
-    case RESIZE_BOTTOM_LEFT:
+    case ResizeHandle::TopRight:
+    case ResizeHandle::BottomLeft:
         return g_curSizeNESW;
-    case RESIZE_TOP:
-    case RESIZE_BOTTOM:
+    case ResizeHandle::Top:
+    case ResizeHandle::Bottom:
         return g_curSizeNS;
-    case RESIZE_LEFT:
-    case RESIZE_RIGHT:
+    case ResizeHandle::Left:
+    case ResizeHandle::Right:
         return g_curSizeWE;
     default:
         return g_curSizeAll;
     }
 }
 
-static void StopResizing()
-{
-    g_resizing = false;
-    g_resizeFirstMove = false;
-    g_resizeTarget = nullptr;
-    g_currentHandle = RESIZE_NONE;
-    HideOverlay();
-}
-
-static void ReplayAbsorbedModifier(bool alsoKeyUp)
+static void ReplayCapturedModifier(ModifierReplay replay)
 {
     INPUT inputs[2] = {};
     inputs[0].type = INPUT_KEYBOARD;
-    inputs[0].ki.wVk = static_cast<WORD>(g_absorbedVk);
-    inputs[0].ki.wScan = static_cast<WORD>(g_absorbedScanCode);
-    inputs[0].ki.dwFlags = (g_absorbedFlags & LLKHF_EXTENDED) ? KEYEVENTF_EXTENDEDKEY : 0;
+    inputs[0].ki.wVk = static_cast<WORD>(g_modifierSession.key.vk);
+    inputs[0].ki.wScan = static_cast<WORD>(g_modifierSession.key.scanCode);
+    inputs[0].ki.dwFlags = (g_modifierSession.key.flags & LLKHF_EXTENDED) ? KEYEVENTF_EXTENDEDKEY : 0;
     inputs[1] = inputs[0];
     inputs[1].ki.dwFlags |= KEYEVENTF_KEYUP;
-    SendInput(alsoKeyUp ? 2 : 1, inputs, sizeof(INPUT));
+
+    switch (replay)
+    {
+    case ModifierReplay::DownOnly:
+        SendInput(1, &inputs[0], sizeof(INPUT));
+        break;
+    case ModifierReplay::UpOnly:
+        SendInput(1, &inputs[1], sizeof(INPUT));
+        break;
+    case ModifierReplay::DownAndUp:
+        SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+        break;
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -825,55 +900,97 @@ static void ReplayAbsorbedModifier(bool alsoKeyUp)
 // real drag/resize) or the button is released first (then the absorbed input is
 // replayed so the target application receives a normal modifier+click).
 // ---------------------------------------------------------------------------
-static void BeginDrag(HWND hwnd, POINT pt)
+static bool BeginInteraction(InteractionAction action, MouseButton button, HWND hwnd, POINT pt)
 {
-    g_dragging = true;
-    g_dragFirstMove = true;
-    g_dragConsumedAlt = true;
-    g_activatedDuringHold = true;
-    g_dragTarget = hwnd;
-    g_dragStart = pt;
-    GetWindowRect(hwnd, &g_dragWndRect);
+    RECT windowRect{};
+    if (!GetWindowRect(hwnd, &windowRect))
+    {
+        return false;
+    }
+
+    g_interaction.phase = InteractionPhase::Active;
+    g_interaction.action = action;
+    g_interaction.button = button;
+    g_interaction.target = hwnd;
+    g_interaction.startPoint = pt;
+    g_interaction.lastPoint = pt;
+    g_interaction.windowRect = windowRect;
+    g_interaction.firstUpdate = true;
+    g_interaction.resizeHandle = action == InteractionAction::Resize ? GetClosestHandle(pt, windowRect) : ResizeHandle::None;
+
+    g_modifierSession.consumed = true;
+    g_modifierSession.disposition = ModifierHoldDisposition::Activated;
+
     PrepareOverlayMetrics(hwnd);
-    ShowOverlay(g_dragWndRect, g_curSizeAll);
-    TraceShortcutUse(true, GrabAndMoveShortcutAction::Move, L"started");
+    ShowOverlay(
+        windowRect,
+        action == InteractionAction::Resize ? CursorForHandle(g_interaction.resizeHandle) : g_curSizeAll);
+    TraceShortcutUse(
+        true,
+        action == InteractionAction::Resize ? GrabAndMoveShortcutAction::Resize : GrabAndMoveShortcutAction::Move,
+        L"started");
+    return true;
 }
 
-static void BeginResize(HWND hwnd, POINT pt)
+static void ArmPendingInteraction(InteractionAction action, MouseButton button, HWND hwnd, POINT pt)
 {
-    g_resizing = true;
-    g_resizeFirstMove = true;
-    g_dragConsumedAlt = true;
-    g_activatedDuringHold = true;
-    g_resizeTarget = hwnd;
-    g_resizeLast = pt;
-    GetWindowRect(hwnd, &g_resizeWndRect);
-    PrepareOverlayMetrics(hwnd);
-    g_currentHandle = GetClosestHandle(pt, g_resizeWndRect);
-    ShowOverlay(g_resizeWndRect, CursorForHandle(g_currentHandle));
-    TraceShortcutUse(true, GrabAndMoveShortcutAction::Resize, L"started");
+    g_interaction = {};
+    g_interaction.phase = InteractionPhase::Pending;
+    g_interaction.action = action;
+    g_interaction.button = button;
+    g_interaction.target = hwnd;
+    g_interaction.startPoint = pt;
 }
 
 // Replays a modifier+click to the target: first the absorbed modifier key-down
 // (if it was swallowed), then the button click. The modifier key-up is not
 // synthesized here - the real key-up still reaches the target when the user
-// releases the modifier. The absorbed-modifier flags are intentionally left set so
-// the keyboard hook forwards that real key-up; g_pendingModifierReplayed guards
+// releases the modifier. The captured-modifier state is intentionally retained so
+// the keyboard hook forwards that real key-up; replayedDown guards
 // against replaying the key-down more than once (e.g. across repeated clicks).
-static void ReplayPendingClick(bool isRight)
+static void ReplayPendingClick(MouseButton button, bool completeModifier = false)
 {
-    if ((g_altAbsorbed || g_winAbsorbed) && !g_pendingModifierReplayed)
+    if (g_modifierSession.absorbed && !g_modifierSession.replayedDown)
     {
-        g_pendingModifierReplayed = true;
-        ReplayAbsorbedModifier(false); // modifier down only
+        g_modifierSession.replayedDown = true;
+        ReplayCapturedModifier(ModifierReplay::DownOnly);
     }
 
+    const bool isRight = button == MouseButton::Right;
     INPUT inputs[2] = {};
     inputs[0].type = INPUT_MOUSE;
     inputs[0].mi.dwFlags = isRight ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_LEFTDOWN;
     inputs[1].type = INPUT_MOUSE;
     inputs[1].mi.dwFlags = isRight ? MOUSEEVENTF_RIGHTUP : MOUSEEVENTF_LEFTUP;
     SendInput(2, inputs, sizeof(INPUT));
+
+    if (completeModifier && g_modifierSession.replayedDown)
+    {
+        ReplayCapturedModifier(ModifierReplay::UpOnly);
+        g_modifierSession = {};
+    }
+}
+
+static void MarkButtonUpForSwallow(MouseButton button)
+{
+    g_swallowButtonUpMask |= ButtonBit(button);
+}
+
+static bool ConsumeSwallowedButtonUp(MouseButton button)
+{
+    const unsigned int bit = ButtonBit(button);
+    if ((g_swallowButtonUpMask & bit) == 0)
+    {
+        return false;
+    }
+
+    g_swallowButtonUpMask &= ~bit;
+    return true;
+}
+
+static void ClearStaleSwallowedButtonUp(MouseButton button)
+{
+    g_swallowButtonUpMask &= ~ButtonBit(button);
 }
 
 // Called when the modifier is released while a press is still pending (button
@@ -881,61 +998,13 @@ static void ReplayPendingClick(bool isRight)
 // matching physical button-up that will arrive later.
 static void FlushPendingClickOnModifierRelease()
 {
-    if (g_pendingDrag)
+    if (g_interaction.phase == InteractionPhase::Pending)
     {
-        g_pendingDrag = false;
-        g_pendingTarget = nullptr;
-        ReplayPendingClick(false);
-        g_swallowNextLButtonUp = true;
+        const MouseButton button = g_interaction.button;
+        StopInteraction();
+        ReplayPendingClick(button);
+        MarkButtonUpForSwallow(button);
     }
-    else if (g_pendingResize)
-    {
-        g_pendingResize = false;
-        g_pendingTarget = nullptr;
-        ReplayPendingClick(true);
-        g_swallowNextRButtonUp = true;
-    }
-}
-
-// ---------------------------------------------------------------------------
-// System tray helpers
-// ---------------------------------------------------------------------------
-static NOTIFYICONDATAW g_nid = {};
-
-static void AddTrayIcon(HWND hwnd)
-{
-    g_nid.cbSize = sizeof(NOTIFYICONDATAW);
-    g_nid.hWnd = hwnd;
-    g_nid.uID = 1;
-    g_nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-    g_nid.uCallbackMessage = WM_TRAY_ICON;
-    g_nid.hIcon = LoadIconW(g_hInstance, MAKEINTRESOURCEW(IDI_APP_ICON));
-    wcscpy_s(g_nid.szTip, APP_TITLE);
-    Shell_NotifyIconW(NIM_ADD, &g_nid);
-}
-
-static void RemoveTrayIcon()
-{
-    Shell_NotifyIconW(NIM_DELETE, &g_nid);
-}
-
-static void ShowTrayMenu(HWND hwnd)
-{
-    HMENU hMenu = CreatePopupMenu();
-    if (!hMenu)
-        return;
-
-    AppendMenuW(hMenu, MF_STRING, IDM_EXIT, L"Exit");
-
-    POINT pt;
-    GetCursorPos(&pt);
-
-    // Required so the menu dismisses when clicking outside it
-    SetForegroundWindow(hwnd);
-    TrackPopupMenu(hMenu, TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwnd, nullptr);
-    PostMessageW(hwnd, WM_NULL, 0, 0);
-
-    DestroyMenu(hMenu);
 }
 
 static bool IsSystemClass(HWND hwnd)
@@ -970,7 +1039,6 @@ static bool IsSystemClass(HWND hwnd)
 
     return false;
 }
-
 
 std::wstring ToUpperInvariant(std::wstring_view input)
 {
@@ -1045,7 +1113,7 @@ static bool IsExcluded(HWND hwnd)
         }
     }
 
-    auto apps = g_excludedApps.load();
+    const auto& apps = g_settings.excludedApps;
     if (!apps || apps->empty())
         return false;
 
@@ -1077,207 +1145,229 @@ static bool IsExcluded(HWND hwnd)
 // ---------------------------------------------------------------------------
 // Hook callbacks
 // ---------------------------------------------------------------------------
-static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+static LRESULT CompleteHook(
+    HHOOK hook,
+    HookDisposition disposition,
+    int nCode,
+    WPARAM wParam,
+    LPARAM lParam)
 {
-    if (nCode >= 0)
+    ValidateInputState();
+
+#if defined(_DEBUG) && defined(GRABANDMOVE_TRACE_INPUT)
+    wchar_t trace[256]{};
+    swprintf_s(
+        trace,
+        L"GrabAndMove input=%llu modifier=%d hold=%d phase=%d action=%d buttonMask=%u disposition=%d\n",
+        static_cast<unsigned long long>(wParam),
+        static_cast<int>(g_modifierSession.modifier),
+        static_cast<int>(g_modifierSession.disposition),
+        static_cast<int>(g_interaction.phase),
+        static_cast<int>(g_interaction.action),
+        g_swallowButtonUpMask,
+        static_cast<int>(disposition));
+    OutputDebugStringW(trace);
+#endif
+
+    switch (disposition)
     {
-        auto* kb = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+    case HookDisposition::Swallow:
+        return 1;
+    case HookDisposition::PassWithoutChaining:
+        return 0;
+    case HookDisposition::Chain:
+    default:
+        return CallNextHookEx(hook, nCode, wParam, lParam);
+    }
+}
 
-        // Ignore injected events (includes our own replayed keys)
-        if (kb->flags & LLKHF_INJECTED)
-            goto forward;
+static constexpr bool IsKeyDownMessage(WPARAM message)
+{
+    return message == WM_KEYDOWN || message == WM_SYSKEYDOWN;
+}
 
-        // Skip processing if the foreground window is excluded
+static constexpr bool IsKeyUpMessage(WPARAM message)
+{
+    return message == WM_KEYUP || message == WM_SYSKEYUP;
+}
+
+static constexpr bool IsAltKey(DWORD vkCode)
+{
+    return vkCode == VK_MENU || vkCode == VK_LMENU || vkCode == VK_RMENU;
+}
+
+static constexpr bool IsWinKey(DWORD vkCode)
+{
+    return vkCode == VK_LWIN || vkCode == VK_RWIN;
+}
+
+static constexpr bool IsModifierKey(DWORD vkCode, GrabAndMoveModifier modifier)
+{
+    return modifier == GrabAndMoveModifier::Win ? IsWinKey(vkCode) : IsAltKey(vkCode);
+}
+
+static bool HasConflictingInput(GrabAndMoveModifier modifier)
+{
+    if ((GetAsyncKeyState(VK_CONTROL) & 0x8000) ||
+        (GetAsyncKeyState(VK_SHIFT) & 0x8000) ||
+        g_heldNonAltKeyCount > 0)
+    {
+        return true;
+    }
+
+    if (modifier == GrabAndMoveModifier::Win)
+    {
+        return (GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
+    }
+
+    return (GetAsyncKeyState(VK_LWIN) & 0x8000) ||
+           (GetAsyncKeyState(VK_RWIN) & 0x8000);
+}
+
+static void TrackHeldNonModifierKey(DWORD vkCode, WPARAM message)
+{
+    if (IsAltKey(vkCode) || IsWinKey(vkCode))
+    {
+        return;
+    }
+
+    const BYTE vk = static_cast<BYTE>(vkCode);
+    if (IsKeyDownMessage(message))
+    {
+        if (!g_keyHeld[vk])
         {
-            HWND fg = GetForegroundWindow();
-            if (fg && IsExcluded(fg))
-                goto forward;
+            g_keyHeld[vk] = true;
+            ++g_heldNonAltKeyCount;
         }
-
-        bool isAltKey = (kb->vkCode == VK_MENU || kb->vkCode == VK_LMENU || kb->vkCode == VK_RMENU);
-        bool isWinKey = (kb->vkCode == VK_LWIN || kb->vkCode == VK_RWIN);
-
-        // ----- Win key modifier handling -----
-        if (isWinKey && g_modifierKey == GrabAndMoveModifier::Win)
+    }
+    else if (IsKeyUpMessage(message) && g_keyHeld[vk])
+    {
+        g_keyHeld[vk] = false;
+        if (g_heldNonAltKeyCount > 0)
         {
-            if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)
-            {
-                if (IsSuppressedByGameMode())
-                    goto forward;
-                // Suppress if Ctrl, Alt, Shift, or any regular key is already held
-                if ((GetAsyncKeyState(VK_CONTROL) & 0x8000) ||
-                    (GetAsyncKeyState(VK_MENU) & 0x8000) ||
-                    (GetAsyncKeyState(VK_SHIFT) & 0x8000) ||
-                    g_heldNonAltKeyCount > 0)
-                {
-                    goto forward;
-                }
-                g_winPressed = true;
-                if (!g_winAbsorbed)
-                {
-                    g_winAbsorbed = true;
-                    g_dragConsumedAlt = false;
-                    g_pendingModifierReplayed = false;
-                    g_absorbedVk = kb->vkCode;
-                    g_absorbedScanCode = kb->scanCode;
-                    g_absorbedFlags = kb->flags;
-                }
-                return 1; // swallow Win keydown
-            }
-            else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
-            {
-                g_winPressed = false;
-                g_ignoreModifier = false;
-                g_activatedDuringHold = false;
-                // If a press was still pending (button held, no move), deliver it now.
-                FlushPendingClickOnModifierRelease();
-                bool wasDragging = g_dragging;
-                bool wasResizing = g_resizing;
-                EndInteraction(true, true);
-                if (g_winAbsorbed)
-                {
-                    g_winAbsorbed = false;
-                    if (wasDragging || wasResizing || g_dragConsumedAlt)
-                    {
-                        // Win was used for a drag/resize; swallow the keyup too
-                        g_dragConsumedAlt = false;
-                        return 1;
-                    }
-                    if (g_pendingModifierReplayed)
-                    {
-                        // The key-down was already replayed for a pending click; let the
-                        // real key-up reach the target (falls through to goto forward).
-                        g_pendingModifierReplayed = false;
-                    }
-                    else
-                    {
-                        // No drag happened; replay the keydown, THEN the keyup
-                        ReplayAbsorbedModifier(true);
-                        return 1; // swallow this keyup since the replay already sent one
-                    }
-                }
-            }
-            goto forward; // let Win keyup pass through
+            --g_heldNonAltKeyCount;
         }
+    }
+}
 
-        if (g_modifierKey == GrabAndMoveModifier::Alt)
+static HookDisposition ReleaseModifierSession()
+{
+    g_modifierSession.pressed = false;
+    FlushPendingClickOnModifierRelease();
+
+    const bool interactionConsumedModifier =
+        g_interaction.phase == InteractionPhase::Active || g_modifierSession.consumed;
+    if (g_interaction.phase == InteractionPhase::Active)
+    {
+        MarkButtonUpForSwallow(g_interaction.button);
+    }
+    StopInteraction();
+
+    HookDisposition disposition = HookDisposition::Chain;
+    if (g_modifierSession.absorbed)
+    {
+        if (interactionConsumedModifier)
         {
-            if (isAltKey)
+            disposition = HookDisposition::Swallow;
+        }
+        else if (!g_modifierSession.replayedDown)
+        {
+            if (g_modifierSession.modifier == GrabAndMoveModifier::Win)
             {
-                if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)
-                {
-                    if (IsSuppressedByGameMode())
-                    {
-                        goto forward;
-                    }
-                    // If any other modifier is already held (e.g. Ctrl in Ctrl+Alt+Del),
-                    // or any regular key is currently held (e.g. Q held before Alt),
-                    // don't intercept this Alt press – let it reach the target application.
-                    if ((GetAsyncKeyState(VK_CONTROL) & 0x8000) ||
-                        (GetAsyncKeyState(VK_SHIFT) & 0x8000) ||
-                        (GetAsyncKeyState(VK_LWIN) & 0x8000) ||
-                        (GetAsyncKeyState(VK_RWIN) & 0x8000) ||
-                        g_heldNonAltKeyCount > 0)
-                    {
-                        goto forward;
-                    }
-                    g_altPressed = true;
-                    if (g_shouldAbsorbAlt)
-                    {
-                        if (!g_altAbsorbed)
-                        {
-                            g_altAbsorbed = true;
-                            g_dragConsumedAlt = false;
-                            g_pendingModifierReplayed = false;
-                            g_absorbedVk = kb->vkCode;
-                            g_absorbedScanCode = kb->scanCode;
-                            g_absorbedFlags = kb->flags;
-                        }
-                        return 1; // swallow the Alt keydown
-                    }
-                }
-                else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
-                {
-                    g_altPressed = false;
-                    g_ignoreModifier = false;
-                    g_activatedDuringHold = false;
-                    // If a press was still pending (button held, no move), deliver it now.
-                    FlushPendingClickOnModifierRelease();
-                    bool wasDragging = g_dragging;
-                    bool wasResizing = g_resizing;
-                    EndInteraction(true, true);
-                    if (g_altAbsorbed)
-                    {
-                        g_altAbsorbed = false;
-                        if (wasDragging || wasResizing || g_dragConsumedAlt)
-                        {
-                            // Alt was used for a drag/resize; swallow the keyup too
-                            g_dragConsumedAlt = false;
-                            return 1;
-                        }
-                        if (g_pendingModifierReplayed)
-                        {
-                            // The key-down was already replayed for a pending click; let
-                            // the real key-up reach the target.
-                            g_pendingModifierReplayed = false;
-                        }
-                        else
-                        {
-                            // No drag happened; replay the keydown, then let keyup through
-                            ReplayAbsorbedModifier(false);
-                        }
-                    }
-                }
+                ReplayCapturedModifier(ModifierReplay::DownAndUp);
+                disposition = HookDisposition::Swallow;
             }
             else
             {
-                // Non-Alt key while Alt was absorbed without a drag: replay Alt first
-                if (g_altAbsorbed && !g_dragConsumedAlt && !g_pendingModifierReplayed)
-                {
-                    g_altAbsorbed = false;
-                    g_altPressed = false;
-                    ReplayAbsorbedModifier(false);
-                }
-            }
-        }
-
-        // Non-Win key while Win was absorbed without a drag: replay Win first
-        if (g_winAbsorbed && !g_dragConsumedAlt && !isWinKey && !g_pendingModifierReplayed)
-        {
-            g_winAbsorbed = false;
-            g_winPressed = false;
-            ReplayAbsorbedModifier(false);
-        }
-
-        // Track held non-modifier keys (used to suppress GrabAndMove when the modifier
-        // is pressed while another key is already down). Applies to both Alt and Win modes.
-        // Use per-vkCode tracking to detect initial press vs auto-repeat, since
-        // KBDLLHOOKSTRUCT::flags does not carry the KF_REPEAT bit.
-        if (!isAltKey && !isWinKey)
-        {
-            BYTE vk = static_cast<BYTE>(kb->vkCode);
-            if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)
-            {
-                if (!g_keyHeld[vk])
-                {
-                    g_keyHeld[vk] = true;
-                    ++g_heldNonAltKeyCount;
-                }
-            }
-            else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
-            {
-                if (g_keyHeld[vk])
-                {
-                    g_keyHeld[vk] = false;
-                    if (g_heldNonAltKeyCount > 0)
-                        --g_heldNonAltKeyCount;
-                }
+                ReplayCapturedModifier(ModifierReplay::DownOnly);
             }
         }
     }
 
-forward:
-    return CallNextHookEx(g_hhkKeyboard, nCode, wParam, lParam);
+    g_modifierSession = {};
+    return disposition;
+}
+
+static HookDisposition HandleKeyboardEvent(WPARAM message, const KBDLLHOOKSTRUCT& key)
+{
+    if (key.vkCode == g_swallowNextModifierUpVk)
+    {
+        if (IsKeyUpMessage(message))
+        {
+            g_swallowNextModifierUpVk = 0;
+            return HookDisposition::Swallow;
+        }
+
+        if (IsKeyDownMessage(message))
+        {
+            g_swallowNextModifierUpVk = 0;
+        }
+    }
+
+    if (HasModifierSession() && IsModifierKey(key.vkCode, g_modifierSession.modifier))
+    {
+        if (IsKeyDownMessage(message))
+        {
+            return g_modifierSession.absorbed ? HookDisposition::Swallow : HookDisposition::Chain;
+        }
+
+        if (IsKeyUpMessage(message))
+        {
+            return ReleaseModifierSession();
+        }
+    }
+
+    if (HasModifierSession() &&
+        !IsModifierKey(key.vkCode, g_modifierSession.modifier) &&
+        g_modifierSession.absorbed &&
+        !g_modifierSession.consumed &&
+        !g_modifierSession.replayedDown)
+    {
+        ReplayCapturedModifier(ModifierReplay::DownOnly);
+        g_modifierSession.absorbed = false;
+        g_modifierSession.pressed = false;
+        g_modifierSession.replayedDown = true;
+    }
+
+    TrackHeldNonModifierKey(key.vkCode, message);
+
+    if (!IsModifierKey(key.vkCode, g_settings.modifierKey) || !IsKeyDownMessage(message) || HasModifierSession())
+    {
+        return HookDisposition::Chain;
+    }
+
+    HWND foreground = GetForegroundWindow();
+    if ((foreground && IsExcluded(foreground)) ||
+        IsSuppressedByGameMode() ||
+        HasConflictingInput(g_settings.modifierKey))
+    {
+        return HookDisposition::Chain;
+    }
+
+    g_modifierSession = {};
+    g_modifierSession.modifier = g_settings.modifierKey;
+    g_modifierSession.pressed = true;
+    g_modifierSession.absorbed =
+        g_settings.modifierKey == GrabAndMoveModifier::Win || g_settings.shouldAbsorbAlt;
+    g_modifierSession.key = { key.vkCode, key.scanCode, key.flags };
+
+    return g_modifierSession.absorbed ? HookDisposition::Swallow : HookDisposition::Chain;
+}
+
+static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    if (nCode < 0)
+    {
+        return CallNextHookEx(g_hhkKeyboard, nCode, wParam, lParam);
+    }
+
+    const auto& key = *reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+    if (key.flags & LLKHF_INJECTED)
+    {
+        return CallNextHookEx(g_hhkKeyboard, nCode, wParam, lParam);
+    }
+
+    return CompleteHook(g_hhkKeyboard, HandleKeyboardEvent(wParam, key), nCode, wParam, lParam);
 }
 
 static HWND ResolveTargetWindow(POINT pt)
@@ -1334,238 +1424,271 @@ static HWND ResolveTargetWindow(POINT pt)
 static void HandleDragMove(POINT pt);
 static void HandleDragResize(POINT pt);
 
-static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
+static constexpr MouseButton ButtonFromDownMessage(WPARAM message)
 {
-    if (nCode >= 0)
+    if (message == WM_LBUTTONDOWN)
     {
-        auto* ms = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
+        return MouseButton::Left;
+    }
+    if (message == WM_RBUTTONDOWN)
+    {
+        return MouseButton::Right;
+    }
+    return MouseButton::None;
+}
 
-        // Ignore injected events to avoid feedback loops
-        if (ms->flags & LLMHF_INJECTED)
-            goto forward;
+static constexpr MouseButton ButtonFromUpMessage(WPARAM message)
+{
+    if (message == WM_LBUTTONUP)
+    {
+        return MouseButton::Left;
+    }
+    if (message == WM_RBUTTONUP)
+    {
+        return MouseButton::Right;
+    }
+    return MouseButton::None;
+}
 
-        // Deliver-as-click bookkeeping: swallow the physical button-up that matches a
-        // press we already replayed to the target on modifier release.
-        if (wParam == WM_LBUTTONUP && g_swallowNextLButtonUp)
+static constexpr InteractionAction ActionForButton(MouseButton button)
+{
+    return button == MouseButton::Right ? InteractionAction::Resize : InteractionAction::Move;
+}
+
+static HookDisposition HandleActionButtonDown(MouseButton button, POINT point)
+{
+    const InteractionAction action = ActionForButton(button);
+
+    if (g_interaction.phase == InteractionPhase::Active)
+    {
+        if (button != g_interaction.button)
         {
-            g_swallowNextLButtonUp = false;
-            return 1;
+            MarkButtonUpForSwallow(button);
         }
-        if (wParam == WM_RBUTTONUP && g_swallowNextRButtonUp)
+        return HookDisposition::Swallow;
+    }
+
+    if (IsSuppressedByGameMode())
+    {
+        TraceShortcutUse(
+            false,
+            action == InteractionAction::Resize ? GrabAndMoveShortcutAction::Resize : GrabAndMoveShortcutAction::Move,
+            L"game_mode");
+        return HookDisposition::Chain;
+    }
+
+    HWND target = ResolveTargetWindow(point);
+    if (!target || IsExcluded(target))
+    {
+        return HookDisposition::Chain;
+    }
+
+    if (action == InteractionAction::Resize &&
+        !(GetWindowLongW(target, GWL_STYLE) & WS_THICKFRAME))
+    {
+        return HookDisposition::Chain;
+    }
+
+    if (g_modifierSession.disposition == ModifierHoldDisposition::Activated)
+    {
+        return BeginInteraction(action, button, target, point) ? HookDisposition::Swallow : HookDisposition::Chain;
+    }
+
+    if (g_interaction.phase == InteractionPhase::Pending)
+    {
+        return HookDisposition::Chain;
+    }
+
+    ArmPendingInteraction(action, button, target, point);
+    return HookDisposition::Swallow;
+}
+
+static void RecoverStaleInteraction(MouseButton incomingButton)
+{
+    if (g_interaction.phase == InteractionPhase::Idle)
+    {
+        return;
+    }
+
+    const MouseButton button = g_interaction.button;
+    if (g_interaction.phase == InteractionPhase::Pending)
+    {
+        StopInteraction();
+        ReplayPendingClick(button, true);
+    }
+    else
+    {
+        StopInteraction();
+    }
+
+    if (incomingButton != button)
+    {
+        MarkButtonUpForSwallow(button);
+    }
+}
+
+static HookDisposition HandleMouseEvent(WPARAM message, const MSLLHOOKSTRUCT& mouse)
+{
+    const MouseButton upButton = ButtonFromUpMessage(message);
+    if (upButton != MouseButton::None && ConsumeSwallowedButtonUp(upButton))
+    {
+        return HookDisposition::Swallow;
+    }
+
+    const MouseButton downButton = ButtonFromDownMessage(message);
+    if (downButton != MouseButton::None)
+    {
+        // A new down means a previously expected up for this button was lost.
+        ClearStaleSwallowedButtonUp(downButton);
+    }
+
+    if (downButton != MouseButton::None && !IsActivationModifierPressed())
+    {
+        RecoverStaleInteraction(downButton);
+    }
+
+    if (g_interaction.phase == InteractionPhase::Idle &&
+        g_hOverlay &&
+        IsWindowVisible(g_hOverlay))
+    {
+        HideOverlay();
+    }
+
+    if (downButton != MouseButton::None && IsActivationModifierPressed())
+    {
+        if (downButton == MouseButton::Right &&
+            g_interaction.phase != InteractionPhase::Active &&
+            !g_settings.useAltResize)
         {
-            g_swallowNextRButtonUp = false;
-            return 1;
+            return HookDisposition::Chain;
+        }
+        return HandleActionButtonDown(downButton, mouse.pt);
+    }
+
+    if (message == WM_MOUSEMOVE && g_interaction.phase == InteractionPhase::Pending)
+    {
+        int dx = mouse.pt.x - g_interaction.startPoint.x;
+        int dy = mouse.pt.y - g_interaction.startPoint.y;
+        if (dx < 0)
+        {
+            dx = -dx;
+        }
+        if (dy < 0)
+        {
+            dy = -dy;
         }
 
-        // Recovery path: if a non-modifier click occurs while stale drag/resize/pending state exists, clear it.
-        if ((wParam == WM_LBUTTONDOWN || wParam == WM_RBUTTONDOWN) && !IsActivationModifierPressed())
+        if (dx >= GetSystemMetrics(SM_CXDRAG) || dy >= GetSystemMetrics(SM_CYDRAG))
         {
-            g_pendingDrag = false;
-            g_pendingResize = false;
-            g_pendingTarget = nullptr;
-            g_pendingModifierReplayed = false;
-            EndInteraction(true, true);
-        }
-
-        if (!g_dragging && !g_resizing && g_hOverlay && IsWindowVisible(g_hOverlay))
-        {
-            HideOverlay();
-        }
-
-        // ----- Modifier + Left Button Down: arm a pending drag (deferred until move) -----
-        if (wParam == WM_LBUTTONDOWN && IsActivationModifierPressed())
-        {
-            if (IsSuppressedByGameMode())
+            const InteractionState pending = g_interaction;
+            StopInteraction();
+            if (BeginInteraction(
+                    pending.action,
+                    pending.button,
+                    pending.target,
+                    pending.startPoint))
             {
-                TraceShortcutUse(false, GrabAndMoveShortcutAction::Move, L"game_mode");
-                goto forward;
-            }
-            POINT pt = ms->pt;
-            HWND hwnd = ResolveTargetWindow(pt);
-            if (hwnd)
-            {
-                // Don't drag excluded windows (desktop, taskbar, user-excluded apps)
-                if (IsExcluded(hwnd))
+                if (pending.action == InteractionAction::Resize)
                 {
-                    goto forward;
-                }
-
-                // Already committed to Grab and Move this hold: start dragging immediately.
-                if (g_activatedDuringHold)
-                {
-                    BeginDrag(hwnd, pt);
-                    return 1; // swallow the press; the drag is now active
-                }
-
-                // A press is already pending (the other button is still held): don't
-                // overwrite it. Forward this one so we never strand the already-swallowed
-                // button-down (which would leak an unmatched button-up to the target).
-                if (g_pendingDrag || g_pendingResize)
-                {
-                    goto forward;
-                }
-
-                // Defer: absorb the button-down but do nothing until the cursor moves.
-                g_pendingDrag = true;
-                g_pendingResize = false;
-                g_pendingTarget = hwnd;
-                g_pendingDownPt = pt;
-                return 1; // swallow the press for now; replayed on release if no move
-            }
-        }
-
-        // ----- Promote a pending press to a real drag/resize once past the threshold -----
-        if (wParam == WM_MOUSEMOVE && (g_pendingDrag || g_pendingResize))
-        {
-            int ddx = ms->pt.x - g_pendingDownPt.x;
-            int ddy = ms->pt.y - g_pendingDownPt.y;
-            if (ddx < 0) ddx = -ddx;
-            if (ddy < 0) ddy = -ddy;
-            if (ddx >= GetSystemMetrics(SM_CXDRAG) || ddy >= GetSystemMetrics(SM_CYDRAG))
-            {
-                bool wasResize = g_pendingResize;
-                HWND target = g_pendingTarget;
-                POINT downPt = g_pendingDownPt;
-                g_pendingDrag = false;
-                g_pendingResize = false;
-                g_pendingTarget = nullptr;
-
-                if (wasResize)
-                {
-                    BeginResize(target, downPt);
-                    HandleDragResize(ms->pt);
+                    HandleDragResize(mouse.pt);
                 }
                 else
                 {
-                    BeginDrag(target, downPt);
-                    HandleDragMove(ms->pt);
+                    HandleDragMove(mouse.pt);
                 }
             }
-            return 0; // keep the cursor moving while waiting for the threshold
-        }
-
-        // ----- Mouse Move while dragging -----
-        if (wParam == WM_MOUSEMOVE && g_dragging && g_dragTarget)
-        {
-            ULONGLONG now = QpcMs();
-            if (now - g_lastMoveTick >= THROTTLE_INTERVAL_MS)
+            else
             {
-                g_lastMoveTick = now;
-                HandleDragMove(ms->pt);
-            }
-            return 0;
-        }
-
-        // ----- Left Button Up while a drag is pending (no move): deliver the click -----
-        if (wParam == WM_LBUTTONUP && g_pendingDrag)
-        {
-            g_ignoreModifier = true;
-            g_pendingDrag = false;
-            g_pendingTarget = nullptr;
-            ReplayPendingClick(false);
-            return 1; // swallow the physical up; the injected click replaces it
-        }
-
-        // ----- Left Button Up: end drag -----
-        if (wParam == WM_LBUTTONUP && g_dragging)
-        {
-            // Flush final position (may have been throttled)
-            POINT pt = ms->pt;
-            int dx = pt.x - g_dragStart.x;
-            int dy = pt.y - g_dragStart.y;
-            int newX = g_dragWndRect.left + dx;
-            int newY = g_dragWndRect.top + dy;
-            int w = g_dragWndRect.right - g_dragWndRect.left;
-            int h = g_dragWndRect.bottom - g_dragWndRect.top;
-            SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
-            EndInteraction(true, false);
-            return 1; // swallow the release
-        }
-
-        // ----- Modifier + Right Button Down: arm a pending resize (deferred until move) -----
-        if (wParam == WM_RBUTTONDOWN && g_useAltResize && IsActivationModifierPressed())
-        {
-            if (IsSuppressedByGameMode())
-            {
-                TraceShortcutUse(false, GrabAndMoveShortcutAction::Resize, L"game_mode");
-                goto forward;
-            }
-            POINT pt = ms->pt;
-            HWND hwnd = ResolveTargetWindow(pt);
-            if (hwnd)
-            {
-                if (IsExcluded(hwnd))
-                {
-                    goto forward;
-                }
-
-                // Only allow resize if the window style permits resizing
-                if (!(GetWindowLongW(hwnd, GWL_STYLE) & WS_THICKFRAME))
-                {
-                    goto forward;
-                }
-
-                // Already committed to Grab and Move this hold: start resizing immediately.
-                if (g_activatedDuringHold)
-                {
-                    BeginResize(hwnd, pt);
-                    return 1; // swallow the press; the resize is now active
-                }
-
-                // A press is already pending (the other button is still held): don't
-                // overwrite it. Forward this one so we never strand the already-swallowed
-                // button-down (which would leak an unmatched button-up to the target).
-                if (g_pendingDrag || g_pendingResize)
-                {
-                    goto forward;
-                }
-
-                // Defer: absorb the button-down but do nothing until the cursor moves.
-                g_pendingResize = true;
-                g_pendingDrag = false;
-                g_pendingTarget = hwnd;
-                g_pendingDownPt = pt;
-                return 1; // swallow the press for now; replayed on release if no move
+                g_modifierSession.disposition = ModifierHoldDisposition::Passthrough;
+                ReplayPendingClick(pending.button);
+                MarkButtonUpForSwallow(pending.button);
             }
         }
-
-        // ----- Mouse Move while resizing -----
-        if (wParam == WM_MOUSEMOVE && g_resizing && g_resizeTarget)
-        {
-            ULONGLONG now = QpcMs();
-            if (now - g_lastMoveTick >= THROTTLE_INTERVAL_MS)
-            {
-                g_lastMoveTick = now;
-                HandleDragResize(ms->pt);
-            }
-            return 0;
-        }
-
-        // ----- Right Button Up while a resize is pending (no move): deliver the click -----
-        if (wParam == WM_RBUTTONUP && g_pendingResize)
-        {
-            g_ignoreModifier = true;
-            g_pendingResize = false;
-            g_pendingTarget = nullptr;
-            ReplayPendingClick(true);
-            return 1; // swallow the physical up; the injected click replaces it
-        }
-
-        // ----- Right Button Up: end resize -----
-        if (wParam == WM_RBUTTONUP && g_resizing)
-        {
-            // Flush final size (may have been throttled)
-            RECT nr = g_resizeWndRect;
-            int w = nr.right - nr.left;
-            int h = nr.bottom - nr.top;
-            SetWindowPos(g_resizeTarget, nullptr, nr.left, nr.top, w, h, SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
-            EndInteraction(false, true);
-            return 1; // swallow the right button release
-        }
+        return HookDisposition::PassWithoutChaining;
     }
 
-forward:
-    return CallNextHookEx(g_hhkMouse, nCode, wParam, lParam);
+    if (message == WM_MOUSEMOVE && g_interaction.phase == InteractionPhase::Active)
+    {
+        const ULONGLONG now = QpcMs();
+        if (now - g_lastMoveTick >= THROTTLE_INTERVAL_MS)
+        {
+            g_lastMoveTick = now;
+            if (g_interaction.action == InteractionAction::Resize)
+            {
+                HandleDragResize(mouse.pt);
+            }
+            else
+            {
+                HandleDragMove(mouse.pt);
+            }
+        }
+        return HookDisposition::PassWithoutChaining;
+    }
+
+    if (upButton != MouseButton::None &&
+        upButton == g_interaction.button &&
+        g_interaction.phase == InteractionPhase::Pending)
+    {
+        g_modifierSession.disposition = ModifierHoldDisposition::Passthrough;
+        const MouseButton button = g_interaction.button;
+        StopInteraction();
+        ReplayPendingClick(button);
+        return HookDisposition::Swallow;
+    }
+
+    if (upButton != MouseButton::None &&
+        upButton == g_interaction.button &&
+        g_interaction.phase == InteractionPhase::Active)
+    {
+        if (g_interaction.action == InteractionAction::Move)
+        {
+            const int dx = mouse.pt.x - g_interaction.startPoint.x;
+            const int dy = mouse.pt.y - g_interaction.startPoint.y;
+            const int newX = g_interaction.windowRect.left + dx;
+            const int newY = g_interaction.windowRect.top + dy;
+            SetWindowPos(
+                g_interaction.target,
+                nullptr,
+                newX,
+                newY,
+                0,
+                0,
+                SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+        }
+        else
+        {
+            const RECT& rect = g_interaction.windowRect;
+            SetWindowPos(
+                g_interaction.target,
+                nullptr,
+                rect.left,
+                rect.top,
+                rect.right - rect.left,
+                rect.bottom - rect.top,
+                SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+        }
+
+        StopInteraction();
+        return HookDisposition::Swallow;
+    }
+
+    return HookDisposition::Chain;
+}
+
+static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    if (nCode < 0)
+    {
+        return CallNextHookEx(g_hhkMouse, nCode, wParam, lParam);
+    }
+
+    const auto& mouse = *reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
+    if (mouse.flags & LLMHF_INJECTED)
+    {
+        return CallNextHookEx(g_hhkMouse, nCode, wParam, lParam);
+    }
+
+    return CompleteHook(g_hhkMouse, HandleMouseEvent(wParam, mouse), nCode, wParam, lParam);
 }
 
 // ---------------------------------------------------------------------------
@@ -1574,177 +1697,226 @@ forward:
 // ---------------------------------------------------------------------------
 static void HandleDragMove(POINT pt)
 {
-    if (!g_dragging || !g_dragTarget)
+    if (g_interaction.phase != InteractionPhase::Active ||
+        g_interaction.action != InteractionAction::Move ||
+        !g_interaction.target)
+    {
         return;
+    }
 
     // On the first move, restore maximized windows
-    if (g_dragFirstMove)
+    if (g_interaction.firstUpdate)
     {
-        g_dragFirstMove = false;
-        if (IsZoomed(g_dragTarget))
+        g_interaction.firstUpdate = false;
+        if (IsZoomed(g_interaction.target))
         {
-            RECT maxRect;
-            GetWindowRect(g_dragTarget, &maxRect);
+            RECT maxRect{};
+            GetWindowRect(g_interaction.target, &maxRect);
             int maxW = maxRect.right - maxRect.left;
             int maxH = maxRect.bottom - maxRect.top;
 
-            ShowWindow(g_dragTarget, SW_RESTORE);
+            ShowWindow(g_interaction.target, SW_RESTORE);
 
-            GetWindowRect(g_dragTarget, &g_dragWndRect);
-            int restoredW = g_dragWndRect.right - g_dragWndRect.left;
-            int restoredH = g_dragWndRect.bottom - g_dragWndRect.top;
+            GetWindowRect(g_interaction.target, &g_interaction.windowRect);
+            int restoredW = g_interaction.windowRect.right - g_interaction.windowRect.left;
+            int restoredH = g_interaction.windowRect.bottom - g_interaction.windowRect.top;
 
             // Preserve the relative grab position in both axes so the cursor stays
             // at the same proportional spot within the restored window.
-            float ratioL = (maxW > 0) ? static_cast<float>(g_dragStart.x - maxRect.left) / maxW : 0.5f;
-            float ratioT = (maxH > 0) ? static_cast<float>(g_dragStart.y - maxRect.top) / maxH : 0.5f;
-            int newX = g_dragStart.x - static_cast<int>(restoredW * ratioL);
-            int newY = g_dragStart.y - static_cast<int>(restoredH * ratioT);
-            SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0,
-                         SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+            float ratioL = (maxW > 0) ? static_cast<float>(g_interaction.startPoint.x - maxRect.left) / maxW : 0.5f;
+            float ratioT = (maxH > 0) ? static_cast<float>(g_interaction.startPoint.y - maxRect.top) / maxH : 0.5f;
+            int newX = g_interaction.startPoint.x - static_cast<int>(restoredW * ratioL);
+            int newY = g_interaction.startPoint.y - static_cast<int>(restoredH * ratioT);
+            SetWindowPos(g_interaction.target, nullptr, newX, newY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
 
-            g_dragStart = pt;
-            g_dragWndRect = {newX, newY, newX + restoredW, newY + restoredH};
+            g_interaction.startPoint = pt;
+            g_interaction.windowRect = { newX, newY, newX + restoredW, newY + restoredH };
 
             // Corner radius / invisible-border margins differ once restored.
-            PrepareOverlayMetrics(g_dragTarget);
+            PrepareOverlayMetrics(g_interaction.target);
         }
     }
 
-    int dx = pt.x - g_dragStart.x;
-    int dy = pt.y - g_dragStart.y;
-    int newX = g_dragWndRect.left + dx;
-    int newY = g_dragWndRect.top + dy;
-    int w = g_dragWndRect.right - g_dragWndRect.left;
-    int h = g_dragWndRect.bottom - g_dragWndRect.top;
+    int dx = pt.x - g_interaction.startPoint.x;
+    int dy = pt.y - g_interaction.startPoint.y;
+    int newX = g_interaction.windowRect.left + dx;
+    int newY = g_interaction.windowRect.top + dy;
+    int w = g_interaction.windowRect.right - g_interaction.windowRect.left;
+    int h = g_interaction.windowRect.bottom - g_interaction.windowRect.top;
 
     // Move target + overlay (separate SetWindowPos – DeferWindowPos doesn't
     // work reliably for cross-process target windows)
-    SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0,
-                 SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+    SetWindowPos(g_interaction.target, nullptr, newX, newY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
     RepositionOverlay(newX, newY, w, h);
 }
 
 static void HandleDragResize(POINT pt)
 {
-    if (!g_resizing || !g_resizeTarget)
+    if (g_interaction.phase != InteractionPhase::Active ||
+        g_interaction.action != InteractionAction::Resize ||
+        !g_interaction.target)
+    {
         return;
+    }
 
     // On the first resize, restore maximized windows
-    if (g_resizeFirstMove)
+    if (g_interaction.firstUpdate)
     {
-        g_resizeFirstMove = false;
-        if (IsZoomed(g_resizeTarget))
+        g_interaction.firstUpdate = false;
+        if (IsZoomed(g_interaction.target))
         {
-            RECT maxRect = g_resizeWndRect;
+            RECT maxRect = g_interaction.windowRect;
             int maxW = maxRect.right - maxRect.left;
             int maxH = maxRect.bottom - maxRect.top;
 
             float ratioL = (maxW > 0) ? static_cast<float>(pt.x - maxRect.left) / maxW : 0.5f;
             float ratioT = (maxH > 0) ? static_cast<float>(pt.y - maxRect.top) / maxH : 0.5f;
 
-            ShowWindow(g_resizeTarget, SW_RESTORE);
-            GetWindowRect(g_resizeTarget, &g_resizeWndRect);
+            ShowWindow(g_interaction.target, SW_RESTORE);
+            GetWindowRect(g_interaction.target, &g_interaction.windowRect);
 
-            int newW = g_resizeWndRect.right - g_resizeWndRect.left;
-            int newH = g_resizeWndRect.bottom - g_resizeWndRect.top;
+            int newW = g_interaction.windowRect.right - g_interaction.windowRect.left;
+            int newH = g_interaction.windowRect.bottom - g_interaction.windowRect.top;
 
             int newLeft = pt.x - static_cast<int>(ratioL * newW);
             int newTop = pt.y - static_cast<int>(ratioT * newH);
-            SetWindowPos(g_resizeTarget, nullptr, newLeft, newTop, newW, newH,
-                         SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
-            g_resizeWndRect = {newLeft, newTop, newLeft + newW, newTop + newH};
+            SetWindowPos(g_interaction.target, nullptr, newLeft, newTop, newW, newH, SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+            g_interaction.windowRect = { newLeft, newTop, newLeft + newW, newTop + newH };
 
             // Corner radius / invisible-border margins differ once restored.
-            PrepareOverlayMetrics(g_resizeTarget);
+            PrepareOverlayMetrics(g_interaction.target);
 
-            g_resizeLast = pt;
-            g_currentHandle = GetClosestHandle(pt, g_resizeWndRect);
+            g_interaction.lastPoint = pt;
+            g_interaction.resizeHandle = GetClosestHandle(pt, g_interaction.windowRect);
         }
     }
 
-    int dx = pt.x - g_resizeLast.x;
-    int dy = pt.y - g_resizeLast.y;
+    int dx = pt.x - g_interaction.lastPoint.x;
+    int dy = pt.y - g_interaction.lastPoint.y;
 
     // Re-evaluate closest handle as the cursor moves
-    ResizeHandle newHandle = GetClosestHandle(pt, g_resizeWndRect);
-    if (newHandle != g_currentHandle)
+    ResizeHandle newHandle = GetClosestHandle(pt, g_interaction.windowRect);
+    if (newHandle != g_interaction.resizeHandle)
     {
-        g_currentHandle = newHandle;
-        HCURSOR hCur = CursorForHandle(g_currentHandle);
+        g_interaction.resizeHandle = newHandle;
+        HCURSOR hCur = CursorForHandle(g_interaction.resizeHandle);
         SetClassLongPtrW(g_hOverlay, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(hCur));
         SetCursor(hCur);
     }
 
     // Apply delta to the edges indicated by the current handle
-    RECT nr = g_resizeWndRect;
-    switch (g_currentHandle)
+    RECT nr = g_interaction.windowRect;
+    switch (g_interaction.resizeHandle)
     {
-    case RESIZE_TOP_LEFT:     nr.left += dx; nr.top += dy; break;
-    case RESIZE_TOP:          nr.top += dy; break;
-    case RESIZE_TOP_RIGHT:    nr.right += dx; nr.top += dy; break;
-    case RESIZE_RIGHT:        nr.right += dx; break;
-    case RESIZE_BOTTOM_RIGHT: nr.right += dx; nr.bottom += dy; break;
-    case RESIZE_BOTTOM:       nr.bottom += dy; break;
-    case RESIZE_BOTTOM_LEFT:  nr.left += dx; nr.bottom += dy; break;
-    case RESIZE_LEFT:         nr.left += dx; break;
-    default: break;
+    case ResizeHandle::TopLeft:
+        nr.left += dx;
+        nr.top += dy;
+        break;
+    case ResizeHandle::Top:
+        nr.top += dy;
+        break;
+    case ResizeHandle::TopRight:
+        nr.right += dx;
+        nr.top += dy;
+        break;
+    case ResizeHandle::Right:
+        nr.right += dx;
+        break;
+    case ResizeHandle::BottomRight:
+        nr.right += dx;
+        nr.bottom += dy;
+        break;
+    case ResizeHandle::Bottom:
+        nr.bottom += dy;
+        break;
+    case ResizeHandle::BottomLeft:
+        nr.left += dx;
+        nr.bottom += dy;
+        break;
+    case ResizeHandle::Left:
+        nr.left += dx;
+        break;
+    default:
+        break;
     }
 
     // Enforce minimum window size
-    bool leftMoving = (g_currentHandle == RESIZE_TOP_LEFT || g_currentHandle == RESIZE_BOTTOM_LEFT || g_currentHandle == RESIZE_LEFT);
-    bool topMoving = (g_currentHandle == RESIZE_TOP_LEFT || g_currentHandle == RESIZE_TOP || g_currentHandle == RESIZE_TOP_RIGHT);
+    bool leftMoving =
+        g_interaction.resizeHandle == ResizeHandle::TopLeft ||
+        g_interaction.resizeHandle == ResizeHandle::BottomLeft ||
+        g_interaction.resizeHandle == ResizeHandle::Left;
+    bool topMoving =
+        g_interaction.resizeHandle == ResizeHandle::TopLeft ||
+        g_interaction.resizeHandle == ResizeHandle::Top ||
+        g_interaction.resizeHandle == ResizeHandle::TopRight;
 
     if (nr.right - nr.left < MIN_WINDOW_WIDTH)
     {
-        if (leftMoving) nr.left = nr.right - MIN_WINDOW_WIDTH;
-        else            nr.right = nr.left + MIN_WINDOW_WIDTH;
+        if (leftMoving)
+            nr.left = nr.right - MIN_WINDOW_WIDTH;
+        else
+            nr.right = nr.left + MIN_WINDOW_WIDTH;
     }
     if (nr.bottom - nr.top < MIN_WINDOW_HEIGHT)
     {
-        if (topMoving) nr.top = nr.bottom - MIN_WINDOW_HEIGHT;
-        else           nr.bottom = nr.top + MIN_WINDOW_HEIGHT;
+        if (topMoving)
+            nr.top = nr.bottom - MIN_WINDOW_HEIGHT;
+        else
+            nr.bottom = nr.top + MIN_WINDOW_HEIGHT;
     }
 
-    g_resizeWndRect = nr;
-    g_resizeLast = pt;
+    g_interaction.windowRect = nr;
+    g_interaction.lastPoint = pt;
 
     int w = nr.right - nr.left;
     int h = nr.bottom - nr.top;
 
     // Move target + overlay (separate SetWindowPos – DeferWindowPos doesn't
     // work reliably for cross-process target windows)
-    SetWindowPos(g_resizeTarget, nullptr, nr.left, nr.top, w, h,
-                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+    SetWindowPos(g_interaction.target, nullptr, nr.left, nr.top, w, h, SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
     RepositionOverlay(nr.left, nr.top, w, h);
 }
+
+static void ApplyPendingSettings()
+{
+    std::optional<SettingsSnapshot> settings;
+    {
+        std::scoped_lock lock(g_pendingSettingsMutex);
+        settings.swap(g_pendingSettings);
+    }
+
+    if (!settings)
+    {
+        return;
+    }
+
+    const bool geometryChanged = settings->showGeometry != g_settings.showGeometry;
+    g_settings = std::move(*settings);
+    g_excludedCache.clear();
+
+    if (geometryChanged &&
+        g_hOverlay &&
+        IsWindowVisible(g_hOverlay) &&
+        g_overlayInfoW > 0 &&
+        g_overlayInfoH > 0)
+    {
+        RenderOverlayContent(g_hOverlay, g_overlayInfoW, g_overlayInfoH);
+    }
+}
+
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
-    case WM_INVALIDATE_EXCLUDED_CACHE:
-        g_excludedCache.clear();
+    case WM_APPLY_SETTINGS:
+        ApplyPendingSettings();
         return 0;
 
-    case WM_TRAY_ICON:
-        if (LOWORD(lParam) == WM_RBUTTONUP)
-        {
-            ShowTrayMenu(hwnd);
-        }
-        return 0;
-
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDM_EXIT)
-        {
-            PostQuitMessage(0);
-        }
+    case WM_CLOSE:
+        DestroyWindow(hwnd);
         return 0;
 
     case WM_DESTROY:
-        if (!g_systemSessionEnding)
-        {
-            RemoveTrayIcon();
-        }
         PostQuitMessage(0);
         return 0;
     }
@@ -1762,7 +1934,6 @@ static LRESULT CALLBACK OverlayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
     case WM_ENDSESSION:
         if (wParam)
         {
-            g_systemSessionEnding = !(lParam & ENDSESSION_CLOSEAPP);
             PostQuitMessage(0);
         }
         return 0;
@@ -1774,18 +1945,93 @@ static LRESULT CALLBACK OverlayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 // ---------------------------------------------------------------------------
 // Entry point
 // ---------------------------------------------------------------------------
-const std::wstring instanceMutexName = L"Local\\PowerToys_GrabAndMove_InstanceMutex";
+static constexpr wchar_t INSTANCE_MUTEX_NAME[] = L"Local\\PowerToys_GrabAndMove_InstanceMutex";
+
+static void CleanupRuntime()
+{
+    if (g_hStopSettingsEvent)
+    {
+        SetEvent(g_hStopSettingsEvent);
+    }
+    if (g_settingsThread.joinable())
+    {
+        g_settingsThread.join();
+    }
+
+    if (g_hhkKeyboard)
+    {
+        UnhookWindowsHookEx(g_hhkKeyboard);
+        g_hhkKeyboard = nullptr;
+    }
+    if (g_hhkMouse)
+    {
+        UnhookWindowsHookEx(g_hhkMouse);
+        g_hhkMouse = nullptr;
+    }
+    if (g_hWinEventHook)
+    {
+        UnhookWinEvent(g_hWinEventHook);
+        g_hWinEventHook = nullptr;
+    }
+
+    if (g_hOverlay)
+    {
+        DestroyWindow(g_hOverlay);
+        g_hOverlay = nullptr;
+    }
+    if (g_hMsgWnd)
+    {
+        if (IsWindow(g_hMsgWnd))
+        {
+            DestroyWindow(g_hMsgWnd);
+        }
+        g_hMsgWnd = nullptr;
+    }
+
+    if (g_hReloadSettingsEvent)
+    {
+        CloseHandle(g_hReloadSettingsEvent);
+        g_hReloadSettingsEvent = nullptr;
+    }
+    if (g_hExitEvent)
+    {
+        CloseHandle(g_hExitEvent);
+        g_hExitEvent = nullptr;
+    }
+    if (g_hStopSettingsEvent)
+    {
+        CloseHandle(g_hStopSettingsEvent);
+        g_hStopSettingsEvent = nullptr;
+    }
+    if (g_hInstanceMutex)
+    {
+        CloseHandle(g_hInstanceMutex);
+        g_hInstanceMutex = nullptr;
+    }
+
+    if (g_gdiplusToken)
+    {
+        Gdiplus::GdiplusShutdown(g_gdiplusToken);
+        g_gdiplusToken = 0;
+    }
+    if (g_traceRegistered)
+    {
+        TraceLoggingUnregister(g_hProvider);
+        g_traceRegistered = false;
+    }
+}
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 {
     g_hInstance = hInstance;
     TraceLoggingRegister(g_hProvider);
+    g_traceRegistered = true;
 
     // Prevent multiple instances
-    auto mutex = CreateMutexW(nullptr, TRUE, instanceMutexName.c_str());
-    if (GetLastError() == ERROR_ALREADY_EXISTS)
+    g_hInstanceMutex = CreateMutexW(nullptr, TRUE, INSTANCE_MUTEX_NAME);
+    if (!g_hInstanceMutex || GetLastError() == ERROR_ALREADY_EXISTS)
     {
-        TraceLoggingUnregister(g_hProvider);
+        CleanupRuntime();
         return 1;
     }
 
@@ -1794,40 +2040,43 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     if (pid.empty())
     {
         MessageBoxW(nullptr, L"GrabAndMove can't run as a standalone. Start it from PowerToys.", L"GrabAndMove", MB_ICONERROR);
-        TraceLoggingUnregister(g_hProvider);
+        CleanupRuntime();
         return 1;
     }
 
-    auto mainThreadId = GetCurrentThreadId();
-    ProcessWaiter::OnProcessTerminate(pid, [mainThreadId](int err) {
-        if (err != ERROR_SUCCESS)
-        {
-            // Failed to wait for parent process exit
-        }
-        PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
-    });
-
-    // Load initial settings from JSON before anything else
-    LoadSettingsFromFile();
-
-    // Open the named event for settings reload notifications
-    g_hReloadSettingsEvent = CreateEventW(nullptr, FALSE, FALSE, GRABANDMOVE_REFRESH_SETTINGS_EVENT);
-
-    // Open the named event for exit signal from the module interface
-    g_hExitEvent = CreateEventW(nullptr, FALSE, FALSE, GRABANDMOVE_EXIT_EVENT);
-
-    if (g_hReloadSettingsEvent)
+    SettingsSnapshot initialSettings;
+    if (TryLoadSettingsFromFile(g_settings, initialSettings))
     {
-        g_settingsThread = std::thread(SettingsWatcherThread, mainThreadId);
+        g_settings = std::move(initialSettings);
     }
 
-    // Ensure common controls are initialised (for Shell_NotifyIcon)
-    INITCOMMONCONTROLSEX commonControls = { sizeof(commonControls), ICC_STANDARD_CLASSES };
-    InitCommonControlsEx(&commonControls);
+    // Open the named event for settings reload notifications
+    g_hReloadSettingsEvent = CreateEventW(
+        nullptr,
+        FALSE,
+        FALSE,
+        CommonSharedConstants::GRABANDMOVE_REFRESH_SETTINGS_EVENT);
+
+    // Open the named event for exit signal from the module interface
+    g_hExitEvent = CreateEventW(
+        nullptr,
+        FALSE,
+        FALSE,
+        CommonSharedConstants::GRABANDMOVE_EXIT_EVENT);
+    g_hStopSettingsEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    if (!g_hReloadSettingsEvent || !g_hExitEvent || !g_hStopSettingsEvent)
+    {
+        CleanupRuntime();
+        return 1;
+    }
 
     // Initialise GDI+ for antialiased overlay border rendering
     Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-    Gdiplus::GdiplusStartup(&g_gdiplusToken, &gdiplusStartupInput, nullptr);
+    if (Gdiplus::GdiplusStartup(&g_gdiplusToken, &gdiplusStartupInput, nullptr) != Gdiplus::Ok)
+    {
+        CleanupRuntime();
+        return 1;
+    }
 
     // Register a message-only window class
     WNDCLASSEXW wc = {};
@@ -1837,7 +2086,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     wc.lpszClassName = CLASS_NAME;
     if (!RegisterClassExW(&wc))
     {
-        TraceLoggingUnregister(g_hProvider);
+        CleanupRuntime();
         return 1;
     }
 
@@ -1851,7 +2100,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     overlayWindowClass.lpszClassName = OVERLAY_CLASS_NAME;
     if (!RegisterClassExW(&overlayWindowClass))
     {
-        TraceLoggingUnregister(g_hProvider);
+        CleanupRuntime();
         return 1;
     }
 
@@ -1859,7 +2108,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     g_hMsgWnd = CreateWindowExW(0, CLASS_NAME, APP_TITLE, 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, hInstance, nullptr);
     if (!g_hMsgWnd)
     {
-        TraceLoggingUnregister(g_hProvider);
+        CleanupRuntime();
         return 1;
     }
 
@@ -1868,17 +2117,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     EnsureOverlayWindow();
     if (!g_hOverlay)
     {
-        DestroyWindow(g_hMsgWnd);
-        TraceLoggingUnregister(g_hProvider);
+        CleanupRuntime();
         return 1;
     }
 
     // Pre-load system cursors (fix #6 – avoid LoadCursorW in hot path)
-    g_curSizeAll  = LoadCursorW(nullptr, IDC_SIZEALL);
+    g_curSizeAll = LoadCursorW(nullptr, IDC_SIZEALL);
     g_curSizeNWSE = LoadCursorW(nullptr, IDC_SIZENWSE);
     g_curSizeNESW = LoadCursorW(nullptr, IDC_SIZENESW);
-    g_curSizeWE   = LoadCursorW(nullptr, IDC_SIZEWE);
-    g_curSizeNS   = LoadCursorW(nullptr, IDC_SIZENS);
+    g_curSizeWE = LoadCursorW(nullptr, IDC_SIZEWE);
+    g_curSizeNS = LoadCursorW(nullptr, IDC_SIZENS);
 
     // Install global low-level hooks
     g_hhkKeyboard = SetWindowsHookExW(WH_KEYBOARD_LL, KeyboardProc, hInstance, 0);
@@ -1886,8 +2134,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 
     // Detect foreground switches to elevated processes (where key-up events stop arriving)
     g_hWinEventHook = SetWinEventHook(
-        EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND,
-        nullptr, WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+        EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, nullptr, WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 
     if (!g_hhkKeyboard || !g_hhkMouse)
     {
@@ -1897,64 +2144,46 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
             L"Try running as Administrator.",
             APP_TITLE,
             MB_ICONERROR | MB_OK);
-        if (g_hhkKeyboard)
-            UnhookWindowsHookEx(g_hhkKeyboard);
-        if (g_hhkMouse)
-            UnhookWindowsHookEx(g_hhkMouse);
-        TraceLoggingUnregister(g_hProvider);
+        CleanupRuntime();
         return 1;
     }
 
-    // This is a good place to add system tray icon with AddTrayIcon(g_hMsgWnd);
+    try
+    {
+        g_settingsThread = std::thread(SettingsWatcherThread, g_settings);
+    }
+    catch (...)
+    {
+        CleanupRuntime();
+        return 1;
+    }
+
+    const HWND messageWindow = g_hMsgWnd;
+    ProcessWaiter::OnProcessTerminate(pid, [messageWindow](DWORD) {
+        PostMessage(messageWindow, WM_CLOSE, 0, 0);
+    });
 
     // Message loop – required for low-level hooks to function
-    MSG msg;
-    while (GetMessageW(&msg, nullptr, 0, 0) > 0)
+    MSG msg{};
+    int exitCode = 0;
+    for (;;)
     {
+        const BOOL result = GetMessageW(&msg, nullptr, 0, 0);
+        if (result == 0)
+        {
+            exitCode = static_cast<int>(msg.wParam);
+            break;
+        }
+        if (result == -1)
+        {
+            exitCode = 1;
+            break;
+        }
+
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
     }
 
-    // Cleanup
-    g_running = false;
-    if (g_hReloadSettingsEvent)
-    {
-        SetEvent(g_hReloadSettingsEvent); // wake the thread so it exits
-    }
-    if (g_settingsThread.joinable())
-    {
-        g_settingsThread.join();
-    }
-    if (g_hReloadSettingsEvent)
-    {
-        CloseHandle(g_hReloadSettingsEvent);
-    }
-    if (g_hExitEvent)
-    {
-        CloseHandle(g_hExitEvent);
-    }
-    UnhookWindowsHookEx(g_hhkKeyboard);
-    UnhookWindowsHookEx(g_hhkMouse);
-    if (g_hWinEventHook)
-    {
-        UnhookWinEvent(g_hWinEventHook);
-    }
-    // Destroy persistent overlay window (fix #9)
-    if (g_hOverlay)
-    {
-        DestroyWindow(g_hOverlay);
-        g_hOverlay = nullptr;
-    }
-    if (!g_systemSessionEnding)
-    {
-        RemoveTrayIcon();
-    }
-    if (g_gdiplusToken)
-    {
-        Gdiplus::GdiplusShutdown(g_gdiplusToken);
-        g_gdiplusToken = 0;
-    }
-    TraceLoggingUnregister(g_hProvider);
-
-    return static_cast<int>(msg.wParam);
+    CleanupRuntime();
+    return exitCode;
 }
