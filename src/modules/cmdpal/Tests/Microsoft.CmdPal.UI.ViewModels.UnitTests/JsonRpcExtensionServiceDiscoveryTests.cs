@@ -136,8 +136,8 @@ public class JsonRpcExtensionServiceDiscoveryTests
     [TestMethod]
     public void IsExtensionPresentOnDisk_ReportsPresentDirectory()
     {
-        // A crash-disabled or corrupt install leaves the directory on disk even when the provider
-        // never loaded. Present-on-disk detection is what lets the gallery still offer Uninstall.
+        // A crash disabled or corrupt install can leave the directory on disk even when the provider
+        // never loaded. Disk detection keeps Uninstall available.
         var present = Path.Combine(_root, "present-but-unloaded");
         Directory.CreateDirectory(present);
 

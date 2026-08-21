@@ -10,8 +10,8 @@ namespace Microsoft.CmdPal.UI.ViewModels.Services;
 
 /// <summary>
 /// The reason an <see cref="NpmArtifact"/> failed validation. The installer maps each value to a
-/// localized, user-facing message; keeping the reason as an enum keeps validation free of any
-/// presentation concern and lets tests assert the exact failure.
+/// localized message. Keeping the reason as an enum keeps validation free of UI concerns and gives
+/// tests one exact failure to assert.
 /// </summary>
 public enum NpmArtifactValidationError
 {
@@ -27,7 +27,7 @@ public enum NpmArtifactValidationError
     /// <summary>The version is missing.</summary>
     VersionMissing,
 
-    /// <summary>The version is not an exact semantic version (a range or dist-tag was supplied).</summary>
+    /// <summary>The version is not an exact semantic version (a range or dist tag was supplied).</summary>
     VersionInvalid,
 
     /// <summary>The integrity value is missing.</summary>
@@ -41,33 +41,31 @@ public enum NpmArtifactValidationError
 }
 
 /// <summary>
-/// An immutable, validated description of the npm artifact the gallery is allowed to install. The
-/// only way to obtain one is through <see cref="TryCreate"/>, so any instance is guaranteed to carry
-/// a package name that matches the npm grammar, an exact version (never a range or dist-tag), a
-/// sha512 Subresource Integrity value, and, when present, an approved HTTPS registry. The npm install
-/// spec is always the literal "name@version" and can never be read as a flag, path, URL, git ref, or
-/// tarball.
+/// A validated description of the npm package the gallery may install. Instances only come from
+/// <see cref="TryCreate"/>, so callers get npm grammar, an exact version, a sha512 Subresource
+/// Integrity value, and an approved HTTPS registry when one is supplied. The install spec is the
+/// literal "name@version", not a flag, path, URL, git ref, or tarball.
 /// </summary>
 public sealed class NpmArtifact
 {
-    // The default public npm registry. When a catalog entry omits a registry this host is used
-    // implicitly by npm; when it specifies one it must be on this allowlist.
+    // The default public npm registry. If the catalog omits a registry, npm uses this host
+    // implicitly. If it specifies one, the host must be on this allowlist.
     private static readonly HashSet<string> ApprovedRegistryHosts = new(StringComparer.OrdinalIgnoreCase)
     {
         "registry.npmjs.org",
     };
 
-    // npm package name grammar (RFC-ish): an optional @scope/ prefix, then a name segment. Each
-    // segment starts with an ASCII letter or digit and otherwise allows only letters, digits, and
-    // the '.', '_', '-' characters. This forbids whitespace, path separators, ':', '#', and a
-    // leading '-' or '@' in the name segment, so the value can never be a path, URL, git ref, or flag.
+    // npm package name grammar: optional @scope/ prefix, then a name segment. Each segment starts
+    // with an ASCII letter or digit and otherwise allows only letters, digits, '.', '_', and '-'.
+    // This blocks whitespace, path separators, ':', '#', and a leading '-' or '@' in the name
+    // segment, so the value cannot become a path, URL, git ref, or flag.
     private static readonly Regex PackageNameRegex = new(
         "^(?:@[a-z0-9][a-z0-9._-]*/)?[a-z0-9][a-z0-9._-]*$",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
-    // Exact semantic version: major.minor.patch with optional pre-release and build metadata. Range
-    // operators (^, ~, >, <, =, *, x, ||, -) and dist-tags (such as "latest") do not match, so only a
-    // single concrete version is ever accepted.
+    // Exact semantic version: major.minor.patch with optional prerelease and build metadata. Range
+    // operators (^, ~, >, <, =, *, x, ||, -) and dist tags such as "latest" do not match, so only one
+    // concrete version is accepted.
     private static readonly Regex ExactVersionRegex = new(
         @"^\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?(?:\+[0-9A-Za-z][0-9A-Za-z.-]*)?$",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
@@ -96,7 +94,7 @@ public sealed class NpmArtifact
     /// <summary>Gets the sha512 Subresource Integrity value of the approved tarball.</summary>
     public string Integrity { get; }
 
-    /// <summary>Gets the approved canonical registry origin ("https://host/"), or null to use the machine default.</summary>
+    /// <summary>Gets the approved canonical registry origin ("https://host/"), or null to use npm's machine default.</summary>
     public string? Registry { get; }
 
     /// <summary>
@@ -107,8 +105,8 @@ public sealed class NpmArtifact
     public string InstallSpec => $"{Package}@{Version}";
 
     /// <summary>
-    /// Validates the parts of an approved artifact and, on success, returns an immutable
-    /// <see cref="NpmArtifact"/>. Fails closed: any missing or malformed part yields a specific
+    /// Validates the parts of an approved artifact and returns an immutable <see cref="NpmArtifact"/>
+    /// when they pass. Any missing or malformed part fails closed with a specific
     /// <see cref="NpmArtifactValidationError"/> and no artifact.
     /// </summary>
     /// <param name="package">The npm package name.</param>
@@ -200,11 +198,9 @@ public sealed class NpmArtifact
             return false;
         }
 
-        // A registry value is later passed to npm as the "--registry" argument. Restricting it to a
-        // canonical origin (scheme, host, and nothing else) closes the door on a value that smuggles
-        // shell metacharacters or extra request parts through a userinfo, port, path, query, or
-        // fragment. Anything richer than "https://<approved-host>/" is rejected, and the value that is
-        // stored is reconstructed from the host alone rather than echoing the caller's raw string.
+        // npm later receives this value as the "--registry" argument. Keep it to a canonical origin
+        // so userinfo, ports, paths, query strings, fragments, and shell metacharacters cannot ride
+        // along. Store a rebuilt value from the host instead of echoing the caller's raw string.
         var pathIsRoot = uri.AbsolutePath.Length == 0 || uri.AbsolutePath == "/";
         var isCanonicalOrigin =
             string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
@@ -226,11 +222,9 @@ public sealed class NpmArtifact
 
     /// <summary>
     /// Determines whether <paramref name="url"/> is an absolute HTTPS URL served by an approved
-    /// registry host. Unlike <see cref="TryCanonicalizeRegistry"/> this accepts any path, because a
-    /// resolved tarball URL in a lockfile carries the package path (for example
-    /// "https://registry.npmjs.org/left-pad/-/left-pad-1.3.0.tgz"). Used by the lockfile-integrity
-    /// gate to reject a dependency resolved from file:, git:, http:, or any host that is not on the
-    /// allowlist.
+    /// registry host. Unlike <see cref="TryCanonicalizeRegistry"/>, this accepts package paths from
+    /// lockfiles (for example, "https://registry.npmjs.org/left-pad/-/left-pad-1.3.0.tgz"). The
+    /// lockfile check uses it to reject file:, git:, http:, and any host outside the allowlist.
     /// </summary>
     internal static bool IsRegistrySourcedHttps(string? url)
     {
@@ -245,8 +239,7 @@ public sealed class NpmArtifact
 
     /// <summary>
     /// Determines whether <paramref name="integrity"/> is a supported sha512 Subresource Integrity
-    /// value. Used by the lockfile-integrity gate to reject a dependency that npm resolved without an
-    /// integrity hash.
+    /// value. The lockfile check uses it to reject dependencies without an integrity hash.
     /// </summary>
     internal static bool IsSupportedIntegrity(string? integrity) =>
         !string.IsNullOrWhiteSpace(integrity) && IntegrityRegex.IsMatch(integrity.Trim());

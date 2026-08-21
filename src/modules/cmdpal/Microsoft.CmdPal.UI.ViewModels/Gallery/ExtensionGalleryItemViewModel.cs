@@ -58,8 +58,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
     private readonly Uri? _authorPageHttpUri;
     private readonly Uri? _installLinkHttpUri;
 
-    // Drives the cancel affordance for an in-flight jsonrpc install or uninstall. Non-null only while
-    // an operation is running.
+    // Backs Cancel while a jsonrpc install or uninstall is running.
     private CancellationTokenSource? _jsonRpcActionCts;
 
     public ExtensionGalleryItemViewModel(
@@ -86,9 +85,8 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
         var resolvedIconUri = ResolveIconUri();
         IconUri = resolvedIconUri ?? PlaceholderIconUri;
 
-        // Derive the installed state for a jsonrpc gallery item from the host truth (a validated,
-        // loadable manifest) rather than the catalog, so reopening the gallery shows Uninstall for
-        // packages that are actually installed and blocks reinstalling into an active directory.
+        // Seed jsonrpc install state from the host, not the catalog. That keeps Uninstall visible for
+        // packages that are installed and blocks reinstall into an active directory.
         if (_jsExtensionInstaller is not null && HasJsonRpcSource)
         {
             if (_jsExtensionInstaller.IsInstalled(Id))
@@ -521,7 +519,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
         }
         catch (ObjectDisposedException)
         {
-            // The operation completed and disposed the source between the guard and here; nothing to do.
+            // The operation finished and disposed the source after the guard but before Cancel.
         }
 
         JsonRpcActionMessage = Resources.gallery_item_jsonrpc_action_canceling;

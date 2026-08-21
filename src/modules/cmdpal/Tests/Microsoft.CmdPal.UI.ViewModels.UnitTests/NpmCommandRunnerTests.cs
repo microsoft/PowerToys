@@ -48,7 +48,7 @@ public class NpmCommandRunnerTests
 
         var args = NpmCommandRunner.BuildPackArguments(artifact!, "C:\\stage\\pack").ToArray();
 
-        // The spec token (second argument) must never begin with '-', so npm cannot read it as a flag.
+        // The spec token must not begin with '-', or npm could read it as a flag.
         Assert.IsFalse(args[1].StartsWith('-'));
     }
 
@@ -77,8 +77,8 @@ public class NpmCommandRunnerTests
         CollectionAssert.Contains(args, "--no-fund");
         CollectionAssert.Contains(args, "--loglevel=error");
 
-        // npm ci installs the frozen closure named in the shrinkwrap; it must never carry a package
-        // spec or version, because doing so would re-open range resolution at install time.
+        // npm ci installs the frozen closure named in the shrinkwrap. Do not pass a package spec or
+        // version, because that would open range resolution again.
         CollectionAssert.DoesNotContain(args, artifact!.InstallSpec);
         CollectionAssert.DoesNotContain(args, "install");
         CollectionAssert.DoesNotContain(args, "--save-exact");
@@ -108,7 +108,7 @@ public class NpmCommandRunnerTests
     [TestMethod]
     public void RequirePublisherShrinkwrap_ReturnsError_WhenShrinkwrapMissing()
     {
-        // Fail closed: a package that only ships a package.json but no frozen closure is rejected.
+        // Fail closed when a package ships package.json but no frozen closure.
         var packageRoot = CreateTempDirectory();
         File.WriteAllText(Path.Combine(packageRoot, "package.json"), "{\"name\":\"x\",\"version\":\"1.0.0\"}");
         File.WriteAllText(Path.Combine(packageRoot, "package-lock.json"), "{}");
@@ -153,9 +153,9 @@ public class NpmCommandRunnerTests
     [TestMethod]
     public void TryExtractPackage_ExtractsPublishedRoot_WithEmbeddedShrinkwrap()
     {
-        // Build a real npm-style tarball (gzip tar rooted under "package/") that embeds a shrinkwrap,
-        // then prove the runner unpacks it so the published package becomes the root project and the
-        // shrinkwrap gate can see the frozen closure. No network is involved.
+        // Build a real npm tarball (gzip tar rooted under "package/") with a shrinkwrap, then prove
+        // the runner makes the published package the root project so the gate can see the frozen
+        // closure. No network needed.
         var dir = CreateTempDirectory();
         var tarball = Path.Combine(dir, "sample.tgz");
         WriteNpmTarball(tarball, new[]
@@ -195,8 +195,8 @@ public class NpmCommandRunnerTests
     [TestMethod]
     public void VerifyLockfileIntegrity_ReadsPublisherShrinkwrap_WhenNoPackageLock()
     {
-        // Only the shrinkwrap is present (as it would be after npm ci consumes it). The trusted
-        // URL + SRI gate must read it and accept a fully pinned, registry-sourced closure.
+        // Only the shrinkwrap is present, as it would be after npm ci consumes it. The trusted URL and
+        // SRI gate must accept a fully pinned closure from the registry.
         var dir = CreateTempDirectory();
         var shrinkwrap = """
         {
@@ -258,8 +258,8 @@ public class NpmCommandRunnerTests
         {
             var removed = runner.RemoveDirectory(junction);
 
-            // The runner must refuse to recurse through the reparse point, and the real target's
-            // contents must be untouched.
+            // The runner must refuse to recurse through the reparse point, and the real target must stay
+            // untouched.
             Assert.IsFalse(removed);
             Assert.IsTrue(File.Exists(sentinel));
         }
@@ -279,7 +279,7 @@ public class NpmCommandRunnerTests
     [TestMethod]
     public void ResolveNpmInvocation_UsesNodeExeAndNpmCliJs_NotNpmCmd()
     {
-        // Lay out a fake Node.js install: node.exe on PATH with npm-cli.js under its node_modules.
+        // Lay out a fake Node.js install: node.exe on PATH with npm-cli.js under node_modules.
         var nodeDir = CreateTempDirectory();
         var nodeExe = Path.Combine(nodeDir, "node.exe");
         File.WriteAllText(nodeExe, "binary");
@@ -410,8 +410,8 @@ public class NpmCommandRunnerTests
     }
 
     /// <summary>
-    /// Writes a gzip-compressed tar archive (the format npm publishes) containing the given entries,
-    /// so extraction can be exercised without any network access.
+    /// Writes a gzip compressed tar archive in npm's published format so extraction can be tested
+    /// without network access.
     /// </summary>
     private static void WriteNpmTarball(string tarballPath, (string Name, string Content)[] entries)
     {

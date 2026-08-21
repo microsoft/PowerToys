@@ -14,15 +14,11 @@ using Microsoft.CmdPal.UI.ViewModels.Properties;
 namespace Microsoft.CmdPal.UI.ViewModels.Services;
 
 /// <summary>
-/// Installs and uninstalls gallery jsonrpc extensions as a fail-closed transaction over an
-/// immutable, approved artifact. The package, exact version, integrity, and optional registry are
-/// validated up front; the runner downloads the exact tarball, requires the publisher-provided
-/// npm-shrinkwrap.json that freezes the whole dependency closure, and installs that frozen closure
-/// with npm ci into a unique staging directory outside the watched JSExtensions root with lifecycle
-/// scripts disabled; the resolved integrity, package identity, and manifest are verified; and only
-/// then is the extension atomically promoted into JSExtensions/&lt;name&gt;/ and awaited for host
-/// registration. Staging is always cleaned up, and a failed, timed-out, or cancelled install never
-/// deletes or corrupts an existing install.
+/// Installs and uninstalls gallery jsonrpc extensions as a transaction around an approved artifact.
+/// The installer validates the catalog data, stages the package outside JSExtensions, asks the runner
+/// to install the frozen dependency tree, verifies identity and integrity, promotes the ready tree,
+/// and waits for host registration. Staging is cleaned every time. Failed, timed out, and canceled
+/// installs leave any existing install alone.
 /// </summary>
 public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
 {
@@ -32,8 +28,8 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
     private readonly IJsExtensionHost _host;
     private readonly INpmCommandRunner _npmCommandRunner;
 
-    // Per-canonical-directory locks so an install and an uninstall of the same extension are
-    // serialized while different extensions install in parallel.
+    // Per directory locks keep install and uninstall for the same extension serialized while
+    // different extensions can still install in parallel.
     private readonly Dictionary<string, SemaphoreSlim> _directoryLocks = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, int> _lockReferenceCounts = new(StringComparer.OrdinalIgnoreCase);
     private readonly Lock _directoryLocksGate = new();
@@ -54,7 +50,7 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
             return JsExtensionInstallResult.Fail(Resources.npm_installer_invalid_name);
         }
 
-        // Fail closed: an incomplete or malformed catalog entry is never installable.
+        // Fail closed. An incomplete or malformed catalog entry is never installable.
         if (!NpmArtifact.TryCreate(npmPackage, version, integrity, registry, out var artifact, out var validationError)
             || artifact is null)
         {
@@ -104,14 +100,12 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
             await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                // Terminate the Node.js process and wait for its handles to be released before
-                // deleting; the Phase 4 StopExtension blocks until the process has exited. The token
-                // lets Cancel abandon a wait for a contended lifecycle gate.
+                // Stop the Node.js process before delete so file handles are released. StopExtension
+                // blocks until the process exits, and the token lets Cancel stop waiting on a busy gate.
                 _host.StopExtension(targetDirectory, cancellationToken);
 
-                // RemoveDirectory refuses to follow a junction or symbolic link out of the root and
-                // retries briefly to tolerate a handle that is still being released. The token stops
-                // the retry loop so Cancel is honored between attempts.
+                // RemoveDirectory refuses to follow a junction or symbolic link and retries briefly when
+                // handles are still closing. The token stops the retry loop between attempts.
                 if (!_npmCommandRunner.RemoveDirectory(targetDirectory, cancellationToken))
                 {
                     Logger.LogError($"Uninstall of JS extension '{extensionName}' failed: could not delete {targetDirectory}.");
@@ -140,9 +134,8 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
 
     private async Task<JsExtensionInstallResult> InstallLockedAsync(string extensionName, string targetDirectory, NpmArtifact artifact, CancellationToken cancellationToken)
     {
-        // Upgrade policy: block installing over an existing or loaded extension. The user uninstalls
-        // and reinstalls to change versions, which guarantees an existing install is never touched by
-        // a failed upgrade.
+        // Upgrade policy: do not install over an existing or loaded extension. The user uninstalls and
+        // reinstalls to change versions, so a failed upgrade cannot damage a working install.
         if (Directory.Exists(targetDirectory) || _host.IsExtensionInstalled(extensionName))
         {
             return JsExtensionInstallResult.Fail(Resources.npm_installer_already_installed);
@@ -175,9 +168,8 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
                 return JsExtensionInstallResult.Fail(Resources.npm_installer_not_an_extension);
             }
 
-            // Validate that this is the approved package and version, and that it is a loadable
-            // CmdPal manifest (the parser enforces the entry point, the .js/.mjs/.cjs allowlist, and
-            // reparse/canonical containment).
+            // Validate that this is the approved package and version, with a manifest the host can load.
+            // The parser enforces the entry point, extension allowlist, and canonical containment.
             var manifestPath = Path.Combine(packageDirectory, "package.json");
             var parseResult = JSExtensionManifest.TryParseFile(manifestPath);
             if (!parseResult.IsValid || parseResult.Manifest is null)
@@ -199,17 +191,16 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
                 return JsExtensionInstallResult.Fail(Resources.npm_installer_version_mismatch);
             }
 
-            // The extracted package root already has the discovery layout npm ci produced: package.json
-            // at the root with the publisher-frozen dependency closure under its own node_modules.
-            // Promote it directly.
+            // The extracted package root already has the layout discovery expects: package.json at the
+            // root with the frozen dependency closure under its own node_modules. Promote it directly.
             //
-            // Atomic promote onto the same volume. The target does not exist (blocked above), so this
-            // is a plain rename; the watched root only ever sees the fully validated tree.
+            // Keep the promote on the same volume. The target does not exist, so this is a plain rename,
+            // and the watched root only sees the fully validated tree.
             Directory.CreateDirectory(_host.ExtensionsRootPath);
             Directory.Move(packageDirectory, targetDirectory);
             promoted = true;
 
-            // Only report success once the host has actually loaded and registered the provider.
+            // Only report success after the host loads and registers the provider.
             var registered = await _host.RefreshAndAwaitProviderAsync(targetDirectory, RegistrationTimeout, cancellationToken).ConfigureAwait(false);
             if (!registered)
             {
@@ -227,8 +218,8 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
         }
         catch (OperationCanceledException)
         {
-            // A cancel after promotion must not leave a half-registered extension behind: stop the
-            // host process/provider first, then remove the promoted tree.
+            // A cancel after promotion must not leave a half registered extension behind. Stop the host
+            // process and provider first, then remove the promoted tree.
             if (promoted)
             {
                 RollbackPromotedInstall(targetDirectory);
@@ -248,8 +239,8 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
         }
         finally
         {
-            // Clean the staging tree on every path, even when the install was canceled, so the staging
-            // cleanup must not observe the caller's token: pass CancellationToken.None explicitly.
+            // Clean the staging tree on every path, even after cancel. Do not observe the caller token
+            // here, because cleanup still needs to run.
             if (!_npmCommandRunner.RemoveDirectory(stagingDirectory, CancellationToken.None))
             {
                 Logger.LogWarning($"Failed to clean up staging directory {stagingDirectory}.");
@@ -258,10 +249,9 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
     }
 
     /// <summary>
-    /// Rolls back a promoted install. Stops the host process/provider that may have started for the
-    /// promoted directory, then removes the promoted tree, in that order, so a canceled or failed
-    /// install can never leave the extension both installed on disk and running. Uses no cancellation
-    /// token so cleanup always runs to completion, even on the cancel path.
+    /// Rolls back a promoted install. Stops any host process and provider for the promoted directory,
+    /// then removes the promoted tree, in that order, so a canceled or failed install cannot leave the
+    /// extension both installed and running. Uses no cancellation token so cleanup can finish.
     /// </summary>
     /// <returns><see langword="true"/> when the promoted directory was removed; otherwise, <see langword="false"/>.</returns>
     private bool RollbackPromotedInstall(string targetDirectory)
@@ -271,8 +261,8 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
     }
 
     /// <summary>
-    /// Gets the staging root, a sibling of the JSExtensions root that the FileSystemWatcher does not
-    /// watch. Keeping it a sibling (same volume) makes the final promote a rename rather than a copy.
+    /// Gets the staging root, a sibling of JSExtensions that the FileSystemWatcher does not watch.
+    /// Keeping it on the same volume makes the final promote a rename instead of a copy.
     /// </summary>
     private string GetStagingRoot()
     {
@@ -282,7 +272,7 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
 
         if (string.IsNullOrEmpty(parent) || string.IsNullOrEmpty(rootName))
         {
-            // Degenerate path (root of a volume); fall back to a sibling under the same directory.
+            // Root of a volume. Fall back to a sibling under the same directory.
             return Path.Combine(root + ".staging");
         }
 
@@ -302,8 +292,7 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
                 _directoryLocks[canonicalKey] = entry;
             }
 
-            // Track a reference count in the semaphore's current use so the dictionary entry is only
-            // removed when no operation holds or waits on it.
+            // Keep the semaphore until no operation holds it or waits on it.
             _lockReferenceCounts.TryGetValue(canonicalKey, out var count);
             _lockReferenceCounts[canonicalKey] = count + 1;
             return entry;
@@ -367,11 +356,9 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
         var root = _host.ExtensionsRootPath;
         var normalizedRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
 
-        // The extensions root must be a real directory, not a reparse point. If a junction or symbolic
-        // link is used as the root, a candidate that passes the textual containment check below can
-        // still resolve on disk to a path outside the intended tree, so an uninstall delete could
-        // escape containment. Resolve reparse points on the root and refuse when it does not resolve
-        // to itself.
+        // The extensions root must be a real directory, not a reparse point. A junction or symbolic
+        // link can pass the text containment check and still resolve outside the intended tree, letting
+        // uninstall delete escape containment. Refuse roots that resolve somewhere else.
         if (!RootResolvesToItself(normalizedRoot))
         {
             Logger.LogError($"Refusing to resolve a target under extensions root '{normalizedRoot}' because the root is a reparse point (junction or symbolic link).");
@@ -390,7 +377,7 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
 
     private static bool RootResolvesToItself(string normalizedRoot)
     {
-        // A root that does not exist yet cannot redirect anywhere; install creates it as a real
+        // A root that does not exist yet cannot redirect anywhere. Install creates it as a real
         // directory before promoting into it.
         if (!Directory.Exists(normalizedRoot))
         {
@@ -399,13 +386,13 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
 
         try
         {
-            // ResolveLinkTarget returns null when the path is not a reparse point, and the final
-            // target otherwise. Any reparse point on the root is treated as unsafe.
+            // ResolveLinkTarget returns null when the path is not a reparse point. Any reparse point on
+            // the root is treated as unsafe.
             return Directory.ResolveLinkTarget(normalizedRoot, returnFinalTarget: true) is null;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException)
         {
-            // If the root cannot be inspected, err on the side of caution and refuse.
+            // If the root cannot be inspected, play it safe and refuse.
             Logger.LogError($"Failed to inspect extensions root '{normalizedRoot}' for reparse points: {ex.Message}");
             return false;
         }
