@@ -12,6 +12,6 @@ public interface IBrowserInfoService
     /// <summary>
     ///     Gets information about the system's default web browser.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The default browser information, or <see langword="null"/> if it could not be determined.</returns>
     BrowserInfo? GetDefaultBrowser();
 }

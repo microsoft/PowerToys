@@ -1,0 +1,106 @@
+{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "Container",
+      "$when": "${errorMessage != null}",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "${errorMessage}",
+          "wrap": true,
+          "size": "small"
+        }
+      ],
+      "style": "warning"
+    },
+    {
+      "type": "Container",
+      "$when": "${errorMessage == null}",
+      "items": [
+        {
+          "type": "Image",
+          "url": "${diskGraphUrl}",
+          "height": "${chartHeight}",
+          "width": "${chartWidth}",
+          "$when": "${$host.widgetSize != \"small\"}",
+          "horizontalAlignment": "center"
+        },
+        {
+          "type": "ColumnSet",
+          "columns": [
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%DiskUsage_Widget_Template/Disk_Usage%",
+                  "type": "TextBlock",
+                  "spacing": "none",
+                  "size": "small",
+                  "isSubtle": true
+                },
+                {
+                  "text": "${diskUsage}",
+                  "type": "TextBlock",
+                  "size": "large",
+                  "weight": "bolder"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%DiskUsage_Widget_Template/Read%",
+                  "type": "TextBlock",
+                  "spacing": "none",
+                  "size": "small",
+                  "isSubtle": true
+                },
+                {
+                  "text": "${diskRead}",
+                  "type": "TextBlock",
+                  "size": "large",
+                  "weight": "bolder"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%DiskUsage_Widget_Template/Write%",
+                  "type": "TextBlock",
+                  "spacing": "none",
+                  "size": "small",
+                  "isSubtle": true,
+                  "horizontalAlignment": "right"
+                },
+                {
+                  "text": "${diskWrite}",
+                  "type": "TextBlock",
+                  "size": "large",
+                  "weight": "bolder",
+                  "horizontalAlignment": "right"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "text": "%DiskUsage_Widget_Template/Disk_Name%",
+          "type": "TextBlock",
+          "size": "small",
+          "isSubtle": true
+        },
+        {
+          "text": "${diskName}",
+          "type": "TextBlock",
+          "size": "medium"
+        }
+      ]
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5"
+}

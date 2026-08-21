@@ -15,6 +15,9 @@ parameters:
   - name: signingIdentity
     type: object
     default: {}
+  - name: beforeBuildSteps
+    type: stepList
+    default: []
 
 jobs:
 - job: "BuildSDK"
@@ -44,6 +47,8 @@ jobs:
     - template: .\steps-setup-versioning.yml
       parameters:
         directory: $(build.sourcesdirectory)\src\modules\cmdpal
+
+  - ${{ parameters.beforeBuildSteps }}
 
   - pwsh: |-
       & "$(build.sourcesdirectory)\src\modules\cmdpal\extensionsdk\nuget\BuildSDKHelper.ps1" -Configuration "Release" -BuildStep "build" -IsAzurePipelineBuild

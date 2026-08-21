@@ -211,7 +211,21 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
 
 LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
-    if (message == WM_HOTKEY)
+    if (message == WM_QUERYENDSESSION)
+    {
+        return TRUE;
+    }
+    else if (message == WM_ENDSESSION)
+    {
+        if (wparam)
+        {
+            // This window has no WM_DESTROY -> PostQuitMessage path, so it
+            // cannot use handle_stateless_session_end_message.
+            PostQuitMessage(0);
+        }
+        return 0;
+    }
+    else if (message == WM_HOTKEY)
     {
         int hotkeyId = static_cast<int>(wparam);
         if (HWND fw{ GetForegroundWindow() })
@@ -252,11 +266,13 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     }
 
     Sound::Type soundType = Sound::Type::Off;
+    bool stateChanged = false;
     bool topmost = IsTopmost(window);
     if (topmost)
     {
         if (UnpinTopmostWindow(window))
         {
+            stateChanged = true;
             auto iter = m_topmostWindows.find(window);
             if (iter != m_topmostWindows.end())
             {
@@ -274,6 +290,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     {
         if (PinTopmostWindow(window))
         {
+            stateChanged = true;
             soundType = Sound::Type::On;
             AssignBorder(window);
             
@@ -281,7 +298,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         }
     }
 
-    if (AlwaysOnTopSettings::settings()->enableSound)
+    if (stateChanged && AlwaysOnTopSettings::settings()->enableSound)
     {
         m_sound.Play(soundType);    
     }

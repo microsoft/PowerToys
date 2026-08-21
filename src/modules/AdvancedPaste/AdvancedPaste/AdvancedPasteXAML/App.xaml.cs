@@ -188,14 +188,23 @@ namespace AdvancedPaste
             }
             else
             {
-                if (!AdditionalActionIPCKeys.TryGetValue(messageParts[1], out PasteFormats pasteFormat))
+                const string coachingSuffix = "-coaching";
+                var actionKey = messageParts[1];
+                bool forceCoaching = actionKey.EndsWith(coachingSuffix, StringComparison.OrdinalIgnoreCase);
+
+                if (forceCoaching)
+                {
+                    actionKey = actionKey[..^coachingSuffix.Length];
+                }
+
+                if (!AdditionalActionIPCKeys.TryGetValue(actionKey, out PasteFormats pasteFormat))
                 {
                     Logger.LogWarning($"Unexpected additional action type {messageParts[1]}");
                 }
                 else
                 {
                     await ShowWindow();
-                    await viewModel.ExecutePasteFormatAsync(pasteFormat, PasteActionSource.GlobalKeyboardShortcut);
+                    await viewModel.ExecutePasteFormatAsync(pasteFormat, PasteActionSource.GlobalKeyboardShortcut, forceCoaching);
                 }
             }
         }

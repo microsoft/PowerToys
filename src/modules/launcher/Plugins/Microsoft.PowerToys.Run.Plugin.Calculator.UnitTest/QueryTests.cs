@@ -37,6 +37,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("=2^96", "Result value was either too large or too small for a decimal number")]
         [DataRow("=+()", "Calculation result is not a valid number (NaN)")]
         [DataRow("=[10,10]", "Unsupported use of square brackets")]
+        [DataRow("=sqrt(-1)", "Complex numbers are not supported")]
         [DataRow("=5/0", "Expression contains division by zero")]
         [DataRow("=5 / 0", "Expression contains division by zero")]
         [DataRow("10+(8*9)/0+7", "Expression contains division by zero")]
@@ -63,6 +64,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("2^96")]
         [DataRow("+()")]
         [DataRow("[10,10]")]
+        [DataRow("sqrt(-1)")]
         [DataRow("5/0")]
         [DataRow("5 / 0")]
         [DataRow("10+(8*9)/0+7")]
@@ -76,7 +78,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var result = _main.Object.Query(expectedQuery).Count;
 
             // Assert
-            Assert.AreEqual(result, 0);
+            Assert.AreEqual(0, result);
         }
 
         [DataTestMethod]
@@ -101,12 +103,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var resultWithKeyword = _main.Object.Query(expectedQueryWithKeyword).Count;
 
             // Assert
-            Assert.AreEqual(result, 0);
-            Assert.AreEqual(resultWithKeyword, 0);
+            Assert.AreEqual(0, result);
+            Assert.AreEqual(0, resultWithKeyword);
         }
 
         [DataTestMethod]
-        [DataRow("10+(8*9)/0,5")] // German decimal digit separator
+        [DataRow("10+(8*9)/0,5")]// German decimal digit separator
         [DataRow("10+(8*9)/0.5")]
         [DataRow("10+(8*9)/1,5")] // German decimal digit separator
         [DataRow("10+(8*9)/1.5")]
@@ -121,8 +123,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var resultWithKeyword = _main.Object.Query(expectedQueryWithKeyword).FirstOrDefault().SubTitle;
 
             // Assert
-            Assert.AreEqual(result, "Copy this number to the clipboard");
-            Assert.AreEqual(resultWithKeyword, "Copy this number to the clipboard");
+            Assert.AreEqual("Copy this number to the clipboard", result);
+            Assert.AreEqual("Copy this number to the clipboard", resultWithKeyword);
         }
 
         [DataTestMethod]

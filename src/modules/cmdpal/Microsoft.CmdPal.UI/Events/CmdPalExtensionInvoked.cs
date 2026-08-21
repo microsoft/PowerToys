@@ -33,7 +33,7 @@ public class CmdPalExtensionInvoked : EventBase, IEvent
     public string CommandName { get; set; }
 
     /// <summary>
-    /// Gets or sets whether the command executed successfully.
+    /// Gets or sets a value indicating whether the command executed successfully.
     /// </summary>
     public bool Success { get; set; }
 

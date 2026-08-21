@@ -17,4 +17,6 @@ internal sealed class Icons
     internal static IconInfo TimeDateIcon { get; } = new IconInfo("\uEC92");
 
     internal static IconInfo ErrorIcon { get; } = IconHelpers.FromRelativePaths("Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.light.png", "Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.dark.png");
+
+    internal static IconInfo NotificationCenterIcon { get; } = new IconInfo("\uEA8F");
 }

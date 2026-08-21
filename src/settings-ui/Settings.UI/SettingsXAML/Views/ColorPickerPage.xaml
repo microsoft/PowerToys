@@ -216,8 +216,8 @@
             <controls:PageLink x:Uid="LearnMore_ColorPicker" Link="https://aka.ms/PowerToysOverview_ColorPicker" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Link="https://github.com/martinchrzan/ColorPicker/" Text="Martin Chrzan's Color Picker" />
-            <controls:PageLink Link="https://medium.com/@Niels9001/a-fluent-color-meter-for-powertoys-20407ededf0c" Text="Niels Laute's UX concept" />
+            <controls:PageLink x:Uid="Attribution_ColorPicker" Link="https://github.com/martinchrzan/ColorPicker/" />
+            <controls:PageLink x:Uid="Attribution_ColorPicker_UXConcept" Link="https://medium.com/@Niels9001/a-fluent-color-meter-for-powertoys-20407ededf0c" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </local:NavigablePage>

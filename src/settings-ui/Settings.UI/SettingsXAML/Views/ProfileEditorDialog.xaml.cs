@@ -11,7 +11,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using PowerDisplay.Common.Models;
+using PowerDisplay.Models;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -24,10 +24,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public PowerDisplayProfile? ResultProfile { get; private set; }
 
-        public ProfileEditorDialog(ObservableCollection<MonitorInfo> availableMonitors, string defaultName = "")
+        public ProfileEditorDialog(
+            ObservableCollection<MonitorInfo> availableMonitors,
+            string defaultName = "",
+            int profileId = 0)
         {
             this.InitializeComponent();
-            ViewModel = new ProfileEditorViewModel(availableMonitors, defaultName);
+            ViewModel = new ProfileEditorViewModel(availableMonitors, defaultName, profileId);
 
             // Set localized strings for ContentDialog
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;

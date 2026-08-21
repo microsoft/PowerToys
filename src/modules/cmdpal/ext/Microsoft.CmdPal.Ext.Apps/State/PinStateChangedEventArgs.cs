@@ -14,7 +14,7 @@ public class PinStateChangedEventArgs : EventArgs
     public string AppIdentifier { get; }
 
     /// <summary>
-    /// Gets a value indicating whether the specified app identifier was pinned or not.
+    /// Gets a value indicating whether or not the specified app identifier was pinned.
     /// </summary>
     public bool IsPinned { get; }
 

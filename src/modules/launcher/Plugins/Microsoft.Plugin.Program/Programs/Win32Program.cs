@@ -28,7 +28,7 @@ using DirectoryWrapper = Wox.Infrastructure.FileSystemHelper.DirectoryWrapper;
 namespace Microsoft.Plugin.Program.Programs
 {
     [Serializable]
-    public class Win32Program : IProgram
+    public partial class Win32Program : IProgram
     {
         public static readonly Win32Program InvalidProgram = new Win32Program { Valid = false, Enabled = false };
 
@@ -420,7 +420,8 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        private static readonly Regex InternetShortcutURLPrefixes = new Regex(@"^steam:\/\/(rungameid|run|open)\/|^com\.epicgames\.launcher:\/\/apps\/", RegexOptions.Compiled);
+        [GeneratedRegex(@"^steam:\/\/(rungameid|run|open)\/|^com\.epicgames\.launcher:\/\/apps\/", RegexOptions.Compiled)]
+        private static partial Regex InternetShortcutURLPrefixes();
 
         // This function filters Internet Shortcut programs
         private static Win32Program InternetShortcutProgram(string path)
@@ -450,7 +451,7 @@ namespace Microsoft.Plugin.Program.Programs
                         }
 
                         // To filter out only those steam shortcuts which have 'run' or 'rungameid' as the hostname
-                        if (InternetShortcutURLPrefixes.Match(urlPath).Success)
+                        if (InternetShortcutURLPrefixes().IsMatch(urlPath))
                         {
                             validApp = true;
                         }

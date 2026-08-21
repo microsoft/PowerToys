@@ -71,7 +71,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool shortcutGuide = true;
+        private bool shortcutGuide; // defaulting to off
 
         [JsonPropertyName("Shortcut Guide")]
         public bool ShortcutGuide
@@ -119,7 +119,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool powerLauncher = true;
+        private bool powerLauncher; // defaulting to off
 
         [JsonPropertyName("PowerToys Run")]
         public bool PowerLauncher
@@ -153,7 +153,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool cropAndLock = true;
+        private bool cropAndLock; // defaulting to off
 
         [JsonPropertyName("CropAndLock")]
         public bool CropAndLock
@@ -214,6 +214,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     findMyMouse = value;
+                }
+            }
+        }
+
+        private bool altWindowCycle; // defaulting to off
+
+        [JsonPropertyName("AltWindowCycle")]
+        public bool AltWindowCycle
+        {
+            get => altWindowCycle;
+            set
+            {
+                if (altWindowCycle != value)
+                {
+                    LogTelemetryEvent(value);
+                    altWindowCycle = value;
                 }
             }
         }
@@ -315,7 +331,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool advancedPaste = true;
+        private bool advancedPaste; // defaulting to off
 
         [JsonPropertyName("AdvancedPaste")]
         public bool AdvancedPaste
@@ -349,7 +365,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool hosts = true;
+        private bool hosts; // defaulting to off
 
         [JsonPropertyName("Hosts")]
         public bool Hosts
@@ -398,7 +414,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool registryPreview = true;
+        private bool registryPreview; // defaulting to off
 
         [JsonPropertyName("RegistryPreview")]
         public bool RegistryPreview
@@ -431,7 +447,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool environmentVariables = true;
+        private bool environmentVariables; // defaulting to off
 
         [JsonPropertyName("EnvironmentVariables")]
         public bool EnvironmentVariables
@@ -463,7 +479,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool workspaces = true;
+        private bool workspaces; // defaulting to off
 
         [JsonPropertyName("Workspaces")]
         public bool Workspaces
@@ -574,6 +590,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     powerDisplay = value;
+                    NotifyChange();
+                }
+            }
+        }
+
+        private bool grabAndMove;
+
+        [JsonPropertyName("GrabAndMove")]
+        public bool GrabAndMove
+        {
+            get => grabAndMove;
+            set
+            {
+                if (grabAndMove != value)
+                {
+                    LogTelemetryEvent(value);
+                    grabAndMove = value;
                     NotifyChange();
                 }
             }

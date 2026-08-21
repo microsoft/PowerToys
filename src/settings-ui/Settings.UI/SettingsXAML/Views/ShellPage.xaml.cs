@@ -13,6 +13,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Windowing;
@@ -83,6 +84,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// </summary>
         public ShellViewModel ViewModel { get; }
 
+        public UpdateViewModel UpdateViewModel { get; }
+
         /// <summary>
         /// Gets a collection of functions that handle IPC responses.
         /// </summary>
@@ -112,7 +115,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             InitializeComponent();
             SetWindowTitle();
             var settingsUtils = SettingsUtils.Default;
-            ViewModel = new ShellViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
+            var generalSettingsRepository = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils);
+            ViewModel = new ShellViewModel(generalSettingsRepository);
+            UpdateViewModel = new UpdateViewModel(generalSettingsRepository, SendCheckForUpdatesIPCMessage);
             DataContext = ViewModel;
             ShellHandler = this;
             ViewModel.Initialize(shellFrame, navigationView, KeyboardAccelerators);
@@ -147,8 +152,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public static int SendCheckForUpdatesIPCMessage(string msg)
         {
-            CheckForUpdatesMsgCallback?.Invoke(msg);
+            if (CheckForUpdatesMsgCallback is null)
+            {
+                return 1;
+            }
 
+            CheckForUpdatesMsgCallback(msg);
             return 0;
         }
 
@@ -221,6 +230,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void Refresh()
         {
             shellFrame.Navigate(typeof(DashboardPage));
+        }
+
+        public void OpenUpdateActivity()
+        {
+            UpdateActivity.Open();
+        }
+
+        public void BeginWindowSession()
+        {
+            UpdateViewModel.BeginWindowSession();
         }
 
         // Tell the current page view model to update
@@ -599,27 +618,34 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            // If a suggestion is selected, navigate directly
-            if (args.ChosenSuggestion is SuggestionItem chosen)
+            try
             {
-                NavigateFromSuggestion(chosen);
-                return;
-            }
+                // If a suggestion is selected, navigate directly
+                if (args.ChosenSuggestion is SuggestionItem chosen)
+                {
+                    NavigateFromSuggestion(chosen);
+                    return;
+                }
 
-            var queryText = (args.QueryText ?? _lastQueryText)?.Trim();
-            if (string.IsNullOrWhiteSpace(queryText))
+                var queryText = (args.QueryText ?? _lastQueryText)?.Trim();
+                if (string.IsNullOrWhiteSpace(queryText))
+                {
+                    NavigationService.Navigate<DashboardPage>();
+                    return;
+                }
+
+                // Prefer cached results (from live search); if empty, perform a fresh search
+                var matched = _lastSearchResults?.Count > 0 && string.Equals(_lastQueryText, queryText, StringComparison.Ordinal)
+                    ? _lastSearchResults
+                    : await Task.Run(() => SearchIndexService.Search(queryText));
+
+                var searchParams = new SearchResultsNavigationParams(queryText, matched);
+                NavigationService.Navigate<SearchResultsPage>(searchParams);
+            }
+            catch (Exception ex)
             {
-                NavigationService.Navigate<DashboardPage>();
-                return;
+                Logger.LogError("Search query submission failed", ex);
             }
-
-            // Prefer cached results (from live search); if empty, perform a fresh search
-            var matched = _lastSearchResults?.Count > 0 && string.Equals(_lastQueryText, queryText, StringComparison.Ordinal)
-                ? _lastSearchResults
-                : await Task.Run(() => SearchIndexService.Search(queryText));
-
-            var searchParams = new SearchResultsNavigationParams(queryText, matched);
-            NavigationService.Navigate<SearchResultsPage>(searchParams);
         }
 
         public void Dispose()
@@ -629,6 +655,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
+            UpdateViewModel.Dispose();
             _searchDebounceCts?.Cancel();
             _searchDebounceCts?.Dispose();
             _searchDebounceCts = null;

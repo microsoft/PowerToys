@@ -49,3 +49,14 @@ void Trace::QueryContextMenuError(_In_ HRESULT hr) noexcept
         TraceLoggingHResult(hr),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
+
+void Trace::CLICommand(_In_ PCWSTR commandName, _In_ bool successful) noexcept
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "FileLocksmith_CLICommand",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingWideString(commandName, "CommandName"),
+        TraceLoggingBoolean(successful, "Successful"));
+}

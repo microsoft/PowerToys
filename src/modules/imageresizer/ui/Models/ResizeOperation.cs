@@ -62,6 +62,9 @@ namespace ImageResizer.Models
 
         public async Task ExecuteAsync()
         {
+            var originalLastWriteTimeUtc = _settings.KeepDateModified
+                ? _fileSystem.File.GetLastWriteTimeUtc(_file)
+                : (DateTime?)null;
             string path;
 
             using (var inputStream = _fileSystem.File.OpenRead(_file))
@@ -102,11 +105,14 @@ namespace ImageResizer.Models
                     using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.ReadWrite))
                     {
                         var winrtOutputStream = outputStream.AsRandomAccessStream();
+                        bool forceFresh = encoderGuid == BitmapEncoder.JpegEncoderId && !noTransformNeeded;
+
                         await EncodeToStreamAsync(
                             decoder,
                             winrtInputStream,
                             winrtOutputStream,
                             encoderGuid,
+                            forceFresh,
                             async (encoder, isTranscode) =>
                             {
                                 if (isTranscode)
@@ -140,15 +146,21 @@ namespace ImageResizer.Models
                 }
             }
 
-            if (_settings.KeepDateModified)
-            {
-                _fileSystem.File.SetLastWriteTimeUtc(path, _fileSystem.File.GetLastWriteTimeUtc(_file));
-            }
-
+            string backup = null;
             if (_settings.Replace)
             {
-                var backup = GetBackupPath();
+                backup = GetBackupPath();
                 _fileSystem.File.Replace(path, _file, backup, ignoreMetadataErrors: true);
+                path = _file;
+            }
+
+            if (originalLastWriteTimeUtc.HasValue)
+            {
+                _fileSystem.File.SetLastWriteTimeUtc(path, originalLastWriteTimeUtc.Value);
+            }
+
+            if (backup != null)
+            {
                 FileSystem.DeleteFile(backup, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
             }
         }
@@ -180,11 +192,15 @@ namespace ImageResizer.Models
                 using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.ReadWrite))
                 {
                     var winrtOutputStream = outputStream.AsRandomAccessStream();
+
+                    // SetSoftwareBitmap requires a fresh encoder; the transcode encoder only
+                    // accepts BitmapTransform. Also forces quality to apply for JPEG output.
                     await EncodeToStreamAsync(
                         decoder,
                         winrtInputStream,
                         winrtOutputStream,
                         encoderGuid,
+                        forceFresh: true,
                         (encoder, _) =>
                         {
                             encoder.SetSoftwareBitmap(aiResult);
@@ -206,10 +222,12 @@ namespace ImageResizer.Models
             IRandomAccessStream inputStream,
             IRandomAccessStream outputStream,
             Guid encoderGuid,
+            bool forceFresh,
             Func<BitmapEncoder, bool, Task> writeContent)
         {
             var decoderEncoderId = CodecHelper.GetEncoderIdForDecoder(decoder);
-            bool canTranscode = !_settings.RemoveMetadata
+            bool canTranscode = !forceFresh
+                && !_settings.RemoveMetadata
                 && decoderEncoderId.HasValue
                 && decoderEncoderId.Value == encoderGuid;
 
@@ -249,7 +267,8 @@ namespace ImageResizer.Models
 
         /// <summary>
         /// Fresh encoder path: creates a blank encoder and manually writes pixel data.
-        /// Used when metadata must be stripped (RemoveMetadata) or format doesn't match (ICO→PNG).
+        /// Used when codec options (e.g. JPEG quality) must apply, when metadata must be
+        /// stripped (RemoveMetadata), or when the format doesn't match (ICO→PNG).
         /// The <paramref name="writeContent"/> callback receives isTranscode=false and should
         /// call <see cref="EncodeFramesAsync"/> or <see cref="BitmapEncoder.SetSoftwareBitmap"/>.
         /// </summary>
@@ -259,22 +278,18 @@ namespace ImageResizer.Models
             Guid encoderGuid,
             Func<BitmapEncoder, bool, Task> writeContent)
         {
-            // Read rendering-critical metadata before encoding so we can restore it on
-            // the blank encoder. Only needed for RemoveMetadata; format-mismatch files
-            // (e.g. ICO) rarely carry meaningful EXIF data.
-            BitmapPropertySet renderingMetadata = null;
-            if (_settings.RemoveMetadata)
-            {
-                renderingMetadata = await ReadMetadataAsync(decoder, RenderingMetadataProperties);
-            }
+            // The blank encoder inherits nothing from the source, so we have to carry
+            // metadata over ourselves. RemoveMetadata keeps only the rendering-critical
+            // properties (orientation/colorspace); otherwise mirror the transcode path's
+            // best-effort EXIF preservation.
+            var propsToPreserve = _settings.RemoveMetadata
+                ? RenderingMetadataProperties
+                : KnownMetadataProperties;
+            var preservedMetadata = await ReadMetadataAsync(decoder, propsToPreserve);
 
             var encoder = await CreateFreshEncoderAsync(encoderGuid, outputStream);
             await writeContent(encoder, false);
-
-            if (renderingMetadata != null)
-            {
-                await WriteMetadataAsync(encoder, renderingMetadata);
-            }
+            await WriteMetadataAsync(encoder, preservedMetadata);
 
             await encoder.FlushAsync();
         }
@@ -470,28 +485,44 @@ namespace ImageResizer.Models
             }
 
             // Calculate scaled dimensions
-            uint scaledWidth = (uint)Math.Max(1, (int)Math.Round(originalWidth * scaleX));
-            uint scaledHeight = (uint)Math.Max(1, (int)Math.Round(originalHeight * scaleY));
+            uint scaledWidth = GetValidatedScaledDimension(originalWidth * scaleX);
+            uint scaledHeight = GetValidatedScaledDimension(originalHeight * scaleY);
 
             // Apply the centered crop for Fill mode, if necessary.
-            if (_settings.SelectedSize.Fit == ResizeFit.Fill
-                && (scaledWidth > (uint)width || scaledHeight > (uint)height))
+            if (_settings.SelectedSize.Fit == ResizeFit.Fill)
             {
-                uint cropX = (uint)(((originalWidth * scaleX) - width) / 2);
-                uint cropY = (uint)(((originalHeight * scaleY) - height) / 2);
+                uint targetWidth = GetValidatedScaledDimension(width);
+                uint targetHeight = GetValidatedScaledDimension(height);
 
-                var cropBounds = new BitmapBounds
+                if (scaledWidth > targetWidth || scaledHeight > targetHeight)
                 {
-                    X = cropX,
-                    Y = cropY,
-                    Width = (uint)width,
-                    Height = (uint)height,
-                };
+                    uint cropX = (scaledWidth - targetWidth) / 2;
+                    uint cropY = (scaledHeight - targetHeight) / 2;
 
-                return (scaledWidth, scaledHeight, cropBounds, false);
+                    var cropBounds = new BitmapBounds
+                    {
+                        X = cropX,
+                        Y = cropY,
+                        Width = targetWidth,
+                        Height = targetHeight,
+                    };
+
+                    return (scaledWidth, scaledHeight, cropBounds, false);
+                }
             }
 
             return (scaledWidth, scaledHeight, null, false);
+        }
+
+        private static uint GetValidatedScaledDimension(double value)
+        {
+            if (!double.IsFinite(value) || value < 0 || value > int.MaxValue)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), Resources.Error_DimensionOutOfRange);
+            }
+
+            var roundedValue = Math.Round(value);
+            return (uint)Math.Max(1, (int)roundedValue);
         }
 
         private async Task<BitmapEncoder> CreateFreshEncoderAsync(Guid encoderGuid, IRandomAccessStream outputStream)
@@ -513,6 +544,25 @@ namespace ImageResizer.Models
                 {
                     { "ImageQuality", new BitmapTypedValue(GetJpegQualityFraction(), PropertyType.Single) },
                 };
+            }
+
+            if (encoderGuid == BitmapEncoder.PngEncoderId)
+            {
+                // Only override when explicitly set; Default lets the WIC encoder decide.
+                if (_settings.PngInterlaceOption == PngInterlaceOption.On)
+                {
+                    return new BitmapPropertySet
+                    {
+                        { "InterlaceOption", new BitmapTypedValue(true, PropertyType.Boolean) },
+                    };
+                }
+                else if (_settings.PngInterlaceOption == PngInterlaceOption.Off)
+                {
+                    return new BitmapPropertySet
+                    {
+                        { "InterlaceOption", new BitmapTypedValue(false, PropertyType.Boolean) },
+                    };
+                }
             }
 
             if (encoderGuid == BitmapEncoder.TiffEncoderId)

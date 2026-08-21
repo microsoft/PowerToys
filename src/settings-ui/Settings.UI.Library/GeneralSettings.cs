@@ -89,6 +89,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("download_updates_automatically")]
         public bool AutoDownloadUpdates { get; set; }
 
+        [JsonPropertyName("include_prerelease_updates")]
+        public bool IncludePrereleaseUpdates { get; set; }
+
         [JsonPropertyName("show_whats_new_after_updates")]
         public bool ShowWhatsNewAfterUpdates { get; set; }
 
@@ -111,7 +114,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             QuickAccessShortcut = new HotkeySettings();
             IsElevated = false;
             ShowNewUpdatesToastNotification = true;
-            AutoDownloadUpdates = false;
+            AutoDownloadUpdates = true;
+            IncludePrereleaseUpdates = false;
             EnableExperimentation = true;
             DashboardSortOrder = DashboardSortOrder.Alphabetical;
             Theme = "system";

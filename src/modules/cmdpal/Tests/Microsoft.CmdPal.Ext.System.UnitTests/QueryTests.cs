@@ -145,4 +145,54 @@ public class QueryTests : CommandPaletteUnitTestBase
         var firstItemIsUefiCommand = firstItem?.Title.Contains("UEFI", StringComparison.OrdinalIgnoreCase) ?? false;
         Assert.AreEqual(hasCommand, firstItemIsUefiCommand, $"Expected to match (or not match) 'UEFI firmware settings' but got '{firstItem?.Title}'");
     }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void UpdateCommandsAvailabilityTest(bool updatePending)
+    {
+        var settings = new Settings(updatePending: updatePending);
+        var pages = new SystemCommandPage(settings);
+        var allCommands = pages.GetItems();
+
+        var hasUpdateRestart = allCommands.Any(i => i.Title.Equals("Update and restart", StringComparison.Ordinal));
+        var hasUpdateShutdown = allCommands.Any(i => i.Title.Equals("Update and shut down", StringComparison.Ordinal));
+
+        Assert.AreEqual(updatePending, hasUpdateRestart, "'Update and restart' should only be listed while updates are pending.");
+        Assert.AreEqual(updatePending, hasUpdateShutdown, "'Update and shut down' should only be listed while updates are pending.");
+    }
+
+    [TestMethod]
+    public void UpdateCommandsMatchQueryTest()
+    {
+        var settings = new Settings(updatePending: true);
+        var pages = new SystemCommandPage(settings);
+        var allCommands = pages.GetItems();
+
+        var result = Query("update", allCommands);
+
+        Assert.IsNotNull(result);
+        Assert.IsTrue(
+            result.Any(i => i.Title.Equals("Update and restart", StringComparison.Ordinal)),
+            "'update' query should match the 'Update and restart' command.");
+        Assert.IsTrue(
+            result.Any(i => i.Title.Equals("Update and shut down", StringComparison.Ordinal)),
+            "'update' query should match the 'Update and shut down' command.");
+    }
+
+    [TestMethod]
+    public void UpdateCommandsHaveStableIdsTest()
+    {
+        var settings = new Settings(updatePending: true);
+        var pages = new SystemCommandPage(settings);
+        var allCommands = pages.GetItems();
+
+        var updateRestart = allCommands.FirstOrDefault(i => i.Title.Equals("Update and restart", StringComparison.Ordinal));
+        var updateShutdown = allCommands.FirstOrDefault(i => i.Title.Equals("Update and shut down", StringComparison.Ordinal));
+
+        Assert.IsNotNull(updateRestart);
+        Assert.IsNotNull(updateShutdown);
+        Assert.AreEqual("com.microsoft.cmdpal.builtin.system.update_restart", updateRestart.Command?.Id);
+        Assert.AreEqual("com.microsoft.cmdpal.builtin.system.update_shutdown", updateShutdown.Command?.Id);
+    }
 }

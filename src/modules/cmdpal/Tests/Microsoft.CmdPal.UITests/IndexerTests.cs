@@ -25,7 +25,7 @@ public class IndexerTests : CommandPaletteTestBase
     public IndexerTests()
         : base()
     {
-        // create a empty file in Downloads folder
+        // create an empty file in Downloads folder
         // to ensure that the indexer has something to search for
         var downloadsPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\Downloads";
         var emptyFilePath = System.IO.Path.Combine(downloadsPath, TestFileName);
@@ -45,7 +45,7 @@ public class IndexerTests : CommandPaletteTestBase
         SetSearchBox("files");
 
         var searchFileItem = this.Find<NavigationViewItem>("Search files");
-        Assert.AreEqual(searchFileItem.Name, "Search files");
+        Assert.AreEqual("Search files", searchFileItem.Name);
         searchFileItem.DoubleClick();
     }
 

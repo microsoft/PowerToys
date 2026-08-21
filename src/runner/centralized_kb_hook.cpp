@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "centralized_kb_hook.h"
+#include <atomic>
 #include <common/debug_control.h>
 #include <common/utils/winapi_error.h>
 #include <common/logger/logger.h>
@@ -42,7 +43,7 @@ namespace CentralizedKeyboardHook
 
     // keep track of last pressed key, to detect repeated keys and if there are more keys pressed.
     const DWORD VK_DISABLED = CommonSharedConstants::VK_DISABLED;
-    DWORD vkCodePressed = VK_DISABLED;
+    std::atomic<DWORD> vkCodePressed{ VK_DISABLED };
 
     // Save the runner window handle for registering timers.
     HWND runnerWindow;
@@ -72,7 +73,12 @@ namespace CentralizedKeyboardHook
         {
             if (it.idTimer == idTimer)
             {
-                it.action();
+                // Revalidate that the key is still physically held before firing.
+                // This prevents ghost activations after the key was already released.
+                if (GetAsyncKeyState(static_cast<int>(it.virtualKey)) & 0x8000)
+                {
+                    it.action();
+                }
             }
         }
 
@@ -177,6 +183,7 @@ namespace CentralizedKeyboardHook
                 dummyEvent[0].type = INPUT_KEYBOARD;
                 dummyEvent[0].ki.wVk = 0xFF;
                 dummyEvent[0].ki.dwFlags = KEYEVENTF_KEYUP;
+                dummyEvent[0].ki.dwExtraInfo = PowertoyModuleIface::CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
                 SendInput(1, dummyEvent, sizeof(INPUT));
 
                 // Swallow the key press
@@ -205,6 +212,46 @@ namespace CentralizedKeyboardHook
         pressedKeyDescriptors.insert({ .virtualKey = vk, .moduleName = moduleName, .action = std::move(action), .idTimer = timerId, .millisecondsToPress = milliseconds });
     }
 
+    void ClearPressedKeyActions(const std::wstring& moduleName) noexcept
+    {
+        Logger::trace(L"UnRegister pressed key action for {}", moduleName);
+        std::unique_lock lock{ pressedKeyMutex };
+        const DWORD trackedKey = vkCodePressed.load();
+        bool removedTrackedKey = false;
+        auto it = pressedKeyDescriptors.begin();
+        while (it != pressedKeyDescriptors.end())
+        {
+            if (it->moduleName == moduleName)
+            {
+                removedTrackedKey |= it->virtualKey == trackedKey;
+                if (it->idTimer != 0)
+                {
+                    KillTimer(runnerWindow, it->idTimer);
+                }
+
+                it = pressedKeyDescriptors.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+
+        if (pressedKeyDescriptors.empty())
+        {
+            vkCodePressed = VK_DISABLED;
+        }
+        else if (removedTrackedKey)
+        {
+            PressedKeyDescriptor trackedKeyDescriptor{ .virtualKey = trackedKey };
+            const auto [first, last] = pressedKeyDescriptors.equal_range(trackedKeyDescriptor);
+            if (first == last)
+            {
+                vkCodePressed = VK_DISABLED;
+            }
+        }
+    }
+
     void ClearModuleHotkeys(const std::wstring& moduleName) noexcept
     {
         Logger::trace(L"UnRegister hotkey action for {}", moduleName);
@@ -223,21 +270,7 @@ namespace CentralizedKeyboardHook
                 }
             }
         }
-        {
-            std::unique_lock lock{ pressedKeyMutex };
-            auto it = pressedKeyDescriptors.begin();
-            while (it != pressedKeyDescriptors.end())
-            {
-                if (it->moduleName == moduleName)
-                {
-                    it = pressedKeyDescriptors.erase(it);
-                }
-                else
-                {
-                    ++it;
-                }
-            }
-        }
+        ClearPressedKeyActions(moduleName);
     }
 
     void Start() noexcept
@@ -263,6 +296,18 @@ namespace CentralizedKeyboardHook
 
     void Stop() noexcept
     {
+        // Kill all pending pressed-key timers before unhooking to prevent
+        // ghost callbacks firing after the hook is removed.
+        {
+            std::unique_lock lock{ pressedKeyMutex };
+            for (const auto& it : pressedKeyDescriptors)
+            {
+                KillTimer(runnerWindow, it.idTimer);
+            }
+        }
+
+        vkCodePressed = VK_DISABLED;
+
         if (hHook && UnhookWindowsHookEx(hHook))
         {
             hHook = NULL;

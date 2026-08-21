@@ -45,6 +45,9 @@
     <ClInclude Include="two_way_pipe_message_ipc_impl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="pipe_caller_auth.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="async_message_queue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -52,6 +55,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="excluded_app.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tasklist_positions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -74,6 +83,9 @@
     <ClCompile Include="two_way_pipe_message_ipc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pipe_caller_auth.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -81,6 +93,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Constants.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="excluded_app.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tasklist_positions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

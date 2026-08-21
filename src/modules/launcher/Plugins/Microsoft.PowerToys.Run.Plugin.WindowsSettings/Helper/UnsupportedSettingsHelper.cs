@@ -57,7 +57,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         }
 
         /// <summary>
-        /// Return a unsigned numeric value from given registry value name inside the given registry key.
+        /// Return an unsigned numeric value from given registry value name inside the given registry key.
         /// </summary>
         /// <param name="registryKey">The registry key.</param>
         /// <param name="valueName">The name of the registry value.</param>

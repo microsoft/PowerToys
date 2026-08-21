@@ -32,4 +32,14 @@ public enum DataType
     /// Network related data.
     /// </summary>
     Network,
+
+    /// <summary>
+    /// Battery related data.
+    /// </summary>
+    Battery,
+
+    /// <summary>
+    /// Disk related data.
+    /// </summary>
+    Disk,
 }

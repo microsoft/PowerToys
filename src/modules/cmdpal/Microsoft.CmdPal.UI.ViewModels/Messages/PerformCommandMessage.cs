@@ -20,6 +20,22 @@ public record PerformCommandMessage
 
     public bool TransientPage { get; set; }
 
+    /// <summary>
+    /// Optional callback raised by <see cref="ShellViewModel"/> just before a
+    /// <see cref="ShowConfirmationMessage"/> is dispatched for this command's
+    /// result. Lets the sender prepare UI (for example, the dock uses this to
+    /// open the cmdpal window anchored at the invoking dock item so that the
+    /// confirmation dialog appears in the right place).
+    /// </summary>
+    public Action? OnBeforeShowConfirmation { get; set; }
+
+    /// <summary>
+    /// When set, and the command turns out to be a page, the main window is
+    /// summoned before navigating. Used by senders that run while the palette
+    /// is hidden (for example the toast's action button).
+    /// </summary>
+    public bool ShowWindowIfPage { get; set; }
+
     public PerformCommandMessage(ExtensionObject<ICommand> command)
     {
         Command = command;

@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="KeyboardManagerEditorUI.Controls.KeyDropDownButton"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:commoncontrols="using:Microsoft.PowerToys.Common.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <DropDownButton
+        x:Name="KeyButton"
+        MinWidth="48"
+        MinHeight="36"
+        Padding="8"
+        HorizontalAlignment="Center"
+        HorizontalContentAlignment="Center"
+        VerticalContentAlignment="Center"
+        CornerRadius="{StaticResource OverlayCornerRadius}"
+        FontSize="16"
+        Style="{StaticResource DefaultKeyVisualDropDownButtonStyle}">
+        <DropDownButton.Flyout>
+            <Flyout
+                x:Name="KeyListFlyout"
+                Closed="KeyListFlyout_Closed"
+                Opening="KeyListFlyout_Opening"
+                Placement="Bottom">
+                <ListView
+                    x:Name="KeyListView"
+                    MinWidth="200"
+                    MaxHeight="320"
+                    IsItemClickEnabled="True"
+                    ItemClick="KeyListView_ItemClick"
+                    SelectionMode="Single">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayName}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Flyout>
+        </DropDownButton.Flyout>
+
+        <commoncontrols:KeyCharPresenter x:Name="KeyNamePresenter" Content="{x:Bind KeyName, Mode=OneWay}" />
+    </DropDownButton>
+</UserControl>

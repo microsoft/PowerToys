@@ -61,7 +61,7 @@ namespace Wox.Plugin
         /// <summary>
         /// Gets search part of a query.
         /// This will not include action keyword if exclusive plugin gets it; otherwise, it should be same as RawQuery.
-        /// Since we allow user to switch a exclusive plugin to generic plugin,
+        /// Since we allow user to switch an exclusive plugin to generic plugin,
         /// so this property will always give you the "real" query part of the query
         /// </summary>
         public string Search
@@ -118,6 +118,12 @@ namespace Wox.Plugin
         public int WeightBoost { get; set; }
 
         public string ActionKeyword { get; set; }
+
+        /// <summary>
+        /// Gets or sets the launcher-assigned generation used to correlate asynchronous result updates.
+        /// Plugins that reconstruct a query for <see cref="ResultUpdatedEventArgs"/> must preserve this value.
+        /// </summary>
+        public long QueryGeneration { get; set; }
 
         /// <summary>
         /// Gets return first search split by space if it has

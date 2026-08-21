@@ -3,6 +3,7 @@
     <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
   </PropertyGroup>
   <Import Project="$(RepoRoot)src\Version.props" />
+  <Import Project="$(RepoRoot)src\PhiSilicaLaf.props" />
   <PropertyGroup>
     <Copyright>Copyright (C) Microsoft Corporation. All rights reserved.</Copyright>
     <AssemblyCopyright>Copyright (C) Microsoft Corporation. All rights reserved.</AssemblyCopyright>
@@ -18,7 +19,7 @@
     <AnalysisMode>Recommended</AnalysisMode>
     <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
     <NuGetAuditMode>direct</NuGetAuditMode>
-    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>    <!-- Don't add source revision hash to the product version of binaries. -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>    <!-- Source commit is exposed explicitly via Version.props/version_gen.h. -->
     <PlatformTarget>$(Platform)</PlatformTarget>
     <RestoreEnablePackagePruning Condition=" '$(VisualStudioVersion)' == '17.0'">false </RestoreEnablePackagePruning>
 
@@ -74,7 +75,9 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
-    <Version>$(Version).0</Version>
+    <VersionBuildSuffix Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(Version)', '^\d+\.\d+\.\d+$'))">.0</VersionBuildSuffix>
+    <VersionBuildSuffix Condition="'$(VersionBuildSuffix)' == ''"></VersionBuildSuffix>
+    <Version>$(Version)$(VersionBuildSuffix)</Version>
     <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -171,6 +174,12 @@
       $(USERPROFILE)\AppData\LocalLow\Microsoft\PowerToys\**;
     </MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
 
+    <!-- dotnet.exe seems to access files after builds. Temporarily putting in this entry for testing if we get further. This looks to be related to a .NET Roslyn Analyzer in .NET 10-->
+    <MSBuildCacheAllowFileAccessAfterProjectFinishProcessPatterns>
+      $(MSBuildCacheAllowFileAccessAfterProjectFinishProcessPatterns);
+      \**\dotnet\dotnet.exe;
+      \**\vbcscompiler.exe;
+    </MSBuildCacheAllowFileAccessAfterProjectFinishProcessPatterns>
     <!-- 
       This repo uses a common output directory with many projects writing duplicate outputs. Allow everything, but note this costs some performance in the form of requiring
       the cache to use copies instead of hardlinks when pulling from cache.

@@ -5,7 +5,6 @@
 using System.Globalization;
 using System.Text;
 using System.Unicode;
-using System.Windows;
 
 using ManagedCommon;
 using PowerAccent.Core.Services;
@@ -22,11 +21,12 @@ public partial class PowerAccent : IDisposable
     private readonly LetterKey[] _letterKeysShowingDescription = new LetterKey[] { LetterKey.VK_O };
     private const double ScreenMinPadding = 150;
 
-    private bool _visible;
+    private readonly DelayedDisplayState _displayState = new();
     private string[] _characters = Array.Empty<string>();
     private string[] _characterDescriptions = Array.Empty<string>();
     private int _selectedIndex = -1;
     private bool _showUnicodeDescription;
+    private bool _initialShiftState; // Was shift held down when the toolbar was summoned?
 
     public LetterKey[] LetterKeysShowingDescription => _letterKeysShowingDescription;
 
@@ -42,8 +42,12 @@ public partial class PowerAccent : IDisposable
 
     private readonly CharactersUsageInfo _usageInfo;
 
-    public PowerAccent()
+    private readonly Action<Action> _runOnUiThread;
+
+    public PowerAccent(Action<Action> runOnUiThread)
     {
+        _runOnUiThread = runOnUiThread ?? throw new ArgumentNullException(nameof(runOnUiThread));
+
         Logger.InitializeLogger("\\QuickAccent\\Logs");
 
         LoadUnicodeInfoCache();
@@ -63,17 +67,22 @@ public partial class PowerAccent : IDisposable
 
     private void SetEvents()
     {
-        _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey) =>
+        _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey, int displayDelay) =>
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            _runOnUiThread(() =>
             {
-                ShowToolbar(letterKey);
+                ShowToolbar(letterKey, displayDelay);
             });
+        }));
+
+        _keyboardListener.SetCancelToolbarEvent(new PowerToys.PowerAccentKeyboardService.CancelToolbar(() =>
+        {
+            _runOnUiThread(CancelToolbar);
         }));
 
         _keyboardListener.SetHideToolbarEvent(new PowerToys.PowerAccentKeyboardService.HideToolbar((InputType inputType) =>
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            _runOnUiThread(() =>
             {
                 SendInputAndHideToolbar(inputType);
             });
@@ -81,7 +90,7 @@ public partial class PowerAccent : IDisposable
 
         _keyboardListener.SetNextCharEvent(new PowerToys.PowerAccentKeyboardService.NextChar((TriggerKey triggerKey, bool shiftPressed) =>
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            _runOnUiThread(() =>
             {
                 ProcessNextChar(triggerKey, shiftPressed);
             });
@@ -89,22 +98,24 @@ public partial class PowerAccent : IDisposable
 
         _keyboardListener.SetIsLanguageLetterDelegate(new PowerToys.PowerAccentKeyboardService.IsLanguageLetter((LetterKey letterKey, out bool result) =>
         {
-            result = Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang).Length > 0;
+            result = CharacterMappings.GetCharacters(letterKey, _settingService.SelectedLang).Length > 0;
         }));
     }
 
-    private void ShowToolbar(LetterKey letterKey)
+    private void ShowToolbar(LetterKey letterKey, int displayDelay)
     {
-        _visible = true;
+        // Each summon gets a generation id so a delayed render queued by an earlier
+        // press can't fire for a newer one (or after the toolbar was hidden).
+        var pendingDisplay = _displayState.Begin(displayDelay);
 
-        _characters = GetCharacters(letterKey);
-        _characterDescriptions = GetCharacterDescriptions(_characters);
-        _showUnicodeDescription = _settingService.ShowUnicodeDescription;
+        // Character data must be ready before the native listener accepts navigation. This also
+        // keeps an in-progress gesture coherent if the configured hold duration changes.
+        PrepareCharacters(letterKey);
 
-        Task.Delay(_settingService.InputTime).ContinueWith(
+        Task.Delay(pendingDisplay.Delay).ContinueWith(
         t =>
         {
-            if (_visible)
+            if (_displayState.ShouldShow(pendingDisplay))
             {
                 OnChangeDisplay?.Invoke(true, _characters);
             }
@@ -112,9 +123,25 @@ public partial class PowerAccent : IDisposable
         TaskScheduler.FromCurrentSynchronizationContext());
     }
 
+    private void CancelToolbar()
+    {
+        _displayState.Cancel();
+        _characters = Array.Empty<string>();
+        _selectedIndex = -1;
+        OnChangeDisplay?.Invoke(false, null);
+    }
+
+    private void PrepareCharacters(LetterKey letterKey)
+    {
+        _initialShiftState = WindowsFunctions.IsShiftState();
+        _characters = GetCharacters(letterKey);
+        _characterDescriptions = GetCharacterDescriptions(_characters);
+        _showUnicodeDescription = _settingService.ShowUnicodeDescription;
+    }
+
     private string[] GetCharacters(LetterKey letterKey)
     {
-        var characters = Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang);
+        var characters = CharacterMappings.GetCharacters(letterKey, _settingService.SelectedLang);
         if (_settingService.SortByUsageFrequency)
         {
             characters = characters.OrderByDescending(character => _usageInfo.GetUsageFrequency(character))
@@ -207,13 +234,13 @@ public partial class PowerAccent : IDisposable
 
             case InputType.Right:
                 {
-                    SendKeys.SendWait("{RIGHT}");
+                    WindowsFunctions.SendArrowKey(left: false);
                     break;
                 }
 
             case InputType.Left:
                 {
-                    SendKeys.SendWait("{LEFT}");
+                    WindowsFunctions.SendArrowKey(left: true);
                     break;
                 }
 
@@ -233,28 +260,44 @@ public partial class PowerAccent : IDisposable
                 }
         }
 
+        _keyboardListener.ForceReset();
         OnChangeDisplay?.Invoke(false, null);
         _selectedIndex = -1;
-        _visible = false;
+        _displayState.Cancel();
     }
 
     private void ProcessNextChar(TriggerKey triggerKey, bool shiftPressed)
     {
-        if (_visible && _selectedIndex == -1)
+        // Ignore navigation after cancellation or reset, when there is nothing to select.
+        if (_characters.Length == 0)
         {
-            if (triggerKey == TriggerKey.Left)
+            return;
+        }
+
+        // Use an async hardware check as a fallback in case the keyboard hook misses a
+        // quick Shift press. If the popup was opened while holding Shift (e.g., typing a
+        // capital letter), ignore the hardware check so we don't accidentally trigger a
+        // backwards navigation.
+        bool isHardwareShiftPressed = WindowsFunctions.IsShiftState() && !_initialShiftState;
+        shiftPressed = shiftPressed || isHardwareShiftPressed;
+
+        if (_displayState.IsVisible && _selectedIndex == -1)
+        {
+            if (triggerKey == TriggerKey.Space)
+            {
+                _selectedIndex = shiftPressed ? (_characters.Length - 1) : 0;
+            }
+            else if (_settingService.StartSelectionFromTheLeft)
+            {
+                _selectedIndex = 0;
+            }
+            else if (triggerKey == TriggerKey.Left)
             {
                 _selectedIndex = (_characters.Length / 2) - 1;
             }
-
-            if (triggerKey == TriggerKey.Right)
+            else if (triggerKey == TriggerKey.Right)
             {
                 _selectedIndex = _characters.Length / 2;
-            }
-
-            if (triggerKey == TriggerKey.Space || _settingService.StartSelectionFromTheLeft)
-            {
-                _selectedIndex = 0;
             }
 
             if (_selectedIndex < 0)
@@ -321,22 +364,78 @@ public partial class PowerAccent : IDisposable
         OnSelectCharacter?.Invoke(_selectedIndex, _characters[_selectedIndex]);
     }
 
+    /// <summary>
+    /// Calculates the coordinates at which a window of the specified size should be
+    /// displayed, based on the current display settings and user preferences.
+    /// </summary>
+    /// <remarks>The calculated coordinates take into account the active display's
+    /// location, size, DPI, and the user's configured position preferences.</remarks>
+    /// <param name="window">The size of the window for which to calculate display
+    /// coordinates.</param>
+    /// <returns>A point representing the top-left coordinates where the window should be
+    /// positioned on the active display, in physical/raw coordinates suitable for Win32
+    /// APIs like SetWindowPos.</returns>
     public Point GetDisplayCoordinates(Size window)
     {
         (Point Location, Size Size, double Dpi) activeDisplay = WindowsFunctions.GetActiveDisplay();
         Rect screen = new(activeDisplay.Location, activeDisplay.Size);
         Position position = _settingService.Position;
 
-        /* Debug.WriteLine("Dpi: " + activeDisplay.Dpi); */
-
-        return Calculation.GetRawCoordinatesFromPosition(position, screen, window, activeDisplay.Dpi) / activeDisplay.Dpi;
+        return Calculation.GetRawCoordinatesFromPosition(position, screen, window, activeDisplay.Dpi);
     }
 
-    public double GetDisplayMaxWidth()
+    /// <summary>
+    /// Gets the maximum width for the toolbar display based on the active screen
+    /// dimensions.
+    /// </summary>
+    /// <returns>The maximum width in DIPs (device-independent pixels), accounting for
+    /// screen padding.</returns>
+    /// <remarks>Private on purpose: the toolbar width must go through
+    /// <see cref="GetDisplayWidth"/> so the measured content width is always applied.</remarks>
+    private double GetDisplayMaxWidth()
     {
-        return WindowsFunctions.GetActiveDisplay().Size.Width - ScreenMinPadding;
+        // activeDisplay.Size.Width is in raw physical pixels; divide by the DPI scale to
+        // convert to DIPs (device-independent pixels), since ScreenMinPadding and the
+        // consuming window width are both expressed in DIPs.
+        var activeDisplay = WindowsFunctions.GetActiveDisplay();
+        return (activeDisplay.Size.Width / activeDisplay.Dpi) - ScreenMinPadding;
     }
 
+    /// <summary>
+    /// Calculates the width the toolbar should be given on the active display.
+    /// </summary>
+    /// <remarks>The caller measures its own character list and passes the result in; this
+    /// applies the minimum-cell-width floor, the description row's minimum width and the
+    /// active display's maximum width.</remarks>
+    /// <param name="measuredContentWidth">Width the character list needs, in DIPs; 0 when it
+    /// could not be measured yet.</param>
+    /// <param name="itemCount">Number of accent characters in the bar.</param>
+    /// <param name="minItemWidth">Minimum width of a single accent cell, in DIPs.</param>
+    /// <param name="chromeWidth">Width taken up outside the character list, in DIPs.</param>
+    /// <param name="descriptionMinWidth">Minimum width of the bar while the Unicode description
+    /// row is shown, in DIPs; 0 while that row is hidden.</param>
+    /// <returns>The toolbar width in DIPs.</returns>
+    public double GetDisplayWidth(
+        double measuredContentWidth,
+        int itemCount,
+        double minItemWidth,
+        double chromeWidth,
+        double descriptionMinWidth)
+    {
+        return Calculation.GetToolbarWidth(
+            measuredContentWidth,
+            itemCount,
+            minItemWidth,
+            chromeWidth,
+            descriptionMinWidth,
+            GetDisplayMaxWidth());
+    }
+
+    /// <summary>
+    /// Gets the user-configured position preference for the toolbar display. For example
+    /// <see cref="Position.TopLeft"/>.
+    /// </summary>
+    /// <returns>The preferred location for the toolbar.</returns>
     public Position GetToolbarPosition()
     {
         return _settingService.Position;
@@ -368,6 +467,7 @@ public partial class PowerAccent : IDisposable
                 case "ı\u0307\u0304": result.Add("İ\u0304"); break;
                 case "ı": result.Add("İ"); break;
                 case "ᵛ": result.Add("ⱽ"); break;
+                case "ⁿ": result.Add("ᴺ"); break;
                 case "ϑ": break;
                 default: result.Add(array[i].ToUpper(CultureInfo.InvariantCulture)); break;
             }

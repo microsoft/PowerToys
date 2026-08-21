@@ -260,12 +260,12 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.KeyboardManager.dll",
             L"PowerToys.Launcher.dll",
             L"WinUI3Apps/PowerToys.PowerRenameExt.dll",
-            L"PowerToys.ShortcutGuideModuleInterface.dll",
+            L"WinUI3Apps/PowerToys.ShortcutGuideModuleInterface.dll",
             L"PowerToys.ColorPicker.dll",
             L"PowerToys.AwakeModuleInterface.dll",
             L"PowerToys.FindMyMouse.dll",
             L"PowerToys.MouseHighlighter.dll",
-            L"PowerToys.MouseJump.dll",
+            L"WinUI3Apps/PowerToys.MouseJump.dll",
             L"PowerToys.AlwaysOnTopModuleInterface.dll",
             L"PowerToys.MousePointerCrosshairs.dll",
             L"PowerToys.CursorWrap.dll",
@@ -287,7 +287,9 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.CmdPalModuleInterface.dll",
             L"PowerToys.ZoomItModuleInterface.dll",
             L"PowerToys.LightSwitchModuleInterface.dll",
-            // L"PowerToys.PowerDisplayModuleInterface.dll", // TEMPORARILY_DISABLED: PowerDisplay
+            L"PowerToys.PowerDisplayModuleInterface.dll",
+            L"PowerToys.GrabAndMoveModuleInterface.dll",
+            L"PowerToys.AltWindowCycle.dll",
         };
 
         for (auto moduleSubdir : knownModules)
@@ -352,7 +354,14 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         result = -1;
     }
     Trace::UnregisterProvider();
-    QuickAccessHost::stop();
+    // When the full Windows session is ending, the OS reaps the Quick Access
+    // host process in parallel, so its stop timeout is pure dead time against
+    // the quiesce budget. User exits and Restart Manager ENDSESSION_CLOSEAPP
+    // requests retain the full graceful cleanup.
+    if (!is_system_session_ending())
+    {
+        QuickAccessHost::stop();
+    }
     return result;
 }
 

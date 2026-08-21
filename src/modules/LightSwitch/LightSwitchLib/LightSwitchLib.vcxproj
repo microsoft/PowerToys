@@ -84,7 +84,6 @@
         ..\..\..\common;
         ..\..\..\common\logger;
         ..\..\..\common\utils;
-        ..\..\..\..\deps\spdlog\include;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
     </ClCompile>

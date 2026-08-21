@@ -22,7 +22,11 @@
                 </Grid.RowDefinitions>
                 <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" />
                 <StackPanel Grid.Row="1" Orientation="Horizontal">
-                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind Fit, Converter={StaticResource EnumValueConverter}}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="-" />
                     <TextBlock
                         Margin="4,0,0,0"
                         Style="{StaticResource BodyStrongTextBlockStyle}"
@@ -318,6 +322,7 @@
             </Button>
 
             <Button
+                x:Uid="Resize_button"
                 Grid.Column="1"
                 MinWidth="{StaticResource ButtonMinWidth}"
                 Command="{x:Bind ViewModel.ResizeCommand}"
@@ -332,6 +337,7 @@
             </Button>
 
             <Button
+                x:Uid="Cancel"
                 Grid.Column="2"
                 MinWidth="{StaticResource ButtonMinWidth}"
                 Margin="8,0,0,0"
@@ -339,7 +345,6 @@
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="Escape" />
                 </Button.KeyboardAccelerators>
-                <TextBlock x:Uid="Cancel" />
             </Button>
         </Grid>
     </Grid>

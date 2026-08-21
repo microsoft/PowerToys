@@ -40,11 +40,6 @@ public:
     void send_message(const std::wstring& message_type, const std::wstring& message_arg = L"");
 
     /// <summary>
-    /// Bring the PowerDisplay window to the foreground.
-    /// </summary>
-    void bring_to_front();
-
-    /// <summary>
     /// Check if PowerDisplay.exe process is running.
     /// </summary>
     bool is_running() const;

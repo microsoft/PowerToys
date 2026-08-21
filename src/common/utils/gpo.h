@@ -33,6 +33,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_CROP_AND_LOCK = L"ConfigureEnabledUtilityCropAndLock";
     const std::wstring POLICY_CONFIGURE_ENABLED_LIGHT_SWITCH = L"ConfigureEnabledUtilityLightSwitch";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_DISPLAY = L"ConfigureEnabledUtilityPowerDisplay";
+    const std::wstring POLICY_CONFIGURE_ENABLED_GRAB_AND_MOVE = L"ConfigureEnabledUtilityGrabAndMove";
     const std::wstring POLICY_CONFIGURE_ENABLED_FANCYZONES = L"ConfigureEnabledUtilityFancyZones";
     const std::wstring POLICY_CONFIGURE_ENABLED_FILE_LOCKSMITH = L"ConfigureEnabledUtilityFileLocksmith";
     const std::wstring POLICY_CONFIGURE_ENABLED_SVG_PREVIEW = L"ConfigureEnabledUtilityFileExplorerSVGPreview";
@@ -72,6 +73,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerQOIThumbnails";
     const std::wstring POLICY_CONFIGURE_ENABLED_NEWPLUS = L"ConfigureEnabledUtilityNewPlus";
     const std::wstring POLICY_CONFIGURE_ENABLED_WORKSPACES = L"ConfigureEnabledUtilityWorkspaces";
+    const std::wstring POLICY_CONFIGURE_ENABLED_ALT_WINDOW_CYCLE = L"ConfigureEnabledUtilityAltWindowCycle";
 
     // The registry value names for PowerToys installer and update policies.
     const std::wstring POLICY_DISABLE_PER_USER_INSTALLATION = L"PerUserInstallationDisabled";
@@ -79,6 +81,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_SUSPEND_NEW_UPDATE_TOAST = L"SuspendNewUpdateAvailableToast";
     const std::wstring POLICY_DISABLE_NEW_UPDATE_TOAST = L"DisableNewUpdateAvailableToast";
     const std::wstring POLICY_DISABLE_SHOW_WHATS_NEW_AFTER_UPDATES = L"DoNotShowWhatsNewAfterUpdates";
+    const std::wstring POLICY_DISABLE_PREVIEW_UPDATES = L"PreviewUpdatesDisabled";
 
     // The registry value names for other PowerToys policies.
     const std::wstring POLICY_ALLOW_EXPERIMENTATION = L"AllowExperimentation";
@@ -105,6 +108,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_NEW_PLUS_HIDE_TEMPLATE_FILENAME_EXTENSION = L"NewPlusHideTemplateFilenameExtension";
     const std::wstring POLICY_NEW_PLUS_REPLACE_VARIABLES = L"NewPlusReplaceVariablesInTemplateFilenames";
     const std::wstring POLICY_NEW_PLUS_HIDE_BUILT_IN_NEW_CONTEXT_MENU = L"NewPlusHideBuiltInNewContextMenu";
+    const std::wstring POLICY_MARKDOWN_ALLOW_LOCAL_IMAGES = L"MarkdownAllowLocalImages";
 
     // Methods used for reading the registry
 #pragma region ReadRegistryMethods
@@ -261,7 +265,7 @@ namespace powertoys_gpo
             }
         }
 
-        // No list exists for machine and user, or no value was found in the list, or an error ocurred while reading the value.
+        // No list exists for machine and user, or no value was found in the list, or an error occurred while reading the value.
         return std::nullopt;
     }
 
@@ -286,6 +290,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredAlwaysOnTopEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_ALWAYS_ON_TOP);
+    }
+
+    inline gpo_rule_configured_t getConfiguredAltWindowCycleEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_ALT_WINDOW_CYCLE);
     }
 
     inline gpo_rule_configured_t getConfiguredAwakeEnabledValue()
@@ -316,6 +325,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredPowerDisplayEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_POWER_DISPLAY);
+    }
+
+    inline gpo_rule_configured_t getConfiguredGrabAndMoveEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_GRAB_AND_MOVE);
     }
 
     inline gpo_rule_configured_t getConfiguredFancyZonesEnabledValue()
@@ -542,6 +556,11 @@ namespace powertoys_gpo
         return getConfiguredValue(POLICY_DISABLE_SHOW_WHATS_NEW_AFTER_UPDATES);
     }
 
+    inline gpo_rule_configured_t getDisablePreviewUpdatesValue()
+    {
+        return getConfiguredValue(POLICY_DISABLE_PREVIEW_UPDATES);
+    }
+
     inline gpo_rule_configured_t getAllowExperimentationValue()
     {
         return getConfiguredValue(POLICY_ALLOW_EXPERIMENTATION);
@@ -710,6 +729,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredNewPlusHideBuiltInNewContextMenuValue()
     {
         return getConfiguredValue(POLICY_NEW_PLUS_HIDE_BUILT_IN_NEW_CONTEXT_MENU);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMarkdownLocalImagesEnabledValue()
+    {
+        return getConfiguredValue(POLICY_MARKDOWN_ALLOW_LOCAL_IMAGES);
     }
 
 #pragma endregion IndividualModuleSettingPolicies

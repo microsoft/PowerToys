@@ -26,26 +26,26 @@ namespace ImageResizer.Models
         };
 
         [ObservableProperty]
-        [JsonPropertyName("Id")]
+        [property: JsonPropertyName("Id")]
         private int _id;
 
         private string _name;
 
         [ObservableProperty]
-        [JsonPropertyName("fit")]
+        [property: JsonPropertyName("fit")]
         [NotifyPropertyChangedFor(nameof(ShowHeight))]
         private ResizeFit _fit = ResizeFit.Fit;
 
         [ObservableProperty]
-        [JsonPropertyName("width")]
+        [property: JsonPropertyName("width")]
         private double _width;
 
         [ObservableProperty]
-        [JsonPropertyName("height")]
+        [property: JsonPropertyName("height")]
         private double _height;
 
         [ObservableProperty]
-        [JsonPropertyName("unit")]
+        [property: JsonPropertyName("unit")]
         [NotifyPropertyChangedFor(nameof(ShowHeight))]
         private ResizeUnit _unit = ResizeUnit.Pixel;
 

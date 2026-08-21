@@ -705,7 +705,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                         else
                         {
                             // this has never been backed up, we need to do it now.
-                            Logger.LogInfo($"BackupSettings, {currentFile.Value} does not exists.");
+                            Logger.LogInfo($"BackupSettings, {currentFile.Value} does not exist.");
                             doBackup = true;
                         }
 

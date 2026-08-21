@@ -36,11 +36,28 @@ namespace Peek.UI
                 lock (_settingsLock)
                 {
                     _settings = value;
+                    AlwaysOnTop = _settings.Properties.AlwaysOnTop.Value;
+                    ShowTaskbarIcon = _settings.Properties.ShowTaskbarIcon.Value;
                     CloseAfterLosingFocus = _settings.Properties.CloseAfterLosingFocus.Value;
                     ConfirmFileDelete = _settings.Properties.ConfirmFileDelete.Value;
+                    ShowFilePreviewTooltip = _settings.Properties.ShowFilePreviewTooltip.Value;
                 }
+
+                Changed?.Invoke(this, EventArgs.Empty);
             }
         }
+
+        public event EventHandler? Changed;
+
+        /// <summary>
+        /// Gets a value indicating whether Peek shows its window on the top of the stack.
+        /// </summary>
+        public bool AlwaysOnTop { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether Peek shows its icon on the taskbar when activated.
+        /// </summary>
+        public bool ShowTaskbarIcon { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether Peek closes automatically when the window loses focus.
@@ -63,7 +80,7 @@ namespace Peek.UI
                 {
                     _confirmFileDelete = value;
 
-                    // We write directly to the settings file. The Settings UI will pick detect
+                    // We write directly to the settings file. The Settings UI will detect
                     // this change via its file watcher and update accordingly. This is the only
                     // setting that is modified by Peek itself.
                     lock (_settingsLock)
@@ -74,6 +91,11 @@ namespace Peek.UI
                 }
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether the file metadata tooltip is shown when hovering over the Peek preview.
+        /// </summary>
+        public bool ShowFilePreviewTooltip { get; private set; }
 
         public UserSettings()
         {

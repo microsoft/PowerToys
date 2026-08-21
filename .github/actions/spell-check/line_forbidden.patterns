@@ -8,12 +8,39 @@
 # you might not want to check in code where you skip all the other tests.
 #\bfit\(
 
+# Variant selectors
+# Were you really intending to use Variant selectors?
+# https://www.aikido.dev/blog/glassworm-returns-unicode-attack-github-npm-vscode
+[\x{FE00}-\x{FE0F}\x{E0100}-\x{E01EF}]{2,}
+
+# Private Use Area
+# Were you really intending to use Private Use Area code points?
+# https://www.aikido.dev/blog/the-return-of-the-invisible-threat-hidden-pua-unicode-hits-github-repositorties
+[\x{F0000}-\x{FFFFD}\x{100000}-\x{10FFFD}]{2,}
+
 # English does not use a hyphen between adverbs and nouns
 # https://twitter.com/nyttypos/status/1894815686192685239
 (?:^|\s)[A-Z]?[a-z]+ly-(?=[a-z]{3,})(?:[.,?!]?\s|$)
 
 # Smart quotes should match
 \s’[^.?!‘’]+’[^.?!‘’]+‘[^.?!‘’]+’|\s‘[^.?!‘’]+’[^.?!‘’]+’[^.?!‘’]+’|\s”[^.?!“”]+”[^.?!“”]+“[^.?!“”]+”|\s“[^.?!“”]+”[^.?!“”]+”[^.?!“”]+”
+
+# Don't write double negatives
+\w+n't not(?=\s)
+
+# Generally spaces follow instead of preceding `,`s
+# It's possible this is some strange CSV dialect, but, even so, you could probably move the space.
+\s[A-Za-z]{3,} ,[A-Za-z]{3,}\s
+
+# Should be `could`/`should`/`would`+`'ve`
+\b(?:c|sh|w)ould of\b(?! course)
+
+# Generally words are written with `'s`, not `"s`
+[^=|+']\s\w+"s\s
+
+# Don't miswrite **irreversible binomials**
+# https://en.wikipedia.org/wiki/Irreversible_binomial
+(?i)\b(?:cheese and macroni|honey and milk|sweet and short|die or do|roll and rock|the bees and the birds|match and mix|tear and wear|clear and loud|death and life|span and spick|vigor and vim|abet and aid|says and deposes|means and ways|dryer and washer|relaxation and rest|famous and rich|loan and savings|come high\s?water or hell|tuck and nip|turf and surf|between a hard place and a rock|dime and five|mouse and cat|tired and sick|pregnant and barefoot|feathered and tarred|feathers and tar|subtraction and addition|liabilities and assets|forth and back|strikes and balls|end to beginning|white and black|small and big|bust or boom|groom and bride|sister and brother|pass and butt|sell and buy|release and catch|effect and cause|state and church|robbers and cops|go and come|going and coming|Indians and cowboys|nights and days|wide and deep|flow and ebb|ice and fire|last and first|ceiling to floor|drink and food|aft and fore|domestic and foreign|backward and forward|foe or friend|back to front|vegetables and fruits|take and give|evil and good|foot and hand|heels over head|Hell and Heaven|there and here|seek and hide|dale and hill|her and him|low and high|valleys and hills|hers and his|thither and hither|yon and hither|cold and hot|wife and husband|out and in|gentlemen and ladies|sea and land|death or life|short and long|found and lost|hate and love|war and love|wife and man|matter over mind|pop and mom|nice or naughty|far and near|tuck and nip|south to north|then and now|later and now|shut and open|under and over|ride and park|starboard and port|cons and pros|pull and push|file and rank|fall and rise|loan and savings|water and soap|finish to start|go and stop|dip and strike|sour and sweet|thin and thick|ring and tip|fro and to|bottom to top|country and town|down and up|downs and ups|downtown and uptown|peace and war|dryer and washer|wane and wax|no and yes|yang and yin|a curse and a blessing|don'ts and dos |farewell and hail|wait and hurry up|difference\s(?:\w+\s+)+day and night|in health and in sickness|from stern to stem|the dead and the quick|a place and a time|generations and ages|comfort and aid|alack and alas|pieces and bits|soul and body|early and bright|mortar and brick|jowl by cheek|tidy and clean|verse and chapter|saucer and cup|cents and dollars|loathing and fear|chips and fish|foremost and first|farewell and hail|fist over hand|shoulders and head|soul and heart|spices and herbs|home and house|thirst and hunger|fork and knife|bounds and leaps|behold and lo|tidy and neat|dime and nickel|cranny and nook|void and null|bolts and nuts|suffering and pain|quiet and peace|ink and pen|choose and pick|simple and plain|proper and prim|rave and rant|shoals and rocks|awe and shock|wonders and signs|bones and skull|crossbones and skull|narrow and strait|narrow and straight|strain and stress|roundabouts and swings|chiggers and ticks|complain and whine|rain and wind|amen and yea|(?:raised|bred) and born|by crook or by hook|(?<=it was a )stormy and dark(?= night)|(?<=this ) age and day|cross the t's and dot the i's|high minded and haughty|best and highest(?= use)|like daughter, like mother|done and over with|(?<=on ) needles and pins|half a dozen of the other, six of one|(?<=up ) personal and close|baggage and bag|beads and baubles|balance and beams|breakfast and bed|braces and belt|bar and bench|bad and big|bosh bash bish|blue and black|beautiful and bold|Baptists and bootleggers|briefs or boxers|butter and bread|boar and bull|carry and cash|cheese and chalk|clans and cliques|control and command|cream and cookies|dumb and deaf|dash and dine|dirty and down|drabs and dribs|drive and drink|disorderly and drunk|furious and fast|famine or feast|forget and fire|fury and fire|fauna and flora|forget and forgive|function and form|foe or friend|frolics and fun|feathers and fur|goblins and ghosts|giggles and grins|home and hearth|haw and hem|holler and hoot|handgrenades and horseshoes|Gentile and Jew|jiving and juking|country and king|caboodle and kit|kin and kith|longitude and latitude|limb and life|learn and live|load and lock|match and mix|mild and meek|number and name|parcel and part|pencil and pen|post to pillar|pans and pots|perish or publish|riches to rags|raving and ranting|write and read|rumble to ready|wrong and right|roll and rock|ready and rough|regulations and rules|secure and safe|sound and safe|shell and shot|shave and shower|symptoms and signs|slide and slip|span and spick|shine and spit|Stripes and Stars|stones and sticks|spice and sugar|that or this|tat for tit|tail and top|turn and toss|treat or trick|tribulations and trials|tested and tried|true and tried|trailer and truck|wear and wash|waiting and watching|wail and weep|wild and wet|hollering and whooping|woolly and wild|wonderful and wise|warlocks and witches|ruin and wrack|the bees and the birds|(?<=between the) deep blue sea and the devil|Dragons & Dungeons|fuck off or fit in|flop-flip|fancy-free and footloose|to hold and to have|least but not last|Lease-Lend|leave ['‘]em and love ['‘]em|leave it or love it|paper and pen(?:cil|)|patter-pitter|relaxation and rest|(?<=without )reason or rhyme|tacky-ticky|take and break|zoom and boom|cox and box|talk and chalk|darts and charts|dip and chips|drive and dive|square and fair|dime and five|jetsam and flotsam|dry and high|fire and hire|split and hit|thither and hither|trot to hot|puff and huff|bustle and hustle|gap and lap|greatest and latest|proud and loud|greet and meet|right makes might|shame and name|dear and near|sods and odds|upwards and onwards|about and out|proud and out|dump and pump|tough and rough|gun and run|clout and shout|bake and shake|surely but slowly|joke and smoke|dash and stash|bitch and stitch|drop and stop|turf and surf|tide and time|gown and town|bake and wake|tear and wear|feed and weed|dealing and wheeling|dine and wine|nay or yea|trouble double|bender fender|dandy-handy|panky-hanky|scarum-harum|skelter helter|piggledy higgledy|quit it and hit|pocus hocus|toity[- ]hoity|potch-hotch|burly-hurly|bitty-itty|bitsy-itsy|votor moter|the highway or my way|pamby-namby|claim it and name it|ever, never|gritty nitty|porgy orgy|mell-pell|baggy saggy|so good, so far|weeny-teeny|blue true|lose it or use it|nilly willy|(?<=the )nays and (?:the |)yeas|beyond and above|graces and airs|muster and alarm|kicking and alive|well and alive|dangerous and armed|oranges and apples|fill and back|forth and back|eggs and bacon|mash and bangers|switch and bait|tackle and bait|pregnant and barefoot|sale and bargain|breakfast and bed|call and beck|whistles and bells|suspenders and belt|bold and big|tall and big|better and bigger|purge and binge|bridle and bit|bobs and bits|pieces and bits|blue and black|tackle and block|guts and blood|gore and blood|weave and bob|arrow and bow|determined and bound|gagged and bound|scrape and bow|bit and brace|water and bread|circuses and bread|roses and bread|serve and brown|spade and bucket|grind and bump|run and bump|large and by|gown and cap|driver and car|mouse and cat|balances and checks|dumplings and chicken|change and chop|sober and clean|dagger and cloak|tie and coat|doughnuts and coffee|go and come|burn and crash|sugar and cream|punishment and crime|saucer and cup|paste and cut|run and cut|burdock and dandelion|night and day|buried and dead|gone and dead|taxes and death|dash and dine|conquer and divide|out and down|cover and duck|dive and duck|every and each|ears and eyes|figures and facts|wide and far|furious and fast|loose and fast|dandy and fine|thumbs and fingers|brimstone and fire|foremost and first|chips and fish|blood and flesh|bone and flesh|ever and forever|center and front|games and fun|bother and fuss|take and give|aspirations and goals|plenty and good|light and goodness|pound and ground|slash and hack|hearty and hale|fast and hard|eggs and ham|nail and hammer|sickle and hammer|tongs and hammer|minds and hearts|now and here|seek and hide|watch and hide|mighty and high|dry and high|tight and high|miss and hit|run and hit|yon and hither|thither and hither|hosed and home|dry and home|eye and hook|loop and hook|buggy and horse|carriage and horse|heavy and hot|high and hot|bothered and hot|puff and huff|when and if|custard and kippers|tell and kiss|kin and kith|fork and knife|screaming and kicking|streams and lakes|order and law|behold and lo|dam and lock|key and lock|feel and look|clear and loud|boy and man|potatoes and meat|women and men|cookies and milk|honey and milk|tenon and mortise|shakers and movers|address and name|faces and names|easy and nice|cranny and nook|crosses and noughts|bolts and nuts|ends and odds|away and off|done and one|about and out|out and over|terminer and oyer|cream and peaches|Qs and Ps|carrots and peas|axe and pick|moan and piss|vinegar and piss|whine and piss|proper and prim|booty and prize|cons and pros|beans and pork|simple and pure|dirty and quick|pinion and rack|ruin and rack|pillage and rape|famous and rich|fall and rise|shine and rise|board and room|tumble and rough|jump and run|pepper and salt|vinegar and salt|sniff and scratch|rescue and search|destroy and seek|tie and shirt|fat and short|sweet and short|stout and short|tell and show|jive and shuck|tired and sick|burn and slash|arrows and slings|fall and slip|steady and slow|grab and smash|mirrors and smoke|ladders and snakes|dance and song|fury and sound|polish and spit|deliver and stand|strain and stress|Drang und Sturm|debonair and suave|tie and suit|rainbows and sunshine|demand and supply|light and sweetness|sandal and sword|chairs and tables|thin and tall|feathers and tar|crumpets and tea|lightning and thunder|ass and tits|fro and to|nail and tooth|go and touch|field and track|error and trial|tribulations and trials|roll and tuck|turn and twist|about and up|coming and up|vigor and vim|see and wait|fuzzy and warm|weft and warp|ward and watch|wane and wax|means and ways|good and well|whine and whinge|roses and wine|phrases and words|no and yes|a leg and an arm|(?<=old )chain and ball|by golly and by guess|bull-and-cock|dried (dry) and cut|(?<=in this )age and day|pony and dog show|(?<=by )starts and fits|grin and bear it|(?<=move ) earth and heaven|quit it and hit it|kisses and hugs|(?<=for all )purposes and intents|make up and kiss|last testament and will|make do and mend|(?<=every ) then and now|for all and once(?=[,.;!?])|jelly and peanut butter|ice cream and pickles|raining dogs and cats|development and research|blues and rhythm|(?<=between a )hard place and a rock|(?<=all's )done and said|(?<=different )sizes and shapes|bones? and skin|(?<=in )spirit and (?:in |)truth|a miss and a swing|(?<=through )thin and thick|O's and X's|a day and a year|nothing or all|worse or better|small or big|white or black|pleasure or business|night or day|alive or dead|die or do|flight or fight|take or give|bad or good|simple or gentle|she or he|tails or heads|her or his|miss or hit|cure or kill|break or make|less or more|never or now|shine or rain|reason or rhyme|wrong or right|swim or sink|later or sooner|more or two|down or up|death or victory|lose or win|no or yes|the egg or (?:the |)chicken|(?<=neither )fowl nor fish|(?<=come )high water or hell|(?<=neither )there nor here|(?<=neither )hair nor hide|(?<=not one )tittle or jot|(?<=neither )money nor love|shut up or put up|leave it or take it|(?<=neither )ornament nor use|gatherer-hunter|cheese corn|Costello and Abbott|Isaac and Abraham|Patroclus and Achilles|Eve and Adam|Anicetus and Alexiares|Cleopatra and Antony|Ant & Dec|Robin and Batman|Clyde and Bonnie|Abel and Cain|Ball and Cannon|Pollux and Castor|Psyche and Cupid|Clack and Click|Pythias and Damon|Goliath and David|Guattari and Deleuze|Jane and Dick|Marguerite and Faust|Swann and Flanders|Saunders and French|Frack and Frick|Laurie and Fry|Sullivan and Gilbert|Aga and Gilgamesh|Gretel and Hansel|Hellman & Friedman|Esau and Jacob|Jill and Jack|Victor and Jack|Vijaya and Jaya|Jekyll & Hyde|Hardy and Laurel|McCartney and Lennon|Loewe and Lerner|Clark and Lewis|Lilo & Stitch|Large and Little|Meslamta-ea and Lugal-irra|Luigi and Mario|Lewis and Martin|Ashley and Mary-Kate Olsen|Sue and Mel|Wise and Morecambe|Mindy and Mork|Eurydice and Orpheus|Horse-Face and Ox-Head|Penn & Teller|Aristotle and Phyllis|Ferb and Phineas|Pinky & The Brain|Galatea and Pygmalion|Ren & Stimpy|Rhett & Link|Morty and Rick|Hart and Rodgers|Hammerstein and Rodgers|Juliet and Romeo|Remus and Romulus|Guildenstern and Rosencrantz|Max and Sam|Delilah and Samson|Simon & Garfunkel|Sonny & Cher|Thelma & Louise|Thompson and Thomson|Tom & Jerry|Isolde and Tristan|Tim & Eric|Adonis and Venus|Vic & Bob|Crick and Watson|Eve and Adam|pears and apples|glass and bottle|Liszt and Brahms|bone and dog|toad and frog|blister and hand|south and north|pork and rabbit|strife and trouble|eight and two|flute and whistle)\b
 
 # Don't use `requires that` + `to be`
 # https://twitter.com/nyttypos/status/1894816551435641027
@@ -29,6 +56,18 @@
 # Complete sentences in parentheticals should not have a space before the period.
 \s\.\)(?!.*\}\})
 
+# Write out small numbers (unless they are code)
+# See https://www.scribendi.com/academy/articles/when_to_spell_out_numbers_in_writing.en.html#:~:text=Writing%20Small%20and%20Large%20Numbers,ten%29%20are%20written%20as%20numerals%2e
+#(?<![=>]|depth|frame|page|project|select)\s[1-9] (?!byte|day|hour|meaning|minute|month|(?:new |)page|people|(?:more |)space|year)[a-z]+ [a-z]+\s
+
+# Write out numbers at the start of a sentence
+# https://www.scribendi.com/academy/articles/when_to_spell_out_numbers_in_writing.en.html#:~:text=Beginning%20a%20Sentence%20with%20a%20Number,may%20be%2e
+#(?:\b[a-z]{4,}|\s(?:[a-eg-z][a-z]{2}|f[a-hj-z][a-z]|fi[a-fh][a-z]))[:.?!] [1-9] [a-z]{3,} [a-z]+\s\w+
+
+# Don't write two numbers in a row
+# https://www.scribendi.com/academy/articles/when_to_spell_out_numbers_in_writing.en.html#:~:text=Paired%20Numbers%20%28Two%20Numbers%20in,librarian%20to%20begin%20story%20time%2e
+#(?:[a-z]{4,}|\s(?!apr|aug|dec|feb|fri|jan|mar|mon|nov|oct|sat|sep|sun|thu|tue|wed)[a-z]{3})\s\d+\s\d+(?!--)[-\s](?:(?!--)[-A-Za-z]){2,}\s
+
 # This probably indicates Mojibake https://en.wikipedia.org/wiki/Mojibake
 # You probably should try to unbake this content
 Ã(?:Â[¤¶¥]|[£¢])|Ãƒ
@@ -43,39 +82,96 @@
 # Assuming that the time is being passed to https://go.dev/src/time/format.go
 \b2006-02-01\b
 
+# Should probably have a trailing `.`
+\s([a-z]\.){2,}[a-z]\s(?=\w)
+
+# Should probably end with `”`
+# Likely bad OCR
+“.+[^'‘\\\[]+’'(?!['"])
+
+# Should probably end with `”` or with only one of `’`/`'`
+\s\w+[^'‘\\\[]+’'(?!['"])
+
+# Should probably be matching (smart)quotes or backticks (if Markdown)
+# Unless the file format is TeX
+^[^`]+(?<!`)``(?!`)[^`]*?''
+
 # Should probably be `YYYYMMDD`
 \b[Yy]{4}[Dd]{2}[Mm]{2}(?!.*[Yy]{4}[Dd]{2}[Mm]{2}).*$
+
+# Should be `a bit of`
+(?<=\bquite )some(?= hands-on)
+
+# Should be `a few`
+(?<=\bquite )some(?= hands\s)
+
+# Should be `a part`
+(?i)\bapart(?= of\b)
 
 # Should be `a priori` or `and prior`
 (?i)(?<!posteriori)\sand priori\s
 
 # Should be `a`
-\san (?=(?:[b-df-gj-npqtv-xz]|h(?!our|tml|ttp)|r(?!c\b)|s(?!sh|vg))[a-z])
+\san (?=(?:[b-dfgjklpqtvwz]|h(?!onou?r|our|s[lv]|tml|ttp|ref)|n(?!ginx|grok|pm)|r(?!c)|s(?!s[ho]|vg))[a-z]|x(?!\b|[-\d]|ml))
 
 # Articles generally shouldn't be used without a noun and a verb
 # - Perhaps you're missing a verb between the noun and the second article.
 # - Or, perhaps you should remove the first verb and treat the intervening word as a verb?
 # - In some cases you should add a `,` between the noun and the second article.
-\s(?:an?|the(?! action))\s(?!way|wh|how\b)[A-Za-z][a-z]+[a-qs-z]\s(?:a(?! bit)n?|the)\s
+\s(?:an?|the(?! action))\s(?!way|wh|(?:how|priori)\b)[A-Za-z][a-z]+[a-qs-z]\s(?:a(?! (?:bit|few|little|lot|posteriori))n?|the(?! same))\s
 
 # Should only be one of `a`, `an`, or `the`
-\b(?:(?:an?|the)\s+){2,}\b
+\b(?:(?:a(?! (?:priori|posteriori))n?|the)\s+){2,}\b
+
+# Should be `a large amount` or `large amounts`
+(?<=\bof )large amount(?= of data\b)
+
+# Should be `access`
+(?<!\bto )assess(?= token(?!-)\b)
+
+# Should be `ado`
+(?i)(?<=without further )adieu\b
+
+# Should be `afterthought` or `after some thought`
+\bafter thought\b
+
+# Should be `and not` or `nor`
+\band nor\b
 
 # Should be a list `something, a second thing, or a third thing` or `something, a thing to do a thing`
 # -- This rule is experimental, if you find it has a high false-positive rate, please let the maintainer know
-#(?:^|[?!.] )[^()?!;,.]+, a(?:\s+(?!to\b)\w+)+?\s+an?\b
+#(?:^|[?!.] )(?:(?![Ff]or example|Currently|In \w)[^()?!;,.])+, a(?:\s+(?!and|to\b)\w+)+?\s+an?\b(?![^.:!]+, (?:and|or)\b)
+
+# Should be present tense
+(?<=\bhas to )\w+ed\b
 
 # Should only be `are` or `can`, not both
 \b(?:(?:are|can)\s+){2,}\b
 
+# Should be `at` or possibly `in`
+\bon(?= the (?:top|bottom) (?:left|right) \w+)
+
 # Should probably be `ABCDEFGHIJKLMNOPQRSTUVWXYZ`
 (?i)(?!ABCDEFGHIJKLMNOPQRSTUVWXYZ)ABC[A-Z]{21}YZ
 
+# Should be `all over`
+\ballover(?= the\b)
+
+# Should be `please` or `also, please`
+# https://english.stackexchange.com/questions/106165/please-do-also-or-please-also
+\b[Pp]lease(?:, do|) also\b
+
 # Should be `an`
-#(?<!\b[Ii] |\.)\bam\b
+#(?<!(?:\b[Ii]|git) )(?<![-.])(?<!\d\s?)\bam\b(?!/pm|[:")]| I\b)
+
+# Should be `an`
+(?<=\s)a(?= (?:a(?!nd\s|s\s)|e(?!u)|i(?![ns]\s)|o(?!nc?e)|u(?!\d|biquitous|int|kr|long|n[ai]|r[ael]|s[aeiu]|tf\d*|til|topia|uid|vula|v\b|wp)|y(?!aml|arn|e|ie|oga|oung|y)))
 
 # Should be `anymore`
 \bany more[,.]
+
+# Should be `as`
+(?<=\bas well )a\b
 
 # Should be `Ask`
 (?:^|[.?]\s+)As\s+[A-Z][a-z]{2,}\s[^.?]*?(?:how|if|wh\w+)\b
@@ -86,14 +182,32 @@
 # https://www.opensourceshakespeare.org/views/plays/play_view.php?WorkID=macbeth&Act=4&Scene=3&Scope=scene
 \bin one fell s[lw]?oop\b
 
+# Should be `aw`
+(?i)\bawe(?=, look)
+
 # Should be `'`
 (?i)\b(?:(?:i|s?he|they|what|who|you)[`"]ll|(?:are|ca|did|do|does|ha[ds]|have|is|should|were|wo|would)n[`"]t|(?:s?he|let|that|there|what|where|who)[`"]s|(?:i|they|we|what|who|you)[`"]ve)\b
 
 # Should be `background` / `intro text` / `introduction` / `prologue` unless it's a brand or relates to _subterfuge_
 (?i)\bpretext\b
 
+# Should be `bear`
+(?i)\bbare(?= with\b)
+
+# Should be `Bitbucket`
+\bBitBucket\b
+
 # Should be `bearer`
 \b(?<=the )burden(?= of bad news\b)
+
+# Should be `beginning`
+\b(?<=from )begin(?= to end\b)
+
+# Should be `beside`
+(?i)\bbesides(?= the point)
+
+# Should be `best-effort`
+\bbest-efforts\b
 
 # Should be `bona`
 # unless talking about bones
@@ -105,6 +219,9 @@
 
 # Should be `briefcase`
 \bbrief-case\b
+
+# Should be `by`
+(?<=caused )from(?= an?\b)
 
 # Should be `by far` or `far and away`
 \bby far and away\b
@@ -132,6 +249,15 @@
 # Should be `chart`
 (?i)\bhelm\b.*\bchard\b
 
+# Should be `chute`
+(?i)(?<=laundry )shoot\b
+
+# Should be `code`
+(?<=\bof )a code(?= that\b)
+
+# Should be `counter-intuitive`
+\bcounter intuitive\b
+
 # Do not use `(click) here` links
 # For more information, see:
 # * https://www.w3.org/QA/Tips/noClickHere
@@ -146,8 +272,30 @@
 # Alt text should be short
 \balt=(?:'[^']{126,}'|"[^"]{126,}")
 
+# Should be either of `default` or `fallback`, but not both
+# Unless you have a non-default fallback, but that's just weird.
+\bdefault fallback\b
+
+# Should be `dress code`
+\bdressing code\b
+
+# Should be `dried`
+(?i)(?<=\bcut and )dry\b
+
+# Should be `dryer`
+(?i)(?<=\ba clothes )drier\b
+
 # Should be `effect`
 (?<=\btake )affect\b
+
+# Should be `en`
+(?i)(?<=\bis )on(?= route to\b)
+
+# Should be `end`
+(?<=\b[Ww]e )ends\b
+
+# Should be `ends`
+\bend's(?= up\b)
 
 # Should be `-endian`
 \b(?i)(?<=big|little) endian\b
@@ -155,17 +303,39 @@
 # Should be `equals` to `is equal to`
 \bequals to\b
 
+# Should be `equal to`, `equal width`, or reworded
+\bequal with\b(?! (?:no|respect))
+
+# Should be `eta` or `calculate eta`
+(?i)\bestimated? eta\b
+
 # Should be `ECMA` 262 (JavaScript)
 (?i)\bTS\/EMCA\b|\bEMCA(?: \d|\s*Script)|\bEMCA\b(?=.*\bTS\b)
 
 # Should be `ECMA` 340 (Near Field Communications)
 (?i)EMCA[- ]340
 
+# Should be `exceed`
+\bare higher than\b
+
+# Should be `exceeds`
+\bis higher than\b
+
+# Should be `... exists`
+\b(?:an?|the) \w+[a-rt-z] already exist\b
+
 # Should be `fall back`
-\bfallback(?= to)\b
+(?<!\b(?:a|the) |-)\bfallback(?= to)\b
+
+# Should be `fell`
+(?i)\bfoul(?= swoop)
 
 # Should be `for`, `for, to` or `to`
-\b(?:for to|to for)\b
+\b(?:for to|(?<!\bup |-)to for)\b
+
+# Should be `ghcr.io`
+# https://bmitch.net/blog/2025-08-22-ghrc-appears-malicious/
+\bghrc\.io\b
 
 # Should be `GitHub`
 (?<![&*.]|// |\b(?:from|import|type) )\bGithub\b(?![{()])
@@ -173,12 +343,38 @@
 # Should be `GitLab`
 (?<![&*.]|// |\b(?:from|import|type) )\bGitlab\b(?![{()])
 
+# Should be `GmbH`
+\bGmbh\b
+
 # Should be `heartrending` unless talking about drawing hearts
 \b(?i)heart[- ]rendering\b(?![^.?!]*(?:hearts|quirk))
+
+# Should be `homing`
+(?i)\bhoning(?= in on)
+
+# Should be `how to` or reworded
+(?<=figure out )to(?! which)\b"
+
+# Should be `hunker`
+(?i)\bbunker(?= down)
 
 # Should probably be `https://`...
 # Markdown generally doesn't assume that links are to urls
 \]\(www\.\w
+
+# Should be `https://www.chiark.greenend.org.uk/~sgtatham/putty/`
+# See https://hachyderm.io/@simontatham/114846017785770922
+\bputty\.org\b
+
+# Often should be `if`/`when` (or reworded)
+# unless describing exceptional cases (i.e. emergencies)
+#(?<!just )\bin case\b(?! (?:I|s?he|they|of|we|you))
+
+# Should be `in`
+(?<=\b(?:go|reach) back )into(?= time\b)
+
+# Should be `in` or `out`
+(?<=\bfill )up(?= the forms?\b)
 
 # Should be `intents and purposes`
 (?<=[Ff]or all )intensive purposes\b
@@ -186,14 +382,24 @@
 # Should be `JavaScript`
 \bJavascript\b
 
+# Should be `Jira`
+\bJIRA\b(?!-\d+)
+
 # Should be `macOS` or `Mac OS X` or ...
 \bMacOS\b
 
 # Should be `Microsoft`
 \bMicroSoft\b
 
+# Should be `muster`
+(?i)(?<=cut the )mustard
+
 # Should be `OAuth`
 (?:^|[^-/*$])[ '"]oAuth(?: [a-z]|\d+ |[^ a-zA-Z0-9:;_.()])
+
+# Should be `pytest`
+# see https://docs.pytest.org/en/stable/
+\bPytest\b
 
 # Should be `RabbitMQ`
 \bRabbitmq\b
@@ -204,17 +410,45 @@
 # Should be `TypeScript`
 \bTypescript\b
 
+# Should be `also need to`
+\bneed to also\b
+
 # Should be `another`
 \ban[- ]other(?!-)\b
 
 # Should be `case-(in)sensitive`
 \bcase (?:in|)sensitive\b
 
+# Should be `Cloud`
+CLoud
+
 # Should be `coinciding`
 \bco-inciding\b
 
+# Should be `convert`
+# Unless talking about a thing named `Covert`
+\b[Cc]overt(?= (?!channel)\w+ to\b)
+
 # Should be `deprecation warning(s)`
 \b[Dd]epreciation [Ww]arnings?\b
+
+# Should be `disk space.`
+(?<=to save )disk\.(?![a-zA-Z])
+
+# Should be `diffuse`
+(?i)\bdefuse(?= tensions)
+
+# Should be `drawers`
+(?i)(?<=dresser )draws\b
+
+# Should be `due`
+(?i)\bdo(?= diligence\b)
+
+# Should be `due`
+(?i)(?<=\bin )do(?= (?:course|time))
+
+# Should be `gets`
+\scommand get the\s
 
 # Should be `greater than`
 \bgreater then\b
@@ -229,10 +463,13 @@
 \bgoing to bad(?!-)\b
 
 # Should be `greater than`
-#\bhigher than\b
+#\bhigher than\b(?! ever)
 
-# Should be `ID` (unless it's a flag/property)
-#(?<![-\.])\bId\b(?![(])
+# Should be `Homebrew`
+\bHomeBrew\b
+
+# Should be `ID` (unless it's a flag/property/RCS variable)
+#(?<![-\.*$])\bId\b(?![(=:])
 
 # Should be `in front of`
 \bin from of\b
@@ -240,16 +477,19 @@
 # Should be `into`
 # when not phrasal and when `in order to` would be wrong:
 # https://thewritepractice.com/into-vs-in-to/
-\sin to\s(?!if\b)
+(?<!opt)\sin to\s(?!if\b)
 
 # Should be `use`
 \sin used by\b
 
 # Should be `in-depth` if used as an adjective (but `in depth` when used as an adverb)
-\bin depth\s(?!rather\b)\w{6,}
+\bin depth\s(?!before\b|rather\b)\w{6,}
 
 # Should be `in-flight` or `on the fly` (unless actually talking about airline flights)
 \bon[- ]flight\b(?!=\s+(?:(?:\w{2}|)\d+|availability|booking|computer|data|delay|departure|management|performance|radar|reservation|scheduling|software|status|ticket|time|type|.*(?:hotel|taxi)))
+
+# Should be `in case`
+\bencase(?= of)\b
 
 # Should be `is obsolete`
 \bis obsolescent\b
@@ -258,13 +498,31 @@
 (?<![.'])\bits['’]
 
 # Should be `its`
+(?<=\b(?:in|of) )it's\b
+
+# Should be `its`
 \bit's(?= (?:child|only purpose|own(?:er|)|parent|sibling)\b)
+
+# Should be `its`
+(?<!since )\bit's(?= data\b)
+
+# Should be `... its`
+\w{2}(?<!\b(?:case|fail|mean|perhap|purpose|sometime|suggest|test|unles|ye))s it's\b(?! (?:an?|going|not|own|the|\w+ed)\b)
 
 # Should be `for its` (possessive) or `because it is`
 \bfor it(?:'s| is)\b
 
 # Should be `lends`
 \bleads(?= credence)
+
+# Should be `lessen`
+(?<=\bwould )lesson\b
+
+# Should be `few times` or `little time`
+(?<=\bvery )few time\b
+
+# Should be `lo`
+(?i)\blow(?= and behold)
 
 # Should be `log in`
 \blogin to the
@@ -274,6 +532,15 @@
 
 # Should be `lose`
 (?<=\bwill )loose\b
+
+# Should be `lowercase`/`uppercase` if writing in en-US
+\b(?:low|upp)er case\b
+
+# Should be `OAuth`
+\bOauth\b
+
+# Should be `paste`
+(?<=and )past(?= it)
 
 # `apt-key` is deprecated
 # ... instead you should be writing a pair of files:
@@ -291,6 +558,9 @@
 # Should be `nearby`
 \bnear by\b
 
+# Should be `necessary`
+(?<=\blonger )needed(?= to\b)
+
 # Should probably be a person named `Nick` or the abbreviation `NIC`
 \bNic\b
 
@@ -306,6 +576,9 @@
 # Should be `perform its`
 \bperform it's\b
 
+# Should be `PowerPoint`
+\bPowerpoint\b
+
 # Should be `opt-in`
 (?<!\scan|for)(?<!\smust)(?<!\sif)\sopt in\s
 
@@ -313,13 +586,16 @@
 \bout of date(?= \w{3,}\b)
 
 # Should be `less than`
-\bless then\b
+\bless then\b|\blesser than\b
 
 # Should be `load balancer`
 \b[Ll]oud balancer
 
+# Should be `I may be`, or `I, maybe`
+\bI maybe\b
+
 # Should be `moot`
-\bmute point\b
+(?i)\bmute(?= point\b)
 
 # Should be `one of`
 (?<!-)\bon of\b
@@ -331,6 +607,9 @@
 # The former if you mean it can be changed dynamically.
 # The latter if you mean that it can be changed without recompiling but not after the program starts.
 \bswitched on runtime\b
+
+# Should be `of`
+(?<=\brid )off\b
 
 # Should be `Of course,`
 [?.!]\s+Of course\s(?=[-\w\s]+[.?;!,])
@@ -365,8 +644,14 @@
 # Should be `or`
 \b(?i)true of .*false\b
 
+# Should be `PagerDuty`
+\bPagerduty\b
+
 # Should be `pale`
 \b(?<=beyond the )pail\b
+
+# Should be `piqued`
+(?i)\bpe[ae]ked(?= my interest\b)
 
 # Should be reworded.
 # `passthrough` is an adjective
@@ -380,8 +665,27 @@
 # Should be `Red Hat`
 \bRed[Hh]at\b
 
+# Should be `rein`
+(?i)(?<=\bfree )(?:rain|reign)\b
+
 # Should be `regardless, ...` or `regardless of (whether)`
 \b[Rr]egardless if you\b
+
+# Should be `rely`
+(?<=\b(?i)we )reply(?= on\b)
+
+# Should be `rought`
+(?i)\brod(?= iron)
+
+# Should probably be `(s)` if trying to say "word(s)"
+# False positive if `/s` is used to mean `per second`
+\s[a-z]{2,}[a-rt-z]/s\s(?=[a-oq-z]\w{2}|p[a-df-z]\w|pe[a-qs-z]|per[a-z])
+
+# Should be `safeguard`
+\bsafe guard\b
+
+# Should be `se`
+(?i)(?<=per )say\b
 
 # Should be `self-signed`
 \bself signed\b
@@ -389,14 +693,60 @@
 # Should be `SendGrid`
 \bSendgrid\b
 
+# Should be `served`
+(?i)(?<=first come, first )serve(?=\.)
+
 # Should be `set up` (`setup` is a noun / `set up` is a verb)
-\b[Ss]etup(?= (?:an?|the)\b)
+\b[Ss]etup(?= (?:an?|the|to)\b)
+
+# Should be `shoo`
+(?i)shoe(?=-in)
+
+# Should be `sleight`
+(?i)\bslight(?= of hand)
+
+# Should be `start` or `state`
+# unless D&D (or similar), files/sockets, or statistics
+(?:^|\s)stat of\b(?!.*(?:socket|file|path|roll|battle|race|class|diff|NPC))
 
 # Should be `state`
 \bsate(?=\b|[A-Z])|(?<=[a-z])Sate(?=\b|[A-Z])|(?<=[A-Z]{2})Sate(?=\b|[A-Z])
 
+# Should be `succeed` (or `successfully`)
+(?i)(?<=\bshould )success\b
+
+# Should be `supposed`
+(?i)\bsuppose(?= to\b)
+
+# Should be `time`
+(?<=\bat a )tim\b(?! (?i)(?:bu|ho)rton)
+
+# Should be `times`
+(?<=\ba few )time\b
+
+# Should be `that`
+\b[Tt]hat's(?= would)
+
+# Should be `then` (or occasionally `that`)
+# Original GitHub query: "/ than the \w+ must/ NOT /(er|more|less|worse|different\w*)(?: \w+|)(,[^.?!]+,|) than the/"
+# RegEx engines don't tend to appreciate variable length negative bookbehind
+(?<!er|ly)(?<!more|less)(?<!worse)(?<!different)\sthan(?= the \w+ must)
+
+# Should be `think`
+(?i)(?<=you've got another )thing(?= coming)
+
 # Should be `this`
 \b[Tt]oday(?= morning\b)
+
+# Should be `through`
+# unless the next concept is something that is being thrown
+(?i)\bbl[eo]w thr[eo]w(?! (?:him|her|me|them?|us)(?! in))\b
+
+# Should be `to use`
+\bto now use\b
+
+# Should be `toe`
+(?i)\btow(?= the line)
 
 # Should be `let's` or `let us`
 \b[Ll]ets (?=throw\.)
@@ -413,11 +763,23 @@
 # Should be `did not exist`
 \bwere not existent\b
 
+# Should be `not exist` or `nonexistent`
+(?<!(?i)(?:IF|WHERE) )\bnot exists\b(?!\()
+
 # Should be `nonexistent`
 \bnon existing\b
 
 # Should be `nonexistent`
 \b[Nn]o[nt][- ]existent\b
+
+# Should be `only does`
+(?<![Ww]hy )\bdoes only(?! (?:seem|match))\b
+
+# Should be `only matches`
+\bdoes only match\b
+
+# Should be `only seems`
+\bdoes only seem\b
 
 # Should be `our`
 \bspending out time\b
@@ -428,8 +790,14 @@
 # Should be `more than` or `more, then`
 \bmore then\b
 
+# Should be `peek`
+(?i)(?<=sneak )peak
+
 # Should be `Pipeline`/`pipeline`
 (?:(?<=\b|[A-Z])p|P)ipeLine(?:\b|(?=[A-Z]))
+
+# Should be `please do not`/`you do not need`
+[Pp]lease do not need
 
 # Should be `preexisting`
 [Pp]re[- ]existing
@@ -446,8 +814,16 @@
 # Should be `prerequisite`
 [Pp]re[- ]requisite
 
+# Should be `principal`
+[Pp]rinciple(?= [Ee]ngineer)
+
 # Should be `QuickTime`
 \bQuicktime\b
+
+# Should be `quiet`
+# Unless for some really strange reason you *quite* literally mean *quite*
+# instead of the opposite of load/verbose.
+(?<=--)quite\b
 
 # Should be `recently changed` or `recent changes`
 [Rr]ecent changed
@@ -458,8 +834,14 @@
 # Should be `reentrant`
 [Rr]e[- ]entrant
 
+# Should be `rely`
+(?<=\bto )really(?= on\b)
+
 # Should be `room for`
 \brooms for (?!lease|rent|sale)
+
+# Reword
+#\b(?i)same as for\b
 
 # Should be `socioeconomic`
 # https://dictionary.cambridge.org/us/dictionary/english/socioeconomic
@@ -474,14 +856,26 @@ socio-economic
 # Should be `there are` or `they are` (or `they're`)
 (?i)\btheir are\b
 
-# Should be `understand`
-\bunder stand\b
+# Should be `they have` or `have the` or ...
+\bthe (?:have(?! nots)|has)\b
 
-# Should be `URI` or `uri` unless it refers to a person named `Uri` (or a flag)
-#(?<![-\.])\bUri\b(?![(])
+# Should be `too`
+(?<=\sit's )to(?= (?:big|large|small|tiny|important))
+
+# Should be `too`
+(?<=\bway )to(?= many\s)
 
 # Should be `true`
 (?i)(?<![\[\]()])\brue(?:= or false)
+
+# Should be `understand`
+\bunder stand\b
+
+# Should be `upside down`
+\bup side down\b
+
+# Should be `URI` or `uri` unless it refers to a person named `Uri` (or a flag)
+#(?<![-\.])\bUri\b(?![(])
 
 # Should be `it uses is`
 /\bis uses is\b/
@@ -492,11 +886,30 @@ socio-economic
 # Should be `was`
 \bhas been(?= removed in v?\d)
 
+# Should be `waste`
+# Unless really talking about the human torso
+\b(?i)waist[\w\s,']*\b(?:lot|time)\b
+
 # Should be `where`
 \bwere they are\b
 
+# Should be `whet`
+(?i)\bwet(?= your appetite)
+
+# Should be `whether or not ...`
+(?i)\b(?:whe|ra)ther(?:\s\w+)+ or not\.
+
 # Should be `why`
 , way(?= is [^.]*\?)
+
+# Should be `won't`
+\bwont(?= have\b)
+
+# Should be `wouldn't`
+would'nt
+
+# Should be `wreaks`
+(?i)\bwrecks(?= havoc)
 
 # should be `vCenter`
 \bV[Cc]enter\b
@@ -504,14 +917,23 @@ socio-economic
 # Should be `VM`
 \bVm\b
 
+# Should be `void`
+(?<=\bnull and)avoid\b
+
+# Should be `way too`, `ways to`, or have some extra punctuation
+\sways too\s(?=\w)
+
 # Should be `walkthrough(s)`
 \bwalk-throughs?\b
 
 # Should be `want`
-\bdon't ant\b
+(?<=\bdon't )ant\b
 
 # Should be `we'll`
 \bwe 'll\b
+
+# Should be `Webex`
+\bWebEx\b
 
 # Should be `week`
 # unless you're really talking about people or pointers
@@ -520,14 +942,37 @@ socio-economic
 # Should be `well`
 \b[Yy]ou(?:'re| are) doing good\b
 
+# Should be `well`
+# unless there is a word after good and good is modifying it...
+\b(?<=[Dd]oing pretty )good(?! stuff\b)
+
+# Should be `WhatsApp`
+Whatsapp
+
+# Should probably be `when`/`where` or reworded
+#\bat the point\b
+
 # Should be `whereas`
 \bwhere as\b
+
+# Should be `which`
+# unless you're talking about Halloween/D&D/wizards/broomsticks
+\bwitch\b
+
+# Should be _verb in infinitive form_
+(?<=\bwill )(?!(?:(?:un|)alias|bias|(?:b|sp|\b)ring|cities|(?:re|)focus|its|shed|sometimes|th[iu]s|[a-z]+s (?:be|of))\b)[a-z]+(?:[a-df-z]ed|ing|[a-rt-xz]s)\b
 
 # Should be `WinGet`
 \bWinget\b
 
 # Should be `without` (unless `out` is a modifier of the next word)
 \bwith out\b(?!-)
+
+# Should be `without ...` / `while missing ...` or reworded
+#\bwith missing\b
+
+# Should be `wondering`
+\bwandering(?= why)
 
 # Should be `work around`
 \b[Ww]orkaround(?= an?\b)
@@ -541,8 +986,14 @@ socio-economic
 # Should be `worst`
 (?i)worse-case
 
+# Should be `yea`
+(?i)\byay(?= or nay)
+
 # Should be `you are not` or reworded
 \byour not\b
+
+# Should be `your`
+(?i)\byou're(?= time\b(?! traveling))
 
 # Should be `(coarse|fine)-grained`
 \b(?:coarse|fine) grained\b
@@ -554,6 +1005,12 @@ socio-economic
 # Homoglyph (Cyrillic) should be `a`/`b`/`c`/`e`/`o`/`p`/`x`/`y`
 # It's possible that your content is intentionally mixing Cyrillic and Latin scripts, but if it isn't, you definitely want to correct this.
 [авсеорху](?=[A-Za-z]{2,})|(?<=[A-Za-z]{2})[авсеорху]|(?<=[A-Za-z])[авсеорху](?=[A-Za-z])
+
+# Homoglyph (Greek) should be `o`
+[ο](?=[A-Za-z]{2,})|(?<=[A-Za-z]{2})[ο]|(?<=[A-Za-z])[ο](?=[A-Za-z])
+
+# Homoglyph (Turkish) should be `i`
+[ı](?=[A-Za-z]{2,})|(?<=[A-Za-z]{2})[ı]|(?<=[A-Za-z])[ı](?=[A-Za-z])
 
 # Should be `neither/nor` -- or reword
 #(?<!do )\bnot\b([^.?!"/(](?!neither|,.*?,))+\bnor\b

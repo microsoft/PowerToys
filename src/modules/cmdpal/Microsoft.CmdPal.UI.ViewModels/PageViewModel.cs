@@ -171,7 +171,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         Icon = new(page.Icon);
         Icon.InitializeProperties();
 
-        HasSearchBox = page is IListPage;
+        HasSearchBox = (page is IListPage) || (page is IParametersPage);
 
         // Let the UI know about our initial properties too.
         UpdateProperty(nameof(Name));
@@ -228,7 +228,10 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
                 UpdateProperty(nameof(ModelIsLoading));
                 break;
             case nameof(Icon):
-                this.Icon = new(model.Icon);
+                var incomingIcon = model.Icon;
+
+                this.Icon = new(incomingIcon);
+                this.Icon.InitializeProperties();
                 break;
             default:
                 updateProperty = false;

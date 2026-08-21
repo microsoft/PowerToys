@@ -8,12 +8,14 @@ using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Gallery;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.System;
 using WinUIEx;
@@ -25,16 +27,39 @@ namespace Microsoft.CmdPal.UI.Settings;
 public sealed partial class SettingsWindow : WindowEx,
     IDisposable,
     IRecipient<NavigateToExtensionSettingsMessage>,
+    IRecipient<OpenExtensionGalleryScreenshotViewerMessage>,
     IRecipient<QuitMessage>
 {
+    // Navigation tags; must match the Tag values of NavigationViewItems in SettingsWindow.xaml
+    private static class PageTags
+    {
+        public const string General = "General";
+        public const string Appearance = "Appearance";
+        public const string Extensions = "Extensions";
+        public const string Gallery = "Gallery";
+        public const string Dock = "Dock";
+        public const string Internal = "Internal";
+    }
+
     private readonly LocalKeyboardListener _localKeyboardListener;
 
     private readonly NavigationViewItem? _internalNavItem;
+
+    private Storyboard? _breadcrumbStoryboard;
+    private IReadOnlyList<ExtensionGalleryScreenshotViewModel> _currentScreenshotSet = [];
+    private ExtensionGalleryScreenshotViewModel? _currentScreenshot;
 
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
 
     // Gets or sets optional action invoked after NavigationView is loaded.
     public Action? NavigationViewLoaded { get; set; }
+
+    public string CurrentScreenshotDisplayName => _currentScreenshot?.DisplayName ?? string.Empty;
+
+    public string CurrentScreenshotPositionText =>
+        _currentScreenshot is null || _currentScreenshotSet.Count == 0
+            ? string.Empty
+            : $"{GetCurrentScreenshotIndex() + 1} / {_currentScreenshotSet.Count}";
 
     public SettingsWindow()
     {
@@ -44,15 +69,24 @@ public sealed partial class SettingsWindow : WindowEx,
         var title = RS_.GetString("SettingsWindowTitle");
         this.AppWindow.Title = title;
         this.AppTitleBar.Title = title;
+
+        if (AppWindowTitleBar.IsCustomizationSupported())
+        {
+            var titleBar = this.AppWindow.TitleBar;
+            titleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
+        }
+
         PositionCentered();
 
         WeakReferenceMessenger.Default.Register<NavigateToExtensionSettingsMessage>(this);
+        WeakReferenceMessenger.Default.Register<OpenExtensionGalleryScreenshotViewerMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
 
         _localKeyboardListener = new LocalKeyboardListener();
         _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
         _localKeyboardListener.Start();
         Closed += SettingsWindow_Closed;
+        RootElement.SizeChanged += RootElement_SizeChanged;
         RootElement.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootElement_OnPointerPressed), true);
 
         if (!BuildInfo.IsCiBuild)
@@ -61,16 +95,16 @@ public sealed partial class SettingsWindow : WindowEx,
             {
                 Content = "Internal Tools",
                 Icon = new FontIcon { Glyph = "\uEC7A" },
-                Tag = "Internal",
+                Tag = PageTags.Internal,
             };
-            NavView.MenuItems.Add(_internalNavItem);
+            NavView.FooterMenuItems.Add(_internalNavItem);
         }
         else
         {
             _internalNavItem = null;
         }
 
-        Navigate("General");
+        Navigate(PageTags.General);
     }
 
     private void SettingsWindow_Closed(object sender, WindowEventArgs args)
@@ -110,24 +144,27 @@ public sealed partial class SettingsWindow : WindowEx,
         Navigate((selectedItem.Tag as string)!);
     }
 
-    internal void Navigate(string page)
+    internal void Navigate(string page, string? extensionGalleryId = null)
     {
         Type? pageType;
         switch (page)
         {
-            case "General":
+            case PageTags.General:
                 pageType = typeof(GeneralPage);
                 break;
-            case "Appearance":
+            case PageTags.Appearance:
                 pageType = typeof(AppearancePage);
                 break;
-            case "Extensions":
+            case PageTags.Extensions:
                 pageType = typeof(ExtensionsPage);
                 break;
-            case "Dock":
+            case PageTags.Gallery:
+                pageType = typeof(ExtensionGalleryPage);
+                break;
+            case PageTags.Dock:
                 pageType = typeof(DockSettingsPage);
                 break;
-            case "Internal":
+            case PageTags.Internal:
                 pageType = typeof(InternalPage);
                 break;
             case "":
@@ -141,22 +178,74 @@ public sealed partial class SettingsWindow : WindowEx,
                 break;
         }
 
-        if (pageType is not null)
+        if (pageType is null)
         {
-            NavFrame.Navigate(pageType);
+            return;
+        }
 
-            // Now, make sure to actually select the correct menu item too
-            foreach (var obj in NavView.MenuItems)
+        var openGallery = pageType == typeof(ExtensionGalleryPage);
+        var openGalleryExtension = openGallery && !string.IsNullOrWhiteSpace(extensionGalleryId);
+        if (openGallery && TryOpenGallery(extensionGalleryId))
+        {
+            return;
+        }
+
+        if (NavFrame.Content?.GetType() == pageType)
+        {
+            return;
+        }
+
+        NavFrame.Navigate(pageType);
+
+        if (openGalleryExtension && NavFrame.Content is ExtensionGalleryPage galleryPage)
+        {
+            galleryPage.OpenExtension(extensionGalleryId!);
+        }
+
+        // Now, make sure to actually select the correct menu item too
+        foreach (var obj in NavView.MenuItems)
+        {
+            if (obj is NavigationViewItem item && item.Tag is string s && s == page)
             {
-                if (obj is NavigationViewItem item)
-                {
-                    if (item.Tag is string s && s == page)
-                    {
-                        NavView.SelectedItem = item;
-                    }
-                }
+                NavView.SelectedItem = item;
             }
         }
+    }
+
+    private bool TryOpenGallery(string? extensionId)
+    {
+        var openExtension = !string.IsNullOrWhiteSpace(extensionId);
+        if (NavFrame.Content is ExtensionGalleryItemPage itemPage)
+        {
+            if (openExtension && string.Equals(itemPage.ViewModel?.Id, extensionId, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            // Details is a child of the gallery on the same frame. Return to the existing
+            // gallery entry so the next details page replaces this one in the journal.
+            if (NavFrame.CanGoBack &&
+                NavFrame.BackStack.Count > 0 &&
+                NavFrame.BackStack[NavFrame.BackStack.Count - 1].SourcePageType == typeof(ExtensionGalleryPage))
+            {
+                NavFrame.GoBack();
+                NavFrame.ForwardStack.Clear();
+            }
+        }
+
+        if (NavFrame.Content is not ExtensionGalleryPage galleryPage)
+        {
+            return false;
+        }
+
+        galleryPage.ClearPendingExtension();
+
+        if (openExtension)
+        {
+            galleryPage.OpenExtension(extensionId!);
+        }
+
+        return true;
     }
 
     private void Navigate(ProviderSettingsViewModel extension)
@@ -177,6 +266,16 @@ public sealed partial class SettingsWindow : WindowEx,
     }
 
     public void Receive(NavigateToExtensionSettingsMessage message) => Navigate(message.ProviderSettingsVM);
+
+    public void Receive(OpenExtensionGalleryScreenshotViewerMessage message)
+    {
+        if (message.Screenshots.Count == 0)
+        {
+            return;
+        }
+
+        OpenScreenshotViewer(message.Screenshot, message.Screenshots, startConnectedAnimation: true);
+    }
 
     private void NavigationBreadcrumbBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
     {
@@ -229,6 +328,12 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void TryGoBack()
     {
+        if (ScreenshotViewerPopup.IsOpen)
+        {
+            CloseScreenshotViewer();
+            return;
+        }
+
         if (NavFrame.CanGoBack)
         {
             NavFrame.GoBack();
@@ -278,57 +383,275 @@ public sealed partial class SettingsWindow : WindowEx,
         }
     }
 
+    private void RootElement_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        UpdateScreenshotViewerPopupSize();
+    }
+
+    private void HideBreadcrumb()
+    {
+        _breadcrumbStoryboard?.Stop();
+
+        var fadeOut = new DoubleAnimation
+        {
+            To = 0,
+            Duration = new Duration(TimeSpan.FromMilliseconds(200)),
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn },
+        };
+        Storyboard.SetTarget(fadeOut, BreadcrumbContainer);
+        Storyboard.SetTargetProperty(fadeOut, "Opacity");
+
+        _breadcrumbStoryboard = new Storyboard();
+        _breadcrumbStoryboard.Children.Add(fadeOut);
+        _breadcrumbStoryboard.Completed += (_, _) =>
+        {
+            BreadcrumbContainer.Visibility = Visibility.Collapsed;
+            BreadcrumbContainer.Opacity = 1;
+            _breadcrumbStoryboard = null;
+        };
+        _breadcrumbStoryboard.Begin();
+    }
+
+    private void ShowBreadcrumb()
+    {
+        _breadcrumbStoryboard?.Stop();
+        _breadcrumbStoryboard = null;
+
+        if (BreadcrumbContainer.Visibility == Visibility.Collapsed)
+        {
+            BreadcrumbContainer.Opacity = 0;
+            BreadcrumbContainer.Visibility = Visibility.Visible;
+
+            var fadeIn = new DoubleAnimation
+            {
+                To = 1,
+                Duration = new Duration(TimeSpan.FromMilliseconds(250)),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+            };
+            Storyboard.SetTarget(fadeIn, BreadcrumbContainer);
+            Storyboard.SetTargetProperty(fadeIn, "Opacity");
+
+            _breadcrumbStoryboard = new Storyboard();
+            _breadcrumbStoryboard.Children.Add(fadeIn);
+            _breadcrumbStoryboard.Completed += (_, _) => _breadcrumbStoryboard = null;
+            _breadcrumbStoryboard.Begin();
+        }
+        else
+        {
+            BreadcrumbContainer.Opacity = 1;
+        }
+    }
+
     public void Dispose()
     {
+        CloseScreenshotViewer();
+        WinGetOperationsButtonControl?.Dispose();
         _localKeyboardListener?.Dispose();
     }
 
     private void NavFrame_OnNavigated(object sender, NavigationEventArgs e)
     {
         BreadCrumbs.Clear();
+        ShowBreadcrumb();
 
         if (e.SourcePageType == typeof(GeneralPage))
         {
             NavView.SelectedItem = GeneralPageNavItem;
-            var pageType = RS_.GetString("Settings_PageTitles_GeneralPage");
-            BreadCrumbs.Add(new(pageType, pageType));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_GeneralPage"), PageTags.General));
         }
         else if (e.SourcePageType == typeof(AppearancePage))
         {
             NavView.SelectedItem = AppearancePageNavItem;
-            var pageType = RS_.GetString("Settings_PageTitles_AppearancePage");
-            BreadCrumbs.Add(new(pageType, pageType));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_AppearancePage"), PageTags.Appearance));
         }
         else if (e.SourcePageType == typeof(ExtensionsPage))
         {
             NavView.SelectedItem = ExtensionPageNavItem;
-            var pageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
-            BreadCrumbs.Add(new(pageType, pageType));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_ExtensionsPage"), PageTags.Extensions));
+        }
+        else if (e.SourcePageType == typeof(ExtensionGalleryPage))
+        {
+            NavView.SelectedItem = GalleryPageNavItem;
+            HideBreadcrumb();
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_GalleryPage"), PageTags.Gallery));
+        }
+        else if (e.SourcePageType == typeof(ExtensionGalleryItemPage) && e.Parameter is ExtensionGalleryItemViewModel galleryExtension)
+        {
+            NavView.SelectedItem = GalleryPageNavItem;
+            HideBreadcrumb();
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_GalleryPage"), PageTags.Gallery));
+            BreadCrumbs.Add(new(galleryExtension.Title, galleryExtension));
         }
         else if (e.SourcePageType == typeof(DockSettingsPage))
         {
             NavView.SelectedItem = DockSettingsPageNavItem;
-            var pageType = RS_.GetString("Settings_PageTitles_DockPage");
-            BreadCrumbs.Add(new(pageType, pageType));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_DockPage"), PageTags.Dock));
         }
         else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is ProviderSettingsViewModel vm)
         {
             NavView.SelectedItem = ExtensionPageNavItem;
-            var extensionsPageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
-            BreadCrumbs.Add(new(extensionsPageType, extensionsPageType));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_ExtensionsPage"), PageTags.Extensions));
             BreadCrumbs.Add(new(vm.DisplayName, vm));
         }
         else if (e.SourcePageType == typeof(InternalPage) && _internalNavItem is not null)
         {
             NavView.SelectedItem = _internalNavItem;
-            var pageType = "Internal";
-            BreadCrumbs.Add(new(pageType, pageType));
+            BreadCrumbs.Add(new(PageTags.Internal, PageTags.Internal));
         }
         else
         {
             BreadCrumbs.Add(new($"[{e.SourcePageType?.Name}]", string.Empty));
             Logger.LogError($"Unknown breadcrumb for page type '{e.SourcePageType}'");
         }
+    }
+
+    private void CloseScreenshotViewerButton_Click(object sender, RoutedEventArgs e)
+    {
+        CloseScreenshotViewer();
+    }
+
+    private void ScreenshotViewerOverlay_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+    {
+        if (!ScreenshotViewerPopup.IsOpen || _currentScreenshotSet.Count <= 1)
+        {
+            return;
+        }
+
+        var delta = e.GetCurrentPoint(ScreenshotViewerOverlay).Properties.MouseWheelDelta;
+        if (delta > 0)
+        {
+            ChangeScreenshot(-1);
+            e.Handled = true;
+        }
+        else if (delta < 0)
+        {
+            ChangeScreenshot(1);
+            e.Handled = true;
+        }
+    }
+
+    private void ScreenshotViewerOverlay_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (!ScreenshotViewerPopup.IsOpen)
+        {
+            return;
+        }
+
+        switch (e.Key)
+        {
+            case VirtualKey.Escape:
+                CloseScreenshotViewer();
+                e.Handled = true;
+                break;
+            case VirtualKey.Left:
+                ChangeScreenshot(-1);
+                e.Handled = true;
+                break;
+            case VirtualKey.Right:
+                ChangeScreenshot(1);
+                e.Handled = true;
+                break;
+        }
+    }
+
+    private void ScreenshotViewerFlipView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        _currentScreenshot = ScreenshotViewerFlipView.SelectedItem as ExtensionGalleryScreenshotViewModel;
+        UpdateScreenshotViewerBindings();
+    }
+
+    private void OpenScreenshotViewer(
+        ExtensionGalleryScreenshotViewModel screenshot,
+        IReadOnlyList<ExtensionGalleryScreenshotViewModel> screenshots,
+        bool startConnectedAnimation)
+    {
+        _currentScreenshotSet = screenshots;
+        UpdateScreenshotViewerBindings();
+        UpdateScreenshotViewerPopupSize();
+        ScreenshotViewerFlipView.ItemsSource = screenshots;
+
+        // _currentScreenshot has to be set after ItemsSource for the FlipView to update to the correct index
+        _currentScreenshot = screenshot;
+        ScreenshotViewerFlipView.SelectedIndex = GetCurrentScreenshotIndex();
+        ScreenshotViewerPopup.IsOpen = true;
+
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            ScreenshotViewerOverlay.UpdateLayout();
+
+            if (startConnectedAnimation)
+            {
+                var animation = ConnectedAnimationService.GetForCurrentView().GetAnimation(OpenExtensionGalleryScreenshotViewerMessage.ConnectedAnimationKey);
+                animation?.TryStart(ScreenshotViewerImageHost);
+            }
+
+            ScreenshotViewerOverlay.Focus(FocusState.Programmatic);
+        });
+    }
+
+    private void CloseScreenshotViewer()
+    {
+        if (ScreenshotViewerPopup.IsOpen)
+        {
+            ScreenshotViewerPopup.IsOpen = false;
+        }
+
+        ScreenshotViewerFlipView.ItemsSource = null;
+        ScreenshotViewerFlipView.SelectedIndex = -1;
+        _currentScreenshotSet = [];
+        _currentScreenshot = null;
+        UpdateScreenshotViewerBindings();
+        RootElement.Focus(FocusState.Programmatic);
+    }
+
+    private void ChangeScreenshot(int delta)
+    {
+        if (_currentScreenshotSet.Count <= 1 || ScreenshotViewerFlipView.SelectedIndex < 0)
+        {
+            return;
+        }
+
+        var nextIndex = (ScreenshotViewerFlipView.SelectedIndex + delta) % _currentScreenshotSet.Count;
+        if (nextIndex < 0)
+        {
+            nextIndex += _currentScreenshotSet.Count;
+        }
+
+        ScreenshotViewerFlipView.SelectedIndex = nextIndex;
+    }
+
+    private int GetCurrentScreenshotIndex()
+    {
+        if (_currentScreenshot is null)
+        {
+            return -1;
+        }
+
+        for (var i = 0; i < _currentScreenshotSet.Count; i++)
+        {
+            if (ReferenceEquals(_currentScreenshotSet[i], _currentScreenshot))
+            {
+                return i;
+            }
+        }
+
+        return Math.Clamp(_currentScreenshot.Index, 0, _currentScreenshotSet.Count - 1);
+    }
+
+    private void UpdateScreenshotViewerPopupSize()
+    {
+        if (RootElement.ActualWidth <= 0 || RootElement.ActualHeight <= 0)
+        {
+            return;
+        }
+
+        ScreenshotViewerOverlay.Width = RootElement.ActualWidth;
+        ScreenshotViewerOverlay.Height = RootElement.ActualHeight;
+    }
+
+    private void UpdateScreenshotViewerBindings()
+    {
+        Bindings.Update();
     }
 }
 

@@ -11,12 +11,14 @@
 #include <Windows.h>
 
 #include <common/utils/resources.h>
+#include <common/utils/window.h>
 #include <common/version/version.h>
 #include <common/logger/logger.h>
 #include <common/utils/elevation.h>
 #include <common/Themes/theme_listener.h>
 #include <common/Themes/theme_helpers.h>
 #include "bug_report.h"
+#include <common/updating/updateState.h>
 
 namespace
 {
@@ -34,6 +36,10 @@ namespace
     NOTIFYICONDATAW tray_icon_data;
     bool tray_icon_created = false;
 
+    // Set when Windows confirms that the full session is ending so WM_DESTROY
+    // can skip cross-process cleanup the OS is already performing in parallel.
+    bool g_system_session_ending = false;
+
     bool about_box_shown = false;
 
     HMENU h_menu = nullptr;
@@ -45,6 +51,7 @@ namespace
 
     static ThemeListener theme_listener;
     static bool theme_adaptive_enabled = false;
+    static bool update_available = false;
 }
 
 // Struct to fill with callback and the data. The window_proc is responsible for cleaning it.
@@ -124,6 +131,11 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
         open_quick_access_flyout_window();
         break;
     }
+    case ID_UPDATE_MENU_COMMAND:
+    {
+        open_settings_window(std::wstring{ L"Overview" });
+        break;
+    }
     }
 }
 
@@ -148,6 +160,12 @@ void click_timer_elapsed()
 
 LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
+    LRESULT session_end_result = 0;
+    if (handle_stateless_session_end_message(window, message, wparam, lparam, session_end_result, &g_system_session_ending))
+    {
+        return session_end_result;
+    }
+
     switch (message)
     {
     case WM_HOTKEY:
@@ -167,12 +185,23 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         }
         break;
     case WM_DESTROY:
-        if (tray_icon_created)
+        // On OS-initiated shutdown skip cross-process cleanup: the shell is tearing
+        // down and close_settings_window() blocks up to 1.5s waiting on
+        // PowerToys.Settings.exe, which the OS is reaping in parallel. That wait, plus
+        // Shell_NotifyIcon during explorer teardown, would burn the limited quiesce
+        // budget and trip APPLICATION_HANG_QUIESCE. PostQuitMessage alone unwinds the
+        // loop in milliseconds. User-initiated Exit and Restart Manager
+        // ENDSESSION_CLOSEAPP requests keep the full graceful cleanup.
+        Logger::info(L"Runner WM_DESTROY, system_session_ending={}", g_system_session_ending);
+        if (!g_system_session_ending)
         {
-            Shell_NotifyIcon(NIM_DELETE, &tray_icon_data);
-            tray_icon_created = false;
+            if (tray_icon_created)
+            {
+                Shell_NotifyIcon(NIM_DELETE, &tray_icon_data);
+                tray_icon_created = false;
+            }
+            close_settings_window();
         }
-        close_settings_window();
         PostQuitMessage(0);
         break;
     case WM_CLOSE:
@@ -260,6 +289,24 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                 {
                     h_sub_menu = GetSubMenu(h_menu, 0);
                 }
+
+                // Dynamically add/remove "Update available" menu item and its separator
+                DeleteMenu(h_sub_menu, ID_UPDATE_MENU_COMMAND, MF_BYCOMMAND);
+                // Remove the separator right after the update item (position 0 after deletion)
+                if (GetMenuItemCount(h_sub_menu) > 0)
+                {
+                    MENUITEMINFOW mii = { .cbSize = sizeof(mii), .fMask = MIIM_FTYPE };
+                    if (GetMenuItemInfoW(h_sub_menu, 0, TRUE, &mii) && (mii.fType & MFT_SEPARATOR))
+                    {
+                        DeleteMenu(h_sub_menu, 0, MF_BYPOSITION);
+                    }
+                }
+                if (update_available)
+                {
+                    InsertMenuW(h_sub_menu, 0, MF_BYPOSITION | MF_STRING, ID_UPDATE_MENU_COMMAND, GET_RESOURCE_STRING(IDS_UPDATE_AVAILABLE_MENU_TEXT).c_str());
+                    InsertMenuW(h_sub_menu, 1, MF_BYPOSITION | MF_SEPARATOR, 0, nullptr);
+                }
+
                 POINT mouse_pointer;
                 GetCursorPos(&mouse_pointer);
                 SetForegroundWindow(window); // Needed for the context menu to disappear.
@@ -318,7 +365,14 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
 static HICON get_icon(Theme theme)
 {
     std::wstring icon_path = get_module_folderpath();
-    icon_path += theme == Theme::Dark ? L"\\svgs\\PowerToysWhite.ico" : L"\\svgs\\PowerToysDark.ico";
+    if (theme == Theme::Dark)
+    {
+        icon_path += update_available ? L"\\svgs\\PowerToysWhiteUpdate.ico" : L"\\svgs\\PowerToysWhite.ico";
+    }
+    else
+    {
+        icon_path += update_available ? L"\\svgs\\PowerToysDarkUpdate.ico" : L"\\svgs\\PowerToysDark.ico";
+    }
     Logger::trace(L"get_icon: Loading icon from path: {}", icon_path);
 
     HICON icon = static_cast<HICON>(LoadImage(NULL,
@@ -356,7 +410,14 @@ void start_tray_icon(bool isProcessElevated, bool theme_adaptive)
 {
     theme_adaptive_enabled = theme_adaptive;
     auto h_instance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-    HICON const icon = theme_adaptive ? get_icon(ThemeHelpers::GetSystemTheme()) : LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
+
+    // Check if an update is available at startup
+    auto state = UpdateState::read();
+    update_available = (state.state == UpdateState::readyToDownload || state.state == UpdateState::readyToInstall);
+
+    HICON const icon = theme_adaptive
+                           ? get_icon(ThemeHelpers::GetSystemTheme())
+                           : LoadIcon(h_instance, MAKEINTRESOURCE(update_available ? APPICON_UPDATE : APPICON));
     if (icon)
     {
         UINT id_tray_icon = 1;
@@ -425,6 +486,29 @@ void set_tray_icon_visible(bool shouldIconBeVisible)
     Shell_NotifyIcon(NIM_MODIFY, &tray_icon_data);
 }
 
+void set_tray_icon_update_available(bool available)
+{
+    if (update_available == available)
+    {
+        return;
+    }
+
+    update_available = available;
+    Logger::info(L"set_tray_icon_update_available: update_available={}", update_available);
+
+    if (theme_adaptive_enabled)
+    {
+        tray_icon_data.hIcon = get_icon(ThemeHelpers::GetSystemTheme());
+    }
+    else
+    {
+        auto h_instance = reinterpret_cast<HINSTANCE>(&__ImageBase);
+        tray_icon_data.hIcon = LoadIcon(h_instance, MAKEINTRESOURCE(available ? APPICON_UPDATE : APPICON));
+    }
+
+    Shell_NotifyIcon(NIM_MODIFY, &tray_icon_data);
+}
+
 void set_tray_icon_theme_adaptive(bool theme_adaptive)
 {
     Logger::info(L"set_tray_icon_theme_adaptive: Called with theme_adaptive={}, current theme_adaptive_enabled={}",
@@ -445,7 +529,7 @@ void set_tray_icon_theme_adaptive(bool theme_adaptive)
     // If not requesting adaptive icon, or if adaptive icon failed to load, use default icon
     if (!icon)
     {
-        icon = LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
+        icon = LoadIcon(h_instance, MAKEINTRESOURCE(update_available ? APPICON_UPDATE : APPICON));
         if (theme_adaptive && icon)
         {
             // We requested adaptive but had to fall back, so update the flag
@@ -477,6 +561,11 @@ void stop_tray_icon()
         BugReportManager::instance().clear_callbacks();
         SendMessage(tray_icon_hwnd, WM_CLOSE, 0, 0);
     }
+}
+
+bool is_system_session_ending()
+{
+    return g_system_session_ending;
 }
 void update_quick_access_hotkey(bool enabled, PowerToysSettings::HotkeyObject hotkey)
 {

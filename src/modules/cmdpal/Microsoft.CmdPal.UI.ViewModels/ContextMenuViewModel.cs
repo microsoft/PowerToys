@@ -228,6 +228,20 @@ public partial class ContextMenuViewModel : ObservableObject,
         }
     }
 
+    /// <summary>
+    /// Raised after a command is actually invoked (i.e. sent as a <see cref="PerformCommandMessage"/>)
+    /// from this context menu. Not raised when the user navigates into a submenu.
+    /// </summary>
+    public event EventHandler<CommandItemViewModel>? CommandInvoked;
+
+    /// <summary>
+    /// Raised immediately before the <see cref="PerformCommandMessage"/> is sent.
+    /// Subscribers can decorate the message (for example, to attach an
+    /// <see cref="PerformCommandMessage.OnBeforeShowConfirmation"/> callback).
+    /// Not raised when the user navigates into a submenu.
+    /// </summary>
+    public event EventHandler<PerformCommandMessage>? CommandInvoking;
+
     public ContextKeybindingResult InvokeCommand(CommandItemViewModel? command)
     {
         if (command is null)
@@ -245,8 +259,11 @@ public partial class ContextMenuViewModel : ObservableObject,
         }
         else
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
+            var message = new PerformCommandMessage(command.Command.Model, command.Model);
+            CommandInvoking?.Invoke(this, message);
+            WeakReferenceMessenger.Default.Send(message);
             UpdateContextItems();
+            CommandInvoked?.Invoke(this, command);
             return ContextKeybindingResult.Hide;
         }
     }
