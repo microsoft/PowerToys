@@ -203,6 +203,7 @@
             "WinUI3Apps\\PowerToys.MouseJump.WinUI3.exe",
             "PowerToys.MousePointerCrosshairs.dll",
             "PowerToys.CursorWrap.dll",
+            "PowerToys.MouseButtonLock.dll",
 
             "PowerToys.MouseWithoutBorders.dll",
             "PowerToys.MouseWithoutBorders.exe",

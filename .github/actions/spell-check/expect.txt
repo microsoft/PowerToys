@@ -960,6 +960,7 @@ livezoom
 LLKH
 llkhf
 LLMHF
+lmb
 LMEM
 LMENU
 lng
@@ -1087,6 +1088,7 @@ minwindef
 Mip
 mkdn
 mlcfg
+mmb
 mmc
 mmcexe
 mmi
@@ -1102,6 +1104,7 @@ MONITORINFOEX
 MONITORINFOEXW
 monitorinfof
 MOUSEACTIVATE
+mousebuttonlock
 mousecrosshairs
 MOUSEDATA
 MOUSEEVENTF
@@ -1184,6 +1187,7 @@ NEEDDISPATCH
 netcoreapp
 netcpl
 netframework
+NETSDK
 netsetup
 netsh
 NEWDIALOGSTYLE
@@ -1307,6 +1311,7 @@ openxmlformats
 OPTIMIZEFORINVOKE
 Optronics
 ORPHANEDDIALOGTITLE
+osk
 oss
 OSVERSIONINFO
 OSVERSIONINFOEX
@@ -1604,6 +1609,7 @@ RIDEV
 RIGHTBUTTON
 RIGHTSCROLLBAR
 riid
+rmb
 rollups
 ROUNDSMALL
 rpcrt
@@ -1979,6 +1985,7 @@ UIA
 UIDs
 UIEx
 uild
+UIPI
 uitests
 UITo
 ULONGLONG
@@ -2149,6 +2156,7 @@ wingetpkgs
 Winhook
 WINL
 winlogon
+WINM
 winmd
 winml
 WINNT
