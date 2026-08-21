@@ -93,7 +93,7 @@ only a superseded run that the user owns or explicitly asked to stop:
 
 ```pwsh
 Invoke-AzDevOpsRest `
-  -Uri "_apis/build/builds/$buildId?api-version=7.1" `
+  -Uri "_apis/build/builds/${buildId}?api-version=7.1" `
   -Method Patch `
   -Body @{ status = 'cancelling' }
 ```
@@ -162,7 +162,7 @@ $request = @{
   templateParameters = $templateParameters
 }
 $preview = (Invoke-AzDevOpsRest `
-  -Uri "_apis/pipelines/$pipelineId/runs?api-version=7.1-preview.1" `
+  -Uri "_apis/pipelines/${pipelineId}/runs?api-version=7.1-preview.1" `
   -Method Post `
   -Body $request).Body
 ```
@@ -176,7 +176,7 @@ Immediately repeat the full branch preflight from section 2. If clear, queue by 
 ```pwsh
 $request.previewRun = $false
 $run = (Invoke-AzDevOpsRest `
-  -Uri "_apis/pipelines/$pipelineId/runs?api-version=7.1-preview.1" `
+  -Uri "_apis/pipelines/${pipelineId}/runs?api-version=7.1-preview.1" `
   -Method Post `
   -Body $request).Body
 ```
@@ -264,7 +264,7 @@ Use the YAML stage key such as `Build_x64`, not its display name. Retry only a t
 ```pwsh
 $stageRefName = 'Build_x64'
 Invoke-AzDevOpsRest `
-  -Uri "_apis/build/builds/$buildId/stages/$stageRefName?api-version=7.1-preview.1" `
+  -Uri "_apis/build/builds/${buildId}/stages/${stageRefName}?api-version=7.1-preview.1" `
   -Method Patch `
   -Body @{ state = 'retry'; forceRetryAllJobs = $false }
 ```
@@ -336,7 +336,7 @@ $resultId = <RESULT_ID>
 $destination = Join-Path $env:TEMP "PowerToys-CI-$buildId-$runId-$resultId"
 New-Item -ItemType Directory -Path $destination -Force | Out-Null
 
-$resultBase = "_apis/test/Runs/$runId/Results/$resultId"
+$resultBase = "_apis/test/Runs/${runId}/Results/${resultId}"
 $attachments = (Invoke-AzDevOpsRest `
   -Uri "$resultBase/attachments?api-version=7.1-preview.1").Body.value
 $selected = @($attachments | Where-Object {

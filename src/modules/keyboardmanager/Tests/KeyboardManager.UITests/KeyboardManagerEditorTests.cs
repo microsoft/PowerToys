@@ -72,7 +72,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         Assert.IsTrue(save!.IsEnabled, "Save did not enable after recording A to B.");
 
         Step("Saving A to B");
-        save.Click(msPostAction: 500);
+        save.Invoke(msPostAction: 500);
         Assert.IsTrue(
             editor.WaitFor(
                 () => ProfileContainsSingleKeyMapping(A, B),
@@ -96,7 +96,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         RecordKeys(editorProcess, "ActionKeyToggleBtn", C);
         save = FindExact<Button>(editorProcess, "Save", timeoutMS: 5_000);
         Assert.IsNotNull(save, "The edit dialog did not expose Save.");
-        save!.Click(msPostAction: 500);
+        save!.Invoke(msPostAction: 500);
         Assert.IsTrue(
             editor.WaitFor(
                 () => ProfileContainsEditedAndUnrelatedMappings() && EditorSettingsContainsMappings((A, C), (D, E)),
@@ -220,7 +220,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         RecordKeys(editorProcess, "ActionKeyToggleBtn", B);
         save = FindExact<Button>(editorProcess, "Save", timeoutMS: 5_000);
         Assert.IsNotNull(save, "The recovered editor did not expose Save for A to B.");
-        save!.Click(msPostAction: 500);
+        save!.Invoke(msPostAction: 500);
         Assert.IsTrue(
             editor.WaitFor(
                 () => ProfileContainsOnlySingleKeyMapping(A, B, C) &&
@@ -289,7 +289,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         Step("Saving the dropdown-created 1 to 2 mapping");
         save = FindExact<Button>(editorProcess, "Save", timeoutMS: 5_000);
         Assert.IsNotNull(save, "The dropdown-created mapping did not expose Save.");
-        save!.Click(msPostAction: 500);
+        save!.Invoke(msPostAction: 500);
         Assert.IsTrue(
             editor.WaitFor(
                 () => ProfileContainsSingleKeyMapping((int)Key.Num1, (int)Key.Num2),
@@ -309,7 +309,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         save = FindExact<Button>(editorProcess, "Save", timeoutMS: 5_000);
         Assert.IsNotNull(save, "The app-specific mapping did not expose Save.");
         Step("Attempting to save without an application name");
-        save!.Click(msPostAction: 300);
+        save!.Invoke(msPostAction: 300);
         Assert.IsNotNull(FindExact<Button>(editorProcess, "Save", timeoutMS: 2_000), "An app-specific mapping saved without an application name.");
 
         var appName = editorProcess.Find<TextBox>(By.AccessibilityId("AppNameTextBox"), timeoutMS: 5_000);
@@ -352,7 +352,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         editorProcess.Find<TextBox>(By.AccessibilityId("UrlPathInput"), timeoutMS: 5_000).SetText(url);
         var save = FindExact<Button>(editorProcess, "Save", timeoutMS: 5_000);
         Assert.IsNotNull(save, "The Open URL mapping did not expose Save.");
-        save!.Click(msPostAction: 500);
+        save!.Invoke(msPostAction: 500);
         Assert.IsTrue(
             editor.WaitFor(
                 () => ProfileContainsOpenUrlMapping(LeftControl, A, url) &&
@@ -374,7 +374,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         editorProcess.Find<TextBox>(By.AccessibilityId("StartInPathInput"), timeoutMS: 5_000).SetText(startInDirectory);
         save = FindExact<Button>(editorProcess, "Save", timeoutMS: 5_000);
         Assert.IsNotNull(save, "The Open app mapping did not expose Save.");
-        save!.Click(msPostAction: 500);
+        save!.Invoke(msPostAction: 500);
         Assert.IsTrue(
             editor.WaitFor(
                 () => ProfileContainsOpenAppMapping(LeftControl, B, programPath, programArgs, startInDirectory) &&
@@ -394,7 +394,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         editorProcess.Find<TextBox>(By.AccessibilityId("TextContentBox"), timeoutMS: 5_000).SetText(text);
         save = FindExact<Button>(editorProcess, "Save", timeoutMS: 5_000);
         Assert.IsNotNull(save, "The Insert text mapping did not expose Save.");
-        save!.Click(msPostAction: 500);
+        save!.Invoke(msPostAction: 500);
         Assert.IsTrue(
             editor.WaitFor(
                 () => ProfileContainsTextMapping(LeftControl, C, text) &&
