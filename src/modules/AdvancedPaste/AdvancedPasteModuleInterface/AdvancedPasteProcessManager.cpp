@@ -3,6 +3,7 @@
 
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
+#include <common/utils/secure_named_pipe.h>
 #include <common/interop/shared_constants.h>
 #include <atlstr.h>
 
@@ -134,20 +135,9 @@ HRESULT AdvancedPasteProcessManager::start_named_pipe_server(const std::wstring&
 
     const auto full_pipe_name = std::format(L"\\\\.\\pipe\\{}", pipe_name);
 
-    const auto hPipe = CreateNamedPipe(
-        full_pipe_name.c_str(),     // pipe name
-        PIPE_ACCESS_OUTBOUND |      // write access
-            FILE_FLAG_OVERLAPPED,   // overlapped mode
-        PIPE_TYPE_MESSAGE |         // message type pipe
-            PIPE_READMODE_MESSAGE | // message-read mode
-            PIPE_WAIT,              // blocking mode
-        1,                          // max. instances
-        BUFSIZE,                    // output buffer size
-        0,                          // input buffer size
-        0,                          // client time-out
-        NULL);                      // default security attribute
+    const auto hPipe = secure_named_pipe::create_outbound_server(full_pipe_name, BUFSIZE, true);
 
-    if (hPipe == NULL || hPipe == INVALID_HANDLE_VALUE)
+    if (hPipe == INVALID_HANDLE_VALUE)
     {
         Logger::error(L"Error creating handle for named pipe");
         return E_FAIL;
@@ -169,47 +159,62 @@ HRESULT AdvancedPasteProcessManager::start_named_pipe_server(const std::wstring&
         return E_FAIL;
     };
 
+    bool connect_pending = false;
     if (!ConnectNamedPipe(hPipe, &overlapped))
     {
         const auto lastError = GetLastError();
 
-        if (lastError != ERROR_IO_PENDING && lastError != ERROR_PIPE_CONNECTED)
+        if (lastError == ERROR_IO_PENDING)
+        {
+            connect_pending = true;
+        }
+        else
         {
             Logger::error(L"Error connecting to named pipe");
             return clean_up_and_fail();
         }
     }
 
+    // The secured, first-instance listener must exist before the pipe name is exposed to the child.
+    if (start_process(pipe_name) != S_OK)
+    {
+        CancelIoEx(hPipe, &overlapped);
+        return clean_up_and_fail();
+    }
+
     // Wait for client. AdvancedPaste under sparse identity can take >5s on cold start to
     // bootstrap WinAppSDK + DI host before connecting back to this pipe.
     const constexpr DWORD client_timeout_millis = 15000;
-    switch (WaitForSingleObject(overlapped.hEvent, client_timeout_millis))
+    if (connect_pending)
     {
-        case WAIT_OBJECT_0:
+        switch (WaitForSingleObject(overlapped.hEvent, client_timeout_millis))
         {
-            DWORD bytes_transferred = 0;
-            if (GetOverlappedResult(hPipe, &overlapped, &bytes_transferred, FALSE))
+            case WAIT_OBJECT_0:
             {
-                CloseHandle(overlapped.hEvent);
-                m_write_pipe = std::make_unique<CAtlFile>(hPipe);
-
-                Logger::trace(L"Advanced Paste successfully connected to named pipe");
-
-                return S_OK;
+                DWORD bytes_transferred = 0;
+                if (!GetOverlappedResult(hPipe, &overlapped, &bytes_transferred, FALSE))
+                {
+                    Logger::error(L"Error waiting for Advanced Paste to connect to named pipe");
+                    return clean_up_and_fail();
+                }
+                break;
             }
-            else
-            {
+
+            case WAIT_TIMEOUT:
+            case WAIT_FAILED:
+            default:
                 Logger::error(L"Error waiting for Advanced Paste to connect to named pipe");
+                CancelIoEx(hPipe, &overlapped);
                 return clean_up_and_fail();
-            }
         }
-
-        case WAIT_TIMEOUT:
-        case WAIT_FAILED:
-        default:
-            Logger::error(L"Error waiting for Advanced Paste to connect to named pipe");
-            return clean_up_and_fail();
     }
+
+    CloseHandle(overlapped.hEvent);
+    m_write_pipe = std::make_unique<CAtlFile>(hPipe);
+
+    Logger::trace(L"Advanced Paste successfully connected to named pipe");
+
+    return S_OK;
 }
 
 void AdvancedPasteProcessManager::refresh()
@@ -226,11 +231,6 @@ void AdvancedPasteProcessManager::refresh()
         const auto pipe_name = get_pipe_name(L"powertoys_advanced_paste_");
 
         if (!pipe_name)
-        {
-            return;
-        }
-
-        if (start_process(pipe_name.value()) != S_OK)
         {
             return;
         }
