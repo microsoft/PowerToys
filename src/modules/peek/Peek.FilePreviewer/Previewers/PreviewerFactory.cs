@@ -57,6 +57,13 @@ namespace Peek.FilePreviewer.Previewers
             {
                 return new SpecialFolderPreviewer(item);
             }
+            else if (WebBrowserPreviewer.IsFallbackCandidate(item))
+            {
+                // No recognized extension. The content check is done asynchronously in
+                // LoadDisplayInfoAsync; if it isn't text, the previewer fails over to
+                // the default/info preview.
+                return new WebBrowserPreviewer(item, _previewSettings);
+            }
 
             // Other previewer types check their supported file types here
             return CreateDefaultPreviewer(item);
