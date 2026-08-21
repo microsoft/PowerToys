@@ -289,8 +289,8 @@ public class ExtensionGalleryServiceTests
     {
         // This JSON is the gallery feed example published in
         // doc/json-rpc-spec/04-manifest-packaging.md. It is fed through the production parser so
-        // the documentation and the real gallery model can never drift apart. The example omits
-        // iconUrl so the parse stays hermetic (no icon is fetched over the network).
+        // the documentation and the real gallery model stay in sync. The example omits iconUrl
+        // so the test stays offline.
         var feedDirectory = CreateTempDirectory("feed");
         var cacheDirectory = CreateTempDirectory("cache");
 

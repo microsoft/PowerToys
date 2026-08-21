@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 /**
- * Drives periodic refresh notifications for the live-updating sample pages while
- * a page is actually being observed by the host.
+ * Sends periodic refresh notifications while the host is still observing a page
+ * that updates over time.
  *
  * The JS protocol has no page unload signal, so a plain `setInterval` started in
  * `getItems()` would run for the life of the process and keep sending refresh
@@ -15,9 +15,9 @@
  * the top of `getItems()`. That records the moment of the fetch and arms a
  * single timer if one is not already running. On each tick the timer checks how
  * long it has been since the last fetch: while the page is on screen the host
- * keeps re-fetching in response to the notifications, so the gap stays small and
- * the timer keeps ticking. Once the page is no longer visible the host stops
- * fetching, the gap grows past the idle threshold, and the timer stops itself.
+ * keeps asking again in response to the notifications, so the gap stays small
+ * and the timer keeps ticking. Once the page is no longer visible the host
+ * stops fetching, the gap grows past the idle threshold, and the timer stops itself.
  * The next `observe` call (when the user navigates back) arms it again. At most
  * one timer runs per page, and only while that page is being viewed.
  */

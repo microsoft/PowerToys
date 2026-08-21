@@ -545,9 +545,8 @@ public class NpmJsExtensionInstallerTests
     [TestMethod]
     public async Task InstallAsync_PreservesMixedScopedAndUnscopedDependencies()
     {
-        // The publisher-frozen closure npm ci installs under the package's own node_modules, including
-        // @scope directories, survives promotion so scoped, unscoped, and mixed dependencies all land
-        // in the promoted extension.
+        // npm ci installs the publisher's dependency tree under the package's own node_modules.
+        // Promotion must keep scoped, unscoped, and mixed dependencies together.
         var host = CreateHost();
         var runner = new FakeRunner
         {

@@ -16,7 +16,7 @@ import { LiveRefresh } from '../liveRefresh.js';
  * `notifyItemsChanged()` on a timer.
  *
  * The refresh timer is driven by {@link LiveRefresh} so it only runs while the
- * page is being viewed and stops itself once the host stops re-fetching.
+ * page is being viewed and stops itself once the host stops fetching.
  */
 export class SampleUpdatingItemsPage extends DynamicListPageBase {
   readonly id = 'sample-updating-items-page';

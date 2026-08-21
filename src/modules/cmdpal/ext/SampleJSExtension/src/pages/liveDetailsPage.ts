@@ -14,12 +14,12 @@ import { LiveRefresh } from '../liveRefresh.js';
  * Approximation: the JS `Details` type has no observable push. The C# page
  * relies on `Details` raising `INotifyPropertyChanged` so the pane refreshes
  * without reselecting. Here the page extends `DynamicListPageBase` and calls
- * `notifyItemsChanged()` on a timer, which asks the host to re-fetch the items
+ * `notifyItemsChanged()` on a timer, which asks the host to fetch the items again
  * (and their rebuilt details). The details therefore refresh live, though
  * through a full item refresh rather than a targeted property change.
  *
  * The refresh timer is driven by {@link LiveRefresh} so it only runs while the
- * page is being viewed and stops itself once the host stops re-fetching.
+ * page is being viewed and stops itself once the host stops fetching.
  */
 export class SampleLiveDetailsPage extends DynamicListPageBase {
   readonly id = 'sample-live-details-page';

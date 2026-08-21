@@ -9,7 +9,7 @@ import { SamplesListPage } from './samplesListPage.js';
 
 /**
  * The provider for the JavaScript sample extension. Mirrors the C#
- * `SamplePagesCommandsProvider`, exposing a single top-level "Sample Pages"
+ * `SamplePagesCommandsProvider`, exposing a single top level "Sample Pages"
  * command that opens the {@link SamplesListPage} index.
  */
 class SampleProvider extends CommandProviderBase {

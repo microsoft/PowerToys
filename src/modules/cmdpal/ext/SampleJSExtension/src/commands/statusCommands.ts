@@ -27,7 +27,7 @@ export class ShowToastCommand extends InvokableCommandBase {
 }
 
 /**
- * Shows an in-page status message through the host bridge and keeps the palette
+ * Shows a status message on the page through the host bridge and keeps the palette
  * open. Mirrors the C# `ToastCommand`, which uses `ToastStatusMessage` (an
  * inline banner) rather than the toast window.
  */
@@ -79,7 +79,7 @@ export class SingleMessageCommand extends InvokableCommandBase {
   readonly id = 'single-message';
   name = 'Show';
 
-  // The stable handle the host minted for the shown status. Hiding targets this
+  // The stable handle the host returned for the shown status. Hiding targets this
   // exact status rather than matching on the message text.
   private statusId: string | null = null;
 
@@ -115,9 +115,9 @@ export class IndeterminateProgressMessageCommand extends InvokableCommandBase {
     if (!this.running) {
       this.running = true;
 
-      // Keep the stable status handle the host returns. The working status is
-      // updated in place to the completion message and then hidden by the same
-      // id, so the spinner is never left behind next to the result.
+      // Keep the stable status handle the host returns. The working status becomes
+      // the completion message and is hidden by the same id, so the spinner is not
+      // left behind next to the result.
       const statusId = ExtensionHost.showStatus('Doing the thing...', 'info', { isIndeterminate: true });
       setTimeout(() => {
         ExtensionHost.updateStatus(statusId, 'Did the thing!', 'success');
@@ -134,9 +134,8 @@ export class IndeterminateProgressMessageCommand extends InvokableCommandBase {
 
 /**
  * Shows an indeterminate progress status and then resolves it in place to a
- * success message after a short delay. Used by the details command buttons to
- * make the status banner and its spinner obviously visible when the button is
- * invoked.
+ * success message after a short delay. The details command buttons use this so
+ * the status banner and spinner are easy to see when the button is invoked.
  */
 export class ProgressStatusCommand extends InvokableCommandBase {
   readonly id: string;
@@ -158,8 +157,8 @@ export class ProgressStatusCommand extends InvokableCommandBase {
     if (!this.running) {
       this.running = true;
 
-      // Update the working status in place to the completion message, then hide
-      // that same status, instead of stacking a second banner on top of it.
+      // Update the working status to the completion message, then hide that same
+      // status instead of stacking a second banner on top of it.
       const statusId = ExtensionHost.showStatus(this.workingMessage, 'info', { isIndeterminate: true });
       setTimeout(() => {
         ExtensionHost.updateStatus(statusId, this.doneMessage, 'success');

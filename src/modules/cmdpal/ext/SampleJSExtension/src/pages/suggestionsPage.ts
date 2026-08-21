@@ -11,7 +11,7 @@ import { icon } from '../util.js';
  * `SampleSuggestionsPage`.
  *
  * Approximation: the C# version tracks the caret position and wraps picked
- * tokens in zero-width spaces, and it uses `IExtendedAttributesProvider` to opt
+ * tokens in zero width spaces, and it uses `IExtendedAttributesProvider` to opt
  * into token search. Neither the caret position nor extended attributes are
  * exposed to JS extensions, so this sample keys off the last word of the query
  * and uses `textToSuggest` to place a pick back into the search box.
