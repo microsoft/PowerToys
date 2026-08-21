@@ -44,8 +44,8 @@ public sealed class RateLimitedProtocolLogTests
         Assert.AreEqual(2, emitted);
         Assert.AreEqual(-1, reportedSuppressed, "No summary should be reported until a new window begins.");
 
-        // Advance past the window boundary. The next call reports the previous window's suppressed count
-        // and emits under a fresh budget.
+        // Advance past the window boundary. The next call reports the previous window's suppressed
+        // count and emits under a fresh budget.
         now += 100;
         log.Run(() => emitted++);
 
@@ -75,8 +75,8 @@ public sealed class RateLimitedProtocolLogTests
         long now = 0;
         var log = new RateLimitedProtocolLog(1, TimeSpan.FromMilliseconds(10), static _ => { }, () => now);
 
-        // Many entries within a single window: one emits, the rest are suppressed. The limiter holds only
-        // fixed counters, so its accounting stays exact no matter how large the flood is.
+        // Many entries in one window: one emits, the rest are suppressed. The limiter holds fixed
+        // counters, so its accounting stays exact no matter how large the flood is.
         for (var i = 0; i < 100_000; i++)
         {
             log.Run(static () => { });

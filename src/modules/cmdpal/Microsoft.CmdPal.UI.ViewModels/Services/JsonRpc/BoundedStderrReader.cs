@@ -11,11 +11,9 @@ using System.Threading.Tasks;
 namespace Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
 
 /// <summary>
-/// Reads a child process's standard error stream and forwards it to a sink under strict bounds so a
-/// chatty or adversarial extension cannot exhaust host memory or flood the log. Individual lines are
-/// truncated beyond a byte cap, the number of lines per time window is rate limited, and the total
-/// volume forwarded is capped. The underlying stream is still drained to EOF even after the budget is
-/// reached so the child is never blocked writing to a full pipe.
+/// Drains a child process's standard error stream under strict bounds. A noisy extension should not
+/// fill host memory or flood the log, but the stream still has to reach EOF so the child never blocks
+/// on a full pipe.
 /// </summary>
 internal sealed class BoundedStderrReader
 {
@@ -128,7 +126,7 @@ internal sealed class BoundedStderrReader
             }
         }
 
-        // Forward any trailing line that was not newline-terminated before EOF.
+        // Forward a trailing line even if EOF arrives before a newline.
         if (_lineLength > 0 || _lineTruncated)
         {
             EmitLine();
@@ -147,7 +145,7 @@ internal sealed class BoundedStderrReader
 
         if (value == (byte)'\r')
         {
-            // Carriage returns are terminators, handled by the following line feed or trailing flush.
+            // Carriage returns are terminators. The following line feed or trailing flush does the work.
             return;
         }
 
@@ -157,7 +155,7 @@ internal sealed class BoundedStderrReader
         }
         else
         {
-            // Beyond the per-line cap: discard the extra bytes but remember the line was truncated.
+            // Past the per-line cap, keep draining bytes but remember the line was truncated.
             _lineTruncated = true;
         }
     }

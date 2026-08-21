@@ -7,13 +7,12 @@ using System.Text.Json.Serialization;
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
-/// Represents the "cmdpal" section of a package.json, carrying the
-/// CmdPal-specific metadata for a JavaScript/TypeScript extension.
+/// The "cmdpal" section of a package.json for a CmdPal JavaScript/TypeScript extension.
 /// </summary>
 public sealed record JSCmdPalSection
 {
     /// <summary>
-    /// Gets the human-readable name shown in the CmdPal UI. Falls back to the package name when absent.
+    /// Gets the name shown in CmdPal. Falls back to the package name when absent.
     /// </summary>
     [JsonPropertyName("displayName")]
     public string? DisplayName { get; init; }
@@ -25,7 +24,7 @@ public sealed record JSCmdPalSection
     public string? Icon { get; init; }
 
     /// <summary>
-    /// Gets the optional entry point override that takes precedence over the top-level "main" field.
+    /// Gets the optional entry point override. This takes precedence over the top-level "main" field.
     /// </summary>
     [JsonPropertyName("main")]
     public string? Main { get; init; }

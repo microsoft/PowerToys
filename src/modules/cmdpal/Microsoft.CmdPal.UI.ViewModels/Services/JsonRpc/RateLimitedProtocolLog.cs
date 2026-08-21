@@ -7,11 +7,10 @@ using System;
 namespace Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
 
 /// <summary>
-/// Bounds the volume of protocol-error logging so a peer that sends a flood of malformed or
-/// undecodable frames cannot produce unbounded log output. Within each fixed time window at most a
-/// configured number of log entries are emitted; further entries are counted and reported as a
-/// single suppressed-count summary when the next window begins. The limiter itself holds only a
-/// fixed set of counters, so it never grows with the number of errors it throttles.
+/// Bounds protocol-error logging so a peer that sends malformed or undecodable frames cannot flood
+/// the log. Each window emits up to the configured budget, then reports one suppressed-count summary
+/// when the next window begins. The limiter keeps fixed counters, so its memory use does not grow
+/// with the number of errors it throttles.
 /// </summary>
 internal sealed class RateLimitedProtocolLog
 {
@@ -60,9 +59,9 @@ internal sealed class RateLimitedProtocolLog
 
     /// <summary>
     /// Emits a protocol-error log entry through <paramref name="emit"/> when the current window still
-    /// has budget; otherwise records the entry as suppressed. When a new window has begun and the
-    /// previous window suppressed entries, the suppressed-count summary is reported first. Both
-    /// callbacks are invoked outside the internal lock so a sink may safely take its own locks.
+    /// has budget. Otherwise, records the entry as suppressed. If the previous window suppressed
+    /// entries, its summary is reported first. Both callbacks run outside the internal lock so a sink
+    /// may safely take its own locks.
     /// </summary>
     /// <param name="emit">The action that performs the actual logging when budget is available.</param>
     public void Run(Action emit)

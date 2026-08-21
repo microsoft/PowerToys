@@ -258,8 +258,8 @@ public class JSExtensionManifestTests
     [TestMethod]
     public void TryParse_AbsoluteEntryPoint_IsInvalid()
     {
-        // Create a real file at an absolute path outside the extension directory so the
-        // rejection is due to the rooted-path rule, not a missing file.
+        // Create a real file outside the extension directory so rejection comes from the rooted-path
+        // rule, not a missing file.
         var outsidePath = Path.Combine(Path.GetTempPath(), $"JSExtensionManifestAbsolute_{Guid.NewGuid():N}.js");
         File.WriteAllText(outsidePath, "// entry point");
         try
@@ -515,9 +515,9 @@ public class JSExtensionManifestTests
     [TestMethod]
     public void TryParse_EntryPointThroughJunction_IsRejected()
     {
-        // Create a directory outside the extension dir with a real entry point, then expose it inside
-        // the extension dir through a junction. A lexically-contained path must still be rejected
-        // because it traverses a reparse point that redirects outside the package.
+        // Create a real entry point outside the extension directory, then expose it through a junction
+        // inside the extension directory. The path text stays inside the package, but the reparse point
+        // redirects outside it.
         var outsideDirectory = Path.Combine(Path.GetTempPath(), $"JSExtensionManifestJunctionTarget_{Guid.NewGuid():N}");
         Directory.CreateDirectory(outsideDirectory);
         File.WriteAllText(Path.Combine(outsideDirectory, "index.js"), "// entry point");
@@ -547,8 +547,8 @@ public class JSExtensionManifestTests
         }
         finally
         {
-            // Remove the junction reparse point itself (non-recursive) before deleting the target so
-            // the shared cleanup does not try to recurse through the junction into the outside tree.
+            // Remove the junction reparse point itself before deleting the target so shared cleanup
+            // does not recurse through the junction into the outside tree.
             if (Directory.Exists(junctionPath))
             {
                 Directory.Delete(junctionPath, recursive: false);
