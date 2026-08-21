@@ -29,7 +29,7 @@ Create a new test project within your module folder. Ensure the project name fol
 ### Step 2: Configure the Project
 
 1. Set up a `.NET 10 (Windows)` project
-   - Note: OneFuzz's .NET fuzzing is runtime-agnostic (".NET Core targets are preferred") and keys off the build drop directory, so PowerToys fuzz projects target net10 like the rest of the repo. Older guidance pinned .NET 8; that is no longer required.
+   - Note: OneFuzz's .NET fuzzing is runtime-agnostic (".NET Core targets are preferred") and keys off the build drop directory, so PowerToys fuzz projects target net11 like the rest of the repo. Older guidance pinned .NET 8; that is no longer required.
 
 2. Add the required files to your fuzzing test project:
    - Create fuzzing test code
@@ -65,7 +65,7 @@ The `OneFuzzConfig.json` file provides critical information for deploying fuzzin
       "targetName": "YourModule",
       "jobDependencies": {
         "binaries": [
-          "PowerToys\\x64\\Debug\\tests\\YourModule.FuzzTests\\net10.0-windows10.0.26100.0\\**"
+          "PowerToys\\x64\\Debug\\tests\\YourModule.FuzzTests\\net11.0-windows10.0.26100.0\\**"
         ]
       }
     }
