@@ -10,6 +10,7 @@ namespace Microsoft.PowerToys.KeyboardManager.UITests;
 
 internal sealed class CalculatorInputWindow : IKeyboardInputWindow, IDisposable
 {
+    private const string ApplicationFrameWindowClass = "ApplicationFrameWindow";
     private const string WindowTitle = "Calculator";
 
     private readonly Session window;
@@ -28,9 +29,17 @@ internal sealed class CalculatorInputWindow : IKeyboardInputWindow, IDisposable
             });
             Assert.IsNotNull(process, "System Calculator could not be started.");
 
-            launchedWindow = WindowsFinder.WaitForWindow(
+            if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
+            {
+                launchedWindow = WindowsFinder.WaitForWindow(
+                    candidate => IsCalculatorWindow(candidate) &&
+                        candidate.ClassName.Equals(ApplicationFrameWindowClass, StringComparison.OrdinalIgnoreCase),
+                    timeoutMS: 15_000);
+            }
+
+            launchedWindow ??= WindowsFinder.WaitForWindow(
                 IsCalculatorWindow,
-                timeoutMS: 30_000);
+                timeoutMS: 15_000);
             window = launchedWindow ?? throw new AssertFailedException("A new Calculator window did not open.");
             ClassName = WindowsFinder.ListAll()
                 .First(candidate => candidate.Hwnd == window.WindowHandle)

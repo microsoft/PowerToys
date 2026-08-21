@@ -90,8 +90,27 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         Step("Opening the persisted mapping for editing");
         var sourceKey = FindExact<Element>(editorProcess, "A", timeoutMS: 5_000);
         Assert.IsNotNull(sourceKey, "The persisted A mapping could not be addressed for editing.");
-        sourceKey!.MouseClick(msPostAction: 400);
-        Assert.IsNotNull(FindExact<Element>(editorProcess, "Edit remapping", timeoutMS: 5_000), "The edit dialog did not open.");
+        Assert.IsTrue(
+            editor.WaitFor(
+                () =>
+                {
+                    if (FindExact<Element>(editorProcess, "Edit remapping", timeoutMS: 200) is not null)
+                    {
+                        return true;
+                    }
+
+                    sourceKey = FindExact<Element>(editorProcess, "A", timeoutMS: 500);
+                    if (sourceKey is null)
+                    {
+                        return false;
+                    }
+
+                    sourceKey.MouseClick(msPostAction: 200);
+                    return FindExact<Element>(editorProcess, "Edit remapping", timeoutMS: 500) is not null;
+                },
+                timeoutMS: 10_000,
+                pollIntervalMS: 250),
+            "The edit dialog did not open after retrying the mapping-row interaction.");
 
         RecordKeys(editorProcess, "ActionKeyToggleBtn", C);
         save = FindExact<Button>(editorProcess, "Save", timeoutMS: 5_000);

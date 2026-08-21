@@ -215,6 +215,12 @@ Do not leave a nonterminal build with a passive handoff. Full builds normally ta
 test-only validation about 40 minutes. Arm one one-shot host wake-up at a time; after each wake,
 query exact build IDs and re-arm for one hour only if work remains nonterminal.
 
+Monitoring state is scoped to exact build IDs. If the user reports a tracked build's status and asks
+to stop its now-obsolete watcher, remove only that build's task/marker. Do not treat that as a
+standing opt-out: every later build queued by the agent must immediately receive a fresh one-shot
+continuation and remain monitored until terminal unless the user explicitly opts out for that new
+build.
+
 The scheduled action only wakes the agent. Do not put `az`, a token, build parameters, or any Azure
 request in it. On Windows without a native agent scheduler:
 
