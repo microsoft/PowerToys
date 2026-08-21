@@ -185,22 +185,22 @@ namespace Awake.Core
                         ? string.Empty
                         : $"\nPID: {ProcessId}";
                     iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_TRAY_TEXT_INDEFINITE}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}{pidLine}";
-                    icon = TrayHelper.IndefiniteIcon;
+                    icon = TrayHelper.GetIconForMode(AwakeMode.INDEFINITE);
                     break;
 
                 case AwakeMode.PASSIVE:
                     iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_SCREEN_OFF}";
-                    icon = TrayHelper.DisabledIcon;
+                    icon = TrayHelper.GetIconForMode(AwakeMode.PASSIVE);
                     break;
 
                 case AwakeMode.EXPIRABLE:
                     iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_TRAY_UNTIL} {ExpireAt:MMM d, h:mm tt}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}";
-                    icon = TrayHelper.ExpirableIcon;
+                    icon = TrayHelper.GetIconForMode(AwakeMode.EXPIRABLE);
                     break;
 
                 case AwakeMode.TIMED:
                     iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_TRAY_TEXT_TIMED}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}";
-                    icon = TrayHelper.TimedIcon;
+                    icon = TrayHelper.GetIconForMode(AwakeMode.TIMED);
                     break;
             }
 
