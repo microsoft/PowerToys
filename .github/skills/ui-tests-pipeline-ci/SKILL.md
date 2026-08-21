@@ -1,14 +1,14 @@
 ---
 name: ui-tests-pipeline-ci
-description: "Microsoft FTE-only workflow for queueing, monitoring, and stabilizing PowerToys UI Test Automation runs in Azure DevOps through the remote Azure DevOps MCP. Use after local default and constrained VM suites pass, when asked to run UITests CI, monitor an Azure pipeline, reuse a successful product build with specificBuildId, diagnose CI-only UI test failures, inspect recordings/artifacts, or manage the three-run stabilization limit. Keywords: FTE, Azure DevOps, pipeline, UI Test Automation, UITests CI, buildNow, specificBuildId, uiTestModules, failed test video, CI flake."
+description: "Microsoft FTE-only workflow for queueing, monitoring, and stabilizing PowerToys UI Test Automation runs through an existing Azure CLI session and Azure DevOps REST APIs. Use after local default and constrained VM suites pass, when asked to run UITests CI, monitor a pipeline without repeated authentication prompts, reuse a successful product build with specificBuildId, diagnose CI-only UI test failures, download recordings/artifacts, or manage the three-run stabilization limit. Keywords: FTE, az, Azure CLI, Azure DevOps, pipeline, UI Test Automation, UITests CI, buildNow, specificBuildId, uiTestModules, failed test video, CI flake."
 license: MIT
 ---
 
 # PowerToys UI Tests Pipeline CI
 
 Queue and stabilize the internal `UI Test Automation` Azure DevOps pipeline only after the target
-UITest suite is proven locally. Use the remote Azure DevOps MCP for discovery, queueing, status,
-logs, tests, and artifacts.
+UITest suite is proven locally. Use the existing Azure CLI sign-in plus Azure DevOps REST APIs for
+discovery, preview, queueing, status, timelines, logs, tests, artifacts, and result attachments.
 
 > [!IMPORTANT]
 > **Microsoft FTE only.** This workflow requires authorized access to the `microsoft` Azure DevOps
@@ -70,7 +70,8 @@ Do not use this skill for local execution. Complete
 Read and execute [references/agentic-loop.md](./references/agentic-loop.md) from top to bottom. It
 contains:
 
-- Remote MCP setup and authentication.
+- Prompt-free Azure CLI session validation and the bundled
+   [REST helper](./scripts/AzureDevOps.ps1).
 - Local-signoff and active-run preflight.
 - `buildNow` versus `specificBuildId` decision rules.
 - Exact queue parameters and branch targeting.
