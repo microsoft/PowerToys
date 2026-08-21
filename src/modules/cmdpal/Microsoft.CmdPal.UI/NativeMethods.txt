@@ -1,6 +1,7 @@
 GetPhysicallyInstalledSystemMemory
 GlobalMemoryStatusEx
 GetSystemInfo
+GetActiveWindow
 GetForegroundWindow
 SetForegroundWindow
 GetWindowRect
@@ -115,6 +116,7 @@ WM_GETMINMAXINFO
 MINMAXINFO
 SetWinEventHook
 WINDOW_STYLE
+SC_CLOSE
 SC_MINIMIZE
 SC_MAXIMIZE
 SET_WINDOW_POS_FLAGS

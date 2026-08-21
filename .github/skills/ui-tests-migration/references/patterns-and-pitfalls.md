@@ -315,6 +315,97 @@ string result = MeasureWithRetry(() => { MouseHelper.MoveTo(cx, cy); MouseHelper
 > Each test spawns its own module process = its own capture session = its own cold-start; there is no
 > cross-test warming, so every capture test must tolerate the first-frame delay on its own.
 
+## Recipe 13 — Establish exact File Explorer selection
+
+Do not use UIA child discovery or timing-sensitive `Shift+Arrow` input for Explorer selection. The
+Shell view is the authority consumed by Peek and similar file-driven tools:
+
+```csharp
+var result = ExplorerShell.SetSelectionAndWaitForStable(
+    new IntPtr(explorerWindow.WindowHandle),
+    selectedPaths: new[] { firstPath, secondPath, focusedPath },
+    focusedPath,
+    timeoutMS: 30_000,
+    requiredConsecutiveMatches: 4);
+
+Assert.IsTrue(result.Succeeded,
+    $"Explorer selection did not settle. Last focus: {result.LastObservation?.FocusedPath ?? "<none>"}");
+```
+
+The helper normalizes paths, sets exact selection/focus through Shell COM, retries exact foreground
+ownership, and requires consecutive matching snapshots. The focused item matters: multi-select tools
+often open item zero/current, not an arbitrary member of the selected set.
+
+## Recipe 14 — Preserve or reset module process state intentionally
+
+Write a lifecycle matrix before implementing cleanup:
+
+| Scenario | Close window | Preserve process | Kill tree and wait |
+|---|---:|---:|---:|
+| Validate state retained in-process | yes | yes | no |
+| Explicitly reset/unpin/reopen | yes | no | yes |
+| Renderer terminal failure | best effort | no | yes |
+
+Use `WindowControl.TryKillProcessTreeByNameAndWait(exactName)` when a fresh process is required. It
+waits for the parent and children (for example WebView2) to exit before the next activation. Do not
+use it in scenarios whose assertion depends on in-process state.
+
+## Recipe 15 — Validate composed WinUI/WebView visuals
+
+Expose a product-owned ready signal first, then compare visible pixels:
+
+```csharp
+var state = window.Find<Element>(By.AccessibilityId("PreviewStateAutomationPeer"), 15_000);
+Assert.IsTrue(state.WaitForValue("Loaded", timeoutMS: 60_000));
+VisualAssert.AreEqual(TestContext, window, scenarioSubname: "image");
+```
+
+`VisualAssert` uses `ScreenshotVisibleWindow`, DWM frame bounds, exact foreground ownership, and
+bounded retries. Keep platform-specific embedded baselines. If a correctly rendered video disagrees
+with a screenshot, diagnose capture/z-order before touching the baseline or 95% threshold.
+
+## Recipe 16 — Give an unaddressable control a test hook
+
+An icon-only button whose label lives in a `ToolTipService.ToolTip` has **no** UIA Name: the
+automation peer builds the name from the content's plain text, and a `FontIcon` has none. There is
+nothing for `By.Name` to match and nothing for `By.AccessibilityId` to match either, so the only
+test-side option left is clicking raw coordinates derived from a neighbouring control — brittle,
+DPI-sensitive, and silently wrong when the layout changes.
+
+The fix is a **one-attribute product edit**: add `AutomationProperties.AutomationId`.
+
+```xml
+<Button
+    AutomationProperties.AutomationId="ReloadBtn"
+    Command="{Binding LoadProcessesCommand}"
+    Content="{ui:FontIcon Glyph=&#xe72c;, FontSize=16}"
+    Style="{StaticResource SubtleButtonStyle}">
+    <ToolTipService.ToolTip>
+        <TextBlock x:Uid="Reload" />
+    </ToolTipService.ToolTip>
+</Button>
+```
+
+```csharp
+ui.Find<Button>(By.AccessibilityId("ReloadBtn")).Click();
+```
+
+Rules for using it:
+
+- **`AutomationProperties.AutomationId`, not `x:Name`.** `x:Name` does yield an AutomationId, but it
+  also generates a code-behind field and turns a pure markup change into something a developer can
+  bind to and depend on. `AutomationProperties.AutomationId` is inert: no field, no codegen, no
+  visual, no localization, no behaviour, and it never appears in the accessible name a screen reader
+  reads.
+- **Only when the control is genuinely unaddressable.** Try `By.Name`, `By.AccessibilityId` on an
+  existing `x:Name`, and `GetValue()` (Recipe 8) first. Do not sprinkle ids over controls that already
+  resolve.
+- **Add the id, not the behaviour.** Anything beyond an id — a hidden automation-peer TextBlock like
+  ColorPicker's `ColorHexAutomationPeer`, a new property, a state string — is a real product change:
+  describe it and let the maintainers decide.
+- **Name it after the control, not the test**, and keep it stable; it is now part of the module's
+  automation contract.
+
 ---
 
 ## Pitfalls
@@ -408,3 +499,69 @@ string result = MeasureWithRetry(() => { MouseHelper.MoveTo(cx, cy); MouseHelper
     interaction: activate a `NavigationViewItem` with `By.AccessibilityId(...).Click()` (the harness
     routes it to a coordinate-free UIA invoke), not a raw `MouseHelper`/`MouseClick`. See
     [ci-stability.md](ci-stability.md) Principle 2.
+20. **A condition observed once may be transient.** Deferred Explorer chrome, focus changes, and DWM
+    composition can invalidate an apparently ready state. Use `WaitHelper.WaitForStable` for exact
+    foreground/selection/bounds state and require consecutive samples.
+21. **Blind retries can undo success.** Activation hotkeys and pin buttons toggle. Once any target
+    HWND exists, stop resending and wait for initialization. Retry the whole activation only after a
+    bounded terminal failure and explicit process reset.
+22. **Window close is not process reset.** A hidden module process may ignore later show events, while
+    a pinned process may intentionally hold geometry. Choose preserve vs.
+    `TryKillProcessTreeByNameAndWait` per scenario (Recipe 14).
+23. **Foreground activation is best-effort across integrity levels.** An elevated visible helper
+    console can permanently block a non-elevated target. Log `GetForegroundWindowInfo()` and fix the
+    environment (for example launch shared WinAppDriver hidden), rather than adding infinite retries.
+24. **Explorer UIA is not the Shell selection authority.** Title readiness and visible file rows do
+    not prove the exact selected set or focused item. Use `ExplorerShell` (Recipe 13).
+25. **`PrintWindow` is not a composed-content oracle.** WinUI/WebView2 can render correctly on video
+    while `PrintWindow` is blank or incomplete. Use visible DWM capture and verify z-order before
+    changing valid baselines (Recipe 15).
+26. **Read the failure artifacts BEFORE theorising about the product.** Every failed test attaches a
+    desktop screenshot (and, in pipeline mode, an MP4). Open them first — they show what the UI
+    actually did, which is the one thing an assertion message cannot tell you. An assertion says
+    "found 0 rows"; the screenshot says whether the list was empty or whether your *counter* was
+    wrong. Skipping this step cost ~8 local-VM iterations on File Locksmith and produced a confident,
+    fully-argued, and entirely wrong "product defect" report — the window had ~10 rows on screen the
+    whole time while `FindAll<Button>(By.Name("End task"))` returned 0, because the button exposes no
+    UIA name and the `Button` wrapper filtered out the `Text` matches that winappcli did return.
+
+    Concretely, when a test reports "the UI shows nothing":
+
+    | Ask | Where to look |
+    |---|---|
+    | Did the UI really show nothing? | the failure PNG / MP4 |
+    | Is my selector matching the right control type? | `Session.Inspect()`, or `FindAll<Element>` and print `ControlType` |
+    | Did my fixture establish its precondition? | make the fixture assert it (Pitfall 27) |
+    | Is the product genuinely broken? | only after the three above |
+
+    A product-defect claim needs artifact evidence, not inference from an assertion message. If you
+    catch yourself building a theory about product internals from a counter that returns 0, stop and
+    open the PNG.
+27. **A fixture must prove its own precondition, per unit.** "At least one holder locked the file"
+    passes when 1 of 2 holders locked it, so the shortfall gets reported later as a product failure.
+    Assert the exact expected state (e.g. one ready-marker file per holder, written *after* the
+    operation succeeds) and include the fixture's own diagnostics in the assertion message. Equally,
+    expectations must track the lifecycle: a fixture that counts "total ever started" fails a test
+    that deliberately kills one of its processes — count what should be *alive now*. Marker files
+    outlive crashed/killed processes, so derive the ready count from markers whose PID is still live,
+    not from every marker ever written.
+28. **A background fixture must be non-activating from process creation; hiding its window later is
+    racy.** `CreateNoWindow=true` is reliable for a direct child, but an elevated test host may need
+    Explorer to launch a medium-integrity fixture. Opening a generated `.cmd` through Explorer still
+    creates a console even when the batch uses `start /b`; that console can appear after the first
+    window enumeration, steal foreground from non-elevated Explorer, and make a strict foreground
+    assertion fail on only one CI runner. Do not weaken the target's foreground check or add retries.
+    Eliminate the competing surface: launch the helper hidden from creation. One proven Windows
+    pattern is an Explorer-opened VBScript using `WScript.Shell.Run(command, 0, False)` and an encoded
+    PowerShell command; a dedicated launcher using `CREATE_NO_WINDOW` under the intended token is
+    another. Verify the fixture's ready signal, `MainWindowHandle == 0`, and that its PID does not own
+    `GetForegroundWindow()`.
+29. **Foreground is an interaction contract, not a universal window-readiness assertion.** Keep a
+    strict, stable foreground check for operations whose meaning depends on focus or coordinates —
+    Explorer selection/context menus, SendInput, drag, and physical clicks. Do not require an exact
+    launch-time HWND merely before coordinate-free UIA reads/invokes: WinUI can replace its top-level
+    HWND, and an interactive scheduled-task host can transiently observe `GetForegroundWindow()==0`
+    while the failure PNG shows the target visible and unobscured. In that case, attempt focus and log
+    `GetForegroundWindowInfo()`, but gate readiness on the owning process/window plus the authoritative
+    UIA element. Never apply this relaxation to Explorer context-menu tests; their focused Shell item
+    is part of the behavior under test.

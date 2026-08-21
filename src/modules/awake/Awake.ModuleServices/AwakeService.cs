@@ -33,6 +33,11 @@ public sealed class AwakeService : ModuleServiceBase, IAwakeService
         var isRunning = IsAwakeProcessRunning();
         var settings = ReadSettings();
 
+        return CreateState(isRunning, settings);
+    }
+
+    internal static AwakeState CreateState(bool isRunning, AwakeSettings? settings)
+    {
         if (settings is null)
         {
             return new AwakeState(isRunning, AwakeStateMode.Passive, false, null, null);

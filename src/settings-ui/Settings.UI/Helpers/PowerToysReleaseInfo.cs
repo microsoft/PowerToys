@@ -25,5 +25,8 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         [JsonPropertyName("body")]
         public string ReleaseNotes { get; set; }
+
+        [JsonPropertyName("prerelease")]
+        public bool IsPrerelease { get; set; }
     }
 }

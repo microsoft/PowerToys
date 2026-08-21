@@ -44,6 +44,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [HttpStatusCodes](https://github.com/grzhan/HttpStatusCodePowerToys) | [grzhan](https://github.com/grzhan) | Search for http status codes |
 | [SVGL](https://github.com/Sameerjs6/powertoys-svgl) | [SameerJS6](https://github.com/SameerJS6) | Search, Browse and copy SVG logos from SVGL. |
 | [QuickNotes](https://github.com/ruslanlap/CommunityPowerToysRunPlugin-QuickNotes) | [ruslanlap](https://github.com/ruslanlap) | Create, manage, and search notes directly from PowerToys Run. |
+| [Quick Shell](https://github.com/tonythethompson/QuickShell) | [tonythethompson](https://github.com/tonythethompson) | Open saved project folders in any terminal; shared shortcuts with the Quick Shell extension |
 | [Weather](https://github.com/ruslanlap/PowerToysRun-Weather) | [ruslanlap](https://github.com/ruslanlap) | Get real-time weather information directly from PowerToys Run. |
 | [Pomodoro](https://github.com/ruslanlap/PowerToysRun-Pomodoro) | [ruslanlap](https://github.com/ruslanlap) | Manage Pomodoro productivity sessions directly from PowerToys Run. |
 | [Definition](https://github.com/ruslanlap/PowerToysRun-Definition) | [ruslanlap](https://github.com/ruslanlap) | Lookup word definitions, phonetics, and synonyms directly in PowerToys Run. |
@@ -55,6 +56,8 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [CheatSheets](https://github.com/ruslanlap/PowerToysRun-CheatSheets) | [ruslanlap](https://github.com/ruslanlap) | 📚 Find cheat sheets and command examples instantly from tldr pages, cheat.sh, and devhints.io. Features include favorites system, categories, offline mode, and smart caching. |
 | [QuickAI](https://github.com/ruslanlap/PowerToysRun-QuickAi) | [ruslanlap](https://github.com/ruslanlap) | AI-powered assistance with instant, smart responses from multiple providers (Groq, Together, Fireworks, OpenRouter, Cohere) |
 | [Launchy](https://github.com/PsychodelEKS/PowerToysRun-Launchy) | [PsychodelEKS](https://github.com/PsychodelEKS) | Index and launch files from configured folders |
+| [DevDocs](https://github.com/jan-jaros/PowerToys-Run-DevDocs) | [jan-jaros](https://github.com/jan-jaros) | Search programming documentation from DevDocs.io |
+| [PoetSearch](https://github.com/Greyaircraft/PowerToysRun-PoetSearch) | [Greyaircraft](https://github.com/Greyaircraft) | Search 78,581 classical Chinese poems (全唐诗 + 全宋词) |
 
 ## Extending software plugins
 

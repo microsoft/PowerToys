@@ -13,7 +13,6 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v143</PlatformToolset>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\tests\UnitTestsCommonUtils\</OutDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -29,7 +28,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>..\;..\utils;..\Telemetry;..\..\;..\..\..\deps\;..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.260126.7\include;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp23</LanguageStandard>
-      <PreprocessorDefinitions>SPDLOG_WCHAR_TO_UTF8_SUPPORT;SPDLOG_HEADER_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SPDLOG_WCHAR_TO_UTF8_SUPPORT;SPDLOG_HEADER_ONLY;TWO_WAY_PIPE_MESSAGE_IPC_TESTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -49,6 +48,10 @@
     <ClCompile Include="OsDetect.Tests.cpp" />
     <ClCompile Include="Threading.Tests.cpp" />
     <ClCompile Include="ProcessPath.Tests.cpp" />
+    <ClCompile Include="PipeCallerAuth.Tests.cpp" />
+    <ClCompile Include="..\interop\pipe_caller_auth.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Window.Tests.cpp" />
     <ClCompile Include="GameMode.Tests.cpp" />
     <ClCompile Include="Gpo.Tests.cpp" />
@@ -70,6 +73,10 @@
     <ClCompile Include="Resources.Tests.cpp" />
     <ClCompile Include="TestStubs.cpp" />
     <ClCompile Include="UnhandledException.Tests.cpp" />
+    <ClCompile Include="TwoWayPipeMessageIPC.Tests.cpp" />
+    <ClCompile Include="..\interop\two_way_pipe_message_ipc.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
