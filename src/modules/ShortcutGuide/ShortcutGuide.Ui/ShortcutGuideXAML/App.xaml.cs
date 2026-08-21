@@ -251,15 +251,23 @@ namespace ShortcutGuide
             try
             {
                 bool isOverlayVisible = OverlayWindow.AppWindow.IsVisible;
+                bool isCurrentWindowExcluded =
+                    !isOverlayVisible && NativeMethods.IsCurrentWindowExcludedFromShortcutGuide();
                 var activeSource = (ShortcutGuideActivationSource)Volatile.Read(ref _activeSource);
                 var activeSurface = (ShortcutGuideOverlaySurface)Volatile.Read(ref _activeSurface);
                 var windowsKeyAction = (ShortcutGuideWindowsKeyAction)ShortcutGuideProperties.WindowsKeyAction.Value;
                 var action = ShortcutGuideActivationPolicy.GetActivationAction(
                     activationSource,
                     isOverlayVisible,
+                    isCurrentWindowExcluded,
                     activeSource,
                     activeSurface,
                     windowsKeyAction);
+
+                if (isCurrentWindowExcluded)
+                {
+                    Logger.LogInfo("Shortcut Guide activation suppressed because the foreground application is excluded.");
+                }
 
                 Logger.LogInfo($"Shortcut Guide activation action: {action}.");
                 switch (action)

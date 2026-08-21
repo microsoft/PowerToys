@@ -55,11 +55,6 @@ namespace ShortcutGuide
 
             Directory.CreateDirectory(ManifestInterpreter.PathOfManifestFiles);
 
-            if (NativeMethods.IsCurrentWindowExcludedFromShortcutGuide())
-            {
-                return;
-            }
-
             // Copy every shipped manifest from the install directory to the per-user manifest folder.
             // Enumerating the source folder avoids drift between the deployed assets and a hard-coded list.
             // Todo: Only copy files after an update.

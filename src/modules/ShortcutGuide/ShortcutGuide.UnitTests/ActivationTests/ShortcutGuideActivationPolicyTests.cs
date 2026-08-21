@@ -22,6 +22,7 @@ public sealed class ShortcutGuideActivationPolicyTests
         var action = ShortcutGuideActivationPolicy.GetActivationAction(
             ShortcutGuideActivationSource.WindowsKeyHold,
             isOverlayVisible: false,
+            isCurrentWindowExcluded: false,
             ShortcutGuideActivationSource.None,
             ShortcutGuideOverlaySurface.Hidden,
             windowsKeyAction);
@@ -38,6 +39,7 @@ public sealed class ShortcutGuideActivationPolicyTests
         var action = ShortcutGuideActivationPolicy.GetActivationAction(
             ShortcutGuideActivationSource.RegularHotkey,
             isOverlayVisible: false,
+            isCurrentWindowExcluded: false,
             ShortcutGuideActivationSource.None,
             ShortcutGuideOverlaySurface.Hidden,
             windowsKeyAction);
@@ -51,6 +53,7 @@ public sealed class ShortcutGuideActivationPolicyTests
         var action = ShortcutGuideActivationPolicy.GetActivationAction(
             ShortcutGuideActivationSource.RegularHotkey,
             isOverlayVisible: true,
+            isCurrentWindowExcluded: false,
             ShortcutGuideActivationSource.WindowsKeyHold,
             ShortcutGuideOverlaySurface.TaskbarIndicators,
             ShortcutGuideWindowsKeyAction.TaskbarIndicators);
@@ -64,6 +67,7 @@ public sealed class ShortcutGuideActivationPolicyTests
         var action = ShortcutGuideActivationPolicy.GetActivationAction(
             ShortcutGuideActivationSource.RegularHotkey,
             isOverlayVisible: true,
+            isCurrentWindowExcluded: false,
             ShortcutGuideActivationSource.WindowsKeyHold,
             ShortcutGuideOverlaySurface.FullGuide,
             ShortcutGuideWindowsKeyAction.OpenShortcutGuide);
@@ -77,6 +81,7 @@ public sealed class ShortcutGuideActivationPolicyTests
         var action = ShortcutGuideActivationPolicy.GetActivationAction(
             ShortcutGuideActivationSource.RegularHotkey,
             isOverlayVisible: true,
+            isCurrentWindowExcluded: false,
             ShortcutGuideActivationSource.RegularHotkey,
             ShortcutGuideOverlaySurface.FullGuide,
             ShortcutGuideWindowsKeyAction.TaskbarIndicators);
@@ -90,11 +95,56 @@ public sealed class ShortcutGuideActivationPolicyTests
         var action = ShortcutGuideActivationPolicy.GetActivationAction(
             ShortcutGuideActivationSource.WindowsKeyHold,
             isOverlayVisible: true,
+            isCurrentWindowExcluded: false,
             ShortcutGuideActivationSource.RegularHotkey,
             ShortcutGuideOverlaySurface.FullGuide,
             ShortcutGuideWindowsKeyAction.OpenShortcutGuide);
 
         Assert.AreEqual(ShortcutGuideActivationAction.None, action);
+    }
+
+    [TestMethod]
+    [DataRow(ShortcutGuideActivationSource.RegularHotkey, ShortcutGuideWindowsKeyAction.TaskbarIndicators)]
+    [DataRow(ShortcutGuideActivationSource.WindowsKeyHold, ShortcutGuideWindowsKeyAction.TaskbarIndicators)]
+    [DataRow(ShortcutGuideActivationSource.WindowsKeyHold, ShortcutGuideWindowsKeyAction.OpenShortcutGuide)]
+    public void GetActivationAction_ExcludedApp_SuppressesHiddenOverlay(
+        ShortcutGuideActivationSource activationSource,
+        ShortcutGuideWindowsKeyAction windowsKeyAction)
+    {
+        var action = ShortcutGuideActivationPolicy.GetActivationAction(
+            activationSource,
+            isOverlayVisible: false,
+            isCurrentWindowExcluded: true,
+            ShortcutGuideActivationSource.None,
+            ShortcutGuideOverlaySurface.Hidden,
+            windowsKeyAction);
+
+        Assert.AreEqual(ShortcutGuideActivationAction.None, action);
+    }
+
+    [TestMethod]
+    [DataRow(
+        ShortcutGuideActivationSource.RegularHotkey,
+        ShortcutGuideOverlaySurface.FullGuide,
+        ShortcutGuideActivationAction.Close)]
+    [DataRow(
+        ShortcutGuideActivationSource.WindowsKeyHold,
+        ShortcutGuideOverlaySurface.TaskbarIndicators,
+        ShortcutGuideActivationAction.ShowFullGuide)]
+    public void GetActivationAction_ExcludedApp_DoesNotSuppressVisibleOverlay(
+        ShortcutGuideActivationSource activeSource,
+        ShortcutGuideOverlaySurface activeSurface,
+        ShortcutGuideActivationAction expected)
+    {
+        var action = ShortcutGuideActivationPolicy.GetActivationAction(
+            ShortcutGuideActivationSource.RegularHotkey,
+            isOverlayVisible: true,
+            isCurrentWindowExcluded: true,
+            activeSource,
+            activeSurface,
+            ShortcutGuideWindowsKeyAction.TaskbarIndicators);
+
+        Assert.AreEqual(expected, action);
     }
 
     [TestMethod]
