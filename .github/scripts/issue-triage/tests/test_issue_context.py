@@ -1,4 +1,6 @@
 import importlib.util
+import json
+import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -532,6 +534,31 @@ class IssueContextTests(unittest.TestCase):
         self.assertFalse(should_process)
         self.assertEqual(api.queries, [])
 
+    def test_closed_issue_writes_noop_without_api_reads(self):
+        event = {
+            "action": "edited",
+            "issue": {
+                "number": 10,
+                "state": "closed",
+                "title": "Keyboard Manager exits",
+                "body": BUG_BODY,
+                "user": {"login": "alice"},
+                "labels": [],
+            },
+        }
+        api = FakeApi()
+        with (
+            mock.patch.object(CONTEXT, "write_noop") as noop,
+            mock.patch.object(
+                api,
+                "list_comments",
+                side_effect=AssertionError("Closed issues must not read comments"),
+            ),
+        ):
+            _, _, should_process = CONTEXT.prepare(event, api)
+        noop.assert_called_once_with("Closed issues are not triaged")
+        self.assertFalse(should_process)
+
     def test_prepare_emits_bounded_ranked_candidates(self):
         issue = {
             "number": 10,
@@ -592,6 +619,94 @@ class IssueContextTests(unittest.TestCase):
             evidence["allowed_product_labels"],
             ["Product-Screen Ruler"],
         )
+
+    def test_force_evidence_skips_issue_closed_after_trigger(self):
+        stale_issue = {
+            "number": 10,
+            "state": "open",
+            "title": "Keyboard Manager exits",
+            "body": BUG_BODY,
+            "user": {"login": "alice"},
+            "labels": [],
+        }
+        current_issue = {**stale_issue, "state": "closed"}
+        api = FakeApi(current_issue=current_issue)
+
+        with (
+            mock.patch.object(CONTEXT, "write_noop") as noop,
+            mock.patch.object(
+                api,
+                "list_comments",
+                side_effect=AssertionError("Closed issues must not read comments"),
+            ),
+        ):
+            _, normalized, should_process, evidence = CONTEXT.prepare_with_evidence(
+                {"action": "opened", "issue": stale_issue},
+                api,
+                force_evidence=True,
+            )
+
+        noop.assert_called_once_with("Closed issues are not triaged")
+        self.assertEqual(normalized["issue"]["state"], "closed")
+        self.assertFalse(should_process)
+        self.assertIsNone(evidence)
+
+    def test_main_cleanly_skips_closed_issue_during_evidence_refresh(self):
+        stale_issue = {
+            "number": 10,
+            "state": "open",
+            "title": "Keyboard Manager exits",
+            "body": BUG_BODY,
+            "user": {"login": "alice"},
+            "labels": [],
+        }
+        current_issue = {**stale_issue, "state": "closed"}
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            event_path = root / "event.json"
+            context_path = root / "context.md"
+            normalized_event_path = root / "normalized-event.json"
+            evidence_path = root / "evidence.json"
+            output_path = root / "github-output.txt"
+            event_path.write_text(
+                json.dumps({"action": "opened", "issue": stale_issue}),
+                encoding="utf-8",
+            )
+
+            with (
+                mock.patch.object(
+                    CONTEXT,
+                    "GitHubApi",
+                    return_value=FakeApi(current_issue=current_issue),
+                ),
+                mock.patch.object(
+                    CONTEXT.sys,
+                    "argv",
+                    [
+                        "issue-context.py",
+                        str(event_path),
+                        str(context_path),
+                        str(normalized_event_path),
+                        str(evidence_path),
+                    ],
+                ),
+                mock.patch.dict(
+                    CONTEXT.os.environ,
+                    {
+                        "GITHUB_OUTPUT": str(output_path),
+                        "ISSUE_TRIAGE_FORCE_EVIDENCE": "true",
+                    },
+                    clear=True,
+                ),
+            ):
+                self.assertEqual(CONTEXT.main(), 0)
+
+            self.assertFalse(evidence_path.exists())
+            self.assertEqual(
+                output_path.read_text(encoding="utf-8"),
+                "should_process=false\n",
+            )
 
     def test_candidate_retrieval_only_returns_older_issues(self):
         issue = {
