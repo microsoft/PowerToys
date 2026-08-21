@@ -45,6 +45,10 @@
 		<PackageReference Include="Shmuelie.WinRTServer" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="Microsoft.CmdPal.Ext.PowerToys.UnitTests" />
+	</ItemGroup>
+
 	<!-- Enable Single-project MSIX packaging support -->
 	<ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
 		<ProjectCapability Include="Msix" />
