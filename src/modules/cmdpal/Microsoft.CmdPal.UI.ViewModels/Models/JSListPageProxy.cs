@@ -20,18 +20,16 @@ using Windows.Foundation;
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
-/// Proxy that presents a Node.js extension list page as <see cref="IListPage"/>.
-/// Items are fetched with <c>listPage/getItems</c> and the extension can push
-/// <c>listPage/itemsChanged</c> notifications to refresh the view.
+/// Exposes a Node.js extension list page as <see cref="IListPage"/>.
+/// Items come from <c>listPage/getItems</c>. The extension can send
+/// <c>listPage/itemsChanged</c> to refresh the view.
 /// </summary>
 internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
 {
-    // Routing is scoped per connection so that identical page ids from different
-    // extensions never collide. Each page id maps to the set of live proxies that
-    // share it, so a notification reaches every visible reference (the same page
-    // can be materialized more than once) instead of only the most recent proxy.
-    // Proxies are held weakly so they can be collected without the registry
-    // keeping them alive, and dead references are pruned on dispatch and dispose.
+    // Routing is scoped per connection so identical page ids from different
+    // extensions do not collide. A page id can have more than one live proxy, so
+    // notifications go to every visible reference instead of only the newest one.
+    // Weak references let old proxies be collected, then pruned on dispatch and dispose.
     private static readonly ConditionalWeakTable<JsonRpcConnection, PageRegistry> Registries = new();
 
     private readonly string _pageId;
@@ -45,13 +43,10 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
     {
         _pageId = pageId ?? throw new ArgumentNullException(nameof(pageId));
 
-        // Establish the retained registry first. The factory must stay free of
-        // side effects: ConditionalWeakTable can invoke it on a thread that then
-        // loses the race and has its result discarded, so subscribing inside it
-        // could leave the connection's notification handler bound to a registry
-        // that is thrown away while proxies register into a different one. The
-        // handler is wired exactly once below, against the registry actually
-        // retained.
+        // Get the retained registry before subscribing. ConditionalWeakTable may run
+        // the factory on a thread that loses the race and discards its result. If the
+        // factory subscribed, the connection could keep a handler for a discarded
+        // registry while proxies register with the retained one.
         _registry = Registries.GetValue(Connection, static _ => new PageRegistry());
         _registry.EnsureSubscribed(Connection);
 
@@ -98,10 +93,9 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
 
     public IGridProperties? GridProperties => JSModelMapper.ParseGridProperties(Data);
 
-    // Pagination state is mutable: the extension reports whether more pages
-    // remain via the getItems / loadMore responses and itemsChanged
-    // notifications. The seeded page metadata is only the initial value; once the
-    // extension reports the final page we stop and never issue another loadMore.
+    // Pagination state can change after construction. The extension reports
+    // whether more pages remain through getItems, loadMore, and itemsChanged.
+    // The seeded page metadata is only the starting value.
     public bool HasMoreItems
     {
         get
@@ -156,7 +150,7 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
     {
         lock (_stateLock)
         {
-            // The extension has already reported the final page; do not ask again.
+            // The extension already reported the final page, so do not ask again.
             if (_hasMoreItemsState == false)
             {
                 return;
@@ -179,15 +173,12 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
 
             UpdatePageState(response.Result);
 
-            // A loadMore response that does not explicitly report more pages
-            // means the extension has no further items, so settle HasMoreItems to
-            // false rather than leaving the previous (true) value in place.
+            // If loadMore does not report more pages, treat it as the final page
+            // instead of keeping an old true value.
             SettleHasMoreItemsAfterLoadMore(response.Result);
 
-            // The host waits on ItemsChanged after LoadMore (see
-            // ListViewModel.LoadMoreIfNeeded) to re-query GetItems and clear its
-            // loading state, so raise it once the newly loaded page has been
-            // folded into the pagination state.
+            // The host waits for ItemsChanged after LoadMore before it asks for
+            // items again and clears its loading state.
             RaiseItemsChanged(ReadTotalItems(response.Result));
         }
         catch (Exception ex)
@@ -197,11 +188,9 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
         }
     }
 
-    // A failed loadMore (an RPC error response or a transport exception) must not
-    // leave the host stuck in its loading state. Settle paging to false so no
-    // further LoadMore is issued, and raise ItemsChanged so the host clears its
-    // loading spinner and re-queries the items it already has. The total is
-    // reported as unknown (-1) because the failed page delivered no count.
+    // A failed loadMore must not leave the host stuck loading. Stop paging and
+    // raise ItemsChanged so the host can clear its spinner and keep the items it
+    // already has. The total is unknown because the failed page delivered no count.
     private void SettleLoadMoreFailure()
     {
         var changed = false;
@@ -222,8 +211,8 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
         RaiseItemsChanged(-1);
     }
 
-    // Reads the mutable page state (currently HasMoreItems) from a getItems /
-    // loadMore response envelope and raises a change notification when it moves.
+    // Applies mutable page state from getItems or loadMore and raises a change
+    // notification when HasMoreItems changes.
     private void UpdatePageState(JsonElement? envelope)
     {
         if (!envelope.HasValue || envelope.Value.ValueKind != JsonValueKind.Object)
@@ -264,12 +253,9 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
         }
     }
 
-    // After a loadMore round trip, the flag is authoritative: an explicit
-    // hasMoreItems:true keeps paging alive, while false or an omitted flag means
-    // the extension has delivered its final page and no further LoadMore should
-    // be issued. This differs from UpdatePageState, which leaves the flag
-    // untouched when the field is absent so that itemsChanged notifications do
-    // not accidentally stop paging.
+    // After loadMore, an explicit hasMoreItems true keeps paging alive. False or a
+    // missing flag means the extension delivered its final page. itemsChanged keeps
+    // the old value when the flag is missing, since it can be only a refresh.
     private void SettleHasMoreItemsAfterLoadMore(JsonElement? envelope)
     {
         var hasMore = false;
@@ -361,8 +347,8 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
                 totalItems = totalItemsProp.GetInt32();
             }
 
-            // Snapshot the live proxies and prune any that were collected so the
-            // registry does not grow without bound as pages come and go.
+            // Snapshot live proxies and prune collected ones so the registry does
+            // not grow as pages come and go.
             List<JSListPageProxy> targets = new();
             lock (proxyRefs)
             {
@@ -464,10 +450,9 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
 
         public ConcurrentDictionary<string, List<WeakReference<JSListPageProxy>>> Pages { get; } = new();
 
-        // Wires the connection's itemsChanged handler to this retained registry
-        // exactly once. Binding here rather than inside the ConditionalWeakTable
-        // factory guarantees the handler can never target a registry that lost
-        // the creation race and was discarded.
+        // Binds the itemsChanged handler to the retained registry once. Binding here,
+        // instead of inside the ConditionalWeakTable factory, keeps the handler from
+        // pointing at a registry that lost the creation race.
         public void EnsureSubscribed(JsonRpcConnection connection)
         {
             lock (_subscribeLock)
@@ -477,15 +462,10 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
                     return;
                 }
 
-                // Register the handler before marking the registry subscribed.
-                // Publication must be atomic: no caller may observe the registry
-                // as subscribed (and then publish its proxy into Pages) until the
-                // connection is guaranteed to route itemsChanged notifications
-                // here. Setting the flag first and registering afterwards left a
-                // window where a notification could arrive after a concurrent
-                // caller saw the flag but before the handler was bound, and be
-                // dropped. Holding the lock across both steps closes that window,
-                // so EnsureSubscribed never returns before the handler is live.
+                // Register the handler before marking the registry subscribed. No caller
+                // should see the registry as subscribed and add a proxy until the
+                // connection can route itemsChanged here. Holding the lock across both
+                // steps closes the drop window.
                 connection.RegisterNotificationHandler(
                     "listPage/itemsChanged",
                     paramsElement => DispatchItemsChanged(this, paramsElement));

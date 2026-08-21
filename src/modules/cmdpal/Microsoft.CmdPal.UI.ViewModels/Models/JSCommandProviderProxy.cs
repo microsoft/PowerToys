@@ -17,9 +17,9 @@ using Windows.Foundation;
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
-/// Presents a Node.js extension as an <see cref="ICommandProvider"/> by forwarding
-/// provider calls over JSON-RPC. Fallback display titles, host status messages,
-/// log messages and clipboard requests raised by the extension are handled here.
+/// Lets Command Palette treat a Node.js extension as an <see cref="ICommandProvider"/>.
+/// Provider calls go over JSON-RPC. Fallback titles, host status, log messages,
+/// and clipboard requests from the extension are handled here.
 /// </summary>
 public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposable
 {
@@ -30,22 +30,19 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
     private readonly string _displayName;
     private readonly IIconInfo _icon;
 
-    // Host status messages are tracked by their client-minted statusId so an
-    // update to the same status refreshes the existing message in place instead
-    // of creating a duplicate, and a hide targets exactly the right message.
+    // Host status messages use the statusId minted by the client. That lets an
+    // update refresh the same message and lets hide target the right one.
     private readonly Dictionary<string, StatusMessage> _shownStatusMessages = new();
 
     // Guards _shownStatusMessages. Host status notifications and Dispose can run
-    // on different threads, so every read, mutation and enumeration of the map
-    // is serialized to avoid enumerating it while another thread mutates it.
+    // on different threads, so reads, writes, and enumeration share one gate.
     private readonly object _statusLock = new();
     private readonly ConcurrentDictionary<string, JSFallbackCommandItemAdapter> _fallbackAdapters = new();
 
-    // Host notifications can arrive between this proxy subscribing (in the
-    // constructor) and the host being attached via InitializeWithHost. Until the
-    // host is attached they are buffered here in arrival order and replayed once
-    // the host is bound, so a status or log raised during startup is not dropped.
-    // A null buffer means the host is attached and notifications run inline.
+    // Host notifications can arrive after this proxy subscribes but before
+    // InitializeWithHost attaches the host. Buffer them in arrival order so
+    // startup status and log messages are not dropped. A null buffer means the
+    // host is attached and notifications can run inline.
     private readonly object _preInitLock = new();
     private List<BufferedHostNotification>? _preInitNotifications = new();
     private IExtensionHost? _host;
@@ -59,10 +56,8 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
         _manifest = manifest ?? throw new ArgumentNullException(nameof(manifest));
         _providerMetadata = providerMetadata;
 
-        // The initialize handshake response carries the extension's declared
-        // identity and icon. Prefer those when present so the palette reflects
-        // what the extension reports at runtime, falling back to the static
-        // package manifest values when the handshake omits a field.
+        // Prefer the identity and icon from the initialize handshake when they are
+        // present. If the extension omits a field, use the package manifest value.
         _id = ReadHandshakeString(providerMetadata, "id", "Id") ?? _manifest.Name ?? "unknown";
         _displayName = ReadHandshakeString(providerMetadata, "displayName", "DisplayName") ?? _manifest.EffectiveDisplayName;
         _icon = ReadHandshakeIcon(providerMetadata) ?? new IconInfo(_manifest.Icon ?? string.Empty);
@@ -78,9 +73,8 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
 
     public IIconInfo Icon => _icon;
 
-    // Whether the provider's top-level command set is fixed. The value is carried
-    // from the initialize handshake metadata; the wire default is true when the
-    // extension does not specify it.
+    // True means the provider's top-level command set is fixed. If the extension
+    // leaves it out of the handshake, the wire default is true.
     public bool Frozen => ReadFrozen(_providerMetadata);
 
     public ICommandSettings? Settings
@@ -242,19 +236,16 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
         {
             _host = host;
 
-            // Flip the buffer to null under the same lock that the notification
-            // handlers use to decide whether to buffer. Writing _host before
-            // clearing the buffer (and readers taking _preInitLock before reading
-            // _host) guarantees a handler that runs inline observes the attached
-            // host rather than a stale null.
+            // Swap the buffer to null under the same lock used by notification handlers.
+            // _host is written first so any handler that now runs inline sees the host,
+            // not a stale null.
             buffered = _preInitNotifications ?? new List<BufferedHostNotification>();
             _preInitNotifications = null;
         }
 
         Logger.LogDebug($"JSCommandProviderProxy initialized with host for {DisplayName}");
 
-        // Replay the host notifications that arrived before the host was attached,
-        // in their original arrival order, now that the host can receive them.
+        // Replay startup notifications in arrival order now that the host can receive them.
         foreach (var notification in buffered)
         {
             DispatchBufferedHostNotification(notification.Method, notification.Parameters);
@@ -270,20 +261,16 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
 
         _isDisposed = true;
 
-        // Detach every notification handler this proxy registered so late
-        // notifications from the connection are no longer routed here. Process
-        // teardown and the protocol dispose request are owned by the extension
-        // service, so this proxy only releases its own subscriptions and host
-        // references. See the W4 coordination note in the remediation report.
+        // Detach this proxy's handlers so late connection notifications stop here.
+        // The extension service owns process teardown and protocol dispose, so this
+        // proxy only releases its subscriptions and host references.
         foreach (var method in RegisteredNotificationMethods)
         {
             _connection.UnregisterNotificationHandler(method);
         }
 
-        // Hide any status messages that are still visible so a disposed provider
-        // does not leave stale status in the host UI. Snapshot and clear the map
-        // under the lock so a status notification racing dispose cannot mutate it
-        // while it is being enumerated.
+        // Hide any status messages still on screen. Snapshot and clear under the lock
+        // so a status notification racing Dispose cannot change the map during enumeration.
         var host = _host;
         List<StatusMessage> pendingStatuses;
         lock (_statusLock)
@@ -330,11 +317,8 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
         _connection.RegisterNotificationHandler("host/copyText", HandleCopyTextNotification);
     }
 
-    // Buffers a host notification that arrived before InitializeWithHost attached
-    // the host. Returns true when the notification was buffered (the caller must
-    // stop) and false when the host is already attached and the caller should
-    // handle it inline. The params element is cloned so the buffered copy stays
-    // valid after the connection recycles the source document.
+    // Buffers a host notification until InitializeWithHost attaches the host.
+    // The params element is cloned because the connection may recycle the source document.
     private bool TryBufferUntilHostAttached(string method, JsonElement paramsElement)
     {
         lock (_preInitLock)
@@ -349,9 +333,8 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
         }
     }
 
-    // Replays a buffered host notification through its handler once the host is
-    // attached. The gate is already open, so the handler runs inline instead of
-    // buffering again.
+    // Runs the buffered notification now that the host is attached. The open gate
+    // keeps this pass from buffering the same notification again.
     private void DispatchBufferedHostNotification(string method, JsonElement paramsElement)
     {
         switch (method)
@@ -518,8 +501,8 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
                 if (!string.IsNullOrEmpty(statusId) &&
                     _shownStatusMessages.TryGetValue(statusId, out var existing))
                 {
-                    // Same status shown again: refresh it in place so the host
-                    // keeps a single message rather than stacking duplicates.
+                    // Same statusId again. Update the existing message instead of
+                    // stacking another one.
                     existing.Message = message;
                     existing.State = (MessageState)state;
                     existing.Progress = progress;
@@ -538,14 +521,11 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
                     _shownStatusMessages[statusId] = statusMessage;
                 }
 
-                // Dispatch the show while still holding the status lock. Dispose
-                // hides every tracked status and must acquire this same lock, so
-                // keeping the map insertion and the ShowStatus call atomic
-                // guarantees a racing dispose either runs entirely before this
-                // show (and the disposed guard above cancels it) or entirely
-                // after (and hides the status the show has already dispatched).
-                // Releasing the lock between the insertion and the call would let
-                // dispose observe the status and hide it before it was ever shown.
+                // Keep the map update and ShowStatus under one lock. Dispose uses
+                // this same lock to hide tracked statuses, so it either runs before
+                // this show starts or after the shown status is tracked. Releasing
+                // the lock between those steps would let Dispose hide a status that
+                // was not shown yet.
                 _ = host.ShowStatus(statusMessage, ReadStatusContext(paramsElement));
             }
         }
@@ -640,8 +620,8 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
         return string.Empty;
     }
 
-    // Maps a status progress payload (indeterminate spinner or a percentage) onto
-    // a toolkit progress state. Returns null when no progress is reported.
+    // Turns the wire progress payload into the toolkit shape. Null means no
+    // progress was reported.
     private static IProgressState? ReadProgress(JsonElement paramsElement)
     {
         if (paramsElement.ValueKind != JsonValueKind.Object ||
@@ -668,9 +648,7 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
         return progress;
     }
 
-    // Reads a non-empty string field (id or displayName) from the initialize
-    // handshake metadata. Returns null when the field is absent or blank so the
-    // caller falls back to the static package manifest value.
+    // Blank or missing handshake fields fall back to the package manifest value.
     private static string? ReadHandshakeString(JsonElement metadata, string camel, string pascal)
     {
         if (metadata.ValueKind == JsonValueKind.Object &&
@@ -684,9 +662,7 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
         return null;
     }
 
-    // Reads the icon declared in the initialize handshake metadata. Returns null
-    // when the handshake omits an icon so the caller falls back to the manifest
-    // icon rather than replacing it with an empty glyph.
+    // Missing handshake icons fall back to the manifest icon, not an empty glyph.
     private static IIconInfo? ReadHandshakeIcon(JsonElement metadata)
     {
         if (metadata.ValueKind == JsonValueKind.Object &&
@@ -714,7 +690,7 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
             }
         }
 
-        // The wire default when the extension omits the flag is frozen.
+        // The wire default is frozen when the extension leaves the flag out.
         return true;
     }
 

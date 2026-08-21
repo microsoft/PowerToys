@@ -14,9 +14,8 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
-/// Proxy that presents a Node.js extension form as <see cref="IFormContent"/>.
-/// Submitting the form forwards a <c>form/submit</c> request and maps the
-/// response to a toolkit command result.
+/// Exposes a Node.js extension form as <see cref="IFormContent"/>.
+/// Submit sends <c>form/submit</c> and maps the response to a toolkit command result.
 /// </summary>
 internal sealed partial class JSFormContentProxy : BaseObservable, IFormContent
 {
@@ -31,10 +30,9 @@ internal sealed partial class JSFormContentProxy : BaseObservable, IFormContent
         _data = data;
         _connection = connection;
 
-        // Each serialized form carries a required formId that is unique within its
-        // page. Capturing it here lets a page with multiple forms, or a form nested
-        // inside tree content, route its submission back to the correct handler
-        // instead of relying on the SDK first-form fallback.
+        // Each form carries a formId that is unique within its page. Keep it so pages
+        // with multiple forms, or forms nested in tree content, submit to the correct
+        // handler instead of the SDK first-form fallback.
         _formId = JSModelMapper.GetString(_data, "formId") ?? JSModelMapper.GetString(_data, "FormId") ?? string.Empty;
     }
 

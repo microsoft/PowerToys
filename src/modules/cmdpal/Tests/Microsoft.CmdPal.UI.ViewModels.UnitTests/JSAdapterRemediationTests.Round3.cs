@@ -16,10 +16,10 @@ using Windows.Foundation;
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 /// <summary>
-/// Round-3 phase-3 adapter remediation. Covers the swallowed LoadMore failure
-/// (r3-p3-01), atomic registry subscription (r3-p3-02), pre-init host
-/// notification buffering (r3-p3-03), handshake metadata adoption (r3-p3-04),
-/// pending-show versus dispose ordering (r3-p3-05) and single-theme icon
+/// Round 3, phase 3 adapter remediation. Covers swallowed LoadMore failures
+/// (r3-p3-01), registry subscription ordering (r3-p3-02), host notification
+/// buffering before InitializeWithHost (r3-p3-03), handshake metadata adoption
+/// (r3-p3-04), show versus dispose ordering (r3-p3-05), and single-theme icon
 /// mirroring (r3-p3-06). Shared helpers live in the primary
 /// <see cref="JSAdapterRemediationTests"/> partial.
 /// </summary>
@@ -61,8 +61,7 @@ public partial class JSAdapterRemediationTests
     }
 
     // r3-p3-02: the itemsChanged handler is bound before the constructor returns,
-    // so a notification pushed immediately after subscribing is delivered rather
-    // than dropped because the connection had no handler yet.
+    // so a notification pushed immediately after subscribing is not dropped.
     [TestMethod]
     public async Task ListPage_NotificationRightAfterSubscriptionIsDelivered()
     {
@@ -81,8 +80,8 @@ public partial class JSAdapterRemediationTests
     }
 
     // r3-p3-02: constructing proxies concurrently on one connection keeps the
-    // subscription atomic, so a notification is delivered no matter which
-    // constructor won the registration race.
+    // subscription under one lock, so the notification is delivered no matter
+    // which constructor wins the registration race.
     [TestMethod]
     public async Task ListPage_ConcurrentSubscriptionNeverDropsNotification()
     {
@@ -114,9 +113,8 @@ public partial class JSAdapterRemediationTests
     }
 
     // r3-p3-03: a host notification that arrives before InitializeWithHost is
-    // buffered and replayed once the host is attached, so a startup status is not
-    // dropped. The itemsChanged pushed afterward drains behind it (FIFO), proving
-    // the status was processed while the host was still detached.
+    // buffered and replayed once the host is attached. The itemsChanged pushed
+    // afterward runs behind it, which proves FIFO order.
     [TestMethod]
     public async Task Provider_HostNotificationBeforeInitIsReplayedAfterInit()
     {
@@ -135,8 +133,8 @@ public partial class JSAdapterRemediationTests
                 ["message"] = new JsonObject { ["Message"] = "Booting", ["State"] = 0 },
             });
 
-        // The itemsChanged handler needs no host, so observing it confirms the
-        // preceding showStatus has already been processed (and buffered).
+        // The itemsChanged handler needs no host. Seeing it means the earlier
+        // showStatus has already been processed and buffered.
         await fake.PushNotificationAsync("provider/itemsChanged", new JsonObject { ["totalItems"] = 1 });
         await ordered.Task.WaitAsync(Timeout);
 
@@ -186,9 +184,9 @@ public partial class JSAdapterRemediationTests
         Assert.AreEqual("Test Extension", provider.DisplayName);
     }
 
-    // r3-p3-05: a pending show holds the status lock, so a dispose-triggered hide
-    // cannot run until the show has been dispatched. The recorded order is always
-    // show then hide, never hide before show.
+    // r3-p3-05: a pending show holds the status lock, so a hide from Dispose
+    // cannot run until the show has been dispatched. The order is always show
+    // then hide.
     [TestMethod]
     public async Task Provider_DisposeHidesStrictlyAfterPendingShow()
     {
@@ -209,8 +207,8 @@ public partial class JSAdapterRemediationTests
 
         var dispose = Task.Run(() => provider.Dispose());
 
-        // The pending show still holds the status lock, so dispose cannot hide the
-        // status yet. Give it time to prove it stays blocked rather than racing.
+        // The pending show still holds the status lock, so Dispose cannot hide the
+        // status yet. Give it time to prove the hide waits.
         await Task.Delay(200);
         Assert.AreEqual(0, host.HiddenCount);
 
@@ -265,9 +263,8 @@ public partial class JSAdapterRemediationTests
     }
 
     /// <summary>
-    /// A host whose ShowStatus blocks until released, and which records the order
-    /// of show and hide calls. Used to make the pending-show-versus-dispose
-    /// ordering deterministic.
+    /// A host whose ShowStatus blocks until released and records show and hide
+    /// order. This makes the show versus dispose ordering deterministic.
     /// </summary>
     private sealed partial class OrderedGatingHost : IExtensionHost, IDisposable
     {

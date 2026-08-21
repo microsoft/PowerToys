@@ -19,9 +19,9 @@ using Windows.Foundation;
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
-/// Proxy that presents a Node.js extension content page as <see cref="IContentPage"/>.
-/// Content is fetched with <c>contentPage/getContent</c>; details and commands are
-/// materialized from the page payload.
+/// Exposes a Node.js extension content page as <see cref="IContentPage"/>.
+/// Content comes from <c>contentPage/getContent</c>. Details and commands come
+/// from the page payload.
 /// </summary>
 internal sealed partial class JSContentPageProxy : JSObservableProxyBase, IContentPage
 {

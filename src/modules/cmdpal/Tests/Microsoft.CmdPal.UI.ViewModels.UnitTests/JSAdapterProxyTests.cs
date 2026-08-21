@@ -13,8 +13,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 /// <summary>
-/// Exercises the JSON-RPC adapters and proxies end to end against an in-memory
-/// fake extension driving a real JsonRpcConnection.
+/// Exercises JSON-RPC adapters and proxies against an in-memory fake extension
+/// running through a real JsonRpcConnection.
 /// </summary>
 [TestClass]
 public class JSAdapterProxyTests
@@ -159,7 +159,7 @@ public class JSAdapterProxyTests
         Assert.AreEqual("DetailTitle", items[0].Details!.Title);
         Assert.AreEqual(1, items[0].MoreCommands.Length);
 
-        // Separator items expose no command.
+        // Separator items have no command.
         Assert.IsNull(items[1].Command);
         Assert.AreEqual("Item B", items[2].Title);
     }
@@ -197,19 +197,19 @@ public class JSAdapterProxyTests
 
         Assert.AreEqual(2, items.Length);
 
-        // The root item carries a first-level nested command.
+        // The root item has the first nested command.
         var firstLevel = items[0].MoreCommands;
         Assert.AreEqual(1, firstLevel.Length);
         var firstLevelCommand = (ICommandContextItem)firstLevel[0];
         Assert.AreEqual("Level 1", firstLevelCommand.Title);
 
-        // That first-level command carries its own second-level nested command.
+        // That command has a second nested command.
         Assert.AreEqual(1, firstLevelCommand.MoreCommands.Length);
         var secondLevelCommand = (ICommandContextItem)firstLevelCommand.MoreCommands[0];
         Assert.AreEqual("Level 2", secondLevelCommand.Title);
         Assert.AreEqual(0, secondLevelCommand.MoreCommands.Length);
 
-        // The leaf item with no moreCommands yields no children.
+        // The leaf item has no moreCommands, so it yields no children.
         Assert.AreEqual(0, items[1].MoreCommands.Length);
     }
 

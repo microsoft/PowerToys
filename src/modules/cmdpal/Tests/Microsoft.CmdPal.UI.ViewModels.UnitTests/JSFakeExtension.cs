@@ -17,9 +17,9 @@ using Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 /// <summary>
-/// In-memory fake Node.js extension. It drives a real <see cref="JsonRpcConnection"/>
-/// over paired pipes, answering requests with canned JSON responses and pushing
-/// notifications on demand. No external process is started.
+/// Fake Node.js extension that runs in memory. It drives a real
+/// <see cref="JsonRpcConnection"/> over paired pipes, answers requests with
+/// canned JSON, and can push notifications. No external process is started.
 /// </summary>
 internal sealed class JSFakeExtension : IDisposable
 {
@@ -49,8 +49,8 @@ internal sealed class JSFakeExtension : IDisposable
 
     public void OnResult(string method, string resultJson) => _handlers[method] = _ => JsonNode.Parse(resultJson);
 
-    // Answers a request method with a JSON-RPC error response so tests can drive
-    // the error-handling branches of the proxies.
+    // Answers a request method with a JSON-RPC error so tests can drive proxy
+    // error handling.
     public void OnError(string method, int code, string message) => _errors[method] = (code, message);
 
     public async Task PushNotificationAsync(string method, JsonNode? parameters)

@@ -17,10 +17,9 @@ using Windows.System;
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
-/// Static helpers that materialize JSON-RPC payloads into the Command Palette
-/// toolkit data types (icons, tags, details, content, grid layouts, filters).
-/// Keeping the JSON key literals inside these helpers (rather than inside
-/// properties named after the keys) keeps the adapters analyzer clean.
+/// Helpers that turn JSON-RPC payloads into Command Palette toolkit types,
+/// including icons, tags, details, content, grid layouts, and filters. Keeping
+/// JSON key literals here instead of property names keeps the adapters analyzer clean.
 /// </summary>
 internal static class JSModelMapper
 {
@@ -85,10 +84,9 @@ internal static class JSModelMapper
     }
 
     /// <summary>
-    /// Materializes an icon only when the payload actually carries the field.
-    /// Returns <c>true</c> when an icon key is present (even if it resolves to an
-    /// empty glyph), so callers can distinguish an explicitly empty icon from an
-    /// absent one and fall back to another source when it is absent.
+    /// Builds an icon only when the payload carries the field. Returns <c>true</c>
+    /// when an icon key is present, even if it resolves to an empty glyph. That lets
+    /// callers tell an explicitly empty icon from a missing one.
     /// </summary>
     internal static bool TryGetIcon(JsonElement parent, string camel, string pascal, out IIconInfo icon)
     {
@@ -139,10 +137,8 @@ internal static class JSModelMapper
             return new IconInfo(string.Empty);
         }
 
-        // Exactly one theme variant was supplied here (both-absent already
-        // returned above). Mirror the supplied variant onto the missing theme so
-        // the icon renders in both light and dark rather than disappearing in
-        // whichever theme was omitted.
+        // Only one theme variant was supplied. Copy it to the missing theme so the
+        // icon renders in both light and dark.
         var supplied = light ?? dark;
         if (supplied is null)
         {
@@ -291,10 +287,8 @@ internal static class JSModelMapper
 
         var command = JSCommandFactory.CreateCommandFromJson(commandData, connection);
 
-        // A context item that omits its own icon inherits the command's icon,
-        // matching how list items fall back. Reading the item icon with
-        // TryGetIcon distinguishes an absent icon (fall back) from an explicitly
-        // empty one (which stays empty and is not replaced).
+        // A context item without its own icon inherits the command icon, matching
+        // list item fallback. TryGetIcon tells a missing icon from an explicitly empty one.
         var icon = TryGetIcon(element, "icon", "Icon", out var ownIcon)
             ? ownIcon
             : command.Icon ?? new IconInfo(string.Empty);
@@ -317,9 +311,8 @@ internal static class JSModelMapper
             item.Subtitle = subtitle;
         }
 
-        // Context items can carry their own nested context menu via "moreCommands".
-        // The wire omits the field entirely when empty, so only assign when the
-        // recursive parse yields children and otherwise leave the default.
+        // moreCommands is omitted when empty. Leave the default unless the recursive
+        // parse finds children.
         var moreCommands = ParseContextItems(element, "moreCommands", "MoreCommands", connection);
         if (moreCommands.Length > 0)
         {
@@ -335,10 +328,9 @@ internal static class JSModelMapper
     }
 
     /// <summary>
-    /// Parses a requested context-menu shortcut (modifiers, virtual key and scan
-    /// code) into a <see cref="KeyChord"/>. Returns <c>false</c> when the field is
-    /// absent or malformed so the caller leaves the default (no) shortcut. Never
-    /// throws on unexpected shapes.
+    /// Parses a requested context menu shortcut into a <see cref="KeyChord"/>.
+    /// Returns <c>false</c> when the field is absent or malformed so the caller can
+    /// leave the default shortcut. Unexpected shapes do not throw.
     /// </summary>
     internal static bool TryParseKeyChord(JsonElement parent, out KeyChord keyChord)
     {
@@ -353,7 +345,7 @@ internal static class JSModelMapper
         var vkey = ReadInt32OrNull(chordProp, "vkey", "Vkey") ?? ReadInt32OrNull(chordProp, "vKey", "VKey");
         if (vkey is null)
         {
-            // A shortcut with no virtual key is not actionable; treat as absent.
+            // Without a virtual key, the shortcut cannot be invoked.
             return false;
         }
 

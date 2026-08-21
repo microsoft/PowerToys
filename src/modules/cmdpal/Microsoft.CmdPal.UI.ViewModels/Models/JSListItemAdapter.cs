@@ -10,9 +10,9 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
-/// Adapts a JSON list item payload to <see cref="IListItem"/>. The nested
-/// command is resolved lazily; tags, details and context items are materialized
-/// through <see cref="JSModelMapper"/>.
+/// Adapts a JSON list item payload to <see cref="IListItem"/>.
+/// The nested command is resolved lazily. Tags, details, and context items are
+/// built through <see cref="JSModelMapper"/>.
 /// </summary>
 internal sealed partial class JSListItemAdapter : BaseObservable, IListItem
 {

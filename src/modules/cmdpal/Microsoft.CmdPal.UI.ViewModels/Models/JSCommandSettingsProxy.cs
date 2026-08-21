@@ -10,8 +10,8 @@ namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
 /// Exposes a Node.js extension's settings page as <see cref="ICommandSettings"/>.
-/// The complete serialized settings page (title, name, icon, details, commands)
-/// is presented as a content page rather than reconstructing one from an id.
+/// The full settings page payload is kept intact, including title, name, icon,
+/// details, and commands.
 /// </summary>
 internal sealed partial class JSCommandSettingsProxy : ICommandSettings
 {

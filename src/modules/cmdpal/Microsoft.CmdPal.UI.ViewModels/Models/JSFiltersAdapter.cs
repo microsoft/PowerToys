@@ -11,8 +11,8 @@ using Microsoft.CommandPalette.Extensions;
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
-/// Adapts a JSON filters payload to <see cref="IFilters"/>. Changing the current
-/// filter forwards a <c>listPage/setFilter</c> request to the extension.
+/// Adapts a JSON filters payload to <see cref="IFilters"/>.
+/// Changing the current filter sends <c>listPage/setFilter</c> to the extension.
 /// </summary>
 internal sealed partial class JSFiltersAdapter : IFilters
 {

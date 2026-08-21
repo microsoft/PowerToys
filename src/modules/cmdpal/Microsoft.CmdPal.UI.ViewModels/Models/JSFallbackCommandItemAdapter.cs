@@ -15,9 +15,8 @@ namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
 /// Adapts a JSON fallback command payload to <see cref="IFallbackCommandItem2"/>.
-/// The display title can be updated when the extension pushes a
-/// <c>command/propChanged</c> notification, and query updates are forwarded via
-/// <c>fallback/updateQuery</c>.
+/// The display title can change when the extension sends <c>command/propChanged</c>,
+/// and query updates go through <c>fallback/updateQuery</c>.
 /// </summary>
 internal sealed partial class JSFallbackCommandItemAdapter : BaseObservable, IFallbackCommandItem2
 {
