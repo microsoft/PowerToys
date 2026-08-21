@@ -59,7 +59,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
     private readonly List<CommandProviderWrapper> _providerWrappers = [];
     private readonly HashSet<string> _disabledExtensions = new(StringComparer.Ordinal);
 
-    // Provider-id (normalized manifest name key) reservations shared by every
+    // Provider ID (normalized manifest name key) reservations shared by every
     // registration path. Consulted and claimed atomically under _extensionsLock so a
     // duplicate id can never register regardless of how it arrives (initial scan,
     // refresh, dynamic install, hot-reload, or crash-restart).
@@ -1230,8 +1230,8 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
 
     private void OnDirectoryWatcherRenamed(object sender, RenamedEventArgs e)
     {
-        // A rename can be an atomic promotion (temp -> final) or a demotion/uninstall
-        // (final -> temp). Treat the new name as a possible install and the old name as
+        // A rename can be an atomic promotion from temp to final, or a demotion or uninstall
+        // from final to temp. Treat the new name as a possible install and the old name as
         // a possible removal, ignoring either side that sits under an ignored segment.
         // The new name must also be a top-level extension entry (directory or its own
         // manifest); a nested rename is not an extension change.
@@ -1695,11 +1695,11 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
 
         using (gate)
         {
-            // Validate-then-swap. Start the replacement FIRST, before removing the
+            // Validate then swap. Start the replacement before removing the
             // incumbent, so a failed reload keeps the incumbent provider (and its source
             // watcher) live and a later corrective edit re-triggers this reload. The old
             // provider is only removed once the new one has started and registered, so a
-            // duplicate-id refresh never leaves the directory with neither provider.
+            // duplicate ID refresh never leaves the directory with neither provider.
             var replacement = await StartInstanceAsync(directory, parseResult.Manifest, _reload.Token).ConfigureAwait(false);
             if (replacement is null)
             {

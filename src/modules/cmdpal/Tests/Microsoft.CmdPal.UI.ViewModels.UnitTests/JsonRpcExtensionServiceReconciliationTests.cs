@@ -15,9 +15,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 /// <summary>
-/// Covers the robust-discovery and duplicate-id remediations (p4-04, p4-07): the
-/// reconciliation diff, the deterministic collision policy, the manifest-stability
-/// retry, and mapping a changed path back to its owning extension directory.
+/// Covers the discovery and duplicate ID fixes (p4-04, p4-07): the reconciliation
+/// diff, deterministic collision policy, manifest stability retry, and mapping a
+/// changed path back to its owning extension directory.
 /// </summary>
 [TestClass]
 public class JsonRpcExtensionServiceReconciliationTests

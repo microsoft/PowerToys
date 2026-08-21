@@ -24,7 +24,7 @@ internal sealed class ProviderIdReservations
 {
     private readonly Lock _lock = new();
 
-    // Provider id (ordinal name key) -> canonical directory that owns it.
+    // Provider ID (ordinal name key) mapped to the canonical directory that owns it.
     private readonly Dictionary<string, string> _owners = new(StringComparer.Ordinal);
 
     /// <summary>
