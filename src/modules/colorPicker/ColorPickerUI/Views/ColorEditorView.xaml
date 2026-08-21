@@ -238,6 +238,7 @@
                 <ScrollViewer IsTabStop="False">
                     <ItemsControl
                         FocusManager.IsFocusScope="True"
+                        Grid.IsSharedSizeScope="True"
                         IsTabStop="False"
                         ItemsSource="{Binding ColorRepresentations}"
                         KeyboardNavigation.DirectionalNavigation="Contained"
