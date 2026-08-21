@@ -8,14 +8,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 /// <summary>
-/// Documents the crash-lifecycle decisions behind r2-p4-03 (an immediate post-init
-/// crash must be handled) and r2-p4-07 (a crash-disabled extension recovers after a
-/// source edit). The end-to-end wiring (the post-init <c>IsRunning()</c> probe that
-/// drives <c>OnExtensionProcessExited</c>, the disable branch keeping the source
-/// watcher alive, and hot-reload resetting the crash count) requires spawning a Node
-/// process and is verified by inspection; the deterministic decision the wiring relies
-/// on is exercised here through the pure <see cref="JsonRpcExtensionService.DecideCrashAction"/>
-/// seam.
+/// Documents the crash lifecycle decisions behind r2-p4-03 (handle a crash right after
+/// init) and r2-p4-07 (recover a disabled extension after a source edit).
+/// The full wiring needs a Node process, so these tests cover the pure
+/// <see cref="JsonRpcExtensionService.DecideCrashAction"/> decision the service depends on.
 /// </summary>
 [TestClass]
 public class JsonRpcExtensionServiceCrashRecoveryTests
