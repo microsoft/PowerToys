@@ -38,7 +38,7 @@ $relativeFiles = [System.Collections.Generic.HashSet[string]]::new(
 function Add-PortableFile([string]$RelativePath) {
     if ([string]::IsNullOrWhiteSpace($RelativePath) -or
         [IO.Path]::IsPathRooted($RelativePath) -or
-        $RelativePath.Split('\', '/').Contains('..')) {
+        ($RelativePath -split '[\\/]').Contains('..')) {
         throw "Portable artifact path is invalid: $RelativePath"
     }
     [void]$relativeFiles.Add($RelativePath)
