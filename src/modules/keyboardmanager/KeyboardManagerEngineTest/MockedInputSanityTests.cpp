@@ -53,5 +53,42 @@ namespace RemappingLogicTests
             // A key state should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
         }
+
+        TEST_METHOD (MockedInput_ShouldReportAndDeliverExactInjectedPrefix)
+        {
+            mockedInputHandler.SetSendVirtualInputInjectedCount([](const std::vector<INPUT>&) {
+                return static_cast<size_t>(1);
+            });
+            std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'B' } },
+            };
+
+            const auto result = mockedInputHandler.SendVirtualInput(inputs);
+
+            Assert::AreEqual(
+                static_cast<int>(KeyboardManagerInput::SendVirtualInputStatus::Partial),
+                static_cast<int>(result.status));
+            Assert::AreEqual(static_cast<UINT>(1), result.injectedEventCount);
+            Assert::IsTrue(mockedInputHandler.GetVirtualKeyState('A'));
+            Assert::IsFalse(mockedInputHandler.GetVirtualKeyState('B'));
+        }
+
+        TEST_METHOD (MockedInput_ShouldReportNoneWhenNoEventsAreInjected)
+        {
+            mockedInputHandler.SetSendVirtualInputInjectedCount([](const std::vector<INPUT>&) {
+                return static_cast<size_t>(0);
+            });
+
+            const auto result = mockedInputHandler.SendVirtualInput({
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            });
+
+            Assert::AreEqual(
+                static_cast<int>(KeyboardManagerInput::SendVirtualInputStatus::None),
+                static_cast<int>(result.status));
+            Assert::AreEqual(static_cast<UINT>(0), result.injectedEventCount);
+            Assert::IsFalse(mockedInputHandler.GetVirtualKeyState('A'));
+        }
     };
 }

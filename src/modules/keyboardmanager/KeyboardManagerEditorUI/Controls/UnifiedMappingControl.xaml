@@ -47,6 +47,15 @@
                         <TextBlock x:Uid="TriggerType_KeyOrShortcut_Text" />
                     </StackPanel>
                 </ComboBoxItem>
+                <ComboBoxItem
+                    x:Name="TextExpansionTriggerTypeItem"
+                    x:Uid="TriggerType_TextExpansion"
+                    Tag="KeyOrShortcut">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE8C8;" />
+                        <TextBlock x:Uid="TriggerType_TextExpansion_Text" />
+                    </StackPanel>
+                </ComboBoxItem>
                 <!--
                 <ComboBoxItem x:Uid="TriggerType_Mouse" Tag="Mouse">
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -61,6 +70,24 @@
                 Margin="0,12,0,12"
                 HorizontalAlignment="Stretch"
                 Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+            <StackPanel
+                x:Name="TextExpansionSourcePanel"
+                Orientation="Vertical"
+                Spacing="8"
+                Visibility="Collapsed">
+                <TextBlock x:Uid="TextExpansionAbbreviationLabel" FontWeight="SemiBold" />
+                <TextBox
+                    x:Name="TextExpansionSourceTextBox"
+                    x:Uid="TextExpansionSourceTextBox"
+                    MaxLength="256"
+                    GotFocus="TextContentBox_GotFocus"
+                    TextChanged="TextExpansionTextBox_TextChanged" />
+                <TextBlock
+                    x:Uid="TextExpansionActivationLabel"
+                    Margin="0,12,0,0"
+                    FontWeight="SemiBold" />
+            </StackPanel>
 
             <tkcontrols:SwitchPresenter
                 x:Name="TriggerSwitchPresenter"
@@ -194,6 +221,16 @@
                         <TextBlock x:Uid="ActionType_Text_Text" />
                     </StackPanel>
                 </ComboBoxItem>
+                <ComboBoxItem
+                    x:Name="TextExpansionActionTypeItem"
+                    x:Uid="ActionType_ReplaceWith"
+                    Tag="TextExpansion"
+                    Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE8D2;" />
+                        <TextBlock x:Uid="ActionType_ReplaceWith_Text" />
+                    </StackPanel>
+                </ComboBoxItem>
                 <ComboBoxItem x:Uid="ActionType_OpenUrl" Tag="OpenUrl">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="14" Glyph="&#xE774;" />
@@ -284,6 +321,21 @@
                         BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                         GotFocus="TextContentBox_GotFocus"
                         TextChanged="TextContentBox_TextChanged"
+                        TextWrapping="Wrap" />
+                </tkcontrols:Case>
+                <!--  Text Expansion Action  -->
+                <tkcontrols:Case Value="TextExpansion">
+                    <TextBox
+                        x:Name="TextExpansionReplacementTextBox"
+                        x:Uid="TextExpansionReplacementTextBox"
+                        MinHeight="120"
+                        MaxHeight="240"
+                        MaxLength="256"
+                        AcceptsReturn="True"
+                        Background="{ThemeResource TextControlBackgroundFocused}"
+                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                        GotFocus="TextContentBox_GotFocus"
+                        TextChanged="TextExpansionTextBox_TextChanged"
                         TextWrapping="Wrap" />
                 </tkcontrols:Case>
                 <!--  Open URL Action  -->

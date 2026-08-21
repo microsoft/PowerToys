@@ -3,27 +3,29 @@
 #include <common/utils/EventWaiter.h>
 #include <keyboardmanager/common/Input.h>
 #include "State.h"
+#include "TextExpansionController.h"
 
 class KeyboardManager
 {
 public:
-    static const inline DWORD StartHookMessageID = WM_APP + 1;
+    static const inline DWORD ReloadSettingsMessageID = WM_APP + 1;
+    static const inline DWORD TextExpansionCommitMessageID = WM_APP + 2;
 
     // Constructor
     KeyboardManager();
 
-    ~KeyboardManager()
-    {
-        if (editorIsRunningEvent)
-        {
-            CloseHandle(editorIsRunningEvent);
-        }
-    }
+    ~KeyboardManager();
 
     void StartLowlevelKeyboardHook();
     void StopLowlevelKeyboardHook();
+    void Shutdown() noexcept;
 
     bool HasRegisteredRemappings() const;
+
+    // Applies a settings notification on the hook-owning thread. Reload is deferred
+    // until any Text Expansion transaction and physical press finishes.
+    void ReloadSettings();
+    void CompletePendingTextExpansion() noexcept;
 
 private:
     // Returns whether there are any remappings available without waiting for settings to load
@@ -48,18 +50,29 @@ private:
     // Object of class which implements InputInterface. Required for calling library functions while enabling testing
     KeyboardManagerInput::Input inputHandler;
 
+    std::unique_ptr<TextExpansionController> textExpansionController;
+
     // Auto reset event for waiting for settings changes. The event is signaled when settings are changed
     EventWaiter settingsEventWaiter;
 
     std::atomic_bool loadingSettings = false;
+    std::atomic_bool settingsReloadDeferred = false;
+    std::atomic_bool deferredReloadPosted = false;
+    std::atomic_bool shutdownStarted = false;
 
     HANDLE editorIsRunningEvent = nullptr;
 
     // Hook procedure definition
     static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
+    static void CALLBACK DeferredReloadTimerProc(HWND, UINT, UINT_PTR timerId, DWORD);
 
     // Load settings from the file.
     void LoadSettings();
+    void ArmDeferredReloadTimer() noexcept;
+    void QueueDeferredSettingsReloadIfReady() noexcept;
+
+    UINT_PTR deferredReloadTimer = 0;
+    uint64_t textExpansionInstanceId = 0;
 
     // Function called by the hook procedure to handle the events. This is the starting point function for remapping
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;

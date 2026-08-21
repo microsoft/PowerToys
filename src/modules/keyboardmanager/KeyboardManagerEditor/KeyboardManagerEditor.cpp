@@ -114,6 +114,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     editor = std::make_unique<KeyboardManagerEditor>(hInstance);
+    if (!editor->IsConfigurationLoaded())
+    {
+        Logger::error(L"Keyboard Manager Editor refused to open because the active profile could not be loaded completely.");
+        editor = nullptr;
+        return -1;
+    }
+
     if (!editor->StartLowLevelKeyboardHook())
     {
         DWORD errorCode = GetLastError();
@@ -136,16 +143,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 KeyboardManagerEditor::KeyboardManagerEditor(HINSTANCE hInst) :
     hInstance(hInst)
 {
-    bool loadedSuccessful = mappingConfiguration.LoadSettings();
-    if (!loadedSuccessful)
+    auto loadResult = mappingConfiguration.LoadSettingsWithResult();
+    if (loadResult == MappingConfigurationLoadResult::Failure)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-        // retry once
-        mappingConfiguration.LoadSettings();
+        // Retry only file-level or transient failures. Partial data is deterministic
+        // and must never be opened and subsequently saved as a truncated profile.
+        loadResult = mappingConfiguration.LoadSettingsWithResult();
     }
 
-    StartLowLevelKeyboardHook();
+    configurationLoaded = loadResult == MappingConfigurationLoadResult::Success;
 }
 
 KeyboardManagerEditor::~KeyboardManagerEditor()

@@ -77,13 +77,22 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
     if (kbm.HasRegisteredRemappings())
         kbm.StartLowlevelKeyboardHook();
 
-    auto StartHookFunc = [&kbm]() {
-        kbm.StartLowlevelKeyboardHook();
+    auto ReloadSettingsFunc = [&kbm]() {
+        kbm.ReloadSettings();
+    };
+    auto CompleteTextExpansionFunc = [&kbm]() {
+        kbm.CompletePendingTextExpansion();
     };
 
-    run_message_loop({}, {}, { { KeyboardManager::StartHookMessageID, StartHookFunc } });
+    run_message_loop(
+        {},
+        {},
+        {
+            { KeyboardManager::ReloadSettingsMessageID, ReloadSettingsFunc },
+            { KeyboardManager::TextExpansionCommitMessageID, CompleteTextExpansionFunc },
+        });
 
-    kbm.StopLowlevelKeyboardHook();
+    kbm.Shutdown();
     Trace::UnregisterProvider();
 
     trace.Flush();
