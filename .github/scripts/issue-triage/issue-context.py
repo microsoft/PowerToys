@@ -771,6 +771,14 @@ def prepare_with_evidence(event, api, force_evidence=False):
         issue = api.get_issue(issue["number"])
         event = dict(event)
         event["issue"] = issue
+    if str(issue.get("state") or "").lower() == "closed":
+        write_noop("Closed issues are not triaged")
+        return (
+            "# Deterministic issue evidence\n\nAgent execution was skipped.\n",
+            event,
+            False,
+            None,
+        )
     comments = api.list_comments(issue["number"])
     author = issue.get("user", {}).get("login")
     report_comment = latest_author_report_comment(comments, author)
@@ -847,7 +855,7 @@ def main():
             output_file.write(payload)
             if not payload.endswith("\n"):
                 output_file.write("\n")
-    if evidence_path:
+    if evidence_path and should_process_event:
         if evidence is None:
             raise ValueError("Deterministic evidence was not generated")
         os.makedirs(os.path.dirname(os.path.abspath(evidence_path)), exist_ok=True)
