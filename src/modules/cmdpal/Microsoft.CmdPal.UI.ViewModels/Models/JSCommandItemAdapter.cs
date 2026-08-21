@@ -10,8 +10,8 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
-/// Adapts a JSON command item payload to <see cref="ICommandItem"/>. The nested
-/// command is resolved lazily so page proxies are only created on demand.
+/// Adapts a JSON command item payload to <see cref="ICommandItem"/>.
+/// The nested command is resolved lazily so page proxies are created only when needed.
 /// </summary>
 internal sealed partial class JSCommandItemAdapter : BaseObservable, ICommandItem
 {

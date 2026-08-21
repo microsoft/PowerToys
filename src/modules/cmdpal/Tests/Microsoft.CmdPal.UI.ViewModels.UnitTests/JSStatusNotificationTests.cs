@@ -14,10 +14,9 @@ using Windows.Foundation;
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 /// <summary>
-/// Exercises the host/showStatus notification path end to end against an in-memory
-/// fake extension, verifying that the host reads the SDK status wire shape correctly:
-/// the indeterminate progress payload and the Pascal-case State severity nested in
-/// the message object.
+/// Exercises the host/showStatus notification path against an in-memory fake
+/// extension. It verifies the SDK status wire shape: indeterminate progress and
+/// PascalCase State severity nested in the message object.
 /// </summary>
 [TestClass]
 public partial class JSStatusNotificationTests

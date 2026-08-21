@@ -9,9 +9,9 @@ using Microsoft.CommandPalette.Extensions;
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
-/// Creates the appropriate <see cref="ICommand"/> implementation from a JSON
-/// command payload. A <c>pageType</c> (or legacy <c>_type</c>) discriminator
-/// selects a page proxy; otherwise an invokable command adapter is returned.
+/// Builds the right <see cref="ICommand"/> from a JSON command payload.
+/// <c>pageType</c>, or legacy <c>_type</c>, selects a page proxy. Everything
+/// else becomes an invokable command adapter.
 /// </summary>
 internal static class JSCommandFactory
 {

@@ -14,9 +14,9 @@ using Windows.Foundation;
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
-/// Proxy that presents a Node.js extension page as <see cref="IDynamicListPage"/>.
-/// Setting the search text forwards a <c>listPage/setSearchText</c> request so the
-/// extension can perform its own filtering.
+/// Exposes a Node.js extension page as <see cref="IDynamicListPage"/>.
+/// Search text is sent with <c>listPage/setSearchText</c> so the extension can
+/// filter its own items.
 /// </summary>
 internal sealed partial class JSDynamicListPageProxy : IDynamicListPage, IDisposable
 {

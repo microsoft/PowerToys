@@ -15,8 +15,8 @@ namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
 /// Adapts a JSON command payload to <see cref="ICommand"/> and
-/// <see cref="IInvokableCommand"/>. Invoking sends a <c>command/invoke</c>
-/// request and maps the response to a toolkit command result.
+/// <see cref="IInvokableCommand"/>. Invoke sends <c>command/invoke</c> and maps
+/// the response to a toolkit command result.
 /// </summary>
 internal sealed partial class JSInvokableCommandAdapter : JSObservableProxyBase, IInvokableCommand
 {

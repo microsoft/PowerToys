@@ -11,8 +11,8 @@ namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
 /// Translates a JSON-RPC command result payload into a toolkit
-/// <see cref="ICommandResult"/>, mapping every <c>Kind</c> value (0-7) and its
-/// associated arguments. Accepts both PascalCase and camelCase keys.
+/// <see cref="ICommandResult"/>. It maps <c>Kind</c> values 0 through 7 and
+/// accepts both PascalCase and camelCase keys.
 /// </summary>
 internal static class JSCommandResultParser
 {
@@ -100,9 +100,8 @@ internal static class JSCommandResultParser
             toastArgs.Icon = JSModelMapper.ParseIconInfo(iconProp);
         }
 
-        // Action commands require the live connection used by the command
-        // adapter. If parsing is used without one, keep the toast usable and
-        // omit only the unavailable action.
+        // Toast action commands need the same live connection as the command adapter.
+        // If no connection is available, keep the toast and skip only the action.
         if (connection != null &&
             args.ValueKind == JsonValueKind.Object &&
             JSModelMapper.TryGetAnyCase(args, "command", "Command", out var commandProp) &&
@@ -111,10 +110,8 @@ internal static class JSCommandResultParser
             toastArgs.Command = JSCommandFactory.CreateCommandFromJson(commandProp, connection);
         }
 
-        // A toast can carry a nested continuation result that the shell executes
-        // after the toast is shown. Parse it recursively so every nested kind
-        // (including confirm, which needs the connection for its primary command,
-        // and even another toast) round-trips faithfully.
+        // A toast can carry a continuation result for the shell to run after display.
+        // Parse it recursively so nested confirm and toast results keep working.
         if (args.ValueKind == JsonValueKind.Object &&
             JSModelMapper.TryGetAnyCase(args, "result", "Result", out var resultProp) &&
             resultProp.ValueKind == JsonValueKind.Object)

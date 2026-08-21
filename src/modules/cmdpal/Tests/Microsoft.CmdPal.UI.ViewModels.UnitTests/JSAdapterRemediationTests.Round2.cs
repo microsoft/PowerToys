@@ -13,16 +13,16 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 /// <summary>
-/// Round-2 phase-3 adapter remediation (r2-p3-01 pagination drive-through,
-/// r2-p3-03 registry init ordering, r2-p3-04 context icon fallback and
-/// r2-p3-05 status disposal synchronization). Shared helpers and the recording
+/// Round 2, phase 3 adapter remediation. Covers r2-p3-01 pagination load,
+/// r2-p3-03 registry init ordering, r2-p3-04 context icon fallback, and
+/// r2-p3-05 status disposal synchronization. Shared helpers and the recording
 /// host live in the primary <see cref="JSAdapterRemediationTests"/> partial.
 /// </summary>
 public partial class JSAdapterRemediationTests
 {
-    // r2-p3-01: LoadMore folds the loaded page into the pagination state and
-    // raises ItemsChanged so the host re-queries GetItems and surfaces the
-    // appended items, then stops once the extension reports the final page.
+    // r2-p3-01: LoadMore folds the loaded page into pagination state and raises
+    // ItemsChanged so the host asks GetItems again and sees the appended items.
+    // It stops once the extension reports the final page.
     [TestMethod]
     public async Task ListPage_LoadMoreRaisesItemsChangedAndAppendsItems()
     {
@@ -68,8 +68,8 @@ public partial class JSAdapterRemediationTests
         Assert.AreEqual(2, secondItems.Length);
     }
 
-    // r2-p3-01: a loadMore response that omits hasMoreItems is treated as the
-    // final page so no further LoadMore is issued.
+    // r2-p3-01: a loadMore response with no hasMoreItems flag is the final page,
+    // so no further LoadMore is issued.
     [TestMethod]
     public async Task ListPage_LoadMoreWithoutHasMoreItemsStopsPaging()
     {
@@ -100,10 +100,9 @@ public partial class JSAdapterRemediationTests
         Assert.AreEqual(1, Volatile.Read(ref loadMoreCount));
     }
 
-    // r2-p3-03: proxies created concurrently on one connection share the retained
-    // registry, so the itemsChanged handler is bound to the registry the proxies
-    // register into and the notification is delivered rather than lost to a
-    // discarded registry.
+    // r2-p3-03: concurrent proxies on one connection share the retained registry.
+    // The itemsChanged handler binds to the same registry the proxies use, so the
+    // notification is not lost to a discarded registry.
     [TestMethod]
     public async Task ListPage_ConcurrentInitBindsItemsChangedToRetainedRegistry()
     {
@@ -175,11 +174,10 @@ public partial class JSAdapterRemediationTests
         Assert.AreEqual("OWN", item.Icon!.Light.Icon);
     }
 
-    // r2-p3-05: status notifications racing dispose never enumerate the status
-    // map while it is mutated. Pre-fix this could throw a collection-modified
-    // exception out of Dispose; the synchronization keeps it safe. This is a
-    // best-effort concurrency guard: the race is timing dependent, so the check
-    // is that Dispose completes without throwing and leaves consistent counts.
+    // r2-p3-05: status notifications racing Dispose never enumerate the status map
+    // while it is changing. Before the fix, Dispose could throw when the collection
+    // changed mid-enumeration. This check is best effort because the race depends
+    // on timing. Dispose should complete and leave consistent counts.
     [TestMethod]
     public async Task Status_ConcurrentNotificationsDuringDisposeStaySynchronized()
     {

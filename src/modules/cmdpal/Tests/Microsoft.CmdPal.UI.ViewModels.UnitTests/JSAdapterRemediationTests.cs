@@ -18,11 +18,10 @@ using Windows.System;
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 /// <summary>
-/// Covers the phase-3 adapter remediation items (form identity, toast
-/// continuation, page routing, pagination, settings metadata, context
-/// shortcuts, icon fallback, status identity, provider dispose, frozen and
-/// accent color). The parser assertions consume the shared TS SDK wire
-/// fixtures so the C# adapters stay byte-compatible with the SDK.
+/// Covers phase 3 adapter fixes: form identity, toast continuation, page
+/// routing, pagination, settings metadata, context shortcuts, icon fallback,
+/// status identity, provider dispose, frozen state, and accent color. Parser
+/// assertions use shared TS SDK wire fixtures so the C# adapters match the SDK.
 /// </summary>
 [TestClass]
 public partial class JSAdapterRemediationTests
@@ -163,7 +162,7 @@ public partial class JSAdapterRemediationTests
         Assert.AreEqual(1, loadMoreCount);
     }
 
-    // p3-05: the settings page exposes the full serialized metadata, not just id.
+    // p3-05: the settings page exposes full metadata, not just id.
     [TestMethod]
     public void Settings_ExposesFullPageMetadata()
     {
@@ -277,7 +276,7 @@ public partial class JSAdapterRemediationTests
         Assert.AreNotEqual("CMDICON", adapter.Icon.Light.Icon);
     }
 
-    // p3-07: light and dark icon variants both round-trip from the shared fixture.
+    // p3-07: light and dark icon variants both match the shared fixture.
     [TestMethod]
     public void Icon_LightAndDarkVariantsFromFixture()
     {
@@ -370,7 +369,7 @@ public partial class JSAdapterRemediationTests
         Assert.AreEqual(1, host.ShownCount);
     }
 
-    // p3-10: frozen and non-frozen providers surface their actual value.
+    // p3-10: frozen and non-frozen providers return their actual value.
     [TestMethod]
     public void Frozen_ReflectsProviderMetadata()
     {
@@ -387,7 +386,7 @@ public partial class JSAdapterRemediationTests
         Assert.IsTrue(defaultProvider.Frozen);
     }
 
-    // p3-11: a page with accentColor surfaces the parsed color; a page without
+    // p3-11: a page with accentColor returns the parsed color; a page without
     // stays NoColor.
     [TestMethod]
     public void AccentColor_SurfacesParsedColorAndDefaultsToNoColor()
@@ -406,10 +405,9 @@ public partial class JSAdapterRemediationTests
         Assert.IsFalse(withoutAccent.AccentColor.HasValue);
     }
 
-    // p3-12: a tag whose color components are out of byte range or fractional must
-    // not throw out of the WinRT-visible Tags getter. Every numeric component that
-    // does not fit is dropped to its default, and the surrounding item metadata
-    // (title, subtitle, other tags) is preserved rather than collapsing to Error.
+    // p3-12: a tag with fractional or out-of-range color components must not throw
+    // from the WinRT-visible Tags getter. Invalid components fall back to defaults,
+    // while the rest of the item metadata stays intact.
     [TestMethod]
     public void Tags_OutOfRangeOrFractionalColorComponentsDefaultInsteadOfThrowing()
     {
@@ -425,8 +423,8 @@ public partial class JSAdapterRemediationTests
                     ["text"] = "over",
                     ["foreground"] = new JsonObject
                     {
-                        // 256 overflows a byte and 1.5 is fractional; both would throw
-                        // from JsonElement.GetByte, so they must fall back to defaults.
+                        // 256 overflows a byte and 1.5 is fractional. JsonElement.GetByte
+                        // would throw, so both must fall back to defaults.
                         ["r"] = 256,
                         ["g"] = 1.5,
                         ["b"] = 12,
@@ -510,8 +508,8 @@ public partial class JSAdapterRemediationTests
     private static JsonNode ParseNode(string json) => JsonNode.Parse(json)!;
 
     /// <summary>
-    /// Records the status and log calls a provider makes on its host so tests can
-    /// assert status identity, update-in-place, and hide-on-dispose behavior.
+    /// Records status and log calls from a provider host so tests can assert status
+    /// identity, in-place updates, and hiding during Dispose.
     /// </summary>
     private sealed partial class RecordingExtensionHost : IExtensionHost
     {
