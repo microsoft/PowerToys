@@ -121,6 +121,10 @@
     <value>Command Palette</value>
     <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
   </data>
+  <data name="TabbedPage_UnsupportedTab.Text" xml:space="preserve">
+    <value>This tab can't be shown here.</value>
+    <comment>Shown in place of a tab's content when the tab hosts a page type that this version of Command Palette doesn't support.</comment>
+  </data>
   <data name="AppNameDev" xml:space="preserve">
     <value>Command Palette Dev</value>
     <comment>{Locked} The dev build will never be seen in multiple languages</comment>
