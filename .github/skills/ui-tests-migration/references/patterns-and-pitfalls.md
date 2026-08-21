@@ -582,9 +582,10 @@ swallow in `FancyZones.cpp::OnKeyDown`.
 1. **`Click` has no `msPreAction` in `.Next`.** Legacy `Click(msPreAction: 1000, msPostAction: 2000)`
    → `Thread.Sleep(1000); el.Click(msPostAction: 2000);`. Forgetting the pre-delay causes flaky clicks
    on slow-rendering pages.
-2. **`Click` (invoke) vs. `MouseClick` (real mouse).** `Click` uses UIA InvokePattern (and falls back
-   to Toggle/Select/Expand). For elements with **no** invoke pattern (TextBlocks, list labels, headers
-   whose ancestor handles the click), `Click` silently does nothing useful — use `MouseClick`.
+2. **`Click` (physical) vs. `Invoke` (coordinate-free).** `Click` raises the target window and uses
+    the element's winappcli bounds for a native mouse click; zero-bounds controls fall back to `Invoke`.
+    Use `Invoke` directly when cursor movement is undesirable. `NavigationViewItem.Click()` overrides
+    the default with `Invoke` so first-interaction navigation stays race-safe.
 3. **`By.Name` is a substring match and may return many hits.** Always `FindAll` + filter when the
    name isn't unique. Prefer `By.AccessibilityId`.
 4. **No `global` parameter.** If a legacy `Find(by, t, global: true)` reached into a popup/other
@@ -606,17 +607,17 @@ swallow in `FancyZones.cpp::OnKeyDown`.
     the template already includes it.
 11. **`winapp.exe` missing at run time** is expected on a headless agent — the project still *builds*.
     Don't treat a missing-CLI run failure as a migration defect; report build-clean + ready-to-run.
-12. **Coordinate-exact tests need an `app.manifest` with `PerMonitorV2`.** Without it the test host is
-    DPI-unaware, so `MouseHelper`'s `SetCursorPos`/`GetCursorPos` coordinates are virtualized by the
-    display scale and stop matching winappcli's PHYSICAL-pixel bounds. On a 150% display a 99px drag
-    measured as ~149px (Screen Ruler reported `150 x 149` instead of `100 x 100`). Copy the manifest
-    from the module's legacy UITests project (or [templates/app.manifest](../templates/app.manifest))
-    and add `<ApplicationManifest>app.manifest</ApplicationManifest>` to the csproj. Regex-only
-    assertions (e.g. `\d+ x \d+`) don't notice the scale — only exact-value tests fail, which makes
-    this easy to miss.
+12. **Every `UITestAutomation.Next` test Exe needs an `app.manifest` with `PerMonitorV2`.** This
+    includes greenfield projects whose names omit `.Next`. Without it the test host is DPI-unaware,
+    so `Element.Click()` and `MouseHelper` can feed virtualized Win32 cursor coordinates with
+    winappcli's PHYSICAL-pixel bounds. Ordinary clicks can miss their controls; exact drags make the
+    scale error especially obvious (Screen Ruler reported `150 x 149` instead of `100 x 100` on a
+    150% display). Copy [templates/app.manifest](../templates/app.manifest) and keep
+    `<ApplicationManifest>app.manifest</ApplicationManifest>` in the csproj regardless of assertion
+    type.
     **Why the legacy project's manifest doesn't save it:** a legacy `OutputType=Library` test runs
     inside `testhost.exe` (vstest), whose manifest — not the test DLL's — governs DPI awareness, so the
-    legacy `app.manifest` is silently ignored and its coordinate-exact tests can't be DPI-correct on a
+    legacy `app.manifest` is silently ignored and its physical input can't be DPI-correct on a
     scaled display (the ScreenRuler legacy Bounds test fails `150 x 149` even *with* its manifest). A
     `.Next` project is an `OutputType=Exe` (MTP), so ITS manifest applies to its own process — which is
     why adding the manifest actually fixes the port, and can make it pass where the legacy can't.
