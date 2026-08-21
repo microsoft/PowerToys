@@ -251,6 +251,10 @@
   <data name="No_Workspaces_Message" xml:space="preserve">
     <value>There are no saved Workspaces.</value>
   </data>
+  <data name="Provisioning_Status" xml:space="preserve">
+    <value>Setting up Workspaces protection…</value>
+    <comment>Transient status shown while the settings service is being provisioned in the background.</comment>
+  </data>
   <data name="OneHourAgo" xml:space="preserve">
     <value>an hour ago</value>
   </data>
