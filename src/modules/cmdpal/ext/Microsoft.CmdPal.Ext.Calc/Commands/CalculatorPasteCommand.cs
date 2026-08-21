@@ -22,6 +22,8 @@ public sealed partial class CalculatorPasteCommand : InvokableCommand
     private string _query;
     private string _text;
 
+    internal string Text => _text;
+
     public CalculatorPasteCommand(string result, string query, ISettingsInterface settings, bool canStoreHistory = true)
         : this(result, query, settings, () => canStoreHistory)
     {

@@ -39,6 +39,7 @@ public static class ResultHelper
         }
 
         var result = roundedResult?.ToString(outputCulture);
+        var displayResult = FormatForDisplay(roundedResult.Value, outputCulture);
 
         var replaceCommand = new ReplaceQueryCommand();
         replaceCommand.ReplaceRequested += handleReplace;
@@ -59,7 +60,7 @@ public static class ResultHelper
         return new ListItem(primaryCommand)
         {
             Icon = Icons.ResultIcon,
-            Title = result,
+            Title = displayResult,
             Subtitle = query,
             MoreCommands = [
                 new CommandContextItem(secondaryCommand),
@@ -93,6 +94,7 @@ public static class ResultHelper
     private static ListItem CreateResultItem(decimal? roundedResult, CultureInfo inputCulture, CultureInfo outputCulture, string query, ICommand copyCommand, bool hideOnCopy)
     {
         var decimalResult = roundedResult?.ToString(outputCulture);
+        var displayResult = FormatForDisplay(roundedResult.Value, outputCulture);
         var decimalValue = (decimal)roundedResult;
 
         List<IContextItem> context = [];
@@ -155,12 +157,21 @@ public static class ResultHelper
 
         return new ListItem(copyCommand)
         {
-            // Using CurrentCulture since this is user facing
-            Title = decimalResult,
+            Title = displayResult,
             Subtitle = query,
             TextToSuggest = decimalResult,
             MoreCommands = context.ToArray(),
         };
+    }
+
+    private static string FormatForDisplay(decimal value, CultureInfo culture)
+    {
+        var rawValue = value.ToString(culture);
+        var decimalSeparator = culture.NumberFormat.NumberDecimalSeparator;
+        var decimalSeparatorIndex = rawValue.IndexOf(decimalSeparator, StringComparison.Ordinal);
+        var decimalPlaces = decimalSeparatorIndex >= 0 ? rawValue.Length - decimalSeparatorIndex - decimalSeparator.Length : 0;
+
+        return value.ToString($"N{decimalPlaces}", culture);
     }
 
     private static CopyTextCommand CreateCopyCommand(string text, string name, bool hideOnCopy)
