@@ -259,9 +259,9 @@ internal static class JSModelMapper
     }
 
     /// <summary>
-    /// Reads the optional details "size" field. Accepts either the string names
-    /// (small, medium, large) or the numeric <see cref="ContentSize"/> value the
-    /// host uses (0, 1, 2). Defaults to <see cref="ContentSize.Small"/>.
+    /// Reads the optional details "size" field. The wire format can send the
+    /// names (small, medium, large) or the numeric <see cref="ContentSize"/> value
+    /// used by the host (0, 1, 2). Missing or unknown values fall back to <see cref="ContentSize.Small"/>.
     /// </summary>
     internal static ContentSize ParseContentSize(JsonElement parent)
     {

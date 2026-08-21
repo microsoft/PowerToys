@@ -349,9 +349,9 @@ export interface Details {
   /** Labeled metadata rows shown below the body. */
   metadata?: DetailsElement[];
   /**
-   * Size of the details pane. Accepts the string names 'small', 'medium', or
-   * 'large', or the numeric `ContentSize` value the host uses (0, 1, 2).
-   * Defaults to 'small' when omitted.
+   * Size of the details pane. You can send 'small', 'medium', or 'large'.
+   * Numeric `ContentSize` values (0, 1, 2) also work to match the host.
+   * Omitted values default to 'small'.
    */
   size?: DetailsSize | number;
 }

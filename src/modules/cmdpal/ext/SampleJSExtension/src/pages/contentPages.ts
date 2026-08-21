@@ -8,8 +8,8 @@ import { fileURLToPath } from 'node:url';
 import { glyphIcon } from '../util.js';
 
 /**
- * Load this once so each content request can reuse the encoded image instead
- * of reading the file or depending on the repo checkout.
+ * Load the bundled image once so every content request can reuse it.
+ * `import.meta.url` keeps the path tied to the installed extension.
  */
 const localImagePath = fileURLToPath(new URL('../assets/hero.png', import.meta.url));
 const localImage = await iconFromFile(localImagePath);
@@ -113,8 +113,13 @@ export class SamplePlainTextContentPage extends ContentPageBase {
 /**
  * A page showing images. Mirrors the C# `SampleImageContentPage`.
  *
+<<<<<<< HEAD
  * The C# page loads packaged JPG and SVG assets. This sample uses its bundled
  * hero PNG and sends the encoded image bytes rather than a machine-specific path.
+=======
+ * The image ships with the sample, so the page works without a network
+ * connection and matches the details page.
+>>>>>>> d644f02e36 (reword phase-7 comments in my voice)
  */
 export class SampleImageContentPage extends ContentPageBase {
   readonly id = 'sample-image-content-page';
