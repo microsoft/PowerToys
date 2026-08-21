@@ -16,7 +16,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Microsoft.CmdPal.Ext.PowerToys.csproj" />
+    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Helpers\PowerToysFallbackCommandItem.cs" Link="PowerToysFallbackCommandItem.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\common\Common.Search\Common.Search.csproj" />
     <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
     <ProjectReference Include="..\Microsoft.CmdPal.Ext.UnitTestsBase\Microsoft.CmdPal.Ext.UnitTestBase.csproj" />
   </ItemGroup>
