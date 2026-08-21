@@ -2,13 +2,13 @@
 
 #include <shellapi.h>
 #include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Management.Deployment.h>
 #include <winrt/base.h>
 
 #include <algorithm>
 #include <array>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 
 namespace
@@ -20,6 +20,10 @@ namespace
         L"Microsoft.PowerToys.WsPuvr.Runtime1_1.0.0.0_x64__t8ed0av59w5q6";
     constexpr std::wstring_view LegacyRuntime2PackageFullName =
         L"Microsoft.PowerToys.WsPuvr.Runtime2_2.0.0.0_x64__t8ed0av59w5q6";
+    constexpr std::wstring_view PreviousRuntime1PackageFullName =
+        L"Microsoft.PowerToys.WsPuvr.Runtime1_1.0.0.0_x64__fcbv3b023fanj";
+    constexpr std::wstring_view PreviousRuntime2PackageFullName =
+        L"Microsoft.PowerToys.WsPuvr.Runtime2_2.0.0.0_x64__fcbv3b023fanj";
 
     enum class command : uint16_t
     {
@@ -154,77 +158,124 @@ namespace
         throw ptlsmr::win32_error("updater service start timeout", ERROR_TIMEOUT);
     }
 
-    [[nodiscard]] bool files_are_identical(
-        const std::filesystem::path& source,
-        const std::filesystem::path& destination)
+    [[nodiscard]] SERVICE_STATUS_PROCESS query_service_status(SC_HANDLE service)
     {
-        if (!std::filesystem::is_regular_file(source) ||
-            !std::filesystem::is_regular_file(destination) ||
-            std::filesystem::file_size(source) != std::filesystem::file_size(destination))
-        {
-            return false;
-        }
-        std::ifstream sourceStream(source, std::ios::binary);
-        std::ifstream destinationStream(destination, std::ios::binary);
-        if (!sourceStream || !destinationStream)
-        {
-            throw ptlsmr::win32_error("bootstrap file comparison", ERROR_OPEN_FAILED);
-        }
-        std::array<char, 64 * 1024> sourceBuffer{};
-        std::array<char, 64 * 1024> destinationBuffer{};
-        do
-        {
-            sourceStream.read(sourceBuffer.data(), sourceBuffer.size());
-            destinationStream.read(destinationBuffer.data(), destinationBuffer.size());
-            const auto sourceBytes = sourceStream.gcount();
-            const auto destinationBytes = destinationStream.gcount();
-            if (sourceBytes != destinationBytes ||
-                !std::equal(
-                    sourceBuffer.begin(),
-                    sourceBuffer.begin() + sourceBytes,
-                    destinationBuffer.begin()))
-            {
-                return false;
-            }
-        } while (sourceStream);
-        return sourceStream.eof() && destinationStream.eof();
+        SERVICE_STATUS_PROCESS status{};
+        DWORD bytes = 0;
+        ptlsmr::check_bool(
+            QueryServiceStatusEx(
+                service,
+                SC_STATUS_PROCESS_INFO,
+                reinterpret_cast<BYTE*>(&status),
+                sizeof(status),
+                &bytes),
+            "QueryServiceStatusEx(updater)");
+        return status;
     }
 
-    void copy_fixed_file(
-        const std::filesystem::path& source,
-        const std::filesystem::path& destination)
+    void stop_service(SC_HANDLE service)
     {
-        if (!std::filesystem::is_regular_file(source))
-        {
-            throw ptlsmr::win32_error("bootstrap source policy", ERROR_FILE_NOT_FOUND);
-        }
-        if (files_are_identical(source, destination))
+        const auto initial = query_service_status(service);
+        if (initial.dwCurrentState == SERVICE_STOPPED)
         {
             return;
         }
-        std::filesystem::copy_file(
-            source,
-            destination,
-            std::filesystem::copy_options::overwrite_existing);
+        SERVICE_STATUS status{};
+        if (!ControlService(service, SERVICE_CONTROL_STOP, &status))
+        {
+            const DWORD error = GetLastError();
+            if (error != ERROR_SERVICE_NOT_ACTIVE)
+            {
+                throw ptlsmr::win32_error("ControlService(updater stop)", error);
+            }
+        }
+        wait_for_service(service, SERVICE_STOPPED);
     }
 
-    void bootstrap_install(const std::filesystem::path& suppliedUpdater)
+    [[nodiscard]] std::filesystem::path stage_updater_package(
+        const std::filesystem::path& suppliedPackage,
+        uint16_t major)
+    {
+        if (major != 5 && major != 6)
+        {
+            throw ptlsmr::win32_error(
+                "updater package version argument",
+                ERROR_INVALID_PARAMETER);
+        }
+        const auto packagePath = std::filesystem::weakly_canonical(suppliedPackage);
+        if (!std::filesystem::is_regular_file(packagePath))
+        {
+            throw ptlsmr::win32_error("updater MSIX missing", ERROR_FILE_NOT_FOUND);
+        }
+        if (_wcsicmp(packagePath.extension().c_str(), L".msix") != 0)
+        {
+            throw ptlsmr::win32_error(
+                "updater package extension policy",
+                ERROR_INVALID_NAME);
+        }
+
+        winrt::init_apartment();
+        winrt::Windows::Management::Deployment::PackageManager manager;
+        const auto dependencies =
+            winrt::single_threaded_vector<winrt::Windows::Foundation::Uri>().GetView();
+        const auto deployment = manager.StagePackageAsync(
+            winrt::Windows::Foundation::Uri(ptlsmr::file_uri(packagePath)),
+            dependencies,
+            winrt::Windows::Management::Deployment::DeploymentOptions::
+                ForceUpdateFromAnyVersion)
+                                    .get();
+        const HRESULT result = deployment.ExtendedErrorCode();
+        if (FAILED(result))
+        {
+            throw winrt::hresult_error(result, L"StagePackageAsync(updater)");
+        }
+
+        const auto executable =
+            ptlsmr::updater_package_directory(major) / ptlsmr::UpdaterExe;
+        if (!std::filesystem::is_regular_file(executable))
+        {
+            throw ptlsmr::win32_error(
+                "staged updater executable",
+                ERROR_FILE_NOT_FOUND);
+        }
+        return std::filesystem::weakly_canonical(executable);
+    }
+
+    [[nodiscard]] bool is_allowed_updater_executable(
+        const std::filesystem::path& executable)
+    {
+        if (_wcsicmp(executable.filename().c_str(), ptlsmr::UpdaterExe) != 0)
+        {
+            return false;
+        }
+        for (const uint16_t major : std::array<uint16_t, 2>{ 5, 6 })
+        {
+            if (_wcsicmp(
+                    executable.parent_path().filename().c_str(),
+                    ptlsmr::expected_updater_package_full_name(major).c_str()) != 0)
+            {
+                continue;
+            }
+            const auto expected = ptlsmr::updater_package_directory(major) /
+                ptlsmr::UpdaterExe;
+            if (_wcsicmp(
+                    std::filesystem::absolute(executable).lexically_normal().c_str(),
+                    std::filesystem::absolute(expected).lexically_normal().c_str()) == 0)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void bootstrap_install(
+        const std::filesystem::path& suppliedPackage,
+        uint16_t major)
     {
         if (!elevated())
         {
             throw ptlsmr::win32_error("bootstrap elevation policy", ERROR_ELEVATION_REQUIRED);
         }
-        const auto updaterSource = std::filesystem::weakly_canonical(suppliedUpdater);
-        if (!std::filesystem::is_regular_file(updaterSource) ||
-            _wcsicmp(updaterSource.filename().c_str(), ptlsmr::UpdaterExe) != 0)
-        {
-            throw ptlsmr::win32_error("bootstrap updater source policy", ERROR_INVALID_NAME);
-        }
-        const auto installDirectory = ptlsmr::installed_updater_root();
-        std::filesystem::create_directories(installDirectory);
-        const auto installedUpdater = installDirectory / ptlsmr::UpdaterExe;
-        copy_fixed_file(updaterSource, installedUpdater);
-        ptlsmr::protect_system_directory(installDirectory);
 
         service_handle scm(OpenSCManagerW(
             nullptr,
@@ -234,81 +285,120 @@ namespace
         {
             throw ptlsmr::win32_error("OpenSCManagerW(bootstrap)", GetLastError());
         }
-        const std::wstring imagePath = ptlsmr::quote_argument(installedUpdater.wstring());
-        service_handle service(CreateServiceW(
+        service_handle service(OpenServiceW(
             scm.get(),
             ptlsmr::UpdaterServiceName,
-            ptlsmr::UpdaterServiceName,
             SERVICE_QUERY_STATUS | SERVICE_QUERY_CONFIG | SERVICE_START |
-                SERVICE_STOP | SERVICE_CHANGE_CONFIG | DELETE,
-            SERVICE_WIN32_OWN_PROCESS,
-            SERVICE_AUTO_START,
-            SERVICE_ERROR_NORMAL,
-            imagePath.c_str(),
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr));
-        if (!service)
+                SERVICE_STOP | SERVICE_CHANGE_CONFIG | DELETE));
+        const bool serviceExists = static_cast<bool>(service);
+        if (!serviceExists && GetLastError() != ERROR_SERVICE_DOES_NOT_EXIST)
         {
-            if (GetLastError() != ERROR_SERVICE_EXISTS)
-            {
-                throw ptlsmr::win32_error("CreateServiceW(updater)", GetLastError());
-            }
-            service = service_handle(OpenServiceW(
-                scm.get(),
-                ptlsmr::UpdaterServiceName,
-                SERVICE_QUERY_STATUS | SERVICE_QUERY_CONFIG | SERVICE_START |
-                    SERVICE_STOP | SERVICE_CHANGE_CONFIG | DELETE));
-            if (!service)
-            {
-                throw ptlsmr::win32_error("OpenServiceW(updater)", GetLastError());
-            }
+            throw ptlsmr::win32_error("OpenServiceW(updater bootstrap)", GetLastError());
         }
 
-        DWORD configBytes = 0;
-        QueryServiceConfigW(service.get(), nullptr, 0, &configBytes);
-        if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+        std::filesystem::path executablePath;
+        DWORD existingStartType = SERVICE_AUTO_START;
+        DWORD existingErrorControl = SERVICE_ERROR_NORMAL;
+        if (serviceExists)
         {
-            throw ptlsmr::win32_error("QueryServiceConfigW(updater size)", GetLastError());
+            DWORD configBytes = 0;
+            QueryServiceConfigW(service.get(), nullptr, 0, &configBytes);
+            if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+            {
+                throw ptlsmr::win32_error(
+                    "QueryServiceConfigW(updater size)",
+                    GetLastError());
+            }
+            std::vector<BYTE> configBuffer(configBytes);
+            ptlsmr::check_bool(
+                QueryServiceConfigW(
+                    service.get(),
+                    reinterpret_cast<QUERY_SERVICE_CONFIGW*>(configBuffer.data()),
+                    configBytes,
+                    &configBytes),
+                "QueryServiceConfigW(updater)");
+            const auto* config =
+                reinterpret_cast<const QUERY_SERVICE_CONFIGW*>(configBuffer.data());
+            const bool isLocalSystem =
+                config->lpServiceStartName &&
+                (_wcsicmp(config->lpServiceStartName, L"LocalSystem") == 0 ||
+                 _wcsicmp(
+                     config->lpServiceStartName,
+                     L"NT AUTHORITY\\SYSTEM") == 0);
+            int argumentCount = 0;
+            if (!config->lpBinaryPathName)
+            {
+                throw ptlsmr::win32_error(
+                    "raw updater ImagePath",
+                    ERROR_INVALID_DATA);
+            }
+            LPWSTR* rawArguments =
+                CommandLineToArgvW(config->lpBinaryPathName, &argumentCount);
+            if (!rawArguments)
+            {
+                throw ptlsmr::win32_error(
+                    "CommandLineToArgvW(updater ImagePath)",
+                    GetLastError());
+            }
+            ptlsmr::local_memory arguments(rawArguments);
+            executablePath = rawArguments[0];
+            if (!isLocalSystem ||
+                argumentCount != 1 ||
+                config->dwServiceType != SERVICE_WIN32_OWN_PROCESS ||
+                _wcsicmp(
+                    executablePath.filename().c_str(),
+                    ptlsmr::UpdaterExe) != 0 ||
+                !is_allowed_updater_executable(executablePath))
+            {
+                throw ptlsmr::win32_error(
+                    "raw updater SCM policy",
+                    ERROR_ACCESS_DENIED);
+            }
+            existingStartType = config->dwStartType;
+            existingErrorControl = config->dwErrorControl;
         }
-        std::vector<BYTE> configBuffer(configBytes);
-        ptlsmr::check_bool(
-            QueryServiceConfigW(
-                service.get(),
-                reinterpret_cast<QUERY_SERVICE_CONFIGW*>(configBuffer.data()),
-                configBytes,
-                &configBytes),
-            "QueryServiceConfigW(updater)");
-        const auto* config =
-            reinterpret_cast<const QUERY_SERVICE_CONFIGW*>(configBuffer.data());
-        const bool isLocalSystem =
-            config->lpServiceStartName &&
-            (_wcsicmp(config->lpServiceStartName, L"LocalSystem") == 0 ||
-             _wcsicmp(config->lpServiceStartName, L"NT AUTHORITY\\SYSTEM") == 0);
-        int argumentCount = 0;
-        if (!config->lpBinaryPathName)
+
+        const auto installedUpdater =
+            stage_updater_package(suppliedPackage, major);
+        const std::wstring imagePath =
+            ptlsmr::quote_argument(installedUpdater.wstring());
+        if (!serviceExists)
         {
-            throw ptlsmr::win32_error("manifest updater ImagePath", ERROR_INVALID_DATA);
+            service = service_handle(CreateServiceW(
+                scm.get(),
+                ptlsmr::UpdaterServiceName,
+                ptlsmr::UpdaterServiceName,
+                SERVICE_QUERY_STATUS | SERVICE_QUERY_CONFIG | SERVICE_START |
+                    SERVICE_STOP | SERVICE_CHANGE_CONFIG | DELETE,
+                SERVICE_WIN32_OWN_PROCESS,
+                SERVICE_AUTO_START,
+                SERVICE_ERROR_NORMAL,
+                imagePath.c_str(),
+                nullptr,
+                nullptr,
+                nullptr,
+                nullptr,
+                nullptr));
+            if (!service)
+            {
+                throw ptlsmr::win32_error(
+                    "CreateServiceW(updater)",
+                    GetLastError());
+            }
+            executablePath = installedUpdater;
         }
-        LPWSTR* rawArguments = CommandLineToArgvW(config->lpBinaryPathName, &argumentCount);
-        if (!rawArguments)
+
+        const bool repath =
+            _wcsicmp(
+                std::filesystem::absolute(executablePath).lexically_normal().c_str(),
+                installedUpdater.c_str()) != 0;
+        if (repath)
         {
-            throw ptlsmr::win32_error("CommandLineToArgvW(updater ImagePath)", GetLastError());
+            stop_service(service.get());
         }
-        ptlsmr::local_memory arguments(rawArguments);
-        const std::filesystem::path executablePath(rawArguments[0]);
-        if (!isLocalSystem ||
-            argumentCount != 1 ||
-            config->dwServiceType != SERVICE_WIN32_OWN_PROCESS ||
-            _wcsicmp(executablePath.filename().c_str(), ptlsmr::UpdaterExe) != 0 ||
-            !std::filesystem::equivalent(executablePath, installedUpdater))
-        {
-            throw ptlsmr::win32_error("ordinary updater SCM policy", ERROR_ACCESS_DENIED);
-        }
-        if (config->dwStartType != SERVICE_AUTO_START ||
-            config->dwErrorControl != SERVICE_ERROR_NORMAL)
+        if (repath ||
+            existingStartType != SERVICE_AUTO_START ||
+            existingErrorControl != SERVICE_ERROR_NORMAL)
         {
             ptlsmr::check_bool(
                 ChangeServiceConfigW(
@@ -316,7 +406,7 @@ namespace
                     SERVICE_NO_CHANGE,
                     SERVICE_AUTO_START,
                     SERVICE_ERROR_NORMAL,
-                    nullptr,
+                    repath ? imagePath.c_str() : nullptr,
                     nullptr,
                     nullptr,
                     nullptr,
@@ -325,16 +415,7 @@ namespace
                     nullptr),
                 "ChangeServiceConfigW(updater startup policy)");
         }
-        SERVICE_STATUS_PROCESS status{};
-        DWORD bytes = 0;
-        ptlsmr::check_bool(
-            QueryServiceStatusEx(
-                service.get(),
-                SC_STATUS_PROCESS_INFO,
-                reinterpret_cast<BYTE*>(&status),
-                sizeof(status),
-                &bytes),
-            "QueryServiceStatusEx(updater start)");
+        const auto status = query_service_status(service.get());
         if (status.dwCurrentState != SERVICE_RUNNING)
         {
             if (!StartServiceW(service.get(), 0, nullptr) &&
@@ -348,10 +429,13 @@ namespace
 
     [[nodiscard]] bool is_allowed_cleanup_package(std::wstring_view packageFullName)
     {
-        return ptlsmr::is_allowed_runtime_package_full_name(packageFullName) ||
+        return ptlsmr::is_allowed_updater_package_full_name(packageFullName) ||
+            ptlsmr::is_allowed_runtime_package_full_name(packageFullName) ||
             packageFullName == LegacyUpdaterPackageFullName ||
             packageFullName == LegacyRuntime1PackageFullName ||
-            packageFullName == LegacyRuntime2PackageFullName;
+            packageFullName == LegacyRuntime2PackageFullName ||
+            packageFullName == PreviousRuntime1PackageFullName ||
+            packageFullName == PreviousRuntime2PackageFullName;
     }
 
     void remove_exact_package_as_system(std::wstring_view packageFullName)
@@ -695,9 +779,19 @@ int wmain()
         }
         if (std::find(arguments.begin(), arguments.end(), L"--bootstrap-install") != arguments.end())
         {
+            const auto majorText =
+                ptlsmr::argument_value(arguments, L"--updater-major");
+            if (majorText != L"5" && majorText != L"6")
+            {
+                throw ptlsmr::win32_error(
+                    "updater major argument",
+                    ERROR_INVALID_PARAMETER);
+            }
             bootstrap_install(
-                ptlsmr::argument_value(arguments, L"--updater-binary"));
-            std::wcout << L"ordinary LocalSystem updater is installed and running\n";
+                ptlsmr::argument_value(arguments, L"--updater-package"),
+                static_cast<uint16_t>(majorText[0] - L'0'));
+            std::wcout
+                << L"raw LocalSystem updater is running from staged MSIX payload\n";
             return 0;
         }
         if (std::find(arguments.begin(), arguments.end(), L"--remove-package") != arguments.end())
@@ -739,7 +833,8 @@ int wmain()
                 command::cleanup,
                 ptlsmr::canonical_owner_sid(ptlsmr::argument_value(arguments, L"--owner-sid")));
         }
-        std::wcerr << L"usage: --bootstrap-install --updater-binary path.exe | "
+        std::wcerr << L"usage: --bootstrap-install --updater-package path.msix "
+                      L"--updater-major 5|6 | "
                       L"--remove-package --package-full-name full-name | "
                       L"--provision --owner-sid S-1-5-21-... "
                       L"--runtime-track 1|2 --runtime-package path.msix | "
@@ -750,6 +845,13 @@ int wmain()
     {
         std::wcerr << L"win32 error=" << error.code() << L" operation=" << error.what() << L"\n";
         return static_cast<int>(error.code());
+    }
+    catch (const winrt::hresult_error& error)
+    {
+        std::wcerr << L"hresult error=0x"
+                   << std::hex << static_cast<uint32_t>(error.code())
+                   << L" message=" << error.message().c_str() << L"\n";
+        return static_cast<int>(HRESULT_CODE(error.code()));
     }
     catch (...)
     {

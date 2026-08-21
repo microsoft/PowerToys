@@ -46,6 +46,10 @@ $packageRoot = Join-Path $root 'artifacts\packages'
 $bundleRoot = Join-Path $root 'artifacts\simulated-bundles'
 $metadata.updater.path = Resolve-ArtifactFile `
     $packageRoot $metadata.updater.path $metadata.updater.sha256
+$metadata.updater.upgrade.path = Resolve-ArtifactFile `
+    $packageRoot `
+    $metadata.updater.upgrade.path `
+    $metadata.updater.upgrade.sha256
 foreach ($runtimeName in 'track1', 'track2') {
     $runtime = $metadata.runtimes.$runtimeName
     $runtime.path = Resolve-ArtifactFile $packageRoot $runtime.path $runtime.sha256
@@ -73,24 +77,33 @@ if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administra
     throw 'Lifecycle operations require an elevated administrator token.'
 }
 
-$installRoot = Join-Path `
+$legacyLooseInstallRoot = Join-Path `
     $env:ProgramFiles `
     'PowerToys\WorkspacesUnpackagedUpdaterVirtualRuntimePrototype'
-$installedUpdater = Join-Path $installRoot 'PtPuvrUpdater.exe'
 $storeRoot = Join-Path `
     $env:ProgramData `
-    'Microsoft\PowerToys\WorkspacesUnpackagedUpdaterVirtualRuntimePrototype'
+    'Microsoft\PowerToys\WorkspacesPackagedPayloadUpdaterVirtualRuntimePrototype'
 $legacyStoreRoot = Join-Path `
     $env:ProgramData `
     'Microsoft\PowerToys\WorkspacesPackagedUpdaterVirtualRuntimePrototype'
+$previousStoreRoot = Join-Path `
+    $env:ProgramData `
+    'Microsoft\PowerToys\WorkspacesUnpackagedUpdaterVirtualRuntimePrototype'
+$previousPackageFullNames = @(
+    'Microsoft.PowerToys.WsPuvr.Runtime1_1.0.0.0_x64__fcbv3b023fanj',
+    'Microsoft.PowerToys.WsPuvr.Runtime2_2.0.0.0_x64__fcbv3b023fanj'
+)
 $legacyPackageFullNames = @(
     'Microsoft.PowerToys.WsPuvr.Updater_5.0.0.0_x64__t8ed0av59w5q6',
     'Microsoft.PowerToys.WsPuvr.Runtime1_1.0.0.0_x64__t8ed0av59w5q6',
     'Microsoft.PowerToys.WsPuvr.Runtime2_2.0.0.0_x64__t8ed0av59w5q6'
 )
 $exactPackageFullNames = @(
+    $metadata.updater.fullName
+    $metadata.updater.upgrade.fullName
     $metadata.runtimes.track1.fullName
     $metadata.runtimes.track2.fullName
+    $previousPackageFullNames
     $legacyPackageFullNames
 )
 
@@ -121,20 +134,139 @@ function Assert-Equal($actual, $expected, [string]$label) {
     }
 }
 
+function Get-ExactPackage([string]$packageFullName) {
+    $separator = $packageFullName.IndexOf('_')
+    if ($separator -le 0) {
+        throw "Invalid package full name: $packageFullName"
+    }
+    $packageName = $packageFullName.Substring(0, $separator)
+    $matches = @(
+        Get-AppxPackage `
+            -AllUsers `
+            -Name $packageName `
+            -ErrorAction SilentlyContinue |
+            Where-Object PackageFullName -eq $packageFullName
+    )
+    if ($matches.Count -gt 1) {
+        throw "Multiple exact package records found: $packageFullName"
+    }
+    if ($matches.Count -eq 1) {
+        return $matches[0]
+    }
+    return
+}
+
+function Get-PackageInstallLocation([string]$packageFullName) {
+    $package = Get-ExactPackage $packageFullName
+    if (-not $package) {
+        return
+    }
+    if ([string]::IsNullOrWhiteSpace($package.InstallLocation)) {
+        throw "Package has no install location: $packageFullName"
+    }
+    return [IO.Path]::GetFullPath([string]$package.InstallLocation)
+}
+
+function Get-ServiceExecutablePath([string]$pathName) {
+    if ([string]::IsNullOrWhiteSpace($pathName)) {
+        throw 'Service ImagePath is empty.'
+    }
+    if ($pathName[0] -eq '"') {
+        $closingQuote = $pathName.IndexOf('"', 1)
+        if ($closingQuote -lt 2) {
+            throw "Malformed quoted service ImagePath: $pathName"
+        }
+        return $pathName.Substring(1, $closingQuote - 1)
+    }
+    $separator = $pathName.IndexOf(' ')
+    if ($separator -ge 0) {
+        return $pathName.Substring(0, $separator)
+    }
+    return $pathName
+}
+
 function Remove-ExactPackage([string]$packageFullName) {
+    $packageDirectory = Get-PackageInstallLocation $packageFullName
     & $controller `
         --remove-package `
         --package-full-name $packageFullName
     $exitCode = $LASTEXITCODE
-    $packageDirectory = Join-Path `
-        (Join-Path $env:ProgramFiles 'WindowsApps') `
-        $packageFullName
     for ($attempt = 0; $attempt -lt 40 -and
-         (Test-Path -LiteralPath $packageDirectory); $attempt++) {
+         ((Get-ExactPackage $packageFullName) -or
+          ($packageDirectory -and
+           (Test-Path -LiteralPath $packageDirectory))); $attempt++) {
         Start-Sleep -Milliseconds 250
     }
-    if ($exitCode -ne 0 -or (Test-Path -LiteralPath $packageDirectory)) {
+    if ($exitCode -ne 0 -or
+        (Get-ExactPackage $packageFullName) -or
+        ($packageDirectory -and
+         (Test-Path -LiteralPath $packageDirectory))) {
         throw "Exact package removal failed for ${packageFullName}: controller exit $exitCode"
+    }
+}
+
+function Get-UpdaterExecutable($updaterMetadata) {
+    $packageDirectory = Get-PackageInstallLocation $updaterMetadata.fullName
+    if (-not $packageDirectory) {
+        throw "Updater package is not staged: $($updaterMetadata.fullName)"
+    }
+    return Join-Path $packageDirectory 'PtPuvrUpdater.exe'
+}
+
+function Set-UpdaterPackage(
+    $updaterMetadata,
+    [uint16]$major,
+    [string]$transition
+) {
+    $signature = Get-AuthenticodeSignature -LiteralPath $updaterMetadata.path
+    Assert-Equal $signature.Status 'Valid' "$transition package signature"
+    Assert-Equal `
+        $signature.SignerCertificate.Subject `
+        $metadata.updater.signerSubject `
+        "$transition package signer"
+
+    & $controller `
+        --bootstrap-install `
+        --updater-package $updaterMetadata.path `
+        --updater-major $major | Out-Host
+    if ($LASTEXITCODE -ne 0) {
+        throw "Updater $transition failed: $LASTEXITCODE"
+    }
+
+    $service = Get-CimInstance Win32_Service -Filter "Name='PtPuvrUpdater'"
+    if (-not $service -or $service.State -ne 'Running' -or $service.ProcessId -eq 0) {
+        throw "Updater is not running after $transition."
+    }
+    $evidence = Read-Evidence (Join-Path $storeRoot 'updater-evidence.txt')
+    $expectedExecutable = Get-UpdaterExecutable $updaterMetadata
+    Assert-Equal $evidence.processId $service.ProcessId "$transition evidence PID"
+    Assert-Equal $evidence.updaterVersion $updaterMetadata.standaloneVersion `
+        "$transition updater version"
+    Assert-Equal $evidence.fileVersion $updaterMetadata.fileVersion `
+        "$transition file version"
+    Assert-Equal $evidence.updaterPackageFullName $updaterMetadata.fullName `
+        "$transition package full name"
+    Assert-Equal $evidence.updaterPackageVersion $updaterMetadata.packageVersion `
+        "$transition package version"
+    Assert-Equal $evidence.packageIdentityPresent 'false' `
+        "$transition process package identity"
+    Assert-Equal $evidence.payloadDelivery 'msix-staged-windowsapps' `
+        "$transition payload delivery"
+    Assert-Equal `
+        ([IO.Path]::GetFullPath($service.PathName.Trim('"'))) `
+        ([IO.Path]::GetFullPath($expectedExecutable)) `
+        "$transition SCM ImagePath"
+    Assert-Equal `
+        ([IO.Path]::GetFullPath($evidence.executablePath)) `
+        ([IO.Path]::GetFullPath($expectedExecutable)) `
+        "$transition evidence executable"
+
+    return [pscustomobject]@{
+        transition = $transition
+        version = $evidence.updaterVersion
+        processId = [uint32]$service.ProcessId
+        packageFullName = $evidence.updaterPackageFullName
+        executablePath = $evidence.executablePath
     }
 }
 
@@ -149,42 +281,56 @@ function Start-Updater {
         $firstBundle.updaterSha256 `
         $metadata.updater.sha256 `
         'canonical updater hash'
-    Assert-Equal $metadata.updater.artifactType 'unpackaged-pe' 'updater artifact type'
-
-    $signature = Get-AuthenticodeSignature -LiteralPath $firstBundle.updaterPath
-    Assert-Equal $signature.Status 'Valid' 'updater source signature'
     Assert-Equal `
-        $signature.SignerCertificate.Subject `
-        $metadata.updater.signerSubject `
-        'updater signer subject'
+        $metadata.updater.artifactType `
+        'msix-staged-raw-scm' `
+        'updater artifact type'
 
-    foreach ($updaterSource in $firstBundle.updaterPath, $secondBundle.updaterPath) {
-        & $controller `
-            --bootstrap-install `
-            --updater-binary $updaterSource
-        if ($LASTEXITCODE -ne 0) {
-            throw "Updater bootstrap failed for ${updaterSource}: $LASTEXITCODE"
+    $states = @()
+    foreach ($definition in @(
+        [pscustomobject]@{
+            source = $firstBundle.updaterPath
+            transition = 'PowerToys-0.101 bootstrap'
+        },
+        [pscustomobject]@{
+            source = $secondBundle.updaterPath
+            transition = 'PowerToys-0.110 idempotent bootstrap'
         }
+    )) {
+        $bundleUpdater = $metadata.updater.PSObject.Copy()
+        $bundleUpdater.path = $definition.source
+        $states += Set-UpdaterPackage `
+            $bundleUpdater `
+            5 `
+            $definition.transition
+    }
+    return $states
+}
+
+function Provision-One(
+    [string]$ownerSid,
+    [uint16]$runtimeTrack,
+    [string]$runtimePath
+) {
+    & $controller `
+        --provision `
+        --owner-sid $ownerSid `
+        --runtime-track $runtimeTrack `
+        --runtime-package $runtimePath
+    if ($LASTEXITCODE -ne 0) {
+        throw "Runtime track $runtimeTrack provision failed: $LASTEXITCODE"
     }
 }
 
 function Provision-Two {
-    & $controller `
-        --provision `
-        --owner-sid $FirstOwnerSid `
-        --runtime-track 1 `
-        --runtime-package $metadata.simulatedBundles.'PowerToys-0.101'.runtimePath
-    if ($LASTEXITCODE -ne 0) {
-        throw "First runtime provision failed: $LASTEXITCODE"
-    }
-    & $controller `
-        --provision `
-        --owner-sid $SecondOwnerSid `
-        --runtime-track 2 `
-        --runtime-package $metadata.simulatedBundles.'PowerToys-0.110'.runtimePath
-    if ($LASTEXITCODE -ne 0) {
-        throw "Second runtime provision failed: $LASTEXITCODE"
-    }
+    Provision-One `
+        $FirstOwnerSid `
+        1 `
+        $metadata.simulatedBundles.'PowerToys-0.101'.runtimePath
+    Provision-One `
+        $SecondOwnerSid `
+        2 `
+        $metadata.simulatedBundles.'PowerToys-0.110'.runtimePath
 }
 
 function Show-Status {
@@ -246,8 +392,13 @@ function Remove-All {
         Remove-ExactPackage $packageFullName
     }
 
-    Remove-Item -LiteralPath $installRoot -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item `
+        -LiteralPath $legacyLooseInstallRoot `
+        -Recurse `
+        -Force `
+        -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath $storeRoot -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath $previousStoreRoot -Recurse -Force -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath $legacyStoreRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
 
@@ -255,9 +406,41 @@ function Invoke-Validation {
     $firstName = Get-RuntimeServiceName $FirstOwnerSid
     $secondName = Get-RuntimeServiceName $SecondOwnerSid
     $resultPath = Join-Path $root 'artifacts\validation-result.json'
+    $trustedCertificatePath =
+        "Cert:\LocalMachine\TrustedPeople\$($metadata.certificateThumbprint)"
+    $certificateWasAlreadyTrusted = Test-Path -LiteralPath $trustedCertificatePath
     try {
-        Start-Updater
-        Provision-Two
+        if (-not $certificateWasAlreadyTrusted) {
+            Import-Certificate `
+                -FilePath $metadata.certificatePath `
+                -CertStoreLocation 'Cert:\LocalMachine\TrustedPeople' | Out-Null
+        }
+
+        $updaterTransitions = @(Start-Updater)
+        $initialV5State = $updaterTransitions[-1]
+        Provision-One `
+            $FirstOwnerSid `
+            1 `
+            $metadata.simulatedBundles.'PowerToys-0.101'.runtimePath
+
+        $updaterTransitions += Set-UpdaterPackage `
+            $metadata.updater.upgrade `
+            6 `
+            'upgrade v5 to v6'
+        $updaterTransitions += Set-UpdaterPackage `
+            $metadata.updater `
+            5 `
+            'rollback v6 to v5'
+        $updaterTransitions += Set-UpdaterPackage `
+            $metadata.updater.upgrade `
+            6 `
+            'final upgrade v5 to v6'
+        $finalV6State = $updaterTransitions[-1]
+
+        Provision-One `
+            $SecondOwnerSid `
+            2 `
+            $metadata.simulatedBundles.'PowerToys-0.110'.runtimePath
         Show-Status
 
         $updaterService = Get-CimInstance Win32_Service -Filter "Name='PtPuvrUpdater'"
@@ -271,18 +454,30 @@ function Invoke-Validation {
             throw 'Updater PID is zero.'
         }
         $configuredUpdater = $updaterService.PathName.Trim('"')
+        $installedUpdater = Get-UpdaterExecutable $metadata.updater.upgrade
         Assert-Equal `
             ([IO.Path]::GetFullPath($configuredUpdater)) `
             ([IO.Path]::GetFullPath($installedUpdater)) `
-            'updater protected ImagePath'
+            'updater WindowsApps ImagePath'
 
         $updaterEvidence = Read-Evidence (Join-Path $storeRoot 'updater-evidence.txt')
         Assert-Equal $updaterEvidence.processId $updaterService.ProcessId 'updater evidence PID'
         Assert-Equal $updaterEvidence.tokenUserSid 'S-1-5-18' 'updater token SID'
         Assert-Equal $updaterEvidence.packageIdentityPresent 'false' 'updater package identity'
         Assert-Equal $updaterEvidence.packageIdentityError '15700' 'updater package identity error'
-        Assert-Equal $updaterEvidence.updaterVersion '5.0.0.0' 'updater standalone version'
-        Assert-Equal $updaterEvidence.fileVersion '5.0.0.0' 'updater file version'
+        Assert-Equal `
+            $updaterEvidence.updaterVersion `
+            '6.0.0.0' `
+            'updater standalone version'
+        Assert-Equal $updaterEvidence.fileVersion '6.0.0.0' 'updater file version'
+        Assert-Equal `
+            $updaterEvidence.updaterPackageFullName `
+            $metadata.updater.upgrade.fullName `
+            'updater physical package'
+        Assert-Equal `
+            $updaterEvidence.payloadDelivery `
+            'msix-staged-windowsapps' `
+            'updater payload delivery'
         Assert-Equal `
             $updaterEvidence.deploymentMode `
             'direct-unpackaged-package-manager' `
@@ -298,8 +493,20 @@ function Invoke-Validation {
             $installedSignature.SignerCertificate.Subject `
             $metadata.updater.signerSubject `
             'installed updater signer subject'
-        $installAcl = Get-Acl -LiteralPath $installRoot
-        Assert-Equal $installAcl.AreAccessRulesProtected $true 'updater install DACL protection'
+        if (Test-Path -LiteralPath $legacyLooseInstallRoot) {
+            throw "Loose updater install root still exists: $legacyLooseInstallRoot"
+        }
+        $updaterPackages = @(
+            Get-AppxPackage `
+                -AllUsers `
+                -Name $metadata.updater.packageName `
+                -ErrorAction SilentlyContinue
+        )
+        Assert-Equal $updaterPackages.Count 1 'staged updater package count'
+        Assert-Equal `
+            $updaterPackages[0].PackageFullName `
+            $metadata.updater.upgrade.fullName `
+            'preferred staged updater package'
 
         $stageResults = @(
             Read-Evidence (Join-Path $storeRoot 'direct-stage-result-track1.txt')
@@ -309,7 +516,16 @@ function Invoke-Validation {
             $stage = $stageResults[$index]
             Assert-Equal $stage.operation 'StagePackageAsync' 'direct deployment API'
             Assert-Equal $stage.runtimeTrack ($index + 1) 'direct deployment runtime track'
-            Assert-Equal $stage.callerProcessId $updaterService.ProcessId 'direct Stage caller PID'
+            $expectedCallerPid = if ($index -eq 0) {
+                $initialV5State.processId
+            }
+            else {
+                $finalV6State.processId
+            }
+            Assert-Equal `
+                $stage.callerProcessId `
+                $expectedCallerPid `
+                'direct Stage caller PID'
             Assert-Equal $stage.callerTokenUserSid 'S-1-5-18' 'direct Stage caller SID'
             Assert-Equal `
                 $stage.callerPackageIdentityPresent `
@@ -319,12 +535,21 @@ function Invoke-Validation {
             Assert-Equal $stage.win32 '0' 'direct Stage Win32 error'
         }
 
+        $helperSearchRoots = @(
+            $legacyLooseInstallRoot
+            $storeRoot
+            $previousStoreRoot
+            $legacyStoreRoot
+        )
+        foreach ($packageFullName in $exactPackageFullNames) {
+            $packageDirectory = Get-PackageInstallLocation $packageFullName
+            if ($packageDirectory) {
+                $helperSearchRoots += $packageDirectory
+            }
+        }
         $helperArtifacts = @(
             Get-ChildItem `
-                -LiteralPath $installRoot, $storeRoot, $legacyStoreRoot, (
-                    Join-Path `
-                        (Join-Path $env:ProgramFiles 'WindowsApps') `
-                        $legacyPackageFullNames[0]) `
+                -LiteralPath $helperSearchRoots `
                 -Filter PtPuvrDeploymentHelper.exe `
                 -Recurse `
                 -ErrorAction SilentlyContinue
@@ -361,10 +586,17 @@ function Invoke-Validation {
             if ($service.ProcessId -eq 0) {
                 throw "Runtime PID is zero: $($definition.service)"
             }
-            if ($service.PathName -notlike
-                "*\WindowsApps\$($definition.metadata.fullName)\PtPuvrRuntime.exe*") {
-                throw "Runtime ImagePath is not package-owned: $($service.PathName)"
+            $runtimeDirectory =
+                Get-PackageInstallLocation $definition.metadata.fullName
+            if (-not $runtimeDirectory) {
+                throw "Runtime package is not staged: $($definition.metadata.fullName)"
             }
+            $expectedRuntime = Join-Path $runtimeDirectory 'PtPuvrRuntime.exe'
+            Assert-Equal `
+                ([IO.Path]::GetFullPath(
+                    (Get-ServiceExecutablePath $service.PathName))) `
+                ([IO.Path]::GetFullPath($expectedRuntime)) `
+                'runtime SCM ImagePath'
             $suffix = $definition.service.Substring('PtPuvrRuntime_'.Length)
             $evidence = Read-Evidence (Join-Path $storeRoot "$suffix\evidence.txt")
             Assert-Equal $evidence.ownerSid $definition.owner 'runtime owner'
@@ -393,10 +625,10 @@ function Invoke-Validation {
                 $evidence.serviceSidPresent `
                 'true' `
                 'runtime service SID membership'
-            if ($evidence.executablePath -notlike
-                "*\WindowsApps\$($definition.metadata.fullName)\PtPuvrRuntime.exe") {
-                throw "Runtime executable is not the direct WindowsApps payload: $($evidence.executablePath)"
-            }
+            Assert-Equal `
+                ([IO.Path]::GetFullPath($evidence.executablePath)) `
+                ([IO.Path]::GetFullPath($expectedRuntime)) `
+                'runtime evidence executable'
             $runtimeResults += [pscustomobject]@{
                 ownerSid = $definition.owner
                 serviceName = $definition.service
@@ -417,7 +649,7 @@ function Invoke-Validation {
         }
         $installedRuntimeCopies = @(
             Get-ChildItem `
-                -LiteralPath $installRoot, $storeRoot `
+                -LiteralPath $legacyLooseInstallRoot, $storeRoot `
                 -Filter PtPuvrRuntime.exe `
                 -Recurse `
                 -ErrorAction SilentlyContinue
@@ -435,12 +667,17 @@ function Invoke-Validation {
                 account = $updaterService.StartName
                 standaloneVersion = $updaterEvidence.updaterVersion
                 fileVersion = $updaterEvidence.fileVersion
+                artifactType = $metadata.updater.artifactType
+                packageFullName = $updaterEvidence.updaterPackageFullName
+                packageVersion = $updaterEvidence.updaterPackageVersion
+                payloadDelivery = $updaterEvidence.payloadDelivery
                 packageIdentityPresent = $updaterEvidence.packageIdentityPresent
                 packageIdentityError = $updaterEvidence.packageIdentityError
                 executablePath = $updaterEvidence.executablePath
                 sharedBundleSha256 = $metadata.updater.sha256
                 deploymentMode = $updaterEvidence.deploymentMode
                 deploymentHelperPresent = $false
+                transitions = $updaterTransitions
                 directStageResults = @(
                     foreach ($stage in $stageResults) {
                         [ordered]@{
@@ -464,7 +701,15 @@ function Invoke-Validation {
         Write-Host "VALIDATION PASS: $resultPath"
     }
     finally {
-        Remove-All
+        try {
+            Remove-All
+        }
+        finally {
+            if (-not $certificateWasAlreadyTrusted -and
+                (Test-Path -LiteralPath $trustedCertificatePath)) {
+                Remove-Item -LiteralPath $trustedCertificatePath -Force
+            }
+        }
     }
 }
 

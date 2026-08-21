@@ -22,6 +22,12 @@ function Get-RuntimeServiceName([string]$ownerSid) {
 }
 
 $newPackageFullNames = @(
+    'Microsoft.PowerToys.WsPuvr.RawUpdater_5.0.0.0_x64__c79g9vhs3b4a6',
+    'Microsoft.PowerToys.WsPuvr.RawUpdater_6.0.0.0_x64__c79g9vhs3b4a6',
+    'Microsoft.PowerToys.WsPuvr.Runtime1_1.0.0.0_x64__c79g9vhs3b4a6',
+    'Microsoft.PowerToys.WsPuvr.Runtime2_2.0.0.0_x64__c79g9vhs3b4a6'
+)
+$previousPackageFullNames = @(
     'Microsoft.PowerToys.WsPuvr.Runtime1_1.0.0.0_x64__fcbv3b023fanj',
     'Microsoft.PowerToys.WsPuvr.Runtime2_2.0.0.0_x64__fcbv3b023fanj'
 )
@@ -30,21 +36,61 @@ $legacyPackageFullNames = @(
     'Microsoft.PowerToys.WsPuvr.Runtime1_1.0.0.0_x64__t8ed0av59w5q6',
     'Microsoft.PowerToys.WsPuvr.Runtime2_2.0.0.0_x64__t8ed0av59w5q6'
 )
-$exactPackageFullNames = @($newPackageFullNames + $legacyPackageFullNames)
+$exactPackageFullNames = @(
+    $newPackageFullNames +
+    $previousPackageFullNames +
+    $legacyPackageFullNames
+)
+
+function Get-ExactPackage([string]$packageFullName) {
+    $separator = $packageFullName.IndexOf('_')
+    if ($separator -le 0) {
+        throw "Invalid package full name: $packageFullName"
+    }
+    $packageName = $packageFullName.Substring(0, $separator)
+    $matches = @(
+        Get-AppxPackage `
+            -AllUsers `
+            -Name $packageName `
+            -ErrorAction SilentlyContinue |
+            Where-Object PackageFullName -eq $packageFullName
+    )
+    if ($matches.Count -gt 1) {
+        throw "Multiple exact package records found: $packageFullName"
+    }
+    if ($matches.Count -eq 1) {
+        return $matches[0]
+    }
+    return
+}
+
+function Get-PackageInstallLocation([string]$packageFullName) {
+    $package = Get-ExactPackage $packageFullName
+    if (-not $package) {
+        return
+    }
+    if ([string]::IsNullOrWhiteSpace($package.InstallLocation)) {
+        throw "Package has no install location: $packageFullName"
+    }
+    return [IO.Path]::GetFullPath([string]$package.InstallLocation)
+}
 
 function Remove-ExactPackage([string]$packageFullName) {
+    $packageDirectory = Get-PackageInstallLocation $packageFullName
     & $controller `
         --remove-package `
         --package-full-name $packageFullName
     $exitCode = $LASTEXITCODE
-    $packageDirectory = Join-Path `
-        (Join-Path $env:ProgramFiles 'WindowsApps') `
-        $packageFullName
     for ($attempt = 0; $attempt -lt 40 -and
-         (Test-Path -LiteralPath $packageDirectory); $attempt++) {
+         ((Get-ExactPackage $packageFullName) -or
+          ($packageDirectory -and
+           (Test-Path -LiteralPath $packageDirectory))); $attempt++) {
         Start-Sleep -Milliseconds 250
     }
-    if ($exitCode -ne 0 -or (Test-Path -LiteralPath $packageDirectory)) {
+    if ($exitCode -ne 0 -or
+        (Get-ExactPackage $packageFullName) -or
+        ($packageDirectory -and
+         (Test-Path -LiteralPath $packageDirectory))) {
         throw "Exact package removal failed for ${packageFullName}: controller exit $exitCode"
     }
 }
@@ -96,6 +142,14 @@ if ($updater) {
     sc.exe delete PtPuvrUpdater | Out-Host
 }
 
+$knownPackageDirectories = @(
+    foreach ($packageFullName in $exactPackageFullNames) {
+        $packageDirectory = Get-PackageInstallLocation $packageFullName
+        if ($packageDirectory) {
+            $packageDirectory
+        }
+    }
+)
 foreach ($packageFullName in $exactPackageFullNames) {
     Remove-ExactPackage $packageFullName
 }
@@ -105,16 +159,21 @@ $installRoot = Join-Path `
     'PowerToys\WorkspacesUnpackagedUpdaterVirtualRuntimePrototype'
 $storeRoot = Join-Path `
     $env:ProgramData `
+    'Microsoft\PowerToys\WorkspacesPackagedPayloadUpdaterVirtualRuntimePrototype'
+$previousStoreRoot = Join-Path `
+    $env:ProgramData `
     'Microsoft\PowerToys\WorkspacesUnpackagedUpdaterVirtualRuntimePrototype'
 $legacyStoreRoot = Join-Path `
     $env:ProgramData `
     'Microsoft\PowerToys\WorkspacesPackagedUpdaterVirtualRuntimePrototype'
 Remove-Item -LiteralPath $installRoot -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath $storeRoot -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -LiteralPath $previousStoreRoot -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath $legacyStoreRoot -Recurse -Force -ErrorAction SilentlyContinue
 
 if (-not $PreserveTrustedCertificates) {
     $certificateSubjects = @(
+        'CN=PowerToys Workspaces Packaged Payload Updater Virtual Runtime Prototype Test',
         'CN=PowerToys Workspaces Unpackaged Updater Virtual Runtime Prototype Test',
         'CN=PowerToys Workspaces Packaged Updater Virtual Runtime Prototype Test'
     )
@@ -145,20 +204,24 @@ if (-not $PreserveTrustedCertificates) {
     )
 }
 $remainingPackageDirectories = @(
-    foreach ($packageFullName in $exactPackageFullNames) {
-        $packageDirectory = Join-Path `
-            (Join-Path $env:ProgramFiles 'WindowsApps') `
-            $packageFullName
+    foreach ($packageDirectory in $knownPackageDirectories) {
         if (Test-Path -LiteralPath $packageDirectory) {
             $packageDirectory
         }
     }
 )
+$remainingPackages = @(
+    foreach ($packageFullName in $exactPackageFullNames) {
+        Get-ExactPackage $packageFullName
+    }
+)
 if ($remainingServices.Count -ne 0 -or
     $remainingCertificates.Count -ne 0 -or
+    $remainingPackages.Count -ne 0 -or
     $remainingPackageDirectories.Count -ne 0 -or
     (Test-Path -LiteralPath $installRoot) -or
     (Test-Path -LiteralPath $storeRoot) -or
+    (Test-Path -LiteralPath $previousStoreRoot) -or
     (Test-Path -LiteralPath $legacyStoreRoot)) {
     throw 'Teardown verification failed; prototype state remains.'
 }

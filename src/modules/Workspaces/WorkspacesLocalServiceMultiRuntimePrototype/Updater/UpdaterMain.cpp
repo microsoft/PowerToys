@@ -164,7 +164,8 @@ namespace
         }
         const std::filesystem::path executablePath = module_path();
         const std::filesystem::path expectedPath =
-            ptlsmr::installed_updater_root() / ptlsmr::UpdaterExe;
+            ptlsmr::updater_package_directory(PT_UPDATER_VERSION_MAJOR) /
+            ptlsmr::UpdaterExe;
         if (!std::filesystem::equivalent(executablePath, expectedPath))
         {
             throw ptlsmr::win32_error("updater protected path policy", ERROR_ACCESS_DENIED);
@@ -182,6 +183,12 @@ namespace
         evidence << L"packageIdentityError=" << APPMODEL_ERROR_NO_PACKAGE << L"\r\n";
         evidence << L"updaterVersion=" << ptlsmr::UpdaterVersion << L"\r\n";
         evidence << L"fileVersion=" << ptlsmr::UpdaterVersion << L"\r\n";
+        evidence << L"updaterPackageFullName="
+                 << ptlsmr::expected_updater_package_full_name(
+                        PT_UPDATER_VERSION_MAJOR)
+                 << L"\r\n";
+        evidence << L"updaterPackageVersion=" << ptlsmr::UpdaterVersion << L"\r\n";
+        evidence << L"payloadDelivery=msix-staged-windowsapps\r\n";
         evidence << L"protocolVersion=" << ptlsmr::ProtocolVersion << L"\r\n";
         evidence << L"deploymentMode=direct-unpackaged-package-manager\r\n";
         evidence << L"executablePath=" << executablePath.wstring() << L"\r\n";
@@ -504,14 +511,11 @@ namespace
         {
             throw ptlsmr::win32_error("runtime package extension policy", ERROR_INVALID_NAME);
         }
-        std::wstring uriText = L"file:///";
-        uriText += packagePath.wstring();
-        std::replace(uriText.begin(), uriText.end(), L'\\', L'/');
         winrt::Windows::Management::Deployment::PackageManager manager;
         const auto dependencies =
             winrt::single_threaded_vector<winrt::Windows::Foundation::Uri>().GetView();
         const auto deployment = manager.StagePackageAsync(
-            winrt::Windows::Foundation::Uri(uriText),
+            winrt::Windows::Foundation::Uri(ptlsmr::file_uri(packagePath)),
             dependencies,
             winrt::Windows::Management::Deployment::DeploymentOptions::None)
                                     .get();
@@ -532,14 +536,7 @@ namespace
         {
             throw ptlsmr::win32_error("staged package identity policy", ERROR_INVALID_DATA);
         }
-        PWSTR programFiles = nullptr;
-        const HRESULT result = SHGetKnownFolderPath(FOLDERID_ProgramFiles, 0, nullptr, &programFiles);
-        if (FAILED(result))
-        {
-            throw ptlsmr::win32_error("SHGetKnownFolderPath(FOLDERID_ProgramFiles)", HRESULT_CODE(result));
-        }
-        ptlsmr::local_memory memory(programFiles);
-        return std::filesystem::path(programFiles) / L"WindowsApps" / fullName;
+        return ptlsmr::staged_package_directory(fullName);
     }
 
     [[nodiscard]] std::filesystem::path staged_package_directory(const std::wstring& fullName)

@@ -6,6 +6,7 @@
 #include <sddl.h>
 #include <shellapi.h>
 #include <shlobj_core.h>
+#include <shlwapi.h>
 
 #include <array>
 #include <cstring>
@@ -16,6 +17,7 @@
 #pragma comment(lib, "advapi32.lib")
 #pragma comment(lib, "bcrypt.lib")
 #pragma comment(lib, "shell32.lib")
+#pragma comment(lib, "shlwapi.lib")
 
 namespace
 {
@@ -453,17 +455,69 @@ namespace ptlsmr
         return std::filesystem::path(path) / StoreRelativeRoot;
     }
 
-    std::filesystem::path installed_updater_root()
+    std::wstring expected_updater_package_full_name(uint16_t major)
     {
-        PWSTR path = nullptr;
-        const HRESULT result = SHGetKnownFolderPath(FOLDERID_ProgramFiles, 0, nullptr, &path);
+        if (major != 5 && major != 6)
+        {
+            throw win32_error("updater package version policy", ERROR_INVALID_PARAMETER);
+        }
+        return package_string_from_id(UpdaterPackageName, false, major);
+    }
+
+    std::wstring expected_updater_package_family_name()
+    {
+        return package_string_from_id(UpdaterPackageName, true, 5);
+    }
+
+    bool is_allowed_updater_package_full_name(std::wstring_view value)
+    {
+        return value == expected_updater_package_full_name(5) ||
+            value == expected_updater_package_full_name(6);
+    }
+
+    std::filesystem::path updater_package_directory(uint16_t major)
+    {
+        return staged_package_directory(expected_updater_package_full_name(major));
+    }
+
+    std::filesystem::path staged_package_directory(std::wstring_view packageFullName)
+    {
+        const std::wstring fullName(packageFullName);
+        UINT32 characters = 0;
+        LONG result =
+            GetStagedPackagePathByFullName(fullName.c_str(), &characters, nullptr);
+        if (result != ERROR_INSUFFICIENT_BUFFER)
+        {
+            throw win32_error(
+                "GetStagedPackagePathByFullName(size)",
+                static_cast<DWORD>(result));
+        }
+        std::wstring path(characters, L'\0');
+        result =
+            GetStagedPackagePathByFullName(fullName.c_str(), &characters, path.data());
+        if (result != ERROR_SUCCESS)
+        {
+            throw win32_error(
+                "GetStagedPackagePathByFullName",
+                static_cast<DWORD>(result));
+        }
+        path.resize(characters - 1);
+        return std::filesystem::path(path);
+    }
+
+    std::wstring file_uri(const std::filesystem::path& path)
+    {
+        const std::wstring pathText = std::filesystem::absolute(path).wstring();
+        DWORD characters = static_cast<DWORD>(pathText.size() * 3 + 16);
+        std::wstring uri(characters, L'\0');
+        const HRESULT result =
+            UrlCreateFromPathW(pathText.c_str(), uri.data(), &characters, 0);
         if (FAILED(result))
         {
-            throw win32_error("SHGetKnownFolderPath(FOLDERID_ProgramFiles)", HRESULT_CODE(result));
+            throw win32_error("UrlCreateFromPathW", HRESULT_CODE(result));
         }
-        local_memory memory(path);
-        return std::filesystem::path(path) /
-            L"PowerToys\\WorkspacesUnpackagedUpdaterVirtualRuntimePrototype";
+        uri.resize(characters);
+        return uri;
     }
 
     std::wstring runtime_package_name(uint16_t track)

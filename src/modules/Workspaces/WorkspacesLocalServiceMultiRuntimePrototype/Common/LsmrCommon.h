@@ -8,21 +8,33 @@
 #include <string_view>
 #include <vector>
 
+#ifndef PT_UPDATER_VERSION_MAJOR
+#define PT_UPDATER_VERSION_MAJOR 5
+#endif
+
 namespace ptlsmr
 {
+    inline constexpr wchar_t UpdaterPackageName[] =
+        L"Microsoft.PowerToys.WsPuvr.RawUpdater";
     inline constexpr wchar_t RuntimePackageNameTrack1[] =
         L"Microsoft.PowerToys.WsPuvr.Runtime1";
     inline constexpr wchar_t RuntimePackageNameTrack2[] =
         L"Microsoft.PowerToys.WsPuvr.Runtime2";
     inline constexpr wchar_t PackagePublisher[] =
-        L"CN=PowerToys Workspaces Unpackaged Updater Virtual Runtime Prototype Test";
+        L"CN=PowerToys Workspaces Packaged Payload Updater Virtual Runtime Prototype Test";
     inline constexpr wchar_t RuntimeExe[] = L"PtPuvrRuntime.exe";
     inline constexpr wchar_t UpdaterExe[] = L"PtPuvrUpdater.exe";
     inline constexpr wchar_t UpdaterServiceName[] = L"PtPuvrUpdater";
     inline constexpr wchar_t UpdaterPipeName[] = L"\\\\.\\pipe\\PtPuvrUpdater";
     inline constexpr wchar_t StoreRelativeRoot[] =
-        L"Microsoft\\PowerToys\\WorkspacesUnpackagedUpdaterVirtualRuntimePrototype";
+        L"Microsoft\\PowerToys\\WorkspacesPackagedPayloadUpdaterVirtualRuntimePrototype";
+#if PT_UPDATER_VERSION_MAJOR == 5
     inline constexpr wchar_t UpdaterVersion[] = L"5.0.0.0";
+#elif PT_UPDATER_VERSION_MAJOR == 6
+    inline constexpr wchar_t UpdaterVersion[] = L"6.0.0.0";
+#else
+#error Unsupported PT_UPDATER_VERSION_MAJOR
+#endif
     inline constexpr uint32_t ProtocolMagic = 0x52565550; // PUVR
     inline constexpr uint16_t ProtocolVersion = 2;
     inline constexpr size_t MaxOwnerSidChars = 192;
@@ -90,7 +102,13 @@ namespace ptlsmr
     [[nodiscard]] InstanceNames instance_names(std::wstring_view ownerSid);
     [[nodiscard]] std::wstring service_sid(std::wstring_view serviceName);
     [[nodiscard]] std::filesystem::path program_data_root();
-    [[nodiscard]] std::filesystem::path installed_updater_root();
+    [[nodiscard]] std::wstring expected_updater_package_full_name(uint16_t major);
+    [[nodiscard]] std::wstring expected_updater_package_family_name();
+    [[nodiscard]] bool is_allowed_updater_package_full_name(std::wstring_view value);
+    [[nodiscard]] std::filesystem::path updater_package_directory(uint16_t major);
+    [[nodiscard]] std::filesystem::path staged_package_directory(
+        std::wstring_view packageFullName);
+    [[nodiscard]] std::wstring file_uri(const std::filesystem::path& path);
     [[nodiscard]] std::wstring runtime_package_name(uint16_t track);
     [[nodiscard]] std::wstring expected_runtime_package_full_name(uint16_t track);
     [[nodiscard]] std::wstring expected_runtime_package_family_name(uint16_t track);

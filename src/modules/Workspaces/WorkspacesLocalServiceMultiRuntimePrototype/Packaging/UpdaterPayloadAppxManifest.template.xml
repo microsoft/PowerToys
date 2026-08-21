@@ -2,16 +2,15 @@
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-  xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  IgnorableNamespaces="uap uap10 rescap">
+  IgnorableNamespaces="uap rescap">
   <Identity
-    Name="@@PACKAGE_NAME@@"
+    Name="Microsoft.PowerToys.WsPuvr.RawUpdater"
     Publisher="CN=PowerToys Workspaces Packaged Payload Updater Virtual Runtime Prototype Test"
     Version="@@VERSION@@"
     ProcessorArchitecture="x64" />
   <Properties>
-    <DisplayName>PowerToys Virtual-Account Runtime Track @@TRACK@@</DisplayName>
+    <DisplayName>PowerToys Raw-SCM Packaged-Payload Updater</DisplayName>
     <PublisherDisplayName>PowerToys prototype (test only)</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -23,14 +22,13 @@
   </Dependencies>
   <Applications>
     <Application
-      Id="Runtime"
-      Executable="PtPuvrRuntime.exe"
-      EntryPoint="Windows.FullTrustApplication"
-      uap10:SupportsMultipleInstances="true">
+      Id="Updater"
+      Executable="PtPuvrUpdater.exe"
+      EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         AppListEntry="none"
-        DisplayName="PowerToys Virtual-Account Runtime Track @@TRACK@@"
-        Description="Test-only unpackaged service payload supplied by MSIX"
+        DisplayName="PowerToys Raw-SCM Packaged-Payload Updater"
+        Description="Test-only MSIX payload launched through classic SCM"
         BackgroundColor="transparent"
         Square44x44Logo="Assets\Square44x44Logo.png"
         Square150x150Logo="Assets\Square150x150Logo.png" />
