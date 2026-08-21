@@ -44,6 +44,13 @@ namespace KeyboardManagerEditorUI.Interop
         internal static extern bool GetSingleKeyToTextRemap(IntPtr config, int index, ref KeyboardTextMapping mapping);
 
         [DllImport(DllName, CallingConvention = Convention)]
+        internal static extern int GetTextReplacementCount(IntPtr config);
+
+        [DllImport(DllName, CallingConvention = Convention)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetTextReplacement(IntPtr config, int index, ref TextReplacementMapping mapping);
+
+        [DllImport(DllName, CallingConvention = Convention)]
         internal static extern int GetShortcutRemapCount(IntPtr config);
 
         [DllImport(DllName, CallingConvention = Convention)]
@@ -65,6 +72,10 @@ namespace KeyboardManagerEditorUI.Interop
         [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AddSingleKeyToTextRemap(IntPtr config, int originalKey, [MarshalAs(UnmanagedType.LPWStr)] string targetText);
+
+        [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool AddTextReplacement(IntPtr config, [MarshalAs(UnmanagedType.LPWStr)] string trigger, [MarshalAs(UnmanagedType.LPWStr)] string targetText);
 
         [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -93,6 +104,10 @@ namespace KeyboardManagerEditorUI.Interop
         [DllImport(DllName, CallingConvention = Convention)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeleteSingleKeyToTextRemap(IntPtr config, int originalKey);
+
+        [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeleteTextReplacement(IntPtr config, [MarshalAs(UnmanagedType.LPWStr)] string trigger);
 
         [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -151,6 +166,13 @@ namespace KeyboardManagerEditorUI.Interop
     public struct KeyboardTextMapping
     {
         public int OriginalKey;
+        public IntPtr TargetText;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct TextReplacementMapping
+    {
+        public IntPtr Trigger;
         public IntPtr TargetText;
     }
 
