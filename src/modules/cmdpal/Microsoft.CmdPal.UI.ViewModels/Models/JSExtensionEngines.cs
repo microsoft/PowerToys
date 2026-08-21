@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
-/// Represents the "engines" section of a package.json.
+/// The "engines" section of a package.json.
 /// </summary>
 public sealed record JSExtensionEngines
 {

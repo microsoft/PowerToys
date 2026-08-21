@@ -19,10 +19,9 @@ using ManagedCommon;
 namespace Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
 
 /// <summary>
-/// Low-level JSON-RPC 2.0 transport that speaks LSP-style Content-Length framing
-/// over a pair of byte streams (typically a child process's stdout and stdin).
-/// The transport is symmetric: it can send requests and notifications, and it
-/// dispatches inbound requests and notifications to registered handlers.
+/// Low-level JSON-RPC 2.0 transport for LSP-style Content-Length framing over a pair of byte
+/// streams, typically a child process's stdout and stdin. It sends requests and notifications,
+/// then dispatches inbound requests and notifications to registered handlers.
 /// </summary>
 public sealed partial class JsonRpcConnection : IDisposable
 {
@@ -32,16 +31,16 @@ public sealed partial class JsonRpcConnection : IDisposable
     // The connection has not been closed.
     private const int StateOpen = 0;
 
-    // The connection has reached its terminal closed state: the reader exited, a write failed,
-    // or the connection was disposed. No further protocol traffic is possible.
+    // The connection has reached its terminal closed state. The reader exited, a write failed, or the
+    // connection was disposed. No further protocol traffic is possible.
     private const int StateClosed = 1;
 
     // Upper bound on the number of inbound notifications buffered for the serialized consumer.
     // The reader never blocks on this queue: when it is full the oldest notification is dropped.
     private const int NotificationQueueCapacity = 1024;
 
-    // Number of worker tasks that service inbound requests. This caps how many inbound request
-    // handlers can run at once so a flood of inbound requests cannot spawn unbounded work.
+    // Number of worker tasks that service inbound requests. This keeps a flood of inbound requests
+    // from spawning unbounded work.
     internal const int InboundRequestWorkerCount = 16;
 
     // Upper bound on the number of inbound requests buffered ahead of the workers. This is a
@@ -50,16 +49,15 @@ public sealed partial class JsonRpcConnection : IDisposable
     // than stalling the reader.
     private const int InboundRequestQueueCapacity = 256;
 
-    // Aggregate byte budgets for buffered inbound work. Because a single frame body can be as large
-    // as MaxMessageBytes (32 MiB), a purely count-based bound could retain tens of gigabytes of
-    // buffered payloads. These caps bound the total bytes held by the notification queue and the
-    // inbound request queue independently, regardless of item count.
+    // Aggregate byte budgets for buffered inbound work. A single frame body can be as large as
+    // MaxMessageBytes (32 MiB), so a count-only bound could hold far too much memory. These caps
+    // bound the notification queue and the inbound request queue independently.
     internal const long DefaultMaxQueuedNotificationBytes = 64L * 1024 * 1024;
     internal const long DefaultMaxQueuedRequestBytes = 64L * 1024 * 1024;
 
-    // Upper bound on the number of concurrent server-busy rejection responses in flight. The reader
-    // sends these without blocking; this cap keeps a sustained overload from spawning unbounded
-    // rejection tasks. When exceeded, the request is dropped and the peer observes a timeout.
+    // Upper bound on concurrent server-busy rejection responses. The reader sends these without
+    // blocking, so this cap keeps sustained overload from spawning unbounded rejection tasks. When the
+    // cap is hit, the request is dropped and the peer observes a timeout.
     private const int MaxConcurrentRejectionSends = 64;
 
     // Protocol-error logging is rate limited so a peer that streams malformed or undecodable frames
@@ -72,9 +70,8 @@ public sealed partial class JsonRpcConnection : IDisposable
 
     private static readonly TimeSpan ProtocolErrorLogWindow = TimeSpan.FromSeconds(5);
 
-    // A single aggregate budget for draining every background task during disposal. The total drain
-    // time is bounded by this one deadline instead of applying a separate per-task timeout, so a
-    // connection with many workers still shuts down promptly.
+    // One budget for draining every background task during disposal. This avoids turning many stuck
+    // workers into many separate timeout waits.
     private static readonly TimeSpan DisposeDrainBudget = TimeSpan.FromSeconds(2);
 
     private readonly Stream _input;
@@ -114,10 +111,8 @@ public sealed partial class JsonRpcConnection : IDisposable
     private readonly SemaphoreSlim _writeLock = new(1, 1);
     private readonly CancellationTokenSource _disposalCts = new();
 
-    // A snapshot of the disposal token taken at construction. Background tasks and the write path use
-    // this captured value instead of _disposalCts.Token so they never touch the CancellationTokenSource
-    // after it is disposed (which would throw ObjectDisposedException). The token is cancelled before
-    // the source is disposed, so the snapshot still reports cancellation correctly.
+    // Background tasks and writes use this token snapshot instead of touching _disposalCts after it is
+    // disposed. The source is cancelled first, so the snapshot still reports shutdown correctly.
     private readonly CancellationToken _shutdownToken;
 
     private readonly RateLimitedProtocolLog _protocolErrorLog;
@@ -150,7 +145,7 @@ public sealed partial class JsonRpcConnection : IDisposable
 
     /// <summary>
     /// Initializes a new instance of the <see cref="JsonRpcConnection"/> class with explicit aggregate
-    /// byte budgets for buffered inbound work. Used by tests to exercise the byte-budget rejection path.
+    /// byte budgets for buffered inbound work. Tests use this to exercise byte-budget rejection.
     /// </summary>
     /// <param name="input">The stream to read incoming framed messages from.</param>
     /// <param name="output">The stream to write outgoing framed messages to.</param>
@@ -253,10 +248,9 @@ public sealed partial class JsonRpcConnection : IDisposable
         var tcs = new TaskCompletionSource<JsonRpcResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
         _pendingRequests[id] = tcs;
 
-        // Close the add/disconnect race: the reader may have exited between the check above and the
-        // add. The terminal state is set before FailAllPending runs, so re-reading it here guarantees
-        // that either FailAllPending already observed this entry or we observe the closed state and
-        // fail immediately, never waiting the full timeout for a response that can never arrive.
+        // Close the add/disconnect race. The reader may have exited between the check above and this
+        // add. The terminal state is set before FailAllPending runs, so this request is either already
+        // observed there or fails here without waiting for a response that can never arrive.
         if (Volatile.Read(ref _connectionState) != StateOpen)
         {
             _pendingRequests.TryRemove(id, out _);
@@ -383,18 +377,17 @@ public sealed partial class JsonRpcConnection : IDisposable
 
         _disposed = true;
 
-        // (a) Enter the terminal closed state so new writes are rejected before they touch the
-        // write lock, (b) cancel the disposal token, fail every pending request, and raise
-        // Disconnected exactly once.
+        // Mark the connection closed before canceling so new writes fail before they reach the lock.
+        // Pending requests fail and Disconnected is raised exactly once.
         Close("The JSON-RPC connection was disposed.");
 
-        // (c) Complete the notification and inbound-request queues so their consumers drain and exit.
+        // Complete the work queues so consumers drain and exit.
         _notificationQueue.Writer.TryComplete();
         _inboundRequestQueue.Writer.TryComplete();
 
-        // (d) Drain the write lock and every background task under a single aggregate deadline so the
-        // total shutdown time is bounded by one budget, not by a separate timeout per task. Acquiring
-        // the write lock once lets any writer that is mid-frame finish (or be abandoned by disposal).
+        // Drain the write lock and background tasks under one deadline. A connection with many stuck
+        // workers should not pay one timeout per worker. Taking the write lock lets a mid-frame writer
+        // finish, or be abandoned by disposal.
         var drainStopwatch = Stopwatch.StartNew();
 
         var acquiredWriteLock = false;
@@ -440,7 +433,7 @@ public sealed partial class JsonRpcConnection : IDisposable
             }
         }
 
-        // (e) Dispose the write lock only after draining, so no in-flight writer can still release it.
+        // Dispose the write lock after draining because an in-flight writer may still release it.
         _writeLock.Dispose();
         _disposalCts.Dispose();
     }
@@ -460,15 +453,15 @@ public sealed partial class JsonRpcConnection : IDisposable
     }
 
     /// <summary>
-    /// Transitions the connection to its terminal closed state exactly once: cancels the disposal
-    /// token, fails every pending request, and raises <see cref="Disconnected"/>. Safe to call from
-    /// the reader, a failed writer, or Dispose; repeated calls are no-ops.
+    /// Transitions the connection to its terminal closed state exactly once. It cancels disposal,
+    /// fails pending requests, and raises <see cref="Disconnected"/>. Safe to call from the reader, a
+    /// failed writer, or Dispose. Repeated calls are no-ops.
     /// </summary>
     /// <param name="reason">A human-readable reason recorded on failed pending requests.</param>
     private void Close(string reason)
     {
-        // The state flag is flipped before FailAllPending so that a request racing the close either
-        // has already been observed by FailAllPending or observes the closed state on its own re-check.
+        // Flip the state before FailAllPending so a racing request is either observed there or sees
+        // the closed state on its own re-check.
         if (Interlocked.Exchange(ref _connectionState, StateClosed) == StateClosed)
         {
             return;
@@ -505,25 +498,22 @@ public sealed partial class JsonRpcConnection : IDisposable
         }
         catch (ObjectDisposedException)
         {
-            // The connection was disposed while waiting for the write lock.
+            // Disposal can happen while a write is waiting for the lock.
             throw new JsonRpcException("The JSON-RPC connection is closed.");
         }
 
         try
         {
-            // Re-check after acquiring the lock: the connection may have closed while we waited.
+            // Re-check after acquiring the lock because the connection may have closed while we waited.
             if (Volatile.Read(ref _connectionState) != StateOpen)
             {
                 throw new JsonRpcException("The JSON-RPC connection is closed.");
             }
 
-            // Once frame emission begins the header, body, and flush must be written as one unit, so
-            // the caller's cancellation token is deliberately not honored here: cancelling between the
-            // header and body would leave a corrupt partial frame on a still-open connection. Instead
-            // the emission is bounded by a dedicated write timeout and by disposal. If the peer stops
-            // draining stdin the write cannot block forever: when the timeout or disposal fires the
-            // write is abandoned and the connection is torn down (never reused), so a partial frame can
-            // only ever appear on a connection that is already closing.
+            // Once frame emission begins, the header, body, and flush have to be written as one unit.
+            // Honoring the caller's cancellation token here could leave a corrupt partial frame on a
+            // connection we still consider open. A write timeout and disposal bound the work instead.
+            // If the peer stops draining stdin, the write is abandoned and the connection is closed.
             using var writeCts = CancellationTokenSource.CreateLinkedTokenSource(_shutdownToken);
             writeCts.CancelAfter(_writeTimeout);
 
@@ -535,17 +525,16 @@ public sealed partial class JsonRpcConnection : IDisposable
             }
             catch (OperationCanceledException) when (writeCts.IsCancellationRequested)
             {
-                // The write did not complete within the write timeout, or disposal cancelled it. The
-                // peer is no longer draining stdin (or is gone), so the stream can no longer be trusted:
-                // enter the terminal closed state, which raises Disconnected so the owner tears the child
-                // process down, and fail this write instead of blocking the write lock indefinitely.
+                // The peer is not draining stdin, or disposal cancelled the write. Close the
+                // connection so the owner can tear down the child process instead of leaving the write
+                // lock blocked.
                 Close("The JSON-RPC connection failed because a write did not complete in time.");
                 throw new JsonRpcException("The JSON-RPC connection failed because a write did not complete in time.");
             }
             catch (Exception ex) when (ex is not JsonRpcException)
             {
-                // A partial frame may have reached the peer. The stream can no longer be trusted, so
-                // the connection transitions to its terminal closed state and is never reused.
+                // A partial frame may have reached the peer. Close the connection instead of reusing a
+                // stream we can no longer trust.
                 Close("The JSON-RPC connection failed while writing a message.");
                 throw new JsonRpcException("The JSON-RPC connection failed while writing a message.", ex);
             }
@@ -590,9 +579,8 @@ public sealed partial class JsonRpcConnection : IDisposable
 
                 var json = Encoding.UTF8.GetString(body);
 
-                // Dispatch synchronously so the reader never awaits a bounded resource. Response frames
-                // are routed immediately and inbound requests/notifications are admitted without blocking,
-                // which keeps response correlation alive even when the inbound work queues are saturated.
+                // Dispatch synchronously so the reader never awaits bounded work. Responses are routed
+                // immediately, which keeps correlation alive even when inbound queues are saturated.
                 DispatchMessage(json, body.Length);
             }
         }
@@ -606,8 +594,8 @@ public sealed partial class JsonRpcConnection : IDisposable
         }
         finally
         {
-            // The reader has exited: EOF, a protocol failure, or disposal. Enter the terminal closed
-            // state so pending requests fail and new requests are rejected without waiting.
+            // The reader has exited because of EOF, protocol failure, or disposal. Close the transport
+            // so pending requests fail and new requests are rejected without waiting.
             Close("The JSON-RPC connection was closed.");
         }
     }
@@ -707,9 +695,8 @@ public sealed partial class JsonRpcConnection : IDisposable
         }
         catch (JsonException ex)
         {
-            // Bound the logged payload: a malformed body can be as large as the frame cap, so only a
-            // short prefix is recorded (with a truncation marker). Route it through the rate limiter so
-            // a flood of malformed frames cannot flood the log.
+            // A malformed body can be as large as the frame cap. Log a short prefix and route it
+            // through the rate limiter so bad frames cannot flood the log.
             _protocolErrorLog.Run(() => Logger.LogError($"Failed to parse an inbound JSON-RPC message: {TruncateForLog(json)}", ex));
             RaiseError(ex);
             return;
@@ -775,9 +762,8 @@ public sealed partial class JsonRpcConnection : IDisposable
             return;
         }
 
-        // Response correlation runs directly on the reader with no bounded-capacity await, so an
-        // in-flight handler awaiting this response always completes even when the inbound work queues
-        // are saturated.
+        // Correlation runs on the reader and does not await bounded queues. An in-flight handler can
+        // still receive this response while inbound work is saturated.
         if (_pendingRequests.TryRemove(id, out var tcs))
         {
             tcs.TrySetResult(response);
@@ -800,9 +786,8 @@ public sealed partial class JsonRpcConnection : IDisposable
         var envelope = new NotificationEnvelope(method, parameters, sizeBytes);
 
         // Enqueue rather than invoke inline so a slow or reentrant handler never blocks the read loop
-        // or delays response correlation. The reader never blocks on admission: it makes room within
-        // both the count and aggregate byte budgets by dropping the oldest notifications, and if the
-        // newest still does not fit it is dropped too. Notifications are advisory, so this is safe.
+        // or delays response correlation. The reader drops old notifications to stay within the count
+        // and byte budgets. If the newest still does not fit, it is dropped too.
         while (true)
         {
             var projected = Interlocked.Read(ref _queuedNotificationBytes) + sizeBytes;
@@ -813,7 +798,7 @@ public sealed partial class JsonRpcConnection : IDisposable
             }
 
             // The byte budget would be exceeded or the count-bounded queue is full. Drop the oldest
-            // buffered notification to free space, then retry.
+            // notification to make room, then retry.
             if (_notificationQueue.Reader.TryRead(out var oldest))
             {
                 Interlocked.Add(ref _queuedNotificationBytes, -oldest.SizeBytes);
@@ -821,8 +806,8 @@ public sealed partial class JsonRpcConnection : IDisposable
                 continue;
             }
 
-            // The queue is empty yet the newest notification still does not fit (it alone exceeds the
-            // byte budget), or the queue has completed because the connection is closing. Drop it.
+            // The newest notification does not fit by itself, or the queue completed because the
+            // connection is closing. Drop it.
             RecordDroppedNotification();
             return;
         }
@@ -878,9 +863,9 @@ public sealed partial class JsonRpcConnection : IDisposable
 
     private void EnqueueInboundRequest(string method, JsonElement idElement, JsonElement root, int sizeBytes)
     {
-        // Admit the request without ever blocking the reader. Enforce the aggregate byte budget first,
-        // then the count-bounded queue. When either budget is exhausted the request is rejected with a
-        // server-busy error rather than stalling the reader, which must stay free to route responses.
+        // Admit the request without blocking the reader. Enforce the byte budget first, then the
+        // count-bounded queue. If either budget is exhausted, reject with server-busy so the reader can
+        // keep routing responses.
         var projected = Interlocked.Add(ref _queuedRequestBytes, sizeBytes);
         if (projected > _maxQueuedRequestBytes)
         {
@@ -889,8 +874,8 @@ public sealed partial class JsonRpcConnection : IDisposable
             return;
         }
 
-        // Clone the id and params so the buffered envelope stays valid after the source document is
-        // disposed by the read loop.
+        // Clone the id and params so the buffered envelope stays valid after the read loop disposes
+        // the source document.
         var envelope = new InboundRequestEnvelope(
             method,
             idElement.Clone(),
@@ -902,7 +887,7 @@ public sealed partial class JsonRpcConnection : IDisposable
             return;
         }
 
-        // The count-bounded queue is full (or completed because the connection is closing). Release the
+        // The count-bounded queue is full or completed because the connection is closing. Release the
         // byte reservation and reject the request.
         Interlocked.Add(ref _queuedRequestBytes, -sizeBytes);
         RejectInboundRequest(idElement);
@@ -916,8 +901,8 @@ public sealed partial class JsonRpcConnection : IDisposable
             return;
         }
 
-        // Bound the number of concurrent rejection sends so a sustained overload cannot spawn unbounded
-        // tasks. When the cap is reached the rejection is dropped and the peer observes a timeout.
+        // Bound concurrent rejection sends so sustained overload cannot spawn unbounded tasks. When
+        // the cap is reached, the rejection is dropped and the peer observes a timeout.
         if (Interlocked.Increment(ref _pendingRejectionSends) > MaxConcurrentRejectionSends)
         {
             Interlocked.Decrement(ref _pendingRejectionSends);
@@ -1071,15 +1056,14 @@ public sealed partial class JsonRpcConnection : IDisposable
     }
 
     /// <summary>
-    /// A buffered inbound notification: the method name, a detached clone of its parameters, and the
-    /// byte size charged against the notification queue's aggregate byte budget.
+    /// A buffered inbound notification with detached parameters and the byte size charged against the
+    /// notification queue's aggregate byte budget.
     /// </summary>
     private readonly record struct NotificationEnvelope(string Method, JsonElement Parameters, int SizeBytes);
 
     /// <summary>
-    /// A buffered inbound request: the method name plus detached clones of its id and parameters, so
-    /// the envelope remains valid after the source document is disposed by the read loop, and the byte
-    /// size charged against the request queue's aggregate byte budget.
+    /// A buffered inbound request with detached id and parameters plus the byte size charged against
+    /// the request queue's aggregate byte budget.
     /// </summary>
     private readonly record struct InboundRequestEnvelope(string Method, JsonElement Id, JsonElement Parameters, int SizeBytes);
 }

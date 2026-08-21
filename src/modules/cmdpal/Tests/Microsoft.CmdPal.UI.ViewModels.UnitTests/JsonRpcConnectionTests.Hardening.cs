@@ -16,7 +16,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 /// <summary>
-/// Tests for the phase-2 transport hardening: partial-write framing, reader-exit terminal state,
+/// Covers phase 2 transport hardening: partial-write framing, reader-exit terminal state,
 /// notification decoupling, and disposal safety.
 /// </summary>
 public partial class JsonRpcConnectionTests
@@ -39,7 +39,7 @@ public partial class JsonRpcConnectionTests
 
             await disconnected.Task.WaitAsync(cts.Token);
 
-            // A partial or failed frame makes the connection terminal: later sends fail fast.
+            // A partial or failed frame makes the connection terminal. Later sends fail fast.
             await Assert.ThrowsExceptionAsync<JsonRpcException>(async () =>
                 await host.SendRequestAsync("later", null, cts.Token));
         }
@@ -73,7 +73,7 @@ public partial class JsonRpcConnectionTests
             // Emission is not cancellable once started, so the write completes.
             await sendTask.WaitAsync(cts.Token);
 
-            // The whole, valid frame is intact on the wire.
+            // The full valid frame is still intact on the wire.
             var (_, body) = await ReadFramedAsync(outputPipe.Reader.AsStream(), cts.Token);
             using var document = JsonDocument.Parse(body);
             Assert.AreEqual("emit", document.RootElement.GetProperty("method").GetString());
@@ -98,7 +98,7 @@ public partial class JsonRpcConnectionTests
 
         try
         {
-            // Signal EOF to the host's read loop by completing the extension's output stream.
+            // Completing the extension output stream signals EOF to the host read loop.
             harness.ExtensionWrites.Dispose();
             await disconnected.Task.WaitAsync(cts.Token);
 
@@ -154,8 +154,8 @@ public partial class JsonRpcConnectionTests
             await WriteFramedAsync(harness.ExtensionWrites, BuildNotification("slow", null), cts.Token);
             await WriteFramedAsync(harness.ExtensionWrites, BuildRequest(1, "ping", null), cts.Token);
 
-            // The blocked notification handler runs on the consumer task, so the reader still
-            // dispatches the inbound request and writes its response.
+            // The blocked notification handler runs on the consumer task, so the reader can still
+            // dispatch the inbound request and write its response.
             var (_, body) = await ReadFramedAsync(harness.ExtensionReads, cts.Token);
             using var document = JsonDocument.Parse(body);
             Assert.AreEqual(1, document.RootElement.GetProperty("id").GetInt32());
@@ -195,8 +195,8 @@ public partial class JsonRpcConnectionTests
 
             await WriteFramedAsync(harness.ExtensionWrites, BuildNotification("reenter", null), cts.Token);
 
-            // The handler synchronously sends a request; the reader (independent of the consumer)
-            // must still be able to read and correlate that request's response.
+            // The handler sends a request synchronously. The reader is independent of the consumer, so
+            // it must still read and correlate that request's response.
             var (_, body) = await ReadFramedAsync(harness.ExtensionReads, cts.Token);
             using var document = JsonDocument.Parse(body);
             Assert.AreEqual("callback", document.RootElement.GetProperty("method").GetString());
@@ -228,11 +228,11 @@ public partial class JsonRpcConnectionTests
             var sendTask = host.SendNotificationAsync("during-dispose", null, cts.Token);
             await gated.AfterFirstWrite.WaitAsync(cts.Token);
 
-            // Dispose concurrently while the writer is blocked mid-frame.
+            // Dispose while the writer is blocked mid-frame.
             var stopwatch = Stopwatch.StartNew();
             var disposeTask = Task.Run(host.Dispose);
 
-            // Let the body write proceed so the writer can observe the disposal and release the lock.
+            // Let the body write proceed so the writer can observe disposal and release the lock.
             gated.ReleaseBody();
 
             await disposeTask.WaitAsync(cts.Token);
@@ -250,8 +250,8 @@ public partial class JsonRpcConnectionTests
                 sendException = ex;
             }
 
-            // Disposal abandons the in-flight frame and tears the connection down, so the send either
-            // completes or fails with a transport error, but must never surface ObjectDisposedException.
+            // Disposal abandons the in-flight frame and closes the connection. The send may complete
+            // or fail with a transport error, but must never surface ObjectDisposedException.
             Assert.IsFalse(sendException is ObjectDisposedException, "Dispose during an active write must not surface ObjectDisposedException.");
             Assert.IsTrue(sendException is null or JsonRpcException, $"An abandoned write must fail with a transport error, not '{sendException?.GetType().Name}'.");
         }
@@ -292,7 +292,7 @@ public partial class JsonRpcConnectionTests
 
             Assert.IsTrue(stopwatch.Elapsed < TimeSpan.FromSeconds(10), "A write that never drains must be abandoned at the write timeout, not hang.");
 
-            // The stalled write tears the connection down so the owner can terminate the child.
+            // The stalled write closes the connection so the owner can terminate the child.
             await disconnected.Task.WaitAsync(cts.Token);
         }
         finally
@@ -309,7 +309,7 @@ public partial class JsonRpcConnectionTests
         var input = new Pipe();
         var stuck = new BlockingWriteStream();
 
-        // A long write timeout guarantees it is disposal, not the timeout, that unblocks the write.
+        // A long write timeout makes disposal the thing that unblocks the write.
         var host = new JsonRpcConnection(
             input.Reader.AsStream(),
             stuck,
@@ -322,7 +322,7 @@ public partial class JsonRpcConnectionTests
 
         try
         {
-            // Wait until the frame write has begun and is blocked on the never-draining stream.
+            // Wait until the frame write is blocked on the never-draining stream.
             await stuck.WriteStarted.WaitAsync(cts.Token);
 
             var stopwatch = Stopwatch.StartNew();
@@ -332,7 +332,7 @@ public partial class JsonRpcConnectionTests
 
             Assert.IsTrue(stopwatch.Elapsed < TimeSpan.FromSeconds(10), "Dispose must abandon a stuck write rather than block on it indefinitely.");
 
-            // Disposal cancels the in-flight write, which fails rather than hanging forever.
+            // Disposal cancels the in-flight write so it fails rather than hanging forever.
             await Assert.ThrowsExceptionAsync<JsonRpcException>(async () => await sendTask.WaitAsync(cts.Token));
         }
         finally
@@ -366,8 +366,8 @@ public partial class JsonRpcConnectionTests
 
         try
         {
-            // A large, validly framed but unparseable body. It exercises the truncated log path and
-            // must be reported through the Error event without hanging.
+            // Use a large, validly framed body that cannot parse. It should hit the truncated log path
+            // and report through the Error event without hanging.
             var malformed = "{" + new string('a', 2_000_000);
             await WriteFramedAsync(harness.ExtensionWrites, malformed, cts.Token);
 
@@ -421,14 +421,14 @@ public partial class JsonRpcConnectionTests
 
         try
         {
-            // Flood the host with far more inbound requests than there are workers.
+            // Send far more inbound requests than there are workers.
             var total = JsonRpcConnection.InboundRequestWorkerCount * 2;
             for (var i = 0; i < total; i++)
             {
                 await WriteFramedAsync(harness.ExtensionWrites, BuildRequest(i + 1, "block", null), cts.Token);
             }
 
-            // Wait until every worker is busy, then give any excess a chance to (wrongly) start.
+            // Wait until every worker is busy, then give any extra work a chance to start by mistake.
             await saturated.Task.WaitAsync(cts.Token);
             await Task.Delay(250, cts.Token);
 
@@ -447,23 +447,23 @@ public partial class JsonRpcConnectionTests
     [TestMethod]
     public async Task InFlightHandler_AwaitingResponse_CompletesWhileRequestQueueSaturated()
     {
-        // Regression for the reader-admission deadlock: a handler that is awaiting an RPC response must
-        // still complete when the inbound request queue is saturated, because the reader routes response
-        // frames without ever blocking on work-queue admission.
+        // Regression for the reader-admission deadlock. A handler awaiting an RPC response must still
+        // complete when the inbound request queue is saturated because the reader routes response
+        // frames without blocking on work-queue admission.
         using var cts = new CancellationTokenSource(TestTimeout);
         var harness = CreateHarness(TimeSpan.FromSeconds(30));
 
         var blockGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        // "reflect" issues an outbound request and awaits the peer's response before returning. Its
-        // completion depends on the reader continuing to route response frames.
+        // "reflect" issues an outbound request and waits for the peer's response. It only completes
+        // if the reader keeps routing response frames.
         harness.Host.RegisterRequestHandler("reflect", async (_, token) =>
         {
             var response = await harness.Host.SendRequestAsync("callback", null, token).ConfigureAwait(false);
             return new JsonObject { ["ok"] = response.Error is null };
         });
 
-        // "block" never returns until released, so it pins a worker and helps saturate the queue.
+        // "block" does not return until released, so it pins a worker and helps saturate the queue.
         harness.Host.RegisterRequestHandler("block", async (_, token) =>
         {
             await blockGate.Task.WaitAsync(token).ConfigureAwait(false);
@@ -488,15 +488,15 @@ public partial class JsonRpcConnectionTests
                 }
             }
 
-            // Saturate the inbound request path far beyond the worker count and queue capacity. A reader
-            // that blocked on admission (the pre-fix behavior) could no longer route the response below.
+            // Saturate the inbound request path far beyond the worker count and queue capacity. A
+            // reader that blocked on admission could no longer route the response below.
             for (var i = 0; i < 600; i++)
             {
                 await WriteFramedAsync(harness.ExtensionWrites, BuildRequest(1000 + i, "block", null), cts.Token);
             }
 
             // Answer the in-flight handler's outbound request. The reader must route this response even
-            // though the request queue is saturated; otherwise "reflect" never completes (deadlock).
+            // while the request queue is saturated, or "reflect" never completes.
             await RespondWithResultAsync(harness.ExtensionWrites, callbackId, new JsonObject { ["pong"] = true }, cts.Token);
 
             using var reflectResponse = await ReadResponseWithIdAsync(harness.ExtensionReads, 1, cts.Token);
@@ -518,8 +518,8 @@ public partial class JsonRpcConnectionTests
         var toHost = new Pipe();
         var fromHost = new Pipe();
 
-        // A tiny request byte budget so the first inbound request's frame already exceeds it and the
-        // reader rejects it rather than admitting a payload that would blow the aggregate budget.
+        // Use a tiny request byte budget so the first inbound request exceeds it and gets rejected
+        // instead of being admitted into the aggregate budget.
         var host = new JsonRpcConnection(
             toHost.Reader.AsStream(),
             fromHost.Writer.AsStream(),
@@ -564,7 +564,7 @@ public partial class JsonRpcConnectionTests
         var toHost = new Pipe();
         var fromHost = new Pipe();
 
-        // A tiny notification byte budget so the notification's frame exceeds it and is dropped.
+        // Use a tiny notification byte budget so the notification frame exceeds it and is dropped.
         var host = new JsonRpcConnection(
             toHost.Reader.AsStream(),
             fromHost.Writer.AsStream(),
@@ -576,8 +576,8 @@ public partial class JsonRpcConnectionTests
 
         var notificationHandled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        // The handler must be registered so the notification reaches the byte-budget drop path rather
-        // than being ignored as unrecognized.
+        // Register the handler so the notification reaches the byte-budget drop path instead of being
+        // ignored as unrecognized.
         host.RegisterNotificationHandler("note", _ => notificationHandled.TrySetResult());
         host.RegisterRequestHandler("ping", (_, _) => Task.FromResult<JsonNode?>(new JsonObject { ["ok"] = true }));
         host.StartListening();
@@ -589,8 +589,8 @@ public partial class JsonRpcConnectionTests
         {
             await WriteFramedAsync(extensionWrites, BuildNotification("note", new JsonObject { ["payload"] = "abcdefghij" }), cts.Token);
 
-            // Frames are processed in order, so once the ping response arrives the notification ahead of
-            // it has already been dropped by the reader.
+            // Frames are processed in order. Once the ping response arrives, the notification before it
+            // has already been dropped by the reader.
             await WriteFramedAsync(extensionWrites, BuildRequest(1, "ping", null), cts.Token);
             using var pong = await ReadResponseWithIdAsync(extensionReads, 1, cts.Token);
             Assert.IsTrue(pong.RootElement.GetProperty("result").GetProperty("ok").GetBoolean());
@@ -618,8 +618,8 @@ public partial class JsonRpcConnectionTests
         var allStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var neverRelease = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        // The handler deliberately ignores its cancellation token and blocks forever, forcing disposal
-        // to fall back on its drain deadline for every worker at once.
+        // The handler ignores its cancellation token and blocks forever, which forces disposal to fall
+        // back on its drain deadline for every worker at once.
         harness.Host.RegisterRequestHandler("hang", async (_, _) =>
         {
             if (Interlocked.Increment(ref started) >= JsonRpcConnection.InboundRequestWorkerCount)
@@ -644,9 +644,9 @@ public partial class JsonRpcConnectionTests
             harness.Host.Dispose();
             stopwatch.Stop();
 
-            // A single aggregate drain budget governs disposal, so even with every worker stuck the wait
-            // is bounded by one deadline rather than one timeout per worker. Generous headroom keeps the
-            // assertion stable on busy CI while still failing the per-worker (~32 second) regression.
+            // A single aggregate drain budget governs disposal. Even with every worker stuck, the wait
+            // is bounded by one deadline rather than one timeout per worker. Generous headroom keeps
+            // this stable on busy CI while still catching the per-worker timeout regression.
             Assert.IsTrue(
                 stopwatch.Elapsed < TimeSpan.FromSeconds(10),
                 $"Dispose took {stopwatch.Elapsed.TotalSeconds:F1}s; the aggregate drain deadline was not applied.");
@@ -665,8 +665,8 @@ public partial class JsonRpcConnectionTests
             var document = JsonDocument.Parse(body);
             var root = document.RootElement;
 
-            // A response carries an id but no method. Skip outbound requests/notifications and responses
-            // correlated to other ids (for example server-busy rejections for the saturating flood).
+            // A response carries an id but no method. Skip outbound requests, notifications, and
+            // responses correlated to other ids, such as server-busy rejections from the flood.
             if (!root.TryGetProperty("method", out _) &&
                 root.TryGetProperty("id", out var idElement) &&
                 idElement.ValueKind == JsonValueKind.Number &&
@@ -703,8 +703,8 @@ public partial class JsonRpcConnectionTests
         {
             _writeStarted.TrySetResult();
 
-            // Never accept the bytes, but honor cancellation the way a real cancellable stream does,
-            // so the write timeout and disposal can abandon the write.
+            // Never accept the bytes, but honor cancellation like a real cancellable stream so the
+            // write timeout and disposal can abandon the write.
             await Task.Delay(Timeout.Infinite, cancellationToken).ConfigureAwait(false);
         }
 

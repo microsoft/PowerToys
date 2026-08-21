@@ -8,8 +8,8 @@ using System.Text.Json.Serialization;
 namespace Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
 
 /// <summary>
-/// Represents a JSON-RPC 2.0 request message. A request always carries an
-/// <see cref="Id"/> and a <see cref="Method"/> and expects a matching response.
+/// A JSON-RPC 2.0 request message. It carries an <see cref="Id"/> and a <see cref="Method"/>, then
+/// expects a matching response.
 /// </summary>
 public sealed class JsonRpcRequest
 {

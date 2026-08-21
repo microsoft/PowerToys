@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
 
 /// <summary>
-/// Represents a JSON-RPC 2.0 error object returned inside a failed response.
+/// A JSON-RPC 2.0 error object returned inside a failed response.
 /// </summary>
 public sealed class JsonRpcError
 {
@@ -38,9 +38,9 @@ public sealed class JsonRpcError
     public const int InternalError = -32603;
 
     /// <summary>
-    /// The server was too busy to accept the request because its inbound work budget (queued item
-    /// count or aggregate queued bytes) was exceeded. The peer may retry later. This uses the
-    /// implementation-defined server-error range reserved by the JSON-RPC 2.0 specification.
+    /// The server was too busy to accept the request because its inbound work budget was exceeded.
+    /// The peer may retry later. This uses the implementation-defined server-error range reserved by
+    /// the JSON-RPC 2.0 specification.
     /// </summary>
     public const int ServerBusy = -32000;
 

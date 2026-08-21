@@ -5,7 +5,7 @@
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
-/// The outcome of attempting to parse and validate a package.json as a CmdPal extension manifest.
+/// The result of parsing and validating a package.json as a CmdPal extension manifest.
 /// </summary>
 public sealed record JSExtensionManifestParseResult
 {
@@ -32,7 +32,7 @@ public sealed record JSExtensionManifestParseResult
     public string? FailureReason { get; }
 
     /// <summary>
-    /// Creates a successful result.
+    /// Creates a success result.
     /// </summary>
     /// <param name="manifest">The validated manifest.</param>
     /// <returns>A successful <see cref="JSExtensionManifestParseResult"/>.</returns>

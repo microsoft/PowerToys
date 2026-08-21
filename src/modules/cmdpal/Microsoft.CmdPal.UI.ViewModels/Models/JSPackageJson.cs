@@ -8,8 +8,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
-/// Represents the raw top-level structure of a package.json used to discover
-/// CmdPal JavaScript/TypeScript extensions.
+/// The raw top-level package.json structure used to discover CmdPal JavaScript/TypeScript extensions.
 /// </summary>
 public sealed record JSPackageJson
 {
@@ -32,10 +31,9 @@ public sealed record JSPackageJson
     public string? Description { get; init; }
 
     /// <summary>
-    /// Gets the raw npm "author" field. It can be either a string
-    /// (for example, "Jane Doe &lt;jane@example.com&gt; (https://example.com)")
-    /// or an object with "name", "email", and "url" properties. Only the name is
-    /// used, and only when cmdpal.publisher is absent.
+    /// Gets the raw npm "author" field. It can be a string, for example
+    /// "Jane Doe &lt;jane@example.com&gt; (https://example.com)", or an object with "name", "email",
+    /// and "url" properties. Only the name is used, and only when cmdpal.publisher is absent.
     /// </summary>
     [JsonPropertyName("author")]
     public JsonElement? Author { get; init; }

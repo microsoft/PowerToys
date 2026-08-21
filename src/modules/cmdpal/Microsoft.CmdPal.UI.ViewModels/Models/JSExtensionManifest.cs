@@ -9,8 +9,8 @@ using System.Text.Json;
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
-/// Represents a resolved CmdPal JavaScript/TypeScript extension manifest, built
-/// from a package.json that contains a "cmdpal" section.
+/// A resolved CmdPal JavaScript/TypeScript extension manifest built from a package.json
+/// with a "cmdpal" section.
 /// </summary>
 public sealed record JSExtensionManifest
 {
@@ -75,11 +75,10 @@ public sealed record JSExtensionManifest
     public string EffectiveDisplayName => string.IsNullOrWhiteSpace(DisplayName) ? Name ?? string.Empty : DisplayName;
 
     /// <summary>
-    /// Gets the stable identity key used to compare extensions for uniqueness. The extension
-    /// <see cref="Name"/> is the identity; it is trimmed and lower-cased so that comparisons are
-    /// case-insensitive, matching npm package-name semantics. Cross-extension uniqueness (rejecting a
-    /// second installed extension that resolves to the same key) is enforced during discovery, not by
-    /// the manifest parser. See the discovery-level follow-up noted in <see cref="TryParse"/>.
+    /// Gets the stable key used to compare extensions for uniqueness. The package
+    /// <see cref="Name"/> is trimmed and lower-cased to match npm package-name comparisons.
+    /// Discovery rejects two installed extensions that resolve to the same key. The parser only
+    /// reports the key.
     /// </summary>
     public string NameKey => (Name ?? string.Empty).Trim().ToLowerInvariant();
 
@@ -118,12 +117,11 @@ public sealed record JSExtensionManifest
     /// Parses and validates a package.json body as a CmdPal extension manifest.
     /// </summary>
     /// <remarks>
-    /// Unknown JSON fields are ignored rather than treated as errors, so a newer manifest still parses
-    /// on an older host. Missing required fields and malformed value types produce a failed result
-    /// through <see cref="JSExtensionManifestParseResult"/> rather than throwing. The extension
-    /// <see cref="Name"/> is the extension identity (see <see cref="NameKey"/>); enforcing that two
-    /// different installed extensions do not share the same identity is a discovery-level concern and
-    /// is handled by the extension discovery service (phase 4), not by this parser.
+    /// Unknown JSON fields are ignored so a newer manifest can still parse on an older host.
+    /// Missing required fields and malformed value types return a failed
+    /// <see cref="JSExtensionManifestParseResult"/> rather than throwing. The extension
+    /// <see cref="Name"/> is the identity. The phase 4 discovery service rejects duplicate
+    /// identities across installed extensions.
     /// </remarks>
     /// <param name="packageJson">The raw package.json contents.</param>
     /// <param name="extensionDirectory">The directory used to resolve the entry point file, checked for existence.</param>
@@ -178,8 +176,8 @@ public sealed record JSExtensionManifest
             return JSExtensionManifestParseResult.Failure(resolutionError!);
         }
 
-        // Rule 4: the entry point must be a JavaScript module Node can execute directly. Only .js,
-        // .mjs, and .cjs are supported; anything else (for example an uncompiled .ts source) is rejected.
+        // Rule 4: Node must be able to run the entry point directly. Only .js, .mjs, and .cjs are
+        // supported. Uncompiled .ts source is rejected.
         if (!IsSupportedEntryPointExtension(resolvedEntryPoint))
         {
             return JSExtensionManifestParseResult.Failure($"The entry point '{entryPoint}' must be a JavaScript file with a .js, .mjs, or .cjs extension.");
@@ -191,8 +189,8 @@ public sealed record JSExtensionManifest
         }
 
         // Rule 5: a symbolic link or junction must not redirect the entry point outside the extension
-        // directory, even when the lexical path stays within it. This is checked against the real
-        // filesystem after confirming the file exists.
+        // directory, even when the text path stays inside it. Check the real filesystem after the file
+        // is known to exist.
         if (!IsEntryPointContainmentTrusted(extensionDirectory, resolvedEntryPoint, out var containmentError))
         {
             return JSExtensionManifestParseResult.Failure(containmentError!);
@@ -217,9 +215,9 @@ public sealed record JSExtensionManifest
     }
 
     /// <summary>
-    /// Resolves the publisher name. The explicit cmdpal.publisher value wins. When it is
-    /// absent or whitespace, the name portion of the top-level npm "author" field is used.
-    /// Returns null when neither source provides a name.
+    /// Resolves the publisher name. The explicit cmdpal.publisher value wins. When it is absent or
+    /// whitespace, the name portion of the top-level npm "author" field is used. Returns null when
+    /// neither source provides a name.
     /// </summary>
     private static string? ResolvePublisher(JSPackageJson package)
     {
@@ -232,10 +230,10 @@ public sealed record JSExtensionManifest
     }
 
     /// <summary>
-    /// Extracts the author name from the npm "author" field. The field is either a string
-    /// such as "Jane Doe &lt;jane@example.com&gt; (https://example.com)" or an object with a
-    /// "name" property. For the string form, the substring before the first '&lt;' or '('
-    /// delimiter is taken. Returns null when no usable name can be determined.
+    /// Extracts the author name from the npm "author" field. The field is either a string such as
+    /// "Jane Doe &lt;jane@example.com&gt; (https://example.com)" or an object with a "name" property.
+    /// For the string form, text before the first '&lt;' or '(' delimiter is used. Returns null when
+    /// no usable name can be found.
     /// </summary>
     private static string? ExtractAuthorName(JsonElement? author)
     {
@@ -276,8 +274,8 @@ public sealed record JSExtensionManifest
     {
         error = null;
 
-        // The spec requires the entry point to be a relative path within the extension
-        // directory. Reject absolute/rooted paths so a manifest cannot point outside its package.
+        // The entry point has to stay relative to the extension directory. Reject rooted paths so a
+        // manifest cannot point outside its package.
         if (Path.IsPathRooted(entryPoint))
         {
             error = $"The entry point '{entryPoint}' must be a relative path within the extension directory.";
@@ -303,7 +301,7 @@ public sealed record JSExtensionManifest
             return null;
         }
 
-        // Guard against traversal via "..": the resolved path must stay inside the extension directory.
+        // Guard against ".." traversal. The resolved path must stay inside the extension directory.
         var prefix = baseDirectory.EndsWith(Path.DirectorySeparatorChar)
             ? baseDirectory
             : baseDirectory + Path.DirectorySeparatorChar;
@@ -327,9 +325,9 @@ public sealed record JSExtensionManifest
 
     /// <summary>
     /// Confirms that the resolved entry point stays inside the extension directory on the real
-    /// filesystem. The lexical check in <see cref="ResolveEntryPoint"/> only blocks ".." traversal; a
-    /// symbolic link or junction could still redirect a lexically-contained path outside the package.
-    /// Any reparse point encountered between the extension directory and the entry point is rejected.
+    /// filesystem. The text check in <see cref="ResolveEntryPoint"/> only blocks ".." traversal. A
+    /// symbolic link or junction could still redirect an in-package path outside the package, so any
+    /// reparse point between the extension directory and the entry point is rejected.
     /// </summary>
     private static bool IsEntryPointContainmentTrusted(string extensionDirectory, string resolvedEntryPoint, out string? error)
     {
@@ -341,7 +339,7 @@ public sealed record JSExtensionManifest
             var current = Path.GetFullPath(resolvedEntryPoint);
 
             // Walk from the entry point up toward the extension directory. The extension directory
-            // itself and everything above it are outside the scope of this check.
+            // itself and everything above it are outside this check.
             while (!string.Equals(Path.TrimEndingDirectorySeparator(current), baseDirectory, StringComparison.OrdinalIgnoreCase))
             {
                 if (IsReparsePoint(current))
@@ -353,7 +351,7 @@ public sealed record JSExtensionManifest
                 var parent = Path.GetDirectoryName(current);
                 if (string.IsNullOrEmpty(parent) || string.Equals(parent, current, StringComparison.OrdinalIgnoreCase))
                 {
-                    // Reached a filesystem root without meeting the extension directory. The lexical
+                    // Reached a filesystem root without meeting the extension directory. The text
                     // containment check already ran, so this only happens for pathological inputs.
                     break;
                 }
@@ -378,8 +376,8 @@ public sealed record JSExtensionManifest
         }
         catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
         {
-            // A missing segment cannot be a trusted-but-unverified link. Existence of the entry point
-            // was already confirmed by the caller, so treat a vanished segment as not a reparse point.
+            // A missing segment cannot be a trusted but unverified link. The caller already confirmed
+            // the entry point exists, so treat a vanished segment as not a reparse point.
             return false;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or System.Security.SecurityException)

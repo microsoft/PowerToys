@@ -97,9 +97,9 @@ public partial class JsonRpcConnectionTests
                 received.TrySetResult(element.GetProperty("text").GetString() ?? string.Empty);
             });
 
-            // Build the raw JSON body with literal multi-byte characters so the framed
-            // bytes genuinely exceed the character count. This exercises the decode path
-            // reading exactly Content-Length bytes rather than characters.
+            // Build the raw JSON body with literal multi-byte characters so the framed bytes are
+            // larger than the character count. This proves the reader uses Content-Length bytes, not
+            // characters.
             var rawBody = "{\"jsonrpc\":\"2.0\",\"method\":\"unicode\",\"params\":{\"text\":\"" + MultiByte + "\"}}";
             Assert.IsTrue(Encoding.UTF8.GetByteCount(rawBody) > rawBody.Length, "The raw body should contain multi-byte UTF-8 characters.");
 
@@ -134,7 +134,7 @@ public partial class JsonRpcConnectionTests
                 idByMethod[method] = document.RootElement.GetProperty("id").GetInt32();
             }
 
-            // Respond in the opposite order to prove correlation is by id, not arrival order.
+            // Respond in the opposite order to prove correlation uses id, not arrival order.
             await RespondWithResultAsync(harness.ExtensionWrites, idByMethod["second"], new JsonObject { ["message"] = "two" }, cts.Token);
             await RespondWithResultAsync(harness.ExtensionWrites, idByMethod["first"], new JsonObject { ["message"] = "one" }, cts.Token);
 
@@ -358,7 +358,7 @@ public partial class JsonRpcConnectionTests
 
         var requestTask = harness.Host.SendRequestAsync("wait", null, cts.Token);
 
-        // Make sure the request has actually been written before disposing.
+        // Make sure the request has been written before disposing.
         _ = await ReadFramedAsync(harness.ExtensionReads, cts.Token);
 
         harness.Host.Dispose();
@@ -376,8 +376,8 @@ public partial class JsonRpcConnectionTests
             var errorRaised = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
             harness.Host.Error += (_, e) => errorRaised.TrySetResult(e.Exception);
 
-            // A Content-Length far larger than the allowed maximum must be rejected up front
-            // rather than triggering a huge buffer allocation. No body is written on purpose.
+            // Reject a Content-Length far beyond the allowed maximum before allocating the body
+            // buffer. No body is written on purpose.
             var header = Encoding.ASCII.GetBytes("Content-Length: 2000000000\r\n\r\n");
             await harness.ExtensionWrites.WriteAsync(header, cts.Token);
             await harness.ExtensionWrites.FlushAsync(cts.Token);

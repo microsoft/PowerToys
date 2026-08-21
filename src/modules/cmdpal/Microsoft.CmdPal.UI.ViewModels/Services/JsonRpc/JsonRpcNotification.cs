@@ -8,8 +8,8 @@ using System.Text.Json.Serialization;
 namespace Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
 
 /// <summary>
-/// Represents a JSON-RPC 2.0 notification message. A notification carries a
-/// <see cref="Method"/> but no id and never receives a response.
+/// A JSON-RPC 2.0 notification message. It carries a <see cref="Method"/> but no id and never
+/// receives a response.
 /// </summary>
 public sealed class JsonRpcNotification
 {
