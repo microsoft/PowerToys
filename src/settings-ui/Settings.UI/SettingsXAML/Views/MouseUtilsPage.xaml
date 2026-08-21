@@ -65,6 +65,9 @@
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=OneWay}">
                                 <CheckBox x:Uid="MouseUtils_CursorWrap_DisableOnSingleMonitor" IsChecked="{x:Bind ViewModel.CursorWrapDisableOnSingleMonitor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=OneWay}">
+                                <CheckBox x:Uid="MouseUtils_CursorWrap_DisableInGameMode" IsChecked="{x:Bind ViewModel.CursorWrapDisableInGameMode, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
