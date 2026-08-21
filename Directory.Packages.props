@@ -3,8 +3,8 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <MSTestVersion>3.8.3</MSTestVersion>
-    <!-- .NET SDK 10.0.303 contains runtime 10.0.11. Keep this aligned with exactVersion in .pipelines/v2/templates/job-build-project.yml. -->
-    <DotNetRuntimePackageVersion>10.0.11</DotNetRuntimePackageVersion>
+    <!-- .NET 11 preview runtime. Keep this aligned with exactVersion in .pipelines/v2/templates/job-build-project.yml. -->
+    <DotNetRuntimePackageVersion>11.0.0-preview.7.26381.103</DotNetRuntimePackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="AdaptiveCards.ObjectModel.WinUI3" Version="2.0.2-beta" />
@@ -120,6 +120,7 @@
     <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.ClientModel" Version="1.8.1" />
     <PackageVersion Include="System.Drawing.Common" Version="$(DotNetRuntimePackageVersion)" />
+    <PackageVersion Include="System.Resources.Extensions" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.IO.Abstractions" Version="22.0.13" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="22.0.13" />
     <PackageVersion Include="System.Management" Version="$(DotNetRuntimePackageVersion)" />
