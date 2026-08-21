@@ -186,6 +186,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.KeyOrShortcut);
             UnifiedMappingControl.SetActionKeys(remapping.RemappedKeys.ToList());
             UnifiedMappingControl.SetAppSpecific(!remapping.IsAllApps, remapping.AppName);
+            UnifiedMappingControl.SetCondition(remapping.Condition);
             RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
             await ShowRemappingDialog();
         }
@@ -211,6 +212,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.SetTriggerKeys(disabledMapping.Shortcut.ToList());
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.Disable);
             UnifiedMappingControl.SetAppSpecific(!disabledMapping.IsAllApps, disabledMapping.AppName);
+            UnifiedMappingControl.SetCondition(disabledMapping.Condition);
             RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
             await ShowRemappingDialog();
         }
@@ -508,13 +510,16 @@ namespace KeyboardManagerEditorUI.Pages
                 triggerKeys,
                 actionKeys,
                 UnifiedMappingControl.GetIsAppSpecific(),
-                UnifiedMappingControl.GetAppName());
+                UnifiedMappingControl.GetAppName(),
+                true,
+                UnifiedMappingControl.GetCondition());
         }
 
         private bool SaveDisableMapping(List<string> triggerKeys)
         {
             bool isAppSpecific = UnifiedMappingControl.GetIsAppSpecific();
             string appName = UnifiedMappingControl.GetAppName();
+            SingleKeyRemapCondition condition = UnifiedMappingControl.GetCondition();
 
             string originalKeysString = string.Join(
                 ";",
@@ -537,7 +542,19 @@ namespace KeyboardManagerEditorUI.Pages
                 }
 
                 shortcutKeyMapping.OriginalKeys = originalKey.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                _mappingService.AddSingleKeyMapping(originalKey, VkDisabled);
+
+                // A single-key disable can also be an "alone" disable ("tapping alone does nothing" while
+                // the key still works in combination). Route it to the alone table and persist the
+                // condition so it round-trips instead of being reloaded as an unconditional disable.
+                if (condition == SingleKeyRemapCondition.Alone)
+                {
+                    shortcutKeyMapping.Condition = condition;
+                    _mappingService.AddSingleKeyAloneMapping(originalKey, VkDisabled);
+                }
+                else
+                {
+                    _mappingService.AddSingleKeyMapping(originalKey, VkDisabled);
+                }
             }
             else
             {
@@ -796,7 +813,9 @@ namespace KeyboardManagerEditorUI.Pages
                 }
                 else
                 {
-                    RemappingHelper.SaveMapping(_mappingService!, remapping.Shortcut, remapping.RemappedKeys, !remapping.IsAllApps, remapping.AppName, false);
+                    // Preserve the dual-key condition (e.g. "alone") when re-enabling; otherwise the
+                    // toggle would silently recreate the mapping as an unconditional (Always) remap.
+                    RemappingHelper.SaveMapping(_mappingService!, remapping.Shortcut, remapping.RemappedKeys, !remapping.IsAllApps, remapping.AppName, false, remapping.Condition);
                 }
 
                 shortcut.IsActive = true;
@@ -852,7 +871,16 @@ namespace KeyboardManagerEditorUI.Pages
                 int originalKey = _mappingService!.GetKeyCodeFromName(remapping.Shortcut[0]);
                 if (originalKey != 0)
                 {
-                    _mappingService.AddSingleKeyMapping(originalKey, VkDisabled);
+                    // Preserve an "alone" condition when re-enabling a disabled single-key mapping;
+                    // otherwise it would be recreated in the regular (unconditional) remap table.
+                    if (remapping.Condition == SingleKeyRemapCondition.Alone)
+                    {
+                        _mappingService.AddSingleKeyAloneMapping(originalKey, VkDisabled);
+                    }
+                    else
+                    {
+                        _mappingService.AddSingleKeyMapping(originalKey, VkDisabled);
+                    }
                 }
             }
             else
@@ -919,6 +947,7 @@ namespace KeyboardManagerEditorUI.Pages
                     AppName = mapping.TargetApp ?? string.Empty,
                     Id = shortcutSettings.Id,
                     IsActive = shortcutSettings.IsActive,
+                    Condition = mapping.Condition,
                 };
 
                 if (isDisabled)

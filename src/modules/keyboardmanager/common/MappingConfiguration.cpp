@@ -24,6 +24,12 @@ void MappingConfiguration::ClearSingleKeyRemaps()
     scanMap.clear();
 }
 
+// Function to clear the "Alone" single key remapping table.
+void MappingConfiguration::ClearSingleKeyAloneRemaps()
+{
+    aloneSingleKeyReMap.clear();
+}
+
 // Function to clear the Keys remapping table.
 void MappingConfiguration::ClearSingleKeyToTextRemaps()
 {
@@ -74,6 +80,19 @@ bool MappingConfiguration::AddSingleKeyRemap(const DWORD& originalKey, const Key
             scanMap[MapVirtualKey(originalKey, MAPVK_VK_TO_VSC)] = originalKey;
         }
     }
+    return true;
+}
+
+bool MappingConfiguration::AddSingleKeyAloneRemap(const DWORD& originalKey, const KeyShortcutTextUnion& aloneRemapKey)
+{
+    // Reject a duplicate source key within the alone table.
+    auto it = aloneSingleKeyReMap.find(originalKey);
+    if (it != aloneSingleKeyReMap.end())
+    {
+        return false;
+    }
+
+    aloneSingleKeyReMap[originalKey] = aloneRemapKey;
     return true;
 }
 
@@ -128,6 +147,7 @@ bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
     {
         auto remapKeysData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName);
         ClearSingleKeyRemaps();
+        ClearSingleKeyAloneRemaps();
 
         if (remapKeysData)
         {
@@ -139,16 +159,30 @@ bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
                     auto originalKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
                     auto newRemapKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
 
-                    // If remapped to a shortcut
-                    if (std::wstring(newRemapKey).find(L";") != std::string::npos)
-                    {
-                        AddSingleKeyRemap(std::stoul(originalKey.c_str()), Shortcut(newRemapKey.c_str()));
-                    }
+                    // Optional dual-key condition. Missing field defaults to "always" (legacy behavior),
+                    // so preexisting settings files load unchanged. "alone" routes to the alone table.
+                    auto condition = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RemapConditionSettingName, KeyboardManagerConstants::RemapConditionAlways);
+                    const bool isAloneCondition = (std::wstring(condition) == KeyboardManagerConstants::RemapConditionAlone);
 
-                    // If remapped to a key
+                    // Parse the target: a ';'-separated value is a shortcut; otherwise a single key.
+                    const bool remapToShortcut = (std::wstring(newRemapKey).find(L";") != std::string::npos);
+                    KeyShortcutTextUnion target;
+                    if (remapToShortcut)
+                    {
+                        target = Shortcut(newRemapKey.c_str());
+                    }
                     else
                     {
-                        AddSingleKeyRemap(std::stoul(originalKey.c_str()), std::stoul(newRemapKey.c_str()));
+                        target = static_cast<DWORD>(std::stoul(newRemapKey.c_str()));
+                    }
+
+                    if (isAloneCondition)
+                    {
+                        AddSingleKeyAloneRemap(std::stoul(originalKey.c_str()), target);
+                    }
+                    else
+                    {
+                        AddSingleKeyRemap(std::stoul(originalKey.c_str()), target);
                     }
                 }
                 catch (...)
@@ -482,6 +516,30 @@ bool MappingConfiguration::SaveSettingsToFile()
         {
             keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(std::get<Shortcut>(it.second).ToHstringVK()));
         }
+
+        inProcessRemapKeysArray.Append(keys);
+    }
+
+    // Serialize "Alone" (dual-key) single key remaps into the same inProcess array, tagged with an
+    // explicit condition field so they round-trip back into aloneSingleKeyReMap on load. Regular
+    // remaps above omit the field, which the loader treats as "always" (backward compatible).
+    for (const auto& it : aloneSingleKeyReMap)
+    {
+        json::JsonObject keys;
+        keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring(static_cast<unsigned int>(it.first))));
+
+        // For key to key remapping
+        if (it.second.index() == 0)
+        {
+            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring((unsigned int)std::get<DWORD>(it.second))));
+        }
+        // For key to shortcut remapping
+        else
+        {
+            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(std::get<Shortcut>(it.second).ToHstringVK()));
+        }
+
+        keys.SetNamedValue(KeyboardManagerConstants::RemapConditionSettingName, json::value(KeyboardManagerConstants::RemapConditionAlone));
 
         inProcessRemapKeysArray.Append(keys);
     }
