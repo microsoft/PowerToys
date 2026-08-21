@@ -77,6 +77,25 @@ public static class SettingsConfigHelper
         return new FileSnapshot(path);
     }
 
+    internal static IDisposable PreserveFirstRunSettings() => PreserveFirstRunSettings(PowerToysSettingsRoot);
+
+    internal static IDisposable PreserveFirstRunSettings(string settingsRoot)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(settingsRoot);
+
+        var globalSettings = PreserveFile(Path.Combine(settingsRoot, "settings.json"));
+        try
+        {
+            var oobeSettings = PreserveFile(Path.Combine(settingsRoot, "oobe_settings.json"));
+            return new CompositeSnapshot(globalSettings, oobeSettings);
+        }
+        catch
+        {
+            globalSettings.Dispose();
+            throw;
+        }
+    }
+
     /// <summary>
     /// Enable exactly the named modules in the global <c>settings.json</c> and disable every other
     /// known or already-listed module. Module names are the keys under <c>"enabled"</c>
@@ -228,6 +247,39 @@ public static class SettingsConfigHelper
             else
             {
                 File.Delete(path);
+            }
+        }
+    }
+
+    private sealed class CompositeSnapshot(params IDisposable[] snapshots) : IDisposable
+    {
+        private bool disposed;
+
+        public void Dispose()
+        {
+            if (disposed)
+            {
+                return;
+            }
+
+            disposed = true;
+            List<Exception>? failures = null;
+            foreach (var snapshot in snapshots.Reverse())
+            {
+                try
+                {
+                    snapshot.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    failures ??= [];
+                    failures.Add(ex);
+                }
+            }
+
+            if (failures is not null)
+            {
+                throw new AggregateException("One or more PowerToys settings files could not be restored.", failures);
             }
         }
     }

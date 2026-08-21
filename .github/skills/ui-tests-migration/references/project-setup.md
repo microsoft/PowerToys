@@ -193,6 +193,8 @@ $exe = "$PWD\x64\Debug\tests\<Module>.UITests.Next\net10.0-windows10.0.26100.0\<
 ```
 
 - On build failure, read `build.<Configuration>.<Platform>.errors.log` next to the project.
+- For CI runtime-pack restore or dependency-audit failures, see
+  [NuGet runtime-pack cache misses](nuget-runtime-pack-cache.md).
 - `winapp.exe` is a **run-time** prerequisite only (`winget install Microsoft.winappcli`, or set
   `WINAPP_CLI_PATH`). A migration that compiles clean is valid even where the CLI/desktop is absent;
   say so and list coverage.

@@ -12,6 +12,7 @@ public enum Key : byte
 {
     Ctrl = 0x11,
     Shift = 0x10,
+    LShift = 0xA0,
     Alt = 0x12,
     LWin = 0x5B,
     Tab = 0x09,
@@ -96,6 +97,9 @@ public static class KeyboardHelper
     private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
 #pragma warning restore SA1300
 
+    [DllImport("user32.dll")]
+    private static extern short GetAsyncKeyState(int vKey);
+
     private const uint KEYEVENTF_KEYUP = 0x2;
     private const uint KEYEVENTF_EXTENDEDKEY = 0x1;
     private const byte VK_LWIN = 0x5B;
@@ -119,7 +123,8 @@ public static class KeyboardHelper
                     winDown = true;
                     break;
                 case Key.Ctrl: chord.Append('^'); break;
-                case Key.Shift: chord.Append('+'); break;
+                case Key.Shift:
+                case Key.LShift: chord.Append('+'); break;
                 case Key.Alt: chord.Append('%'); break;
                 case Key.Esc: chord.Append("{ESC}"); break;
                 case Key.Enter: chord.Append("{ENTER}"); break;
@@ -170,6 +175,13 @@ public static class KeyboardHelper
             }
         }
     }
+
+    /// <summary>
+    /// Whether <paramref name="key"/> is currently held, per the system's async key state. A key that a
+    /// low-level keyboard hook swallowed never reaches this state, so this also tells a test whether an
+    /// injected key was consumed by another process's hook.
+    /// </summary>
+    public static bool IsKeyDown(Key key) => (GetAsyncKeyState((byte)key) & 0x8000) != 0;
 
     /// <summary>Press (and hold) a key via <c>keybd_event</c>. Pair with <see cref="ReleaseKey"/>.</summary>
     public static void PressKey(Key key) =>

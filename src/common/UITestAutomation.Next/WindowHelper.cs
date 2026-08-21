@@ -54,9 +54,13 @@ public static class WindowHelper
     private const uint SWP_NOACTIVATE = 0x0010;
     private const int GWL_EXSTYLE = -20;
     private const long WS_EX_TOPMOST = 0x00000008L;
+    private const long WS_EX_LAYERED = 0x00080000L;
+    private const uint LWA_ALPHA = 0x00000002;
     private const int SM_CXSCREEN = 0;
     private const int SM_CYSCREEN = 1;
     private const int SW_MAXIMIZE = 3;
+    private const int SW_RESTORE = 9;
+    private const int SW_MINIMIZE = 6;
     private const int DwmExtendedFrameBoundsAttribute = 9;
 
     [DllImport("user32.dll", SetLastError = true)]
@@ -69,6 +73,13 @@ public static class WindowHelper
 
     [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW", SetLastError = true)]
     private static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    private static extern IntPtr GetPropW(IntPtr hWnd, string lpString);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetLayeredWindowAttributes(IntPtr hWnd, out uint crKey, out byte bAlpha, out uint dwFlags);
 
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -139,6 +150,17 @@ public static class WindowHelper
     /// </summary>
     public static void MaximizeWindow(IntPtr hWnd) => ShowWindow(hWnd, SW_MAXIMIZE);
 
+    /// <summary>
+    /// Restore a window from maximized/minimized. Needed before positioning a window that a test will
+    /// then drag: <c>SetWindowPos</c> can move and size a maximized window without clearing its
+    /// maximized state, and dragging such a window makes Windows restore it mid-gesture instead of
+    /// performing a plain move.
+    /// </summary>
+    public static void RestoreWindow(IntPtr hWnd) => ShowWindow(hWnd, SW_RESTORE);
+
+    /// <summary>Minimize a window, e.g. to get it out of the way of an on-screen pixel measurement.</summary>
+    public static void MinimizeWindow(IntPtr hWnd) => ShowWindow(hWnd, SW_MINIMIZE);
+
     /// <summary>(Left, Top, Right, Bottom) of the window in screen pixels.</summary>
     public static (int Left, int Top, int Right, int Bottom) GetWindowBounds(IntPtr hWnd)
     {
@@ -148,6 +170,13 @@ public static class WindowHelper
         }
 
         return (0, 0, 0, 0);
+    }
+
+    /// <summary>Read a named Win32 property stamped on a window, or zero when it is absent.</summary>
+    public static long GetWindowPropertyValue(IntPtr hWnd, string propertyName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
+        return GetPropW(hWnd, propertyName).ToInt64();
     }
 
     /// <summary>
@@ -238,6 +267,23 @@ public static class WindowHelper
     {
         var c = GetPixelColor(x, y);
         return $"#{c.R:X2}{c.G:X2}{c.B:X2}";
+    }
+
+    /// <summary>
+    /// Alpha of a layered window, or 255 when it is not alpha-blended. Lets a test observe a module
+    /// that fades a window (FancyZones' "make the dragged window transparent") without sampling
+    /// pixels.
+    /// </summary>
+    public static byte GetWindowAlpha(IntPtr hWnd)
+    {
+        if ((GetWindowLongPtr(hWnd, GWL_EXSTYLE).ToInt64() & WS_EX_LAYERED) == 0)
+        {
+            return 255;
+        }
+
+        return GetLayeredWindowAttributes(hWnd, out _, out var alpha, out var flags) && (flags & LWA_ALPHA) != 0
+            ? alpha
+            : (byte)255;
     }
 
     private static (int Width, int Height) Dimensions(WindowSize size) => size switch

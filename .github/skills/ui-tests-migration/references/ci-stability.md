@@ -211,6 +211,14 @@ Some state lives only in a long-running process. Peek's pinned geometry must pre
 while an explicitly unpinned reopen is safer with a fresh process. Encode this as a lifecycle matrix
 per scenario; use `TryKillProcessTreeByNameAndWait` only where state should be discarded.
 
+**Restarting PowerToys is not a way to apply settings.** Modules watch their own `settings.json` and
+hot-reload it, so seeding the file is enough. A per-test `RestartScope()` on top of the base class's
+launch starts the runner twice per test — pure runtime — and worse, it converts "the user changed a
+setting while the module ran" into "the module started with that setting", hiding live
+reconfiguration defects. Restart only when the restart is the behaviour under test (state surviving a
+restart), when the enabled-module set changes, or to recover from a terminal failure. See
+[patterns-and-pitfalls.md](patterns-and-pitfalls.md) Recipe 17.
+
 ---
 
 ## Principle 6 — Everything on-screen, DPI-correct, from a clean profile
@@ -297,6 +305,7 @@ likely extra CI iteration.
 - [ ] Exact foreground requirements use `WaitForForeground`; failures record foreground PID/title/elevation
 - [ ] Pipeline helper processes have no visible foreground-capable windows; detached consoles start hidden
 - [ ] Process lifecycle is explicit per scenario: close/preserve/input-idle/process-tree restart
+- [ ] Module settings are seeded and hot-reloaded, not applied by relaunching PowerToys (P5 / Recipe 17)
 - [ ] Renderer readiness is separate from window/title readiness; composed visuals use visible DWM capture
 - [ ] Explorer-driven tests verify exact selected paths and focused path via `ExplorerShell` (Recipe 13)
 - [ ] Explorer view mode/icon size is set through `ExplorerShell`, then independently verified by item geometry
