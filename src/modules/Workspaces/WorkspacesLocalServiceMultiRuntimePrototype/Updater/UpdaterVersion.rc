@@ -1,8 +1,27 @@
 #include <windows.h>
 
+#ifndef PT_ENGINE_VERSION_MAJOR
+#define PT_ENGINE_VERSION_MAJOR 5
+#endif
+#ifndef PT_ENGINE_VERSION_MINOR
+#define PT_ENGINE_VERSION_MINOR 0
+#endif
+#ifndef PT_ENGINE_VERSION_BUILD
+#define PT_ENGINE_VERSION_BUILD 0
+#endif
+#ifndef PT_ENGINE_VERSION_REVISION
+#define PT_ENGINE_VERSION_REVISION 0
+#endif
+
+#define PT_STRINGIZE_DETAIL(value) #value
+#define PT_STRINGIZE(value) PT_STRINGIZE_DETAIL(value)
+#define PT_ENGINE_VERSION_STRING PT_STRINGIZE(PT_ENGINE_VERSION_MAJOR) "." \
+    PT_STRINGIZE(PT_ENGINE_VERSION_MINOR) "." PT_STRINGIZE(PT_ENGINE_VERSION_BUILD) "." \
+    PT_STRINGIZE(PT_ENGINE_VERSION_REVISION) "\0"
+
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,0,0,0
- PRODUCTVERSION 5,0,0,0
+ FILEVERSION PT_ENGINE_VERSION_MAJOR,PT_ENGINE_VERSION_MINOR,PT_ENGINE_VERSION_BUILD,PT_ENGINE_VERSION_REVISION
+ PRODUCTVERSION PT_ENGINE_VERSION_MAJOR,PT_ENGINE_VERSION_MINOR,PT_ENGINE_VERSION_BUILD,PT_ENGINE_VERSION_REVISION
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -18,12 +37,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "Microsoft Corporation\0"
-            VALUE "FileDescription", "PowerToys protected runtime updater prototype\0"
-            VALUE "FileVersion", "5.0.0.0\0"
+            VALUE "FileDescription", "PowerToys protected runtime updater engine prototype\0"
+            VALUE "FileVersion", PT_ENGINE_VERSION_STRING
             VALUE "InternalName", "PtPuvrUpdater.exe\0"
             VALUE "OriginalFilename", "PtPuvrUpdater.exe\0"
-            VALUE "ProductName", "PowerToys Workspaces protected runtime updater prototype\0"
-            VALUE "ProductVersion", "5.0.0.0\0"
+            VALUE "ProductName", "PowerToys Workspaces protected runtime updater engine prototype\0"
+            VALUE "ProductVersion", PT_ENGINE_VERSION_STRING
         END
     END
     BLOCK "VarFileInfo"

@@ -218,7 +218,11 @@ namespace
         const auto stagedUpdater = stagedDirectory / ptlsmr::UpdaterExe;
         try
         {
-            ptlsmr::copy_file_to_protected_stage(suppliedUpdater, stagedUpdater);
+            (void)ptlsmr::copy_file_to_protected_stage(
+                suppliedUpdater,
+                suppliedUpdater.parent_path(),
+                stagedUpdater,
+                ptlsmr::MaxEngineArtifactBytes);
             const auto candidateVersion = ptlsmr::validate_updater_candidate(
                 stagedUpdater,
                 expectedSignerPin);

@@ -22,6 +22,9 @@
 #ifndef PT_RUNTIME_FAIL_READINESS
 #define PT_RUNTIME_FAIL_READINESS 0
 #endif
+#ifndef PT_RUNTIME_PAYLOAD_VARIANT
+#define PT_RUNTIME_PAYLOAD_VARIANT 0
+#endif
 
 namespace
 {
@@ -159,6 +162,7 @@ namespace
         evidence << L"serviceSidPresent=true\r\n";
         evidence << L"runtimeTrack=" << g_runtimeTrack << L"\r\n";
         evidence << L"runtimeVersion=" << ptlsmr::format_version(g_runtimeVersion) << L"\r\n";
+        evidence << L"payloadVariant=" << PT_RUNTIME_PAYLOAD_VARIANT << L"\r\n";
         evidence << L"packageFullNameResult=" << packageFullNameResult << L"\r\n";
         evidence << L"packageIdentityPresent=false\r\n";
         evidence << L"executablePath=" << executable.wstring() << L"\r\n";

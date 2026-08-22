@@ -1,0 +1,11 @@
+schemaVersion=1
+releaseId=release-000
+securityEpoch=1
+minimumHostVersion=5.0.0.0
+runtimeTrack=1
+runtimeVersion=1.0.0.0
+runtimeFile=PtPuvrRuntime.exe
+runtimeSha256=0000000000000000000000000000000000000000000000000000000000000
+engineVersion=none
+engineFile=none
+engineSha256=none

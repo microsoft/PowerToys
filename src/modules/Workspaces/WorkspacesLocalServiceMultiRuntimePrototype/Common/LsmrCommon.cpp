@@ -39,6 +39,53 @@ namespace
         return text;
     }
 
+    [[nodiscard]] std::filesystem::path final_path_from_handle(
+        HANDLE handle,
+        const char* operation)
+    {
+        const DWORD required = GetFinalPathNameByHandleW(
+            handle,
+            nullptr,
+            0,
+            FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
+        if (required == 0)
+        {
+            throw ptlsmr::win32_error(operation, GetLastError());
+        }
+        std::wstring path(required, L'\0');
+        const DWORD written = GetFinalPathNameByHandleW(
+            handle,
+            path.data(),
+            static_cast<DWORD>(path.size()),
+            FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
+        if (written == 0 || written >= path.size())
+        {
+            throw ptlsmr::win32_error(operation, written == 0 ? GetLastError() : ERROR_BUFFER_OVERFLOW);
+        }
+        path.resize(written);
+        if (path.starts_with(L"\\\\?\\UNC\\"))
+        {
+            return std::filesystem::path(L"\\\\" + path.substr(8));
+        }
+        if (path.starts_with(L"\\\\?\\"))
+        {
+            path.erase(0, 4);
+        }
+        return std::filesystem::path(path).lexically_normal();
+    }
+
+    [[nodiscard]] bool equal_path_ordinal(
+        const std::filesystem::path& left,
+        const std::filesystem::path& right)
+    {
+        return CompareStringOrdinal(
+                   left.c_str(),
+                   -1,
+                   right.c_str(),
+                   -1,
+                   TRUE) == CSTR_EQUAL;
+    }
+
     [[nodiscard]] std::wstring hex_digest(std::wstring_view input)
     {
         BCRYPT_ALG_HANDLE algorithm = nullptr;
@@ -124,9 +171,19 @@ namespace
         return value.str();
     }
 
-    void protect_directory(const std::filesystem::path& directory, const std::wstring& sddl)
+    [[nodiscard]] std::wstring hex_encode(const BYTE* bytes, size_t count)
     {
-        std::filesystem::create_directories(directory);
+        std::wstringstream output;
+        for (size_t index = 0; index < count; ++index)
+        {
+            output << std::hex << std::uppercase << std::setw(2) << std::setfill(L'0') <<
+                static_cast<unsigned int>(bytes[index]);
+        }
+        return output.str();
+    }
+
+    void apply_protection(const std::filesystem::path& path, const std::wstring& sddl)
+    {
         PSECURITY_DESCRIPTOR descriptor = nullptr;
         if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(
                 sddl.c_str(),
@@ -152,7 +209,7 @@ namespace
         {
             throw ptlsmr::win32_error("GetSecurityDescriptorDacl(directory)", GetLastError());
         }
-        std::wstring mutablePath = directory.wstring();
+        std::wstring mutablePath = path.wstring();
         SECURITY_INFORMATION information =
             DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION;
         if (sddl.starts_with(L"O:"))
@@ -173,6 +230,26 @@ namespace
         }
     }
 
+    void protect_directory(const std::filesystem::path& directory, const std::wstring& sddl)
+    {
+        std::filesystem::create_directories(directory);
+        apply_protection(directory, sddl);
+    }
+
+    void protect_file(const std::filesystem::path& file, const std::wstring& sddl)
+    {
+        const DWORD attributes = GetFileAttributesW(file.c_str());
+        if (attributes == INVALID_FILE_ATTRIBUTES)
+        {
+            throw ptlsmr::win32_error("GetFileAttributesW(protected file)", GetLastError());
+        }
+        if ((attributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT)) != 0)
+        {
+            throw ptlsmr::win32_error("protected file type policy", ERROR_INVALID_DATA);
+        }
+        apply_protection(file, sddl);
+    }
+
     void protect_with_owner_fallback(
         const std::filesystem::path& directory,
         const std::wstring& withOwner,
@@ -189,6 +266,25 @@ namespace
                 throw;
             }
             protect_directory(directory, daclOnly);
+        }
+    }
+
+    void protect_file_with_owner_fallback(
+        const std::filesystem::path& file,
+        const std::wstring& withOwner,
+        const std::wstring& daclOnly)
+    {
+        try
+        {
+            protect_file(file, withOwner);
+        }
+        catch (const ptlsmr::win32_error& error)
+        {
+            if (error.code() != ERROR_INVALID_OWNER)
+            {
+                throw;
+            }
+            protect_file(file, daclOnly);
         }
     }
 
@@ -723,9 +819,29 @@ namespace ptlsmr
         return std::filesystem::path(path) / InstallRelativeRoot;
     }
 
+    std::filesystem::path host_executable_path()
+    {
+        return installation_root() / HostExe;
+    }
+
+    std::filesystem::path engine_root()
+    {
+        return installation_root() / L"Engines";
+    }
+
+    std::filesystem::path engine_install_directory(const file_version& version)
+    {
+        return engine_root() / format_version(version);
+    }
+
+    std::filesystem::path engine_executable_path(const file_version& version)
+    {
+        return engine_install_directory(version) / EngineExe;
+    }
+
     std::filesystem::path updater_install_directory(const file_version& version)
     {
-        return installation_root() / L"Updater" / format_version(version);
+        return engine_install_directory(version);
     }
 
     std::filesystem::path runtime_root()
@@ -753,9 +869,59 @@ namespace ptlsmr
         return runtime_install_directory(track, version) / RuntimeExe;
     }
 
-    std::filesystem::path trusted_signer_pin_path()
+    std::filesystem::path code_signer_pin_path()
     {
-        return program_data_root() / TrustedSignerPinFile;
+        return program_data_root() / CodeSignerPinFile;
+    }
+
+    std::filesystem::path metadata_signer_pin_path()
+    {
+        return program_data_root() / MetadataSignerPinFile;
+    }
+
+    std::filesystem::path policy_directory()
+    {
+        return program_data_root() / L"Policy";
+    }
+
+    std::filesystem::path code_policy_path()
+    {
+        return policy_directory() / CodePolicyExe;
+    }
+
+    std::filesystem::path metadata_policy_path()
+    {
+        return policy_directory() / MetadataPolicyExe;
+    }
+
+    std::filesystem::path engine_state_path()
+    {
+        return program_data_root() / ActiveEngineFile;
+    }
+
+    std::filesystem::path engine_activation_journal_path()
+    {
+        return program_data_root() / EngineActivationJournalFile;
+    }
+
+    std::filesystem::path accepted_release_state_path()
+    {
+        return program_data_root() / AcceptedReleaseStateFile;
+    }
+
+    std::filesystem::path acquisition_journal_path()
+    {
+        return program_data_root() / AcquisitionJournalFile;
+    }
+
+    std::filesystem::path lease_state_path()
+    {
+        return program_data_root() / LeaseStateFile;
+    }
+
+    std::filesystem::path requests_root()
+    {
+        return program_data_root() / L"Requests";
     }
 
     bool path_is_within(
@@ -852,25 +1018,295 @@ namespace ptlsmr
         return normalized;
     }
 
-    std::wstring read_trusted_signer_pin()
+    std::wstring read_code_signer_pin()
     {
-        const auto path = trusted_signer_pin_path();
+        const auto path = code_signer_pin_path();
         if (!std::filesystem::is_regular_file(path))
         {
-            throw win32_error("trusted signer pin policy missing", ERROR_FILE_NOT_FOUND);
+            throw win32_error("code signer pin policy missing", ERROR_FILE_NOT_FOUND);
         }
         return canonical_signer_sha256(read_utf8_file(path, 128));
     }
 
+    std::wstring read_metadata_signer_pin()
+    {
+        const auto path = metadata_signer_pin_path();
+        if (!std::filesystem::is_regular_file(path))
+        {
+            throw win32_error("metadata signer pin policy missing", ERROR_FILE_NOT_FOUND);
+        }
+        return canonical_signer_sha256(read_utf8_file(path, 128));
+    }
+
+    std::wstring read_trusted_signer_pin()
+    {
+        return read_code_signer_pin();
+    }
+
     void write_trusted_signer_pin(std::wstring_view value)
     {
-        const auto pin = canonical_signer_sha256(value);
-        const auto path = trusted_signer_pin_path();
-        if (std::filesystem::exists(path) && read_trusted_signer_pin() != pin)
+        write_utf8_file_atomic(code_signer_pin_path(), canonical_signer_sha256(value));
+    }
+
+    std::wstring sha256_text(std::wstring_view value)
+    {
+        return hex_digest(value);
+    }
+
+    std::wstring random_hex_identifier(size_t bytes)
+    {
+        if (bytes == 0 || bytes > 64)
         {
-            throw win32_error("trusted signer pin rotation policy", ERROR_ACCESS_DENIED);
+            throw win32_error("random identifier size policy", ERROR_INVALID_PARAMETER);
         }
-        write_utf8_file_atomic(path, pin);
+        std::vector<UCHAR> entropy(bytes);
+        const NTSTATUS result = BCryptGenRandom(
+            nullptr,
+            entropy.data(),
+            static_cast<ULONG>(entropy.size()),
+            BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+        if (result < 0)
+        {
+            throw std::runtime_error("BCryptGenRandom(identifier) failed");
+        }
+        std::wstringstream value;
+        value << std::hex << std::setfill(L'0');
+        for (const auto byte : entropy)
+        {
+            value << std::setw(2) << static_cast<unsigned int>(byte);
+        }
+        return value.str();
+    }
+
+    std::wstring sha256_file(const std::filesystem::path& path)
+    {
+        if (!std::filesystem::is_regular_file(path))
+        {
+            throw win32_error("SHA-256 source file policy", ERROR_FILE_NOT_FOUND);
+        }
+        BCRYPT_ALG_HANDLE algorithm = nullptr;
+        const NTSTATUS openStatus = BCryptOpenAlgorithmProvider(
+            &algorithm,
+            BCRYPT_SHA256_ALGORITHM,
+            nullptr,
+            0);
+        if (openStatus < 0)
+        {
+            throw std::runtime_error("BCryptOpenAlgorithmProvider(SHA256 file) failed");
+        }
+        struct algorithm_guard
+        {
+            BCRYPT_ALG_HANDLE value;
+            ~algorithm_guard()
+            {
+                BCryptCloseAlgorithmProvider(value, 0);
+            }
+        } algorithmGuard{ algorithm };
+
+        DWORD objectBytes = 0;
+        DWORD resultBytes = 0;
+        const NTSTATUS propertyStatus = BCryptGetProperty(
+            algorithm,
+            BCRYPT_OBJECT_LENGTH,
+            reinterpret_cast<PUCHAR>(&objectBytes),
+            sizeof(objectBytes),
+            &resultBytes,
+            0);
+        if (propertyStatus < 0)
+        {
+            throw std::runtime_error("BCryptGetProperty(BCRYPT_OBJECT_LENGTH file) failed");
+        }
+        std::vector<UCHAR> object(objectBytes);
+        BCRYPT_HASH_HANDLE hash = nullptr;
+        const NTSTATUS createStatus = BCryptCreateHash(
+            algorithm,
+            &hash,
+            object.data(),
+            static_cast<ULONG>(object.size()),
+            nullptr,
+            0,
+            0);
+        if (createStatus < 0)
+        {
+            throw std::runtime_error("BCryptCreateHash(file) failed");
+        }
+        struct hash_guard
+        {
+            BCRYPT_HASH_HANDLE value;
+            ~hash_guard()
+            {
+                BCryptDestroyHash(value);
+            }
+        } hashGuard{ hash };
+
+        std::ifstream input(path, std::ios::binary);
+        if (!input)
+        {
+            throw win32_error("open SHA-256 source file", ERROR_OPEN_FAILED);
+        }
+        std::array<char, 64 * 1024> buffer{};
+        while (input)
+        {
+            input.read(buffer.data(), static_cast<std::streamsize>(buffer.size()));
+            const auto bytes = input.gcount();
+            if (bytes > 0)
+            {
+                const NTSTATUS hashStatus = BCryptHashData(
+                    hash,
+                    reinterpret_cast<PUCHAR>(buffer.data()),
+                    static_cast<ULONG>(bytes),
+                    0);
+                if (hashStatus < 0)
+                {
+                    throw std::runtime_error("BCryptHashData(file) failed");
+                }
+            }
+        }
+        if (!input.eof())
+        {
+            throw win32_error("read SHA-256 source file", ERROR_READ_FAULT);
+        }
+        std::array<BYTE, 32> digest{};
+        const NTSTATUS finishStatus = BCryptFinishHash(
+            hash,
+            digest.data(),
+            static_cast<ULONG>(digest.size()),
+            0);
+        if (finishStatus < 0)
+        {
+            throw std::runtime_error("BCryptFinishHash(file) failed");
+        }
+        return hex_encode(digest.data(), digest.size());
+    }
+
+    std::wstring read_rcdata_text(
+        const std::filesystem::path& path,
+        std::wstring_view resourceName,
+        size_t maximumBytes)
+    {
+        if (resourceName.empty() || resourceName.size() > 64)
+        {
+            throw win32_error("RCDATA resource name policy", ERROR_INVALID_PARAMETER);
+        }
+        HMODULE module = LoadLibraryExW(
+            path.c_str(),
+            nullptr,
+            LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE | LOAD_LIBRARY_AS_IMAGE_RESOURCE);
+        if (!module)
+        {
+            throw win32_error("LoadLibraryExW(RCDATA data file)", GetLastError());
+        }
+        struct module_guard
+        {
+            HMODULE value;
+            ~module_guard()
+            {
+                FreeLibrary(value);
+            }
+        } moduleGuard{ module };
+        const HRSRC resource = FindResourceW(
+            module,
+            std::wstring(resourceName).c_str(),
+            RT_RCDATA);
+        if (!resource)
+        {
+            throw win32_error("FindResourceW(RCDATA)", GetLastError());
+        }
+        const DWORD size = SizeofResource(module, resource);
+        if (size == 0 || size > maximumBytes)
+        {
+            throw win32_error("RCDATA size policy", ERROR_FILE_TOO_LARGE);
+        }
+        const HGLOBAL data = LoadResource(module, resource);
+        const void* bytes = LockResource(data);
+        if (!bytes)
+        {
+            throw win32_error("LockResource(RCDATA)", GetLastError());
+        }
+        const int characters = MultiByteToWideChar(
+            CP_UTF8,
+            MB_ERR_INVALID_CHARS,
+            static_cast<const char*>(bytes),
+            static_cast<int>(size),
+            nullptr,
+            0);
+        if (characters <= 0)
+        {
+            throw win32_error("MultiByteToWideChar(RCDATA size)", GetLastError());
+        }
+        std::wstring output(static_cast<size_t>(characters), L'\0');
+        if (MultiByteToWideChar(
+                CP_UTF8,
+                MB_ERR_INVALID_CHARS,
+                static_cast<const char*>(bytes),
+                static_cast<int>(size),
+                output.data(),
+                characters) != characters)
+        {
+            throw win32_error("MultiByteToWideChar(RCDATA)", GetLastError());
+        }
+        return output;
+    }
+
+    std::filesystem::path token_local_app_data(HANDLE token)
+    {
+        if (!token)
+        {
+            throw win32_error("token-bound LocalAppData token policy", ERROR_INVALID_HANDLE);
+        }
+        HANDLE duplicateRaw = nullptr;
+        check_bool(
+            DuplicateTokenEx(
+                token,
+                TOKEN_QUERY | TOKEN_IMPERSONATE,
+                nullptr,
+                SecurityImpersonation,
+                TokenPrimary,
+                &duplicateRaw),
+            "DuplicateTokenEx(LocalAppData)");
+        unique_handle duplicate(duplicateRaw);
+        PWSTR path = nullptr;
+        const HRESULT result = SHGetKnownFolderPath(
+            FOLDERID_LocalAppData,
+            KF_FLAG_DONT_VERIFY,
+            duplicate.get(),
+            &path);
+        if (FAILED(result))
+        {
+            throw win32_error(
+                "SHGetKnownFolderPath(FOLDERID_LocalAppData caller token)",
+                HRESULT_CODE(result));
+        }
+        local_memory memory(path);
+        return std::filesystem::path(path);
+    }
+
+    std::filesystem::path raw_process_image_path(HANDLE process)
+    {
+        if (!process || process == INVALID_HANDLE_VALUE)
+        {
+            throw win32_error("client process handle policy", ERROR_INVALID_HANDLE);
+        }
+        std::wstring path(32768, L'\0');
+        DWORD characters = static_cast<DWORD>(path.size());
+        check_bool(
+            QueryFullProcessImageNameW(process, 0, path.data(), &characters),
+            "QueryFullProcessImageNameW(client)");
+        path.resize(characters);
+        return std::filesystem::path(std::move(path));
+    }
+
+    std::filesystem::path raw_process_image_path(DWORD processId)
+    {
+        unique_handle process(OpenProcess(
+            PROCESS_QUERY_LIMITED_INFORMATION,
+            FALSE,
+            processId));
+        if (!process)
+        {
+            throw win32_error("OpenProcess(client image)", GetLastError());
+        }
+        return raw_process_image_path(process.get());
     }
 
     DWORD require_no_package_identity()
@@ -892,6 +1328,22 @@ namespace ptlsmr
             directory,
             L"O:SYD:P(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)",
             L"D:P(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)");
+    }
+
+    void protect_system_file(const std::filesystem::path& file)
+    {
+        protect_file_with_owner_fallback(
+            file,
+            L"O:SYD:P(A;;FA;;;SY)(A;;FA;;;BA)",
+            L"D:P(A;;FA;;;SY)(A;;FA;;;BA)");
+    }
+
+    void protect_user_client_file(const std::filesystem::path& file)
+    {
+        protect_file_with_owner_fallback(
+            file,
+            L"O:SYD:P(A;;FA;;;SY)(A;;FA;;;BA)(A;;GRGX;;;BU)",
+            L"D:P(A;;FA;;;SY)(A;;FA;;;BA)(A;;GRGX;;;BU)");
     }
 
     void protect_runtime_directory(
@@ -926,23 +1378,8 @@ namespace ptlsmr
         std::wstring_view prefix)
     {
         protect_system_directory(parent);
-        std::array<UCHAR, 16> entropy{};
-        const NTSTATUS result = BCryptGenRandom(
-            nullptr,
-            entropy.data(),
-            static_cast<ULONG>(entropy.size()),
-            BCRYPT_USE_SYSTEM_PREFERRED_RNG);
-        if (result < 0)
-        {
-            throw std::runtime_error("BCryptGenRandom(staging) failed");
-        }
-        std::wstringstream suffix;
-        for (const auto byte : entropy)
-        {
-            suffix << std::hex << std::setw(2) << std::setfill(L'0') <<
-                static_cast<unsigned int>(byte);
-        }
-        const auto directory = parent / (std::wstring(prefix) + L"-" + suffix.str());
+        const auto directory =
+            parent / (std::wstring(prefix) + L"-" + random_hex_identifier(16));
         if (!CreateDirectoryW(directory.c_str(), nullptr))
         {
             throw win32_error("CreateDirectoryW(protected staging)", GetLastError());
@@ -951,17 +1388,185 @@ namespace ptlsmr
         return directory;
     }
 
-    void copy_file_to_protected_stage(
+    uint64_t copy_file_to_protected_stage(
         const std::filesystem::path& source,
-        const std::filesystem::path& stagedFile)
+        const std::filesystem::path& expectedSourceRoot,
+        const std::filesystem::path& stagedFile,
+        uint64_t maximumBytes,
+        std::optional<uint64_t> expectedBytes)
     {
-        if (!std::filesystem::is_regular_file(source))
+        if (maximumBytes == 0 ||
+            (expectedBytes && (*expectedBytes == 0 || *expectedBytes > maximumBytes)) ||
+            source.wstring().starts_with(L"\\\\") ||
+            expectedSourceRoot.wstring().starts_with(L"\\\\"))
         {
-            throw win32_error("candidate source policy", ERROR_FILE_NOT_FOUND);
+            throw win32_error("candidate source size or UNC policy", ERROR_INVALID_DATA);
         }
-        if (!CopyFileW(source.c_str(), stagedFile.c_str(), TRUE))
+
+        unique_handle root(CreateFileW(
+            expectedSourceRoot.c_str(),
+            FILE_READ_ATTRIBUTES,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+            nullptr,
+            OPEN_EXISTING,
+            FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
+            nullptr));
+        if (!root)
         {
-            throw win32_error("CopyFileW(protected staging)", GetLastError());
+            throw win32_error("CreateFileW(candidate source root)", GetLastError());
+        }
+        FILE_ATTRIBUTE_TAG_INFO rootAttributes{};
+        check_bool(
+            GetFileInformationByHandleEx(
+                root.get(),
+                FileAttributeTagInfo,
+                &rootAttributes,
+                sizeof(rootAttributes)),
+            "GetFileInformationByHandleEx(candidate source root)");
+        if ((rootAttributes.FileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0 ||
+            (rootAttributes.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
+        {
+            throw win32_error("candidate source root reparse policy", ERROR_REPARSE_TAG_INVALID);
+        }
+        const auto finalRoot = final_path_from_handle(
+            root.get(),
+            "GetFinalPathNameByHandleW(candidate source root)");
+        if (finalRoot.wstring().starts_with(L"\\\\") ||
+            GetDriveTypeW(finalRoot.root_path().c_str()) == DRIVE_REMOTE)
+        {
+            throw win32_error("candidate source root remote policy", ERROR_BAD_NETPATH);
+        }
+
+        unique_handle input(CreateFileW(
+            source.c_str(),
+            GENERIC_READ | FILE_READ_ATTRIBUTES,
+            FILE_SHARE_READ,
+            nullptr,
+            OPEN_EXISTING,
+            FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_SEQUENTIAL_SCAN,
+            nullptr));
+        if (!input)
+        {
+            throw win32_error("CreateFileW(candidate source)", GetLastError());
+        }
+        FILE_ATTRIBUTE_TAG_INFO attributes{};
+        check_bool(
+            GetFileInformationByHandleEx(
+                input.get(),
+                FileAttributeTagInfo,
+                &attributes,
+                sizeof(attributes)),
+            "GetFileInformationByHandleEx(candidate source attributes)");
+        if ((attributes.FileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0 ||
+            (attributes.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
+        {
+            throw win32_error("candidate source file type policy", ERROR_REPARSE_TAG_INVALID);
+        }
+        BY_HANDLE_FILE_INFORMATION identity{};
+        check_bool(
+            GetFileInformationByHandle(input.get(), &identity),
+            "GetFileInformationByHandle(candidate source)");
+        if (identity.nNumberOfLinks != 1)
+        {
+            throw win32_error("candidate source hard-link policy", ERROR_TOO_MANY_LINKS);
+        }
+        const auto finalSource = final_path_from_handle(
+            input.get(),
+            "GetFinalPathNameByHandleW(candidate source)");
+        if (!path_is_within(finalSource, finalRoot) ||
+            !equal_path_ordinal(finalSource.filename(), source.filename()) ||
+            finalSource.wstring().starts_with(L"\\\\") ||
+            GetDriveTypeW(finalSource.root_path().c_str()) == DRIVE_REMOTE)
+        {
+            throw win32_error("candidate source final path policy", ERROR_ACCESS_DENIED);
+        }
+
+        LARGE_INTEGER initialSize{};
+        check_bool(GetFileSizeEx(input.get(), &initialSize), "GetFileSizeEx(candidate source)");
+        if (initialSize.QuadPart <= 0)
+        {
+            throw win32_error("candidate source nonempty policy", ERROR_HANDLE_EOF);
+        }
+        const auto sourceBytes = static_cast<uint64_t>(initialSize.QuadPart);
+        if (sourceBytes > maximumBytes)
+        {
+            throw win32_error("candidate source maximum size policy", ERROR_FILE_TOO_LARGE);
+        }
+        if (expectedBytes && sourceBytes != *expectedBytes)
+        {
+            throw win32_error("candidate source exact size policy", ERROR_BAD_LENGTH);
+        }
+
+        bool destinationCreated = false;
+        try
+        {
+            unique_handle output(CreateFileW(
+                stagedFile.c_str(),
+                GENERIC_WRITE,
+                0,
+                nullptr,
+                CREATE_NEW,
+                FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH | FILE_FLAG_SEQUENTIAL_SCAN,
+                nullptr));
+            if (!output)
+            {
+                throw win32_error("CreateFileW(protected staging destination)", GetLastError());
+            }
+            destinationCreated = true;
+            std::array<BYTE, 64 * 1024> buffer{};
+            uint64_t copied = 0;
+            for (;;)
+            {
+                DWORD read = 0;
+                check_bool(
+                    ReadFile(
+                        input.get(),
+                        buffer.data(),
+                        static_cast<DWORD>(buffer.size()),
+                        &read,
+                        nullptr),
+                    "ReadFile(candidate source)");
+                if (read == 0)
+                {
+                    break;
+                }
+                if (copied > maximumBytes || read > maximumBytes - copied ||
+                    (expectedBytes &&
+                     (copied > *expectedBytes || read > *expectedBytes - copied)))
+                {
+                    throw win32_error("candidate source streaming bound", ERROR_BAD_LENGTH);
+                }
+                DWORD written = 0;
+                check_bool(
+                    WriteFile(output.get(), buffer.data(), read, &written, nullptr) &&
+                        written == read,
+                    "WriteFile(protected staging destination)");
+                copied += read;
+            }
+            LARGE_INTEGER finalSize{};
+            check_bool(GetFileSizeEx(input.get(), &finalSize), "GetFileSizeEx(candidate source final)");
+            if (finalSize.QuadPart < 0 ||
+                static_cast<uint64_t>(finalSize.QuadPart) != sourceBytes ||
+                copied != sourceBytes ||
+                (expectedBytes && copied != *expectedBytes))
+            {
+                throw win32_error("candidate source final exact size policy", ERROR_BAD_LENGTH);
+            }
+            check_bool(
+                FlushFileBuffers(output.get()),
+                "FlushFileBuffers(protected staging destination)");
+            output.reset();
+            protect_system_file(stagedFile);
+            return copied;
+        }
+        catch (...)
+        {
+            const auto failure = std::current_exception();
+            if (destinationCreated)
+            {
+                (void)DeleteFileW(stagedFile.c_str());
+            }
+            std::rethrow_exception(failure);
         }
     }
 
@@ -1047,34 +1652,43 @@ namespace ptlsmr
                 throw win32_error("WideCharToMultiByte", GetLastError());
             }
         }
-        unique_handle file(CreateFileW(
-            temporary.c_str(),
-            GENERIC_WRITE,
-            0,
-            nullptr,
-            CREATE_ALWAYS,
-            FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
-            nullptr));
-        if (!file)
+        try
         {
-            throw win32_error("CreateFileW(protected state)", GetLastError());
-        }
-        if (!utf8.empty())
-        {
-            DWORD written = 0;
-            check_bool(
-                WriteFile(file.get(), utf8.data(), static_cast<DWORD>(utf8.size()), &written, nullptr) &&
-                    written == utf8.size(),
-                "WriteFile(protected state)");
-        }
-        check_bool(FlushFileBuffers(file.get()), "FlushFileBuffers(protected state)");
-        file.reset();
-        check_bool(
-            MoveFileExW(
+            unique_handle file(CreateFileW(
                 temporary.c_str(),
-                path.c_str(),
-                MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH),
-            "MoveFileExW(protected state)");
+                GENERIC_WRITE,
+                0,
+                nullptr,
+                CREATE_ALWAYS,
+                FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
+                nullptr));
+            if (!file)
+            {
+                throw win32_error("CreateFileW(protected state)", GetLastError());
+            }
+            if (!utf8.empty())
+            {
+                DWORD written = 0;
+                check_bool(
+                    WriteFile(file.get(), utf8.data(), static_cast<DWORD>(utf8.size()), &written, nullptr) &&
+                        written == utf8.size(),
+                    "WriteFile(protected state)");
+            }
+            check_bool(FlushFileBuffers(file.get()), "FlushFileBuffers(protected state)");
+            file.reset();
+            check_bool(
+                MoveFileExW(
+                    temporary.c_str(),
+                    path.c_str(),
+                    MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH),
+                "MoveFileExW(protected state)");
+        }
+        catch (...)
+        {
+            const auto failure = std::current_exception();
+            (void)DeleteFileW(temporary.c_str());
+            std::rethrow_exception(failure);
+        }
     }
 
     std::wstring read_utf8_file(const std::filesystem::path& path, size_t maximumBytes)
@@ -1124,21 +1738,44 @@ namespace ptlsmr
         return output;
     }
 
-    file_version validate_updater_candidate(
+    file_version validate_host_candidate(
         const std::filesystem::path& path,
         std::wstring_view expectedSignerPin)
     {
         const auto version = validate_signed_executable(
             path,
-            UpdaterExe,
-            UpdaterProductName,
+            HostExe,
+            HostProductName,
             expectedSignerPin);
-        const auto expected = parse_version(UpdaterVersion);
+        const auto expected = parse_version(HostVersion);
         if (!(version == expected))
         {
-            throw win32_error("updater version policy", ERROR_REVISION_MISMATCH);
+            throw win32_error("host version policy", ERROR_REVISION_MISMATCH);
         }
         return version;
+    }
+
+    file_version validate_engine_candidate(
+        const std::filesystem::path& path,
+        std::wstring_view expectedSignerPin)
+    {
+        const auto version = validate_signed_executable(
+            path,
+            EngineExe,
+            EngineProductName,
+            expectedSignerPin);
+        if (version.major != 5 || version.minor > 4)
+        {
+            throw win32_error("engine release-train policy", ERROR_REVISION_MISMATCH);
+        }
+        return version;
+    }
+
+    file_version validate_updater_candidate(
+        const std::filesystem::path& path,
+        std::wstring_view expectedSignerPin)
+    {
+        return validate_engine_candidate(path, expectedSignerPin);
     }
 
     file_version validate_runtime_candidate(
@@ -1163,6 +1800,55 @@ namespace ptlsmr
             (expectedTrack == 2 && version != file_version{ 2, 0, 0, 0 }))
         {
             throw win32_error("runtime release-train policy", ERROR_REVISION_MISMATCH);
+        }
+        return version;
+    }
+
+    file_version validate_user_client_candidate(
+        const std::filesystem::path& path,
+        std::wstring_view expectedSignerPin)
+    {
+        const auto version = validate_signed_executable(
+            path,
+            UserClientExe,
+            UserClientProductName,
+            expectedSignerPin);
+        if (!(version == parse_version(HostVersion)))
+        {
+            throw win32_error("user client version policy", ERROR_REVISION_MISMATCH);
+        }
+        return version;
+    }
+
+    file_version validate_release_manifest_candidate(
+        const std::filesystem::path& path,
+        std::wstring_view expectedSignerPin)
+    {
+        const auto version = validate_signed_executable(
+            path,
+            ReleaseManifestExe,
+            MetadataProductName,
+            expectedSignerPin);
+        if (!(version == file_version{ 1, 0, 0, 0 }))
+        {
+            throw win32_error("release metadata version policy", ERROR_REVISION_MISMATCH);
+        }
+        return version;
+    }
+
+    file_version validate_policy_candidate(
+        const std::filesystem::path& path,
+        std::wstring_view expectedOriginalFilename,
+        std::wstring_view expectedSignerPin)
+    {
+        const auto version = validate_signed_executable(
+            path,
+            expectedOriginalFilename,
+            PolicyProductName,
+            expectedSignerPin);
+        if (!(version == file_version{ 1, 0, 0, 0 }))
+        {
+            throw win32_error("policy version policy", ERROR_REVISION_MISMATCH);
         }
         return version;
     }

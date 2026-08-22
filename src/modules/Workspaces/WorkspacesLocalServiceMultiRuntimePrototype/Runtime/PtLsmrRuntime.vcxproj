@@ -19,9 +19,11 @@
     <RuntimeVersionRevision Condition="'$(RuntimeVersionRevision)'==''">0</RuntimeVersionRevision>
     <RuntimeFailReadiness Condition="'$(RuntimeFailReadiness)'==''">0</RuntimeFailReadiness>
     <RuntimeWrongProduct Condition="'$(RuntimeWrongProduct)'==''">0</RuntimeWrongProduct>
+    <RuntimePayloadVariant Condition="'$(RuntimePayloadVariant)'==''">0</RuntimePayloadVariant>
+    <IntDir Condition="'$(RuntimeIntDir)'!=''">$(RuntimeIntDir)</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
-    <ClCompile><PreprocessorDefinitions>PT_RUNTIME_TRACK=$(RuntimeTrack);PT_RUNTIME_VERSION_MAJOR=$(RuntimeVersionMajor);PT_RUNTIME_VERSION_MINOR=$(RuntimeVersionMinor);PT_RUNTIME_VERSION_BUILD=$(RuntimeVersionBuild);PT_RUNTIME_VERSION_REVISION=$(RuntimeVersionRevision);PT_RUNTIME_FAIL_READINESS=$(RuntimeFailReadiness);PT_RUNTIME_WRONG_PRODUCT=$(RuntimeWrongProduct);%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
+    <ClCompile><PreprocessorDefinitions>PT_RUNTIME_TRACK=$(RuntimeTrack);PT_RUNTIME_VERSION_MAJOR=$(RuntimeVersionMajor);PT_RUNTIME_VERSION_MINOR=$(RuntimeVersionMinor);PT_RUNTIME_VERSION_BUILD=$(RuntimeVersionBuild);PT_RUNTIME_VERSION_REVISION=$(RuntimeVersionRevision);PT_RUNTIME_FAIL_READINESS=$(RuntimeFailReadiness);PT_RUNTIME_WRONG_PRODUCT=$(RuntimeWrongProduct);PT_RUNTIME_PAYLOAD_VARIANT=$(RuntimePayloadVariant);%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
     <ResourceCompile><PreprocessorDefinitions>PT_RUNTIME_TRACK=$(RuntimeTrack);PT_RUNTIME_VERSION_MAJOR=$(RuntimeVersionMajor);PT_RUNTIME_VERSION_MINOR=$(RuntimeVersionMinor);PT_RUNTIME_VERSION_BUILD=$(RuntimeVersionBuild);PT_RUNTIME_VERSION_REVISION=$(RuntimeVersionRevision);PT_RUNTIME_WRONG_PRODUCT=$(RuntimeWrongProduct);%(PreprocessorDefinitions)</PreprocessorDefinitions></ResourceCompile>
     <Link>
       <SubSystem>Console</SubSystem>

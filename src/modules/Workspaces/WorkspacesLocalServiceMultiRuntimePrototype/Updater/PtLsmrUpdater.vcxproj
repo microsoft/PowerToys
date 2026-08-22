@@ -10,9 +10,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration"><ConfigurationType>Application</ConfigurationType><UseDebugLibraries>false</UseDebugLibraries></PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\PtLsmr.Common.props" />
-  <PropertyGroup><TargetName>PtPuvrUpdater</TargetName></PropertyGroup>
-  <ItemDefinitionGroup><Link><SubSystem>Console</SubSystem><AdditionalDependencies>advapi32.lib;crypt32.lib;wintrust.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies></Link></ItemDefinitionGroup>
+  <PropertyGroup>
+    <TargetName>PtPuvrUpdater</TargetName>
+    <EngineVersionMajor Condition="'$(EngineVersionMajor)'==''">5</EngineVersionMajor>
+    <EngineVersionMinor Condition="'$(EngineVersionMinor)'==''">0</EngineVersionMinor>
+    <EngineVersionBuild Condition="'$(EngineVersionBuild)'==''">0</EngineVersionBuild>
+    <EngineVersionRevision Condition="'$(EngineVersionRevision)'==''">0</EngineVersionRevision>
+    <EngineFailQualification Condition="'$(EngineFailQualification)'==''">0</EngineFailQualification>
+    <EngineSlowQualification Condition="'$(EngineSlowQualification)'==''">0</EngineSlowQualification>
+    <IntDir Condition="'$(EngineIntDir)'!=''">$(EngineIntDir)</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>PT_ENGINE_VERSION_MAJOR=$(EngineVersionMajor);PT_ENGINE_VERSION_MINOR=$(EngineVersionMinor);PT_ENGINE_VERSION_BUILD=$(EngineVersionBuild);PT_ENGINE_VERSION_REVISION=$(EngineVersionRevision);PT_ENGINE_FAIL_QUALIFICATION=$(EngineFailQualification);PT_ENGINE_SLOW_QUALIFICATION=$(EngineSlowQualification);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>PT_ENGINE_VERSION_MAJOR=$(EngineVersionMajor);PT_ENGINE_VERSION_MINOR=$(EngineVersionMinor);PT_ENGINE_VERSION_BUILD=$(EngineVersionBuild);PT_ENGINE_VERSION_REVISION=$(EngineVersionRevision);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup><Link><SubSystem>Console</SubSystem><AdditionalDependencies>$(OutDir)PtLsmrCommon.lib;advapi32.lib;crypt32.lib;wintrust.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies></Link></ItemDefinitionGroup>
   <ItemGroup><ClCompile Include="UpdaterMain.cpp" /><ResourceCompile Include="UpdaterVersion.rc" /></ItemGroup>
-  <ItemGroup><ProjectReference Include="..\Common\PtLsmrCommon.vcxproj"><Project>{51EAD4A2-BB68-420C-8CFD-11891A654810}</Project></ProjectReference></ItemGroup>
+  <ItemGroup Condition="'$(BuildProjectReferences)'!='false'"><ProjectReference Include="..\Common\PtLsmrCommon.vcxproj"><Project>{51EAD4A2-BB68-420C-8CFD-11891A654810}</Project></ProjectReference></ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
