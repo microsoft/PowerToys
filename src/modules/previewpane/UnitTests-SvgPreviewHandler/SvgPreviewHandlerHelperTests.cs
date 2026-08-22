@@ -99,5 +99,31 @@ namespace SvgPreviewHandlerUnitTests
             // Assert
             Assert.IsFalse(foundFilteredElement);
         }
+
+        [TestMethod]
+        public void BuildCacheKeyShouldReturnSameValueForSameInputs()
+        {
+            // Arrange
+            var firstKey = SvgPreviewCacheHelper.BuildCacheKey("v1", "svg-preview", "sample data");
+
+            // Act
+            var secondKey = SvgPreviewCacheHelper.BuildCacheKey("v1", "svg-preview", "sample data");
+
+            // Assert
+            Assert.AreEqual(firstKey, secondKey);
+        }
+
+        [TestMethod]
+        public void BuildCacheKeyShouldReturnDifferentValueForDifferentInputs()
+        {
+            // Arrange
+            var firstKey = SvgPreviewCacheHelper.BuildCacheKey("v1", "svg-preview", "sample data");
+
+            // Act
+            var secondKey = SvgPreviewCacheHelper.BuildCacheKey("v1", "svg-preview", "different data");
+
+            // Assert
+            Assert.AreNotEqual(firstKey, secondKey);
+        }
     }
 }
