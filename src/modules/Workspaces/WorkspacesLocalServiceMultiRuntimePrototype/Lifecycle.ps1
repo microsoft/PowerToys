@@ -332,7 +332,8 @@ function Assert-MsiRegistered {
     $entries = @(
         Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue
     ) | Where-Object {
-        $_.DisplayName -eq $metadata.msi.productName
+        $displayName = $_.PSObject.Properties['DisplayName']
+        $null -ne $displayName -and $displayName.Value -eq $metadata.msi.productName
     }
     Assert-True ($entries.Count -ge 1) 'MSI product registration'
     return $entries[0]
@@ -1658,7 +1659,10 @@ function Remove-ManagedState {
     }
     $installedProduct = @(
         Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue |
-            Where-Object { $_.DisplayName -eq $metadata.msi.productName }
+            Where-Object {
+                $displayName = $_.PSObject.Properties['DisplayName']
+                $null -ne $displayName -and $displayName.Value -eq $metadata.msi.productName
+            }
     )
     if ($installedProduct.Count -gt 0) {
         Clear-CleanupOutcome
@@ -1697,7 +1701,10 @@ function Assert-Teardown {
     Assert-True (-not (Test-Path -LiteralPath $cleanupOutcomeRegistryPath)) 'cleanup outcome registry key removed'
     Assert-Equal @(
         Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue |
-            Where-Object { $_.DisplayName -eq $metadata.msi.productName }
+            Where-Object {
+                $displayName = $_.PSObject.Properties['DisplayName']
+                $null -ne $displayName -and $displayName.Value -eq $metadata.msi.productName
+            }
     ).Count 0 'MSI product removed'
     foreach ($name in $ownerNames) {
         Assert-True (-not (Get-LocalUser -Name $name -ErrorAction SilentlyContinue)) "test user removed $name"
