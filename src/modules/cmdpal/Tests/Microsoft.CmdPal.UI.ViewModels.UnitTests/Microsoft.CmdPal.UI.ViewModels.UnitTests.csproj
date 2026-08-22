@@ -29,4 +29,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- The TS SDK owns the canonical wire fixtures. Copy them next to the test
+         binaries so the C# parser tests consume the same bytes as the SDK. -->
+    <Content Include="..\..\ts-sdk\wire-fixtures\*.json" Link="wire-fixtures\%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
