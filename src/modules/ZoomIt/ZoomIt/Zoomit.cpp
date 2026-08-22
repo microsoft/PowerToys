@@ -12010,7 +12010,9 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                         pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, FALSE );
                 }
                 zoomLevel = zoomAnimation.Sample( GetTickCount64() );
-                if( animationSmoothingDisabled && !zoomAnimation.IsActive() ) {
+                MSG queuedHotkey;
+                const bool zoomInQueued = PeekMessage( &queuedHotkey, hWnd, WM_HOTKEY, WM_HOTKEY, PM_NOREMOVE ) && queuedHotkey.wParam == 0;
+                if( animationSmoothingDisabled && !zoomAnimation.IsActive() && !zoomInQueued ) {
 
                     animationSmoothingDisabled = FALSE;
                     if( pMagSetLensUseBitmapSmoothing )
