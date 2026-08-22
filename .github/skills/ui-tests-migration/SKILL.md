@@ -144,7 +144,8 @@ Create a TODO list and work top-to-bottom. Each step links to the reference that
     compositor, child process) and its authoritative ready signal
         — references/porting-workflow.md
 - [ ] 4. Internalize the deltas — references/framework-differences.md
-- [ ] 5. Scaffold the new project (csproj from template, name per the table, register in .slnx)
+- [ ] 5. Scaffold the new project (csproj + PerMonitorV2 app.manifest from templates, name per the
+  table, register in .slnx)
         — references/project-setup.md
 - [ ] 6. Re-implement tests, mapping each API as you go — references/api-mapping.md
         + recipes from references/patterns-and-pitfalls.md

@@ -25,11 +25,12 @@ Rules and judgment:
   `Hosts.UITests/` folder), prefer a clean `[Module].UITests.Next.csproj`; consistency with the new
   examples (`ColorPicker.UITests.csproj`, `Settings.UITests.csproj`) wins.
 
-## 2. Scaffold the csproj
+## 2. Scaffold the project and DPI manifest
 
-Copy [../templates/Module.UITests.Next.csproj](../templates/Module.UITests.Next.csproj) and replace the
-`__MODULE__` placeholder (and fix the `..\` depth on the ProjectReference). The reference csproj
-(ColorPicker, whose project folder sits 3 levels under `src/`) is:
+Copy [../templates/Module.UITests.Next.csproj](../templates/Module.UITests.Next.csproj) and
+[../templates/app.manifest](../templates/app.manifest). Replace `__MODULE__` in the csproj and
+`__ASSEMBLY_NAME__` in the manifest with the final `AssemblyName`, then fix the `..\` depth on the
+ProjectReference. For a project folder that sits 3 levels under `src/`, the scaffold is:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
@@ -45,6 +46,7 @@ Copy [../templates/Module.UITests.Next.csproj](../templates/Module.UITests.Next.
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.__MODULE__.UITests</RootNamespace>
     <AssemblyName>__MODULE__.UITests.Next</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
 
     <!-- Microsoft.Testing.Platform: appears in Test Explorer AND runs via dotnet test / vstest. -->
     <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
@@ -79,11 +81,13 @@ Critical, non-negotiable bits (CI audits or the build will fail without them):
 2. **`OutputType=Exe`**, **`IsTestingPlatformApplication=true`**, **`EnableMSTestRunner=true`** — the
    Microsoft.Testing.Platform runner the rest of the repo uses; this is what makes the class appear in
    Test Explorer and run via `dotnet test`/`vstest.console.exe`.
-3. **`<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\<Name>\</OutputPath>`** — stages the
+3. **`<ApplicationManifest>app.manifest</ApplicationManifest>`** — embeds `PerMonitorV2` awareness so
+  physical mouse coordinates match winappcli's UIA bounds on every monitor.
+4. **`<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\<Name>\</OutputPath>`** — stages the
    build output where the UI-tests pipeline globs (`**/<plat>/<config>/tests/**`). Without it the app
    builds to `bin\` and is never picked up by the test job.
-4. **`RunVSTest=false`** — UI tests must not run during MSBuild.
-5. **ProjectReference to `UITestAutomation.Next.csproj` only** — never the legacy
+5. **`RunVSTest=false`** — UI tests must not run during MSBuild.
+6. **ProjectReference to `UITestAutomation.Next.csproj` only** — never the legacy
    `UITestAutomation.csproj`. Fix the `..\` depth to match the folder nesting:
    - `src/modules/<M>/Tests/<M>.UITests.Next/` (4 levels under `src`) → `..\..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj`
    - `src/modules/<M>/<M>.UITests/` (3 levels under `src`) → `..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj`
@@ -129,15 +133,17 @@ The standard file header is required on every `.cs`:
 // See the LICENSE file in the project root for more information.
 ```
 
-## 4b. (Coordinate-exact tests only) add a DPI-aware `app.manifest`
+## 4b. Keep every test host per-monitor DPI aware
 
-If any test drives the mouse by **pixel coordinates** and asserts on an **exact** value (a drag that
-must measure `100 x 100`, a click at a precise point), the test host MUST be per-monitor DPI aware,
-otherwise `MouseHelper`'s `SetCursorPos`/`GetCursorPos` are virtualized by the display scale and stop
-matching winappcli's physical-pixel bounds (a 99px drag measured ~149px on a 150% display).
+Every UI-test executable that references `UITestAutomation.Next` MUST embed
+[../templates/app.manifest](../templates/app.manifest) with `PerMonitorV2`, including greenfield
+projects whose names intentionally omit the `.Next` suffix. `Element.Click()` resolves a
+physical-pixel rectangle through winappcli and clicks its centre through `MouseHelper`, so even tests
+that never mention raw coordinates depend on matching DPI coordinate spaces. Without the manifest,
+`SetCursorPos`/`GetCursorPos` can be virtualized by the display scale and the cursor can miss the
+target entirely on a scaled or mixed-DPI desktop.
 
-Copy [../templates/app.manifest](../templates/app.manifest) into the project (or the one from the
-module's legacy UITests project) and reference it in the csproj:
+The scaffold step copies the manifest and references it in the csproj:
 
 ```xml
 <PropertyGroup>
@@ -145,8 +151,10 @@ module's legacy UITests project) and reference it in the csproj:
 </PropertyGroup>
 ```
 
-Tests that only assert on **format** (regex like `\d+ x \d+`) or never touch raw coordinates don't
-need the manifest — which is why ColorPicker/Settings `.Next` projects omit it.
+Do not remove the manifest because assertions are behavioral or format-only. Exact-value drags make
+the defect especially visible, but ordinary `Element.Click()`, `MouseClick()`, `DoubleClick()`, and
+coordinate-based `MouseHelper` calls need the same physical coordinate space. Some older reference
+projects omit the manifest; do not copy that omission into new or migrated projects.
 
 ## 4c. (Visual tests only) embed platform baselines
 
@@ -193,6 +201,8 @@ $exe = "$PWD\x64\Debug\tests\<Module>.UITests.Next\net10.0-windows10.0.26100.0\<
 ```
 
 - On build failure, read `build.<Configuration>.<Platform>.errors.log` next to the project.
+- For CI runtime-pack restore or dependency-audit failures, see
+  [NuGet runtime-pack cache misses](nuget-runtime-pack-cache.md).
 - `winapp.exe` is a **run-time** prerequisite only (`winget install Microsoft.winappcli`, or set
   `WINAPP_CLI_PATH`). A migration that compiles clean is valid even where the CLI/desktop is absent;
   say so and list coverage.
