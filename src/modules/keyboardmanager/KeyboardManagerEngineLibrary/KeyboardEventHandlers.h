@@ -10,6 +10,15 @@ namespace KeyboardManagerInput
 
 namespace KeyboardEventHandlers
 {
+    namespace ProgramLauncher
+    {
+        constexpr bool ShouldUseExplorerShell(Shortcut::StartWindowType startWindowType) noexcept
+        {
+            return startWindowType == Shortcut::StartWindowType::Normal;
+        }
+
+        std::wstring GetWorkingDirectory(const std::wstring& filePath, const std::wstring& configuredDirectory);
+    }
 
     struct ResetChordsResults
     {
