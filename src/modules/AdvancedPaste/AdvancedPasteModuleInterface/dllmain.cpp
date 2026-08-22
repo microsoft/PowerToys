@@ -58,6 +58,7 @@ namespace
     const wchar_t JSON_KEY_ADVANCED_PASTE_UI_HOTKEY[] = L"advanced-paste-ui-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY[] = L"paste-as-markdown-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_JSON_HOTKEY[] = L"paste-as-json-hotkey";
+    const wchar_t JSON_KEY_PASTE_AS_SINGLE_LINE_HOTKEY[] = L"paste-as-single-line-hotkey";
     const wchar_t JSON_KEY_IS_AI_ENABLED[] = L"IsAIEnabled";
     const wchar_t JSON_KEY_IS_OPEN_AI_ENABLED[] = L"IsOpenAIEnabled";
     const wchar_t JSON_KEY_SHOW_CUSTOM_PREVIEW[] = L"ShowCustomPreview";
@@ -83,12 +84,13 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key;
 
-    static const constexpr int NUM_DEFAULT_HOTKEYS = 4;
+    static const constexpr int NUM_DEFAULT_HOTKEYS = 5;
 
     Hotkey m_paste_as_plain_hotkey = { .win = true, .ctrl = true, .shift = false, .alt = true, .key = 'V' };
     Hotkey m_advanced_paste_ui_hotkey = { .win = true, .ctrl = false, .shift = true, .alt = false, .key = 'V' };
     Hotkey m_paste_as_markdown_hotkey{};
     Hotkey m_paste_as_json_hotkey{};
+    Hotkey m_paste_as_single_line_hotkey{};
 
     template<class Id>
     struct ActionData
@@ -398,7 +400,7 @@ private:
         {
             if (settingsObject.GetView().Size())
             {
-                const std::array<std::pair<Hotkey*, LPCWSTR>, NUM_DEFAULT_HOTKEYS> defaultHotkeys{
+                const std::array<std::pair<Hotkey*, LPCWSTR>, NUM_DEFAULT_HOTKEYS - 1> defaultHotkeys{
                     { { &m_paste_as_plain_hotkey, JSON_KEY_PASTE_AS_PLAIN_HOTKEY },
                       { &m_advanced_paste_ui_hotkey, JSON_KEY_ADVANCED_PASTE_UI_HOTKEY },
                       { &m_paste_as_markdown_hotkey, JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY },
@@ -416,6 +418,11 @@ private:
                 if (settingsObject.HasKey(JSON_KEY_PROPERTIES))
                 {
                     const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+
+                    if (propertiesObject.HasKey(JSON_KEY_PASTE_AS_SINGLE_LINE_HOTKEY))
+                    {
+                        m_paste_as_single_line_hotkey = parse_single_hotkey(JSON_KEY_PASTE_AS_SINGLE_LINE_HOTKEY, settingsObject);
+                    }
 
                     if (propertiesObject.HasKey(JSON_KEY_ADDITIONAL_ACTIONS))
                     {
@@ -972,6 +979,7 @@ public:
                                                    m_advanced_paste_ui_hotkey,
                                                    m_paste_as_markdown_hotkey,
                                                    m_paste_as_json_hotkey,
+                                                   m_paste_as_single_line_hotkey,
                                                    m_is_advanced_ai_enabled,
                                                    m_preview_custom_format_output,
                                                    additionalActionMap);
@@ -1103,6 +1111,13 @@ public:
                 Trace::AdvancedPaste_Invoked(L"JsonDirect");
                 return true;
             }
+            if (hotkeyId == 4)
+            { // m_paste_as_single_line_hotkey
+                Logger::trace(L"Starting paste as single line directly");
+                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_SINGLE_LINE_MESSAGE);
+                Trace::AdvancedPaste_Invoked(L"SingleLineDirect");
+                return true;
+            }
 
 
             if (additional_action_index < m_additional_actions.size())
@@ -1141,7 +1156,8 @@ public:
             const std::array default_hotkeys = { m_paste_as_plain_hotkey,
                                                  m_advanced_paste_ui_hotkey,
                                                  m_paste_as_markdown_hotkey,
-                                                 m_paste_as_json_hotkey };
+                                                 m_paste_as_json_hotkey,
+                                                 m_paste_as_single_line_hotkey };
             std::copy(default_hotkeys.begin(), default_hotkeys.end(), hotkeys);
 
             const auto get_action_hotkey = [](const auto& action) { return action.hotkey; };

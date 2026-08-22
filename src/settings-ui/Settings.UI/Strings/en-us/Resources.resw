@@ -2147,6 +2147,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PasteAsJson_Shortcut.Header" xml:space="preserve">
     <value>Paste as JSON directly</value>
   </data>
+  <data name="PasteAsSingleLine_Shortcut.Header" xml:space="preserve">
+    <value>Paste as single line directly</value>
+  </data>
   <data name="ImageToText.Header" xml:space="preserve">
     <value>Image to text</value>
   </data>
@@ -4242,6 +4245,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_AdvancedPastePlain_HowToUse.Text" xml:space="preserve">
     <value>to paste your clipboard data as plain text.</value>
+  </data>
+  <data name="Oobe_AdvancedPasteSingleLine_HowToUse.Text" xml:space="preserve">
+    <value>to paste your clipboard text as a single line.</value>
   </data>
   <data name="Oobe_AdvancedPasteMarkdown_HowToUse.Text" xml:space="preserve">
     <value>to paste your clipboard data as Markdown. Note: Clipboard content type has to be HTML.</value>
