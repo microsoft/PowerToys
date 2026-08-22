@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Threading;
-using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Ext.WebSearch.Commands;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers.Browser;
@@ -34,7 +33,7 @@ internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
         Name = Resources.command_item_title;
         Title = Resources.command_item_title;
         Icon = Icons.WebSearch;
-        Id = BuiltInCommandIds.WebSearch;
+        Id = "com.microsoft.cmdpal.websearch";
 
         _settingsManager = settingsManager;
         _browserInfoService = browserInfoService;

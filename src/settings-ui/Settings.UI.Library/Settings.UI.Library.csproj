@@ -18,6 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
         <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
         <ProjectReference Include="..\..\modules\ZoomIt\ZoomItSettingsInterop\ZoomItSettingsInterop.vcxproj" />
         <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />

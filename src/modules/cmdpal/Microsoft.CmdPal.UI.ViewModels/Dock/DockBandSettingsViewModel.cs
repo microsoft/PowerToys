@@ -46,6 +46,45 @@ public partial class DockBandSettingsViewModel : ObservableObject
 
     public IconInfoViewModel Icon => _adapter.IconViewModel;
 
+    private ShowLabelsOption _showLabels;
+
+    public ShowLabelsOption ShowLabels
+    {
+        get => _showLabels;
+        set
+        {
+            if (value != _showLabels)
+            {
+                _showLabels = value;
+                var newShowTitles = value switch
+                {
+                    ShowLabelsOption.Default => (bool?)null,
+                    ShowLabelsOption.ShowLabels => true,
+                    ShowLabelsOption.HideLabels => false,
+                    _ => null,
+                };
+                UpdateModel(_dockSettingsModel with { ShowTitles = newShowTitles });
+            }
+        }
+    }
+
+    private ShowLabelsOption FetchShowLabels()
+    {
+        if (_dockSettingsModel.ShowLabels == null)
+        {
+            return ShowLabelsOption.Default;
+        }
+
+        return _dockSettingsModel.ShowLabels.Value ? ShowLabelsOption.ShowLabels : ShowLabelsOption.HideLabels;
+    }
+
+    // used to map to ComboBox selection
+    public int ShowLabelsIndex
+    {
+        get => (int)ShowLabels;
+        set => ShowLabels = (ShowLabelsOption)value;
+    }
+
     private DockPinSide PinSide
     {
         get => _pinSide;
@@ -99,6 +138,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
         _bandViewModel = bandViewModel;
         _settingsService = settingsService;
         _pinSide = FetchPinSide();
+        _showLabels = FetchShowLabels();
     }
 
     private DockPinSide FetchPinSide()

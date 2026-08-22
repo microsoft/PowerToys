@@ -43,7 +43,6 @@
 #include <winrt/Windows.Graphics.DirectX.Direct3d11.h>
 #include <winrt/Windows.Media.h>
 #include <winrt/Windows.Media.Core.h>
-#include <winrt/Windows.Media.Capture.h>
 #include <winrt/Windows.Media.Editing.h>
 #include <winrt/Windows.Media.Playback.h>
 #include <winrt/Windows.Media.Transcoding.h>
@@ -93,6 +92,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <future>
+#include <regex>
 #include <fstream>
 #include <sstream>
 
@@ -107,40 +107,3 @@
 #include <robmikh.common/hwnd.interop.h>
 #include <robmikh.common/capture.desktop.interop.h>
 #include <robmikh.common/DesktopWindow.h>
-
-//----------------------------------------------------------------------------
-//
-// [ZoomIt] debug-output prefix.
-//
-// Route every OutputDebugString call in this module through a thin wrapper that
-// prepends "[ZoomIt] " so the traces can be filtered in DebugView. The wrapper
-// functions are defined BEFORE the macros, so their bodies call the real Win32
-// APIs (no self-recursion). The function-like macros only expand at call sites
-// (identifier immediately followed by '('), so plain references / declarations
-// of these names are unaffected. This mirrors the existing wrap-via-macro idiom
-// used above (e.g. D3D11CreateDevice -> WrapD3D11CreateDevice).
-//
-// Note: the suffixless OutputDebugString is already an object-like macro from
-// <windows.h> that expands to OutputDebugStringW/A, so it automatically chains
-// through these wrappers and must not be redefined here (would be C4005).
-//
-//----------------------------------------------------------------------------
-namespace zoomit_dbg
-{
-    inline void OutputW( const wchar_t* msg )
-    {
-        std::wstring s( L"[ZoomIt] " );
-        s += ( msg ? msg : L"" );
-        OutputDebugStringW( s.c_str() );
-    }
-
-    inline void OutputA( const char* msg )
-    {
-        std::string s( "[ZoomIt] " );
-        s += ( msg ? msg : "" );
-        OutputDebugStringA( s.c_str() );
-    }
-}
-
-#define OutputDebugStringW( s ) ::zoomit_dbg::OutputW( s )
-#define OutputDebugStringA( s ) ::zoomit_dbg::OutputA( s )

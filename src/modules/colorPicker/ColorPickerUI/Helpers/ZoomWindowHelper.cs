@@ -79,30 +79,12 @@ namespace ColorPicker.Helpers
             // we just started zooming, copy screen area
             if (_previousZoomLevel == 0)
             {
-                // First, exclude the color picker window from the capture; otherwise its
-                // corner will be included in the zoomed-in image.
-                var mainWindowHandle = _appStateHandler.GetMainWindowHandle();
-                bool exclusionSuccess =
-                    WindowCaptureExclusionHelper.Exclude(mainWindowHandle);
+                var x = (int)point.X - (BaseZoomImageSize / 2);
+                var y = (int)point.Y - (BaseZoomImageSize / 2);
 
-                try
-                {
-                    var x = (int)point.X - (BaseZoomImageSize / 2);
-                    var y = (int)point.Y - (BaseZoomImageSize / 2);
+                _graphics.CopyFromScreen(x, y, 0, 0, _bmp.Size, CopyPixelOperation.SourceCopy);
 
-                    _graphics.CopyFromScreen(x, y, 0, 0, _bmp.Size, CopyPixelOperation.SourceCopy);
-
-                    _zoomViewModel.ZoomArea = BitmapToImageSource(_bmp);
-                }
-                finally
-                {
-                    // Restore the color picker window to normal display affinity so that
-                    // it can be captured again.
-                    if (exclusionSuccess)
-                    {
-                        WindowCaptureExclusionHelper.Include(mainWindowHandle);
-                    }
-                }
+                _zoomViewModel.ZoomArea = BitmapToImageSource(_bmp);
             }
 
             _zoomViewModel.ZoomFactor = Math.Pow(ZoomFactor, _currentZoomLevel - 1);

@@ -45,9 +45,6 @@
     <ClInclude Include="two_way_pipe_message_ipc_impl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pipe_caller_auth.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="async_message_queue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -57,10 +54,19 @@
     <ClInclude Include="Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="excluded_app.h">
+    <ClInclude Include="ThemeHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="tasklist_positions.h">
+    <ClInclude Include="Package.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Clipboard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Elevation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AutoStart.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -83,9 +89,6 @@
     <ClCompile Include="two_way_pipe_message_ipc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pipe_caller_auth.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -95,10 +98,19 @@
     <ClCompile Include="Constants.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="excluded_app.cpp">
+    <ClCompile Include="ThemeHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="tasklist_positions.cpp">
+    <ClCompile Include="Package.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Clipboard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Elevation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AutoStart.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -131,6 +143,21 @@
       <Filter>Source Files</Filter>
     </Midl>
     <Midl Include="TwoWayPipeMessageIPCManaged.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="ThemeHelper.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="Package.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="Clipboard.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="Elevation.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="AutoStart.idl">
       <Filter>Source Files</Filter>
     </Midl>
   </ItemGroup>

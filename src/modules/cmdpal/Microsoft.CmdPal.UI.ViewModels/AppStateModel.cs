@@ -11,24 +11,9 @@ public record AppStateModel
     ///////////////////////////////////////////////////////////////////////////
     // STATE HERE
     // Make sure that any new types you add are added to JsonSerializationContext!
-    private RecentCommandsManager? _recentCommands = new();
+    public RecentCommandsManager RecentCommands { get; init; } = new();
 
-    public RecentCommandsManager RecentCommands
-    {
-        get => _recentCommands ?? new();
-        init => _recentCommands = value;
-    }
-
-    // HERE BE DRAGONS: Using an ImmutableList<T> for a setting may explode in
-    // AOT builds. Make sure to test IN AOT setting this setting to null, [],
-    // and and array with values.
-    private ImmutableList<string>? _runHistory = ImmutableList<string>.Empty;
-
-    public ImmutableList<string> RunHistory
-    {
-        get => _runHistory ?? ImmutableList<string>.Empty;
-        init => _runHistory = value;
-    }
+    public ImmutableList<string> RunHistory { get; init; } = ImmutableList<string>.Empty;
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////

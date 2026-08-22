@@ -4,8 +4,14 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public interface IRootPageService : IRootPageAccessor
+public interface IRootPageService
 {
+    /// <summary>
+    /// Gets the root page of the command palette. Return any IPage implementation that
+    /// represents the root view of this instance of the command palette.
+    /// </summary>
+    Microsoft.CommandPalette.Extensions.IPage GetRootPage();
+
     /// <summary>
     /// Pre-loads any necessary data or state before the root page is loaded.
     /// This will be awaited before the root page and the user can do anything,

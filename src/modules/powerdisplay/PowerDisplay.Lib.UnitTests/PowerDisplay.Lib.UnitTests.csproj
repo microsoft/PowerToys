@@ -37,6 +37,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PowerDisplay.Lib\PowerDisplay.Lib.csproj" />
-    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
 </Project>

@@ -206,12 +206,14 @@ public static class CommandLineNormalizer
 
         unsafe
         {
+            var outParam = default(PWSTR); // ultimately discarded
+
             var result = PInvoke.SearchPath(
                 null,           // Use default search path
                 executableName,
                 ".exe",         // Default extension
                 buffer,
-                out var outParam);     // We don't need the file part
+                &outParam);     // We don't need the file part
 
             if (result == 0)
             {
@@ -222,7 +224,7 @@ public static class CommandLineNormalizer
             {
                 // Buffer was too small, resize and try again
                 buffer = new char[result];
-                result = PInvoke.SearchPath(null, executableName, ".exe", buffer, out outParam);
+                result = PInvoke.SearchPath(null, executableName, ".exe", buffer, &outParam);
 
                 if (result == 0)
                 {

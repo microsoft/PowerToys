@@ -4,7 +4,6 @@
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
@@ -27,9 +26,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set => SetValue(DescriptionProperty, value);
         }
 
-        public ImageSource HeroImage
+        public string HeroImage
         {
-            get => (ImageSource)GetValue(HeroImageProperty);
+            get => (string)GetValue(HeroImageProperty);
             set => SetValue(HeroImageProperty, value);
         }
 
@@ -45,10 +44,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(PageContentProperty, value); }
         }
 
-        public static readonly DependencyProperty TitleProperty = DependencyProperty.Register("Title", typeof(string), typeof(OOBEPageControl), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register("Description", typeof(string), typeof(OOBEPageControl), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty HeroImageProperty = DependencyProperty.Register("HeroImage", typeof(ImageSource), typeof(OOBEPageControl), new PropertyMetadata(default(ImageSource)));
-        public static readonly DependencyProperty PageContentProperty = DependencyProperty.Register("PageContent", typeof(object), typeof(OOBEPageControl), new PropertyMetadata(new Grid()));
-        public static readonly DependencyProperty HeroImageHeightProperty = DependencyProperty.Register("HeroImageHeight", typeof(double), typeof(OOBEPageControl), new PropertyMetadata(280.0));
+        public static readonly DependencyProperty TitleProperty = DependencyProperty.Register("Title", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register("Description", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty HeroImageProperty = DependencyProperty.Register("HeroImage", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty PageContentProperty = DependencyProperty.Register("PageContent", typeof(object), typeof(SettingsPageControl), new PropertyMetadata(new Grid()));
+        public static readonly DependencyProperty HeroImageHeightProperty = DependencyProperty.Register("HeroImageHeight", typeof(double), typeof(SettingsPageControl), new PropertyMetadata(280.0));
     }
 }

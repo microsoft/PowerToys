@@ -98,14 +98,6 @@ public sealed partial class AllAppsPage : ListPage
 
         items.Sort((a, b) => string.Compare(a.Title, b.Title, StringComparison.Ordinal));
 
-        if (AllAppsSettings.Instance.HideAppDescriptions)
-        {
-            foreach (var item in items)
-            {
-                item.Subtitle = string.Empty;
-            }
-        }
-
         return [.. items];
     }
 }

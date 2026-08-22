@@ -45,13 +45,9 @@
             Loaded="NavigationView_Loaded"
             OpenPaneLength="296"
             SelectionChanged="NavigationView_SelectionChanged">
-            <NavigationView.Resources>
-                <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
-                <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
-            </NavigationView.Resources>
             <NavigationView.MenuItems>
                 <NavigationViewItem
-                    x:Uid="Shell_Welcome"
+                    x:Uid="Shell_General"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToys.png}"
                     Tag="Overview" />
                 <NavigationViewItem
@@ -166,11 +162,6 @@
                     x:Uid="Shell_TextExtractor"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}"
                     Tag="TextExtractor" />
-                <NavigationViewItem
-                    x:Uid="Shell_AltWindowCycle"
-                    AutomationProperties.AutomationId="AltWindowCycleOobeNavItem"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowHopper.png}"
-                    Tag="AltWindowCycle" />
                 <NavigationViewItem
                     x:Uid="Shell_Workspaces"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}"

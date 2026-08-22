@@ -160,7 +160,7 @@ bool WindowBorder::Init(HINSTANCE hinstance)
 
 void WindowBorder::UpdateBorderPosition() const
 {
-    if (!m_trackingWindow || !m_frameDrawer || !m_window)
+    if (!m_trackingWindow)
     {
         return;
     }

@@ -1,11 +1,10 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Ext.WindowsSettings.Classes;
 using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
@@ -22,7 +21,7 @@ internal sealed partial class WindowsSettingsListPage : DynamicListPage
     {
         Icon = Icons.WindowsSettingsIcon;
         Name = Resources.settings_title;
-        Id = BuiltInCommandIds.WindowsSettings;
+        Id = "com.microsoft.cmdpal.windowsSettings";
         _windowsSettings = windowsSettings;
 
         EmptyContent = new CommandItem(new NoOpCommand())
@@ -53,8 +52,6 @@ internal sealed partial class WindowsSettingsListPage : DynamicListPage
                 .Select(setting => ScoringHelper.SearchScoringPredicate(query, setting))
                 .Where(scoredSetting => scoredSetting.Score > 0)
                 .OrderByDescending(scoredSetting => scoredSetting.Score)
-                .ThenByDescending(ScoringHelper.IsWindowsSettingsExactMatch)
-                .ThenByDescending(ScoringHelper.IsPreferredNameMatch)
                 .Select(scoredSetting => scoredSetting.Setting);
         }
         else

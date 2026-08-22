@@ -7,12 +7,12 @@
 		<OutputType>WinExe</OutputType>
 		<RootNamespace>PowerToysExtension</RootNamespace>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<ApplicationIcon>..\..\..\..\runner\svgs\icon.ico</ApplicationIcon>
+		<ApplicationIcon>..\..\..\..\runner\icon.ico</ApplicationIcon>
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
 		<EnableMsixTooling>false</EnableMsixTooling>
 		<WindowsPackageType>None</WindowsPackageType>
 		<GenerateAppxPackageOnBuild>false</GenerateAppxPackageOnBuild>
-		<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
+		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 		<Nullable>enable</Nullable>

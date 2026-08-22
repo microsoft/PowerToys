@@ -18,9 +18,6 @@
     <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="PowerDisplay.Lib.UnitTests" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="BuiltInMonitorBlacklist.json" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 </Project>

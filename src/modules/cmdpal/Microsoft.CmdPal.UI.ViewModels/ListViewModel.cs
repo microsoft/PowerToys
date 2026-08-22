@@ -56,12 +56,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [ThreadStatic]
     private static Dictionary<ListViewModel, int>? _getItemsDepthByViewModel;
 
-    private InterlockedBoolean _isLoadingMore;
+    private InterlockedBoolean _isLoading;
     private int _activeFetchCount;
     private int _latestFetchGeneration;
     private bool _deferredFetchRequested;
     private bool _deferredFetchKeepSelection = true;
-    private bool _deferredFetchEnsureSelectionVisible;
 
     public event TypedEventHandler<ListViewModel, ItemsUpdatedEventArgs>? ItemsUpdated;
 
@@ -92,8 +91,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
     public CommandItemViewModel EmptyContent { get; private set; }
 
     public bool IsMainPage { get; init; }
-
-    public bool IsTokenSearch { get; private set; }
 
     public bool HasCustomDebounceLogic => IsMainPage;
 
@@ -150,14 +147,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args)
     {
-        var isLoadingMore = _isLoadingMore.Value;
-
-        // Perform a soft refresh when:
-        // - the caller explicitly requests it through a flag piggybacked on args.TotalItems;
-        // - incremental loading (LoadMore) is used, which implies a soft refresh by definition.
-        RequestFetch(
-            keepSelection: args.TotalItems == IncrementalRefresh || isLoadingMore,
-            ensureSelectionVisible: !isLoadingMore);
+        RequestFetch(args.TotalItems == IncrementalRefresh);
     }
 
     protected override void OnSearchTextBoxUpdated(string searchTextBox)
@@ -207,9 +197,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 RunFilteredItemsUpdate(ApplyFilterUnderLock);
             }
 
-            ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(forceFirstItem: true, ensureSelectionVisible: true));
+            ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(true));
             UpdateEmptyContent();
-            _isLoadingMore.Clear();
+            _isLoading.Clear();
         }
     }
 
@@ -233,16 +223,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
         });
     }
 
-    private void RequestFetch(bool keepSelection, bool ensureSelectionVisible)
+    private void RequestFetch(bool keepSelection)
     {
         // Keep RPC GetItems work off the UI thread. If the provider raises
         // ItemsChanged while we're already on a background thread, stay on that
         // thread so same-thread reentrancy detection still works.
         if (IsCurrentThreadUiThread())
         {
-            QueueObservedBackgroundFetch(
-                () => RequestFetch(keepSelection, ensureSelectionVisible),
-                "Failed to request background fetch");
+            QueueObservedBackgroundFetch(() => RequestFetch(keepSelection), "Failed to request background fetch");
             return;
         }
 
@@ -252,35 +240,29 @@ public partial class ListViewModel : PageViewModel, IDisposable
             {
                 _deferredFetchRequested = true;
                 _deferredFetchKeepSelection &= keepSelection;
-                _deferredFetchEnsureSelectionVisible |= ensureSelectionVisible;
             }
 
             return;
         }
 
-        FetchItems(keepSelection, ensureSelectionVisible);
+        FetchItems(keepSelection);
     }
 
     private void QueueDeferredFetchIfNeeded()
     {
         bool deferredFetchRequested;
         bool keepSelection;
-        bool ensureSelectionVisible;
         lock (_fetchStateLock)
         {
             deferredFetchRequested = _deferredFetchRequested;
             keepSelection = _deferredFetchKeepSelection;
-            ensureSelectionVisible = _deferredFetchEnsureSelectionVisible;
             _deferredFetchRequested = false;
             _deferredFetchKeepSelection = true;
-            _deferredFetchEnsureSelectionVisible = false;
         }
 
         if (deferredFetchRequested)
         {
-            QueueObservedBackgroundFetch(
-                () => FetchItems(keepSelection, ensureSelectionVisible),
-                "Failed to execute deferred fetch");
+            QueueObservedBackgroundFetch(() => FetchItems(keepSelection), "Failed to execute deferred fetch");
         }
     }
 
@@ -304,7 +286,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     }
 
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
-    private void FetchItems(bool keepSelection, bool ensureSelectionVisible)
+    private void FetchItems(bool keepSelection)
     {
         System.Diagnostics.Debug.Assert(!IsCurrentThreadUiThread(), "FetchItems should not run on the UI thread.");
 
@@ -552,12 +534,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     var forceFirst = _forceFirstItemPending;
                     _forceFirstItemPending = false;
 
-                    ItemsUpdated?.Invoke(
-                        this,
-                        new ItemsUpdatedEventArgs(
-                            forceFirstItem: IsRootPage && forceFirst,
-                            ensureSelectionVisible: ensureSelectionVisible));
-                    _isLoadingMore.Clear();
+                    ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(forceFirstItem: IsRootPage && forceFirst));
+                    _isLoading.Clear();
                 }
             });
     }
@@ -979,12 +957,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         Filters?.InitializeProperties();
         UpdateProperty(nameof(Filters));
 
-        if (model is IExtendedAttributesProvider haveProperties)
-        {
-            LoadExtendedAttributes(haveProperties.GetProperties().AsReadOnly());
-        }
-
-        FetchItems(keepSelection: true, ensureSelectionVisible: true);
+        FetchItems(true);
         model.ItemsChanged += Model_ItemsChanged;
     }
 
@@ -999,17 +972,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
         };
     }
 
-    private void LoadExtendedAttributes(IReadOnlyDictionary<string, object> properties)
-    {
-        // Check if this is a token page
-        if (properties.TryGetValue("TokenSearch", out var isTokenSearchObj) &&
-            isTokenSearchObj is bool isTokenSearch)
-        {
-            IsTokenSearch = isTokenSearch;
-            UpdateProperty(nameof(IsTokenSearch));
-        }
-    }
-
     public void LoadMoreIfNeeded()
     {
         var model = _model.Unsafe;
@@ -1018,7 +980,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             return;
         }
 
-        if (!_isLoadingMore.Set())
+        if (!_isLoading.Set())
         {
             return;
 
@@ -1036,17 +998,17 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 {
                     model.LoadMore();
 
-                    // LoadMore must raise ItemsChanged; the resulting fetch clears
-                    // _isLoadingMore when the updated items are published.
+                    // _isLoading flag will be set as a result of LoadMore,
+                    // which must raise ItemsChanged to end the loading.
                 }
                 else
                 {
-                    _isLoadingMore.Clear();
+                    _isLoading.Clear();
                 }
             }
             catch (Exception ex)
             {
-                _isLoadingMore.Clear();
+                _isLoading.Clear();
                 ShowException(ex, model.Name);
             }
         });

@@ -8,7 +8,7 @@
     d:DesignWidth="400"
     mc:Ignorable="d">
 
-    <Grid Style="{StaticResource PageStyle}">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

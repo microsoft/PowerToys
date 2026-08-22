@@ -13,11 +13,14 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\Microsoft.CmdPal.UITests\</OutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\Microsoft.CmdPal.UITests\</OutputPath>
   </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="MSTest" />
-		<ProjectReference Include="..\..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+    <PackageReference Include="System.Net.Http" />
+    <PackageReference Include="System.Private.Uri" />
+    <PackageReference Include="System.Text.RegularExpressions" />
+    <ProjectReference Include="..\..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
+  </ItemGroup>
 </Project>

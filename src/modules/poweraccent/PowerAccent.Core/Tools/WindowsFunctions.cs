@@ -4,10 +4,8 @@
 
 using System.Runtime.InteropServices;
 
-using ManagedCommon;
 using Windows.Win32;
 using Windows.Win32.Graphics.Gdi;
-using Windows.Win32.UI.HiDpi;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 
@@ -15,10 +13,6 @@ namespace PowerAccent.Core.Tools;
 
 internal static class WindowsFunctions
 {
-    // Mirrors PowertoyModuleIface::CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG (0x110) so the
-    // centralized keyboard hook ignores the keys PowerAccent injects and they don't re-trigger shortcuts.
-    private const nuint PowerToysInjectedTag = 0x110;
-
     public static void Insert(string s, bool back = false)
     {
         unsafe
@@ -36,7 +30,6 @@ internal static class WindowsFunctions
                             ki = new KEYBDINPUT
                             {
                                 wVk = VIRTUAL_KEY.VK_BACK,
-                                dwExtraInfo = PowerToysInjectedTag,
                             },
                         },
                     },
@@ -49,100 +42,48 @@ internal static class WindowsFunctions
                             {
                                 wVk = VIRTUAL_KEY.VK_BACK,
                                 dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP,
-                                dwExtraInfo = PowerToysInjectedTag,
                             },
                         },
                     },
                 };
 
-                uint backSent = PInvoke.SendInput(inputsBack, Marshal.SizeOf<INPUT>());
-                if (backSent != (uint)inputsBack.Length)
-                {
-                    Logger.LogError($"SendInput backspace failed: sent {backSent}/{inputsBack.Length}");
-                }
-
+                _ = PInvoke.SendInput(inputsBack, Marshal.SizeOf<INPUT>());
                 Thread.Sleep(1); // Some apps, like Terminal, need a little wait to process the sent backspace or they'll ignore it.
             }
 
-            if (s.Length > 0)
+            foreach (char c in s)
             {
-                var inputsInsert = new INPUT[s.Length * 2];
-                for (int i = 0; i < s.Length; i++)
+                // Letter
+                var inputsInsert = new INPUT[]
                 {
-                    inputsInsert[i * 2] = new INPUT
+                    new INPUT
                     {
                         type = INPUT_TYPE.INPUT_KEYBOARD,
                         Anonymous = new INPUT._Anonymous_e__Union
                         {
                             ki = new KEYBDINPUT
                             {
-                                wScan = s[i],
+                                wScan = c,
                                 dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_UNICODE,
-                                dwExtraInfo = PowerToysInjectedTag,
                             },
                         },
-                    };
-                    inputsInsert[(i * 2) + 1] = new INPUT
+                    },
+                    new INPUT
                     {
                         type = INPUT_TYPE.INPUT_KEYBOARD,
                         Anonymous = new INPUT._Anonymous_e__Union
                         {
                             ki = new KEYBDINPUT
                             {
-                                wScan = s[i],
+                                wScan = c,
                                 dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_UNICODE | KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP,
-                                dwExtraInfo = PowerToysInjectedTag,
                             },
                         },
-                    };
-                }
+                    },
+                };
 
-                uint charSent = PInvoke.SendInput(inputsInsert, Marshal.SizeOf<INPUT>());
-                if (charSent != (uint)inputsInsert.Length)
-                {
-                    Logger.LogError($"SendInput character failed: sent {charSent}/{inputsInsert.Length}");
-                }
+                _ = PInvoke.SendInput(inputsInsert, Marshal.SizeOf<INPUT>());
             }
-        }
-    }
-
-    public static void SendArrowKey(bool left)
-    {
-        var key = left ? VIRTUAL_KEY.VK_LEFT : VIRTUAL_KEY.VK_RIGHT;
-        var inputs = new INPUT[]
-        {
-            new INPUT
-            {
-                type = INPUT_TYPE.INPUT_KEYBOARD,
-                Anonymous = new INPUT._Anonymous_e__Union
-                {
-                    ki = new KEYBDINPUT
-                    {
-                        wVk = key,
-                        dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_EXTENDEDKEY,
-                        dwExtraInfo = PowerToysInjectedTag,
-                    },
-                },
-            },
-            new INPUT
-            {
-                type = INPUT_TYPE.INPUT_KEYBOARD,
-                Anonymous = new INPUT._Anonymous_e__Union
-                {
-                    ki = new KEYBDINPUT
-                    {
-                        wVk = key,
-                        dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_EXTENDEDKEY | KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP,
-                        dwExtraInfo = PowerToysInjectedTag,
-                    },
-                },
-            },
-        };
-
-        uint arrowSent = PInvoke.SendInput(inputs, Marshal.SizeOf<INPUT>());
-        if (arrowSent != (uint)inputs.Length)
-        {
-            Logger.LogError($"SendInput arrow key failed: sent {arrowSent}/{inputs.Length}");
         }
     }
 
@@ -157,16 +98,9 @@ internal static class WindowsFunctions
         monitorInfo.cbSize = (uint)Marshal.SizeOf(monitorInfo);
         PInvoke.GetMonitorInfo(res, ref monitorInfo);
 
-        uint dpiRaw = 96; // Safe default
-        if (PInvoke.GetDpiForMonitor(res, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint dpiX, out _) == 0)
-        {
-            dpiRaw = dpiX;
-        }
-
-        double dpi = dpiRaw / 96d;
+        double dpi = PInvoke.GetDpiForWindow(guiInfo.hwndActive) / 96d;
         var location = new Point(monitorInfo.rcWork.left, monitorInfo.rcWork.top);
-        var size = new Size(monitorInfo.rcWork.right - monitorInfo.rcWork.left, monitorInfo.rcWork.bottom - monitorInfo.rcWork.top);
-        return (location, size, dpi);
+        return (location, monitorInfo.rcWork.Size, dpi);
     }
 
     public static bool IsCapsLockState()
@@ -177,7 +111,7 @@ internal static class WindowsFunctions
 
     public static bool IsShiftState()
     {
-        var shift = PInvoke.GetAsyncKeyState((int)VIRTUAL_KEY.VK_SHIFT);
+        var shift = PInvoke.GetKeyState((int)VIRTUAL_KEY.VK_SHIFT);
         return shift < 0;
     }
 }

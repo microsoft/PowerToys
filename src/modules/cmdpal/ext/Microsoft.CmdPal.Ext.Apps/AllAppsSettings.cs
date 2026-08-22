@@ -66,8 +66,6 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
 
     public bool IncludeNonAppsInStartMenu => _includeNonAppsInStartMenu.Value;
 
-    public bool HideAppDescriptions => _hideAppDescriptions.Value;
-
     private readonly ChoiceSetSetting _searchResultLimitSource = new(
         Namespaced(nameof(SearchResultLimit)),
         Resources.limit_fallback_results_source,
@@ -139,12 +137,6 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         string.Empty,
         true);
 
-    private readonly ToggleSetting _hideAppDescriptions = new(
-        Namespaced(nameof(HideAppDescriptions)),
-        Resources.hide_app_descriptions,
-        Resources.hide_app_descriptions_description,
-        false);
-
     public double MinScoreThreshold { get; set; } = 0.75;
 
     internal const char SuffixSeparator = ';';
@@ -168,7 +160,6 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         Settings.Add(_enableRegistrySource);
         Settings.Add(_enablePathEnvironmentVariableSource);
         Settings.Add(_searchResultLimitSource);
-        Settings.Add(_hideAppDescriptions);
 
         LoadSettings();
 

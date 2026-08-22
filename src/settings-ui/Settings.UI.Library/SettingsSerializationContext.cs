@@ -4,7 +4,8 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using PowerDisplay.Models;
+using PowerDisplay.Common.Models;
+using Settings.UI.Library;
 using SettingsUILibrary = Settings.UI.Library;
 using SettingsUILibraryHelpers = Settings.UI.Library.Helpers;
 
@@ -44,7 +45,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(GeneralSettings))]
     [JsonSerializable(typeof(OutGoingGeneralSettings))]
     [JsonSerializable(typeof(AdvancedPasteSettings))]
-    [JsonSerializable(typeof(AltWindowCycleSettings))]
     [JsonSerializable(typeof(AlwaysOnTopSettings))]
     [JsonSerializable(typeof(AwakeSettings))]
     [JsonSerializable(typeof(CmdNotFoundSettings))]
@@ -59,6 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(HostsSettings))]
     [JsonSerializable(typeof(ImageResizerSettings))]
     [JsonSerializable(typeof(KeyboardManagerSettings))]
+    [JsonSerializable(typeof(LastVersionRunSettings))]
     [JsonSerializable(typeof(LightSwitchSettings))]
     [JsonSerializable(typeof(MeasureToolSettings))]
     [JsonSerializable(typeof(MouseHighlighterSettings))]
@@ -66,6 +67,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(MousePointerCrosshairsSettings))]
     [JsonSerializable(typeof(MouseWithoutBordersSettings))]
     [JsonSerializable(typeof(NewPlusSettings))]
+    [JsonSerializable(typeof(OOBESettings))]
     [JsonSerializable(typeof(PeekSettings))]
     [JsonSerializable(typeof(PowerAccentSettings))]
     [JsonSerializable(typeof(PowerDisplaySettings))]
@@ -105,7 +107,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(MouseWithoutBordersProperties))]
     [JsonSerializable(typeof(NewPlusProperties))]
     [JsonSerializable(typeof(PeekProperties))]
-    [JsonSerializable(typeof(SettingsUILibrary.PeekPreviewSettings))]
+    [JsonSerializable(typeof(PeekPreviewSettings))]
     [JsonSerializable(typeof(PowerAccentProperties))]
     [JsonSerializable(typeof(PowerDisplayProperties))]
     [JsonSerializable(typeof(PowerLauncherProperties))]

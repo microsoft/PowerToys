@@ -24,13 +24,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public PowerDisplayProfile? ResultProfile { get; private set; }
 
-        public ProfileEditorDialog(
-            ObservableCollection<MonitorInfo> availableMonitors,
-            string defaultName = "",
-            int profileId = 0)
+        public ProfileEditorDialog(ObservableCollection<MonitorInfo> availableMonitors, string defaultName = "")
         {
             this.InitializeComponent();
-            ViewModel = new ProfileEditorViewModel(availableMonitors, defaultName, profileId);
+            ViewModel = new ProfileEditorViewModel(availableMonitors, defaultName);
 
             // Set localized strings for ContentDialog
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;

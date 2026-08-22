@@ -4,7 +4,6 @@
 
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using Microsoft.CmdPal.Ext.WindowsSettings.Commands;
 using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
@@ -18,7 +17,7 @@ internal sealed partial class FallbackWindowsSettingsItem : FallbackCommandItem
 
     private readonly Classes.WindowsSettings _windowsSettings;
 
-    private static readonly CompositeFormat _titleFormat = CompositeFormat.Parse(Resources.settings_fallback_title);
+    private readonly string _title = Resources.settings_fallback_title;
     private readonly string _subtitle = Resources.settings_fallback_subtitle;
 
     public FallbackWindowsSettingsItem(Classes.WindowsSettings windowsSettings)
@@ -45,20 +44,17 @@ internal sealed partial class FallbackWindowsSettingsItem : FallbackCommandItem
         var filteredList = _windowsSettings.Settings
             .Select(setting => ScoringHelper.SearchScoringPredicate(query, setting))
             .Where(scoredSetting => scoredSetting.Score > 0)
-            .OrderByDescending(scoredSetting => scoredSetting.Score)
-            .ThenByDescending(ScoringHelper.IsWindowsSettingsExactMatch)
-            .ThenByDescending(ScoringHelper.IsPreferredNameMatch)
-            .ToList();
+            .OrderByDescending(scoredSetting => scoredSetting.Score);
 
-        if (filteredList.Count == 0)
+        if (!filteredList.Any())
         {
             return;
         }
 
-        var exactMatches = filteredList.Where(ScoringHelper.IsExactNameMatch).ToList();
-        if (filteredList.Count == 1 || exactMatches.Count == 1)
+        if (filteredList.Count() == 1 ||
+            filteredList.Any(a => a.Score == 10))
         {
-            var setting = exactMatches.Count == 1 ? exactMatches[0].Setting : filteredList[0].Setting;
+            var setting = filteredList.First().Setting;
 
             Title = setting.Name;
             Subtitle = setting.JoinedFullSettingsPath;
@@ -82,9 +78,9 @@ internal sealed partial class FallbackWindowsSettingsItem : FallbackCommandItem
         // We found more than one result. Make our command take
         // us to the Windows Settings search page, prepopulated with this search.
         var settingsPage = new WindowsSettingsListPage(_windowsSettings, query);
-        Title = _subtitle;
+        Title = string.Format(CultureInfo.CurrentCulture, _title, query);
         Icon = Icons.WindowsSettingsIcon;
-        Subtitle = string.Format(CultureInfo.CurrentCulture, _titleFormat, query);
+        Subtitle = _subtitle;
         Command = settingsPage;
 
         return;

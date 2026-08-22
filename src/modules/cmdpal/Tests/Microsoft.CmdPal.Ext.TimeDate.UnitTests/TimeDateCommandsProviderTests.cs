@@ -11,8 +11,8 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
     [TestClass]
     public class TimeDateCommandsProviderTests
     {
-        private CultureInfo originalCulture = null!;
-        private CultureInfo originalUiCulture = null!;
+        private CultureInfo originalCulture;
+        private CultureInfo originalUiCulture;
 
         [TestInitialize]
         public void Setup()
@@ -89,28 +89,6 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
 
             // Assert
             Assert.IsFalse(string.IsNullOrEmpty(displayName));
-        }
-
-        [TestMethod]
-        public void GetDockBands_ReturnsNonEmptyArray()
-        {
-            var provider = new TimeDateCommandsProvider();
-
-            var bands = provider.GetDockBands();
-
-            Assert.IsTrue(bands.Length > 0, "GetDockBands should return at least one item");
-            Assert.IsNotNull(bands[0], "First dock band should not be null");
-        }
-
-        [TestMethod]
-        public void GetDockBands_NotificationCenterBandDoesNotSetDockIcon()
-        {
-            var provider = new TimeDateCommandsProvider();
-
-            var bands = provider.GetDockBands();
-
-            Assert.IsTrue(bands.Length > 1, "Expected notification center band to be present");
-            Assert.IsNull(bands[1].Icon, "Notification center band should not set a dock icon");
         }
     }
 }

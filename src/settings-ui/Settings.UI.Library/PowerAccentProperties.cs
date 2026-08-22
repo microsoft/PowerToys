@@ -22,9 +22,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("input_time_ms")]
         public IntProperty InputTime { get; set; }
 
-        [JsonPropertyName("hold_duration_ms")]
-        public IntProperty HoldDuration { get; set; }
-
         [JsonPropertyName("selected_lang")]
         public StringProperty SelectedLang { get; set; }
 
@@ -46,7 +43,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             DoNotActivateOnGameMode = true;
             ToolbarPosition = "Top center";
             InputTime = new IntProperty(PowerAccentSettings.DefaultInputTimeMs);
-            HoldDuration = new IntProperty(PowerAccentSettings.DefaultHoldDurationMs);
             SelectedLang = "ALL";
             ExcludedApps = new StringProperty();
             ShowUnicodeDescription = false;

@@ -45,17 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
 
-            var windowTitle = resourceLoader.GetString("ShortcutConflictWindow_Title");
-
-            // Guard against an empty title: ResourceLoader.GetString returns "" when the resource
-            // map can't be resolved, and an empty native window title can fault the WinUI TitleBar
-            // control while it reads AppWindow.Title during a deferred layout pass.
-            if (string.IsNullOrEmpty(windowTitle))
-            {
-                windowTitle = "PowerToys shortcut conflicts";
-            }
-
-            this.Title = windowTitle;
+            this.Title = resourceLoader.GetString("ShortcutConflictWindow_Title");
             this.CenterOnScreen();
 
             ViewModel.OnPageLoaded();

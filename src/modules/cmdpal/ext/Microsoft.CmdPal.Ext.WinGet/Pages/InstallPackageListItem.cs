@@ -4,22 +4,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.CmdPal.Common.WinGet.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Management.Deployment;
+using Windows.Foundation.Metadata;
 
 namespace Microsoft.CmdPal.Ext.WinGet.Pages;
 
 public partial class InstallPackageListItem : ListItem
 {
-    private readonly IWinGetPackageManagerService _winGetPackageManagerService;
-    private readonly IWinGetOperationTrackerService _winGetOperationTrackerService;
-    private readonly TaskScheduler _uiScheduler;
     private readonly CatalogPackage _package;
 
     // Lazy-init the details
@@ -28,18 +26,10 @@ public partial class InstallPackageListItem : ListItem
     public override IDetails? Details { get => _details.Value; set => base.Details = value; }
 
     private InstallPackageCommand? _installCommand;
-    private bool? _skipDependencies;
 
-    public InstallPackageListItem(
-        CatalogPackage package,
-        IWinGetPackageManagerService winGetPackageManagerService,
-        IWinGetOperationTrackerService winGetOperationTrackerService,
-        TaskScheduler uiScheduler)
+    public InstallPackageListItem(CatalogPackage package)
         : base(new NoOpCommand())
     {
-        _winGetPackageManagerService = winGetPackageManagerService;
-        _winGetOperationTrackerService = winGetOperationTrackerService;
-        _uiScheduler = uiScheduler;
         _package = package;
 
         PackageVersionInfo? version = null;
@@ -85,7 +75,11 @@ public partial class InstallPackageListItem : ListItem
             {
                 if (metadata.Tags[i].Equals(WinGetExtensionPage.ExtensionsTag, StringComparison.OrdinalIgnoreCase))
                 {
-                    _skipDependencies = true;
+                    if (_installCommand is not null)
+                    {
+                        _installCommand.SkipDependencies = true;
+                    }
+
                     break;
                 }
             }
@@ -226,10 +220,7 @@ public partial class InstallPackageListItem : ListItem
             PackageInstallCommandState.Install;
 
         // might be an uninstall command
-        InstallPackageCommand installCommand = new(_winGetPackageManagerService, _winGetOperationTrackerService, _uiScheduler, _package, installedState)
-        {
-            SkipDependencies = ShouldSkipDependencies(),
-        };
+        InstallPackageCommand installCommand = new(_package, installedState);
 
         if (_package.InstalledVersion is not null)
         {
@@ -254,7 +245,7 @@ public partial class InstallPackageListItem : ListItem
         }
         else
         {
-            _installCommand = installCommand;
+            _installCommand = new InstallPackageCommand(_package, installedState);
             _installCommand.InstallStateChanged += InstallStateChangedHandler;
             Command = _installCommand;
             Icon = _installCommand.Icon;
@@ -318,43 +309,37 @@ public partial class InstallPackageListItem : ListItem
 
     private void InstallStateChangedHandler(object? sender, InstallPackageCommand e)
     {
-        UpdatedInstalledStatus();
-    }
-
-    private bool ShouldSkipDependencies()
-    {
-        if (_skipDependencies.HasValue)
+        if (!ApiInformation.IsApiContractPresent("Microsoft.Management.Deployment.WindowsPackageManagerContract", 12))
         {
-            return _skipDependencies.Value;
+            Logger.LogError($"RefreshPackageCatalogAsync isn't available");
+            e.FakeChangeStatus();
+            Command = e;
+            Icon = (IconInfo?)Command.Icon;
+            return;
         }
 
-        CatalogPackageMetadata? metadata = null;
-        try
+        _ = Task.Run(() =>
         {
-            var version = _package.DefaultInstallVersion ?? _package.InstalledVersion;
-            metadata = version?.GetCatalogPackageMetadata();
-        }
-        catch (COMException ex)
-        {
-            Logger.LogWarning($"GetCatalogPackageMetadata error {ex.ErrorCode}");
-        }
-
-        if (metadata is null)
-        {
-            _skipDependencies = false;
-            return false;
-        }
-
-        for (var i = 0; i < metadata.Tags.Count; i++)
-        {
-            if (metadata.Tags[i].Equals(WinGetExtensionPage.ExtensionsTag, StringComparison.OrdinalIgnoreCase))
+            Stopwatch s = new();
+            Logger.LogDebug($"Starting RefreshPackageCatalogAsync");
+            s.Start();
+            var refs = WinGetStatics.AvailableCatalogs;
+            for (var i = 0; i < refs.Count; i++)
             {
-                _skipDependencies = true;
-                return true;
+                var catalog = refs[i];
+                var operation = catalog.RefreshPackageCatalogAsync();
+                operation.Wait();
             }
-        }
 
-        _skipDependencies = false;
-        return false;
+            s.Stop();
+            Logger.LogDebug($"RefreshPackageCatalogAsync took {s.ElapsedMilliseconds}ms");
+        }).ContinueWith((previous) =>
+        {
+            if (previous.IsCompletedSuccessfully)
+            {
+                Logger.LogDebug($"Updating InstalledStatus");
+                UpdatedInstalledStatus();
+            }
+        });
     }
 }

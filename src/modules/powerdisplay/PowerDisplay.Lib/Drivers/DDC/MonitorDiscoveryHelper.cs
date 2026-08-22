@@ -90,16 +90,15 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// after discovery to avoid slow I2C operations during the discovery phase.
         /// </summary>
         /// <param name="physicalMonitor">Physical monitor structure with handle and description</param>
-        /// <param name="monitorInfo">Display info from QueryDisplayConfig (DevicePath, FriendlyName, MonitorNumber)</param>
-        /// <param name="monitorId">Canonical DevicePath-based monitor ID derived by the discovery controller</param>
+        /// <param name="monitorInfo">Display info from QueryDisplayConfig (EdidId, FriendlyName, MonitorNumber)</param>
         internal Monitor? CreateMonitorFromPhysical(
             PHYSICAL_MONITOR physicalMonitor,
-            MonitorDisplayInfo monitorInfo,
-            string monitorId)
+            MonitorDisplayInfo monitorInfo)
         {
             try
             {
-                // Get friendly name directly from MonitorDisplayInfo
+                // Get EDID ID and friendly name directly from MonitorDisplayInfo
+                string edidId = monitorInfo.EdidId ?? string.Empty;
                 string name = physicalMonitor.GetDescription() ?? string.Empty;
 
                 // Use FriendlyName from QueryDisplayConfig if available and not generic
@@ -109,17 +108,10 @@ namespace PowerDisplay.Common.Drivers.DDC
                     name = monitorInfo.FriendlyName;
                 }
 
-                // Use the stable DevicePath-based Id derived once by the discovery controller.
-                // DiscoverFromHandleAsync already rejects an empty Id before it issues any I2C
-                // traffic, so this is a contract check on an internal helper rather than a path
-                // discovery can reach — persisting settings under a key that will not survive the
-                // next reboot is worth two guards.
-                if (string.IsNullOrEmpty(monitorId))
-                {
-                    Logger.LogWarning(
-                        $"DDC: Skipping monitor #{monitorInfo.MonitorNumber} (name='{name}') — DevicePath unavailable, cannot generate stable Id");
-                    return null;
-                }
+                // Generate unique monitor Id: "DDC_{EdidId}_{MonitorNumber}"
+                string monitorId = !string.IsNullOrEmpty(edidId)
+                    ? $"DDC_{edidId}_{monitorInfo.MonitorNumber}"
+                    : $"DDC_Unknown_{monitorInfo.MonitorNumber}";
 
                 // If still no good name, use default value
                 if (string.IsNullOrEmpty(name) || name.Contains("Generic") || name.Contains("PnP"))
@@ -131,7 +123,10 @@ namespace PowerDisplay.Common.Drivers.DDC
                 {
                     Id = monitorId,
                     Name = name.Trim(),
-                    CurrentBrightness = 50, // Initial placeholder; overwritten if the VCP read succeeds
+                    CurrentBrightness = 50, // Default value, will be updated by MonitorManager after discovery
+                    MinBrightness = 0,
+                    MaxBrightness = 100,
+                    IsAvailable = true,
                     Handle = physicalMonitor.HPhysicalMonitor,
                     Capabilities = MonitorCapabilities.DdcCi,
                     CommunicationMethod = "DDC/CI",

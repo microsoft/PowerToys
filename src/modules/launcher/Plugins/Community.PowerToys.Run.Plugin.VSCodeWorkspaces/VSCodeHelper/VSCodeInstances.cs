@@ -16,7 +16,6 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
     public static class VSCodeInstances
     {
         private static readonly string _userAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        private static readonly string _userProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
         public static List<VSCodeInstance> Instances { get; set; } = new List<VSCodeInstance>();
 
@@ -130,7 +129,6 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
 
                 var portableData = Path.Join(iconPath, "data");
                 instance.AppData = Directory.Exists(portableData) ? Path.Join(portableData, "user-data") : Path.Combine(_userAppDataPath, version);
-                instance.SharedStorageDbPath = GetSharedStorageDbPath(version, iconPath, Directory.Exists(portableData));
                 var vsCodeIconPath = Path.Join(iconPath, $"{version}.exe");
                 if (!File.Exists(vsCodeIconPath))
                 {
@@ -158,31 +156,6 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
 
                 Instances.Add(instance);
             }
-        }
-
-        private static string GetSharedStorageDbPath(string version, string iconPath, bool isPortable)
-        {
-            if (isPortable)
-            {
-                return Path.Join(iconPath, "data-shared", "sharedStorage", "state.vscdb");
-            }
-
-            var sharedStorageDirectory = version switch
-            {
-                "Code" => ".vscode-shared",
-                "Code - Insiders" => ".vscode-insiders-shared",
-                "Code - Exploration" => ".vscode-exploration-shared",
-                "VSCodium" => ".vscodium-shared",
-                "VSCodium - Insiders" => ".vscodium-insiders-shared",
-                _ => string.Empty,
-            };
-
-            if (string.IsNullOrEmpty(sharedStorageDirectory))
-            {
-                return string.Empty;
-            }
-
-            return Path.Combine(_userProfilePath, sharedStorageDirectory, "sharedStorage", "state.vscdb");
         }
     }
 }

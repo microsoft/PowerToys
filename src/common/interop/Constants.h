@@ -24,7 +24,6 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring AdvancedPasteCustomActionMessage();
         static hstring AdvancedPasteTerminateAppMessage();
         static hstring AdvancedPasteShowUIEvent();
-        static hstring AlwaysOnTopPinEvent();
         static hstring MeasureToolTriggerEvent();
         static hstring FindMyMouseTriggerEvent();
         static hstring MouseHighlighterTriggerEvent();
@@ -59,6 +58,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring TerminateHostsSharedEvent();
         static hstring CropAndLockThumbnailEvent();
         static hstring CropAndLockReparentEvent();
+        static hstring CropAndLockExitEvent();
         static hstring CropAndLockScreenshotEvent();
         static hstring ShowEnvironmentVariablesSharedEvent();
         static hstring ShowEnvironmentVariablesAdminSharedEvent();
@@ -66,14 +66,17 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring WorkspacesHotkeyEvent();
         static hstring PowerToysRunnerTerminateSettingsEvent();
         static hstring ShowCmdPalEvent();
+        static hstring AlwaysOnTopPinEvent();
+        static hstring AlwaysOnTopTerminateEvent();
+        static hstring ZoomItRefreshSettingsEvent();
+        static hstring TerminateKBMSharedEvent();
+        static hstring LightSwitchManualOverrideEvent();
         static hstring TogglePowerDisplayEvent();
         static hstring TerminatePowerDisplayEvent();
-        static hstring AutoDisablePowerDisplayEvent();
         static hstring RefreshPowerDisplayMonitorsEvent();
         static hstring SettingsUpdatedPowerDisplayEvent();
         static hstring PowerDisplaySendSettingsTelemetryEvent();
         static hstring HotkeyUpdatedPowerDisplayEvent();
-        static hstring RescanPowerDisplayMonitorsEvent();
         static hstring PowerDisplayToggleMessage();
         static hstring PowerDisplayApplyProfileMessage();
         static hstring PowerDisplayTerminateAppMessage();
@@ -90,4 +93,3 @@ namespace winrt::PowerToys::Interop::factory_implementation
     {
     };
 }
-

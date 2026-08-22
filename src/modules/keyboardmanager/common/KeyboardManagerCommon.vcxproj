@@ -59,10 +59,8 @@
     <ClInclude Include="RemapShortcut.h" />
     <ClInclude Include="Shortcut.h" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)src\common\COMUtils\COMUtils.vcxproj">
-      <Project>{7319089e-46d6-4400-bc65-e39bdf1416ee}</Project>
-    </ProjectReference>
     <ProjectReference Include="$(RepoRoot)src\common\logger\logger.vcxproj">
       <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
     </ProjectReference>

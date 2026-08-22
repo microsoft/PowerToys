@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -26,7 +26,6 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
     private readonly IPlaceholderParser _placeholderParser;
     private readonly SupersedingAsyncValueGate<BookmarkListItemReclassifyResult> _classificationGate;
     private readonly TaskCompletionSource _initializationTcs = new();
-    private readonly bool _isBandItem;
 
     private BookmarkData _bookmark;
 
@@ -38,18 +37,12 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
 
     public Guid BookmarkId => _bookmark.Id;
 
-    public BookmarkListItem(
-        BookmarkData bookmark,
-        IBookmarksManager bookmarksManager,
-        IBookmarkResolver commandResolver,
-        IBookmarkIconLocator iconLocator,
-        IPlaceholderParser placeholderParser,
-        bool asBand = false)
+    public BookmarkListItem(BookmarkData bookmark, IBookmarksManager bookmarksManager, IBookmarkResolver commandResolver, IBookmarkIconLocator iconLocator, IPlaceholderParser placeholderParser)
     {
         ArgumentNullException.ThrowIfNull(bookmark);
         ArgumentNullException.ThrowIfNull(bookmarksManager);
         ArgumentNullException.ThrowIfNull(commandResolver);
-        _isBandItem = asBand;
+
         _bookmark = bookmark;
         _bookmarksManager = bookmarksManager;
         _bookmarksManager.BookmarkUpdated += BookmarksManagerOnBookmarkUpdated;
@@ -114,23 +107,6 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
         BuildSpecificContextMenuItems(classification, contextMenu);
         AddCommonContextMenuItems(_bookmark, _bookmarksManager, bookmarkSavedHandler, contextMenu);
 
-        // If we're a band AND the classification kind was directory , then flip
-        // the command and the first contextMenu item
-        if (_isBandItem && classification.Kind == CommandKind.Directory && contextMenu.Count > 0)
-        {
-            var firstContextCommand = contextMenu[0] as CommandContextItem;
-            if (firstContextCommand != null)
-            {
-                var browseCommand = firstContextCommand.Command;
-                if (browseCommand != null)
-                {
-                    contextMenu.RemoveAt(0);
-                    contextMenu.Insert(0, new CommandContextItem(command));
-                    command = browseCommand;
-                }
-            }
-        }
-
         return new BookmarkListItemReclassifyResult(
             command,
             title,
@@ -179,8 +155,7 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
         {
             case CommandKind.Directory:
                 directoryPath = targetPath;
-                var c = new DirectoryPage(directoryPath);
-                contextMenu.Add(new CommandContextItem(c)); // Browse
+                contextMenu.Add(new CommandContextItem(new DirectoryPage(directoryPath))); // Browse
                 break;
             case CommandKind.FileExecutable:
             case CommandKind.FileDocument:

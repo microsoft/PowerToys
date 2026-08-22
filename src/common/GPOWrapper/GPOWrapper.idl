@@ -12,7 +12,6 @@ namespace PowerToys
         };
         [default_interface] static runtimeclass GPOWrapper {
             static GpoRuleConfigured GetConfiguredAlwaysOnTopEnabledValue();
-            static GpoRuleConfigured GetConfiguredAltWindowCycleEnabledValue();
             static GpoRuleConfigured GetConfiguredAwakeEnabledValue();
             static GpoRuleConfigured GetConfiguredCmdNotFoundEnabledValue();
             static GpoRuleConfigured GetConfiguredCmdPalEnabledValue();

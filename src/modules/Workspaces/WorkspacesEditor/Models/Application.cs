@@ -130,7 +130,7 @@ namespace WorkspacesEditor.Models
         {
             if (_isInitialized)
             {
-                Parent.Initialize(App.GetCurrentTheme());
+                Parent.Initialize(App.ThemeManager.GetCurrentTheme());
             }
         }
 

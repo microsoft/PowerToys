@@ -17,10 +17,44 @@
 #include <string>
 #include <filesystem>
 
+#ifndef SUPRESS_LOGGER
 #include <common/logger/logger.h>
+#endif // SUPRESS_LOGGER
 #include <common/utils/winapi_error.h>
 #include <common/utils/process_path.h>
 #include <common/utils/processApi.h>
+
+#ifdef SUPRESS_LOGGER
+class Logger
+{
+public:
+    template<typename FormatString, typename... Args>
+    static void trace(const FormatString&, const Args&...)
+    {
+    }
+    template<typename FormatString, typename... Args>
+    static void debug(const FormatString&, const Args&...)
+    {
+    }
+    template<typename FormatString, typename... Args>
+    static void info(const FormatString&, const Args&...)
+    {
+    }
+    template<typename FormatString, typename... Args>
+    static void warn(const FormatString&, const Args&...)
+    {
+    }
+    template<typename FormatString, typename... Args>
+    static void error(const FormatString&, const Args&...)
+    {
+    }
+    template<typename FormatString, typename... Args>
+    static void critical(const FormatString&, const Args&...)
+    {
+    }
+};
+#endif // SUPRESS_LOGGER
+
 
 namespace
 {
@@ -406,7 +440,7 @@ inline std::optional<ProcessInfo> RunNonElevatedFailsafe(const std::wstring& fil
     {
         Logger::warn(L"RunNonElevatedEx() failed. Trying fallback");
         std::wstring action_runner_path = get_module_folderpath() + L"\\PowerToys.ActionRunner.exe";
-        std::wstring newParams = fmt::format(L"-run-non-elevated -target \"{}\" {}", file, params);
+        std::wstring newParams = std::format(L"-run-non-elevated -target \"{}\" {}", file, params);
         launched = run_non_elevated(action_runner_path, newParams, nullptr, working_dir.c_str());
         if (launched)
         {

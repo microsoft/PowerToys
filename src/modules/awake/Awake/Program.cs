@@ -113,7 +113,7 @@ namespace Awake
                 else
                 {
                     Logger.LogInfo($"Launching {Core.Constants.AppName}...");
-                    Logger.LogInfo(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
+                    Logger.LogInfo(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion ?? string.Empty);
                     Logger.LogInfo($"Build: {Core.Constants.BuildId}");
                     Logger.LogInfo($"OS: {Environment.OSVersion}");
                     Logger.LogInfo($"OS Build: {Manager.GetOperatingSystemBuild()}");
@@ -243,7 +243,7 @@ namespace Awake
             if (e.ExceptionObject is Exception exception)
             {
                 Logger.LogError(exception.ToString());
-                Logger.LogError(exception.StackTrace);
+                Logger.LogError(exception.StackTrace ?? string.Empty);
             }
         }
 

@@ -185,19 +185,22 @@ internal sealed class Window
         // Try WM_GETICON with SendMessageTimeout
         if (NativeMethods.SendMessageTimeout(Hwnd, Win32Constants.WM_GETICON, Win32Constants.ICON_BIG, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out var result) != 0 && result != 0)
         {
-            icon = CloneIcon(result);
+            icon = System.Drawing.Icon.FromHandle(result);
+            NativeMethods.DestroyIcon(result);
             return true;
         }
 
         if (NativeMethods.SendMessageTimeout(Hwnd, Win32Constants.WM_GETICON, Win32Constants.ICON_SMALL, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out result) != 0 && result != 0)
         {
-            icon = CloneIcon(result);
+            icon = System.Drawing.Icon.FromHandle(result);
+            NativeMethods.DestroyIcon(result);
             return true;
         }
 
         if (NativeMethods.SendMessageTimeout(Hwnd, Win32Constants.WM_GETICON, Win32Constants.ICON_SMALL2, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out result) != 0 && result != 0)
         {
-            icon = CloneIcon(result);
+            icon = System.Drawing.Icon.FromHandle(result);
+            NativeMethods.DestroyIcon(result);
             return true;
         }
 
@@ -205,24 +208,20 @@ internal sealed class Window
         var iconHandle = NativeMethods.GetClassLongPtr(Hwnd, Win32Constants.GCLP_HICON);
         if (iconHandle != IntPtr.Zero)
         {
-            icon = CloneIcon(iconHandle);
+            icon = System.Drawing.Icon.FromHandle(iconHandle);
+            NativeMethods.DestroyIcon(iconHandle);
             return true;
         }
 
         iconHandle = NativeMethods.GetClassLongPtr(Hwnd, Win32Constants.GCLP_HICONSM);
         if (iconHandle != IntPtr.Zero)
         {
-            icon = CloneIcon(iconHandle);
+            icon = System.Drawing.Icon.FromHandle(iconHandle);
+            NativeMethods.DestroyIcon(iconHandle);
             return true;
         }
 
         return false;
-    }
-
-    private static System.Drawing.Icon CloneIcon(IntPtr iconHandle)
-    {
-        using var borrowedIcon = System.Drawing.Icon.FromHandle(iconHandle);
-        return (System.Drawing.Icon)borrowedIcon.Clone();
     }
 
     /// <summary>

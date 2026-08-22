@@ -6,7 +6,7 @@ using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
-public interface IBookmarksManager
+internal interface IBookmarksManager
 {
     event Action<BookmarkData>? BookmarkAdded;
 

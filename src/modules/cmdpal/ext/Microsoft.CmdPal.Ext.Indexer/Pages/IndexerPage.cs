@@ -10,7 +10,6 @@ using System.Globalization;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Ext.Indexer.Indexer;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -45,7 +44,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
     public IndexerPage()
     {
-        Id = BuiltInCommandIds.FileSearch;
+        Id = "com.microsoft.indexer.fileSearch";
         Icon = Icons.FileExplorerIcon;
         Name = Resources.Indexer_Title;
         PlaceholderText = Resources.Indexer_PlaceholderText;

@@ -43,9 +43,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private bool _isActive;
         private bool disposedValue;
 
-        [ThreadStatic]
-        private static bool _isDialogOpen;
-
         public string Header { get; set; }
 
         public string Keys { get; set; }
@@ -545,7 +542,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
                     if (lastValidSettings.IsValid())
                     {
-                        if (hotkeySettings != null && string.Equals(lastValidSettings.ToString(), hotkeySettings.ToString(), StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(lastValidSettings.ToString(), hotkeySettings.ToString(), StringComparison.OrdinalIgnoreCase))
                         {
                             c.HasConflict = hotkeySettings.HasConflict;
                             c.ConflictMessage = hotkeySettings.ConflictDescription;
@@ -674,48 +671,25 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private async void OpenDialogButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_isDialogOpen)
-            {
-                return;
-            }
+            c.Keys = null;
+            c.Keys = HotkeySettings.GetKeysList();
 
-            _isDialogOpen = true;
-            try
-            {
-                c.Keys = null;
-                c.Keys = HotkeySettings?.GetKeysList() ?? new List<object>();
+            c.IgnoreConflict = IgnoreConflict;
+            c.HasConflict = hotkeySettings.HasConflict;
+            c.ConflictMessage = hotkeySettings.ConflictDescription;
 
-                c.IgnoreConflict = IgnoreConflict;
-                c.HasConflict = hotkeySettings?.HasConflict ?? false;
-                c.ConflictMessage = hotkeySettings?.ConflictDescription;
+            // 92 means the Win key. The logic is: warning should be visible if the shortcut contains Alt AND contains Ctrl AND NOT contains Win.
+            // Additional key must be present, as this is a valid, previously used shortcut shown at dialog open. Check for presence of non-modifier-key is not necessary therefore
+            c.IsWarningAltGr = c.Keys.Contains("Ctrl") && c.Keys.Contains("Alt") && !c.Keys.Contains(92);
 
-                // 92 means the Win key. The logic is: warning should be visible if the shortcut contains Alt AND contains Ctrl AND NOT contains Win.
-                // Additional key must be present, as this is a valid, previously used shortcut shown at dialog open. Check for presence of non-modifier-key is not necessary therefore
-                c.IsWarningAltGr = c.Keys.Contains("Ctrl") && c.Keys.Contains("Alt") && !c.Keys.Contains(92);
-
-                shortcutDialog.XamlRoot = this.XamlRoot;
-                shortcutDialog.RequestedTheme = this.ActualTheme;
-                await shortcutDialog.ShowAsync();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Failed to open shortcut dialog", ex);
-            }
-            finally
-            {
-                _isDialogOpen = false;
-            }
+            shortcutDialog.XamlRoot = this.XamlRoot;
+            shortcutDialog.RequestedTheme = this.ActualTheme;
+            await shortcutDialog.ShowAsync();
         }
 
         private void C_ResetClick(object sender, RoutedEventArgs e)
         {
-            // Use an empty HotkeySettings instead of null to avoid a native E_POINTER
-            // crash in the WinUI3 XAML runtime.  Setting the DependencyProperty to null
-            // while the two-way binding is still active causes the XAML runtime to
-            // dereference a null pointer during property-change notification.
-            // An empty HotkeySettings (IsEmpty()==true) signals "no shortcut" without
-            // breaking the binding chain.
-            hotkeySettings = new HotkeySettings();
+            hotkeySettings = null;
 
             SetValue(HotkeySettingsProperty, hotkeySettings);
             SetKeys();

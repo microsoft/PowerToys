@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "CommonManaged.h"
 #include "CommonManaged.g.cpp"
-#include <common/version/version.h>
+#include <common/utils/version.h>
 
 namespace winrt::PowerToys::Interop::implementation
 {

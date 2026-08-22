@@ -93,14 +93,13 @@ void FancyZonesApp::InitHooks()
         }
     }
 
-    std::array<DWORD, 7> events_to_subscribe = {
+    std::array<DWORD, 6> events_to_subscribe = {
         EVENT_SYSTEM_MOVESIZESTART,
         EVENT_SYSTEM_MOVESIZEEND,
         EVENT_OBJECT_NAMECHANGE,
         EVENT_OBJECT_UNCLOAKED,
         EVENT_OBJECT_SHOW,
-        EVENT_OBJECT_CREATE,
-        EVENT_OBJECT_DESTROY
+        EVENT_OBJECT_CREATE
     };
     for (const auto event : events_to_subscribe)
     {
@@ -175,7 +174,6 @@ void FancyZonesApp::HandleWinHookEvent(WinHookEvent* data) noexcept
     case EVENT_OBJECT_UNCLOAKED:
     case EVENT_OBJECT_SHOW:
     case EVENT_OBJECT_CREATE:
-    case EVENT_OBJECT_DESTROY:
     {
         fzCallback->HandleWinHookEvent(data);
     }

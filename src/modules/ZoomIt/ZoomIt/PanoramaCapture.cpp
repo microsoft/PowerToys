@@ -104,7 +104,6 @@
 #include "pch.h"
 
 #include "PanoramaCapture.h"
-#include "ImageEncoder.h"
 #include "Utility.h"
 #include "WindowsVersions.h"
 
@@ -141,6 +140,7 @@ extern bool             g_bSaveInProgress;
 extern std::wstring     g_ScreenshotSaveLocation;
 void OutputDebug(const TCHAR* format, ...);
 const wchar_t* HotkeyIdToString( WPARAM hotkeyId );
+DWORD SavePng( LPCTSTR Filename, HBITMAP hBitmap );
 std::wstring GetUniqueFilename( const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId );
 
 // Maximum number of frames the capture loop will collect before auto-stopping.
@@ -285,11 +285,13 @@ public:
             SetWindowPos( m_hProgress, nullptr, 0, 0, 0, 0,
                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED );
 
-            // Disable visual styles so PBM_SETBARCOLOR / PBM_SETBKCOLOR are honored
+            // Disable visual styles so PBM_SETBARCOLOR is honored
             SetWindowTheme( m_hProgress, L"", L"" );
             SendMessage( m_hProgress, PBM_SETBARCOLOR, 0, static_cast<LPARAM>( RGB( 0x00, 0x78, 0xD4 ) ) );
-            SendMessage( m_hProgress, PBM_SETBKCOLOR, 0, static_cast<LPARAM>(
-                darkMode ? DarkMode::SurfaceColor : GetSysColor( COLOR_WINDOW ) ) );
+            if( darkMode )
+            {
+                SendMessage( m_hProgress, PBM_SETBKCOLOR, 0, static_cast<LPARAM>( DarkMode::SurfaceColor ) );
+            }
         }
 
         // Set font scaled for DPI
@@ -387,32 +389,25 @@ private:
 
         case WM_CTLCOLORSTATIC:
         case WM_CTLCOLORBTN:
+            if( IsDarkModeEnabled() )
             {
                 HDC hdc = reinterpret_cast<HDC>( wParam );
-                if( IsDarkModeEnabled() )
-                {
-                    SetTextColor( hdc, DarkMode::TextColor );
-                    SetBkColor( hdc, DarkMode::BackgroundColor );
-                    return reinterpret_cast<LRESULT>( GetDarkModeBrush() );
-                }
-                else
-                {
-                    SetBkMode( hdc, TRANSPARENT );
-                    SetTextColor( hdc, GetSysColor( COLOR_WINDOWTEXT ) );
-                    return reinterpret_cast<LRESULT>( GetSysColorBrush( COLOR_BTNFACE ) );
-                }
+                SetTextColor( hdc, DarkMode::TextColor );
+                SetBkColor( hdc, DarkMode::BackgroundColor );
+                return reinterpret_cast<LRESULT>( GetDarkModeBrush() );
             }
+            break;
 
         case WM_ERASEBKGND:
+            if( IsDarkModeEnabled() )
             {
                 HDC hdc = reinterpret_cast<HDC>( wParam );
                 RECT rc{};
                 GetClientRect( hWnd, &rc );
-                FillRect( hdc, &rc, IsDarkModeEnabled()
-                    ? GetDarkModeBrush()
-                    : GetSysColorBrush( COLOR_BTNFACE ) );
+                FillRect( hdc, &rc, GetDarkModeBrush() );
                 return 1;
             }
+            break;
         }
         return DefWindowProcW( hWnd, uMsg, wParam, lParam );
     }
@@ -7200,11 +7195,12 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
 
     if( directOk && !transposedOk )
     {
-        // When only one direction succeeds on the first pair, the result
-        // might be spurious autocorrelation rather than true scroll.
-        // Fall through to the axis scan to validate the direction.
+        bestDx = directDx;
+        bestDy = directDy;
+        return true;
     }
-    else if( transposedOk && !directOk )
+
+    if( transposedOk && !directOk )
     {
         // On portrait portals (height >= 2*width), a transposed-only
         // success is likely spurious horizontal autocorrelation from
@@ -7219,7 +7215,9 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
                        mappedDx, mappedDy, frameWidth, frameHeight );
             return false;
         }
-        // Otherwise fall through to the axis scan to validate the direction.
+        bestDx = mappedDx;
+        bestDy = mappedDy;
+        return true;
     }
 
     // Both searches succeeded.  Startup axis choice is critical because a
@@ -10343,10 +10341,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     } captureStitchLogGuard;
 
     g_RecordCropping = TRUE;
-    g_SelectRectangle.AspectRatio( 0.0 );
-    // Panorama uses a blue bounding rectangle to distinguish it from the yellow
-    // recording-region selection.
-    const bool started = g_SelectRectangle.Start( hWnd, false, RGB( 0, 120, 215 ) );
+    const bool started = g_SelectRectangle.Start( hWnd );
     g_RecordCropping = FALSE;
     if( !started )
     {
@@ -10760,9 +10755,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             saveDialog->SetOptions( options | FOS_FORCEFILESYSTEM | FOS_OVERWRITEPROMPT );
 
         COMDLG_FILTERSPEC fileTypes[] = {
-            { L"PNG Image", L"*.png" },
-            { L"WebP Image", L"*.webp" },
-            { L"JPEG Image", L"*.jpg" }
+            { L"PNG Image", L"*.png" }
         };
         saveDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
         saveDialog->SetFileTypeIndex( 1 );
@@ -10787,7 +10780,6 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         }
 
         std::wstring selectedFilePath;
-        UINT selectedFilterIndex = 1;
         if( SUCCEEDED( saveDialog->Show( hWnd ) ) )
         {
             wil::com_ptr<IShellItem> resultItem;
@@ -10799,43 +10791,16 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
                     selectedFilePath = pathStr.get();
                 }
             }
-            saveDialog->GetFileTypeIndex( &selectedFilterIndex );
         }
 
         bool success = false;
         if( !selectedFilePath.empty() )
         {
-            // Map the selected filter to an image format. Filter indices are
-            // 1-based: 1 = PNG, 2 = WebP, 3 = JPEG.
-            ImageFormat imageFormat = ImageFormat::Png;
-            const wchar_t* desiredExtension = L".png";
-            if( selectedFilterIndex == 2 )
+            if( selectedFilePath.find( L'.' ) == std::wstring::npos )
             {
-                imageFormat = ImageFormat::Webp;
-                desiredExtension = L".webp";
+                selectedFilePath += L".png";
             }
-            else if( selectedFilterIndex == 3 )
-            {
-                imageFormat = ImageFormat::Jpeg;
-                desiredExtension = L".jpg";
-            }
-
-            // Ensure the filename carries the extension matching the chosen
-            // format. Only override when the user left the extension off or
-            // used a format extension we manage (.png/.webp/.jpg/.jpeg).
-            std::filesystem::path targetPath( selectedFilePath );
-            std::wstring currentExt = targetPath.extension().wstring();
-            if( currentExt.empty() ||
-                _wcsicmp( currentExt.c_str(), L".png" ) == 0 ||
-                _wcsicmp( currentExt.c_str(), L".webp" ) == 0 ||
-                _wcsicmp( currentExt.c_str(), L".jpg" ) == 0 ||
-                _wcsicmp( currentExt.c_str(), L".jpeg" ) == 0 )
-            {
-                targetPath.replace_extension( desiredExtension );
-            }
-            selectedFilePath = targetPath.wstring();
-
-            DWORD saveResult = SaveImage( selectedFilePath.c_str(), panoramaBitmap, imageFormat );
+            DWORD saveResult = SavePng( selectedFilePath.c_str(), panoramaBitmap );
             if( saveResult == ERROR_SUCCESS )
             {
                 g_ScreenshotSaveLocation = selectedFilePath;
@@ -10844,7 +10809,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             }
             else
             {
-                StitchLog( L"[Panorama/Capture] SaveImage failed err=%lu\n", saveResult );
+                StitchLog( L"[Panorama/Capture] SavePng failed err=%lu\n", saveResult );
             }
         }
 

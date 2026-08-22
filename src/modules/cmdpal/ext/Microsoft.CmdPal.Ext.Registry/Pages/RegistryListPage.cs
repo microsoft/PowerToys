@@ -1,11 +1,10 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Ext.Registry.Classes;
 using Microsoft.CmdPal.Ext.Registry.Helpers;
 using Microsoft.CmdPal.Ext.Registry.Properties;
@@ -25,7 +24,7 @@ internal sealed partial class RegistryListPage : DynamicListPage
     {
         Icon = Icons.RegistryIcon;
         Name = Title = Resources.Registry_Page_Title;
-        Id = BuiltInCommandIds.Registry;
+        Id = "com.microsoft.cmdpal.registry";
         _settingsManager = settingsManager;
         _emptyMessage = new CommandItem()
         {

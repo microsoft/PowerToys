@@ -8,16 +8,8 @@ public sealed partial class ItemsUpdatedEventArgs : EventArgs
 {
     public bool ForceFirstItem { get; }
 
-    public bool EnsureSelectionVisible { get; }
-
     public ItemsUpdatedEventArgs(bool forceFirstItem)
-        : this(forceFirstItem, ensureSelectionVisible: true)
-    {
-    }
-
-    public ItemsUpdatedEventArgs(bool forceFirstItem, bool ensureSelectionVisible)
     {
         ForceFirstItem = forceFirstItem;
-        EnsureSelectionVisible = ensureSelectionVisible;
     }
 }

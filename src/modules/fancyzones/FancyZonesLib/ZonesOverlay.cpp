@@ -340,19 +340,13 @@ void ZonesOverlay::DrawActiveZoneSet(const ZonesMap& zones,
 
 ZonesOverlay::~ZonesOverlay()
 {
-    // Constructor early-returns (e.g. CreateHwndRenderTarget failing during a
-    // display-driver TDR) leave m_renderThread default-constructed; calling
-    // join() on a non-joinable thread terminates the process.
-    if (m_renderThread.joinable())
     {
-        {
-            std::unique_lock lock(m_mutex);
-            m_abortThread = true;
-            m_shouldRender = true;
-        }
-        m_cv.notify_all();
-        m_renderThread.join();
+        std::unique_lock lock(m_mutex);
+        m_abortThread = true;
+        m_shouldRender = true;
     }
+    m_cv.notify_all();
+    m_renderThread.join();
 
     if (m_renderTarget)
     {

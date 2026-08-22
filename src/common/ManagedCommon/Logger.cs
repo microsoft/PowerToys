@@ -29,17 +29,17 @@ namespace ManagedCommon
         /// <summary>
         /// Gets the path to the log directory for the current version of the app.
         /// </summary>
-        public static string CurrentVersionLogDirectoryPath { get; private set; }
+        public static string? CurrentVersionLogDirectoryPath { get; private set; }
 
         /// <summary>
         /// Gets the path to the current log file.
         /// </summary>
-        public static string CurrentLogFile { get; private set; }
+        public static string? CurrentLogFile { get; private set; }
 
         /// <summary>
         /// Gets the path to the log directory for the app.
         /// </summary>
-        public static string AppLogDirectoryPath { get; private set; }
+        public static string? AppLogDirectoryPath { get; private set; }
 
         /// <summary>
         /// Initializes the logger and sets the path for logging.
@@ -50,7 +50,7 @@ namespace ManagedCommon
         public static void InitializeLogger(string applicationLogPath, bool isLocalLow = false)
         {
             string versionedPath = LogDirectoryPath(applicationLogPath, isLocalLow);
-            string basePath = Path.GetDirectoryName(versionedPath);
+            string basePath = Path.GetDirectoryName(versionedPath)!;
 
             if (!Directory.Exists(versionedPath))
             {
@@ -64,6 +64,7 @@ namespace ManagedCommon
             var logFilePath = Path.Combine(versionedPath, logFile);
             CurrentLogFile = logFilePath;
 
+            Trace.Listeners.Clear();
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 
             Trace.AutoFlush = true;
@@ -185,14 +186,20 @@ namespace ManagedCommon
 
         private static void Log(string message, string type, string memberName, string sourceFilePath, int sourceLineNumber)
         {
-            Trace.WriteLine("[" + DateTime.Now.TimeOfDay + "] [" + type + "] " + GetCallerInfo(memberName, sourceFilePath, sourceLineNumber));
-            Trace.Indent();
-            if (message != string.Empty)
+            try
             {
-                Trace.WriteLine(message);
-            }
+                Trace.WriteLine("[" + DateTime.Now.TimeOfDay + "] [" + type + "] " + GetCallerInfo(memberName, sourceFilePath, sourceLineNumber));
+                Trace.Indent();
+                if (message != string.Empty)
+                {
+                    Trace.WriteLine(message);
+                }
 
-            Trace.Unindent();
+                Trace.Unindent();
+            }
+            catch
+            {
+            }
         }
 
         private static string GetCallerInfo(string memberName, string sourceFilePath, int sourceLineNumber)

@@ -192,7 +192,7 @@ public class ExtensionWrapper : IExtensionWrapper
         }
         else if (supportedProviders is T singleProviderSupported)
         {
-            return (T[])[singleProviderSupported];
+            return [singleProviderSupported];
         }
 
         return Enumerable.Empty<T>();

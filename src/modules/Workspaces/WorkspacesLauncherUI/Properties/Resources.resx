@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CancelLaunch" xml:space="preserve">
-    <value>Cancel launch</value>
+    <value>Cancel Launch</value>
   </data>
   <data name="Dismiss" xml:space="preserve">
     <value>Dismiss</value>

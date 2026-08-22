@@ -12,8 +12,8 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 [TestClass]
 public class StringParserTests
 {
-    private CultureInfo originalCulture = null!;
-    private CultureInfo originalUiCulture = null!;
+    private CultureInfo originalCulture;
+    private CultureInfo originalUiCulture;
 
     [TestInitialize]
     public void Setup()

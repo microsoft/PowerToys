@@ -109,11 +109,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void ReleaseNotesButton_Click(object sender, RoutedEventArgs e)
-        {
-            ((App)App.Current)!.OpenScoobe();
-        }
-
         private void OpenDiagnosticsAndFeedbackSettings_Click(object sender, RoutedEventArgs e)
         {
             try

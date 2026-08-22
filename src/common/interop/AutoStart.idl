@@ -1,0 +1,13 @@
+namespace PowerToys
+{
+    namespace Interop
+    {
+        [default_interface] runtimeclass AutoStart
+        {
+            static Boolean CreateAutoStartTaskForThisUser(Boolean runElevated);
+            static Boolean IsAutoStartTaskActiveForThisUser();
+            static Boolean DeleteAutoStartTaskForThisUser();
+        }
+    }
+}
+

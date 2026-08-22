@@ -30,7 +30,8 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
     private const uint HardQueryCookie = 10;
     private static readonly NoOpCommand BaseCommandWithId = new() { Id = CommandId };
 
-    private readonly CompositeFormat _fallbackItemSearchSubtitleFormat = CompositeFormat.Parse(Resources.Indexer_fallback_searchPage_title);
+    private readonly CompositeFormat _fallbackItemSearchPageTitleFormat = CompositeFormat.Parse(Resources.Indexer_fallback_searchPage_title);
+    private readonly CompositeFormat _fallbackItemSearchSubtitleMultipleResults = CompositeFormat.Parse(Resources.Indexer_Fallback_MultipleResults_Subtitle);
     private readonly Lock _querySwitchLock = new();
     private readonly Lock _resultLock = new();
 
@@ -151,8 +152,8 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
                 var indexerPage = new IndexerPage(query);
 
                 var set = UpdateResultForCurrentQuery(
-                    Resources.IndexerCommandsProvider_DisplayName,
-                    string.Format(CultureInfo.CurrentCulture, _fallbackItemSearchSubtitleFormat, query),
+                    string.Format(CultureInfo.CurrentCulture, _fallbackItemSearchPageTitleFormat, query),
+                    string.Format(CultureInfo.CurrentCulture, _fallbackItemSearchSubtitleMultipleResults),
                     Icons.FileExplorerIcon,
                     indexerPage,
                     MoreCommands,

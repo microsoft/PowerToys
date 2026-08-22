@@ -22,11 +22,9 @@ using Windows.System;
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 [Serializable]
-public partial class Win32Program : IProgram
+public class Win32Program : IProgram
 {
     public static readonly Win32Program InvalidProgram = new() { Valid = false, Enabled = false };
-
-    private static readonly Regex InternetShortcutURLPrefixes = InternetShortcutURLPrefixesGenerator();
 
     private static readonly IFileSystem FileSystem = new FileSystem();
     private static readonly IPath Path = FileSystem.Path;
@@ -223,9 +221,7 @@ public partial class Win32Program : IProgram
             RequestedShortcut = KeyChords.OpenInConsole,
         });
 
-        if ((AppType == ApplicationType.ShortcutApplication || AppType == ApplicationType.ApprefApplication || AppType == ApplicationType.Win32Application)
-            && !IsProtectedSystemApp(this)
-            && !IsShortcutTarget(this))
+        if (AppType == ApplicationType.ShortcutApplication || AppType == ApplicationType.ApprefApplication || AppType == ApplicationType.Win32Application)
         {
             commands.Add(new CommandContextItem(
                 new UninstallApplicationConfirmation(this))
@@ -288,6 +284,8 @@ public partial class Win32Program : IProgram
         }
     }
 
+    private static readonly Regex InternetShortcutURLPrefixes = new(@"^steam:\/\/(rungameid|run|open)\/|^com\.epicgames\.launcher:\/\/apps\/", RegexOptions.Compiled);
+
     // This function filters Internet Shortcut programs
     private static Win32Program InternetShortcutProgram(string path)
     {
@@ -315,7 +313,7 @@ public partial class Win32Program : IProgram
                     }
 
                     // To filter out only those steam shortcuts which have 'run' or 'rungameid' as the hostname
-                    if (InternetShortcutURLPrefixes.IsMatch(urlPath))
+                    if (InternetShortcutURLPrefixes.Match(urlPath).Success)
                     {
                         validApp = true;
                     }
@@ -1095,49 +1093,4 @@ public partial class Win32Program : IProgram
             FullExecutablePath = app.FullPath,
         };
     }
-
-    /// <summary>
-    /// Determines whether a Win32 program is a protected system app whose
-    /// executable lives inside %SystemRoot% (e.g. regedit.exe, taskmgr.exe).
-    /// </summary>
-    private static bool IsProtectedSystemApp(Win32Program program)
-    {
-        return PathHelpers.IsSystemRootPath(program.FullPath);
-    }
-
-    /// <summary>
-    /// Determines whether the program's resolved path is itself a shortcut (.lnk).
-    /// This occurs when a shortcut targets another shortcut (an unresolved chain).
-    /// In this case, there is no real executable to uninstall, so the uninstall
-    /// option should be hidden.
-    /// </summary>
-    private static bool IsShortcutTarget(Win32Program program)
-    {
-        if (!PathHelpers.IsShortcutFile(program.FullPath))
-        {
-            return false;
-        }
-
-        var identifier = program.GetAppIdentifier();
-        return PathHelpers.IsShortcutFile(identifier);
-    }
-
-    [GeneratedRegex(
-        """
-        (?:
-            ^steam://(?:rungameid|run|open)/
-            |
-            ^com\.epicgames\.launcher://apps/
-            |
-            ^origin2?://game/
-            |
-            ^link2ea://launchgame/
-            |
-            ^uplay://launch/
-            |
-            ^msgamelaunch://shortcutLaunch/
-        )
-        """,
-        RegexOptions.IgnorePatternWhitespace)]
-    private static partial Regex InternetShortcutURLPrefixesGenerator();
 }

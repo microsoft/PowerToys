@@ -35,6 +35,8 @@ namespace EnvironmentVariablesUILib.Models
             {
                 foreach (var variable in Variables)
                 {
+                    var applyToSystem = variable.ApplyToSystem;
+
                     // Get existing variable with the same name if it exist
                     var variableToOverride = EnvironmentVariablesHelper.GetExisting(variable.Name);
 
@@ -44,13 +46,13 @@ namespace EnvironmentVariablesUILib.Models
                         variableToOverride.Name = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, this.Name);
 
                         // Backup the variable
-                        if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(variableToOverride))
+                        if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToOverride))
                         {
                             LoggerInstance.Logger.LogError("Failed to set backup variable.");
                         }
                     }
 
-                    if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(variable))
+                    if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variable))
                     {
                         LoggerInstance.Logger.LogError("Failed to set profile variable.");
                     }
@@ -76,7 +78,7 @@ namespace EnvironmentVariablesUILib.Models
         public void UnapplyVariable(Variable variable)
         {
             // Unset the variable
-            if (!EnvironmentVariablesHelper.UnsetProfileVariableWithoutNotify(variable))
+            if (!EnvironmentVariablesHelper.UnsetVariableWithoutNotify(variable))
             {
                 LoggerInstance.Logger.LogError("Failed to unset variable.");
             }
@@ -91,12 +93,12 @@ namespace EnvironmentVariablesUILib.Models
             {
                 var variableToRestore = new Variable(originalName, backupVariable.Values, backupVariable.ParentType);
 
-                if (!EnvironmentVariablesHelper.UnsetProfileVariableWithoutNotify(backupVariable))
+                if (!EnvironmentVariablesHelper.UnsetVariableWithoutNotify(backupVariable))
                 {
                     LoggerInstance.Logger.LogError("Failed to unset backup variable.");
                 }
 
-                if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(variableToRestore))
+                if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToRestore))
                 {
                     LoggerInstance.Logger.LogError("Failed to restore backup variable.");
                 }

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using ManagedCommon;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
@@ -30,7 +31,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
             return moduleType switch
             {
                 ModuleType.AdvancedPaste => "ms-appx:///Assets/Settings/Icons/AdvancedPaste.png",
-                ModuleType.AltWindowCycle => "ms-appx:///Assets/Settings/Icons/WindowHopper.png",
                 ModuleType.Workspaces => "ms-appx:///Assets/Settings/Icons/Workspaces.png",
                 ModuleType.PowerOCR => "ms-appx:///Assets/Settings/Icons/TextExtractor.png",
                 ModuleType.PowerAccent => "ms-appx:///Assets/Settings/Icons/QuickAccent.png",
@@ -57,7 +57,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.FancyZones => generalSettingsConfig.Enabled.FancyZones,
                 ModuleType.FileLocksmith => generalSettingsConfig.Enabled.FileLocksmith,
                 ModuleType.FindMyMouse => generalSettingsConfig.Enabled.FindMyMouse,
-                ModuleType.AltWindowCycle => generalSettingsConfig.Enabled.AltWindowCycle,
                 ModuleType.Hosts => generalSettingsConfig.Enabled.Hosts,
                 ModuleType.ImageResizer => generalSettingsConfig.Enabled.ImageResizer,
                 ModuleType.KeyboardManager => generalSettingsConfig.Enabled.KeyboardManager,
@@ -99,7 +98,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 case ModuleType.FancyZones: generalSettingsConfig.Enabled.FancyZones = isEnabled; break;
                 case ModuleType.FileLocksmith: generalSettingsConfig.Enabled.FileLocksmith = isEnabled; break;
                 case ModuleType.FindMyMouse: generalSettingsConfig.Enabled.FindMyMouse = isEnabled; break;
-                case ModuleType.AltWindowCycle: generalSettingsConfig.Enabled.AltWindowCycle = isEnabled; break;
                 case ModuleType.Hosts: generalSettingsConfig.Enabled.Hosts = isEnabled; break;
                 case ModuleType.ImageResizer: generalSettingsConfig.Enabled.ImageResizer = isEnabled; break;
                 case ModuleType.KeyboardManager: generalSettingsConfig.Enabled.KeyboardManager = isEnabled; break;
@@ -144,7 +142,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.FancyZones => FancyZonesSettings.ModuleName,
                 ModuleType.FileLocksmith => FileLocksmithSettings.ModuleName,
                 ModuleType.FindMyMouse => FindMyMouseSettings.ModuleName,
-                ModuleType.AltWindowCycle => AltWindowCycleSettings.ModuleName,
                 ModuleType.Hosts => HostsSettings.ModuleName,
                 ModuleType.ImageResizer => ImageResizerSettings.ModuleName,
                 ModuleType.KeyboardManager => KeyboardManagerSettings.ModuleName,
@@ -167,6 +164,45 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.GrabAndMove => GrabAndMoveSettings.ModuleName,
                 ModuleType.ZoomIt => ZoomItSettings.ModuleName,
                 _ => moduleType.ToString(),
+            };
+        }
+
+        public static ModuleType GetModuleType(string moduleName)
+        {
+            return moduleName switch
+            {
+                AdvancedPasteSettings.ModuleName => ModuleType.AdvancedPaste,
+                AlwaysOnTopSettings.ModuleName => ModuleType.AlwaysOnTop,
+                AwakeSettings.ModuleName => ModuleType.Awake,
+                "CmdPal" => ModuleType.CmdPal, // No dedicated settings class
+                ColorPickerSettings.ModuleName => ModuleType.ColorPicker,
+                CropAndLockSettings.ModuleName => ModuleType.CropAndLock,
+                CursorWrapSettings.ModuleName => ModuleType.CursorWrap,
+                EnvironmentVariablesSettings.ModuleName => ModuleType.EnvironmentVariables,
+                FancyZonesSettings.ModuleName => ModuleType.FancyZones,
+                FileLocksmithSettings.ModuleName => ModuleType.FileLocksmith,
+                FindMyMouseSettings.ModuleName => ModuleType.FindMyMouse,
+                HostsSettings.ModuleName => ModuleType.Hosts,
+                ImageResizerSettings.ModuleName => ModuleType.ImageResizer,
+                KeyboardManagerSettings.ModuleName => ModuleType.KeyboardManager,
+                LightSwitchSettings.ModuleName => ModuleType.LightSwitch,
+                MouseHighlighterSettings.ModuleName => ModuleType.MouseHighlighter,
+                MouseJumpSettings.ModuleName => ModuleType.MouseJump,
+                MousePointerCrosshairsSettings.ModuleName => ModuleType.MousePointerCrosshairs,
+                MouseWithoutBordersSettings.ModuleName => ModuleType.MouseWithoutBorders,
+                NewPlusSettings.ModuleName => ModuleType.NewPlus,
+                PeekSettings.ModuleName => ModuleType.Peek,
+                PowerDisplaySettings.ModuleName => ModuleType.PowerDisplay,
+                PowerRenameSettings.ModuleName => ModuleType.PowerRename,
+                PowerLauncherSettings.ModuleName => ModuleType.PowerLauncher,
+                PowerAccentSettings.ModuleName => ModuleType.PowerAccent,
+                RegistryPreviewSettings.ModuleName => ModuleType.RegistryPreview,
+                MeasureToolSettings.ModuleName => ModuleType.MeasureTool,
+                ShortcutGuideSettings.ModuleName => ModuleType.ShortcutGuide,
+                PowerOcrSettings.ModuleName => ModuleType.PowerOCR,
+                WorkspacesSettings.ModuleName => ModuleType.Workspaces,
+                ZoomItSettings.ModuleName => ModuleType.ZoomIt,
+                _ => throw new ArgumentException($"Unknown module name: {moduleName}"),
             };
         }
     }

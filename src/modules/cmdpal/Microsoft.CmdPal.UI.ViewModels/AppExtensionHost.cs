@@ -60,19 +60,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
             return Task.CompletedTask.AsAsyncAction();
         }
 
-        switch (message.State)
-        {
-            case MessageState.Error:
-                CoreLogger.LogError(message.Message);
-                break;
-            case MessageState.Warning:
-                CoreLogger.LogWarning(message.Message);
-                break;
-            case MessageState.Info:
-            default:
-                CoreLogger.LogInfo(message.Message);
-                break;
-        }
+        CoreLogger.LogDebug(message.Message);
 
         _ = Task.Run(() =>
         {

@@ -37,6 +37,5 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         GrabAndMove,
         NewPlus,
         ZoomIt,
-        AltWindowCycle,
     }
 }

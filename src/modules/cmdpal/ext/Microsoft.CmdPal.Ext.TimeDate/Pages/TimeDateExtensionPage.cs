@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -20,7 +19,7 @@ internal sealed partial class TimeDateExtensionPage : DynamicListPage
         Title = Resources.Microsoft_plugin_timedate_main_page_title;
         Name = Resources.Microsoft_plugin_timedate_main_page_name;
         PlaceholderText = Resources.Microsoft_plugin_timedate_placeholder_text;
-        Id = BuiltInCommandIds.TimeDate;
+        Id = "com.microsoft.cmdpal.timedate";
         _settingsManager = settingsManager;
         ShowDetails = true;
     }

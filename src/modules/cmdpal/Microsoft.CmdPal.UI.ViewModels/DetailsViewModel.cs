@@ -7,11 +7,9 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class DetailsViewModel : ExtensionObjectViewModel
+public partial class DetailsViewModel(IDetails _details, WeakReference<IPageContext> context) : ExtensionObjectViewModel(context)
 {
-    private readonly ExtensionObject<IDetails> _detailsModel;
-    private INotifyPropChanged? _observableDetails;
-    private bool _isSubscribed;
+    private readonly ExtensionObject<IDetails> _detailsModel = new(_details);
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -27,95 +25,12 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
     //   where IDetailsElement = {IDetailsTags, IDetailsLink, IDetailsSeparator}
     public List<DetailsElementViewModel> Metadata { get; private set; } = [];
 
-    public DetailsViewModel(IDetails details, WeakReference<IPageContext> context)
-        : base(context)
-    {
-        _detailsModel = new(details);
-    }
-
-    private void Model_PropChanged(object sender, IPropChangedEventArgs args)
-    {
-        try
-        {
-            FetchProperty(args.PropertyName);
-        }
-        catch (Exception ex)
-        {
-            ShowException(ex);
-        }
-    }
-
-    private void FetchProperty(string propertyName)
-    {
-        var model = _detailsModel.Unsafe;
-        if (model is null)
-        {
-            return;
-        }
-
-        switch (propertyName)
-        {
-            case nameof(IDetails.Title):
-                Title = model.Title ?? string.Empty;
-                UpdateProperty(nameof(Title));
-                break;
-            case nameof(IDetails.Body):
-                Body = model.Body ?? string.Empty;
-                UpdateProperty(nameof(Body));
-                break;
-            case nameof(IDetails.HeroImage):
-                HeroImage = new(model.HeroImage);
-                HeroImage.InitializeProperties();
-                UpdateProperty(nameof(HeroImage));
-                break;
-            case nameof(IDetails.Metadata):
-                RebuildMetadata(model);
-                UpdateProperty(nameof(Metadata));
-                break;
-        }
-    }
-
-    private void RebuildMetadata(IDetails model)
-    {
-        var newMetadata = new List<DetailsElementViewModel>();
-        var meta = model.Metadata;
-        if (meta is not null)
-        {
-            foreach (var element in meta)
-            {
-                DetailsElementViewModel? vm = element.Data switch
-                {
-                    IDetailsSeparator => new DetailsSeparatorViewModel(element, this.PageContext),
-                    IDetailsLink => new DetailsLinkViewModel(element, this.PageContext),
-                    IDetailsCommands => new DetailsCommandsViewModel(element, this.PageContext),
-                    IDetailsTags => new DetailsTagsViewModel(element, this.PageContext),
-                    _ => null,
-                };
-                if (vm is not null)
-                {
-                    vm.InitializeProperties();
-                    newMetadata.Add(vm);
-                }
-            }
-        }
-
-        Metadata = newMetadata;
-    }
-
     public override void InitializeProperties()
     {
         var model = _detailsModel.Unsafe;
         if (model is null)
         {
             return;
-        }
-
-        // Subscribe to PropChanged if the model supports it (only subscribe once)
-        if (!_isSubscribed && model is INotifyPropChanged observable)
-        {
-            observable.PropChanged += Model_PropChanged;
-            _observableDetails = observable;
-            _isSubscribed = true;
         }
 
         Title = model.Title ?? string.Empty;
@@ -142,18 +57,25 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
 
         UpdateProperty(nameof(Size));
 
-        RebuildMetadata(model);
-    }
-
-    protected override void UnsafeCleanup()
-    {
-        base.UnsafeCleanup();
-
-        if (_isSubscribed && _observableDetails is not null)
+        var meta = model.Metadata;
+        if (meta is not null)
         {
-            _observableDetails.PropChanged -= Model_PropChanged;
-            _observableDetails = null;
-            _isSubscribed = false;
+            foreach (var element in meta)
+            {
+                DetailsElementViewModel? vm = element.Data switch
+                {
+                    IDetailsSeparator => new DetailsSeparatorViewModel(element, this.PageContext),
+                    IDetailsLink => new DetailsLinkViewModel(element, this.PageContext),
+                    IDetailsCommands => new DetailsCommandsViewModel(element, this.PageContext),
+                    IDetailsTags => new DetailsTagsViewModel(element, this.PageContext),
+                    _ => null,
+                };
+                if (vm is not null)
+                {
+                    vm.InitializeProperties();
+                    Metadata.Add(vm);
+                }
+            }
         }
     }
 }

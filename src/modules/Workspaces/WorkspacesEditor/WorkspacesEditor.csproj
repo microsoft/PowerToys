@@ -65,6 +65,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ModernWpfUI" />
     <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>
 

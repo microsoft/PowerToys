@@ -153,17 +153,7 @@ namespace Microsoft.PowerToys.UITest
                 }
             }
 
-            var developmentPath = moduleInfo.GetDevelopmentPath();
-            if (File.Exists(developmentPath))
-            {
-                return developmentPath;
-            }
-
-            // Last resort: an installed build if one is present, so a slim/installed CI layout that didn't
-            // set useInstallerForTest still resolves. Returns the development path either way so a launch
-            // failure names a concrete location.
-            var installedFallback = moduleInfo.GetInstalledPath(GetPowerToysInstallPath());
-            return File.Exists(installedFallback) ? installedFallback : developmentPath;
+            return moduleInfo.GetDevelopmentPath();
         }
 
         public string GetWindowsApplicationDriverUrl() => WindowsApplicationDriverUrl;

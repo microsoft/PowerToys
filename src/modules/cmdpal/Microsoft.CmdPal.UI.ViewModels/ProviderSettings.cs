@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -18,23 +18,11 @@ public record ProviderSettings
 
     public bool IsEnabled { get; init; } = true;
 
-    private ImmutableDictionary<string, FallbackSettings>? _fallbackCommands
+    public ImmutableDictionary<string, FallbackSettings> FallbackCommands { get; init; }
         = ImmutableDictionary<string, FallbackSettings>.Empty;
 
-    public ImmutableDictionary<string, FallbackSettings> FallbackCommands
-    {
-        get => _fallbackCommands ?? ImmutableDictionary<string, FallbackSettings>.Empty;
-        init => _fallbackCommands = value;
-    }
-
-    private ImmutableList<string>? _pinnedCommandIds
+    public ImmutableList<string> PinnedCommandIds { get; init; }
         = ImmutableList<string>.Empty;
-
-    public ImmutableList<string> PinnedCommandIds
-    {
-        get => _pinnedCommandIds ?? ImmutableList<string>.Empty;
-        init => _pinnedCommandIds = value;
-    }
 
     [JsonIgnore]
     public string ProviderId { get; init; } = string.Empty;
@@ -49,6 +37,7 @@ public record ProviderSettings
     {
     }
 
+    [JsonConstructor]
     public ProviderSettings(bool isEnabled)
     {
         IsEnabled = isEnabled;

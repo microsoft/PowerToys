@@ -3,8 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Threading.Tasks;
-using Microsoft.CmdPal.Common.WinGet.Services;
+using System.IO;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -12,21 +11,31 @@ namespace Microsoft.CmdPal.Ext.WinGet;
 
 public partial class WinGetExtensionCommandsProvider : CommandProvider
 {
-    private readonly ICommandItem[] _commands;
-
-    public WinGetExtensionCommandsProvider(
-        IWinGetPackageManagerService winGetPackageManagerService,
-        IWinGetOperationTrackerService winGetOperationTrackerService,
-        TaskScheduler uiScheduler)
+    public WinGetExtensionCommandsProvider()
     {
         DisplayName = Properties.Resources.winget_display_name;
         Id = "WinGet";
         Icon = Icons.WinGetIcon;
 
-        _commands = [
-            new ListItem(new WinGetExtensionPage(winGetPackageManagerService, winGetOperationTrackerService, uiScheduler)),
-        ];
+        _ = WinGetStatics.Manager;
     }
+
+    private readonly ICommandItem[] _commands = [
+        new ListItem(new WinGetExtensionPage()),
+
+         new ListItem(
+            new WinGetExtensionPage(WinGetExtensionPage.ExtensionsTag) { Title = Properties.Resources.winget_install_extensions_title })
+         {
+            Title = Properties.Resources.winget_install_extensions_title,
+         },
+
+        new ListItem(
+            new OpenUrlCommand("ms-windows-store://assoc/?Tags=AppExtension-com.microsoft.commandpalette"))
+         {
+            Title = Properties.Resources.winget_search_store_title,
+            Icon = Icons.StoreIcon,
+         },
+    ];
 
     public override ICommandItem[] TopLevelCommands() => _commands;
 

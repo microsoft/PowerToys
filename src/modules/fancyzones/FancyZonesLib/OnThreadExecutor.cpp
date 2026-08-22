@@ -48,14 +48,7 @@ void OnThreadExecutor::worker_thread()
 
 OnThreadExecutor::~OnThreadExecutor()
 {
-    {
-        // Modify the shared shutdown flag while holding the mutex so the
-        // worker reliably observes it on its next wake. Without this, a notify
-        // racing the worker entering _task_cv.wait can be missed and the join
-        // below hangs forever.
-        std::lock_guard lock{ _task_mutex };
-        _shutdown_request = true;
-    }
+    _shutdown_request = true;
     _task_cv.notify_one();
     _worker_thread.join();
 }

@@ -5,7 +5,6 @@
 
 #include "FancyZonesData/AppliedLayouts.h"
 #include "FancyZonesData/AppZoneHistory.h"
-#include "FancyZonesData/CustomLayouts.h"
 #include "ZonesOverlay.h"
 #include "Settings.h"
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
@@ -116,11 +115,6 @@ WorkArea::WorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& u
 
 WorkArea::~WorkArea()
 {
-    // Tear down the renderer (joining its background thread) before returning
-    // the HWND to the pool. Otherwise, the render thread can still be drawing
-    // through m_renderTarget into an HWND that has already been recycled by a
-    // subsequent NewZonesOverlayWindow call.
-    m_zonesOverlay.reset();
     windowPool.FreeZonesOverlayWindow(m_window);
 }
 
@@ -304,26 +298,11 @@ void WorkArea::InitSnappedWindows()
 
 void WorkArea::CalculateZoneSet()
 {
-    auto appliedLayout = AppliedLayouts::instance().GetDeviceLayout(m_uniqueId);
+    const auto appliedLayout = AppliedLayouts::instance().GetDeviceLayout(m_uniqueId);
     if (!appliedLayout.has_value())
     {
         Logger::error(L"Layout wasn't applied. Can't init layout on work area {}x{}", m_workAreaRect.width(), m_workAreaRect.height());
         return;
-    }
-
-    // For custom layouts the spacing, sensitivity radius and zone count live in the custom
-    // layout definition (custom-layouts.json), while the applied-layouts.json snapshot keeps a
-    // copy taken at apply time. Editing those properties only rewrites custom-layouts.json, so
-    // without this sync the snapshot stays stale and the edits don't take effect until the layout
-    // is re-applied (see GH #44058). Re-derive the scalar properties from the current custom
-    // layout using the same logic the apply path uses (CustomLayouts::GetLayout also derives the
-    // canvas zone count from the zone list, keeping it consistent with Layout::Init validation).
-    if (appliedLayout->type == FancyZonesDataTypes::ZoneSetLayoutType::Custom)
-    {
-        if (const auto refreshed = CustomLayouts::instance().GetLayout(appliedLayout->uuid))
-        {
-            appliedLayout = refreshed;
-        }
     }
 
     m_layout = std::make_unique<Layout>(appliedLayout.value());
