@@ -310,14 +310,29 @@ public class NowDockBandTests
     }
 
     [TestMethod]
-    public void CustomFormatModeWithInvalidFormatFallsBackToDefaultDate()
+    public void CustomFormatModeShowsInvalidFormatsAsRawText()
     {
-        // An unclosed literal quote is an invalid .NET date format
+        // An unclosed literal quote is an invalid .NET date format; the dock shows
+        // the raw pattern so the user can see their format is broken (same
+        // recovery as the custom format search results).
         var settings = new Settings(clockBandDateMode: 3, customDateFormatInClockBand: "'unclosed");
 
         _band = new NowDockBand(settings, clock: () => FixedTime);
 
-        Assert.AreEqual("7/1/2025", _band.Subtitle);
+        Assert.AreEqual("'unclosed", _band.Subtitle);
+    }
+
+    [TestMethod]
+    public void CustomFormatModeSupportsSingleTokenFormats()
+    {
+        // 'IDOW' alone replaces to a lone digit, which is not a valid .NET date
+        // format on its own; the recovery keeps the replaced value.
+        // FixedTime is a Tuesday, ISO day 2.
+        var settings = new Settings(clockBandDateMode: 3, customDateFormatInClockBand: "IDOW");
+
+        _band = new NowDockBand(settings, clock: () => FixedTime);
+
+        Assert.AreEqual("2", _band.Subtitle);
     }
 
     [TestMethod]

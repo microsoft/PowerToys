@@ -208,5 +208,41 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
 
             Assert.AreEqual("W28", dateLine);
         }
+
+        [DataTestMethod]
+
+        // A format consisting of a single token replaces to a string that is no
+        // longer a valid .NET date format (a lone digit is read as a standard
+        // format specifier and throws), so the recovery has to keep the replaced
+        // value. 2026-07-06 is a Monday in ISO week 28.
+        [DataRow("IDOW", "1")]
+        [DataRow("IWOY", "28")]
+        [DataRow("WOY", "28")]
+        [DataRow("IWYY", "26")]
+        public void SingleTokenFormatsRenderTheBareValue(string format, string expected)
+        {
+            var date = new DateTime(2026, 7, 6);
+            var weekOfYear = TimeAndDateHelper.GetWeekOfYear(date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+
+            var success = TimeAndDateHelper.TryFormatCustomString(date, format, weekOfYear, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, out var result);
+
+            Assert.IsTrue(success);
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void InvalidFormatsRenderAsRawTextInsteadOfBeingDropped()
+        {
+            // Same recovery as the custom format search results: the raw pattern in
+            // the dock tells the user their format is broken, a silent fallback
+            // would be indistinguishable from an ignored setting.
+            var date = new DateTime(2026, 7, 6);
+            var weekOfYear = TimeAndDateHelper.GetWeekOfYear(date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+
+            var success = TimeAndDateHelper.TryFormatCustomString(date, "'unclosed", weekOfYear, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, out var result);
+
+            Assert.IsTrue(success);
+            Assert.AreEqual("'unclosed", result);
+        }
     }
 }
