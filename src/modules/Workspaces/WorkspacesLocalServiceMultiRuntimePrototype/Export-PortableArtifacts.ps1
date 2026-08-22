@@ -79,7 +79,7 @@ if ($LASTEXITCODE -ne 0 -or $commit -notmatch '^[0-9a-fA-F]{40}$') {
     throw 'Portable export requires a committed HEAD revision.'
 }
 
-& (Join-Path $root 'Package.ps1') -Configuration Release
+& (Join-Path $root 'Package.ps1') -Configuration Release -TrustMachine
 if ($LASTEXITCODE -notin @(0, $null)) {
     throw "Clean-HEAD package rebuild failed with exit code $LASTEXITCODE."
 }
