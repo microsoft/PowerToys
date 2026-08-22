@@ -56,6 +56,7 @@ namespace
     const wchar_t JSON_KEY_WRAP_MODE[] = L"wrap_mode";
     const wchar_t JSON_KEY_ACTIVATION_MODE[] = L"activation_mode";
     const wchar_t JSON_KEY_DISABLE_ON_SINGLE_MONITOR[] = L"disable_cursor_wrap_on_single_monitor";
+    const wchar_t JSON_KEY_SUPPRESS_TOP_EDGE_WRAP_IN_REMOTE_SESSION[] = L"suppress_top_edge_wrap_in_remote_session";
 }
 
 // The PowerToy name that will be shown in the settings.
@@ -83,6 +84,7 @@ private:
     bool m_autoActivate = false;
     bool m_disableWrapDuringDrag = true; // Default to true to prevent wrap during drag
     bool m_disableOnSingleMonitor = false; // Default to false
+    bool m_suppressTopEdgeWrapInRemoteSession = false; // Default to false; keeps the RDP connection bar reachable
     int m_wrapMode = 0; // 0=Both (default), 1=VerticalOnly, 2=HorizontalOnly
     int m_activationMode = 0; // 0=Always (default), 1=HoldingCtrl (wraps only while held), 2=HoldingShift (wraps only while held)
     
@@ -461,6 +463,21 @@ private:
             {
                 Logger::warn("Failed to initialize CursorWrap disable on single monitor from settings. Will use default value (false)");
             }
+
+            try
+            {
+                // Parse suppress top-edge wrap in Remote Desktop sessions
+                auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+                if (propertiesObject.HasKey(JSON_KEY_SUPPRESS_TOP_EDGE_WRAP_IN_REMOTE_SESSION))
+                {
+                    auto suppressTopEdgeObject = propertiesObject.GetNamedObject(JSON_KEY_SUPPRESS_TOP_EDGE_WRAP_IN_REMOTE_SESSION);
+                    m_suppressTopEdgeWrapInRemoteSession = suppressTopEdgeObject.GetNamedBoolean(JSON_KEY_VALUE);
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize CursorWrap suppress top-edge wrap in remote session from settings. Will use default value (false)");
+            }
         }
         else
         {
@@ -709,11 +726,17 @@ private:
                     return CallNextHookEx(nullptr, nCode, wParam, lParam);
                 }
                 
+                // Only suppress the top-edge wrap while actually connected via Remote Desktop, so
+                // the behavior is transparent during normal local use.
+                bool suppressTopEdgeWrap = g_cursorWrapInstance->m_suppressTopEdgeWrapInRemoteSession &&
+                                           (GetSystemMetrics(SM_REMOTESESSION) != 0);
+
                 POINT newPos = g_cursorWrapInstance->m_core.HandleMouseMove(
                     currentPos,
                     g_cursorWrapInstance->m_disableWrapDuringDrag,
                     g_cursorWrapInstance->m_wrapMode,
-                    g_cursorWrapInstance->m_disableOnSingleMonitor);
+                    g_cursorWrapInstance->m_disableOnSingleMonitor,
+                    suppressTopEdgeWrap);
                     
                 if (newPos.x != currentPos.x || newPos.y != currentPos.y)
                 {

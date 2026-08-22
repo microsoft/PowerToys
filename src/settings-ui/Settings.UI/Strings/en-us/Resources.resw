@@ -2793,6 +2793,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_DisableOnSingleMonitor.Content" xml:space="preserve">
     <value>Disable wrapping when using a single monitor</value>
   </data>
+  <data name="MouseUtils_CursorWrap_SuppressTopEdgeWrapInRemoteSession.Content" xml:space="preserve">
+    <value>Suppress top-edge wrap in Remote Desktop sessions</value>
+  </data>
   <data name="MouseUtils_CursorWrap_WrapMode.Header" xml:space="preserve">
     <value>Wrap mode</value>
   </data>

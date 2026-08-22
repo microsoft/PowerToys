@@ -128,6 +128,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Null-safe access in case property wasn't upgraded yet - default to false
             _cursorWrapDisableOnSingleMonitor = CursorWrapSettingsConfig.Properties.DisableCursorWrapOnSingleMonitor?.Value ?? false;
 
+            // Null-safe access in case property wasn't upgraded yet - default to false
+            _cursorWrapSuppressTopEdgeWrapInRemoteSession = CursorWrapSettingsConfig.Properties.SuppressTopEdgeWrapInRemoteSession?.Value ?? false;
+
             int isEnabled = 0;
 
             Utilities.NativeMethods.SystemParametersInfo(Utilities.NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
@@ -1303,6 +1306,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool CursorWrapSuppressTopEdgeWrapInRemoteSession
+        {
+            get
+            {
+                return _cursorWrapSuppressTopEdgeWrapInRemoteSession;
+            }
+
+            set
+            {
+                if (value != _cursorWrapSuppressTopEdgeWrapInRemoteSession)
+                {
+                    _cursorWrapSuppressTopEdgeWrapInRemoteSession = value;
+
+                    // Ensure the property exists before setting value
+                    if (CursorWrapSettingsConfig.Properties.SuppressTopEdgeWrapInRemoteSession == null)
+                    {
+                        CursorWrapSettingsConfig.Properties.SuppressTopEdgeWrapInRemoteSession = new BoolProperty(value);
+                    }
+                    else
+                    {
+                        CursorWrapSettingsConfig.Properties.SuppressTopEdgeWrapInRemoteSession.Value = value;
+                    }
+
+                    NotifyCursorWrapPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyCursorWrapPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -1383,5 +1414,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _cursorWrapWrapMode; // 0=Both, 1=VerticalOnly, 2=HorizontalOnly
         private int _cursorWrapActivationMode; // 0=Always, 1=HoldingCtrl (wraps only while held), 2=HoldingShift (wraps only while held)
         private bool _cursorWrapDisableOnSingleMonitor; // Disable cursor wrap when only one monitor is connected
+        private bool _cursorWrapSuppressTopEdgeWrapInRemoteSession; // Suppress top-edge wrap on the topmost monitor in Remote Desktop sessions
     }
 }
