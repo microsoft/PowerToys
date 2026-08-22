@@ -111,6 +111,13 @@ steps:
       dir $(build.sourcesdirectory)\extractedUserMsi
     displayName: "WiX5: Extract and verify MSIs"
 
+  - pwsh: |-
+      & '.pipelines/verifyWinUI3DuplicateFiles.ps1' -MsiPath @(
+        '$(InstallerMachineRoot)\$(InstallerMachineBasename).msi',
+        '$(InstallerUserRoot)\$(InstallerUserBasename).msi'
+      ) -BuildOutputPath '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+    displayName: Verify WinUI3Apps DuplicateFile entries
+
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-
       & '.pipelines/verifyDepsJsonLibraryVersions.ps1' -targetDir '$(build.sourcesdirectory)\extractedMachineMsi\File'
