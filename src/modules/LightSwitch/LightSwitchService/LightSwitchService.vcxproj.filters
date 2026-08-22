@@ -71,6 +71,9 @@
     <ClInclude Include="NightLightRegistryObserver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BrightnessObserver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
