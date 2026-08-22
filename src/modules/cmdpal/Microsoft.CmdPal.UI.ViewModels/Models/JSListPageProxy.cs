@@ -35,8 +35,16 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
     private readonly string _pageId;
     private readonly PageRegistry _registry;
     private readonly object _stateLock = new();
+    private readonly object _itemCacheLock = new();
     private bool? _hasMoreItemsState;
     private bool _disposed;
+
+    // Adapters from the previous GetItems call, keyed by stable identity. Reusing
+    // the same IListItem instance for an item that persists across a refresh lets
+    // the host's reference-keyed view model cache keep the existing view model,
+    // which preserves the current list selection when a dynamic page rebuilds its
+    // items. A queue per key keeps reuse stable when several items share a title.
+    private Dictionary<string, Queue<JSListItemAdapter>> _adapterCache = new(StringComparer.Ordinal);
 
     public JSListPageProxy(string pageId, JsonRpcConnection connection, JsonElement pageData = default)
         : base(pageId, connection, pageData)
@@ -411,6 +419,7 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
     {
         if (!result.HasValue)
         {
+            ResetAdapterCache();
             return [];
         }
 
@@ -423,24 +432,61 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
 
         if (arrayElement.ValueKind != JsonValueKind.Array)
         {
+            ResetAdapterCache();
             return [];
         }
 
         var items = new List<IListItem>();
-        foreach (var element in arrayElement.EnumerateArray())
+
+        lock (_itemCacheLock)
         {
-            if (element.ValueKind == JsonValueKind.Object &&
-                JSModelMapper.GetBool(element, "_isSeparator", false))
+            var previousCache = _adapterCache;
+            var nextCache = new Dictionary<string, Queue<JSListItemAdapter>>(StringComparer.Ordinal);
+
+            foreach (var element in arrayElement.EnumerateArray())
             {
-                items.Add(new Separator(JSModelMapper.GetString(element, "title") ?? string.Empty));
+                if (element.ValueKind == JsonValueKind.Object &&
+                    JSModelMapper.GetBool(element, "_isSeparator", false))
+                {
+                    items.Add(new Separator(JSModelMapper.GetString(element, "title") ?? string.Empty));
+                    continue;
+                }
+
+                var key = JSListItemAdapter.ComputeKey(element);
+                JSListItemAdapter adapter;
+                if (previousCache.TryGetValue(key, out var previousQueue) && previousQueue.Count > 0)
+                {
+                    adapter = previousQueue.Dequeue();
+                    adapter.UpdateData(element);
+                }
+                else
+                {
+                    adapter = new JSListItemAdapter(element, Connection);
+                }
+
+                items.Add(adapter);
+
+                if (!nextCache.TryGetValue(key, out var nextQueue))
+                {
+                    nextQueue = new Queue<JSListItemAdapter>();
+                    nextCache[key] = nextQueue;
+                }
+
+                nextQueue.Enqueue(adapter);
             }
-            else
-            {
-                items.Add(new JSListItemAdapter(element, Connection));
-            }
+
+            _adapterCache = nextCache;
         }
 
         return items.ToArray();
+    }
+
+    private void ResetAdapterCache()
+    {
+        lock (_itemCacheLock)
+        {
+            _adapterCache = new Dictionary<string, Queue<JSListItemAdapter>>(StringComparer.Ordinal);
+        }
     }
 
     private sealed class PageRegistry
