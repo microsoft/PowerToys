@@ -3,12 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.PowerToys.SettingsBackupRestore.Security;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Data.Json;
@@ -74,6 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 doRefreshBackupRestoreStatus,
                 PickSingleFolderDialog,
                 loader);
+            ViewModel.ConfirmRestoreAsync = ShowRestorePreviewAsync;
 
             DataContext = ViewModel;
 
@@ -154,6 +157,49 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void UpdateBackupAndRestoreStatusText(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {
             RefreshBackupRestoreStatus();
+        }
+
+        private async Task<bool> ShowRestorePreviewAsync(RestorePreviewViewModel preview)
+        {
+            var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
+            StringBuilder content = new();
+            foreach (RestorePreviewItem item in preview.Items)
+            {
+                string action = item.Included ? item.RestoreMode.ToString() : loader.GetString("General_SettingsRestorePreview_Excluded");
+                content.Append(item.Module).Append(" — ").Append(item.SettingsPath).Append(" — ").AppendLine(action);
+                if (!string.IsNullOrEmpty(item.ExclusionReason))
+                {
+                    content.Append("  ").AppendLine(item.ExclusionReason);
+                }
+            }
+
+            content.AppendLine();
+            content.AppendLine(preview.RestartAfterRestore
+                ? loader.GetString("General_SettingsRestorePreview_Restart")
+                : loader.GetString("General_SettingsRestorePreview_NoRestart"));
+            content.AppendLine();
+            content.Append(preview.SecurityBoundaryStatement);
+
+            ContentDialog dialog = new()
+            {
+                XamlRoot = XamlRoot,
+                Title = loader.GetString("General_SettingsRestorePreview_Title"),
+                PrimaryButtonText = loader.GetString("General_SettingsRestorePreview_Confirm"),
+                CloseButtonText = loader.GetString("General_SettingsRestorePreview_Cancel"),
+                DefaultButton = ContentDialogButton.Close,
+                Content = new ScrollViewer
+                {
+                    MaxHeight = 420,
+                    Content = new TextBlock
+                    {
+                        Text = content.ToString(),
+                        IsTextSelectionEnabled = true,
+                        TextWrapping = TextWrapping.Wrap,
+                    },
+                },
+            };
+
+            return await dialog.ShowAsync() == ContentDialogResult.Primary;
         }
 
         private async Task<string> PickSingleFolderDialog()
