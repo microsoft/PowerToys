@@ -216,6 +216,7 @@ CHILDWINDOW
 CHOOSEFONT
 chu
 CIBUILD
+cifhbcnohmdccbgoicgdjpfamggdegmo
 cidl
 CIELCh
 cim
@@ -334,6 +335,7 @@ cursorwrap
 customaction
 CUSTOMACTIONTEST
 CUSTOMFORMATPLACEHOLDER
+cw5n1h2txyewy
 cvd
 CWMO
 CXSCREEN
@@ -565,6 +567,7 @@ fffffffzzz
 FFh
 Figma
 figma
+fmgjjmmmlfnkbppncijlocphclkkleod
 FILEEXPLORER
 fileexploreraddons
 fileexplorerpreview
@@ -816,6 +819,7 @@ imagingdevices
 ime
 IMEAceept
 imgflip
+immersivecontrolpanel
 inapp
 inbox
 INCONTACT
@@ -1959,6 +1963,7 @@ tstoi
 tsv
 tweakable
 TWF
+txyewy
 tymed
 TYPEKEYBOARD
 TYPEMOUSE
