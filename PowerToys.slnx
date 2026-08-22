@@ -853,6 +853,7 @@
     </Project>
   </Folder>
   <Folder Name="/modules/MeasureTool/Tests/">
+    <Project Path="src/modules/MeasureTool/Tests/MeasureToolCore.UnitTests/MeasureToolCore.UnitTests.vcxproj" Id="1b76e770-b56f-486f-89d9-9dfe7c5289e8" />
     <Project Path="src/modules/MeasureTool/Tests/ScreenRuler.UITests/ScreenRuler.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
