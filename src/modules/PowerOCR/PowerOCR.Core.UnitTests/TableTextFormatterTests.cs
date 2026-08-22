@@ -1,0 +1,133 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerOCR.Core.Formatting;
+using PowerOCR.Core.Models;
+
+namespace PowerOCR.Core.UnitTests;
+
+[TestClass]
+public sealed class TableTextFormatterTests
+{
+    [TestMethod]
+    public void Format_TwoByTwoGrid_UsesTabsAndNewLines()
+    {
+        OcrLineData[] cells =
+        [
+            Cell("A1", 0, 0),
+            Cell("B1", 100, 0),
+            Cell("A2", 0, 40),
+            Cell("B2", 100, 40),
+        ];
+
+        Assert.AreEqual(
+            $"A1\tB1{Environment.NewLine}A2\tB2",
+            TableTextFormatter.Format(cells, "en-US"));
+    }
+
+    [TestMethod]
+    public void Format_SparseSecondRow_PreservesEmptyColumn()
+    {
+        OcrLineData[] cells =
+        [
+            Cell("A1", 0, 0),
+            Cell("B1", 100, 0),
+            Cell("B2", 100, 40),
+        ];
+
+        Assert.AreEqual(
+            $"A1\tB1{Environment.NewLine}\tB2",
+            TableTextFormatter.Format(cells, "en-US"));
+    }
+
+    [TestMethod]
+    public void Format_RowsSeparatedByOnePixelGap_RemainSeparate()
+    {
+        OcrLineData[] cells =
+        [
+            Cell("A1", 0, 0),
+            Cell("A2", 0, 21),
+        ];
+
+        Assert.AreEqual(
+            $"A1{Environment.NewLine}A2",
+            TableTextFormatter.Format(cells, "en-US"));
+    }
+
+    [TestMethod]
+    public void Format_ColumnsSeparatedByOnePixelGap_RemainSeparate()
+    {
+        OcrLineData[] cells =
+        [
+            Cell("A1", 0, 0),
+            Cell("B1", 41, 0),
+        ];
+
+        Assert.AreEqual(
+            "A1\tB1",
+            TableTextFormatter.Format(cells, "en-US"));
+    }
+
+    [TestMethod]
+    public void Format_RowsWithOnePixelOverlap_RemainSeparate()
+    {
+        OcrLineData[] cells =
+        [
+            Cell("A1", 0, 0),
+            Cell("A2", 0, 19),
+        ];
+
+        Assert.AreEqual(
+            $"A1{Environment.NewLine}A2",
+            TableTextFormatter.Format(cells, "en-US"));
+    }
+
+    [TestMethod]
+    public void Format_ColumnsWithOnePixelOverlap_RemainSeparate()
+    {
+        OcrLineData[] cells =
+        [
+            Cell("A1", 0, 0),
+            Cell("B1", 39, 0),
+        ];
+
+        Assert.AreEqual(
+            "A1\tB1",
+            TableTextFormatter.Format(cells, "en-US"));
+    }
+
+    [TestMethod]
+    [DataRow("zh-CN")]
+    [DataRow("ja-JP")]
+    public void Format_CjkFragmentsInSameCell_DoesNotInsertSpace(string languageTag)
+    {
+        OcrLineData[] cells =
+        [
+            Cell("你", 0, 0),
+            Cell("好", 10, 0),
+        ];
+
+        Assert.AreEqual(
+            "你好",
+            TableTextFormatter.Format(cells, languageTag));
+    }
+
+    [TestMethod]
+    public void Format_EnglishFragmentsInSameCell_InsertsSpace()
+    {
+        OcrLineData[] cells =
+        [
+            Cell("Hello", 0, 0),
+            Cell("world", 10, 0),
+        ];
+
+        Assert.AreEqual(
+            "Hello world",
+            TableTextFormatter.Format(cells, "en-US"));
+    }
+
+    private static OcrLineData Cell(string text, double x, double y)
+        => new(text, new OcrRect(x, y, 40, 20), [new(text, new(x, y, 40, 20))]);
+}
