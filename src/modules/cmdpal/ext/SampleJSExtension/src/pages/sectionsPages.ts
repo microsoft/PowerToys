@@ -4,9 +4,17 @@
 
 import { ListItemBase, ListPageBase, NoOpCommand, Separator } from '@microsoft/cmdpal-sdk';
 import type { GridProperties, IListItem } from '@microsoft/cmdpal-sdk';
+import { fileURLToPath } from 'node:url';
 import { icon } from '../util.js';
 
 let sectionPageCounter = 0;
+
+/**
+ * Path to the bundled image used by the grid and gallery items. The C# sample
+ * gives every item a local image too, and `import.meta.url` keeps this working
+ * from the installed extension without a network fetch.
+ */
+const sectionImagePath = fileURLToPath(new URL('../assets/hero.png', import.meta.url));
 
 /**
  * A list (or grid) page that groups items under headings. The host only shows a
@@ -15,6 +23,11 @@ let sectionPageCounter = 0;
  * field (the host ignores `section` on command-bearing items). Mirrors the C#
  * `SampleListPageWithSections`, whose `Section` objects become titled separators
  * here.
+ *
+ * A titled `Separator` renders as heading text. An untitled one renders as a
+ * divider line, so the sample emits both when it needs a visible break between
+ * groups. Items also keep a local image icon so grid and gallery pages show
+ * pictures instead of empty tiles.
  */
 export class SampleListPageWithSections extends ListPageBase {
   readonly id: string;
@@ -36,44 +49,54 @@ export class SampleListPageWithSections extends ListPageBase {
         command: new NoOpCommand('sec1-a'),
         title: 'Sample Title',
         subtitle: "I don't do anything",
+        icon: icon(sectionImagePath),
       }),
+      new Separator(),
       new Separator('This is another section list'),
       new ListItemBase({
         command: new NoOpCommand('sec2-a'),
         title: 'Another Title',
         subtitle: "I don't do anything",
+        icon: icon(sectionImagePath),
       }),
       new ListItemBase({
         command: new NoOpCommand('sec2-b'),
         title: 'More Titles',
         subtitle: "I don't do anything",
+        icon: icon(sectionImagePath),
       }),
       new ListItemBase({
         command: new NoOpCommand('sec2-c'),
         title: 'Stop With The Titles',
         subtitle: "I don't do anything",
+        icon: icon(sectionImagePath),
       }),
       new Separator(),
       new ListItemBase({
         command: new NoOpCommand('sec-sep'),
         title: 'Separators also work',
         subtitle: "But I still don't do anything",
+        icon: icon(sectionImagePath),
       }),
+      new Separator(),
       new Separator("There's another"),
       new ListItemBase({
         command: new NoOpCommand('sec3-a'),
         title: 'Sample Title',
         subtitle: "I don't do anything",
+        icon: icon(sectionImagePath),
       }),
       new ListItemBase({
         command: new NoOpCommand('sec3-b'),
         title: 'Another Title',
         subtitle: "I don't do anything",
+        icon: icon(sectionImagePath),
       }),
       new ListItemBase({
         command: new NoOpCommand('sec3-c'),
         title: 'More Titles',
         subtitle: "I don't do anything",
+        icon: icon(sectionImagePath),
       }),
     ];
   }

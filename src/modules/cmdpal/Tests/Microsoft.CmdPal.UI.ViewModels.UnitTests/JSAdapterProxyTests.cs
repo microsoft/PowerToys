@@ -165,6 +165,105 @@ public class JSAdapterProxyTests
     }
 
     [TestMethod]
+    public void ListPage_MapsDetailsSizeFromStringAndNumber()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult("provider/getCommand", """{ "id": "list1", "pageType": "listPage", "name": "My List" }""");
+        var itemsJson =
+            """
+            {
+              "items": [
+                { "title": "Large by name", "details": { "title": "A", "size": "large" } },
+                { "title": "Medium by number", "details": { "title": "B", "size": 1 } },
+                { "title": "Default size", "details": { "title": "C" } }
+              ]
+            }
+            """;
+        fake.OnResult("listPage/getItems", itemsJson);
+
+        var provider = CreateProvider(fake);
+        var page = (IListPage)provider.GetCommand("list1")!;
+        var items = page.GetItems();
+
+        Assert.AreEqual((int)ContentSize.Large, GetDetailsSize(items[0].Details));
+        Assert.AreEqual((int)ContentSize.Medium, GetDetailsSize(items[1].Details));
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[2].Details));
+    }
+
+    private static int GetDetailsSize(IDetails? details)
+    {
+        Assert.IsNotNull(details);
+        var provider = details as IExtendedAttributesProvider;
+        Assert.IsNotNull(provider, "Details should expose extended attributes for its size.");
+        var properties = provider!.GetProperties();
+        Assert.IsNotNull(properties);
+        Assert.IsTrue(properties!.TryGetValue("Size", out var size));
+        return (int)size!;
+    }
+
+    [TestMethod]
+    public void ListPage_DetailsCommandInvokeSendsCommandInvokeWithId()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult("provider/getCommand", """{ "id": "list1", "pageType": "listPage", "name": "My List" }""");
+        var itemsJson =
+            """
+            {
+              "items": [
+                {
+                  "title": "Item with detail buttons",
+                  "details": {
+                    "title": "Detail",
+                    "metadata": [
+                      {
+                        "key": "actions",
+                        "data": {
+                          "type": "commands",
+                          "commands": [
+                            { "id": "details-cmd-1", "name": "Do It" }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+            """;
+        fake.OnResult("listPage/getItems", itemsJson);
+
+        string? invokedCommandId = null;
+        fake.OnRequest("command/invoke", element =>
+        {
+            invokedCommandId = element.GetProperty("commandId").GetString();
+            return new JsonObject { ["Kind"] = 4 };
+        });
+
+        var provider = CreateProvider(fake);
+        var page = (IListPage)provider.GetCommand("list1")!;
+        var items = page.GetItems();
+
+        var details = items[0].Details;
+        Assert.IsNotNull(details, "The list item should carry details.");
+
+        var commandsElement = Array.Find(
+            details!.Metadata,
+            e => e.Data is IDetailsCommands);
+        Assert.IsNotNull(commandsElement, "The details metadata should include a commands element.");
+
+        var detailsCommands = (IDetailsCommands)commandsElement!.Data!;
+        Assert.AreEqual(1, detailsCommands.Commands.Length);
+
+        var invokable = (IInvokableCommand)detailsCommands.Commands[0];
+        Assert.AreEqual("details-cmd-1", invokable.Id);
+
+        var result = invokable.Invoke(null);
+
+        Assert.AreEqual("details-cmd-1", invokedCommandId, "Invoking a details command should send command/invoke with the command id.");
+        Assert.AreEqual(CommandResultKind.KeepOpen, result.Kind);
+    }
+
+    [TestMethod]
     public void ContextItems_ParseNestedMoreCommandsRecursively()
     {
         using var fake = new JSFakeExtension();
