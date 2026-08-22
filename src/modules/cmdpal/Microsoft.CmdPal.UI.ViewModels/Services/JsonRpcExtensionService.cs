@@ -32,7 +32,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Services;
 /// only guards in-memory collection mutations and is never held across an await or a
 /// process launch.
 /// </remarks>
-public sealed partial class JsonRpcExtensionService : IExtensionService, IDisposable
+public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExtensionHost, IDisposable
 {
     // Consecutive crashes above this threshold disable an extension instead of restarting it.
     private const int MaxRestartAttempts = 3;
@@ -114,6 +114,111 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
 
         /// <summary>Stop restarting the extension and leave it disabled.</summary>
         Disable,
+    }
+
+    /// <inheritdoc />
+    public string ExtensionsRootPath => ExtensionsPath;
+
+    /// <inheritdoc />
+    public void StopExtension(string extensionDirectory, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(extensionDirectory))
+        {
+            return;
+        }
+
+        // Use the lifecycle gate so uninstall waits behind any load, refresh, restart, or hot reload
+        // for this directory and cleans every owned resource. The gallery calls this before deleting
+        // files, so wait synchronously. Awaited work on this path uses ConfigureAwait(false), and we
+        // never enter while holding the same gate, so we avoid a reentrant deadlock. The token lets
+        // Cancel stop waiting for a busy gate.
+        var removed = RemoveExtensionByDirectoryGatedAsync(extensionDirectory, cancellationToken).GetAwaiter().GetResult();
+        if (removed is not null)
+        {
+            OnProviderRemoved?.Invoke(this, [removed]);
+        }
+    }
+
+    /// <inheritdoc />
+    public bool IsExtensionDiscoverable(string extensionDirectory)
+    {
+        if (string.IsNullOrEmpty(extensionDirectory))
+        {
+            return false;
+        }
+
+        var manifestPath = Path.Combine(extensionDirectory, "package.json");
+        if (!File.Exists(manifestPath))
+        {
+            return false;
+        }
+
+        var parseResult = JSExtensionManifest.TryParseFile(manifestPath);
+        return parseResult.IsValid && parseResult.Manifest is not null;
+    }
+
+    /// <inheritdoc />
+    public bool IsExtensionInstalled(string extensionName)
+    {
+        if (string.IsNullOrEmpty(extensionName))
+        {
+            return false;
+        }
+
+        var directory = Path.Combine(ExtensionsPath, extensionName);
+
+        // Treat a directory on disk as installed even when the provider never loaded. That lets the
+        // gallery offer Uninstall for a crash disabled or corrupt install instead of stranding it.
+        return IsExtensionLoadedInDirectory(directory) || IsExtensionPresentOnDisk(directory);
+    }
+
+    internal static bool IsExtensionPresentOnDisk(string extensionDirectory) =>
+        !string.IsNullOrEmpty(extensionDirectory) && Directory.Exists(extensionDirectory);
+
+    /// <inheritdoc />
+    public async Task<bool> RefreshAndAwaitProviderAsync(string extensionDirectory, TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(extensionDirectory))
+        {
+            return false;
+        }
+
+        if (!EnsureExtensionsDirectory())
+        {
+            return false;
+        }
+
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        if (timeout > TimeSpan.Zero)
+        {
+            timeoutCts.CancelAfter(timeout);
+        }
+
+        try
+        {
+            // The lifecycle gate waits for the promoted directory to load or fail. Raise OnProviderAdded
+            // for anything that registered so the host and gallery see the same state.
+            var added = await AddDiscoveredNotLoadedAsync(timeoutCts.Token).ConfigureAwait(false);
+            foreach (var wrapper in added)
+            {
+                OnProviderAdded?.Invoke(this, [wrapper]);
+            }
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            // The timeout elapsed before the extension finished loading.
+            return false;
+        }
+
+        return IsExtensionLoadedInDirectory(extensionDirectory);
+    }
+
+    private bool IsExtensionLoadedInDirectory(string extensionDirectory)
+    {
+        lock (_extensionsLock)
+        {
+            return _extensions.Any(e => PathsEqual(e.ManifestDirectory, extensionDirectory));
+        }
     }
 
     /// <summary>
@@ -1396,12 +1501,12 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
         }
     }
 
-    private async Task<CommandProviderWrapper?> RemoveExtensionByDirectoryGatedAsync(string directory)
+    private async Task<CommandProviderWrapper?> RemoveExtensionByDirectoryGatedAsync(string directory, CancellationToken cancellationToken = default)
     {
         IDisposable? gate = null;
         try
         {
-            gate = await _directoryGate.AcquireAsync(directory, CancellationToken.None).ConfigureAwait(false);
+            gate = await _directoryGate.AcquireAsync(directory, cancellationToken).ConfigureAwait(false);
         }
         catch (ObjectDisposedException)
         {
