@@ -104,7 +104,7 @@ function Restore-ExactCertificateOwnership([object]$Ownership) {
                 $store.introducedByRun -isnot [bool]) {
                 throw 'Certificate ownership store state is invalid.'
             }
-            if ($store.introducedByRun -and (Test-CertificatePresent $store.path $record.thumbprint)) {
+            if (-not $store.preRunPresent -and (Test-CertificatePresent $store.path $record.thumbprint)) {
                 Remove-ExactCertificates $store.path $record.thumbprint
             }
             if ((Test-CertificatePresent $store.path $record.thumbprint) -ne $store.preRunPresent) {

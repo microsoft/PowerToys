@@ -125,7 +125,7 @@ function Restore-Certificates([object[]]$Certificates) {
     foreach ($certificate in $Certificates) {
         $record = Get-OwnershipRecord $certificate.role
         foreach ($store in $record.stores) {
-            if ($store.introducedByRun) {
+            if (-not $store.preRunPresent) {
                 Remove-ExactCertificateEntries $store.path $certificate.thumbprint
             }
             $actual = @(Get-CertificateEntries $store.path $certificate.thumbprint).Count -ge 1
@@ -2270,7 +2270,7 @@ function Invoke-Validation {
         Invoke-UserClient $ownerB @('--status') | Out-Null
         Invoke-UserClient $ownerB @('--release') 0 'lease released' | Out-Null
         Assert-RuntimeRemoved $ownerB
-        Assert-Equal (Get-LeaseOwners).Count 0 'zero protected leases'
+        Assert-Equal @(Get-LeaseOwners).Count 0 'zero protected leases'
         Assert-Equal @(
             Get-Content -LiteralPath (Join-Path $storeRoot 'runtime-inventory.txt') |
                 Where-Object { -not [string]::IsNullOrWhiteSpace($_) }

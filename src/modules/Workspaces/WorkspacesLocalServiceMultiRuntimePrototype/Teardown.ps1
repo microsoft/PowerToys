@@ -51,7 +51,7 @@ function Restore-OwnedCertificates {
     foreach ($role in @('code', 'metadata', 'foreign')) {
         $record = Get-OwnershipRecord $role
         foreach ($store in $record.stores) {
-            if ($store.introducedByRun) {
+            if (-not $store.preRunPresent) {
                 Remove-ExactCertificateEntries $store.path $record.thumbprint
             }
 
