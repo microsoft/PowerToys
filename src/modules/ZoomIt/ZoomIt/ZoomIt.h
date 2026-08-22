@@ -29,7 +29,7 @@ type_pEnableThemeDialogTexture    pEnableThemeDialogTexture;
 
 #define ZOOM_LEVEL_MIN		1
 #define ZOOM_LEVEL_INIT		2
-#define ZOOM_LEVEL_MAX		64
+#define ZOOM_LEVEL_MAX		256
 #define ZOOM_ANIMATION_FRAME_TIME	10
 
 #define LIVEZOOM_MOVE_REGIONS	8

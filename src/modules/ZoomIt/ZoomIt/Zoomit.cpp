@@ -11622,20 +11622,49 @@ LRESULT APIENTRY MainWndProc(
 #if SCALE_HALFTONE
             SetStretchBltMode( hDc, zoomLevel == zoomTelescopeTarget ? HALFTONE : COLORONCOLOR );
 #else
-            // Filtering a changing scale causes temporal shimmer. Restore it on the final frame.
-            if (g_SmoothImage && !zoomAnimation.IsActive()) {
+            // Interpolate while the scale is changing so sub-pixel motion is smooth; keep the user's setting once settled.
+            if (zoomAnimation.IsActive() || g_SmoothImage) {
                 SetStretchBltMode( hDc, HALFTONE );
+                SetBrushOrgEx( hDc, 0, 0, nullptr );
             } else {
                 SetStretchBltMode( hDc, COLORONCOLOR );
             }
 #endif
-            StretchBlt( ps.hdc,
-                    0, 0,
-                    bmp.bmWidth, bmp.bmHeight,
-                    hdcScreenCompat,
-                    x, y,
-                    static_cast<int>(width/zoomLevel), static_cast<int>(height/zoomLevel),
-                    SRCCOPY|CAPTUREBLT );
+            // Render with the continuous fractional viewport whenever we are not drawing/typing/tracing so the
+            // animation moves at device-pixel granularity and converges without snapping on the final frame.
+            const bool renderFractionalZoom = zoomAnimation.IsActive() ||
+                ( !g_Drawing && !g_Tracing && g_TypeMode == TypeModeOff );
+            if( renderFractionalZoom ) {
+                float sourceX;
+                float sourceY;
+                GetAnimatedZoomSourceCoordinates( zoomLevel, &cursorPos, width, height, &sourceX, &sourceY );
+
+                const int sourceLeft = static_cast<int>( std::floor( sourceX ) );
+                const int sourceTop = static_cast<int>( std::floor( sourceY ) );
+                const int sourceRight = min( width, static_cast<int>( std::ceil( sourceX + static_cast<float>( width ) / zoomLevel ) ) );
+                const int sourceBottom = min( height, static_cast<int>( std::ceil( sourceY + static_cast<float>( height ) / zoomLevel ) ) );
+                const int srcW = sourceRight - sourceLeft;
+                const int srcH = sourceBottom - sourceTop;
+                // Enlarge with StretchBlt (so HALFTONE interpolates) and offset the destination to compensate the
+                // sub-pixel origin, giving smooth device-pixel-granular motion instead of source-pixel snapping.
+                const int destX = static_cast<int>( std::lround( ( static_cast<float>( sourceLeft ) - sourceX ) * zoomLevel ) );
+                const int destY = static_cast<int>( std::lround( ( static_cast<float>( sourceTop ) - sourceY ) * zoomLevel ) );
+                const int destW = static_cast<int>( std::lround( static_cast<float>( srcW ) * zoomLevel ) );
+                const int destH = static_cast<int>( std::lround( static_cast<float>( srcH ) * zoomLevel ) );
+                StretchBlt( ps.hdc,
+                        destX, destY, destW, destH,
+                        hdcScreenCompat,
+                        sourceLeft, sourceTop, srcW, srcH,
+                        SRCCOPY|CAPTUREBLT );
+            } else {
+                StretchBlt( ps.hdc,
+                        0, 0,
+                        bmp.bmWidth, bmp.bmHeight,
+                        hdcScreenCompat,
+                        x, y,
+                        static_cast<int>(width/zoomLevel), static_cast<int>(height/zoomLevel),
+                        SRCCOPY|CAPTUREBLT );
+            }
 #endif
         } else if( g_TimerActive ) {
 
@@ -11815,7 +11844,8 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
     static float	zoomLevel;
     static float	zoomTelescopeTarget;
     static ZoomAnimation zoomAnimation;
-    static BOOLEAN animationSmoothingDisabled = FALSE;
+    static BOOLEAN animationSmoothingForced = FALSE;
+    static BOOLEAN magWindowOffset = FALSE;
     static BOOL		dwmEnabled = FALSE;
     static BOOLEAN	startedInPresentationMode = FALSE;
     MAGTRANSFORM matrix;
@@ -11862,7 +11892,8 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
     case WM_SHOWWINDOW:
         if( wParam == TRUE ) {
 
-            animationSmoothingDisabled = FALSE;
+            animationSmoothingForced = FALSE;
+            magWindowOffset = FALSE;
             if( !g_fullScreenWorkaround && pMagSetLensUseBitmapSmoothing )
                 pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, g_SmoothImage );
 
@@ -11931,11 +11962,11 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
         } else {
 
             KillTimer( hWnd, 0 );
-            if( animationSmoothingDisabled ) {
+            if( animationSmoothingForced ) {
 
-                animationSmoothingDisabled = FALSE;
+                animationSmoothingForced = FALSE;
                 if( pMagSetLensUseBitmapSmoothing )
-                    pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, TRUE );
+                    pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, g_SmoothImage );
             }
 
             if( g_RecordToggle )
@@ -11964,6 +11995,8 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             bool animationFrame = false;
             float animatedSourceX = 0.0f;
             float animatedSourceY = 0.0f;
+            int magOffsetX = 0;
+            int magOffsetY = 0;
 
             // if we're cropping, do not move
             if( g_RecordCropping == TRUE )
@@ -12003,20 +12036,19 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             if( zoomAnimation.IsActive() ) {
 
                 animationFrame = true;
-                if( g_SmoothImage && !g_fullScreenWorkaround && !animationSmoothingDisabled ) {
+                // Force interpolated magnification while the scale changes so sub-pixel motion is smooth, not blocky.
+                if( !g_fullScreenWorkaround && !animationSmoothingForced ) {
 
-                    animationSmoothingDisabled = TRUE;
-                    if( pMagSetLensUseBitmapSmoothing )
-                        pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, FALSE );
-                }
-                zoomLevel = zoomAnimation.Sample( GetTickCount64() );
-                MSG queuedHotkey;
-                const bool zoomInQueued = PeekMessage( &queuedHotkey, hWnd, WM_HOTKEY, WM_HOTKEY, PM_NOREMOVE ) && queuedHotkey.wParam == 0;
-                if( animationSmoothingDisabled && !zoomAnimation.IsActive() && !zoomInQueued ) {
-
-                    animationSmoothingDisabled = FALSE;
+                    animationSmoothingForced = TRUE;
                     if( pMagSetLensUseBitmapSmoothing )
                         pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, TRUE );
+                }
+                zoomLevel = zoomAnimation.Sample( GetTickCount64() );
+                if( animationSmoothingForced && !zoomAnimation.IsActive() ) {
+
+                    animationSmoothingForced = FALSE;
+                    if( pMagSetLensUseBitmapSmoothing )
+                        pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, g_SmoothImage );
                 }
                 // Time to exit zoom mode?
                 if( zoomTelescopeTarget == 1 && zoomLevel == 1 ) {
@@ -12112,10 +12144,16 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             }
             if( animationFrame && !g_fullScreenWorkaround && !g_ZoomOnLiveZoom ) {
 
+                // The magnifier floors the source position to whole screen pixels, so feed it an integer source and
+                // apply the sub-pixel remainder by offsetting the magnifier window (device-pixel-granular motion).
+                const float intSourceX = std::floor( animatedSourceX );
+                const float intSourceY = std::floor( animatedSourceY );
+                magOffsetX = static_cast<int>( std::lround( ( animatedSourceX - intSourceX ) * zoomLevel ) );
+                magOffsetY = static_cast<int>( std::lround( ( animatedSourceY - intSourceY ) * zoomLevel ) );
                 matrix.v[0][0] = zoomLevel;
-                matrix.v[0][2] = -animatedSourceX * zoomLevel;
+                matrix.v[0][2] = -intSourceX * zoomLevel;
                 matrix.v[1][1] = zoomLevel;
-                matrix.v[1][2] = -animatedSourceY * zoomLevel;
+                matrix.v[1][2] = -intSourceY * zoomLevel;
                 matrix.v[2][2] = 1.0f;
             }
             lastCursorPos = cursorPos;
@@ -12132,10 +12170,30 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                 else {
 
                     pMagSetWindowTransform(g_hWndLiveZoomMag, &matrix);
+
+                    // A settled pan re-applied an integer source; drop the animation's window offset (the pan hides it).
+                    if( !animationFrame && !g_ZoomOnLiveZoom && magWindowOffset ) {
+
+                        SetWindowPos( g_hWndLiveZoomMag, nullptr, 0, 0, width, height,
+                            SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS );
+                        magWindowOffset = FALSE;
+                    }
                 }
             }
 
-            if( !g_fullScreenWorkaround ) {
+            if( animationFrame && !g_fullScreenWorkaround && !g_ZoomOnLiveZoom ) {
+
+                // Feed the magnifier an integer source and offset its window by the sub-pixel remainder; keep the
+                // offset frozen after the animation so the settled view does not snap back to a whole source pixel.
+                SetWindowPos( g_hWndLiveZoomMag, nullptr, -magOffsetX, -magOffsetY,
+                    width + ZOOM_LEVEL_MAX, height + ZOOM_LEVEL_MAX,
+                    SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS );
+                magWindowOffset = TRUE;
+            }
+
+            // The offset SetWindowPos already forces a clean repaint; a second invalidate would double-render the
+            // animation frame and add shimmer, so only invalidate for pan/settled frames.
+            if( !g_fullScreenWorkaround && !( animationFrame && !g_ZoomOnLiveZoom ) ) {
 
                 // Force redraw to refresh screen contents
                 InvalidateRect(g_hWndLiveZoomMag, NULL, TRUE);
@@ -12260,9 +12318,9 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
         }
         break;
     case WM_DESTROY:
-        if( animationSmoothingDisabled && pMagSetLensUseBitmapSmoothing )
-            pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, TRUE );
-        animationSmoothingDisabled = FALSE;
+        if( animationSmoothingForced && pMagSetLensUseBitmapSmoothing )
+            pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, g_SmoothImage );
+        animationSmoothingForced = FALSE;
         g_hWndLiveZoom = NULL;
         break;
 
