@@ -120,6 +120,7 @@ public sealed partial class DockItemControl : Control
         {
             control.UpdateTextVisibility();
             control.UpdateAlignment();
+            control.UpdateCompactState();
         }
     }
 

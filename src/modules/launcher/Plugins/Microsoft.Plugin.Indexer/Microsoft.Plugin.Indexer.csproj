@@ -17,15 +17,6 @@
 
   <ItemGroup>
     <PackageReference Include="System.Data.OleDb" />
-    <PackageReference Include="System.Configuration.ConfigurationManager">
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
-    <PackageReference Include="System.Diagnostics.EventLog">
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
-    <PackageReference Include="System.Diagnostics.PerformanceCounter">
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

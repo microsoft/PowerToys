@@ -4,6 +4,7 @@
 namespace Microsoft.Terminal.UI
 {
 
+    [bindable]
     static runtimeclass Converters
     {
         // Booleans

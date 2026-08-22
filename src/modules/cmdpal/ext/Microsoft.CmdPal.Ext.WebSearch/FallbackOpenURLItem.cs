@@ -56,10 +56,9 @@ internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
         _executeItem.Url = query;
         _executeItem.Name = string.IsNullOrEmpty(query) ? string.Empty : Resources.open_in_default_browser;
 
-        Title = string.Format(CultureInfo.CurrentCulture, PluginOpenURL, query);
-
         var browserName = _browserInfoService.GetDefaultBrowser()?.Name;
-        Subtitle = string.IsNullOrWhiteSpace(browserName) ? Resources.open_in_default_browser : string.Format(CultureInfo.CurrentCulture, PluginOpenUrlInBrowser, browserName);
+        Title = string.IsNullOrWhiteSpace(browserName) ? Resources.open_in_default_browser : string.Format(CultureInfo.CurrentCulture, PluginOpenUrlInBrowser, browserName);
+        Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpenURL, query);
     }
 
     private static bool IsValidUrl(string url)

@@ -160,10 +160,37 @@ namespace WorkspacesEditor.ViewModels
         {
             foreach (Project project in Workspaces)
             {
-                project.Initialize(App.ThemeManager.GetCurrentTheme());
+                project.Initialize(App.GetCurrentTheme());
             }
 
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
+        }
+
+        /// <summary>
+        /// True while the user is actively editing a project (edit page open) — used
+        /// to suppress the background provisioning reload so it never clobbers
+        /// in-progress edits (Design §14.1 / non-blocking provisioning).
+        /// </summary>
+        public bool IsEditInProgress => editedProject != null || editPage != null;
+
+        private bool _isProvisioning;
+
+        /// <summary>
+        /// True while first-run service provisioning (UAC + MSIX deploy) is running
+        /// in the background.  Bindable so the UI can show a "Setting up
+        /// protection…" affordance and (optionally) gate destructive actions.
+        /// </summary>
+        public bool IsProvisioning
+        {
+            get => _isProvisioning;
+            set
+            {
+                if (_isProvisioning != value)
+                {
+                    _isProvisioning = value;
+                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsProvisioning)));
+                }
+            }
         }
 
         public void SetEditedProject(Project editedProject)
@@ -188,7 +215,7 @@ namespace WorkspacesEditor.ViewModels
             editedProject.Applications = projectToSave.Applications.Where(x => x.IsIncluded).ToList();
 
             editedProject.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs("AppsCountString"));
-            editedProject.Initialize(App.ThemeManager.GetCurrentTheme());
+            editedProject.Initialize(App.GetCurrentTheme());
             _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
             ApplyShortcut(editedProject);
         }
@@ -216,7 +243,7 @@ namespace WorkspacesEditor.ViewModels
             var shortcutAddress = GetDesktopShortcutAddress(project);
             var shortcutIconFilename = GetShortcutStoreAddress(project);
 
-            Bitmap icon = WorkspacesIcon.DrawIcon(WorkspacesIcon.IconTextFromProjectName(project.Name), App.ThemeManager.GetCurrentTheme());
+            Bitmap icon = WorkspacesIcon.DrawIcon(WorkspacesIcon.IconTextFromProjectName(project.Name), App.GetCurrentTheme());
             WorkspacesIcon.SaveIcon(icon, shortcutIconFilename);
 
             try
@@ -270,7 +297,7 @@ namespace WorkspacesEditor.ViewModels
                     project.EditorWindowTitle = Properties.Resources.EditWorkspace;
                     editPage.DataContext = project;
                     CheckShortcutPresence(project);
-                    project.Initialize(App.ThemeManager.GetCurrentTheme());
+                    project.Initialize(App.GetCurrentTheme());
                 }
                 else
                 {
@@ -283,7 +310,7 @@ namespace WorkspacesEditor.ViewModels
         {
             CheckShortcutPresence(projectBeforeLaunch);
             editPage.DataContext = projectBeforeLaunch;
-            projectBeforeLaunch.Initialize(App.ThemeManager.GetCurrentTheme());
+            projectBeforeLaunch.Initialize(App.GetCurrentTheme());
         }
 
         public void EditProject(Project selectedProject, bool isNewlyCreated = false)
@@ -323,7 +350,7 @@ namespace WorkspacesEditor.ViewModels
             }
 
             selectedProject.EditorWindowTitle = isNewlyCreated ? Properties.Resources.CreateWorkspace : Properties.Resources.EditWorkspace;
-            selectedProject.Initialize(App.ThemeManager.GetCurrentTheme());
+            selectedProject.Initialize(App.GetCurrentTheme());
 
             CheckShortcutPresence(selectedProject);
 
@@ -342,7 +369,7 @@ namespace WorkspacesEditor.ViewModels
         public void AddNewProject(Project project)
         {
             project.Applications.RemoveAll(app => !app.IsIncluded);
-            project.Initialize(App.ThemeManager.GetCurrentTheme());
+            project.Initialize(App.GetCurrentTheme());
             Workspaces.Add(project);
             _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
             TempProjectData.DeleteTempFile();

@@ -7,12 +7,14 @@ using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -21,13 +23,29 @@ using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 
+using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
+
 namespace Microsoft.CmdPal.UI.Dock;
 
-public sealed partial class DockControl : UserControl, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>
+public sealed partial class DockControl : UserControl, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>, IRecipient<ExitDockEditModeMessage>, IRecipient<CrossMonitorBandDropMessage>
 {
     private DockViewModel _viewModel;
 
     internal DockViewModel ViewModel => _viewModel;
+
+    /// <summary>
+    /// Gets or sets the HWND of the parent DockWindow that owns this control.
+    /// Used to target palette-show messages to the correct DockWindow in multi-monitor setups.
+    /// </summary>
+    internal IntPtr OwnerHwnd { get; set; }
+
+    internal bool HasOpenTransientUi =>
+        ContextMenuFlyout.IsOpen ||
+        AddBandFlyout.IsOpen ||
+        EditModeContextMenu.IsOpen ||
+        EditButtonsTeachingTip.IsOpen;
+
+    internal bool IsDragOperationActive => _draggedBand is not null;
 
     public static readonly DependencyProperty ItemsOrientationProperty =
         DependencyProperty.Register(nameof(ItemsOrientation), typeof(Orientation), typeof(DockControl), new PropertyMetadata(Orientation.Horizontal));
@@ -89,6 +107,13 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         WeakReferenceMessenger.Default.UnregisterAll(this);
         WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<EnterDockEditModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<ExitDockEditModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<CrossMonitorBandDropMessage>(this);
+
+        ContextControl.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
+        ContextControl.ViewModel.CommandInvoked += ContextMenu_CommandInvoked;
+        ContextControl.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
+        ContextControl.ViewModel.CommandInvoking += ContextMenu_CommandInvoking;
 
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
         ViewModel.CenterItems.CollectionChanged += CenterItems_CollectionChanged;
@@ -99,6 +124,9 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     private void DockControl_Unloaded(object sender, RoutedEventArgs e)
     {
         WeakReferenceMessenger.Default.UnregisterAll(this);
+
+        ContextControl.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
+        ContextControl.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
 
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
 
@@ -139,6 +167,21 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         DispatcherQueue.TryEnqueue(() =>
         {
             EnterEditMode();
+        });
+    }
+
+    public void Receive(ExitDockEditModeMessage message)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (message.Discard)
+            {
+                DiscardEditMode();
+            }
+            else
+            {
+                ExitEditMode();
+            }
         });
     }
 
@@ -231,20 +274,21 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     private void DoneEditingButton_Click(object sender, RoutedEventArgs e)
     {
-        ExitEditMode();
+        WeakReferenceMessenger.Default.Send(new ExitDockEditModeMessage(Discard: false));
     }
 
     private void DiscardEditingButton_Click(object sender, RoutedEventArgs e)
     {
-        DiscardEditMode();
+        WeakReferenceMessenger.Default.Send(new ExitDockEditModeMessage(Discard: true));
     }
 
-    internal void UpdateSettings(DockSettings settings)
+    internal void UpdateSettings(DockSettings settings, DockSide? effectiveSide = null)
     {
-        DockSide = settings.Side;
+        var side = effectiveSide ?? settings.Side;
+        DockSide = side;
 
         // Compact mode is only supported for Top/Bottom positions
-        var isHorizontal = settings.Side == DockSide.Top || settings.Side == DockSide.Bottom;
+        var isHorizontal = side == DockSide.Top || side == DockSide.Bottom;
         var effectiveSize = isHorizontal ? settings.DockSize : DockSize.Default;
         DockSize = effectiveSize;
 
@@ -267,10 +311,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         if (sender is DockItemControl dockItem && dockItem.DataContext is DockBandViewModel band && dockItem.Tag is DockItemViewModel item)
         {
             // Use the center of the border as the point to open at
-            var borderPos = dockItem.TransformToVisual(null).TransformPoint(new Point(0, 0));
-            var borderCenter = new Point(
-                borderPos.X + (dockItem.ActualWidth / 2),
-                borderPos.Y + (dockItem.ActualHeight / 2));
+            var borderCenter = GetDockItemCenter(dockItem);
 
             InvokeItem(item, borderCenter);
             e.Handled = true;
@@ -286,6 +327,11 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     // Stores the band that was right-clicked for edit mode context menu
     private DockBandViewModel? _editModeContextBand;
+
+    // Position (in window coords) of the dock item whose context menu is currently
+    // open, used to anchor the cmdpal palette when a Page command is invoked from
+    // the context menu. Null when the open context menu is not anchored to a band.
+    private Point? _bandContextMenuPalettePos;
 
     private void BandItem_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
     {
@@ -324,6 +370,10 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             // Normal mode - show the command context menu
             if (item.CanOpenContextMenu)
             {
+                // Remember where to anchor the palette if the user picks a Page
+                // command from the context menu.
+                _bandContextMenuPalettePos = GetDockItemCenter(dockItem);
+
                 ContextControl.ViewModel.SelectedItem = item;
                 ContextControl.ShowFilterBox = true;
                 ContextControl.PrepareForOpen(GetDockContextMenuFilterLocation());
@@ -368,17 +418,25 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     private void InvokeItem(DockItemViewModel item, Point pos)
     {
         var command = item.Command;
+        var hwnd = OwnerHwnd;
         try
         {
-            PerformCommandMessage m = new(command.Model);
-            m.WithAnimation = false;
-            m.TransientPage = true;
+            PerformCommandMessage m = new(command.Model)
+            {
+                WithAnimation = false,
+                TransientPage = true,
+
+                // If the command is invokable and its result asks for a
+                // confirmation dialog, surface the cmdpal window anchored at
+                // this dock item before the dialog appears.
+                OnBeforeShowConfirmation = () =>
+                    WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd)),
+            };
             WeakReferenceMessenger.Default.Send(m);
 
-            var isPage = command.Model.Unsafe is not IInvokableCommand invokable;
-            if (isPage)
+            if (IsPageCommand(command.Model.Unsafe))
             {
-                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos));
+                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd));
             }
         }
         catch (COMException e)
@@ -387,11 +445,65 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         }
     }
 
+    private static bool IsPageCommand(ICommand? command)
+    {
+        // A Page command is one that's not directly invokable - selecting it
+        // navigates into a page rather than performing an action in place.
+        return command is not null and not IInvokableCommand;
+    }
+
+    private static Point GetDockItemCenter(FrameworkElement dockItem)
+    {
+        var borderPos = dockItem.TransformToVisual(null).TransformPoint(new Point(0, 0));
+        return new Point(
+            borderPos.X + (dockItem.ActualWidth / 2),
+            borderPos.Y + (dockItem.ActualHeight / 2));
+    }
+
+    private void ContextMenu_CommandInvoked(object? sender, CommandItemViewModel command)
+    {
+        // The context menu just invoked a command. If it came from a dock band
+        // (i.e. _bandContextMenuPalettePos is set) and the command is a Page,
+        // open the cmdpal palette anchored at the dock item — mirroring what
+        // a direct click on the band does.
+        var pos = _bandContextMenuPalettePos;
+        _bandContextMenuPalettePos = null;
+
+        if (pos is null)
+        {
+            return;
+        }
+
+        if (IsPageCommand(command.Command.Model.Unsafe))
+        {
+            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos.Value, OwnerHwnd));
+        }
+    }
+
+    private void ContextMenu_CommandInvoking(object? sender, PerformCommandMessage message)
+    {
+        // The context menu is about to dispatch a command. If it was opened
+        // from a dock band, attach a callback so that an invokable command
+        // whose result is a Confirm surfaces the cmdpal window anchored at the
+        // dock item before the confirmation dialog appears.
+        var pos = _bandContextMenuPalettePos;
+        if (pos is null)
+        {
+            return;
+        }
+
+        var hwnd = OwnerHwnd;
+        var capturedPos = pos.Value;
+        message.OnBeforeShowConfirmation = () =>
+            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(capturedPos, hwnd));
+    }
+
     private void ContextMenuFlyout_Opened(object sender, object e)
     {
-        // We need to wait until our flyout is opened to try and toss focus
-        // at its search box. The control isn't in the UI tree before that
+        // Focus the filter box so the flyout captures keyboard input,
+        // then fire a single consolidated Narrator announcement.
         ContextControl.FocusSearchBox();
+        ContextControl.AnnounceOpened();
     }
 
     public void Receive(CloseContextMenuMessage message)
@@ -409,6 +521,10 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         {
             return;
         }
+
+        // This context menu is for the dock itself (not a band), so the palette
+        // should not be opened on invocation.
+        _bandContextMenuPalettePos = null;
 
         var pos = e.GetPosition(null);
         var item = this.ViewModel.GetContextMenuForDock();
@@ -438,12 +554,21 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         {
             _draggedBand = band;
             e.Data.RequestedOperation = DataPackageOperation.Move;
+
+            // Only advertise cross-monitor data when we have a real monitor ID.
+            // Without one (single-monitor / global dock) the cross-monitor path
+            // cannot safely distinguish source from target.
+            if (ViewModel.MonitorDeviceId is not null)
+            {
+                e.Data.Properties["DockBandId"] = band.Id;
+                e.Data.Properties["SourceMonitorDeviceId"] = ViewModel.MonitorDeviceId;
+            }
         }
     }
 
     private void BandListView_DragOver(object sender, DragEventArgs e)
     {
-        if (_draggedBand != null)
+        if (_draggedBand != null || e.DataView.Properties.ContainsKey("DockBandId"))
         {
             e.AcceptedOperation = DataPackageOperation.Move;
         }
@@ -505,15 +630,27 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     private void HandleCrossListDrop(DockPinSide targetSide, DragEventArgs e)
     {
-        if (_draggedBand == null)
+        if (_draggedBand != null)
         {
+            HandleLocalCrossListDrop(targetSide, e);
             return;
         }
 
+        // Cross-monitor drag from another DockControl
+        if (e.DataView.Properties.TryGetValue("DockBandId", out var bandIdObj) &&
+            e.DataView.Properties.TryGetValue("SourceMonitorDeviceId", out var sourceMonitorObj) &&
+            bandIdObj is string bandId &&
+            sourceMonitorObj is string sourceMonitorDeviceId)
+        {
+            HandleCrossMonitorDrop(bandId, sourceMonitorDeviceId, targetSide, e);
+        }
+    }
+
+    private void HandleLocalCrossListDrop(DockPinSide targetSide, DragEventArgs e)
+    {
         // Check which list the band is currently in
-        var isInStart = ViewModel.StartItems.Contains(_draggedBand);
-        var isInCenter = ViewModel.CenterItems.Contains(_draggedBand);
-        var isInEnd = ViewModel.EndItems.Contains(_draggedBand);
+        var isInStart = ViewModel.StartItems.Contains(_draggedBand!);
+        var isInCenter = ViewModel.CenterItems.Contains(_draggedBand!);
 
         DockPinSide sourceSide;
         if (isInStart)
@@ -532,7 +669,6 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         // Only handle cross-list drops here; same-list reorders are handled in DragItemsCompleted
         if (sourceSide != targetSide)
         {
-            // Calculate drop index based on drop position
             var targetListView = targetSide switch
             {
                 DockPinSide.Start => StartListView,
@@ -549,9 +685,36 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             var dropIndex = GetDropIndex(targetListView, e, targetCollection.Count);
 
             // Move the band to the new side (without saving - save happens on Done)
-            ViewModel.MoveBandWithoutSaving(_draggedBand, targetSide, dropIndex);
+            ViewModel.MoveBandWithoutSaving(_draggedBand!, targetSide, dropIndex);
             e.Handled = true;
         }
+    }
+
+    private void HandleCrossMonitorDrop(string bandId, string sourceMonitorDeviceId, DockPinSide targetSide, DragEventArgs e)
+    {
+        var targetListView = targetSide switch
+        {
+            DockPinSide.Start => StartListView,
+            DockPinSide.Center => CenterListView,
+            _ => EndListView,
+        };
+        var targetCollection = targetSide switch
+        {
+            DockPinSide.Start => ViewModel.StartItems,
+            DockPinSide.Center => ViewModel.CenterItems,
+            _ => ViewModel.EndItems,
+        };
+
+        var dropIndex = GetDropIndex(targetListView, e, targetCollection.Count);
+
+        ViewModel.AcceptBandFromMonitor(bandId, targetSide, dropIndex);
+
+        if (!string.IsNullOrEmpty(sourceMonitorDeviceId))
+        {
+            WeakReferenceMessenger.Default.Send(new CrossMonitorBandDropMessage(bandId, sourceMonitorDeviceId));
+        }
+
+        e.Handled = true;
     }
 
     private int GetDropIndex(ListView listView, DragEventArgs e, int itemCount)
@@ -633,7 +796,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     private void BandListView_DragEnter(object sender, DragEventArgs e)
     {
-        if (sender is ListView view)
+        if (sender is ListView view && (_draggedBand != null || e.DataView.Properties.ContainsKey("DockBandId")))
         {
             view.Background = Application.Current.Resources["ControlAltFillColorQuarternaryBrush"] as SolidColorBrush;
             e.DragUIOverride.IsGlyphVisible = false;
@@ -652,5 +815,120 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         {
             listView.Background = new SolidColorBrush(Colors.Transparent);
         }
+    }
+
+    private void RootGrid_DragOver(object sender, DragEventArgs e)
+    {
+        // Don't intercept internal band drag-drop during edit mode
+        if (_draggedBand != null)
+        {
+            return;
+        }
+
+        if (e.DataView.Contains(StandardDataFormats.StorageItems) ||
+            e.DataView.Contains(StandardDataFormats.Uri))
+        {
+            e.AcceptedOperation = DataPackageOperation.Link;
+            e.DragUIOverride.Caption = RS_.GetString("Dock_DropFile_Caption");
+            e.DragUIOverride.IsGlyphVisible = true;
+            e.DragUIOverride.IsCaptionVisible = true;
+
+            // DON'T mark the event as handled - if you do, we won't get the Drop event.
+        }
+    }
+
+    private async void RootGrid_Drop(object sender, DragEventArgs e)
+    {
+        // Don't intercept internal band drag-drop during edit mode
+        if (_draggedBand != null)
+        {
+            Logger.LogDebug("[DockDrop] RootGrid_Drop: ignoring (internal band drag in progress)");
+            return;
+        }
+
+        var hasStorageItems = e.DataView.Contains(StandardDataFormats.StorageItems);
+        var hasUri = e.DataView.Contains(StandardDataFormats.Uri);
+
+        if (!hasStorageItems && !hasUri)
+        {
+            return;
+        }
+
+        e.Handled = true;
+
+        try
+        {
+            var bookmarksManager = App.Current.Services.GetService<IBookmarksManager>();
+            if (bookmarksManager == null)
+            {
+                Logger.LogWarning("[DockDrop] IBookmarksManager service is not registered; cannot pin dropped item");
+                return;
+            }
+
+            var foundItem = false;
+            if (hasStorageItems)
+            {
+                var items = await e.DataView.GetStorageItemsAsync();
+                foreach (var item in items)
+                {
+                    var path = item.Path;
+                    if (string.IsNullOrEmpty(path))
+                    {
+                        continue;
+                    }
+
+                    var name = Path.GetFileNameWithoutExtension(path);
+                    AddBookmarkAndPinToDock(bookmarksManager, name, path);
+                    foundItem = true;
+                }
+            }
+
+            if (foundItem)
+            {
+                return;
+            }
+
+            if (hasUri)
+            {
+                var uri = await e.DataView.GetUriAsync();
+                var url = uri.AbsoluteUri;
+                var name = uri.Host;
+                AddBookmarkAndPinToDock(bookmarksManager, name, url);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("[DockDrop] Error handling file drop on dock", ex);
+        }
+    }
+
+    private static void AddBookmarkAndPinToDock(IBookmarksManager bookmarksManager, string name, string bookmarkValue)
+    {
+        var bookmark = bookmarksManager.Add(name, bookmarkValue);
+
+        // Make the command ID exactly the same as the ID it would have in the
+        // top-level list, so that pinning to the dock from the top-level is seamless.
+        var commandId = Ext.Bookmarks.Helpers.CommandIds.GetLaunchBookmarkItemId(bookmark.Id);
+        Logger.LogDebug($"[DockDrop] Pinning dropped item '{name}' as bookmark id={bookmark.Id} (commandId='{commandId}')");
+        WeakReferenceMessenger.Default.Send(new PinToDockMessage("Bookmarks", commandId, true, WithReload: false));
+    }
+
+    public void Receive(CrossMonitorBandDropMessage message)
+    {
+        // Only match if this dock has a real monitor ID that matches the source.
+        if (ViewModel.MonitorDeviceId is null)
+        {
+            return;
+        }
+
+        if (!string.Equals(ViewModel.MonitorDeviceId, message.SourceMonitorDeviceId, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            ViewModel.RemoveBandById(message.BandId);
+        });
     }
 }

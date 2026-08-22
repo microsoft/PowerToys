@@ -1,7 +1,5 @@
 #pragma once
 #include "pch.h"
-#include <Windows.h>
-#include <common/SettingsAPI/settings_objects.h>
 
 enum struct FindMyMouseActivationMethod : int
 {
@@ -41,10 +39,8 @@ struct FindMyMouseSettings
     std::vector<std::wstring> excludedApps;
 };
 
-EXTERN_C __declspec(dllexport) int FindMyMouseMain();
-EXTERN_C __declspec(dllexport) void FindMyMouseDisable();
+int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings);
+void FindMyMouseDisable();
 bool FindMyMouseIsEnabled();
 void FindMyMouseApplySettings(const FindMyMouseSettings& settings);
-EXTERN_C __declspec(dllexport) HWND GetSonarHwnd() noexcept;
-
-static FindMyMouseSettings parse_settings(PowerToysSettings::PowerToyValues& settings);
+HWND GetSonarHwnd() noexcept;

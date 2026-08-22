@@ -71,7 +71,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool shortcutGuide = true;
+        private bool shortcutGuide; // defaulting to off
 
         [JsonPropertyName("Shortcut Guide")]
         public bool ShortcutGuide

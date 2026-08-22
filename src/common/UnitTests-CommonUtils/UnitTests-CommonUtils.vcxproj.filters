@@ -96,6 +96,9 @@
     <ClCompile Include="Elevation.Tests.cpp">
       <Filter>Source Files\Integration</Filter>
     </ClCompile>
+    <ClCompile Include="Package.Tests.cpp">
+      <Filter>Source Files\Integration</Filter>
+    </ClCompile>
     <ClCompile Include="MsiUtils.Tests.cpp">
       <Filter>Source Files\Integration</Filter>
     </ClCompile>
@@ -116,9 +119,6 @@
     </ClCompile>
     <ClCompile Include="UnhandledException.Tests.cpp">
       <Filter>Source Files\Integration</Filter>
-    </ClCompile>
-    <ClCompile Include="TestStubs.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

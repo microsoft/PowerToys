@@ -5,7 +5,6 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using ManagedCommon;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {

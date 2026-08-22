@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "KeyboardManager.h"
+#include <interface/powertoy_module_interface.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/interop/shared_constants.h>
 #include <common/debug_control.h>

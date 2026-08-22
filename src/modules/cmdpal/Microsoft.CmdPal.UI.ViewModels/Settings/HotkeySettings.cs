@@ -55,8 +55,14 @@ public record HotkeySettings// : ICmdLineRepresentable
 
     // This is currently needed for FancyZones, we need to unify these two objects
     // see src\common\settings_objects.h
+    private string? _key = string.Empty;
+
     [JsonPropertyName("key")]
-    public string Key { get; init; } = string.Empty;
+    public string Key
+    {
+        get => _key ?? string.Empty;
+        init => _key = value;
+    }
 
     public override string ToString()
     {

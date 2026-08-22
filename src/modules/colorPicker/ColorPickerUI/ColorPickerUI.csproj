@@ -37,7 +37,6 @@
     <PackageReference Include="System.ComponentModel.Composition" />
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
-    <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Properties\Settings.settings">

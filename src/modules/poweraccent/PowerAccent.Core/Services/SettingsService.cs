@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -11,6 +11,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using PowerAccent.Core.SerializationContext;
 using PowerToys.PowerAccentKeyboardService;
+using Language = global::PowerAccent.Common.Language;
 
 namespace PowerAccent.Core.Services;
 
@@ -57,6 +58,9 @@ public class SettingsService
 
                         InputTime = settings.Properties.InputTime.Value;
                         _keyboardListener.UpdateInputTime(InputTime);
+
+                        HoldDuration = settings.Properties.HoldDuration.Value;
+                        _keyboardListener.UpdateHoldDuration(HoldDuration);
 
                         ExcludedApps = settings.Properties.ExcludedApps.Value;
                         _keyboardListener.UpdateExcludedApps(ExcludedApps);
@@ -194,6 +198,8 @@ public class SettingsService
             _inputTime = value;
         }
     }
+
+    public int HoldDuration { get; set; } = PowerAccentSettings.DefaultHoldDurationMs;
 
     private string _excludedApps;
 

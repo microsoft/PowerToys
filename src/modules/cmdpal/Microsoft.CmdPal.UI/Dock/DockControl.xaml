@@ -206,9 +206,12 @@
 
     <Grid
         x:Name="RootGrid"
+        AllowDrop="True"
         Background="Transparent"
         BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
         BorderThickness="0,0,0,1"
+        DragOver="RootGrid_DragOver"
+        Drop="RootGrid_Drop"
         RightTapped="RootGrid_RightTapped">
         <!--  Dock content with Start / Center / End sections  -->
         <local:DockContentControl
@@ -291,11 +294,7 @@
                     ItemsPanel="{StaticResource HorizontalItemsPanel}"
                     ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}"
                     SelectionMode="None"
-                    Style="{StaticResource DockBandListViewStyle}">
-                    <ListView.ItemContainerTransitions>
-                        <TransitionCollection />
-                    </ListView.ItemContainerTransitions>
-                </ListView>
+                    Style="{StaticResource DockBandListViewStyle}" />
             </local:DockContentControl.EndSource>
             <local:DockContentControl.EndActionButton>
                 <Button

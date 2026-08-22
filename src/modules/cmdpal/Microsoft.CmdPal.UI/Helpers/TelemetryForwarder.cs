@@ -103,4 +103,152 @@ internal sealed class TelemetryForwarder :
     {
         PowerToysTelemetry.Log.WriteEvent(new CmdPalOpenUri(uri, isWeb, success));
     }
+
+    public void LogEvent(string eventName, IDictionary<string, object>? properties = null)
+    {
+        if (string.IsNullOrEmpty(eventName))
+        {
+            throw new ArgumentNullException(nameof(eventName));
+        }
+
+        switch (eventName)
+        {
+            case "BuildListItems_PathResolution":
+                PowerToysTelemetry.Log.WriteEvent(new CmdPalRunBuildListPathResolution(
+                    GetString(properties, "newSearch"),
+                    GetString(properties, "correctedSearchText"),
+                    GetString(properties, "expanded"),
+                    GetBool(properties, "withLeadingTilde"),
+                    GetBool(properties, "couldResolvePath"),
+                    GetBool(properties, "isFile"),
+                    GetLong(properties, "durationMs"),
+                    GetInt(properties, "result")));
+                break;
+
+            case "CreatePathItems_ResolvedPath":
+                PowerToysTelemetry.Log.WriteEvent(new CmdPalRunCreatePathItemsResolvedPath(
+                    GetString(properties, "fullFilePath"),
+                    GetString(properties, "searchText"),
+                    GetString(properties, "directoryPath")));
+                break;
+
+            case "CreatePathItems_Filtered":
+                PowerToysTelemetry.Log.WriteEvent(new CmdPalRunCreatePathItemsFiltered(
+                    GetString(properties, "dir"),
+                    GetString(properties, "fuzzyString"),
+                    GetInt(properties, "filteredCount")));
+                break;
+
+            case "CreatePathItems_ChangedDirectory":
+                PowerToysTelemetry.Log.WriteEvent(new CmdPalRunCreatePathItemsChangedDirectory(
+                    GetString(properties, "old"),
+                    GetString(properties, "new")));
+                break;
+
+            case "BuildItemsForDirectory":
+                PowerToysTelemetry.Log.WriteEvent(new CmdPalRunBuildItemsForDirectory(
+                    GetString(properties, "dir"),
+                    GetInt(properties, "fileCount")));
+                break;
+
+            case "LoadHistory":
+                PowerToysTelemetry.Log.WriteEvent(new CmdPalRunLoadHistory(
+                    GetInt(properties, "itemsToLoad"),
+                    GetInt(properties, "itemsLoaded"),
+                    GetLong(properties, "durationMs")));
+                break;
+
+            case "LoadHistoryItem":
+                PowerToysTelemetry.Log.WriteEvent(new CmdPalRunLoadHistoryItem(
+                    GetString(properties, "type"),
+                    GetBool(properties, "timedOut"),
+                    GetLong(properties, "totalMs"),
+                    GetLong(properties, "parseMs"),
+                    GetBool(properties, "isUri"),
+                    GetString(properties, "target"),
+                    GetString(properties, "args"),
+                    GetInt(properties, "parseResult")));
+                break;
+
+            default:
+                // Unknown event name - log a generic event with the
+                // serialized properties. Add a concrete event type above to
+                // start collecting strongly-typed telemetry for new event
+                // names.
+                PowerToysTelemetry.Log.WriteEvent(new CmdPalGenericLogEvent(
+                    eventName,
+                    PrintProperties(properties)));
+                break;
+        }
+    }
+
+    private static string PrintProperties(IDictionary<string, object>? properties)
+    {
+        if (properties == null || properties.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var list = new List<string>();
+        foreach (KeyValuePair<string, object> kvp in properties)
+        {
+            list.Add($"{kvp.Key}={kvp.Value}");
+        }
+
+        return string.Join(", ", list);
+    }
+
+    private static string GetString(IDictionary<string, object>? properties, string key)
+    {
+        if (properties != null && properties.TryGetValue(key, out var v) && v is not null)
+        {
+            return v.ToString() ?? string.Empty;
+        }
+
+        return string.Empty;
+    }
+
+    private static bool GetBool(IDictionary<string, object>? properties, string key)
+    {
+        if (properties != null && properties.TryGetValue(key, out var v) && v is bool b)
+        {
+            return b;
+        }
+
+        return false;
+    }
+
+    private static int GetInt(IDictionary<string, object>? properties, string key)
+    {
+        if (properties != null && properties.TryGetValue(key, out var v) && v is not null)
+        {
+            try
+            {
+                return Convert.ToInt32(v, System.Globalization.CultureInfo.InvariantCulture);
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        return 0;
+    }
+
+    private static long GetLong(IDictionary<string, object>? properties, string key)
+    {
+        if (properties != null && properties.TryGetValue(key, out var v) && v is not null)
+        {
+            try
+            {
+                return Convert.ToInt64(v, System.Globalization.CultureInfo.InvariantCulture);
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        return 0;
+    }
 }

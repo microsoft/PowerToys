@@ -48,7 +48,6 @@ namespace ViewModelTests
 
             // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.ShortcutGuide, viewModel.IsEnabled);
-            Assert.AreEqual(originalSettings.Properties.OverlayOpacity.Value, viewModel.OverlayOpacity);
 
             // Verify that the stub file was used
             var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)
@@ -104,22 +103,6 @@ namespace ViewModelTests
             // Assert
             Func<string, bool> isDark = s => JsonSerializer.Deserialize<ShortcutGuideSettings>(s).Properties.Theme.Value == "dark";
             settingsUtilsMock.Verify(x => x.SaveSettings(It.Is<string>(y => isDark(y)), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-        }
-
-        [TestMethod]
-        public void OverlayOpacityShouldSeOverlayOpacityToOneHundredWhenSuccessful()
-        {
-            // Arrange
-            var settingsUtilsMock = new Mock<SettingsUtils>(new FileSystem(), null);
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(settingsUtilsMock.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), msg => { return 0; }, ShortCutGuideTestFolderName);
-            Assert.AreEqual(90, viewModel.OverlayOpacity);
-
-            // Act
-            viewModel.OverlayOpacity = 100;
-
-            // Assert
-            Func<string, bool> equal100 = s => JsonSerializer.Deserialize<ShortcutGuideSettings>(s).Properties.OverlayOpacity.Value == 100;
-            settingsUtilsMock.Verify(x => x.SaveSettings(It.Is<string>(y => equal100(y)), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
     }
 }

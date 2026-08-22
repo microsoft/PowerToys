@@ -85,7 +85,7 @@
       <AdditionalOptions>%(AdditionalOptions) /bigobj /Zc:twoPhase- </AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>WindowsApp.lib;Taskschd.lib;shell32.lib;advapi32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <ModuleDefinitionFile>PowerToys.Interop.def</ModuleDefinitionFile>
@@ -93,15 +93,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="async_message_queue.h" />
-    <ClInclude Include="AutoStart.h" />
-    <ClInclude Include="Clipboard.h" />
     <ClInclude Include="CommonManaged.h">
       <DependentUpon>CommonManaged.idl</DependentUpon>
     </ClInclude>
     <ClInclude Include="Constants.h">
       <DependentUpon>KeyboardListener.idl</DependentUpon>
     </ClInclude>
-    <ClInclude Include="Elevation.h" />
+    <ClInclude Include="excluded_app.h" />
     <ClInclude Include="HotkeyManager.h">
       <DependentUpon>HotkeyManager.idl</DependentUpon>
     </ClInclude>
@@ -113,12 +111,10 @@
     <ClInclude Include="LayoutMapManaged.h">
       <DependentUpon>LayoutMapManaged.idl</DependentUpon>
     </ClInclude>
-    <ClInclude Include="Notifications.h" />
-    <ClInclude Include="Package.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="shared_constants.h" />
-    <ClInclude Include="ThemeHelper.h" />
+    <ClInclude Include="tasklist_positions.h" />
     <ClInclude Include="TwoWayPipeMessageIPCManaged.h">
       <DependentUpon>TwoWayPipeMessageIPCManaged.idl</DependentUpon>
     </ClInclude>
@@ -126,15 +122,13 @@
     <ClInclude Include="two_way_pipe_message_ipc_impl.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AutoStart.cpp" />
-    <ClCompile Include="Clipboard.cpp" />
     <ClCompile Include="CommonManaged.cpp">
       <DependentUpon>CommonManaged.idl</DependentUpon>
     </ClCompile>
     <ClCompile Include="Constants.cpp">
       <DependentUpon>KeyboardListener.idl</DependentUpon>
     </ClCompile>
-    <ClCompile Include="Elevation.cpp" />
+    <ClCompile Include="excluded_app.cpp" />
     <ClCompile Include="HotkeyManager.cpp">
       <DependentUpon>HotkeyManager.idl</DependentUpon>
     </ClCompile>
@@ -145,14 +139,10 @@
     <ClCompile Include="LayoutMapManaged.cpp">
       <DependentUpon>LayoutMapManaged.idl</DependentUpon>
     </ClCompile>
-    <ClCompile Include="Notifications.cpp" />
-    <ClCompile Include="Package.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ThemeHelper.cpp">
-      <DependentUpon>ThemeHelper.idl</DependentUpon>
-    </ClCompile>
+    <ClCompile Include="tasklist_positions.cpp" />
     <ClCompile Include="TwoWayPipeMessageIPCManaged.cpp">
       <DependentUpon>TwoWayPipeMessageIPCManaged.idl</DependentUpon>
     </ClCompile>
@@ -170,38 +160,32 @@
     <None Include="PropertySheet.props" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="AutoStart.idl" />
-    <Midl Include="Clipboard.idl" />
     <Midl Include="CommonManaged.idl" />
     <Midl Include="Constants.idl" />
-    <Midl Include="Elevation.idl" />
     <Midl Include="HotkeyManager.idl" />
     <Midl Include="KeyboardHook.idl" />
     <Midl Include="LayoutMapManaged.idl" />
-    <Midl Include="Notifications.idl" />
-    <Midl Include="Package.idl" />
-    <Midl Include="ThemeHelper.idl" />
     <Midl Include="TwoWayPipeMessageIPCManaged.idl" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\logger\logger.vcxproj">
-      <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
+    <ProjectReference Include="..\SettingsAPI\SettingsAPI.vcxproj">
+      <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\notifications\notifications.vcxproj">
-      <Project>{1d5be09d-78c0-4fd7-af00-ae7c1af7c525}</Project>
+    <ProjectReference Include="..\version\version.vcxproj">
+      <Project>{cc6e41ac-8174-4e8a-8d22-85dd7f4851df}</Project>
     </ProjectReference>
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
+    <Import Project="$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.260126.7\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.260126.7\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
     <Import Project="$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
+    <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.260126.7\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.260126.7\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
     <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>

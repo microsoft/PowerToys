@@ -3,12 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using global::PowerToys.GPOWrapper;
-using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -244,24 +241,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void Launch()
         {
-            try
-            {
-                if (!_isElevated && LaunchAdministrator)
-                {
-                    Process.Start(new ProcessStartInfo()
-                    {
-                        FileName = Path.GetFullPath("WinUI3Apps\\PowerToys.Hosts.exe"),
-                        Verb = "runas",
-                        UseShellExecute = true,
-                    });
-                    return;
-                }
+            string eventName = !_isElevated && LaunchAdministrator
+                ? Constants.ShowHostsAdminSharedEvent()
+                : Constants.ShowHostsSharedEvent();
 
-                Process.Start("WinUI3Apps\\PowerToys.Hosts.exe");
-            }
-            catch (Exception e)
+            using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
             {
-                Logger.LogError($"[HostsViewModel] Launch failed", e);
+                eventHandle.Set();
             }
         }
 

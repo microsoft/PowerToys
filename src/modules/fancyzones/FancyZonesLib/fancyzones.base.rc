@@ -1,6 +1,6 @@
 #include <windows.h>
 #include "resource.h"
-#include "../../../../common/utils/version.h"
+#include "../../../../common/version/version.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 #include "winres.h"
@@ -47,3 +47,4 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_ICON1               ICON                    "./../icon.ico"
+

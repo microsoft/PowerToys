@@ -17,7 +17,7 @@
 #include <winrt/Windows.Management.Deployment.h>
 
 #include "../logger/logger.h"
-#include "../utils/version.h"
+#include "../version/version.h"
 
 namespace package
 {

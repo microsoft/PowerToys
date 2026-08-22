@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static readonly HotkeySettings DefaultDecreaseOpacityHotkeyValue = new HotkeySettings(true, true, false, false, 0xBD);
         public const bool DefaultFrameEnabled = true;
         public const bool DefaultShowInSystemMenu = false;
-        public const int DefaultFrameThickness = 15;
+        public const int DefaultFrameThickness = 4;
         public const string DefaultFrameColor = "#0099cc";
         public const bool DefaultFrameAccentColor = true;
         public const int DefaultFrameOpacity = 100;

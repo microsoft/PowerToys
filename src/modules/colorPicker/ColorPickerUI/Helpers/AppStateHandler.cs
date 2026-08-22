@@ -243,5 +243,7 @@ namespace ColorPicker.Helpers
             lpPoint.Y += yOffset;
             SetCursorPos(lpPoint.X, lpPoint.Y);
         }
+
+        internal IntPtr GetMainWindowHandle() => _hwndSource?.Handle ?? IntPtr.Zero;
     }
 }

@@ -18,11 +18,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             ActivationShortcut = DefaultActivationShortcut;
             MonitorRefreshDelay = 5;
+            MouseWheelIncrement = 5;
             Monitors = new List<MonitorInfo>();
             RestoreSettingsOnStartup = false;
             ShowSystemTrayIcon = true;
             ShowProfileSwitcher = true;
             ShowIdentifyMonitorsButton = true;
+            MaxCompatibilityMode = false;
+            LinkedLevelsActive = false;
+            ExcludedFromSyncMonitorIds = new List<string>();
             CustomVcpMappings = new List<CustomVcpValueMapping>();
 
             // Note: saved_monitor_settings has been moved to monitor_state.json
@@ -45,11 +49,27 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("monitor_refresh_delay")]
         public int MonitorRefreshDelay { get; set; }
 
+        /// <summary>
+        /// Gets or sets the amount each PowerDisplay flyout slider (brightness, contrast, volume)
+        /// changes per mouse-wheel notch. Defaults to 5, the historical hardcoded step.
+        /// </summary>
+        [JsonPropertyName("mouse_wheel_increment")]
+        public int MouseWheelIncrement { get; set; }
+
         [JsonPropertyName("monitors")]
         public List<MonitorInfo> Monitors { get; set; }
 
         [JsonPropertyName("restore_settings_on_startup")]
         public bool RestoreSettingsOnStartup { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether PowerDisplay should aggressively probe each
+        /// supported VCP feature when a monitor's DDC/CI capabilities string is empty or
+        /// unparsable. Disabled by default; enabling it increases monitor discovery time but
+        /// can surface monitors whose firmware does not advertise capabilities correctly.
+        /// </summary>
+        [JsonPropertyName("max_compatibility_mode")]
+        public bool MaxCompatibilityMode { get; set; }
 
         [JsonPropertyName("show_system_tray_icon")]
         public bool ShowSystemTrayIcon { get; set; }
@@ -68,6 +88,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         [JsonPropertyName("show_identify_monitors_button")]
         public bool ShowIdentifyMonitorsButton { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether brightness slider changes are broadcast
+        /// to all connected monitors as a single linked level. When false (default), each
+        /// monitor's slider operates independently. The toggle is only meaningful when two
+        /// or more monitors are connected; the UI hides the entry point otherwise.
+        /// </summary>
+        [JsonPropertyName("linked_levels_active")]
+        public bool LinkedLevelsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the set of monitor <c>Id</c> values excluded from linked brightness.
+        /// Keyed by <c>Monitor.Id</c> (the DevicePath-based identifier, unique per physical
+        /// device × port — the same key profiles use), so three identical monitors of the same
+        /// model are distinguished. An excluded monitor keeps its own independent brightness
+        /// slider while link mode is on. Monitors not present here are linked by default,
+        /// including newly connected ones.
+        /// </summary>
+        [JsonPropertyName("excluded_from_sync_monitor_ids")]
+        public List<string> ExcludedFromSyncMonitorIds { get; set; }
 
         /// <summary>
         /// Gets or sets custom VCP value name mappings shared across all monitors.

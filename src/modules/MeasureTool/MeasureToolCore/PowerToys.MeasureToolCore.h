@@ -13,12 +13,14 @@ struct PowerToysMisc
 {
     PowerToysMisc()
     {
+        Trace::RegisterProvider();
         LoggerHelpers::init_logger(L"Measure Tool", L"Core", "Measure Tool");
         InitUnhandledExceptionHandler();
     }
 
     ~PowerToysMisc()
     {
+        Trace::UnregisterProvider();
     }
 };
 

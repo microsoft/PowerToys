@@ -84,13 +84,14 @@ namespace Peek.FilePreviewer.Previewers.Archives
 
             if (Item.Path.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase) || Item.Path.EndsWith(".tgz", StringComparison.OrdinalIgnoreCase))
             {
-                // A gzip-compressed tar can't be opened as a random-access archive, so it is read
-                // forward-only and the uncompressed size is accumulated while enumerating entries.
-                using var reader = ReaderFactory.OpenReader(stream);
+                using var archive = ArchiveFactory.Open(stream);
+                _extractedSize = (ulong)archive.TotalUncompressSize;
+                stream.Seek(0, SeekOrigin.Begin);
+
+                using var reader = ReaderFactory.Open(stream);
                 while (reader.MoveToNextEntry())
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    _extractedSize += (ulong)reader.Entry.Size;
                     await AddEntryAsync(reader.Entry, cancellationToken);
                 }
             }
@@ -117,8 +118,8 @@ namespace Peek.FilePreviewer.Previewers.Archives
                 {
                     ArchiveEncoding = new ArchiveEncoding { Forced = cp437 },
                 };
-                using var archive = ArchiveFactory.OpenArchive(stream, readerOptions);
-                _extractedSize = (ulong)archive.TotalUncompressedSize;
+                using var archive = ArchiveFactory.Open(stream, readerOptions);
+                _extractedSize = (ulong)archive.TotalUncompressSize;
                 var encoding = Encoding.UTF8;
                 var encodingDetermined = false;
                 try
@@ -169,8 +170,8 @@ namespace Peek.FilePreviewer.Previewers.Archives
             }
             else
             {
-                using var archive = ArchiveFactory.OpenArchive(stream);
-                _extractedSize = (ulong)archive.TotalUncompressedSize;
+                using var archive = ArchiveFactory.Open(stream);
+                _extractedSize = (ulong)archive.TotalUncompressSize;
 
                 foreach (var entry in archive.Entries)
                 {

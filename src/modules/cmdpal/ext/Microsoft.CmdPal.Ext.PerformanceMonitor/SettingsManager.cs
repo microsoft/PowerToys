@@ -20,21 +20,36 @@ internal sealed class SettingsManager : JsonSettingsManager
         Resources.GetResource("Network_Speed_Unit_Setting_Title"),
         Resources.GetResource("Network_Speed_Unit_Setting_Description"),
         [
-            new ChoiceSetSetting.Choice(Resources.GetResource("Network_Speed_Unit_BitsPerSec"), NetworkSpeedUnit.BitsPerSecond.ToString("G")),
-            new ChoiceSetSetting.Choice(Resources.GetResource("Network_Speed_Unit_BytesPerSec"), NetworkSpeedUnit.BytesPerSecond.ToString("G")),
-            new ChoiceSetSetting.Choice(Resources.GetResource("Network_Speed_Unit_BinaryBytesPerSec"), NetworkSpeedUnit.BinaryBytesPerSecond.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.GetResource("Network_Speed_Unit_BitsPerSec"), SpeedUnit.BitsPerSecond.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.GetResource("Network_Speed_Unit_BytesPerSec"), SpeedUnit.BytesPerSecond.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.GetResource("Network_Speed_Unit_BinaryBytesPerSec"), SpeedUnit.BinaryBytesPerSecond.ToString("G")),
         ]);
 
-    public NetworkSpeedUnit NetworkSpeedUnit =>
-        Enum.TryParse<NetworkSpeedUnit>(_networkSpeedUnit.Value, out var unit)
+    public SpeedUnit NetworkSpeedUnit =>
+        Enum.TryParse<SpeedUnit>(_networkSpeedUnit.Value, out var unit)
             ? unit
-            : NetworkSpeedUnit.BitsPerSecond;
+            : SpeedUnit.BitsPerSecond;
+
+    private readonly ChoiceSetSetting _diskSpeedUnit = new(
+        Namespaced(nameof(DiskSpeedUnit)),
+        Resources.GetResource("Disk_Speed_Unit_Setting_Title"),
+        Resources.GetResource("Disk_Speed_Unit_Setting_Description"),
+        [
+            new ChoiceSetSetting.Choice(Resources.GetResource("Disk_Speed_Unit_BitsPerSec"), SpeedUnit.BitsPerSecond.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.GetResource("Disk_Speed_Unit_BytesPerSec"), SpeedUnit.BytesPerSecond.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.GetResource("Disk_Speed_Unit_BinaryBytesPerSec"), SpeedUnit.BinaryBytesPerSecond.ToString("G")),
+        ]);
+
+    public SpeedUnit DiskSpeedUnit =>
+        Enum.TryParse<SpeedUnit>(_diskSpeedUnit.Value, out var unit)
+            ? unit
+            : SpeedUnit.BytesPerSecond;
 
     private static string SettingsJsonPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         Directory.CreateDirectory(directory);
-        return Path.Combine(directory, "settings.json");
+        return Path.Combine(directory, $"{Namespace}.settings.json");
     }
 
     public SettingsManager()
@@ -42,6 +57,7 @@ internal sealed class SettingsManager : JsonSettingsManager
         FilePath = SettingsJsonPath();
 
         Settings.Add(_networkSpeedUnit);
+        Settings.Add(_diskSpeedUnit);
 
         LoadSettings();
 

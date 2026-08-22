@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public HotkeySettings EditorShortcut { get; set; }
 
         [JsonPropertyName("useNewEditor")]
-        public bool UseNewEditor { get; set; }
+        public bool UseNewEditor { get; set; } = true;
 
         public string ToJsonString()
         {

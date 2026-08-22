@@ -6,6 +6,7 @@
 #include <common/utils/UnhandledExceptionHandler.h>
 #include <common/logger/logger.h>
 
+#include "../MeasureToolModuleInterface/trace.h"
 #include "constants.h"
 #include "PowerToys.MeasureToolCore.h"
 #include "Core.g.cpp"
@@ -117,6 +118,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         }
 
         trace.UpdateState(true);
+        Trace::BoundsToolActivated();
         trace.Flush();
         trace.UpdateState(false);
     }
@@ -168,6 +170,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         }
 
         trace.UpdateState(true);
+        Trace::MeasureToolActivated();
         trace.Flush();
         trace.UpdateState(false);
     }

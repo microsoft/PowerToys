@@ -54,19 +54,10 @@
     <ClInclude Include="Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ThemeHelper.h">
+    <ClInclude Include="excluded_app.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Package.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Clipboard.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Elevation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AutoStart.h">
+    <ClInclude Include="tasklist_positions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -98,19 +89,10 @@
     <ClCompile Include="Constants.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ThemeHelper.cpp">
+    <ClCompile Include="excluded_app.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Package.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Clipboard.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Elevation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AutoStart.cpp">
+    <ClCompile Include="tasklist_positions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -143,21 +125,6 @@
       <Filter>Source Files</Filter>
     </Midl>
     <Midl Include="TwoWayPipeMessageIPCManaged.idl">
-      <Filter>Source Files</Filter>
-    </Midl>
-    <Midl Include="ThemeHelper.idl">
-      <Filter>Source Files</Filter>
-    </Midl>
-    <Midl Include="Package.idl">
-      <Filter>Source Files</Filter>
-    </Midl>
-    <Midl Include="Clipboard.idl">
-      <Filter>Source Files</Filter>
-    </Midl>
-    <Midl Include="Elevation.idl">
-      <Filter>Source Files</Filter>
-    </Midl>
-    <Midl Include="AutoStart.idl">
       <Filter>Source Files</Filter>
     </Midl>
   </ItemGroup>

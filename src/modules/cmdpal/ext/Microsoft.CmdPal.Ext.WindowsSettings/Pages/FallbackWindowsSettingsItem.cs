@@ -4,6 +4,7 @@
 
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using Microsoft.CmdPal.Ext.WindowsSettings.Commands;
 using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
@@ -17,7 +18,7 @@ internal sealed partial class FallbackWindowsSettingsItem : FallbackCommandItem
 
     private readonly Classes.WindowsSettings _windowsSettings;
 
-    private readonly string _title = Resources.settings_fallback_title;
+    private static readonly CompositeFormat _titleFormat = CompositeFormat.Parse(Resources.settings_fallback_title);
     private readonly string _subtitle = Resources.settings_fallback_subtitle;
 
     public FallbackWindowsSettingsItem(Classes.WindowsSettings windowsSettings)
@@ -78,9 +79,9 @@ internal sealed partial class FallbackWindowsSettingsItem : FallbackCommandItem
         // We found more than one result. Make our command take
         // us to the Windows Settings search page, prepopulated with this search.
         var settingsPage = new WindowsSettingsListPage(_windowsSettings, query);
-        Title = string.Format(CultureInfo.CurrentCulture, _title, query);
+        Title = _subtitle;
         Icon = Icons.WindowsSettingsIcon;
-        Subtitle = _subtitle;
+        Subtitle = string.Format(CultureInfo.CurrentCulture, _titleFormat, query);
         Command = settingsPage;
 
         return;

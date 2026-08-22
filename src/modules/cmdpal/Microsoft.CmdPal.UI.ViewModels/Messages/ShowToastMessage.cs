@@ -4,4 +4,7 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-public record ShowToastMessage(string Message);
+public record ShowToastMessage(
+    string Message,
+    IconInfoViewModel? Icon = null,
+    CommandViewModel? Command = null);

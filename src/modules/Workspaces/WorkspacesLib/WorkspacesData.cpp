@@ -4,23 +4,59 @@
 
 #include <workspaces-common/GuidUtils.h>
 
+#include <windows.h>
+#include <sddl.h>
+#include <shlobj.h>
+#include <vector>
+
+#pragma comment(lib, "Advapi32.lib")
+#pragma comment(lib, "Shell32.lib")
+
 namespace NonLocalizable
 {
     const inline wchar_t ModuleKey[] = L"Workspaces";
+}
+
+namespace
+{
+    // v6: the protected settings store lives under %ProgramData% and is reached
+    // only through the PTSettingsSvc named pipe (PTSettingsClient GetBlob/PutBlob)
+    // — see JsonUtils::ReadWorkspacesFromService / WriteWorkspacesToService.
+    //
+    // This %LocalAppData% folder is the *user-writable* working location: the
+    // pre-v6 / no-service fallback file and the transient snapshot->editor temp
+    // handoff.  It matches the managed editor (FolderUtils.DataFolder), so the
+    // snapshot tool (writer) and editor (reader) agree on the temp path.
+    std::wstring GetUserWritableWorkspacesFolder()
+    {
+        PWSTR localAppData = nullptr;
+        std::wstring root;
+        if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &localAppData)))
+        {
+            root = localAppData;
+            CoTaskMemFree(localAppData);
+        }
+        else
+        {
+            return L"";
+        }
+        root += L"\\Microsoft\\PowerToys\\Workspaces";
+        return root;
+    }
 }
 
 namespace WorkspacesData
 {
     std::wstring WorkspacesFile()
     {
-        std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-        return settingsFolderPath + L"\\workspaces.json";
+        // No-service fallback location (also the legacy / migration source).
+        return GetUserWritableWorkspacesFolder() + L"\\workspaces.json";
     }
 
     std::wstring TempWorkspacesFile()
     {
-        std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-        return settingsFolderPath + L"\\temp-workspaces.json";
+        // Transient snapshot->editor handoff; user-writable, matches the editor.
+        return GetUserWritableWorkspacesFolder() + L"\\temp-workspaces.json";
     }
 
     RECT WorkspacesProject::Application::Position::toRect() const noexcept

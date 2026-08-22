@@ -1,5 +1,6 @@
 #include "pch.h"
-#include "version_helper.h"
+
+#include <common/version/helper.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

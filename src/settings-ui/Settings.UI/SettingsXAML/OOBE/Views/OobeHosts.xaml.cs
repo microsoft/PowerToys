@@ -2,11 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Diagnostics;
-using System.IO;
 using System.Threading;
-using ManagedCommon;
+
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
@@ -46,24 +43,13 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private void Launch_Hosts_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.LaunchAdministrator;
-            try
-            {
-                if (!App.IsElevated && launchAdmin)
-                {
-                    Process.Start(new ProcessStartInfo()
-                    {
-                        FileName = Path.GetFullPath("WinUI3Apps\\PowerToys.Hosts.exe"),
-                        Verb = "runas",
-                        UseShellExecute = true,
-                    });
-                    return;
-                }
+            string eventName = !App.IsElevated && launchAdmin
+                ? Constants.ShowHostsAdminSharedEvent()
+                : Constants.ShowHostsSharedEvent();
 
-                Process.Start("WinUI3Apps\\PowerToys.Hosts.exe");
-            }
-            catch (Exception ex)
+            using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
             {
-                Logger.LogError($"[OobeHosts] Launch failed", ex);
+                eventHandle.Set();
             }
         }
 
