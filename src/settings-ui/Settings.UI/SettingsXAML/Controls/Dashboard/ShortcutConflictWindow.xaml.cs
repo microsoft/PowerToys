@@ -40,6 +40,10 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
 
             this.Activated += Window_Activated_SetIcon;
 
+            const string fallbackTitle = "PowerToys shortcut conflicts";
+            this.Title = fallbackTitle;
+            titleBar.Title = fallbackTitle;
+
             // Set localized window title
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             ExtendsContentIntoTitleBar = true;
@@ -52,10 +56,11 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
             // control while it reads AppWindow.Title during a deferred layout pass.
             if (string.IsNullOrEmpty(windowTitle))
             {
-                windowTitle = "PowerToys shortcut conflicts";
+                windowTitle = fallbackTitle;
             }
 
             this.Title = windowTitle;
+            titleBar.Title = windowTitle;
             this.CenterOnScreen();
 
             ViewModel.OnPageLoaded();
