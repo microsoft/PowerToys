@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="ShortcutGuide.Pages.ShortcutsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:ShortcutGuide.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:ShortcutGuide.Models"
+    xmlns:vm="using:ShortcutGuide.ViewModels"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <DataTemplate x:Key="HeaderTemplate" x:DataType="vm:ShortcutListItem">
+            <TextBlock
+                Margin="16,20,16,8"
+                FontWeight="SemiBold"
+                Text="{x:Bind Text}" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="SubtitleTemplate" x:DataType="vm:ShortcutListItem">
+            <TextBlock
+                Margin="16,2,16,8"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="{x:Bind Text}" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="EmptyTextTemplate" x:DataType="vm:ShortcutListItem">
+            <TextBlock
+                Margin="16,0,16,8"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="{x:Bind Text}" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="ShortcutTemplate" x:DataType="vm:ShortcutListItem">
+            <controls:ShortcutItemView Shortcut="{x:Bind Shortcut}" />
+        </DataTemplate>
+
+        <vm:ShortcutListItemTemplateSelector
+            x:Key="RowTemplateSelector"
+            EmptyTextTemplate="{StaticResource EmptyTextTemplate}"
+            HeaderTemplate="{StaticResource HeaderTemplate}"
+            ShortcutTemplate="{StaticResource ShortcutTemplate}"
+            SubtitleTemplate="{StaticResource SubtitleTemplate}" />
+    </Page.Resources>
+    <ScrollViewer>
+        <ItemsRepeater
+            Margin="0,0,0,24"
+            ItemTemplate="{StaticResource RowTemplateSelector}"
+            ItemsSource="{x:Bind Rows, Mode=OneWay}" />
+    </ScrollViewer>
+</Page>
