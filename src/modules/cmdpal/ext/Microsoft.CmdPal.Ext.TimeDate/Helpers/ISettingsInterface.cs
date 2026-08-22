@@ -24,5 +24,11 @@ public interface ISettingsInterface
 
     public bool DateWithWeekday { get; }
 
+    public int ClockBandDateMode { get; }
+
+    public string CustomDateFormatInClockBand { get; }
+
+    public bool ClockBandOpensNotificationCenter { get; }
+
     public List<string> CustomFormats { get; }
 }
