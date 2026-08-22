@@ -99,6 +99,14 @@ public sealed class SessionHelper
     /// <summary>Process name as winappcli's <c>-a</c> flag (and <see cref="Process.GetProcessesByName(string)"/>) accept it.</summary>
     public static string GetProcessName(PowerToysModule scope) => ModulePaths.ProcessNameFor(scope);
 
+    /// <summary>
+    /// Full path to the executable backing <paramref name="scope"/>, resolved against the build under
+    /// test (or an installed build). Exposed for the few modules a test must launch itself because the
+    /// scope needs arguments the harness cannot supply — PowerRename takes its item list on the
+    /// command line.
+    /// </summary>
+    public static string GetExecutablePath(PowerToysModule scope) => ModulePaths.ExePathFor(scope);
+
     /// <summary>Returns <c>true</c> if at least one process matching <paramref name="scope"/> is running.</summary>
     public static bool IsRunning(PowerToysModule scope) =>
         Process.GetProcessesByName(GetProcessName(scope)).Length > 0;
