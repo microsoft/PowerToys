@@ -32,22 +32,26 @@ Do not use this skill for local execution. Complete
 
 ## Non-negotiable gates
 
-1. **Local first.** Do not queue CI until all required local runs are green, including full suites on
+1. **Setup preflight first.** Before the first Azure operation in a session, run
+   [Test-AzureDevOpsSetup.ps1](./scripts/Test-AzureDevOpsSetup.ps1) and require `Ready=true` with
+   every required check `PASS`. It performs reads and a non-mutating pipeline preview only. Re-run it
+   after account changes or any `401`/`403` response.
+2. **Local first.** Do not queue CI until all required local runs are green, including full suites on
    the default and `Constrained` profiles for Windows 10 and Windows 11, plus the applicable
    architecture builds/guests required by `ui-tests-local-vm`.
-2. **Pushed revision.** Queue only a pushed branch. Record its exact commit and verify the queued
+3. **Pushed revision.** Queue only a pushed branch. Record its exact commit and verify the queued
    run's `sourceVersion` matches it.
-3. **One run per branch.** Before queueing, discover active runs for `UI Test Automation`. Wait for
+4. **One run per branch.** Before queueing, discover active runs for `UI Test Automation`. Wait for
    or cancel a relevant superseded run on the target branch; runs on other branches may continue in
    parallel. Never cancel another branch's unrelated run.
-4. **Always scope modules.** `uiTestModules` must be non-empty and contain the exact current UITest
+5. **Always scope modules.** `uiTestModules` must be non-empty and contain the exact current UITest
    project stem, for example `[FancyZonesEditor.UITests.Next]`.
-5. **Three-run ceiling.** A CI stabilization sequence may queue at most three runs total. Keep an
+6. **Three-run ceiling.** A CI stabilization sequence may queue at most three runs total. Keep an
    attempt ledger. If run 3 is not green, stop and ask the user for assistance. Also stop when three
    consecutive runs show no stabilization progress.
-6. **Evidence before edits.** Read the failed result, logs, screenshot, and recording before forming
+7. **Evidence before edits.** Read the failed result, logs, screenshot, and recording before forming
    a fix hypothesis. Preserve assertions and classify infrastructure failures separately.
-7. **Tracked runs remain unfinished work.** After queueing, persist the build ID, branch, source SHA,
+8. **Tracked runs remain unfinished work.** After queueing, persist the build ID, branch, source SHA,
    attempt number, and parameters in session/task state. Do not mark the task complete or claim a
    terminal result while that build is nonterminal. If no authenticated completion waiter exists,
    arm the one-hour scheduled continuation in the agentic loop rather than relying on a passive
@@ -62,6 +66,8 @@ Do not use this skill for local execution. Complete
 | Project | `Dart` |
 | Pipeline name | `UI Test Automation` |
 | Current known definition ID | `161438` (discover by name each session; do not blindly hardcode) |
+| Azure DevOps token resource | `499b84ac-1321-427f-aa17-267ca6975798` |
+| Required setup check | `scripts/Test-AzureDevOpsSetup.ps1` |
 | Platforms | `arm64`, `x64` |
 | Default booleans | `enableMsBuildCaching=false`, `useVSPreview=false`, `useLatestWebView2=false` |
 
@@ -70,7 +76,8 @@ Do not use this skill for local execution. Complete
 Read and execute [references/agentic-loop.md](./references/agentic-loop.md) from top to bottom. It
 contains:
 
-- Prompt-free Azure CLI session validation and the bundled
+- The required prompt-free
+   [setup preflight](./scripts/Test-AzureDevOpsSetup.ps1) and bundled
    [REST helper](./scripts/AzureDevOps.ps1).
 - Local-signoff and active-run preflight.
 - `buildNow` versus `specificBuildId` decision rules.
