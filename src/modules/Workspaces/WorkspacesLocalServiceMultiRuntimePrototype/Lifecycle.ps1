@@ -109,14 +109,14 @@ function Ensure-CertificatesTrusted([object[]]$Certificates) {
         $record = Get-OwnershipRecord $certificate.role
         $storeRecord = @($record.stores | Where-Object { $_.path -eq 'Cert:\LocalMachine\TrustedPeople' })
         Assert-Equal $storeRecord.Count 1 "certificate ownership machine trust $($certificate.role)"
-        if ((Get-CertificateEntries $storeRecord[0].path $certificate.thumbprint).Count -eq 0) {
+        if (@(Get-CertificateEntries $storeRecord[0].path $certificate.thumbprint).Count -eq 0) {
             $storeRecord[0].introducedByRun = $true
             $ownership | ConvertTo-Json -Depth 8 |
                 Set-Content -LiteralPath $ownershipPath -Encoding utf8NoBOM
             Import-Certificate -FilePath $certificate.path -CertStoreLocation $storeRecord[0].path | Out-Null
         }
         Assert-True (
-            (Get-CertificateEntries $storeRecord[0].path $certificate.thumbprint).Count -ge 1
+            @(Get-CertificateEntries $storeRecord[0].path $certificate.thumbprint).Count -ge 1
         ) "machine trust $($certificate.role)"
     }
 }
@@ -128,7 +128,7 @@ function Restore-Certificates([object[]]$Certificates) {
             if ($store.introducedByRun) {
                 Remove-ExactCertificateEntries $store.path $certificate.thumbprint
             }
-            $actual = (Get-CertificateEntries $store.path $certificate.thumbprint).Count -ge 1
+            $actual = @(Get-CertificateEntries $store.path $certificate.thumbprint).Count -ge 1
             Assert-Equal $actual $store.preRunPresent "certificate restoration $($certificate.role) $($store.path)"
         }
     }
@@ -1489,7 +1489,7 @@ function Assert-StandaloneTeardownRefusal(
         'blocked standalone teardown preserves ProgramData'
     foreach ($certificate in $Certificates) {
         Assert-True (
-            (Get-CertificateEntries 'Cert:\LocalMachine\TrustedPeople' $certificate.thumbprint).Count -ge 1
+            @(Get-CertificateEntries 'Cert:\LocalMachine\TrustedPeople' $certificate.thumbprint).Count -ge 1
         ) "blocked standalone teardown preserves $($certificate.role) trust"
     }
     Invoke-UserClient $User @('--release') 0 'lease released' | Out-Null
