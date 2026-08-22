@@ -3,8 +3,6 @@
 #include "pch.h"
 #include "ContextMenuHandler.h"
 
-#include <strsafe.h>
-
 #include <Settings.h>
 #include <trace.h>
 
@@ -12,7 +10,6 @@
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/utils/HDropIterator.h>
-#include <common/utils/package.h>
 
 extern HINSTANCE g_hInst_imageResizer;
 
@@ -183,21 +180,19 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
 
 HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT* /*pReserved*/, LPSTR pszName, UINT cchMax)
 {
-    if (idCmd != ID_RESIZE_PICTURES)
+    if (idCmd == ID_RESIZE_PICTURES)
+    {
+        if (uType == GCS_VERBW)
+        {
+            wcscpy_s(reinterpret_cast<LPWSTR>(pszName), cchMax, RESIZE_PICTURES_VERBW);
+        }
+    }
+    else
     {
         return E_INVALIDARG;
     }
 
-    switch (uType)
-    {
-    case GCS_VERBW:
-        return StringCchCopyW(reinterpret_cast<LPWSTR>(pszName), cchMax, RESIZE_PICTURES_VERBW);
-    case GCS_VALIDATEA:
-    case GCS_VALIDATEW:
-        return S_OK;
-    default:
-        return E_NOTIMPL;
-    }
+    return S_OK;
 }
 
 HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)

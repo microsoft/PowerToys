@@ -303,3 +303,19 @@ extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
     return new AltWindowCycle();
 }
+
+// C# runner P/Invoke exports
+EXTERN_C __declspec(dllexport) bool __cdecl InitializeAltWindowCycle() noexcept
+{
+    return ::InitializeAltWindowCycle(reinterpret_cast<HINSTANCE>(&__ImageBase));
+}
+
+EXTERN_C __declspec(dllexport) void __cdecl ShutdownAltWindowCycle(bool blockUntilExit) noexcept
+{
+    ::ShutdownAltWindowCycle(blockUntilExit);
+}
+
+EXTERN_C __declspec(dllexport) bool __cdecl HandleAltWindowCycleHotkey(bool forward, unsigned int holdModifiers) noexcept
+{
+    return ::HandleAltWindowCycleHotkey(forward, holdModifiers);
+}
