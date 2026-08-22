@@ -1,0 +1,14 @@
+# Build output
+dist/
+*.tsbuildinfo
+
+# Dependencies
+node_modules/
+
+# Test / coverage output
+coverage/
+
+# The published bootstrap launcher must be tracked even though the
+# repository root .gitignore excludes every [Bb]in/ directory.
+!/bin/
+!/bin/cmdpal-bootstrap.mjs
