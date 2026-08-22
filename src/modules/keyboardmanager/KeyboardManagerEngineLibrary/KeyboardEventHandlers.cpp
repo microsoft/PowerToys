@@ -30,7 +30,8 @@ namespace
 {
     bool GeneratedByKBM(const LowlevelKeyboardEvent* data)
     {
-        return data->lParam->dwExtraInfo & CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG;
+        return (data->lParam->flags & LLKHF_INJECTED) != 0 &&
+               (data->lParam->dwExtraInfo & CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG) != 0;
     }
 
     void UpdateNumpadWithShift(LowlevelKeyboardEvent* data, State& state)
