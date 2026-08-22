@@ -12,7 +12,7 @@ namespace Microsoft.CmdPal.Ext.PowerToys.UnitTests;
 public class PowerToysFallbackCommandItemTests
 {
     [TestMethod]
-    public void FallbackItemsUseTheirCommandIds()
+    public void FallbackItemsAppendFallbackSuffixToCommandIds()
     {
         var firstCommand = new NoOpCommand { Id = "com.microsoft.powertoys.first" };
         var secondCommand = new NoOpCommand { Id = "com.microsoft.powertoys.second" };
@@ -20,8 +20,10 @@ public class PowerToysFallbackCommandItemTests
         var firstFallback = new PowerToysFallbackCommandItem(firstCommand, "First", string.Empty, null, null);
         var secondFallback = new PowerToysFallbackCommandItem(secondCommand, "Second", string.Empty, null, null);
 
-        Assert.AreEqual(firstCommand.Id, firstFallback.Id);
-        Assert.AreEqual(secondCommand.Id, secondFallback.Id);
+        Assert.AreEqual($"{firstCommand.Id}.fallback", firstFallback.Id);
+        Assert.AreEqual($"{secondCommand.Id}.fallback", secondFallback.Id);
+        Assert.AreNotEqual(firstCommand.Id, firstFallback.Id);
+        Assert.AreNotEqual(secondCommand.Id, secondFallback.Id);
         Assert.AreNotEqual(firstFallback.Id, secondFallback.Id);
     }
 }
