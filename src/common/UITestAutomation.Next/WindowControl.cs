@@ -348,6 +348,37 @@ public static class WindowControl
         }
     }
 
+    /// <summary>Send <c>WM_CLOSE</c> to one exact HWND and wait for it to be destroyed.</summary>
+    public static bool TryCloseWindow(long hwnd, int timeoutMS = 5_000)
+    {
+        try
+        {
+            var handle = new IntPtr(hwnd);
+            if (!IsWindow(handle))
+            {
+                return true;
+            }
+
+            PostMessageW(handle, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+            var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMS);
+            while (DateTime.UtcNow < deadline)
+            {
+                if (!IsWindow(handle))
+                {
+                    return true;
+                }
+
+                Thread.Sleep(100);
+            }
+
+            return !IsWindow(handle);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     /// <summary>
     /// Bring the first window owned by <paramref name="appNameOrPid"/> to the foreground.
     /// If the window is minimized it's first restored. Tolerant.
