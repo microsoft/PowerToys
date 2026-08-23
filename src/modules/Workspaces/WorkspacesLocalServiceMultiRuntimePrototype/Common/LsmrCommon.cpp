@@ -1338,14 +1338,6 @@ namespace ptlsmr
             L"D:P(A;;FA;;;SY)(A;;FA;;;BA)");
     }
 
-    void protect_user_client_file(const std::filesystem::path& file)
-    {
-        protect_file_with_owner_fallback(
-            file,
-            L"O:SYD:P(A;;FA;;;SY)(A;;FA;;;BA)(A;;GRGX;;;BU)",
-            L"D:P(A;;FA;;;SY)(A;;FA;;;BA)(A;;GRGX;;;BU)");
-    }
-
     void protect_runtime_directory(
         const std::filesystem::path& directory,
         std::wstring_view serviceSid)
@@ -1800,22 +1792,6 @@ namespace ptlsmr
             (expectedTrack == 2 && version != file_version{ 2, 0, 0, 0 }))
         {
             throw win32_error("runtime release-train policy", ERROR_REVISION_MISMATCH);
-        }
-        return version;
-    }
-
-    file_version validate_user_client_candidate(
-        const std::filesystem::path& path,
-        std::wstring_view expectedSignerPin)
-    {
-        const auto version = validate_signed_executable(
-            path,
-            UserClientExe,
-            UserClientProductName,
-            expectedSignerPin);
-        if (!(version == parse_version(HostVersion)))
-        {
-            throw win32_error("user client version policy", ERROR_REVISION_MISMATCH);
         }
         return version;
     }

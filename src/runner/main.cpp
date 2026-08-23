@@ -17,6 +17,7 @@
 #include <common/Telemetry/EtwTrace/EtwTrace.h>
 #include <common/notifications/notifications.h>
 #include <common/notifications/dont_show_again.h>
+#include <common/protected_runtime/ProtectedRuntimeControlClient.h>
 #include <common/updating/installer.h>
 #include <common/updating/updating.h>
 #include <common/updating/updateState.h>
@@ -66,6 +67,43 @@ namespace
 {
     const wchar_t PT_URI_PROTOCOL_SCHEME[] = L"powertoys://";
     const wchar_t POWER_TOYS_MODULE_LOAD_FAIL[] = L"Failed to load "; // Module name will be appended on this message and it is not localized.
+
+    std::optional<int> protected_runtime_control_mode(
+        int argument_count,
+        wchar_t** arguments)
+    {
+        using namespace powertoys::protected_runtime;
+        try
+        {
+            if (argument_count == 2 &&
+                std::wstring_view(arguments[1]) == L"--protected-runtime-status")
+            {
+                return static_cast<int>(
+                    invoke(control_command::status).win32_status);
+            }
+            if (argument_count == 2 &&
+                std::wstring_view(arguments[1]) == L"--protected-runtime-release")
+            {
+                return static_cast<int>(
+                    invoke(control_command::release).win32_status);
+            }
+            if (argument_count == 3 &&
+                std::wstring_view(arguments[1]) == L"--protected-runtime-acquire")
+            {
+                return static_cast<int>(
+                    invoke(control_command::acquire, arguments[2]).win32_status);
+            }
+            return std::nullopt;
+        }
+        catch (const control_error& error)
+        {
+            return static_cast<int>(error.code());
+        }
+        catch (...)
+        {
+            return static_cast<int>(ERROR_UNHANDLED_EXCEPTION);
+        }
+    }
 }
 
 void chdir_current_executable()
@@ -439,6 +477,22 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
 
 int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nCmdShow*/)
 {
+    int n_cmd_args = 0;
+    LPWSTR* cmd_arg_list = CommandLineToArgvW(GetCommandLineW(), &n_cmd_args);
+    if (!cmd_arg_list)
+    {
+        return static_cast<int>(GetLastError());
+    }
+    const auto free_arguments = wil::scope_exit([&] {
+        LocalFree(cmd_arg_list);
+    });
+    if (const auto result = protected_runtime_control_mode(
+            n_cmd_args,
+            cmd_arg_list))
+    {
+        return *result;
+    }
+
     Shared::Trace::ETWTrace trace{};
     trace.UpdateState(true);
 
@@ -461,8 +515,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         L"(ML;;NX;;;LW)"; // Integrity label on No execute up for Low mandatory level
     initializeCOMSecurity(securityDescriptor);
 
-    int n_cmd_args = 0;
-    LPWSTR* cmd_arg_list = CommandLineToArgvW(GetCommandLineW(), &n_cmd_args);
     switch (should_run_in_special_mode(n_cmd_args, cmd_arg_list))
     {
     case SpecialMode::Win32ToastNotificationCOMServer:

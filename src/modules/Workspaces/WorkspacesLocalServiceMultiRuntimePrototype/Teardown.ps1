@@ -197,7 +197,7 @@ try {
         )
         Assert-True (
             $leases.Count -eq 0
-        ) 'MSI teardown is refused while protected leases remain; release each owner through the MSI-installed Program Files PtPuvrUserClient.exe first'
+        ) 'MSI teardown is refused while protected leases remain; release each owner through an existing PowerToys process linked with the generic control client first'
     }
 
     $registrations = @(Get-MsiRegistrations)

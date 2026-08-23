@@ -4,15 +4,25 @@
     <ProjectConfiguration Include="Debug|x64"><Configuration>Debug</Configuration><Platform>x64</Platform></ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64"><Configuration>Release</Configuration><Platform>x64</Platform></ProjectConfiguration>
   </ItemGroup>
-  <PropertyGroup Label="Globals"><ProjectGuid>{7D862537-CB3A-4A5A-90CB-0C9764AA6A23}</ProjectGuid><Keyword>Win32Proj</Keyword><RootNamespace>PtPuvrUserClient</RootNamespace></PropertyGroup>
+  <PropertyGroup Label="Globals"><ProjectGuid>{7D862537-CB3A-4A5A-90CB-0C9764AA6A23}</ProjectGuid><Keyword>Win32Proj</Keyword><RootNamespace>PtPuvrClientHarness</RootNamespace></PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration"><ConfigurationType>Application</ConfigurationType><UseDebugLibraries>true</UseDebugLibraries></PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration"><ConfigurationType>Application</ConfigurationType><UseDebugLibraries>false</UseDebugLibraries></PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\PtLsmr.Common.props" />
-  <PropertyGroup><TargetName>PtPuvrUserClient</TargetName></PropertyGroup>
-  <ItemDefinitionGroup><Link><SubSystem>Console</SubSystem><AdditionalDependencies>advapi32.lib;crypt32.lib;wintrust.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies></Link></ItemDefinitionGroup>
-  <ItemGroup><ClCompile Include="UserClientMain.cpp" /><ResourceCompile Include="UserClientVersion.rc" /></ItemGroup>
-  <ItemGroup><ProjectReference Include="..\Common\PtLsmrCommon.vcxproj"><Project>{51EAD4A2-BB68-420C-8CFD-11891A654810}</Project></ProjectReference></ItemGroup>
+  <PropertyGroup><TargetName>PtPuvrClientHarness</TargetName></PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile><PreprocessorDefinitions>POWERTOYS_PROTECTED_RUNTIME_TEST_HOOKS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
+    <Link><SubSystem>Console</SubSystem><AdditionalDependencies>advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies></Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="ClientHarnessMain.cpp" />
+    <ClCompile Include="..\..\..\..\common\protected_runtime\ProtectedRuntimeControlClient.cpp" />
+    <ResourceCompile Include="ClientHarnessVersion.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\common\protected_runtime\ProtectedRuntimeControlClient.h" />
+    <ClInclude Include="..\..\..\..\common\protected_runtime\ProtectedRuntimeControlProtocol.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

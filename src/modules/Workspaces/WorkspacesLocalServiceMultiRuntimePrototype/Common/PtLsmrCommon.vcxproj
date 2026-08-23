@@ -10,6 +10,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration"><ConfigurationType>StaticLibrary</ConfigurationType><UseDebugLibraries>false</UseDebugLibraries></PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\PtLsmr.Common.props" />
-  <ItemGroup><ClCompile Include="LsmrCommon.cpp" /><ClInclude Include="LsmrCommon.h" /></ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="LsmrCommon.cpp" />
+    <ClInclude Include="LsmrCommon.h" />
+    <ClInclude Include="..\..\..\..\common\protected_runtime\ProtectedRuntimeControlProtocol.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

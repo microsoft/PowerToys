@@ -51,7 +51,7 @@
     <Link>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalDependencies>Shcore.lib;gdiplus.lib;Msi.lib;WindowsApp.lib;taskschd.lib;Rstrtmgr.lib;Shlwapi.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shcore.lib;gdiplus.lib;Msi.lib;WindowsApp.lib;taskschd.lib;Rstrtmgr.lib;Shlwapi.lib;dwmapi.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableDpiAwareness>false</EnableDpiAwareness>
@@ -59,6 +59,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\common\interop\two_way_pipe_message_ipc.cpp" />
+    <ClCompile Include="..\common\protected_runtime\ProtectedRuntimeControlClient.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="auto_start_helper.cpp" />
     <ClCompile Include="bug_report.cpp" />
     <ClCompile Include="centralized_hotkeys.cpp" />
@@ -81,6 +84,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ActionRunnerUtils.h" />
+    <ClInclude Include="..\common\protected_runtime\ProtectedRuntimeControlClient.h" />
+    <ClInclude Include="..\common\protected_runtime\ProtectedRuntimeControlProtocol.h" />
     <ClInclude Include="ai_detection.h" />
     <ClInclude Include="auto_start_helper.h" />
     <ClInclude Include="bug_report.h" />

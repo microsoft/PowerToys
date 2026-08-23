@@ -25,7 +25,6 @@ namespace
     ptlsmr::unique_handle g_stopEvent;
     ptlsmr::unique_handle g_dispatchMutex;
     std::wstring g_publishedEndpoint;
-    std::filesystem::path g_expectedUserClientPath;
     DWORD g_localFixedDriveMask{};
     thread_local std::wstring g_operationPhase = L"idle";
     constexpr DWORD PipeIoTimeoutMilliseconds = 5000;
@@ -551,18 +550,6 @@ namespace
                 ERROR_INVALID_DRIVE);
         }
         g_localFixedDriveMask = fixedDrives;
-    }
-
-    [[nodiscard]] bool equal_normalized_windows_path(
-        std::wstring_view left,
-        std::wstring_view right) noexcept
-    {
-        return CompareStringOrdinal(
-                   left.data(),
-                   static_cast<int>(left.size()),
-                   right.data(),
-                   static_cast<int>(right.size()),
-                   TRUE) == CSTR_EQUAL;
     }
 
     [[nodiscard]] ptlsmr::unique_handle open_pipe_client_token(HANDLE pipe)
@@ -1375,16 +1362,6 @@ namespace
         const auto actualClient = normalize_local_fixed_dos_path(
             ptlsmr::raw_process_image_path(process.get()).wstring(),
             "host caller raw DOS image path policy");
-        if (g_expectedUserClientPath.empty() ||
-            !equal_normalized_windows_path(
-                actualClient,
-                g_expectedUserClientPath.native()))
-        {
-            throw ptlsmr::win32_error(
-                "host caller raw image string filter",
-                ERROR_ACCESS_DENIED);
-        }
-
         HANDLE rawProcessToken = nullptr;
         ptlsmr::check_bool(
             OpenProcessToken(
@@ -1456,26 +1433,6 @@ namespace
     [[nodiscard]] caller_context authorize_caller(
         const caller_identity& identity)
     {
-        if (g_expectedUserClientPath.empty() ||
-            !equal_normalized_windows_path(
-                identity.imagePath,
-                g_expectedUserClientPath.native()))
-        {
-            throw ptlsmr::win32_error(
-                "caller MSI-installed user-client path policy",
-                ERROR_ACCESS_DENIED);
-        }
-        if (!std::filesystem::is_regular_file(g_expectedUserClientPath))
-        {
-            throw ptlsmr::win32_error(
-                "caller MSI-installed user-client file policy",
-                ERROR_FILE_NOT_FOUND);
-        }
-        const std::wstring codePin = ptlsmr::read_code_signer_pin();
-        (void)ptlsmr::validate_user_client_candidate(
-            g_expectedUserClientPath,
-            codePin);
-
         // The explicit token plus KF_FLAG_DONT_VERIFY resolves metadata without
         // probing or creating the caller-controlled directory.
         const auto localAppData = normalize_local_fixed_dos_path(
@@ -2235,8 +2192,6 @@ namespace
         {
             ptlsmr::protect_system_file(file);
         }
-        ptlsmr::protect_user_client_file(
-            ptlsmr::installation_root() / ptlsmr::UserClientExe);
     }
 
     [[nodiscard]] std::vector<std::wstring_view> split(
@@ -4020,10 +3975,6 @@ namespace
             ptlsmr::protect_system_directory(ptlsmr::requests_root());
             protect_msi_owned_bootstrap_files();
             initialize_local_fixed_drive_mask();
-            g_expectedUserClientPath = std::filesystem::path(
-                normalize_local_fixed_dos_path(
-                    (ptlsmr::installation_root() / ptlsmr::UserClientExe).wstring(),
-                    "host expected user-client path policy"));
             if (!equal_path(module_path(), ptlsmr::host_executable_path()))
             {
                 throw ptlsmr::win32_error("host fixed execution path policy", ERROR_ACCESS_DENIED);

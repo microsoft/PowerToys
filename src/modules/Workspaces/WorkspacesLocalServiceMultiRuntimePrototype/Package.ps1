@@ -422,7 +422,7 @@ try {
     }
 
     $hostArtifact = Copy-SignedCodeArtifact (Join-Path $binRoot 'PtPuvrHost.exe') 'PtPuvrHost.exe'
-    $userClient = Copy-SignedCodeArtifact (Join-Path $binRoot 'PtPuvrUserClient.exe') 'PtPuvrUserClient.exe'
+    $clientHarness = Copy-SignedCodeArtifact (Join-Path $binRoot 'PtPuvrClientHarness.exe') 'PtPuvrClientHarness.exe'
     $codePolicy = Copy-SignedCodeArtifact $codePolicySource 'PtPuvrCodePolicy.exe'
     $metadataPolicy = Copy-SignedCodeArtifact $metadataPolicySource 'PtPuvrMetadataPolicy.exe'
 
@@ -581,7 +581,7 @@ try {
         }
     }
 
-    foreach ($artifact in $hostArtifact, $userClient, $codePolicy, $metadataPolicy, $engines['5.0.0.0']) {
+    foreach ($artifact in $hostArtifact, $codePolicy, $metadataPolicy, $engines['5.0.0.0']) {
         Copy-Item -LiteralPath $artifact.path -Destination (Join-Path $payloadRoot $artifact.file)
     }
     @(
@@ -626,7 +626,7 @@ try {
             signerSha256 = $foreignPin
         }
         host = $hostArtifact
-        userClient = $userClient
+        validationHarness = $clientHarness
         engines = @($engines.Values | Sort-Object version)
         runtimes = @($runtimes.Values | Sort-Object id)
         releaseSets = $releaseSetMetadata
@@ -640,7 +640,7 @@ try {
     } | ConvertTo-Json -Depth 10 |
         Set-Content -LiteralPath (Join-Path $releaseRoot 'artifacts.json') -Encoding utf8NoBOM
     Save-CertificateOwnership $certificateOwnership
-    Write-Host "Built signed host, engines, user client, metadata release sets, and WiX v5 companion MSI: $msiPath"
+    Write-Host "Built signed host, engines, non-installed client harness, metadata release sets, and WiX v5 companion MSI: $msiPath"
 }
 catch {
     $failure = $_

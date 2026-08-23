@@ -13,7 +13,6 @@
         <Directory Id="ControlPlaneInstallFolder" Name="WorkspacesProtectedRuntimeControlPlanePrototype">
           <Component Id="HostComponent" Guid="{A4CF4E08-4C5F-4A23-89E0-20E9F30B6911}" Bitness="always64">
             <File Id="HostExecutable" Source="$(var.PayloadDir)\PtPuvrHost.exe" KeyPath="yes" />
-            <File Id="UserClientExecutable" Source="$(var.PayloadDir)\PtPuvrUserClient.exe" />
             <ServiceInstall
                 Id="HostServiceInstall"
                 Name="PtPuvrHost"

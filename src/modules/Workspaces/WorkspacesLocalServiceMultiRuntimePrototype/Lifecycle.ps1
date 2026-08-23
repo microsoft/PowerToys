@@ -3,7 +3,8 @@ param(
     [ValidateSet('validate', 'cleanup', 'status')]
     [string]$Verb = 'validate',
     [ValidateSet('Debug', 'Release')]
-    [string]$Configuration = 'Release'
+    [string]$Configuration = 'Release',
+    [string]$PowerToysClientPath = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -18,7 +19,7 @@ $resultPath = Join-Path $root 'artifacts\validation-result.json'
 $installRoot = Join-Path $env:ProgramFiles 'PowerToys\WorkspacesProtectedRuntimeControlPlanePrototype'
 $storeRoot = Join-Path $env:ProgramData 'Microsoft\PowerToys\WorkspacesProtectedRuntimeControlPlanePrototype'
 $hostPath = Join-Path $installRoot 'PtPuvrHost.exe'
-$clientPath = Join-Path $installRoot 'PtPuvrUserClient.exe'
+$clientHarnessPath = Join-Path $releaseRoot 'PtPuvrClientHarness.exe'
 $endpointRegistryPath = 'HKLM:\SOFTWARE\Microsoft\PowerToys\WorkspacesProtectedRuntimeControlPlanePrototype'
 $cleanupOutcomeRegistryPath = 'HKLM:\SOFTWARE\Microsoft\PowerToys\WorkspacesProtectedRuntimeControlPlanePrototypeValidation'
 $msiPath = Join-Path $root 'artifacts\msi\PtPuvrControlPlane.msi'
@@ -37,6 +38,12 @@ if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administra
 if (-not (Test-Path -LiteralPath $metadataPath -PathType Leaf) -or
     -not (Test-Path -LiteralPath $msiPath -PathType Leaf)) {
     throw 'Run Package.ps1 before Lifecycle.ps1.'
+}
+if (-not [string]::IsNullOrWhiteSpace($PowerToysClientPath)) {
+    $PowerToysClientPath = [IO.Path]::GetFullPath($PowerToysClientPath)
+    if (-not (Test-Path -LiteralPath $PowerToysClientPath -PathType Leaf)) {
+        throw "PowerToys embedded-client executable not found: $PowerToysClientPath"
+    }
 }
 
 $metadata = Get-Content -LiteralPath $metadataPath -Raw | ConvertFrom-Json
@@ -529,6 +536,14 @@ public static class PtPuvrLifecycleNative
         IntPtr securityAttributes);
 
     [DllImport("kernel32.dll", SetLastError = true)]
+    public static extern bool WriteFile(
+        IntPtr handle,
+        byte[] buffer,
+        uint bytesToWrite,
+        out uint bytesWritten,
+        IntPtr overlapped);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
     public static extern bool ReadFile(
         IntPtr handle,
         byte[] buffer,
@@ -708,9 +723,27 @@ function Assert-RawPipeRejected(
     [Microsoft.Win32.SafeHandles.SafeFileHandle]$Pipe,
     [string]$Label
 ) {
+    $invalidPreface = New-Object byte[] 8
+    [uint32]$written = 0
+    $watch = [Diagnostics.Stopwatch]::StartNew()
+    $writeSuccess = [PtPuvrLifecycleNative]::WriteFile(
+        $Pipe.DangerousGetHandle(),
+        $invalidPreface,
+        [uint32]$invalidPreface.Length,
+        [ref]$written,
+        [IntPtr]::Zero)
+    $writeError = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
+    if (-not $writeSuccess) {
+        $watch.Stop()
+        Assert-True ($writeError -in @(5, 109, 233, 995)) `
+            "$Label invalid preface write observes immediate server rejection"
+        Assert-True ($watch.ElapsedMilliseconds -lt 2000) `
+            "$Label invalid preface write rejection is immediate"
+        return [uint64]$watch.ElapsedMilliseconds
+    }
+    Assert-Equal $written $invalidPreface.Length "$Label invalid preface exact length"
     $buffer = New-Object byte[] 1
     [uint32]$read = 0
-    $watch = [Diagnostics.Stopwatch]::StartNew()
     $success = [PtPuvrLifecycleNative]::ReadFile(
         $Pipe.DangerousGetHandle(),
         $buffer,
@@ -857,6 +890,8 @@ function Initialize-UserLayout([object]$User) {
     Get-ChildItem -LiteralPath $releaseSetsRoot -Directory | ForEach-Object {
         Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $inbox $_.Name) -Recurse -Force
     }
+    $User.client = Join-Path $User.layout 'PtPuvrClientHarness.exe'
+    Copy-Item -LiteralPath $clientHarnessPath -Destination $User.client -Force
     $acl = Get-Acl -LiteralPath $User.layout
     $acl.SetAccessRuleProtection($true, $false)
     $acl.SetOwner([Security.Principal.SecurityIdentifier]$User.sid)
@@ -882,15 +917,14 @@ function Initialize-UserLayout([object]$User) {
     if ($LASTEXITCODE -ne 0) {
         throw "Could not set exact user ownership for $($User.name) layout."
     }
-    $User.client = $clientPath
-    Assert-True (Test-Path -LiteralPath $User.client) "MSI-installed client $($User.name)"
+    Assert-True (Test-Path -LiteralPath $User.client) "embedded-client harness $($User.name)"
     $owner = (Get-Acl -LiteralPath $User.layout).Owner
     $expectedOwner = ([Security.Principal.SecurityIdentifier]$User.sid).Translate(
         [Security.Principal.NTAccount]).Value
     Assert-Equal $owner $expectedOwner "user layout ownership $($User.name)"
     $signature = Get-AuthenticodeSignature -LiteralPath $User.client
-    Assert-Equal $signature.Status 'Valid' "MSI-installed user client signature $($User.name)"
-    Assert-Equal (Get-CertificateSha256 $signature.SignerCertificate) $metadata.codeSigner.signerSha256 "MSI-installed user client signer $($User.name)"
+    Assert-Equal $signature.Status 'Valid' "embedded-client harness signature $($User.name)"
+    Assert-Equal (Get-CertificateSha256 $signature.SignerCertificate) $metadata.codeSigner.signerSha256 "embedded-client harness signer $($User.name)"
 }
 
 function Convert-ExitCodeToUInt32([int]$ExitCode) {
@@ -1007,6 +1041,26 @@ function Invoke-UserClientObserved(
     }
 }
 
+function Invoke-EmbeddedPowerToysControlClient(
+    [object]$User,
+    [string[]]$Arguments,
+    [uint32]$ExpectedWin32
+) {
+    if ([string]::IsNullOrWhiteSpace($PowerToysClientPath)) {
+        throw 'PowerToysClientPath was not supplied.'
+    }
+    $process = Start-Process `
+        -FilePath $PowerToysClientPath `
+        -ArgumentList $Arguments `
+        -Credential $User.credential `
+        -LoadUserProfile `
+        -WorkingDirectory (Split-Path $PowerToysClientPath -Parent) `
+        -Wait `
+        -PassThru
+    Assert-Equal (Convert-ExitCodeToUInt32 $process.ExitCode) $ExpectedWin32 `
+        "embedded PowerToys control client $($User.name) $($Arguments -join ' ')"
+}
+
 function Start-HoldingUserClient(
     [object]$User,
     [uint32]$Milliseconds,
@@ -1051,22 +1105,22 @@ function Start-HoldingUserClient(
     throw "Holding user client did not connect: $Suffix"
 }
 
-function Test-CallerRejections([object]$User, [object]$OtherUser) {
+function Test-CallerAdmission([object]$User, [object]$OtherUser) {
     $hostBefore = Assert-Host '5.0.0.0'
-    $nonProxyImage = (Get-Process -Id $PID).Path
+    $nonClientImage = (Get-Process -Id $PID).Path
     Assert-True (
-        $nonProxyImage -match '^[A-Za-z]:\\' -and
-        -not $nonProxyImage.StartsWith('\\')
-    ) 'deliberately non-proxy client uses a local drive path without UNC access'
+        $nonClientImage -match '^[A-Za-z]:\\' -and
+        -not $nonClientImage.StartsWith('\\')
+    ) 'deliberately non-protocol client uses a local drive path without UNC access'
     $raw = Open-ControlPipe
     try {
-        $nonProxyMilliseconds = Assert-RawPipeRejected $raw 'local-non-proxy-image'
+        $nonClientMilliseconds = Assert-RawPipeRejected $raw 'local-non-client-image'
     }
     finally {
         $raw.Dispose()
     }
 
-    $copied = Join-Path $User.layout 'Outside\PtPuvrUserClient.exe'
+    $copied = Join-Path $User.layout 'Outside\EmbeddedPowerToysClient.exe'
     New-Item -ItemType Directory -Path (Split-Path $copied -Parent) -Force | Out-Null
     Copy-Item -LiteralPath $User.client -Destination $copied -Force
     $outside = [pscustomobject]@{
@@ -1075,16 +1129,16 @@ function Test-CallerRejections([object]$User, [object]$OtherUser) {
         name = "$($User.name)-outside"
         layout = $User.layout
     }
-    $watch = Invoke-UserClientObserved $outside @('--status') 'outside-protected-path'
-    Assert-True ($watch.win32 -in @(109, 233, 995)) `
-        'signed proxy outside the protected path is closed before request dispatch'
+    $watch = Invoke-UserClientObserved $outside @('--status') 'embedded-client-location-independent'
+    Assert-Equal $watch.win32 0 `
+        'same-SID embedded client succeeds independently of executable path'
     Assert-True ($watch.elapsedMilliseconds -lt 5000) `
-        'signed proxy path rejection is below the request I/O timeout'
+        'embedded client reaches self-only status below the request I/O timeout'
 
     $sameSidRecovery = Invoke-UserClientObserved $User @('--status') `
-        'same-sid-after-path-rejection'
+        'same-sid-after-embedded-client'
     Assert-Equal $sameSidRecovery.win32 0 `
-        'same SID succeeds after its outside-path client is rejected'
+        'same SID succeeds after another embedded client location'
     Assert-True ($sameSidRecovery.elapsedMilliseconds -lt 5000) `
         'same SID quickly regains its connection quota after path rejection'
 
@@ -1097,17 +1151,17 @@ function Test-CallerRejections([object]$User, [object]$OtherUser) {
 
     $hostAfter = Assert-Host '5.0.0.0'
     Assert-Equal $hostAfter.processId $hostBefore.processId `
-        'host PID is stable across pre-read path rejections'
+        'host PID is stable across location-independent embedded callers'
     Assert-Equal $hostAfter.pipeListenerCount $hostBefore.pipeListenerCount `
-        'listener count is stable across pre-read path rejections'
+        'listener count is stable across location-independent embedded callers'
     return [ordered]@{
-        deliberatelyNonProxyImage = $nonProxyImage
-        deliberatelyNonProxyImageKind = 'local-drive'
-        deliberatelyNonProxyRejection = 'pre-read transport rejection'
-        deliberatelyNonProxyElapsedMilliseconds = $nonProxyMilliseconds
+        deliberatelyNonClientImage = $nonClientImage
+        deliberatelyNonClientImageKind = 'local-drive'
+        deliberatelyNonClientRejection = 'invalid authentication-preface rejection'
+        deliberatelyNonClientElapsedMilliseconds = $nonClientMilliseconds
         networkPathAccessRequired = $false
-        signedOutsideProtectedPath = 'pre-read transport rejection'
-        policy = 'ERROR_ACCESS_DENIED'
+        embeddedClientOutsideOriginalPath = 'self-only status succeeds'
+        policy = 'token-derived SID and self-only operation'
         observedWin32 = $watch.win32
         elapsedMilliseconds = $watch.elapsedMilliseconds
         operationWouldOtherwiseSucceed = 'status with an existing SID lease'
@@ -1118,41 +1172,19 @@ function Test-CallerRejections([object]$User, [object]$OtherUser) {
     }
 }
 
-function Assert-ProtectedInstalledClient([object]$User) {
-    Assert-Equal ([IO.Path]::GetFullPath($User.client)) ([IO.Path]::GetFullPath($clientPath)) `
-        'all users invoke the MSI-installed client'
-    $acl = Get-Acl -LiteralPath $clientPath
-    Assert-True $acl.AreAccessRulesProtected 'MSI-installed client has a protected DACL'
-    Assert-Equal $acl.Owner 'NT AUTHORITY\SYSTEM' 'MSI-installed client owner'
-    $usersSid = [Security.Principal.SecurityIdentifier]::new('S-1-5-32-545')
-    $usersRules = @(
-        $acl.Access | Where-Object {
-            $_.IdentityReference.Translate([Security.Principal.SecurityIdentifier]) -eq $usersSid -and
-            $_.AccessControlType -eq [Security.AccessControl.AccessControlType]::Allow
-        }
-    )
-    Assert-True ($usersRules.Count -ge 1) 'Users have an explicit client allow rule'
-    $rights = [Security.AccessControl.FileSystemRights]0
-    foreach ($rule in $usersRules) {
-        $rights = $rights -bor $rule.FileSystemRights
-    }
+function Assert-EmbeddedClientHarness([object]$User) {
     Assert-True (
-        ($rights -band [Security.AccessControl.FileSystemRights]::ReadAndExecute) -eq
-        [Security.AccessControl.FileSystemRights]::ReadAndExecute
-    ) 'Users can read and execute the protected client'
-    Assert-True (
-        ($rights -band (
-            [Security.AccessControl.FileSystemRights]::WriteData -bor
-            [Security.AccessControl.FileSystemRights]::AppendData -bor
-            [Security.AccessControl.FileSystemRights]::WriteAttributes -bor
-            [Security.AccessControl.FileSystemRights]::WriteExtendedAttributes -bor
-            [Security.AccessControl.FileSystemRights]::Delete
-        )) -eq 0
-    ) 'Users have no client mutation rights'
-
-    $before = (Get-FileHash -LiteralPath $clientPath -Algorithm SHA256).Hash
-    $escapedPath = $clientPath.Replace("'", "''")
-    $command = "try { `$stream=[IO.File]::OpenWrite('$escapedPath'); `$stream.Dispose(); exit 0 } catch { exit 5 }"
+        [IO.Path]::GetFullPath($User.client).StartsWith(
+            [IO.Path]::GetFullPath($User.layout),
+            [StringComparison]::OrdinalIgnoreCase)
+    ) 'validation harness is embedded in the existing user-owned PowerToys layout'
+    $acl = Get-Acl -LiteralPath $User.client
+    $expectedOwner = ([Security.Principal.SecurityIdentifier]$User.sid).Translate(
+        [Security.Principal.NTAccount]).Value
+    Assert-Equal $acl.Owner $expectedOwner 'embedded-client harness is user owned'
+    $before = (Get-FileHash -LiteralPath $User.client -Algorithm SHA256).Hash
+    $escapedPath = $User.client.Replace("'", "''")
+    $command = "try { `$stream=[IO.File]::Open('$escapedPath','Open','Write','Read'); `$stream.Dispose(); exit 0 } catch { exit 5 }"
     $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($command))
     $probe = Start-Process `
         -FilePath pwsh.exe `
@@ -1162,14 +1194,14 @@ function Assert-ProtectedInstalledClient([object]$User) {
         -WorkingDirectory $User.layout `
         -Wait `
         -PassThru
-    Assert-Equal $probe.ExitCode 5 'standard user cannot open MSI-installed client for write'
-    Assert-Equal (Get-FileHash -LiteralPath $clientPath -Algorithm SHA256).Hash $before `
-        'MSI-installed client hash unchanged after write probe'
+    Assert-Equal $probe.ExitCode 0 'standard user can open embedded client image for write'
+    Assert-Equal (Get-FileHash -LiteralPath $User.client -Algorithm SHA256).Hash $before `
+        'non-mutating user-write probe preserves embedded client hash'
     return [ordered]@{
-        path = $clientPath
+        path = $User.client
         owner = $acl.Owner
         sha256 = $before
-        standardUserWrite = 'ERROR_ACCESS_DENIED'
+        standardUserWrite = 'allowed; client image is not a trust anchor'
     }
 }
 
@@ -1727,7 +1759,8 @@ function Invoke-Validation {
             host = 'PtPuvrHost.exe stable LocalSystem SCM service'
             engine = 'PtPuvrUpdater.exe versioned on-demand LocalSystem child'
             bootstrap = 'WiX v5 per-machine companion MSI'
-            userClient = 'MSI-owned Program Files PtPuvrUserClient.exe'
+            controlClient = 'shared source linked into existing PowerToys processes'
+            validationHarness = 'test-only PtPuvrClientHarness.exe; not installed by MSI'
             packageIdentityRequired = $false
         }
         events = $events
@@ -1765,7 +1798,9 @@ function Invoke-Validation {
         $msiSignature = Get-AuthenticodeSignature -LiteralPath $msiPath
         Assert-Equal $msiSignature.Status 'Valid' 'companion MSI signature'
         Assert-Equal (Get-CertificateSha256 $msiSignature.SignerCertificate) $metadata.codeSigner.signerSha256 'companion MSI signer'
-        Assert-True (Test-Path -LiteralPath $clientPath -PathType Leaf) 'MSI-installed user client payload'
+        Assert-True (-not (Test-Path -LiteralPath (
+            Join-Path $installRoot 'PtPuvrUserClient.exe'
+        ))) 'MSI installs no user-client executable'
         Assert-True (
             Select-String -LiteralPath $install.log -Pattern 'ServiceInstall' -Quiet
         ) 'MSI declarative ServiceInstall log evidence'
@@ -1796,7 +1831,8 @@ function Invoke-Validation {
             product = $msiProduct.DisplayName
             service = $hostState
             serviceInstallLogged = $true
-            userClientPath = $clientPath
+            installedUserClient = $false
+            validationHarness = $clientHarnessPath
             scmFailureActions = 'restart/restart/restart at 5000ms'
             scmFailureActionsOnNonCrash = $true
             initialAcceptedEpoch = 100
@@ -1810,11 +1846,29 @@ function Invoke-Validation {
         $ownerB = New-TestUser $ownerNames[1]
         Initialize-UserLayout $ownerA
         Initialize-UserLayout $ownerB
-        $protectedClient = Assert-ProtectedInstalledClient $ownerA
-        Assert-Equal $ownerA.client $ownerB.client 'users share the protected MSI proxy'
+        $embeddedClientA = Assert-EmbeddedClientHarness $ownerA
+        $embeddedClientB = Assert-EmbeddedClientHarness $ownerB
+        Assert-True ($ownerA.client -ne $ownerB.client) `
+            'each existing user process carries the shared client code without a machine proxy'
+        if (-not [string]::IsNullOrWhiteSpace($PowerToysClientPath)) {
+            Invoke-EmbeddedPowerToysControlClient `
+                $ownerB @('--protected-runtime-status') 1168
+        }
         Invoke-UserClient $ownerB @('--status') 1168 'caller lease status policy' | Out-Null
 
         Invoke-UserClient $ownerA @('--acquire', '--release-id', 'release-101') | Out-Null
+        if (-not [string]::IsNullOrWhiteSpace($PowerToysClientPath)) {
+            Invoke-EmbeddedPowerToysControlClient `
+                $ownerA @('--protected-runtime-status') 0
+            $events.Add([ordered]@{
+                area = 'existing-powertoys-client-integration'
+                executable = $PowerToysClientPath
+                sha256 = (Get-FileHash -LiteralPath $PowerToysClientPath -Algorithm SHA256).Hash
+                noLeaseStatus = 'ERROR_NOT_FOUND'
+                leasedOwnerStatus = 'ERROR_SUCCESS'
+                additionalInstalledExecutable = $false
+            })
+        }
         $runtimeA100 = Assert-Runtime $ownerA '1.0.0.0' 'not-configured'
         Assert-Equal (Get-AcceptedSecurityEpoch) 101 'release-101 exact accepted epoch'
 
@@ -1847,8 +1901,8 @@ function Invoke-Validation {
             area = 'caller-authorization'
             userA = [ordered]@{ sid = $ownerA.sid; layout = $ownerA.layout }
             userB = [ordered]@{ sid = $ownerB.sid; layout = $ownerB.layout }
-            protectedClient = $protectedClient
-            rejections = Test-CallerRejections $ownerA $ownerB
+            embeddedClients = @($embeddedClientA, $embeddedClientB)
+            admission = Test-CallerAdmission $ownerA $ownerB
             differentUserWithoutLease = 'ERROR_NOT_FOUND'
             sameUserProxySecrecyRequired = $false
         })
@@ -2093,7 +2147,7 @@ function Invoke-Validation {
         })
 
         Invoke-UserClient $ownerA @('--acquire', '--release-id', 'release-105-engine-before') `
-            109 'ReadFile(user client response)' | Out-Null
+            109 'ReadFile(protected runtime response)' | Out-Null
         $activationJournal = Join-Path $storeRoot 'engine-activation-journal.txt'
         Move-Item -LiteralPath $activationJournal -Destination "$activationJournal.new"
         $outerJournal = Join-Path $storeRoot 'acquisition-transaction.txt'
@@ -2108,7 +2162,7 @@ function Invoke-Validation {
         Assert-True (-not (Test-Path -LiteralPath "$outerJournal.new")) `
             'primary acquisition journal was authoritative over stale .new'
         Invoke-UserClient $ownerA @('--acquire', '--release-id', 'release-106-engine-after') `
-            109 'ReadFile(user client response)' | Out-Null
+            109 'ReadFile(protected runtime response)' | Out-Null
         Copy-Item -LiteralPath $activationJournal -Destination "$activationJournal.new"
         Restart-HostAfterCrash
         [void](Assert-Host '5.3.0.0')

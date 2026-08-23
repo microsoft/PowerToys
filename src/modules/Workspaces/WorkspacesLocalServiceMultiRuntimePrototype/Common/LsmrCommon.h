@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../../../../common/protected_runtime/ProtectedRuntimeControlProtocol.h"
+
 #include <windows.h>
 
 #include <filesystem>
@@ -18,8 +20,6 @@ namespace ptlsmr
         L"PowerToys Workspaces protected runtime updater engine prototype";
     inline constexpr wchar_t RuntimeProductName[] =
         L"PowerToys Workspaces protected runtime prototype";
-    inline constexpr wchar_t UserClientProductName[] =
-        L"PowerToys Workspaces protected runtime user client prototype";
     inline constexpr wchar_t MetadataProductName[] =
         L"PowerToys Workspaces protected runtime release metadata prototype";
     inline constexpr wchar_t PolicyProductName[] =
@@ -27,17 +27,19 @@ namespace ptlsmr
     inline constexpr wchar_t RuntimeExe[] = L"PtPuvrRuntime.exe";
     inline constexpr wchar_t EngineExe[] = L"PtPuvrUpdater.exe";
     inline constexpr wchar_t HostExe[] = L"PtPuvrHost.exe";
-    inline constexpr wchar_t UserClientExe[] = L"PtPuvrUserClient.exe";
     inline constexpr wchar_t ReleaseManifestExe[] = L"PtPuvrReleaseManifest.exe";
     inline constexpr wchar_t CodePolicyExe[] = L"PtPuvrCodePolicy.exe";
     inline constexpr wchar_t MetadataPolicyExe[] = L"PtPuvrMetadataPolicy.exe";
-    inline constexpr wchar_t HostServiceName[] = L"PtPuvrHost";
-    inline constexpr wchar_t HostPipePrefix[] = L"\\\\.\\pipe\\PtPuvrHost-";
-    inline constexpr wchar_t ControlPlaneRegistryKey[] =
-        L"SOFTWARE\\Microsoft\\PowerToys\\WorkspacesProtectedRuntimeControlPlanePrototype";
+    inline constexpr const wchar_t* HostServiceName =
+        powertoys::protected_runtime::protocol::host_service_name;
+    inline constexpr const wchar_t* HostPipePrefix =
+        powertoys::protected_runtime::protocol::host_pipe_prefix;
+    inline constexpr const wchar_t* ControlPlaneRegistryKey =
+        powertoys::protected_runtime::protocol::control_plane_registry_key;
     inline constexpr wchar_t CleanupOutcomeRegistryKey[] =
         L"SOFTWARE\\Microsoft\\PowerToys\\WorkspacesProtectedRuntimeControlPlanePrototypeValidation";
-    inline constexpr wchar_t HostEndpointRegistryValue[] = L"HostEndpoint";
+    inline constexpr const wchar_t* HostEndpointRegistryValue =
+        powertoys::protected_runtime::protocol::host_endpoint_registry_value;
     inline constexpr wchar_t StateInitializedRegistryValue[] = L"StateInitialized";
     inline constexpr wchar_t CleanupNonceRegistryValue[] = L"CleanupRunNonce";
     inline constexpr wchar_t CleanupTimestampRegistryValue[] = L"CleanupTimestampFileTimeUtc";
@@ -64,13 +66,17 @@ namespace ptlsmr
     inline constexpr wchar_t UpdaterServiceName[] = L"PtPuvrLegacyEngineDiagnostics";
     inline constexpr wchar_t UpdaterPipeName[] = L"\\\\.\\pipe\\PtPuvrLegacyEngineDiagnostics";
     inline constexpr const wchar_t* UpdaterVersion = InitialEngineVersion;
-    inline constexpr uint32_t ProtocolMagic = 0x52565550; // PUVR
-    inline constexpr uint32_t PipeAuthenticationMagic = 0x48545541; // AUTH
-    inline constexpr uint16_t ProtocolVersion = 5;
+    inline constexpr uint32_t ProtocolMagic =
+        powertoys::protected_runtime::protocol::magic;
+    inline constexpr uint32_t PipeAuthenticationMagic =
+        powertoys::protected_runtime::protocol::authentication_magic;
+    inline constexpr uint16_t ProtocolVersion =
+        powertoys::protected_runtime::protocol::version;
     inline constexpr size_t MaxOwnerSidChars = 192;
     inline constexpr size_t MaxCandidatePathChars = 1024;
     inline constexpr size_t MaxCrashPhaseChars = 48;
-    inline constexpr size_t MaxReleaseIdChars = 80;
+    inline constexpr size_t MaxReleaseIdChars =
+        powertoys::protected_runtime::protocol::max_release_id_chars;
     inline constexpr size_t TransactionIdChars = 32;
     inline constexpr size_t MaxLeases = 32;
     inline constexpr uint64_t MaxReleaseManifestBytes = 1024ull * 1024ull;
@@ -151,12 +157,8 @@ namespace ptlsmr
         cleanup = 3,
     };
 
-    enum class public_command : uint16_t
-    {
-        acquire = 1,
-        status = 2,
-        release = 3,
-    };
+    using public_command =
+        powertoys::protected_runtime::protocol::control_command;
 
     enum class engine_action : uint16_t
     {
@@ -165,12 +167,8 @@ namespace ptlsmr
     };
 
 #pragma pack(push, 1)
-    struct pipe_authentication_preface
-    {
-        uint32_t magic{ PipeAuthenticationMagic };
-        uint16_t version{ ProtocolVersion };
-        uint16_t reserved{};
-    };
+    using pipe_authentication_preface =
+        powertoys::protected_runtime::protocol::authentication_preface;
 
     struct request
     {
@@ -198,28 +196,10 @@ namespace ptlsmr
         wchar_t detail[2048]{};
     };
 
-    struct public_request
-    {
-        uint32_t magic{};
-        uint16_t version{};
-        uint16_t command{};
-        uint16_t reserved{};
-        wchar_t releaseId[MaxReleaseIdChars]{};
-    };
-
-    struct public_reply
-    {
-        uint32_t magic{ ProtocolMagic };
-        uint16_t version{ ProtocolVersion };
-        uint16_t command{};
-        uint32_t win32Status{};
-        uint32_t scmState{};
-        uint32_t processId{};
-        uint32_t leaseCount{};
-        wchar_t runtimeVersion[64]{};
-        wchar_t activeEngineVersion[64]{};
-        wchar_t detail[2048]{};
-    };
+    using public_request =
+        powertoys::protected_runtime::protocol::control_request;
+    using public_reply =
+        powertoys::protected_runtime::protocol::control_reply;
 
     struct engine_request
     {
@@ -316,7 +296,6 @@ namespace ptlsmr
 
     void protect_system_directory(const std::filesystem::path& directory);
     void protect_system_file(const std::filesystem::path& file);
-    void protect_user_client_file(const std::filesystem::path& file);
     void protect_runtime_directory(
         const std::filesystem::path& directory,
         std::wstring_view serviceSid = L"");
@@ -353,9 +332,6 @@ namespace ptlsmr
     [[nodiscard]] file_version validate_runtime_candidate(
         const std::filesystem::path& path,
         uint16_t expectedTrack,
-        std::wstring_view expectedSignerPin);
-    [[nodiscard]] file_version validate_user_client_candidate(
-        const std::filesystem::path& path,
         std::wstring_view expectedSignerPin);
     [[nodiscard]] file_version validate_release_manifest_candidate(
         const std::filesystem::path& path,

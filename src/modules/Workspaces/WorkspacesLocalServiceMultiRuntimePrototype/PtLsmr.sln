@@ -10,7 +10,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PtLsmrUpdater", "Updater\Pt
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PtPuvrHost", "Host\PtPuvrHost.vcxproj", "{91C5372B-4EDC-4C5B-81FA-9BA4D2A0ED36}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PtPuvrUserClient", "UserClient\PtPuvrUserClient.vcxproj", "{7D862537-CB3A-4A5A-90CB-0C9764AA6A23}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PtPuvrClientHarness", "ClientHarness\PtPuvrClientHarness.vcxproj", "{7D862537-CB3A-4A5A-90CB-0C9764AA6A23}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PtPuvrPolicy", "Policy\PtPuvrPolicy.vcxproj", "{F77CD6BA-7A85-41E5-9D68-D2802C18C77B}"
 EndProject

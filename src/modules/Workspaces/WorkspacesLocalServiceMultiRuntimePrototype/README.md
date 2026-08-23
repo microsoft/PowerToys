@@ -1,12 +1,19 @@
-# Workspaces protected runtime control-plane prototype
+# PowerToys generic protected runtime integration prototype
 
 This prototype proves a machine-protected, ordinary-PE control plane for
-per-user Workspaces runtimes. It uses no MSIX, AppX package identity,
+per-user generic PowerToys runtimes consumed by Workspaces, Keyboard Manager,
+and future modules. It uses no MSIX, AppX package identity,
 WindowsApps path, package alias, package ACL, or user-writable elevated
 bootstrap. The validated result is a signed WiX v5 companion MSI, one stable
 LocalSystem SCM host, versioned on-demand updater engines, and dynamically
 created per-owner runtime services using `NT SERVICE\<derived-name>` virtual
 accounts.
+
+This integration removes only the separate control-client process. Module
+data APIs remain a separate generic Runtime concern: module callers will link
+client code from `src\common`, and the Runtime must map fixed target IDs to
+module namespaces without accepting caller-supplied paths. No control-client
+code is linked specifically to Workspaces.
 
 The prototype is intentionally isolated to this directory. It does not
 modify the PowerToys installer.
@@ -16,15 +23,18 @@ modify the PowerToys installer.
 The WiX v5 project in `Installer\PtPuvrControlPlane.wixproj` produces a
 per-machine companion MSI. The successful lifecycle installs it with elevated
 `msiexec`; it does **not** use the legacy controller bootstrap command.
+The MSI is an installation vehicle, not a running component or a required
+product packaging boundary. A per-machine PowerToys MSI can own the same
+payload directly; a per-user PowerToys bundle can chain a machine package.
 
 | Location | Immutable MSI content and protected runtime role |
 |---|---|
-| `%ProgramFiles%\PowerToys\WorkspacesProtectedRuntimeControlPlanePrototype` | MSI-owned stable `PtPuvrHost.exe`, machine-protected `PtPuvrUserClient.exe`, and initial `Engines\5.0.0.0\PtPuvrUpdater.exe`; host-created protected directories hold later engines and runtimes. |
+| `%ProgramFiles%\PowerToys\WorkspacesProtectedRuntimeControlPlanePrototype` | MSI-owned stable `PtPuvrHost.exe` and initial `Engines\5.0.0.0\PtPuvrUpdater.exe`; host-created protected directories hold later engines and runtimes. No normal-user client executable is installed. |
 | `%ProgramData%\Microsoft\PowerToys\WorkspacesProtectedRuntimeControlPlanePrototype` | MSI-owned immutable policy PEs and signer pins; host-owned active-engine state, activation/runtime/acquisition journals, accepted-release state, version floors, SID leases, inventory, request/reply files, and evidence. |
 | SCM | The fixed-image-path `PtPuvrHost` service installed as `LocalSystem` through declarative WiX `ServiceInstall` and controlled through `ServiceControl`. |
 
-The host, user proxy, initial engine, policy files, and signer pins are MSI
-payloads. Mutable state is deliberately absent from the MSI `File` table.
+The host, initial engine, policy files, and signer pins are MSI payloads.
+Mutable state is deliberately absent from the MSI `File` table.
 After validating the immutable signed policy, the host creates the complete
 initial mutable-state set once and marks it initialized in the protected
 registry key. It fails closed if only part of that set exists; it never
@@ -96,21 +106,23 @@ read-control, and synchronize rights needed to use it; it does not grant
 `FILE_CREATE_PIPE_INSTANCE`. The client independently reads the protected
 endpoint pointer, requests only
 `FILE_READ_DATA | FILE_WRITE_DATA | SYNCHRONIZE`, and binds the connected
-server process to the current SCM host PID. The host rejects remote clients with `PIPE_REJECT_REMOTE_CLIENTS`. Immediately
+server process to the current SCM host PID. This client implementation lives
+in `src\common\protected_runtime` and is compiled directly into existing
+PowerToys processes, including `PowerToys.exe`; it does not produce a
+production client EXE. The host rejects remote clients with
+`PIPE_REJECT_REMOTE_CLIENTS`. Immediately
 after each `ConnectNamedPipe`, before reading request bytes, the worker binds
 the retained client process to both its primary token and the impersonated
 pipe token. Because Windows named-pipe impersonation is unavailable until a
-server read has completed, the protected proxy first emits a fixed eight-byte
+server read has completed, the embedded client first emits a fixed eight-byte
 `AUTH`/protocol-version preface containing no operation, path, SID, or other
-caller-controlled request data. A purely lexical image-string filter rejects
-non-proxy processes before waiting for that preface. The host derives the
-canonical process-token SID and immediately reserves that SID's single
-active-connection slot before waiting for the preface. After consuming it,
-the host retains the impersonated pipe token and requires its canonical user
-SID to match the process-token SID. Only while that RAII quota guard is alive
-does it validate the protected proxy path and signature, resolve LocalAppData,
-read the request, and serve the connection.
-Excess same-SID connections and direct/non-proxy clients are closed
+caller-controlled request data. The host derives the canonical process-token
+SID and immediately reserves that SID's single active-connection slot before
+waiting for the preface. After consuming it, the host retains the
+impersonated pipe token and requires its canonical user SID to match the
+process-token SID. Only while that RAII quota guard is alive does it resolve
+token-bound LocalAppData, read the request, and serve the connection.
+Excess same-SID connections and invalid-protocol clients are closed
 immediately, while other SIDs retain listener capacity. Request reads and
 response writes each have an exact five-second, stop-aware deadline. A global
 stop-aware dispatch mutex serializes protected state mutation across the
@@ -129,42 +141,33 @@ For every request the host:
    `SYNCHRONIZE`, queries its image as a raw DOS string, and lexically rejects
    UNC, device, remote-drive, non-drive-root, DOS-device-component, and
    root-escaping forms against the local fixed-drive mask captured during
-   trusted host startup, without canonicalizing or probing the caller path.
-   It compares that string to the trusted expected proxy string so non-proxy
-   clients are closed before any authentication-preface wait;
+   trusted host startup, without canonicalizing or probing the caller path;
 3. re-queries the pipe client PID, requires the process session to equal the
    pipe client session, and requires the retained process to remain live;
 4. opens the process token, derives its canonical user SID, and acquires the
    per-SID connection quota before waiting for the fixed authentication
-   preface, known-folder resolution, filesystem access, signature validation,
-   or request reading;
+   preface, known-folder resolution, filesystem access, or request reading;
 5. consumes only the fixed authentication preface, briefly impersonates the
    pipe client to retain its thread token, reverts to SYSTEM, and requires the
    pipe-token canonical user SID to match the process-token SID;
-6. compares the lexically normalized raw image string to the fixed
-   MSI-installed
-   `%ProgramFiles%\PowerToys\WorkspacesProtectedRuntimeControlPlanePrototype\PtPuvrUserClient.exe`
-   path computed once during trusted host setup, using case-insensitive
-   ordinal Windows comparison with no caller-filesystem traversal;
-7. validates that protected file's pinned WinVerifyTrust-selected leaf,
-   company, product, original filename, architecture, and version;
-8. resolves the retained process token's LocalAppData with
+6. resolves the retained process token's LocalAppData with
    `KF_FLAG_DONT_VERIFY`, lexically requires a local fixed-drive DOS path, and
    derives but does not touch the release inbox before request dispatch. The
    later no-follow source-handle intake remains the authoritative
    containment, reparse, hard-link, and final-path check.
 
-The proxy is machine protected, but it is not a secret or an authorization
-capability: a same-user attacker can invoke it. Security comes from binding
-the kernel-reported pipe client identity to a retained live process and its
-token, deriving the owner and release inbox from that token, exposing only
+The client executable path and bytes are deliberately not an authorization
+capability: the production client code is linked into existing PowerToys
+processes, and the lifecycle copies the same test harness into two distinct
+user-owned, user-writable layouts. Security comes from binding the
+kernel-reported pipe client identity to a retained live process and its token,
+deriving the owner and release inbox from that token, exposing only
 self-scoped operations, and accepting only signed, bounded release metadata.
-A copied signed proxy outside Program Files is rejected even for `status` on
-an existing lease. The lifecycle also connects from the local `pwsh.exe`
-process as a deliberate non-proxy, proves pre-read rejection without any UNC
-or device/network path access, observes the same host PID and listener count,
-then proves the original SID recovers and another SID reaches normal request
-dispatch. The proxy exposes only
+The lifecycle proves a copied embedded client succeeds from another local
+path without gaining cross-SID authority. It also sends an invalid preface
+from `pwsh.exe`, observes immediate protocol rejection with the same host PID
+and listener count, and proves another SID retains normal dispatch. The
+generic control API exposes only
 `acquire`/`ensure` for a bounded release ID, `status` for the caller, and
 `release` for the caller. It cannot send an owner SID, candidate path,
 destination, service/account name, raw command line, URL, runtime track, or
@@ -186,7 +189,8 @@ lease safely even if no runtime or inventory record exists. `status`,
 `acquire`, and `release` always use the caller SID's single lease, so one user
 cannot address another SID's lease or service. The lifecycle creates two
 standard local users, gives each only its token-derived LocalAppData release
-inbox, and has both invoke the same Program Files proxy. It proves distinct
+inbox, and has both invoke client code from their existing user-owned
+PowerToys layout. It proves distinct
 SIDs, leases, services, service SIDs, and stores, plus one-record-per-SID
 behavior and lease-only release.
 
@@ -342,23 +346,24 @@ Run from an elevated x64 PowerShell 7 (`pwsh.exe`):
 ```powershell
 .\Build.ps1 -Configuration Release -Clean
 .\Package.ps1 -Configuration Release -TrustMachine
-.\Lifecycle.ps1 -Verb validate -Configuration Release
+.\Lifecycle.ps1 -Verb validate -Configuration Release `
+  -PowerToysClientPath ..\..\..\..\x64\Release\PowerToys.exe
 ```
 
-`Build.ps1` builds x64 Release `/WX` host, user client, policy, manifest,
-engine, and runtime artifacts. `Package.ps1` dynamically creates test-only
+`Build.ps1` builds x64 Release `/WX` host, test-only client harness, policy,
+manifest, engine, and runtime artifacts. `Package.ps1` dynamically creates test-only
 code, metadata, and foreign signing leaves; signs the PEs and companion MSI;
 creates all release sets; and records exact certificate ownership. It does
 not commit private keys or credentials. `Lifecycle.ps1` always attempts its
 exact teardown and writes `artifacts\validation-result.json`.
 
-`Teardown.ps1` is a standalone recovery tool. Owners must release through the
-MSI-installed Program Files proxy. The script performs an early zero-lease
+`Teardown.ps1` is a standalone recovery tool. Owners must release through an
+existing PowerToys process linked with the generic client. The script performs an early zero-lease
 check, then relies on the MSI's stricter protected-state/inventory/service/
 journal pre-remove check rather than deleting the host or protected roots
 directly. A blocked or failed teardown deliberately leaves the test
 certificates trusted while MSI, service, or protected state remains, so the
-same owner can still use the signed proxy to release its lease. Only after
+same owner can still release its lease. Only after
 successful product, service, root, and test-user removal does teardown restore
 the exact pre-run certificate state. It removes only the two explicitly
 identified prototype users/profiles and only exact certificate entries
@@ -396,9 +401,10 @@ channel, and values copied from inside the bundle are not an external anchor.
 
 The current `validation-result.json` records `PASS` with exact Win32/detail
 assertions and explicit events for independently queried MSI/SCM/file/pipe
-bootstrap evidence, caller authorization, random endpoint publication and
-DACL queried from an authenticated signed-client handle, immediate raw-client
-and outside-path rejection with no network path, stable host PID/listener
+bootstrap evidence, caller authorization, existing `PowerToys.exe` embedded
+client execution, random endpoint publication and DACL queried from an
+authenticated client handle, immediate invalid-protocol rejection and
+location-independent self-only access with no network path, stable host PID/listener
 count and cross-SID dispatch, externally measured four-instance capacity and per-SID quota,
 five-second timeout with stable host PID,
 old-endpoint squatting,
@@ -418,8 +424,9 @@ certificate entries.
 
 ## Proven scope and remaining production work
 
-**Mechanism GO:** the prototype validates a real MSI-owned protected host and
-proxy, process/pipe-token-bound normal-user admission, SID-only lease
+**Mechanism GO:** the prototype validates a real MSI-owned protected host,
+client code compiled into existing PowerToys processes with no installed
+proxy executable, process/pipe-token-bound normal-user admission, SID-only lease
 isolation, an unsquattable per-start endpoint, bounded no-follow signed-length
 intake, atomic signed-release state and anti-downgrade floors, versioned
 child-engine servicing, hash/generation-aware signed PE runtime transactions,
