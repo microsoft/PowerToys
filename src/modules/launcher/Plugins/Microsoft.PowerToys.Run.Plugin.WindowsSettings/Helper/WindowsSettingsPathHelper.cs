@@ -50,7 +50,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 }
 
                 // Generating path values.
-                if (!(settings.Areas is null) && settings.Areas.Any())
+                if (!(settings.Areas is null) && settings.Areas.Count > 0)
                 {
                     var areaValue = string.Join(_pathDelimiterSequence, settings.Areas);
                     settings.JoinedAreaPath = areaValue;

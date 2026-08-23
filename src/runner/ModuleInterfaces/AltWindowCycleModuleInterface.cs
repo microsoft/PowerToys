@@ -45,11 +45,11 @@ namespace RunnerV2.ModuleInterfaces
         {
             Shortcuts.Clear();
             var settings = SettingsUtils.Default.GetSettings<AltWindowCycleSettings>(Name);
-            Shortcuts.Add((settings.Properties.NextWindowShortcut, () =>
+            Shortcuts.Add((settings.Properties.NextWindowShortcut.Value, () =>
             {
                 AltWindowCycleOnNextHotkey();
             }));
-            Shortcuts.Add((settings.Properties.PreviousWindowShortcut, () =>
+            Shortcuts.Add((settings.Properties.PreviousWindowShortcut.Value, () =>
             {
                 AltWindowCycleOnPreviousHotkey();
             }));
@@ -61,10 +61,10 @@ namespace RunnerV2.ModuleInterfaces
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool AltWindowCycleInitialize();
 
-        [DllImport("PowerToys.AltWindowCycle.dll", EntryPoint = "ShutdownAltWindowCycle")]
+        [DllImport("PowerToys.AltWindowCycle.dll", EntryPoint = "AltWindowCycle_ShutdownExport")]
         private static extern void ShutdownAltWindowCycle([MarshalAs(UnmanagedType.Bool)] bool blockUntilExit);
 
-        [DllImport("PowerToys.AltWindowCycle.dll", EntryPoint = "HandleAltWindowCycleHotkey")]
+        [DllImport("PowerToys.AltWindowCycle.dll", EntryPoint = "AltWindowCycle_HandleHotkeyExport")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool AltWindowCycleHandleHotkey([MarshalAs(UnmanagedType.Bool)] bool forward, uint holdModifiers);
 

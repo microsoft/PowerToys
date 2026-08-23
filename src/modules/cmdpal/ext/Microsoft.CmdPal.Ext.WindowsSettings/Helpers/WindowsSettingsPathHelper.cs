@@ -64,7 +64,7 @@ internal static class WindowsSettingsPathHelper
         }
 
         // Generating path values.
-        if (!(setting.Areas is null) && setting.Areas.Any())
+        if (!(setting.Areas is null) && setting.Areas.Count > 0)
         {
             var areaValue = string.Join(_pathDelimiterSequence, setting.Areas);
             setting.JoinedAreaPath = areaValue;

@@ -17,7 +17,6 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/common/COMUtils/COMUtils.vcxproj" Id="7319089e-46d6-4400-bc65-e39bdf1416ee" />
     <Project Path="src/common/Display/Display.vcxproj" Id="caba8dfb-823b-4bf2-93ac-3f31984150d9" />
     <Project Path="src/common/FilePreviewCommon/FilePreviewCommon.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
@@ -54,14 +53,8 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/common/UITestAutomation.Next/UITestAutomation.Next.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
     <Project Path="src/common/UnitTests-CommonLib/UnitTests-CommonLib.vcxproj" Id="1a066c63-64b3-45f8-92fe-664e1cce8077" />
     <Project Path="src/common/UnitTests-CommonUtils/UnitTests-CommonUtils.vcxproj" Id="8b5cfb38-ccba-40a8-ad7a-89c57b070884" />
-    <Project Path="src/common/updating/UnitTests/UpdatingUnitTests.vcxproj" Id="a1b2c3d4-e5f6-7890-abcd-ef1234567890" />
-    <Project Path="src/common/updating/updating.vcxproj" Id="17da04df-e393-4397-9cf0-84dabe11032e" />
     <Project Path="src/common/version/version.vcxproj" Id="cc6e41ac-8174-4e8a-8d22-85dd7f4851df" />
   </Folder>
   <Folder Name="/common/interop/">
@@ -109,7 +102,6 @@
     <File Path="src/common/utils/MsWindowsSettings.h" />
     <File Path="src/common/utils/OnThreadExecutor.h" />
     <File Path="src/common/utils/os-detect.h" />
-    <File Path="src/common/utils/package.h" />
     <File Path="src/common/utils/ProcessWaiter.h" />
     <File Path="src/common/utils/process_path.h" />
     <File Path="src/common/utils/registry.h" />
@@ -119,6 +111,7 @@
     <File Path="src/common/utils/string_utils.h" />
     <File Path="src/common/utils/timeutil.h" />
     <File Path="src/common/utils/UnhandledExceptionHandler.h" />
+    <File Path="src/common/utils/version.h" />
     <File Path="src/common/utils/winapi_error.h" />
     <File Path="src/common/utils/window.h" />
   </Folder>
@@ -168,10 +161,6 @@
   </Folder>
   <Folder Name="/modules/awake/">
     <Project Path="src/modules/awake/Awake.ModuleServices/Awake.ModuleServices.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/awake/Awake.ModuleServices.UnitTests/Awake.ModuleServices.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -838,10 +827,6 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/peek/Peek.Common.UnitTests/Peek.Common.UnitTests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
     <Project Path="src/modules/peek/Peek.FilePreviewer/Peek.FilePreviewer.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -1155,10 +1140,6 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/settings-ui/Settings.UITests/Settings.UITests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".vsconfig" />
@@ -1174,41 +1155,18 @@
     <File Path="src/Solution.props" />
     <File Path="src/Version.props" />
   </Folder>
-  <Project Path="src/ActionRunner/ActionRunner.vcxproj" Id="d29ddd63-e2cf-4657-9fd5-2aede4257e5d">
-    <BuildDependency Project="src/common/updating/updating.vcxproj" />
-  </Project>
   <Project Path="src/PackageIdentity/PackageIdentity.vcxproj" Id="e2a5a82e-1e5b-4c8d-9a4f-2b1a8f9e5c3d" />
-  <Project Path="src/runner/runner.vcxproj" Id="9412d5c6-2cf2-4fc2-a601-b55508ea9b27">
-    <BuildDependency Project="src/ActionRunner/ActionRunner.vcxproj" />
-    <BuildDependency Project="src/common/notifications/BackgroundActivator/BackgroundActivator.vcxproj" />
-    <BuildDependency Project="src/common/notifications/BackgroundActivatorDLL/BackgroundActivatorDLL.vcxproj" />
-    <BuildDependency Project="src/common/updating/updating.vcxproj" />
-    <BuildDependency Project="src/modules/awake/Awake/Awake.csproj" />
-    <BuildDependency Project="src/modules/awake/AwakeModuleInterface/AwakeModuleInterface.vcxproj" />
-    <BuildDependency Project="src/modules/colorPicker/ColorPicker/ColorPicker.vcxproj" />
-    <BuildDependency Project="src/modules/colorPicker/ColorPickerUI/ColorPickerUI.csproj" />
-    <BuildDependency Project="src/modules/fancyzones/editor/FancyZonesEditor/FancyZonesEditor.csproj" />
-    <BuildDependency Project="src/modules/fancyzones/FancyZonesLib/FancyZonesLib.vcxproj" />
-    <BuildDependency Project="src/modules/fancyzones/FancyZonesModuleInterface/FancyZonesModuleInterface.vcxproj" />
-    <BuildDependency Project="src/modules/GrabAndMove/GrabAndMove/GrabAndMove.vcxproj" />
-    <BuildDependency Project="src/modules/GrabAndMove/GrabAndMoveModuleInterface/GrabAndMoveModuleInterface.vcxproj" />
-    <BuildDependency Project="src/modules/imageresizer/dll/ImageResizerExt.vcxproj" />
-    <BuildDependency Project="src/modules/imageresizer/ui/ImageResizerUI.csproj" />
-    <BuildDependency Project="src/modules/keyboardmanager/dll/KeyboardManager.vcxproj" />
-    <BuildDependency Project="src/modules/launcher/Microsoft.Launcher/Microsoft.Launcher.vcxproj" />
-    <BuildDependency Project="src/modules/LightSwitch/LightSwitchModuleInterface/LightSwitchModuleInterface.vcxproj" />
-    <BuildDependency Project="src/modules/LightSwitch/LightSwitchService/LightSwitchService.vcxproj" />
-    <BuildDependency Project="src/modules/powerrename/dll/PowerRenameExt.vcxproj" />
-    <BuildDependency Project="src/modules/powerrename/lib/PowerRenameLib.vcxproj" />
-    <BuildDependency Project="src/modules/previewpane/Common/PreviewHandlerCommon.csproj" />
-    <BuildDependency Project="src/modules/previewpane/MarkdownPreviewHandler/MarkdownPreviewHandler.csproj" />
-    <BuildDependency Project="src/modules/previewpane/PdfPreviewHandler/PdfPreviewHandler.csproj" />
-    <BuildDependency Project="src/modules/previewpane/powerpreview/powerpreview.vcxproj" />
-    <BuildDependency Project="src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj" />
-    <BuildDependency Project="src/PackageIdentity/PackageIdentity.vcxproj" />
+  <Project Path="src/PowerToys.ActionRunner/PowerToys.ActionRunner.csproj">
+    <Platform Solution="*|ARM64" Project="ARM64" />
+    <Platform Solution="*|x64" Project="x64" />
   </Project>
-  <Project Path="src/Update/PowerToys.Update.vcxproj" Id="44ce9ae1-4390-42c5-bacc-0fd6b40aa203" />
-  <Project Path="src/runner/UnitTests/UnitTests-Runner.vcxproj" Id="97bdacf8-261d-4e23-a708-a27e0b60e444" />
-  <Project Path="tools/project_template/ModuleTemplate/ModuleTemplateCompileTest.vcxproj" Id="64a80062-4d8b-4229-8a38-dfa1d7497749" />
+  <Project Path="src/Runner/RunnerV2.csproj">
+    <Platform Solution="*|ARM64" Project="ARM64" />
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="src/Update/Update.csproj">
+    <Platform Solution="*|ARM64" Project="ARM64" />
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
 </Solution>
 

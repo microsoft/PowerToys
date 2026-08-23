@@ -77,6 +77,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(WorkspacesSettings))]
     [JsonSerializable(typeof(GrabAndMoveSettings))]
     [JsonSerializable(typeof(ZoomItSettings))]
+    [JsonSerializable(typeof(AltWindowCycleSettings))]
+    [JsonSerializable(typeof(global::Settings.UI.Library.LastVersionRunSettings))]
+    [JsonSerializable(typeof(global::Settings.UI.Library.OOBESettings))]
 
     // Properties Classes
     [JsonSerializable(typeof(AdvancedPasteProperties))]
@@ -118,6 +121,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(WorkspacesProperties))]
     [JsonSerializable(typeof(GrabAndMoveProperties))]
     [JsonSerializable(typeof(ZoomItProperties))]
+    [JsonSerializable(typeof(AltWindowCycleProperties))]
 
     // Base Property Types (used throughout settings)
     [JsonSerializable(typeof(BoolProperty))]

@@ -22,6 +22,8 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.System;
+using HotkeySettingsControlHook = Microsoft.PowerToys.Settings.UI.Library.HotkeySettingsControlHook;
+using NativeKeyboardHelper = Microsoft.PowerToys.Settings.UI.Helpers.NativeKeyboardHelper;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {

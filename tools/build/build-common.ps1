@@ -202,7 +202,16 @@ function Ensure-VsDevEnvironment {
         "$env:ProgramFiles\Microsoft Visual Studio\Installer\vswhere.exe"
     )
     $vswhere = $vswhereCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-    if ($vswhere) { Write-Host "[VS] vswhere found: $vswhere" } else { Write-Host "[VS] vswhere not found" }
+    if ($vswhere) {
+        Write-Host "[VS] vswhere found: $vswhere"
+        # Add the VS Installer directory to PATH so that child processes (e.g. NativeAOT's
+        # findvcvarsall.bat → vcvarsall.bat) can locate vswhere.exe by name.
+        $vsInstallerDir = Split-Path $vswhere -Parent
+        if ($env:PATH -notlike "*$vsInstallerDir*") {
+            $env:PATH = "$vsInstallerDir;$env:PATH"
+            Write-Host "[VS] Added '$vsInstallerDir' to PATH for vswhere accessibility"
+        }
+    } else { Write-Host "[VS] vswhere not found" }
 
     # Probe for a Visual Studio install with the C++ workload. Selection is
     # capability-based (-requires VC.Tools.x86.x64), not SKU-based: full VS

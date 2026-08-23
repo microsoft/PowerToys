@@ -90,7 +90,7 @@ internal static class FancyZonesCliUsage
 
         // Usage line
         string argsLabel = string.Join(" ", subcommand.Arguments.Select(a => $"<{a.Name}>"));
-        string optionsLabel = subcommand.Options.Any() ? " [options]" : string.Empty;
+        string optionsLabel = subcommand.Options.Count > 0 ? " [options]" : string.Empty;
         Console.WriteLine($"Usage: FancyZonesCLI {subcommand.Name} {argsLabel}{optionsLabel}".TrimEnd());
         Console.WriteLine();
 
@@ -103,7 +103,7 @@ internal static class FancyZonesCliUsage
         }
 
         // Arguments
-        if (subcommand.Arguments.Any())
+        if (subcommand.Arguments.Count > 0)
         {
             Console.WriteLine(Properties.Resources.usage_arguments);
             foreach (var arg in subcommand.Arguments)
@@ -116,7 +116,7 @@ internal static class FancyZonesCliUsage
         }
 
         // Options
-        if (subcommand.Options.Any())
+        if (subcommand.Options.Count > 0)
         {
             Console.WriteLine(Properties.Resources.usage_options);
             foreach (var option in subcommand.Options)

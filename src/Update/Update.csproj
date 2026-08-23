@@ -18,9 +18,10 @@
   <!-- This forces the deployment of the project as it must be built as a single file otherwise it won't work, as it is copying itsself around -->
   <PropertyGroup>
     <_IsPublishing Condition="'$(_IsPublishing)'==''">false</_IsPublishing>
+    <_PublishOutputPath>$(OutputPath.TrimEnd('\').TrimEnd('/'))</_PublishOutputPath>
   </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(_IsPublishing)'!='true'">
-    <Exec Command="dotnet publish &quot;$(ProjectPath)&quot; -c $(Configuration) -r $(RuntimeIdentifier) --self-contained -o &quot;$(OutputPath)&quot;" />
+    <Exec Command="dotnet publish &quot;$(ProjectPath)&quot; -c $(Configuration) -r $(RuntimeIdentifier) --self-contained -o &quot;$(_PublishOutputPath)&quot;" />
     <Exec Command="del &quot;$(OutputPath)PowerToys.Update.deps.json&quot;" />
   </Target>
 </Project>

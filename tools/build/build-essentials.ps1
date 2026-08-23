@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-Build essential native PowerToys projects (runner and settings), restoring NuGet packages first.
+Build essential PowerToys projects (runner and settings), restoring NuGet packages first.
 
 .DESCRIPTION
-Lightweight script to build a small set of essential C++ projects used by PowerToys' runner and native modules. This script first restores NuGet packages for the full solution (`PowerToys.slnx`) and then builds the runner and settings projects. Intended for fast local builds during development.
+Lightweight script to build a small set of essential projects used by PowerToys. This script first restores NuGet packages for the full solution (`PowerToys.slnx`) and then builds the runner and settings projects. Intended for fast local builds during development.
 
 .PARAMETER Platform
 Target platform for the build (for example: 'x64', 'arm64'). If omitted the script will attempt to auto-detect the host platform.
@@ -66,7 +66,7 @@ if (-not $Platform -or $Platform -eq '') {
 RestoreThenBuild 'PowerToys.slnx' '' $Platform $Configuration $true
 
 # Build both runner and settings
-$ProjectsToBuild = @(".\src\runner\runner.vcxproj", ".\src\settings-ui\Settings.UI\PowerToys.Settings.csproj")
+$ProjectsToBuild = @(".\src\runner\RunnerV2.csproj", ".\src\settings-ui\Settings.UI\PowerToys.Settings.csproj")
 $ExtraArgs = "/p:SolutionDir=$repoRoot\"
 foreach ($proj in $ProjectsToBuild) {
     Write-Host ("[BUILD-ESSENTIALS] Building {0}" -f $proj)

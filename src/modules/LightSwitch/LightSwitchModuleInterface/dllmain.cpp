@@ -10,6 +10,7 @@
 #include "ThemeHelper.h"
 #include <thread>
 #include <atomic>
+#include <common/interop/shared_constants.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -125,7 +126,7 @@ public:
 
         m_force_light_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_FORCE_LIGHT");
         m_force_dark_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_FORCE_DARK");
-        m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+        m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, CommonSharedConstants::LIGHTSWITCH_MANUAL_OVERRIDE_EVENT);
         m_toggle_event_handle = CreateDefaultEvent(L"Local\\PowerToys-LightSwitch-ToggleEvent-d8dc2f29-8c94-4ca1-8c5f-3e2b1e3c4f5a");
 
         init_settings();
@@ -579,10 +580,10 @@ void LightSwitchInterface::ToggleTheme()
 
     if (!m_manual_override_event_handle)
     {
-        m_manual_override_event_handle = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+        m_manual_override_event_handle = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, CommonSharedConstants::LIGHTSWITCH_MANUAL_OVERRIDE_EVENT);
         if (!m_manual_override_event_handle)
         {
-            m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+            m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, CommonSharedConstants::LIGHTSWITCH_MANUAL_OVERRIDE_EVENT);
         }
     }
 

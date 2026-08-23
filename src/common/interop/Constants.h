@@ -81,6 +81,11 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring MWBReconnectEvent();
         static hstring OpenNewKeyboardManagerEvent();
         static hstring KeyboardManagerEngineInstanceMutex();
+        static hstring AlwaysOnTopTerminateEvent();
+        static hstring ZoomItRefreshSettingsEvent();
+        static hstring CropAndLockExitEvent();
+        static hstring TerminateKBMSharedEvent();
+        static hstring LightSwitchManualOverrideEvent();
     };
 }
 

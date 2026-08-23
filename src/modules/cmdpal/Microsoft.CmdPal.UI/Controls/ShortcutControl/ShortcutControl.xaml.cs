@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.System;
+using NativeKeyboardHelper = Microsoft.PowerToys.Settings.UI.Helpers.NativeKeyboardHelper;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
@@ -25,7 +26,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
     private HotkeySettings? hotkeySettings;
     private HotkeySettings internalSettings;
     private HotkeySettings? lastValidSettings;
-    private HotkeySettingsControlHook? hook;
+    private Microsoft.CmdPal.UI.Library.HotkeySettingsControlHook? hook;
     private bool _isActive;
     private bool disposedValue;
 
@@ -172,7 +173,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
         // These all belong here; because of virtualization in e.g. a ListView, the control can go through several Loaded / Unloaded cycles.
         hook?.Dispose();
 
-        hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
+        hook = new Microsoft.CmdPal.UI.Library.HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
 
         shortcutDialog.PrimaryButtonClick += ShortcutDialog_PrimaryButtonClick;
     }
@@ -485,7 +486,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
         if (args.WindowActivationState != WindowActivationState.Deactivated && (hook is null || hook.GetDisposedState() == true))
         {
             // If the PT settings window gets focussed/activated again, we enable the keyboard hook to catch the keyboard input.
-            hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
+            hook = new Microsoft.CmdPal.UI.Library.HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
         }
         else if (args.WindowActivationState == WindowActivationState.Deactivated && hook is not null && hook.GetDisposedState() == false)
         {

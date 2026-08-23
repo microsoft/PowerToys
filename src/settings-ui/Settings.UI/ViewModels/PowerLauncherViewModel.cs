@@ -685,7 +685,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ShowPluginsLoadingMessage
         {
-            get => EnablePowerLauncher && !Plugins.Any();
+            get => EnablePowerLauncher && Plugins.Count != 0;
         }
 
         public bool IsUpToDate(PowerLauncherSettings settings)

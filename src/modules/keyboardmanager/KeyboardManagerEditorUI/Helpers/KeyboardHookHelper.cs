@@ -22,7 +22,7 @@ namespace KeyboardManagerEditorUI.Helpers
 
         private KeyboardMappingService? _mappingService;
 
-        private HotkeySettingsControlHook? _keyboardHook;
+        private ManagedCommon.HotkeySettingsControlHook? _keyboardHook;
 
         // The active page using this keyboard hook
         private IKeyboardHookTarget? _activeTarget;
@@ -56,7 +56,7 @@ namespace KeyboardManagerEditorUI.Helpers
 
             try
             {
-                _keyboardHook = new HotkeySettingsControlHook(
+                _keyboardHook = new ManagedCommon.HotkeySettingsControlHook(
                     KeyDown,
                     KeyUp,
                     () => true,

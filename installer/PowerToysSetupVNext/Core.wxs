@@ -66,12 +66,12 @@
           <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
             <RegistryValue Type="string" Name="svgs_icons" Value="" KeyPath="yes" />
           </RegistryKey>
-          <File Id="icon.ico" Source="$(var.BinDir)svgs\icon.ico" />
-          <File Id="iconUpdate.ico" Source="$(var.BinDir)svgs\iconUpdate.ico" />
-          <File Id="PowerToysWhite.ico" Source="$(var.BinDir)svgs\PowerToysWhite.ico" />
-          <File Id="PowerToysWhiteUpdate.ico" Source="$(var.BinDir)svgs\PowerToysWhiteUpdate.ico" />
-          <File Id="PowerToysDark.ico" Source="$(var.BinDir)svgs\PowerToysDark.ico" />
-          <File Id="PowerToysDarkUpdate.ico" Source="$(var.BinDir)svgs\PowerToysDarkUpdate.ico" />
+          <File Id="icon.ico" Source="$(var.BinDir)Assets\Runner\icon.ico" />
+          <File Id="iconUpdate.ico" Source="$(var.BinDir)Assets\Runner\iconUpdate.ico" />
+          <File Id="PowerToysWhite.ico" Source="$(var.BinDir)Assets\Runner\PowerToysWhite.ico" />
+          <File Id="PowerToysWhiteUpdate.ico" Source="$(var.BinDir)Assets\Runner\PowerToysWhiteUpdate.ico" />
+          <File Id="PowerToysDark.ico" Source="$(var.BinDir)Assets\Runner\PowerToysDark.ico" />
+          <File Id="PowerToysDarkUpdate.ico" Source="$(var.BinDir)Assets\Runner\PowerToysDarkUpdate.ico" />
         </Component>
       </Directory>
     </DirectoryRef>

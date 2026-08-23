@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Windows.System;
+using HotkeySettingsControlHook = ManagedCommon.HotkeySettingsControlHook;
 
 namespace RunnerV2.Helpers
 {

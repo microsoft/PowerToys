@@ -76,6 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.PowerDisplay => generalSettingsConfig.Enabled.PowerDisplay,
                 ModuleType.Workspaces => generalSettingsConfig.Enabled.Workspaces,
                 ModuleType.GrabAndMove => generalSettingsConfig.Enabled.GrabAndMove,
+                ModuleType.AltWindowCycle => generalSettingsConfig.Enabled.AltWindowCycle,
                 ModuleType.ZoomIt => generalSettingsConfig.Enabled.ZoomIt,
                 ModuleType.GeneralSettings => generalSettingsConfig.EnableQuickAccess,
                 _ => false,
@@ -117,6 +118,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 case ModuleType.PowerDisplay: generalSettingsConfig.Enabled.PowerDisplay = isEnabled; break;
                 case ModuleType.Workspaces: generalSettingsConfig.Enabled.Workspaces = isEnabled; break;
                 case ModuleType.GrabAndMove: generalSettingsConfig.Enabled.GrabAndMove = isEnabled; break;
+                case ModuleType.AltWindowCycle: generalSettingsConfig.Enabled.AltWindowCycle = isEnabled; break;
                 case ModuleType.ZoomIt: generalSettingsConfig.Enabled.ZoomIt = isEnabled; break;
                 case ModuleType.GeneralSettings: generalSettingsConfig.EnableQuickAccess = isEnabled; break;
             }
@@ -161,8 +163,53 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.PowerOCR => PowerOcrSettings.ModuleName,
                 ModuleType.Workspaces => WorkspacesSettings.ModuleName,
                 ModuleType.GrabAndMove => GrabAndMoveSettings.ModuleName,
+                ModuleType.AltWindowCycle => AltWindowCycleSettings.ModuleName,
                 ModuleType.ZoomIt => ZoomItSettings.ModuleName,
                 _ => moduleType.ToString(),
+            };
+        }
+
+        /// <summary>
+        /// Maps a module name string (from settings JSON) to a ModuleType enum value.
+        /// </summary>
+        public static ModuleType GetModuleType(string moduleName)
+        {
+            return moduleName switch
+            {
+                AdvancedPasteSettings.ModuleName => ModuleType.AdvancedPaste,
+                AlwaysOnTopSettings.ModuleName => ModuleType.AlwaysOnTop,
+                AwakeSettings.ModuleName => ModuleType.Awake,
+                "CmdPal" => ModuleType.CmdPal,
+                ColorPickerSettings.ModuleName => ModuleType.ColorPicker,
+                CropAndLockSettings.ModuleName => ModuleType.CropAndLock,
+                CursorWrapSettings.ModuleName => ModuleType.CursorWrap,
+                EnvironmentVariablesSettings.ModuleName => ModuleType.EnvironmentVariables,
+                FancyZonesSettings.ModuleName => ModuleType.FancyZones,
+                FileLocksmithSettings.ModuleName => ModuleType.FileLocksmith,
+                FindMyMouseSettings.ModuleName => ModuleType.FindMyMouse,
+                HostsSettings.ModuleName => ModuleType.Hosts,
+                ImageResizerSettings.ModuleName => ModuleType.ImageResizer,
+                KeyboardManagerSettings.ModuleName => ModuleType.KeyboardManager,
+                LightSwitchSettings.ModuleName => ModuleType.LightSwitch,
+                MouseHighlighterSettings.ModuleName => ModuleType.MouseHighlighter,
+                MouseJumpSettings.ModuleName => ModuleType.MouseJump,
+                MousePointerCrosshairsSettings.ModuleName => ModuleType.MousePointerCrosshairs,
+                MouseWithoutBordersSettings.ModuleName => ModuleType.MouseWithoutBorders,
+                NewPlusSettings.ModuleName => ModuleType.NewPlus,
+                PeekSettings.ModuleName => ModuleType.Peek,
+                PowerRenameSettings.ModuleName => ModuleType.PowerRename,
+                PowerLauncherSettings.ModuleName => ModuleType.PowerLauncher,
+                PowerAccentSettings.ModuleName => ModuleType.PowerAccent,
+                PowerDisplaySettings.ModuleName => ModuleType.PowerDisplay,
+                RegistryPreviewSettings.ModuleName => ModuleType.RegistryPreview,
+                MeasureToolSettings.ModuleName => ModuleType.MeasureTool,
+                ShortcutGuideSettings.ModuleName => ModuleType.ShortcutGuide,
+                PowerOcrSettings.ModuleName => ModuleType.PowerOCR,
+                WorkspacesSettings.ModuleName => ModuleType.Workspaces,
+                GrabAndMoveSettings.ModuleName => ModuleType.GrabAndMove,
+                AltWindowCycleSettings.ModuleName => ModuleType.AltWindowCycle,
+                ZoomItSettings.ModuleName => ModuleType.ZoomIt,
+                _ => throw new System.ArgumentException($"Unknown module name: {moduleName}", nameof(moduleName)),
             };
         }
     }

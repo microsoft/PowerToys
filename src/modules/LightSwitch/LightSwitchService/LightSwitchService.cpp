@@ -1,4 +1,4 @@
-﻿#include <windows.h>
+#include <windows.h>
 #include <tchar.h>
 #include "ThemeScheduler.h"
 #include "ThemeHelper.h"
@@ -13,6 +13,7 @@
 #include <utils/logger_helper.h>
 #include "LightSwitchStateManager.h"
 #include <LightSwitchUtils.h>
+#include <common/interop/shared_constants.h>
 #include <NightLightRegistryObserver.h>
 #include <trace.h>
 
@@ -214,7 +215,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
     LightSwitchSettings::instance().InitFileWatcher();
 
-    HANDLE hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+    HANDLE hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, CommonSharedConstants::LIGHTSWITCH_MANUAL_OVERRIDE_EVENT);
     HANDLE hSettingsChanged = LightSwitchSettings::instance().GetSettingsChangedEvent();
 
     static std::unique_ptr<NightLightRegistryObserver> g_nightLightWatcher;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.Win32;
@@ -18,8 +19,32 @@ using Settings.UI.Library;
 internal sealed class Program
 {
     private static readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
+    private static readonly string _singleInstanceMutexName = "Local\\PowerToysRunnerV2SingleInstance";
+    private static Mutex? _singleInstanceMutex;
 
     internal static GeneralSettings GeneralSettings => _settingsUtils.GetSettings<GeneralSettings>();
+
+    private static bool AcquireSingleInstanceLock()
+    {
+        try
+        {
+            _singleInstanceMutex = new Mutex(true, _singleInstanceMutexName, out bool createdNew);
+            return createdNew;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static void TryNotifyExistingInstanceToOpenSettings(bool shouldOpenSettings)
+    {
+        IntPtr hwndMain = NativeMethods.FindWindowW(Runner.TrayWindowClassName, null!);
+        if (hwndMain != IntPtr.Zero)
+        {
+            NativeMethods.PostMessageW(hwndMain, 0x0111, shouldOpenSettings ? 5 : 1, IntPtr.Zero);
+        }
+    }
 
     private static void Main(string[] args)
     {
@@ -71,12 +96,15 @@ internal sealed class Program
         bool shouldOpenSettings = args.Any(s => s.StartsWith("--open-settings", StringComparison.InvariantCulture));
         bool shouldOpenSettingsToSpecificPage = args.Any(s => s.StartsWith("--open-settings=", StringComparison.InvariantCulture));
 
-        // Check if PowerToys is already running
-        if ((!hasRestartedArgment && Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Length > 1) || Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Length > 2)
+        // Acquire single-instance lock before expensive initialization to avoid startup races.
+        // Keep the legacy restarted tolerance as fallback.
+        if (!AcquireSingleInstanceLock())
         {
-            IntPtr hwndMain = NativeMethods.FindWindowW(Runner.TrayWindowClassName, null!);
-            NativeMethods.PostMessageW(hwndMain, 0x0111, 1, IntPtr.Zero);
-            return;
+            if (!hasRestartedArgment || Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Length > 2)
+            {
+                TryNotifyExistingInstanceToOpenSettings(shouldOpenSettings);
+                return;
+            }
         }
 
         if (GPOWrapper.GetAllowDataDiagnosticsValue() == GpoRuleConfigured.Disabled)

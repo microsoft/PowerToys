@@ -116,9 +116,6 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
             case JsonUtils::WorkspacesFileError::IncorrectFileError:
                 formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), file);
                 break;
-            case JsonUtils::WorkspacesFileError::ServiceAccessError:
-                formattedMessage = GET_RESOURCE_STRING(IDS_SERVICE_ACCESS_ERROR);
-                break;
             }
 
             MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
@@ -129,7 +126,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     if (projectToLaunch.id.empty())
     {
         auto file = WorkspacesData::WorkspacesFile();
-        auto res = JsonUtils::ReadWorkspacesFromService();
+        auto res = JsonUtils::ReadWorkspaces(file);
         if (res.isOk())
         {
             workspaces = res.getValue();
@@ -144,9 +141,6 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
                 break;
             case JsonUtils::WorkspacesFileError::IncorrectFileError:
                 formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), file);
-                break;
-            case JsonUtils::WorkspacesFileError::ServiceAccessError:
-                formattedMessage = GET_RESOURCE_STRING(IDS_SERVICE_ACCESS_ERROR);
                 break;
             }
 
@@ -207,7 +201,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
             }
         }
 
-        JsonUtils::WriteWorkspacesToService(workspaces);
+        json::to_file(WorkspacesData::WorkspacesFile(), WorkspacesData::WorkspacesListJSON::ToJson(workspaces));
     }
 
     // launch

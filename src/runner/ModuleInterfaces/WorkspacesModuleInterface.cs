@@ -41,7 +41,7 @@ namespace RunnerV2.ModuleInterfaces
         private void InitializeShortcuts()
         {
             Shortcuts.Clear();
-            Shortcuts.Add((SettingsUtils.Default.GetSettings<WorkspacesSettings>(Name).Properties.Hotkey, () =>
+            Shortcuts.Add((SettingsUtils.Default.GetSettings<WorkspacesSettings>(Name).Properties.Hotkey.Value, () =>
             {
                 LaunchProcess();
             }));

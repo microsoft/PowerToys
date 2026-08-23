@@ -78,6 +78,11 @@ namespace PowerToys
             static String MWBReconnectEvent();
             static String OpenNewKeyboardManagerEvent();
             static String KeyboardManagerEngineInstanceMutex();
+            static String AlwaysOnTopTerminateEvent();
+            static String ZoomItRefreshSettingsEvent();
+            static String CropAndLockExitEvent();
+            static String TerminateKBMSharedEvent();
+            static String LightSwitchManualOverrideEvent();
         }
     }
 }

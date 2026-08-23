@@ -51,6 +51,7 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(RepoRoot)deps\spdlog.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -85,7 +86,7 @@
       <AdditionalOptions>%(AdditionalOptions) /bigobj /Zc:twoPhase- </AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>WindowsApp.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib;shell32.lib;advapi32.lib;Taskschd.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <ModuleDefinitionFile>PowerToys.Interop.def</ModuleDefinitionFile>
@@ -93,59 +94,47 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="async_message_queue.h" />
-    <ClInclude Include="CommonManaged.h">
-      <DependentUpon>CommonManaged.idl</DependentUpon>
-    </ClInclude>
-    <ClInclude Include="Constants.h">
-      <DependentUpon>KeyboardListener.idl</DependentUpon>
-    </ClInclude>
+    <ClInclude Include="AutoStart.h" />
+    <ClInclude Include="Clipboard.h" />
+    <ClInclude Include="CommonManaged.h" />
+    <ClInclude Include="Constants.h" />
+    <ClInclude Include="Elevation.h" />
     <ClInclude Include="excluded_app.h" />
-    <ClInclude Include="HotkeyManager.h">
-      <DependentUpon>HotkeyManager.idl</DependentUpon>
-    </ClInclude>
-    <ClInclude Include="KeyboardHook.h">
-      <DependentUpon>KeyboardHook.idl</DependentUpon>
-    </ClInclude>
+    <ClInclude Include="HotkeyManager.h" />
+    <ClInclude Include="KeyboardHook.h" />
     <ClInclude Include="keyboard_layout.h" />
     <ClInclude Include="keyboard_layout_impl.h" />
-    <ClInclude Include="LayoutMapManaged.h">
-      <DependentUpon>LayoutMapManaged.idl</DependentUpon>
-    </ClInclude>
+    <ClInclude Include="LayoutMapManaged.h" />
+    <ClInclude Include="Notifications.h" />
+    <ClInclude Include="Package.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="shared_constants.h" />
     <ClInclude Include="tasklist_positions.h" />
-    <ClInclude Include="TwoWayPipeMessageIPCManaged.h">
-      <DependentUpon>TwoWayPipeMessageIPCManaged.idl</DependentUpon>
-    </ClInclude>
+    <ClInclude Include="ThemeHelper.h" />
+    <ClInclude Include="TwoWayPipeMessageIPCManaged.h" />
     <ClInclude Include="two_way_pipe_message_ipc.h" />
     <ClInclude Include="two_way_pipe_message_ipc_impl.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CommonManaged.cpp">
-      <DependentUpon>CommonManaged.idl</DependentUpon>
-    </ClCompile>
-    <ClCompile Include="Constants.cpp">
-      <DependentUpon>KeyboardListener.idl</DependentUpon>
-    </ClCompile>
+    <ClCompile Include="AutoStart.cpp" />
+    <ClCompile Include="Clipboard.cpp" />
+    <ClCompile Include="CommonManaged.cpp" />
+    <ClCompile Include="Constants.cpp" />
+    <ClCompile Include="Elevation.cpp" />
     <ClCompile Include="excluded_app.cpp" />
-    <ClCompile Include="HotkeyManager.cpp">
-      <DependentUpon>HotkeyManager.idl</DependentUpon>
-    </ClCompile>
-    <ClCompile Include="KeyboardHook.cpp">
-      <DependentUpon>KeyboardHook.idl</DependentUpon>
-    </ClCompile>
+    <ClCompile Include="HotkeyManager.cpp" />
+    <ClCompile Include="KeyboardHook.cpp" />
     <ClCompile Include="keyboard_layout.cpp" />
-    <ClCompile Include="LayoutMapManaged.cpp">
-      <DependentUpon>LayoutMapManaged.idl</DependentUpon>
-    </ClCompile>
+    <ClCompile Include="LayoutMapManaged.cpp" />
+    <ClCompile Include="Notifications.cpp" />
+    <ClCompile Include="Package.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="tasklist_positions.cpp" />
-    <ClCompile Include="TwoWayPipeMessageIPCManaged.cpp">
-      <DependentUpon>TwoWayPipeMessageIPCManaged.idl</DependentUpon>
-    </ClCompile>
+    <ClCompile Include="ThemeHelper.cpp" />
+    <ClCompile Include="TwoWayPipeMessageIPCManaged.cpp" />
     <ClCompile Include="two_way_pipe_message_ipc.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
   </ItemGroup>
@@ -160,19 +149,28 @@
     <None Include="PropertySheet.props" />
   </ItemGroup>
   <ItemGroup>
+    <Midl Include="AutoStart.idl" />
+    <Midl Include="Clipboard.idl" />
     <Midl Include="CommonManaged.idl" />
     <Midl Include="Constants.idl" />
+    <Midl Include="Elevation.idl" />
     <Midl Include="HotkeyManager.idl" />
     <Midl Include="KeyboardHook.idl" />
     <Midl Include="LayoutMapManaged.idl" />
+    <Midl Include="Notifications.idl" />
+    <Midl Include="Package.idl" />
+    <Midl Include="ThemeHelper.idl" />
     <Midl Include="TwoWayPipeMessageIPCManaged.idl" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\version\version.vcxproj">
-      <Project>{cc6e41ac-8174-4e8a-8d22-85dd7f4851df}</Project>
+    <ProjectReference Include="..\logger\logger.vcxproj">
+      <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\notifications\notifications.vcxproj">
+      <Project>{1D5BE09D-78C0-4FD7-AF00-AE7C1AF7C525}</Project>
     </ProjectReference>
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets" />

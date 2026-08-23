@@ -113,7 +113,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     private void UpdateHasStatusMessage()
     {
-        if (ExtensionHost.StatusMessages.Any())
+        if (ExtensionHost.StatusMessages.Count > 0)
         {
             var last = ExtensionHost.StatusMessages.Last();
             MostRecentStatusMessage = last;
