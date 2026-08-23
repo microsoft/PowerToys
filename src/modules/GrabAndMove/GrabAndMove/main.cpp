@@ -261,6 +261,39 @@ static constexpr unsigned int ButtonBit(MouseButton button)
     return static_cast<unsigned int>(button);
 }
 
+static int PhysicalVirtualKeyForButton(MouseButton button)
+{
+    const bool buttonsSwapped = GetSystemMetrics(SM_SWAPBUTTON) != 0;
+    if (button == MouseButton::Left)
+    {
+        return buttonsSwapped ? VK_RBUTTON : VK_LBUTTON;
+    }
+    if (button == MouseButton::Right)
+    {
+        return buttonsSwapped ? VK_LBUTTON : VK_RBUTTON;
+    }
+    return 0;
+}
+
+static bool IsMouseButtonPhysicallyHeld(MouseButton button)
+{
+    const int virtualKey = PhysicalVirtualKeyForButton(button);
+    return virtualKey != 0 && (GetAsyncKeyState(virtualKey) & 0x8000) != 0;
+}
+
+static DWORD MouseEventFlagForButton(MouseButton button, bool buttonUp)
+{
+    const bool buttonsSwapped = GetSystemMetrics(SM_SWAPBUTTON) != 0;
+    const bool usePhysicalRight =
+        (button == MouseButton::Left && buttonsSwapped) ||
+        (button == MouseButton::Right && !buttonsSwapped);
+    if (usePhysicalRight)
+    {
+        return buttonUp ? MOUSEEVENTF_RIGHTUP : MOUSEEVENTF_RIGHTDOWN;
+    }
+    return buttonUp ? MOUSEEVENTF_LEFTUP : MOUSEEVENTF_LEFTDOWN;
+}
+
 static constexpr bool AreRectsEqual(const RECT& left, const RECT& right)
 {
     return left.left == right.left &&
@@ -558,6 +591,14 @@ static void CALLBACK WinEventProc(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, D
     // the next Alt/Win press is never blocked by a stale non-zero count.
     g_heldNonAltKeyCount = 0;
     memset(g_keyHeld, 0, sizeof(g_keyHeld));
+    if (!IsMouseButtonPhysicallyHeld(MouseButton::Left))
+    {
+        g_swallowButtonUpMask &= ~ButtonBit(MouseButton::Left);
+    }
+    if (!IsMouseButtonPhysicallyHeld(MouseButton::Right))
+    {
+        g_swallowButtonUpMask &= ~ButtonBit(MouseButton::Right);
+    }
 
     // Invalidate the IsExcluded cache on foreground change (fix #4)
     g_excludedCache.clear();
@@ -1954,18 +1995,27 @@ static void ReplayPendingClick(MouseButton button, bool completeModifier = false
         ReplayCapturedModifier(ModifierReplay::DownOnly);
     }
 
-    const bool isRight = button == MouseButton::Right;
     INPUT inputs[2] = {};
     inputs[0].type = INPUT_MOUSE;
-    inputs[0].mi.dwFlags = isRight ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_LEFTDOWN;
+    inputs[0].mi.dwFlags = MouseEventFlagForButton(button, false);
     inputs[1].type = INPUT_MOUSE;
-    inputs[1].mi.dwFlags = isRight ? MOUSEEVENTF_RIGHTUP : MOUSEEVENTF_LEFTUP;
+    inputs[1].mi.dwFlags = MouseEventFlagForButton(button, true);
     SendInput(2, inputs, sizeof(INPUT));
 
     if (completeModifier && g_modifierSession.replayedDown)
     {
-        ReplayCapturedModifier(ModifierReplay::UpOnly);
-        g_modifierSession = {};
+        if (IsModifierPhysicallyHeld(g_modifierSession.modifier))
+        {
+            g_modifierSession.absorbed = false;
+            g_modifierSession.disposition = ModifierHoldDisposition::Passthrough;
+        }
+        else
+        {
+            const DWORD virtualKey = g_modifierSession.key.vk;
+            ReplayCapturedModifier(ModifierReplay::UpOnly);
+            g_modifierSession = {};
+            g_swallowNextModifierUpVk = virtualKey;
+        }
     }
 }
 
@@ -2583,6 +2633,13 @@ static HookDisposition HandleMouseEvent(WPARAM message, const MSLLHOOKSTRUCT& mo
             g_interaction.phase != InteractionPhase::Active &&
             !g_settings.useAltResize)
         {
+            if (g_modifierSession.absorbed && !g_modifierSession.replayedDown)
+            {
+                g_modifierSession.replayedDown = true;
+                ReplayCapturedModifier(ModifierReplay::DownOnly);
+            }
+            g_modifierSession.absorbed = false;
+            g_modifierSession.disposition = ModifierHoldDisposition::Passthrough;
             return HookDisposition::Chain;
         }
         return HandleActionButtonDown(downButton, mouse.pt);
