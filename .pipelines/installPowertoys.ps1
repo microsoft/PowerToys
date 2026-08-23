@@ -1,15 +1,20 @@
 param(
     [Parameter()]
     [ValidateSet("Machine", "PerUser")]
-    [string]$InstallMode = "Machine"
+    [string]$InstallMode = "Machine",
+
+    # Folder that contains the PowerToys installer. Defaults to the build staging directory used
+    # by the official-build path (installer downloaded via DownloadPipelineArtifact@2). The
+    # full-build (buildNow) path passes the downloaded pipeline-artifact folder instead, since
+    # the installer ships inside that build's own artifact.
+    [Parameter()]
+    [string]$ArtifactPath = $ENV:BUILD_ARTIFACTSTAGINGDIRECTORY
 )
 
 $ProgressPreference = 'SilentlyContinue'
 
-# Get artifact path
-$ArtifactPath = $ENV:BUILD_ARTIFACTSTAGINGDIRECTORY
 if (-not $ArtifactPath) {
-    throw "BUILD_ARTIFACTSTAGINGDIRECTORY environment variable not set"
+    throw "Installer path not provided. Pass -ArtifactPath or set BUILD_ARTIFACTSTAGINGDIRECTORY."
 }
 
 # Since we only download PowerToysSetup-*.exe files, we can directly find it

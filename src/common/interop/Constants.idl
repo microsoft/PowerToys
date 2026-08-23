@@ -42,6 +42,7 @@ namespace PowerToys
             static String TerminatePeekEvent();
             static String PowerAccentExitEvent();
             static String ShortcutGuideTriggerEvent();
+            static String ShortcutGuideWinKeyHoldEvent();
             static String RegistryPreviewTriggerEvent();
             static String MeasureToolTriggerEvent();
             static String GcodePreviewResizeEvent();

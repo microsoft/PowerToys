@@ -835,6 +835,24 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show seconds on the dock clock.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingDockClockWithSeconds {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingDockClockWithSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This setting applies to the clock shown on the Command Palette dock..
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingDockClockWithSeconds_Description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingDockClockWithSeconds_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Select for more details..
         /// </summary>
         public static string Microsoft_plugin_timedate_show_details {

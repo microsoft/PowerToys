@@ -29,6 +29,11 @@ public partial class SamplesListPage : ListPage
             Title = "List Page With Details",
             Subtitle = "A list of items, each with additional details to display",
         },
+        new ListItem(new SampleLiveDetailsPage())
+        {
+            Title = "Live Updating Details",
+            Subtitle = "Details pane updates in real time without reselecting",
+        },
         new ListItem(new SectionsIndexPage())
         {
             Title = "List Pages With Sections",
@@ -124,6 +129,11 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Sample settings page",
             Subtitle = "A demo of the settings helpers",
+        },
+        new ListItem(new SampleListSettingsPage())
+        {
+            Title = "Path and list settings controls",
+            Subtitle = "Manage strings, file paths, and escaped key/value pairs",
         },
 
         // Data package samples

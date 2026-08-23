@@ -19,6 +19,8 @@ public:
     // Load the configuration.
     bool LoadSettings();
 
+    bool IsConfigurationNameResolved() const;
+
     // Save the updated configuration.
     bool SaveSettingsToFile();
 
@@ -87,6 +89,8 @@ public:
     bool LoadSingleKeyRemaps(const json::JsonObject& jsonData);
 
 private:
+    bool configurationNameResolved = false;
+
     bool LoadSingleKeyToTextRemaps(const json::JsonObject& jsonData);
     bool LoadShortcutRemaps(const json::JsonObject& jsonData, const std::wstring& objectName);
     bool LoadAppSpecificShortcutRemaps(const json::JsonObject& remapShortcutsData);

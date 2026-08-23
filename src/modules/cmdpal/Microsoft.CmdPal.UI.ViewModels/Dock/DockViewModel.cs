@@ -83,6 +83,11 @@ public sealed partial class DockViewModel : IDisposable
             return;
         }
 
+        if (_settings == settings)
+        {
+            return;
+        }
+
         _settings = settings;
         SetupBands();
     }

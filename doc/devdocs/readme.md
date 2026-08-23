@@ -11,7 +11,7 @@ Welcome to the PowerToys developer documentation. This documentation provides in
    - Desktop Development with C++
    - WinUI application development
    - .NET desktop development
-   - Windows 10 SDK (10.0.22621.0)
+   - Windows 11 SDK (10.0.22621.0)
    - Windows 11 SDK (10.0.26100.3916)
 1. .NET 8 SDK
 1. Enable long paths in Windows (see [Enable Long Paths](https://docs.microsoft.com/windows/win32/fileio/maximum-file-path-limitation#enabling-long-paths-in-windows-10-version-1607-and-later) for details)

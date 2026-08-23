@@ -74,7 +74,7 @@
             <controls:PageLink x:Uid="LearnMore_TextExtractor" Link="https://aka.ms/PowerToysOverview_TextExtractor" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Link="https://github.com/TheJoeFin/Text-Grab" Text="Based upon Joseph Finney's Text Grab" />
+            <controls:PageLink x:Uid="Attribution_TextExtractor" Link="https://github.com/TheJoeFin/Text-Grab" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </local:NavigablePage>
