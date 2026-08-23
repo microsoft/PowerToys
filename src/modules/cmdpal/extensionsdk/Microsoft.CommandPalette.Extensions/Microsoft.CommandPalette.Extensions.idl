@@ -401,6 +401,66 @@ namespace Microsoft.CommandPalette.Extensions
     interface IFallbackCommandItem2 requires IFallbackCommandItem {
         String Id { get; };
     };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    enum FallbackCommandMode {
+        Active = 0,
+        Passive,
+        Results,
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    enum HostMatchKind {
+        None = 0,
+        Regex,
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    struct OptionalUInt32 {
+        Boolean HasValue;
+        UInt32 Value;
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFallbackQueryArgs requires IExtendedAttributesProvider {
+        String Query { get; };
+        String QueryId { get; };
+        UInt32 RequestedItemCount { get; };
+        String[] LanguageTags { get; };
+    };
+
+    [uuid(4f3ba46e-4d06-4a3e-9464-8b6e9f5b792c)]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFallbackCommandInvocationArgs requires IFallbackQueryArgs {
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFallbackCommandResult {
+        String Query { get; };
+        String QueryId { get; };
+        IListItem[] Items { get; };
+        Boolean HasMoreItems { get; };
+        Windows.Foundation.IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> LoadMoreItemsAsync(UInt32 requestedItemCount);
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFallbackHandler2 requires IFallbackHandler {
+        Windows.Foundation.IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args);
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFallbackCommandItem3 requires IFallbackCommandItem2 {
+        FallbackCommandMode Mode { get; };
+        String Name { get; };
+        String TitleTemplate { get; };
+        String SubtitleTemplate { get; };
+        HostMatchKind MatchKind { get; };
+        String MatchValue { get; };
+        OptionalUInt32 SuggestedQueryDelayMilliseconds { get; };
+        OptionalUInt32 SuggestedMinQueryLength { get; };
+        IFallbackHandler2 QueryHandler { get; };
+        ICommand CreateCommand(IFallbackCommandInvocationArgs args);
+    };
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ICommandProvider requires Windows.Foundation.IClosable, INotifyItemsChanged
