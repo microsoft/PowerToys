@@ -12,6 +12,7 @@
 #include "resource.h"
 
 #include <dwmapi.h>
+#include <array>
 #include <optional>
 
 TRACELOGGING_DEFINE_PROVIDER(
@@ -128,12 +129,35 @@ struct InteractionState
     bool firstUpdate = false;
 };
 
+struct TargetUpdateState
+{
+    HWND target = nullptr;
+    RECT observedBeforeSubmit{};
+    RECT lastSubmitted{};
+    RECT pendingDesired{};
+    InteractionAction pendingAction = InteractionAction::None;
+    ULONGLONG submittedAtMs = 0;
+    bool inFlight = false;
+    bool hasSubmitted = false;
+    bool hasPending = false;
+};
+
 static SettingsSnapshot g_settings;
 static ModifierSession g_modifierSession;
 static InteractionState g_interaction;
+static TargetUpdateState g_targetUpdate;
 static unsigned int g_swallowButtonUpMask = 0;
 static DWORD g_swallowNextModifierUpVk = 0;
 static HWND g_hOverlay = nullptr; // semi-transparent overlay during drag
+static HWND g_hResizeFillOverlay = nullptr;
+static HWND g_hResizeBorderOverlay = nullptr;
+static HWND g_hResizeGeometryOverlay = nullptr;
+static bool g_resizeFillPainted = false;
+static int g_segmentedRegionWidth = 0;
+static int g_segmentedRegionHeight = 0;
+static int g_segmentedRegionRadius = 0;
+static int g_segmentedRegionThickness = 0;
+static bool g_segmentedRegionsValid = false;
 
 // Current target window rect for overlay info display
 static int g_overlayInfoX = 0, g_overlayInfoY = 0;
@@ -179,9 +203,20 @@ static const int MIN_WINDOW_HEIGHT = 50;
 // 4 ms ≈ 240 Hz, 8 ms ≈ 120 Hz, 16 ms ≈ 60 Hz.
 static constexpr ULONGLONG THROTTLE_INTERVAL_MS = 16;
 
+#ifdef GRABANDMOVE_PERF_DIAGNOSTICS
+static std::optional<ULONGLONG> g_perfReplayClockMs;
+#endif
+
 // QPC helpers for throttle
 static ULONGLONG QpcMs()
 {
+#ifdef GRABANDMOVE_PERF_DIAGNOSTICS
+    if (g_perfReplayClockMs)
+    {
+        return *g_perfReplayClockMs;
+    }
+#endif
+
     static LARGE_INTEGER freq = {};
     if (freq.QuadPart == 0)
         QueryPerformanceFrequency(&freq);
@@ -203,6 +238,8 @@ static std::unordered_map<HWND, bool> g_excludedCache;
 
 static const wchar_t* const CLASS_NAME = L"GrabAndMove_MsgWnd";
 static const wchar_t* const OVERLAY_CLASS_NAME = L"GrabAndMove_Overlay";
+static const wchar_t* const RESIZE_FILL_CLASS_NAME = L"GrabAndMove_ResizeFill";
+static const wchar_t* const RESIZE_BORDER_CLASS_NAME = L"GrabAndMove_ResizeBorder";
 static const wchar_t* const APP_TITLE = L"GrabAndMove";
 
 static HANDLE g_hReloadSettingsEvent = nullptr;
@@ -223,6 +260,222 @@ static constexpr unsigned int ButtonBit(MouseButton button)
 {
     return static_cast<unsigned int>(button);
 }
+
+static constexpr bool AreRectsEqual(const RECT& left, const RECT& right)
+{
+    return left.left == right.left &&
+           left.top == right.top &&
+           left.right == right.right &&
+           left.bottom == right.bottom;
+}
+
+#ifdef GRABANDMOVE_PERF_DIAGNOSTICS
+enum class PerfMetric
+{
+    KeyboardHook,
+    MouseHook,
+    GameModeQuery,
+    RenderOverlay,
+    SurfaceSetup,
+    SurfaceClear,
+    OverlayDraw,
+    OverlayFill,
+    OverlayBorder,
+    GeometryBox,
+    UpdateLayeredWindow,
+    SurfaceCleanup,
+    ResizeRegions,
+    ResizeLayout,
+    ResizeBorderPaint,
+    TargetSetWindowPos,
+    OverlaySetWindowPos,
+    Count,
+};
+
+struct PerfAccumulator
+{
+    ULONGLONG count = 0;
+    LONGLONG totalTicks = 0;
+    LONGLONG maxTicks = 0;
+};
+
+struct PerfStats
+{
+    std::array<PerfAccumulator, static_cast<size_t>(PerfMetric::Count)> metrics{};
+    ULONGLONG mouseMoveCount = 0;
+    ULONGLONG appliedMoveCount = 0;
+    ULONGLONG renderedBytes = 0;
+    ULONGLONG surfaceAllocationCount = 0;
+};
+
+static PerfStats g_perfStats;
+static LARGE_INTEGER g_perfFrequency{};
+static std::optional<InteractionAction> g_perfPendingReport;
+static bool g_perfCollectionActive = false;
+static_assert(sizeof(ULONG_PTR) >= sizeof(uint64_t));
+static constexpr ULONG_PTR PERF_REPLAY_SIGNATURE = static_cast<ULONG_PTR>(0x474D000000000000ull);
+static constexpr ULONG_PTR PERF_REPLAY_SIGNATURE_MASK = static_cast<ULONG_PTR>(0xFFFF000000000000ull);
+static constexpr ULONG_PTR PERF_REPLAY_TIME_MASK = static_cast<ULONG_PTR>(0x00000000FFFFFFFFull);
+
+static constexpr bool IsPerfReplayInput(ULONG_PTR extraInfo)
+{
+    return (extraInfo & PERF_REPLAY_SIGNATURE_MASK) == PERF_REPLAY_SIGNATURE;
+}
+
+static void RecordPerfMetric(PerfMetric metric, LONGLONG elapsedTicks)
+{
+    if (!g_perfCollectionActive)
+    {
+        return;
+    }
+
+    auto& accumulator = g_perfStats.metrics[static_cast<size_t>(metric)];
+    ++accumulator.count;
+    accumulator.totalTicks += elapsedTicks;
+    accumulator.maxTicks = (std::max)(accumulator.maxTicks, elapsedTicks);
+}
+
+static void FlushPendingPerfReport();
+
+class PerfScope
+{
+public:
+    explicit PerfScope(PerfMetric metric) :
+        m_metric(metric),
+        m_enabled(g_perfCollectionActive)
+    {
+        if (m_enabled)
+        {
+            QueryPerformanceCounter(&m_start);
+        }
+    }
+
+    ~PerfScope()
+    {
+        if (!m_enabled)
+        {
+            return;
+        }
+
+        LARGE_INTEGER end{};
+        QueryPerformanceCounter(&end);
+        RecordPerfMetric(m_metric, end.QuadPart - m_start.QuadPart);
+        if (m_metric == PerfMetric::KeyboardHook || m_metric == PerfMetric::MouseHook)
+        {
+            FlushPendingPerfReport();
+        }
+    }
+
+private:
+    PerfMetric m_metric;
+    LARGE_INTEGER m_start{};
+    bool m_enabled = false;
+};
+
+static double PerfTicksToMicroseconds(LONGLONG ticks)
+{
+    return g_perfFrequency.QuadPart > 0 ? static_cast<double>(ticks) * 1'000'000.0 / static_cast<double>(g_perfFrequency.QuadPart) : 0.0;
+}
+
+static void ReportAndResetPerfStats(InteractionAction action)
+{
+    if (g_perfStats.mouseMoveCount != 0 || g_perfStats.appliedMoveCount != 0)
+    {
+        constexpr std::array<const wchar_t*, static_cast<size_t>(PerfMetric::Count)> names = {
+            L"keyboardHook",
+            L"mouseHook",
+            L"gameMode",
+            L"render",
+            L"surfaceSetup",
+            L"surfaceClear",
+            L"overlayDraw",
+            L"overlayFill",
+            L"overlayBorder",
+            L"geometryBox",
+            L"updateLayeredWindow",
+            L"surfaceCleanup",
+            L"resizeRegions",
+            L"resizeLayout",
+            L"resizeBorderPaint",
+            L"targetSetWindowPos",
+            L"overlaySetWindowPos",
+        };
+
+        wchar_t line[512]{};
+        swprintf_s(
+            line,
+            L"GrabAndMove perf action=%d mouseMoves=%llu applied=%llu renderedBytes=%llu surfaceAllocations=%llu\n",
+            static_cast<int>(action),
+            g_perfStats.mouseMoveCount,
+            g_perfStats.appliedMoveCount,
+            g_perfStats.renderedBytes,
+            g_perfStats.surfaceAllocationCount);
+        OutputDebugStringW(line);
+
+        for (size_t i = 0; i < g_perfStats.metrics.size(); ++i)
+        {
+            const auto& metric = g_perfStats.metrics[i];
+            if (metric.count == 0)
+            {
+                continue;
+            }
+
+            swprintf_s(
+                line,
+                L"GrabAndMove perf metric=%s count=%llu averageUs=%.3f maxUs=%.3f\n",
+                names[i],
+                metric.count,
+                PerfTicksToMicroseconds(metric.totalTicks) / static_cast<double>(metric.count),
+                PerfTicksToMicroseconds(metric.maxTicks));
+            OutputDebugStringW(line);
+        }
+    }
+
+    g_perfStats = {};
+    g_perfCollectionActive = false;
+}
+
+static void BeginPerfCollection()
+{
+    g_perfStats = {};
+    g_perfPendingReport.reset();
+    g_perfCollectionActive = true;
+}
+
+static void FlushPendingPerfReport()
+{
+    if (g_perfPendingReport)
+    {
+        const InteractionAction action = *g_perfPendingReport;
+        g_perfPendingReport.reset();
+        ReportAndResetPerfStats(action);
+    }
+}
+
+#define GRABANDMOVE_CONCAT_IMPL(left, right) left##right
+#define GRABANDMOVE_CONCAT(left, right) GRABANDMOVE_CONCAT_IMPL(left, right)
+#define PERF_SCOPE(metric) PerfScope GRABANDMOVE_CONCAT(perfScope, __LINE__)(PerfMetric::metric)
+#define PERF_INCREMENT(field)       \
+    do                              \
+    {                               \
+        if (g_perfCollectionActive) \
+        {                           \
+            ++g_perfStats.field;    \
+        }                           \
+    } while (false)
+#define PERF_ADD(field, value)                                  \
+    do                                                          \
+    {                                                           \
+        if (g_perfCollectionActive)                             \
+        {                                                       \
+            g_perfStats.field += static_cast<ULONGLONG>(value); \
+        }                                                       \
+    } while (false)
+#else
+#define PERF_SCOPE(metric) ((void)0)
+#define PERF_INCREMENT(field) ((void)0)
+#define PERF_ADD(field, value) ((void)0)
+#endif
 
 static void ValidateInputState() noexcept
 {
@@ -263,6 +516,9 @@ static void StopInteraction();
 static void FlushPendingClickOnModifierRelease();
 static void ReplayCapturedModifier(ModifierReplay replay);
 static void MarkButtonUpForSwallow(MouseButton button);
+static void FinalizeTargetUpdate();
+static HCURSOR CursorForHandle(ResizeHandle handle);
+static void EnsureOverlayWindow();
 
 static bool HasModifierSession()
 {
@@ -290,7 +546,11 @@ static void CALLBACK WinEventProc(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, D
 {
     // Ignore focus changes to our own windows – these are benign and fire constantly
     // (overlay creation/destruction, repositioned drag targets, etc.).
-    if (hwnd == g_hOverlay || hwnd == g_hMsgWnd)
+    if (hwnd == g_hOverlay ||
+        hwnd == g_hResizeFillOverlay ||
+        hwnd == g_hResizeBorderOverlay ||
+        hwnd == g_hResizeGeometryOverlay ||
+        hwnd == g_hMsgWnd)
         return;
 
     // Any foreground switch to a non-own window can eat key-up events (e.g. Win+L eats
@@ -328,11 +588,16 @@ static void CALLBACK WinEventProc(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, D
 
         StopInteraction();
         g_modifierSession = {};
+#ifdef GRABANDMOVE_PERF_DIAGNOSTICS
+        FlushPendingPerfReport();
+#endif
     }
 }
 
 static bool IsSuppressedByGameMode()
 {
+    PERF_SCOPE(GameModeQuery);
+
     // Remote sessions can report fullscreen notification states that are not actual games.
     if (GetSystemMetrics(SM_REMOTESESSION))
     {
@@ -609,36 +874,68 @@ static void DrawOverlayBorder(Gdiplus::Graphics& graphics, const RECT& rect, int
 static void RenderOverlayContent(HWND hwnd, int cw, int ch)
 {
     if (!hwnd || cw <= 0 || ch <= 0)
-        return;
-
-    BITMAPINFO bmi = {};
-    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bmi.bmiHeader.biWidth = cw;
-    bmi.bmiHeader.biHeight = -ch; // top-down so (0,0) is top-left
-    bmi.bmiHeader.biPlanes = 1;
-    bmi.bmiHeader.biBitCount = 32;
-    bmi.bmiHeader.biCompression = BI_RGB;
-
-    HDC screenDC = GetDC(nullptr);
-    DWORD* pBits = nullptr;
-    HBITMAP hDib = CreateDIBSection(screenDC, &bmi, DIB_RGB_COLORS, reinterpret_cast<void**>(&pBits), nullptr, 0);
-    if (!hDib)
     {
+        return;
+    }
+
+    PERF_SCOPE(RenderOverlay);
+
+    HDC screenDC = nullptr;
+    DWORD* bits = nullptr;
+    HBITMAP dib = nullptr;
+    HDC memoryDC = nullptr;
+    HBITMAP previousBitmap = nullptr;
+    {
+        PERF_SCOPE(SurfaceSetup);
+        BITMAPINFO bmi{};
+        bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+        bmi.bmiHeader.biWidth = cw;
+        bmi.bmiHeader.biHeight = -ch;
+        bmi.bmiHeader.biPlanes = 1;
+        bmi.bmiHeader.biBitCount = 32;
+        bmi.bmiHeader.biCompression = BI_RGB;
+
+        screenDC = GetDC(nullptr);
+        dib = CreateDIBSection(
+            screenDC,
+            &bmi,
+            DIB_RGB_COLORS,
+            reinterpret_cast<void**>(&bits),
+            nullptr,
+            0);
+        if (dib)
+        {
+            memoryDC = CreateCompatibleDC(screenDC);
+            previousBitmap = static_cast<HBITMAP>(SelectObject(memoryDC, dib));
+        }
+    }
+    if (!dib || !memoryDC || !previousBitmap || previousBitmap == HGDI_ERROR)
+    {
+        if (memoryDC)
+        {
+            DeleteDC(memoryDC);
+        }
+        if (dib)
+        {
+            DeleteObject(dib);
+        }
         ReleaseDC(nullptr, screenDC);
         return;
     }
 
-    HDC memDC = CreateCompatibleDC(screenDC);
-    HBITMAP hOldBmp = static_cast<HBITMAP>(SelectObject(memDC, hDib));
-
-    // Start fully transparent.
-    memset(pBits, 0, static_cast<size_t>(cw) * ch * sizeof(DWORD));
+    {
+        PERF_SCOPE(SurfaceClear);
+        memset(bits, 0, static_cast<size_t>(cw) * ch * sizeof(DWORD));
+    }
+    PERF_ADD(renderedBytes, static_cast<ULONGLONG>(cw) * ch * sizeof(DWORD));
+    PERF_INCREMENT(surfaceAllocationCount);
 
     // We apply a translucent white rect with a gold border.
     // The overlay window spans GetWindowRect, so inset by
     // the invisible-border margins so both hug the visible edge; Always On Top draws
     // its own border just outside that edge, giving a clean double layer.
     {
+        PERF_SCOPE(OverlayDraw);
         const RECT visible = {
             g_overlayMarginL,
             g_overlayMarginT,
@@ -648,12 +945,13 @@ static void RenderOverlayContent(HWND hwnd, int cw, int ch)
         const int vw = visible.right - visible.left;
         const int vh = visible.bottom - visible.top;
 
-        Gdiplus::Bitmap bitmap(cw, ch, cw * 4, PixelFormat32bppPARGB, reinterpret_cast<BYTE*>(pBits));
+        Gdiplus::Bitmap bitmap(cw, ch, cw * 4, PixelFormat32bppPARGB, reinterpret_cast<BYTE*>(bits));
         Gdiplus::Graphics graphics(&bitmap);
         graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 
         if (vw > 0 && vh > 0)
         {
+            PERF_SCOPE(OverlayFill);
             Gdiplus::SolidBrush fillBrush(Gdiplus::Color(OVERLAY_FILL_ALPHA, 255, 255, 255));
             if (g_overlayCornerRadius > 0)
             {
@@ -674,61 +972,540 @@ static void RenderOverlayContent(HWND hwnd, int cw, int ch)
             }
         }
 
-        DrawOverlayBorder(graphics, visible, g_overlayBorderThickness, g_overlayCornerRadius);
+        {
+            PERF_SCOPE(OverlayBorder);
+            DrawOverlayBorder(graphics, visible, g_overlayBorderThickness, g_overlayCornerRadius);
+        }
         graphics.Flush();
     }
 
     if (g_settings.showGeometry)
     {
-        wchar_t text[128];
-        swprintf_s(text, L"X: %d  Y: %d\nW: %d  H: %d", g_overlayInfoX, g_overlayInfoY, g_overlayInfoW, g_overlayInfoH);
+        PERF_SCOPE(GeometryBox);
+        wchar_t text[128]{};
+        swprintf_s(
+            text,
+            L"X: %d  Y: %d\nW: %d  H: %d",
+            g_overlayInfoX,
+            g_overlayInfoY,
+            g_overlayInfoW,
+            g_overlayInfoH);
 
-        HFONT hFont = static_cast<HFONT>(GetStockObject(DEFAULT_GUI_FONT));
-        HFONT hOldFont = static_cast<HFONT>(SelectObject(memDC, hFont));
+        HFONT font = static_cast<HFONT>(GetStockObject(DEFAULT_GUI_FONT));
+        HFONT previousFont = static_cast<HFONT>(SelectObject(memoryDC, font));
 
-        RECT textRect = {};
-        DrawTextW(memDC, text, -1, &textRect, DT_CALCRECT | DT_CENTER | DT_NOPREFIX);
+        RECT textRect{};
+        DrawTextW(memoryDC, text, -1, &textRect, DT_CALCRECT | DT_CENTER | DT_NOPREFIX);
 
-        const int pad = 10;
-        const int boxW = (textRect.right - textRect.left) + pad * 2;
-        const int boxH = (textRect.bottom - textRect.top) + pad * 2;
-        RECT boxRect = { cw / 2 - boxW / 2, ch / 2 - boxH / 2, cw / 2 + boxW / 2, ch / 2 + boxH / 2 };
+        constexpr int padding = 10;
+        const int boxWidth = textRect.right - textRect.left + padding * 2;
+        const int boxHeight = textRect.bottom - textRect.top + padding * 2;
+        RECT boxRect = {
+            cw / 2 - boxWidth / 2,
+            ch / 2 - boxHeight / 2,
+            cw / 2 + boxWidth / 2,
+            ch / 2 + boxHeight / 2,
+        };
 
-        HBRUSH hBlack = CreateSolidBrush(RGB(0, 0, 0));
-        FillRect(memDC, &boxRect, hBlack);
-        DeleteObject(hBlack);
+        FillRect(memoryDC, &boxRect, static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
 
-        RECT textDrawRect = { boxRect.left + pad, boxRect.top + pad, boxRect.right - pad, boxRect.bottom - pad };
-        SetTextColor(memDC, RGB(255, 255, 255));
-        SetBkMode(memDC, TRANSPARENT);
-        DrawTextW(memDC, text, -1, &textDrawRect, DT_CENTER | DT_NOPREFIX);
-        SelectObject(memDC, hOldFont);
+        RECT textDrawRect = {
+            boxRect.left + padding,
+            boxRect.top + padding,
+            boxRect.right - padding,
+            boxRect.bottom - padding,
+        };
+        SetTextColor(memoryDC, RGB(255, 255, 255));
+        SetBkMode(memoryDC, TRANSPARENT);
+        DrawTextW(memoryDC, text, -1, &textDrawRect, DT_CENTER | DT_NOPREFIX);
+        SelectObject(memoryDC, previousFont);
 
-        // GDI zeroes the alpha byte for every pixel it touches in a 32bpp DIB.
-        // Walk the box region and force A=255 so those pixels are fully opaque.
-        // With A=255 premultiplied alpha equals straight RGB, so the colours GDI
-        // wrote (black fill, white text, anti-aliased edges) are correct as-is.
         const int x0 = max(0, boxRect.left);
         const int y0 = max(0, boxRect.top);
         const int x1 = min(cw, boxRect.right);
         const int y1 = min(ch, boxRect.bottom);
         for (int y = y0; y < y1; ++y)
+        {
             for (int x = x0; x < x1; ++x)
-                pBits[y * cw + x] |= 0xFF000000u;
+            {
+                bits[y * cw + x] |= 0xFF000000u;
+            }
+        }
     }
 
-    SIZE sz = { cw, ch };
-    POINT ptSrc = { 0, 0 };
-    BLENDFUNCTION blend = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-    UpdateLayeredWindow(hwnd, screenDC, nullptr, &sz, memDC, &ptSrc, 0, &blend, ULW_ALPHA);
+    {
+        PERF_SCOPE(UpdateLayeredWindow);
+        SIZE size = { cw, ch };
+        POINT source = { 0, 0 };
+        BLENDFUNCTION blend = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+        UpdateLayeredWindow(
+            hwnd,
+            screenDC,
+            nullptr,
+            &size,
+            memoryDC,
+            &source,
+            0,
+            &blend,
+            ULW_ALPHA);
+    }
 
-    SelectObject(memDC, hOldBmp);
-    DeleteObject(hDib);
-    DeleteDC(memDC);
-    ReleaseDC(nullptr, screenDC);
+    {
+        PERF_SCOPE(SurfaceCleanup);
+        SelectObject(memoryDC, previousBitmap);
+        DeleteObject(dib);
+        DeleteDC(memoryDC);
+        ReleaseDC(nullptr, screenDC);
+    }
 
     g_overlayRenderedW = cw;
     g_overlayRenderedH = ch;
+}
+
+static LRESULT CALLBACK SolidOverlayWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if (message == WM_PAINT)
+    {
+        PAINTSTRUCT paint{};
+        HDC dc = BeginPaint(hwnd, &paint);
+        RECT client{};
+        GetClientRect(hwnd, &client);
+        HBRUSH brush = nullptr;
+        if (hwnd == g_hResizeBorderOverlay)
+        {
+            SetDCBrushColor(dc, OVERLAY_BORDER_COLOR);
+            brush = static_cast<HBRUSH>(GetStockObject(DC_BRUSH));
+        }
+        else
+        {
+            brush = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
+        }
+        FillRect(dc, &client, brush);
+        EndPaint(hwnd, &paint);
+        return 0;
+    }
+
+    if (message == WM_ERASEBKGND)
+    {
+        RECT client{};
+        GetClientRect(hwnd, &client);
+        HDC dc = reinterpret_cast<HDC>(wParam);
+        HBRUSH brush = nullptr;
+        if (hwnd == g_hResizeBorderOverlay)
+        {
+            SetDCBrushColor(dc, OVERLAY_BORDER_COLOR);
+            brush = static_cast<HBRUSH>(GetStockObject(DC_BRUSH));
+        }
+        else
+        {
+            brush = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
+        }
+        FillRect(dc, &client, brush);
+        return 1;
+    }
+
+    return DefWindowProcW(hwnd, message, wParam, lParam);
+}
+
+static void EnsureResizeOverlayWindows()
+{
+    if (!g_hResizeFillOverlay)
+    {
+        g_hResizeFillOverlay = CreateWindowExW(
+            WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
+            RESIZE_FILL_CLASS_NAME,
+            nullptr,
+            WS_POPUP,
+            0,
+            0,
+            1,
+            1,
+            nullptr,
+            nullptr,
+            g_hInstance,
+            nullptr);
+        if (g_hResizeFillOverlay)
+        {
+            SetLayeredWindowAttributes(g_hResizeFillOverlay, 0, OVERLAY_FILL_ALPHA, LWA_ALPHA);
+        }
+    }
+
+    if (!g_hResizeBorderOverlay)
+    {
+        g_hResizeBorderOverlay = CreateWindowExW(
+            WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
+            RESIZE_BORDER_CLASS_NAME,
+            nullptr,
+            WS_POPUP,
+            0,
+            0,
+            1,
+            1,
+            nullptr,
+            nullptr,
+            g_hInstance,
+            nullptr);
+        if (g_hResizeBorderOverlay)
+        {
+            SetLayeredWindowAttributes(g_hResizeBorderOverlay, 0, 255, LWA_ALPHA);
+        }
+    }
+
+    if (!g_hResizeGeometryOverlay)
+    {
+        g_hResizeGeometryOverlay = CreateWindowExW(
+            WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
+            OVERLAY_CLASS_NAME,
+            nullptr,
+            WS_POPUP,
+            0,
+            0,
+            1,
+            1,
+            nullptr,
+            nullptr,
+            g_hInstance,
+            nullptr);
+    }
+}
+
+static bool SetResizeOverlayRegions(int width, int height)
+{
+    const int radius = (std::min)(g_overlayCornerRadius, (std::min)(width, height) / 2);
+    const int thickness = (std::min)(g_overlayBorderThickness, (std::min)(width, height) / 2);
+    if (g_segmentedRegionsValid &&
+        width == g_segmentedRegionWidth &&
+        height == g_segmentedRegionHeight &&
+        radius == g_segmentedRegionRadius &&
+        thickness == g_segmentedRegionThickness)
+    {
+        return true;
+    }
+
+    PERF_SCOPE(ResizeRegions);
+    g_segmentedRegionsValid = false;
+
+    const int diameter = radius * 2;
+
+    HRGN fillRegion = radius > 0 ? CreateRoundRectRgn(0, 0, width + 1, height + 1, diameter, diameter) : CreateRectRgn(0, 0, width, height);
+    HRGN outer = radius > 0 ? CreateRoundRectRgn(0, 0, width + 1, height + 1, diameter, diameter) : CreateRectRgn(0, 0, width, height);
+    if (!fillRegion || !outer)
+    {
+        if (fillRegion)
+        {
+            DeleteObject(fillRegion);
+        }
+        if (outer)
+        {
+            DeleteObject(outer);
+        }
+        return false;
+    }
+
+    const int innerWidth = width - thickness * 2;
+    const int innerHeight = height - thickness * 2;
+    if (innerWidth > 0 && innerHeight > 0)
+    {
+        const int innerRadius = (std::max)(0, radius - thickness);
+        const int innerDiameter = innerRadius * 2;
+        HRGN inner = innerRadius > 0 ? CreateRoundRectRgn(
+                                           thickness,
+                                           thickness,
+                                           width - thickness + 1,
+                                           height - thickness + 1,
+                                           innerDiameter,
+                                           innerDiameter) :
+                                       CreateRectRgn(
+                                           thickness,
+                                           thickness,
+                                           width - thickness,
+                                           height - thickness);
+        if (!inner)
+        {
+            DeleteObject(fillRegion);
+            DeleteObject(outer);
+            return false;
+        }
+        if (CombineRgn(outer, outer, inner, RGN_DIFF) == ERROR)
+        {
+            DeleteObject(inner);
+            DeleteObject(fillRegion);
+            DeleteObject(outer);
+            return false;
+        }
+        DeleteObject(inner);
+    }
+
+    if (!SetWindowRgn(g_hResizeFillOverlay, fillRegion, FALSE))
+    {
+        DeleteObject(fillRegion);
+        DeleteObject(outer);
+        return false;
+    }
+    if (!SetWindowRgn(g_hResizeBorderOverlay, outer, FALSE))
+    {
+        DeleteObject(outer);
+        return false;
+    }
+
+    g_segmentedRegionWidth = width;
+    g_segmentedRegionHeight = height;
+    g_segmentedRegionRadius = radius;
+    g_segmentedRegionThickness = thickness;
+    g_segmentedRegionsValid = true;
+    return true;
+}
+
+static void RenderResizeGeometryOverlay()
+{
+    if (!g_settings.showGeometry || !g_hResizeGeometryOverlay)
+    {
+        if (g_hResizeGeometryOverlay)
+        {
+            ShowWindow(g_hResizeGeometryOverlay, SW_HIDE);
+        }
+        return;
+    }
+
+    PERF_SCOPE(GeometryBox);
+
+    wchar_t text[128]{};
+    swprintf_s(
+        text,
+        L"X: %d  Y: %d\nW: %d  H: %d",
+        g_overlayInfoX,
+        g_overlayInfoY,
+        g_overlayInfoW,
+        g_overlayInfoH);
+
+    HDC screenDC = GetDC(nullptr);
+    HDC memoryDC = CreateCompatibleDC(screenDC);
+    HFONT font = static_cast<HFONT>(GetStockObject(DEFAULT_GUI_FONT));
+    HFONT previousFont = static_cast<HFONT>(SelectObject(memoryDC, font));
+
+    RECT textRect{};
+    DrawTextW(memoryDC, text, -1, &textRect, DT_CALCRECT | DT_CENTER | DT_NOPREFIX);
+
+    constexpr int padding = 10;
+    const int width = textRect.right - textRect.left + padding * 2;
+    const int height = textRect.bottom - textRect.top + padding * 2;
+
+    BITMAPINFO bitmapInfo{};
+    bitmapInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bitmapInfo.bmiHeader.biWidth = width;
+    bitmapInfo.bmiHeader.biHeight = -height;
+    bitmapInfo.bmiHeader.biPlanes = 1;
+    bitmapInfo.bmiHeader.biBitCount = 32;
+    bitmapInfo.bmiHeader.biCompression = BI_RGB;
+
+    DWORD* bits = nullptr;
+    HBITMAP bitmap = CreateDIBSection(
+        screenDC,
+        &bitmapInfo,
+        DIB_RGB_COLORS,
+        reinterpret_cast<void**>(&bits),
+        nullptr,
+        0);
+    if (!bitmap)
+    {
+        SelectObject(memoryDC, previousFont);
+        DeleteDC(memoryDC);
+        ReleaseDC(nullptr, screenDC);
+        return;
+    }
+
+    HBITMAP previousBitmap = static_cast<HBITMAP>(SelectObject(memoryDC, bitmap));
+    RECT box = { 0, 0, width, height };
+    FillRect(memoryDC, &box, static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
+    SetTextColor(memoryDC, RGB(255, 255, 255));
+    SetBkMode(memoryDC, TRANSPARENT);
+    RECT textDrawRect = { padding, padding, width - padding, height - padding };
+    DrawTextW(memoryDC, text, -1, &textDrawRect, DT_CENTER | DT_NOPREFIX);
+    for (int index = 0; index < width * height; ++index)
+    {
+        bits[index] |= 0xFF000000u;
+    }
+
+    POINT destination = {
+        g_overlayInfoX + (g_overlayInfoW - width) / 2,
+        g_overlayInfoY + (g_overlayInfoH - height) / 2,
+    };
+    SIZE size = { width, height };
+    POINT source = { 0, 0 };
+    BLENDFUNCTION blend = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+    UpdateLayeredWindow(
+        g_hResizeGeometryOverlay,
+        screenDC,
+        &destination,
+        &size,
+        memoryDC,
+        &source,
+        0,
+        &blend,
+        ULW_ALPHA);
+    SetWindowPos(
+        g_hResizeGeometryOverlay,
+        HWND_TOPMOST,
+        0,
+        0,
+        0,
+        0,
+        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+
+    SelectObject(memoryDC, previousBitmap);
+    SelectObject(memoryDC, previousFont);
+    DeleteObject(bitmap);
+    DeleteDC(memoryDC);
+    ReleaseDC(nullptr, screenDC);
+}
+
+static void RepositionResizeOverlay(int x, int y, int width, int height, HCURSOR cursor)
+{
+    EnsureResizeOverlayWindows();
+    if (!g_hResizeFillOverlay || !g_hResizeBorderOverlay)
+    {
+        return;
+    }
+
+    g_overlayInfoX = x;
+    g_overlayInfoY = y;
+    g_overlayInfoW = width;
+    g_overlayInfoH = height;
+
+    const int visibleX = x + g_overlayMarginL;
+    const int visibleY = y + g_overlayMarginT;
+    const int visibleWidth = width - g_overlayMarginL - g_overlayMarginR;
+    const int visibleHeight = height - g_overlayMarginT - g_overlayMarginB;
+    if (visibleWidth <= 0 || visibleHeight <= 0)
+    {
+        return;
+    }
+
+    const int currentRadius = (std::min)(g_overlayCornerRadius, (std::min)(visibleWidth, visibleHeight) / 2);
+    const int currentThickness = (std::min)(g_overlayBorderThickness, (std::min)(visibleWidth, visibleHeight) / 2);
+    const bool fillNeedsRedraw =
+        !g_resizeFillPainted ||
+        !g_segmentedRegionsValid ||
+        currentRadius < g_segmentedRegionRadius;
+    const bool regionsChanged =
+        !g_segmentedRegionsValid ||
+        visibleWidth != g_segmentedRegionWidth ||
+        visibleHeight != g_segmentedRegionHeight ||
+        currentRadius != g_segmentedRegionRadius ||
+        currentThickness != g_segmentedRegionThickness;
+
+    if (!SetResizeOverlayRegions(visibleWidth, visibleHeight))
+    {
+        ShowWindow(g_hResizeFillOverlay, SW_HIDE);
+        ShowWindow(g_hResizeBorderOverlay, SW_HIDE);
+        if (g_hResizeGeometryOverlay)
+        {
+            ShowWindow(g_hResizeGeometryOverlay, SW_HIDE);
+        }
+
+        EnsureOverlayWindow();
+        if (g_hOverlay)
+        {
+            SetClassLongPtrW(g_hOverlay, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(cursor));
+            SetWindowPos(
+                g_hOverlay,
+                HWND_TOPMOST,
+                x,
+                y,
+                width,
+                height,
+                SWP_NOACTIVATE | SWP_SHOWWINDOW);
+            RenderOverlayContent(g_hOverlay, width, height);
+        }
+        return;
+    }
+
+    if (g_hOverlay)
+    {
+        ShowWindow(g_hOverlay, SW_HIDE);
+    }
+    SetClassLongPtrW(g_hResizeFillOverlay, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(cursor));
+    SetClassLongPtrW(g_hResizeBorderOverlay, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(cursor));
+    if (g_hResizeGeometryOverlay)
+    {
+        SetClassLongPtrW(g_hResizeGeometryOverlay, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(cursor));
+    }
+    SetCursor(cursor);
+
+    {
+        PERF_SCOPE(ResizeLayout);
+        HDWP positions = BeginDeferWindowPos(2);
+        if (positions)
+        {
+            positions = DeferWindowPos(
+                positions,
+                g_hResizeFillOverlay,
+                HWND_TOPMOST,
+                visibleX,
+                visibleY,
+                visibleWidth,
+                visibleHeight,
+                SWP_NOACTIVATE | SWP_SHOWWINDOW);
+        }
+        if (positions)
+        {
+            positions = DeferWindowPos(
+                positions,
+                g_hResizeBorderOverlay,
+                HWND_TOPMOST,
+                visibleX,
+                visibleY,
+                visibleWidth,
+                visibleHeight,
+                SWP_NOACTIVATE | SWP_SHOWWINDOW);
+        }
+        if (positions)
+        {
+            EndDeferWindowPos(positions);
+        }
+        else
+        {
+            SetWindowPos(
+                g_hResizeFillOverlay,
+                HWND_TOPMOST,
+                visibleX,
+                visibleY,
+                visibleWidth,
+                visibleHeight,
+                SWP_NOACTIVATE | SWP_SHOWWINDOW);
+            SetWindowPos(
+                g_hResizeBorderOverlay,
+                HWND_TOPMOST,
+                visibleX,
+                visibleY,
+                visibleWidth,
+                visibleHeight,
+                SWP_NOACTIVATE | SWP_SHOWWINDOW);
+        }
+    }
+
+    {
+        PERF_SCOPE(ResizeBorderPaint);
+        if (fillNeedsRedraw)
+        {
+            RedrawWindow(
+                g_hResizeFillOverlay,
+                nullptr,
+                nullptr,
+                RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW);
+            g_resizeFillPainted = true;
+        }
+        if (regionsChanged)
+        {
+            RedrawWindow(
+                g_hResizeBorderOverlay,
+                nullptr,
+                nullptr,
+                RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW);
+        }
+    }
+
+    RenderResizeGeometryOverlay();
 }
 
 // Ensures the persistent overlay window exists (created once, reused).
@@ -754,24 +1531,35 @@ static void EnsureOverlayWindow()
 
 static void ShowOverlay(const RECT& rc, HCURSOR hCursor)
 {
+    const int width = rc.right - rc.left;
+    const int height = rc.bottom - rc.top;
+    const bool useSegmentedOverlay =
+        g_interaction.action == InteractionAction::Resize ||
+        (g_interaction.action == InteractionAction::Move && g_settings.showGeometry);
+    if (useSegmentedOverlay)
+    {
+        RepositionResizeOverlay(rc.left, rc.top, width, height, hCursor);
+        return;
+    }
+
     EnsureOverlayWindow();
     if (!g_hOverlay)
         return;
-
-    int w = rc.right - rc.left;
-    int h = rc.bottom - rc.top;
 
     SetClassLongPtrW(g_hOverlay, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(hCursor));
 
     g_overlayInfoX = rc.left;
     g_overlayInfoY = rc.top;
-    g_overlayInfoW = w;
-    g_overlayInfoH = h;
+    g_overlayInfoW = width;
+    g_overlayInfoH = height;
     g_overlayRenderedW = 0; // force re-render
     g_overlayRenderedH = 0;
 
-    SetWindowPos(g_hOverlay, HWND_TOPMOST, rc.left, rc.top, w, h, SWP_NOACTIVATE | SWP_SHOWWINDOW);
-    RenderOverlayContent(g_hOverlay, w, h);
+    {
+        PERF_SCOPE(OverlaySetWindowPos);
+        SetWindowPos(g_hOverlay, HWND_TOPMOST, rc.left, rc.top, width, height, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    }
+    RenderOverlayContent(g_hOverlay, width, height);
 }
 
 // Repositions (and optionally re-renders) the overlay.
@@ -779,6 +1567,33 @@ static void ShowOverlay(const RECT& rc, HCURSOR hCursor)
 // For resize (size changed), always re-renders so the layered surface matches.
 static void RepositionOverlay(int x, int y, int w, int h)
 {
+    const bool useSegmentedOverlay =
+        g_interaction.action == InteractionAction::Resize ||
+        (g_interaction.action == InteractionAction::Move && g_settings.showGeometry);
+    if (useSegmentedOverlay)
+    {
+        RepositionResizeOverlay(
+            x,
+            y,
+            w,
+            h,
+            g_interaction.action == InteractionAction::Resize ? CursorForHandle(g_interaction.resizeHandle) : g_curSizeAll);
+        return;
+    }
+
+    if (g_hResizeFillOverlay)
+    {
+        ShowWindow(g_hResizeFillOverlay, SW_HIDE);
+    }
+    if (g_hResizeBorderOverlay)
+    {
+        ShowWindow(g_hResizeBorderOverlay, SW_HIDE);
+    }
+    if (g_hResizeGeometryOverlay)
+    {
+        ShowWindow(g_hResizeGeometryOverlay, SW_HIDE);
+    }
+
     if (!g_hOverlay)
         return;
 
@@ -787,7 +1602,10 @@ static void RepositionOverlay(int x, int y, int w, int h)
     g_overlayInfoW = w;
     g_overlayInfoH = h;
 
-    SetWindowPos(g_hOverlay, HWND_TOPMOST, x, y, w, h, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    {
+        PERF_SCOPE(OverlaySetWindowPos);
+        SetWindowPos(g_hOverlay, HWND_TOPMOST, x, y, w, h, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    }
 
     // Re-render only when the size changed or geometry text needs updating
     bool sizeChanged = (w != g_overlayRenderedW || h != g_overlayRenderedH);
@@ -803,12 +1621,46 @@ static void HideOverlay()
     {
         ShowWindow(g_hOverlay, SW_HIDE);
     }
+    if (g_hResizeFillOverlay)
+    {
+        ShowWindow(g_hResizeFillOverlay, SW_HIDE);
+    }
+    if (g_hResizeBorderOverlay)
+    {
+        ShowWindow(g_hResizeBorderOverlay, SW_HIDE);
+    }
+    if (g_hResizeGeometryOverlay)
+    {
+        ShowWindow(g_hResizeGeometryOverlay, SW_HIDE);
+    }
 }
 
 static void StopInteraction()
 {
+    const bool wasActive = g_interaction.phase == InteractionPhase::Active;
+    const bool wasIdle = g_interaction.phase == InteractionPhase::Idle;
+    const InteractionAction action = g_interaction.action;
+    if (wasActive)
+    {
+        FinalizeTargetUpdate();
+    }
+    else
+    {
+        g_targetUpdate = {};
+    }
     g_interaction = {};
     HideOverlay();
+#ifdef GRABANDMOVE_PERF_DIAGNOSTICS
+    if (wasActive)
+    {
+        g_perfPendingReport = action;
+    }
+    else if (wasIdle)
+    {
+        g_perfStats = {};
+        g_perfCollectionActive = false;
+    }
+#endif
 }
 
 static ResizeHandle GetClosestHandle(POINT pt, const RECT& rc)
@@ -867,6 +1719,152 @@ static HCURSOR CursorForHandle(ResizeHandle handle)
     default:
         return g_curSizeAll;
     }
+}
+
+static constexpr ULONGLONG TARGET_UPDATE_TIMEOUT_MS = THROTTLE_INTERVAL_MS * 2;
+
+static bool SubmitTargetUpdate(
+    HWND target,
+    const RECT& desired,
+    InteractionAction action)
+{
+    if (!target)
+    {
+        return false;
+    }
+
+    RECT current{};
+    const bool haveCurrentRect = GetWindowRect(target, &current) != FALSE;
+
+    const int width = desired.right - desired.left;
+    const int height = desired.bottom - desired.top;
+    UINT flags = SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS;
+    if (action == InteractionAction::Move)
+    {
+        flags |= SWP_NOSIZE;
+    }
+
+    BOOL submitted = FALSE;
+    {
+        PERF_SCOPE(TargetSetWindowPos);
+        submitted = SetWindowPos(
+            target,
+            nullptr,
+            desired.left,
+            desired.top,
+            width,
+            height,
+            flags);
+    }
+    if (!submitted)
+    {
+        return false;
+    }
+
+    g_targetUpdate.target = target;
+    g_targetUpdate.observedBeforeSubmit = haveCurrentRect ? current : desired;
+    g_targetUpdate.lastSubmitted = desired;
+    g_targetUpdate.submittedAtMs = QpcMs();
+    g_targetUpdate.inFlight = true;
+    g_targetUpdate.hasSubmitted = true;
+    PERF_INCREMENT(appliedMoveCount);
+    return true;
+}
+
+static void ObserveTargetUpdate()
+{
+    if (!g_targetUpdate.inFlight || !g_targetUpdate.target)
+    {
+        return;
+    }
+
+    RECT current{};
+    const bool haveCurrentRect = GetWindowRect(g_targetUpdate.target, &current) != FALSE;
+    const bool arrived =
+        haveCurrentRect &&
+        (AreRectsEqual(current, g_targetUpdate.lastSubmitted) ||
+         !AreRectsEqual(current, g_targetUpdate.observedBeforeSubmit));
+    const bool timedOut =
+        QpcMs() - g_targetUpdate.submittedAtMs >= TARGET_UPDATE_TIMEOUT_MS;
+    if (!arrived && !timedOut)
+    {
+        return;
+    }
+
+    g_targetUpdate.inFlight = false;
+    if (g_targetUpdate.hasPending)
+    {
+        const HWND target = g_targetUpdate.target;
+        const RECT desired = g_targetUpdate.pendingDesired;
+        const InteractionAction action = g_targetUpdate.pendingAction;
+        g_targetUpdate.hasPending = false;
+        SubmitTargetUpdate(target, desired, action);
+    }
+}
+
+static bool RequestTargetUpdate(
+    HWND target,
+    const RECT& desired,
+    InteractionAction action,
+    bool forceFinal)
+{
+    if (!target)
+    {
+        return false;
+    }
+
+    if (g_targetUpdate.target != target)
+    {
+        g_targetUpdate = {};
+        g_targetUpdate.target = target;
+    }
+
+    if (g_targetUpdate.inFlight)
+    {
+        if (AreRectsEqual(desired, g_targetUpdate.lastSubmitted))
+        {
+            g_targetUpdate.hasPending = false;
+            return false;
+        }
+
+        if (!forceFinal)
+        {
+            g_targetUpdate.pendingDesired = desired;
+            g_targetUpdate.pendingAction = action;
+            g_targetUpdate.hasPending = true;
+            return false;
+        }
+    }
+    else
+    {
+        RECT current{};
+        if (GetWindowRect(target, &current) &&
+            AreRectsEqual(current, desired))
+        {
+            g_targetUpdate.hasPending = false;
+            return false;
+        }
+    }
+
+    g_targetUpdate.hasPending = false;
+    return SubmitTargetUpdate(target, desired, action);
+}
+
+static void FinalizeTargetUpdate()
+{
+    if (g_targetUpdate.hasPending && g_targetUpdate.target)
+    {
+        const RECT desired = g_targetUpdate.pendingDesired;
+        const InteractionAction action = g_targetUpdate.pendingAction;
+        g_targetUpdate.hasPending = false;
+        RequestTargetUpdate(
+            g_targetUpdate.target,
+            desired,
+            action,
+            true);
+    }
+
+    g_targetUpdate = {};
 }
 
 static void ReplayCapturedModifier(ModifierReplay replay)
@@ -1336,10 +2334,17 @@ static HookDisposition HandleKeyboardEvent(WPARAM message, const KBDLLHOOKSTRUCT
         return HookDisposition::Chain;
     }
 
+#ifdef GRABANDMOVE_PERF_DIAGNOSTICS
+    BeginPerfCollection();
+#endif
+
+    if (HasConflictingInput(g_settings.modifierKey))
+    {
+        return HookDisposition::Chain;
+    }
+
     HWND foreground = GetForegroundWindow();
-    if ((foreground && IsExcluded(foreground)) ||
-        IsSuppressedByGameMode() ||
-        HasConflictingInput(g_settings.modifierKey))
+    if ((foreground && IsExcluded(foreground)) || IsSuppressedByGameMode())
     {
         return HookDisposition::Chain;
     }
@@ -1362,11 +2367,18 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     }
 
     const auto& key = *reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
-    if (key.flags & LLKHF_INJECTED)
+    const bool injected = (key.flags & LLKHF_INJECTED) != 0;
+#ifdef GRABANDMOVE_PERF_DIAGNOSTICS
+    const bool perfReplay = injected && IsPerfReplayInput(key.dwExtraInfo);
+#else
+    constexpr bool perfReplay = false;
+#endif
+    if (injected && !perfReplay)
     {
         return CallNextHookEx(g_hhkKeyboard, nCode, wParam, lParam);
     }
 
+    PERF_SCOPE(KeyboardHook);
     return CompleteHook(g_hhkKeyboard, HandleKeyboardEvent(wParam, key), nCode, wParam, lParam);
 }
 
@@ -1383,7 +2395,13 @@ static HWND ResolveTargetWindow(POINT pt)
             candidate = root;
         }
 
-        if (!candidate || candidate == g_hOverlay || candidate == g_hMsgWnd || IsSystemClass(candidate))
+        if (!candidate ||
+            candidate == g_hOverlay ||
+            candidate == g_hResizeFillOverlay ||
+            candidate == g_hResizeBorderOverlay ||
+            candidate == g_hResizeGeometryOverlay ||
+            candidate == g_hMsgWnd ||
+            IsSystemClass(candidate))
         {
             return nullptr;
         }
@@ -1529,6 +2547,11 @@ static void RecoverStaleInteraction(MouseButton incomingButton)
 
 static HookDisposition HandleMouseEvent(WPARAM message, const MSLLHOOKSTRUCT& mouse)
 {
+    if (message == WM_MOUSEMOVE)
+    {
+        PERF_INCREMENT(mouseMoveCount);
+    }
+
     const MouseButton upButton = ButtonFromUpMessage(message);
     if (upButton != MouseButton::None && ConsumeSwallowedButtonUp(upButton))
     {
@@ -1609,6 +2632,8 @@ static HookDisposition HandleMouseEvent(WPARAM message, const MSLLHOOKSTRUCT& mo
 
     if (message == WM_MOUSEMOVE && g_interaction.phase == InteractionPhase::Active)
     {
+        ObserveTargetUpdate();
+
         const ULONGLONG now = QpcMs();
         if (now - g_lastMoveTick >= THROTTLE_INTERVAL_MS)
         {
@@ -1646,26 +2671,22 @@ static HookDisposition HandleMouseEvent(WPARAM message, const MSLLHOOKSTRUCT& mo
             const int dy = mouse.pt.y - g_interaction.startPoint.y;
             const int newX = g_interaction.windowRect.left + dx;
             const int newY = g_interaction.windowRect.top + dy;
-            SetWindowPos(
+            const int width = g_interaction.windowRect.right - g_interaction.windowRect.left;
+            const int height = g_interaction.windowRect.bottom - g_interaction.windowRect.top;
+            const RECT finalRect = { newX, newY, newX + width, newY + height };
+            RequestTargetUpdate(
                 g_interaction.target,
-                nullptr,
-                newX,
-                newY,
-                0,
-                0,
-                SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+                finalRect,
+                InteractionAction::Move,
+                true);
         }
         else
         {
-            const RECT& rect = g_interaction.windowRect;
-            SetWindowPos(
+            RequestTargetUpdate(
                 g_interaction.target,
-                nullptr,
-                rect.left,
-                rect.top,
-                rect.right - rect.left,
-                rect.bottom - rect.top,
-                SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+                g_interaction.windowRect,
+                InteractionAction::Resize,
+                true);
         }
 
         StopInteraction();
@@ -1683,12 +2704,29 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
     }
 
     const auto& mouse = *reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
-    if (mouse.flags & LLMHF_INJECTED)
+    const bool injected = (mouse.flags & LLMHF_INJECTED) != 0;
+#ifdef GRABANDMOVE_PERF_DIAGNOSTICS
+    const bool perfReplay = injected && IsPerfReplayInput(mouse.dwExtraInfo);
+#else
+    constexpr bool perfReplay = false;
+#endif
+    if (injected && !perfReplay)
     {
         return CallNextHookEx(g_hhkMouse, nCode, wParam, lParam);
     }
 
-    return CompleteHook(g_hhkMouse, HandleMouseEvent(wParam, mouse), nCode, wParam, lParam);
+    PERF_SCOPE(MouseHook);
+#ifdef GRABANDMOVE_PERF_DIAGNOSTICS
+    if (perfReplay)
+    {
+        g_perfReplayClockMs = static_cast<ULONGLONG>(mouse.dwExtraInfo & PERF_REPLAY_TIME_MASK);
+    }
+#endif
+    const HookDisposition disposition = HandleMouseEvent(wParam, mouse);
+#ifdef GRABANDMOVE_PERF_DIAGNOSTICS
+    g_perfReplayClockMs.reset();
+#endif
+    return CompleteHook(g_hhkMouse, disposition, nCode, wParam, lParam);
 }
 
 // ---------------------------------------------------------------------------
@@ -1727,10 +2765,13 @@ static void HandleDragMove(POINT pt)
             float ratioT = (maxH > 0) ? static_cast<float>(g_interaction.startPoint.y - maxRect.top) / maxH : 0.5f;
             int newX = g_interaction.startPoint.x - static_cast<int>(restoredW * ratioL);
             int newY = g_interaction.startPoint.y - static_cast<int>(restoredH * ratioT);
-            SetWindowPos(g_interaction.target, nullptr, newX, newY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
-
             g_interaction.startPoint = pt;
             g_interaction.windowRect = { newX, newY, newX + restoredW, newY + restoredH };
+            RequestTargetUpdate(
+                g_interaction.target,
+                g_interaction.windowRect,
+                InteractionAction::Move,
+                true);
 
             // Corner radius / invisible-border margins differ once restored.
             PrepareOverlayMetrics(g_interaction.target);
@@ -1746,7 +2787,12 @@ static void HandleDragMove(POINT pt)
 
     // Move target + overlay (separate SetWindowPos – DeferWindowPos doesn't
     // work reliably for cross-process target windows)
-    SetWindowPos(g_interaction.target, nullptr, newX, newY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+    const RECT desired = { newX, newY, newX + w, newY + h };
+    RequestTargetUpdate(
+        g_interaction.target,
+        desired,
+        InteractionAction::Move,
+        false);
     RepositionOverlay(newX, newY, w, h);
 }
 
@@ -1780,8 +2826,12 @@ static void HandleDragResize(POINT pt)
 
             int newLeft = pt.x - static_cast<int>(ratioL * newW);
             int newTop = pt.y - static_cast<int>(ratioT * newH);
-            SetWindowPos(g_interaction.target, nullptr, newLeft, newTop, newW, newH, SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
             g_interaction.windowRect = { newLeft, newTop, newLeft + newW, newTop + newH };
+            RequestTargetUpdate(
+                g_interaction.target,
+                g_interaction.windowRect,
+                InteractionAction::Resize,
+                true);
 
             // Corner radius / invisible-border margins differ once restored.
             PrepareOverlayMetrics(g_interaction.target);
@@ -1873,7 +2923,11 @@ static void HandleDragResize(POINT pt)
 
     // Move target + overlay (separate SetWindowPos – DeferWindowPos doesn't
     // work reliably for cross-process target windows)
-    SetWindowPos(g_interaction.target, nullptr, nr.left, nr.top, w, h, SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+    RequestTargetUpdate(
+        g_interaction.target,
+        nr,
+        InteractionAction::Resize,
+        false);
     RepositionOverlay(nr.left, nr.top, w, h);
 }
 
@@ -1894,13 +2948,35 @@ static void ApplyPendingSettings()
     g_settings = std::move(*settings);
     g_excludedCache.clear();
 
-    if (geometryChanged &&
-        g_hOverlay &&
-        IsWindowVisible(g_hOverlay) &&
-        g_overlayInfoW > 0 &&
-        g_overlayInfoH > 0)
+    if (geometryChanged && g_interaction.phase == InteractionPhase::Active)
     {
-        RenderOverlayContent(g_hOverlay, g_overlayInfoW, g_overlayInfoH);
+        if (g_interaction.action == InteractionAction::Resize)
+        {
+            RenderResizeGeometryOverlay();
+        }
+        else if (g_overlayInfoW > 0 && g_overlayInfoH > 0)
+        {
+            if (g_settings.showGeometry)
+            {
+                RepositionResizeOverlay(
+                    g_overlayInfoX,
+                    g_overlayInfoY,
+                    g_overlayInfoW,
+                    g_overlayInfoH,
+                    g_curSizeAll);
+            }
+            else
+            {
+                EnsureOverlayWindow();
+                g_overlayRenderedW = 0;
+                g_overlayRenderedH = 0;
+                RepositionOverlay(
+                    g_overlayInfoX,
+                    g_overlayInfoY,
+                    g_overlayInfoW,
+                    g_overlayInfoH);
+            }
+        }
     }
 }
 
@@ -1974,6 +3050,34 @@ static void CleanupRuntime()
         g_hWinEventHook = nullptr;
     }
 
+    if (g_interaction.phase != InteractionPhase::Idle)
+    {
+        StopInteraction();
+    }
+    else
+    {
+        g_targetUpdate = {};
+    }
+
+#ifdef GRABANDMOVE_PERF_DIAGNOSTICS
+    FlushPendingPerfReport();
+#endif
+
+    if (g_hResizeGeometryOverlay)
+    {
+        DestroyWindow(g_hResizeGeometryOverlay);
+        g_hResizeGeometryOverlay = nullptr;
+    }
+    if (g_hResizeBorderOverlay)
+    {
+        DestroyWindow(g_hResizeBorderOverlay);
+        g_hResizeBorderOverlay = nullptr;
+    }
+    if (g_hResizeFillOverlay)
+    {
+        DestroyWindow(g_hResizeFillOverlay);
+        g_hResizeFillOverlay = nullptr;
+    }
     if (g_hOverlay)
     {
         DestroyWindow(g_hOverlay);
@@ -2026,6 +3130,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     g_hInstance = hInstance;
     TraceLoggingRegister(g_hProvider);
     g_traceRegistered = true;
+#ifdef GRABANDMOVE_PERF_DIAGNOSTICS
+    QueryPerformanceFrequency(&g_perfFrequency);
+#endif
 
     // Prevent multiple instances
     g_hInstanceMutex = CreateMutexW(nullptr, TRUE, INSTANCE_MUTEX_NAME);
@@ -2104,6 +3211,32 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
         return 1;
     }
 
+    WNDCLASSEXW resizeFillWindowClass = {};
+    resizeFillWindowClass.cbSize = sizeof(resizeFillWindowClass);
+    resizeFillWindowClass.lpfnWndProc = SolidOverlayWndProc;
+    resizeFillWindowClass.hInstance = hInstance;
+    resizeFillWindowClass.hCursor = LoadCursorW(nullptr, IDC_ARROW);
+    resizeFillWindowClass.hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
+    resizeFillWindowClass.lpszClassName = RESIZE_FILL_CLASS_NAME;
+    if (!RegisterClassExW(&resizeFillWindowClass))
+    {
+        CleanupRuntime();
+        return 1;
+    }
+
+    WNDCLASSEXW resizeBorderWindowClass = {};
+    resizeBorderWindowClass.cbSize = sizeof(resizeBorderWindowClass);
+    resizeBorderWindowClass.lpfnWndProc = SolidOverlayWndProc;
+    resizeBorderWindowClass.hInstance = hInstance;
+    resizeBorderWindowClass.hCursor = LoadCursorW(nullptr, IDC_ARROW);
+    resizeBorderWindowClass.hbrBackground = static_cast<HBRUSH>(GetStockObject(DC_BRUSH));
+    resizeBorderWindowClass.lpszClassName = RESIZE_BORDER_CLASS_NAME;
+    if (!RegisterClassExW(&resizeBorderWindowClass))
+    {
+        CleanupRuntime();
+        return 1;
+    }
+
     // Create a message-only window (invisible)
     g_hMsgWnd = CreateWindowExW(0, CLASS_NAME, APP_TITLE, 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, hInstance, nullptr);
     if (!g_hMsgWnd)
@@ -2120,7 +3253,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
         CleanupRuntime();
         return 1;
     }
-
     // Pre-load system cursors (fix #6 – avoid LoadCursorW in hot path)
     g_curSizeAll = LoadCursorW(nullptr, IDC_SIZEALL);
     g_curSizeNWSE = LoadCursorW(nullptr, IDC_SIZENWSE);
