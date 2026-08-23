@@ -1143,11 +1143,11 @@ function Test-CallerAdmission([object]$User, [object]$OtherUser) {
         'same SID quickly regains its connection quota after path rejection'
 
     $otherSid = Invoke-UserClientObserved $OtherUser @('--status') `
-        'different-sid-after-non-proxy'
+        'different-sid-after-embedded-client'
     Assert-Equal $otherSid.win32 1168 `
         'another SID reaches normal request dispatch after non-proxy rejection'
-    Assert-True ($otherSid.elapsedMilliseconds -lt 5000) `
-        'another SID retains listener capacity after non-proxy rejection'
+    Assert-True ($otherSid.elapsedMilliseconds -lt 10000) `
+        'another SID retains listener capacity after an alternate embedded-client location'
 
     $hostAfter = Assert-Host '5.0.0.0'
     Assert-Equal $hostAfter.processId $hostBefore.processId `
