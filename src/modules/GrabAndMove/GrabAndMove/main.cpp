@@ -153,6 +153,8 @@ static HWND g_hResizeFillOverlay = nullptr;
 static HWND g_hResizeBorderOverlay = nullptr;
 static HWND g_hResizeGeometryOverlay = nullptr;
 static bool g_resizeFillPainted = false;
+static bool g_segmentedOverlayVisible = false;
+static bool g_resizeGeometryVisible = false;
 static int g_segmentedRegionWidth = 0;
 static int g_segmentedRegionHeight = 0;
 static int g_segmentedRegionRadius = 0;
@@ -1305,6 +1307,7 @@ static void RenderResizeGeometryOverlay()
         {
             ShowWindow(g_hResizeGeometryOverlay, SW_HIDE);
         }
+        g_resizeGeometryVisible = false;
         return;
     }
 
@@ -1386,12 +1389,17 @@ static void RenderResizeGeometryOverlay()
         ULW_ALPHA);
     SetWindowPos(
         g_hResizeGeometryOverlay,
-        HWND_TOPMOST,
+        g_resizeGeometryVisible ? nullptr : HWND_TOPMOST,
         0,
         0,
         0,
         0,
-        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+        SWP_NOMOVE |
+            SWP_NOSIZE |
+            SWP_NOACTIVATE |
+            SWP_SHOWWINDOW |
+            (g_resizeGeometryVisible ? SWP_NOZORDER : 0));
+    g_resizeGeometryVisible = true;
 
     SelectObject(memoryDC, previousBitmap);
     SelectObject(memoryDC, previousFont);
@@ -1443,6 +1451,8 @@ static void RepositionResizeOverlay(int x, int y, int width, int height, HCURSOR
         {
             ShowWindow(g_hResizeGeometryOverlay, SW_HIDE);
         }
+        g_segmentedOverlayVisible = false;
+        g_resizeGeometryVisible = false;
 
         EnsureOverlayWindow();
         if (g_hOverlay)
@@ -1476,29 +1486,33 @@ static void RepositionResizeOverlay(int x, int y, int width, int height, HCURSOR
     {
         PERF_SCOPE(ResizeLayout);
         HDWP positions = BeginDeferWindowPos(2);
+        const UINT positionFlags =
+            SWP_NOACTIVATE |
+            SWP_SHOWWINDOW |
+            (g_segmentedOverlayVisible ? SWP_NOZORDER : 0);
         if (positions)
         {
             positions = DeferWindowPos(
                 positions,
                 g_hResizeFillOverlay,
-                HWND_TOPMOST,
+                g_segmentedOverlayVisible ? nullptr : HWND_TOPMOST,
                 visibleX,
                 visibleY,
                 visibleWidth,
                 visibleHeight,
-                SWP_NOACTIVATE | SWP_SHOWWINDOW);
+                positionFlags);
         }
         if (positions)
         {
             positions = DeferWindowPos(
                 positions,
                 g_hResizeBorderOverlay,
-                HWND_TOPMOST,
+                g_segmentedOverlayVisible ? nullptr : HWND_TOPMOST,
                 visibleX,
                 visibleY,
                 visibleWidth,
                 visibleHeight,
-                SWP_NOACTIVATE | SWP_SHOWWINDOW);
+                positionFlags);
         }
         if (positions)
         {
@@ -1508,22 +1522,23 @@ static void RepositionResizeOverlay(int x, int y, int width, int height, HCURSOR
         {
             SetWindowPos(
                 g_hResizeFillOverlay,
-                HWND_TOPMOST,
+                g_segmentedOverlayVisible ? nullptr : HWND_TOPMOST,
                 visibleX,
                 visibleY,
                 visibleWidth,
                 visibleHeight,
-                SWP_NOACTIVATE | SWP_SHOWWINDOW);
+                positionFlags);
             SetWindowPos(
                 g_hResizeBorderOverlay,
-                HWND_TOPMOST,
+                g_segmentedOverlayVisible ? nullptr : HWND_TOPMOST,
                 visibleX,
                 visibleY,
                 visibleWidth,
                 visibleHeight,
-                SWP_NOACTIVATE | SWP_SHOWWINDOW);
+                positionFlags);
         }
     }
+    g_segmentedOverlayVisible = true;
 
     {
         PERF_SCOPE(ResizeBorderPaint);
@@ -1658,6 +1673,8 @@ static void RepositionOverlay(int x, int y, int w, int h)
 
 static void HideOverlay()
 {
+    g_segmentedOverlayVisible = false;
+    g_resizeGeometryVisible = false;
     if (g_hOverlay)
     {
         ShowWindow(g_hOverlay, SW_HIDE);
