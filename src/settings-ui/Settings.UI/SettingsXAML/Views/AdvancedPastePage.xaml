@@ -376,6 +376,23 @@
                                     <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
+                                    Name="PasteAsJpgFile"
+                                    x:Uid="PasteAsJpgFile"
+                                    DataContext="{Binding PasteAsJpgFile, Mode=TwoWay}"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.PasteAsFile.IsShown, Mode=OneWay}">
+                                    <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    Name="PasteAsJpgQuality"
+                                    x:Uid="PasteAsJpgQuality"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.PasteAsFile.IsShown, Mode=OneWay}">
+                                    <Slider
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        Maximum="100"
+                                        Minimum="1"
+                                        Value="{x:Bind ViewModel.PasteAsJpgQuality, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
                                     Name="PasteAsHtmlFile"
                                     x:Uid="PasteAsHtmlFile"
                                     DataContext="{Binding PasteAsHtmlFile, Mode=TwoWay}"
