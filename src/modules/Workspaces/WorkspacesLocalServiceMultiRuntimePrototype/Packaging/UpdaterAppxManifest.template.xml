@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:desktop6="http://schemas.microsoft.com/appx/manifest/desktop/windows10/6"
+  xmlns:uap11="http://schemas.microsoft.com/appx/manifest/uap/windows10/11"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap desktop6 uap11 rescap">
+  <Identity
+    Name="Microsoft.PowerToys.WsPuvr.ControlPlane"
+    Publisher="CN=PowerToys Workspaces Control-Plane Code Test"
+    Version="@@VERSION@@"
+    ProcessorArchitecture="x64" />
+  <Properties>
+    <DisplayName>PowerToys Protected Runtime Updater Prototype</DisplayName>
+    <PublisherDisplayName>PowerToys prototype (test only)</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+  <Dependencies>
+    <TargetDeviceFamily
+      Name="Windows.Desktop"
+      MinVersion="10.0.19041.0"
+      MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+  <Applications>
+    <Application
+      Id="UpdaterHost"
+      Executable="PtPuvrHost.exe"
+      EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        AppListEntry="none"
+        DisplayName="PowerToys Protected Runtime Updater Prototype"
+        Description="Test-only stable LocalSystem control-plane host"
+        BackgroundColor="transparent"
+        Square44x44Logo="Assets\Square44x44Logo.png"
+        Square150x150Logo="Assets\Square150x150Logo.png" />
+      <Extensions>
+        <desktop6:Extension
+          Category="windows.service"
+          Executable="PtPuvrHost.exe"
+          EntryPoint="Windows.FullTrustApplication"
+          uap11:Id="PtPuvrHostExtension"
+          uap11:SupportsMultipleInstances="false">
+          <desktop6:Service
+            Name="PtPuvrHost"
+            StartupType="manual"
+            StartAccount="localSystem" />
+        </desktop6:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+    <rescap:Capability Name="packagedServices" />
+    <rescap:Capability Name="localSystemServices" />
+  </Capabilities>
+</Package>

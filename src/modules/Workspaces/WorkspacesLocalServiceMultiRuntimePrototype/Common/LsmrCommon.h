@@ -27,6 +27,11 @@ namespace ptlsmr
     inline constexpr wchar_t RuntimeExe[] = L"PtPuvrRuntime.exe";
     inline constexpr wchar_t EngineExe[] = L"PtPuvrUpdater.exe";
     inline constexpr wchar_t HostExe[] = L"PtPuvrHost.exe";
+    inline constexpr wchar_t HostPackageName[] =
+        L"Microsoft.PowerToys.WsPuvr.ControlPlane";
+    inline constexpr wchar_t HostPackagePublisher[] =
+        L"CN=PowerToys Workspaces Control-Plane Code Test";
+    inline constexpr wchar_t HostPackageBootstrapDirectory[] = L"Bootstrap";
     inline constexpr wchar_t ReleaseManifestExe[] = L"PtPuvrReleaseManifest.exe";
     inline constexpr wchar_t CodePolicyExe[] = L"PtPuvrCodePolicy.exe";
     inline constexpr wchar_t MetadataPolicyExe[] = L"PtPuvrMetadataPolicy.exe";

@@ -44,6 +44,10 @@ $signtool = Get-ChildItem $sdkRoot -Directory |
 if (-not $signtool) {
     throw 'signtool.exe was not found.'
 }
+$makeappx = Join-Path (Split-Path -Parent $signtool) 'makeappx.exe'
+if (-not (Test-Path -LiteralPath $makeappx -PathType Leaf)) {
+    throw 'makeappx.exe was not found.'
+}
 
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
 $msbuild = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' |
@@ -56,8 +60,8 @@ $binRoot = Join-Path $root "artifacts\bin\x64\$Configuration"
 $releaseRoot = Join-Path $root 'artifacts\release'
 $releaseSetsRoot = Join-Path $root 'artifacts\release-sets'
 $generatedRoot = Join-Path $root 'artifacts\generated'
-$payloadRoot = Join-Path $root 'artifacts\msi-payload'
-$msiRoot = Join-Path $root 'artifacts\msi'
+$packageStageRoot = Join-Path $root 'artifacts\updater-msix-stage'
+$packageRoot = Join-Path $root 'artifacts\updater-msix'
 $ownershipPath = Join-Path $releaseRoot 'certificate-ownership.json'
 $certificateStores = @(
     'Cert:\CurrentUser\My',
@@ -369,7 +373,7 @@ try {
     if (Test-Path -LiteralPath $ownershipPath -PathType Leaf) {
         Restore-ExactCertificateOwnership (Get-Content -LiteralPath $ownershipPath -Raw | ConvertFrom-Json)
     }
-    foreach ($directory in $releaseRoot, $releaseSetsRoot, $generatedRoot, $payloadRoot, $msiRoot) {
+    foreach ($directory in $releaseRoot, $releaseSetsRoot, $generatedRoot, $packageStageRoot, $packageRoot) {
         Remove-Item -LiteralPath $directory -Recurse -Force -ErrorAction SilentlyContinue
         New-Item -ItemType Directory -Path $directory -Force | Out-Null
     }
@@ -581,33 +585,65 @@ try {
         }
     }
 
-    foreach ($artifact in $hostArtifact, $codePolicy, $metadataPolicy, $engines['5.0.0.0']) {
-        Copy-Item -LiteralPath $artifact.path -Destination (Join-Path $payloadRoot $artifact.file)
-    }
-    @(
-        [ordered]@{ file = 'code-signer-sha256.txt'; value = $codePin }
-        [ordered]@{ file = 'metadata-signer-sha256.txt'; value = $metadataPin }
-    ) | ForEach-Object {
-        Set-Content -LiteralPath (Join-Path $payloadRoot $_.file) -Value $_.value -Encoding ascii -NoNewline
+    $png = [Convert]::FromBase64String(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')
+
+    function New-SignedUpdaterPackage([string]$Version) {
+        $stage = Join-Path $packageStageRoot $Version
+        $assets = Join-Path $stage 'Assets'
+        $bootstrap = Join-Path $stage 'Bootstrap'
+        $engineDirectory = Join-Path $bootstrap 'Engines\5.0.0.0'
+        $policyDirectory = Join-Path $bootstrap 'Policy'
+        foreach ($directory in $assets, $engineDirectory, $policyDirectory) {
+            New-Item -ItemType Directory -Path $directory -Force | Out-Null
+        }
+        foreach ($logo in 'StoreLogo.png', 'Square44x44Logo.png', 'Square150x150Logo.png') {
+            [IO.File]::WriteAllBytes((Join-Path $assets $logo), $png)
+        }
+        Copy-Item -LiteralPath $hostArtifact.path -Destination (Join-Path $stage 'PtPuvrHost.exe')
+        Copy-Item -LiteralPath $engines['5.0.0.0'].path `
+            -Destination (Join-Path $engineDirectory 'PtPuvrUpdater.exe')
+        Copy-Item -LiteralPath $codePolicy.path `
+            -Destination (Join-Path $policyDirectory 'PtPuvrCodePolicy.exe')
+        Copy-Item -LiteralPath $metadataPolicy.path `
+            -Destination (Join-Path $policyDirectory 'PtPuvrMetadataPolicy.exe')
+        Set-Content -LiteralPath (Join-Path $bootstrap 'code-signer-sha256.txt') `
+            -Value $codePin -Encoding ascii -NoNewline
+        Set-Content -LiteralPath (Join-Path $bootstrap 'metadata-signer-sha256.txt') `
+            -Value $metadataPin -Encoding ascii -NoNewline
+        $manifest = (Get-Content -LiteralPath (
+            Join-Path $root 'Packaging\UpdaterAppxManifest.template.xml'
+        ) -Raw).Replace('@@VERSION@@', $Version)
+        Set-Content -LiteralPath (Join-Path $stage 'AppxManifest.xml') `
+            -Value $manifest -Encoding utf8NoBOM
+
+        $package = Join-Path $packageRoot "PtPuvrHost-$Version.msix"
+        & $makeappx pack /o /d $stage /p $package | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            throw "makeappx pack failed: $Version"
+        }
+        Sign-AndVerify $package $codeCertificate $codePin
+        & $signtool verify /pa /v $package | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            throw "signtool package verification failed: $Version"
+        }
+        return [ordered]@{
+            packageName = 'Microsoft.PowerToys.WsPuvr.ControlPlane'
+            packageVersion = $Version
+            file = [IO.Path]::GetFileName($package)
+            path = $package
+            sha256 = (Get-FileHash -LiteralPath $package -Algorithm SHA256).Hash
+            length = (Get-Item -LiteralPath $package).Length
+        }
     }
 
-    $wixProject = Join-Path $root 'Installer\PtPuvrControlPlane.wixproj'
-    & dotnet build $wixProject -c Release "-p:PayloadDir=$payloadRoot" --nologo
-    if ($LASTEXITCODE -ne 0) {
-        throw 'WiX v5 MSI build failed.'
-    }
-    $builtMsi = Get-ChildItem -LiteralPath (Join-Path $root 'Installer\bin') -Recurse -Filter 'PtPuvrControlPlane.msi' |
-        Sort-Object LastWriteTimeUtc -Descending |
-        Select-Object -First 1
-    if (-not $builtMsi) {
-        throw 'WiX v5 build did not produce PtPuvrControlPlane.msi.'
-    }
-    $msiPath = Join-Path $msiRoot 'PtPuvrControlPlane.msi'
-    Copy-Item -LiteralPath $builtMsi.FullName -Destination $msiPath
-    Sign-AndVerify $msiPath $codeCertificate $codePin
+    $updaterPackages = @(
+        New-SignedUpdaterPackage '5.0.0.0'
+        New-SignedUpdaterPackage '6.0.0.0'
+    )
 
     [ordered]@{
-        format = 2
+        format = 3
         sourceCommit = $sourceCommit
         sourceTreeClean = $sourceTreeClean
         codeSigner = [ordered]@{
@@ -630,17 +666,11 @@ try {
         engines = @($engines.Values | Sort-Object version)
         runtimes = @($runtimes.Values | Sort-Object id)
         releaseSets = $releaseSetMetadata
-        msi = [ordered]@{
-            file = 'PtPuvrControlPlane.msi'
-            path = 'msi\PtPuvrControlPlane.msi'
-            sha256 = (Get-FileHash -LiteralPath $msiPath -Algorithm SHA256).Hash
-            productName = 'PowerToys Workspaces Protected Runtime Control-Plane Prototype'
-            upgradeCode = '{5B4C4E51-C55B-4F91-984A-D4A0D7D4FA31}'
-        }
+        updaterPackages = $updaterPackages
     } | ConvertTo-Json -Depth 10 |
         Set-Content -LiteralPath (Join-Path $releaseRoot 'artifacts.json') -Encoding utf8NoBOM
     Save-CertificateOwnership $certificateOwnership
-    Write-Host "Built signed host, engines, non-installed client harness, metadata release sets, and WiX v5 companion MSI: $msiPath"
+    Write-Host "Built signed machine-wide Updater MSIX packages, ordinary PE engines/runtimes, client harness, and release sets."
 }
 catch {
     $failure = $_

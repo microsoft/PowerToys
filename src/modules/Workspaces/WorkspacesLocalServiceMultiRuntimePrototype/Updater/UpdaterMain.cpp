@@ -1,6 +1,7 @@
 #include "../Common/LsmrCommon.h"
 
 #include <aclapi.h>
+#include <appmodel.h>
 #include <sddl.h>
 #include <shellapi.h>
 #include <tlhelp32.h>
@@ -3831,15 +3832,132 @@ namespace
 
     void validate_host_parent(DWORD hostPid)
     {
-        if (parent_process_id() != hostPid ||
-            !equal_path(
-                ptlsmr::raw_process_image_path(hostPid),
-                ptlsmr::host_executable_path()))
+        if (parent_process_id() != hostPid)
+        {
+            throw ptlsmr::win32_error("engine host parent and image policy", ERROR_ACCESS_DENIED);
+        }
+        ptlsmr::unique_handle process(OpenProcess(
+            PROCESS_QUERY_LIMITED_INFORMATION,
+            FALSE,
+            hostPid));
+        if (!process)
+        {
+            throw ptlsmr::win32_error("OpenProcess(engine Host parent)", GetLastError());
+        }
+        UINT32 fullNameCharacters = 0;
+        LONG result = GetPackageFullName(
+            process.get(),
+            &fullNameCharacters,
+            nullptr);
+        if (result != ERROR_INSUFFICIENT_BUFFER || fullNameCharacters <= 1)
+        {
+            throw ptlsmr::win32_error(
+                "GetPackageFullName(engine Host parent size)",
+                static_cast<DWORD>(static_cast<uint32_t>(result)));
+        }
+        std::wstring fullName(fullNameCharacters, L'\0');
+        result = GetPackageFullName(
+            process.get(),
+            &fullNameCharacters,
+            fullName.data());
+        if (result != ERROR_SUCCESS || fullNameCharacters <= 1)
+        {
+            throw ptlsmr::win32_error(
+                "GetPackageFullName(engine Host parent)",
+                static_cast<DWORD>(static_cast<uint32_t>(result)));
+        }
+        fullName.resize(fullNameCharacters - 1);
+
+        UINT32 idBytes = 0;
+        result = PackageIdFromFullName(
+            fullName.c_str(),
+            PACKAGE_INFORMATION_BASIC,
+            &idBytes,
+            nullptr);
+        if (result != ERROR_INSUFFICIENT_BUFFER || idBytes < sizeof(PACKAGE_ID))
+        {
+            throw ptlsmr::win32_error(
+                "PackageIdFromFullName(engine Host parent size)",
+                static_cast<DWORD>(static_cast<uint32_t>(result)));
+        }
+        std::vector<BYTE> idBuffer(idBytes);
+        auto* packageId = reinterpret_cast<PACKAGE_ID*>(idBuffer.data());
+        result = PackageIdFromFullName(
+            fullName.c_str(),
+            PACKAGE_INFORMATION_BASIC,
+            &idBytes,
+            idBuffer.data());
+        const auto minimumVersion = ptlsmr::parse_version(ptlsmr::HostVersion);
+        if (result != ERROR_SUCCESS ||
+            !packageId->name ||
+            !packageId->publisherId ||
+            _wcsicmp(packageId->name, ptlsmr::HostPackageName) != 0 ||
+            packageId->processorArchitecture != PROCESSOR_ARCHITECTURE_AMD64 ||
+            packageId->version.Major < minimumVersion.major ||
+            packageId->version.Minor != 0 ||
+            packageId->version.Build != 0 ||
+            packageId->version.Revision != 0)
+        {
+            throw ptlsmr::win32_error(
+                "engine Host package identity policy",
+                ERROR_ACCESS_DENIED);
+        }
+
+        std::wstring expectedName(ptlsmr::HostPackageName);
+        std::wstring expectedPublisher(ptlsmr::HostPackagePublisher);
+        PACKAGE_ID expectedPackage{};
+        expectedPackage.processorArchitecture = PROCESSOR_ARCHITECTURE_AMD64;
+        expectedPackage.version = packageId->version;
+        expectedPackage.name = expectedName.data();
+        expectedPackage.publisher = expectedPublisher.data();
+        UINT32 expectedFamilyCharacters = 0;
+        result = PackageFamilyNameFromId(
+            &expectedPackage,
+            &expectedFamilyCharacters,
+            nullptr);
+        if (result != ERROR_INSUFFICIENT_BUFFER || expectedFamilyCharacters <= 1)
+        {
+            throw ptlsmr::win32_error(
+                "PackageFamilyNameFromId(engine Host parent size)",
+                static_cast<DWORD>(static_cast<uint32_t>(result)));
+        }
+        std::wstring expectedFamily(expectedFamilyCharacters, L'\0');
+        result = PackageFamilyNameFromId(
+            &expectedPackage,
+            &expectedFamilyCharacters,
+            expectedFamily.data());
+        if (result != ERROR_SUCCESS)
+        {
+            throw ptlsmr::win32_error(
+                "PackageFamilyNameFromId(engine Host parent)",
+                static_cast<DWORD>(static_cast<uint32_t>(result)));
+        }
+        expectedFamily.resize(expectedFamilyCharacters - 1);
+        const std::wstring actualFamily =
+            std::wstring(packageId->name) + L"_" + packageId->publisherId;
+        if (_wcsicmp(expectedFamily.c_str(), actualFamily.c_str()) != 0)
+        {
+            throw ptlsmr::win32_error(
+                "engine Host package publisher policy",
+                ERROR_ACCESS_DENIED);
+        }
+
+        // The ordinary breakaway Engine runs without a package registration
+        // for LocalSystem, so GetPackagePathByFullName cannot resolve this
+        // parent package. The signed full name itself is the exact immutable
+        // WindowsApps directory name.
+        const auto programFiles =
+            ptlsmr::installation_root().parent_path().parent_path();
+        const auto expectedHost =
+            programFiles / L"WindowsApps" / fullName / ptlsmr::HostExe;
+        if (!equal_path(
+                ptlsmr::raw_process_image_path(process.get()),
+                expectedHost))
         {
             throw ptlsmr::win32_error("engine host parent and image policy", ERROR_ACCESS_DENIED);
         }
         (void)ptlsmr::validate_host_candidate(
-            ptlsmr::host_executable_path(),
+            expectedHost,
             ptlsmr::read_code_signer_pin());
     }
 

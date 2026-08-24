@@ -1,5 +1,6 @@
 #include "../Common/LsmrCommon.h"
 
+#include <appmodel.h>
 #include <sddl.h>
 #include <shellapi.h>
 
@@ -132,10 +133,14 @@ namespace
     {
     public:
         explicit process_attribute_list(HANDLE inheritedHandle) :
-            m_inheritedHandle(inheritedHandle)
+            m_inheritedHandle(inheritedHandle),
+            m_desktopAppPolicy(
+                PROCESS_CREATION_DESKTOP_APP_BREAKAWAY_ENABLE_PROCESS_TREE)
         {
+            const DWORD count =
+                inheritedHandle != nullptr && inheritedHandle != INVALID_HANDLE_VALUE ? 2 : 1;
             SIZE_T bytes = 0;
-            (void)InitializeProcThreadAttributeList(nullptr, 1, 0, &bytes);
+            (void)InitializeProcThreadAttributeList(nullptr, count, 0, &bytes);
             if (bytes == 0)
             {
                 throw ptlsmr::win32_error(
@@ -145,7 +150,7 @@ namespace
             m_storage.resize(bytes);
             m_value = reinterpret_cast<LPPROC_THREAD_ATTRIBUTE_LIST>(m_storage.data());
             ptlsmr::check_bool(
-                InitializeProcThreadAttributeList(m_value, 1, 0, &bytes),
+                InitializeProcThreadAttributeList(m_value, count, 0, &bytes),
                 "InitializeProcThreadAttributeList");
             try
             {
@@ -153,12 +158,25 @@ namespace
                     UpdateProcThreadAttribute(
                         m_value,
                         0,
-                        PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
-                        &m_inheritedHandle,
-                        sizeof(m_inheritedHandle),
+                        PROC_THREAD_ATTRIBUTE_DESKTOP_APP_POLICY,
+                        &m_desktopAppPolicy,
+                        sizeof(m_desktopAppPolicy),
                         nullptr,
                         nullptr),
-                    "UpdateProcThreadAttribute(engine diagnostic handle)");
+                    "UpdateProcThreadAttribute(engine package breakaway)");
+                if (count == 2)
+                {
+                    ptlsmr::check_bool(
+                        UpdateProcThreadAttribute(
+                            m_value,
+                            0,
+                            PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+                            &m_inheritedHandle,
+                            sizeof(m_inheritedHandle),
+                            nullptr,
+                            nullptr),
+                        "UpdateProcThreadAttribute(engine diagnostic handle)");
+                }
             }
             catch (...)
             {
@@ -188,6 +206,7 @@ namespace
         std::vector<BYTE> m_storage;
         LPPROC_THREAD_ATTRIBUTE_LIST m_value{};
         HANDLE m_inheritedHandle{};
+        DWORD m_desktopAppPolicy{};
     };
 
     struct job_child
@@ -645,6 +664,242 @@ namespace
                    std::filesystem::weakly_canonical(right).c_str(),
                    -1,
                    TRUE) == CSTR_EQUAL;
+    }
+
+    struct package_identity
+    {
+        std::wstring fullName;
+        std::wstring familyName;
+        std::filesystem::path installedPath;
+        ptlsmr::file_version version{};
+    };
+
+    template<typename Query>
+    [[nodiscard]] std::wstring query_package_string(
+        Query query,
+        const char* operation)
+    {
+        UINT32 characters = 0;
+        LONG result = query(&characters, nullptr);
+        if (result != ERROR_INSUFFICIENT_BUFFER || characters <= 1)
+        {
+            throw ptlsmr::win32_error(
+                operation,
+                static_cast<DWORD>(static_cast<uint32_t>(result)));
+        }
+        std::wstring value(characters, L'\0');
+        result = query(&characters, value.data());
+        if (result != ERROR_SUCCESS || characters <= 1)
+        {
+            throw ptlsmr::win32_error(
+                operation,
+                static_cast<DWORD>(static_cast<uint32_t>(result)));
+        }
+        value.resize(characters - 1);
+        return value;
+    }
+
+    [[nodiscard]] package_identity validate_package_identity()
+    {
+        package_identity identity;
+        identity.fullName = query_package_string(
+            [](UINT32* length, PWSTR value) {
+                return GetCurrentPackageFullName(length, value);
+            },
+            "GetCurrentPackageFullName(host)");
+        identity.familyName = query_package_string(
+            [](UINT32* length, PWSTR value) {
+                return GetCurrentPackageFamilyName(length, value);
+            },
+            "GetCurrentPackageFamilyName(host)");
+        identity.installedPath = std::filesystem::weakly_canonical(
+            query_package_string(
+                [](UINT32* length, PWSTR value) {
+                    return GetCurrentPackagePath(length, value);
+                },
+                "GetCurrentPackagePath(host)"));
+
+        UINT32 bytes = 0;
+        LONG result = PackageIdFromFullName(
+            identity.fullName.c_str(),
+            PACKAGE_INFORMATION_BASIC,
+            &bytes,
+            nullptr);
+        if (result != ERROR_INSUFFICIENT_BUFFER || bytes < sizeof(PACKAGE_ID))
+        {
+            throw ptlsmr::win32_error(
+                "PackageIdFromFullName(host size)",
+                static_cast<DWORD>(static_cast<uint32_t>(result)));
+        }
+        std::vector<BYTE> buffer(bytes);
+        auto* packageId = reinterpret_cast<PACKAGE_ID*>(buffer.data());
+        result = PackageIdFromFullName(
+            identity.fullName.c_str(),
+            PACKAGE_INFORMATION_BASIC,
+            &bytes,
+            buffer.data());
+        const auto minimumVersion = ptlsmr::parse_version(ptlsmr::HostVersion);
+        if (result != ERROR_SUCCESS ||
+            !packageId->name ||
+            !packageId->publisherId ||
+            _wcsicmp(packageId->name, ptlsmr::HostPackageName) != 0 ||
+            packageId->processorArchitecture != PROCESSOR_ARCHITECTURE_AMD64 ||
+            packageId->version.Major < minimumVersion.major ||
+            packageId->version.Minor != 0 ||
+            packageId->version.Build != 0 ||
+            packageId->version.Revision != 0)
+        {
+            throw ptlsmr::win32_error(
+                "host package identity policy",
+                result == ERROR_SUCCESS ?
+                    ERROR_ACCESS_DENIED :
+                    static_cast<DWORD>(static_cast<uint32_t>(result)));
+        }
+        identity.version = {
+            packageId->version.Major,
+            packageId->version.Minor,
+            packageId->version.Build,
+            packageId->version.Revision,
+        };
+
+        std::wstring expectedName(ptlsmr::HostPackageName);
+        std::wstring expectedPublisher(ptlsmr::HostPackagePublisher);
+        PACKAGE_ID expectedPackage{};
+        expectedPackage.processorArchitecture = PROCESSOR_ARCHITECTURE_AMD64;
+        expectedPackage.version = packageId->version;
+        expectedPackage.name = expectedName.data();
+        expectedPackage.publisher = expectedPublisher.data();
+        UINT32 expectedCharacters = 0;
+        result = PackageFamilyNameFromId(
+            &expectedPackage,
+            &expectedCharacters,
+            nullptr);
+        if (result != ERROR_INSUFFICIENT_BUFFER || expectedCharacters <= 1)
+        {
+            throw ptlsmr::win32_error(
+                "PackageFamilyNameFromId(host size)",
+                static_cast<DWORD>(static_cast<uint32_t>(result)));
+        }
+        std::wstring expectedFamily(expectedCharacters, L'\0');
+        result = PackageFamilyNameFromId(
+            &expectedPackage,
+            &expectedCharacters,
+            expectedFamily.data());
+        if (result != ERROR_SUCCESS)
+        {
+            throw ptlsmr::win32_error(
+                "PackageFamilyNameFromId(host)",
+                static_cast<DWORD>(static_cast<uint32_t>(result)));
+        }
+        expectedFamily.resize(expectedCharacters - 1);
+        if (_wcsicmp(identity.familyName.c_str(), expectedFamily.c_str()) != 0 ||
+            !equal_path(
+                module_path(),
+                identity.installedPath / ptlsmr::HostExe))
+        {
+            throw ptlsmr::win32_error(
+                "host package family or executable path policy",
+                ERROR_ACCESS_DENIED);
+        }
+        return identity;
+    }
+
+    void copy_packaged_bootstrap_file(
+        const std::filesystem::path& packageRoot,
+        const std::filesystem::path& source,
+        const std::filesystem::path& destination)
+    {
+        if (!source.wstring().starts_with(
+                packageRoot.wstring() + std::wstring(1, std::filesystem::path::preferred_separator)) ||
+            !std::filesystem::is_regular_file(source) ||
+            std::filesystem::is_symlink(source))
+        {
+            throw ptlsmr::win32_error(
+                "packaged bootstrap source policy",
+                ERROR_ACCESS_DENIED);
+        }
+        ptlsmr::protect_system_directory(destination.parent_path());
+        if (std::filesystem::is_regular_file(destination) &&
+            ptlsmr::files_are_identical(source, destination))
+        {
+            ptlsmr::protect_system_file(destination);
+            return;
+        }
+        if (std::filesystem::exists(destination) &&
+            !std::filesystem::is_regular_file(destination))
+        {
+            throw ptlsmr::win32_error(
+                "packaged bootstrap destination type policy",
+                ERROR_INVALID_DATA);
+        }
+
+        const auto staged = destination.parent_path() /
+            (destination.filename().wstring() + L".package-new-" +
+             ptlsmr::random_hex_identifier(16));
+        bool created = false;
+        try
+        {
+            if (!CopyFileW(source.c_str(), staged.c_str(), TRUE))
+            {
+                throw ptlsmr::win32_error(
+                    "CopyFileW(packaged bootstrap)",
+                    GetLastError());
+            }
+            created = true;
+            ptlsmr::protect_system_file(staged);
+            if (!MoveFileExW(
+                    staged.c_str(),
+                    destination.c_str(),
+                    MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+            {
+                throw ptlsmr::win32_error(
+                    "MoveFileExW(packaged bootstrap)",
+                    GetLastError());
+            }
+            created = false;
+            ptlsmr::protect_system_file(destination);
+        }
+        catch (...)
+        {
+            if (created)
+            {
+                (void)DeleteFileW(staged.c_str());
+            }
+            throw;
+        }
+    }
+
+    void seed_or_repair_packaged_bootstrap(const package_identity& identity)
+    {
+        const auto bootstrap =
+            identity.installedPath / ptlsmr::HostPackageBootstrapDirectory;
+        const auto initialEngine = ptlsmr::parse_version(ptlsmr::InitialEngineVersion);
+        const std::array mappings{
+            std::pair{
+                bootstrap / L"Engines" / ptlsmr::InitialEngineVersion / ptlsmr::EngineExe,
+                ptlsmr::engine_executable_path(initialEngine),
+            },
+            std::pair{
+                bootstrap / ptlsmr::CodeSignerPinFile,
+                ptlsmr::code_signer_pin_path(),
+            },
+            std::pair{
+                bootstrap / ptlsmr::MetadataSignerPinFile,
+                ptlsmr::metadata_signer_pin_path(),
+            },
+            std::pair{
+                bootstrap / L"Policy" / ptlsmr::CodePolicyExe,
+                ptlsmr::code_policy_path(),
+            },
+            std::pair{
+                bootstrap / L"Policy" / ptlsmr::MetadataPolicyExe,
+                ptlsmr::metadata_policy_path(),
+            },
+        };
+        for (const auto& [source, destination] : mappings)
+        {
+            copy_packaged_bootstrap_file(identity.installedPath, source, destination);
+        }
     }
 
     void report_status(DWORD state, DWORD error = ERROR_SUCCESS)
@@ -1482,19 +1737,18 @@ namespace
         auto job = create_kill_on_close_job();
         STARTUPINFOEXW startup{};
         startup.StartupInfo.cb = sizeof(startup);
-        std::unique_ptr<process_attribute_list> attributes;
+        auto attributes = std::make_unique<process_attribute_list>(diagnosticHandle);
         BOOL inheritHandles = FALSE;
-        DWORD creationFlags = CREATE_NO_WINDOW | CREATE_SUSPENDED;
+        DWORD creationFlags =
+            CREATE_NO_WINDOW | CREATE_SUSPENDED | EXTENDED_STARTUPINFO_PRESENT;
+        startup.lpAttributeList = attributes->get();
         if (diagnosticHandle != nullptr && diagnosticHandle != INVALID_HANDLE_VALUE)
         {
-            attributes = std::make_unique<process_attribute_list>(diagnosticHandle);
-            startup.lpAttributeList = attributes->get();
             startup.StartupInfo.dwFlags = STARTF_USESTDHANDLES;
             startup.StartupInfo.hStdInput = diagnosticHandle;
             startup.StartupInfo.hStdOutput = diagnosticHandle;
             startup.StartupInfo.hStdError = diagnosticHandle;
             inheritHandles = TRUE;
-            creationFlags |= EXTENDED_STARTUPINFO_PRESENT;
         }
 
         PROCESS_INFORMATION process{};
@@ -2137,6 +2391,7 @@ namespace
 
     void write_host_evidence()
     {
+        const auto packageIdentity = validate_package_identity();
         const auto active = read_active_engine_version();
         std::wstringstream evidence;
         evidence << L"serviceName=" << ptlsmr::HostServiceName << L"\r\n";
@@ -2153,10 +2408,15 @@ namespace
         evidence << L"pipePerSidActiveConnectionLimit=" <<
             PerSidActiveConnectionLimit << L"\r\n";
         evidence << L"childProcessPolicy=kill-on-close-job-stop-aware-120000ms\r\n";
-        evidence << L"bootstrapOrigin=companion-msi\r\n";
-        evidence << L"hostSelfServicing=msi-or-external-repair-only\r\n";
-        evidence << L"packageIdentityPresent=false\r\n";
-        evidence << L"packageFullNameResult=" << ptlsmr::require_no_package_identity() << L"\r\n";
+        evidence << L"bootstrapOrigin=machine-provisioned-signed-msix\r\n";
+        evidence << L"hostSelfServicing=appx-package-deployment\r\n";
+        evidence << L"packageIdentityPresent=true\r\n";
+        evidence << L"packageFullName=" << packageIdentity.fullName << L"\r\n";
+        evidence << L"packageFamilyName=" << packageIdentity.familyName << L"\r\n";
+        evidence << L"packageVersion=" <<
+            ptlsmr::format_version(packageIdentity.version) << L"\r\n";
+        evidence << L"packageInstalledPath=" <<
+            packageIdentity.installedPath.wstring() << L"\r\n";
         ptlsmr::write_utf8_file_atomic(
             ptlsmr::program_data_root() / L"host-evidence.txt",
             evidence.str());
@@ -2175,23 +2435,6 @@ namespace
             GetTokenInformation(token.get(), TokenElevation, &elevation, sizeof(elevation), &bytes),
             "GetTokenInformation(MSI elevation)");
         return elevation.TokenIsElevated != 0 && ptlsmr::token_is_administrator(token.get());
-    }
-
-    void protect_msi_owned_bootstrap_files()
-    {
-        const auto initialEngine = ptlsmr::parse_version(ptlsmr::InitialEngineVersion);
-        const std::array files{
-            ptlsmr::host_executable_path(),
-            ptlsmr::engine_executable_path(initialEngine),
-            ptlsmr::code_signer_pin_path(),
-            ptlsmr::metadata_signer_pin_path(),
-            ptlsmr::code_policy_path(),
-            ptlsmr::metadata_policy_path(),
-        };
-        for (const auto& file : files)
-        {
-            ptlsmr::protect_system_file(file);
-        }
     }
 
     [[nodiscard]] std::vector<std::wstring_view> split(
@@ -3953,6 +4196,38 @@ namespace
         return ERROR_SUCCESS;
     }
 
+    void write_startup_failure_noexcept(DWORD error, std::string_view operation) noexcept
+    {
+        try
+        {
+            ptlsmr::protect_system_directory(ptlsmr::program_data_root());
+            std::wstring detail(operation.begin(), operation.end());
+            ptlsmr::write_utf8_file_atomic(
+                ptlsmr::program_data_root() / L"host-startup-error.txt",
+                L"win32=" + std::to_wstring(error) + L"\r\noperation=" + detail + L"\r\n");
+        }
+        catch (...)
+        {
+        }
+    }
+
+    void clear_startup_failure()
+    {
+        const auto path =
+            ptlsmr::program_data_root() / L"host-startup-error.txt";
+        if (!DeleteFileW(path.c_str()))
+        {
+            const DWORD error = GetLastError();
+            if (error != ERROR_FILE_NOT_FOUND &&
+                error != ERROR_PATH_NOT_FOUND)
+            {
+                throw ptlsmr::win32_error(
+                    "DeleteFileW(stale Host startup failure)",
+                    error);
+            }
+        }
+    }
+
     void WINAPI service_main(DWORD, LPWSTR*)
     {
         g_statusHandle = RegisterServiceCtrlHandlerExW(
@@ -3970,15 +4245,12 @@ namespace
             {
                 throw ptlsmr::win32_error("host LocalSystem token policy", ERROR_ACCESS_DENIED);
             }
+            const auto packageIdentity = validate_package_identity();
             ptlsmr::protect_system_directory(ptlsmr::installation_root());
             ptlsmr::protect_system_directory(ptlsmr::program_data_root());
             ptlsmr::protect_system_directory(ptlsmr::requests_root());
-            protect_msi_owned_bootstrap_files();
+            seed_or_repair_packaged_bootstrap(packageIdentity);
             initialize_local_fixed_drive_mask();
-            if (!equal_path(module_path(), ptlsmr::host_executable_path()))
-            {
-                throw ptlsmr::win32_error("host fixed execution path policy", ERROR_ACCESS_DENIED);
-            }
             const std::wstring codePin = ptlsmr::read_code_signer_pin();
             (void)ptlsmr::validate_host_candidate(module_path(), codePin);
             validate_installed_policy();
@@ -3990,6 +4262,7 @@ namespace
             initialize_or_validate_mutable_state();
             recover_engine_activation();
             cleanup_abandoned_release_stages();
+            clear_startup_failure();
             g_stopEvent.reset(CreateEventW(nullptr, TRUE, FALSE, nullptr));
             if (!g_stopEvent)
             {
@@ -4067,11 +4340,15 @@ namespace
         catch (const ptlsmr::win32_error& error)
         {
             clear_published_endpoint_noexcept();
+            write_startup_failure_noexcept(error.code(), error.what());
             report_status(SERVICE_STOPPED, error.code());
         }
         catch (...)
         {
             clear_published_endpoint_noexcept();
+            write_startup_failure_noexcept(
+                ERROR_UNHANDLED_EXCEPTION,
+                "unexpected packaged Host startup failure");
             report_status(SERVICE_STOPPED, ERROR_UNHANDLED_EXCEPTION);
         }
     }
@@ -4082,11 +4359,13 @@ int wmain()
     try
     {
         const auto arguments = ptlsmr::command_line_arguments();
-        if (arguments.size() == 2 && arguments[1] == L"--msi-uninstall-check")
+        if (arguments.size() == 2 &&
+            arguments[1] == L"--package-uninstall-check")
         {
             return uninstall_operation(false);
         }
-        if (arguments.size() == 2 && arguments[1] == L"--msi-uninstall-cleanup")
+        if (arguments.size() == 2 &&
+            arguments[1] == L"--package-uninstall-cleanup")
         {
             return uninstall_operation(true);
         }
@@ -4101,7 +4380,9 @@ int wmain()
         };
         if (!StartServiceCtrlDispatcherW(table))
         {
-            return static_cast<int>(GetLastError());
+            const DWORD error = GetLastError();
+            write_startup_failure_noexcept(error, "StartServiceCtrlDispatcherW(host)");
+            return static_cast<int>(error);
         }
         return ERROR_SUCCESS;
     }
