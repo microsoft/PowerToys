@@ -70,6 +70,12 @@ all-module jobs pass their context-menu MSIX names through `-RequiredPackage`, s
 or untrusted setup fails at the prerequisite instead of surfacing later as a product-test failure.
 Jobs that do not exercise either modern context menu keep signing best-effort:
 
+PowerRename jobs also pass `PowerToys.exe` and `PowerToys.Settings.exe` through
+`-RequiredAuthenticodeFile` on every platform. Release IPC accepts only a Microsoft-named signer
+anchored in LocalMachine Root; unsigned PR binaries otherwise let the Settings toggle change
+visually while the runner rejects the command as `not-microsoft-signed`. The same disposable-agent
+test identity satisfies that authentication path without weakening the product policy.
+
 ```yaml
   - pwsh: |
       $roots = @(
@@ -77,11 +83,17 @@ Jobs that do not exercise either modern context menu keep signing best-effort:
         "$env:ProgramFiles\PowerToys",
         "$env:LOCALAPPDATA\PowerToys")
       $requiredPackages = @()
+      $requiredAuthenticodeFiles = @()
       if ($requiresImageResizer) { $requiredPackages += 'ImageResizerContextMenuPackage.msix' }
       if ($requiresPowerRename) { $requiredPackages += 'PowerRenameContextMenuPackage.msix' }
-      if ($requiredPackages.Count -gt 0) {
+      if ($requiresPowerRename) {
+        $requiredAuthenticodeFiles += 'PowerToys.exe', 'PowerToys.Settings.exe'
+      }
+      if ($requiredPackages.Count -gt 0 -or $requiredAuthenticodeFiles.Count -gt 0) {
         & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" `
-          -PackageRoot $roots -RequiredPackage $requiredPackages
+          -PackageRoot $roots `
+          -RequiredPackage $requiredPackages `
+          -RequiredAuthenticodeFile $requiredAuthenticodeFiles
       } else {
         try { & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" -PackageRoot $roots }
         catch { Write-Host "##vso[task.logissue type=warning]Sparse MSIX signing skipped: $($_.Exception.Message)" }

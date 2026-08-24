@@ -34,6 +34,14 @@ Filename patterns to sign. Defaults to *.msix and *.appx.
 Filename patterns that must be found and end with a Valid signature. Missing, unsigned, or untrusted
 matches make the script fail after attempting all packages.
 
+.PARAMETER RequiredAuthenticodeFile
+Filename patterns for unpackaged companion binaries that must be found and signed with the same
+machine-trusted TEST identity. This is used for authenticated PowerToys IPC on unsigned CI builds.
+
+.PARAMETER AuthenticodePublisher
+Certificate subject used to sign RequiredAuthenticodeFile matches. The default matches the
+Microsoft publisher identity required by PowerToys' Release IPC caller authentication.
+
 .PARAMETER Force
 Re-sign even packages that already carry a valid signature.
 
@@ -67,6 +75,12 @@ param(
 
     [Parameter()]
     [string[]]$RequiredPackage = @(),
+
+    [Parameter()]
+    [string[]]$RequiredAuthenticodeFile = @(),
+
+    [Parameter()]
+    [string]$AuthenticodePublisher = 'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US',
 
     [switch]$Force,
 
@@ -258,12 +272,30 @@ foreach ($root in $PackageRoot) {
 }
 $packages = $packages | Sort-Object FullName -Unique
 
-if (-not $packages) {
-    if ($RequiredPackage.Count -gt 0) {
-        throw "No packages found under '$($PackageRoot -join ', ')' while requiring: $($RequiredPackage -join ', ')."
+$requiredAuthenticodeFiles = @()
+foreach ($pattern in ($RequiredAuthenticodeFile | Where-Object { $_ } | Select-Object -Unique)) {
+    $matches = @()
+    foreach ($root in $PackageRoot) {
+        if (Test-Path $root) {
+            $matches += Get-ChildItem -Path $root -Recurse -File -Filter $pattern -ErrorAction SilentlyContinue
+        }
     }
 
-    Write-Host "No packages found under: $($PackageRoot -join ', ')"
+    $matches = @($matches | Sort-Object FullName -Unique)
+    if ($matches.Count -eq 0) {
+        throw "Required Authenticode file '$pattern' was not found under: $($PackageRoot -join ', ')."
+    }
+
+    $requiredAuthenticodeFiles += $matches
+}
+$requiredAuthenticodeFiles = @($requiredAuthenticodeFiles | Sort-Object FullName -Unique)
+
+if (-not $packages -and $RequiredPackage.Count -gt 0) {
+    throw "No packages found under '$($PackageRoot -join ', ')' while requiring: $($RequiredPackage -join ', ')."
+}
+
+if (-not $packages -and $requiredAuthenticodeFiles.Count -eq 0) {
+    Write-Host "No packages or required Authenticode files found under: $($PackageRoot -join ', ')"
     return
 }
 
@@ -329,6 +361,46 @@ if ($requiredPackages.Count -gt 0) {
     }
 
     Write-Host "Verified required sparse package(s): $($requiredPackages.FullName -join ', ')"
+}
+
+if ($requiredAuthenticodeFiles.Count -gt 0) {
+    if (-not $signtool) {
+        $signtool = Find-SignTool
+        if (-not $signtool) { $signtool = Get-SignToolFromNuget }
+        if (-not $signtool) { throw 'signtool.exe not found and could not be fetched from NuGet. Install the Windows SDK.' }
+        Write-Host "Using signtool: $signtool"
+    }
+
+    $cert = Get-TrustedSigningCert -Subject $AuthenticodePublisher
+    foreach ($file in $requiredAuthenticodeFiles) {
+        $existing = Get-AuthenticodeSignature -FilePath $file.FullName
+        if (-not $Force -and $existing.Status -eq 'Valid') {
+            Write-Host "Already validly signed, skipping: $($file.FullName)"
+            continue
+        }
+
+        Write-Host "Signing companion binary: $($file.FullName)"
+        & $signtool sign /fd SHA256 /sha1 $cert.Thumbprint $file.FullName
+        if ($LASTEXITCODE -ne 0) {
+            throw "signtool failed for required Authenticode file '$($file.FullName)' (exit $LASTEXITCODE)."
+        }
+    }
+
+    $invalidAuthenticodeFiles = @($requiredAuthenticodeFiles | Where-Object {
+        $signature = Get-AuthenticodeSignature -FilePath $_.FullName
+        $signerName = if ($signature.SignerCertificate) {
+            $signature.SignerCertificate.GetNameInfo([Security.Cryptography.X509Certificates.X509NameType]::SimpleName, $false)
+        } else {
+            $null
+        }
+        $signatureMissing = -not $signature.SignerCertificate -or $signerName -notlike '*Microsoft Corporation*'
+        $signatureMissing -or (-not $SkipLocalTrust -and $signature.Status -ne 'Valid')
+    })
+    if ($invalidAuthenticodeFiles.Count -gt 0) {
+        throw "Required Authenticode file(s) are not signed with the trusted test identity: $($invalidAuthenticodeFiles.FullName -join ', ')."
+    }
+
+    Write-Host "Verified required Authenticode file(s): $($requiredAuthenticodeFiles.FullName -join ', ')"
 }
 
 Write-Host "Signed $signed package(s) with a trusted test certificate."

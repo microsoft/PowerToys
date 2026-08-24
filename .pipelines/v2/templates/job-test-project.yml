@@ -192,20 +192,31 @@ jobs:
       $selectedModules = @($modulesRaw -split ';' | Where-Object { $_ })
       $allModules = [string]::IsNullOrWhiteSpace($modulesRaw)
       $requiresModernContextMenu = '$(TestPlatform)' -ne 'x64Win10'
+      $requiresPowerRename = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename' }).Count -gt 0
       $requiredPackages = @()
+      $requiredAuthenticodeFiles = @()
 
       if ($requiresModernContextMenu -and ($allModules -or @($selectedModules | Where-Object { $_ -match 'ImageResizer' }).Count -gt 0)) {
         $requiredPackages += 'ImageResizerContextMenuPackage.msix'
       }
 
-      if ($requiresModernContextMenu -and ($allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename' }).Count -gt 0)) {
+      if ($requiresModernContextMenu -and $requiresPowerRename) {
         $requiredPackages += 'PowerRenameContextMenuPackage.msix'
       }
 
-      if ($requiredPackages.Count -gt 0) {
-        & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" `
-          -PackageRoot $packageRoots `
-          -RequiredPackage $requiredPackages
+      if ($requiresPowerRename) {
+        $requiredAuthenticodeFiles += 'PowerToys.exe', 'PowerToys.Settings.exe'
+      }
+
+      if ($requiredPackages.Count -gt 0 -or $requiredAuthenticodeFiles.Count -gt 0) {
+        $signingArguments = @{ PackageRoot = $packageRoots }
+        if ($requiredPackages.Count -gt 0) {
+          $signingArguments.RequiredPackage = $requiredPackages
+        }
+        if ($requiredAuthenticodeFiles.Count -gt 0) {
+          $signingArguments.RequiredAuthenticodeFile = $requiredAuthenticodeFiles
+        }
+        & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" @signingArguments
       } else {
         try {
           & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" -PackageRoot $packageRoots
