@@ -148,6 +148,7 @@ namespace ShortcutGuide
                 // Any failure in launch is fatal for this short-lived overlay; log and exit
                 // cleanly rather than letting WinUI surface a generic crash dialog.
                 Logger.LogError("Failed to launch Shortcut Guide.", ex);
+                Environment.ExitCode = 1;
                 Shutdown();
             }
         }

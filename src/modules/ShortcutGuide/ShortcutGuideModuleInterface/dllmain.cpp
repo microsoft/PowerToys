@@ -307,6 +307,14 @@ private:
 
     void StopProcess()
     {
+        if (exitEvent)
+        {
+            if (!SetEvent(exitEvent))
+            {
+                Logger::error(L"Failed to signal {}. {}", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT, get_last_error_or_default(GetLastError()));
+            }
+        }
+
         if (!m_process)
         {
             return;
@@ -315,14 +323,6 @@ private:
         if (!IsProcessActive())
         {
             return;
-        }
-
-        if (exitEvent)
-        {
-            if (!SetEvent(exitEvent))
-            {
-                Logger::error(L"Failed to signal {}. {}", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT, get_last_error_or_default(GetLastError()));
-            }
         }
 
         constexpr DWORD gracefulShutdownTimeoutMs = 2000;
