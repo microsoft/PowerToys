@@ -271,6 +271,62 @@ identical certificate if that certificate was already trusted before the run.
 The result is written to `artifacts\validation-result.json`; retain it and the
 console output when comparing different Windows builds.
 
+## Machine-wide lifecycle validation
+
+Additional validation on Windows `10.0.26200.0` on 2026-08-24 tested whether
+the updater MSIX could replace the external trusted bootstrap and servicing
+actor, rather than only protecting the updater bytes.
+
+### Passed
+
+- `Add-AppxProvisionedPackage -Online` performed a real machine provisioning
+  operation and created the fixed `PtPuvrUpdater` LocalSystem service.
+- Two temporary standard users independently registered the same provisioned
+  updater package. Removing user A's registration preserved user B's
+  registration, the machine provisioning record, and the running singleton
+  service.
+- An elevated machine deployment operation upgraded updater package
+  `5.0.0.0` to `6.0.0.0` while v5 was running. Windows stopped v5, changed the
+  SCM image path to v6, and left the service stopped for the external actor to
+  health-check and restart.
+- The v6 test package intentionally contained v5 bytes. The updater's
+  exact-version self-check rejected it with service exit 13. An elevated
+  `ForceUpdateFromAnyVersion` operation then restored the provisioned v5
+  package, the v5 SCM path, and a healthy running updater.
+- Removing the updater package did not remove or stop the two independently
+  created runtime services. Re-provisioning v5 rebuilt the package-owned
+  updater service asynchronously in about 2.8 seconds, and the repaired updater
+  reconciled both still-running runtimes.
+
+`MachineMultiUser.ps1` is the repeatable two-standard-user registration and
+one-user-removal harness. Machine-readable results are written under
+`artifacts\machine-multi-user-result.json` and
+`artifacts\machine-servicing\`.
+
+### Blocking result
+
+A standard user could not update v5 to v6 while another registered user was
+logged in. Deployment returned outer error `0x80073D19` with the specific
+error:
+
+```text
+0x80073D25
+Packages with singleton components will fail if other users are logged in
+and have the package installed.
+```
+
+The same package update succeeded when invoked by an elevated machine actor.
+Therefore AppX supplies signature validation, protected bytes, transactional
+package replacement, and SCM path ownership, but it does not create a
+non-privileged cross-user servicing authority for a package containing this
+singleton service.
+
+Machine provisioning also requires administrator authority, and updater
+replacement terminates the updater before health-check/restart. Consequently
+the updater cannot be its own only bootstrap, update, rollback, or repair
+actor. A machine installer, enterprise deployment system, or occasional
+explicit elevation is still required.
+
 ## Product gaps
 
 This is a topology/mechanism prototype, not production updater code:
@@ -286,8 +342,11 @@ This is a topology/mechanism prototype, not production updater code:
 - the `SharedAppsRedirect` failure's internal root cause remains undocumented;
 - `AddPackageAsync` shares the same failing early deployment path and is not a
   mitigation on the validated build;
-- updater self-update still needs an external elevated actor, but can remain a
-  rare `MinimumUpdaterVersion` event.
+- machine-wide updater install, cross-user update, rollback, and last-removal
+  still need an external elevated actor;
+- package removal does not understand independently created runtime leases, so
+  product uninstall must refuse updater retirement until protected inventory
+  proves that no installations or runtimes still depend on it.
 
 ## Verdict
 
@@ -303,3 +362,9 @@ requirement on the tested build, and replacing Stage with Add produces the same
 error. Without approval for those two conditions, the cleanest equivalent is
 an ordinary unpackaged LocalSystem updater with virtual-account runtimes; use
 LocalSystem runtimes only if machine-compromise blast radius is acceptable.
+
+**Bootstrap/self-update NO-GO under the no-external-actor requirement:** a
+machine-wide MSIX packaged updater cannot by itself replace a trusted machine
+bootstrap and servicing actor. The existing packaged-updater mechanism remains
+usable only when the product accepts an elevated installer/enterprise actor for
+first provisioning and rare updater-version changes.
