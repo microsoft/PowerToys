@@ -303,7 +303,7 @@ one-user-removal harness. Machine-readable results are written under
 `artifacts\machine-multi-user-result.json` and
 `artifacts\machine-servicing\`.
 
-### Blocking result
+### Expected privilege boundary and elevated multi-user result
 
 A standard user could not update v5 to v6 while another registered user was
 logged in. Deployment returned outer error `0x80073D19` with the specific
@@ -315,17 +315,27 @@ Packages with singleton components will fail if other users are logged in
 and have the package installed.
 ```
 
-The same package update succeeded when invoked by an elevated machine actor.
-Therefore AppX supplies signature validation, protected bytes, transactional
-package replacement, and SCM path ownership, but it does not create a
-non-privileged cross-user servicing authority for a package containing this
-singleton service.
+This is expected: installing or updating a machine-wide package that declares
+a `desktop6:Service` requires elevation. It is not a product requirement for a
+standard-user deployment call to update this package.
 
-Machine provisioning also requires administrator authority, and updater
-replacement terminates the updater before health-check/restart. Consequently
-the updater cannot be its own only bootstrap, update, rollback, or repair
-actor. A machine installer, enterprise deployment system, or occasional
-explicit elevation is still required.
+The decisive test kept another standard user logged in, with v5 registered and
+a live process, while an elevated machine actor performed the update. The
+operation succeeded:
+
+- machine provisioning and both users moved to v6;
+- Windows stopped v5 and changed the SCM image path to v6;
+- the other user's process remained alive throughout the operation;
+- elevated `ForceUpdateFromAnyVersion` then moved provisioning, both user
+  registrations, and the SCM path back to v5 while that user remained logged
+  in.
+
+Therefore the accepted design boundary is one UAC/elevated package deployment
+operation for initial machine provisioning and for rare updater-version
+changes. The signed MSIX is the bootstrap trust anchor; a persistent or
+separately installed Burn bootstrapper is not required for package
+authentication. The elevated invoking process remains responsible for
+restart, health-check, and rollback after AppX stops the packaged updater.
 
 ## Product gaps
 
@@ -343,7 +353,7 @@ This is a topology/mechanism prototype, not production updater code:
 - `AddPackageAsync` shares the same failing early deployment path and is not a
   mitigation on the validated build;
 - machine-wide updater install, cross-user update, rollback, and last-removal
-  still need an external elevated actor;
+  require the expected UAC/elevated deployment operation;
 - package removal does not understand independently created runtime leases, so
   product uninstall must refuse updater retirement until protected inventory
   proves that no installations or runtimes still depend on it.
@@ -363,8 +373,8 @@ error. Without approval for those two conditions, the cleanest equivalent is
 an ordinary unpackaged LocalSystem updater with virtual-account runtimes; use
 LocalSystem runtimes only if machine-compromise blast radius is acceptable.
 
-**Bootstrap/self-update NO-GO under the no-external-actor requirement:** a
-machine-wide MSIX packaged updater cannot by itself replace a trusted machine
-bootstrap and servicing actor. The existing packaged-updater mechanism remains
-usable only when the product accepts an elevated installer/enterprise actor for
-first provisioning and rare updater-version changes.
+**Machine lifecycle GO under the accepted UAC requirement:** elevated install,
+multi-user update, health-failure rollback, one-user removal, last removal, and
+machine repair all passed. This validates proceeding to an integration
+prototype with the machine-provisioned packaged updater and ordinary protected
+per-SID runtime services.
