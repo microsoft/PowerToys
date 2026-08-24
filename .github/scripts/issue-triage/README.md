@@ -81,8 +81,8 @@ that retain `Needs-Author-Feedback` for seven days without activity.
 
 - The GitHub Models-based automatic issue deduplicator is removed.
 - The GitHub Models-based issue/PR area labeler is removed. This workflow
-  replaces issue labeling only; automatic PR product labeling is intentionally
-  not replaced here.
+  replaces issue labeling; deterministic changed-path product labeling for pull
+  requests is handled by `.github/workflows/pr-intake.yml`.
 - The Azure Pipelines XAML Styler verification step is removed. The local
   `.pipelines/applyXamlStyling.ps1` developer tool remains available.
 
