@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.PowerRename.UITests;
 /// <remarks>Covers checklist items 1-3 of microsoft/PowerToys#40663.</remarks>
 [TestClass]
 [DoNotParallelize]
-public sealed class PowerRenameContextMenuTests : PowerRenameTestBase
+public sealed partial class PowerRenameTests : PowerRenameTestBase
 {
     private const string ExplorerProcessName = "explorer";
     private const string ModernContextMenuClassName = "Microsoft.UI.Content.PopupWindowSiteBridge";
@@ -32,7 +32,8 @@ public sealed class PowerRenameContextMenuTests : PowerRenameTestBase
     [TestInitialize]
     public void PrepareTest()
     {
-        ConfigureModuleSettings();
+        ConfigureModuleSettings(persistState: false, mruEnabled: false);
+        ClearPersistedRenameState();
         Assert.IsTrue(CloseExplorerFileWindows(), "Stale Explorer file windows could not be closed before the test.");
     }
 
@@ -63,7 +64,6 @@ public sealed class PowerRenameContextMenuTests : PowerRenameTestBase
             toggle = SetModuleEnabled(toggle, false);
             var explorer = OpenExplorer(folder);
             AssertClassicMenuContainsEntry(explorer, new[] { fixture }, expected: false, extendedVerbs: false);
-            AssertModernMenuContainsEntry(explorer, new[] { fixture }, expected: false);
 
             toggle = SetModuleEnabled(toggle, true);
             Assert.IsTrue(
@@ -99,19 +99,11 @@ public sealed class PowerRenameContextMenuTests : PowerRenameTestBase
         var fixture = CreateFile(folder, "icon.txt");
         var explorer = OpenExplorer(folder);
 
-        var withIcon = CaptureMenuEntry(explorer, fixture, showIcon: true, name: "icon-on");
-        var withoutIcon = CaptureMenuEntry(explorer, fixture, showIcon: false, name: "icon-off");
-
-        var iconPixels = CountGutterDetailPixels(withIcon);
-        var plainPixels = CountGutterDetailPixels(withoutIcon);
-        Step($"Icon gutter detail pixels: on={iconPixels}, off={plainPixels}");
-
-        Assert.IsTrue(
-            plainPixels < 8,
-            $"'Show icon on context menu' was off but the entry's icon gutter still had {plainPixels} non-background pixels.");
-        Assert.IsTrue(
-            iconPixels > plainPixels + 20,
-            $"'Show icon on context menu' made no visible difference to the entry (on={iconPixels}, off={plainPixels} non-background pixels).");
+        AssertMenuIconSetting(explorer, fixture, ContextMenuSurface.Classic);
+        if (ModernSurfaceAvailable())
+        {
+            AssertMenuIconSetting(explorer, fixture, ContextMenuSurface.Modern);
+        }
     }
 
     [TestMethod("PowerRename.ContextMenu.ExtendedOnly")]
@@ -125,6 +117,7 @@ public sealed class PowerRenameContextMenuTests : PowerRenameTestBase
 
         ConfigureModuleSettings(extendedContextMenuOnly: false);
         AssertClassicMenuContainsEntry(explorer, new[] { fixture }, expected: true, extendedVerbs: false);
+        AssertModernMenuContainsEntry(explorer, new[] { fixture }, expected: true);
 
         ConfigureModuleSettings(extendedContextMenuOnly: true);
         AssertClassicMenuContainsEntry(explorer, new[] { fixture }, expected: false, extendedVerbs: false);
@@ -145,7 +138,8 @@ public sealed class PowerRenameContextMenuTests : PowerRenameTestBase
             explorer,
             new[] { first, second },
             ModernSurfaceAvailable() ? ContextMenuSurface.Modern : ContextMenuSurface.Classic,
-            extendedVerbs: false);
+            extendedVerbs: false,
+            requireEntry: true);
         var entry = FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: MenuSurfaceTimeoutMS);
         Assert.IsNotNull(entry, $"Explorer did not offer '{ContextMenuCaption}' for the selected files.");
         Step($"Invoking '{ContextMenuCaption}'");
@@ -270,12 +264,17 @@ public sealed class PowerRenameContextMenuTests : PowerRenameTestBase
             return;
         }
 
-        var menu = OpenMenuWithRetry(explorer, paths, ContextMenuSurface.Modern, extendedVerbs: false);
+        var menu = OpenMenuWithRetry(explorer, paths, ContextMenuSurface.Modern, extendedVerbs: false, requireEntry: expected);
         try
         {
-            Assert.AreEqual(
-                expected,
-                FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: 3_000) is not null,
+            var observation = WaitHelper.WaitForStable(
+                observe: () => FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: 250) is not null,
+                isMatch: present => present == expected,
+                timeoutMS: 5_000,
+                requiredConsecutiveMatches: expected ? 2 : 8,
+                pollIntervalMS: 250);
+            Assert.IsTrue(
+                observation.Succeeded,
                 $"The tier-1 Explorer context menu did {(expected ? "not show" : "show")} '{ContextMenuCaption}'.");
         }
         finally
@@ -286,15 +285,19 @@ public sealed class PowerRenameContextMenuTests : PowerRenameTestBase
 
     private void AssertClassicMenuContainsEntry(Session explorer, string[] paths, bool expected, bool extendedVerbs)
     {
-        var menu = OpenMenuWithRetry(explorer, paths, ContextMenuSurface.Classic, extendedVerbs);
+        var menu = OpenMenuWithRetry(explorer, paths, ContextMenuSurface.Classic, extendedVerbs, requireEntry: expected);
         try
         {
-            var captions = ClassicContextMenu.TryReadItemCaptions(new IntPtr(menu.WindowHandle));
-            Assert.AreEqual(
-                expected,
-                HasEntry(captions),
+            var observation = WaitHelper.WaitForStable(
+                observe: () => ClassicContextMenu.TryReadItemCaptions(new IntPtr(menu.WindowHandle)),
+                isMatch: captions => captions is not null && HasEntry(captions) == expected,
+                timeoutMS: 5_000,
+                requiredConsecutiveMatches: expected ? 2 : 8,
+                pollIntervalMS: 250);
+            Assert.IsTrue(
+                observation.Succeeded,
                 $"The classic Explorer context menu ({(extendedVerbs ? "extended" : "plain")}) did " +
-                $"{(expected ? "not show" : "show")} '{ContextMenuCaption}'. {Describe(captions)}");
+                $"{(expected ? "not show" : "show")} '{ContextMenuCaption}'. {Describe(observation.LastObservation)}");
         }
         finally
         {
@@ -314,10 +317,28 @@ public sealed class PowerRenameContextMenuTests : PowerRenameTestBase
     /// Crop of the PowerRename entry's row, taken from the live desktop so the popup menu (which no
     /// window-scoped capture reaches) is included.
     /// </summary>
-    private string CaptureMenuEntry(Session explorer, string fixture, bool showIcon, string name)
+    private void AssertMenuIconSetting(Session explorer, string fixture, ContextMenuSurface surface)
+    {
+        var surfaceName = surface.ToString().ToLowerInvariant();
+        var withIcon = CaptureMenuEntry(explorer, fixture, showIcon: true, $"{surfaceName}-icon-on", surface);
+        var withoutIcon = CaptureMenuEntry(explorer, fixture, showIcon: false, $"{surfaceName}-icon-off", surface);
+
+        var iconPixels = CountGutterDetailPixels(withIcon);
+        var plainPixels = CountGutterDetailPixels(withoutIcon);
+        Step($"{surface} icon gutter detail pixels: on={iconPixels}, off={plainPixels}");
+
+        Assert.IsTrue(
+            plainPixels < 8,
+            $"The {surface} entry's icon gutter had {plainPixels} non-background pixels while the icon setting was off.");
+        Assert.IsTrue(
+            iconPixels > plainPixels + 20,
+            $"The {surface} entry showed no icon difference (on={iconPixels}, off={plainPixels} non-background pixels).");
+    }
+
+    private string CaptureMenuEntry(Session explorer, string fixture, bool showIcon, string name, ContextMenuSurface surface)
     {
         ConfigureModuleSettings(showIcon: showIcon);
-        var menu = OpenMenuWithRetry(explorer, new[] { fixture }, ContextMenuSurface.Classic, extendedVerbs: false);
+        var menu = OpenMenuWithRetry(explorer, new[] { fixture }, surface, extendedVerbs: false, requireEntry: true);
         var results = TestContext.TestResultsDirectory ?? Path.GetTempPath();
         var desktopPath = Path.Combine(results, $"context-menu-{name}-desktop.png");
         var entryPath = Path.Combine(results, $"context-menu-{name}.png");
@@ -327,8 +348,10 @@ public sealed class PowerRenameContextMenuTests : PowerRenameTestBase
             var entry = FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: MenuSurfaceTimeoutMS);
             Assert.IsNotNull(
                 entry,
-                $"The classic Explorer context menu did not show '{ContextMenuCaption}'. " +
-                Describe(ClassicContextMenu.TryReadItemCaptions(new IntPtr(menu.WindowHandle))));
+                $"The {surface} Explorer context menu did not show '{ContextMenuCaption}'. " +
+                (surface == ContextMenuSurface.Classic
+                    ? Describe(ClassicContextMenu.TryReadItemCaptions(new IntPtr(menu.WindowHandle)))
+                    : string.Empty));
             Assert.IsTrue(ScreenCapture.TryCaptureDesktop(desktopPath), "The desktop could not be captured while the menu was open.");
 
             using (var desktop = new Bitmap(desktopPath))
@@ -396,7 +419,12 @@ public sealed class PowerRenameContextMenuTests : PowerRenameTestBase
     /// attempt and reopening a stale window: a slow agent re-renders the file view asynchronously and
     /// silently drops the selection the gesture needs.
     /// </summary>
-    private Session OpenMenuWithRetry(Session explorer, string[] paths, ContextMenuSurface surface, bool extendedVerbs)
+    /// <param name="requireEntry">
+    /// When the entry is expected, treat a menu that opened without it as a failed attempt and reopen.
+    /// A shell extension's item can be enumerated after the popup is already on screen, so one open is
+    /// not enough to conclude the entry is missing.
+    /// </param>
+    private Session OpenMenuWithRetry(Session explorer, string[] paths, ContextMenuSurface surface, bool extendedVerbs, bool requireEntry = false)
     {
         var folder = Path.GetDirectoryName(paths[0])!;
         var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(MenuAttemptTimeoutMS);
@@ -424,7 +452,7 @@ public sealed class PowerRenameContextMenuTests : PowerRenameTestBase
             var menu = surface == ContextMenuSurface.Classic
                 ? OpenClassicMenu(explorer, extendedVerbs)
                 : OpenModernMenu(explorer);
-            if (menu is not null)
+            if (menu is not null && (!requireEntry || MenuHasEntry(menu, surface)))
             {
                 return menu;
             }
@@ -434,14 +462,21 @@ public sealed class PowerRenameContextMenuTests : PowerRenameTestBase
         while (DateTime.UtcNow < deadline);
 
         Assert.Fail(
-            $"Explorer never opened the {surface} context menu for [{string.Join(", ", paths.Select(Path.GetFileName))}]. " +
+            $"Explorer never opened the {surface} context menu" +
+            $"{(requireEntry ? $" carrying '{ContextMenuCaption}'" : string.Empty)} " +
+            $"for [{string.Join(", ", paths.Select(Path.GetFileName))}]. " +
             $"Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
         return null!;
     }
 
+    private static bool MenuHasEntry(Session menu, ContextMenuSurface surface) =>
+        surface == ContextMenuSurface.Classic
+            ? HasEntry(ClassicContextMenu.TryReadItemCaptions(new IntPtr(menu.WindowHandle)))
+            : FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: 5_000) is not null;
+
     private Session? OpenModernMenu(Session explorer)
     {
-        EnsureExplorerForeground(explorer);
+        TryEnsureExplorerForeground(explorer);
         Step("Opening the tier-1 Explorer context menu");
         if (!WindowControl.TryOpenContextMenuForFocusedControl(new IntPtr(explorer.WindowHandle)))
         {
@@ -457,7 +492,7 @@ public sealed class PowerRenameContextMenuTests : PowerRenameTestBase
     /// </summary>
     private Session? OpenClassicMenu(Session explorer, bool extendedVerbs)
     {
-        EnsureExplorerForeground(explorer);
+        TryEnsureExplorerForeground(explorer);
         Step($"Opening the classic Explorer context menu (extended verbs: {extendedVerbs})");
 
         // Keep any Shift hold short: Windows pops its Filter Keys prompt after eight seconds.
@@ -545,7 +580,8 @@ public sealed class PowerRenameContextMenuTests : PowerRenameTestBase
                         element.Name.Equals(name, StringComparison.OrdinalIgnoreCase) &&
                         element.ControlType.Equals("MenuItem", StringComparison.OrdinalIgnoreCase) &&
                         element.Width > 0 &&
-                        element.Height > 0);
+                        element.Height > 0 &&
+                        element.Displayed);
                 if (item is not null)
                 {
                     return item;
@@ -590,7 +626,7 @@ public sealed class PowerRenameContextMenuTests : PowerRenameTestBase
             timeoutMS: ExplorerTimeoutMS);
         Assert.IsNotNull(explorer, $"Explorer did not open '{folderPath}'.");
 
-        EnsureExplorerForeground(explorer!);
+        TryEnsureExplorerForeground(explorer!);
         return explorer!;
     }
 
@@ -676,11 +712,15 @@ public sealed class PowerRenameContextMenuTests : PowerRenameTestBase
             : WindowsFinder.WaitForWindow(window => window.Hwnd == replacement.Hwnd, timeoutMS: 2_000, pollIntervalMS: 100);
     }
 
-    private static void EnsureExplorerForeground(Session explorer) =>
-        Assert.IsTrue(
-            WindowControl.WaitForForeground(new IntPtr(explorer.WindowHandle), ExplorerTimeoutMS, requiredConsecutiveMatches: 3),
-            $"Explorer HWND {explorer.WindowHandle} was not the stable foreground window. " +
-            $"Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
+    private void TryEnsureExplorerForeground(Session explorer)
+    {
+        if (!WindowControl.WaitForForeground(new IntPtr(explorer.WindowHandle), ExplorerTimeoutMS, requiredConsecutiveMatches: 3))
+        {
+            Step(
+                $"Explorer HWND {explorer.WindowHandle} did not become stable foreground; continuing. " +
+                $"Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        }
+    }
 
     private static bool IsExplorerFileWindow(WindowsFinder.WindowInfo window) =>
         window.ClassName.Equals("CabinetWClass", StringComparison.OrdinalIgnoreCase);

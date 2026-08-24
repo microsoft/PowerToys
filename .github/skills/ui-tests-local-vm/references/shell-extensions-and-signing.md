@@ -65,10 +65,10 @@ whichever tree hosts the packages:
 
 **Where it is wired in CI.** This runs in `.pipelines/v2/templates/job-test-project.yml` after the
 download/install steps and before **Run UI Tests**. It recursively searches the run-in-place artifact
-and complete machine/per-user install roots. Windows 11/ARM64 Image Resizer and all-module jobs pass
-`-RequiredPackage ImageResizerContextMenuPackage.msix`, so missing, unsigned, or untrusted setup fails
-at the prerequisite instead of surfacing later as a product-test failure. Jobs that do not exercise
-Image Resizer keep signing best-effort because their suites can guard unavailable modern packages:
+and complete machine/per-user install roots. Windows 11/ARM64 Image Resizer, PowerRename, and
+all-module jobs pass their context-menu MSIX names through `-RequiredPackage`, so missing, unsigned,
+or untrusted setup fails at the prerequisite instead of surfacing later as a product-test failure.
+Jobs that do not exercise either modern context menu keep signing best-effort:
 
 ```yaml
   - pwsh: |
@@ -76,9 +76,12 @@ Image Resizer keep signing best-effort because their suites can guard unavailabl
         "$(Pipeline.Workspace)\$(TestArtifactsName)",
         "$env:ProgramFiles\PowerToys",
         "$env:LOCALAPPDATA\PowerToys")
-      if ($requiresImageResizer) {
+      $requiredPackages = @()
+      if ($requiresImageResizer) { $requiredPackages += 'ImageResizerContextMenuPackage.msix' }
+      if ($requiresPowerRename) { $requiredPackages += 'PowerRenameContextMenuPackage.msix' }
+      if ($requiredPackages.Count -gt 0) {
         & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" `
-          -PackageRoot $roots -RequiredPackage 'ImageResizerContextMenuPackage.msix'
+          -PackageRoot $roots -RequiredPackage $requiredPackages
       } else {
         try { & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" -PackageRoot $roots }
         catch { Write-Host "##vso[task.logissue type=warning]Sparse MSIX signing skipped: $($_.Exception.Message)" }

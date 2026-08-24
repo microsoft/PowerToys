@@ -112,6 +112,14 @@ public sealed class SessionHelper
         Process.GetProcessesByName(GetProcessName(scope)).Length > 0;
 
     /// <summary>
+    /// Returns <c>true</c> when the scope's full owning environment is alive. Settings is healthy
+    /// only while both its window process and the runner that owns module lifecycle are running.
+    /// </summary>
+    internal static bool IsScopeHealthy(PowerToysModule scope) =>
+        IsRunning(scope) &&
+        (scope != PowerToysModule.PowerToysSettings || IsRunning(PowerToysModule.Runner));
+
+    /// <summary>
     /// Ensure the runner-owned environment for <paramref name="scope"/> is up and has presented a
     /// UIA-visible window. Returns <c>false</c> when the target was already running (nothing
     /// launched), <c>true</c> when a launch was needed — callers track this so cleanup only kills
@@ -147,7 +155,7 @@ public sealed class SessionHelper
         // Whether or not the scope process already exists, the test needs its WINDOW. EnsureWindow
         // waits patiently and (idempotently) re-issues the launch as needed; it only kills/relaunches
         // a genuinely-dead fresh launch, never a slow-but-healthy or class-shared (reused) window.
-        var alreadyRunning = IsRunning(scope);
+        var alreadyRunning = IsScopeHealthy(scope);
         EnsureWindow(scope, timeout, alreadyRunning);
         return !alreadyRunning;
     }
@@ -187,7 +195,7 @@ public sealed class SessionHelper
 
         while (DateTime.UtcNow < deadline)
         {
-            if (WindowsFinder.ListByApp(processName).Count > 0)
+            if (IsScopeHealthy(scope) && WindowsFinder.ListByApp(processName).Count > 0)
             {
                 // Give XAML a moment to populate the visual tree.
                 Thread.Sleep(750);
@@ -204,8 +212,16 @@ public sealed class SessionHelper
                 // honours with a SEPARATE Settings.exe (the "Settings: 3" pile-up seen in CI), and the
                 // competing single-instance processes plus the launch contention push the window past
                 // the deadline. So when anything is alive, keep waiting instead of piling on.
-                var alive = IsRunning(scope) || Process.GetProcessesByName(runnerName).Length > 0;
-                if (!alive)
+                var scopeAlive = IsRunning(scope);
+                var runnerAlive = IsRunning(PowerToysModule.Runner);
+                var orphanedSettings = scope == PowerToysModule.PowerToysSettings && scopeAlive && !runnerAlive;
+                if (orphanedSettings)
+                {
+                    KillScopeProcessesAndWait(scope);
+                    LaunchScope(scope);
+                    lastLaunch = DateTime.UtcNow;
+                }
+                else if (!scopeAlive && !runnerAlive)
                 {
                     if (!alreadyRunning)
                     {
@@ -260,10 +276,17 @@ public sealed class SessionHelper
             WindowControl.TryKillProcessByName(name);
         }
 
-        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(10);
         while (DateTime.UtcNow < deadline && names.Any(n => Process.GetProcessesByName(n).Length > 0))
         {
             Thread.Sleep(150);
+        }
+
+        var remaining = names.Where(n => Process.GetProcessesByName(n).Length > 0).ToList();
+        if (remaining.Count > 0)
+        {
+            throw new InvalidOperationException(
+                $"Could not stop the {scope} scope within 10 seconds. Remaining processes: {string.Join(", ", remaining)}.");
         }
     }
 

@@ -181,22 +181,31 @@ jobs:
   # register on unsigned PR builds and the UI tests can drive the real modern (Win11 tier-1) context
   # menu instead of the signing-free fallback. Test-only trust anchor; asserts no security. All roots
   # are searched recursively (buildNow run-in-place tree + complete machine/per-user installs).
-  # Image Resizer has no Windows 11 classic-menu fallback, so its focused and all-module jobs require
-  # the signed/trusted package; unrelated jobs keep this setup best-effort.
+  # Focused and all-module jobs that exercise a modern context menu require the corresponding
+  # signed/trusted package; unrelated jobs keep this setup best-effort.
   - pwsh: |
       $packageRoots = @(
         "$(Pipeline.Workspace)\$(TestArtifactsName)",
         "$env:ProgramFiles\PowerToys",
         "$env:LOCALAPPDATA\PowerToys")
       $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
-      $requiresImageResizer = '$(TestPlatform)' -ne 'x64Win10' -and (
-        [string]::IsNullOrWhiteSpace($modulesRaw) -or
-        @($modulesRaw -split ';' | Where-Object { $_ -match 'ImageResizer' }).Count -gt 0)
+      $selectedModules = @($modulesRaw -split ';' | Where-Object { $_ })
+      $allModules = [string]::IsNullOrWhiteSpace($modulesRaw)
+      $requiresModernContextMenu = '$(TestPlatform)' -ne 'x64Win10'
+      $requiredPackages = @()
 
-      if ($requiresImageResizer) {
+      if ($requiresModernContextMenu -and ($allModules -or @($selectedModules | Where-Object { $_ -match 'ImageResizer' }).Count -gt 0)) {
+        $requiredPackages += 'ImageResizerContextMenuPackage.msix'
+      }
+
+      if ($requiresModernContextMenu -and ($allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename' }).Count -gt 0)) {
+        $requiredPackages += 'PowerRenameContextMenuPackage.msix'
+      }
+
+      if ($requiredPackages.Count -gt 0) {
         & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" `
           -PackageRoot $packageRoots `
-          -RequiredPackage 'ImageResizerContextMenuPackage.msix'
+          -RequiredPackage $requiredPackages
       } else {
         try {
           & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" -PackageRoot $packageRoots

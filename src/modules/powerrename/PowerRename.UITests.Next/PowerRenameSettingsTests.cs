@@ -12,16 +12,10 @@ namespace Microsoft.PowerToys.PowerRename.UITests;
 /// and restoring the values from the last use.
 /// </summary>
 /// <remarks>Covers checklist items 4 and 5 of microsoft/PowerToys#40663.</remarks>
-[TestClass]
-[DoNotParallelize]
-public sealed class PowerRenameSettingsTests : PowerRenameTestBase
+public sealed partial class PowerRenameTests
 {
-    private const string CaseSensitive = "Case sensitive";
     private const string SeedSearchTerm = "seedterm";
     private const string SeedReplaceTerm = "replaceterm";
-
-    [TestInitialize]
-    public void PrepareTest() => ClearPersistedRenameState();
 
     [TestMethod("PowerRename.Settings.AutoComplete")]
     [TestCategory("PowerRename")]
@@ -103,14 +97,7 @@ public sealed class PowerRenameSettingsTests : PowerRenameTestBase
     /// </summary>
     private bool SuggestionAppears(Session window, string typedText, string expectedSuggestion)
     {
-        Step($"Typing '{typedText}' into the search box to open the suggestion list");
-        var box = window.Find<TextBox>(By.Name(SearchBoxName), timeoutMS: PreviewTimeoutMS);
-        box.SetText(string.Empty);
-        box.Focus();
-        Thread.Sleep(300);
-        KeyboardHelper.SendKeySequence(typedText.Select(ToKey).ToArray());
-        Thread.Sleep(500);
-
+        Assert.IsTrue(TypeIntoSearchBox(window, typedText), $"The typed text '{typedText}' never reached the search box.");
         if (HasSuggestion(window, expectedSuggestion))
         {
             return true;
@@ -120,6 +107,33 @@ public sealed class PowerRenameSettingsTests : PowerRenameTestBase
         KeyboardHelper.SendKey(Key.Down);
         Thread.Sleep(500);
         return HasSuggestion(window, expectedSuggestion);
+    }
+
+    /// <summary>
+    /// Send real keystrokes and confirm from the box's own value that they landed — injected input
+    /// goes to whatever owns the foreground, which is not something a test host can simply assert.
+    /// </summary>
+    private bool TypeIntoSearchBox(Session window, string typedText)
+    {
+        for (var attempt = 1; attempt <= 3; attempt++)
+        {
+            Step($"Typing '{typedText}' into the search box to open the suggestion list (attempt {attempt})");
+            TryBringPowerRenameForward();
+
+            var box = window.Find<TextBox>(By.Name(SearchBoxName), timeoutMS: PreviewTimeoutMS);
+            box.SetText(string.Empty);
+            box.Focus();
+            Thread.Sleep(300);
+            KeyboardHelper.SendKeySequence(typedText.Select(ToKey).ToArray());
+            Thread.Sleep(500);
+
+            if (window.Find<TextBox>(By.Name(SearchBoxName), timeoutMS: 2_000).Value == typedText)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool HasSuggestion(Session window, string suggestion) =>

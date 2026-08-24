@@ -16,9 +16,7 @@ namespace Microsoft.PowerToys.PowerRename.UITests;
 /// <c>BasicRenameTests.BasicInput</c>, <c>BasicMatchFileName</c>, <c>BasicMatchAllOccurrences</c>,
 /// and <c>BasicCaseSensitive</c>.
 /// </remarks>
-[TestClass]
-[DoNotParallelize]
-public sealed class PowerRenameOptionsTests : PowerRenameTestBase
+public sealed partial class PowerRenameTests
 {
     private const string Uppercase = "Uppercase";
     private const string Lowercase = "Lowercase";
@@ -32,13 +30,6 @@ public sealed class PowerRenameOptionsTests : PowerRenameTestBase
     private const string CaseSensitive = "Case sensitive";
 
     private static readonly string[] TextFormattingModes = { Uppercase, Lowercase, TitleCase, CapitalizeEachWord };
-
-    [TestInitialize]
-    public void PrepareTest()
-    {
-        ConfigureModuleSettings(persistState: false, mruEnabled: false);
-        ClearPersistedRenameState();
-    }
 
     [TestMethod("PowerRename.Preview.SearchAndReplace")]
     [TestCategory("PowerRename")]

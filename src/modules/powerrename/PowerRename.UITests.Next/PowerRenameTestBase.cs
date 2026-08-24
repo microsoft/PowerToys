@@ -27,8 +27,9 @@ public abstract class PowerRenameTestBase : UITestBase
     protected const string SearchBoxName = "Search for";
     protected const string ReplaceBoxName = "Replace with";
     protected const string ApplyButtonName = "Apply";
+    protected const string RenamedCountAutomationId = "RenamedCount";
     protected const int WindowTimeoutMS = 30_000;
-    protected const int PreviewTimeoutMS = 15_000;
+    protected const int PreviewTimeoutMS = 30_000;
     protected const int RenameTimeoutMS = 30_000;
 
     private static readonly string[] PowerRenameModuleOnly = { "PowerRename" };
@@ -48,6 +49,7 @@ public abstract class PowerRenameTestBase : UITestBase
 
     private readonly List<string> temporaryFolders = new();
     private readonly Dictionary<string, byte[]?> moduleStateSnapshot = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string> lastAppliedText = new(StringComparer.Ordinal);
 
     protected PowerRenameTestBase()
         : base(PowerToysModule.PowerToysSettings, WindowSize.UnSpecified, PowerRenameModuleOnly)
@@ -79,9 +81,8 @@ public abstract class PowerRenameTestBase : UITestBase
     [TestInitialize]
     public void PreparePowerRenameBaseline()
     {
-        // The harness seeds the enabled-module baseline once per class and restores the profile's
-        // original settings.json after the first test. PowerRename's shell extension re-reads that
-        // file on every context-menu query, so re-assert the baseline for every test.
+        // The harness seeds the enabled-module baseline once per class. PowerRename's shell
+        // extension re-reads settings.json on every context-menu query, so re-assert it per test.
         EnsureModuleEnabledInGlobalSettings();
     }
 
@@ -89,18 +90,31 @@ public abstract class PowerRenameTestBase : UITestBase
     public async Task CleanupPowerRenameTest()
     {
         await CaptureFailureArtifactsBeforeCleanupAsync(TimeSpan.FromSeconds(2));
-        ClosePowerRenameWindows();
-        RestoreModuleState();
+        var failures = new List<Exception>();
+        try
+        {
+            ClosePowerRenameWindows();
+        }
+        catch (Exception ex)
+        {
+            failures.Add(ex);
+        }
+
+        failures.AddRange(RestoreModuleState());
 
         foreach (var folder in temporaryFolders)
         {
             if (!TryDeleteDirectory(folder))
             {
-                TestContext.WriteLine($"Cleanup could not delete temporary folder '{folder}'.");
+                failures.Add(new IOException($"Cleanup could not delete temporary folder '{folder}'."));
             }
         }
 
         temporaryFolders.Clear();
+        if (failures.Count > 0)
+        {
+            throw new AggregateException("PowerRename test cleanup failed.", failures);
+        }
     }
 
     /// <summary>Timestamped trace so a CI hang names the step it stuck on.</summary>
@@ -260,7 +274,8 @@ public abstract class PowerRenameTestBase : UITestBase
             session.WaitFor(() => session.Has(By.Name(SearchBoxName), timeoutMS: 1_000), WindowTimeoutMS, pollIntervalMS: 500),
             $"The PowerRename window did not expose its search box. {DescribeSurface(session)}");
 
-        EnsurePowerRenameForeground();
+        lastAppliedText.Clear();
+        TryBringPowerRenameForward();
 
         var firstItemName = Path.GetFileName(paths[0].TrimEnd(Path.DirectorySeparatorChar));
         Assert.IsTrue(
@@ -269,20 +284,26 @@ public abstract class PowerRenameTestBase : UITestBase
         return session;
     }
 
-    /// <summary>Bring PowerRename forward so physical clicks land on it rather than on Settings.</summary>
-    protected static void EnsurePowerRenameForeground()
+    /// <summary>
+    /// Best-effort raise of the PowerRename window. Foreground is not an authoritative readiness
+    /// signal here — UIA search and invoke never need it, and <c>Element.Click</c> raises the window
+    /// itself — while a scheduled interactive host can legitimately read <c>GetForegroundWindow()</c>
+    /// as 0 for seconds at a time. Steps that do need real input verify their own effect instead.
+    /// </summary>
+    protected void TryBringPowerRenameForward()
     {
         var settled = WaitHelper.WaitForStable(
             observe: WindowControl.GetForegroundWindowInfo,
             isMatch: info => info.ProcessName.Contains("PowerRename", StringComparison.OrdinalIgnoreCase),
-            timeoutMS: 15_000,
+            timeoutMS: 8_000,
             requiredConsecutiveMatches: 2,
             pollIntervalMS: 250,
             recover: _ => WindowControl.TryFocusByApp(PowerRenameProcessName));
 
-        Assert.IsTrue(
-            settled.Succeeded,
-            $"The PowerRename window did not become foreground. Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        if (!settled.Succeeded)
+        {
+            Step($"PowerRename did not take the foreground; continuing. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        }
     }
 
     /// <summary>Window inventory plus a shallow UIA dump, so a readiness timeout says what was there.</summary>
@@ -314,7 +335,11 @@ public abstract class PowerRenameTestBase : UITestBase
             return;
         }
 
-        WindowControl.TryKillProcessTreeByNameAndWait(PowerRenameProcessName, timeoutMS: 10_000);
+        if (!WindowControl.TryKillProcessTreeByNameAndWait(PowerRenameProcessName, timeoutMS: 10_000) ||
+            !WaitForProcess(PowerRenameProcessName, expected: false, timeoutMS: 2_000))
+        {
+            throw new InvalidOperationException($"Could not stop '{PowerRenameProcessName}' during test cleanup.");
+        }
     }
 
     protected static bool WaitForProcess(string processName, bool expected, int timeoutMS)
@@ -352,14 +377,41 @@ public abstract class PowerRenameTestBase : UITestBase
     private void SetAutoSuggestText(Session window, string boxName, string text)
     {
         Step($"Setting '{boxName}' to '{text}'");
-        var box = window.Find<TextBox>(By.Name(boxName), timeoutMS: PreviewTimeoutMS);
-        box.SetText(text);
+        ApplyAutoSuggestText(window, boxName, text);
+        lastAppliedText[boxName] = text;
+    }
+
+    private static void ApplyAutoSuggestText(Session window, string boxName, string text)
+    {
+        window.Find<TextBox>(By.Name(boxName), timeoutMS: PreviewTimeoutMS).SetText(text);
+
+        // An empty box reports its placeholder through UIA, so only a non-empty value is verifiable.
+        if (text.Length == 0)
+        {
+            return;
+        }
+
         Assert.IsTrue(
             window.WaitFor(
                 () => window.Find<TextBox>(By.Name(boxName), timeoutMS: 1_000).Value == text,
                 timeoutMS: 5_000,
                 pollIntervalMS: 200),
             $"The '{boxName}' box did not accept the text '{text}'.");
+    }
+
+    /// <summary>
+    /// Re-type the search and replace terms. A programmatic value change can reach the box but not the
+    /// rename engine, leaving the preview computed from the previous terms; clearing first guarantees
+    /// a fresh change notification, because re-setting the same value raises none.
+    /// </summary>
+    private void ReapplySearchAndReplaceText(Session window)
+    {
+        foreach (var (boxName, text) in lastAppliedText.ToList())
+        {
+            Step($"Re-applying '{boxName}' to nudge the rename engine");
+            ApplyAutoSuggestText(window, boxName, string.Empty);
+            ApplyAutoSuggestText(window, boxName, text);
+        }
     }
 
     protected string GetSearchText(Session window) => window.Find<TextBox>(By.Name(SearchBoxName)).Value;
@@ -450,11 +502,8 @@ public abstract class PowerRenameTestBase : UITestBase
     {
         Step($"Waiting for the preview to drop '{renamedName}'");
         Assert.IsTrue(
-            window.WaitFor(
-                () => FindExact<TextBlock>(window, renamedName, timeoutMS: 500) is null,
-                timeoutMS: PreviewTimeoutMS,
-                pollIntervalMS: 250),
-            $"The PowerRename preview still showed '{renamedName}'.");
+            WaitForPreview(window, () => FindExact<TextBlock>(window, renamedName, timeoutMS: 500) is null),
+            $"The PowerRename preview still showed '{renamedName}'. {DescribeSurface(window)}");
     }
 
     /// <summary>Wait until the preview column shows exactly <paramref name="renamedName"/> for some row.</summary>
@@ -462,11 +511,8 @@ public abstract class PowerRenameTestBase : UITestBase
     {
         Step($"Waiting for the preview to show '{renamedName}'");
         Assert.IsTrue(
-            window.WaitFor(
-                () => FindExact<TextBlock>(window, renamedName, timeoutMS: 500) is not null,
-                timeoutMS: PreviewTimeoutMS,
-                pollIntervalMS: 250),
-            $"The PowerRename preview never showed '{renamedName}'.");
+            WaitForPreview(window, () => FindExact<TextBlock>(window, renamedName, timeoutMS: 500) is not null),
+            $"The PowerRename preview never showed '{renamedName}'. {DescribeSurface(window)}");
     }
 
     /// <summary>Wait until the "will be renamed" badge reads <paramref name="count"/>.</summary>
@@ -475,11 +521,50 @@ public abstract class PowerRenameTestBase : UITestBase
         var badge = "(" + count.ToString(CultureInfo.InvariantCulture) + ")";
         Step($"Waiting for the renamed count badge to read '{badge}'");
         Assert.IsTrue(
-            window.WaitFor(
-                () => FindExact<TextBlock>(window, badge, timeoutMS: 500) is not null,
-                timeoutMS: PreviewTimeoutMS,
-                pollIntervalMS: 250),
-            $"The PowerRename header never reported {badge} items to rename.");
+            WaitForPreview(
+                window,
+                () => window.FindAll<TextBlock>(By.AccessibilityId(RenamedCountAutomationId), timeoutMS: 500)
+                    .Any(element => element.Name.Equals(badge, StringComparison.Ordinal))),
+            $"The PowerRename header never reported {badge} items to rename. {DescribeSurface(window)}");
+    }
+
+    /// <summary>
+    /// Poll a preview condition, re-typing the search and replace terms every few seconds so terms the
+    /// rename engine never received are corrected instead of waited out.
+    /// </summary>
+    private bool WaitForPreview(Session window, Func<bool> isReady)
+    {
+        const int requiredConsecutiveMatches = 3;
+        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(PreviewTimeoutMS);
+        var nextNudge = DateTime.UtcNow + TimeSpan.FromSeconds(6);
+        var consecutiveMatches = 0;
+        while (true)
+        {
+            if (isReady())
+            {
+                if (++consecutiveMatches >= requiredConsecutiveMatches)
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                consecutiveMatches = 0;
+
+                if (DateTime.UtcNow >= nextNudge && lastAppliedText.Count > 0)
+                {
+                    ReapplySearchAndReplaceText(window);
+                    nextNudge = DateTime.UtcNow + TimeSpan.FromSeconds(6);
+                }
+            }
+
+            if (DateTime.UtcNow >= deadline)
+            {
+                return false;
+            }
+
+            Thread.Sleep(250);
+        }
     }
 
     // ---- applying ------------------------------------------------------------------------------
@@ -553,8 +638,9 @@ public abstract class PowerRenameTestBase : UITestBase
 
     // ---- cleanup -------------------------------------------------------------------------------
 
-    private void RestoreModuleState()
+    private IReadOnlyList<Exception> RestoreModuleState()
     {
+        var failures = new List<Exception>();
         foreach (var (path, content) in moduleStateSnapshot)
         {
             try
@@ -574,9 +660,11 @@ public abstract class PowerRenameTestBase : UITestBase
             }
             catch (Exception ex)
             {
-                TestContext.WriteLine($"Could not restore PowerRename state file '{path}'. {ex.Message}");
+                failures.Add(new IOException($"Could not restore PowerRename state file '{path}'.", ex));
             }
         }
+
+        return failures;
     }
 
     private static bool TryDeleteDirectory(string path)

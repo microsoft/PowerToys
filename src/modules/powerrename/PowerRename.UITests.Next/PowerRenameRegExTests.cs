@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,19 +15,8 @@ namespace Microsoft.PowerToys.PowerRename.UITests;
 /// Covers checklist items 12-15 of microsoft/PowerToys#40663 and replaces the legacy
 /// <c>BasicRenameTests.BasicRegularMatch</c>.
 /// </remarks>
-[TestClass]
-[DoNotParallelize]
-public sealed class PowerRenameRegExTests : PowerRenameTestBase
+public sealed partial class PowerRenameTests
 {
-    private const string RegularExpressions = "Use regular expressions";
-
-    [TestInitialize]
-    public void PrepareTest()
-    {
-        ConfigureModuleSettings(persistState: false, mruEnabled: false);
-        ClearPersistedRenameState();
-    }
-
     [TestMethod("PowerRename.RegEx.ToggleChangesMatching")]
     [TestCategory("PowerRename")]
     public void RegularExpressionToggleChangesWhatMatches()
@@ -71,19 +61,22 @@ public sealed class PowerRenameRegExTests : PowerRenameTestBase
     [TestCategory("PowerRename")]
     public void ReplaceTermCanUseFileCreationDateAndTime()
     {
-        // Checklist item 14 — $YYYY / $MM / $DD / $hh / $mm / $ss come from the item's file time.
+        // Checklist item 14 — exercise both example forms, including milliseconds and month name.
         var folder = CreateTestFolder();
         var source = CreateFile(folder, "stamp.txt");
-        var fileTime = new DateTime(2020, 2, 3, 4, 5, 6, DateTimeKind.Local);
+        var fileTime = new DateTime(2020, 2, 3, 4, 5, 6, 789, DateTimeKind.Local);
         File.SetCreationTime(source, fileTime);
         File.SetLastWriteTime(source, fileTime);
         File.SetLastAccessTime(source, fileTime);
+        fileTime = File.GetCreationTime(source);
 
         var window = LaunchPowerRename(source);
         SetSearchText(window, "stamp");
-        SetReplaceText(window, "$YYYY-$MM-$DD_$hh-$mm-$ss");
+        SetReplaceText(window, "$hh-$mm-$ss-$fff_$DD_$MMMM_$YYYY");
 
-        const string expectedName = "2020-02-03_04-05-06.txt";
+        var month = fileTime.ToString("MMMM", CultureInfo.CurrentCulture);
+        month = char.ToUpper(month[0], CultureInfo.CurrentCulture) + month[1..];
+        var expectedName = $"{fileTime:HH-mm-ss-fff_dd}_{month}_{fileTime:yyyy}.txt";
         WaitForPreviewName(window, expectedName);
         ApplyRenameAndAssertEntries(window, folder, expectedName);
     }

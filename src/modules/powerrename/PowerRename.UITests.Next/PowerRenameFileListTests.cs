@@ -16,21 +16,12 @@ namespace Microsoft.PowerToys.PowerRename.UITests;
 /// the clickable "Original"/"Renamed" column headers of the original checklist with a Filter flyout
 /// and a header checkbox, so those two items are driven through their current surfaces.
 /// </remarks>
-[TestClass]
-[DoNotParallelize]
-public sealed class PowerRenameFileListTests : PowerRenameTestBase
+public sealed partial class PowerRenameTests
 {
     private const string FilterButtonName = "Filter";
     private const string ShowAllFiles = "Show all files";
     private const string ShowOnlyRenamed = "Only show files that will be renamed";
     private const string SelectAllCheckBoxName = "Select or deselect all";
-
-    [TestInitialize]
-    public void PrepareTest()
-    {
-        ConfigureModuleSettings(persistState: false, mruEnabled: false);
-        ClearPersistedRenameState();
-    }
 
     [TestMethod("PowerRename.FileList.UncheckExcludesItem")]
     [TestCategory("PowerRename")]

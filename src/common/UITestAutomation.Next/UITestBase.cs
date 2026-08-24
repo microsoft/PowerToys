@@ -35,6 +35,7 @@ public class UITestBase : IDisposable
     // inherited ClassCleanup stops it once the owning class finishes.
     private static SessionHelper? keepAliveHelper;
     private static Type? keepAliveOwner;
+    private static IDisposable? keepAliveSettingsSnapshot;
 
     private readonly PowerToysModule scope;
     private readonly WindowSize windowSize;
@@ -110,9 +111,8 @@ public class UITestBase : IDisposable
         {
             // Reuse the already-open window from a previous test in this class when the class opted
             // into a shared scope and it's still alive — skip the hygiene that would minimize/kill it.
-            var reuse = ReuseScopeAcrossTests
-                && keepAliveOwner == GetType()
-                && SessionHelper.IsRunning(scope);
+            var ownsSharedScope = ReuseScopeAcrossTests && keepAliveOwner == GetType();
+            var reuse = ownsSharedScope && SessionHelper.IsScopeHealthy(scope);
 
             if (!reuse)
             {
@@ -124,7 +124,11 @@ public class UITestBase : IDisposable
                     DisplayHelper.LogMonitors(TestContext);
                 }
 
-                firstRunSettingsSnapshot = SettingsConfigHelper.PreserveFirstRunSettings();
+                if (!ownsSharedScope)
+                {
+                    firstRunSettingsSnapshot = SettingsConfigHelper.PreserveFirstRunSettings();
+                }
+
                 PreTestHygiene();
 
                 // Seed a deterministic module on/off baseline before the runner reads settings.json.
@@ -154,6 +158,11 @@ public class UITestBase : IDisposable
             {
                 keepAliveHelper = sessionHelper;
                 keepAliveOwner = GetType();
+                if (!ownsSharedScope)
+                {
+                    keepAliveSettingsSnapshot = firstRunSettingsSnapshot;
+                    firstRunSettingsSnapshot = null;
+                }
             }
         }
         catch
@@ -206,13 +215,7 @@ public class UITestBase : IDisposable
             // window must survive for the next test; the inherited ClassCleanup stops it at class end.
             if (!ReuseScopeAcrossTests)
             {
-                try
-                {
-                    sessionHelper?.StopIfStarted();
-                }
-                catch
-                {
-                }
+                sessionHelper?.StopIfStarted();
             }
         }
         finally
@@ -226,19 +229,39 @@ public class UITestBase : IDisposable
     /// tests finish. Runs after every derived class via inheritance; a no-op for classes that never
     /// kept a scope alive.
     /// </summary>
-    [ClassCleanup(InheritanceBehavior.BeforeEachDerivedClass)]
+    [ClassCleanup(InheritanceBehavior.BeforeEachDerivedClass, ClassCleanupBehavior.EndOfClass)]
     public static void StopSharedScope()
     {
+        var failures = new List<Exception>();
         try
         {
             keepAliveHelper?.StopIfStarted();
         }
-        catch
+        catch (Exception ex)
         {
+            failures.Add(ex);
+        }
+        finally
+        {
+            keepAliveHelper = null;
+            keepAliveOwner = null;
         }
 
-        keepAliveHelper = null;
-        keepAliveOwner = null;
+        try
+        {
+            var snapshot = keepAliveSettingsSnapshot;
+            keepAliveSettingsSnapshot = null;
+            snapshot?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            failures.Add(ex);
+        }
+
+        if (failures.Count > 0)
+        {
+            throw new AggregateException("Shared UI-test scope cleanup failed.", failures);
+        }
     }
 
     /// <summary>

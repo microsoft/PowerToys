@@ -64,7 +64,10 @@
                     VerticalAlignment="Center"
                     Orientation="Horizontal">
                     <TextBlock x:Uid="TxtBlock_Original" FontWeight="Medium" />
-                    <TextBlock Margin="4,0,0,0" FontWeight="Medium">
+                    <TextBlock
+                        AutomationProperties.AutomationId="OriginalCount"
+                        Margin="4,0,0,0"
+                        FontWeight="Medium">
                         <Run Text="(" /><Run Text="{x:Bind OriginalCount, Mode=OneWay}" /><Run Text=")" />
                     </TextBlock>
                 </StackPanel>
@@ -77,7 +80,10 @@
                 VerticalAlignment="Center"
                 Orientation="Horizontal">
                 <TextBlock x:Uid="TxtBlock_Renamed" FontWeight="Medium" />
-                <TextBlock Margin="4,0,0,0" FontWeight="Medium">
+                <TextBlock
+                    AutomationProperties.AutomationId="RenamedCount"
+                    Margin="4,0,0,0"
+                    FontWeight="Medium">
                     <Run Text="(" /><Run Text="{x:Bind RenamedCount, Mode=OneWay}" /><Run Text=")" />
                 </TextBlock>
             </StackPanel>
