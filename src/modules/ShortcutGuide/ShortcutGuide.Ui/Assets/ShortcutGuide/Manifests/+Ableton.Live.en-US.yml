@@ -1,0 +1,298 @@
+PackageName: +Ableton.Live
+Name: Ableton Live
+WindowFilter: "Ableton Live 12 Suite.exe;Ableton Live 12 Standard.exe;Ableton Live 12 Intro.exe;Ableton Live 12 Lite.exe;Ableton Live 11 Suite.exe;Ableton Live 11 Standard.exe;Ableton Live 11 Intro.exe;Ableton Live 11 Lite.exe;Ableton Live 10 Suite.exe;Ableton Live 10 Standard.exe;Ableton Live 10 Intro.exe;Ableton Live 10 Lite.exe;Ableton Live 9 Suite.exe;Ableton Live 9 Standard.exe;Ableton Live 9 Intro.exe;Ableton Live 9 Lite.exe;Live.exe"
+BackgroundProcess: false
+Shortcuts:
+  - SectionName: General
+    Properties:
+      - Name: New Live Set
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - N
+      - Name: Open Live Set
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - O
+      - Name: Save Live Set
+        Recommended: true
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - S
+      - Name: Save Live Set As
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - S
+      - Name: Preferences
+        Recommended: true
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - ','
+      - Name: Undo
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - Z
+      - Name: Redo
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - Y
+      - Name: Cut
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - X
+      - Name: Copy
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - C
+      - Name: Paste
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - V
+      - Name: Duplicate
+        Recommended: true
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - D
+      - Name: Select All
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - A
+
+  - SectionName: Views and Navigation
+    Properties:
+      - Name: Toggle Session / Arrangement View
+        Recommended: true
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Tab>"
+      - Name: Toggle Clip / Device View
+        Recommended: true
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - "<Tab>"
+      - Name: Toggle Browser
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: true
+            Keys:
+              - B
+      - Name: Toggle Detail View
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: true
+            Keys:
+              - L
+      - Name: Toggle Info View
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - '?'
+      - Name: Full Screen
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<F11>"
+
+  - SectionName: Playback and Recording
+    Properties:
+      - Name: Play / Stop
+        Recommended: true
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Space>"
+      - Name: Continue Play from Stop Point
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - "<Space>"
+      - Name: Play from Selection
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - "<Space>"
+      - Name: Record
+        Recommended: true
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<F9>"
+      - Name: Capture MIDI
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - C
+
+  - SectionName: Editing and Tracks
+    Properties:
+      - Name: Insert Audio Track
+        Recommended: true
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - T
+      - Name: Insert MIDI Track
+        Recommended: true
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - T
+      - Name: Insert Return Track
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: true
+            Keys:
+              - T
+      - Name: Group Tracks / Clips
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - G
+      - Name: Ungroup Tracks / Clips
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - G
+      - Name: Split Clip at Selection
+        Recommended: true
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - E
+      - Name: Consolidate
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - J
+      - Name: Rename
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - R
+      - Name: Quantize
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - U
+      - Name: Quantize Settings
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - U
+      - Name: Deactivate / Mute Clip or Note
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - '0'
