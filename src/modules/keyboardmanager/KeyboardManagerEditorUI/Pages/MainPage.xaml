@@ -220,11 +220,13 @@
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    AutomationProperties.AutomationId="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
                                                                     VerticalAlignment="Center"
+                                                                    AutomationProperties.AutomationId="MappingMenuButton"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
                                                                     Style="{StaticResource SubtleButtonStyle}">
@@ -308,11 +310,13 @@
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    AutomationProperties.AutomationId="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
                                                                     VerticalAlignment="Center"
+                                                                    AutomationProperties.AutomationId="MappingMenuButton"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
                                                                     Style="{StaticResource SubtleButtonStyle}">
@@ -426,11 +430,13 @@
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    AutomationProperties.AutomationId="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
                                                                     VerticalAlignment="Center"
+                                                                    AutomationProperties.AutomationId="MappingMenuButton"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
                                                                     Style="{StaticResource SubtleButtonStyle}">
@@ -514,11 +520,13 @@
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    AutomationProperties.AutomationId="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
                                                                     VerticalAlignment="Center"
+                                                                    AutomationProperties.AutomationId="MappingMenuButton"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
                                                                     Style="{StaticResource SubtleButtonStyle}">
@@ -583,11 +591,13 @@
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    AutomationProperties.AutomationId="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
                                                                     VerticalAlignment="Center"
+                                                                    AutomationProperties.AutomationId="MappingMenuButton"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
                                                                     Style="{StaticResource SubtleButtonStyle}">

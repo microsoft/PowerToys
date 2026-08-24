@@ -10,6 +10,37 @@
 #include "RemapShortcut.h"
 #include "Helpers.h"
 
+namespace
+{
+    bool WriteJsonAtomically(const std::wstring& filePath, const json::JsonObject& object)
+    {
+        const std::wstring temporaryPath = filePath + L"." + std::to_wstring(GetCurrentProcessId()) + L"." + std::to_wstring(GetCurrentThreadId()) + L".tmp";
+
+        try
+        {
+            std::ofstream stream{ temporaryPath, std::ios::binary | std::ios::trunc };
+            stream.exceptions(std::ios::failbit | std::ios::badbit);
+
+            const std::string serialized = winrt::to_string(object.Stringify());
+            stream.write(serialized.data(), static_cast<std::streamsize>(serialized.size()));
+            stream.flush();
+            stream.close();
+
+            if (!MoveFileExW(temporaryPath.c_str(), filePath.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+            {
+                throw winrt::hresult_error(HRESULT_FROM_WIN32(GetLastError()));
+            }
+
+            return true;
+        }
+        catch (...)
+        {
+            DeleteFileW(temporaryPath.c_str());
+            return false;
+        }
+    }
+}
+
 // Function to clear the OS Level shortcut remapping table
 void MappingConfiguration::ClearOSLevelShortcuts()
 {
@@ -410,6 +441,7 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
 bool MappingConfiguration::LoadSettings()
 {
     Logger::trace(L"SettingsHelper::LoadSettings()");
+    configurationNameResolved = false;
     try
     {
         PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::load_from_settings_file(KeyboardManagerConstants::ModuleName);
@@ -421,6 +453,7 @@ bool MappingConfiguration::LoadSettings()
         }
 
         currentConfig = *current_config;
+    configurationNameResolved = true;
 
         // Read the config file and load the remaps.
         auto configFile = json::from_file(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + *current_config + L".json");
@@ -444,6 +477,11 @@ bool MappingConfiguration::LoadSettings()
     }
 
     return false;
+}
+
+bool MappingConfiguration::IsConfigurationNameResolved() const
+{
+    return configurationNameResolved;
 }
 
 // Save the updated configuration.
@@ -637,11 +675,8 @@ bool MappingConfiguration::SaveSettingsToFile()
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsSettingName, remapShortcuts);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsToTextSettingName, remapShortcutsToText);
 
-    try
-    {
-        json::to_file((PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + currentConfig + L".json"), configJson);
-    }
-    catch (...)
+    const std::wstring settingsFilePath = PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + currentConfig + L".json";
+    if (!WriteJsonAtomically(settingsFilePath, configJson))
     {
         result = false;
         Logger::error(L"Failed to save the settings");

@@ -207,8 +207,8 @@ public static class TestHelper
 
     /// <summary>
     /// Primary-monitor centre in PHYSICAL pixels — the right anchor for coordinate gestures (don't
-    /// offset from the current cursor, which can be off-screen). Correct only when the test host is
-    /// per-monitor DPI aware (add the app.manifest, Pitfall 12); otherwise the size is virtualized.
+    /// offset from the current cursor, which can be off-screen). The project template's PerMonitorV2
+    /// manifest keeps these coordinates in the same physical-pixel space as winappcli (Pitfall 12).
     /// </summary>
     public static (int X, int Y) ScreenCenter()
     {
