@@ -63,6 +63,12 @@ public static class WindowControl
     [DllImport("user32.dll")]
     private static extern IntPtr GetForegroundWindow();
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr WindowFromPoint(POINT point);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetAncestor(IntPtr hWnd, uint gaFlags);
+
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, [MarshalAs(UnmanagedType.Bool)] bool fAttach);
@@ -82,6 +88,7 @@ public static class WindowControl
 
     private const uint WM_CLOSE = 0x0010;
     private const uint WM_CONTEXTMENU = 0x007B;
+    private const uint GaRoot = 2;
     private const int SW_RESTORE = 9;
 
     [StructLayout(LayoutKind.Sequential)]
@@ -91,6 +98,13 @@ public static class WindowControl
         public int Top;
         public int Right;
         public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT
+    {
+        public int X;
+        public int Y;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -137,6 +151,60 @@ public static class WindowControl
     /// Same no-UIA path as <see cref="EnumerateProcessWindows"/>.
     /// </summary>
     public static IReadOnlyList<ProcessWindow> EnumerateAllWindows() => EnumerateTopLevelWindows(null);
+
+    /// <summary>
+    /// Whether any top-level window of <paramref name="className"/> is currently visible.
+    /// </summary>
+    /// <remarks>
+    /// Cheap enough to poll: it reads class names only, never window titles, so it avoids the
+    /// cross-process <c>WM_GETTEXT</c> that <see cref="EnumerateAllWindows"/> performs per window.
+    /// For a window that only appears briefly, prefer <see cref="WindowShowWatcher"/> — no poll can
+    /// tell "never shown" apart from "shown between two samples".
+    /// </remarks>
+    public static bool IsAnyWindowOfClassVisible(string className) =>
+        AnyWindowOfClass(className, requireVisible: true);
+
+    /// <summary>Whether any top-level window of <paramref name="className"/> exists, visible or not.</summary>
+    public static bool AnyWindowOfClassExists(string className) =>
+        AnyWindowOfClass(className, requireVisible: false);
+
+    private static bool AnyWindowOfClass(string className, bool requireVisible)
+    {
+        // EnumWindows rather than chained FindWindowEx calls: when several windows share a class (the
+        // caller's product may pool and recycle them) the chained form is easy to get subtly wrong and
+        // end up only ever inspecting the first match.
+        var found = false;
+
+        try
+        {
+            EnumWindows(
+                (hWnd, _) =>
+                {
+                    try
+                    {
+                        if ((!requireVisible || IsWindowVisible(hWnd)) &&
+                            GetWindowClassName(hWnd).Equals(className, StringComparison.OrdinalIgnoreCase))
+                        {
+                            found = true;
+                            return false;
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore any single window we can't read; keep enumerating.
+                    }
+
+                    return true;
+                },
+                IntPtr.Zero);
+        }
+        catch
+        {
+            // Best-effort: report whatever was determined before the failure.
+        }
+
+        return found;
+    }
 
     private static IReadOnlyList<ProcessWindow> EnumerateTopLevelWindows(Func<int, bool>? pidFilter)
     {
@@ -280,6 +348,37 @@ public static class WindowControl
         }
     }
 
+    /// <summary>Send <c>WM_CLOSE</c> to one exact HWND and wait for it to be destroyed.</summary>
+    public static bool TryCloseWindow(long hwnd, int timeoutMS = 5_000)
+    {
+        try
+        {
+            var handle = new IntPtr(hwnd);
+            if (!IsWindow(handle))
+            {
+                return true;
+            }
+
+            PostMessageW(handle, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+            var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMS);
+            while (DateTime.UtcNow < deadline)
+            {
+                if (!IsWindow(handle))
+                {
+                    return true;
+                }
+
+                Thread.Sleep(100);
+            }
+
+            return !IsWindow(handle);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     /// <summary>
     /// Bring the first window owned by <paramref name="appNameOrPid"/> to the foreground.
     /// If the window is minimized it's first restored. Tolerant.
@@ -343,6 +442,25 @@ public static class WindowControl
 
     /// <summary>Return the current foreground window handle.</summary>
     public static IntPtr GetForegroundWindowHandle() => GetForegroundWindow();
+
+    /// <summary>Whether the root window under a screen point is the expected HWND.</summary>
+    public static bool IsPointOwnedByWindow(IntPtr window, int x, int y)
+    {
+        if (window == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        try
+        {
+            var atPoint = WindowFromPoint(new POINT { X = x, Y = y });
+            return atPoint != IntPtr.Zero && GetAncestor(atPoint, GaRoot) == window;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     /// <summary>Open the context menu owned by the control that currently has focus in a foreground window.</summary>
     public static bool TryOpenContextMenuForFocusedControl(IntPtr ownerWindow)

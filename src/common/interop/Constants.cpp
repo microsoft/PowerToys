@@ -163,6 +163,12 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::POWERACCENT_EXIT_EVENT;
     }
+
+    hstring Constants::ShortcutGuideExitEvent()
+    {
+        return CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT;
+    }
+
     hstring Constants::ShortcutGuideTriggerEvent()
     {
         return CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT;
@@ -317,4 +323,3 @@ namespace winrt::PowerToys::Interop::implementation
         return CommonSharedConstants::KEYBOARD_MANAGER_ENGINE_INSTANCE_MUTEX;
     }
 }
-

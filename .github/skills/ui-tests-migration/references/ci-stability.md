@@ -123,7 +123,8 @@ first interaction, so it must not depend on a physical click.
 
 The harness bakes this in so you get it for free: `NavigationViewItem.Click()` is overridden to a
 coordinate-free invoke, and `Element.Click()` falls back to invoke for zero-bounds controls. **So keep
-navigating with `By.AccessibilityId(...).Click()`** (Recipe 1) — it's race-safe under the hood. Only
+navigating with `Find<NavigationViewItem>(By.AccessibilityId(...)).Click()`** (Recipe 1) — it's
+race-safe under the hood. Only
 reach for a raw `MouseClick`/manual `MouseHelper` when the interaction genuinely needs real mouse input
 (and by then the window has settled).
 
@@ -211,6 +212,14 @@ Some state lives only in a long-running process. Peek's pinned geometry must pre
 while an explicitly unpinned reopen is safer with a fresh process. Encode this as a lifecycle matrix
 per scenario; use `TryKillProcessTreeByNameAndWait` only where state should be discarded.
 
+**Restarting PowerToys is not a way to apply settings.** Modules watch their own `settings.json` and
+hot-reload it, so seeding the file is enough. A per-test `RestartScope()` on top of the base class's
+launch starts the runner twice per test — pure runtime — and worse, it converts "the user changed a
+setting while the module ran" into "the module started with that setting", hiding live
+reconfiguration defects. Restart only when the restart is the behaviour under test (state surviving a
+restart), when the enabled-module set changes, or to recover from a terminal failure. See
+[patterns-and-pitfalls.md](patterns-and-pitfalls.md) Recipe 17.
+
 ---
 
 ## Principle 6 — Everything on-screen, DPI-correct, from a clean profile
@@ -220,7 +229,7 @@ a one-time fix; do them all up-front:
 
 | Difference (CI vs local) | Symptom | Fix (bake in once) |
 |---|---|---|
-| **DPI** — CI often 100%, dev often 125–150% (or vice-versa) | coordinate tests off by the scale factor (`150 × 149` for a 100px drag) | `app.manifest` with `PerMonitorV2`, wired in the csproj (Pitfall 12) |
+| **DPI** — CI often 100%, dev often 125–150% (or vice-versa) | physical clicks miss or drags are scaled (`150 × 149` for a 100px drag) | every `UITestAutomation.Next` test Exe embeds `app.manifest` with `PerMonitorV2` (Pitfall 12) |
 | **Off-screen** — same-size 1920×1080 agent, a resized window keeps its old top-left | gesture lands off-screen → empty result | anchor to `ScreenCenter()`, move in steps; harness centers+clamps `WindowSize` presets (Pitfall 16, Recipe 11) |
 | **Fresh profile** — OOBE / "what's new" window, centered + topmost | centre-screen gesture hits *that* window | harness `PreTestHygiene` calls `SettingsConfigHelper.SuppressFirstRunExperience()` (Pitfall 17) |
 | **Cursor position** — undefined at test start | gesture anchored to current cursor drifts off-screen | park at `ScreenCenter()`, never anchor to `GetMousePosition()` (Recipe 11) |
@@ -284,11 +293,11 @@ Tick these **before** the first CI push. Each maps to a principle/recipe above; 
 likely extra CI iteration.
 
 ```markdown
-- [ ] app.manifest (PerMonitorV2) wired into the csproj — any coordinate-exact test (P6 / Pitfall 12)
+- [ ] app.manifest (PerMonitorV2) wired into every UITestAutomation.Next test Exe, including greenfield projects without a .Next suffix (P6 / Pitfall 12)
 - [ ] Base ctor enables ONLY the module under test (P6 / Recipe 9)
 - [ ] First-run/what's-new suppression confirmed for capture & coordinate modules (P6 / Pitfall 17)
 - [ ] Gestures anchored to ScreenCenter(), cursor moved in steps, never to the current cursor (P6 / Recipe 11)
-- [ ] Navigation & the first interaction go through By.AccessibilityId(...).Click() (invoke under the hood) (P2 / Recipe 1)
+- [ ] Navigation & the first interaction use Find<NavigationViewItem>(By.AccessibilityId(...)).Click() (invoke override) (P2 / Recipe 1)
 - [ ] Window/overlay presence via WindowControl/WindowsFinder (Win32) — never a UIA walk of a live-capture window (mental model / P3 / Pitfall 18)
 - [ ] Every wait polls an authoritative signal to a deadline — no bare Thread.Sleep standing in for "wait until ready" (P1)
 - [ ] Multi-part readiness uses consecutive stable samples and reports the last structured observation (P1)
@@ -297,6 +306,7 @@ likely extra CI iteration.
 - [ ] Exact foreground requirements use `WaitForForeground`; failures record foreground PID/title/elevation
 - [ ] Pipeline helper processes have no visible foreground-capable windows; detached consoles start hidden
 - [ ] Process lifecycle is explicit per scenario: close/preserve/input-idle/process-tree restart
+- [ ] Module settings are seeded and hot-reloaded, not applied by relaunching PowerToys (P5 / Recipe 17)
 - [ ] Renderer readiness is separate from window/title readiness; composed visuals use visible DWM capture
 - [ ] Explorer-driven tests verify exact selected paths and focused path via `ExplorerShell` (Recipe 13)
 - [ ] Explorer view mode/icon size is set through `ExplorerShell`, then independently verified by item geometry
