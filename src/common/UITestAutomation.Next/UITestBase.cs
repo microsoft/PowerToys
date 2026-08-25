@@ -43,6 +43,7 @@ public class UITestBase : IDisposable
 
     private SessionHelper? sessionHelper;
     private ScreenRecording? screenRecording;
+    private IDisposable? firstRunSettingsSnapshot;
     private string? recordingDirectory;
     private bool artifactsCaptured;
     private bool disposed;
@@ -71,6 +72,14 @@ public class UITestBase : IDisposable
     /// the class finishes. Default <c>false</c> — each test gets an isolated launch + teardown.
     /// </summary>
     protected virtual bool ReuseScopeAcrossTests => false;
+
+    /// <summary>
+    /// Prepare test-owned state after stale processes have stopped and immediately before the scope
+    /// launches. Override when constructor-created fixtures can be overwritten during process cleanup.
+    /// </summary>
+    protected virtual void PrepareTestState()
+    {
+    }
 
     /// <param name="scope">Module whose window the test drives.</param>
     /// <param name="size">Optional fixed window size applied once the window appears.</param>
@@ -115,6 +124,7 @@ public class UITestBase : IDisposable
                     DisplayHelper.LogMonitors(TestContext);
                 }
 
+                firstRunSettingsSnapshot = SettingsConfigHelper.PreserveFirstRunSettings();
                 PreTestHygiene();
 
                 // Seed a deterministic module on/off baseline before the runner reads settings.json.
@@ -122,6 +132,8 @@ public class UITestBase : IDisposable
                 {
                     SettingsConfigHelper.ConfigureGlobalModuleSettings(enableModules);
                 }
+
+                PrepareTestState();
             }
 
             // Start the 1s screenshot timer + FFmpeg recording before the UI work so the artifacts
@@ -150,31 +162,6 @@ public class UITestBase : IDisposable
             // media here (e.g. the window never appeared) before propagating — otherwise an init
             // failure would attach no diagnostics at all.
             await CaptureFailureArtifactsAsync();
-            throw;
-        }
-    }
-
-    [TestCleanup]
-    public async Task TestCleanup()
-    {
-        var failed = TestContext.CurrentTestOutcome is
-            UnitTestOutcome.Failed or UnitTestOutcome.Error or UnitTestOutcome.Unknown;
-
-        if (failed)
-        {
-            await CaptureFailureArtifactsAsync();
-        }
-        else if (isInPipeline)
-        {
-            // Passing test: stop the capture and discard the (now uninteresting) recording.
-            await StopPipelineCaptureAsync();
-            CleanupRecordingDirectory();
-        }
-
-        // Tear the scope down only when each test owns its launch. With a class-shared scope the
-        // window must survive for the next test; the inherited ClassCleanup stops it at class end.
-        if (!ReuseScopeAcrossTests)
-        {
             try
             {
                 sessionHelper?.StopIfStarted();
@@ -182,9 +169,56 @@ public class UITestBase : IDisposable
             catch
             {
             }
-        }
 
-        Dispose();
+            try
+            {
+                Dispose();
+            }
+            catch (Exception ex)
+            {
+                TestContext.WriteLine($"Failed to restore PowerToys settings after test initialization failed: {ex.Message}");
+            }
+
+            throw;
+        }
+    }
+
+    [TestCleanup]
+    public async Task TestCleanup()
+    {
+        try
+        {
+            var failed = TestContext.CurrentTestOutcome is
+                UnitTestOutcome.Failed or UnitTestOutcome.Error or UnitTestOutcome.Unknown;
+
+            if (failed)
+            {
+                await CaptureFailureArtifactsAsync();
+            }
+            else if (isInPipeline)
+            {
+                // Passing test: stop the capture and discard the (now uninteresting) recording.
+                await StopPipelineCaptureAsync();
+                CleanupRecordingDirectory();
+            }
+
+            // Tear the scope down only when each test owns its launch. With a class-shared scope the
+            // window must survive for the next test; the inherited ClassCleanup stops it at class end.
+            if (!ReuseScopeAcrossTests)
+            {
+                try
+                {
+                    sessionHelper?.StopIfStarted();
+                }
+                catch
+                {
+                }
+            }
+        }
+        finally
+        {
+            Dispose();
+        }
     }
 
     /// <summary>
@@ -213,7 +247,7 @@ public class UITestBase : IDisposable
     /// the PowerToys log files. Idempotent and fully tolerant — runs from both the <see cref="TestInit"/>
     /// failure path (where <c>[TestCleanup]</c> won't fire) and <see cref="TestCleanup"/>.
     /// </summary>
-    private async Task CaptureFailureArtifactsAsync()
+    protected async Task CaptureFailureArtifactsAsync()
     {
         if (artifactsCaptured)
         {
@@ -221,6 +255,20 @@ public class UITestBase : IDisposable
         }
 
         artifactsCaptured = true;
+
+        try
+        {
+            var screenshotPath = Path.Combine(
+                TestContext.TestResultsDirectory ?? Path.GetTempPath(),
+                $"failure-{Guid.NewGuid():N}.png");
+            if (ScreenCapture.TryCaptureDesktop(screenshotPath))
+            {
+                TestContext.AddResultFile(screenshotPath);
+            }
+        }
+        catch
+        {
+        }
 
         if (isInPipeline)
         {
@@ -244,6 +292,32 @@ public class UITestBase : IDisposable
             {
             }
         }
+    }
+
+    /// <summary>
+    /// Preserve and capture a failed test's terminal UI before derived cleanup closes its windows.
+    /// Call this at the beginning of a derived <c>[TestCleanup]</c>; passing tests return immediately.
+    /// </summary>
+    /// <param name="failureStateTail">
+    /// Optional time to keep the failed UI visible in the recording before finalizing artifacts.
+    /// </param>
+    protected async Task CaptureFailureArtifactsBeforeCleanupAsync(TimeSpan failureStateTail = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(failureStateTail, TimeSpan.Zero);
+
+        var failed = TestContext.CurrentTestOutcome is
+            UnitTestOutcome.Failed or UnitTestOutcome.Error or UnitTestOutcome.Unknown;
+        if (!failed)
+        {
+            return;
+        }
+
+        if (failureStateTail > TimeSpan.Zero)
+        {
+            await Task.Delay(failureStateTail);
+        }
+
+        await CaptureFailureArtifactsAsync();
     }
 
     /// <summary>
@@ -327,7 +401,7 @@ public class UITestBase : IDisposable
 
     // ----- Pipeline diagnostics (CI only) ---------------------------------------------------
 
-    /// <summary>Start the FFmpeg screen recording. Best-effort.</summary>
+    /// <summary>Start the screen recording. Best-effort.</summary>
     private void StartPipelineCapture()
     {
         try
@@ -339,17 +413,26 @@ public class UITestBase : IDisposable
             try
             {
                 screenRecording = new ScreenRecording(recordingDirectory);
-                if (screenRecording.IsAvailable)
+
+                // Say why there is no video: an empty recordings folder otherwise looks like a lost
+                // artifact, and the usual cause (no Visual C++ redistributable on a clean image) is
+                // invisible from the test output.
+                var unavailable = ScreenRecording.UnavailableReason;
+                if (unavailable is null)
                 {
                     _ = screenRecording.StartRecordingAsync();
                 }
                 else
                 {
+                    TestContext.WriteLine(
+                        $"Screen recording disabled - the native encoder could not load ({unavailable}). " +
+                        "Install the Visual C++ redistributable on this machine to capture video.");
                     screenRecording = null;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                TestContext.WriteLine($"Screen recording could not start: {ex.Message}");
                 screenRecording = null;
             }
         }
@@ -470,7 +553,16 @@ public class UITestBase : IDisposable
         }
 
         disposed = true;
-        screenRecording?.Dispose();
-        GC.SuppressFinalize(this);
+        try
+        {
+            var snapshot = firstRunSettingsSnapshot;
+            firstRunSettingsSnapshot = null;
+            snapshot?.Dispose();
+        }
+        finally
+        {
+            screenRecording?.Dispose();
+            GC.SuppressFinalize(this);
+        }
     }
 }

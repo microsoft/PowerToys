@@ -14,9 +14,23 @@
 
     <Grid>
         <ProgressRing
+            x:Name="LoadingIndicator"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            IsActive="{x:Bind MatchPreviewState(Previewer.State, previewers:PreviewState.Loading), Mode=OneWay}" />
+            AutomationProperties.AutomationId="LoadingIndicator"
+            IsActive="{x:Bind MatchPreviewState(Previewer.State, previewers:PreviewState.Loading), Mode=OneWay}"
+            Visibility="{x:Bind IsLoadingIndicatorVisible(Previewer.State), Mode=OneWay}" />
+
+        <TextBlock
+            x:Name="PreviewStateAutomationPeer"
+            Width="1"
+            Height="1"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            AutomationProperties.AutomationId="PreviewStateAutomationPeer"
+            IsHitTestVisible="False"
+            Opacity="0"
+            Text="{x:Bind GetPreviewStateText(Previewer.State), Mode=OneWay}" />
 
         <controls:ShellPreviewHandlerControl
             x:Name="ShellPreviewHandlerPreview"

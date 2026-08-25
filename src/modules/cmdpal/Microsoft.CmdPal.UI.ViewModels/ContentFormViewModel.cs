@@ -47,7 +47,16 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
         {
             var template = new AdaptiveCardTemplate(templateJson);
             var cardJson = template.Expand(dataJson);
-            card = AdaptiveCard.FromJsonString(cardJson);
+            card = AdaptiveCard.FromJsonString(
+                cardJson,
+                AdaptiveCardParserRegistrations.ElementParsers,
+                AdaptiveCardParserRegistrations.ActionParsers);
+
+            foreach (var warning in card.Warnings)
+            {
+                Logger.LogWarning($"Adaptive Card parse warning ({warning.StatusCode}): {warning.Message}");
+            }
+
             return true;
         }
         catch (Exception ex)

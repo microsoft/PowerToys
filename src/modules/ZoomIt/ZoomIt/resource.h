@@ -140,6 +140,8 @@
 #define IDC_NOISE_CANCELLATION          1133
 #define IDC_SNIP_SAVE_HOTKEY            1134
 #define IDC_SNIP_PANORAMA_SAVE_HOTKEY   1135
+#define IDC_MIRROR_HOTKEY               1138
+#define IDC_MIRROR_TRACK_WINDOW         1137
 #define IDC_SAVE                        40002
 #define IDC_COPY                        40004
 #define IDC_RECORD                      40006
@@ -155,7 +157,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        120
 #define _APS_NEXT_COMMAND_VALUE         40012
-#define _APS_NEXT_CONTROL_VALUE         1137
+#define _APS_NEXT_CONTROL_VALUE         1139
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

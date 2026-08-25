@@ -70,4 +70,6 @@ internal static class Icons
     internal static IconInfo NavigateBackwardIcon => new("\uE72B"); // Previous icon
 
     internal static IconInfo NavigateForwardIcon => new("\uE72A"); // Next icon
+
+    internal static IconInfo SetDefaultIcon => new("\uE73E"); // Accept icon
 }

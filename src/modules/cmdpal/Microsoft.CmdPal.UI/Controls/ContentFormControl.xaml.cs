@@ -6,6 +6,7 @@ using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
 using ManagedCommon;
 using Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
+using Microsoft.CmdPal.UI.Controls.AdaptiveCards;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
@@ -20,6 +21,8 @@ public sealed partial class ContentFormControl : UserControl
 {
     private readonly AdaptiveCardRenderer _renderer;
     private readonly LatestWinsUpdateQueue<CardUpdateRequest> _cardUpdateQueue;
+    private static readonly AdaptiveCardRenderer _renderer;
+    private static bool _customElementsRegistered;
     private ContentFormViewModel? _viewModel;
 
     // LOAD-BEARING: if you don't hang onto a reference to the RenderedAdaptiveCard
@@ -34,6 +37,43 @@ public sealed partial class ContentFormControl : UserControl
     private long _cardSessionGeneration;
 
     public ContentFormViewModel? ViewModel { get => _viewModel; set => AttachViewModel(value); }
+
+    static ContentFormControl()
+    {
+        // We can't use `CardOverrideStyles` here yet, because we haven't called InitializeComponent once.
+        // But also, the default value isn't `null` here. It's... some other default empty value.
+        // So clear it out so that we know when the first time we get created is
+        _renderer = new AdaptiveCardRenderer()
+        {
+            OverrideStyles = null,
+        };
+    }
+
+    internal static void RegisterCustomElements()
+    {
+        if (_customElementsRegistered)
+        {
+            return;
+        }
+
+        Register<AdaptiveStringListInputElement, AdaptiveStringListInputElementParser, AdaptiveStringListInputElementRenderer>();
+        Register<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementParser, AdaptiveFilePathListInputElementRenderer>();
+        Register<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementParser, AdaptiveKeyValueListInputElementRenderer>();
+        Register<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementParser, AdaptiveFilePathInputElementRenderer>();
+
+        _customElementsRegistered = true;
+
+        return;
+
+        static void Register<TElement, TParser, TRenderer>()
+            where TElement : IAdaptiveCardElement, ICustomAdaptiveCardElement
+            where TParser : IAdaptiveElementParser, new()
+            where TRenderer : IAdaptiveElementRenderer, new()
+        {
+            AdaptiveCardParserRegistrations.ElementParsers.Set(TElement.CustomInputType, new TParser());
+            _renderer.ElementRenderers.Set(TElement.CustomInputType, new TRenderer());
+        }
+    }
 
     public ContentFormControl()
     {

@@ -217,6 +217,40 @@ winrt::AudioEncodingProperties AudioSampleGenerator::GetEncodingProperties()
     return m_audioOutputNode.EncodingProperties();
 }
 
+winrt::fire_and_forget AudioSampleGenerator::DisposeAsync(
+    std::unique_ptr<AudioSampleGenerator> generator,
+    winrt::IAsyncAction initAction )
+{
+    if (!generator)
+    {
+        co_return;
+    }
+
+    // InitializeAsync signals m_asyncInitialized from its own continuation.
+    // While it is still suspended at a co_await, that continuation is queued
+    // back to the apartment that started it - normally the UI STA.  Destroying
+    // the generator there runs Stop(), which waits on m_asyncInitialized and so
+    // stops the thread from pumping, meaning the continuation can never be
+    // delivered: a self-deadlock.  Awaiting yields the thread instead of
+    // blocking it, so the pending initialization can complete (or fail).
+    if (initAction)
+    {
+        try
+        {
+            co_await initAction;
+        }
+        catch (...)
+        {
+            // Initialization failed; the object still has to be torn down.
+        }
+    }
+
+    // Keep the teardown (graph stop, device node close, buffer flush) off the
+    // calling thread.
+    co_await winrt::resume_background();
+    generator.reset();
+}
+
 std::optional<winrt::MediaStreamSample> AudioSampleGenerator::TryGetNextSample()
 {
     CheckInitialized();

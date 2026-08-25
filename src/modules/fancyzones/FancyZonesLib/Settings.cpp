@@ -45,6 +45,8 @@ namespace NonLocalizable
     const wchar_t WindowSwitchingToggleID[] = L"fancyzones_windowSwitching";
     const wchar_t NextTabHotkeyID[] = L"fancyzones_nextTab_hotkey";
     const wchar_t PrevTabHotkeyID[] = L"fancyzones_prevTab_hotkey";
+    const wchar_t MonitorRotationID[] = L"fancyzones_monitorRotation";
+    const wchar_t MonitorRotationHotkeyID[] = L"fancyzones_monitorRotation_hotkey";
     const wchar_t ExcludedAppsID[] = L"fancyzones_excluded_apps";
     const wchar_t ZoneHighlightOpacityID[] = L"fancyzones_highlight_opacity";
     const wchar_t ShowZoneNumberID[] = L"fancyzones_showZoneNumber";
@@ -124,6 +126,7 @@ void FancyZonesSettings::LoadSettings()
         SetBoolFlag(values, NonLocalizable::SpanZonesAcrossMonitorsID, SettingId::SpanZonesAcrossMonitors, m_settings.spanZonesAcrossMonitors);
         SetBoolFlag(values, NonLocalizable::MakeDraggedWindowTransparentID, SettingId::MakeDraggedWindowsTransparent, m_settings.makeDraggedWindowTransparent);
         SetBoolFlag(values, NonLocalizable::WindowSwitchingToggleID, SettingId::WindowSwitching, m_settings.windowSwitching);
+        SetBoolFlag(values, NonLocalizable::MonitorRotationID, SettingId::MonitorRotation, m_settings.monitorRotation);
         SetBoolFlag(values, NonLocalizable::SystemThemeID, SettingId::SystemTheme, m_settings.systemTheme);
         SetBoolFlag(values, NonLocalizable::ShowZoneNumberID, SettingId::ShowZoneNumber, m_settings.showZoneNumber);
         SetBoolFlag(values, NonLocalizable::AllowChildWindowSnapID, SettingId::AllowSnapChildWindows, m_settings.allowSnapChildWindows);
@@ -203,6 +206,16 @@ void FancyZonesSettings::LoadSettings()
             {
                 m_settings.prevTabHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
                 NotifyObservers(SettingId::PrevTabHotkey);
+            }
+        }
+
+        if (const auto val = values.get_json(NonLocalizable::MonitorRotationHotkeyID))
+        {
+            auto hotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+            if (m_settings.monitorRotationHotkey.get_modifiers() != hotkey.get_modifiers() || m_settings.monitorRotationHotkey.get_key() != hotkey.get_key() || m_settings.monitorRotationHotkey.get_code() != hotkey.get_code())
+            {
+                m_settings.monitorRotationHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+                NotifyObservers(SettingId::MonitorRotationHotkey);
             }
         }
 

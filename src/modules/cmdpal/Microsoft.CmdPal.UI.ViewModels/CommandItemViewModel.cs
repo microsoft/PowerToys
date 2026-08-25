@@ -67,7 +67,21 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public IconInfoViewModel Icon => _icon.IsSet ? _icon : Command.Icon;
 
-    public CommandViewModel Command { get; private set; }
+    /// <summary>
+    /// The command and whether we own it, held as a single immutable pair.
+    /// </summary>
+    private CommandOwnership _commandState;
+
+    /// <summary>
+    /// Gets the command backing this item.
+    /// </summary>
+    /// <remarks>
+    /// Read-only on purpose. Assigning it directly would silently drop the  previous view-model without unsubscribing it,
+    /// which strands it and its extension command across the process boundary for good.
+    /// Mutate it through <see cref="ReplaceCommand"/> when this item owns the command,
+    /// or <see cref="BorrowCommand"/> when it is holding one owned elsewhere.
+    /// </remarks>
+    public CommandViewModel Command => _commandState.Command;
 
     // Reuse a cached read-only snapshot so repeated reads don't allocate.
     public IReadOnlyList<IContextItemViewModel> MoreCommands => _moreCommandsSnapshot;
@@ -123,7 +137,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     {
         _commandItemModel = item;
         _contextMenuFactory = contextMenuFactory;
-        Command = new(null, errorContext);
+        _commandState = new(new CommandViewModel(null, errorContext), Owned: true);
     }
 
     public void FastInitializeProperties()
@@ -140,7 +154,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         var command = model.Command;
-        Command = new(command, PageContext);
+        ReplaceCommand(command);
         Command.FastInitializeProperties();
 
         _itemTitle = model.Title;
@@ -249,7 +263,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         catch (Exception ex)
         {
             CoreLogger.LogError("error fast initializing CommandItemViewModel", ex);
-            Command = new(null, PageContext);
+            ReplaceCommand(null);
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
             ClearMoreCommands();
@@ -288,7 +302,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         catch (Exception ex)
         {
             CoreLogger.LogError("error initializing CommandItemViewModel", ex);
-            Command = new(null, PageContext);
+            ReplaceCommand(null);
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
             ClearMoreCommands();
@@ -324,9 +338,12 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         switch (propertyName)
         {
             case nameof(Command):
-                Command.PropertyChanged -= Command_PropertyChanged;
                 var command = model.Command;
-                Command = new(command, PageContext);
+
+                // ReplaceCommand detaches this item's handler from the command it
+                // displaces, so there is no manual unsubscribe to remember here.
+                ReplaceCommand(command);
+
                 Command.InitializeProperties();
                 Command.PropertyChanged += Command_PropertyChanged;
 
@@ -336,7 +353,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
                 if (_defaultCommandContextItemViewModel is not null)
                 {
-                    _defaultCommandContextItemViewModel.Command = Command;
+                    _defaultCommandContextItemViewModel.BorrowCommand(Command);
                     _defaultCommandContextItemViewModel.UpdateTitle(_itemTitle);
                     UpdateDefaultContextItemIcon();
                 }
@@ -452,15 +469,21 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
-        _defaultCommandContextItemViewModel = new CommandContextItemViewModel(new CommandContextItem(commandModel), PageContext)
+        var defaultContextItem = new CommandContextItemViewModel(new CommandContextItem(commandModel), PageContext)
         {
             _itemTitle = Name,
             Subtitle = Subtitle,
-            Command = Command,
 
             // TODO this probably should just be a CommandContextItemViewModel(CommandItemViewModel) ctor, or a copy ctor or whatever
             // Anything we set manually here must stay in sync with the corresponding properties on CommandItemViewModel.
         };
+
+        // The synthesized entry stands in for this item's own command, so it
+        // shares the view-model rather than building a second one for the same
+        // extension object.
+        defaultContextItem.BorrowCommand(Command);
+
+        _defaultCommandContextItemViewModel = defaultContextItem;
 
         UpdateDefaultContextItemIcon();
 
@@ -506,6 +529,54 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher)
         => _subtitleCache.GetOrUpdate(matcher, Subtitle);
+
+    /// <summary>
+    /// Replaces <see cref="Command"/> with a newly built view-model this item owns, cleaning up the one being dropped.
+    /// </summary>
+    /// <remarks>
+    /// Takes the extension command instead of a view-model - the view-model is built here so that we can guarantee ownership..
+    /// </remarks>
+    private void ReplaceCommand(ICommand? model)
+    {
+        var command = new CommandViewModel(model, PageContext);
+        var replaced = Interlocked.Exchange(ref _commandState, new CommandOwnership(command, Owned: true));
+
+        ReleaseReplaced(replaced, command);
+    }
+
+    /// <summary>
+    /// Points <see cref="Command"/> at a view-model owned by someone else.
+    /// </summary>
+    /// <remarks>
+    /// The borrowed instance is never cleaned up here - that is its owner's job.
+    /// </remarks>
+    private void BorrowCommand(CommandViewModel command)
+    {
+        var replaced = Interlocked.Exchange(ref _commandState, new CommandOwnership(command, Owned: false));
+
+        ReleaseReplaced(replaced, command);
+    }
+
+    /// <summary>
+    /// Cleans up a displaced command, if we owned it and it is not the one that just took its place.
+    /// </summary>
+    private void ReleaseReplaced(CommandOwnership replaced, CommandViewModel current)
+    {
+        if (ReferenceEquals(replaced.Command, current))
+        {
+            return;
+        }
+
+        // Detach regardless of ownership: this item attaches its own handler to
+        // whichever command it is showing, borrowed or not, so the handler has to
+        // come off whenever that command is swapped out.
+        replaced.Command.PropertyChanged -= Command_PropertyChanged;
+
+        if (replaced.Owned)
+        {
+            replaced.Command.SafeCleanup();
+        }
+    }
 
     /// <remarks>
     /// * Does call SlowInitializeProperties on the created items.
@@ -588,8 +659,18 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         // _listItemIcon.SafeCleanup();
         _icon = new(null); // necessary?
 
-        Command.PropertyChanged -= Command_PropertyChanged;
-        Command.SafeCleanup();
+        // One read of the pair, so a replacement racing this teardown cannot
+        // leave us cleaning up a command against the wrong ownership flag.
+        var commandState = _commandState;
+        commandState.Command.PropertyChanged -= Command_PropertyChanged;
+
+        // Only tear down a command this item built. The synthesized default
+        // context item borrows its parent's, and cleaning that up from here
+        // would pull it out from under an item that is still using it.
+        if (commandState.Owned)
+        {
+            commandState.Command.SafeCleanup();
+        }
 
         var model = _commandItemModel.Unsafe;
         if (model is not null)
@@ -637,6 +718,16 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                   .ToList()
                   .ForEach(c => c.SafeCleanup());
     }
+
+    /// <summary>
+    /// A command together with whether this item is responsible for cleaning it up.
+    /// </summary>
+    /// <param name="Command">The command view-model.</param>
+    /// <param name="Owned">
+    /// <see langword="true"/> when this item constructed <paramref name="Command"/>,
+    /// <see langword="false"/> when it is borrowing one owned elsewhere.
+    /// </param>
+    private sealed record CommandOwnership(CommandViewModel Command, bool Owned);
 }
 
 [Flags]

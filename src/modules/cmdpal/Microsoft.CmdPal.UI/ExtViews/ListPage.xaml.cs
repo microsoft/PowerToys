@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.UI.Xaml;
@@ -74,7 +75,7 @@ public sealed partial class ListPage : Page
         // Clean-up event listeners
         ViewModel = null;
 
-        GC.Collect();
+        ExtensionObjectReleaser.AfterNavigation();
     }
 
     private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

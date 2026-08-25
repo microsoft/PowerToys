@@ -2,6 +2,7 @@
 #include "KeyboardManagerEditorLibraryWrapper.h"
 #include <algorithm>
 #include <cstring>
+#include <filesystem>
 #include <vector>
 #include <string>
 #include <memory>
@@ -28,6 +29,20 @@ extern "C"
         return static_cast<MappingConfiguration*>(config)->LoadSettings();
     }
 
+    bool MappingSettingsFileExists(void* config)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+        auto path = PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + mappingConfig->currentConfig + L".json";
+        std::error_code error;
+        bool exists = std::filesystem::exists(path, error);
+        return exists || error.value() != 0;
+    }
+
+    bool MappingConfigurationNameWasResolved(void* config)
+    {
+        return static_cast<MappingConfiguration*>(config)->IsConfigurationNameResolved();
+    }
+
     bool SaveMappingSettings(void* config)
     {
         return static_cast<MappingConfiguration*>(config)->SaveSettingsToFile();
@@ -39,6 +54,11 @@ extern "C"
         wchar_t* buffer = new wchar_t[len + 1];
         wcscpy_s(buffer, len + 1, str.c_str());
         return buffer;
+    }
+
+    wchar_t* GetMappingConfigurationName(void* config)
+    {
+        return AllocateAndCopyString(static_cast<MappingConfiguration*>(config)->currentConfig);
     }
 
     int GetSingleKeyRemapCount(void* config)
@@ -326,6 +346,11 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         std::wstring origKeysStr = origShortcut.ToHstringVK().c_str();
         mapping->originalKeys = AllocateAndCopyString(origKeysStr);
         mapping->targetApp = AllocateAndCopyString(app);
+        mapping->exactMatch = origShortcut.exactMatch ? 1 : 0;
+        mapping->startInDirectory = nullptr;
+        mapping->elevation = 0;
+        mapping->ifRunningAction = 0;
+        mapping->visibility = 0;
 
         if (targetShortcutUnion.index() == 0)
         {
@@ -347,15 +372,19 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             switch (targetShortcut.operationType)
             {
             case Shortcut::OperationType::RunProgram:
-                mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
+                mapping->targetKeys = AllocateAndCopyString(L"");
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(targetShortcut.runProgramFilePath);
                 mapping->programArgs = AllocateAndCopyString(targetShortcut.runProgramArgs);
+                mapping->startInDirectory = AllocateAndCopyString(targetShortcut.runProgramStartInDir);
+                mapping->elevation = static_cast<int>(targetShortcut.elevationLevel);
+                mapping->ifRunningAction = static_cast<int>(targetShortcut.alreadyRunningAction);
+                mapping->visibility = static_cast<int>(targetShortcut.startWindowType);
                 mapping->uriToOpen = AllocateAndCopyString(L"");
                 break;
 
             case Shortcut::OperationType::OpenURI:
-                mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
+                mapping->targetKeys = AllocateAndCopyString(L"");
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(L"");
                 mapping->programArgs = AllocateAndCopyString(L"");
@@ -375,7 +404,7 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         {
             std::wstring text = std::get<std::wstring>(targetShortcutUnion);
             mapping->targetKeys = AllocateAndCopyString(L"");
-            mapping->operationType = 0;
+            mapping->operationType = 3;
             mapping->targetText = AllocateAndCopyString(text);
             mapping->programPath = AllocateAndCopyString(L"");
             mapping->programArgs = AllocateAndCopyString(L"");
@@ -429,6 +458,11 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         mapping->originalKeys = AllocateAndCopyString(origKeysStr);
 
         mapping->targetApp = AllocateAndCopyString(app);
+        mapping->exactMatch = origShortcut.exactMatch ? 1 : 0;
+        mapping->startInDirectory = nullptr;
+        mapping->elevation = 0;
+        mapping->ifRunningAction = 0;
+        mapping->visibility = 0;
 
         if (targetShortcutUnion.index() == 0)
         {
@@ -449,15 +483,19 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
 
             if (targetShortcut.operationType == Shortcut::OperationType::RunProgram)
             {
-                mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
+                mapping->targetKeys = AllocateAndCopyString(L"");
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(targetShortcut.runProgramFilePath);
                 mapping->programArgs = AllocateAndCopyString(targetShortcut.runProgramArgs);
+                mapping->startInDirectory = AllocateAndCopyString(targetShortcut.runProgramStartInDir);
+                mapping->elevation = static_cast<int>(targetShortcut.elevationLevel);
+                mapping->ifRunningAction = static_cast<int>(targetShortcut.alreadyRunningAction);
+                mapping->visibility = static_cast<int>(targetShortcut.startWindowType);
                 mapping->uriToOpen = AllocateAndCopyString(L"");
             }
             else if (targetShortcut.operationType == Shortcut::OperationType::OpenURI)
             {
-                mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
+                mapping->targetKeys = AllocateAndCopyString(L"");
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(L"");
                 mapping->programArgs = AllocateAndCopyString(L"");
@@ -476,7 +514,7 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         {
             std::wstring text = std::get<std::wstring>(targetShortcutUnion);
             mapping->targetKeys = AllocateAndCopyString(L"");
-            mapping->operationType = 0;
+            mapping->operationType = 3;
             mapping->targetText = AllocateAndCopyString(text);
             mapping->programPath = AllocateAndCopyString(L"");
             mapping->programArgs = AllocateAndCopyString(L"");
@@ -533,11 +571,13 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
                           const wchar_t* startDirectory,
                           int elevation,
                           int ifRunningAction,
-                          int visibility)
+                          int visibility,
+                          int exactMatch)
     {
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
 
         Shortcut originalShortcut(originalKeys);
+        originalShortcut.exactMatch = exactMatch != 0;
 
         KeyShortcutTextUnion targetShortcut;
 

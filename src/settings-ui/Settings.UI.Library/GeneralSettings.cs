@@ -89,6 +89,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("download_updates_automatically")]
         public bool AutoDownloadUpdates { get; set; }
 
+        [JsonPropertyName("include_prerelease_updates")]
+        public bool IncludePrereleaseUpdates { get; set; }
+
         [JsonPropertyName("show_whats_new_after_updates")]
         public bool ShowWhatsNewAfterUpdates { get; set; }
 
@@ -112,6 +115,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IsElevated = false;
             ShowNewUpdatesToastNotification = true;
             AutoDownloadUpdates = true;
+            IncludePrereleaseUpdates = false;
             EnableExperimentation = true;
             DashboardSortOrder = DashboardSortOrder.Alphabetical;
             Theme = "system";

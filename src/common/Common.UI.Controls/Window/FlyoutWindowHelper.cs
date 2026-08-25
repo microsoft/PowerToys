@@ -41,15 +41,6 @@ public static partial class FlyoutWindowHelper
     private static partial int GetDpiForMonitor(nint hMonitor, uint dpiType, out uint dpiX, out uint dpiY);
 
     /// <summary>
-    /// Get the DPI scale factor (1.0 = 100%, 1.25 = 125%, 1.5 = 150%, 2.0 = 200%) for a window.
-    /// </summary>
-    public static double GetDpiScale(WindowEx window)
-    {
-        ArgumentNullException.ThrowIfNull(window);
-        return (double)window.GetDpiForWindow() / DefaultDpi;
-    }
-
-    /// <summary>
     /// Get the DPI scale factor for a given <see cref="DisplayArea"/>.
     /// Resolves DPI from the underlying monitor handle so the value reflects the
     /// target display, regardless of which monitor the window is currently on.

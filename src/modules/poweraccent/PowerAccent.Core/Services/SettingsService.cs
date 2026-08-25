@@ -51,16 +51,12 @@ public class SettingsService
                     if (settings != null)
                     {
                         ActivationKey = settings.Properties.ActivationKey;
-                        _keyboardListener.UpdateActivationKey((int)ActivationKey);
+                        InputTime = settings.Properties.InputTime.Value;
+                        HoldDuration = settings.Properties.HoldDuration.Value;
+                        _keyboardListener.UpdateActivationSettings((int)ActivationKey, InputTime, HoldDuration);
 
                         DoNotActivateOnGameMode = settings.Properties.DoNotActivateOnGameMode;
                         _keyboardListener.UpdateDoNotActivateOnGameMode(DoNotActivateOnGameMode);
-
-                        InputTime = settings.Properties.InputTime.Value;
-                        _keyboardListener.UpdateInputTime(InputTime);
-
-                        HoldDuration = settings.Properties.HoldDuration.Value;
-                        _keyboardListener.UpdateHoldDuration(HoldDuration);
 
                         ExcludedApps = settings.Properties.ExcludedApps.Value;
                         _keyboardListener.UpdateExcludedApps(ExcludedApps);

@@ -61,6 +61,7 @@
                 Orientation="Horizontal"
                 Spacing="8">
                 <Button
+                    AutomationProperties.AutomationId="ReloadBtn"
                     Command="{Binding LoadProcessesCommand}"
                     Content="{ui:FontIcon Glyph=&#xe72c;,
                                           FontSize=16}"

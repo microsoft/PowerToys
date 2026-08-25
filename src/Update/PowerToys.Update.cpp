@@ -146,7 +146,8 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
         return std::nullopt;
     }
 
-    const auto new_version_info = std::move(get_github_version_info_async()).get();
+    const bool include_prerelease_updates = PTSettingsHelper::load_general_settings().GetNamedBoolean(L"include_prerelease_updates", false);
+    const auto new_version_info = std::move(get_github_version_info_async(include_prerelease_updates)).get();
 
     // Check for error BEFORE dereferencing — the old code crashed here
     // when GitHub API was unreachable (new_version_info held an error string).
