@@ -177,17 +177,47 @@ jobs:
       inputs:
         displaySettings: 'optimal'
 
+  # Sign the sparse shell-extension MSIX packages with a machine-trusted TEST certificate so they
+  # register on unsigned PR builds and the UI tests can drive the real modern (Win11 tier-1) context
+  # menu instead of the signing-free fallback. Test-only trust anchor; asserts no security. All roots
+  # are searched recursively (buildNow run-in-place tree + complete machine/per-user installs).
+  # Image Resizer has no Windows 11 classic-menu fallback, so its focused and all-module jobs require
+  # the signed/trusted package; unrelated jobs keep this setup best-effort.
+  - pwsh: |
+      $packageRoots = @(
+        "$(Pipeline.Workspace)\$(TestArtifactsName)",
+        "$env:ProgramFiles\PowerToys",
+        "$env:LOCALAPPDATA\PowerToys")
+      $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
+      $requiresImageResizer = '$(TestPlatform)' -ne 'x64Win10' -and (
+        [string]::IsNullOrWhiteSpace($modulesRaw) -or
+        @($modulesRaw -split ';' | Where-Object { $_ -match 'ImageResizer' }).Count -gt 0)
+
+      if ($requiresImageResizer) {
+        & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" `
+          -PackageRoot $packageRoots `
+          -RequiredPackage 'ImageResizerContextMenuPackage.msix'
+      } else {
+        try {
+          & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" -PackageRoot $packageRoots
+        } catch {
+          Write-Host "##vso[task.logissue type=warning]Sparse MSIX signing skipped: $($_.Exception.Message)"
+        }
+      }
+    displayName: "Sign sparse MSIX packages (test trust)"
+
   # Start WinAppDriver once for the whole job — WinAppDriver's documented CI pattern
   # (https://github.com/microsoft/WinAppDriver/blob/master/Docs/CI_AzureDevOps.md). Launching it
-  # detached gives it its own console whose stdin blocks, so it stays alive for the run instead of
-  # reading EOF and exiting the moment it starts listening (the failure mode when a test host launches
-  # it as a child). The legacy UITest harness reuses an already-listening instance rather than
+  # detached gives it its own hidden console whose stdin blocks, so it stays alive for the run without
+  # stealing foreground from non-elevated apps under test. This also avoids reading EOF and exiting the
+  # moment it starts listening (the failure mode when a test host launches it as a child). The legacy
+  # UITest harness reuses an already-listening instance rather than
   # relaunching it per test, so this removes the per-assembly launch cost. The winappcli-based .Next
   # tests don't use WinAppDriver. Best-effort: if the pre-start fails, each assembly still launches its own.
   - pwsh: |
       $winapp = "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe"
       if (Test-Path $winapp) {
-        Start-Process -FilePath $winapp
+        Start-Process -FilePath $winapp -WindowStyle Hidden
 
         $deadline = (Get-Date).AddSeconds(30)
         $ready = $false

@@ -34,6 +34,7 @@ namespace ShortcutGuide.Controls
         private List<string> _lastNavItemIds = [];
         private ShortcutFile? _shortcutFile;
         private string _selectedAppName = string.Empty;
+        private string _searchQuery = string.Empty;
 
         /// <summary>
         /// Raised whenever the user selects a different app in the nav list.
@@ -60,6 +61,8 @@ namespace ShortcutGuide.Controls
 
         public async Task Open()
         {
+            this.ResetSearch();
+
             // Same background work the original MainWindow ran in its
             // constructor: wait for the index-generation thread to finish
             // and then enumerate the apps to populate the nav list.
@@ -94,9 +97,27 @@ namespace ShortcutGuide.Controls
 
             _shortcutFile = null;
             _currentApplicationIds.Clear();
+            this.ResetSearch();
 
             _getAppIdsTask?.Dispose();
             _getAppIdsTask = null;
+        }
+
+        internal bool TryClearSearch()
+        {
+            if (string.IsNullOrWhiteSpace(_searchQuery))
+            {
+                return false;
+            }
+
+            this.SearchBox.Text = string.Empty;
+            this.SearchBox.Focus(FocusState.Programmatic);
+            return true;
+        }
+
+        internal void FocusSearch()
+        {
+            this.SearchBox.Focus(FocusState.Programmatic);
         }
 
         internal string SelectedAppName => _selectedAppName;
@@ -247,7 +268,7 @@ namespace ShortcutGuide.Controls
                 // alive by live ComWrappers CCWs), leaking ~one page per open.
                 ShortcutsPage page = this.ContentFrame.Content as ShortcutsPage
                     ?? this.NavigateToShortcutsPage();
-                page.SetShortcuts(file, this._selectedAppName);
+                page.SetShortcuts(file, this._selectedAppName, _searchQuery);
             }
 
             SelectedAppTaskbarVisibilityChanged?.Invoke(this, exposesTaskbarSection);
@@ -267,6 +288,30 @@ namespace ShortcutGuide.Controls
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             CloseRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            _searchQuery = sender.Text;
+            if (this.ContentFrame.Content is ShortcutsPage currentPage)
+            {
+                currentPage.SetSearchQuery(_searchQuery);
+            }
+        }
+
+        private void OnFindInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            this.SearchBox.Focus(FocusState.Programmatic);
+            args.Handled = true;
+        }
+
+        private void ResetSearch()
+        {
+            _searchQuery = string.Empty;
+            if (!string.IsNullOrEmpty(this.SearchBox.Text))
+            {
+                this.SearchBox.Text = string.Empty;
+            }
         }
     }
 }

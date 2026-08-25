@@ -125,7 +125,14 @@ tests often did by hand:
   kills + relaunches, reapplies size, returns the fresh `Session`.
 - **Class-shared window:** override `protected bool ReuseScopeAcrossTests => true;` to launch once per
   class and reuse the window across `[TestMethod]`s (skips per-test hygiene/relaunch). Use for smoke
-  suites with many cheap cases against one window. Default is per-test isolation.
+  suites with many cheap cases against one window, or Shell-extension suites whose registration
+  belongs to one long-lived runner. Per-test setup may still close/recreate *secondary* windows such
+  as Explorer file windows. If the shared scope dies, the next test relaunches it. The inherited
+  class cleanup stops the scope after the final test. Default is per-test isolation.
+- **Failure capture vs. derived cleanup:** MSTest runs a derived `[TestCleanup]` before the base
+  cleanup. If derived cleanup closes the window that explains a failure, call
+  `CaptureFailureArtifactsBeforeCleanupAsync(...)` first; otherwise the recording's final frame and
+  desktop screenshot show only the post-cleanup desktop.
 
 ## 6. Multi-window discovery
 

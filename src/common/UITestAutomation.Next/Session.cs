@@ -212,7 +212,19 @@ public sealed class Session
 
         while (true)
         {
-            var matches = ExecuteSearch(by);
+            List<SearchHit> matches;
+            try
+            {
+                matches = ExecuteSearch(by);
+            }
+            catch (AssertFailedException ex) when (
+                DateTime.UtcNow < deadline &&
+                ex.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase))
+            {
+                Thread.Sleep(200);
+                continue;
+            }
+
             var typed = new List<T>(matches.Count);
             foreach (var m in matches)
             {
@@ -300,6 +312,21 @@ public sealed class Session
     public string Screenshot(string outputPath, Element? element = null, bool captureScreen = false)
     {
         WinappCli.InvokeAssertSuccess(BuildScreenshotArgs(outputPath, element, captureScreen));
+        return outputPath;
+    }
+
+    /// <summary>
+    /// Capture the session's visible DWM frame from the desktop, including composed content while
+    /// excluding the invisible resize border around top-level windows.
+    /// </summary>
+    public string ScreenshotVisibleWindow(string outputPath)
+    {
+        Assert.IsTrue(Scope == TargetScope.Window && WindowHandle != 0, "Visible-frame capture requires a window-scoped session.");
+        var windowHandle = new IntPtr(WindowHandle);
+        var foregroundFailure = $"HWND {WindowHandle} did not become foreground before screenshot capture. " +
+                                $"Current foreground: {WindowControl.GetForegroundWindowInfo()}";
+        Assert.IsTrue(WindowControl.WaitForForeground(windowHandle, timeoutMS: 5_000), foregroundFailure);
+        WindowHelper.CaptureVisibleWindow(windowHandle, outputPath);
         return outputPath;
     }
 

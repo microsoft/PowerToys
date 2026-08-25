@@ -41,11 +41,10 @@ public sealed partial class SelectorControl : UserControl
     /// The cell is a <c>MinWidth</c> of 48, not a fixed 48: a glyph wider than that (₹, ‰, ﷼, a CJK
     /// fallback) grows its cell, so the bar has to be measured rather than derived from the item
     /// count. The measurement is taken explicitly instead of read from the last layout pass because
-    /// the bar is rebuilt on every summon while the window is still hidden, so no pass has run for
-    /// the new items; measuring against an infinite width also yields the true content width rather
-    /// than whatever the ScrollViewer inside the ListView's own template would have clipped it to.
-    /// A caller that measures before the surface has been templated and laid out may get less than
-    /// the items need, so <c>MainWindow</c> measures again after its first layout pass.
+    /// the bar is rebuilt on every summon while its shown window is still cloaked, so the caller
+    /// first lays out the newly visible surface off screen. Measuring against an infinite width also
+    /// yields the true content width rather than whatever the ScrollViewer inside the ListView's own
+    /// template would have clipped it to.
     /// </remarks>
     internal double MeasureContentWidthDip()
     {

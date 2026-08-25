@@ -28,6 +28,8 @@ namespace Microsoft.PowerToys.UITest.Next;
 /// </remarks>
 public static class WinappCli
 {
+    internal const string InvokeTimeoutSecondsEnvironmentVariable = "WINAPP_CLI_INVOKE_TIMEOUT_SECONDS";
+
     /// <summary>Stable hint surfaced when the CLI is missing or fails — used in all error paths.</summary>
     public const string InstallHint =
         "winapp.exe not found. Install once with: winget install Microsoft.winappcli " +
@@ -254,9 +256,17 @@ public static class WinappCli
     /// command carries its own <c>-t</c>/<c>--timeout</c> wait in milliseconds (e.g. <c>wait-for</c>), the
     /// guard is extended past that wait plus a grace margin so a legitimate long wait isn't killed early.
     /// </summary>
-    private static TimeSpan ResolveInvokeTimeout(string[] args)
+    internal static TimeSpan ResolveInvokeTimeout(string[] args)
     {
-        var budget = DefaultInvokeTimeout;
+        var configuredSeconds = Environment.GetEnvironmentVariable(InvokeTimeoutSecondsEnvironmentVariable);
+        var budget = int.TryParse(
+                configuredSeconds,
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var seconds) &&
+            seconds is > 0 and <= 3_600
+                ? TimeSpan.FromSeconds(seconds)
+                : DefaultInvokeTimeout;
         for (var i = 0; i < args.Length - 1; i++)
         {
             if ((string.Equals(args[i], "-t", StringComparison.Ordinal) ||

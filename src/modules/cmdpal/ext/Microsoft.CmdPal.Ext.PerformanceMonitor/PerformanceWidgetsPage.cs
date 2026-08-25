@@ -405,6 +405,12 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 /// </summary>
 internal abstract partial class WidgetPage : OnLoadContentPage
 {
+    private readonly Lock _activationLock = new();
+    private int _loadCount;
+
+    // null means that the last transition failed and the applied state is unknown.
+    private bool? _isActive = false;
+
     internal event EventHandler? Updated;
 
     protected Dictionary<string, string> ContentData { get; } = new();
@@ -491,19 +497,85 @@ internal abstract partial class WidgetPage : OnLoadContentPage
     /// active. When either is activated, we'll start updating. When both are
     /// removed, we'll stop updating.
     /// </summary>
-    internal virtual void PushActivate()
+    internal void PushActivate()
     {
-        Interlocked.Increment(ref _loadCount);
+        (Exception Exception, bool Activating)? failure;
+        lock (_activationLock)
+        {
+            _loadCount++;
+            failure = ReconcileActivation();
+        }
+
+        LogTransitionFailure(failure);
     }
 
-    internal virtual void PopActivate()
+    internal void PopActivate()
     {
-        Interlocked.Decrement(ref _loadCount);
+        (Exception Exception, bool Activating)? failure;
+        lock (_activationLock)
+        {
+            if (_loadCount > 0)
+            {
+                _loadCount--;
+            }
+
+            failure = ReconcileActivation();
+        }
+
+        LogTransitionFailure(failure);
     }
 
-    private int _loadCount;
+    protected virtual void OnActivated()
+    {
+    }
 
-    protected bool IsActive => Volatile.Read(ref _loadCount) > 0;
+    protected virtual void OnDeactivated()
+    {
+    }
+
+    private (Exception Exception, bool Activating)? ReconcileActivation()
+    {
+        var shouldBeActive = _loadCount > 0;
+        if (_isActive == shouldBeActive)
+        {
+            return null;
+        }
+
+        try
+        {
+            if (shouldBeActive)
+            {
+                OnActivated();
+            }
+            else
+            {
+                OnDeactivated();
+            }
+
+            _isActive = shouldBeActive;
+            return null;
+        }
+        catch (Exception ex)
+        {
+            // The hook may have failed after doing some work. Keep the state
+            // unknown so the next activation change reasserts the desired state.
+            _isActive = null;
+            return (ex, shouldBeActive);
+        }
+    }
+
+    private void LogTransitionFailure((Exception Exception, bool Activating)? failure)
+    {
+        if (failure is not { } transitionFailure)
+        {
+            return;
+        }
+
+        var state = transitionFailure.Activating ? "active" : "inactive";
+        CoreLogger.LogError(
+            $"Failed to transition performance widget {GetType().Name} to the {state} state. A later activation change will retry the transition.",
+            transitionFailure.Exception);
+    }
 
     protected override void Loaded()
     {
@@ -605,23 +677,9 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
         return string.Format(CultureInfo.InvariantCulture, "{0:0.00} GHz", cpuSpeed / 1000);
     }
 
-    internal override void PushActivate()
-    {
-        base.PushActivate();
-        if (IsActive)
-        {
-            _dataManager.Start();
-        }
-    }
+    protected override void OnActivated() => _dataManager.Start();
 
-    internal override void PopActivate()
-    {
-        base.PopActivate();
-        if (!IsActive)
-        {
-            _dataManager.Stop();
-        }
-    }
+    protected override void OnDeactivated() => _dataManager.Stop();
 
     public void Dispose()
     {
@@ -729,23 +787,9 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
         return memSize.ToString("0.00", CultureInfo.InvariantCulture) + " GB";
     }
 
-    internal override void PushActivate()
-    {
-        base.PushActivate();
-        if (IsActive)
-        {
-            _dataManager.Start();
-        }
-    }
+    protected override void OnActivated() => _dataManager.Start();
 
-    internal override void PopActivate()
-    {
-        base.PopActivate();
-        if (!IsActive)
-        {
-            _dataManager.Stop();
-        }
-    }
+    protected override void OnDeactivated() => _dataManager.Stop();
 
     public void Dispose()
     {
@@ -869,23 +913,9 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
         };
     }
 
-    internal override void PushActivate()
-    {
-        base.PushActivate();
-        if (IsActive)
-        {
-            _dataManager.Start();
-        }
-    }
+    protected override void OnActivated() => _dataManager.Start();
 
-    internal override void PopActivate()
-    {
-        base.PopActivate();
-        if (!IsActive)
-        {
-            _dataManager.Stop();
-        }
-    }
+    protected override void OnDeactivated() => _dataManager.Stop();
 
     private void HandlePrevDisk()
     {
@@ -1058,23 +1088,9 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         };
     }
 
-    internal override void PushActivate()
-    {
-        base.PushActivate();
-        if (IsActive)
-        {
-            _dataManager.Start();
-        }
-    }
+    protected override void OnActivated() => _dataManager.Start();
 
-    internal override void PopActivate()
-    {
-        base.PopActivate();
-        if (!IsActive)
-        {
-            _dataManager.Stop();
-        }
-    }
+    protected override void OnDeactivated() => _dataManager.Stop();
 
     private void HandlePrevNetwork()
     {
@@ -1258,23 +1274,9 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         return Resources.GetResource("GPU_Usage_Subtitle");
     }
 
-    internal override void PushActivate()
-    {
-        base.PushActivate();
-        if (IsActive)
-        {
-            _dataManager.Start();
-        }
-    }
+    protected override void OnActivated() => _dataManager.Start();
 
-    internal override void PopActivate()
-    {
-        base.PopActivate();
-        if (!IsActive)
-        {
-            _dataManager.Stop();
-        }
-    }
+    protected override void OnDeactivated() => _dataManager.Stop();
 
     private void HandlePrevGPU()
     {
@@ -1467,23 +1469,9 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
             minutes);
     }
 
-    internal override void PushActivate()
-    {
-        base.PushActivate();
-        if (IsActive)
-        {
-            _dataManager.Start();
-        }
-    }
+    protected override void OnActivated() => _dataManager.Start();
 
-    internal override void PopActivate()
-    {
-        base.PopActivate();
-        if (!IsActive)
-        {
-            _dataManager.Stop();
-        }
-    }
+    protected override void OnDeactivated() => _dataManager.Stop();
 
     public void Dispose()
     {

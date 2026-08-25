@@ -29,9 +29,14 @@ struct ShortcutMapping
     wchar_t* targetKeys;
     wchar_t* targetApp;
     int operationType;
+    int exactMatch;
     wchar_t* targetText;
     wchar_t* programPath;
     wchar_t* programArgs;
+    wchar_t* startInDirectory;
+    int elevation;
+    int ifRunningAction;
+    int visibility;
     wchar_t* uriToOpen;
 };
 
@@ -40,6 +45,9 @@ extern "C"
     __declspec(dllexport) void* CreateMappingConfiguration();
     __declspec(dllexport) void DestroyMappingConfiguration(void* config);
     __declspec(dllexport) bool LoadMappingSettings(void* config);
+    __declspec(dllexport) bool MappingSettingsFileExists(void* config);
+    __declspec(dllexport) bool MappingConfigurationNameWasResolved(void* config);
+    __declspec(dllexport) wchar_t* GetMappingConfigurationName(void* config);
     __declspec(dllexport) bool SaveMappingSettings(void* config);
 
     __declspec(dllexport) int GetSingleKeyRemapCount(void* config);
@@ -69,7 +77,8 @@ extern "C"
                                                 const wchar_t* startDirectory = nullptr,
                                                 int elevation = 0,
                                                 int ifRunningAction = 0,
-                                                int visibility = 0);
+                                                int visibility = 0,
+                                                int exactMatch = 0);
 
     __declspec(dllexport) void GetKeyDisplayName(int keyCode, wchar_t* keyName, int maxCount);
     __declspec(dllexport) int GetKeyCodeFromName(const wchar_t* keyName);

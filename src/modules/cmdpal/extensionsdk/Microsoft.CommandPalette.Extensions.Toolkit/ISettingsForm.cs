@@ -12,6 +12,8 @@ internal interface ISettingsForm
 
     public void Update(JsonObject payload);
 
+    public void UpdateFromForm(JsonObject payload);
+
     public Dictionary<string, object> ToDictionary();
 
     public string ToDataIdentifier();

@@ -58,6 +58,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/common/UITestAutomation.Next.UnitTests/UITestAutomation.Next.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/common/UnitTests-CommonLib/UnitTests-CommonLib.vcxproj" Id="1a066c63-64b3-45f8-92fe-664e1cce8077" />
     <Project Path="src/common/UnitTests-CommonUtils/UnitTests-CommonUtils.vcxproj" Id="8b5cfb38-ccba-40a8-ad7a-89c57b070884" />
     <Project Path="src/common/updating/UnitTests/UpdatingUnitTests.vcxproj" Id="a1b2c3d4-e5f6-7890-abcd-ef1234567890" />
@@ -345,6 +349,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.PowerToys.UnitTests/Microsoft.CmdPal.Ext.PowerToys.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.Registry.UnitTests/Microsoft.CmdPal.Ext.Registry.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -454,7 +462,15 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/fancyzones/FancyZones.UITests.Next/FancyZones.UITests.Next.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/fancyzones/FancyZonesEditor.UITests/FancyZonesEditor.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/fancyzones/FancyZonesEditor.UITests.Next/FancyZonesEditor.UITests.Next.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -479,6 +495,10 @@
   </Folder>
   <Folder Name="/modules/FileLocksmith/Tests/">
     <Project Path="src/modules/FileLocksmith/FileLocksmithCLI/tests/FileLocksmithCLIUnitTests.vcxproj" Id="a1b2c3d4-e5f6-7890-1234-567890abcdef" />
+    <Project Path="src/modules/FileLocksmith/Tests/FileLocksmith.UITests/FileLocksmith.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/modules/Hosts/">
     <Project Path="src/modules/Hosts/Hosts/Hosts.csproj">
@@ -517,6 +537,10 @@
   </Folder>
   <Folder Name="/modules/imageresizer/Tests/">
     <Project Path="src/modules/imageresizer/tests/ImageResizer.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/imageresizer/tests/ImageResizer.UITests/ImageResizer.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -585,6 +609,10 @@
   <Folder Name="/modules/keyboardmanager/Tests/">
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEditorTest/KeyboardManagerEditorTest.vcxproj" Id="62173d9a-6724-4c00-a1c8-fb646480a9ec" />
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEngineTest/KeyboardManagerEngineTest.vcxproj" Id="7f4b3a60-bc27-45a7-8000-68b0b6ea7466" />
+    <Project Path="src/modules/keyboardmanager/Tests/KeyboardManager.UITests/KeyboardManager.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/modules/launcher/">
     <Project Path="src/modules/launcher/Microsoft.Launcher/Microsoft.Launcher.vcxproj" Id="e364f67b-bb12-4e91-b639-355866ebcd8b">
@@ -885,6 +913,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/peek/Peek.UITests.Next/Peek.UITests.Next.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/peek/peek/peek.vcxproj" Id="a1425b53-3d61-4679-8623-e64a0d3d0a48" />
   </Folder>
   <Folder Name="/modules/PowerAccent/">
@@ -1021,6 +1053,10 @@
     <Project Path="src/modules/previewpane/SvgThumbnailProviderCpp/SvgThumbnailProviderCpp.vcxproj" Id="2bbc9e33-21ec-401c-84da-bb6590a9b2aa" />
   </Folder>
   <Folder Name="/modules/previewpane/Tests/">
+    <Project Path="src/modules/previewpane/PreviewPane.UITests/PreviewPane.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/previewpane/UnitTests-BgcodePreviewHandler/Preview.BgcodePreviewHandler.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -1199,6 +1235,7 @@
     <File Path="src/.editorconfig" />
     <File Path="src/Common.Dotnet.AotCompatibility.props" />
     <File Path="src/Common.Dotnet.CsWinRT.props" />
+    <File Path="src/Common.Dotnet.props" />
     <File Path="src/Common.SelfContained.props" />
     <File Path="src/Monaco.props" />
     <File Path="src/Solution.props" />
@@ -1240,5 +1277,7 @@
   <Project Path="src/Update/PowerToys.Update.vcxproj" Id="44ce9ae1-4390-42c5-bacc-0fd6b40aa203" />
   <Project Path="src/runner/UnitTests/UnitTests-Runner.vcxproj" Id="97bdacf8-261d-4e23-a708-a27e0b60e444" />
   <Project Path="tools/project_template/ModuleTemplate/ModuleTemplateCompileTest.vcxproj" Id="64a80062-4d8b-4229-8a38-dfa1d7497749" />
+  <Project Path="tools/CliShim/CliShim.vcxproj" Id="8a7fb7fa-65ea-4004-ba73-1b237435a57b" />
+  <Project Path="tools/CliShim.UnitTests/CliShim.UnitTests.vcxproj" Id="d4b0ed68-867d-46b4-a03f-ec52b9fbebe5" />
 </Solution>
 

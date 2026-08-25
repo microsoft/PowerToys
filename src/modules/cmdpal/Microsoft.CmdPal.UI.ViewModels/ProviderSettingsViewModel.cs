@@ -135,6 +135,41 @@ public partial class ProviderSettingsViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Per-provider search weight surfaced as a 0/1/2 ComboBox index (Lower / Normal /
+    /// Higher) so it can bind to <c>ComboBox.SelectedIndex</c> in the same style as the
+    /// other per-provider options. Persists to <see cref="ProviderSettings.SearchWeight"/>.
+    /// </summary>
+    public int SearchWeightIndex
+    {
+        get => _providerSettings.SearchWeight switch
+        {
+            ProviderSearchWeight.Lower => 0,
+            ProviderSearchWeight.Higher => 2,
+            _ => 1,
+        };
+        set
+        {
+            var newWeight = value switch
+            {
+                0 => ProviderSearchWeight.Lower,
+                2 => ProviderSearchWeight.Higher,
+                _ => ProviderSearchWeight.Normal,
+            };
+
+            if (newWeight != _providerSettings.SearchWeight)
+            {
+                var newSettings = _providerSettings with { SearchWeight = newWeight };
+                _settingsService.UpdateSettings(s => s with
+                {
+                    ProviderSettings = s.ProviderSettings.SetItem(_provider.ProviderId, newSettings),
+                });
+                _providerSettings = newSettings;
+                OnPropertyChanged(nameof(SearchWeightIndex));
+            }
+        }
+    }
+
+    /// <summary>
     /// Gets a value indicating whether returns true if we have a settings page
     /// that's initialized, or we are still working on initializing that
     /// settings page. If we don't have a settings object, or that settings
