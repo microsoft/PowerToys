@@ -104,6 +104,11 @@ public sealed partial class SearchEngine : IDisposable
         return results;
     }
 
+    public IList<IListItem> FetchNextItems(int limit, uint queryCookie, out bool hasMore, out SearchNoticeInfo? notice, bool noIcons = false)
+    {
+        return FetchItems(0, limit, queryCookie, out hasMore, out notice, noIcons);
+    }
+
     private static SearchNoticeInfo? BuildNotice(SearchQuery searchQuery)
     {
         return SearchNoticeInfoBuilder.FromQueryStatus(searchQuery.GetExecutionStatus())
