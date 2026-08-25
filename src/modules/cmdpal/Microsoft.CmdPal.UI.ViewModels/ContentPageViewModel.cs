@@ -123,7 +123,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         var extensionDetails = model.Details;
         if (extensionDetails is not null)
         {
-            Details = new(extensionDetails, PageContext);
+            Details = new(extensionDetails, PageContext, FallbackContext);
             Details.InitializeProperties();
         }
 
@@ -198,7 +198,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 break;
             case nameof(Details):
                 var extensionDetails = model.Details;
-                Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
+                Details = extensionDetails is not null ? new(extensionDetails, PageContext, FallbackContext) : null;
                 UpdateDetails();
                 break;
         }
@@ -237,7 +237,10 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
             {
                 if (item is ICommandContextItem contextItem)
                 {
-                    return new CommandContextItemViewModel(contextItem, PageContext);
+                    return new CommandContextItemViewModel(
+                        contextItem,
+                        PageContext,
+                        FallbackContext?.WithInvocationContext(contextItem));
                 }
 
                 return new SeparatorViewModel();
@@ -298,7 +301,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     {
         if (PrimaryCommand is not null)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(PrimaryCommand.Command.Model, PrimaryCommand.Model));
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(PrimaryCommand, PrimaryCommand.Model.Unsafe));
         }
     }
 
@@ -308,7 +311,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     {
         if (SecondaryCommand is not null)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(SecondaryCommand.Command.Model, SecondaryCommand.Model));
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(SecondaryCommand, SecondaryCommand.Model.Unsafe));
         }
     }
 

@@ -23,7 +23,8 @@ internal static class MainListPageResultFactory
         IList<RoScored<IListItem>>? fallbackItems,
         IListItem resultsSeparator,
         IListItem fallbacksSeparator,
-        int appResultLimit)
+        int appResultLimit,
+        IReadOnlyList<IListItem>? fallbackResultItems = null)
     {
         if (appResultLimit < 0)
         {
@@ -39,14 +40,19 @@ internal static class MainListPageResultFactory
         // Apps are pre-sorted, so we just need to take the top N, limited by appResultLimit.
         int len3 = Math.Min(filteredApps?.Count ?? 0, appResultLimit);
 
-        int nonEmptyFallbackCount = fallbackItems?.Count ?? 0;
+        var nonEmptyFallbackItems = fallbackItems?
+            .Where(scored => !string.IsNullOrWhiteSpace(scored.Item.Title))
+            .Select(scored => scored.Item)
+            .ToArray() ?? [];
+        int nonEmptyFallbackCount = nonEmptyFallbackItems.Length;
+        int fallbackResultCount = fallbackResultItems?.Count ?? 0;
 
         // Allocate the exact size of the result array.
         // We'll add an extra slot for the fallbacks section header if needed,
         // and another for the "Results" section header when merged results exist.
         int mergedCount = len1 + len2 + len3;
         bool needsResultsHeader = mergedCount > 0;
-        int totalCount = mergedCount + nonEmptyFallbackCount
+        int totalCount = mergedCount + fallbackResultCount + nonEmptyFallbackCount
             + (needsResultsHeader ? 1 : 0)
             + (nonEmptyFallbackCount > 0 ? 1 : 0);
 
@@ -138,45 +144,26 @@ internal static class MainListPageResultFactory
             result[writePos++] = filteredApps![idx3++].Item;
         }
 
+        if (fallbackResultItems is not null)
+        {
+            for (int i = 0; i < fallbackResultItems.Count; i++)
+            {
+                result[writePos++] = fallbackResultItems[i];
+            }
+        }
+
         // Append filtered fallback items. Fallback items are added post-sort so they are
         // always at the end of the list and are sorted by user settings.
-        if (fallbackItems is not null)
+        if (nonEmptyFallbackItems.Length > 0)
         {
-            // Create the fallbacks section header
-            if (fallbackItems.Count > 0)
+            result[writePos++] = fallbacksSeparator;
+            for (int i = 0; i < nonEmptyFallbackItems.Length; i++)
             {
-                result[writePos++] = fallbacksSeparator;
-            }
-
-            for (int i = 0; i < fallbackItems.Count; i++)
-            {
-                var item = fallbackItems[i].Item;
-                if (!string.IsNullOrEmpty(item.Title))
-                {
-                    result[writePos++] = item;
-                }
+                result[writePos++] = nonEmptyFallbackItems[i];
             }
         }
 
         return result;
-    }
-
-    private static int GetNonEmptyFallbackItemsCount(IList<RoScored<IListItem>>? fallbackItems)
-    {
-        int fallbackItemsCount = 0;
-
-        if (fallbackItems is not null)
-        {
-            for (int i = 0; i < fallbackItems.Count; i++)
-            {
-                if (!string.IsNullOrWhiteSpace(fallbackItems[i].Item.Title))
-                {
-                    fallbackItemsCount++;
-                }
-            }
-        }
-
-        return fallbackItemsCount;
     }
 }
 #pragma warning restore IDE0007 // Use implicit type

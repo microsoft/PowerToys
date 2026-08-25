@@ -247,6 +247,30 @@ public partial class ShellViewModel : ObservableObject,
 
     private void PerformCommand(PerformCommandMessage message)
     {
+        var requestedCommand = message.Command.Unsafe;
+        if (requestedCommand is null)
+        {
+            return;
+        }
+
+        var commandResolver = requestedCommand as IFallbackInvocationContext;
+        var fallbackContext = message.FallbackContext;
+        if (fallbackContext?.CanInvoke == false)
+        {
+            return;
+        }
+
+        var invocationLease = fallbackContext?.AcquireSnapshotLease();
+        if (fallbackContext?.HasSnapshotLease == true && invocationLease is null)
+        {
+            return;
+        }
+
+        var invocationContext = fallbackContext?.InvocationContext
+            ?? commandResolver?.InvocationContext
+            ?? message.Context;
+        var invocationSender = invocationContext;
+
         // Create/replace the navigation cancellation token.
         // If one already exists, cancel and dispose it first.
         var newCts = new CancellationTokenSource();
@@ -269,12 +293,6 @@ public partial class ShellViewModel : ObservableObject,
 
         var navigationToken = newCts.Token;
 
-        var command = message.Command.Unsafe;
-        if (command is null)
-        {
-            return;
-        }
-
         // Determine whether this is the root/home page navigation BEFORE
         // computing providerContext. When navigating back to the root page we
         // must use an empty provider context so that home-page list items don't
@@ -283,17 +301,27 @@ public partial class ShellViewModel : ObservableObject,
         // isMainPage must be evaluated here; if it were moved inside the
         // "if (command is IPage)" block below, it would be too late to affect
         // the providerContext that is passed to the new page view-model.
-        var isMainPage = command == _rootPage;
-
-        var host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
-        var providerContext = isMainPage
-            ? CommandProviderContext.Empty
-            : _appHostService.GetProviderContextForCommand(message.Context, CurrentPage.ProviderContext);
-
-        _rootPageService.OnPerformCommand(message.Context, CurrentPage.IsRootPage, host);
+        var host = fallbackContext?.ExtensionHost
+            ?? commandResolver?.ExtensionHost
+            ?? _appHostService.GetHostForCommand(invocationContext, CurrentPage.ExtensionHost);
 
         try
         {
+            var command = ResolveRequestedCommand(requestedCommand, commandResolver);
+            if (command is null)
+            {
+                return;
+            }
+
+            var isMainPage = command == _rootPage;
+            var providerContext = isMainPage
+                ? CommandProviderContext.Empty
+                : fallbackContext?.ProviderContext
+                    ?? commandResolver?.ProviderContext
+                    ?? _appHostService.GetProviderContextForCommand(invocationContext, CurrentPage.ProviderContext);
+
+            _rootPageService.OnPerformCommand(invocationContext, CurrentPage.IsRootPage, host);
+
             if (command is IPage page)
             {
                 CoreLogger.LogDebug($"Navigating to page");
@@ -317,7 +345,12 @@ public partial class ShellViewModel : ObservableObject,
                 }
 
                 // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
-                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host!, providerContext);
+                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(
+                    page,
+                    _isNested,
+                    host!,
+                    providerContext,
+                    fallbackContext);
                 if (pageViewModel is null)
                 {
                     CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
@@ -357,7 +390,8 @@ public partial class ShellViewModel : ObservableObject,
                 CoreLogger.LogDebug($"Invoking command");
 
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
-                StartInvoke(message, invokable, host);
+                StartInvoke(message, invokable, host, invocationSender, invocationLease);
+                invocationLease = null;
             }
         }
         catch (Exception ex)
@@ -366,28 +400,51 @@ public partial class ShellViewModel : ObservableObject,
             // than a silent log message.
             host?.Log(ex.Message);
         }
+        finally
+        {
+            invocationLease?.Dispose();
+        }
     }
 
-    private void StartInvoke(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host)
+    internal static ICommand? ResolveRequestedCommand(
+        ICommand requestedCommand,
+        IFallbackInvocationContext? fallbackContext)
+    {
+        return fallbackContext is null
+            ? requestedCommand
+            : fallbackContext.ResolveCommand(requestedCommand);
+    }
+
+    private void StartInvoke(
+        PerformCommandMessage message,
+        IInvokableCommand invokable,
+        AppExtensionHost? host,
+        object? invocationSender,
+        IDisposable? invocationLease)
     {
         // TODO GH #525 This needs more better locking.
         lock (_invokeLock)
         {
             if (_handleInvokeTask is not null)
             {
-                // do nothing - a command is already doing a thing
+                invocationLease?.Dispose();
             }
             else
             {
                 _handleInvokeTask = Task.Run(() =>
                 {
-                    SafeHandleInvokeCommandSynchronous(message, invokable, host);
+                    SafeHandleInvokeCommandSynchronous(message, invokable, host, invocationSender, invocationLease);
                 });
             }
         }
     }
 
-    private void SafeHandleInvokeCommandSynchronous(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host)
+    private void SafeHandleInvokeCommandSynchronous(
+        PerformCommandMessage message,
+        IInvokableCommand invokable,
+        AppExtensionHost? host,
+        object? invocationSender,
+        IDisposable? invocationLease)
     {
         // Telemetry: Track command execution time and success
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -402,10 +459,10 @@ public partial class ShellViewModel : ObservableObject,
             // Call out to extension process.
             // * May fail!
             // * May never return!
-            var result = invokable.Invoke(message.Context);
+            var result = invokable.Invoke(invocationSender);
 
             // But if it did succeed, we need to handle the result.
-            UnsafeHandleCommandResult(result, message.OnBeforeShowConfirmation);
+            UnsafeHandleCommandResult(result, message.OnBeforeShowConfirmation, message.FallbackContext);
 
             success = true;
             _handleInvokeTask = null;
@@ -424,6 +481,8 @@ public partial class ShellViewModel : ObservableObject,
         }
         finally
         {
+            invocationLease?.Dispose();
+
             // Telemetry: Send extension invocation metrics (always sent, even on failure)
             stopwatch.Stop();
             WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
@@ -431,7 +490,10 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    private void UnsafeHandleCommandResult(ICommandResult? result, Action? onBeforeShowConfirmation = null)
+    private void UnsafeHandleCommandResult(
+        ICommandResult? result,
+        Action? onBeforeShowConfirmation = null,
+        FallbackQueryContext? fallbackContext = null)
     {
         if (result is null)
         {
@@ -494,7 +556,14 @@ public partial class ShellViewModel : ObservableObject,
                             CoreLogger.LogError(ex.ToString());
                         }
 
-                        WeakReferenceMessenger.Default.Send<ShowConfirmationMessage>(new(a));
+                        var confirmationLease = fallbackContext?.AcquireSnapshotLease();
+                        if (fallbackContext?.HasSnapshotLease == true && confirmationLease is null)
+                        {
+                            break;
+                        }
+
+                        WeakReferenceMessenger.Default.Send<ShowConfirmationMessage>(
+                            new(a, fallbackContext, confirmationLease));
                     }
 
                     break;
@@ -519,13 +588,19 @@ public partial class ShellViewModel : ObservableObject,
                             var toastCommand = a2.Command;
                             if (toastCommand is not null)
                             {
-                                command = new CommandViewModel(toastCommand, new(CurrentPage));
+                                command = new CommandViewModel(toastCommand, new(CurrentPage), fallbackContext);
                                 command.InitializeProperties();
                             }
                         }
 
-                        WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message, icon, command));
-                        UnsafeHandleCommandResult(a.Result, onBeforeShowConfirmation);
+                        var toastLease = command is null ? null : fallbackContext?.AcquireSnapshotLease();
+                        if (command is not null && fallbackContext?.HasSnapshotLease == true && toastLease is null)
+                        {
+                            break;
+                        }
+
+                        WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message, icon, command, toastLease));
+                        UnsafeHandleCommandResult(a.Result, onBeforeShowConfirmation, fallbackContext);
                     }
 
                     break;
@@ -558,7 +633,7 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Receive(HandleCommandResultMessage message)
     {
-        UnsafeHandleCommandResult(message.Result.Unsafe);
+        UnsafeHandleCommandResult(message.Result.Unsafe, fallbackContext: message.FallbackContext);
     }
 
     public void Receive(WindowHiddenMessage message)

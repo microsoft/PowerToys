@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
+using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -45,6 +46,35 @@ public partial class MainListPageResultFactoryTests
 #pragma warning restore CS0067 // The event is never used
 
         public override string ToString() => Title;
+    }
+
+    private sealed class MockInvocationContext(ICommand? resolvedCommand) : IFallbackInvocationContext
+    {
+        public AppExtensionHost ExtensionHost => null!;
+
+        public ICommandProviderContext ProviderContext => null!;
+
+        public object InvocationContext => this;
+
+        public ICommand? ResolveCommand(ICommand requestedCommand) => resolvedCommand;
+    }
+
+    private sealed partial class DisposableFallbackResult : IFallbackCommandResult, IDisposable
+    {
+        public string Query => "query";
+
+        public string QueryId => "query-id";
+
+        public IListItem[] Items => [];
+
+        public bool HasMoreItems => false;
+
+        public int DisposeCount { get; private set; }
+
+        public IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> LoadMoreItemsAsync(uint requestedItemCount)
+            => throw new NotSupportedException();
+
+        public void Dispose() => DisposeCount++;
     }
 
     private static RoScored<IListItem> S(string title, int score)
@@ -213,6 +243,7 @@ public partial class MainListPageResultFactoryTests
         var fallbacks = new List<RoScored<IListItem>>
         {
             S("FB1", 0),
+            S(string.Empty, 0),
             S("FB3", 0),
         };
 
@@ -245,5 +276,140 @@ public partial class MainListPageResultFactoryTests
 
         Assert.IsNotNull(result);
         Assert.AreEqual(0, result.Length);
+    }
+
+    [TestMethod]
+    public void Merge_PlacesFallbackResultBlocksBeforeCommandFallbacks()
+    {
+        var filtered = new List<RoScored<IListItem>>
+        {
+            S("Direct", 100),
+        };
+        var fallbacks = new List<RoScored<IListItem>>
+        {
+            S("Command fallback", 0),
+        };
+        IListItem[] fallbackResults =
+        [
+            new MockListItem { Title = "Files" },
+            new MockListItem { Title = "File result" },
+        ];
+
+        var result = MainListPageResultFactory.Create(
+            filtered,
+            null,
+            null,
+            fallbacks,
+            _resultsSeparator,
+            _fallbacksSeparator,
+            appResultLimit: 10,
+            fallbackResults);
+
+#pragma warning disable CA1861 // Avoid constant arrays as arguments
+        CollectionAssert.AreEqual(
+            new[] { "Results", "Direct", "Files", "File result", "Fallbacks", "Command fallback" },
+            result.Select(item => item.Title).ToArray());
+#pragma warning restore CA1861 // Avoid constant arrays as arguments
+    }
+
+    [TestMethod]
+    public void OrderFallbackResultSources_UsesPersistedOrderThenDiscoveryOrder()
+    {
+        var sources = new[] { "unranked-a", "second", "first", "unranked-b" };
+        var ranks = new[] { "first", "second" };
+
+        var result = MainListPage.OrderFallbackResultSources(sources, ranks, static id => id);
+
+#pragma warning disable CA1861 // Avoid constant arrays as arguments
+        CollectionAssert.AreEqual(
+            new[] { "first", "second", "unranked-a", "unranked-b" },
+            result.ToArray());
+#pragma warning restore CA1861 // Avoid constant arrays as arguments
+    }
+
+    [TestMethod]
+    public void OrderFallbackResultSources_QualifiesDuplicateIdsByProvider()
+    {
+        var sources = new[] { "provider-a\0shared", "provider-b\0shared" };
+        var ranks = new[] { "provider-b\0shared", "provider-a\0shared" };
+
+        var result = MainListPage.OrderFallbackResultSources(sources, ranks, static id => id);
+
+        CollectionAssert.AreEqual(ranks, result.ToArray());
+    }
+
+    [TestMethod]
+    public void ResolveRequestedCommand_WithoutFallbackContextPreservesCommand()
+    {
+        var requestedCommand = new NoOpCommand();
+
+        var result = ShellViewModel.ResolveRequestedCommand(requestedCommand, null);
+
+        Assert.AreSame(requestedCommand, result);
+    }
+
+    [TestMethod]
+    public void ResolveRequestedCommand_UsesExplicitSelectedCommandFromContext()
+    {
+        var requestedCommand = new NoOpCommand();
+        var selectedCommand = new NoOpCommand();
+        var context = new MockInvocationContext(selectedCommand);
+
+        var result = ShellViewModel.ResolveRequestedCommand(requestedCommand, context);
+
+        Assert.AreSame(selectedCommand, result);
+    }
+
+    [TestMethod]
+    public void ResolveRequestedCommand_PreservesContextRejection()
+    {
+        var requestedCommand = new NoOpCommand();
+        var context = new MockInvocationContext(null);
+
+        var result = ShellViewModel.ResolveRequestedCommand(requestedCommand, context);
+
+        Assert.IsNull(result);
+    }
+
+    [TestMethod]
+    public void LoadMoreFallbackResultsCommand_InvokesOnlyOnce()
+    {
+        var invocationCount = 0;
+        var command = new LoadMoreFallbackResultsCommand("source", () => invocationCount++);
+
+        command.Invoke(null);
+        command.Invoke(null);
+
+        Assert.AreEqual(1, invocationCount);
+    }
+
+    [TestMethod]
+    public void FallbackSnapshotLease_RetainsSnapshotUntilAllReferencesRelease()
+    {
+        var result = new DisposableFallbackResult();
+        var lease = new FallbackSnapshotLease(result);
+        var rowLease = lease.Acquire();
+
+        lease.ReleaseOwner();
+
+        Assert.AreEqual(0, result.DisposeCount);
+        rowLease?.Dispose();
+        Assert.AreEqual(1, result.DisposeCount);
+    }
+
+    [TestMethod]
+    public void FallbackSnapshotLease_TransfersOwnerForSameSnapshotPublication()
+    {
+        var result = new DisposableFallbackResult();
+        var lease = new FallbackSnapshotLease(result);
+        var rowLease = lease.Acquire();
+        Assert.IsTrue(lease.TryAcquireOwner());
+
+        lease.ReleaseOwner();
+        lease.ReleaseOwner();
+
+        Assert.AreEqual(0, result.DisposeCount);
+        rowLease?.Dispose();
+        Assert.AreEqual(1, result.DisposeCount);
     }
 }

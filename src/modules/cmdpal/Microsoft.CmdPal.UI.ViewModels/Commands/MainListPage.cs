@@ -9,6 +9,7 @@
 using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
@@ -41,6 +42,7 @@ public sealed partial class MainListPage : DynamicListPage,
     private static readonly TimeSpan RaiseItemsChangedThrottleForUserInput = TimeSpan.FromMilliseconds(50);
 
     private readonly FallbackUpdateManager _fallbackUpdateManager;
+    private readonly FallbackResultQueryManager _fallbackResultQueryManager;
     private readonly ThrottledDebouncedAction _refreshThrottledDebouncedAction;
     private readonly TopLevelCommandManager _tlcManager;
     private readonly AliasManager _aliasManager;
@@ -49,6 +51,11 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly ScoringFunction<IListItem> _scoringFunction;
     private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
+    private readonly Dictionary<string, FallbackResultState> _fallbackResultSnapshots = new(StringComparer.Ordinal);
+    private readonly Dictionary<IFallbackCommandResult, FallbackSnapshotLease> _fallbackSnapshotLeases = new(ReferenceEqualityComparer.Instance);
+    private readonly ConditionalWeakTable<IFallbackCommandResult, object> _retiredFallbackSnapshots = new();
+    private readonly Lock _fallbackSnapshotLeaseLock = new();
+    private readonly Lock _queryGenerationLock = new();
 
     // All main-page search telemetry state and emission is owned by this dedicated type, keeping
     // MainListPage responsible for producing results rather than for tracking telemetry bookkeeping.
@@ -80,6 +87,8 @@ public sealed partial class MainListPage : DynamicListPage,
     // Common fallbacks use query-independent scores, so freezing them is safe; only their live
     // titles decide whether they render.
     private IEnumerable<RoScored<IListItem>>? _fallbackItems;
+    private IListItem[]? _fallbackResultItems;
+    private IReadOnlyList<TopLevelViewModel> _fallbackResultSourceOrder = [];
 
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
@@ -165,6 +174,9 @@ public sealed partial class MainListPage : DynamicListPage,
             RaiseItemsChangedThrottle);
 
         _fallbackUpdateManager = new FallbackUpdateManager(() => RequestRefresh(fullRefresh: false));
+        _fallbackResultQueryManager = new FallbackResultQueryManager(
+            PublishFallbackResultSnapshot,
+            DiscardFallbackResultSnapshot);
 
         // The all apps page will kick off a BG thread to start loading apps.
         // We just want to know when it is done.
@@ -207,6 +219,13 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         _defaultViewDirty = true;
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            var currentSearch = SearchText;
+            _ = Task.Run(() => UpdateSearchTextCore(currentSearch, currentSearch, isUserInput: false, forceReset: true));
+            return;
+        }
+
         if (_includeApps != _filteredItemsIncludesApps)
         {
             ReapplySearchInBackground();
@@ -301,7 +320,13 @@ public sealed partial class MainListPage : DynamicListPage,
             validFallbacks,
             _resultsSeparator,
             _fallbacksSeparator,
-            AppResultLimit);
+            AppResultLimit,
+            _fallbackResultItems);
+
+        foreach (var fallbackResultItem in result.OfType<FallbackResultListItem>())
+        {
+            fallbackResultItem.MarkPublished();
+        }
 
         // Snapshot the rendered order plus every scored input and the query length together, so
         // selection telemetry resolves an invoked item's rank, tier, and query length from this one
@@ -490,6 +515,9 @@ public sealed partial class MainListPage : DynamicListPage,
         _filteredAppsQueryLength = 0;
         _fallbackItems = null;
         _globalFallbackSources = null;
+        _fallbackResultItems = null;
+        _fallbackResultSourceOrder = [];
+        CloseFallbackResultSnapshots();
 
         // Clear the paired query too, so both are reset together.
         _globalFallbackQuery = default;
@@ -507,15 +535,29 @@ public sealed partial class MainListPage : DynamicListPage,
         UpdateSearchTextCore(oldSearch, newSearch, isUserInput: true);
     }
 
-    private void UpdateSearchTextCore(string oldSearch, string newSearch, bool isUserInput)
+    private void UpdateSearchTextCore(string oldSearch, string newSearch, bool isUserInput, bool forceReset = false)
     {
+        CancellationTokenSource? previousCancellationTokenSource;
+        CancellationToken token;
+        lock (_queryGenerationLock)
+        {
+            if (forceReset && !string.Equals(newSearch, SearchText, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            var nextCancellationTokenSource = new CancellationTokenSource();
+            previousCancellationTokenSource = _cancellationTokenSource;
+            _cancellationTokenSource = nextCancellationTokenSource;
+            token = nextCancellationTokenSource.Token;
+        }
+
         var stopwatch = Stopwatch.StartNew();
 
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
-        _cancellationTokenSource = new CancellationTokenSource();
+        previousCancellationTokenSource?.Cancel();
+        previousCancellationTokenSource?.Dispose();
 
-        var token = _cancellationTokenSource.Token;
+        var queryId = Guid.NewGuid().ToString("N");
         if (token.IsCancellationRequested)
         {
             return;
@@ -526,7 +568,8 @@ public sealed partial class MainListPage : DynamicListPage,
         {
             var aliases = _aliasManager;
 
-            if (token.IsCancellationRequested)
+            if (token.IsCancellationRequested
+                || (forceReset && !string.Equals(newSearch, SearchText, StringComparison.Ordinal)))
             {
                 return;
             }
@@ -563,21 +606,24 @@ public sealed partial class MainListPage : DynamicListPage,
         IReadOnlyList<IListItem> appsSource;
         IReadOnlyList<IListItem> fallbackSource;
         IListItem[] globalFallbackSources;
+        TopLevelViewModel[] fallbackResultSources;
         bool includeAppsSnapshot;
         bool tookFullCatalog = false;
 
         // ===== SNAPSHOT PHASE (under lock) =====
         lock (commands)
         {
-            if (token.IsCancellationRequested)
+            if (token.IsCancellationRequested
+                || (forceReset && !string.Equals(newSearch, SearchText, StringComparison.Ordinal)))
             {
                 return;
             }
 
             // prefilter fallbacks
-            var configuredGlobalFallbackIds = _settingsService.Settings.GetGlobalFallbacks();
-            var specialFallbacks = new List<TopLevelViewModel>(configuredGlobalFallbackIds.Length);
-            var commonFallbacks = new List<TopLevelViewModel>(Math.Max(commands.Count - configuredGlobalFallbackIds.Length, 0));
+            var specialFallbacks = new List<TopLevelViewModel>();
+            var commonFallbacks = new List<TopLevelViewModel>(commands.Count);
+            var activeFallbacks = new List<TopLevelViewModel>();
+            var resultFallbacks = new List<TopLevelViewModel>();
 
             foreach (var s in commands)
             {
@@ -586,7 +632,35 @@ public sealed partial class MainListPage : DynamicListPage,
                     continue;
                 }
 
-                if (configuredGlobalFallbackIds.Contains(s.Id))
+                if (s.IsFallbackV2)
+                {
+                    if (s.FallbackMode == FallbackCommandMode.Passive)
+                    {
+                        if (!s.PreparePassiveFallback(newSearch, queryId, token))
+                        {
+                            continue;
+                        }
+                    }
+                    else if (s.FallbackMode == FallbackCommandMode.Results)
+                    {
+                        if (s.IsEnabled && s.FallbackQueryHandler is not null)
+                        {
+                            resultFallbacks.Add(s);
+                        }
+
+                        continue;
+                    }
+                    else
+                    {
+                        activeFallbacks.Add(s);
+                    }
+                }
+                else
+                {
+                    activeFallbacks.Add(s);
+                }
+
+                if (s.IncludeInGlobalResults)
                 {
                     specialFallbacks.Add(s);
                 }
@@ -596,7 +670,7 @@ public sealed partial class MainListPage : DynamicListPage,
                 }
             }
 
-            _fallbackUpdateManager.BeginUpdate(SearchText, [.. specialFallbacks, .. commonFallbacks], token);
+            _fallbackUpdateManager.BeginUpdate(newSearch, queryId, activeFallbacks, token);
 
             if (token.IsCancellationRequested)
             {
@@ -623,7 +697,8 @@ public sealed partial class MainListPage : DynamicListPage,
             // A query that doesn't extend the old one, or a change in app inclusion, means we
             // can't re-use the previous results and have to rebuild from the full catalog. On an
             // extend we re-score only the previously matched subset.
-            var reset = !newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase)
+            var reset = forceReset
+                || !newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase)
                 || _filteredItemsIncludesApps != includeAppsSnapshot;
 
             var prevFilteredItems = reset ? null : _filteredItems;
@@ -691,12 +766,22 @@ public sealed partial class MainListPage : DynamicListPage,
             appsSource = MaterializeSource(newApps);
             fallbackSource = MaterializeSource(newFallbacks);
             globalFallbackSources = [.. specialFallbacks];
+            fallbackResultSources = [.. resultFallbacks];
+            _fallbackResultSourceOrder = OrderFallbackResultSources(
+                fallbackResultSources,
+                _settingsService.Settings.FallbackRanks,
+                static source => source.FallbackKey,
+                static source => source.Id);
+            CloseFallbackResultSnapshots();
+            _fallbackResultItems = null;
         }
 
         if (token.IsCancellationRequested)
         {
             return;
         }
+
+        _fallbackResultQueryManager.BeginUpdate(newSearch, queryId, fallbackResultSources, token);
 
         // ===== SCORING PHASE (off the lock) =====
         // The dominant apps pass is parallelized, commands and fallbacks stay serial, and none of
@@ -763,7 +848,8 @@ public sealed partial class MainListPage : DynamicListPage,
         {
             // A newer keystroke cancels this token before doing its own work, so a stale snapshot
             // can never overwrite a newer query's results.
-            if (token.IsCancellationRequested)
+            if (token.IsCancellationRequested
+                || (forceReset && !string.Equals(newSearch, SearchText, StringComparison.Ordinal)))
             {
                 return;
             }
@@ -834,6 +920,348 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         var allApps = AllAppsCommandProvider.Page;
         return allApps.IsLoading || _tlcManager.IsLoading;
+    }
+
+    private void PublishFallbackResultSnapshot(
+        TopLevelViewModel source,
+        IFallbackCommandResult snapshot,
+        bool isFinal,
+        uint maximumItemCount,
+        CancellationToken queryToken)
+    {
+        if (queryToken.IsCancellationRequested)
+        {
+            DiscardFallbackResultSnapshot(snapshot);
+            return;
+        }
+
+        FallbackResultState nextState;
+        try
+        {
+            nextState = CreateFallbackResultState(
+                source,
+                snapshot,
+                isFinal,
+                maximumItemCount,
+                queryToken);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Fallback result source '{source.Id}' returned an invalid snapshot.", ex);
+            RemoveFallbackResultSource(source, queryToken);
+            return;
+        }
+
+        FallbackResultState? oldState = null;
+        lock (_tlcManager.TopLevelCommands)
+        {
+            if (queryToken.IsCancellationRequested)
+            {
+                ReleaseUnpublishedWrapperLeases(nextState);
+                nextState.Lease.ReleaseOwner();
+                return;
+            }
+
+            _fallbackResultSnapshots.TryGetValue(source.FallbackKey, out oldState);
+            _fallbackResultSnapshots[source.FallbackKey] = nextState;
+            _fallbackResultItems = BuildFallbackResultItems();
+        }
+
+        if (oldState is not null)
+        {
+            ReleaseUnpublishedWrapperLeases(oldState);
+            oldState.Lease.ReleaseOwner();
+        }
+
+        RequestRefresh(fullRefresh: false);
+    }
+
+    private FallbackResultState CreateFallbackResultState(
+        TopLevelViewModel source,
+        IFallbackCommandResult snapshot,
+        bool isFinal,
+        uint maximumItemCount,
+        CancellationToken queryToken)
+    {
+        var snapshotLease = AcquireSnapshotOwner(snapshot);
+        List<IListItem> sourceItems = [];
+        try
+        {
+            var rawItems = snapshot.Items ?? [];
+            var acceptedItemLimit = (int)Math.Min(maximumItemCount, int.MaxValue);
+            sourceItems = new List<IListItem>(Math.Min(rawItems.Length, acceptedItemLimit) + 1);
+            var stableIds = new HashSet<string>(StringComparer.Ordinal);
+            var sourceTitle = string.IsNullOrWhiteSpace(source.DisplayTitle) ? source.ExtensionName : source.DisplayTitle;
+            var sourceAttribution = source.IncludeInGlobalResults ? sourceTitle : null;
+            for (var index = 0; index < rawItems.Length && sourceItems.Count < acceptedItemLimit; index++)
+            {
+                var item = rawItems[index];
+                if (item is null)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    var command = item.Command;
+                    if (string.IsNullOrWhiteSpace(item.Title) || command is not (IInvokableCommand or IPage))
+                    {
+                        continue;
+                    }
+
+                    var stableId = command.Id;
+                    if (!string.IsNullOrEmpty(stableId) && !stableIds.Add(stableId))
+                    {
+                        continue;
+                    }
+
+                    sourceItems.Add(new FallbackResultListItem(item, source, snapshotLease, queryToken, sourceAttribution));
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Fallback result source '{source.Id}' returned an invalid item.", ex);
+                }
+            }
+
+            if (isFinal && snapshot.HasMoreItems)
+            {
+                var acceptedDisplayCount = sourceItems.Count;
+                var loadMoreCommand = new LoadMoreFallbackResultsCommand(
+                    source.Id,
+                    () => _fallbackResultQueryManager.LoadMore(source, snapshotLease, acceptedDisplayCount, queryToken));
+                var loadMoreItem = new ListItem(loadMoreCommand)
+                {
+                    Title = Properties.Resources.fallback_load_more,
+                    Icon = source.Icon,
+                };
+                sourceItems.Add(new FallbackResultListItem(loadMoreItem, source, snapshotLease, queryToken, sourceAttribution));
+            }
+
+            return new FallbackResultState(snapshot, snapshotLease, sourceItems.ToArray(), sourceTitle, source.IncludeInGlobalResults);
+        }
+        catch
+        {
+            foreach (var item in sourceItems)
+            {
+                (item as FallbackResultListItem)?.ReleaseIfUnpublished();
+            }
+
+            snapshotLease.ReleaseOwner();
+            throw;
+        }
+    }
+
+    private void DiscardFallbackResultSnapshot(IFallbackCommandResult snapshot)
+    {
+        lock (_fallbackSnapshotLeaseLock)
+        {
+            if (_fallbackSnapshotLeases.ContainsKey(snapshot)
+                || _retiredFallbackSnapshots.TryGetValue(snapshot, out _))
+            {
+                return;
+            }
+
+            _retiredFallbackSnapshots.Add(snapshot, new object());
+        }
+
+        CloseFallbackResultSnapshot(snapshot);
+    }
+
+    private IListItem[] BuildFallbackResultItems()
+    {
+        var rendered = new List<IListItem>();
+        foreach (var source in _fallbackResultSourceOrder)
+        {
+            if (!_fallbackResultSnapshots.TryGetValue(source.FallbackKey, out var state))
+            {
+                continue;
+            }
+
+            if (state.Items.Length == 0)
+            {
+                continue;
+            }
+
+            if (!state.IncludeInGlobalResults)
+            {
+                rendered.Add(new Separator(state.SourceTitle));
+            }
+
+            rendered.AddRange(state.Items);
+        }
+
+        return [.. rendered];
+    }
+
+    private void RemoveFallbackResultSource(TopLevelViewModel source, CancellationToken queryToken)
+    {
+        FallbackResultState? oldState = null;
+        lock (_tlcManager.TopLevelCommands)
+        {
+            if (queryToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (_fallbackResultSnapshots.Remove(source.FallbackKey, out oldState))
+            {
+                _fallbackResultItems = BuildFallbackResultItems();
+            }
+        }
+
+        if (oldState is not null)
+        {
+            ReleaseUnpublishedWrapperLeases(oldState);
+            oldState.Lease.ReleaseOwner();
+            RequestRefresh(fullRefresh: false);
+        }
+    }
+
+    internal static IReadOnlyList<T> OrderFallbackResultSources<T>(
+        IReadOnlyList<T> sources,
+        string[] fallbackRanks,
+        Func<T, string> idSelector,
+        Func<T, string>? legacyIdSelector = null)
+    {
+        return sources
+            .Select((source, index) => new
+            {
+                Source = source,
+                OriginalIndex = index,
+                Rank = ResolveFallbackRank(source, fallbackRanks, idSelector, legacyIdSelector),
+            })
+            .OrderBy(entry => entry.Rank < 0 ? int.MaxValue : entry.Rank)
+            .ThenBy(entry => entry.OriginalIndex)
+            .Select(entry => entry.Source)
+            .ToArray();
+    }
+
+    private static int ResolveFallbackRank<T>(
+        T source,
+        string[] fallbackRanks,
+        Func<T, string> idSelector,
+        Func<T, string>? legacyIdSelector)
+    {
+        var rank = Array.IndexOf(fallbackRanks, idSelector(source));
+        return rank >= 0 || legacyIdSelector is null
+            ? rank
+            : Array.IndexOf(fallbackRanks, legacyIdSelector(source));
+    }
+
+    private void CloseFallbackResultSnapshots()
+    {
+        FallbackSnapshotLease[] leases;
+        lock (_tlcManager.TopLevelCommands)
+        {
+            leases = _fallbackResultSnapshots.Values.Select(state => state.Lease).ToArray();
+            foreach (var state in _fallbackResultSnapshots.Values)
+            {
+                ReleaseUnpublishedWrapperLeases(state);
+            }
+
+            _fallbackResultSnapshots.Clear();
+        }
+
+        if (leases.Length == 0)
+        {
+            return;
+        }
+
+        _ = Task.Run(() =>
+        {
+            foreach (var lease in leases)
+            {
+                lease.ReleaseOwner();
+            }
+        });
+    }
+
+    private static void CloseFallbackResultSnapshot(IFallbackCommandResult snapshot)
+    {
+        try
+        {
+            (snapshot as IDisposable)?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to close a fallback result snapshot.", ex);
+        }
+    }
+
+    private void CloseFallbackResultSnapshotsSynchronously()
+    {
+        FallbackSnapshotLease[] leases;
+        lock (_tlcManager.TopLevelCommands)
+        {
+            leases = _fallbackResultSnapshots.Values.Select(state => state.Lease).ToArray();
+            foreach (var state in _fallbackResultSnapshots.Values)
+            {
+                ReleaseUnpublishedWrapperLeases(state);
+            }
+
+            _fallbackResultSnapshots.Clear();
+        }
+
+        foreach (var lease in leases)
+        {
+            lease.ReleaseOwner();
+        }
+    }
+
+    private sealed record FallbackResultState(
+        IFallbackCommandResult Snapshot,
+        FallbackSnapshotLease Lease,
+        IListItem[] Items,
+        string SourceTitle,
+        bool IncludeInGlobalResults);
+
+    private FallbackSnapshotLease AcquireSnapshotOwner(IFallbackCommandResult snapshot)
+    {
+        lock (_fallbackSnapshotLeaseLock)
+        {
+            if (_retiredFallbackSnapshots.TryGetValue(snapshot, out _))
+            {
+                throw new InvalidOperationException("The fallback result snapshot was already retired.");
+            }
+
+            if (_fallbackSnapshotLeases.TryGetValue(snapshot, out var existing)
+                && existing.TryAcquireOwner())
+            {
+                return existing;
+            }
+
+            var created = new FallbackSnapshotLease(snapshot, OnSnapshotLeaseReleased);
+            _fallbackSnapshotLeases[snapshot] = created;
+            return created;
+        }
+    }
+
+    private void OnSnapshotLeaseReleased(FallbackSnapshotLease lease)
+    {
+        var shouldClose = false;
+        lock (_fallbackSnapshotLeaseLock)
+        {
+            if (_fallbackSnapshotLeases.TryGetValue(lease.Snapshot, out var current)
+                && ReferenceEquals(current, lease))
+            {
+                _fallbackSnapshotLeases.Remove(lease.Snapshot);
+                _retiredFallbackSnapshots.Add(lease.Snapshot, new object());
+                shouldClose = true;
+            }
+        }
+
+        if (shouldClose)
+        {
+            lease.CloseSnapshot();
+        }
+    }
+
+    private static void ReleaseUnpublishedWrapperLeases(FallbackResultState state)
+    {
+        foreach (var item in state.Items)
+        {
+            (item as FallbackResultListItem)?.ReleaseIfUnpublished();
+        }
     }
 
     // Almost verbatim ListHelpers.ScoreListItem. Fallbacks tier by the same title match as any
@@ -944,7 +1372,11 @@ public sealed partial class MainListPage : DynamicListPage,
 
         if (topLevelOrAppItem is TopLevelViewModel topLevelViewModel)
         {
-            var index = Array.IndexOf(fallbackRanks, topLevelViewModel.Id);
+            var index = Array.IndexOf(fallbackRanks, topLevelViewModel.FallbackKey);
+            if (index < 0)
+            {
+                index = Array.IndexOf(fallbackRanks, topLevelViewModel.Id);
+            }
 
             if (index >= 0)
             {
@@ -1082,7 +1514,9 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
+        CloseFallbackResultSnapshotsSynchronously();
         _fallbackUpdateManager.Dispose();
+        _fallbackResultQueryManager.Dispose();
         _searchTelemetry.Dispose();
 
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;

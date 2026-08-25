@@ -16,10 +16,23 @@ using Windows.Data.Json;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPageContext> context) :
-    ContentViewModel(context)
+public partial class ContentFormViewModel : ContentViewModel
 {
-    private readonly ExtensionObject<IFormContent> _formModel = new(_form);
+    private readonly ExtensionObject<IFormContent> _formModel;
+
+    public ContentFormViewModel(IFormContent form, WeakReference<IPageContext> context)
+        : this(form, context, null)
+    {
+    }
+
+    internal ContentFormViewModel(
+        IFormContent form,
+        WeakReference<IPageContext> context,
+        FallbackQueryContext? fallbackContext)
+        : base(context, fallbackContext)
+    {
+        _formModel = new(form);
+    }
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -153,8 +166,19 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AdaptiveExecuteAction))]
     public void HandleSubmit(IAdaptiveActionElement action, JsonObject inputs)
     {
+        if (FallbackContext?.CanInvoke == false)
+        {
+            return;
+        }
+
         if (action is AdaptiveOpenUrlAction openUrlAction)
         {
+            using var operationLease = FallbackContext?.AcquireSnapshotLease();
+            if (FallbackContext?.HasSnapshotLease == true && operationLease is null)
+            {
+                return;
+            }
+
             WeakReferenceMessenger.Default.Send<LaunchUriMessage>(new(openUrlAction.Url));
             return;
         }
@@ -165,20 +189,35 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
             var dataString = (action as AdaptiveSubmitAction)?.DataJson.Stringify() ?? string.Empty;
             var inputString = inputs.Stringify();
 
+            var operationLease = FallbackContext?.AcquireSnapshotLease();
+            if (FallbackContext?.HasSnapshotLease == true && operationLease is null)
+            {
+                return;
+            }
+
             _ = Task.Run(() =>
             {
                 try
                 {
+                    if (FallbackContext?.CanInvoke == false)
+                    {
+                        return;
+                    }
+
                     var model = _formModel.Unsafe!;
                     if (model != null)
                     {
                         var result = model.SubmitForm(inputString, dataString);
-                        WeakReferenceMessenger.Default.Send<HandleCommandResultMessage>(new(new(result)));
+                        WeakReferenceMessenger.Default.Send<HandleCommandResultMessage>(new(new(result), FallbackContext));
                     }
                 }
                 catch (Exception ex)
                 {
                     ShowException(ex);
+                }
+                finally
+                {
+                    operationLease?.Dispose();
                 }
             });
         }

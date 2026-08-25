@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -155,5 +157,33 @@ public class CommandItemViewModelTests
 
         Assert.AreEqual("after unique", primaryContextItem.Subtitle);
         Assert.AreEqual("after unique", primaryContextItem.GetSubtitleTarget(matcher).Original);
+    }
+
+    [TestMethod]
+    public void FallbackContext_PropagatesToSecondaryCommandViewModel()
+    {
+        var pageContext = new TestPageContext();
+        var secondary = new CommandContextItem(new NoOpCommand { Name = "Secondary" });
+        var item = new CommandItem(new NoOpCommand { Name = "Primary" })
+        {
+            MoreCommands = [secondary],
+        };
+        using var queryCancellation = new CancellationTokenSource();
+        var fallbackContext = new FallbackQueryContext(
+            null!,
+            CommandProviderContext.Empty,
+            item,
+            queryCancellation.Token);
+
+        var viewModel = new CommandItemViewModel(
+            new(item),
+            new(pageContext),
+            DefaultContextMenuFactory.Instance,
+            fallbackContext);
+        viewModel.SlowInitializeProperties();
+
+        Assert.IsNotNull(viewModel.SecondaryCommand?.FallbackContext);
+        Assert.AreSame(secondary, viewModel.SecondaryCommand.FallbackContext.InvocationContext);
+        Assert.AreEqual(queryCancellation.Token, viewModel.SecondaryCommand.FallbackContext.QueryToken);
     }
 }

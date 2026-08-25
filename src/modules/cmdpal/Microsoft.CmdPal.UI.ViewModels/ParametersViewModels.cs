@@ -404,14 +404,23 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
         set => SetSearchText(value);
     }
 
-    public CommandParameterRunViewModel(ICommandParameterRun commandRun, WeakReference<IPageContext> context, AppExtensionHost extensionHost, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory)
+    public CommandParameterRunViewModel(
+        ICommandParameterRun commandRun,
+        WeakReference<IPageContext> context,
+        AppExtensionHost extensionHost,
+        ICommandProviderContext providerContext,
+        IContextMenuFactory contextMenuFactory,
+        FallbackQueryContext? fallbackContext = null)
         : base(commandRun, context)
     {
         _model = new(commandRun);
         _extensionHost = extensionHost;
         _providerContext = providerContext;
         _contextMenuFactory = contextMenuFactory;
+        FallbackContext = fallbackContext;
     }
+
+    internal FallbackQueryContext? FallbackContext { get; }
 
     public override void InitializeProperties()
     {
@@ -438,12 +447,13 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
             if (PageContext.TryGetTarget(out var pageContext))
             {
                 _listViewModel = new ListViewModel(list, pageContext.Scheduler, _extensionHost, _providerContext, _contextMenuFactory);
+                _listViewModel.AttachFallbackContext(FallbackContext);
                 _listViewModel.InitializeProperties();
             }
         }
         else if (command is IInvokableCommand invokable)
         {
-            _commandViewModel = new CommandViewModel(invokable, this.PageContext);
+            _commandViewModel = new CommandViewModel(invokable, this.PageContext, FallbackContext);
             _commandViewModel.InitializeProperties();
         }
 
@@ -513,7 +523,7 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
             return;
         }
 
-        PerformCommandMessage m = new(this._commandViewModel.Model);
+        PerformCommandMessage m = new(this._commandViewModel);
         WeakReferenceMessenger.Default.Send(m);
     }
 
@@ -601,7 +611,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     {
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
-        _command = new(new(null), PageContext, _contextMenuFactory);
+        _command = new(new(null), PageContext, _contextMenuFactory, FallbackContext);
     }
 
     /// <summary>
@@ -609,7 +619,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     /// </summary>
     private void ReplaceCommand(ICommandItem? model)
     {
-        var command = new CommandItemViewModel(new(model), PageContext, _contextMenuFactory);
+        var command = new CommandItemViewModel(new(model), PageContext, _contextMenuFactory, FallbackContext);
         var replaced = Interlocked.Exchange(ref _command, command);
 
         if (!ReferenceEquals(replaced, command))
@@ -652,7 +662,13 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 {
                     ILabelRun labelRun => new LabelRunViewModel(labelRun, PageContext),
                     IStringParameterRun stringRun => new StringParameterRunViewModel(stringRun, PageContext),
-                    ICommandParameterRun commandRun => new CommandParameterRunViewModel(commandRun, PageContext, this.ExtensionHost, this.ProviderContext, _contextMenuFactory),
+                    ICommandParameterRun commandRun => new CommandParameterRunViewModel(
+                        commandRun,
+                        PageContext,
+                        this.ExtensionHost,
+                        this.ProviderContext,
+                        _contextMenuFactory,
+                        FallbackContext),
                     _ => null,
                 };
                 var t = itemVm?.ToString() ?? "unknown";
@@ -842,7 +858,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     {
         if (ShowCommand)
         {
-            PerformCommandMessage m = new(this.Command.Command.Model);
+            PerformCommandMessage m = new(this.Command, this.Command.Model.Unsafe);
             WeakReferenceMessenger.Default.Send(m);
         }
     }

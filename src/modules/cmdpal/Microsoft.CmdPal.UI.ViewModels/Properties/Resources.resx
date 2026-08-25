@@ -605,4 +605,8 @@
   <data name="winget_operations_recent_activity" xml:space="preserve">
     <value>Recent WinGet activity</value>
   </data>
+  <data name="fallback_load_more" xml:space="preserve">
+    <value>Load more</value>
+    <comment>Loads more results from a fallback result source.</comment>
+  </data>
 </root>

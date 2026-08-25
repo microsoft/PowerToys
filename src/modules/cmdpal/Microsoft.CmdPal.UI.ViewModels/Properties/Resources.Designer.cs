@@ -574,6 +574,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
 
         /// <summary>
+        ///   Gets the command that loads more fallback results.
+        /// </summary>
+        public static string fallback_load_more {
+            get {
+                return ResourceManager.GetString("fallback_load_more", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to We couldn&apos;t load the extension gallery right now. Please try again in a little while..
         /// </summary>
         public static string gallery_error_generic_message {

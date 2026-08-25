@@ -10,10 +10,23 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPageContext> context) :
-    ContentViewModel(context)
+public partial class ContentTreeViewModel : ContentViewModel
 {
-    public ExtensionObject<ITreeContent> Model { get; } = new(_tree);
+    public ExtensionObject<ITreeContent> Model { get; }
+
+    public ContentTreeViewModel(ITreeContent tree, WeakReference<IPageContext> context)
+        : this(tree, context, null)
+    {
+    }
+
+    internal ContentTreeViewModel(
+        ITreeContent tree,
+        WeakReference<IPageContext> context,
+        FallbackQueryContext? fallbackContext)
+        : base(context, fallbackContext)
+    {
+        Model = new(tree);
+    }
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -55,9 +68,9 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
     {
         ContentViewModel? viewModel = content switch
         {
-            IFormContent form => new ContentFormViewModel(form, context),
+            IFormContent form => new ContentFormViewModel(form, context, FallbackContext),
             IMarkdownContent markdown => new ContentMarkdownViewModel(markdown, context),
-            ITreeContent tree => new ContentTreeViewModel(tree, context),
+            ITreeContent tree => new ContentTreeViewModel(tree, context, FallbackContext),
             IPlainTextContent plainText => new ContentPlainTextViewModel(plainText, context),
             IImageContent image => new ContentImageViewModel(image, context),
             _ => null,

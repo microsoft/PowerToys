@@ -205,6 +205,39 @@
                                                             IsChecked="{x:Bind IncludeInGlobalResults, Mode=TwoWay}"
                                                             IsEnabled="{x:Bind IsEnabled, Mode=OneWay}" />
                                                     </controls:SettingsCard>
+
+                                                    <controls:SettingsCard
+                                                        x:Uid="Settings_Fallback_QueryDelay"
+                                                        Visibility="{x:Bind HasQuerySettings, Mode=OneWay}">
+                                                        <NumberBox
+                                                            Maximum="2000"
+                                                            Minimum="0"
+                                                            SmallChange="25"
+                                                            SpinButtonPlacementMode="Compact"
+                                                            Value="{x:Bind QueryDelayMilliseconds, Mode=TwoWay}" />
+                                                    </controls:SettingsCard>
+
+                                                    <controls:SettingsCard
+                                                        x:Uid="Settings_Fallback_MinimumQueryLength"
+                                                        Visibility="{x:Bind HasQuerySettings, Mode=OneWay}">
+                                                        <NumberBox
+                                                            Maximum="100"
+                                                            Minimum="0"
+                                                            SmallChange="1"
+                                                            SpinButtonPlacementMode="Compact"
+                                                            Value="{x:Bind MinimumQueryLength, Mode=TwoWay}" />
+                                                    </controls:SettingsCard>
+
+                                                    <controls:SettingsCard
+                                                        x:Uid="Settings_Fallback_MaximumVisibleItems"
+                                                        Visibility="{x:Bind HasResultSettings, Mode=OneWay}">
+                                                        <NumberBox
+                                                            Maximum="100"
+                                                            Minimum="1"
+                                                            SmallChange="1"
+                                                            SpinButtonPlacementMode="Compact"
+                                                            Value="{x:Bind MaximumVisibleItemCount, Mode=TwoWay}" />
+                                                    </controls:SettingsCard>
                                                 </controls:SettingsExpander.Items>
                                             </controls:SettingsExpander>
                                         </DataTemplate>

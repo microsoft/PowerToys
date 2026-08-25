@@ -7,10 +7,30 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ConfirmResultViewModel(IConfirmationArgs _args, WeakReference<IPageContext> context) :
-    ExtensionObjectViewModel(context)
+public partial class ConfirmResultViewModel : ExtensionObjectViewModel
 {
-    public ExtensionObject<IConfirmationArgs> Model { get; } = new(_args);
+    private readonly IConfirmationArgs _args;
+
+    public ConfirmResultViewModel(IConfirmationArgs args, WeakReference<IPageContext> context)
+        : this(args, context, null)
+    {
+    }
+
+    public ConfirmResultViewModel(
+        IConfirmationArgs args,
+        WeakReference<IPageContext> context,
+        FallbackQueryContext? fallbackContext)
+        : base(context)
+    {
+        _args = args;
+        FallbackContext = fallbackContext;
+        Model = new(args);
+        PrimaryCommand = new(null, context, fallbackContext);
+    }
+
+    internal FallbackQueryContext? FallbackContext { get; }
+
+    public ExtensionObject<IConfirmationArgs> Model { get; }
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -20,7 +40,7 @@ public partial class ConfirmResultViewModel(IConfirmationArgs _args, WeakReferen
 
     public bool IsPrimaryCommandCritical { get; private set; }
 
-    public CommandViewModel PrimaryCommand { get; private set; } = new(null, context);
+    public CommandViewModel PrimaryCommand { get; private set; }
 
     public override void InitializeProperties()
     {
@@ -33,7 +53,7 @@ public partial class ConfirmResultViewModel(IConfirmationArgs _args, WeakReferen
         Title = model.Title;
         Description = model.Description;
         IsPrimaryCommandCritical = model.IsPrimaryCommandCritical;
-        PrimaryCommand = new(model.PrimaryCommand, PageContext);
+        PrimaryCommand = new(model.PrimaryCommand, PageContext, FallbackContext);
         PrimaryCommand.InitializeProperties();
 
         UpdateProperty(nameof(Title));

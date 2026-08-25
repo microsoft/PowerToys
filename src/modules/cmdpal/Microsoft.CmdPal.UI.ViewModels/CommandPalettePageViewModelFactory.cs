@@ -19,9 +19,14 @@ public class CommandPalettePageViewModelFactory
         _contextMenuFactory = contextMenuFactory;
     }
 
-    public PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host, ICommandProviderContext providerContext)
+    public PageViewModel? TryCreatePageViewModel(
+        IPage page,
+        bool nested,
+        AppExtensionHost host,
+        ICommandProviderContext providerContext,
+        FallbackQueryContext? fallbackContext = null)
     {
-        return page switch
+        PageViewModel? viewModel = page switch
         {
             MainListPage listPage => new ListViewModel(listPage, _scheduler, host, providerContext, _contextMenuFactory) { IsRootPage = !nested, IsMainPage = true },
             IListPage listPage => new ListViewModel(listPage, _scheduler, host, providerContext, _contextMenuFactory) { IsRootPage = !nested },
@@ -29,5 +34,6 @@ public class CommandPalettePageViewModelFactory
             IParametersPage paramsPage => new ParametersPageViewModel(paramsPage, _scheduler, host, providerContext, _contextMenuFactory),
             _ => null,
         };
+        return viewModel?.AttachFallbackContext(fallbackContext) == true ? viewModel : null;
     }
 }

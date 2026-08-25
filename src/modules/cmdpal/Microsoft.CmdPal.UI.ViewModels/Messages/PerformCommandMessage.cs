@@ -16,6 +16,8 @@ public record PerformCommandMessage
 
     public object? Context { get; }
 
+    internal FallbackQueryContext? FallbackContext { get; }
+
     public bool WithAnimation { get; set; } = true;
 
     public bool TransientPage { get; set; }
@@ -63,12 +65,28 @@ public record PerformCommandMessage
     public PerformCommandMessage(CommandContextItemViewModel contextCommand)
     {
         Command = contextCommand.Command.Model;
-        Context = contextCommand.Model.Unsafe;
+        FallbackContext = contextCommand.FallbackContext;
+        Context = FallbackContext?.InvocationContext ?? contextCommand.Model.Unsafe;
+    }
+
+    internal PerformCommandMessage(CommandItemViewModel command, object? context)
+    {
+        Command = command.Command.Model;
+        FallbackContext = command.FallbackContext;
+        Context = FallbackContext?.InvocationContext ?? context;
+    }
+
+    public PerformCommandMessage(CommandViewModel command)
+    {
+        Command = command.Model;
+        FallbackContext = command.FallbackContext;
+        Context = FallbackContext?.InvocationContext;
     }
 
     public PerformCommandMessage(ConfirmResultViewModel vm)
     {
         Command = vm.PrimaryCommand.Model;
-        Context = null;
+        FallbackContext = vm.FallbackContext;
+        Context = FallbackContext?.InvocationContext;
     }
 }

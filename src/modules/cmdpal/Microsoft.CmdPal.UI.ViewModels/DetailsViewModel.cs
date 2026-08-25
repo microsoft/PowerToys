@@ -28,10 +28,21 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
     public List<DetailsElementViewModel> Metadata { get; private set; } = [];
 
     public DetailsViewModel(IDetails details, WeakReference<IPageContext> context)
+        : this(details, context, null)
+    {
+    }
+
+    internal DetailsViewModel(
+        IDetails details,
+        WeakReference<IPageContext> context,
+        FallbackQueryContext? fallbackContext)
         : base(context)
     {
         _detailsModel = new(details);
+        FallbackContext = fallbackContext;
     }
+
+    internal FallbackQueryContext? FallbackContext { get; }
 
     private void Model_PropChanged(object sender, IPropChangedEventArgs args)
     {
@@ -86,8 +97,8 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
                 DetailsElementViewModel? vm = element.Data switch
                 {
                     IDetailsSeparator => new DetailsSeparatorViewModel(element, this.PageContext),
-                    IDetailsLink => new DetailsLinkViewModel(element, this.PageContext),
-                    IDetailsCommands => new DetailsCommandsViewModel(element, this.PageContext),
+                    IDetailsLink => new DetailsLinkViewModel(element, this.PageContext, FallbackContext),
+                    IDetailsCommands => new DetailsCommandsViewModel(element, this.PageContext, FallbackContext),
                     IDetailsTags => new DetailsTagsViewModel(element, this.PageContext),
                     _ => null,
                 };

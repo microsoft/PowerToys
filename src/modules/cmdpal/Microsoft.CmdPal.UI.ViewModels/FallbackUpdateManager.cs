@@ -61,7 +61,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
         _onFallbackChanged = onFallbackChanged;
     }
 
-    internal void BeginUpdate(string query, IReadOnlyList<TopLevelViewModel> commands, CancellationToken cancellationToken)
+    internal void BeginUpdate(string query, string queryId, IReadOnlyList<TopLevelViewModel> commands, CancellationToken cancellationToken)
     {
         if (commands.Count == 0 || string.IsNullOrWhiteSpace(query))
         {
@@ -95,15 +95,30 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                 }
 
                 var command = commands[i];
-                var counter = _inflightFallbacks.GetOrAdd(command.Id, static _ => new InflightCounter());
-                if (!counter.TryClaim(MaxInflightPerFallback))
+                if (command.IsFallbackV2)
+                {
+                    if ((uint)query.Length < command.EffectiveMinimumQueryLength)
+                    {
+                        continue;
+                    }
+
+                    var delay = TimeSpan.FromMilliseconds(Math.Min(command.EffectiveQueryDelayMilliseconds, 2000));
+                    if (delay > TimeSpan.Zero && cancellationToken.WaitHandle.WaitOne(delay))
+                    {
+                        return;
+                    }
+                }
+
+                var counter = _inflightFallbacks.GetOrAdd(command.FallbackKey, static _ => new InflightCounter());
+                var maximumInflight = command.IsFallbackV2 ? 1 : MaxInflightPerFallback;
+                if (!counter.TryClaim(maximumInflight))
                 {
                     // At capacity — store this query as a pending retry so it runs
                     // when one of the in-flight calls finishes. Latest query wins.
                     var pendingCommand = command;
                     var pendingQuery = query;
                     var pendingCt = cancellationToken;
-                    counter.SetPending(() => RetryFallbackUpdate(pendingCommand, pendingQuery, pendingCt, counter), pendingCt);
+                    counter.SetPending(() => RetryFallbackUpdate(pendingCommand, pendingQuery, queryId, pendingCt, counter), pendingCt);
                     continue;
                 }
 
@@ -138,7 +153,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                     var sw = Stopwatch.StartNew();
                     Logger.LogDebug($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' updating with '{query}'");
 #endif
-                    changed = command.SafeUpdateFallbackTextSynchronous(query);
+                    changed = command.SafeUpdateFallbackTextSynchronous(query, queryId, cancellationToken);
 #if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
                     var elapsed = sw.Elapsed;
                     var tail = elapsed > FallbackItemSlowTimeout ? " is slow" : string.Empty;
@@ -195,14 +210,15 @@ internal sealed partial class FallbackUpdateManager : IDisposable
 
         // One-shot retry for a command that was skipped due to MaxInflightPerFallback.
         // Claims a slot, runs the COM call, releases, and propagates the next pending (if any).
-        void RetryFallbackUpdate(TopLevelViewModel cmd, string q, CancellationToken ct, InflightCounter ctr)
+        void RetryFallbackUpdate(TopLevelViewModel cmd, string q, string id, CancellationToken ct, InflightCounter ctr)
         {
             if (ct.IsCancellationRequested)
             {
                 return;
             }
 
-            if (!ctr.TryClaim(MaxInflightPerFallback))
+            var maximumInflight = cmd.IsFallbackV2 ? 1 : MaxInflightPerFallback;
+            if (!ctr.TryClaim(maximumInflight))
             {
                 // Still at capacity (a newer worker claimed the freed slot first).
                 // The pending was already consumed from TakePending, so it's dropped here.
@@ -212,7 +228,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
             var changed = false;
             try
             {
-                changed = cmd.SafeUpdateFallbackTextSynchronous(q);
+                changed = cmd.SafeUpdateFallbackTextSynchronous(q, id, ct);
             }
             catch (Exception ex)
             {
