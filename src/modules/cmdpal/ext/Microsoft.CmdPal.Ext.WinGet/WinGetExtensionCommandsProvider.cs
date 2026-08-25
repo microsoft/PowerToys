@@ -13,6 +13,7 @@ namespace Microsoft.CmdPal.Ext.WinGet;
 public partial class WinGetExtensionCommandsProvider : CommandProvider
 {
     private readonly ICommandItem[] _commands;
+    private readonly IFallbackCommandItem[] _fallbacks;
 
     public WinGetExtensionCommandsProvider(
         IWinGetPackageManagerService winGetPackageManagerService,
@@ -26,9 +27,15 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
         _commands = [
             new ListItem(new WinGetExtensionPage(winGetPackageManagerService, winGetOperationTrackerService, uiScheduler)),
         ];
+        _fallbacks =
+        [
+            new WinGetFallback(winGetPackageManagerService, winGetOperationTrackerService, uiScheduler),
+        ];
     }
 
     public override ICommandItem[] TopLevelCommands() => _commands;
+
+    public override IFallbackCommandItem[] FallbackCommands() => _fallbacks;
 
     public override void InitializeWithHost(IExtensionHost host) => WinGetExtensionHost.Instance.Initialize(host);
 

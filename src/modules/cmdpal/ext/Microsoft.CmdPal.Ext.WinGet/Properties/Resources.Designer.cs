@@ -194,6 +194,33 @@ namespace Microsoft.CmdPal.Ext.WinGet.Properties {
                 return ResourceManager.GetString("winget_no_packages_found", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Gets the name of the WinGet fallback command.
+        /// </summary>
+        public static string winget_fallback_display_title {
+            get {
+                return ResourceManager.GetString("winget_fallback_display_title", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Gets the description of the WinGet fallback command.
+        /// </summary>
+        public static string winget_fallback_subtitle {
+            get {
+                return ResourceManager.GetString("winget_fallback_subtitle", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Gets the title template of the WinGet fallback command.
+        /// </summary>
+        public static string winget_fallback_title_template {
+            get {
+                return ResourceManager.GetString("winget_fallback_title_template", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Find apps on WinGet.
