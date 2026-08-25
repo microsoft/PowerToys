@@ -18,10 +18,10 @@ namespace Microsoft.PowerToys.PowerRename.UITests;
 /// </remarks>
 public sealed partial class PowerRenameTests
 {
-    private const string FilterButtonName = "Filter";
-    private const string ShowAllFiles = "Show all files";
-    private const string ShowOnlyRenamed = "Only show files that will be renamed";
-    private const string SelectAllCheckBoxName = "Select or deselect all";
+    private const string FilterButtonAutomationId = "FilterButton";
+    private const string ShowAllFilesAutomationId = "button_showAll";
+    private const string ShowOnlyRenamedAutomationId = "button_showRenamed";
+    private const string SelectAllCheckBoxAutomationId = "checkBox_selectAll";
 
     [TestMethod("PowerRename.FileList.UncheckExcludesItem")]
     [TestCategory("PowerRename")]
@@ -33,6 +33,7 @@ public sealed partial class PowerRenameTests
         var second = CreateFile(folder, "two.txt");
         var window = LaunchPowerRename(first, second);
 
+        WaitForOriginalCount(window, 2);
         SetSearchText(window, "o");
         SetReplaceText(window, "0");
         WaitForPreviewName(window, "0ne.txt");
@@ -59,7 +60,7 @@ public sealed partial class PowerRenameTests
         SetReplaceText(window, "hit");
         WaitForPreviewName(window, "hit.txt");
 
-        SelectFilter(window, ShowOnlyRenamed);
+        SelectFilter(window, ShowOnlyRenamedAutomationId);
         Assert.IsTrue(
             window.WaitFor(
                 () => FindRowCheckBox(window, "other.txt", timeoutMS: 500) is null,
@@ -70,7 +71,7 @@ public sealed partial class PowerRenameTests
             FindRowCheckBox(window, "match.txt", PreviewTimeoutMS),
             "The renamed-only filter dropped the item that will be renamed.");
 
-        SelectFilter(window, ShowAllFiles);
+        SelectFilter(window, ShowAllFilesAutomationId);
         Assert.IsTrue(
             window.WaitFor(
                 () => FindRowCheckBox(window, "other.txt", timeoutMS: 500) is not null,
@@ -93,27 +94,24 @@ public sealed partial class PowerRenameTests
         SetReplaceText(window, "0");
         WaitForRenamedCount(window, 2);
 
-        SetOptionCheckBox(window, SelectAllCheckBoxName, false);
+        SetOptionCheckBox(window, SelectAllCheckBoxAutomationId, false);
         WaitForRenamedCount(window, 0);
         Assert.IsFalse(FindRowCheckBox(window, "one.txt", PreviewTimeoutMS)!.IsChecked, "'one.txt' stayed selected.");
         Assert.IsFalse(FindRowCheckBox(window, "two.txt", PreviewTimeoutMS)!.IsChecked, "'two.txt' stayed selected.");
 
-        SetOptionCheckBox(window, SelectAllCheckBoxName, true);
+        SetOptionCheckBox(window, SelectAllCheckBoxAutomationId, true);
         WaitForRenamedCount(window, 2);
         Assert.IsTrue(FindRowCheckBox(window, "one.txt", PreviewTimeoutMS)!.IsChecked, "'one.txt' was not re-selected.");
         Assert.IsTrue(FindRowCheckBox(window, "two.txt", PreviewTimeoutMS)!.IsChecked, "'two.txt' was not re-selected.");
     }
 
     /// <summary>Pick an entry of the Filter flyout, which the window hosts in its own popup.</summary>
-    private void SelectFilter(Session window, string itemName)
+    private void SelectFilter(Session window, string itemAutomationId)
     {
-        Step($"Selecting filter '{itemName}'");
-        var filterButton = FindExact<Button>(window, FilterButtonName, PreviewTimeoutMS);
-        Assert.IsNotNull(filterButton, "The PowerRename window did not expose its Filter button.");
-        filterButton!.Invoke(msPostAction: 500);
-
-        var item = FindExact<Element>(window, itemName, PreviewTimeoutMS);
-        Assert.IsNotNull(item, $"The Filter flyout did not contain '{itemName}'.");
-        item!.Invoke(msPostAction: 500);
+        Step($"Selecting filter '{itemAutomationId}'");
+        window.Find<Button>(By.AccessibilityId(FilterButtonAutomationId), PreviewTimeoutMS)
+            .Invoke(msPostAction: 500);
+        window.Find<Element>(By.AccessibilityId(itemAutomationId), PreviewTimeoutMS)
+            .Invoke(msPostAction: 500);
     }
 }

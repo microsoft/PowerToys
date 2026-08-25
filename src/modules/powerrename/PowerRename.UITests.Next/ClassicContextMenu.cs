@@ -14,8 +14,8 @@ namespace Microsoft.PowerToys.PowerRename.UITests;
 /// <remarks>
 /// This is the authoritative view of what the shell put in the menu: exact captions, no dependency on
 /// the transient popup's UIA tree, and a miss can report the full inventory instead of just "not
-/// found". Item bitmaps are deliberately not read — <c>GetMenuItemInfo</c> does not hand
-/// <c>hbmpItem</c> across a process boundary, so every item of Explorer's menu reads back as null.
+/// found". Measured on Windows 10 and 11, <c>GetMenuItemInfo(MIIM_BITMAP)</c> returns a null
+/// <c>hbmpItem</c> for every Explorer menu item, so icon presence is measured from pixels instead.
 /// </remarks>
 internal static class ClassicContextMenu
 {

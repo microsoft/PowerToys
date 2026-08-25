@@ -32,7 +32,7 @@ public sealed partial class PowerRenameTests
         SetReplaceText(window, "matched.txt");
         WaitForRenamedCount(window, 0);
 
-        SetOptionCheckBox(window, RegularExpressions, true);
+        SetOptionCheckBox(window, RegularExpressionsAutomationId, true);
         WaitForRenamedCount(window, 2);
         WaitForPreviewName(window, "matched.txt");
     }
@@ -47,7 +47,7 @@ public sealed partial class PowerRenameTests
         var text = CreateFile(folder, "notes.txt");
         var window = LaunchPowerRename(image, text);
 
-        SetOptionCheckBox(window, RegularExpressions, true);
+        SetOptionCheckBox(window, RegularExpressionsAutomationId, true);
         SetSearchText(window, "(.*).png");
         SetReplaceText(window, "foo_$1.png");
 
@@ -93,7 +93,7 @@ public sealed partial class PowerRenameTests
 
         ConfigureModuleSettings(useBoostLib: false, persistState: false, mruEnabled: false);
         var window = LaunchPowerRename(matching, notMatching);
-        SetOptionCheckBox(window, RegularExpressions, true);
+        SetOptionCheckBox(window, RegularExpressionsAutomationId, true);
         SetSearchText(window, "(?<=t)est");
         SetReplaceText(window, "XYZ");
         WaitForRenamedCount(window, 0);
@@ -101,7 +101,7 @@ public sealed partial class PowerRenameTests
 
         ConfigureModuleSettings(useBoostLib: true, persistState: false, mruEnabled: false);
         window = LaunchPowerRename(matching, notMatching);
-        SetOptionCheckBox(window, RegularExpressions, true);
+        SetOptionCheckBox(window, RegularExpressionsAutomationId, true);
         SetSearchText(window, "(?<=t)est");
         SetReplaceText(window, "XYZ");
         WaitForPreviewName(window, "tXYZ.txt");

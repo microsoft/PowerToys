@@ -2,6 +2,8 @@
 # The Microsoft Corporation licenses this file to you under the MIT license.
 # See the LICENSE file in the project root for more information.
 
+#requires -Version 7.0
+
 <#
 .SYNOPSIS
 Validates the prompt-free Azure CLI and Azure DevOps capabilities required by the UI-test pipeline skill.
@@ -406,9 +408,10 @@ if ($pipelineId -ne 0)
         $stages = @([regex]::Matches($preview.finalYaml, '(?m)^- stage: (.+)$') |
                 ForEach-Object { $_.Groups[1].Value.Trim() })
         $expectedStages = @('Build_x64', 'Test_x64Win10_FullBuild', 'Test_x64Win11_FullBuild')
-        if ((Compare-Object $expectedStages $stages).Count -ne 0)
+        $missingStages = @($expectedStages | Where-Object { $_ -notin $stages })
+        if ($missingStages.Count -ne 0)
         {
-            throw "Pipeline preview returned unexpected stages: $($stages -join ', ')."
+            throw "Pipeline preview omitted required stages: $($missingStages -join ', '). Expanded stages: $($stages -join ', ')."
         }
 
         $moduleAssignments = @($preview.finalYaml -split "`n" |

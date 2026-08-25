@@ -1,6 +1,6 @@
 ---
 name: ui-tests-pipeline-ci
-description: "Microsoft FTE-only workflow for queueing, monitoring, and stabilizing PowerToys UI Test Automation runs through an existing Azure CLI session and Azure DevOps REST APIs. Use after local default and constrained VM suites pass, when asked to run UITests CI, monitor a pipeline without repeated authentication prompts, reuse a successful product build with specificBuildId, diagnose CI-only UI test failures, download recordings/artifacts, or manage the three-run stabilization limit. Keywords: FTE, az, Azure CLI, Azure DevOps, pipeline, UI Test Automation, UITests CI, buildNow, specificBuildId, uiTestModules, failed test video, CI flake."
+description: "Microsoft FTE-only workflow for validating setup, queueing, monitoring, and stabilizing PowerToys UI Test Automation through an existing Azure CLI session and Azure DevOps REST APIs. Use after local VM suites pass, when asked to run UITests CI, perform a setup preflight/readiness check, diagnose repeated az login prompts or 401/403 permission failures, reuse a successful build, inspect recordings/artifacts, or manage the three-run limit. Keywords: FTE, az, Azure CLI, Azure DevOps, pipeline, UI Test Automation, UITests CI, buildNow, specificBuildId, uiTestModules, CI flake."
 license: MIT
 ---
 
@@ -21,6 +21,7 @@ discovery, preview, queueing, status, timelines, logs, tests, artifacts, and res
 Use this skill when an authorized Microsoft FTE asks to:
 
 - Queue PowerToys UITests in the internal `UI Test Automation` pipeline.
+- Validate Azure CLI and Azure DevOps readiness before queueing or after a `401`/`403` response.
 - Monitor a UITests pipeline run or summarize its stages, tests, and artifacts.
 - Iterate on a failure that passed the complete local VM matrix.
 - Reuse a prior successful product build while rebuilding only one or more UITest projects.

@@ -24,9 +24,13 @@ public abstract class PowerRenameTestBase : UITestBase
 {
     protected const string PowerRenameProcessName = "PowerToys.PowerRename";
     protected const string ContextMenuCaption = "Rename with PowerRename";
-    protected const string SearchBoxName = "Search for";
-    protected const string ReplaceBoxName = "Replace with";
-    protected const string ApplyButtonName = "Apply";
+    protected const string SearchBoxAutomationId = "textBox_search";
+    protected const string ReplaceBoxAutomationId = "textBox_replace";
+    protected const string ApplyButtonAutomationId = "button_rename";
+    protected const string RegularExpressionsAutomationId = "checkBox_regex";
+    protected const string MatchAllOccurrencesAutomationId = "checkBox_matchAll";
+    protected const string CaseSensitiveAutomationId = "checkBox_case";
+    protected const string OriginalCountAutomationId = "OriginalCount";
     protected const string RenamedCountAutomationId = "RenamedCount";
     protected const int WindowTimeoutMS = 30_000;
     protected const int PreviewTimeoutMS = 30_000;
@@ -84,6 +88,14 @@ public abstract class PowerRenameTestBase : UITestBase
         // The harness seeds the enabled-module baseline once per class. PowerRename's shell
         // extension re-reads settings.json on every context-menu query, so re-assert it per test.
         EnsureModuleEnabledInGlobalSettings();
+        ConfigureModuleSettings(
+            showIcon: true,
+            extendedContextMenuOnly: false,
+            persistState: false,
+            mruEnabled: false,
+            maxMruSize: 10,
+            useBoostLib: false);
+        ClearPersistedRenameState();
     }
 
     [TestCleanup]
@@ -165,27 +177,36 @@ public abstract class PowerRenameTestBase : UITestBase
     /// Explorer) and the UI reload it from disk, so seeding the file is enough — no runner restart.
     /// </summary>
     protected static void ConfigureModuleSettings(
-        bool showIcon = true,
-        bool extendedContextMenuOnly = false,
-        bool persistState = true,
-        bool mruEnabled = true,
-        int maxMruSize = 10,
-        bool useBoostLib = false)
+        bool? showIcon = null,
+        bool? extendedContextMenuOnly = null,
+        bool? persistState = null,
+        bool? mruEnabled = null,
+        int? maxMruSize = null,
+        bool? useBoostLib = null)
     {
-        var settings = new JsonObject
+        var path = Path.Combine(ModuleSettingsDirectory, "power-rename-settings.json");
+        var settings = File.Exists(path)
+            ? JsonNode.Parse(File.ReadAllText(path)) as JsonObject ?? new JsonObject()
+            : new JsonObject();
+
+        foreach (var (name, value) in new (string Name, JsonNode? Value)[]
         {
-            ["ShowIcon"] = showIcon,
-            ["ExtendedContextMenuOnly"] = extendedContextMenuOnly,
-            ["PersistState"] = persistState,
-            ["MRUEnabled"] = mruEnabled,
-            ["MaxMRUSize"] = maxMruSize,
-            ["UseBoostLib"] = useBoostLib,
-        };
+            ("ShowIcon", showIcon.HasValue ? JsonValue.Create(showIcon.Value) : null),
+            ("ExtendedContextMenuOnly", extendedContextMenuOnly.HasValue ? JsonValue.Create(extendedContextMenuOnly.Value) : null),
+            ("PersistState", persistState.HasValue ? JsonValue.Create(persistState.Value) : null),
+            ("MRUEnabled", mruEnabled.HasValue ? JsonValue.Create(mruEnabled.Value) : null),
+            ("MaxMRUSize", maxMruSize.HasValue ? JsonValue.Create(maxMruSize.Value) : null),
+            ("UseBoostLib", useBoostLib.HasValue ? JsonValue.Create(useBoostLib.Value) : null),
+        })
+        {
+            if (value is not null)
+            {
+                settings[name] = value;
+            }
+        }
 
         Directory.CreateDirectory(ModuleSettingsDirectory);
-        File.WriteAllText(
-            Path.Combine(ModuleSettingsDirectory, "power-rename-settings.json"),
-            settings.ToJsonString(IndentedJson));
+        File.WriteAllText(path, settings.ToJsonString(IndentedJson));
     }
 
     /// <summary>Drop the persisted flags, last-run text, and MRU lists so a launch starts from defaults.</summary>
@@ -252,13 +273,18 @@ public abstract class PowerRenameTestBase : UITestBase
         Assert.IsTrue(File.Exists(exePath), $"PowerRename UI executable not found at '{exePath}'.");
 
         Step($"Launching PowerRename with {paths.Length} item(s) from '{Path.GetDirectoryName(paths[0])}'");
-        using (Process.Start(new ProcessStartInfo
+        var startInfo = new ProcessStartInfo
         {
             FileName = exePath,
-            Arguments = string.Join(' ', paths.Select(path => $"\"{path}\"")),
             WorkingDirectory = Path.GetDirectoryName(exePath)!,
             UseShellExecute = true,
-        }) ?? throw new InvalidOperationException($"Process.Start returned null for '{exePath}'."))
+        };
+        foreach (var path in paths)
+        {
+            startInfo.ArgumentList.Add(path);
+        }
+
+        using (Process.Start(startInfo) ?? throw new InvalidOperationException($"Process.Start returned null for '{exePath}'."))
         {
         }
 
@@ -271,7 +297,10 @@ public abstract class PowerRenameTestBase : UITestBase
         Step("Waiting for the PowerRename window to become ready");
         var session = Session.FromProcess(PowerRenameProcessName, PowerToysModule.PowerRename, timeoutMS: WindowTimeoutMS);
         Assert.IsTrue(
-            session.WaitFor(() => session.Has(By.Name(SearchBoxName), timeoutMS: 1_000), WindowTimeoutMS, pollIntervalMS: 500),
+            session.WaitFor(
+                () => session.Has(By.AccessibilityId(SearchBoxAutomationId), timeoutMS: 1_000),
+                WindowTimeoutMS,
+                pollIntervalMS: 500),
             $"The PowerRename window did not expose its search box. {DescribeSurface(session)}");
 
         lastAppliedText.Clear();
@@ -370,20 +399,22 @@ public abstract class PowerRenameTestBase : UITestBase
 
     // ---- driving the PowerRename UI --------------------------------------------------------------
 
-    protected void SetSearchText(Session window, string text) => SetAutoSuggestText(window, SearchBoxName, text);
+    protected void SetSearchText(Session window, string text) =>
+        SetAutoSuggestText(window, SearchBoxAutomationId, "search", text);
 
-    protected void SetReplaceText(Session window, string text) => SetAutoSuggestText(window, ReplaceBoxName, text);
+    protected void SetReplaceText(Session window, string text) =>
+        SetAutoSuggestText(window, ReplaceBoxAutomationId, "replace", text);
 
-    private void SetAutoSuggestText(Session window, string boxName, string text)
+    private void SetAutoSuggestText(Session window, string automationId, string description, string text)
     {
-        Step($"Setting '{boxName}' to '{text}'");
-        ApplyAutoSuggestText(window, boxName, text);
-        lastAppliedText[boxName] = text;
+        Step($"Setting the {description} box to '{text}'");
+        ApplyAutoSuggestText(window, automationId, description, text);
+        lastAppliedText[automationId] = text;
     }
 
-    private static void ApplyAutoSuggestText(Session window, string boxName, string text)
+    private static void ApplyAutoSuggestText(Session window, string automationId, string description, string text)
     {
-        window.Find<TextBox>(By.Name(boxName), timeoutMS: PreviewTimeoutMS).SetText(text);
+        window.Find<TextBox>(By.AccessibilityId(automationId), timeoutMS: PreviewTimeoutMS).SetText(text);
 
         // An empty box reports its placeholder through UIA, so only a non-empty value is verifiable.
         if (text.Length == 0)
@@ -393,10 +424,10 @@ public abstract class PowerRenameTestBase : UITestBase
 
         Assert.IsTrue(
             window.WaitFor(
-                () => window.Find<TextBox>(By.Name(boxName), timeoutMS: 1_000).Value == text,
+                () => window.Find<TextBox>(By.AccessibilityId(automationId), timeoutMS: 1_000).Value == text,
                 timeoutMS: 5_000,
                 pollIntervalMS: 200),
-            $"The '{boxName}' box did not accept the text '{text}'.");
+            $"The {description} box did not accept the text '{text}'.");
     }
 
     /// <summary>
@@ -406,73 +437,66 @@ public abstract class PowerRenameTestBase : UITestBase
     /// </summary>
     private void ReapplySearchAndReplaceText(Session window)
     {
-        foreach (var (boxName, text) in lastAppliedText.ToList())
+        foreach (var (automationId, text) in lastAppliedText.ToList())
         {
-            Step($"Re-applying '{boxName}' to nudge the rename engine");
-            ApplyAutoSuggestText(window, boxName, string.Empty);
-            ApplyAutoSuggestText(window, boxName, text);
+            var description = automationId == SearchBoxAutomationId ? "search" : "replace";
+            Step($"Re-applying the {description} box to nudge the rename engine");
+            ApplyAutoSuggestText(window, automationId, description, string.Empty);
+            ApplyAutoSuggestText(window, automationId, description, text);
         }
     }
 
-    protected string GetSearchText(Session window) => window.Find<TextBox>(By.Name(SearchBoxName)).Value;
+    protected string GetSearchText(Session window) =>
+        window.Find<TextBox>(By.AccessibilityId(SearchBoxAutomationId)).Value;
 
-    protected string GetReplaceText(Session window) => window.Find<TextBox>(By.Name(ReplaceBoxName)).Value;
+    protected string GetReplaceText(Session window) =>
+        window.Find<TextBox>(By.AccessibilityId(ReplaceBoxAutomationId)).Value;
 
-    protected void SetOptionCheckBox(Session window, string name, bool value)
+    protected void SetOptionCheckBox(Session window, string automationId, bool value)
     {
-        Step($"Setting checkbox '{name}' to {value}");
-        var checkBox = FindExact<CheckBox>(window, name, PreviewTimeoutMS);
-        Assert.IsNotNull(checkBox, $"The PowerRename window did not expose the '{name}' checkbox.");
-        checkBox!.SetCheck(value);
+        Step($"Setting checkbox '{automationId}' to {value}");
+        var checkBox = window.Find<CheckBox>(By.AccessibilityId(automationId), PreviewTimeoutMS);
+        checkBox.SetCheck(value);
         Assert.IsTrue(
             checkBox.WaitForProperty("ToggleState", value ? "On" : "Off", timeoutMS: 5_000),
-            $"The '{name}' checkbox did not settle to {(value ? "checked" : "unchecked")}.");
+            $"The '{automationId}' checkbox did not settle to {(value ? "checked" : "unchecked")}.");
     }
 
     /// <summary>
     /// Press a toolbar <c>ToggleButton</c> only when its state is wrong — a blind press on an
     /// already-engaged toggle turns it off.
     /// </summary>
-    protected void SetToggleButton(Session window, string name, bool value)
+    protected void SetToggleButton(Session window, string automationId, bool value)
     {
-        Step($"Setting toggle button '{name}' to {value}");
-        var button = FindExact<Button>(window, name, PreviewTimeoutMS);
-        Assert.IsNotNull(button, $"The PowerRename window did not expose the '{name}' toggle button.");
-        if (GetToggleState(button!) != value)
+        Step($"Setting toggle button '{automationId}' to {value}");
+        var button = window.Find<Button>(By.AccessibilityId(automationId), PreviewTimeoutMS);
+        if (GetToggleState(button) != value)
         {
-            button!.Invoke(msPostAction: 300);
+            button.Invoke(msPostAction: 300);
         }
 
         Assert.IsTrue(
-            button!.WaitForProperty("ToggleState", value ? "On" : "Off", timeoutMS: 5_000),
-            $"The '{name}' toggle button did not settle to {(value ? "on" : "off")}.");
+            button.WaitForProperty("ToggleState", value ? "On" : "Off", timeoutMS: 5_000),
+            $"The '{automationId}' toggle button did not settle to {(value ? "on" : "off")}.");
     }
 
-    protected static bool IsToggleButtonOn(Session window, string name)
+    protected static bool IsToggleButtonOn(Session window, string automationId)
     {
-        var button = FindExact<Button>(window, name, timeoutMS: 5_000);
-        Assert.IsNotNull(button, $"The PowerRename window did not expose the '{name}' toggle button.");
-        return GetToggleState(button!);
+        var button = window.Find<Button>(By.AccessibilityId(automationId), timeoutMS: 5_000);
+        return GetToggleState(button);
     }
 
     private static bool GetToggleState(Element element) =>
         string.Equals(element.GetProperty("ToggleState"), "On", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Select an entry of the "Apply to" combo box; its popup lives in a separate window.</summary>
-    protected void SelectApplyTo(Session window, string itemName)
+    protected void SelectApplyTo(Session window, string itemAutomationId)
     {
-        Step($"Selecting 'Apply to' = '{itemName}'");
-        var comboBox = window.Find<ComboBox>(By.Name("Apply to"), timeoutMS: PreviewTimeoutMS);
+        Step($"Selecting rename scope '{itemAutomationId}'");
+        var comboBox = window.Find<ComboBox>(By.AccessibilityId("comboBox_renameParts"), timeoutMS: PreviewTimeoutMS);
         comboBox.Invoke(msPostAction: 400);
-        var item = FindExact<Element>(window, itemName, timeoutMS: PreviewTimeoutMS);
-        Assert.IsNotNull(item, $"The 'Apply to' dropdown did not contain '{itemName}'.");
-        item!.Invoke(msPostAction: 400);
-        Assert.IsTrue(
-            window.WaitFor(
-                () => window.Find<ComboBox>(By.Name("Apply to"), timeoutMS: 1_000).SelectedText == itemName,
-                timeoutMS: 5_000,
-                pollIntervalMS: 200),
-            $"'Apply to' did not settle on '{itemName}'.");
+        window.Find<Element>(By.AccessibilityId(itemAutomationId), timeoutMS: PreviewTimeoutMS)
+            .Invoke(msPostAction: 400);
     }
 
     // ---- preview -------------------------------------------------------------------------------
@@ -502,7 +526,9 @@ public abstract class PowerRenameTestBase : UITestBase
     {
         Step($"Waiting for the preview to drop '{renamedName}'");
         Assert.IsTrue(
-            WaitForPreview(window, () => FindExact<TextBlock>(window, renamedName, timeoutMS: 500) is null),
+            WaitForPreview(
+                window,
+                () => FindExact<TextBlock>(window, renamedName, timeoutMS: 500, comparison: StringComparison.Ordinal) is null),
             $"The PowerRename preview still showed '{renamedName}'. {DescribeSurface(window)}");
     }
 
@@ -511,21 +537,29 @@ public abstract class PowerRenameTestBase : UITestBase
     {
         Step($"Waiting for the preview to show '{renamedName}'");
         Assert.IsTrue(
-            WaitForPreview(window, () => FindExact<TextBlock>(window, renamedName, timeoutMS: 500) is not null),
+            WaitForPreview(
+                window,
+                () => FindExact<TextBlock>(window, renamedName, timeoutMS: 500, comparison: StringComparison.Ordinal) is not null),
             $"The PowerRename preview never showed '{renamedName}'. {DescribeSurface(window)}");
     }
 
+    protected void WaitForOriginalCount(Session window, int count) =>
+        WaitForCount(window, OriginalCountAutomationId, count, "original");
+
     /// <summary>Wait until the "will be renamed" badge reads <paramref name="count"/>.</summary>
     protected void WaitForRenamedCount(Session window, int count)
+        => WaitForCount(window, RenamedCountAutomationId, count, "renamed");
+
+    private void WaitForCount(Session window, string automationId, int count, string description)
     {
         var badge = "(" + count.ToString(CultureInfo.InvariantCulture) + ")";
-        Step($"Waiting for the renamed count badge to read '{badge}'");
+        Step($"Waiting for the {description} count badge to read '{badge}'");
         Assert.IsTrue(
             WaitForPreview(
                 window,
-                () => window.FindAll<TextBlock>(By.AccessibilityId(RenamedCountAutomationId), timeoutMS: 500)
+                () => window.FindAll<TextBlock>(By.AccessibilityId(automationId), timeoutMS: 500)
                     .Any(element => element.Name.Equals(badge, StringComparison.Ordinal))),
-            $"The PowerRename header never reported {badge} items to rename. {DescribeSurface(window)}");
+            $"The PowerRename header never reported {badge} {description} items. {DescribeSurface(window)}");
     }
 
     /// <summary>
@@ -575,13 +609,12 @@ public abstract class PowerRenameTestBase : UITestBase
     /// </summary>
     protected void ApplyRename(Session window)
     {
-        var applyButton = FindApplyButton(window);
         Assert.IsTrue(
             window.WaitFor(() => FindApplyButton(window).IsEnabled, timeoutMS: PreviewTimeoutMS, pollIntervalMS: 250),
             "The Apply button never became enabled, so PowerRename had nothing to rename.");
 
         Step("Invoking Apply");
-        applyButton.Invoke(msPostAction: 500);
+        FindApplyButton(window).Invoke(msPostAction: 500);
     }
 
     /// <summary>Apply, then wait until <paramref name="folder"/> contains exactly <paramref name="expectedNames"/>.</summary>
@@ -613,17 +646,8 @@ public abstract class PowerRenameTestBase : UITestBase
             $"within {RenameTimeoutMS}ms of pressing Apply.");
     }
 
-    private static Element FindApplyButton(Session window)
-    {
-        // "Apply" is a substring of the "Apply to" label and combo box, and the SplitButton also
-        // carries a TextBlock with the same caption, so filter to the invokable control itself.
-        var matches = window.FindAll<Element>(By.Name(ApplyButtonName), timeoutMS: PreviewTimeoutMS)
-            .Where(element => element.Name.Equals(ApplyButtonName, StringComparison.OrdinalIgnoreCase))
-            .Where(element => !element.ControlType.Equals("Text", StringComparison.OrdinalIgnoreCase))
-            .ToList();
-        Assert.IsTrue(matches.Count > 0, "The PowerRename window did not expose its Apply button.");
-        return matches[0];
-    }
+    private static Element FindApplyButton(Session window) =>
+        window.Find<Element>(By.AccessibilityId(ApplyButtonAutomationId), timeoutMS: PreviewTimeoutMS);
 
     // ---- lookup --------------------------------------------------------------------------------
 
@@ -631,10 +655,14 @@ public abstract class PowerRenameTestBase : UITestBase
     /// <c>By.Name</c> is a substring match in winappcli, so every lookup that must not collide with a
     /// longer caption goes through an exact-name filter.
     /// </summary>
-    protected static T? FindExact<T>(Session session, string name, int timeoutMS = 5_000)
+    protected static T? FindExact<T>(
+        Session session,
+        string name,
+        int timeoutMS = 5_000,
+        StringComparison comparison = StringComparison.OrdinalIgnoreCase)
         where T : Element, new() =>
         session.FindAll<T>(By.Name(name), timeoutMS)
-            .FirstOrDefault(element => element.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(element => element.Name.Equals(name, comparison));
 
     // ---- cleanup -------------------------------------------------------------------------------
 

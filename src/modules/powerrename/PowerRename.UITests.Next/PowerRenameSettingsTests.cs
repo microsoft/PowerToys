@@ -53,7 +53,7 @@ public sealed partial class PowerRenameTests
         var window = LaunchPowerRename(source);
         SetSearchText(window, "keep");
         SetReplaceText(window, "kept");
-        SetOptionCheckBox(window, CaseSensitive, true);
+        SetOptionCheckBox(window, CaseSensitiveAutomationId, true);
         WaitForPreviewName(window, "kept.txt");
         ApplyRenameAndAssertEntries(window, folder, "kept.txt");
         ClosePowerRenameWindows();
@@ -63,7 +63,7 @@ public sealed partial class PowerRenameTests
         Assert.AreEqual("keep", GetSearchText(window), "The search text from the last use was not restored.");
         Assert.AreEqual("kept", GetReplaceText(window), "The replace text from the last use was not restored.");
         Assert.IsTrue(
-            FindExact<CheckBox>(window, CaseSensitive, PreviewTimeoutMS)!.IsChecked,
+            window.Find<CheckBox>(By.AccessibilityId(CaseSensitiveAutomationId), PreviewTimeoutMS).IsChecked,
             "The 'Case sensitive' flag from the last use was not restored.");
         ClosePowerRenameWindows();
 
@@ -75,7 +75,7 @@ public sealed partial class PowerRenameTests
         Assert.AreNotEqual("keep", GetSearchText(window), "The search text was restored even though the setting is off.");
         Assert.AreNotEqual("kept", GetReplaceText(window), "The replace text was restored even though the setting is off.");
         Assert.IsFalse(
-            FindExact<CheckBox>(window, CaseSensitive, PreviewTimeoutMS)!.IsChecked,
+            window.Find<CheckBox>(By.AccessibilityId(CaseSensitiveAutomationId), PreviewTimeoutMS).IsChecked,
             "A flag was restored even though the setting is off.");
     }
 
@@ -120,14 +120,14 @@ public sealed partial class PowerRenameTests
             Step($"Typing '{typedText}' into the search box to open the suggestion list (attempt {attempt})");
             TryBringPowerRenameForward();
 
-            var box = window.Find<TextBox>(By.Name(SearchBoxName), timeoutMS: PreviewTimeoutMS);
+            var box = window.Find<TextBox>(By.AccessibilityId(SearchBoxAutomationId), timeoutMS: PreviewTimeoutMS);
             box.SetText(string.Empty);
             box.Focus();
             Thread.Sleep(300);
             KeyboardHelper.SendKeySequence(typedText.Select(ToKey).ToArray());
             Thread.Sleep(500);
 
-            if (window.Find<TextBox>(By.Name(SearchBoxName), timeoutMS: 2_000).Value == typedText)
+            if (window.Find<TextBox>(By.AccessibilityId(SearchBoxAutomationId), timeoutMS: 2_000).Value == typedText)
             {
                 return true;
             }

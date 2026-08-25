@@ -18,16 +18,13 @@ namespace Microsoft.PowerToys.PowerRename.UITests;
 /// </remarks>
 public sealed partial class PowerRenameTests
 {
-    private const string Uppercase = "Uppercase";
-    private const string Lowercase = "Lowercase";
-    private const string TitleCase = "Title case";
-    private const string CapitalizeEachWord = "Capitalize each word";
-    private const string IncludeFiles = "Include files";
-    private const string IncludeFolders = "Include folders";
-    private const string IncludeSubfolders = "Include subfolders";
-    private const string RegularExpressions = "Use regular expressions";
-    private const string MatchAllOccurrences = "Match all occurrences";
-    private const string CaseSensitive = "Case sensitive";
+    private const string Uppercase = "toggleButton_upperCase";
+    private const string Lowercase = "toggleButton_lowerCase";
+    private const string TitleCase = "toggleButton_titleCase";
+    private const string CapitalizeEachWord = "toggleButton_capitalize";
+    private const string IncludeFiles = "toggleButton_includeFiles";
+    private const string IncludeFolders = "toggleButton_includeFolders";
+    private const string IncludeSubfolders = "toggleButton_includeSubfolders";
 
     private static readonly string[] TextFormattingModes = { Uppercase, Lowercase, TitleCase, CapitalizeEachWord };
 
@@ -76,14 +73,14 @@ public sealed partial class PowerRenameTests
     [DataRow(Uppercase, "HELLO WORLD.TXT")]
     [DataRow(Lowercase, "hello world.txt")]
     [DataRow(TitleCase, "Hello World.TXT")]
-    public void TextFormattingRenamesUsingTheSelectedMode(string mode, string expectedName)
+    public void TextFormattingRenamesUsingTheSelectedMode(string modeAutomationId, string expectedName)
     {
         // Checklist item 6 — each casing mode applied on its own with no search term.
         var folder = CreateTestFolder();
         var source = CreateFile(folder, "hello world.TXT");
         var window = LaunchPowerRename(source);
 
-        SetToggleButton(window, mode, true);
+        SetToggleButton(window, modeAutomationId, true);
         WaitForPreviewName(window, expectedName);
 
         ApplyRenameAndAssertEntries(window, folder, expectedName);
@@ -132,20 +129,20 @@ public sealed partial class PowerRenameTests
 
     [TestMethod("PowerRename.ApplyTo.Scope")]
     [TestCategory("PowerRename")]
-    [DataRow("Filename + extension", "info.info")]
-    [DataRow("Filename only", "info.data")]
-    [DataRow("Extension only", "data.info")]
-    public void ApplyToScopeLimitsTheReplacement(string applyTo, string expectedName)
+    [DataRow("RenamePartsFilenameAndExtension", "info.info")]
+    [DataRow("RenamePartsFilenameOnly", "info.data")]
+    [DataRow("RenamePartsExtensionOnly", "data.info")]
+    public void ApplyToScopeLimitsTheReplacement(string itemAutomationId, string expectedName)
     {
         // Checklist item 8 — the "Apply to" combo box selects exactly one scope.
         var folder = CreateTestFolder();
         var source = CreateFile(folder, "data.data");
         var window = LaunchPowerRename(source);
 
-        SetOptionCheckBox(window, MatchAllOccurrences, true);
+        SetOptionCheckBox(window, MatchAllOccurrencesAutomationId, true);
         SetSearchText(window, "data");
         SetReplaceText(window, "info");
-        SelectApplyTo(window, applyTo);
+        SelectApplyTo(window, itemAutomationId);
 
         WaitForPreviewName(window, expectedName);
         ApplyRenameAndAssertEntries(window, folder, expectedName);
@@ -162,8 +159,8 @@ public sealed partial class PowerRenameTests
         var third = CreateFile(folder, "c.txt");
 
         var window = LaunchPowerRename(first, second, third);
-        SetToggleButton(window, "Enumeration features", true);
-        SetOptionCheckBox(window, RegularExpressions, true);
+        SetToggleButton(window, "toggleButton_enumItems", true);
+        SetOptionCheckBox(window, RegularExpressionsAutomationId, true);
         SetSearchText(window, ".*");
         SetReplaceText(window, "item_${start=10,increment=2,padding=4}.txt");
 
@@ -188,11 +185,11 @@ public sealed partial class PowerRenameTests
         WaitForPreviewName(window, "match1.txt");
         WaitForRenamedCount(window, 1);
 
-        SetOptionCheckBox(window, CaseSensitive, true);
+        SetOptionCheckBox(window, CaseSensitiveAutomationId, true);
         WaitForPreviewToDropName(window, "match1.txt");
         WaitForRenamedCount(window, 0);
 
-        SetOptionCheckBox(window, CaseSensitive, false);
+        SetOptionCheckBox(window, CaseSensitiveAutomationId, false);
         WaitForPreviewName(window, "match1.txt");
         ApplyRenameAndAssertEntries(window, folder, "match1.txt");
     }
@@ -210,7 +207,7 @@ public sealed partial class PowerRenameTests
         SetReplaceText(window, "best");
         WaitForPreviewName(window, "best-test.txt");
 
-        SetOptionCheckBox(window, MatchAllOccurrences, true);
+        SetOptionCheckBox(window, MatchAllOccurrencesAutomationId, true);
         WaitForPreviewName(window, "best-best.txt");
 
         ApplyRenameAndAssertEntries(window, folder, "best-best.txt");

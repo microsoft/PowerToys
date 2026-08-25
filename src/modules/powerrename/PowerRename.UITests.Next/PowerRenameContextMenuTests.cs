@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using System.Drawing;
+using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -28,18 +29,16 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
     private const int MenuAttemptTimeoutMS = 90_000;
 
     private static bool explorerRefreshedForRegistration;
-
-    [TestInitialize]
-    public void PrepareTest()
-    {
-        ConfigureModuleSettings(persistState: false, mruEnabled: false);
-        ClearPersistedRenameState();
-        Assert.IsTrue(CloseExplorerFileWindows(), "Stale Explorer file windows could not be closed before the test.");
-    }
+    private bool contextMenuTest;
 
     [TestCleanup]
     public async Task CleanupContextMenuTest()
     {
+        if (!contextMenuTest)
+        {
+            return;
+        }
+
         // Capture first: the base cleanup runs last, and by then Explorer is already gone.
         await CaptureFailureArtifactsBeforeCleanupAsync(TimeSpan.FromSeconds(2));
         KeyboardHelper.SendKeys(Key.Esc);
@@ -50,6 +49,8 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
     [TestCategory("PowerRename")]
     public void ContextMenuTracksModuleEnabledState()
     {
+        PrepareContextMenuTest();
+
         // Checklist item 1 — and on Windows 11 both the tier-1 and the classic surface must carry it.
         var settings = NavigateToPowerRenameSettings();
         var toggle = FindExact<ToggleSwitch>(settings, ModuleToggleName, timeoutMS: 15_000);
@@ -69,8 +70,7 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
             Assert.IsTrue(
                 WaitForModernPackageRegistration(timeoutMS: 30_000),
                 "The PowerRename sparse context-menu package did not register after the module was re-enabled.");
-            explorerRefreshedForRegistration = false;
-            explorer = OpenExplorer(folder);
+            explorer = OpenExplorer(folder, forceHandlerRefresh: true);
             AssertClassicMenuContainsEntry(explorer, new[] { fixture }, expected: true, extendedVerbs: false);
             AssertModernMenuContainsEntry(explorer, new[] { fixture }, expected: true);
         }
@@ -92,6 +92,8 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
     [TestCategory("PowerRename")]
     public void ContextMenuIconFollowsShowIconSetting()
     {
+        PrepareContextMenuTest();
+
         // Checklist item 2. The icon lives in MENUITEMINFO.hbmpItem, which GetMenuItemInfo will not
         // hand across a process boundary (every item of Explorer's menu reads back as 0), so the
         // assertion is on the pixels of the entry's icon gutter instead.
@@ -110,6 +112,8 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
     [TestCategory("PowerRename")]
     public void ContextMenuHonorsExtendedContextMenuOnlySetting()
     {
+        PrepareContextMenuTest();
+
         // Checklist item 3 — the entry moves out of the plain classic menu into the extended one.
         var folder = CreateTestFolder();
         var fixture = CreateFile(folder, "extended.txt");
@@ -128,6 +132,8 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
     [TestCategory("PowerRename")]
     public void InvokingTheContextMenuOpensPowerRenameWithTheSelection()
     {
+        PrepareContextMenuTest();
+
         // The real user path: Explorer streams the selection to the UI over a pipe, not on argv.
         var folder = CreateTestFolder();
         var first = CreateFile(folder, "alpha.txt");
@@ -153,7 +159,10 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
 
         var session = Session.FromProcess(PowerRenameProcessName, PowerToysModule.PowerRename, timeoutMS: WindowTimeoutMS);
         Assert.IsTrue(
-            session.WaitFor(() => session.Has(By.Name(SearchBoxName), timeoutMS: 1_000), WindowTimeoutMS, pollIntervalMS: 500),
+            session.WaitFor(
+                () => session.Has(By.AccessibilityId(SearchBoxAutomationId), timeoutMS: 1_000),
+                WindowTimeoutMS,
+                pollIntervalMS: 500),
             "The PowerRename window opened from the context menu but never became ready.");
 
         Assert.IsTrue(
@@ -195,9 +204,16 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
             try
             {
                 toggle.Toggle(enabled);
-                Assert.IsTrue(
-                    toggle.WaitForProperty("ToggleState", enabled ? "On" : "Off", timeoutMS: 5_000),
-                    $"The PowerRename enable switch did not settle to {(enabled ? "On" : "Off")}.");
+                if (!toggle.WaitForProperty("ToggleState", enabled ? "On" : "Off", timeoutMS: 5_000))
+                {
+                    throw new TimeoutException($"The PowerRename enable switch did not settle to {(enabled ? "On" : "Off")}.");
+                }
+
+                if (!WaitForModuleEnabledSetting(enabled, timeoutMS: 15_000))
+                {
+                    throw new TimeoutException($"settings.json did not persist enabled.PowerRename={enabled}.");
+                }
+
                 return toggle;
             }
             catch (TimeoutException) when (attempt < 2)
@@ -208,6 +224,28 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
         }
 
         return toggle;
+    }
+
+    private static bool WaitForModuleEnabledSetting(bool expected, int timeoutMS) =>
+        WaitHelper.WaitForStable(
+            observe: ReadModuleEnabledSetting,
+            isMatch: enabled => enabled == expected,
+            timeoutMS: timeoutMS,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 250).Succeeded;
+
+    private static bool? ReadModuleEnabledSetting()
+    {
+        try
+        {
+            var path = Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, "settings.json");
+            var root = JsonNode.Parse(File.ReadAllText(path));
+            return root?["enabled"]?["PowerRename"]?.GetValue<bool>();
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private static bool WaitForModernPackageRegistration(int timeoutMS)
@@ -374,6 +412,10 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
         finally
         {
             KeyboardHelper.SendKeys(Key.Esc);
+            if (File.Exists(desktopPath))
+            {
+                File.Delete(desktopPath);
+            }
         }
     }
 
@@ -601,9 +643,15 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
 
     // ---- Explorer --------------------------------------------------------------------------------
 
-    private Session OpenExplorer(string folderPath)
+    private void PrepareContextMenuTest()
     {
-        EnsureContextMenuHandlersLoaded();
+        contextMenuTest = true;
+        Assert.IsTrue(CloseExplorerFileWindows(), "Stale Explorer file windows could not be closed before the test.");
+    }
+
+    private Session OpenExplorer(string folderPath, bool forceHandlerRefresh = false)
+    {
+        EnsureContextMenuHandlersLoaded(forceHandlerRefresh);
         CloseExplorerFileWindows();
         var existing = WindowsFinder.ListByApp(ExplorerProcessName)
             .Where(IsExplorerFileWindow)
@@ -635,9 +683,9 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
     /// the sparse MSIX package on signed builds. An Explorer that was already running only picks them
     /// up after the shell restarts, so restart it once per class.
     /// </summary>
-    private static void EnsureContextMenuHandlersLoaded()
+    private static void EnsureContextMenuHandlersLoaded(bool force)
     {
-        if (explorerRefreshedForRegistration)
+        if (explorerRefreshedForRegistration && !force)
         {
             return;
         }
