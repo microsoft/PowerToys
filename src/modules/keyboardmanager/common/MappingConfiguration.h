@@ -61,6 +61,8 @@ public:
     // Load a named profile file. A profile that has not been created yet is a valid empty snapshot.
     MappingConfigurationLoadResult LoadSettingsFromFile(const std::wstring& configurationName, const std::wstring& filePath);
 
+    bool IsConfigurationNameResolved() const;
+
     // Save the updated configuration.
     bool SaveSettingsToFile();
 
@@ -130,6 +132,8 @@ private:
     SettingsWriter settingsWriter;
     SettingsReloadNotifier settingsReloadNotifier;
     SettingsPathProvider settingsPathProvider;
+
+    bool configurationNameResolved = false;
 
     bool LoadSingleKeyRemaps(const json::JsonObject& jsonData);
     bool LoadSingleKeyToTextRemaps(const json::JsonObject& jsonData);

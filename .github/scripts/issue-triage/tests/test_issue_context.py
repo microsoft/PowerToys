@@ -141,6 +141,20 @@ class IssueContextTests(unittest.TestCase):
         )
         self.assertEqual(CONTEXT.reproduction_quality(body), "SUFFICIENT")
 
+    def test_natural_language_shortcut_reproduction_is_sufficient(self):
+        body = BUG_BODY.replace(
+            "1. Open Keyboard Manager.\n"
+            "2. Select Remap a shortcut.\n"
+            "3. Press a key and observe that the editor closes.",
+            "Make a key remap, (alt (left) + tab), then try and use it. "
+            "It's disabled!\n\n"
+            "Now hold alt + tab, then press w, or any other key. It activates it.",
+        ).replace(
+            "The editor exits.",
+            "Alt+Tab still functions when using other keys alongside it.",
+        )
+        self.assertEqual(CONTEXT.reproduction_quality(body), "SUFFICIENT")
+
     def test_intermittent_failure_description_is_sufficient_for_intake(self):
         body = BUG_BODY.replace(
             "1. Open Keyboard Manager.\n"

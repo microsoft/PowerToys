@@ -19,8 +19,9 @@ combines deterministic preprocessing with one bounded GitHub Copilot pass.
 - Mention the author once and list only needed or recommended actions.
 - Apply `Needs-Author-Feedback` when blocking information or an English
   translation is required. Removing the label disables scheduled closure.
-- Add a matching primary `Product-*` label and the reported version label
-  without removing existing product or maintainer labels.
+- Add a matching primary `Product-*` label without removing existing product or
+  maintainer labels.
+- Never add, remove, or otherwise manage version labels.
 - Submit duplicate closure as a native GitHub suggestion. A maintainer must
   accept or decline it; acceptance closes the issue as a duplicate and links
   it to the selected canonical issue.

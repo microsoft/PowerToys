@@ -406,6 +406,175 @@ Rules for using it:
 - **Name it after the control, not the test**, and keep it stable; it is now part of the module's
   automation contract.
 
+## Recipe 17 — Change a module's settings WITHOUT restarting PowerToys
+
+PowerToys modules watch their own `settings.json` and hot-reload it — it is the house pattern, not a
+one-off. The C# modules keep an `IFileSystemWatcher` in their `UserSettings`/settings service
+(ColorPicker, Peek, Hosts, Image Resizer, PowerToys Run, Quick Accent, Text Extractor, Awake, Mouse
+utilities, Advanced Paste …); the C++ side does the same, e.g. FancyZones installs a `FileWatcher` in
+its settings singleton that broadcasts `WM_PRIV_SETTINGS_CHANGED`, driving `LoadSettings()` and
+notifying every observer (`FancyZonesLib/Settings.cpp`). So a suite that needs different module
+options per test should **write the file and carry on** — not kill and relaunch the runner.
+
+```csharp
+// Per-test arrangement: seed the module's own settings, let the watcher pick them up, continue.
+SettingsConfigHelper.UpdateModuleSettings("FancyZones", DefaultSettings, s => { /* set properties */ });
+Thread.Sleep(2_000);   // bounded settle for the file watcher — NOT RestartScope()
+```
+
+Two reasons this matters, and the second is the important one:
+
+- **Speed.** A runner kill + relaunch costs 60–90 s on a loaded machine or VM. `UITestBase` already
+  launches the scope for every test, so a `RestartScope()` in your own `[TestInitialize]` starts
+  PowerToys **twice per test**. On a 17-test FancyZones suite that was ~40% of total wall time
+  (~75 s × 17) for zero coverage.
+- **Fidelity.** A relaunch converts "the user changed this setting while the module was running" into
+  "the module started with this setting". That is not the scenario users hit, and it **hides live
+  reconfiguration bugs** — a module that ignores a settings change until restart still passes.
+
+Restart only when the restart is genuinely part of the scenario:
+
+| Restart | Why |
+|---|---|
+| Changing which modules are **enabled** | `enableModules` / the global `settings.json` `enabled` map is read when the runner launches. |
+| Asserting state **survives a restart** | e.g. per-virtual-desktop layout persistence — the restart is the behaviour under test. |
+| Recovering from a **terminal** failure | A hung/dead scope, after patient readiness has already failed (see ci-stability Principle 5). |
+
+The same reasoning applies to the module's data files: prefer seeding them and letting the module or
+its editor re-read them over bouncing the process, and assert on the file the product writes back
+(FancyZones' `applied-layouts.json` / `app-zone-history.json`) rather than on the restart.
+
+**Expect to inherit state the restart used to reset — and be ready to put the restart back.** Dropping
+the per-test relaunch turns a long-lived module process into part of the fixture, so anything the
+module remembers between tests becomes yours to sequence. FancyZones is the worked example: its
+`ToggleEditor` keeps a terminate-editor handle, and while that handle is alive the toggle event means
+*close*, not *open*. With a per-test restart that state was silently reset; without one, the editor
+open is swallowed and the suite collapsed from **14/17 to 3/17**. Closing the editor explicitly,
+waiting for the process to be gone, settling, and retrying the signal did **not** recover it, so that
+suite keeps a restart — scoped to resetting the editor state, not to applying settings:
+
+```csharp
+new FancyZonesSettingsSeed()./* … */.Apply();   // settings hot-reload; no restart needed for these
+RestartScope();                                 // ONLY to reset the module's editor-toggle state
+```
+
+Practical rule: default to no restart, and when you remove one, verify with a **full-suite** run
+rather than a focused test — cross-test state only shows up in sequence. If the pass rate drops,
+first try making the module's own state explicit (close-and-confirm rather than kill, wait for the
+product's acknowledgement, re-read state before retrying a stateful trigger); if that still fails,
+keep the restart and write down which state forces it. The failures this exposes are real ones users
+can hit — worth reporting to the module owners rather than only working around.
+
+When a test must restart the runner, wait for its single-instance module process to exit too. Waiting
+only for the runner PID can leave the child holding its mutex long enough that the replacement runner
+tracks a short-lived duplicate; explicitly stop-and-wait the module before relaunching.
+
+---
+
+## Recipe 18 — Catch a short-lived window (flash, toast, overlay): hook, don't poll
+
+**Do not poll for a transient window. Hook `EVENT_OBJECT_SHOW`.**
+
+A poll can only observe a window that outlives its sample interval, so it cannot distinguish "never
+shown" from "shown and hidden again immediately" — and you cannot close that gap by sampling faster,
+because the probe then contends for the window manager it is inspecting. A `WinEvent` hook is notified
+of every show regardless of how briefly the window survives:
+
+```csharp
+using var watcher = new WindowShowWatcher("FancyZones_ZonesOverlay");
+trigger();
+bool shown = watcher.Wait(5_000);
+Step(this, $"Overlay window events: {string.Join(", ", watcher.Events)}");   // evidence either way
+```
+
+This is not a theoretical preference. FancyZones' zone flash is documented as 700 ms
+(`FlashZonesDurationMillis`) and the hook measured it at **687 ms** — comfortably longer than any
+sample interval used. Polling for it at **12 ms, 58 ms and 500 ms still reported nothing**, across
+both isolated and full-suite runs, and sent the investigation through four wrong explanations
+(expensive probe → starved watcher → observer effect → settings clobber). The hook answered on the
+first run and the test went from permanently red to passing in 14.5 s.
+
+The eventual suspect for the polling failure was the probe's own `FindWindowEx` chaining: when a
+product **pools** windows of one class, a chained `FindWindowEx(NULL, previous, class, NULL)` walk is
+easy to get subtly wrong and end up only ever inspecting the first match — which may be the stale
+pooled window, permanently hidden. `WindowControl` now enumerates with `EnumWindows` and compares
+class names instead. That bug is fixed, but the lesson stands: an event hook has no sample interval
+and no enumeration order to get wrong.
+
+Two supporting rules, both learned the hard way here:
+
+- **Timestamp with the event's own `dwmsEventTime`, not `DateTime.Now` in your callback.** A hook
+  thread pumps its queue on an interval, so a locally-taken timestamp measures your pump latency. Mine
+  reported SHOW and HIDE in the same millisecond and I briefly concluded the product's animation was
+  broken; the OS-supplied timestamps showed a perfectly healthy 687 ms.
+- **Validate the detector positively before trusting a negative.** A probe that has only ever returned
+  `false` has not been tested. Assert it returns `true` at a moment the thing is provably present —
+  for the zones overlay, mid-drag, where the dragged window's alpha of 127 independently proves the
+  zones are on screen. Note this control *passed* while the probe was still subtly broken, so treat a
+  single positive as necessary, not sufficient.
+
+> If you must poll something (a *stable* window, not a transient one), keep the probe cheap:
+> `WindowControl.IsAnyWindowOfClassVisible` / `AnyWindowOfClassExists` use `FindWindowEx` +
+> `IsWindowVisible`, whereas `EnumerateAllWindows()` reads every window's title through
+> `GetWindowTextW`, a cross-process `WM_GETTEXT` that blocks on a busy owner.
+
+> Existence is not readiness when the product **pools** windows. FancyZones' `WorkArea.cpp` keeps a
+> per-process pool (`FreeZonesOverlayWindow`/`Reusing ZonesOverlay window from pool`), so a window of
+> that class survives the work area that owned it. `AnyWindowOfClassExists` is a meaningful startup
+> gate only against a **freshly restarted** module, where the pool is still empty.
+
+## Recipe 19 — Tell a swallowed input event apart from a product bug
+
+When an injected key produces no reaction, the interesting question is whether the product *ignored*
+it or never *received* it — modules install low-level keyboard hooks, and a hook that returns 1
+removes the event from the input stream for everyone, including the module's own raw-input listener.
+
+```csharp
+KeyboardHelper.PressKey(Key.LShift); // inject one physical Shift key; generic VK_SHIFT is ambiguous
+// false => the key never reached the system's async key state, i.e. some LL hook swallowed it
+var reachedTheSystem = KeyboardHelper.IsKeyDown(Key.Shift);
+```
+
+Use `LShift` when the test must exercise a physical left/right-key branch in a low-level hook; keep
+`Shift` for the aggregate state query. This makes the injected path explicit, but it does not repair
+incorrect product state logic by itself.
+
+Do not gate the hook on a derived "snapping active" flag when the key itself activates snapping.
+FancyZones originally checked `DraggingState::IsDragging()`, which is false in Shift-to-activate
+mode until Shift is processed; gate on the active window move loop instead. Also apply the snapping
+mode transition before calculating the first highlighted zone: if the transition resets highlight
+state afterward, the first modifier-triggered update is discarded and a second mouse move becomes
+an accidental requirement.
+
+For a stateful drag, retry the **whole gesture**: reacquire the same HWND and foreground, grab its
+title bar, move, change modifier state, wait, and drop. Repeating only the modifier after a missed
+grab just repeats input over the desktop. Avoid movement-based readiness probes too: a cursor jiggle
+can move out of the selected zone or hide it. If the modifier callback already schedules a product
+update, wait without moving; keep the modifier held until the asynchronous move-end signal records
+the authoritative snap result.
+
+Explorer can expose its top-level HWND before its title bar finishes rendering. Before mouse-down,
+verify the root HWND under the intended screen point is the target. After any failed grab, release the
+button, restore/recenter the same HWND, wait for stable bounds and foreground, and recompute the next
+candidate from those current bounds. Reusing points derived before a failed desktop-selection drag
+keeps clicking behind a window that has already moved.
+
+Pair it with a **control gesture** that drives the same state machine through a path where nothing can
+swallow the key — usually by reordering the gesture:
+
+| Gesture | Result | Meaning |
+|---|---|---|
+| Modifier pressed **during** the drag | no effect, `IsKeyDown` false | the event was consumed before delivery |
+| Modifier held **before** the drag starts | correct behaviour | the product's state logic is fine |
+
+Two observations, one run, and the failure message can name the defect instead of the symptom. This is
+how FancyZones' "Shift cannot deactivate zones once they are showing" was localized to the bare-Shift
+swallow in `FancyZones.cpp::OnKeyDown`.
+
+> This host may not be able to inject at all: if `GetForegroundWindow()` returns 0 (locked or secure
+> desktop), `SendInput`/`keybd_event` fail with `ERROR_ACCESS_DENIED` (5) and every input experiment
+> silently does nothing. Check that before concluding anything from an input test run outside the VM.
+
 ---
 
 ## Pitfalls
@@ -413,9 +582,10 @@ Rules for using it:
 1. **`Click` has no `msPreAction` in `.Next`.** Legacy `Click(msPreAction: 1000, msPostAction: 2000)`
    → `Thread.Sleep(1000); el.Click(msPostAction: 2000);`. Forgetting the pre-delay causes flaky clicks
    on slow-rendering pages.
-2. **`Click` (invoke) vs. `MouseClick` (real mouse).** `Click` uses UIA InvokePattern (and falls back
-   to Toggle/Select/Expand). For elements with **no** invoke pattern (TextBlocks, list labels, headers
-   whose ancestor handles the click), `Click` silently does nothing useful — use `MouseClick`.
+2. **`Click` (physical) vs. `Invoke` (coordinate-free).** `Click` raises the target window and uses
+    the element's winappcli bounds for a native mouse click; zero-bounds controls fall back to `Invoke`.
+    Use `Invoke` directly when cursor movement is undesirable. `NavigationViewItem.Click()` overrides
+    the default with `Invoke` so first-interaction navigation stays race-safe.
 3. **`By.Name` is a substring match and may return many hits.** Always `FindAll` + filter when the
    name isn't unique. Prefer `By.AccessibilityId`.
 4. **No `global` parameter.** If a legacy `Find(by, t, global: true)` reached into a popup/other
@@ -437,17 +607,17 @@ Rules for using it:
     the template already includes it.
 11. **`winapp.exe` missing at run time** is expected on a headless agent — the project still *builds*.
     Don't treat a missing-CLI run failure as a migration defect; report build-clean + ready-to-run.
-12. **Coordinate-exact tests need an `app.manifest` with `PerMonitorV2`.** Without it the test host is
-    DPI-unaware, so `MouseHelper`'s `SetCursorPos`/`GetCursorPos` coordinates are virtualized by the
-    display scale and stop matching winappcli's PHYSICAL-pixel bounds. On a 150% display a 99px drag
-    measured as ~149px (Screen Ruler reported `150 x 149` instead of `100 x 100`). Copy the manifest
-    from the module's legacy UITests project (or [templates/app.manifest](../templates/app.manifest))
-    and add `<ApplicationManifest>app.manifest</ApplicationManifest>` to the csproj. Regex-only
-    assertions (e.g. `\d+ x \d+`) don't notice the scale — only exact-value tests fail, which makes
-    this easy to miss.
+12. **Every `UITestAutomation.Next` test Exe needs an `app.manifest` with `PerMonitorV2`.** This
+    includes greenfield projects whose names omit `.Next`. Without it the test host is DPI-unaware,
+    so `Element.Click()` and `MouseHelper` can feed virtualized Win32 cursor coordinates with
+    winappcli's PHYSICAL-pixel bounds. Ordinary clicks can miss their controls; exact drags make the
+    scale error especially obvious (Screen Ruler reported `150 x 149` instead of `100 x 100` on a
+    150% display). Copy [templates/app.manifest](../templates/app.manifest) and keep
+    `<ApplicationManifest>app.manifest</ApplicationManifest>` in the csproj regardless of assertion
+    type.
     **Why the legacy project's manifest doesn't save it:** a legacy `OutputType=Library` test runs
     inside `testhost.exe` (vstest), whose manifest — not the test DLL's — governs DPI awareness, so the
-    legacy `app.manifest` is silently ignored and its coordinate-exact tests can't be DPI-correct on a
+    legacy `app.manifest` is silently ignored and its physical input can't be DPI-correct on a
     scaled display (the ScreenRuler legacy Bounds test fails `150 x 149` even *with* its manifest). A
     `.Next` project is an `OutputType=Exe` (MTP), so ITS manifest applies to its own process — which is
     why adding the manifest actually fixes the port, and can make it pass where the legacy can't.
@@ -458,12 +628,15 @@ Rules for using it:
     hook asynchronously, so the first chord is easily lost. Settle ~1.5s after the toggle, then
     re-send the chord and poll for the window, for several attempts (SKILL Recipe 4; the ScreenRuler
     `SendShortcutUntilVisible` helper is the reference).
-15. **Per-test cold relaunch amplifies flakiness.** By default each `[TestMethod]` kills + relaunches
-    the runner, so every test pays the startup + hook-arming cost. For a suite of cheap cases against
-    one page, consider `ReuseScopeAcrossTests => true` (one launch per class). Content-dependent
-    measurements (spacing edge-detection) also vary with what's under the cursor — assert on **format**
-    (regex) unless the gesture is content-independent (a free-form drag like Bounds), where an exact
-    value is safe.
+15. **Per-test cold relaunch amplifies flakiness — and never relaunch just to change a setting.** By
+    default each `[TestMethod]` kills + relaunches the runner, so every test pays the startup +
+    hook-arming cost. For a suite of cheap cases against one page, consider
+    `ReuseScopeAcrossTests => true` (one launch per class). Do **not** add a second relaunch of your
+    own (`RestartScope()` in a derived `[TestInitialize]`) to make seeded module settings take effect:
+    modules hot-reload their own `settings.json`, so the restart only doubles the runtime and masks
+    live-reconfiguration bugs — see Recipe 17. Content-dependent measurements (spacing edge-detection)
+    also vary with what's under the cursor — assert on **format** (regex) unless the gesture is
+    content-independent (a free-form drag like Bounds), where an exact value is safe.
 16. **Coordinate gestures break when the window/cursor is off-screen — and it only shows on CI.** A
     `WindowSize` preset that resized but kept its old top-left could push the Settings window (and the
     measurement area) partially off a same-sized 1920×1080 CI display, so the gesture landed off-screen

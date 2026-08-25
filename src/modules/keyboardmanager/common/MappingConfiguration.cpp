@@ -141,7 +141,8 @@ namespace
 
     bool WriteJsonAtomically(const std::wstring& filePath, const json::JsonObject& value)
     {
-        const std::wstring temporaryFilePath = filePath + L".tmp";
+        const std::wstring temporaryFilePath = filePath + L"." + std::to_wstring(GetCurrentProcessId()) + L"." + std::to_wstring(GetCurrentThreadId()) + L".tmp";
+
         try
         {
             const std::string serializedValue = winrt::to_string(value.Stringify());
@@ -158,8 +159,7 @@ namespace
                     filePath.c_str(),
                     MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
             {
-                DeleteFileW(temporaryFilePath.c_str());
-                return false;
+                throw winrt::hresult_error(HRESULT_FROM_WIN32(GetLastError()));
             }
 
             return true;
@@ -866,6 +866,7 @@ MappingConfigurationLoadResult MappingConfiguration::LoadSettingsFromFile(
 MappingConfigurationLoadResult MappingConfiguration::LoadSettingsWithResult()
 {
     Logger::trace(L"SettingsHelper::LoadSettings()");
+    configurationNameResolved = false;
     try
     {
         PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::load_from_settings_file(KeyboardManagerConstants::ModuleName);
@@ -876,6 +877,10 @@ MappingConfigurationLoadResult MappingConfiguration::LoadSettingsWithResult()
             return MappingConfigurationLoadResult::Failure;
         }
 
+        // Preserve the resolved profile identity even if its file cannot be read. The
+        // editor uses it to distinguish a missing profile from an unresolved setting.
+        currentConfig = *current_config;
+        configurationNameResolved = true;
         return LoadSettingsFromFile(*current_config, settingsPathProvider(*current_config));
     }
     catch (...)
@@ -884,6 +889,11 @@ MappingConfigurationLoadResult MappingConfiguration::LoadSettingsWithResult()
     }
 
     return MappingConfigurationLoadResult::Failure;
+}
+
+bool MappingConfiguration::IsConfigurationNameResolved() const
+{
+    return configurationNameResolved;
 }
 
 // Save the updated configuration.

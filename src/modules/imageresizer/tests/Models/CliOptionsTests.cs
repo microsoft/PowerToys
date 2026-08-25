@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using ImageResizer.Cli.Commands;
 using ImageResizer.Models;
@@ -263,6 +265,271 @@ namespace ImageResizer.Tests.Models
 
             Assert.AreEqual(ResizeUnit.Pixel, options.Unit);
             Assert.AreEqual(ResizeFit.Fit, options.Fit);
+        }
+
+        [TestMethod]
+        public void Parse_WithUnknownLongOption_ReturnsError()
+        {
+            var options = CliOptions.ParseForCli(["--bogus", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            StringAssert.Contains(options.ParseErrors[0], "--bogus");
+        }
+
+        [TestMethod]
+        public void Parse_WithUnknownOptionAfterFile_ReturnsError()
+        {
+            var options = CliOptions.ParseForCli(["test.jpg", "--bogus"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            StringAssert.Contains(options.ParseErrors[0], "--bogus");
+        }
+
+        [TestMethod]
+        public void Parse_WithRootRelativeSlashPath_AllowsFile()
+        {
+            var options = CliOptions.ParseForCli(["/bogus", "test.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            CollectionAssert.Contains(options.Files.ToList(), "/bogus");
+        }
+
+        [TestMethod]
+        public void Parse_WithPrefixedDashFileName_AllowsFile()
+        {
+            var options = CliOptions.ParseForCli([@".\-photo.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            CollectionAssert.Contains(options.Files.ToList(), @".\-photo.jpg");
+        }
+
+        [TestMethod]
+        public void Parse_WithEndOfOptions_AllowsOptionLikeFileName()
+        {
+            var options = CliOptions.ParseForCli(["--", "--photo.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            CollectionAssert.Contains(options.Files.ToList(), "--photo.jpg");
+        }
+
+        [TestMethod]
+        public void Parse_LenientModePreservesOptionLikeFileForGui()
+        {
+            var options = CliOptions.Parse(["--photo.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            CollectionAssert.Contains(options.Files.ToList(), "--photo.jpg");
+        }
+
+        [TestMethod]
+        public void Parse_WithUnknownBundledOption_ReturnsError()
+        {
+            var options = CliOptions.ParseForCli(["-replace", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            StringAssert.Contains(options.ParseErrors[0], "-replace");
+        }
+
+        [TestMethod]
+        public void Parse_WithBundledValueOption_PreservesCompatibility()
+        {
+            var options = CliOptions.ParseForCli(["-w100", "test.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual(100.0, options.Width);
+        }
+
+        [TestMethod]
+        public void Parse_WithBundledFlagAndValueOption_PreservesCompatibility()
+        {
+            var options = CliOptions.ParseForCli(["-rq85", "test.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual(true, options.Replace);
+            Assert.AreEqual(85, options.JpegQualityLevel);
+        }
+
+        [TestMethod]
+        public void Parse_WithInvalidBundleInResponseFile_ReturnsError()
+        {
+            var responseFile = Path.Combine(Path.GetTempPath(), $"ImageResizer-{Guid.NewGuid():N}.rsp");
+            try
+            {
+                File.WriteAllLines(responseFile, ["-rphoto.jpg", "photo.jpg"]);
+
+                var options = CliOptions.ParseForCli(["@" + responseFile]);
+
+                Assert.AreEqual(1, options.ParseErrors.Count);
+                StringAssert.Contains(options.ParseErrors[0], "-rphoto.jpg");
+            }
+            finally
+            {
+                File.Delete(responseFile);
+            }
+        }
+
+        [TestMethod]
+        public void Parse_WithEndOfOptionsInResponseFile_AllowsOptionLikeFiles()
+        {
+            var responseFile = Path.Combine(Path.GetTempPath(), $"ImageResizer-{Guid.NewGuid():N}.rsp");
+            try
+            {
+                File.WriteAllLines(responseFile, ["--"]);
+
+                var options = CliOptions.ParseForCli(["@" + responseFile, "-rphoto.jpg", "photo.jpg"]);
+
+                Assert.AreEqual(0, options.ParseErrors.Count);
+                CollectionAssert.Contains(options.Files.ToList(), "-rphoto.jpg");
+                CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
+            }
+            finally
+            {
+                File.Delete(responseFile);
+            }
+        }
+
+        [TestMethod]
+        public void Parse_WithConversionError_PreservesFilesAndPipeForLenientCallers()
+        {
+            var options = CliOptions.Parse(["--width", "abc", "good.jpg", @"\\.\pipe\ImageResizerTest"]);
+
+            Assert.IsTrue(options.ParseErrors.Count > 0);
+            CollectionAssert.Contains(options.Files.ToList(), "good.jpg");
+            Assert.AreEqual("ImageResizerTest", options.PipeName);
+        }
+
+        [TestMethod]
+        public void Parse_WithConversionError_PreservesValidDestinationForLenientCallers()
+        {
+            var options = CliOptions.Parse(["/d", @"C:\Output", "--width", "bad", "good.jpg"]);
+
+            Assert.IsTrue(options.ParseErrors.Count > 0);
+            Assert.AreEqual(@"C:\Output", options.DestinationDirectory);
+            CollectionAssert.Contains(options.Files.ToList(), "good.jpg");
+        }
+
+        [TestMethod]
+        public void Parse_WithOptionLikeFilenameValue_DoesNotReportBundleError()
+        {
+            var options = CliOptions.ParseForCli(["--filename", "-rphoto.jpg", "photo.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual("-rphoto.jpg", options.FileName);
+        }
+
+        [TestMethod]
+        public void Parse_WithEmptyLongOptionSeparator_ConsumesFollowingOptionLikeValue()
+        {
+            var options = CliOptions.ParseForCli(["--filename=", "-rphoto.jpg", "photo.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual("-rphoto.jpg", options.FileName);
+            CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
+        }
+
+        [TestMethod]
+        public void Parse_WithEmptyShortOptionSeparator_ConsumesFollowingOptionLikeValue()
+        {
+            var options = CliOptions.ParseForCli(["-n=", "-rphoto.jpg", "photo.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual("-rphoto.jpg", options.FileName);
+            CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
+        }
+
+        [TestMethod]
+        public void Parse_WithExplicitBundledBooleanValue_PreservesCompatibility()
+        {
+            var options = CliOptions.ParseForCli(["-r=false", "photo.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.IsNull(options.Replace);
+            CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
+        }
+
+        [DataTestMethod]
+        [DataRow("-rtrue")]
+        [DataRow("-rTRUE")]
+        public void Parse_WithAttachedTrueBooleanValue_PreservesCompatibility(string argument)
+        {
+            var options = CliOptions.ParseForCli([argument, "-q85", "photo.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual(true, options.Replace);
+            Assert.AreEqual(85, options.JpegQualityLevel);
+            CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
+        }
+
+        [TestMethod]
+        public void Parse_WithBundledEmptyValue_DoesNotSkipFollowingInvalidBundle()
+        {
+            var options = CliOptions.ParseForCli(["-rn=", "-rphoto.jpg", "photo.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            StringAssert.Contains(options.ParseErrors[0], "-rphoto.jpg");
+        }
+
+        [TestMethod]
+        public void Parse_WithNegativeWidth_ReturnsError()
+        {
+            var options = CliOptions.Parse(["--width", "-100", "--height", "100", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+        }
+
+        [DataTestMethod]
+        [DataRow("NaN")]
+        [DataRow("Infinity")]
+        [DataRow("-Infinity")]
+        public void Parse_WithNonFiniteDimension_ReturnsError(string value)
+        {
+            var options = CliOptions.Parse(["--width", value, "--height", "100", "test.jpg"]);
+
+            Assert.IsTrue(options.ParseErrors.Count > 0);
+        }
+
+        [TestMethod]
+        public void Parse_WithBothCustomDimensionsZero_ReturnsError()
+        {
+            var options = CliOptions.Parse(["--width", "0", "--height", "0", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+        }
+
+        [TestMethod]
+        public void Parse_WithOnlyZeroWidth_ReturnsError()
+        {
+            var options = CliOptions.Parse(["--width", "0", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+        }
+
+        [TestMethod]
+        public void Parse_WithDimensionAboveInt32Range_ReturnsError()
+        {
+            var options = CliOptions.Parse(["--width", "2147483648", "--height", "100", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+        }
+
+        [DataTestMethod]
+        [DataRow("en-US")]
+        [DataRow("en-HK")]
+        public void Parse_WithGroupedDimensionAboveInt32Range_ReturnsError(string cultureName)
+        {
+            var originalCulture = CultureInfo.CurrentCulture;
+            try
+            {
+                CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
+
+                var options = CliOptions.Parse(["--width", "2,147,483,648", "--height", "100", "test.jpg"]);
+
+                Assert.AreEqual(1, options.ParseErrors.Count);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+            }
         }
     }
 }

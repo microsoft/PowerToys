@@ -61,7 +61,7 @@ internal static class ModulePaths
             [PowerToysModule.PowerToysSettings] = new("PowerToys.Settings.exe", "WinUI3Apps", "PowerToys.Settings", "PowerToys Settings"),
             [PowerToysModule.Runner] = new("PowerToys.exe", null, "PowerToys", "PowerToys"),
             [PowerToysModule.ColorPicker] = new("PowerToys.ColorPickerUI.exe", null, "PowerToys.ColorPickerUI", "PowerToys.ColorPickerUI"),
-            [PowerToysModule.FancyZonesEditor] = new("PowerToys.FancyZonesEditor.exe", null, "PowerToys.FancyZonesEditor", "FancyZones Layout"),
+            [PowerToysModule.FancyZonesEditor] = new("PowerToys.FancyZonesEditor.exe", null, "PowerToys.FancyZonesEditor", "FancyZones Editor"),
             [PowerToysModule.Hosts] = new("PowerToys.Hosts.exe", "WinUI3Apps", "PowerToys.Hosts", "Hosts File Editor"),
             [PowerToysModule.Workspaces] = new("PowerToys.WorkspacesEditor.exe", null, "PowerToys.WorkspacesEditor", "Workspaces Editor"),
             [PowerToysModule.PowerRename] = new("PowerToys.PowerRename.exe", "WinUI3Apps", "PowerToys.PowerRename", "PowerRename"),
