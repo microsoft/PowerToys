@@ -102,26 +102,39 @@ public sealed class AdaptiveCardSemanticFingerprintTests
         var right = """{"type":"AdaptiveCard","body":[{"type":"Image","url":"data:image/svg+xml;utf8,<svg id='new'/>"}]}""";
 
         Assert.AreNotEqual(
-            AdaptiveCardSemanticFingerprint.Create(left, allowInlineSvgPatch: false),
-            AdaptiveCardSemanticFingerprint.Create(right, allowInlineSvgPatch: false));
+            AdaptiveCardSemanticFingerprint.Create(left, mappedTextBlockCount: 0, mappedInlineSvgImageCount: 0),
+            AdaptiveCardSemanticFingerprint.Create(right, mappedTextBlockCount: 0, mappedInlineSvgImageCount: 0));
     }
 
     [TestMethod]
-    public void CountsAuthoredInlineSvgImages()
+    public void TextRemainsReplacementSensitiveWhenMappingIsIncomplete()
     {
-        var card = """
+        var left = """{"type":"AdaptiveCard","body":[{"type":"TextBlock","text":"old"}]}""";
+        var right = """{"type":"AdaptiveCard","body":[{"type":"TextBlock","text":"new"}]}""";
+
+        Assert.AreNotEqual(
+            AdaptiveCardSemanticFingerprint.Create(left, mappedTextBlockCount: 0, mappedInlineSvgImageCount: 0),
+            AdaptiveCardSemanticFingerprint.Create(right, mappedTextBlockCount: 0, mappedInlineSvgImageCount: 0));
+    }
+
+    [TestMethod]
+    public void ActionTextCannotCompensateForUnmappedBodyText()
+    {
+        var left = """
             {
               "type":"AdaptiveCard",
-              "body":[
-                {"type":"Image","url":"data:image/svg+xml;utf8,<svg id='one'/>"},
-                {"type":"Image","url":"https://example.com/image.svg"},
-                {"type":"Container","items":[
-                  {"type":"Image","url":"data:image/svg+xml;base64,PHN2Zy8+"}
-                ]}
-              ]
+              "body":[{"type":"TextBlock","text":"[label](https://old.example)"}],
+              "actions":[{
+                "type":"Action.ShowCard",
+                "title":"Details",
+                "card":{"type":"AdaptiveCard","body":[{"type":"TextBlock","text":"mapped action text"}]}
+              }]
             }
             """;
+        var right = left.Replace("https://old.example", "https://new.example", StringComparison.Ordinal);
 
-        Assert.AreEqual(2, AdaptiveCardSemanticFingerprint.CountInlineSvgImages(card));
+        Assert.AreNotEqual(
+            AdaptiveCardSemanticFingerprint.Create(left, mappedTextBlockCount: 1, mappedInlineSvgImageCount: 0),
+            AdaptiveCardSemanticFingerprint.Create(right, mappedTextBlockCount: 1, mappedInlineSvgImageCount: 0));
     }
 }

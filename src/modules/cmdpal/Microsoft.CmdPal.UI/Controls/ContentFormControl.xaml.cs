@@ -19,77 +19,68 @@ namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class ContentFormControl : UserControl
 {
-    private readonly AdaptiveCardRenderer _renderer;
-    private readonly LatestWinsUpdateQueue<CardUpdateRequest> _cardUpdateQueue;
-    private static readonly AdaptiveCardRenderer _renderer;
-    private static bool _customElementsRegistered;
+    private readonly IncrementalAdaptiveCardUpdater _cardUpdater;
+    private static bool _customElementParsersRegistered;
     private ContentFormViewModel? _viewModel;
 
     // LOAD-BEARING: if you don't hang onto a reference to the RenderedAdaptiveCard
     // then the GC might clean it up sometime, even while the card is in the UI
     // tree. If this gets GC'ed, then it'll revoke our Action handler, and the
     // form will do seemingly nothing.
-    private RenderedAdaptiveCard? _renderedCard;
-    private AdaptiveCard? _adaptiveCard;
-    private IncrementalNodeSnapshot? _cardSnapshot;
-    private string? _cardJson;
-    private long _cardVersion;
-    private long _cardSessionGeneration;
+    private RenderedAdaptiveCard? _attachedRenderedCard;
 
     public ContentFormViewModel? ViewModel { get => _viewModel; set => AttachViewModel(value); }
 
-    static ContentFormControl()
-    {
-        // We can't use `CardOverrideStyles` here yet, because we haven't called InitializeComponent once.
-        // But also, the default value isn't `null` here. It's... some other default empty value.
-        // So clear it out so that we know when the first time we get created is
-        _renderer = new AdaptiveCardRenderer()
-        {
-            OverrideStyles = null,
-        };
-    }
-
     internal static void RegisterCustomElements()
     {
-        if (_customElementsRegistered)
+        if (_customElementParsersRegistered)
         {
             return;
         }
 
-        Register<AdaptiveStringListInputElement, AdaptiveStringListInputElementParser, AdaptiveStringListInputElementRenderer>();
-        Register<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementParser, AdaptiveFilePathListInputElementRenderer>();
-        Register<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementParser, AdaptiveKeyValueListInputElementRenderer>();
-        Register<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementParser, AdaptiveFilePathInputElementRenderer>();
+        RegisterParser<AdaptiveStringListInputElement, AdaptiveStringListInputElementParser>();
+        RegisterParser<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementParser>();
+        RegisterParser<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementParser>();
+        RegisterParser<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementParser>();
 
-        _customElementsRegistered = true;
-
-        return;
-
-        static void Register<TElement, TParser, TRenderer>()
-            where TElement : IAdaptiveCardElement, ICustomAdaptiveCardElement
-            where TParser : IAdaptiveElementParser, new()
-            where TRenderer : IAdaptiveElementRenderer, new()
-        {
-            AdaptiveCardParserRegistrations.ElementParsers.Set(TElement.CustomInputType, new TParser());
-            _renderer.ElementRenderers.Set(TElement.CustomInputType, new TRenderer());
-        }
+        _customElementParsersRegistered = true;
     }
 
     public ContentFormControl()
     {
         this.InitializeComponent();
         var lightTheme = ActualTheme == Microsoft.UI.Xaml.ElementTheme.Light;
-        _renderer = new AdaptiveCardRenderer()
+        var renderer = new AdaptiveCardRenderer()
         {
             HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark,
             OverrideStyles = CardOverrideStyles,
         };
-        _cardUpdateQueue = new LatestWinsUpdateQueue<CardUpdateRequest>(
-            DisplayCardAsync,
-            ex => Logger.LogError("Unexpected incremental Adaptive Card update failure", ex));
+        RegisterRenderer<AdaptiveStringListInputElement, AdaptiveStringListInputElementRenderer>(renderer);
+        RegisterRenderer<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementRenderer>(renderer);
+        RegisterRenderer<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementRenderer>(renderer);
+        RegisterRenderer<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementRenderer>(renderer);
+        _cardUpdater = new IncrementalAdaptiveCardUpdater(
+            renderer,
+            CardHost,
+            AdaptiveCardParserRegistrations.ElementParsers,
+            AdaptiveCardParserRegistrations.ActionParsers);
 
         // TODO in the future, we should handle ActualThemeChanged and replace
         // our rendered card with one for that theme. But today is not that day
+    }
+
+    private static void RegisterParser<TElement, TParser>()
+        where TElement : IAdaptiveCardElement, ICustomAdaptiveCardElement
+        where TParser : IAdaptiveElementParser, new()
+    {
+        AdaptiveCardParserRegistrations.ElementParsers.Set(TElement.CustomInputType, new TParser());
+    }
+
+    private static void RegisterRenderer<TElement, TRenderer>(AdaptiveCardRenderer renderer)
+        where TElement : IAdaptiveCardElement, ICustomAdaptiveCardElement
+        where TRenderer : IAdaptiveElementRenderer, new()
+    {
+        renderer.ElementRenderers.Set(TElement.CustomInputType, new TRenderer());
     }
 
     private void AttachViewModel(ContentFormViewModel? vm)
@@ -134,147 +125,60 @@ public sealed partial class ContentFormControl : UserControl
 
     private void RequestDisplayCard(AdaptiveCardParseResult result)
     {
-        _cardUpdateQueue.Enqueue(new CardUpdateRequest(result, _cardSessionGeneration));
+        _ = DisplayCardAsync(result.AdaptiveCard);
     }
 
-    private async Task DisplayCardAsync(CardUpdateRequest request)
+    private async Task DisplayCardAsync(AdaptiveCard card)
     {
-        var result = request.Result;
-        RenderedAdaptiveCard candidate;
         try
         {
-            candidate = _renderer.RenderAdaptiveCard(result.AdaptiveCard);
+            await _cardUpdater.UpdateAsync(card);
+            AttachRenderedCard(_cardUpdater.RenderedCard);
         }
-        catch
+        catch (Exception ex)
         {
-            // A transient renderer failure must not blank a previously valid form.
-            return;
+            Logger.LogError("Failed to update an Adaptive Card", ex);
         }
-
-        if (candidate.FrameworkElement is not FrameworkElement candidateRoot)
-        {
-            return;
-        }
-
-        var candidateSnapshot = IncrementalAdaptiveCardVisualTree.Build(candidateRoot, result.AdaptiveCard);
-        var candidateJson = result.AdaptiveCard.ToJson().Stringify();
-        if (request.SessionGeneration != _cardSessionGeneration)
-        {
-            return;
-        }
-
-        if (_renderedCard?.FrameworkElement is FrameworkElement currentRoot
-            && _cardSnapshot is not null)
-        {
-            var plan = IncrementalTreeDiffer.CreatePlan(_cardSnapshot, candidateSnapshot, _cardVersion);
-            var cardJsonChanged = !string.Equals(_cardJson, candidateJson, StringComparison.Ordinal);
-            var canRetainCurrentLease = plan.Disposition == IncrementalPlanDisposition.PatchInPlace
-                || (plan.Disposition == IncrementalPlanDisposition.NoChanges && !cardJsonChanged);
-
-            if (canRetainCurrentLease)
-            {
-                var applied = await IncrementalAdaptiveCardVisualTree.TryApplyAsync(
-                    currentRoot,
-                    plan,
-                    _cardVersion,
-                    () => request.SessionGeneration == _cardSessionGeneration);
-                if (applied
-                    && request.SessionGeneration == _cardSessionGeneration)
-                {
-                    _cardSnapshot = candidateSnapshot;
-                    _cardJson = candidateJson;
-                    _adaptiveCard = result.AdaptiveCard;
-                    _cardVersion++;
-                }
-
-                // Decode or validation failures retain the last good visible card. A newer request
-                // waits in the queue's single pending slot rather than cancelling this active update.
-                return;
-            }
-        }
-
-        if (request.SessionGeneration != _cardSessionGeneration)
-        {
-            return;
-        }
-
-        SwapCard(candidate, result.AdaptiveCard, candidateSnapshot, candidateJson, candidateRoot);
     }
 
-    private void SwapCard(
-        RenderedAdaptiveCard candidate,
-        AdaptiveCard adaptiveCard,
-        IncrementalNodeSnapshot snapshot,
-        string cardJson,
-        FrameworkElement candidateRoot)
+    private void AttachRenderedCard(RenderedAdaptiveCard? renderedCard)
     {
-        var oldRenderedCard = _renderedCard;
-        var oldRoot = oldRenderedCard?.FrameworkElement as FrameworkElement;
+        if (ReferenceEquals(_attachedRenderedCard, renderedCard))
+        {
+            return;
+        }
 
-        candidateRoot.KeyDown += OnFormKeyDown;
-        candidateRoot.Loaded += OnFrameworkElementLoaded;
-        candidateRoot.LayoutUpdated += OnFrameworkElementLayoutUpdated;
-        candidate.Action += Rendered_Action;
-
-        _renderedCard = candidate;
-        _adaptiveCard = adaptiveCard;
-        _cardSnapshot = snapshot;
-        _cardJson = cardJson;
-        _cardVersion++;
-
-        // The candidate is completely rendered before this single assignment. The stable host is never
-        // cleared, so unsupported changes cannot produce an intermediate empty frame.
-        CardHost.Child = candidateRoot;
-
-        if (oldRoot is not null)
+        if (_attachedRenderedCard?.FrameworkElement is FrameworkElement oldRoot)
         {
             oldRoot.KeyDown -= OnFormKeyDown;
             oldRoot.Loaded -= OnFrameworkElementLoaded;
             oldRoot.LayoutUpdated -= OnFrameworkElementLayoutUpdated;
         }
 
-        if (oldRenderedCard is not null)
+        if (_attachedRenderedCard is not null)
         {
-            oldRenderedCard.Action -= Rendered_Action;
+            _attachedRenderedCard.Action -= Rendered_Action;
+        }
+
+        _attachedRenderedCard = renderedCard;
+        if (renderedCard?.FrameworkElement is FrameworkElement root)
+        {
+            root.KeyDown += OnFormKeyDown;
+            root.Loaded += OnFrameworkElementLoaded;
+            root.LayoutUpdated += OnFrameworkElementLayoutUpdated;
+            renderedCard.Action += Rendered_Action;
         }
     }
 
     private void ResetCard()
     {
-        _cardSessionGeneration++;
-        _cardUpdateQueue.ClearPending();
-
-        var oldRenderedCard = _renderedCard;
-        if (oldRenderedCard?.FrameworkElement is FrameworkElement oldRoot)
-        {
-            oldRoot.KeyDown -= OnFormKeyDown;
-            oldRoot.Loaded -= OnFrameworkElementLoaded;
-            oldRoot.LayoutUpdated -= OnFrameworkElementLayoutUpdated;
-        }
-
-        if (oldRenderedCard is not null)
-        {
-            oldRenderedCard.Action -= Rendered_Action;
-        }
-
-        CardHost.Child = null;
-        _renderedCard = null;
-        _adaptiveCard = null;
-        _cardSnapshot = null;
-        _cardJson = null;
-        _cardVersion++;
-    }
-
-    private sealed class CardUpdateRequest(AdaptiveCardParseResult result, long sessionGeneration)
-    {
-        public AdaptiveCardParseResult Result { get; } = result;
-
-        public long SessionGeneration { get; } = sessionGeneration;
+        AttachRenderedCard(null);
+        _cardUpdater.Reset();
     }
 
     private void OnFrameworkElementLayoutUpdated(object? sender, object e)
     {
-        // Only fix once — unhook from sender (not _renderedCard, which may have been
+        // Only fix once — unhook from sender (not the updater, whose card may have been
         // reassigned by the time this fires).
         if (sender is FrameworkElement element)
         {
@@ -442,8 +346,8 @@ public sealed partial class ContentFormControl : UserControl
         // Snapshot the fields so a subsequent DisplayCard call can't swap the
         // rendered/parsed card out from under us mid-method. This keeps the
         // resolved submit action and the gathered inputs from the same card.
-        var renderedCard = _renderedCard;
-        var adaptiveCard = _adaptiveCard;
+        var renderedCard = _cardUpdater.RenderedCard;
+        var adaptiveCard = _cardUpdater.Card;
 
         if (e.Key != VirtualKey.Enter || renderedCard == null || adaptiveCard == null)
         {

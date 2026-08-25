@@ -12,25 +12,24 @@ public sealed class IncrementalTreeTests
     {
         var tree = TextTree("hello");
 
-        var plan = IncrementalTreeDiffer.CreatePlan(tree, tree, 7);
+        var plan = IncrementalTreeDiffer.CreatePlan(tree, tree);
 
         Assert.AreEqual(IncrementalPlanDisposition.NoChanges, plan.Disposition);
-        Assert.AreEqual(7, plan.ExpectedVersion);
         Assert.AreEqual(0, plan.PropertyUpdates.Count);
     }
 
     [TestMethod]
     public void TextChangeProducesValidatedPatch()
     {
-        var plan = IncrementalTreeDiffer.CreatePlan(TextTree("old"), TextTree("new"), 2);
+        var plan = IncrementalTreeDiffer.CreatePlan(TextTree("old"), TextTree("new"));
 
         Assert.AreEqual(IncrementalPlanDisposition.PatchInPlace, plan.Disposition);
         Assert.AreEqual(1, plan.PropertyUpdates.Count);
         var update = plan.PropertyUpdates[0];
-        Assert.AreEqual("$/0", update.NodePath);
+        Assert.AreEqual(1, update.NodeIndex);
         Assert.AreEqual("TextBlock", update.ExpectedNodeType);
-        Assert.AreEqual("old", update.ExpectedOldValue.GetString());
-        Assert.AreEqual("new", update.NewValue.GetString());
+        Assert.AreEqual("old", update.ExpectedOldValue);
+        Assert.AreEqual("new", update.NewValue);
     }
 
     [TestMethod]
@@ -38,99 +37,100 @@ public sealed class IncrementalTreeTests
     {
         var plan = IncrementalTreeDiffer.CreatePlan(
             ImageTree("data:image/svg+xml;utf8,<svg id='old'/>"),
-            ImageTree("data:image/svg+xml;utf8,<svg id='new'/>"),
-            3);
+            ImageTree("data:image/svg+xml;utf8,<svg id='new'/>"));
 
         Assert.AreEqual(IncrementalPlanDisposition.PatchInPlace, plan.Disposition);
         Assert.AreEqual(1, plan.PropertyUpdates.Count);
         var update = plan.PropertyUpdates[0];
-        Assert.AreEqual("$/0", update.NodePath);
+        Assert.AreEqual(1, update.NodeIndex);
         Assert.AreEqual("ImageSource", update.PropertyName);
-        Assert.AreEqual("data:image/svg+xml;utf8,<svg id='old'/>", update.ExpectedOldValue.GetString());
-        Assert.AreEqual("data:image/svg+xml;utf8,<svg id='new'/>", update.NewValue.GetString());
+        Assert.AreEqual("data:image/svg+xml;utf8,<svg id='old'/>", update.ExpectedOldValue);
+        Assert.AreEqual("data:image/svg+xml;utf8,<svg id='new'/>", update.NewValue);
     }
 
     [TestMethod]
     public void StructuralChangeReplacesRoot()
     {
         var current = TextTree("hello");
-        var candidate = new IncrementalNodeSnapshot("$", "Root", null);
+        var candidate = Tree(new IncrementalNodeSnapshot("Root", 0));
 
-        var plan = IncrementalTreeDiffer.CreatePlan(current, candidate, 1);
+        var plan = IncrementalTreeDiffer.CreatePlan(current, candidate);
 
         Assert.AreEqual(IncrementalPlanDisposition.ReplaceRoot, plan.Disposition);
-        StringAssert.Contains(plan.FallbackReason, "child count");
+    }
+
+    [TestMethod]
+    public void TreeShapeChangeReplacesRoot()
+    {
+        var current = Tree(
+            new IncrementalNodeSnapshot("Root", 2),
+            new IncrementalNodeSnapshot("Container", 1),
+            new IncrementalNodeSnapshot("TextBlock", 0),
+            new IncrementalNodeSnapshot("TextBlock", 0));
+        var candidate = Tree(
+            new IncrementalNodeSnapshot("Root", 2),
+            new IncrementalNodeSnapshot("Container", 0),
+            new IncrementalNodeSnapshot("TextBlock", 1),
+            new IncrementalNodeSnapshot("TextBlock", 0));
+
+        var plan = IncrementalTreeDiffer.CreatePlan(current, candidate);
+
+        Assert.AreEqual(IncrementalPlanDisposition.ReplaceRoot, plan.Disposition);
     }
 
     [TestMethod]
     public void ReplacementPropertyChangeReplacesRoot()
     {
-        var current = RootWithFingerprint("one");
-        var candidate = RootWithFingerprint("two");
-
-        var plan = IncrementalTreeDiffer.CreatePlan(current, candidate, 1);
-
-        Assert.AreEqual(IncrementalPlanDisposition.ReplaceRoot, plan.Disposition);
-        StringAssert.Contains(plan.FallbackReason, "CardSemantics");
-    }
-
-    [TestMethod]
-    public void DuplicateStableIdsReplaceRoot()
-    {
-        var children = new[]
-        {
-            new IncrementalNodeSnapshot("$/0", "TextBlock", "duplicate"),
-            new IncrementalNodeSnapshot("$/1", "TextBlock", "duplicate"),
-        };
-        var tree = new IncrementalNodeSnapshot("$", "Root", null, children: children);
-
-        var plan = IncrementalTreeDiffer.CreatePlan(tree, tree, 1);
+        var plan = IncrementalTreeDiffer.CreatePlan(
+            RootWithFingerprint("one"),
+            RootWithFingerprint("two"));
 
         Assert.AreEqual(IncrementalPlanDisposition.ReplaceRoot, plan.Disposition);
-        StringAssert.Contains(plan.FallbackReason, "duplicate stable IDs");
     }
 
-    private static IncrementalNodeSnapshot TextTree(string text)
+    private static IncrementalTreeSnapshot TextTree(string text)
     {
-        var textProperties = new[]
-        {
-            new IncrementalPropertySnapshot(
-                "Text",
-                IncrementalValue.FromString(text),
-                IncrementalPropertyBehavior.PatchInPlace),
-        };
-        var children = new[]
-        {
-            new IncrementalNodeSnapshot("$/0", "TextBlock", null, textProperties),
-        };
-        return new IncrementalNodeSnapshot("$", "Root", null, children: children);
+        return Tree(
+            new IncrementalNodeSnapshot("Root", 1),
+            new IncrementalNodeSnapshot(
+                "TextBlock",
+                0,
+                [
+                    new(
+                        "Text",
+                        text,
+                        IncrementalPropertyBehavior.PatchInPlace),
+                ]));
     }
 
-    private static IncrementalNodeSnapshot RootWithFingerprint(string fingerprint)
+    private static IncrementalTreeSnapshot RootWithFingerprint(string fingerprint)
     {
-        var properties = new[]
-        {
-            new IncrementalPropertySnapshot(
-                "CardSemantics",
-                IncrementalValue.FromString(fingerprint),
-                IncrementalPropertyBehavior.ReplaceRoot),
-        };
-        return new IncrementalNodeSnapshot("$", "Root", null, properties);
+        return Tree(
+            new IncrementalNodeSnapshot(
+                "Root",
+                0,
+                [
+                    new(
+                        "CardSemantics",
+                        fingerprint,
+                        IncrementalPropertyBehavior.ReplaceRoot),
+                ]));
     }
 
-    private static IncrementalNodeSnapshot ImageTree(string resource)
+    private static IncrementalTreeSnapshot ImageTree(string resource)
     {
-        var imageProperties = new[]
-        {
-            new IncrementalPropertySnapshot(
-                "ImageSource",
-                IncrementalValue.FromString(resource),
-                IncrementalPropertyBehavior.PatchInPlace),
-        };
-        var children = new[]
-        {
-            new IncrementalNodeSnapshot("$/0", "Image", null, imageProperties),
-        };
-        return new IncrementalNodeSnapshot("$", "Root", null, children: children);
+        return Tree(
+            new IncrementalNodeSnapshot("Root", 1),
+            new IncrementalNodeSnapshot(
+                "Image",
+                0,
+                [
+                    new(
+                        "ImageSource",
+                        resource,
+                        IncrementalPropertyBehavior.PatchInPlace),
+                ]));
     }
+
+    private static IncrementalTreeSnapshot Tree(params IncrementalNodeSnapshot[] nodes) => new(nodes);
 }

@@ -4,134 +4,69 @@
 
 namespace Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
 
-/// <summary>
-/// Produces conservative in-place update plans for ordered logical trees. Any structural ambiguity or
-/// property marked <see cref="IncrementalPropertyBehavior.ReplaceRoot"/> selects a root replacement.
-/// </summary>
-public static class IncrementalTreeDiffer
+internal static class IncrementalTreeDiffer
 {
     public static IncrementalUpdatePlan CreatePlan(
-        IncrementalNodeSnapshot current,
-        IncrementalNodeSnapshot candidate,
-        long expectedVersion)
+        IncrementalTreeSnapshot current,
+        IncrementalTreeSnapshot candidate)
     {
         ArgumentNullException.ThrowIfNull(current);
         ArgumentNullException.ThrowIfNull(candidate);
 
-        if (HasDuplicateStableIds(current) || HasDuplicateStableIds(candidate))
+        if (current.Nodes.Count != candidate.Nodes.Count)
         {
-            return Replace(expectedVersion, "A tree contains duplicate stable IDs.");
+            return Replace();
         }
 
         var updates = new List<IncrementalPropertyUpdate>();
-        var reason = CompareNodes(current, candidate, updates);
-        if (reason is not null)
+        for (var nodeIndex = 0; nodeIndex < current.Nodes.Count; nodeIndex++)
         {
-            return Replace(expectedVersion, reason);
+            var currentNode = current.Nodes[nodeIndex];
+            var candidateNode = candidate.Nodes[nodeIndex];
+            if (!string.Equals(currentNode.Type, candidateNode.Type, StringComparison.Ordinal)
+                || currentNode.ChildCount != candidateNode.ChildCount
+                || currentNode.Properties.Count != candidateNode.Properties.Count)
+            {
+                return Replace();
+            }
+
+            for (var propertyIndex = 0; propertyIndex < currentNode.Properties.Count; propertyIndex++)
+            {
+                var currentProperty = currentNode.Properties[propertyIndex];
+                var candidateProperty = candidateNode.Properties[propertyIndex];
+                if (!string.Equals(currentProperty.Name, candidateProperty.Name, StringComparison.Ordinal)
+                    || currentProperty.Behavior != candidateProperty.Behavior)
+                {
+                    return Replace();
+                }
+
+                if (string.Equals(currentProperty.Value, candidateProperty.Value, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                if (currentProperty.Behavior == IncrementalPropertyBehavior.ReplaceRoot)
+                {
+                    return Replace();
+                }
+
+                updates.Add(new IncrementalPropertyUpdate(
+                    nodeIndex,
+                    currentNode.Type,
+                    currentProperty.Name,
+                    currentProperty.Value,
+                    candidateProperty.Value));
+            }
         }
 
         return new IncrementalUpdatePlan(
-            expectedVersion,
-            updates.Count == 0 ? IncrementalPlanDisposition.NoChanges : IncrementalPlanDisposition.PatchInPlace,
-            updates,
-            null);
+            updates.Count == 0
+                ? IncrementalPlanDisposition.NoChanges
+                : IncrementalPlanDisposition.PatchInPlace,
+            updates);
     }
 
-    private static string? CompareNodes(
-        IncrementalNodeSnapshot current,
-        IncrementalNodeSnapshot candidate,
-        List<IncrementalPropertyUpdate> updates)
-    {
-        if (!string.Equals(current.Path, candidate.Path, StringComparison.Ordinal))
-        {
-            return $"Node path changed from '{current.Path}' to '{candidate.Path}'.";
-        }
-
-        if (!string.Equals(current.Type, candidate.Type, StringComparison.Ordinal))
-        {
-            return $"Node '{current.Path}' changed type.";
-        }
-
-        if (!string.Equals(current.StableId, candidate.StableId, StringComparison.Ordinal))
-        {
-            return $"Node '{current.Path}' changed stable ID.";
-        }
-
-        if (current.Properties.Count != candidate.Properties.Count)
-        {
-            return $"Node '{current.Path}' changed its property schema.";
-        }
-
-        for (var i = 0; i < current.Properties.Count; i++)
-        {
-            var oldProperty = current.Properties[i];
-            var newProperty = candidate.Properties[i];
-            if (!string.Equals(oldProperty.Name, newProperty.Name, StringComparison.Ordinal)
-                || oldProperty.Behavior != newProperty.Behavior)
-            {
-                return $"Node '{current.Path}' changed its property schema.";
-            }
-
-            if (oldProperty.Value == newProperty.Value)
-            {
-                continue;
-            }
-
-            if (oldProperty.Behavior == IncrementalPropertyBehavior.ReplaceRoot)
-            {
-                return $"Property '{oldProperty.Name}' on node '{current.Path}' requires root replacement.";
-            }
-
-            updates.Add(new IncrementalPropertyUpdate(
-                current.Path,
-                current.Type,
-                oldProperty.Name,
-                oldProperty.Value,
-                newProperty.Value));
-        }
-
-        if (current.Children.Count != candidate.Children.Count)
-        {
-            return $"Node '{current.Path}' changed child count.";
-        }
-
-        for (var i = 0; i < current.Children.Count; i++)
-        {
-            var reason = CompareNodes(current.Children[i], candidate.Children[i], updates);
-            if (reason is not null)
-            {
-                return reason;
-            }
-        }
-
-        return null;
-    }
-
-    private static bool HasDuplicateStableIds(IncrementalNodeSnapshot root)
-    {
-        var ids = new HashSet<string>(StringComparer.Ordinal);
-        var stack = new Stack<IncrementalNodeSnapshot>();
-        stack.Push(root);
-        while (stack.Count > 0)
-        {
-            var node = stack.Pop();
-            if (node.StableId is not null && !ids.Add(node.StableId))
-            {
-                return true;
-            }
-
-            for (var i = node.Children.Count - 1; i >= 0; i--)
-            {
-                stack.Push(node.Children[i]);
-            }
-        }
-
-        return false;
-    }
-
-    private static IncrementalUpdatePlan Replace(long expectedVersion, string reason) => new(
-        expectedVersion,
+    private static IncrementalUpdatePlan Replace() => new(
         IncrementalPlanDisposition.ReplaceRoot,
-        Array.Empty<IncrementalPropertyUpdate>(),
-        reason);
+        Array.Empty<IncrementalPropertyUpdate>());
 }
