@@ -93,4 +93,39 @@ Describe "writeReleaseMetadata" {
         $result.sourceBranch | Should Be "refs/heads/user/feature"
         $result.channel | Should Be "private"
     }
+
+    It "records private validation metadata from a pull request merge ref" {
+        $result = & $scriptPath `
+            -DefinitionId 76541 `
+            -BuildId 154000003 `
+            -BuildNumber "pull-request-build" `
+            -Version "0.0.21802.0" `
+            -Channel "private" `
+            -Intent "private-validation" `
+            -SourceBranch "refs/pull/50091/merge" `
+            -SourceCommit "3123456789abcdef0123456789abcdef01234567" `
+            -BuildReason "Manual" `
+            -ShouldPublishPreview "False" `
+            -OutputPath (Join-Path $TestDrive "pull-request-validation.json")
+
+        $result.sourceBranch | Should Be "refs/pull/50091/merge"
+        $result.channel | Should Be "private"
+    }
+
+    It "rejects unsupported source refs" {
+        Assert-Throws {
+            & $scriptPath `
+                -DefinitionId 76541 `
+                -BuildId 154000004 `
+                -BuildNumber "tag-build" `
+                -Version "0.0.21803.0" `
+                -Channel "private" `
+                -Intent "private-validation" `
+                -SourceBranch "refs/tags/v0.101.0" `
+                -SourceCommit "4123456789abcdef0123456789abcdef01234567" `
+                -BuildReason "Manual" `
+                -ShouldPublishPreview "False" `
+                -OutputPath (Join-Path $TestDrive "tag-validation.json")
+        }
+    }
 }
