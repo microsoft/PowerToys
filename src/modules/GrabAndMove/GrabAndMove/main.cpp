@@ -52,6 +52,14 @@ enum class InteractionPhase
     Active,
 };
 
+enum class TargetEligibility
+{
+    Eligible,
+    Invalid,
+    Excluded,
+    NotResizable,
+};
+
 enum class MouseButton : unsigned int
 {
     None = 0,
@@ -96,6 +104,8 @@ struct SettingsSnapshot
     bool useAltResize = true;
     std::shared_ptr<const std::vector<std::wstring>> excludedApps =
         std::make_shared<const std::vector<std::wstring>>();
+    std::shared_ptr<const std::vector<std::wstring>> modifierExcludedApps =
+        std::make_shared<const std::vector<std::wstring>>();
 };
 
 struct CapturedKey
@@ -127,6 +137,12 @@ struct InteractionState
     RECT windowRect{};
     ResizeHandle resizeHandle = ResizeHandle::None;
     bool firstUpdate = false;
+};
+
+struct ActionTarget
+{
+    HWND window = nullptr;
+    TargetEligibility eligibility = TargetEligibility::Invalid;
 };
 
 struct TargetUpdateState
@@ -237,6 +253,7 @@ static HCURSOR g_curSizeWE = nullptr;
 
 // IsExcluded result cache keyed by HWND (cleared on foreground change / settings reload) – fix #4
 static std::unordered_map<HWND, bool> g_excludedCache;
+static std::unordered_map<HWND, bool> g_modifierExcludedCache;
 
 static const wchar_t* const CLASS_NAME = L"GrabAndMove_MsgWnd";
 static const wchar_t* const OVERLAY_CLASS_NAME = L"GrabAndMove_Overlay";
@@ -549,7 +566,7 @@ enum class ModifierReplay
 
 static void StopInteraction();
 static void FlushPendingClickOnModifierRelease();
-static void ReplayCapturedModifier(ModifierReplay replay);
+static UINT ReplayCapturedModifier(ModifierReplay replay);
 static void MarkButtonUpForSwallow(MouseButton button);
 static void FinalizeTargetUpdate();
 static HCURSOR CursorForHandle(ResizeHandle handle);
@@ -604,6 +621,7 @@ static void CALLBACK WinEventProc(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, D
 
     // Invalidate the IsExcluded cache on foreground change (fix #4)
     g_excludedCache.clear();
+    g_modifierExcludedCache.clear();
 
     // Only validate modifier state when there is actually something to reset.
     // Skipping here when all flags are clear prevents spurious resets that would
@@ -679,6 +697,34 @@ static void TraceShortcutUse(bool successful, GrabAndMoveShortcutAction action, 
 // ---------------------------------------------------------------------------
 // Settings file helpers
 // ---------------------------------------------------------------------------
+static std::shared_ptr<const std::vector<std::wstring>> ParseExcludedApps(std::wstring value)
+{
+    std::vector<std::wstring> apps;
+    CharUpperBuffW(value.data(), static_cast<DWORD>(value.length()));
+    std::wstring_view view(value);
+
+    while (!view.empty())
+    {
+        const auto start = view.find_first_not_of(L" \t\r\n");
+        if (start == std::wstring_view::npos)
+        {
+            break;
+        }
+        view.remove_prefix(start);
+
+        auto position = view.find_first_of(L"\r\n");
+        if (position == std::wstring_view::npos)
+        {
+            position = view.length();
+        }
+
+        apps.emplace_back(view.substr(0, position));
+        view.remove_prefix(position);
+    }
+
+    return std::make_shared<const std::vector<std::wstring>>(std::move(apps));
+}
+
 static bool TryLoadSettingsFromFile(const SettingsSnapshot& current, SettingsSnapshot& updated)
 {
     try
@@ -713,29 +759,12 @@ static bool TryLoadSettingsFromFile(const SettingsSnapshot& current, SettingsSna
 
         if (auto v = values.get_string_value(L"excluded_apps"))
         {
-            std::vector<std::wstring> apps;
-            std::wstring upper = *v;
-            CharUpperBuffW(upper.data(), static_cast<DWORD>(upper.length()));
-            std::wstring_view view(upper);
+            updated.excludedApps = ParseExcludedApps(std::move(*v));
+        }
 
-            while (!view.empty())
-            {
-                // skip leading whitespace / newlines
-                auto start = view.find_first_not_of(L" \t\r\n");
-                if (start == std::wstring_view::npos)
-                    break;
-                view.remove_prefix(start);
-
-                auto pos = view.find_first_of(L"\r\n");
-                if (pos == std::wstring_view::npos)
-                    pos = view.length();
-
-                apps.emplace_back(view.substr(0, pos));
-                view.remove_prefix(pos);
-            }
-
-            updated.excludedApps =
-                std::make_shared<const std::vector<std::wstring>>(std::move(apps));
+        if (auto v = values.get_string_value(L"excluded_apps_for_modifier"))
+        {
+            updated.modifierExcludedApps = ParseExcludedApps(std::move(*v));
         }
 
         return true;
@@ -1925,7 +1954,7 @@ static void FinalizeTargetUpdate()
     g_targetUpdate = {};
 }
 
-static void ReplayCapturedModifier(ModifierReplay replay)
+static UINT ReplayCapturedModifier(ModifierReplay replay)
 {
     INPUT inputs[2] = {};
     inputs[0].type = INPUT_KEYBOARD;
@@ -1938,15 +1967,50 @@ static void ReplayCapturedModifier(ModifierReplay replay)
     switch (replay)
     {
     case ModifierReplay::DownOnly:
-        SendInput(1, &inputs[0], sizeof(INPUT));
-        break;
+        return SendInput(1, &inputs[0], sizeof(INPUT));
     case ModifierReplay::UpOnly:
-        SendInput(1, &inputs[1], sizeof(INPUT));
-        break;
+        return SendInput(1, &inputs[1], sizeof(INPUT));
     case ModifierReplay::DownAndUp:
-        SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
-        break;
+        return SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
     }
+
+    return 0;
+}
+
+static HookDisposition EnterModifierPassthrough(MouseButton button, bool latchHold)
+{
+    HookDisposition disposition = HookDisposition::Chain;
+    if (g_modifierSession.absorbed && !g_modifierSession.replayedDown)
+    {
+        INPUT inputs[2]{};
+        inputs[0].type = INPUT_KEYBOARD;
+        inputs[0].ki.wVk = static_cast<WORD>(g_modifierSession.key.vk);
+        inputs[0].ki.wScan = static_cast<WORD>(g_modifierSession.key.scanCode);
+        inputs[0].ki.dwFlags = (g_modifierSession.key.flags & LLKHF_EXTENDED) ? KEYEVENTF_EXTENDEDKEY : 0;
+        inputs[1].type = INPUT_MOUSE;
+        inputs[1].mi.dwFlags = MouseEventFlagForButton(button, false);
+
+        const UINT inserted = SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+        if (inserted >= 1)
+        {
+            g_modifierSession.replayedDown = true;
+            g_modifierSession.absorbed = false;
+        }
+        if (inserted == ARRAYSIZE(inputs))
+        {
+            disposition = HookDisposition::Swallow;
+        }
+        else if (inserted == 0)
+        {
+            MarkButtonUpForSwallow(button);
+            disposition = HookDisposition::Swallow;
+        }
+    }
+    if (latchHold)
+    {
+        g_modifierSession.disposition = ModifierHoldDisposition::Passthrough;
+    }
+    return disposition;
 }
 
 // ---------------------------------------------------------------------------
@@ -2079,6 +2143,7 @@ static bool IsSystemClass(HWND hwnd)
 
     // Desktop and primary/secondary taskbars
     if (wcscmp(cls, L"Progman") == 0 ||
+        wcscmp(cls, L"WorkerW") == 0 ||
         wcscmp(cls, L"Shell_TrayWnd") == 0 ||
         wcscmp(cls, L"Shell_SecondaryTrayWnd") == 0)
         return true;
@@ -2090,6 +2155,10 @@ static bool IsSystemClass(HWND hwnd)
 
     // Tooltips (e.g. "Show hidden icons" tooltip)
     if (wcscmp(cls, L"tooltips_class32") == 0)
+        return true;
+
+    // Native popup menus.
+    if (wcscmp(cls, L"#32768") == 0)
         return true;
 
     // Task View (Win+Tab)
@@ -2132,6 +2201,41 @@ std::wstring ToUpperInvariant(std::wstring_view input)
         0);
 
     return result;
+}
+
+static bool MatchesExcludedApps(
+    HWND hwnd,
+    const std::shared_ptr<const std::vector<std::wstring>>& apps,
+    std::unordered_map<HWND, bool>& pathCache)
+{
+    if (!apps || apps->empty())
+    {
+        return false;
+    }
+
+    bool pathExcluded = false;
+    const auto cached = pathCache.find(hwnd);
+    if (cached != pathCache.end())
+    {
+        pathExcluded = cached->second;
+    }
+    else
+    {
+        std::wstring processPath = get_process_path(hwnd);
+        CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
+        pathExcluded = find_app_name_in_path(processPath, *apps);
+        pathCache[hwnd] = pathExcluded;
+    }
+
+    return pathExcluded || check_excluded_app_with_title(hwnd, *apps);
+}
+
+static bool IsModifierExcluded(HWND hwnd)
+{
+    return MatchesExcludedApps(
+        hwnd,
+        g_settings.modifierExcludedApps,
+        g_modifierExcludedCache);
 }
 
 static bool IsExcluded(HWND hwnd)
@@ -2178,33 +2282,7 @@ static bool IsExcluded(HWND hwnd)
         }
     }
 
-    const auto& apps = g_settings.excludedApps;
-    if (!apps || apps->empty())
-        return false;
-
-    // Check process-path exclusion (cached per HWND – fix #4)
-    bool pathExcluded = false;
-    auto it = g_excludedCache.find(hwnd);
-    if (it != g_excludedCache.end())
-    {
-        pathExcluded = it->second;
-    }
-    else
-    {
-        std::wstring processPath = get_process_path(hwnd);
-        CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
-        pathExcluded = find_app_name_in_path(processPath, *apps);
-        g_excludedCache[hwnd] = pathExcluded;
-    }
-
-    if (pathExcluded)
-        return true;
-
-    // Title-based exclusion is always evaluated live (titles can change)
-    if (check_excluded_app_with_title(hwnd, *apps))
-        return true;
-
-    return false;
+    return MatchesExcludedApps(hwnd, g_settings.excludedApps, g_excludedCache);
 }
 
 // ---------------------------------------------------------------------------
@@ -2329,6 +2407,17 @@ static HookDisposition ReleaseModifierSession()
     StopInteraction();
 
     HookDisposition disposition = HookDisposition::Chain;
+    if (interactionConsumedModifier &&
+        g_modifierSession.modifier == GrabAndMoveModifier::Win &&
+        !g_modifierSession.absorbed)
+    {
+        INPUT dummy{};
+        dummy.type = INPUT_KEYBOARD;
+        dummy.ki.wVk = 0xFF;
+        dummy.ki.dwFlags = KEYEVENTF_KEYUP;
+        SendInput(1, &dummy, sizeof(INPUT));
+    }
+
     if (g_modifierSession.absorbed)
     {
         if (interactionConsumedModifier)
@@ -2344,7 +2433,10 @@ static HookDisposition ReleaseModifierSession()
             }
             else
             {
-                ReplayCapturedModifier(ModifierReplay::DownOnly);
+                if (ReplayCapturedModifier(ModifierReplay::DownOnly) == 0)
+                {
+                    disposition = HookDisposition::Swallow;
+                }
             }
         }
     }
@@ -2401,6 +2493,12 @@ static HookDisposition HandleKeyboardEvent(WPARAM message, const KBDLLHOOKSTRUCT
         return HookDisposition::Chain;
     }
 
+    const HWND foreground = GetForegroundWindow();
+    if (foreground && IsModifierExcluded(foreground))
+    {
+        return HookDisposition::Chain;
+    }
+
 #ifdef GRABANDMOVE_PERF_DIAGNOSTICS
     BeginPerfCollection();
 #endif
@@ -2410,8 +2508,7 @@ static HookDisposition HandleKeyboardEvent(WPARAM message, const KBDLLHOOKSTRUCT
         return HookDisposition::Chain;
     }
 
-    HWND foreground = GetForegroundWindow();
-    if ((foreground && IsExcluded(foreground)) || IsSuppressedByGameMode())
+    if (IsSuppressedByGameMode())
     {
         return HookDisposition::Chain;
     }
@@ -2420,7 +2517,7 @@ static HookDisposition HandleKeyboardEvent(WPARAM message, const KBDLLHOOKSTRUCT
     g_modifierSession.modifier = g_settings.modifierKey;
     g_modifierSession.pressed = true;
     g_modifierSession.absorbed =
-        g_settings.modifierKey == GrabAndMoveModifier::Win || g_settings.shouldAbsorbAlt;
+        (g_settings.modifierKey == GrabAndMoveModifier::Win || g_settings.shouldAbsorbAlt);
     g_modifierSession.key = { key.vkCode, key.scanCode, key.flags };
 
     return g_modifierSession.absorbed ? HookDisposition::Swallow : HookDisposition::Chain;
@@ -2505,6 +2602,28 @@ static HWND ResolveTargetWindow(POINT pt)
     return hwnd;
 }
 
+static ActionTarget ResolveActionTarget(POINT point, InteractionAction action)
+{
+    HWND window = ResolveTargetWindow(point);
+    if (!window)
+    {
+        return {};
+    }
+
+    if (IsExcluded(window))
+    {
+        return { window, TargetEligibility::Excluded };
+    }
+
+    if (action == InteractionAction::Resize &&
+        !(GetWindowLongW(window, GWL_STYLE) & WS_THICKFRAME))
+    {
+        return { window, TargetEligibility::NotResizable };
+    }
+
+    return { window, TargetEligibility::Eligible };
+}
+
 // Forward declarations for helpers called from MouseProc
 static void HandleDragMove(POINT pt);
 static void HandleDragResize(POINT pt);
@@ -2559,24 +2678,18 @@ static HookDisposition HandleActionButtonDown(MouseButton button, POINT point)
             false,
             action == InteractionAction::Resize ? GrabAndMoveShortcutAction::Resize : GrabAndMoveShortcutAction::Move,
             L"game_mode");
-        return HookDisposition::Chain;
+        return EnterModifierPassthrough(button, true);
     }
 
-    HWND target = ResolveTargetWindow(point);
-    if (!target || IsExcluded(target))
+    const ActionTarget target = ResolveActionTarget(point, action);
+    if (target.eligibility != TargetEligibility::Eligible)
     {
-        return HookDisposition::Chain;
-    }
-
-    if (action == InteractionAction::Resize &&
-        !(GetWindowLongW(target, GWL_STYLE) & WS_THICKFRAME))
-    {
-        return HookDisposition::Chain;
+        return EnterModifierPassthrough(button, false);
     }
 
     if (g_modifierSession.disposition == ModifierHoldDisposition::Activated)
     {
-        return BeginInteraction(action, button, target, point) ? HookDisposition::Swallow : HookDisposition::Chain;
+        return BeginInteraction(action, button, target.window, point) ? HookDisposition::Swallow : EnterModifierPassthrough(button, false);
     }
 
     if (g_interaction.phase == InteractionPhase::Pending)
@@ -2584,7 +2697,7 @@ static HookDisposition HandleActionButtonDown(MouseButton button, POINT point)
         return HookDisposition::Chain;
     }
 
-    ArmPendingInteraction(action, button, target, point);
+    ArmPendingInteraction(action, button, target.window, point);
     return HookDisposition::Swallow;
 }
 
@@ -2650,14 +2763,7 @@ static HookDisposition HandleMouseEvent(WPARAM message, const MSLLHOOKSTRUCT& mo
             g_interaction.phase != InteractionPhase::Active &&
             !g_settings.useAltResize)
         {
-            if (g_modifierSession.absorbed && !g_modifierSession.replayedDown)
-            {
-                g_modifierSession.replayedDown = true;
-                ReplayCapturedModifier(ModifierReplay::DownOnly);
-            }
-            g_modifierSession.absorbed = false;
-            g_modifierSession.disposition = ModifierHoldDisposition::Passthrough;
-            return HookDisposition::Chain;
+            return EnterModifierPassthrough(downButton, false);
         }
         return HandleActionButtonDown(downButton, mouse.pt);
     }
@@ -3021,6 +3127,7 @@ static void ApplyPendingSettings()
     const bool geometryChanged = settings->showGeometry != g_settings.showGeometry;
     g_settings = std::move(*settings);
     g_excludedCache.clear();
+    g_modifierExcludedCache.clear();
 
     if (geometryChanged && g_interaction.phase == InteractionPhase::Active)
     {

@@ -6639,4 +6639,14 @@ Text uses the current drawing color.</value>
     <value>Example: outlook</value>
     <comment>{Locked="outlook"}</comment>
   </data>
+  <data name="GrabAndMove_ExcludeAppsForModifier.Header" xml:space="preserve">
+    <value>Excluded apps (for modifier)</value>
+  </data>
+  <data name="GrabAndMove_ExcludeAppsForModifier.Description" xml:space="preserve">
+    <value>Prevents Grab And Move from processing the modifier key while an excluded application is in the foreground - add one application name per line</value>
+  </data>
+  <data name="GrabAndMove_ExcludeAppsForModifier_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: game.exe</value>
+    <comment>{Locked="game.exe"}</comment>
+  </data>
 </root>
