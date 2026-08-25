@@ -36,6 +36,7 @@ private:
 
     // Low level hook handles
     static HHOOK hookHandle;
+    static HHOOK mouseHookHandle;
 
     // Required for Unhook in old versions of Windows
     static HHOOK hookHandleCopy;
@@ -64,6 +65,7 @@ private:
 
     // Hook procedure definition
     static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
+    static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam);
     static void CALLBACK DeferredReloadTimerProc(HWND, UINT, UINT_PTR timerId, DWORD);
 
     // Load settings from the file.

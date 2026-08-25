@@ -37,6 +37,8 @@ public:
     // handling for this entire physical key press on its first down transition.
     EventDisposition BeginKeyboardEvent(LowlevelKeyboardEvent* data) noexcept;
     void NotifyHigherPriorityEventHandled(LowlevelKeyboardEvent* data) noexcept;
+    void TrackKeyboardEvent(LowlevelKeyboardEvent* data) noexcept;
+    void ResetBuffer() noexcept;
 
     // Called only for a fresh action-key down that existing remaps did not consume.
     intptr_t TryActivate(

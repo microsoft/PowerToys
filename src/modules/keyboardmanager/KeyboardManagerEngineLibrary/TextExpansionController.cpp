@@ -201,11 +201,38 @@ void TextExpansionController::NotifyHigherPriorityEventHandled(LowlevelKeyboardE
         return;
     }
 
+    ResetBuffer();
+
     const DWORD physicalKey = data->lParam->vkCode;
     if (Helpers::IsModifierKey(Helpers::ClearKeyNumpadOrigin(physicalKey)))
     {
         std::scoped_lock lock(pressStateMutex);
         higherPriorityModifierKeys.insert(physicalKey);
+    }
+}
+
+void TextExpansionController::TrackKeyboardEvent(LowlevelKeyboardEvent* data) noexcept
+{
+    if (!backendReady.load(std::memory_order_acquire) || !backend)
+    {
+        return;
+    }
+
+    try
+    {
+        backend->TrackKeyboardEvent(data);
+    }
+    catch (...)
+    {
+        backend->ResetBuffer();
+    }
+}
+
+void TextExpansionController::ResetBuffer() noexcept
+{
+    if (backend)
+    {
+        backend->ResetBuffer();
     }
 }
 
@@ -265,7 +292,6 @@ intptr_t TextExpansionController::TryActivate(
             .activationShortcut = *matchedActivation,
             .activationModifierKeys = pressedActivationModifiers,
             .candidates = std::move(candidates),
-            .deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(125),
         };
         result = backend->PrepareActivation(request);
     }

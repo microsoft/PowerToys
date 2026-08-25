@@ -39,7 +39,7 @@
     <ClCompile Include="AppSpecificShortcutRemappingTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CompatibilityTextExpansionBackendTests.cpp">
+    <ClCompile Include="BufferTextExpansionBackendTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TextExpansionControllerTests.cpp">

@@ -15,13 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CompatibilityTextExpansionBackend.h">
+    <ClInclude Include="BufferTextExpansionBackend.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ITextExpansionBackend.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITextExpansionTextContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
@@ -45,12 +42,9 @@
     <ClInclude Include="TextExpansionTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UIAutomationTextExpansionContext.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CompatibilityTextExpansionBackend.cpp">
+    <ClCompile Include="BufferTextExpansionBackend.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
@@ -72,9 +66,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TextExpansionTypes.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="UIAutomationTextExpansionContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

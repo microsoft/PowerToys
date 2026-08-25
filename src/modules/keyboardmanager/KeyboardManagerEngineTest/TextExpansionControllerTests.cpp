@@ -70,6 +70,10 @@ namespace TextExpansionEngineTests
             int completeCalls = 0;
             int cancelCalls = 0;
             int cleanupCalls = 0;
+            int trackCalls = 0;
+            int resetBufferCalls = 0;
+            DWORD lastTrackedKey = 0;
+            WPARAM lastTrackedMessage = 0;
             Shortcut lastActivation;
             std::vector<DWORD> lastActivationModifierKeys;
             std::vector<TextExpansionCandidate> lastCandidates;
@@ -84,6 +88,21 @@ namespace TextExpansionEngineTests
             {
                 ++stopCalls;
                 prepared = false;
+            }
+
+            void TrackKeyboardEvent(const LowlevelKeyboardEvent* data) noexcept override
+            {
+                ++trackCalls;
+                if (data && data->lParam)
+                {
+                    lastTrackedKey = data->lParam->vkCode;
+                    lastTrackedMessage = data->wParam;
+                }
+            }
+
+            void ResetBuffer() noexcept override
+            {
+                ++resetBufferCalls;
             }
 
             TextExpansionResult PrepareActivation(const TextExpansionRequest& request) override
@@ -256,6 +275,22 @@ namespace TextExpansionEngineTests
 
             controller.Stop();
             Assert::AreEqual(1, backendView->stopCalls);
+        }
+
+        TEST_METHOD (TrackKeyboardEventAndResetBuffer_ShouldForwardToBackend)
+        {
+            ControllerFixture fixture;
+            TestKeyEvent keyEvent('A');
+
+            fixture.controller->TrackKeyboardEvent(&keyEvent.event);
+            Assert::AreEqual(1, fixture.backend->trackCalls);
+            Assert::AreEqual(static_cast<DWORD>('A'), fixture.backend->lastTrackedKey);
+            Assert::AreEqual(
+                static_cast<uint64_t>(WM_KEYDOWN),
+                static_cast<uint64_t>(fixture.backend->lastTrackedMessage));
+
+            fixture.controller->ResetBuffer();
+            Assert::AreEqual(1, fixture.backend->resetBufferCalls);
         }
 
         TEST_METHOD (SingleSpace_ShouldActivateMatchingRule)
@@ -448,6 +483,7 @@ namespace TextExpansionEngineTests
                 TextExpansionController::EventDisposition::Continue,
                 fixture.controller->BeginKeyboardEvent(&ctrlDown.event));
             fixture.controller->NotifyHigherPriorityEventHandled(&ctrlDown.event);
+            Assert::AreEqual(1, fixture.backend->resetBufferCalls);
 
             AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
             Assert::AreEqual(0, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
@@ -517,11 +553,6 @@ namespace TextExpansionEngineTests
         TEST_METHOD (NoMatch_ShouldPassEntirePhysicalPress)
         {
             VerifyPassthroughResult(TextExpansionResult::NoMatch);
-        }
-
-        TEST_METHOD (UnsupportedContext_ShouldPassEntirePhysicalPress)
-        {
-            VerifyPassthroughResult(TextExpansionResult::UnsupportedContext);
         }
 
         TEST_METHOD (FailedUnchanged_ShouldPassEntirePhysicalPress)

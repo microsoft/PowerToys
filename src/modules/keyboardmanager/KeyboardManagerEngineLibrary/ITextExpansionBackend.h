@@ -1,5 +1,7 @@
 #pragma once
 
+#include <common/hooks/LowlevelKeyboardEvent.h>
+
 #include "TextExpansionTypes.h"
 
 class ITextExpansionBackend
@@ -9,9 +11,14 @@ public:
 
     virtual bool Start() = 0;
     virtual void Stop() noexcept = 0;
-    // Prepare is called from the low-level hook. It may use the text context, but
-    // must never inject input. A Prepared result owns the selected source range
-    // until CompletePendingActivation or CancelPendingActivation is called.
+
+    // Called only after the event has passed all higher-priority Keyboard Manager
+    // handlers and will be delivered to the foreground application.
+    virtual void TrackKeyboardEvent(const LowlevelKeyboardEvent* data) noexcept = 0;
+    virtual void ResetBuffer() noexcept = 0;
+
+    // Prepare is called from the low-level hook and must never inject input. A
+    // Prepared result reserves the matched suffix until completion or cancellation.
     virtual TextExpansionResult PrepareActivation(const TextExpansionRequest& request) = 0;
 
     // Completion is dispatched through the engine thread's message queue so the

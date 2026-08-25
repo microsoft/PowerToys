@@ -17,11 +17,12 @@
 #include <optional>
 
 #include "KeyboardEventHandlers.h"
-#include "CompatibilityTextExpansionBackend.h"
+#include "BufferTextExpansionBackend.h"
 #include "trace.h"
 
 HHOOK KeyboardManager::hookHandleCopy;
 HHOOK KeyboardManager::hookHandle;
+HHOOK KeyboardManager::mouseHookHandle;
 KeyboardManager* KeyboardManager::keyboardManagerObjectPtr;
 
 namespace
@@ -101,7 +102,7 @@ KeyboardManager::KeyboardManager()
     keyboardManagerObjectPtr = this;
 
     textExpansionController = std::make_unique<TextExpansionController>(
-        std::make_unique<CompatibilityTextExpansionBackend>(inputHandler),
+        std::make_unique<BufferTextExpansionBackend>(inputHandler),
         [this](const uint64_t generation) {
             DWORD errorCode = ERROR_SUCCESS;
             if (QueueTextExpansionMessage(textExpansionInstanceId, generation, errorCode))
@@ -116,7 +117,7 @@ KeyboardManager::KeyboardManager()
         });
     if (HasEnabledTextExpansion(state.textExpansions) && !textExpansionController->Start())
     {
-        Logger::error(L"Failed to start the Keyboard Manager Compatibility Text Expansion backend.");
+        Logger::error(L"Failed to start the Keyboard Manager Buffer Text Expansion backend.");
     }
 
     auto changeSettingsCallback = [](DWORD err) {
@@ -163,7 +164,7 @@ void KeyboardManager::Shutdown() noexcept
         KillTimer(nullptr, deferredReloadTimer);
         deferredReloadTimer = 0;
     }
-    // Cancel/restore any worker-owned selection before detaching the keyboard hook.
+    // Stop the Buffer Text Expansion backend before detaching the keyboard hook.
     if (textExpansionController)
     {
         textExpansionController->Stop();
@@ -202,7 +203,6 @@ void KeyboardManager::LoadSettings()
         }
         catch (...)
         {
-
         }
     }
 }
@@ -226,6 +226,10 @@ void KeyboardManager::ReloadSettings()
     settingsReloadDeferred.store(false, std::memory_order_release);
     loadingSettings.store(true, std::memory_order_release);
     StopLowlevelKeyboardHook();
+    if (textExpansionController)
+    {
+        textExpansionController->Stop();
+    }
     try
     {
         LoadSettings();
@@ -242,7 +246,7 @@ void KeyboardManager::ReloadSettings()
         {
             if (!textExpansionController->Start())
             {
-                Logger::error(L"Failed to start the Keyboard Manager Compatibility Text Expansion backend after settings reload.");
+                Logger::error(L"Failed to start the Keyboard Manager Buffer Text Expansion backend after settings reload.");
             }
         }
         else
@@ -347,6 +351,21 @@ LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const
     return CallNextHookEx(hookHandleCopy, nCode, wParam, lParam);
 }
 
+LRESULT CALLBACK KeyboardManager::MouseHookProc(int nCode, const WPARAM wParam, const LPARAM lParam)
+{
+    if (nCode == HC_ACTION && keyboardManagerObjectPtr &&
+        (wParam == WM_LBUTTONDOWN || wParam == WM_RBUTTONDOWN ||
+         wParam == WM_MBUTTONDOWN || wParam == WM_XBUTTONDOWN))
+    {
+        if (keyboardManagerObjectPtr->textExpansionController)
+        {
+            keyboardManagerObjectPtr->textExpansionController->ResetBuffer();
+        }
+    }
+
+    return CallNextHookEx(mouseHookHandle, nCode, wParam, lParam);
+}
+
 void KeyboardManager::StartLowlevelKeyboardHook()
 {
 #if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
@@ -368,6 +387,26 @@ void KeyboardManager::StartLowlevelKeyboardHook()
             Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"StartLowlevelKeyboardHook::SetWindowsHookEx");
         }
     }
+
+    if (hookHandle && !mouseHookHandle && HasEnabledTextExpansion(state.textExpansions))
+    {
+        mouseHookHandle = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, GetModuleHandle(NULL), NULL);
+        if (!mouseHookHandle)
+        {
+            const DWORD errorCode = GetLastError();
+            const auto errorMessage = get_last_error_message(errorCode);
+            Trace::Error(
+                errorCode,
+                errorMessage.has_value() ? errorMessage.value() : L"",
+                L"StartLowlevelKeyboardHook::SetWindowsHookEx(WH_MOUSE_LL)");
+            if (textExpansionController)
+            {
+                // Mouse clicks can move the caret without changing HWND/PID. Without
+                // this hook the buffered suffix cannot be used safely.
+                textExpansionController->Stop();
+            }
+        }
+    }
 }
 
 void KeyboardManager::StopLowlevelKeyboardHook()
@@ -376,6 +415,11 @@ void KeyboardManager::StopLowlevelKeyboardHook()
     {
         UnhookWindowsHookEx(hookHandle);
         hookHandle = nullptr;
+    }
+    if (mouseHookHandle)
+    {
+        UnhookWindowsHookEx(mouseHookHandle);
+        mouseHookHandle = nullptr;
     }
 }
 
@@ -426,12 +470,20 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
 
     if (settingsReloadDeferred.load(std::memory_order_acquire))
     {
+        if (textExpansionController)
+        {
+            textExpansionController->ResetBuffer();
+        }
         QueueDeferredSettingsReloadIfReady();
         return 0;
     }
 
     if (loadingSettings)
     {
+        if (textExpansionController)
+        {
+            textExpansionController->ResetBuffer();
+        }
         return 0;
     }
 
@@ -440,7 +492,10 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
     {
         if (textExpansionController)
         {
-            textExpansionController->NotifyHigherPriorityEventHandled(data);
+            // Remapping is suspended while the editor is open, but the buffer backend
+            // still needs physical toggle-key transitions such as Caps Lock.
+            textExpansionController->TrackKeyboardEvent(data);
+            textExpansionController->ResetBuffer();
         }
         return 0;
     }
@@ -502,7 +557,19 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
     if (textExpansionDisposition == TextExpansionController::EventDisposition::FreshActionKeyDown &&
         textExpansionController)
     {
-        return textExpansionController->TryActivate(inputHandler, textExpansionPhysicalKey, state.textExpansions);
+        const intptr_t activationResult = textExpansionController->TryActivate(
+            inputHandler,
+            textExpansionPhysicalKey,
+            state.textExpansions);
+        if (activationResult == 1)
+        {
+            return 1;
+        }
+    }
+
+    if (textExpansionController)
+    {
+        textExpansionController->TrackKeyboardEvent(data);
     }
 
     return 0;
