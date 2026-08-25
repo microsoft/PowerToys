@@ -69,9 +69,40 @@ function Restore-OwnedCertificates {
     foreach ($record in @($ownership.certificates)) {
         foreach ($store in @($record.stores)) {
             if (-not $store.preRunPresent) {
-                Get-ChildItem -Path $store.path |
-                    Where-Object Thumbprint -eq $record.thumbprint |
-                    Remove-Item -Force
+                $parts = $store.path -split '\\'
+                Assert-True (
+                    $parts.Count -eq 3 -and $parts[0] -eq 'Cert:'
+                ) "certificate store path '$($store.path)'"
+                $location = [System.Security.Cryptography.X509Certificates.StoreLocation]::$($parts[1])
+                $certificateStore = [System.Security.Cryptography.X509Certificates.X509Store]::new(
+                    $parts[2],
+                    $location)
+                try {
+                    $certificateStore.Open(
+                        [System.Security.Cryptography.X509Certificates.OpenFlags]::ReadOnly)
+                    $present = $certificateStore.Certificates.Find(
+                        [System.Security.Cryptography.X509Certificates.X509FindType]::FindByThumbprint,
+                        $record.thumbprint,
+                        $false).Count -gt 0
+                }
+                finally {
+                    $certificateStore.Close()
+                }
+                if ($present) {
+                    $certutilArguments = @()
+                    if ($location -eq
+                        [System.Security.Cryptography.X509Certificates.StoreLocation]::CurrentUser) {
+                        $certutilArguments += '-user'
+                    }
+                    $certutilArguments += @(
+                        '-delstore',
+                        $parts[2],
+                        $record.thumbprint)
+                    & "$env:SystemRoot\System32\certutil.exe" @certutilArguments |
+                        Out-Null
+                    Assert-True ($LASTEXITCODE -eq 0) `
+                        "remove certificate '$($record.thumbprint)' from '$($store.path)'"
+                }
             }
         }
     }
@@ -112,10 +143,10 @@ Assert-True (
 
 $hostPath = Get-HostExecutable
 if ($hostPath) {
-    $host = Get-Service -Name PtPuvrHost
-    if ($host.Status -ne 'Stopped') {
+    $hostService = Get-Service -Name PtPuvrHost
+    if ($hostService.Status -ne 'Stopped') {
         Stop-Service -Name PtPuvrHost -Force
-        $host.WaitForStatus('Stopped', [TimeSpan]::FromSeconds(30))
+        $hostService.WaitForStatus('Stopped', [TimeSpan]::FromSeconds(30))
     }
     if (Test-Path -LiteralPath $hostPath -PathType Leaf) {
         $process = Start-Process `

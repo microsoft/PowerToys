@@ -1,6 +1,20 @@
-# Packaged Updater + ordinary protected Runtime prototype
+# Packaged Host + ordinary protected Runtime integration prototype
 
-This prototype implements the final proxyless control-plane topology:
+> **Historical validation artifact, not the final process topology.**
+>
+> This worktree still contains a private ordinary
+> `PtPuvrUpdater.exe` Engine behind the packaged Host. The accepted product
+> architecture has since removed that split: the one packaged LocalSystem
+> Updater EXE must own the control-plane implementation directly, alongside
+> the ordinary per-SID Runtime services. There is no private Engine, helper,
+> companion MSI, persistent bootstrapper, or proxy in the target design.
+>
+> The lifecycle results below remain useful evidence for AppX servicing,
+> package identity, SCM repathing, protected-state preservation, and Runtime
+> independence. They must not be cited as proof that the final two-role
+> implementation already exists.
+
+This prototype implements the earlier integration topology:
 
 ```text
 machine-provisioned signed Updater MSIX
@@ -24,9 +38,11 @@ production Proxy EXEs: 0
 companion MSI/Burn processes: 0
 ```
 
-The Updater is the fixed packaged Host, not the versioned
+In this historical prototype, the Updater role is split between the fixed
+packaged Host and the versioned
 `PtPuvrUpdater.exe` Engine. The historical Engine filename is retained only
-to avoid an unrelated prototype rename.
+because this worktree records the already-completed experiment; it is not
+part of the accepted target architecture.
 
 ## Why the split is intentional
 
@@ -104,6 +120,41 @@ There is no companion MSI and no permanently installed bootstrapper. Initial
 machine provisioning and rare Updater package upgrades are elevated AppX
 deployment operations. Normal PowerToys/Engine/Runtime releases continue
 through the already installed LocalSystem Host without UAC.
+
+## Windows-owned install and update validation
+
+The signed v5 and v6 test packages were also installed outside the lifecycle
+script through Windows App Installer file activation. Directly invoking
+`AppInstaller.exe <package.msix>` is not a supported command-line contract and
+remained in its loading state; opening the `.msix` through the Windows file
+association correctly used the protected `DelegateExecute` activation path.
+
+The Windows-owned UI displayed the package publisher, version, and both
+privileged service capabilities before deployment. The observed results were:
+
+- fresh v5 install created the manifest-declared LocalSystem service and
+  pointed SCM at the v5 WindowsApps payload;
+- v5 -> v6 update changed the package registration and SCM image path to the
+  v6 WindowsApps payload;
+- the service was left stopped after servicing, consistent with the scripted
+  AppX lifecycle;
+- both operations created a registration for the initiating user and did not
+  create an `Add-AppxProvisionedPackage -Online` machine-provisioning record;
+- after UAC, the visible App Installer process had a High-integrity,
+  full-elevation token;
+- no PowerToys executable performed package signature or payload validation.
+
+AppX accepted the valid signed packages and rejected a package whose
+`PtPuvrHost.exe` entry had been rewritten after signing with `0x80073CF0`
+before stage/register. A random edit to irrelevant ZIP container metadata did
+not necessarily invalidate the package, so the security claim is specifically
+about AppX signature, publisher, block-map, and declared-payload integrity,
+not byte-for-byte equality of the outer ZIP container.
+
+This machine validated an administrator in Admin Approval Mode. A true
+standard-user, over-the-shoulder credential flow and multi-user
+registration/uninstall ownership remain separate manual tests; this README
+does not claim those results.
 
 ## AppX servicing contract
 
