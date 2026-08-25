@@ -23,8 +23,8 @@ if ($Version -notmatch "^\d+\.\d+\.\d+\.0$") {
 if ($SourceCommit -notmatch "^[0-9a-fA-F]{40}$") {
     throw "SourceCommit must be a full immutable commit SHA."
 }
-if ($SourceBranch -notmatch "^refs/(heads/.+|pull/\d+/(head|merge))$") {
-    throw "SourceBranch '$SourceBranch' is not a supported branch or pull request ref."
+if ($SourceBranch -notmatch "^refs/heads/.+") {
+    throw "SourceBranch '$SourceBranch' is not a branch ref."
 }
 if ($Intent -ne "private-validation" -and $SourceBranch -notin @("refs/heads/main", "refs/heads/stable")) {
     throw "Intent '$Intent' is only supported from main or stable."
