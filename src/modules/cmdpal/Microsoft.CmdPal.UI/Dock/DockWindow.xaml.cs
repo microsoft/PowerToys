@@ -1690,6 +1690,7 @@ public sealed partial class DockWindow : WindowEx,
 
         StopCollapseTimer();
         DisposeAcrylic();
+        _dock.Dispose();
         _windowViewModel.Dispose();
 
         // Remove our app bar registration

@@ -20,6 +20,8 @@ public record PerformCommandMessage
 
     public bool TransientPage { get; set; }
 
+    public DockCommandRoute? DockRoute { get; set; }
+
     public PageViewModel? SourcePage { get; set; }
 
     public AppExtensionHost? SourceExtensionHost { get; set; }
@@ -27,6 +29,8 @@ public record PerformCommandMessage
     public ICommandProviderContext? SourceProviderContext { get; set; }
 
     public Func<ICommandResult, bool>? ResultHandler { get; set; }
+
+    public bool IsSendCanceled { get; private set; }
 
     /// <summary>
     /// Optional callback raised by <see cref="ShellViewModel"/> just before a
@@ -43,6 +47,8 @@ public record PerformCommandMessage
     /// is hidden (for example the toast's action button).
     /// </summary>
     public bool ShowWindowIfPage { get; set; }
+
+    public void CancelSend() => IsSendCanceled = true;
 
     public PerformCommandMessage(ExtensionObject<ICommand> command)
     {

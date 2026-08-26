@@ -28,7 +28,7 @@ namespace Microsoft.CmdPal.UI;
 /// empty-content branch. Hosted by both <see cref="ListPage"/> and
 /// <see cref="ParametersPage"/> so list rendering behavior stays in one place.
 /// </summary>
-public sealed partial class ListItemsView : UserControl
+public sealed partial class ListItemsView : UserControl, IPageInteractionTarget, IListInteractionSource
 {
     private InputSource _lastInputSource;
 

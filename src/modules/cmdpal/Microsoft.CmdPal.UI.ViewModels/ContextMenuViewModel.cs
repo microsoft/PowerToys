@@ -243,9 +243,13 @@ public partial class ContextMenuViewModel : ObservableObject
         {
             var message = command.PreparePerformCommandMessage(new PerformCommandMessage(command.Command.Model, command.Model));
             CommandInvoking?.Invoke(this, message);
-            WeakReferenceMessenger.Default.Send(message);
+            if (!message.IsSendCanceled)
+            {
+                WeakReferenceMessenger.Default.Send(message);
+                CommandInvoked?.Invoke(this, command);
+            }
+
             UpdateContextItems();
-            CommandInvoked?.Invoke(this, command);
             return ContextKeybindingResult.Hide;
         }
     }

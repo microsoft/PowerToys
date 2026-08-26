@@ -248,6 +248,11 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Receive(PerformCommandMessage message)
     {
+        if (message.DockRoute is not null)
+        {
+            return;
+        }
+
         PerformCommand(message);
     }
 
@@ -577,6 +582,11 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Receive(HandleCommandResultMessage message)
     {
+        if (message.DockRoute is not null)
+        {
+            return;
+        }
+
         UnsafeHandleCommandResult(
             message.Result.Unsafe,
             message.OnBeforeShowConfirmation,

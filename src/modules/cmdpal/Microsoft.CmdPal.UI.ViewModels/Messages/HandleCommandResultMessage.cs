@@ -9,6 +9,8 @@ namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 public record HandleCommandResultMessage(ExtensionObject<ICommandResult> Result)
 {
+    public DockCommandRoute? DockRoute { get; set; }
+
     public PageViewModel? SourcePage { get; set; }
 
     public AppExtensionHost? SourceExtensionHost { get; set; }

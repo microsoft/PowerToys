@@ -93,6 +93,16 @@
                 </Style.Setters>
             </Style>
 
+            <Style
+                x:Name="DockPageFlyoutStyle"
+                BasedOn="{StaticResource ContextMenuFlyoutStyle}"
+                TargetType="FlyoutPresenter">
+                <Setter Property="MinWidth" Value="500" />
+                <Setter Property="MaxWidth" Value="500" />
+                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+                <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
+            </Style>
+
             <!--  Backdrop requires ShouldConstrainToRootBounds="False"  -->
             <Flyout
                 x:Name="ContextMenuFlyout"
@@ -102,6 +112,14 @@
                 SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
                 <cpcontrols:ContextMenu x:Name="ContextControl" />
             </Flyout>
+
+            <Flyout
+                x:Name="DockPageFlyout"
+                Closed="DockPageFlyout_Closed"
+                FlyoutPresenterStyle="{StaticResource DockPageFlyoutStyle}"
+                Opened="DockPageFlyout_Opened"
+                ShouldConstrainToRootBounds="False"
+                SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}" />
 
             <!--  Edit mode context menu for dock bands  -->
             <MenuFlyout x:Name="EditModeContextMenu" ShouldConstrainToRootBounds="False">

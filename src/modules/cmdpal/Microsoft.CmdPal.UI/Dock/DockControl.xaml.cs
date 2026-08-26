@@ -22,14 +22,23 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Win32;
+using Windows.Win32.Foundation;
 
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
-public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditModeMessage>, IRecipient<ExitDockEditModeMessage>, IRecipient<CrossMonitorBandDropMessage>
+public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditModeMessage>, IRecipient<ExitDockEditModeMessage>, IRecipient<CrossMonitorBandDropMessage>, IRecipient<PerformCommandMessage>, IRecipient<HandleCommandResultMessage>, IDisposable
 {
-    private DockViewModel _viewModel;
+    private readonly DockViewModel _viewModel;
+    private readonly TaskScheduler _uiScheduler;
+    private DockPageNavigationViewModel? _pageNavigation;
+    private DockPageControl? _pageControl;
+    private DockCommandRoute? _activePageRoute;
+    private PendingDockPageRequest? _pendingPageRequest;
+    private Point? _pagePalettePosition;
+    private bool _isUnloaded;
 
     internal DockViewModel ViewModel => _viewModel;
 
@@ -43,7 +52,9 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         ContextMenuFlyout.IsOpen ||
         AddBandFlyout.IsOpen ||
         EditModeContextMenu.IsOpen ||
-        EditButtonsTeachingTip.IsOpen;
+        EditButtonsTeachingTip.IsOpen ||
+        DockPageFlyout.IsOpen ||
+        (_pageControl?.HasOpenTransientUi ?? false);
 
     internal bool IsDragOperationActive => _draggedBand is not null;
 
@@ -91,9 +102,23 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         }
     }
 
+    internal sealed record PendingDockPageRequest(
+        PerformCommandMessage Message,
+        FrameworkElement Anchor,
+        Point Position,
+        DockCommandRoute Route);
+
+    private enum DockPageRequestResult
+    {
+        Started,
+        Deferred,
+        Failed,
+    }
+
     internal DockControl(DockViewModel viewModel)
     {
         _viewModel = viewModel;
+        _uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
         InitializeComponent();
         ContextControl.CloseRequested += ContextControl_CloseRequested;
         Loaded += DockControl_Loaded;
@@ -105,10 +130,13 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
 
     private void DockControl_Loaded(object sender, RoutedEventArgs e)
     {
+        _isUnloaded = false;
         WeakReferenceMessenger.Default.UnregisterAll(this);
         WeakReferenceMessenger.Default.Register<EnterDockEditModeMessage>(this);
         WeakReferenceMessenger.Default.Register<ExitDockEditModeMessage>(this);
         WeakReferenceMessenger.Default.Register<CrossMonitorBandDropMessage>(this);
+        WeakReferenceMessenger.Default.Register<PerformCommandMessage>(this);
+        WeakReferenceMessenger.Default.Register<HandleCommandResultMessage>(this);
 
         ContextControl.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
         ContextControl.ViewModel.CommandInvoked += ContextMenu_CommandInvoked;
@@ -123,6 +151,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
 
     private void DockControl_Unloaded(object sender, RoutedEventArgs e)
     {
+        _isUnloaded = true;
         WeakReferenceMessenger.Default.UnregisterAll(this);
 
         ContextControl.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
@@ -149,6 +178,14 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         {
             EditModeContextMenu.Hide();
         }
+
+        _pendingPageRequest = null;
+        if (DockPageFlyout.IsOpen)
+        {
+            DockPageFlyout.Hide();
+        }
+
+        CleanupDockPage();
     }
 
     private void CenterItems_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -313,7 +350,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
             // Use the center of the border as the point to open at
             var borderCenter = GetDockItemCenter(dockItem);
 
-            InvokeItem(item, borderCenter);
+            InvokeItem(item, dockItem, borderCenter);
             e.Handled = true;
         }
     }
@@ -332,6 +369,10 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
     // open, used to anchor the cmdpal palette when a Page command is invoked from
     // the context menu. Null when the open context menu is not anchored to a band.
     private Point? _bandContextMenuPalettePos;
+
+    private FrameworkElement? _bandContextMenuTarget;
+
+    private DockItemViewModel? _bandContextMenuItem;
 
     private void BandItem_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
     {
@@ -373,6 +414,8 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
                 // Remember where to anchor the palette if the user picks a Page
                 // command from the context menu.
                 _bandContextMenuPalettePos = GetDockItemCenter(dockItem);
+                _bandContextMenuTarget = dockItem;
+                _bandContextMenuItem = item;
 
                 ContextControl.SetCommandContext(item);
                 ContextControl.ShowFilterBox = true;
@@ -415,41 +458,43 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         }
     }
 
-    private void InvokeItem(DockItemViewModel item, Point pos)
+    private void InvokeItem(DockItemViewModel item, FrameworkElement anchor, Point pos)
     {
         var command = item.Command;
         var hwnd = OwnerHwnd;
         try
         {
-            PerformCommandMessage m = new(command.Model)
+            PerformCommandMessage message = new(command.Model, item.Model)
             {
                 WithAnimation = false,
                 TransientPage = true,
-
-                // If the command is invokable and its result asks for a
-                // confirmation dialog, surface the cmdpal window anchored at
-                // this dock item before the dialog appears.
-                OnBeforeShowConfirmation = () =>
-                    WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd)),
             };
-            WeakReferenceMessenger.Default.Send(m);
+            AddSourceContext(message, item);
 
-            if (IsPageCommand(command.Model.Unsafe))
+            if (command.Model.Unsafe is IPage)
             {
-                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd));
+                var result = PrepareDockPageRequest(message, anchor, pos);
+                if (result == DockPageRequestResult.Started)
+                {
+                    WeakReferenceMessenger.Default.Send(message);
+                }
+                else if (result == DockPageRequestResult.Failed)
+                {
+                    PreparePageFallback(message, pos);
+                    WeakReferenceMessenger.Default.Send(message);
+                }
+            }
+            else
+            {
+                message.OnBeforeShowConfirmation = () =>
+                    WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd));
+                WeakReferenceMessenger.Default.Send(message);
             }
         }
         catch (COMException e)
         {
             Logger.LogError("Error invoking dock command", e);
         }
-    }
-
-    private static bool IsPageCommand(ICommand? command)
-    {
-        // A Page command is one that's not directly invokable - selecting it
-        // navigates into a page rather than performing an action in place.
-        return command is not null and not IInvokableCommand;
     }
 
     private static Point GetDockItemCenter(FrameworkElement dockItem)
@@ -462,22 +507,14 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
 
     private void ContextMenu_CommandInvoked(object? sender, CommandItemViewModel command)
     {
-        // The context menu just invoked a command. If it came from a dock band
-        // (i.e. _bandContextMenuPalettePos is set) and the command is a Page,
-        // open the cmdpal palette anchored at the dock item — mirroring what
-        // a direct click on the band does.
-        var pos = _bandContextMenuPalettePos;
+        ClearBandContextMenuInvocation();
+    }
+
+    private void ClearBandContextMenuInvocation()
+    {
         _bandContextMenuPalettePos = null;
-
-        if (pos is null)
-        {
-            return;
-        }
-
-        if (IsPageCommand(command.Command.Model.Unsafe))
-        {
-            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos.Value, OwnerHwnd));
-        }
+        _bandContextMenuTarget = null;
+        _bandContextMenuItem = null;
     }
 
     private void ContextMenu_CommandInvoking(object? sender, PerformCommandMessage message)
@@ -487,8 +524,32 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         // whose result is a Confirm surfaces the cmdpal window anchored at the
         // dock item before the confirmation dialog appears.
         var pos = _bandContextMenuPalettePos;
-        if (pos is null)
+        var target = _bandContextMenuTarget;
+        var item = _bandContextMenuItem;
+        if (pos is null || target is null || item is null)
         {
+            return;
+        }
+
+        AddSourceContext(message, item);
+        if (message.Command.Unsafe is IPage)
+        {
+            if (ContextMenuFlyout.IsOpen)
+            {
+                ContextMenuFlyout.Hide();
+            }
+
+            var result = PrepareDockPageRequest(message, target, pos.Value);
+            if (result == DockPageRequestResult.Deferred)
+            {
+                message.CancelSend();
+                ClearBandContextMenuInvocation();
+            }
+            else if (result == DockPageRequestResult.Failed)
+            {
+                PreparePageFallback(message, pos.Value);
+            }
+
             return;
         }
 
@@ -504,6 +565,366 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         // then fire a single consolidated Narrator announcement.
         ContextControl.FocusSearchBox();
         ContextControl.AnnounceOpened();
+    }
+
+    public void Receive(PerformCommandMessage message)
+    {
+        var route = message.DockRoute;
+        if (route is null ||
+            route.Value.OwnerHwnd != OwnerHwnd)
+        {
+            return;
+        }
+
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            var navigation = _pageNavigation;
+            if (message.DockRoute != _activePageRoute || navigation is null)
+            {
+                return;
+            }
+
+            if (message.Command.Unsafe is IPage)
+            {
+                _ = ObserveNavigationAsync(navigation.NavigateAsync(message));
+            }
+            else if (message.Command.Unsafe is IInvokableCommand)
+            {
+                var sourcePage = message.SourcePage ?? navigation.CurrentPage;
+                if (sourcePage is null || !navigation.OwnsSourcePage(sourcePage))
+                {
+                    return;
+                }
+
+                var forwarded = message with
+                {
+                    DockRoute = null,
+                    SourcePage = sourcePage,
+                    SourceExtensionHost = message.SourceExtensionHost ?? navigation.CurrentPage?.ExtensionHost,
+                    SourceProviderContext = message.SourceProviderContext ?? navigation.CurrentPage?.ProviderContext,
+                };
+                var existingCallback = forwarded.OnBeforeShowConfirmation;
+                var capturedPosition = _pagePalettePosition;
+                var hwnd = OwnerHwnd;
+                forwarded.OnBeforeShowConfirmation = () =>
+                {
+                    existingCallback?.Invoke();
+                    if (capturedPosition is Point position)
+                    {
+                        WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(position, hwnd));
+                    }
+                };
+
+                var existingHandler = forwarded.ResultHandler;
+                var commandRoute = message.DockRoute!.Value;
+                forwarded.ResultHandler = result =>
+                {
+                    if (existingHandler?.Invoke(result) == true)
+                    {
+                        return true;
+                    }
+
+                    return HandleDockCommandResult(navigation, commandRoute, sourcePage, result);
+                };
+                WeakReferenceMessenger.Default.Send(forwarded);
+            }
+        });
+    }
+
+    public void Receive(HandleCommandResultMessage message)
+    {
+        var route = message.DockRoute;
+        if (route is null ||
+            route.Value.OwnerHwnd != OwnerHwnd)
+        {
+            return;
+        }
+
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            var navigation = _pageNavigation;
+            var sourcePage = message.SourcePage;
+            if (message.DockRoute != _activePageRoute ||
+                navigation is null ||
+                sourcePage is null ||
+                !navigation.OwnsSourcePage(sourcePage))
+            {
+                return;
+            }
+
+            var forwarded = message with { DockRoute = null };
+            var existingCallback = forwarded.OnBeforeShowConfirmation;
+            var capturedPosition = _pagePalettePosition;
+            var hwnd = OwnerHwnd;
+            forwarded.OnBeforeShowConfirmation = () =>
+            {
+                existingCallback?.Invoke();
+                if (capturedPosition is Point position)
+                {
+                    WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(position, hwnd));
+                }
+            };
+
+            var existingHandler = forwarded.ResultHandler;
+            forwarded.ResultHandler = result =>
+            {
+                if (existingHandler?.Invoke(result) == true)
+                {
+                    return true;
+                }
+
+                return HandleDockCommandResult(navigation, route.Value, sourcePage, result);
+            };
+            WeakReferenceMessenger.Default.Send(forwarded);
+        });
+    }
+
+    private bool HandleDockCommandResult(
+        DockPageNavigationViewModel navigation,
+        DockCommandRoute route,
+        PageViewModel sourcePage,
+        ICommandResult result)
+    {
+        if (!ReferenceEquals(Volatile.Read(ref _pageNavigation), navigation) ||
+            navigation.Route != route ||
+            !navigation.OwnsSourcePage(sourcePage))
+        {
+            return true;
+        }
+
+        if (result.Kind is CommandResultKind.ShowToast or CommandResultKind.Confirm)
+        {
+            return false;
+        }
+
+        if (DispatcherQueue.HasThreadAccess)
+        {
+            ApplyDockCommandResult(navigation, route, sourcePage, result.Kind);
+        }
+        else
+        {
+            DispatcherQueue.TryEnqueue(
+                () => ApplyDockCommandResult(navigation, route, sourcePage, result.Kind));
+        }
+
+        return true;
+    }
+
+    private void ApplyDockCommandResult(
+        DockPageNavigationViewModel navigation,
+        DockCommandRoute route,
+        PageViewModel sourcePage,
+        CommandResultKind kind)
+    {
+        if (!ReferenceEquals(_pageNavigation, navigation) ||
+            navigation.Route != route ||
+            !navigation.OwnsSourcePage(sourcePage))
+        {
+            return;
+        }
+
+        switch (kind)
+        {
+            case CommandResultKind.Dismiss:
+            case CommandResultKind.Hide:
+                CloseDockPageFlyout();
+                break;
+            case CommandResultKind.GoHome:
+                _ = ObserveNavigationAsync(navigation.GoHomeAsync());
+                break;
+            case CommandResultKind.GoBack:
+                if (navigation.CanGoBack)
+                {
+                    _ = ObserveNavigationAsync(navigation.GoBackAsync());
+                }
+                else
+                {
+                    CloseDockPageFlyout();
+                }
+
+                break;
+        }
+    }
+
+    private void CloseDockPageFlyout()
+    {
+        _pendingPageRequest = null;
+        if (DockPageFlyout.IsOpen)
+        {
+            DockPageFlyout.Hide();
+        }
+        else
+        {
+            CleanupDockPage();
+        }
+    }
+
+    private static async Task ObserveNavigationAsync(Task<bool> navigationTask)
+    {
+        try
+        {
+            await navigationTask;
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to open a dock page.", ex);
+        }
+    }
+
+    private static void AddSourceContext(PerformCommandMessage message, DockItemViewModel item)
+    {
+        if (!item.PageContext.TryGetTarget(out var pageContext))
+        {
+            return;
+        }
+
+        message.SourceProviderContext = pageContext.ProviderContext;
+        if (pageContext.ProviderContext is CommandProviderWrapper provider)
+        {
+            message.SourceExtensionHost = provider.ExtensionHost;
+        }
+    }
+
+    private DockPageRequestResult PrepareDockPageRequest(PerformCommandMessage message, FrameworkElement anchor, Point position)
+    {
+        var route = new DockCommandRoute(OwnerHwnd, Guid.NewGuid());
+        message.DockRoute = route;
+        var request = new PendingDockPageRequest(message, anchor, position, route);
+
+        if (DockPageFlyout.IsOpen)
+        {
+            _pendingPageRequest = request;
+            DockPageFlyout.Hide();
+            return DockPageRequestResult.Deferred;
+        }
+
+        CleanupDockPage();
+        if (StartDockPageRequest(request))
+        {
+            return DockPageRequestResult.Started;
+        }
+
+        message.DockRoute = null;
+        return DockPageRequestResult.Failed;
+    }
+
+    private void PreparePageFallback(PerformCommandMessage message, Point position)
+    {
+        message.DockRoute = null;
+        WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(position, OwnerHwnd));
+    }
+
+    private bool StartDockPageRequest(PendingDockPageRequest request)
+    {
+        if (request.Anchor.XamlRoot is null || request.Route.OwnerHwnd != OwnerHwnd)
+        {
+            return false;
+        }
+
+        try
+        {
+            var services = App.Current.Services;
+            _activePageRoute = request.Route;
+            _pagePalettePosition = request.Position;
+            _pageNavigation = new DockPageNavigationViewModel(
+                request.Route,
+                _uiScheduler,
+                services.GetRequiredService<IPageViewModelFactoryService>(),
+                services.GetRequiredService<IAppHostService>());
+            _pageControl = new DockPageControl(_pageNavigation);
+            _pageControl.CloseRequested += DockPageControl_CloseRequested;
+            DockPageFlyout.Content = _pageControl;
+
+            // A windowed popup only receives pointer input when its owner is active.
+            var ownerHwnd = new HWND(OwnerHwnd);
+            PInvoke.SetForegroundWindow(ownerHwnd);
+            PInvoke.SetActiveWindow(ownerHwnd);
+
+            PreparePopupForShow(DockPageFlyout, request.Anchor);
+            DockPageFlyout.ShowAt(
+                request.Anchor,
+                new FlyoutShowOptions
+                {
+                    ShowMode = FlyoutShowMode.Standard,
+                    Placement = GetDockPagePlacement(),
+                });
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to show a dock page.", ex);
+            CleanupDockPage();
+            return false;
+        }
+    }
+
+    private FlyoutPlacementMode GetDockPagePlacement()
+    {
+        return DockSide switch
+        {
+            DockSide.Top => FlyoutPlacementMode.Bottom,
+            DockSide.Bottom => FlyoutPlacementMode.Top,
+            DockSide.Left => FlyoutPlacementMode.RightEdgeAlignedTop,
+            DockSide.Right => FlyoutPlacementMode.LeftEdgeAlignedTop,
+            _ => FlyoutPlacementMode.Bottom,
+        };
+    }
+
+    private void DockPageFlyout_Opened(object sender, object e) =>
+        DispatcherQueue.TryEnqueue(
+            Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+            () => _pageControl?.FocusSearch());
+
+    private void DockPageFlyout_Closed(object sender, object e)
+    {
+        CleanupDockPage();
+        if (!_isUnloaded && !IsEditMode)
+        {
+            Focus(FocusState.Programmatic);
+        }
+
+        var pending = _pendingPageRequest;
+        _pendingPageRequest = null;
+        if (pending is not null)
+        {
+            if (!StartDockPageRequest(pending))
+            {
+                PreparePageFallback(pending.Message, pending.Position);
+            }
+
+            WeakReferenceMessenger.Default.Send(pending.Message);
+        }
+    }
+
+    private void DockPageControl_CloseRequested(object? sender, EventArgs e)
+    {
+        if (DockPageFlyout.IsOpen)
+        {
+            DockPageFlyout.Hide();
+        }
+    }
+
+    private void CleanupDockPage()
+    {
+        _activePageRoute = null;
+        _pagePalettePosition = null;
+        DockPageFlyout.Content = null;
+
+        if (_pageControl is not null)
+        {
+            _pageControl.CloseRequested -= DockPageControl_CloseRequested;
+            _pageControl.Dispose();
+            _pageControl = null;
+            _pageNavigation = null;
+        }
+        else
+        {
+            _pageNavigation?.Dispose();
+            _pageNavigation = null;
+        }
     }
 
     private void ContextControl_CloseRequested(object? sender, EventArgs e)
@@ -525,6 +946,8 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         // This context menu is for the dock itself (not a band), so the palette
         // should not be opened on invocation.
         _bandContextMenuPalettePos = null;
+        _bandContextMenuTarget = null;
+        _bandContextMenuItem = null;
 
         var pos = e.GetPosition(null);
         var item = this.ViewModel.GetContextMenuForDock();
@@ -930,5 +1353,19 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         {
             ViewModel.RemoveBandById(message.BandId);
         });
+    }
+
+    public void Dispose()
+    {
+        Loaded -= DockControl_Loaded;
+        Unloaded -= DockControl_Unloaded;
+        ContextControl.CloseRequested -= ContextControl_CloseRequested;
+        ContextControl.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
+        ContextControl.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
+        ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+        _pendingPageRequest = null;
+        CleanupDockPage();
+        GC.SuppressFinalize(this);
     }
 }

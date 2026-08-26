@@ -438,6 +438,11 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
             if (PageContext.TryGetTarget(out var pageContext))
             {
                 _listViewModel = new ListViewModel(list, pageContext.Scheduler, _extensionHost, _providerContext, _contextMenuFactory);
+                if (pageContext is PageViewModel page)
+                {
+                    _listViewModel.DockRoute = page.DockRoute;
+                }
+
                 _listViewModel.InitializeProperties();
             }
         }
@@ -575,7 +580,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     public ListViewModel? ActiveListViewModel
     {
         get => _activeListViewModel;
-        private set
+        internal set
         {
             if (ReferenceEquals(_activeListViewModel, value))
             {

@@ -106,6 +106,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public ICommandProviderContext ProviderContext { get; protected set; }
 
+    public DockCommandRoute? DockRoute { get; internal set; }
+
     public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost, ICommandProviderContext providerContext)
         : base(scheduler)
     {
@@ -218,6 +220,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     internal PerformCommandMessage PreparePerformCommandMessage(PerformCommandMessage message)
     {
+        message.DockRoute = DockRoute;
         message.SourcePage = this;
         message.SourceExtensionHost = ExtensionHost;
         message.SourceProviderContext = ProviderContext;
@@ -226,6 +229,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     internal HandleCommandResultMessage PrepareHandleCommandResultMessage(HandleCommandResultMessage message)
     {
+        message.DockRoute = DockRoute;
         message.SourcePage = this;
         message.SourceExtensionHost = ExtensionHost;
         message.SourceProviderContext = ProviderContext;
