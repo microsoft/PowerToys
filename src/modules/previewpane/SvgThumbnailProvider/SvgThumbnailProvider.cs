@@ -138,7 +138,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 await _browser.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, ms);
                 thumbnail = new Bitmap(ms);
 
-                if (thumbnail.Width != cx && thumbnail.Height != cx && thumbnail.Width != 0 && thumbnail.Height != 0)
+                if (IsResizeRequired(thumbnail, cx))
                 {
                     // We are not the appropriate size for caller.  Resize now while
                     // respecting the aspect ratio.
@@ -245,6 +245,18 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
 
             // Using InvariantCulture since this should be displayed as it is
             return string.Format(CultureInfo.InvariantCulture, html, svg);
+        }
+
+        /// <summary>
+        /// Check whether the captured image must go through <see cref="ResizeImage"/> before being returned.
+        /// </summary>
+        /// <param name="image">The captured image.</param>
+        /// <param name="cx">The maximum thumbnail size, in pixels.</param>
+        /// <returns>True unless the longest side is exactly <paramref name="cx"/> and the image is already 32bpp ARGB.</returns>
+        public static bool IsResizeRequired(Image image, uint cx)
+        {
+            return ((image.Width != cx || image.Height > cx) && (image.Height != cx || image.Width > cx)) ||
+                image.PixelFormat != PixelFormat.Format32bppArgb;
         }
 
         /// <summary>
