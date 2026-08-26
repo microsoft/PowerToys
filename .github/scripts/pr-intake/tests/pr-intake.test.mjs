@@ -53,7 +53,7 @@ test('workflow runs product labeling for drafts and handles draft transitions', 
   assert.match(workflow, /- opened/);
   assert.match(workflow, /- edited/);
   assert.match(workflow, /- synchronize/);
-  assert.match(workflow, /ref: \$\{\{ github\.event\.repository\.default_branch \}\}/);
+  assert.match(workflow, /ref: \$\{\{ github\.workflow_sha \}\}/);
   assert.match(workflow, /- ready_for_review/);
   assert.match(workflow, /- converted_to_draft/);
 });
