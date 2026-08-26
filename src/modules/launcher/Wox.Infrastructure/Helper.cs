@@ -157,7 +157,18 @@ namespace Wox.Infrastructure
             }
             else if (pattern.Contains("%1", StringComparison.Ordinal))
             {
-                arguments = pattern.Replace("%1", arguments);
+                if (pattern.Contains("\"%1\"", StringComparison.Ordinal))
+                {
+                    // Pattern already wraps %1 in quotes (e.g. "chrome.exe" -- "%1"); substitute as-is to avoid double-quoting.
+                    arguments = pattern.Replace("%1", arguments);
+                }
+                else
+                {
+                    // Pattern does not quote %1 (e.g. Edge's own "--single-argument %1" fallback). Quote the substituted
+                    // value so multi-word arguments survive as a single token instead of being split on whitespace by
+                    // the shell, and escape any embedded quotes so they don't prematurely close the quoted argument.
+                    arguments = pattern.Replace("%1", $"\"{arguments.Replace("\"", "\\\"", StringComparison.Ordinal)}\"");
+                }
             }
 
             return OpenInShell(path, arguments, workingDir, runAs, runWithHiddenWindow);
