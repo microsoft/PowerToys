@@ -1,5 +1,8 @@
 #pragma once
 
+#include <optional>
+#include <vector>
+
 #include <FancyZonesLib/Layout.h>
 #include <FancyZonesLib/LayoutAssignedWindows.h>
 
@@ -54,6 +57,7 @@ public:
     void HideZones();
     void FlashZones();
     void ShowLayoutNameLabel(const std::wstring& name);
+    void ShowMonitorRotationPreview(const std::vector<RECT>& windowRects, size_t monitorNumber, std::optional<bool> reverse, bool animateRotation);
     
     void CycleWindows(HWND window, bool reverse);
 

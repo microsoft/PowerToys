@@ -367,6 +367,12 @@
         </RegistryKey>
         <File Id="CmdPalExtPowerToys_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\WinUI3Apps\$(var.Language)\Microsoft.CmdPal.Ext.PowerToys.resources.dll" />
       </Component>
+      <Component Id="PowerDisplayCli_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WinUI3AppsInstallFolder" Guid="$(var.CompGUIDPrefix)24">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="PowerDisplayCli_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <File Id="PowerDisplayCli_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\WinUI3Apps\$(var.Language)\PowerToys.PowerDisplay.Cli.resources.dll" />
+      </Component>
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>
       <?endforeach?>

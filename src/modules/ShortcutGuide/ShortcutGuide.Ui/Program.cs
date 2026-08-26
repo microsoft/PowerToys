@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -19,15 +20,20 @@ namespace ShortcutGuide
 {
     public sealed class Program
     {
+        private static readonly ManualResetEvent _runnerExitEvent = new(false);
+
         public static Thread CopyAndIndexGenerationThread { get; private set; } = null!;
 
-        public static nint ForegroundWindowHandle { get; private set; } = nint.Zero;
+        public static nint ForegroundWindowHandle { get; set; } = nint.Zero;
+
+        internal static WaitHandle RunnerExitEvent => _runnerExitEvent;
 
         [STAThread]
         public static void Main(string[] args)
         {
             ForegroundWindowHandle = NativeMethods.GetForegroundWindow();
             Logger.InitializeLogger("\\ShortcutGuide\\Logs");
+            LogForegroundCapture(ForegroundWindowHandle);
 
             // The module interface passes: <powertoys_pid> [telemetry]
             if (args.Length >= 2 && args[1] == "telemetry")
@@ -43,12 +49,12 @@ namespace ShortcutGuide
                 return;
             }
 
-            Directory.CreateDirectory(ManifestInterpreter.PathOfManifestFiles);
-
-            if (NativeMethods.IsCurrentWindowExcludedFromShortcutGuide())
+            if (args.Length >= 1 && int.TryParse(args[0], out int runnerPID))
             {
-                return;
+                MonitorPowerToysRunner(runnerPID);
             }
+
+            Directory.CreateDirectory(ManifestInterpreter.PathOfManifestFiles);
 
             // Copy every shipped manifest from the install directory to the per-user manifest folder.
             // Enumerating the source folder avoids drift between the deployed assets and a hard-coded list.
@@ -131,9 +137,48 @@ namespace ShortcutGuide
             {
                 Logger.LogWarning("Another instance of ShortcutGuide is running. Exiting ShortcutGuide");
             }
+        }
 
-            // The WinRT/WinUI dispatcher thread doesn't terminate cleanly; force exit.
-            Environment.Exit(0);
+        private static void MonitorPowerToysRunner(int runnerPID)
+        {
+            Process runnerProcess;
+            try
+            {
+                runnerProcess = Process.GetProcessById(runnerPID);
+
+                // Force the process handle to open synchronously so a Runner exit
+                // during WinUI initialization cannot be missed or confused with PID reuse.
+                _ = runnerProcess.Handle;
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or Win32Exception)
+            {
+                Logger.LogWarning($"PowerToys runner process (PID={runnerPID}) is no longer available. Exiting ShortcutGuide.");
+                _runnerExitEvent.Set();
+                return;
+            }
+
+            var runnerWatcher = new Thread(() =>
+            {
+                try
+                {
+                    runnerProcess.WaitForExit();
+                    Logger.LogInfo($"PowerToys runner process (PID={runnerPID}) exited. Exiting ShortcutGuide.");
+                }
+                catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
+                {
+                    Logger.LogWarning($"Failed while waiting for PowerToys runner process (PID={runnerPID}): {ex.Message}");
+                }
+                finally
+                {
+                    runnerProcess.Dispose();
+                    _runnerExitEvent.Set();
+                }
+            })
+            {
+                IsBackground = true,
+                Name = "ShortcutGuide-RunnerWatcher",
+            };
+            runnerWatcher.Start();
         }
 
         private static void SendSettingsTelemetry()
@@ -154,6 +199,48 @@ namespace ShortcutGuide
             catch (Exception ex)
             {
                 Logger.LogError("Failed to send settings telemetry.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Logs the foreground window captured at startup so we can see in
+        /// the SG log which app was foreground at the moment SG.exe began
+        /// running. The dictionary populated from this HWND drives the order
+        /// of nav items, so a wrong/empty capture surfaces as the wrong app
+        /// being auto-selected.
+        /// </summary>
+        private static void LogForegroundCapture(nint hwnd)
+        {
+            try
+            {
+                if (hwnd == nint.Zero)
+                {
+                    Logger.LogInfo("Foreground capture: HWND=0 (no foreground window).");
+                    return;
+                }
+
+                if (NativeMethods.GetWindowThreadProcessId(hwnd, out uint processId) == 0)
+                {
+                    Logger.LogInfo($"Foreground capture: HWND=0x{hwnd:X}; GetWindowThreadProcessId failed.");
+                    return;
+                }
+
+                string moduleName;
+                try
+                {
+                    using var proc = Process.GetProcessById((int)processId);
+                    moduleName = proc.MainModule?.ModuleName ?? "(null)";
+                }
+                catch (Exception ex)
+                {
+                    moduleName = $"(failed: {ex.GetType().Name})";
+                }
+
+                Logger.LogInfo($"Foreground capture: HWND=0x{hwnd:X}, PID={processId}, Module={moduleName}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to log foreground capture.", ex);
             }
         }
     }

@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+
 using ImageResizer.Helpers;
 
 namespace ImageResizer.Properties
@@ -71,5 +73,59 @@ namespace ImageResizer.Properties
         public static string CLI_WarningInvalidSizeIndex => ResourceLoaderInstance.GetString("CLI_WarningInvalidSizeIndex");
 
         public static string CLI_NoInputFiles => ResourceLoaderInstance.GetString("CLI_NoInputFiles");
+
+        public static string CLI_ErrorUnknownOption => GetStringOrDefault(
+            "CLI_ErrorUnknownOption",
+            "Unrecognized option '{0}'. Use '--' before a file name that starts with '-', or prefix it with '.\\'.");
+
+        public static string CLI_ErrorInvalidDimension => GetStringOrDefault(
+            "CLI_ErrorInvalidDimension",
+            "Width and height must be finite numbers greater than or equal to zero.");
+
+        public static string CLI_ErrorZeroDimensions => GetStringOrDefault(
+            "CLI_ErrorZeroDimensions",
+            "Width and height cannot both be zero for a custom size.");
+
+        public static string CLI_ErrorPercentWidthRequired => GetStringOrDefault(
+            "CLI_ErrorPercentWidthRequired",
+            "A positive width is required for percentage-based Fit and Fill sizes.");
+
+        public static string CLI_ErrorSizeIndexOutOfRange => GetStringOrDefault(
+            "CLI_ErrorSizeIndexOutOfRange",
+            "Size index {0} is out of range. The maximum valid index is {1}.");
+
+        public static string Error_DimensionOutOfRange => GetStringOrDefault(
+            "Error_DimensionOutOfRange",
+            "The requested output dimensions are outside the supported range.");
+
+        public static string CLI_ErrorFileNotFound => GetStringOrDefault("CLI_ErrorFileNotFound", "Input file not found.");
+
+        public static string CLI_ErrorUnsupportedFileType => GetStringOrDefault("CLI_ErrorUnsupportedFileType", "Unsupported image file type.");
+
+        public static string CLI_ErrorInvalidInputPath => GetStringOrDefault("CLI_ErrorInvalidInputPath", "Invalid input path: {0}");
+
+        public static string CLI_ErrorWildcardInDirectory => GetStringOrDefault(
+            "CLI_ErrorWildcardInDirectory",
+            "Wildcards are supported only in the file name portion of a path.");
+
+        public static string CLI_ErrorNoWildcardMatches => GetStringOrDefault(
+            "CLI_ErrorNoWildcardMatches",
+            "No files matched the wildcard pattern.");
+
+        public static string CLI_ErrorProcessingFallback => GetStringOrDefault(
+            "CLI_ErrorProcessingFallback",
+            "Image processing failed with {0} (HRESULT 0x{1:X8}).");
+
+        public static string CLI_WarningShrinkOnlyPercent => GetStringOrDefault(
+            "CLI_WarningShrinkOnlyPercent",
+            "Warning: Shrink-only is ignored for percentage-based sizes.");
+
+        private static string GetStringOrDefault(string key, string defaultValue)
+        {
+            var value = ResourceLoaderInstance.GetString(key);
+            return string.IsNullOrWhiteSpace(value) || string.Equals(value, key, StringComparison.Ordinal)
+                ? defaultValue
+                : value;
+        }
     }
 }

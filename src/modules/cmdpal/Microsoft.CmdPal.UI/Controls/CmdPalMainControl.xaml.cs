@@ -5,11 +5,11 @@
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Services;
-using Microsoft.UI.Composition.SystemBackdrops;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Windows.UI;
-using WinUIEx;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
@@ -18,8 +18,11 @@ namespace Microsoft.CmdPal.UI.Controls;
 /// corners, border, shadow and system backdrop. The HWND that hosts it is borderless
 /// and transparent, so all the chrome lives here instead of in window non-client area.
 /// </summary>
-public sealed partial class CmdPalMainControl : UserControl
+public sealed partial class CmdPalMainControl : UserControl, IDisposable
 {
+    private readonly TintedControllerBackdrop _backdrop = new();
+    private Color _cardFallbackBackground;
+
     public static readonly DependencyProperty MainContentProperty =
         DependencyProperty.Register(
             nameof(MainContent),
@@ -103,6 +106,8 @@ public sealed partial class CmdPalMainControl : UserControl
     public CmdPalMainControl()
     {
         this.InitializeComponent();
+        _backdrop.BackdropAttachmentChanged += OnBackdropAttachmentChanged;
+        BackdropElement.SystemBackdrop = _backdrop;
     }
 
     /// <summary>
@@ -142,19 +147,21 @@ public sealed partial class CmdPalMainControl : UserControl
     /// </summary>
     public void SetIsInputActive(bool isActive)
     {
-        if (BackdropElement.SystemBackdrop is TintedControllerBackdrop tinted)
-        {
-            tinted.IsInputActive = isActive;
-        }
+        _backdrop.IsInputActive = isActive;
     }
 
     /// <summary>
-    /// Detaches any backdrop from the embedded element. Used during shutdown to release the
-    /// underlying controller eagerly.
+    /// Releases the active controller on the XAML thread while keeping the projected
+    /// backdrop target rooted until WinUI disconnects it during shutdown.
     /// </summary>
     public void ClearBackdrop()
     {
-        BackdropElement.SystemBackdrop = null;
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _backdrop.Dispose();
     }
 
     /// <summary>
@@ -168,64 +175,57 @@ public sealed partial class CmdPalMainControl : UserControl
     {
         try
         {
-            BackdropElement.SystemBackdrop = CreateBackdrop(backdrop, kind, isImageMode, hasColorization);
+            // The border fill sits underneath SystemBackdropElement and remains a ready
+            // fallback if a controller or composition brush cannot attach.
+            _cardFallbackBackground = CreateCardBackground(backdrop, kind);
+            SetCardBackground(_cardFallbackBackground);
+
+            // Update the controller behind the one long-lived SystemBackdrop. Replacing the
+            // SystemBackdrop property would create short-lived, thread-affine target
+            // projections that C#/WinRT can otherwise release from its finalizer thread.
+            _backdrop.Update(backdrop, kind, isImageMode, hasColorization);
+            UpdateCardBackground(_backdrop.IsBackdropAttached);
         }
         catch (Exception ex)
         {
+            SetCardBackground(backdrop.FallbackColor);
             Logger.LogError("Failed to apply backdrop to CmdPalMainControl", ex);
         }
     }
 
-    private static Microsoft.UI.Xaml.Media.SystemBackdrop? CreateBackdrop(BackdropParameters backdrop, BackdropControllerKind kind, bool isImageMode, bool hasColorization)
+    private void SetCardBackground(Color color)
     {
-        // Image mode: don't tint here, BlurImageControl handles it (avoids double-tinting).
-        var effectiveTintOpacity = isImageMode ? 0.0f : backdrop.EffectiveOpacity;
-
-        switch (kind)
+        if (CardBorder.Background is SolidColorBrush background)
         {
-            case BackdropControllerKind.Solid:
-                var solidTint = Color.FromArgb(
-                    (byte)(backdrop.EffectiveOpacity * 255),
-                    backdrop.TintColor.R,
-                    backdrop.TintColor.G,
-                    backdrop.TintColor.B);
-                return new TransparentTintBackdrop { TintColor = solidTint };
-
-            case BackdropControllerKind.Mica:
-            case BackdropControllerKind.MicaAlt:
-                if (!MicaController.IsSupported())
-                {
-                    return new TransparentTintBackdrop { TintColor = backdrop.FallbackColor };
-                }
-
-                return new TintedMicaBackdrop
-                {
-                    Kind = kind == BackdropControllerKind.MicaAlt ? MicaKind.BaseAlt : MicaKind.Base,
-                    ApplyTint = hasColorization || isImageMode,
-                    TintColor = backdrop.TintColor,
-                    TintOpacity = effectiveTintOpacity,
-                    FallbackColor = backdrop.FallbackColor,
-                    LuminosityOpacity = backdrop.EffectiveLuminosityOpacity,
-                };
-
-            case BackdropControllerKind.Acrylic:
-            case BackdropControllerKind.AcrylicThin:
-            default:
-                if (!DesktopAcrylicController.IsSupported())
-                {
-                    return new TransparentTintBackdrop { TintColor = backdrop.FallbackColor };
-                }
-
-                return new TintedDesktopAcrylicBackdrop
-                {
-                    Kind = kind == BackdropControllerKind.AcrylicThin
-                        ? DesktopAcrylicKind.Thin
-                        : DesktopAcrylicKind.Default,
-                    TintColor = backdrop.TintColor,
-                    TintOpacity = effectiveTintOpacity,
-                    FallbackColor = backdrop.FallbackColor,
-                    LuminosityOpacity = backdrop.EffectiveLuminosityOpacity,
-                };
+            background.Color = color;
         }
+        else
+        {
+            CardBorder.Background = new SolidColorBrush(color);
+        }
+    }
+
+    private void OnBackdropAttachmentChanged(bool isBackdropAttached)
+    {
+        UpdateCardBackground(isBackdropAttached);
+    }
+
+    private void UpdateCardBackground(bool isBackdropAttached)
+    {
+        SetCardBackground(isBackdropAttached ? Colors.Transparent : _cardFallbackBackground);
+    }
+
+    private static Color CreateCardBackground(BackdropParameters backdrop, BackdropControllerKind kind)
+    {
+        if (kind == BackdropControllerKind.Solid)
+        {
+            return Color.FromArgb(
+                (byte)(backdrop.EffectiveOpacity * 255),
+                backdrop.TintColor.R,
+                backdrop.TintColor.G,
+                backdrop.TintColor.B);
+        }
+
+        return backdrop.FallbackColor;
     }
 }

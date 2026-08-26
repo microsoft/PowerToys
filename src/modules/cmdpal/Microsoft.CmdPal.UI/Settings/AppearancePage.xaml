@@ -22,6 +22,7 @@
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource SettingsCardSpacing}">
 
+                    <TextBlock x:Uid="Settings_AppearancePage_AppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
                     <StackPanel
                         Margin="0,0,0,16"
                         HorizontalAlignment="Left"
@@ -283,9 +284,66 @@
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
 
-                    <!--  'Behavior' section  -->
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_DisableAnimations_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_DisableAnimations" IsOn="{x:Bind ViewModel.DisableAnimations, Mode=TwoWay}" />
+                    </controls:SettingsCard>
 
-                    <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <TextBlock x:Uid="Settings_AppearancePage_LayoutSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <controls:SettingsExpander x:Uid="Settings_GeneralPage_CompactMode_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE73F;}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_CompactMode" IsOn="{x:Bind ViewModel.CompactMode, Mode=TwoWay}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard x:Uid="Settings_GeneralPage_CompactCenterHeight_SettingsCard" IsEnabled="{x:Bind ViewModel.CompactMode, Mode=OneWay}">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_CompactCenterHeight"
+                                    Maximum="100"
+                                    Minimum="0"
+                                    Orientation="Horizontal"
+                                    StepFrequency="5"
+                                    TickFrequency="25"
+                                    TickPlacement="Outside"
+                                    Value="{x:Bind ViewModel.CompactCenterHeightPercentage, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+
+                    <controls:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="CmdPal_GeneralPage_MonitorPosition"
+                            SelectedIndex="{x:Bind ViewModel.MonitorPositionIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Run_Radio_Position_Cursor" />
+                            <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor" />
+                            <ComboBoxItem x:Uid="Run_Radio_Position_Focus" />
+                            <ComboBoxItem x:Uid="Run_Radio_Position_In_Place" />
+                            <ComboBoxItem x:Uid="Run_Radio_Position_LastPosition" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ToastPosition_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75A;}">
+                        <controls:SettingsCard.Description>
+                            <HyperlinkButton
+                                x:Uid="Settings_GeneralPage_ToastPosition_OpenSystemSettings_Hyperlink"
+                                Padding="0"
+                                AutomationProperties.AutomationId="CmdPal_GeneralPage_ToastPosition_OpenSystemSettings"
+                                Click="OpenSystemSettings_Click"
+                                Visibility="{x:Bind ViewModel.IsToastPositionFromSystemSettings, Mode=OneWay}" />
+                        </controls:SettingsCard.Description>
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="CmdPal_GeneralPage_ToastPosition"
+                            SelectedIndex="{x:Bind ViewModel.ToastPositionIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ToastPosition_Item_UseSystemSettings" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ToastPosition_Item_BottomCenter" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ToastPosition_Item_TopLeft" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ToastPosition_Item_TopCenter" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+
+                    <TextBlock x:Uid="Settings_AppearancePage_InteractionSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_SingleClickActivation_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_SingleClickActivates" IsOn="{x:Bind ViewModel.SingleClickActivates, Mode=TwoWay}" />
+                    </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowAppDetails_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_ShowAppDetails" IsOn="{x:Bind ViewModel.ShowAppDetails, Mode=TwoWay}" />
@@ -305,14 +363,6 @@
                             <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysDismiss" />
                             <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysHide" />
                         </ComboBox>
-                    </controls:SettingsCard>
-
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_SingleClickActivation_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
-                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_SingleClickActivates" IsOn="{x:Bind ViewModel.SingleClickActivates, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_DisableAnimations_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
-                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_DisableAnimations" IsOn="{x:Bind ViewModel.DisableAnimations, Mode=TwoWay}" />
                     </controls:SettingsCard>
                 </StackPanel>
             </Grid>

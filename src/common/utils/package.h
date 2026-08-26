@@ -182,7 +182,7 @@ namespace package
             if (packageFullName.contains(packageDisplayName))
             {
                 // If checkVersion is true, verify if the package has the same version as PowerToys.
-                if ((!checkVersion) || (packageVersion.Major == VERSION_MAJOR && packageVersion.Minor == VERSION_MINOR && packageVersion.Revision == VERSION_REVISION))
+                if ((!checkVersion) || (packageVersion.Major == VERSION_MAJOR && packageVersion.Minor == VERSION_MINOR && packageVersion.Build == VERSION_REVISION && packageVersion.Revision == VERSION_BUILD))
                 {
                     return { package };
                 }

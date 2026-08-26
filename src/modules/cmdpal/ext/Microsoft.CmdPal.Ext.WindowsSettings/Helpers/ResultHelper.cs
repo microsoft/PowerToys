@@ -24,9 +24,15 @@ internal static class ResultHelper
         in IEnumerable<Classes.WindowsSetting> list)
     {
         var resultList = new List<ListItem>(list.Count());
+        var destinations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var entry in list)
         {
+            if (!destinations.Add(entry.Command))
+            {
+                continue;
+            }
+
             var result = new ListItem(new OpenSettingsCommand(entry))
             {
                 Icon = Icons.WindowsSettingsIcon,
@@ -45,11 +51,7 @@ internal static class ResultHelper
                 result.Subtitle += $"\u0020\u0020\u002D\u0020\u0020{Resources.Note}: {entry.Note}"; // "\u0020\u0020\u002D\u0020\u0020" = "<space><space><minus><space><space>"
             }
 
-            // To not show duplicate entries we check the existing results on the list before adding the new entry. Example: Device Manager entry for Control Panel and Device Manager entry for MMC.
-            if (!resultList.Any(x => x.Title == result.Title))
-            {
-                resultList.Add(result);
-            }
+            resultList.Add(result);
         }
 
         // TODO GH #127 --> Investigate scoring

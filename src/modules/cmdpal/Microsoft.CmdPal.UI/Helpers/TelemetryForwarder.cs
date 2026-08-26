@@ -21,7 +21,9 @@ internal sealed class TelemetryForwarder :
     IRecipient<TelemetryBeginInvokeMessage>,
     IRecipient<TelemetryInvokeResultMessage>,
     IRecipient<TelemetryExtensionInvokedMessage>,
-    IRecipient<TelemetryDockConfigurationMessage>
+    IRecipient<TelemetryDockConfigurationMessage>,
+    IRecipient<TelemetrySearchResultsMessage>,
+    IRecipient<TelemetrySearchResultSelectedMessage>
 {
     public TelemetryForwarder()
     {
@@ -29,6 +31,8 @@ internal sealed class TelemetryForwarder :
         WeakReferenceMessenger.Default.Register<TelemetryInvokeResultMessage>(this);
         WeakReferenceMessenger.Default.Register<TelemetryExtensionInvokedMessage>(this);
         WeakReferenceMessenger.Default.Register<TelemetryDockConfigurationMessage>(this);
+        WeakReferenceMessenger.Default.Register<TelemetrySearchResultsMessage>(this);
+        WeakReferenceMessenger.Default.Register<TelemetrySearchResultSelectedMessage>(this);
     }
 
     // Message handlers for telemetry events from core layer
@@ -66,6 +70,23 @@ internal sealed class TelemetryForwarder :
             message.StartBands,
             message.CenterBands,
             message.EndBands));
+    }
+
+    public void Receive(TelemetrySearchResultsMessage message)
+    {
+        PowerToysTelemetry.Log.WriteEvent(new CmdPalSearchResults(
+            message.QueryLength,
+            message.ResultCount,
+            message.NoResults,
+            message.LatencyMs));
+    }
+
+    public void Receive(TelemetrySearchResultSelectedMessage message)
+    {
+        PowerToysTelemetry.Log.WriteEvent(new CmdPalSearchResultSelected(
+            message.QueryLength,
+            message.SelectedIndex,
+            message.SelectedTier.ToString()));
     }
 
     // Static method for logging session duration from UI layer

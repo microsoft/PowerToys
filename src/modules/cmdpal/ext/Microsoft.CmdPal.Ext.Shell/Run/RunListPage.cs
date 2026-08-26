@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CommandPalette.Extensions;
@@ -69,7 +70,7 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         bool suppressUriFallback = false)
     {
         Icon = Icons.RunV2Icon;
-        Id = "com.microsoft.cmdpal.run";
+        Id = BuiltInCommandIds.Run;
 
         Name = ResourceLoaderInstance.GetString("Run_plugin_name");
         Title = ResourceLoaderInstance.GetString("Run_generic_run_command");

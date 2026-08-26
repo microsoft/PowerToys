@@ -2,6 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Threading.Tasks;
+
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 using Microsoft.CmdPal.Ext.WindowsSettings.Pages;
 using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
@@ -37,6 +41,24 @@ public sealed partial class WindowsSettingsCommandsProvider : CommandProvider
 
         TranslationHelper.TranslateAllSettings(_windowsSettings);
         WindowsSettingsPathHelper.GenerateSettingsPathValues(_windowsSettings);
+
+        // Merge in the Control Panel tasks the shell exposes (see #48539) in
+        // the background — shell enumeration must not delay provider startup.
+        // Runs after TranslateAllSettings on purpose: shell display names are
+        // already localized and must not go through resource translation.
+        var windowsSettings = _windowsSettings;
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                var controlPanelTasks = ControlPanelTasksHelper.GetAllControlPanelTasks();
+                ControlPanelTasksHelper.MergeIntoSettings(windowsSettings, controlPanelTasks);
+            }
+            catch (Exception exception)
+            {
+                Logger.LogError($"Failed to merge Control Panel tasks into settings search", exception);
+            }
+        });
     }
 
     public override ICommandItem[] TopLevelCommands()

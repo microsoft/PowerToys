@@ -83,11 +83,11 @@
       <Directory Id="WindowsPowerShellFolder" Name="WindowsPowerShell">
         <Directory Id="PowerShellModulesFolder" Name="Modules">
           <Directory Id="PowerToysDscFolder" Name="Microsoft.PowerToys.Configure">
-            <Directory Id="PowerToysDscVerFolder" Name="$(var.Version).0">
+            <Directory Id="PowerToysDscVerFolder" Name="$(var.DscModuleVersion)">
               <Component Id="PowerToysDSC" Guid="C52AECA0-DA73-49B8-BB49-31EF6640FF1F" Bitness="always64">
                 <!-- Don't fail installation because of DSC. Files are marked as not vital. -->
-                <File Vital="no" Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version).0\Microsoft.PowerToys.Configure.psd1" Id="PTConf.psd1" />
-                <File Vital="no" Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version).0\Microsoft.PowerToys.Configure.psm1" Id="PTConf.psm1" />
+                <File Vital="no" Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.DscModuleVersion)\Microsoft.PowerToys.Configure.psd1" Id="PTConf.psd1" />
+                <File Vital="no" Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.DscModuleVersion)\Microsoft.PowerToys.Configure.psm1" Id="PTConf.psm1" />
               </Component>
             </Directory>
           </Directory>

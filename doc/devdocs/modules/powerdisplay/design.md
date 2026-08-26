@@ -14,6 +14,7 @@
 6. [Component Design](#component-design)
    - [PowerDisplay Module Internal Structure](#powerdisplay-module-internal-structure)
    - [DisplayChangeWatcher - Monitor Hot-Plug Detection](#displaychangewatcher---monitor-hot-plug-detection)
+   - [Tray Icon Mouse Wheel Control](#tray-icon-mouse-wheel-control)
    - [DDC/CI and WMI Interaction Architecture](#ddcci-and-wmi-interaction-architecture)
    - [IMonitorController Interface Methods](#imonitorcontroller-interface-methods)
    - [Why WmiLight Instead of System.Management](#why-wmilight-instead-of-systemmanagement)
@@ -193,26 +194,18 @@ src/modules/powerdisplay/
 │   │   └── PInvoke.cs                # P/Invoke declarations
 │   ├── Interfaces/
 │   │   ├── IMonitorController.cs     # Controller abstraction
-│   │   ├── IMonitorData.cs           # Monitor data interface
-│   │   └── IProfileService.cs        # Profile service interface
+│   │   └── IMonitorData.cs           # Monitor data interface
 │   ├── Models/
 │   │   ├── Monitor.cs                # Runtime monitor data
 │   │   ├── MonitorCapabilities.cs    # Monitor capability flags
 │   │   ├── MonitorOperationResult.cs # Operation result
 │   │   ├── MonitorStateEntry.cs      # Persisted monitor state
 │   │   ├── MonitorStateFile.cs       # State file schema
-│   │   ├── PowerDisplayProfile.cs    # Profile definition
-│   │   ├── PowerDisplayProfiles.cs   # Profile collection
-│   │   ├── ProfileMonitorSetting.cs  # Per-monitor profile settings
-│   │   ├── ColorPresetItem.cs        # Color preset UI item
 │   │   ├── VcpCapabilities.cs        # Parsed VCP capabilities
 │   │   └── VcpFeatureValue.cs        # VCP feature value (current/min/max)
-│   ├── Serialization/
-│   │   └── ProfileSerializationContext.cs  # JSON source generation
 │   ├── Services/
 │   │   ├── DisplayRotationService.cs # Display rotation via ChangeDisplaySettingsEx
-│   │   ├── MonitorStateManager.cs    # State persistence (debounced save) and restore on startup
-│   │   └── ProfileService.cs         # Profile persistence
+│   │   └── MonitorStateManager.cs    # State persistence (debounced save) and restore on startup
 │   ├── Utils/
 │   │   ├── ColorTemperatureHelper.cs # Color temp utilities
 │   │   ├── EventHelper.cs            # Windows Event utilities
@@ -221,10 +214,18 @@ src/modules/powerdisplay/
 │   │   ├── MonitorMatchingHelper.cs  # Profile-to-monitor matching
 │   │   ├── MonitorValueConverter.cs  # Value conversion utilities
 │   │   ├── PnpIdHelper.cs            # PnP manufacturer ID lookup
-│   │   ├── ProfileHelper.cs          # Profile helper utilities
 │   │   ├── SimpleDebouncer.cs        # Generic debouncer
 │   │   └── VcpNames.cs               # VCP code and value name lookup
 │   └── PathConstants.cs              # File path constants
+│
+├── PowerDisplay.Models/              # Shared profile models and persistence
+│   ├── ColorPresetItem.cs             # Color preset UI item
+│   ├── PowerDisplayProfile.cs         # Profile definition
+│   ├── PowerDisplayProfiles.cs        # Profile collection
+│   ├── ProfileMonitorSetting.cs       # Per-monitor profile settings
+│   ├── ProfileHelper.cs               # Shared asynchronous profile entry points
+│   ├── ProfileStore.cs                # Atomic cross-process profile persistence
+│   └── ProfileSerializationContext.cs # JSON source generation
 │
 ├── PowerDisplay/                     # WinUI 3 application
 │   ├── Assets/                       # App icons and images
@@ -304,7 +305,6 @@ flowchart TB
 
         subgraph PowerDisplayLib["PowerDisplay.Lib"]
             subgraph Services
-                ProfileService
                 MonitorStateManager
                 DisplayRotationService
             end
@@ -315,6 +315,11 @@ flowchart TB
             subgraph Utils
                 PnpIdHelper["PnpIdHelper<br/>(Manufacturer Names)"]
             end
+        end
+
+        subgraph PowerDisplayModels["PowerDisplay.Models"]
+            ProfileHelper
+            ProfileStore
         end
     end
 
@@ -338,13 +343,14 @@ flowchart TB
     ThemeChangedEvent --> LightSwitchService
 
     %% App internal
-    LightSwitchService -.->|"Get profile name"| MainViewModel
+    LightSwitchService -.->|"Get profile id"| MainViewModel
     MainViewModel --> MonitorViewModel
     MonitorViewModel --> MonitorManager
     DisplayChangeWatcher -.->|"DisplayChanged event"| MainViewModel
 
-    %% App to Lib services
-    MainViewModel --> ProfileService
+    %% App to services and profile persistence
+    MainViewModel --> ProfileHelper
+    ProfileHelper --> ProfileStore
     MonitorViewModel --> MonitorStateManager
     MonitorManager --> Drivers
     MonitorManager --> DisplayRotationService
@@ -352,8 +358,8 @@ flowchart TB
     %% Utils used during discovery
     WmiController --> PnpIdHelper
 
-    %% Services to Storage
-    ProfileService --> ProfilesJson
+    %% Persistence to Storage
+    ProfileStore --> ProfilesJson
     MonitorStateManager --> MonitorStateJson
 
     %% Drivers to Hardware
@@ -407,6 +413,66 @@ _deviceWatcher.Updated += OnDeviceUpdated;  // Monitor properties changed
 - Each device change event schedules a `DisplayChanged` event after 1 second
 - Subsequent events within the debounce window cancel the previous timer
 - This prevents excessive refreshes when multiple monitors change simultaneously
+
+---
+
+### Tray Icon Mouse Wheel Control
+
+Scrolling the mouse wheel over the notification-area icon adjusts brightness without opening the
+flyout. The scope comes from the **Tray icon mouse wheel** setting
+(`PowerDisplayProperties.MouseWheelControlMode`): `Disabled` (default), `PrimaryDisplay` or
+`AllDisplays`. The per-notch step reuses the existing **Mouse wheel increment** setting.
+
+**Off by default, on purpose.** The gesture claims a wheel notch that would otherwise reach the
+window under the pointer, and acting on it installs a system-wide `WH_MOUSE_LL` hook. Neither is
+something an existing installation should acquire silently on upgrade, so the feature is opt-in:
+`Disabled` also means the hook is never installed at all.
+
+The setting is scoped to the tray icon. The flyout sliders accept wheel input regardless, as they
+always have.
+
+**No feedback UI, on purpose.** Brightness is self-evidencing: the screen changes as you scroll, so
+there is nothing for a readout to add that the display itself does not already show. The tray icon
+keeps the standard Shell tooltip and its existing text, and the notification icon stays on the
+legacy protocol. This is a deliberate departure from volume-style tray controls, where an on-screen
+readout is the only feedback available.
+
+**Why a low-level hook.** The Shell does not forward `WM_MOUSEWHEEL` to a notification icon's
+callback window under any `NOTIFYICON_VERSION`, and a click-through overlay placed over the icon
+cannot receive wheel input either. `TrayIconMouseWheelListener` therefore installs a `WH_MOUSE_LL`
+hook - but only transiently:
+
+- The hook is installed in `EnsureHook()` when the UI thread confirms the pointer is inside the
+  rectangle returned by `Shell_NotifyIconGetRect` **and** `CanAdjustBrightnessFromTrayWheel` says
+  some monitor can accept a brightness write.
+- It is removed in `DisarmCore()` as soon as either condition stops holding, the pointer leaves the
+  rectangle, or the mode changes.
+- A notch is consumed (the hook proc returns non-zero) only while armed and only for points inside
+  the armed rectangle, so a wheel event PowerDisplay will not act on still reaches the window under
+  the cursor.
+
+The hook runs on a dedicated background thread with its own message loop. Deltas are queued as
+`TrayWheelSample` values and marshalled to the UI thread in batches; `WheelDeltaAccumulator` folds
+high-resolution deltas (precision wheels, touchpads) into whole notches. Each sample carries the
+hover generation it was captured under, so samples from a hover the UI thread has already retired
+are discarded rather than applied late.
+
+**Hover detection.** The Shell sends `WM_MOUSEMOVE` to the icon's callback window while the pointer
+is over it. `TrayIconService.HandleTrayMouseMove` resolves the icon rectangle with
+`Shell_NotifyIconGetRect`, caching it for a second because that message repeats for every pixel of
+travel.
+
+**Linked brightness.** While linked brightness is on, a wheel notch must move the whole group, so it
+is routed through `MainViewModel.LinkedBrightness` rather than the individual monitor setters. The
+new master value is derived from `TrayWheelAdjustmentPlanner`'s value for the monitor the wheel
+named, not from the current master: the master is positional only (`SeedInitialLinkedBrightness`
+takes it from the lowest-numbered linked monitor and never writes hardware, and every monitor-list
+rebuild re-seeds it), so stepping it relative to itself would apply a wrong-sized or wrong-signed
+change.
+
+**Testing.** Target selection and wheel accumulation are pure logic in `PowerDisplay.Lib/Services`
+with unit tests in `PowerDisplay.Lib.UnitTests`. The Win32 glue in `TrayIconService` and
+`TrayIconMouseWheelListener` is not unit tested and needs manual verification.
 
 ---
 
@@ -1080,7 +1146,7 @@ flowchart TB
         StateManager["LightSwitchStateManager"]
         ThemeEval["Theme Evaluation<br/>(Time/System)"]
         LightSwitchSettings["LightSwitchSettings"]
-        NotifyPD["NotifyPowerDisplay(isLight)"]
+        NotifyPD["NotifyPowerDisplayThemeChanged(isLight)"]
     end
 
     subgraph PowerDisplayModule["PowerDisplay Module (C#)"]
@@ -1090,7 +1156,8 @@ flowchart TB
             MainViewModel["MainViewModel"]
         end
 
-        ProfileService["ProfileService"]
+        ProfileHelper["ProfileHelper<br/>(PowerDisplay.Models)"]
+        ProfileStore["ProfileStore"]
         MonitorVMs["MonitorViewModels"]
         Controllers["IMonitorController"]
     end
@@ -1113,17 +1180,18 @@ flowchart TB
     ThemeEval -->|"Time boundary<br/>or manual"| StateManager
     StateManager --> LightSwitchSettings
     StateManager --> NotifyPD
-    NotifyPD -->|"isLight=true"| LightEvent
-    NotifyPD -->|"isLight=false"| DarkEvent
+    NotifyPD -->|"pure light theme event"| LightEvent
+    NotifyPD -->|"pure dark theme event"| DarkEvent
 
     %% PowerDisplay flow - theme determined from event
     LightEvent -->|"Event signaled"| EventWaiter
     DarkEvent -->|"Event signaled"| EventWaiter
     EventWaiter -->|"isLightMode"| LightSwitchSvc
-    LightSwitchSvc -->|"GetProfileForTheme()"| LSSettingsJson
-    LightSwitchSvc -->|"Profile name"| MainViewModel
-    MainViewModel -->|"LoadProfiles()"| ProfileService
-    ProfileService <--> PDProfilesJson
+    LightSwitchSvc -->|"GetProfileIdForTheme()"| LSSettingsJson
+    LightSwitchSvc -->|"Profile id"| MainViewModel
+    MainViewModel -->|"LoadProfilesAsync()"| ProfileHelper
+    ProfileHelper --> ProfileStore
+    ProfileStore <--> PDProfilesJson
     MainViewModel -->|"ApplyProfileAsync()"| MonitorVMs
     MonitorVMs --> Controllers
     Controllers --> Monitors
@@ -1135,19 +1203,24 @@ flowchart TB
     style FileSystem fill:#fffde7
 ```
 
+Native LightSwitch treats these named events as pure theme-change notifications and does not parse PowerDisplay profile enablement, names, or IDs. PowerDisplay reads the typed LightSwitch settings after receiving the event and is the sole authority that validates and applies the configured profile.
+
 ### LightSwitch Settings JSON Structure
 
 ```json
 {
   "properties": {
-    "apply_monitor_settings": { "value": true },
-    "enable_light_mode_profile": { "value": true },
-    "light_mode_profile": { "value": "Productivity" },
-    "enable_dark_mode_profile": { "value": true },
-    "dark_mode_profile": { "value": "Night Mode" }
+    "enableLightModeProfile": { "value": true },
+    "lightModeProfile": { "value": "" },
+    "lightModeProfileId": { "value": 3 },
+    "enableDarkModeProfile": { "value": true },
+    "darkModeProfile": { "value": "" },
+    "darkModeProfileId": { "value": 7 }
   }
 }
 ```
+
+The name fields are retained only for migration from pre-ID settings; current code persists and resolves the positive ID fields.
 
 ---
 
@@ -1354,7 +1427,8 @@ sequenceDiagram
     participant SettingsPage as PowerDisplayPage
     participant ViewModel as PowerDisplayViewModel
     participant ProfileDialog as ProfileEditorDialog
-    participant ProfileService
+    participant ProfileHelper
+    participant ProfileStore
     participant FileSystem as profiles.json
 
     User->>SettingsPage: Clicks "Add Profile" button
@@ -1369,20 +1443,21 @@ sequenceDiagram
     User->>ProfileDialog: Clicks "Save"
 
     ProfileDialog->>ProfileDialog: Validate inputs
-    Note over ProfileDialog: Check name unique,<br/>at least one monitor selected
+    Note over ProfileDialog: Check non-empty name,<br/>at least one monitor selected
 
     ProfileDialog-->>ViewModel: ResultProfile (PowerDisplayProfile)
 
-    ViewModel->>ProfileService: AddOrUpdateProfile(profile)
+    ViewModel->>ProfileHelper: ProfileHelper.AddOrUpdateProfileAsync(profile)
+    ProfileHelper->>ProfileStore: AddOrUpdateProfileAsync(profile)
 
-    ProfileService->>ProfileService: lock(_lock)
-    ProfileService->>FileSystem: Read profiles.json
-    FileSystem-->>ProfileService: Existing profiles
-    ProfileService->>ProfileService: Add/update profile in collection
-    ProfileService->>ProfileService: Set LastUpdated = DateTime.Now
-    ProfileService->>FileSystem: Write profiles.json
-    FileSystem-->>ProfileService: Success
-    ProfileService-->>ViewModel: true
+    ProfileStore->>ProfileStore: Acquire process lock and named mutex
+    ProfileStore->>FileSystem: Read profiles.json
+    FileSystem-->>ProfileStore: Existing profiles
+    ProfileStore->>ProfileStore: Assign id and update profile
+    ProfileStore->>FileSystem: Write temp file and atomically replace profiles.json
+    FileSystem-->>ProfileStore: Success
+    ProfileStore-->>ProfileHelper: Completed
+    ProfileHelper-->>ViewModel: Completed
 
     ViewModel->>ViewModel: RefreshProfilesList()
     ViewModel-->>SettingsPage: PropertyChanged(Profiles)
@@ -1401,7 +1476,7 @@ sequenceDiagram
     participant EventWaiter as NativeEventWaiter
     participant LSSvc as LightSwitchService
     participant MainVM as MainViewModel
-    participant ProfileService
+    participant ProfileHelper
     participant MonitorVM as MonitorViewModel
     participant Controller as IMonitorController
     participant Monitor as Physical Monitor
@@ -1412,8 +1487,8 @@ sequenceDiagram
     LightSwitch->>LightSwitch: EvaluateAndApplyIfNeeded()
     LightSwitch->>LightSwitch: ApplyTheme(isLight)
 
-    LightSwitch->>LightSwitch: NotifyPowerDisplay(isLight)
-    Note over LightSwitch: Check if profile enabled
+    LightSwitch->>LightSwitch: NotifyPowerDisplayThemeChanged(isLight)
+    Note over LightSwitch: Publish the resulting theme only;<br/>PowerDisplay owns profile validation
 
     alt isLight == true
         LightSwitch->>WinEvent: SetEvent("Local\\PowerToys_LightSwitch_LightTheme")
@@ -1425,16 +1500,16 @@ sequenceDiagram
     EventWaiter->>WinEvent: WaitAny([lightEvent, darkEvent]) returns index
 
     Note over EventWaiter: Theme determined from event:<br/>index 0 = Light, index 1 = Dark
-    EventWaiter->>LSSvc: GetProfileForTheme(isLightMode)
+    EventWaiter->>LSSvc: GetProfileIdForTheme(isLightMode)
     LSSvc->>LSSvc: Read LightSwitch/settings.json
-    LSSvc-->>EventWaiter: profileName (or null)
+    LSSvc-->>EventWaiter: profileId (or null)
 
-    EventWaiter->>MainVM: Dispatch to UI thread with profileName
+    EventWaiter->>MainVM: Dispatch to UI thread with profileId
 
-    MainVM->>ProfileService: LoadProfiles()
-    ProfileService-->>MainVM: PowerDisplayProfiles
+    MainVM->>ProfileHelper: LoadProfilesAsync()
+    ProfileHelper-->>MainVM: PowerDisplayProfiles
 
-    MainVM->>MainVM: Find profile by name
+    MainVM->>MainVM: Find profile by id
     MainVM->>MainVM: ApplyProfileAsync(profile.MonitorSettings)
 
     loop For each ProfileMonitorSetting

@@ -206,7 +206,7 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 BorderBrush="{ThemeResource CmdPal.TopBarBorderBrush}"
-                BorderThickness="0,0,0,1">
+                BorderThickness="{x:Bind h:BindTransformers.BottomBorderThicknessWhenAll(ViewModel.IsSearchBoxVisible, ExpandedMode), Mode=OneWay}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -596,7 +596,6 @@
                     <VisualState.Setters>
                         <Setter Target="SearchBox.IsEnabled" Value="False" />
                         <Setter Target="SearchBox.Opacity" Value="0" />
-                        <Setter Target="TopBarGrid.BorderBrush" Value="Transparent" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

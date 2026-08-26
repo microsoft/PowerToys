@@ -12,6 +12,12 @@
 #include <shcore.h>
 
 extern DWORD g_RecordScaling;
+extern HWND g_hWndMain;
+
+// Must match the definition in ZoomIt.h.
+#ifndef WM_USER_RECORDING_NO_FRAMES
+#define WM_USER_RECORDING_NO_FRAMES (WM_USER + 112)
+#endif
 
 namespace winrt
 {
@@ -409,10 +415,28 @@ winrt::IAsyncAction GifRecordingSession::StartAsync()
             // Keep track of the last frame to duplicate when needed
             winrt::com_ptr<ID3D11Texture2D> lastCroppedTexture;
 
+            bool firstFrame = true;
             while (m_isRecording && !m_closed)
             {
                 captureAttempts++;
-                auto frame = m_frameWait->TryGetNextFrame();
+                // Bound the very first frame so a display that never delivers
+                // frames to Windows.Graphics.Capture (headless / GPU-less VM
+                // or some remote sessions) is detected and reported instead
+                // of blocking forever on an INFINITE wait.
+                constexpr DWORD c_firstFrameTimeoutMs = 3000;
+                auto frame = firstFrame
+                    ? m_frameWait->TryGetNextFrame( c_firstFrameTimeoutMs )
+                    : m_frameWait->TryGetNextFrame();
+                if (firstFrame && !frame && m_isRecording && !m_closed)
+                {
+                    // First frame never arrived — capture is not delivering
+                    // frames.  Notify the UI so it can tell the user instead
+                    // of silently producing an empty GIF.
+                    OutputDebugStringW(L"[GIF] first-frame timeout — capture delivered no frames; signaling capture-unavailable\n");
+                    PostMessage(g_hWndMain, WM_USER_RECORDING_NO_FRAMES, 0, 0);
+                    break;
+                }
+                firstFrame = false;
                 if (!frame && !m_isRecording)
                 {
                     // Recording was stopped while waiting for frame

@@ -120,6 +120,9 @@
     <ClCompile Include="UnhandledException.Tests.cpp">
       <Filter>Source Files\Integration</Filter>
     </ClCompile>
+    <ClCompile Include="TwoWayPipeMessageIPC.Tests.cpp">
+      <Filter>Source Files\Integration</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">

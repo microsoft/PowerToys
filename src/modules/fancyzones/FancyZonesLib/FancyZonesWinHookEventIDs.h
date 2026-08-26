@@ -19,5 +19,8 @@ extern UINT WM_PRIV_QUICK_LAYOUT_KEY; // Scheduled when we receive a key down pr
 extern UINT WM_PRIV_WHEEL_LAYOUT_SWITCH; // Scheduled when the mouse wheel is used during a drag to cycle layouts
 extern UINT WM_PRIV_SETTINGS_CHANGED; // Scheduled when a watched settings file is updated
 extern UINT WM_PRIV_SAVE_EDITOR_PARAMETERS; // Scheduled to request saving editor-parameters.json
+extern UINT WM_PRIV_MONITOR_ROTATION_PREVIEW_SHOW; // Scheduled when the monitor rotation preview should be shown
+extern UINT WM_PRIV_MONITOR_ROTATION_PREVIEW_HIDE; // Scheduled when the monitor rotation preview should be hidden
+extern UINT WM_PRIV_MONITOR_ROTATION_PREVIEW_ROTATE; // Scheduled when monitor rotation preview should rotate windows
 
 void InitializeWinhookEventIds();

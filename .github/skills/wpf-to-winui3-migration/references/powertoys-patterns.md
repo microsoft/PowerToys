@@ -482,6 +482,7 @@ If the module communicates with the runner or settings UI:
 - [ ] Replace `{DynamicResource}` → `{ThemeResource}`
 - [ ] Replace `DataType="{x:Type ...}"` → `x:DataType="..."`
 - [ ] Replace `<Style.Triggers>` → `VisualStateManager`
+- [ ] Audit WPF converters: prefer control `VisualState`s, direct `{x:Bind}` Boolean conversion, `XamlControlsResources`, or CommunityToolkit converters; reuse invertible converter instances
 - [ ] Add `<XamlControlsResources/>` to `App.xaml` merged dictionaries
 - [ ] Move `Window.Resources` to root container's `Resources`
 - [ ] Run XamlStyler: `.\.pipelines\applyXamlStyling.ps1 -Main`

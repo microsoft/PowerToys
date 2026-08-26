@@ -3,8 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
+using Microsoft.CmdPal.Ext.Bookmarks.Pages;
 using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
+using Microsoft.CmdPal.Ext.Bookmarks.Services;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
@@ -128,5 +133,82 @@ public class BookmarksCommandProviderTests
 
         var addCommand = commands.FirstOrDefault(c => c.Title.Contains("Add bookmark"));
         Assert.IsNotNull(addCommand);
+    }
+
+    [TestMethod]
+    public void GetDockBands_UsesBookmarkTitleAndFallbackIconImmediately()
+    {
+        // Arrange
+        var bookmark = new BookmarkData("Test Bookmark", "http://test.com");
+        var provider = new BookmarksCommandProvider(new MockBookmarkManager(bookmark));
+
+        // Act
+        var bands = provider.GetDockBands();
+
+        // Assert
+        Assert.IsNotNull(bands);
+        Assert.AreEqual(1, bands.Length);
+        Assert.AreEqual(bookmark.Name, bands[0].Title);
+        Assert.IsNotNull(bands[0].Icon);
+    }
+
+    [TestMethod]
+    public void BookmarkDockItem_UsesFallbackIconWhileBookmarkIsLoading()
+    {
+        // Arrange
+        var bookmark = new BookmarkData("Test Bookmark", "http://test.com");
+        var bookmarkItem = new BookmarkListItem(
+            bookmark,
+            new MockBookmarkManager(bookmark),
+            new BlockingBookmarkResolver(),
+            new IconLocator(),
+            new PlaceholderParser(),
+            asBand: true);
+        using var dockItem = new BookmarkDockItem(bookmarkItem, "test-id");
+
+        // Assert
+        Assert.AreSame(Icons.BookmarksExtensionIcon, dockItem.Icon);
+    }
+
+    [TestMethod]
+    [Timeout(5000)]
+    public async Task BookmarkDockItem_TracksFinalTitleAndIcon()
+    {
+        // Arrange
+        var bookmark = new BookmarkData("Test Bookmark", "http://test.com");
+        var bookmarkItem = new BookmarkListItem(
+            bookmark,
+            new MockBookmarkManager(bookmark),
+            new BookmarkResolver(new PlaceholderParser()),
+            new IconLocator(),
+            new PlaceholderParser(),
+            asBand: true);
+        using var dockItem = new BookmarkDockItem(bookmarkItem, "test-id");
+        var finalIcon = new IconInfo("\uE774");
+
+        // Act
+        await bookmarkItem.IsInitialized;
+        bookmarkItem.Title = "Final title";
+        bookmarkItem.Icon = Icons.Reloading;
+
+        // Assert
+        Assert.AreEqual("Final title", dockItem.Title);
+        Assert.AreSame(Icons.BookmarksExtensionIcon, dockItem.Icon);
+
+        // Act
+        bookmarkItem.Icon = finalIcon;
+
+        // Assert
+        Assert.AreSame(finalIcon, dockItem.Icon);
+    }
+
+    private sealed class BlockingBookmarkResolver : IBookmarkResolver
+    {
+        private readonly TaskCompletionSource<(bool Success, Classification Result)> _completion = new();
+
+        public Task<(bool Success, Classification Result)> TryClassifyAsync(string input, CancellationToken cancellationToken = default) =>
+            _completion.Task;
+
+        public Classification ClassifyOrUnknown(string input) => Classification.Unknown(input);
     }
 }

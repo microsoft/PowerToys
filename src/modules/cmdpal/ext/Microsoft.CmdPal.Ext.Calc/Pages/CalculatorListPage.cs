@@ -1,10 +1,11 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Commands;
 using Microsoft.CmdPal.Ext.Calc.Helper;
 using Microsoft.CmdPal.Ext.Calc.Properties;
@@ -41,7 +42,7 @@ public sealed partial class CalculatorListPage : DynamicListPage
         Icon = Icons.CalculatorIcon;
         Name = Resources.calculator_title;
         PlaceholderText = Resources.calculator_placeholder_text;
-        Id = "com.microsoft.cmdpal.calculator";
+        Id = BuiltInCommandIds.Calculator;
 
         _emptyItem = new ListItem(new NoOpCommand())
         {

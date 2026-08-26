@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using MouseJump.Common.Models.Drawing;
-using MouseJump.Common.Models.Styles;
+using System.Drawing;
+
+using MouseJump.Models.Drawing;
+using MouseJump.Models.Styles;
 
 namespace MouseJump.Common.Helpers;
 
@@ -46,7 +48,13 @@ public static class StyleHelper
                 color1: Color.MidnightBlue,
                 color2: Color.MidnightBlue
             )
-        )
+        ),
+        extraColors: new[]
+        {
+            Color.Red,
+            Color.Blue,
+            Color.Green,
+        }
     );
 
     /// <summary>
@@ -86,7 +94,13 @@ public static class StyleHelper
                 color1: Color.MidnightBlue,
                 color2: Color.MidnightBlue
             )
-        )
+        ),
+        extraColors: new[]
+        {
+            Color.Red,
+            Color.Blue,
+            Color.Green,
+        }
     );
 
     public static PreviewStyle WithCanvasSize(this PreviewStyle previewStyle, SizeInfo canvasSize)
@@ -96,6 +110,7 @@ public static class StyleHelper
         return new PreviewStyle(
             canvasSize: canvasSize,
             canvasStyle: previewStyle.CanvasStyle,
-            screenStyle: previewStyle.ScreenStyle);
+            screenStyle: previewStyle.ScreenStyle,
+            extraColors: previewStyle.ExtraColors);
     }
 }

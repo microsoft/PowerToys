@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -85,6 +84,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// </summary>
         public ShellViewModel ViewModel { get; }
 
+        public UpdateViewModel UpdateViewModel { get; }
+
         /// <summary>
         /// Gets a collection of functions that handle IPC responses.
         /// </summary>
@@ -102,7 +103,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private CancellationTokenSource _searchDebounceCts;
         private const int SearchDebounceMs = 500;
         private bool _disposed;
-        private IFileSystemWatcher _updateStateWatcher;
 
         // Removed trace id counter per cleanup
 
@@ -115,7 +115,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             InitializeComponent();
             SetWindowTitle();
             var settingsUtils = SettingsUtils.Default;
-            ViewModel = new ShellViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
+            var generalSettingsRepository = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils);
+            ViewModel = new ShellViewModel(generalSettingsRepository);
+            UpdateViewModel = new UpdateViewModel(generalSettingsRepository, SendCheckForUpdatesIPCMessage);
             DataContext = ViewModel;
             ShellHandler = this;
             ViewModel.Initialize(shellFrame, navigationView, KeyboardAccelerators);
@@ -140,12 +142,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     _searchSuggestions.Add(child.Content?.ToString());
                 }
             }
-
-            UpdateGeneralInfoBadge();
-            _updateStateWatcher = Helper.GetFileWatcher(string.Empty, UpdatingSettings.SettingsFile, () =>
-            {
-                DispatcherQueue.TryEnqueue(UpdateGeneralInfoBadge);
-            });
         }
 
         public static int SendDefaultIPCMessage(string msg)
@@ -156,8 +152,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public static int SendCheckForUpdatesIPCMessage(string msg)
         {
-            CheckForUpdatesMsgCallback?.Invoke(msg);
+            if (CheckForUpdatesMsgCallback is null)
+            {
+                return 1;
+            }
 
+            CheckForUpdatesMsgCallback(msg);
             return 0;
         }
 
@@ -230,6 +230,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void Refresh()
         {
             shellFrame.Navigate(typeof(DashboardPage));
+        }
+
+        public void OpenUpdateActivity()
+        {
+            UpdateActivity.Open();
+        }
+
+        public void BeginWindowSession()
+        {
+            UpdateViewModel.BeginWindowSession();
         }
 
         // Tell the current page view model to update
@@ -645,28 +655,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            _updateStateWatcher?.Dispose();
+            UpdateViewModel.Dispose();
             _searchDebounceCts?.Cancel();
             _searchDebounceCts?.Dispose();
             _searchDebounceCts = null;
             _disposed = true;
             GC.SuppressFinalize(this);
-        }
-
-        private void UpdateGeneralInfoBadge()
-        {
-            try
-            {
-                var config = UpdatingSettings.LoadSettings();
-                bool updateAvailable = config != null &&
-                    (config.State == UpdatingSettings.UpdatingState.ReadyToDownload ||
-                     config.State == UpdatingSettings.UpdatingState.ReadyToInstall);
-                UpdateInfoBadge.Visibility = updateAvailable ? Visibility.Visible : Visibility.Collapsed;
-            }
-            catch (Exception)
-            {
-                UpdateInfoBadge.Visibility = Visibility.Collapsed;
-            }
         }
     }
 }

@@ -83,8 +83,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.ViewModel.RefreshEnabledState();
         }
 
-        private void LightSwitchPage_Loaded(object sender, RoutedEventArgs e)
+        private async void LightSwitchPage_Loaded(object sender, RoutedEventArgs e)
         {
+            await ViewModel.InitializeProfilesAsync();
+
             if (this.ViewModel.SearchLocations.Count == 0)
             {
                 foreach (var city in SearchLocationLoader.GetAll())
