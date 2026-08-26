@@ -37,6 +37,7 @@ function Add-TestCommit {
         [Parameter(Mandatory)][string]$Message
     )
 
+    Invoke-TestGit -Repository $Repository config core.safecrlf false | Out-Null
     Set-Content -LiteralPath (Join-Path $Repository $FileName) -Value $Content
     Invoke-TestGit -Repository $Repository add $FileName | Out-Null
     Invoke-TestGit -Repository $Repository commit -q -m $Message | Out-Null
@@ -438,6 +439,63 @@ Describe "preview release delta" {
         $result.deltaMode | Should Be "branch-transition"
         ($result.addedPrNumbers -join ",") | Should Be "102,104"
         ($result.removedPrNumbers -join ",") | Should Be "103"
+    }
+
+    It "does not remove a PR already present before the merge base on the target branch" {
+        $repo = Join-Path $TestDrive "full-history-identity"
+        New-Item -ItemType Directory -Path $repo | Out-Null
+        Invoke-TestGit -Repository $repo init -q | Out-Null
+        Invoke-TestGit -Repository $repo config user.email "test@example.com" | Out-Null
+        Invoke-TestGit -Repository $repo config user.name "Test User" | Out-Null
+        $root = Add-TestCommit -Repository $repo -FileName "root.txt" -Content "root" -Message "Root"
+        Invoke-TestGit -Repository $repo checkout -q -b main | Out-Null
+        Add-TestCommit -Repository $repo -FileName "feature.txt" -Content "main" -Message "Shared feature (#201)" | Out-Null
+        $mainTip = Add-TestCommit -Repository $repo -FileName "anchor.txt" -Content "anchor" -Message "Main anchor (#202)"
+
+        Invoke-TestGit -Repository $repo checkout -q -b stable $mainTip | Out-Null
+        $previous = Add-TestCommit -Repository $repo -FileName "stable.txt" -Content "stable adaptation" -Message "Shared feature (#201)"
+        Invoke-TestGit -Repository $repo checkout -q main | Out-Null
+        $target = Add-TestCommit -Repository $repo -FileName "added.txt" -Content "added" -Message "Main addition (#203)"
+        $output = Join-Path $TestDrive "full-history-output"
+
+        $result = & (Join-Path $scripts "get-preview-release-delta.ps1") `
+            -PreviousCommit $previous `
+            -TargetCommit $target `
+            -RepoPath $repo `
+            -OutputDirectory $output `
+            -NoGitHubLookup
+
+        ($result.addedPrNumbers -join ",") | Should Be "203"
+        $result.removedPrNumbers.Count | Should Be 0
+    }
+
+    It "does not report a merge that only promotes the other branch" {
+        $repo = Join-Path $TestDrive "promotion-merge"
+        New-Item -ItemType Directory -Path $repo | Out-Null
+        Invoke-TestGit -Repository $repo init -q | Out-Null
+        Invoke-TestGit -Repository $repo config user.email "test@example.com" | Out-Null
+        Invoke-TestGit -Repository $repo config user.name "Test User" | Out-Null
+        Add-TestCommit -Repository $repo -FileName "root.txt" -Content "root" -Message "Root" | Out-Null
+        Invoke-TestGit -Repository $repo checkout -q -b main | Out-Null
+        Add-TestCommit -Repository $repo -FileName "feature.txt" -Content "feature" -Message "Main feature (#301)" | Out-Null
+
+        Invoke-TestGit -Repository $repo checkout -q -b stable HEAD~1 | Out-Null
+        Add-TestCommit -Repository $repo -FileName "stable.txt" -Content "stable" -Message "Stable fix (#302)" | Out-Null
+        Invoke-TestGit -Repository $repo merge -q --no-ff main -m "Merge main into stable (#303)" | Out-Null
+        $previous = ([string](Invoke-TestGit -Repository $repo rev-parse HEAD)).Trim()
+        Invoke-TestGit -Repository $repo checkout -q main | Out-Null
+        $target = Add-TestCommit -Repository $repo -FileName "later.txt" -Content "later" -Message "Later main feature (#304)"
+        $output = Join-Path $TestDrive "promotion-output"
+
+        $result = & (Join-Path $scripts "get-preview-release-delta.ps1") `
+            -PreviousCommit $previous `
+            -TargetCommit $target `
+            -RepoPath $repo `
+            -OutputDirectory $output `
+            -NoGitHubLookup
+
+        ($result.addedPrNumbers -join ",") | Should Be "304"
+        ($result.removedPrNumbers -join ",") | Should Be "302"
     }
 }
 

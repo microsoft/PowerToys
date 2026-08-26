@@ -20,6 +20,13 @@ Added         = Target identities - Previous identities
 Removed       = Previous identities - Target identities
 ```
 
+Compare each side against the other commit's full reachable history, not only
+the commits after the merge base. Stable cherry-picks can appear after the
+merge base even when the same PR was merged into `main` earlier. Equal PR
+identities or equivalent patches anywhere in the opposite history cancel.
+Aggregate merge commits that only promote an ancestor of the opposite branch
+also cancel; they are not independent release-note changes.
+
 Resolve commit identity in this order:
 
 1. Squash subject ending in `(#<number>)`.
