@@ -50,7 +50,7 @@ export const PRODUCT_PATH_LABEL_MAP = [
   ['src/modules/MouseUtils/FindMyMouse/', 'Product-Find My Mouse'],
   ['src/modules/MouseUtils/CursorWrap/', 'Product-Cursor Wrap'],
   ['src/modules/MouseUtils/MouseJump', 'Product-Mouse Jump'],
-  ['src/modules/AltWindowCycle/', 'Product-Always On Top'],
+  ['src/modules/AltWindowCycle/', 'Product-Window Hopper'],
   ['src/modules/MouseUtils/', 'Product-Mouse Utilities'],
   ['src/modules/AdvancedPaste/', 'Product-Advanced Paste'],
   ['src/modules/alwaysontop/', 'Product-Always On Top'],

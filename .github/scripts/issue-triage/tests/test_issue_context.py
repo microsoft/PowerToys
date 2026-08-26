@@ -89,6 +89,16 @@ class IssueContextTests(unittest.TestCase):
         self.assertEqual(CONTEXT.parse_version(BUG_BODY), "0.100.2")
         self.assertEqual(CONTEXT.reproduction_quality(BUG_BODY), "SUFFICIENT")
 
+    def test_parses_combined_version_and_release_channel(self):
+        body = BUG_BODY.replace(
+            "### Microsoft PowerToys version\n\n0.100.2",
+            "### Microsoft PowerToys version and release channel\n\n"
+            "0.101.2211.0 - Preview (Insider)",
+        )
+
+        self.assertTrue(CONTEXT.is_bug_template(body))
+        self.assertEqual(CONTEXT.parse_version(body), "0.101.2211.0")
+
     def test_version_status_distinguishes_outdated_current_and_preview(self):
         self.assertEqual(
             CONTEXT.version_status("0.99.1", "0.100.2"),

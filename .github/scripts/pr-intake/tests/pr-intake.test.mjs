@@ -176,6 +176,10 @@ test('path product labels use longest prefixes and suppress Settings side effect
     ['Product-Command Palette'],
   );
   assert.deepEqual(
+    deriveProductLabelsFromPaths(['src/modules/AltWindowCycle/AltWindowCycle.cpp']),
+    ['Product-Window Hopper'],
+  );
+  assert.deepEqual(
     deriveProductLabelsFromPaths(
       ['src/settings-ui/Settings.UI/SettingsXAML/Views/DashboardPage.xaml'],
       ['Product-FancyZones'],

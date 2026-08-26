@@ -31,6 +31,7 @@ TECHNICAL_PATTERN = re.compile(
 VERSION_PATTERN = re.compile(
     r"\b(?:v)?(\d+(?:\.\d+){1,3}(?:-[A-Za-z0-9.-]+)?)\b"
 )
+VERSION_CHANNEL_HEADING = "Microsoft PowerToys version and release channel"
 BUG_HEADINGS = (
     "Microsoft PowerToys version",
     "Installation method",
@@ -248,7 +249,9 @@ def reproduction_quality(body):
 
 
 def parse_version(body):
-    section = extract_section(body, "Microsoft PowerToys version")
+    section = extract_section(body, VERSION_CHANNEL_HEADING)
+    if not section:
+        section = extract_section(body, "Microsoft PowerToys version")
     match = VERSION_PATTERN.search(section)
     return match.group(1) if match else "Not provided"
 
@@ -332,7 +335,10 @@ def language_signal(title, body):
     prose = re.sub(r"https?://\S+", " ", prose)
     prose = re.sub(
         r"^###\s+(?:[^\w\r\n]+\s*)?(?:"
-        + "|".join(re.escape(heading) for heading in BUG_HEADINGS)
+        + "|".join(
+            re.escape(heading)
+            for heading in (VERSION_CHANNEL_HEADING, *BUG_HEADINGS)
+        )
         + r")\s*$",
         " ",
         prose,
