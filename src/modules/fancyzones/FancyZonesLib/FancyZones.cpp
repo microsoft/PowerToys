@@ -96,7 +96,10 @@ public:
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
         },
         [this](bool up) {
-            if (WheelCycleLayoutIds().size() < 2)
+            // Swallow the wheel event only when a switch is actually going to happen, otherwise
+            // the window under the cursor would become unscrollable for nothing
+            const auto workArea = m_workAreaConfiguration.GetWorkAreaFromCursor();
+            if (!workArea || !NextWheelLayout(*workArea, up).has_value())
             {
                 return false;
             }
@@ -203,6 +206,8 @@ private:
     bool ShouldProcessSnapHotkey(DWORD vkCode) noexcept;
     void ApplyQuickLayout(int key) noexcept;
     void CycleLayoutByWheel(bool reverse) noexcept;
+    std::optional<LayoutData> NextWheelLayout(const WorkArea& workArea, bool reverse) const noexcept;
+    void SwitchLayout(WorkArea* workArea, const LayoutData& layout) noexcept;
     void FlashZones() noexcept;
 
     HMONITOR WorkAreaKeyFromWindow(HWND window) noexcept;
@@ -1229,17 +1234,7 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
     auto workArea = m_workAreaConfiguration.GetWorkAreaFromCursor();
     if (workArea)
     {
-        if (AppliedLayouts::instance().ApplyLayout(workArea->UniqueId(), layout.value()))
-        {
-            RefreshLayouts();
-            FlashZones();
-            AppliedLayouts::instance().SaveData();
-
-            if (const auto layoutData = CustomLayouts::instance().GetCustomLayoutData(layoutId.value()); layoutData.has_value())
-            {
-                workArea->ShowLayoutNameLabel(layoutData->name);
-            }
-        }
+        SwitchLayout(workArea, layout.value());
     }
 }
 
@@ -1251,34 +1246,64 @@ void FancyZones::CycleLayoutByWheel(bool reverse) noexcept
         return;
     }
 
+    const auto layout = NextWheelLayout(*workArea, reverse);
+    if (layout.has_value())
+    {
+        SwitchLayout(workArea, layout.value());
+    }
+}
+
+// The layout the wheel would switch the work area to, or nothing when no switch is possible
+std::optional<LayoutData> FancyZones::NextWheelLayout(const WorkArea& workArea, bool reverse) const noexcept
+{
+    const auto ids = WheelCycleLayoutIds();
+    if (ids.size() < 2)
+    {
+        return std::nullopt;
+    }
+
     std::optional<GUID> currentId{};
-    if (const auto current = AppliedLayouts::instance().GetDeviceLayout(workArea->UniqueId()); current.has_value())
+    if (const auto current = AppliedLayouts::instance().GetDeviceLayout(workArea.UniqueId()); current.has_value())
     {
         currentId = current->uuid;
     }
 
-    const auto nextId = FancyZonesUtils::PickNextLayoutId(WheelCycleLayoutIds(), currentId, reverse);
+    const auto nextId = FancyZonesUtils::PickNextLayoutId(ids, currentId, reverse);
     if (!nextId.has_value())
     {
-        return;
+        return std::nullopt;
     }
 
-    const auto layout = CustomLayouts::instance().GetLayout(nextId.value());
-    if (!layout.has_value())
+    return CustomLayouts::instance().GetLayout(nextId.value());
+}
+
+// Applies a custom layout picked by a quick switch (hotkey or wheel) to the given work area
+void FancyZones::SwitchLayout(WorkArea* workArea, const LayoutData& layout) noexcept
+{
+    if (!AppliedLayouts::instance().ApplyLayout(workArea->UniqueId(), layout))
     {
         return;
     }
 
-    if (AppliedLayouts::instance().ApplyLayout(workArea->UniqueId(), layout.value()))
-    {
-        RefreshLayouts();
-        FlashZones();
-        AppliedLayouts::instance().SaveData();
+    RefreshLayouts();
 
-        if (const auto layoutData = CustomLayouts::instance().GetCustomLayoutData(nextId.value()); layoutData.has_value())
+    // While dragging, the highlighted zones would keep reflecting the previous layout until the
+    // pointer moves, so recompute them against the new layout at the current cursor position
+    POINT ptScreen{};
+    if (m_windowMouseSnapper && GetPhysicalCursorPos(&ptScreen))
+    {
+        if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
         {
-            workArea->ShowLayoutNameLabel(layoutData->name);
+            MoveSizeUpdate(monitor, ptScreen);
         }
+    }
+
+    FlashZones();
+    AppliedLayouts::instance().SaveData();
+
+    if (const auto layoutData = CustomLayouts::instance().GetCustomLayoutData(layout.uuid); layoutData.has_value())
+    {
+        workArea->ShowLayoutNameLabel(layoutData->name);
     }
 }
 

@@ -306,6 +306,43 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void LayoutNameLabelSettingsShouldPersistWhenSuccessful()
+        {
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
+
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+
+            // check if values were initialized to their defaults.
+            Assert.IsTrue(viewModel.LayoutNameLabelEnabled);
+            Assert.AreEqual(1, viewModel.LayoutNameLabelPlacement);
+            Assert.AreEqual("#FFFFFF", viewModel.LayoutNameLabelTextColor);
+            Assert.AreEqual("#262626", viewModel.LayoutNameLabelBackgroundColor);
+            Assert.AreEqual(36, viewModel.LayoutNameLabelFontSize);
+            Assert.AreEqual(12, viewModel.LayoutNameLabelPadding);
+            Assert.AreEqual(1500, viewModel.LayoutNameLabelDuration);
+
+            // act
+            viewModel.LayoutNameLabelEnabled = false;
+            viewModel.LayoutNameLabelPlacement = 6;
+            viewModel.LayoutNameLabelTextColor = "#123456";
+            viewModel.LayoutNameLabelBackgroundColor = "#654321";
+            viewModel.LayoutNameLabelFontSize = 42;
+            viewModel.LayoutNameLabelPadding = 16;
+            viewModel.LayoutNameLabelDuration = 2500;
+
+            // assert
+            var properties = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties;
+            Assert.IsFalse(properties.FancyzonesLayoutNameLabelEnabled.Value);
+            Assert.AreEqual(6, properties.FancyzonesLayoutNameLabelPlacement.Value);
+            Assert.AreEqual("#123456", properties.FancyzonesLayoutNameLabelTextColor.Value);
+            Assert.AreEqual("#654321", properties.FancyzonesLayoutNameLabelBackgroundColor.Value);
+            Assert.AreEqual(42, properties.FancyzonesLayoutNameLabelFontSize.Value);
+            Assert.AreEqual(16, properties.FancyzonesLayoutNameLabelPadding.Value);
+            Assert.AreEqual(2500, properties.FancyzonesLayoutNameLabelDuration.Value);
+        }
+
+        [TestMethod]
         public void DisplayOrWorkAreaChangeMoveWindowsShouldSetValue2FalseWhenSuccessful()
         {
             Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
