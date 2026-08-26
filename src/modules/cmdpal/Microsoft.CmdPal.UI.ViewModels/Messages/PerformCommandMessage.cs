@@ -20,6 +20,14 @@ public record PerformCommandMessage
 
     public bool TransientPage { get; set; }
 
+    public PageViewModel? SourcePage { get; set; }
+
+    public AppExtensionHost? SourceExtensionHost { get; set; }
+
+    public ICommandProviderContext? SourceProviderContext { get; set; }
+
+    public Func<ICommandResult, bool>? ResultHandler { get; set; }
+
     /// <summary>
     /// Optional callback raised by <see cref="ShellViewModel"/> just before a
     /// <see cref="ShowConfirmationMessage"/> is dispatched for this command's

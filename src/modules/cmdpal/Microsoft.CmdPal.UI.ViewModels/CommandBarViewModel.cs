@@ -170,7 +170,8 @@ public sealed partial class CommandBarViewModel : ObservableObject,
             return ContextKeybindingResult.Unhandled;
         }
 
-        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
+        var message = command.PreparePerformCommandMessage(new PerformCommandMessage(command.Command.Model, command.Model));
+        WeakReferenceMessenger.Default.Send(message);
         if (command.HasMoreCommands)
         {
             return ContextKeybindingResult.KeepOpen;

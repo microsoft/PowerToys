@@ -140,6 +140,16 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         _commandState = new(new CommandViewModel(null, errorContext), Owned: true);
     }
 
+    internal PerformCommandMessage PreparePerformCommandMessage(PerformCommandMessage message)
+    {
+        if (PageContext.TryGetTarget(out var pageContext) && pageContext is PageViewModel page)
+        {
+            return page.PreparePerformCommandMessage(message);
+        }
+
+        return message;
+    }
+
     public void FastInitializeProperties()
     {
         if (IsFastInitialized)

@@ -285,10 +285,12 @@ public partial class ShellViewModel : ObservableObject,
         // the providerContext that is passed to the new page view-model.
         var isMainPage = command == _rootPage;
 
-        var host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
+        var currentHost = message.SourceExtensionHost ?? CurrentPage.ExtensionHost;
+        var currentProviderContext = message.SourceProviderContext ?? CurrentPage.ProviderContext;
+        var host = _appHostService.GetHostForCommand(message.Context, currentHost);
         var providerContext = isMainPage
             ? CommandProviderContext.Empty
-            : _appHostService.GetProviderContextForCommand(message.Context, CurrentPage.ProviderContext);
+            : _appHostService.GetProviderContextForCommand(message.Context, currentProviderContext);
 
         _rootPageService.OnPerformCommand(message.Context, CurrentPage.IsRootPage, host);
 
@@ -405,7 +407,11 @@ public partial class ShellViewModel : ObservableObject,
             var result = invokable.Invoke(message.Context);
 
             // But if it did succeed, we need to handle the result.
-            UnsafeHandleCommandResult(result, message.OnBeforeShowConfirmation);
+            UnsafeHandleCommandResult(
+                result,
+                message.OnBeforeShowConfirmation,
+                message.ResultHandler,
+                message.SourcePage);
 
             success = true;
             _handleInvokeTask = null;
@@ -431,7 +437,11 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    private void UnsafeHandleCommandResult(ICommandResult? result, Action? onBeforeShowConfirmation = null)
+    private void UnsafeHandleCommandResult(
+        ICommandResult? result,
+        Action? onBeforeShowConfirmation = null,
+        Func<ICommandResult, bool>? resultHandler = null,
+        PageViewModel? sourcePage = null)
     {
         if (result is null)
         {
@@ -443,6 +453,11 @@ public partial class ShellViewModel : ObservableObject,
         CoreLogger.LogDebug($"handling {kind.ToString()}");
 
         WeakReferenceMessenger.Default.Send<TelemetryInvokeResultMessage>(new(kind));
+        if (resultHandler?.Invoke(result) == true)
+        {
+            return;
+        }
+
         switch (kind)
         {
             case CommandResultKind.Dismiss:
@@ -519,13 +534,13 @@ public partial class ShellViewModel : ObservableObject,
                             var toastCommand = a2.Command;
                             if (toastCommand is not null)
                             {
-                                command = new CommandViewModel(toastCommand, new(CurrentPage));
+                                command = new CommandViewModel(toastCommand, new(sourcePage ?? CurrentPage));
                                 command.InitializeProperties();
                             }
                         }
 
                         WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message, icon, command));
-                        UnsafeHandleCommandResult(a.Result, onBeforeShowConfirmation);
+                        UnsafeHandleCommandResult(a.Result, onBeforeShowConfirmation, resultHandler, sourcePage);
                     }
 
                     break;
@@ -558,7 +573,11 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Receive(HandleCommandResultMessage message)
     {
-        UnsafeHandleCommandResult(message.Result.Unsafe);
+        UnsafeHandleCommandResult(
+            message.Result.Unsafe,
+            message.OnBeforeShowConfirmation,
+            message.ResultHandler,
+            message.SourcePage);
     }
 
     public void Receive(WindowHiddenMessage message)

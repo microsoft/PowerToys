@@ -164,6 +164,9 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
             // Get the data and inputs
             var dataString = (action as AdaptiveSubmitAction)?.DataJson.Stringify() ?? string.Empty;
             var inputString = inputs.Stringify();
+            var sourcePage = PageContext.TryGetTarget(out var pageContext) && pageContext is PageViewModel page
+                ? page
+                : null;
 
             _ = Task.Run(() =>
             {
@@ -173,7 +176,13 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
                     if (model != null)
                     {
                         var result = model.SubmitForm(inputString, dataString);
-                        WeakReferenceMessenger.Default.Send<HandleCommandResultMessage>(new(new(result)));
+                        var message = new HandleCommandResultMessage(new(result));
+                        if (sourcePage is not null)
+                        {
+                            sourcePage.PrepareHandleCommandResultMessage(message);
+                        }
+
+                        WeakReferenceMessenger.Default.Send(message);
                     }
                 }
                 catch (Exception ex)

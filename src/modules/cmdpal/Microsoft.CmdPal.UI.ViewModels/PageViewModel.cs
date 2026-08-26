@@ -5,7 +5,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 
@@ -203,6 +205,28 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     {
         // The base page has no notion of data, so we do nothing here...
         // subclasses should override.
+    }
+
+    internal PerformCommandMessage PreparePerformCommandMessage(PerformCommandMessage message)
+    {
+        message.SourcePage = this;
+        message.SourceExtensionHost = ExtensionHost;
+        message.SourceProviderContext = ProviderContext;
+        return message;
+    }
+
+    internal HandleCommandResultMessage PrepareHandleCommandResultMessage(HandleCommandResultMessage message)
+    {
+        message.SourcePage = this;
+        message.SourceExtensionHost = ExtensionHost;
+        message.SourceProviderContext = ProviderContext;
+        return message;
+    }
+
+    protected void SendPageUiMessage<TMessage>(TMessage message)
+        where TMessage : class
+    {
+        WeakReferenceMessenger.Default.Send<TMessage>(message);
     }
 
     protected virtual void FetchProperty(string propertyName)
