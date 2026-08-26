@@ -67,6 +67,10 @@ jobs:
           openssl pkcs12 -in cert.pfx -nodes -passin pass: -out cert.pem
           az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --tenant ${{ secrets.AZURE_TENANT_ID }} --certificate cert.pem --allow-no-subscriptions --output none
 
+      - name: Validate Store API token acquisition
+        run: |-
+          az account get-access-token --scope https://api.store.microsoft.com/.default --output none
+
       - name: Configure Store Credentials
         run: |-
           msstore reconfigure -cfp cert.pfx -c ${{ secrets.AZURE_CLIENT_ID }} -t ${{ secrets.AZURE_TENANT_ID }} -s ${{ secrets.SELLER_ID }}
