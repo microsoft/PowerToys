@@ -141,6 +141,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(AdvancedPasteAdditionalAction))]
     [JsonSerializable(typeof(AdvancedPastePasteAsFileAction))]
     [JsonSerializable(typeof(AdvancedPasteTranscodeAction))]
+    [JsonSerializable(typeof(AdvancedPasteTextCaseAction))]
     [JsonSerializable(typeof(ImageResizerSizes))]
     [JsonSerializable(typeof(ImageResizerCustomSizeProperty))]
     [JsonSerializable(typeof(KeyboardKeysProperty))]
