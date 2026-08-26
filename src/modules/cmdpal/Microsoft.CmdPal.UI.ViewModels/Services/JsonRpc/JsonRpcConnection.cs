@@ -4,10 +4,7 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
@@ -15,303 +12,192 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using ManagedCommon;
+using StreamJsonRpc;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
 
 /// <summary>
-/// Low-level JSON-RPC 2.0 transport for LSP-style Content-Length framing over a pair of byte
-/// streams, typically a child process's stdout and stdin. It sends requests and notifications,
-/// then dispatches inbound requests and notifications to registered handlers.
+/// Adapts StreamJsonRpc to the raw JSON contract used by JavaScript extensions.
 /// </summary>
-public sealed partial class JsonRpcConnection : IDisposable
+public sealed class JsonRpcConnection : IDisposable
 {
-    private const int MaxHeaderBytes = 16 * 1024;
-    private const int MaxMessageBytes = 32 * 1024 * 1024;
-
-    // The connection has not been closed.
-    private const int StateOpen = 0;
-
-    // The connection has reached its terminal closed state. The reader exited, a write failed, or the
-    // connection was disposed. No further protocol traffic is possible.
-    private const int StateClosed = 1;
-
-    // Upper bound on the number of inbound notifications buffered for the serialized consumer.
-    // The reader never blocks on this queue: when it is full the oldest notification is dropped.
     private const int NotificationQueueCapacity = 1024;
 
-    // Number of worker tasks that service inbound requests. This keeps a flood of inbound requests
-    // from spawning unbounded work.
-    internal const int InboundRequestWorkerCount = 16;
+    private static readonly TimeSpan DefaultRequestTimeout = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan DisposeDrainTimeout = TimeSpan.FromSeconds(2);
 
-    // Upper bound on the number of inbound requests buffered ahead of the workers. This is a
-    // secondary, count-based guard layered on top of the aggregate byte budget below: the reader
-    // admits requests without ever blocking, so a full queue causes a request to be rejected rather
-    // than stalling the reader.
-    private const int InboundRequestQueueCapacity = 256;
-
-    // Aggregate byte budgets for buffered inbound work. A single frame body can be as large as
-    // MaxMessageBytes (32 MiB), so a count-only bound could hold far too much memory. These caps
-    // bound the notification queue and the inbound request queue independently.
-    internal const long DefaultMaxQueuedNotificationBytes = 64L * 1024 * 1024;
-    internal const long DefaultMaxQueuedRequestBytes = 64L * 1024 * 1024;
-
-    // Upper bound on concurrent server-busy rejection responses. The reader sends these without
-    // blocking, so this cap keeps sustained overload from spawning unbounded rejection tasks. When the
-    // cap is hit, the request is dropped and the peer observes a timeout.
-    private const int MaxConcurrentRejectionSends = 64;
-
-    // Protocol-error logging is rate limited so a peer that streams malformed or undecodable frames
-    // cannot flood the log. At most this many protocol-error entries are logged per window.
-    private const int ProtocolErrorLogMaxPerWindow = 10;
-
-    // Upper bound on how many characters of an offending payload are written to the log. Malformed
-    // or oversized bodies are truncated so a single bad frame cannot flood the log up to the frame cap.
-    internal const int MaxLoggedBodyChars = 1024;
-
-    private static readonly TimeSpan ProtocolErrorLogWindow = TimeSpan.FromSeconds(5);
-
-    // One budget for draining every background task during disposal. This avoids turning many stuck
-    // workers into many separate timeout waits.
-    private static readonly TimeSpan DisposeDrainBudget = TimeSpan.FromSeconds(2);
-
-    private readonly Stream _input;
-    private readonly Stream _output;
+    private readonly CmdPalJsonRpc _rpc;
+    private readonly IJsonRpcMessageHandler _messageHandler;
+    private readonly IJsonRpcMessageFactory _messageFactory;
     private readonly Stream? _errorStream;
     private readonly TimeSpan _requestTimeout;
-    private readonly TimeSpan _writeTimeout;
-    private readonly long _maxQueuedNotificationBytes;
-    private readonly long _maxQueuedRequestBytes;
-
-    private readonly ConcurrentDictionary<int, TaskCompletionSource<JsonRpcResponse>> _pendingRequests = new();
+    private readonly CancellationTokenSource _disposalCts = new();
+    private readonly CancellationTokenSource _connectionClosedCts = new();
     private readonly ConcurrentDictionary<string, Action<JsonElement>> _notificationHandlers = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, Func<JsonElement, CancellationToken, Task<JsonNode?>>> _requestHandlers = new(StringComparer.Ordinal);
-
-    // The reader (and the drop-oldest path) and the consumer both read this queue, so it is not a
-    // single-reader channel. Only the reader writes to it.
+    private readonly ConcurrentDictionary<string, RpcMethodTarget> _registeredMethods = new(StringComparer.Ordinal);
     private readonly Channel<NotificationEnvelope> _notificationQueue = Channel.CreateBounded<NotificationEnvelope>(
         new BoundedChannelOptions(NotificationQueueCapacity)
         {
-            SingleReader = false,
-            SingleWriter = true,
+            SingleReader = true,
+            SingleWriter = false,
             FullMode = BoundedChannelFullMode.Wait,
         });
 
-    // Bounded queue of inbound requests drained by a fixed pool of workers. Only the read loop writes
-    // to it (SingleWriter) and the workers read (multiple readers). The reader admits requests with a
-    // non-blocking TryWrite: when the count or byte budget is exhausted the request is rejected with a
-    // server-busy error instead of blocking the reader, which must stay free to route responses.
-    private readonly Channel<InboundRequestEnvelope> _inboundRequestQueue = Channel.CreateBounded<InboundRequestEnvelope>(
-        new BoundedChannelOptions(InboundRequestQueueCapacity)
-        {
-            SingleReader = false,
-            SingleWriter = true,
-            FullMode = BoundedChannelFullMode.Wait,
-        });
-
-    private readonly SemaphoreSlim _writeLock = new(1, 1);
-    private readonly CancellationTokenSource _disposalCts = new();
-
-    // Background tasks and writes use this token snapshot instead of touching _disposalCts after it is
-    // disposed. The source is cancelled first, so the snapshot still reports shutdown correctly.
-    private readonly CancellationToken _shutdownToken;
-
-    private readonly RateLimitedProtocolLog _protocolErrorLog;
-
-    private int _nextRequestId;
-    private int _connectionState = StateOpen;
-    private long _droppedNotifications;
-    private long _queuedNotificationBytes;
-    private long _queuedRequestBytes;
-    private int _pendingRejectionSends;
-    private Task? _readLoopTask;
-    private Task? _errorPumpTask;
     private Task? _notificationConsumerTask;
-    private Task[]? _inboundRequestWorkers;
-    private volatile bool _disposed;
+    private Task? _errorPumpTask;
+    private int _started;
+    private int _disposed;
     private int _disconnectedRaised;
+    private int _nextRequestId;
+    private long _droppedNotifications;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="JsonRpcConnection"/> class.
     /// </summary>
-    /// <param name="input">The stream to read incoming framed messages from (for example, a process's standard output).</param>
-    /// <param name="output">The stream to write outgoing framed messages to (for example, a process's standard input).</param>
-    /// <param name="errorStream">An optional stream carrying out-of-band diagnostics (for example, a process's standard error). It is logged but is never part of the protocol.</param>
-    /// <param name="requestTimeout">The per-request timeout. Defaults to 10 seconds when null.</param>
-    /// <param name="writeTimeout">The maximum time a single outbound frame may take to reach the peer before the write is abandoned and the connection is torn down. Defaults to 10 seconds when null.</param>
-    public JsonRpcConnection(Stream input, Stream output, Stream? errorStream = null, TimeSpan? requestTimeout = null, TimeSpan? writeTimeout = null)
-        : this(input, output, errorStream, requestTimeout, writeTimeout, maxQueuedNotificationBytes: null, maxQueuedRequestBytes: null)
+    /// <param name="input">The stream carrying messages from the extension.</param>
+    /// <param name="output">The stream carrying messages to the extension.</param>
+    /// <param name="errorStream">An optional stream carrying extension diagnostics.</param>
+    /// <param name="requestTimeout">The timeout applied to requests.</param>
+    public JsonRpcConnection(Stream input, Stream output, Stream? errorStream = null, TimeSpan? requestTimeout = null)
     {
-    }
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(output);
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="JsonRpcConnection"/> class with explicit aggregate
-    /// byte budgets for buffered inbound work. Tests use this to exercise byte-budget rejection.
-    /// </summary>
-    /// <param name="input">The stream to read incoming framed messages from.</param>
-    /// <param name="output">The stream to write outgoing framed messages to.</param>
-    /// <param name="errorStream">An optional stream carrying out-of-band diagnostics.</param>
-    /// <param name="requestTimeout">The per-request timeout. Defaults to 10 seconds when null.</param>
-    /// <param name="writeTimeout">The per-write timeout. Defaults to 10 seconds when null.</param>
-    /// <param name="maxQueuedNotificationBytes">The aggregate byte budget for buffered notifications. Defaults to <see cref="DefaultMaxQueuedNotificationBytes"/> when null.</param>
-    /// <param name="maxQueuedRequestBytes">The aggregate byte budget for buffered inbound requests. Defaults to <see cref="DefaultMaxQueuedRequestBytes"/> when null.</param>
-    internal JsonRpcConnection(Stream input, Stream output, Stream? errorStream, TimeSpan? requestTimeout, TimeSpan? writeTimeout, long? maxQueuedNotificationBytes, long? maxQueuedRequestBytes)
-    {
-        _input = input ?? throw new ArgumentNullException(nameof(input));
-        _output = output ?? throw new ArgumentNullException(nameof(output));
         _errorStream = errorStream;
-        _requestTimeout = requestTimeout ?? TimeSpan.FromSeconds(10);
-        _writeTimeout = writeTimeout ?? TimeSpan.FromSeconds(10);
-        _maxQueuedNotificationBytes = Math.Max(1, maxQueuedNotificationBytes ?? DefaultMaxQueuedNotificationBytes);
-        _maxQueuedRequestBytes = Math.Max(1, maxQueuedRequestBytes ?? DefaultMaxQueuedRequestBytes);
-        _shutdownToken = _disposalCts.Token;
-        _protocolErrorLog = new RateLimitedProtocolLog(
-            ProtocolErrorLogMaxPerWindow,
-            ProtocolErrorLogWindow,
-            static suppressed => Logger.LogWarning($"Suppressed {suppressed} JSON-RPC protocol-error log entries in the previous window to avoid flooding the log."));
+        _requestTimeout = requestTimeout ?? DefaultRequestTimeout;
+
+        var formatter = new SystemTextJsonFormatter
+        {
+            JsonSerializerOptions =
+            {
+                TypeInfoResolver = JsonRpcSerializerContext.Default,
+            },
+        };
+        _messageFactory = formatter;
+
+        _messageHandler = new HeaderDelimitedMessageHandler(output, input, formatter);
+        _rpc = new CmdPalJsonRpc(_messageHandler)
+        {
+            AllowModificationWhileListening = true,
+            CancelLocallyInvokedMethodsWhenConnectionIsClosed = true,
+            SynchronizationContext = null,
+        };
+
+        _rpc.Disconnected += OnRpcDisconnected;
     }
 
     /// <summary>
-    /// Raised when the read loop ends because the underlying stream closed.
+    /// Raised when the underlying connection closes.
     /// </summary>
     public event EventHandler? Disconnected;
 
     /// <summary>
-    /// Raised when the read loop encounters an unrecoverable protocol or stream error.
+    /// Raised when the connection encounters a protocol or handler error.
     /// </summary>
     public event EventHandler<JsonRpcErrorEventArgs>? Error;
 
-    /// <summary>
-    /// Gets the number of inbound notifications that have been dropped because the notification queue
-    /// exceeded its count or byte budget. Exposed for tests.
-    /// </summary>
     internal long DroppedNotificationCount => Interlocked.Read(ref _droppedNotifications);
 
     /// <summary>
-    /// Gets the total number of protocol-error log entries suppressed by the rate limiter. Exposed for tests.
-    /// </summary>
-    internal long SuppressedProtocolErrorLogCount => _protocolErrorLog.TotalSuppressed;
-
-    /// <summary>
-    /// Starts the background read loop (and the optional stderr pump). Must be called once.
+    /// Starts listening for messages from the extension.
     /// </summary>
     public void StartListening()
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
 
-        if (_readLoopTask is not null)
+        if (Interlocked.Exchange(ref _started, 1) != 0)
         {
             throw new InvalidOperationException("The connection is already listening.");
         }
 
-        _readLoopTask = Task.Run(ReadLoopAsync);
         _notificationConsumerTask = Task.Run(ConsumeNotificationsAsync);
-
-        var workers = new Task[InboundRequestWorkerCount];
-        for (var i = 0; i < workers.Length; i++)
-        {
-            workers[i] = Task.Run(ProcessInboundRequestsAsync);
-        }
-
-        _inboundRequestWorkers = workers;
-
         if (_errorStream is not null)
         {
             _errorPumpTask = Task.Run(PumpErrorStreamAsync);
         }
+
+        _rpc.StartListening();
     }
 
     /// <summary>
-    /// Sends a JSON-RPC request and waits for the correlated response.
+    /// Sends a request and returns its raw result or error.
     /// </summary>
-    /// <param name="method">The method name to invoke.</param>
-    /// <param name="parameters">Optional parameters for the method.</param>
-    /// <param name="cancellationToken">A token used to cancel the wait.</param>
-    /// <returns>The raw JSON-RPC response, which may contain a result or an error.</returns>
+    /// <param name="method">The remote method name.</param>
+    /// <param name="parameters">The parameter object.</param>
+    /// <param name="cancellationToken">A token that cancels the local wait.</param>
+    /// <returns>The request result or error.</returns>
     public async Task<JsonRpcResponse> SendRequestAsync(string method, JsonNode? parameters, CancellationToken cancellationToken)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+        ArgumentException.ThrowIfNullOrEmpty(method);
 
-        // Fail fast once the connection is closed rather than waiting for the request timeout.
-        if (Volatile.Read(ref _connectionState) != StateOpen)
-        {
-            throw new JsonRpcException("The JSON-RPC connection is closed.");
-        }
-
-        var id = Interlocked.Increment(ref _nextRequestId);
-        var request = new JsonRpcRequest
-        {
-            Id = id,
-            Method = method,
-            Params = parameters,
-        };
-
-        var tcs = new TaskCompletionSource<JsonRpcResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
-        _pendingRequests[id] = tcs;
-
-        // Close the add/disconnect race. The reader may have exited between the check above and this
-        // add. The terminal state is set before FailAllPending runs, so this request is either already
-        // observed there or fails here without waiting for a response that can never arrive.
-        if (Volatile.Read(ref _connectionState) != StateOpen)
-        {
-            _pendingRequests.TryRemove(id, out _);
-            throw new JsonRpcException("The JSON-RPC connection was closed before the request could be sent.");
-        }
-
-        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _shutdownToken);
-        timeoutCts.CancelAfter(_requestTimeout);
-
+        var requestId = Interlocked.Increment(ref _nextRequestId);
+        using var requestCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _connectionClosedCts.Token);
         try
         {
-            var json = JsonSerializer.Serialize(request, JsonRpcSerializerContext.Default.JsonRpcRequest);
-            await WriteFramedAsync(json, timeoutCts.Token).ConfigureAwait(false);
+            var invokeTask = _rpc.InvokeWithParameterObjectAsync<JsonElement>(requestId, method, parameters, requestCts.Token);
+            var result = await invokeTask.WaitAsync(_requestTimeout, cancellationToken).ConfigureAwait(false);
 
-            using (timeoutCts.Token.Register(static state => ((TaskCompletionSource<JsonRpcResponse>)state!).TrySetCanceled(), tcs))
+            return new JsonRpcResponse
             {
-                return await tcs.Task.ConfigureAwait(false);
-            }
+                Id = requestId,
+                Result = result.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined ? null : result,
+            };
         }
-        catch (OperationCanceledException)
+        catch (RemoteRpcException ex)
         {
-            if (cancellationToken.IsCancellationRequested)
+            return new JsonRpcResponse
             {
-                throw;
-            }
-
-            if (_disposed || _shutdownToken.IsCancellationRequested || Volatile.Read(ref _connectionState) != StateOpen)
-            {
-                throw new JsonRpcException("The JSON-RPC connection was closed before a response was received.");
-            }
-
-            throw new TimeoutException($"The JSON-RPC request '{method}' timed out after {_requestTimeout.TotalSeconds:0} seconds.");
+                Id = requestId,
+                Error = new JsonRpcError
+                {
+                    Code = GetErrorCode(ex),
+                    Message = ex.Message,
+                    Data = GetErrorData(ex),
+                },
+            };
         }
-        finally
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            _pendingRequests.TryRemove(id, out _);
+            requestCts.Cancel();
+            throw;
+        }
+        catch (OperationCanceledException) when (_connectionClosedCts.IsCancellationRequested)
+        {
+            throw new JsonRpcException("The JSON-RPC connection closed before a response was received.");
+        }
+        catch (TimeoutException)
+        {
+            requestCts.Cancel();
+            throw;
+        }
+        catch (Exception ex) when (ex is ConnectionLostException or ObjectDisposedException or IOException)
+        {
+            throw new JsonRpcException("The JSON-RPC connection closed before a response was received.", ex);
         }
     }
 
     /// <summary>
-    /// Sends a JSON-RPC request and deserializes the successful result to <typeparamref name="TResult"/>.
+    /// Sends a request and deserializes its successful result.
     /// </summary>
-    /// <typeparam name="TResult">The type to deserialize the result into.</typeparam>
-    /// <param name="method">The method name to invoke.</param>
-    /// <param name="parameters">Optional parameters for the method.</param>
-    /// <param name="resultTypeInfo">The source-generated type metadata used to deserialize the result.</param>
-    /// <param name="cancellationToken">A token used to cancel the wait.</param>
-    /// <returns>The deserialized result, or the default value when the result is null.</returns>
-    /// <exception cref="JsonRpcException">Thrown when the peer returns an error response.</exception>
+    /// <typeparam name="TResult">The result type.</typeparam>
+    /// <param name="method">The remote method name.</param>
+    /// <param name="parameters">The parameter object.</param>
+    /// <param name="resultTypeInfo">Source generated metadata for the result.</param>
+    /// <param name="cancellationToken">A token that cancels the local wait.</param>
+    /// <returns>The deserialized result.</returns>
     public async Task<TResult?> SendRequestAsync<TResult>(string method, JsonNode? parameters, JsonTypeInfo<TResult> resultTypeInfo, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(resultTypeInfo);
 
         var response = await SendRequestAsync(method, parameters, cancellationToken).ConfigureAwait(false);
-
         if (response.Error is not null)
         {
             throw new JsonRpcException(response.Error);
         }
 
-        if (response.Result is not { } result || result.ValueKind == JsonValueKind.Null)
+        if (response.Result is not { } result)
         {
             return default;
         }
@@ -320,505 +206,162 @@ public sealed partial class JsonRpcConnection : IDisposable
     }
 
     /// <summary>
-    /// Sends a JSON-RPC notification. Notifications never receive a response.
+    /// Sends a notification to the extension.
     /// </summary>
-    /// <param name="method">The notification method name.</param>
-    /// <param name="parameters">Optional parameters for the notification.</param>
-    /// <param name="cancellationToken">A token used to cancel the write.</param>
-    /// <returns>A task that completes when the notification has been written to the output stream.</returns>
+    /// <param name="method">The remote method name.</param>
+    /// <param name="parameters">The parameter object.</param>
+    /// <param name="cancellationToken">A token that cancels the send before it starts.</param>
+    /// <returns>A task that completes when the notification is sent.</returns>
     public async Task SendNotificationAsync(string method, JsonNode? parameters, CancellationToken cancellationToken)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+        ArgumentException.ThrowIfNullOrEmpty(method);
 
-        var notification = new JsonRpcNotification
+        try
         {
-            Method = method,
-            Params = parameters,
-        };
-
-        var json = JsonSerializer.Serialize(notification, JsonRpcSerializerContext.Default.JsonRpcNotification);
-        await WriteFramedAsync(json, cancellationToken).ConfigureAwait(false);
+            var notification = _messageFactory.CreateRequestMessage();
+            notification.Method = method;
+            notification.Arguments = parameters;
+            await _messageHandler.WriteAsync(notification, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is ConnectionLostException or ObjectDisposedException or IOException or TimeoutException)
+        {
+            DisposeRpc();
+            throw new JsonRpcException("The JSON-RPC connection failed while writing a notification.", ex);
+        }
     }
 
     /// <summary>
-    /// Registers a handler for inbound notifications of a specific method. Replaces any existing handler.
+    /// Registers a handler for an inbound notification.
     /// </summary>
     /// <param name="method">The notification method name.</param>
-    /// <param name="handler">The handler invoked with the notification parameters.</param>
+    /// <param name="handler">The handler to invoke.</param>
     public void RegisterNotificationHandler(string method, Action<JsonElement> handler)
     {
         ArgumentException.ThrowIfNullOrEmpty(method);
         ArgumentNullException.ThrowIfNull(handler);
 
         _notificationHandlers[method] = handler;
+        RegisterMethod(method);
     }
 
     /// <summary>
-    /// Registers a handler for inbound requests of a specific method. Replaces any existing handler.
-    /// The handler returns the result payload, which is sent back as the response.
+    /// Registers a handler for an inbound request.
     /// </summary>
     /// <param name="method">The request method name.</param>
-    /// <param name="handler">The handler invoked with the request parameters.</param>
+    /// <param name="handler">The handler to invoke.</param>
     public void RegisterRequestHandler(string method, Func<JsonElement, CancellationToken, Task<JsonNode?>> handler)
     {
         ArgumentException.ThrowIfNullOrEmpty(method);
         ArgumentNullException.ThrowIfNull(handler);
 
         _requestHandlers[method] = handler;
+        RegisterMethod(method);
     }
 
     /// <inheritdoc/>
     public void Dispose()
     {
-        if (_disposed)
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
         {
             return;
         }
 
-        _disposed = true;
-
-        // Mark the connection closed before canceling so new writes fail before they reach the lock.
-        // Pending requests fail and Disconnected is raised exactly once.
-        Close("The JSON-RPC connection was disposed.");
-
-        // Complete the work queues so consumers drain and exit.
         _notificationQueue.Writer.TryComplete();
-        _inboundRequestQueue.Writer.TryComplete();
+        _disposalCts.Cancel();
+        _connectionClosedCts.Cancel();
+        DisposeRpc();
 
-        // Drain the write lock and background tasks under one deadline. A connection with many stuck
-        // workers should not pay one timeout per worker. Taking the write lock lets a mid-frame writer
-        // finish, or be abandoned by disposal.
-        var drainStopwatch = Stopwatch.StartNew();
+        var tasks = new[] { _notificationConsumerTask, _errorPumpTask };
+        foreach (var task in tasks)
+        {
+            if (task is null)
+            {
+                continue;
+            }
 
-        var acquiredWriteLock = false;
-        try
-        {
-            acquiredWriteLock = _writeLock.Wait(RemainingDrainBudget(drainStopwatch));
-        }
-        catch (ObjectDisposedException)
-        {
-        }
-
-        var backgroundTasks = new List<Task>(InboundRequestWorkerCount + 3);
-        AddIfNotNull(backgroundTasks, _readLoopTask);
-        AddIfNotNull(backgroundTasks, _errorPumpTask);
-        AddIfNotNull(backgroundTasks, _notificationConsumerTask);
-        if (_inboundRequestWorkers is { } workers)
-        {
-            backgroundTasks.AddRange(workers);
-        }
-
-        if (backgroundTasks.Count > 0)
-        {
             try
             {
-                Task.WaitAll(backgroundTasks.ToArray(), RemainingDrainBudget(drainStopwatch));
+                task.Wait(DisposeDrainTimeout);
             }
             catch (AggregateException)
             {
             }
         }
 
-        if (acquiredWriteLock)
-        {
-            try
-            {
-                _writeLock.Release();
-            }
-            catch (ObjectDisposedException)
-            {
-            }
-            catch (SemaphoreFullException)
-            {
-            }
-        }
-
-        // Dispose the write lock after draining because an in-flight writer may still release it.
-        _writeLock.Dispose();
         _disposalCts.Dispose();
+        _connectionClosedCts.Dispose();
     }
 
-    private static void AddIfNotNull(List<Task> tasks, Task? task)
+    private void RegisterMethod(string method)
     {
-        if (task is not null)
-        {
-            tasks.Add(task);
-        }
+        _registeredMethods.GetOrAdd(
+            method,
+            static (name, connection) =>
+            {
+                var target = new RpcMethodTarget(connection, name);
+                connection._rpc.AddLocalRpcMethod(
+                    typeof(RpcMethodTarget).GetMethod(nameof(RpcMethodTarget.InvokeAsync))!,
+                    target,
+                    new JsonRpcMethodAttribute(name)
+                    {
+                        UseSingleObjectParameterDeserialization = true,
+                    });
+                return target;
+            },
+            this);
     }
 
-    private static TimeSpan RemainingDrainBudget(Stopwatch stopwatch)
+    private async Task<JsonNode?> DispatchMethodAsync(string method, JsonElement parameters, CancellationToken cancellationToken)
     {
-        var remaining = DisposeDrainBudget - stopwatch.Elapsed;
-        return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
-    }
-
-    /// <summary>
-    /// Transitions the connection to its terminal closed state exactly once. It cancels disposal,
-    /// fails pending requests, and raises <see cref="Disconnected"/>. Safe to call from the reader, a
-    /// failed writer, or Dispose. Repeated calls are no-ops.
-    /// </summary>
-    /// <param name="reason">A human-readable reason recorded on failed pending requests.</param>
-    private void Close(string reason)
-    {
-        // Flip the state before FailAllPending so a racing request is either observed there or sees
-        // the closed state on its own re-check.
-        if (Interlocked.Exchange(ref _connectionState, StateClosed) == StateClosed)
+        if (_rpc.IsResponseExpected)
         {
-            return;
-        }
-
-        try
-        {
-            _disposalCts.Cancel();
-        }
-        catch (ObjectDisposedException)
-        {
-        }
-
-        _notificationQueue.Writer.TryComplete();
-        _inboundRequestQueue.Writer.TryComplete();
-
-        FailAllPending(reason);
-        RaiseDisconnected();
-    }
-
-    private async Task WriteFramedAsync(string json, CancellationToken cancellationToken)
-    {
-        if (Volatile.Read(ref _connectionState) != StateOpen)
-        {
-            throw new JsonRpcException("The JSON-RPC connection is closed.");
-        }
-
-        var body = Encoding.UTF8.GetBytes(json);
-        var header = Encoding.ASCII.GetBytes($"Content-Length: {body.Length}\r\n\r\n");
-
-        try
-        {
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-        }
-        catch (ObjectDisposedException)
-        {
-            // Disposal can happen while a write is waiting for the lock.
-            throw new JsonRpcException("The JSON-RPC connection is closed.");
-        }
-
-        try
-        {
-            // Re-check after acquiring the lock because the connection may have closed while we waited.
-            if (Volatile.Read(ref _connectionState) != StateOpen)
+            if (_requestHandlers.TryGetValue(method, out var requestHandler))
             {
-                throw new JsonRpcException("The JSON-RPC connection is closed.");
-            }
-
-            // Once frame emission begins, the header, body, and flush have to be written as one unit.
-            // Honoring the caller's cancellation token here could leave a corrupt partial frame on a
-            // connection we still consider open. A write timeout and disposal bound the work instead.
-            // If the peer stops draining stdin, the write is abandoned and the connection is closed.
-            using var writeCts = CancellationTokenSource.CreateLinkedTokenSource(_shutdownToken);
-            writeCts.CancelAfter(_writeTimeout);
-
-            try
-            {
-                await _output.WriteAsync(header, writeCts.Token).ConfigureAwait(false);
-                await _output.WriteAsync(body, writeCts.Token).ConfigureAwait(false);
-                await _output.FlushAsync(writeCts.Token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (writeCts.IsCancellationRequested)
-            {
-                // The peer is not draining stdin, or disposal cancelled the write. Close the
-                // connection so the owner can tear down the child process instead of leaving the write
-                // lock blocked.
-                Close("The JSON-RPC connection failed because a write did not complete in time.");
-                throw new JsonRpcException("The JSON-RPC connection failed because a write did not complete in time.");
-            }
-            catch (Exception ex) when (ex is not JsonRpcException)
-            {
-                // A partial frame may have reached the peer. Close the connection instead of reusing a
-                // stream we can no longer trust.
-                Close("The JSON-RPC connection failed while writing a message.");
-                throw new JsonRpcException("The JSON-RPC connection failed while writing a message.", ex);
-            }
-        }
-        finally
-        {
-            try
-            {
-                _writeLock.Release();
-            }
-            catch (ObjectDisposedException)
-            {
-            }
-            catch (SemaphoreFullException)
-            {
-            }
-        }
-    }
-
-    private async Task ReadLoopAsync()
-    {
-        try
-        {
-            while (!_shutdownToken.IsCancellationRequested)
-            {
-                var contentLength = await ReadHeaderAsync(_shutdownToken).ConfigureAwait(false);
-                if (contentLength < 0)
+                try
                 {
-                    break;
+                    return await requestHandler(parameters, cancellationToken).ConfigureAwait(false);
                 }
-
-                if (contentLength == 0)
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
-                    continue;
+                    throw;
                 }
-
-                var body = await ReadExactAsync(contentLength, _shutdownToken).ConfigureAwait(false);
-                if (body is null)
+                catch (Exception ex)
                 {
-                    break;
+                    Logger.LogError($"The JSON-RPC request handler for '{method}' failed.", ex);
+                    throw new LocalRpcException(ex.Message, ex)
+                    {
+                        ErrorCode = JsonRpcError.InternalError,
+                    };
                 }
-
-                var json = Encoding.UTF8.GetString(body);
-
-                // Dispatch synchronously so the reader never awaits bounded work. Responses are routed
-                // immediately, which keeps correlation alive even when inbound queues are saturated.
-                DispatchMessage(json, body.Length);
             }
+
+            throw new LocalRpcException($"No request handler is registered for '{method}'.")
+            {
+                ErrorCode = JsonRpcError.MethodNotFound,
+            };
         }
-        catch (OperationCanceledException) when (_shutdownToken.IsCancellationRequested)
+
+        if (_notificationHandlers.ContainsKey(method))
         {
+            EnqueueNotification(method, parameters);
         }
-        catch (Exception ex)
-        {
-            Logger.LogError("JSON-RPC read loop failed.", ex);
-            RaiseError(ex);
-        }
-        finally
-        {
-            // The reader has exited because of EOF, protocol failure, or disposal. Close the transport
-            // so pending requests fail and new requests are rejected without waiting.
-            Close("The JSON-RPC connection was closed.");
-        }
+
+        return null;
     }
 
-    private async Task<int> ReadHeaderAsync(CancellationToken cancellationToken)
+    private void EnqueueNotification(string method, JsonElement parameters)
     {
-        var buffer = new byte[MaxHeaderBytes];
-        var position = 0;
-        var single = new byte[1];
-
-        while (true)
+        var envelope = new NotificationEnvelope(method, parameters.Clone());
+        while (!_notificationQueue.Writer.TryWrite(envelope))
         {
-            var read = await _input.ReadAsync(single.AsMemory(0, 1), cancellationToken).ConfigureAwait(false);
-            if (read == 0)
+            if (_notificationQueue.Reader.TryRead(out _))
             {
-                if (position == 0)
-                {
-                    return -1;
-                }
-
-                throw new InvalidDataException("The stream closed in the middle of a JSON-RPC header.");
-            }
-
-            if (position >= buffer.Length)
-            {
-                throw new InvalidDataException("The JSON-RPC header exceeded the maximum allowed size.");
-            }
-
-            buffer[position] = single[0];
-            position++;
-
-            if (position >= 4 &&
-                buffer[position - 4] == (byte)'\r' &&
-                buffer[position - 3] == (byte)'\n' &&
-                buffer[position - 2] == (byte)'\r' &&
-                buffer[position - 1] == (byte)'\n')
-            {
-                break;
-            }
-        }
-
-        var headerText = Encoding.ASCII.GetString(buffer, 0, position);
-        foreach (var line in headerText.Split("\r\n", StringSplitOptions.RemoveEmptyEntries))
-        {
-            var separator = line.IndexOf(':', StringComparison.Ordinal);
-            if (separator <= 0)
-            {
+                Interlocked.Increment(ref _droppedNotifications);
                 continue;
             }
 
-            var name = line.AsSpan(0, separator).Trim();
-            if (name.Equals("Content-Length", StringComparison.OrdinalIgnoreCase))
-            {
-                var value = line.AsSpan(separator + 1).Trim();
-                if (!int.TryParse(value, out var length) || length < 0)
-                {
-                    throw new InvalidDataException("The JSON-RPC Content-Length header value was invalid.");
-                }
-
-                if (length > MaxMessageBytes)
-                {
-                    throw new InvalidDataException($"The JSON-RPC Content-Length {length} exceeds the maximum allowed message size of {MaxMessageBytes} bytes.");
-                }
-
-                return length;
-            }
-        }
-
-        throw new InvalidDataException("The JSON-RPC message was missing a Content-Length header.");
-    }
-
-    private async Task<byte[]?> ReadExactAsync(int count, CancellationToken cancellationToken)
-    {
-        var buffer = new byte[count];
-        var offset = 0;
-
-        while (offset < count)
-        {
-            var read = await _input.ReadAsync(buffer.AsMemory(offset, count - offset), cancellationToken).ConfigureAwait(false);
-            if (read == 0)
-            {
-                return null;
-            }
-
-            offset += read;
-        }
-
-        return buffer;
-    }
-
-    private void DispatchMessage(string json, int frameByteLength)
-    {
-        JsonDocument document;
-        try
-        {
-            document = JsonDocument.Parse(json);
-        }
-        catch (JsonException ex)
-        {
-            // A malformed body can be as large as the frame cap. Log a short prefix and route it
-            // through the rate limiter so bad frames cannot flood the log.
-            _protocolErrorLog.Run(() => Logger.LogError($"Failed to parse an inbound JSON-RPC message: {TruncateForLog(json)}", ex));
-            RaiseError(ex);
             return;
-        }
-
-        using (document)
-        {
-            var root = document.RootElement;
-            var hasId = root.TryGetProperty("id", out var idElement) && idElement.ValueKind != JsonValueKind.Null;
-            var hasMethod = root.TryGetProperty("method", out var methodElement) && methodElement.ValueKind == JsonValueKind.String;
-
-            if (hasMethod && !hasId)
-            {
-                EnqueueNotification(methodElement.GetString() ?? string.Empty, root, frameByteLength);
-            }
-            else if (hasMethod && hasId)
-            {
-                EnqueueInboundRequest(methodElement.GetString() ?? string.Empty, idElement, root, frameByteLength);
-            }
-            else if (hasId)
-            {
-                DispatchResponse(idElement, json);
-            }
-            else
-            {
-                _protocolErrorLog.Run(static () => Logger.LogWarning("Received a JSON-RPC message with neither a method nor an id."));
-            }
-        }
-    }
-
-    internal static string TruncateForLog(string value)
-    {
-        if (value.Length <= MaxLoggedBodyChars)
-        {
-            return value;
-        }
-
-        return $"{value.Substring(0, MaxLoggedBodyChars)}... [truncated; {value.Length} total characters]";
-    }
-
-    private void DispatchResponse(JsonElement idElement, string json)
-    {
-        if (idElement.ValueKind != JsonValueKind.Number || !idElement.TryGetInt32(out var id))
-        {
-            _protocolErrorLog.Run(static () => Logger.LogWarning("Received a JSON-RPC response with a non-integer id."));
-            return;
-        }
-
-        JsonRpcResponse? response;
-        try
-        {
-            response = JsonSerializer.Deserialize(json, JsonRpcSerializerContext.Default.JsonRpcResponse);
-        }
-        catch (JsonException ex)
-        {
-            _protocolErrorLog.Run(() => Logger.LogError("Failed to deserialize a JSON-RPC response.", ex));
-            RaiseError(ex);
-            return;
-        }
-
-        if (response is null)
-        {
-            return;
-        }
-
-        // Correlation runs on the reader and does not await bounded queues. An in-flight handler can
-        // still receive this response while inbound work is saturated.
-        if (_pendingRequests.TryRemove(id, out var tcs))
-        {
-            tcs.TrySetResult(response);
-        }
-        else
-        {
-            _protocolErrorLog.Run(() => Logger.LogWarning($"Received a JSON-RPC response for an unknown request id {id}."));
-        }
-    }
-
-    private void EnqueueNotification(string method, JsonElement root, int sizeBytes)
-    {
-        if (!_notificationHandlers.ContainsKey(method))
-        {
-            Logger.LogDebug($"No handler registered for JSON-RPC notification '{method}'.");
-            return;
-        }
-
-        var parameters = root.TryGetProperty("params", out var p) ? p.Clone() : default;
-        var envelope = new NotificationEnvelope(method, parameters, sizeBytes);
-
-        // Enqueue rather than invoke inline so a slow or reentrant handler never blocks the read loop
-        // or delays response correlation. The reader drops old notifications to stay within the count
-        // and byte budgets. If the newest still does not fit, it is dropped too.
-        while (true)
-        {
-            var projected = Interlocked.Read(ref _queuedNotificationBytes) + sizeBytes;
-            if (projected <= _maxQueuedNotificationBytes && _notificationQueue.Writer.TryWrite(envelope))
-            {
-                Interlocked.Add(ref _queuedNotificationBytes, sizeBytes);
-                return;
-            }
-
-            // The byte budget would be exceeded or the count-bounded queue is full. Drop the oldest
-            // notification to make room, then retry.
-            if (_notificationQueue.Reader.TryRead(out var oldest))
-            {
-                Interlocked.Add(ref _queuedNotificationBytes, -oldest.SizeBytes);
-                RecordDroppedNotification();
-                continue;
-            }
-
-            // The newest notification does not fit by itself, or the queue completed because the
-            // connection is closing. Drop it.
-            RecordDroppedNotification();
-            return;
-        }
-    }
-
-    private void RecordDroppedNotification()
-    {
-        var dropped = Interlocked.Increment(ref _droppedNotifications);
-        if ((dropped & 0x3F) == 1)
-        {
-            _protocolErrorLog.Run(() => Logger.LogWarning($"The JSON-RPC notification queue is saturated; {dropped} notification(s) have been dropped."));
         }
     }
 
@@ -826,193 +369,33 @@ public sealed partial class JsonRpcConnection : IDisposable
     {
         try
         {
-            while (await _notificationQueue.Reader.WaitToReadAsync(_shutdownToken).ConfigureAwait(false))
+            while (await _notificationQueue.Reader.WaitToReadAsync(_disposalCts.Token).ConfigureAwait(false))
             {
                 while (_notificationQueue.Reader.TryRead(out var envelope))
                 {
-                    Interlocked.Add(ref _queuedNotificationBytes, -envelope.SizeBytes);
-                    InvokeNotificationHandler(envelope.Method, envelope.Parameters);
+                    if (!_notificationHandlers.TryGetValue(envelope.Method, out var handler))
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        handler(envelope.Parameters);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"The JSON-RPC notification handler for '{envelope.Method}' failed.", ex);
+                        RaiseError(ex);
+                    }
                 }
             }
         }
-        catch (OperationCanceledException) when (_shutdownToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (_disposalCts.IsCancellationRequested)
         {
         }
         catch (ChannelClosedException)
         {
         }
-    }
-
-    private void InvokeNotificationHandler(string method, JsonElement parameters)
-    {
-        if (!_notificationHandlers.TryGetValue(method, out var handler))
-        {
-            return;
-        }
-
-        try
-        {
-            handler(parameters);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"The JSON-RPC notification handler for '{method}' threw an exception.", ex);
-            RaiseError(ex);
-        }
-    }
-
-    private void EnqueueInboundRequest(string method, JsonElement idElement, JsonElement root, int sizeBytes)
-    {
-        // Admit the request without blocking the reader. Enforce the byte budget first, then the
-        // count-bounded queue. If either budget is exhausted, reject with server-busy so the reader can
-        // keep routing responses.
-        var projected = Interlocked.Add(ref _queuedRequestBytes, sizeBytes);
-        if (projected > _maxQueuedRequestBytes)
-        {
-            Interlocked.Add(ref _queuedRequestBytes, -sizeBytes);
-            RejectInboundRequest(idElement);
-            return;
-        }
-
-        // Clone the id and params so the buffered envelope stays valid after the read loop disposes
-        // the source document.
-        var envelope = new InboundRequestEnvelope(
-            method,
-            idElement.Clone(),
-            root.TryGetProperty("params", out var p) ? p.Clone() : default,
-            sizeBytes);
-
-        if (_inboundRequestQueue.Writer.TryWrite(envelope))
-        {
-            return;
-        }
-
-        // The count-bounded queue is full or completed because the connection is closing. Release the
-        // byte reservation and reject the request.
-        Interlocked.Add(ref _queuedRequestBytes, -sizeBytes);
-        RejectInboundRequest(idElement);
-    }
-
-    private void RejectInboundRequest(JsonElement idElement)
-    {
-        if (Volatile.Read(ref _connectionState) != StateOpen)
-        {
-            // The connection is closing; the peer will observe the disconnect. Nothing to send.
-            return;
-        }
-
-        // Bound concurrent rejection sends so sustained overload cannot spawn unbounded tasks. When
-        // the cap is reached, the rejection is dropped and the peer observes a timeout.
-        if (Interlocked.Increment(ref _pendingRejectionSends) > MaxConcurrentRejectionSends)
-        {
-            Interlocked.Decrement(ref _pendingRejectionSends);
-            return;
-        }
-
-        var id = idElement.Clone();
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await SendErrorResponseAsync(id, JsonRpcError.ServerBusy, "The server is busy and cannot accept the request.").ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogDebug($"Failed to send a JSON-RPC server-busy response: {ex.Message}");
-            }
-            finally
-            {
-                Interlocked.Decrement(ref _pendingRejectionSends);
-            }
-        });
-    }
-
-    private async Task ProcessInboundRequestsAsync()
-    {
-        try
-        {
-            while (await _inboundRequestQueue.Reader.WaitToReadAsync(_shutdownToken).ConfigureAwait(false))
-            {
-                while (_inboundRequestQueue.Reader.TryRead(out var envelope))
-                {
-                    Interlocked.Add(ref _queuedRequestBytes, -envelope.SizeBytes);
-                    await DispatchInboundRequestAsync(envelope).ConfigureAwait(false);
-                }
-            }
-        }
-        catch (OperationCanceledException) when (_shutdownToken.IsCancellationRequested)
-        {
-        }
-        catch (ChannelClosedException)
-        {
-        }
-    }
-
-    private Task DispatchInboundRequestAsync(InboundRequestEnvelope envelope)
-    {
-        if (!_requestHandlers.TryGetValue(envelope.Method, out var handler))
-        {
-            return SendErrorResponseAsync(envelope.Id, JsonRpcError.MethodNotFound, $"The method '{envelope.Method}' is not supported.");
-        }
-
-        return HandleInboundRequestAsync(envelope.Method, envelope.Id, envelope.Parameters, handler);
-    }
-
-    private async Task HandleInboundRequestAsync(string method, JsonElement id, JsonElement parameters, Func<JsonElement, CancellationToken, Task<JsonNode?>> handler)
-    {
-        try
-        {
-            var result = await handler(parameters, _shutdownToken).ConfigureAwait(false);
-            await SendResultResponseAsync(id, result).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException) when (_shutdownToken.IsCancellationRequested)
-        {
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"The JSON-RPC request handler for '{method}' threw an exception.", ex);
-            try
-            {
-                await SendErrorResponseAsync(id, JsonRpcError.InternalError, ex.Message).ConfigureAwait(false);
-            }
-            catch (Exception sendEx)
-            {
-                Logger.LogError("Failed to send a JSON-RPC error response.", sendEx);
-            }
-        }
-    }
-
-    private Task SendResultResponseAsync(JsonElement id, JsonNode? result)
-    {
-        var response = new JsonObject
-        {
-            ["jsonrpc"] = "2.0",
-            ["id"] = NodeFromElement(id),
-            ["result"] = result,
-        };
-
-        return WriteFramedAsync(response.ToJsonString(), _shutdownToken);
-    }
-
-    private Task SendErrorResponseAsync(JsonElement id, int code, string message)
-    {
-        var response = new JsonObject
-        {
-            ["jsonrpc"] = "2.0",
-            ["id"] = NodeFromElement(id),
-            ["error"] = new JsonObject
-            {
-                ["code"] = code,
-                ["message"] = message,
-            },
-        };
-
-        return WriteFramedAsync(response.ToJsonString(), _shutdownToken);
-    }
-
-    private static JsonNode? NodeFromElement(JsonElement element)
-    {
-        return element.ValueKind == JsonValueKind.Undefined ? null : JsonNode.Parse(element.GetRawText());
     }
 
     private async Task PumpErrorStreamAsync()
@@ -1020,9 +403,9 @@ public sealed partial class JsonRpcConnection : IDisposable
         try
         {
             var reader = new BoundedStderrReader(line => Logger.LogWarning($"[extension stderr] {line}"));
-            await reader.PumpAsync(_errorStream!, _shutdownToken).ConfigureAwait(false);
+            await reader.PumpAsync(_errorStream!, _disposalCts.Token).ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (_shutdownToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (_disposalCts.IsCancellationRequested)
         {
         }
         catch (Exception ex)
@@ -1031,22 +414,29 @@ public sealed partial class JsonRpcConnection : IDisposable
         }
     }
 
-    private void FailAllPending(string message)
+    private void OnRpcDisconnected(object? sender, JsonRpcDisconnectedEventArgs e)
     {
-        foreach (var key in _pendingRequests.Keys)
-        {
-            if (_pendingRequests.TryRemove(key, out var tcs))
-            {
-                tcs.TrySetException(new JsonRpcException(message));
-            }
-        }
-    }
+        _connectionClosedCts.Cancel();
 
-    private void RaiseDisconnected()
-    {
+        if (e.Exception is not null && e.Reason is not DisconnectedReason.LocallyDisposed and not DisconnectedReason.RemotePartyTerminated)
+        {
+            RaiseError(e.Exception);
+        }
+
         if (Interlocked.Exchange(ref _disconnectedRaised, 1) == 0)
         {
             Disconnected?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private void DisposeRpc()
+    {
+        try
+        {
+            _rpc.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
         }
     }
 
@@ -1055,15 +445,89 @@ public sealed partial class JsonRpcConnection : IDisposable
         Error?.Invoke(this, new JsonRpcErrorEventArgs(exception));
     }
 
-    /// <summary>
-    /// A buffered inbound notification with detached parameters and the byte size charged against the
-    /// notification queue's aggregate byte budget.
-    /// </summary>
-    private readonly record struct NotificationEnvelope(string Method, JsonElement Parameters, int SizeBytes);
+    private static int GetErrorCode(RemoteRpcException exception)
+    {
+        return exception switch
+        {
+            RemoteInvocationException invocationException => invocationException.ErrorCode,
+            _ when exception.ErrorCode is { } code => (int)code,
+            _ => JsonRpcError.InternalError,
+        };
+    }
 
-    /// <summary>
-    /// A buffered inbound request with detached id and parameters plus the byte size charged against
-    /// the request queue's aggregate byte budget.
-    /// </summary>
-    private readonly record struct InboundRequestEnvelope(string Method, JsonElement Id, JsonElement Parameters, int SizeBytes);
+    private static JsonNode? GetErrorData(RemoteRpcException exception)
+    {
+        return exception.ErrorData switch
+        {
+            JsonElement element when element.ValueKind != JsonValueKind.Undefined => JsonNode.Parse(element.GetRawText()),
+            JsonNode node => node.DeepClone(),
+            _ => null,
+        };
+    }
+
+    private sealed class RpcMethodTarget
+    {
+        private readonly JsonRpcConnection _connection;
+        private readonly string _method;
+
+        internal RpcMethodTarget(JsonRpcConnection connection, string method)
+        {
+            _connection = connection;
+            _method = method;
+        }
+
+        public Task<JsonNode?> InvokeAsync(JsonElement parameters = default, CancellationToken cancellationToken = default)
+        {
+            return _connection.DispatchMethodAsync(_method, parameters, cancellationToken);
+        }
+    }
+
+    private sealed class CmdPalJsonRpc : StreamJsonRpc.JsonRpc
+    {
+        private readonly AsyncLocal<bool?> _isResponseExpected = new();
+
+        internal CmdPalJsonRpc(IJsonRpcMessageHandler messageHandler)
+            : base(messageHandler)
+        {
+        }
+
+        internal bool IsResponseExpected => _isResponseExpected.Value ?? true;
+
+        internal Task<TResult> InvokeWithParameterObjectAsync<TResult>(
+            long requestId,
+            string method,
+            object? parameters,
+            CancellationToken cancellationToken)
+        {
+            return InvokeCoreAsync<TResult>(
+                new RequestId(requestId),
+                method,
+                parameters is null ? null : new object[] { parameters },
+                positionalArgumentDeclaredTypes: null,
+                namedArgumentDeclaredTypes: null,
+                cancellationToken,
+                isParameterObject: true);
+        }
+
+        protected override async ValueTask<StreamJsonRpc.Protocol.JsonRpcMessage> DispatchRequestAsync(
+            StreamJsonRpc.Protocol.JsonRpcRequest request,
+            TargetMethod targetMethod,
+            CancellationToken cancellationToken)
+        {
+            var previousValue = _isResponseExpected.Value;
+            _isResponseExpected.Value = request.IsResponseExpected;
+            try
+            {
+                return await base.DispatchRequestAsync(request, targetMethod, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _isResponseExpected.Value = previousValue;
+            }
+        }
+
+        protected override Type? GetErrorDetailsDataType(StreamJsonRpc.Protocol.JsonRpcError error) => typeof(JsonElement);
+    }
+
+    private readonly record struct NotificationEnvelope(string Method, JsonElement Parameters);
 }

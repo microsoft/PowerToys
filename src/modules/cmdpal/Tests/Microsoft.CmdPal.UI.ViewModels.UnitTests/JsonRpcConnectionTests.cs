@@ -286,8 +286,8 @@ public partial class JsonRpcConnectionTests
                 }
             });
 
-            var first = Frame(BuildNotification("tick", null));
-            var second = Frame(BuildNotification("tick", null));
+            var first = Frame(BuildNotification("tick", new JsonObject()));
+            var second = Frame(BuildNotification("tick", new JsonObject()));
             var combined = new byte[first.Length + second.Length];
             Buffer.BlockCopy(first, 0, combined, 0, first.Length);
             Buffer.BlockCopy(second, 0, combined, first.Length, second.Length);
@@ -351,6 +351,55 @@ public partial class JsonRpcConnectionTests
     }
 
     [TestMethod]
+    public async Task InboundRequest_DoesNotInvokeNotificationHandler()
+    {
+        using var cts = new CancellationTokenSource(TestTimeout);
+        var harness = CreateHarness();
+        try
+        {
+            var invocationCount = 0;
+            harness.Host.RegisterNotificationHandler("tick", _ => Interlocked.Increment(ref invocationCount));
+
+            await WriteFramedAsync(harness.ExtensionWrites, BuildRequest(10, "tick", new JsonObject()), cts.Token);
+
+            var (_, body) = await ReadFramedAsync(harness.ExtensionReads, cts.Token);
+            using var document = JsonDocument.Parse(body);
+            Assert.AreEqual(JsonRpcError.MethodNotFound, document.RootElement.GetProperty("error").GetProperty("code").GetInt32());
+            Assert.AreEqual(0, Volatile.Read(ref invocationCount));
+        }
+        finally
+        {
+            harness.Host.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task InboundNotification_DoesNotInvokeRequestHandler()
+    {
+        using var cts = new CancellationTokenSource(TestTimeout);
+        var harness = CreateHarness();
+        try
+        {
+            var invocationCount = 0;
+            harness.Host.RegisterRequestHandler("ping", (_, _) =>
+            {
+                Interlocked.Increment(ref invocationCount);
+                return Task.FromResult<JsonNode?>(null);
+            });
+
+            await WriteFramedAsync(harness.ExtensionWrites, BuildNotification("ping", new JsonObject()), cts.Token);
+            await WriteFramedAsync(harness.ExtensionWrites, BuildRequest(11, "ping", new JsonObject()), cts.Token);
+
+            await ReadFramedAsync(harness.ExtensionReads, cts.Token);
+            Assert.AreEqual(1, Volatile.Read(ref invocationCount));
+        }
+        finally
+        {
+            harness.Host.Dispose();
+        }
+    }
+
+    [TestMethod]
     public async Task Dispose_CancelsPendingRequests()
     {
         using var cts = new CancellationTokenSource(TestTimeout);
@@ -364,32 +413,6 @@ public partial class JsonRpcConnectionTests
         harness.Host.Dispose();
 
         await Assert.ThrowsExceptionAsync<JsonRpcException>(async () => await requestTask.WaitAsync(cts.Token));
-    }
-
-    [TestMethod]
-    public async Task Inbound_OversizedContentLength_RaisesErrorWithoutAllocating()
-    {
-        using var cts = new CancellationTokenSource(TestTimeout);
-        var harness = CreateHarness();
-        try
-        {
-            var errorRaised = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
-            harness.Host.Error += (_, e) => errorRaised.TrySetResult(e.Exception);
-
-            // Reject a Content-Length far beyond the allowed maximum before allocating the body
-            // buffer. No body is written on purpose.
-            var header = Encoding.ASCII.GetBytes("Content-Length: 2000000000\r\n\r\n");
-            await harness.ExtensionWrites.WriteAsync(header, cts.Token);
-            await harness.ExtensionWrites.FlushAsync(cts.Token);
-
-            var exception = await errorRaised.Task.WaitAsync(cts.Token);
-            Assert.IsInstanceOfType(exception, typeof(InvalidDataException));
-            StringAssert.Contains(exception.Message, "maximum");
-        }
-        finally
-        {
-            harness.Host.Dispose();
-        }
     }
 
     private static Harness CreateHarness(TimeSpan? requestTimeout = null)
