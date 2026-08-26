@@ -2,10 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -15,12 +12,8 @@ namespace Microsoft.CmdPal.UI;
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class ContentPage : Page,
-     IRecipient<ActivateSelectedListItemMessage>,
-     IRecipient<ActivateSecondaryCommandMessage>
+public sealed partial class ContentPage : Page, IPageInteractionTarget
 {
-    private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
-
     public ContentPageViewModel? ViewModel
     {
         get => (ContentPageViewModel?)GetValue(ViewModelProperty);
@@ -34,14 +27,6 @@ public sealed partial class ContentPage : Page,
     public ContentPage()
     {
         this.InitializeComponent();
-        this.Unloaded += OnUnloaded;
-    }
-
-    private void OnUnloaded(object sender, RoutedEventArgs e)
-    {
-        // Unhook from everything to ensure nothing can reach us
-        // between this point and our complete and utter destruction.
-        WeakReferenceMessenger.Default.UnregisterAll(this);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -58,24 +43,12 @@ public sealed partial class ContentPage : Page,
 
         ViewModel = contentPageViewModel;
 
-        if (!WeakReferenceMessenger.Default.IsRegistered<ActivateSelectedListItemMessage>(this))
-        {
-            WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
-        }
-
-        if (!WeakReferenceMessenger.Default.IsRegistered<ActivateSecondaryCommandMessage>(this))
-        {
-            WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
-        }
-
         base.OnNavigatedTo(e);
     }
 
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
     {
         base.OnNavigatingFrom(e);
-        WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
-        WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
 
         // Clean-up event listeners
         if (e.NavigationMode != NavigationMode.New)
@@ -87,15 +60,31 @@ public sealed partial class ContentPage : Page,
         ViewModel = null;
     }
 
-    // this comes in on Enter keypresses in the SearchBox
-    public void Receive(ActivateSelectedListItemMessage message)
+    public void NavigatePrevious()
     {
-        ViewModel?.InvokePrimaryCommandCommand?.Execute(ViewModel);
     }
 
-    // this comes in on Ctrl+Enter keypresses in the SearchBox
-    public void Receive(ActivateSecondaryCommandMessage message)
+    public void NavigateNext()
     {
-        ViewModel?.InvokeSecondaryCommandCommand?.Execute(ViewModel);
     }
+
+    public void NavigateLeft()
+    {
+    }
+
+    public void NavigateRight()
+    {
+    }
+
+    public void NavigatePageUp()
+    {
+    }
+
+    public void NavigatePageDown()
+    {
+    }
+
+    public void ActivatePrimary() => ViewModel?.InvokePrimaryCommandCommand?.Execute(ViewModel);
+
+    public void ActivateSecondary() => ViewModel?.InvokeSecondaryCommandCommand?.Execute(ViewModel);
 }

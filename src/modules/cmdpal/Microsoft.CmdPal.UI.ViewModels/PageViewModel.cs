@@ -5,7 +5,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -15,6 +14,16 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 {
+    public event EventHandler<PageCommandBarContextChangedEventArgs>? CommandBarContextChanged;
+
+    public event EventHandler<PageDetailsChangedEventArgs>? DetailsChanged;
+
+    public event EventHandler<PageSearchSuggestionChangedEventArgs>? SearchSuggestionChanged;
+
+    public event EventHandler? FocusSearchRequested;
+
+    public event EventHandler<ParameterFocusRequestedEventArgs>? ParameterFocusRequested;
+
     public TaskScheduler Scheduler { get; private set; }
 
     private readonly ExtensionObject<IPage> _pageModel;
@@ -223,11 +232,22 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         return message;
     }
 
-    protected void SendPageUiMessage<TMessage>(TMessage message)
-        where TMessage : class
-    {
-        WeakReferenceMessenger.Default.Send<TMessage>(message);
-    }
+    protected internal void SetCommandBarContext(ICommandBarContext? context) =>
+        CommandBarContextChanged?.Invoke(this, new(context));
+
+    protected internal void SetDetails(DetailsViewModel? details) =>
+        DetailsChanged?.Invoke(this, new(details));
+
+    protected internal void SetSearchSuggestion(string suggestion) =>
+        SearchSuggestionChanged?.Invoke(this, new(suggestion));
+
+    protected internal void RequestSearchFocus() =>
+        FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+
+    protected internal void RequestParameterFocus(ParameterValueRunViewModel parameter) =>
+        ParameterFocusRequested?.Invoke(this, new(parameter));
+
+    internal virtual bool OwnsCommandSource(PageViewModel source) => ReferenceEquals(this, source);
 
     protected virtual void FetchProperty(string propertyName)
     {

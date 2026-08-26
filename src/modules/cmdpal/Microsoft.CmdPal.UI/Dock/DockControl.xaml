@@ -100,7 +100,7 @@
                 Opened="ContextMenuFlyout_Opened"
                 ShouldConstrainToRootBounds="False"
                 SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
-                <cpcontrols:ContextMenu x:Name="ContextControl" SubscribeToCommandBar="False" />
+                <cpcontrols:ContextMenu x:Name="ContextControl" />
             </Flyout>
 
             <!--  Edit mode context menu for dock bands  -->

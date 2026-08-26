@@ -10,17 +10,18 @@ using Microsoft.CmdPal.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Windows.Foundation;
 using Windows.System;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
-public sealed partial class CommandBar : UserControl,
-    IRecipient<OpenContextMenuMessage>,
-    IRecipient<CloseContextMenuMessage>,
-    IRecipient<TryCommandKeybindingMessage>,
-    ICurrentPageAware
+public sealed partial class CommandBar : UserControl, ICurrentPageAware, ICommandBarInteractionTarget
 {
+    private long _commandContextVersion;
+
     public CommandBarViewModel ViewModel { get; } = new();
+
+    public event EventHandler? FocusSearchRequested;
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -35,24 +36,57 @@ public sealed partial class CommandBar : UserControl,
     public CommandBar()
     {
         this.InitializeComponent();
-
-        // RegisterAll isn't AOT compatible
-        WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
-        WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
-        WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
+        ContextControl.CloseRequested += (_, _) => CloseContextMenu();
+        ContextControl.FocusSearchRequested += (_, _) => FocusSearchRequested?.Invoke(this, EventArgs.Empty);
     }
 
-    public void Receive(OpenContextMenuMessage message)
+    public void SetCommandContext(ICommandBarContext? context)
     {
-        if (message.Element is null)
+        var version = Interlocked.Increment(ref _commandContextVersion);
+        if (!DispatcherQueue.HasThreadAccess)
+        {
+            _ = DispatcherQueue.TryEnqueue(() => ApplyCommandContext(context, version));
+            return;
+        }
+
+        ApplyCommandContext(context, version);
+    }
+
+    private void ApplyCommandContext(ICommandBarContext? context, long version)
+    {
+        if (version != Volatile.Read(ref _commandContextVersion))
+        {
+            return;
+        }
+
+        ViewModel.QueueSelectedItem(context);
+        ContextControl.SetCommandContext(context);
+    }
+
+    public void OpenContextMenu() =>
+        OpenContextMenu(null, null, null, null, ContextMenuFilterLocation.Bottom);
+
+    public void OpenContextMenu(
+        ICommandBarContext? context,
+        FrameworkElement? element = null,
+        FlyoutPlacementMode? placement = null,
+        Point? position = null,
+        ContextMenuFilterLocation filterLocation = ContextMenuFilterLocation.Bottom)
+    {
+        if (context is not null)
+        {
+            SetCommandContext(context);
+        }
+
+        if (element is null)
         {
             // This is invoked from the "More" button on the command bar
-            if (!ViewModel.ShouldShowContextMenu)
+            if (!(ContextControl.ViewModel.SelectedItem?.CanOpenContextMenu ?? false))
             {
                 return;
             }
 
-            ContextControl.PrepareForOpen(message.ContextMenuFilterLocation);
+            ContextControl.PrepareForOpen(filterLocation);
 
             _ = DispatcherQueue.TryEnqueue(
                 () =>
@@ -74,24 +108,24 @@ public sealed partial class CommandBar : UserControl,
                 return;
             }
 
-            ContextControl.PrepareForOpen(message.ContextMenuFilterLocation);
+            ContextControl.PrepareForOpen(filterLocation);
 
             _ = DispatcherQueue.TryEnqueue(
             () =>
             {
                 ContextMenuFlyout.ShowAt(
-                    message.Element!,
+                    element,
                     new FlyoutShowOptions()
                     {
                         ShowMode = FlyoutShowMode.Standard,
-                        Placement = (FlyoutPlacementMode)message.FlyoutPlacementMode!,
-                        Position = message.Point,
+                        Placement = placement ?? FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                        Position = position,
                     });
             });
         }
     }
 
-    public void Receive(CloseContextMenuMessage message)
+    public void CloseContextMenu()
     {
         if (ContextMenuFlyout.IsOpen)
         {
@@ -99,28 +133,28 @@ public sealed partial class CommandBar : UserControl,
         }
     }
 
-    public void Receive(TryCommandKeybindingMessage msg)
+    public bool TryCommandKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
     {
-        if (!ViewModel.ShouldShowContextMenu)
+        if (!(ContextControl.ViewModel.SelectedItem?.CanOpenContextMenu ?? false))
         {
-            return;
+            return false;
         }
 
-        var result = ViewModel?.CheckKeybinding(msg.Ctrl, msg.Alt, msg.Shift, msg.Win, msg.Key);
+        var result = ViewModel.CheckKeybinding(ctrl, alt, shift, win, key);
 
         if (result == ContextKeybindingResult.Hide)
         {
-            msg.Handled = true;
+            CloseContextMenu();
+            return true;
         }
-        else if (result == ContextKeybindingResult.KeepOpen)
+
+        if (result == ContextKeybindingResult.KeepOpen)
         {
-            WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
-            msg.Handled = true;
+            OpenContextMenu();
+            return true;
         }
-        else if (result == ContextKeybindingResult.Unhandled)
-        {
-            msg.Handled = false;
-        }
+
+        return false;
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
@@ -142,7 +176,7 @@ public sealed partial class CommandBar : UserControl,
 
     private void MoreCommandsButton_Clicked(object sender, RoutedEventArgs e)
     {
-        WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
+        OpenContextMenu();
     }
 
     /// <summary>

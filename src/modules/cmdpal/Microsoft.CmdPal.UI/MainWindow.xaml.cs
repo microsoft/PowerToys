@@ -48,12 +48,9 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ShowPaletteAtMessage>,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>,
-    IRecipient<NavigateToPageMessage>,
     IRecipient<NavigationDepthMessage>,
     IRecipient<SearchQueryMessage>,
     IRecipient<ErrorOccurredMessage>,
-    IRecipient<DragStartedMessage>,
-    IRecipient<DragCompletedMessage>,
     IRecipient<ToggleDevRibbonMessage>,
     IRecipient<GetHwndMessage>,
     IRecipient<ExpandCompactModeMessage>,
@@ -77,6 +74,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly IThemeService _themeService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
     private readonly List<long> _breakthroughTimestamps = [];
+    private readonly ShellViewModel _shellViewModel;
 
     private bool _ignoreHotKeyWhenFullScreen = true;
     private bool _ignoreHotKeyWhenBusy;
@@ -141,6 +139,9 @@ public sealed partial class MainWindow : WindowEx,
         InitializeComponent();
 
         ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
+        _shellViewModel = App.Current.Services.GetRequiredService<ShellViewModel>();
+        _shellViewModel.PageNavigationRequested += ShellViewModel_PageNavigationRequested;
+        ShellContent.DragStateChanged += ShellContent_DragStateChanged;
 
         _autoGoHomeTimer = new DispatcherTimer();
         _autoGoHomeTimer.Tick += OnAutoGoHomeTimerOnTick;
@@ -191,12 +192,9 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowPaletteAtMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
-        WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigationDepthMessage>(this);
         WeakReferenceMessenger.Default.Register<SearchQueryMessage>(this);
         WeakReferenceMessenger.Default.Register<ErrorOccurredMessage>(this);
-        WeakReferenceMessenger.Default.Register<DragStartedMessage>(this);
-        WeakReferenceMessenger.Default.Register<DragCompletedMessage>(this);
         WeakReferenceMessenger.Default.Register<ToggleDevRibbonMessage>(this);
         WeakReferenceMessenger.Default.Register<GetHwndMessage>(this);
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
@@ -238,7 +236,7 @@ public sealed partial class MainWindow : WindowEx,
 
         // BEAR LOADING: Focus Search must be suppressed here; otherwise it may steal focus (for example, from the system tray icon)
         // and prevent the user from opening its context menu.
-        WeakReferenceMessenger.Default.Send(new GoHomeMessage(WithAnimation: false, FocusSearch: false));
+        _shellViewModel.GoHome(withAnimation: false, focusSearch: false);
     }
 
     private void ThemeServiceOnThemeChanged(object? sender, ThemeChangedEventArgs e)
@@ -278,11 +276,11 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
+    private void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
     {
         if (e.Key == VirtualKey.GoBack)
         {
-            WeakReferenceMessenger.Default.Send(new GoBackMessage());
+            _shellViewModel.GoBack();
         }
     }
 
@@ -990,7 +988,7 @@ public sealed partial class MainWindow : WindowEx,
     {
         if (message.ForceGoHome)
         {
-            WeakReferenceMessenger.Default.Send(new GoHomeMessage(false, false));
+            _shellViewModel.GoHome(withAnimation: false, focusSearch: false);
         }
 
         // This might come in off the UI thread. Make sure to hop back.
@@ -1003,7 +1001,7 @@ public sealed partial class MainWindow : WindowEx,
 
     // Session telemetry: Track metrics during the Command Palette session
     // These receivers increment counters that are sent when EndSession is called
-    public void Receive(NavigateToPageMessage message)
+    private void ShellViewModel_PageNavigationRequested(object? sender, PageNavigationRequestedEventArgs e)
     {
         _sessionPagesVisited++;
     }
@@ -1902,6 +1900,8 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Dispose()
     {
+        _shellViewModel.PageNavigationRequested -= ShellViewModel_PageNavigationRequested;
+        ShellContent.DragStateChanged -= ShellContent_DragStateChanged;
         _themeService.ThemeChanged -= ThemeServiceOnThemeChanged;
         App.Current.Services.GetRequiredService<ISettingsService>().SettingsChanged -= SettingsChangedHandler;
 
@@ -1917,14 +1917,14 @@ public sealed partial class MainWindow : WindowEx,
         _devRibbon?.Visibility = _devRibbon.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
     }
 
-    public void Receive(DragStartedMessage message)
+    private void ShellContent_DragStateChanged(object? sender, PageDragStateChangedEventArgs e)
     {
-        _preventHideWhenDeactivated = true;
-    }
+        _preventHideWhenDeactivated = e.IsDragging;
+        if (e.IsDragging)
+        {
+            return;
+        }
 
-    public void Receive(DragCompletedMessage message)
-    {
-        _preventHideWhenDeactivated = false;
         Task.Delay(200).ContinueWith(_ =>
         {
             DispatcherQueue.TryEnqueue(StealForeground);

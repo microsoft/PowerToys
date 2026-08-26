@@ -20,6 +20,8 @@ namespace Microsoft.CmdPal.UI.Controls;
 public sealed partial class FiltersDropDown : UserControl,
     ICurrentPageAware
 {
+    public event EventHandler? FocusSearchRequested;
+
     private bool _isDropDownOpen;
     private string? _pendingSearchText;
     private IFilterItemViewModel[] _allItems = [];
@@ -386,7 +388,7 @@ public sealed partial class FiltersDropDown : UserControl,
             FilterFlyout.Hide();
         }
 
-        WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+        FocusSearchRequested?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>

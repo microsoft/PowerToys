@@ -18,7 +18,7 @@ namespace Microsoft.CmdPal.UI;
 /// <see cref="ListItemsView"/> so it can be reused (for example, by
 /// <see cref="ParametersPage"/>).
 /// </summary>
-public sealed partial class ListPage : Page
+public sealed partial class ListPage : Page, IPageInteractionTarget, IListInteractionSource
 {
     internal ListViewModel? ViewModel
     {
@@ -34,7 +34,38 @@ public sealed partial class ListPage : Page
     {
         this.InitializeComponent();
         this.NavigationCacheMode = NavigationCacheMode.Disabled;
+        ListView.SelectionChanged += (_, e) => SelectionChanged?.Invoke(this, e);
+        ListView.ContextMenuRequested += (_, e) => ContextMenuRequested?.Invoke(this, e);
+        ListView.ContextMenuCloseRequested += (_, _) => ContextMenuCloseRequested?.Invoke(this, EventArgs.Empty);
+        ListView.FocusSearchRequested += (_, _) => FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+        ListView.DragStateChanged += (_, e) => DragStateChanged?.Invoke(this, e);
     }
+
+    public event EventHandler<ListItemsSelectionChangedEventArgs>? SelectionChanged;
+
+    public event EventHandler<ListItemsContextMenuRequestedEventArgs>? ContextMenuRequested;
+
+    public event EventHandler? ContextMenuCloseRequested;
+
+    public event EventHandler? FocusSearchRequested;
+
+    public event EventHandler<PageDragStateChangedEventArgs>? DragStateChanged;
+
+    public void NavigatePrevious() => ListView.NavigatePrevious();
+
+    public void NavigateNext() => ListView.NavigateNext();
+
+    public void NavigateLeft() => ListView.NavigateLeft();
+
+    public void NavigateRight() => ListView.NavigateRight();
+
+    public void NavigatePageUp() => ListView.NavigatePageUp();
+
+    public void NavigatePageDown() => ListView.NavigatePageDown();
+
+    public void ActivatePrimary() => ListView.ActivatePrimary();
+
+    public void ActivateSecondary() => ListView.ActivateSecondary();
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {

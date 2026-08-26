@@ -577,16 +577,39 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         get => _activeListViewModel;
         private set
         {
-            if (_activeListViewModel != value)
+            if (ReferenceEquals(_activeListViewModel, value))
             {
-                _activeListViewModel = value;
-                UpdateProperty(nameof(ActiveListViewModel));
-                UpdateProperty(nameof(HasActiveList));
+                return;
             }
+
+            if (_activeListViewModel is not null)
+            {
+                _activeListViewModel.CommandBarContextChanged -= ActiveList_CommandBarContextChanged;
+                _activeListViewModel.DetailsChanged -= ActiveList_DetailsChanged;
+                _activeListViewModel.SearchSuggestionChanged -= ActiveList_SearchSuggestionChanged;
+            }
+
+            _activeListViewModel = value;
+
+            if (_activeListViewModel is not null)
+            {
+                _activeListViewModel.CommandBarContextChanged += ActiveList_CommandBarContextChanged;
+                _activeListViewModel.DetailsChanged += ActiveList_DetailsChanged;
+                _activeListViewModel.SearchSuggestionChanged += ActiveList_SearchSuggestionChanged;
+            }
+
+            SetCommandBarContext(_activeListViewModel is null && ShowCommand ? Command : null);
+            SetDetails(null);
+            SetSearchSuggestion(_activeListViewModel?.TextToSuggest ?? string.Empty);
+            UpdateProperty(nameof(ActiveListViewModel));
+            UpdateProperty(nameof(HasActiveList));
         }
     }
 
     public bool HasActiveList => _activeListViewModel != null;
+
+    internal override bool OwnsCommandSource(PageViewModel source) =>
+        base.OwnsCommandSource(source) || ReferenceEquals(ActiveListViewModel, source);
 
     private CommandParameterRunViewModel? _activeListParam;
 
@@ -595,6 +618,30 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         CoreLogger.LogDebug($"[ParametersPageVM] SetActiveListParameter: {(param != null ? "setting" : "clearing")} (was {(_activeListParam != null ? "set" : "null")})");
         _activeListParam = param;
         ActiveListViewModel = param?.ListViewModel;
+    }
+
+    private void ActiveList_CommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, ActiveListViewModel))
+        {
+            SetCommandBarContext(e.Context);
+        }
+    }
+
+    private void ActiveList_DetailsChanged(object? sender, PageDetailsChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, ActiveListViewModel))
+        {
+            SetDetails(e.Details);
+        }
+    }
+
+    private void ActiveList_SearchSuggestionChanged(object? sender, PageSearchSuggestionChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, ActiveListViewModel))
+        {
+            SetSearchSuggestion(e.Suggestion);
+        }
     }
 
     private readonly Lock _listLock = new();
@@ -727,7 +774,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 OnPropertyChanged(nameof(Items)); // This _could_ be promoted to a dedicated ItemsUpdated event if needed
                 UpdateCommand();
 
-                SendPageUiMessage(new FocusSearchBoxMessage());
+                RequestSearchFocus();
             });
     }
 
@@ -771,7 +818,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         DoOnUiThread(
            () =>
            {
-               SendPageUiMessage(new UpdateCommandBarMessage(Command));
+               SetCommandBarContext(Command);
            });
     }
 
@@ -869,7 +916,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 {
                     if (found)
                     {
-                        SendPageUiMessage(new FocusParamMessage(pv));
+                        RequestParameterFocus(pv);
                         return;
                     }
                     else if (firstWithoutValue is null && pv.NeedsValue)
@@ -881,7 +928,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
             if (firstWithoutValue is not null)
             {
-                SendPageUiMessage(new FocusParamMessage(firstWithoutValue));
+                RequestParameterFocus(firstWithoutValue);
             }
         }
     }
