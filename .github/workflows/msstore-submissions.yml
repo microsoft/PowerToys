@@ -46,6 +46,8 @@ jobs:
           dotnet-version: '9.0.x'
 
       - uses: microsoft/setup-msstore-cli@3b2ec9136230357ce9abc02b9d056626fb248d3f # v1
+        with:
+          version: v0.3.9
 
       - name: Fetch Store Credential
         uses: azure/cli@9eb25b8360668fb0ecbafa808d40e2197b2f5f52 # v3.0.0
@@ -55,11 +57,17 @@ jobs:
             az keyvault secret download --vault-name ${{ secrets.AZURE_KEYVAULT_NAME }} -n ${{ secrets.AZURE_AUTH_CERT_NAME }} -f cert.pfx.b64
             base64 -d < cert.pfx.b64 > cert.pfx
 
+      - name: Validate Store certificate
+        run: |-
+          openssl pkcs12 -in cert.pfx -clcerts -nokeys -passin pass: |
+            openssl x509 -checkend 0 -noout
+
       - name: Configure Store Credentials
         run: |-
           msstore reconfigure -cfp cert.pfx -c ${{ secrets.AZURE_CLIENT_ID }} -t ${{ secrets.AZURE_TENANT_ID }} -s ${{ secrets.SELLER_ID }}
 
       - name: Update draft submission
+        if: ${{ github.event_name == 'release' }}
         run: |-
           msstore submission update ${{ secrets.PRODUCT_ID }} '{
             "packages":[
@@ -81,6 +89,7 @@ jobs:
           }'
 
       - name: Publish Submission
+        if: ${{ github.event_name == 'release' }}
         run: |-
           msstore submission publish ${{ secrets.PRODUCT_ID }}
 
