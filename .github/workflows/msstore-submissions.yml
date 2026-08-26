@@ -62,6 +62,11 @@ jobs:
           openssl pkcs12 -in cert.pfx -clcerts -nokeys -passin pass: |
             openssl x509 -checkend 0 -noout
 
+      - name: Validate Entra certificate authentication
+        run: |-
+          openssl pkcs12 -in cert.pfx -nodes -passin pass: -out cert.pem
+          az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --tenant ${{ secrets.AZURE_TENANT_ID }} --certificate cert.pem --allow-no-subscriptions --output none
+
       - name: Configure Store Credentials
         run: |-
           msstore reconfigure -cfp cert.pfx -c ${{ secrets.AZURE_CLIENT_ID }} -t ${{ secrets.AZURE_TENANT_ID }} -s ${{ secrets.SELLER_ID }}
@@ -96,4 +101,4 @@ jobs:
       - name: Clean up auth certificate
         if: always()
         run: |-
-          rm -f cert.pfx cert.pfx.b64
+          rm -f cert.pfx cert.pfx.b64 cert.pem
