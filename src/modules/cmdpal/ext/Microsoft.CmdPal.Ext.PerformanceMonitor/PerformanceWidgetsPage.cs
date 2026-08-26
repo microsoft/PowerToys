@@ -31,6 +31,8 @@ internal enum PerformanceMetricKind
     Cpu,
     Memory,
     Network,
+    NetworkSpeed,
+    Disk,
     Gpu,
     Battery,
 }
@@ -41,10 +43,10 @@ internal enum PerformanceMetricKind
 /// By using OnLoadStaticListPage, we can get onload/onunload events to start/stop
 /// the data gathering.
 ///
-/// When <paramref name="singleMetric"/> is supplied, the page only initializes
+/// When <code>singleMetric</code> is supplied, the page only initializes
 /// and surfaces a single metric — used to back per-metric dock bands. When
-/// null, the page surfaces all metrics (the default behavior for both the main
-/// list page and the all-metrics dock band).
+/// null, the main list page surfaces all metrics, while the default dock band
+/// surfaces only CPU and memory. Other metrics have their own dock bands.
 /// </summary>
 internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDisposable
 {
@@ -59,6 +61,8 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         PerformanceMetricKind.Cpu => Icons.CpuIcon,
         PerformanceMetricKind.Memory => Icons.MemoryIcon,
         PerformanceMetricKind.Network => Icons.NetworkIcon,
+        PerformanceMetricKind.NetworkSpeed => Icons.NetworkIcon,
+        PerformanceMetricKind.Disk => Icons.HardDriveIcon,
         PerformanceMetricKind.Gpu => Icons.GpuIcon,
         PerformanceMetricKind.Battery => _batteryPage?.CurrentIcon ?? Icons.BatteryIcon,
         _ => Icons.PerformanceMonitorIcon,
@@ -74,6 +78,9 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     private readonly SystemMemoryUsageWidgetPage? _memoryPage;
     private readonly ListItem? _memoryItem;
 
+    private readonly SystemDiskUsageWidgetPage? _diskPage;
+    private readonly ListItem? _diskItem;
+
     private readonly SystemNetworkUsageWidgetPage? _networkPage;
     private readonly ListItem? _networkItem;
 
@@ -83,11 +90,15 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     private readonly SystemBatteryUsageWidgetPage? _batteryPage;
     private readonly ListItem? _batteryItem;
 
-    // For bands, we want two bands, one for up and one for down
+    // For the network band, show one item for upload and one for download.
     private ListItem? _networkUpItem;
     private ListItem? _networkDownItem;
-    private string _networkUpSpeed = string.Empty;
-    private string _networkDownSpeed = string.Empty;
+
+    // For bands, we want two bands, one for read and one for write
+    private ListItem? _diskReadItem;
+    private ListItem? _diskWriteItem;
+    private string _diskReadSpeed = string.Empty;
+    private string _diskWriteSpeed = string.Empty;
 
     public PerformanceWidgetsPage(SettingsManager settingsManager, bool isBandPage = false, PerformanceMetricKind? singleMetric = null)
     {
@@ -134,32 +145,30 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 MoreCommands = _networkPage.Commands,
             };
 
-            if (isBandPage)
-            {
-                _networkUpItem = new ListItem(_networkPage)
-                {
-                    Title = $"{_networkUpSpeed}",
-                    Subtitle = Resources.GetResource("Network_Send_Subtitle"),
-                    Icon = Icons.NetworkUpIcon,
-                    MoreCommands = _networkPage.Commands,
-                };
-
-                _networkDownItem = new ListItem(_networkPage)
-                {
-                    Title = $"{_networkDownSpeed}",
-                    Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
-                    Icon = Icons.NetworkDownIcon,
-                    MoreCommands = _networkPage.Commands,
-                };
-            }
-
             _networkPage.Updated += (s, e) =>
             {
                 _networkItem.Title = _networkPage.GetItemTitle(isBandPage);
-                _networkUpSpeed = _networkPage.GetUpSpeed();
-                _networkDownSpeed = _networkPage.GetDownSpeed();
-                _networkDownItem?.Title = $"{_networkDownSpeed}";
-                _networkUpItem?.Title = $"{_networkUpSpeed}";
+                _networkUpItem?.Title = _networkPage.GetUpSpeed();
+                _networkDownItem?.Title = _networkPage.GetDownSpeed();
+            };
+        }
+
+        if (IncludesMetric(PerformanceMetricKind.Disk))
+        {
+            _diskPage = new SystemDiskUsageWidgetPage(settingsManager);
+            _diskItem = new ListItem(_diskPage)
+            {
+                Title = _diskPage.GetItemTitle(isBandPage),
+                MoreCommands = _diskPage.Commands,
+            };
+
+            _diskPage.Updated += (s, e) =>
+            {
+                _diskItem.Title = _diskPage.GetItemTitle(isBandPage);
+                _diskReadSpeed = _diskPage.GetReadSpeed();
+                _diskWriteSpeed = _diskPage.GetWriteSpeed();
+                _diskReadItem?.Title = $"{_diskReadSpeed}";
+                _diskWriteItem?.Title = $"{_diskWriteSpeed}";
             };
         }
 
@@ -175,6 +184,14 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             _gpuPage.Updated += (s, e) =>
             {
                 _gpuItem.Title = _gpuPage.GetItemTitle(isBandPage);
+                if (_isBandPage)
+                {
+                    // Bands only show the usage percentage as the title, so put
+                    // the active GPU's name in the subtitle - otherwise cycling
+                    // Prev/Next GPU between two idle adapters looks like nothing
+                    // changed.
+                    _gpuItem.Subtitle = _gpuPage.GetBandSubtitle();
+                }
             };
         }
 
@@ -217,6 +234,12 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _networkItem.Subtitle = Resources.GetResource("Network_Usage_Subtitle");
             }
 
+            if (_diskItem is not null)
+            {
+                _diskItem.Subtitle = Resources.GetResource("Disk_Active_Time_Subtitle");
+                _diskItem.Icon = Icons.HardDriveIcon;
+            }
+
             if (_gpuItem is not null)
             {
                 _gpuItem.Subtitle = Resources.GetResource("GPU_Usage_Subtitle");
@@ -234,6 +257,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _cpuPage?.PushActivate();
         _memoryPage?.PushActivate();
         _networkPage?.PushActivate();
+        _diskPage?.PushActivate();
         _gpuPage?.PushActivate();
         _batteryPage?.PushActivate();
     }
@@ -243,20 +267,36 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _cpuPage?.PopActivate();
         _memoryPage?.PopActivate();
         _networkPage?.PopActivate();
+        _diskPage?.PopActivate();
         _gpuPage?.PopActivate();
         _batteryPage?.PopActivate();
     }
 
     public override IListItem[] GetItems()
     {
-        // Per-metric pages just return the single matching item.
+        // Per-metric pages return only the items for that metric.
         if (_singleMetric is PerformanceMetricKind metric)
         {
+            if (_isBandPage)
+            {
+                if (metric == PerformanceMetricKind.NetworkSpeed)
+                {
+                    return CreateNetworkBandItems();
+                }
+
+                if (metric == PerformanceMetricKind.Disk)
+                {
+                    return CreateDiskBandItems();
+                }
+            }
+
             return metric switch
             {
                 PerformanceMetricKind.Cpu => new IListItem[] { _cpuItem! },
                 PerformanceMetricKind.Memory => new IListItem[] { _memoryItem! },
                 PerformanceMetricKind.Network => new IListItem[] { _networkItem! },
+                PerformanceMetricKind.NetworkSpeed => new IListItem[] { _networkItem! },
+                PerformanceMetricKind.Disk => new IListItem[] { _diskItem! },
                 PerformanceMetricKind.Gpu => new IListItem[] { _gpuItem! },
                 PerformanceMetricKind.Battery => new IListItem[] { _batteryItem! },
                 _ => Array.Empty<IListItem>(),
@@ -267,15 +307,53 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         {
             // TODO add details
             return _batteryItem is not null
-                ? new[] { _cpuItem!, _memoryItem!, _networkItem!, _gpuItem!, _batteryItem! }
-                : new[] { _cpuItem!, _memoryItem!, _networkItem!, _gpuItem! };
+                ? new[] { _cpuItem!, _memoryItem!, _networkItem!, _diskItem!, _gpuItem!, _batteryItem! }
+                : new[] { _cpuItem!, _memoryItem!, _networkItem!, _diskItem!, _gpuItem! };
         }
-        else
+
+        return [_cpuItem!, _memoryItem!];
+    }
+
+    private IListItem[] CreateNetworkBandItems()
+    {
+        _networkUpItem ??= new ListItem(_networkPage!)
         {
-            return _batteryItem is not null
-                ? new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _gpuItem!, _batteryItem! }
-                : new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _gpuItem! };
-        }
+            Subtitle = Resources.GetResource("Network_Send_Subtitle"),
+            Icon = Icons.NetworkUpIcon,
+            MoreCommands = _networkPage!.Commands,
+        };
+        _networkUpItem.Title = _networkPage!.GetUpSpeed();
+
+        _networkDownItem ??= new ListItem(_networkPage!)
+        {
+            Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
+            Icon = Icons.NetworkDownIcon,
+            MoreCommands = _networkPage!.Commands,
+        };
+        _networkDownItem.Title = _networkPage!.GetDownSpeed();
+
+        return [_networkUpItem, _networkDownItem];
+    }
+
+    private IListItem[] CreateDiskBandItems()
+    {
+        _diskReadItem ??= new ListItem(_diskPage!)
+        {
+            Subtitle = Resources.GetResource("Disk_Read_Subtitle"),
+            Icon = Icons.FileReadIcon,
+            MoreCommands = _diskPage!.Commands,
+        };
+        _diskReadItem.Title = _diskReadSpeed;
+
+        _diskWriteItem ??= new ListItem(_diskPage!)
+        {
+            Subtitle = Resources.GetResource("Disk_Write_Subtitle"),
+            Icon = Icons.FileWriteIcon,
+            MoreCommands = _diskPage!.Commands,
+        };
+        _diskWriteItem.Title = _diskWriteSpeed;
+
+        return [_diskReadItem, _diskWriteItem, _diskItem!];
     }
 
     public void Dispose()
@@ -283,6 +361,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _cpuPage?.Dispose();
         _memoryPage?.Dispose();
         _networkPage?.Dispose();
+        _diskPage?.Dispose();
         _gpuPage?.Dispose();
         _batteryPage?.Dispose();
     }
@@ -294,7 +373,13 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     private bool IncludesMetric(PerformanceMetricKind metric)
     {
-        return _singleMetric is null || _singleMetric == metric;
+        if (_singleMetric is PerformanceMetricKind singleMetric)
+        {
+            return singleMetric == metric
+                || (singleMetric == PerformanceMetricKind.NetworkSpeed && metric == PerformanceMetricKind.Network);
+        }
+
+        return !_isBandPage || metric is PerformanceMetricKind.Cpu or PerformanceMetricKind.Memory;
     }
 
     private static string GetMetricSuffix(PerformanceMetricKind metric)
@@ -304,6 +389,8 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             PerformanceMetricKind.Cpu => "cpu",
             PerformanceMetricKind.Memory => "memory",
             PerformanceMetricKind.Network => "network",
+            PerformanceMetricKind.NetworkSpeed => "networkSpeed",
+            PerformanceMetricKind.Disk => "disk",
             PerformanceMetricKind.Gpu => "gpu",
             PerformanceMetricKind.Battery => "battery",
             _ => "unknown",
@@ -318,6 +405,12 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 /// </summary>
 internal abstract partial class WidgetPage : OnLoadContentPage
 {
+    private readonly Lock _activationLock = new();
+    private int _loadCount;
+
+    // null means that the last transition failed and the applied state is unknown.
+    private bool? _isActive = false;
+
     internal event EventHandler? Updated;
 
     protected Dictionary<string, string> ContentData { get; } = new();
@@ -404,19 +497,85 @@ internal abstract partial class WidgetPage : OnLoadContentPage
     /// active. When either is activated, we'll start updating. When both are
     /// removed, we'll stop updating.
     /// </summary>
-    internal virtual void PushActivate()
+    internal void PushActivate()
     {
-        Interlocked.Increment(ref _loadCount);
+        (Exception Exception, bool Activating)? failure;
+        lock (_activationLock)
+        {
+            _loadCount++;
+            failure = ReconcileActivation();
+        }
+
+        LogTransitionFailure(failure);
     }
 
-    internal virtual void PopActivate()
+    internal void PopActivate()
     {
-        Interlocked.Decrement(ref _loadCount);
+        (Exception Exception, bool Activating)? failure;
+        lock (_activationLock)
+        {
+            if (_loadCount > 0)
+            {
+                _loadCount--;
+            }
+
+            failure = ReconcileActivation();
+        }
+
+        LogTransitionFailure(failure);
     }
 
-    private int _loadCount;
+    protected virtual void OnActivated()
+    {
+    }
 
-    protected bool IsActive => Volatile.Read(ref _loadCount) > 0;
+    protected virtual void OnDeactivated()
+    {
+    }
+
+    private (Exception Exception, bool Activating)? ReconcileActivation()
+    {
+        var shouldBeActive = _loadCount > 0;
+        if (_isActive == shouldBeActive)
+        {
+            return null;
+        }
+
+        try
+        {
+            if (shouldBeActive)
+            {
+                OnActivated();
+            }
+            else
+            {
+                OnDeactivated();
+            }
+
+            _isActive = shouldBeActive;
+            return null;
+        }
+        catch (Exception ex)
+        {
+            // The hook may have failed after doing some work. Keep the state
+            // unknown so the next activation change reasserts the desired state.
+            _isActive = null;
+            return (ex, shouldBeActive);
+        }
+    }
+
+    private void LogTransitionFailure((Exception Exception, bool Activating)? failure)
+    {
+        if (failure is not { } transitionFailure)
+        {
+            return;
+        }
+
+        var state = transitionFailure.Activating ? "active" : "inactive";
+        CoreLogger.LogError(
+            $"Failed to transition performance widget {GetType().Name} to the {state} state. A later activation change will retry the transition.",
+            transitionFailure.Exception);
+    }
 
     protected override void Loaded()
     {
@@ -518,23 +677,9 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
         return string.Format(CultureInfo.InvariantCulture, "{0:0.00} GHz", cpuSpeed / 1000);
     }
 
-    internal override void PushActivate()
-    {
-        base.PushActivate();
-        if (IsActive)
-        {
-            _dataManager.Start();
-        }
-    }
+    protected override void OnActivated() => _dataManager.Start();
 
-    internal override void PopActivate()
-    {
-        base.PopActivate();
-        if (!IsActive)
-        {
-            _dataManager.Stop();
-        }
-    }
+    protected override void OnDeactivated() => _dataManager.Stop();
 
     public void Dispose()
     {
@@ -642,27 +787,191 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
         return memSize.ToString("0.00", CultureInfo.InvariantCulture) + " GB";
     }
 
-    internal override void PushActivate()
+    protected override void OnActivated() => _dataManager.Start();
+
+    protected override void OnDeactivated() => _dataManager.Stop();
+
+    public void Dispose()
     {
-        base.PushActivate();
-        if (IsActive)
+        _dataManager.Dispose();
+    }
+}
+
+internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposable
+{
+    public override string Id => "com.microsoft.cmdpal.disk_widget";
+
+    public override string Title => Resources.GetResource("Disk_Usage_Title");
+
+    public override IconInfo Icon => Icons.HardDriveIcon;
+
+    private readonly DataManager _dataManager;
+    private readonly SettingsManager _settingsManager;
+    private int _diskIndex;
+
+    public SystemDiskUsageWidgetPage(SettingsManager settingsManager)
+    {
+        _settingsManager = settingsManager;
+        _dataManager = new(DataType.Disk, () => UpdateWidget());
+        Commands = [
+            new CommandContextItem(new PrevDiskCommand(this) { Name = Resources.GetResource("Previous_Disk_Title") }),
+            new CommandContextItem(new NextDiskCommand(this) { Name = Resources.GetResource("Next_Disk_Title") }),
+            new CommandContextItem(OpenTaskManagerCommand.Instance),
+        ];
+    }
+
+    protected override void LoadContentData()
+    {
+        // CoreLogger.LogDebug("Getting Disk stats");
+        try
         {
-            _dataManager.Start();
+            ContentData.Clear();
+
+            var timer = Stopwatch.StartNew();
+
+            var currentData = _dataManager.GetDiskStats();
+
+            var dataDuration = timer.ElapsedMilliseconds;
+
+            var diskName = currentData.GetDiskName(_diskIndex);
+            var diskStats = currentData.GetDiskUsage(_diskIndex);
+
+            ContentData["diskUsage"] = FloatToPercentString(diskStats.Usage);
+            ContentData["diskRead"] = SpeedToString(diskStats.Read);
+            ContentData["diskWrite"] = SpeedToString(diskStats.Written);
+            ContentData["diskName"] = diskName;
+            ContentData["diskGraphUrl"] = currentData.CreateDiskImageUrl(_diskIndex);
+            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
+            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+
+            var contentDuration = timer.ElapsedMilliseconds - dataDuration;
+
+            // CoreLogger.LogDebug($"Disk stats retrieved in {dataDuration} ms, content prepared in {contentDuration} ms. (Total {timer.ElapsedMilliseconds} ms)");
+        }
+        catch (Exception e)
+        {
+            ContentData.Clear();
+            ContentData["errorMessage"] = e.Message;
+            return;
         }
     }
 
-    internal override void PopActivate()
+    protected override string GetTemplatePath(WidgetPageState page)
     {
-        base.PopActivate();
-        if (!IsActive)
+        return page switch
         {
-            _dataManager.Stop();
+            WidgetPageState.Content => @"DevHome\Templates\SystemDiskUsageTemplate.json",
+            WidgetPageState.Loading => @"DevHome\Templates\SystemDiskUsageTemplate.json",
+            _ => throw new NotImplementedException(),
+        };
+    }
+
+    public string GetItemTitle(bool isBandPage)
+    {
+        if (ContentData.TryGetValue("diskName", out var name) && ContentData.TryGetValue("diskUsage", out var usage))
+        {
+            return isBandPage ? usage : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Disk_Usage_Label"), name, usage);
         }
+        else
+        {
+            return isBandPage ? Resources.GetResource("Disk_Usage_Unknown") : Resources.GetResource("Disk_Usage_Unknown_Label");
+        }
+    }
+
+    // read/write speed is always used for bands
+    public string GetReadSpeed()
+    {
+        if (ContentData.TryGetValue("diskRead", out var readSpeed))
+        {
+            return readSpeed;
+        }
+        else
+        {
+            return "???";
+        }
+    }
+
+    public string GetWriteSpeed()
+    {
+        if (ContentData.TryGetValue("diskWrite", out var writeSpeed))
+        {
+            return writeSpeed;
+        }
+        else
+        {
+            return "???";
+        }
+    }
+
+    private string SpeedToString(float bytesPerSec)
+    {
+        return _settingsManager.DiskSpeedUnit switch
+        {
+            SpeedUnit.BytesPerSecond => FormatIncomingData.AsBytesPerSecString(bytesPerSec),
+            SpeedUnit.BinaryBytesPerSecond => FormatIncomingData.AsBinaryBytesPerSecString(bytesPerSec),
+            _ => FormatIncomingData.AsBitsPerSecString(bytesPerSec),
+        };
+    }
+
+    protected override void OnActivated() => _dataManager.Start();
+
+    protected override void OnDeactivated() => _dataManager.Stop();
+
+    private void HandlePrevDisk()
+    {
+        _diskIndex = _dataManager.GetDiskStats().GetPrevDiskIndex(_diskIndex);
+        UpdateWidget();
+    }
+
+    private void HandleNextDisk()
+    {
+        _diskIndex = _dataManager.GetDiskStats().GetNextDiskIndex(_diskIndex);
+        UpdateWidget();
     }
 
     public void Dispose()
     {
         _dataManager.Dispose();
+    }
+
+    private sealed partial class PrevDiskCommand : InvokableCommand
+    {
+        private readonly SystemDiskUsageWidgetPage _page;
+
+        public PrevDiskCommand(SystemDiskUsageWidgetPage page)
+        {
+            _page = page;
+        }
+
+        public override string Id => "com.microsoft.cmdpal.disk_widget.prev";
+
+        public override IconInfo Icon => Icons.NavigateBackwardIcon;
+
+        public override ICommandResult Invoke()
+        {
+            _page.HandlePrevDisk();
+            return CommandResult.KeepOpen();
+        }
+    }
+
+    private sealed partial class NextDiskCommand : InvokableCommand
+    {
+        private readonly SystemDiskUsageWidgetPage _page;
+
+        public NextDiskCommand(SystemDiskUsageWidgetPage page)
+        {
+            _page = page;
+        }
+
+        public override string Id => "com.microsoft.cmdpal.disk_widget.next";
+
+        public override IconInfo Icon => Icons.NavigateForwardIcon;
+
+        public override ICommandResult Invoke()
+        {
+            _page.HandleNextDisk();
+            return CommandResult.KeepOpen();
+        }
     }
 }
 
@@ -677,6 +986,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     private readonly DataManager _dataManager;
     private readonly SettingsManager _settingsManager;
     private int _networkIndex;
+    private bool _defaultNetworkInitialized;
 
     public SystemNetworkUsageWidgetPage(SettingsManager settingsManager)
     {
@@ -685,6 +995,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         Commands = [
             new CommandContextItem(new PrevNetworkCommand(this) { Name = Resources.GetResource("Previous_Network_Title") }),
             new CommandContextItem(new NextNetworkCommand(this) { Name = Resources.GetResource("Next_Network_Title") }),
+            new CommandContextItem(new SetDefaultNetworkCommand(this) { Name = Resources.GetResource("Set_Default_Network_Title") }),
             new CommandContextItem(OpenTaskManagerCommand.Instance),
         ];
     }
@@ -699,6 +1010,16 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
             var timer = Stopwatch.StartNew();
 
             var currentData = _dataManager.GetNetworkStats();
+
+            if (!_defaultNetworkInitialized)
+            {
+                var defaultNetworkIndex = currentData.GetNetworkIndex(_settingsManager.DefaultNetworkAdapterId);
+                if (defaultNetworkIndex >= 0)
+                {
+                    _networkIndex = defaultNetworkIndex;
+                    _defaultNetworkInitialized = true;
+                }
+            }
 
             var dataDuration = timer.ElapsedMilliseconds;
 
@@ -747,180 +1068,56 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
     }
 
-    // up/down speed is always used for bands
     public string GetUpSpeed()
     {
-        if (ContentData.TryGetValue("netSent", out var upSpeed))
-        {
-            return upSpeed;
-        }
-        else
-        {
-            return "???";
-        }
+        return ContentData.TryGetValue("netSent", out var upSpeed) ? upSpeed : "???";
     }
 
     public string GetDownSpeed()
     {
-        if (ContentData.TryGetValue("netReceived", out var downSpeed))
-        {
-            return downSpeed;
-        }
-        else
-        {
-            return "???";
-        }
+        return ContentData.TryGetValue("netReceived", out var downSpeed) ? downSpeed : "???";
     }
 
     private string SpeedToString(float bytesPerSec)
     {
         return _settingsManager.NetworkSpeedUnit switch
         {
-            NetworkSpeedUnit.BytesPerSecond => FormatAsBytesPerSecString(bytesPerSec),
-            NetworkSpeedUnit.BinaryBytesPerSecond => FormatAsBinaryBytesPerSecString(bytesPerSec),
-            _ => FormatAsBitsPerSecString(bytesPerSec),
+            SpeedUnit.BytesPerSecond => FormatIncomingData.AsBytesPerSecString(bytesPerSec),
+            SpeedUnit.BinaryBytesPerSecond => FormatIncomingData.AsBinaryBytesPerSecString(bytesPerSec),
+            _ => FormatIncomingData.AsBitsPerSecString(bytesPerSec),
         };
     }
 
-    private static string FormatAsBitsPerSecString(float value)
-    {
-        // Bytes to bits
-        value *= 8;
+    protected override void OnActivated() => _dataManager.Start();
 
-        // bits to Kbits
-        value /= 1024;
-        if (value < 1024)
-        {
-            if (value < 100)
-            {
-                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} Kbps", value);
-            }
-
-            return string.Format(CultureInfo.InvariantCulture, "{0:0} Kbps", value);
-        }
-
-        // Kbits to Mbits
-        value /= 1024;
-        if (value < 1024)
-        {
-            if (value < 100)
-            {
-                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} Mbps", value);
-            }
-
-            return string.Format(CultureInfo.InvariantCulture, "{0:0} Mbps", value);
-        }
-
-        // Mbits to Gbits
-        value /= 1024;
-        if (value < 100)
-        {
-            return string.Format(CultureInfo.InvariantCulture, "{0:0.0} Gbps", value);
-        }
-
-        return string.Format(CultureInfo.InvariantCulture, "{0:0} Gbps", value);
-    }
-
-    private static string FormatAsBytesPerSecString(float value)
-    {
-        // Bytes to KB
-        value /= 1024;
-        if (value < 1024)
-        {
-            if (value < 100)
-            {
-                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} KB/s", value);
-            }
-
-            return string.Format(CultureInfo.InvariantCulture, "{0:0} KB/s", value);
-        }
-
-        // KB to MB
-        value /= 1024;
-        if (value < 1024)
-        {
-            if (value < 100)
-            {
-                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} MB/s", value);
-            }
-
-            return string.Format(CultureInfo.InvariantCulture, "{0:0} MB/s", value);
-        }
-
-        // MB to GB
-        value /= 1024;
-        if (value < 100)
-        {
-            return string.Format(CultureInfo.InvariantCulture, "{0:0.0} GB/s", value);
-        }
-
-        return string.Format(CultureInfo.InvariantCulture, "{0:0} GB/s", value);
-    }
-
-    private static string FormatAsBinaryBytesPerSecString(float value)
-    {
-        // Bytes to KiB
-        value /= 1024;
-        if (value < 1024)
-        {
-            if (value < 100)
-            {
-                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} KiB/s", value);
-            }
-
-            return string.Format(CultureInfo.InvariantCulture, "{0:0} KiB/s", value);
-        }
-
-        // KiB to MiB
-        value /= 1024;
-        if (value < 1024)
-        {
-            if (value < 100)
-            {
-                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} MiB/s", value);
-            }
-
-            return string.Format(CultureInfo.InvariantCulture, "{0:0} MiB/s", value);
-        }
-
-        // MiB to GiB
-        value /= 1024;
-        if (value < 100)
-        {
-            return string.Format(CultureInfo.InvariantCulture, "{0:0.0} GiB/s", value);
-        }
-
-        return string.Format(CultureInfo.InvariantCulture, "{0:0} GiB/s", value);
-    }
-
-    internal override void PushActivate()
-    {
-        base.PushActivate();
-        if (IsActive)
-        {
-            _dataManager.Start();
-        }
-    }
-
-    internal override void PopActivate()
-    {
-        base.PopActivate();
-        if (!IsActive)
-        {
-            _dataManager.Stop();
-        }
-    }
+    protected override void OnDeactivated() => _dataManager.Stop();
 
     private void HandlePrevNetwork()
     {
+        _defaultNetworkInitialized = true;
         _networkIndex = _dataManager.GetNetworkStats().GetPrevNetworkIndex(_networkIndex);
         UpdateWidget();
     }
 
     private void HandleNextNetwork()
     {
+        _defaultNetworkInitialized = true;
         _networkIndex = _dataManager.GetNetworkStats().GetNextNetworkIndex(_networkIndex);
         UpdateWidget();
+    }
+
+    private ICommandResult HandleSetDefaultNetwork()
+    {
+        _defaultNetworkInitialized = true;
+        var networkStats = _dataManager.GetNetworkStats();
+        var networkName = networkStats.GetNetworkName(_networkIndex);
+        _settingsManager.SetDefaultNetworkAdapterId(networkStats.GetNetworkId(_networkIndex));
+
+        return CommandResult.ShowToast(new ToastArgs
+        {
+            Message = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Set_Default_Network_Success"), networkName),
+            Result = CommandResult.KeepOpen(),
+        });
     }
 
     public void Dispose()
@@ -965,6 +1162,25 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         {
             _page.HandleNextNetwork();
             return CommandResult.KeepOpen();
+        }
+    }
+
+    private sealed partial class SetDefaultNetworkCommand : InvokableCommand
+    {
+        private readonly SystemNetworkUsageWidgetPage _page;
+
+        public SetDefaultNetworkCommand(SystemNetworkUsageWidgetPage page)
+        {
+            _page = page;
+        }
+
+        public override string Id => "com.microsoft.cmdpal.network_widget.setDefault";
+
+        public override IconInfo Icon => Icons.SetDefaultIcon;
+
+        public override ICommandResult Invoke()
+        {
+            return _page.HandleSetDefaultNetwork();
         }
     }
 }
@@ -1048,23 +1264,19 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         }
     }
 
-    internal override void PushActivate()
+    public string GetBandSubtitle()
     {
-        base.PushActivate();
-        if (IsActive)
+        if (ContentData.TryGetValue("gpuName", out var name) && !string.IsNullOrEmpty(name))
         {
-            _dataManager.Start();
+            return name;
         }
+
+        return Resources.GetResource("GPU_Usage_Subtitle");
     }
 
-    internal override void PopActivate()
-    {
-        base.PopActivate();
-        if (!IsActive)
-        {
-            _dataManager.Stop();
-        }
-    }
+    protected override void OnActivated() => _dataManager.Start();
+
+    protected override void OnDeactivated() => _dataManager.Stop();
 
     private void HandlePrevGPU()
     {
@@ -1257,23 +1469,9 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
             minutes);
     }
 
-    internal override void PushActivate()
-    {
-        base.PushActivate();
-        if (IsActive)
-        {
-            _dataManager.Start();
-        }
-    }
+    protected override void OnActivated() => _dataManager.Start();
 
-    internal override void PopActivate()
-    {
-        base.PopActivate();
-        if (!IsActive)
-        {
-            _dataManager.Stop();
-        }
-    }
+    protected override void OnDeactivated() => _dataManager.Stop();
 
     public void Dispose()
     {
@@ -1307,5 +1505,119 @@ internal sealed partial class OpenTaskManagerCommand : InvokableCommand
         }
 
         return CommandResult.Hide();
+    }
+}
+
+internal static class FormatIncomingData
+{
+    public static string AsBitsPerSecString(float value)
+    {
+        // Bytes to bits
+        value *= 8;
+
+        // bits to Kbits
+        value /= 1024;
+        if (value < 1024)
+        {
+            if (value < 100)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} Kbps", value);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "{0:0} Kbps", value);
+        }
+
+        // Kbits to Mbits
+        value /= 1024;
+        if (value < 1024)
+        {
+            if (value < 100)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} Mbps", value);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "{0:0} Mbps", value);
+        }
+
+        // Mbits to Gbits
+        value /= 1024;
+        if (value < 100)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "{0:0.0} Gbps", value);
+        }
+
+        return string.Format(CultureInfo.InvariantCulture, "{0:0} Gbps", value);
+    }
+
+    public static string AsBytesPerSecString(float value)
+    {
+        // Bytes to KB (SI decimal, 1000-based)
+        value /= 1000;
+        if (value < 1000)
+        {
+            if (value < 100)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} KB/s", value);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "{0:0} KB/s", value);
+        }
+
+        // KB to MB
+        value /= 1000;
+        if (value < 1000)
+        {
+            if (value < 100)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} MB/s", value);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "{0:0} MB/s", value);
+        }
+
+        // MB to GB
+        value /= 1000;
+        if (value < 100)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "{0:0.0} GB/s", value);
+        }
+
+        return string.Format(CultureInfo.InvariantCulture, "{0:0} GB/s", value);
+    }
+
+    public static string AsBinaryBytesPerSecString(float value)
+    {
+        // Bytes to KiB
+        value /= 1024;
+        if (value < 1024)
+        {
+            if (value < 100)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} KiB/s", value);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "{0:0} KiB/s", value);
+        }
+
+        // KiB to MiB
+        value /= 1024;
+        if (value < 1024)
+        {
+            if (value < 100)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} MiB/s", value);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "{0:0} MiB/s", value);
+        }
+
+        // MiB to GiB
+        value /= 1024;
+        if (value < 100)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "{0:0.0} GiB/s", value);
+        }
+
+        return string.Format(CultureInfo.InvariantCulture, "{0:0} GiB/s", value);
     }
 }

@@ -25,6 +25,7 @@ internal static class ModuleGpoHelper
             ModuleType.FancyZones => GPOWrapper.GetConfiguredFancyZonesEnabledValue(),
             ModuleType.FileLocksmith => GPOWrapper.GetConfiguredFileLocksmithEnabledValue(),
             ModuleType.FindMyMouse => GPOWrapper.GetConfiguredFindMyMouseEnabledValue(),
+            ModuleType.AltWindowCycle => GPOWrapper.GetConfiguredAltWindowCycleEnabledValue(),
             ModuleType.Hosts => GPOWrapper.GetConfiguredHostsFileEditorEnabledValue(),
             ModuleType.ImageResizer => GPOWrapper.GetConfiguredImageResizerEnabledValue(),
             ModuleType.KeyboardManager => GPOWrapper.GetConfiguredKeyboardManagerEnabledValue(),

@@ -8,7 +8,10 @@ using System.IO;
 using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using PowerDisplay.Common.Services;
+using PowerDisplay.Models;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
@@ -32,12 +35,22 @@ namespace PowerDisplay.Helpers
     {
         private const uint MyNotifyId = 1001;
         private const uint WmTrayIcon = PInvoke.WM_USER + 1;
+        private const uint WmMouseMove = 0x0200;
+
+        // The Shell repeats WM_MOUSEMOVE for every pixel of travel across the icon. Serving a
+        // still-fresh rectangle from this cache keeps the hover path off Shell_NotifyIconGetRect.
+        private const long BoundsCacheLifetimeMs = 1000;
+
+        // Input that queued up behind a stalled UI thread should not move brightness late.
+        private const uint MaxSampleAgeMs = 500;
 
         private readonly SettingsUtils _settingsUtils;
         private readonly Action _toggleWindowAction;
         private readonly Action _exitAction;
         private readonly Action _openSettingsAction;
         private readonly uint _wmTaskbarRestart;
+        private readonly DispatcherQueue _dispatcherQueue;
+        private readonly WheelDeltaAccumulator _wheelDeltaAccumulator = new();
 
         private Window? _window;
         private nint _hwnd;
@@ -46,6 +59,35 @@ namespace PowerDisplay.Helpers
         private NOTIFYICONDATAW? _trayIconData;
         private nint _largeIcon;
         private nint _popupMenu;
+        private TrayIconMouseWheelListener? _mouseWheelListener;
+        private MouseWheelControlMode _mouseWheelControlMode;
+        private TrayIconBounds? _cachedBounds;
+        private long _boundsCacheTimestamp;
+        private long _hoverGeneration;
+        private bool _mouseWheelListenerConstructionFailed;
+        private bool _sampleDispatchFailureLogged;
+        private bool _boundsFailureLogged;
+
+        /// <summary>
+        /// Raised on the UI thread with the signed number of complete wheel notches delivered over
+        /// the icon.
+        /// </summary>
+        internal event Action<int>? MouseWheelScrolled;
+
+        /// <summary>
+        /// Gets or sets the gate checked before wheel deltas enter the accumulator: the UI must be
+        /// interactive and some monitor must be able to accept the resulting brightness write.
+        /// </summary>
+        internal Func<bool>? CanProcessMouseWheel { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether a wheel notch delivered over the icon right now would be
+        /// turned into a brightness change. The hook only arms while this holds, which is what lets
+        /// the hook consume the notch instead of forwarding it to the window under the pointer.
+        /// </summary>
+        private bool IsMouseWheelAdjustmentReady =>
+            _mouseWheelControlMode != MouseWheelControlMode.Disabled &&
+            CanProcessMouseWheel?.Invoke() == true;
 
         public TrayIconService(
             SettingsUtils settingsUtils,
@@ -57,6 +99,7 @@ namespace PowerDisplay.Helpers
             _toggleWindowAction = toggleWindowAction;
             _exitAction = exitAction;
             _openSettingsAction = openSettingsAction;
+            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
             // TaskbarCreated is the message that's broadcast when explorer.exe
             // restarts. We need to know when that happens to be able to bring our
@@ -68,6 +111,7 @@ namespace PowerDisplay.Helpers
         {
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             bool shouldShow = showSystemTrayIcon ?? settings.Properties.ShowSystemTrayIcon;
+            UpdateMouseWheelMode(settings.Properties.MouseWheelControlMode.Normalize());
 
             if (shouldShow)
             {
@@ -129,6 +173,8 @@ namespace PowerDisplay.Helpers
                     InsertMenuNative(_popupMenu, 0, (uint)(MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING), PInvoke.WM_USER + 1, GetString("TrayMenu_Settings"));
                     InsertMenuNative(_popupMenu, 1, (uint)(MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING), PInvoke.WM_USER + 2, GetString("TrayMenu_Exit"));
                 }
+
+                EnsureMouseWheelListener();
             }
             else
             {
@@ -138,6 +184,9 @@ namespace PowerDisplay.Helpers
 
         public void Destroy()
         {
+            DisposeMouseWheelListener();
+            InvalidateMouseWheelHover(disarm: false);
+
             if (_trayIconData is not null)
             {
                 var d = (NOTIFYICONDATAW)_trayIconData;
@@ -179,6 +228,277 @@ namespace PowerDisplay.Helpers
             catch
             {
                 return "unknown";
+            }
+        }
+
+        /// <summary>
+        /// Applies the persisted mouse-wheel mode, starting or stopping the hook thread with it.
+        /// </summary>
+        private void UpdateMouseWheelMode(MouseWheelControlMode mode)
+        {
+            mode = mode.Normalize();
+            if (_mouseWheelControlMode == mode)
+            {
+                return;
+            }
+
+            _mouseWheelControlMode = mode;
+            InvalidateMouseWheelHover(disarm: true);
+
+            if (mode == MouseWheelControlMode.Disabled)
+            {
+                DisposeMouseWheelListener();
+            }
+            else if (_trayIconData is not null)
+            {
+                EnsureMouseWheelListener();
+            }
+        }
+
+        private void EnsureMouseWheelListener()
+        {
+            // Reached from the window procedure, where an escaping exception takes the process down.
+            // The hook thread is optional, so latch a failed start instead of retrying it per hover.
+            if (_mouseWheelControlMode == MouseWheelControlMode.Disabled ||
+                _mouseWheelListenerConstructionFailed)
+            {
+                return;
+            }
+
+            try
+            {
+                _mouseWheelListener ??= new TrayIconMouseWheelListener(
+                    OnWheelSampleBatch,
+                    OnMouseWheelListenerDisarmed);
+            }
+            catch (Exception ex)
+            {
+                // Deliberately broad: starting a thread can also fail with ThreadStateException or
+                // OutOfMemoryException, and anything that escapes here ends the process. Wheel
+                // control is optional, so latch and carry on with a plain tray icon.
+                _mouseWheelListenerConstructionFailed = true;
+                Logger.LogWarning($"[TrayWheel] Unable to start the hook thread: {ex.Message}");
+            }
+        }
+
+        private void DisposeMouseWheelListener()
+        {
+            _mouseWheelListener?.Dispose();
+            _mouseWheelListener = null;
+            _mouseWheelListenerConstructionFailed = false;
+            _cachedBounds = null;
+            _boundsCacheTimestamp = 0;
+            _wheelDeltaAccumulator.Reset();
+        }
+
+        /// <summary>
+        /// Retires the current hover: any sample still in flight is stamped with the old generation
+        /// and will be discarded, and the partial notch it belonged to is no longer meaningful.
+        /// </summary>
+        private void InvalidateMouseWheelHover(bool disarm)
+        {
+            unchecked
+            {
+                _hoverGeneration++;
+            }
+
+            _cachedBounds = null;
+            _boundsCacheTimestamp = 0;
+            _wheelDeltaAccumulator.Reset();
+
+            if (disarm)
+            {
+                _mouseWheelListener?.Disarm();
+            }
+        }
+
+        /// <summary>
+        /// Arms the hook while the pointer is confirmed to be over the icon and a notch would
+        /// actually produce a brightness change. Both conditions are what lets the hook consume the
+        /// notch rather than forwarding it on.
+        /// </summary>
+        private void HandleTrayMouseMove()
+        {
+            if (_mouseWheelControlMode == MouseWheelControlMode.Disabled)
+            {
+                return;
+            }
+
+            if (!GetCursorPos(out var cursor))
+            {
+                if (!_boundsFailureLogged)
+                {
+                    Logger.LogWarning("[TrayWheel] GetCursorPos failed while arming tray hover");
+                    _boundsFailureLogged = true;
+                }
+
+                return;
+            }
+
+            var now = Environment.TickCount64;
+            var previousBounds = _cachedBounds;
+
+            TrayIconBounds bounds;
+            if (previousBounds is TrayIconBounds cached &&
+                now - _boundsCacheTimestamp <= BoundsCacheLifetimeMs &&
+                cached.Contains(cursor.X, cursor.Y))
+            {
+                bounds = cached;
+            }
+            else if (!TryQueryTrayIconBounds(out bounds) || !bounds.Contains(cursor.X, cursor.Y))
+            {
+                // The Shell only notifies while the pointer is over the icon, so a rectangle that
+                // excludes the cursor means either the pointer already moved on or the Shell
+                // reported a stand-in rectangle for an icon in the notification overflow.
+                InvalidateMouseWheelHover(disarm: true);
+                return;
+            }
+
+            _cachedBounds = bounds;
+            _boundsCacheTimestamp = now;
+
+            if (!IsMouseWheelAdjustmentReady)
+            {
+                _mouseWheelListener?.Disarm();
+                return;
+            }
+
+            // The Shell repeats this message for every pixel of travel, so only touch the hook
+            // thread when something it cares about actually changed. Re-arming on an unchanged
+            // rectangle would post a thread message per pixel for no effect.
+            if (_mouseWheelListener?.IsArmed == true &&
+                previousBounds.HasValue &&
+                previousBounds.Value == bounds)
+            {
+                return;
+            }
+
+            unchecked
+            {
+                _hoverGeneration++;
+            }
+
+            _wheelDeltaAccumulator.Reset();
+            EnsureMouseWheelListener();
+            _mouseWheelListener?.Arm(bounds, _hoverGeneration);
+        }
+
+        private unsafe bool TryQueryTrayIconBounds(out TrayIconBounds bounds)
+        {
+            bounds = default;
+            if (_hwnd == 0 || _trayIconData is null)
+            {
+                return false;
+            }
+
+            var identifier = new NotifyIconIdentifier
+            {
+                CbSize = (uint)sizeof(NotifyIconIdentifier),
+                HWnd = _hwnd,
+                Id = MyNotifyId,
+                GuidItem = Guid.Empty,
+            };
+
+            var result = ShellNotifyIconGetRectNative(ref identifier, out var rect);
+            if (result < 0)
+            {
+                if (!_boundsFailureLogged)
+                {
+                    Logger.LogWarning(
+                        $"[TrayWheel] Shell_NotifyIconGetRect failed with HRESULT 0x{result:X8}");
+                    _boundsFailureLogged = true;
+                }
+
+                return false;
+            }
+
+            _boundsFailureLogged = false;
+            bounds = new TrayIconBounds(rect.Left, rect.Top, rect.Right, rect.Bottom);
+            return bounds.IsValid;
+        }
+
+        private void OnWheelSampleBatch(TrayWheelSample[] samples)
+        {
+            if (!_dispatcherQueue.TryEnqueue(() => ProcessWheelSampleBatch(samples)) &&
+                !_sampleDispatchFailureLogged)
+            {
+                Logger.LogWarning("[TrayWheel] Failed to enqueue wheel samples to the UI thread");
+                _sampleDispatchFailureLogged = true;
+            }
+        }
+
+        private void ProcessWheelSampleBatch(TrayWheelSample[] samples)
+        {
+            _sampleDispatchFailureLogged = false;
+
+            if (_mouseWheelControlMode == MouseWheelControlMode.Disabled ||
+                CanProcessMouseWheel?.Invoke() != true ||
+                !TryQueryTrayIconBounds(out var currentBounds))
+            {
+                // The gate can go false after the hook was armed - a monitor rescan, for instance.
+                // Retire the hover rather than only dropping the partial notch: the pointer may be
+                // parked, in which case no further tray mouse-move would arrive to re-evaluate this
+                // and the hook would keep swallowing notches nobody acts on.
+                InvalidateMouseWheelHover(disarm: true);
+                return;
+            }
+
+            var now = unchecked((uint)Environment.TickCount);
+            var totalNotches = 0;
+            var retireHover = false;
+            foreach (var sample in samples)
+            {
+                // The hook only swallows notches that landed inside the rectangle it was armed
+                // with, so a sample stamped with a retired hover - or one the Shell has since moved
+                // the icon out from under - was never ours. Retire the hover for those, but keep
+                // applying the samples in the same batch that were swallowed on our behalf:
+                // dropping those would consume a notch without adjusting anything.
+                if (sample.HoverGeneration != _hoverGeneration ||
+                    !currentBounds.Contains(sample.X, sample.Y))
+                {
+                    retireHover = true;
+                    continue;
+                }
+
+                if (unchecked(now - sample.Timestamp) > MaxSampleAgeMs)
+                {
+                    _wheelDeltaAccumulator.Reset();
+                    continue;
+                }
+
+                totalNotches += _wheelDeltaAccumulator.Add(sample.Delta);
+            }
+
+            if (!retireHover)
+            {
+                _cachedBounds = currentBounds;
+                _boundsCacheTimestamp = Environment.TickCount64;
+            }
+
+            if (totalNotches != 0)
+            {
+                MouseWheelScrolled?.Invoke(totalNotches);
+            }
+
+            if (retireHover)
+            {
+                InvalidateMouseWheelHover(disarm: true);
+            }
+        }
+
+        private void OnMouseWheelListenerDisarmed(long generation)
+        {
+            if (!_dispatcherQueue.TryEnqueue(() =>
+            {
+                if (generation == _hoverGeneration)
+                {
+                    InvalidateMouseWheelHover(disarm: false);
+                }
+            }) &&
+                !_sampleDispatchFailureLogged)
+            {
+                Logger.LogWarning("[TrayWheel] Failed to enqueue hover cleanup to the UI thread");
+                _sampleDispatchFailureLogged = true;
             }
         }
 
@@ -257,6 +577,9 @@ namespace PowerDisplay.Helpers
                             case PInvoke.WM_LBUTTONUP:
                                 _toggleWindowAction?.Invoke();
                                 break;
+                            case WmMouseMove:
+                                HandleTrayMouseMove();
+                                break;
                         }
                     }
 
@@ -291,6 +614,11 @@ namespace PowerDisplay.Helpers
         [LibraryImport("shell32.dll", EntryPoint = "ExtractIconExW", StringMarshalling = StringMarshalling.Utf16)]
         private static partial uint ExtractIconExNative(string lpszFile, int nIconIndex, out nint phiconLarge, out nint phiconSmall, uint nIcons);
 
+        [LibraryImport("shell32.dll", EntryPoint = "Shell_NotifyIconGetRect")]
+        private static partial int ShellNotifyIconGetRectNative(
+            ref NotifyIconIdentifier identifier,
+            out NativeRect iconLocation);
+
         // Menu APIs
         [LibraryImport("user32.dll")]
         private static partial nint CreatePopupMenu();
@@ -316,6 +644,24 @@ namespace PowerDisplay.Helpers
         {
             public int X;
             public int Y;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct NotifyIconIdentifier
+        {
+            public uint CbSize;
+            public nint HWnd;
+            public uint Id;
+            public Guid GuidItem;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct NativeRect
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
         }
 
         private const int GwlWndproc = -4;

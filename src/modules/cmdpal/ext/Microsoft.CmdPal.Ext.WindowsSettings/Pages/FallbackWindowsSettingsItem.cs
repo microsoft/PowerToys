@@ -45,17 +45,20 @@ internal sealed partial class FallbackWindowsSettingsItem : FallbackCommandItem
         var filteredList = _windowsSettings.Settings
             .Select(setting => ScoringHelper.SearchScoringPredicate(query, setting))
             .Where(scoredSetting => scoredSetting.Score > 0)
-            .OrderByDescending(scoredSetting => scoredSetting.Score);
+            .OrderByDescending(scoredSetting => scoredSetting.Score)
+            .ThenByDescending(ScoringHelper.IsWindowsSettingsExactMatch)
+            .ThenByDescending(ScoringHelper.IsPreferredNameMatch)
+            .ToList();
 
-        if (!filteredList.Any())
+        if (filteredList.Count == 0)
         {
             return;
         }
 
-        if (filteredList.Count() == 1 ||
-            filteredList.Any(a => a.Score == 10))
+        var exactMatches = filteredList.Where(ScoringHelper.IsExactNameMatch).ToList();
+        if (filteredList.Count == 1 || exactMatches.Count == 1)
         {
-            var setting = filteredList.First().Setting;
+            var setting = exactMatches.Count == 1 ? exactMatches[0].Setting : filteredList[0].Setting;
 
             Title = setting.Name;
             Subtitle = setting.JoinedFullSettingsPath;

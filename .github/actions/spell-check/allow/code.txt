@@ -33,6 +33,8 @@ bak
 HDP
 Bcl
 bgcode
+3mf
+threemf
 Deflatealgorithm
 exa
 exabyte
@@ -171,6 +173,7 @@ thmutil
 uriutil
 VKTAB
 wcautil
+wcsnlen
 winkey
 wininet
 WMKEYDOWN
@@ -309,6 +312,11 @@ pwa
 AOT
 Aot
 ify
+LAF
+Laf
+languagemodel
+philm
+phisilica
 TFM
 
 # YML
@@ -330,6 +338,7 @@ xes
 PACKAGEVERSIONNUMBER
 APPXMANIFESTVERSION
 PROGMAN
+ROOTOWNER
 
 # MRU lists
 CACHEWRITE
@@ -400,6 +409,17 @@ HHH
 riday
 YYY
 
+# Release versioning identifiers and format fragments
+DAILYVERSIONSEQUENCE
+DDNNN
+Mdd
+SOURCEBRANCH
+SOURCEVERSION
+VERSIONDATE
+YDDD
+YDDDB
+YYMM
+
 # Unicode
 precomposed
 
@@ -435,3 +455,7 @@ WIDGETBOARD
 
 # URIs
 actioncenter
+
+# New+ shell PIDL type names
+PCUITEMID
+PITEMID

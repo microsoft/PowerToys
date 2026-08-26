@@ -19,6 +19,10 @@ internal static class Icons
 
     internal static IconInfo HardDriveIcon => new("\uEDA2"); // HardDrive icon
 
+    internal static IconInfo FileReadIcon => new("\uE890"); // FileRead icon
+
+    internal static IconInfo FileWriteIcon => new("\uE70F"); // FileWrite icon
+
     internal static IconInfo NetworkIcon => new("\uEC05"); // Network icon
 
     internal static IconInfo NetworkUpIcon => new("\uE74A"); // Up arrow icon
@@ -66,4 +70,6 @@ internal static class Icons
     internal static IconInfo NavigateBackwardIcon => new("\uE72B"); // Previous icon
 
     internal static IconInfo NavigateForwardIcon => new("\uE72A"); // Next icon
+
+    internal static IconInfo SetDefaultIcon => new("\uE73E"); // Accept icon
 }

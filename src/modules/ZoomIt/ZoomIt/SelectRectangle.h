@@ -21,10 +21,14 @@ public:
     int MinSize() const { return m_minSize; }
     void AspectRatio( double ratio ) { m_aspectRatio = ratio; }
     double AspectRatio() const { return m_aspectRatio; }
+    // Sets the border color Start resets to (default: capture-API yellow).
+    void BorderColor( COLORREF color ) { m_configuredBorderColor = color; m_borderColor = color; }
     RECT SelectedRect() const { return m_selectedRect; }
     bool IsActive() const { return m_window != nullptr; }
 
-    bool Start( HWND ownerWindow = nullptr, bool fullMonitor = false );
+    // borderColor sets the initial selection border color (defaults to yellow to
+    // match the capture API). Panorama capture passes blue.
+    bool Start( HWND ownerWindow = nullptr, bool fullMonitor = false, COLORREF borderColor = RGB( 255, 222, 0 ) );
     void Stop();
     void UpdateOwner( HWND window );
     void Hide() { if( m_window ) ShowWindow( m_window.get(), SW_HIDE ); }
@@ -46,6 +50,7 @@ private:
     double m_aspectRatio = 0.0; // 0 = no constraint, e.g. 16.0/9.0
     RECT m_selectedRect{};
     COLORREF m_borderColor = RGB( 255, 222, 0 ); // default: yellow (matches capture API)
+    COLORREF m_configuredBorderColor = RGB( 255, 222, 0 ); // color Start resets to
     bool m_recordingActive = false; // true once first frame is captured
     bool m_fullMonitor = false;       // true when recording full screen
 

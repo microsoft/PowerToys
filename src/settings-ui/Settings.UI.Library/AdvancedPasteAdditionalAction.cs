@@ -12,7 +12,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library;
 public sealed partial class AdvancedPasteAdditionalAction : Observable, IAdvancedPasteAction
 {
     private HotkeySettings _shortcut = new();
+    private HotkeySettings _coachingShortcut = new();
     private bool _isShown;
+    private string _prompt = string.Empty;
+    private string _systemPrompt = string.Empty;
+    private string _coachingPrompt = string.Empty;
+    private string _coachingSystemPrompt = string.Empty;
+    private string _providerId = string.Empty;
+    private string _coachingProviderId = string.Empty;
+    private bool _coachingEnabled;
     private bool _hasConflict;
     private string _tooltip;
 
@@ -33,11 +41,74 @@ public sealed partial class AdvancedPasteAdditionalAction : Observable, IAdvance
         }
     }
 
+    [JsonPropertyName("coaching-shortcut")]
+    public HotkeySettings CoachingShortcut
+    {
+        get => _coachingShortcut;
+        set
+        {
+            if (_coachingShortcut != value)
+            {
+                _coachingShortcut = value ?? new();
+                OnPropertyChanged();
+            }
+        }
+    }
+
     [JsonPropertyName("isShown")]
     public bool IsShown
     {
         get => _isShown;
         set => Set(ref _isShown, value);
+    }
+
+    [JsonPropertyName("prompt")]
+    public string Prompt
+    {
+        get => _prompt;
+        set => Set(ref _prompt, value ?? string.Empty);
+    }
+
+    [JsonPropertyName("system-prompt")]
+    public string SystemPrompt
+    {
+        get => _systemPrompt;
+        set => Set(ref _systemPrompt, value ?? string.Empty);
+    }
+
+    [JsonPropertyName("coaching-prompt")]
+    public string CoachingPrompt
+    {
+        get => _coachingPrompt;
+        set => Set(ref _coachingPrompt, value ?? string.Empty);
+    }
+
+    [JsonPropertyName("coaching-system-prompt")]
+    public string CoachingSystemPrompt
+    {
+        get => _coachingSystemPrompt;
+        set => Set(ref _coachingSystemPrompt, value ?? string.Empty);
+    }
+
+    [JsonPropertyName("provider-id")]
+    public string ProviderId
+    {
+        get => _providerId;
+        set => Set(ref _providerId, value ?? string.Empty);
+    }
+
+    [JsonPropertyName("coaching-provider-id")]
+    public string CoachingProviderId
+    {
+        get => _coachingProviderId;
+        set => Set(ref _coachingProviderId, value ?? string.Empty);
+    }
+
+    [JsonPropertyName("coaching-enabled")]
+    public bool CoachingEnabled
+    {
+        get => _coachingEnabled;
+        set => Set(ref _coachingEnabled, value);
     }
 
     [JsonIgnore]

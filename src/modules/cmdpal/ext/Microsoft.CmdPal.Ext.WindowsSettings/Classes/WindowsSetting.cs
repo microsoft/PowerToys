@@ -70,6 +70,11 @@ internal sealed class WindowsSetting
     public int AppHomepageScore { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether this setting should be preferred when the query matches its name.
+    /// </summary>
+    public bool IsPreferredForNameSearch { get; set; }
+
+    /// <summary>
     /// Gets or sets the value with the generated area path as string.
     /// This Property IS NOT PART OF THE DATA IN "WindowsSettings.json".
     /// This property will be filled on runtime by "WindowsSettingsPathHelper".

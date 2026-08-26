@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace PowerDisplay.Common.Models
@@ -38,10 +39,12 @@ namespace PowerDisplay.Common.Models
         public int? Volume { get; set; }
 
         /// <summary>
-        /// Gets or sets the raw capabilities string from DDC/CI.
+        /// Gets or sets the known-good VCP observations cached for this exact DevicePath monitor entry.
+        /// Nullable because deserialization writes an explicit JSON <c>null</c> straight over the
+        /// initializer; readers must treat it as optional.
         /// </summary>
-        [JsonPropertyName("capabilitiesRaw")]
-        public string? CapabilitiesRaw { get; set; }
+        [JsonPropertyName("knownGoodVcpFeatures")]
+        public List<KnownGoodVcpFeature>? KnownGoodVcpFeatures { get; set; } = new();
 
         /// <summary>
         /// Gets or sets when this entry was last updated.

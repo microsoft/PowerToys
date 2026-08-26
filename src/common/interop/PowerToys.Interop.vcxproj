@@ -120,6 +120,7 @@
     </ClInclude>
     <ClInclude Include="two_way_pipe_message_ipc.h" />
     <ClInclude Include="two_way_pipe_message_ipc_impl.h" />
+    <ClInclude Include="pipe_caller_auth.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CommonManaged.cpp">
@@ -147,6 +148,9 @@
       <DependentUpon>TwoWayPipeMessageIPCManaged.idl</DependentUpon>
     </ClCompile>
     <ClCompile Include="two_way_pipe_message_ipc.cpp" />
+    <ClCompile Include="pipe_caller_auth.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
   </ItemGroup>
   <ItemGroup>

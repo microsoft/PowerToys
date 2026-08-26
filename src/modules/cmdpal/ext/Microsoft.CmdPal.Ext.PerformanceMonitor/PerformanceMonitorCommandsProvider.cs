@@ -25,6 +25,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         PerformanceMetricKind.Cpu,
         PerformanceMetricKind.Memory,
         PerformanceMetricKind.Network,
+        PerformanceMetricKind.NetworkSpeed,
         PerformanceMetricKind.Gpu,
         PerformanceMetricKind.Battery,
     ];
@@ -39,7 +40,9 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
     private PerformanceWidgetsPage? _bandPage;
     private PerformanceWidgetsPage? _cpuBandPage;
     private PerformanceWidgetsPage? _memoryBandPage;
+    private PerformanceWidgetsPage? _diskBandPage;
     private PerformanceWidgetsPage? _networkBandPage;
+    private PerformanceWidgetsPage? _networkSpeedBandPage;
     private PerformanceWidgetsPage? _gpuBandPage;
     private PerformanceWidgetsPage? _batteryBandPage;
     private bool _softDisabled;
@@ -157,6 +160,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
             PerformanceMetricKind.Cpu => Resources.GetResource("CPU_Usage_Title"),
             PerformanceMetricKind.Memory => Resources.GetResource("Memory_Usage_Title"),
             PerformanceMetricKind.Network => Resources.GetResource("Network_Usage_Title"),
+            PerformanceMetricKind.NetworkSpeed => Resources.GetResource("Network_Speed_Title"),
             PerformanceMetricKind.Gpu => Resources.GetResource("GPU_Usage_Title"),
             PerformanceMetricKind.Battery => Resources.GetResource("Battery_Usage_Title"),
             _ => DisplayName,
@@ -170,6 +174,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
             PerformanceMetricKind.Cpu => Resources.GetResource("CPU_Usage_Subtitle"),
             PerformanceMetricKind.Memory => Resources.GetResource("Memory_Usage_Subtitle"),
             PerformanceMetricKind.Network => Resources.GetResource("Network_Usage_Subtitle"),
+            PerformanceMetricKind.NetworkSpeed => Resources.GetResource("Network_Usage_Subtitle"),
             PerformanceMetricKind.Gpu => Resources.GetResource("GPU_Usage_Subtitle"),
             PerformanceMetricKind.Battery => Resources.GetResource("Battery_Usage_Subtitle"),
             _ => string.Empty,
@@ -183,6 +188,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
             PerformanceMetricKind.Cpu => Icons.CpuIcon,
             PerformanceMetricKind.Memory => Icons.MemoryIcon,
             PerformanceMetricKind.Network => Icons.NetworkIcon,
+            PerformanceMetricKind.NetworkSpeed => Icons.NetworkIcon,
             PerformanceMetricKind.Gpu => Icons.GpuIcon,
             PerformanceMetricKind.Battery => Icons.BatteryIcon,
             _ => Icons.PerformanceMonitorIcon,
@@ -198,6 +204,8 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         _cpuBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Cpu);
         _memoryBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Memory);
         _networkBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Network);
+        _networkSpeedBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.NetworkSpeed);
+        _diskBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Disk);
         _gpuBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Gpu);
         _batteryBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Battery);
 
@@ -206,6 +214,8 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
             new CommandItem(_cpuBandPage) { Title = Resources.GetResource("CPU_Usage_Title") },
             new CommandItem(_memoryBandPage) { Title = Resources.GetResource("Memory_Usage_Title") },
             new CommandItem(_networkBandPage) { Title = Resources.GetResource("Network_Usage_Title") },
+            new CommandItem(_networkSpeedBandPage) { Title = Resources.GetResource("Network_Speed_Title") },
+            new CommandItem(_diskBandPage) { Title = Resources.GetResource("Disk_Usage_Title") },
             new CommandItem(_gpuBandPage) { Title = Resources.GetResource("GPU_Usage_Title") }
         ];
         var batteryStats = new BatteryStats();
@@ -242,8 +252,14 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         _memoryBandPage?.Dispose();
         _memoryBandPage = null;
 
+        _diskBandPage?.Dispose();
+        _diskBandPage = null;
+
         _networkBandPage?.Dispose();
         _networkBandPage = null;
+
+        _networkSpeedBandPage?.Dispose();
+        _networkSpeedBandPage = null;
 
         _gpuBandPage?.Dispose();
         _gpuBandPage = null;

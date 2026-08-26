@@ -18,6 +18,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class MeasureToolViewModel : PageViewModelBase
     {
+        private const int DefaultUnitsOfMeasureIndex = 0;
+        private const int MaximumUnitsOfMeasureIndex = 3;
+
         protected override string ModuleName => MeasureToolSettings.ModuleName;
 
         private SettingsUtils SettingsUtils { get; set; }
@@ -43,6 +46,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ArgumentNullException.ThrowIfNull(measureToolSettingsRepository);
 
             Settings = measureToolSettingsRepository.SettingsConfig;
+            int normalizedUnitsOfMeasure = NormalizeUnitsOfMeasureIndex(Settings.Properties.UnitsOfMeasure.Value);
+            if (normalizedUnitsOfMeasure != Settings.Properties.UnitsOfMeasure.Value)
+            {
+                Settings.Properties.UnitsOfMeasure.Value = normalizedUnitsOfMeasure;
+                SettingsUtils.SaveSettings(Settings.ToJsonString(), MeasureToolSettings.ModuleName);
+            }
 
             SendConfigMSG = ipcMSGCallBackFunc;
         }
@@ -177,11 +186,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return Settings.Properties.UnitsOfMeasure.Value;
+                return NormalizeUnitsOfMeasureIndex(Settings.Properties.UnitsOfMeasure.Value);
             }
 
             set
             {
+                value = NormalizeUnitsOfMeasureIndex(value);
                 if (Settings.Properties.UnitsOfMeasure.Value != value)
                 {
                     Settings.Properties.UnitsOfMeasure.Value = value;
@@ -271,6 +281,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool ShowContinuousCaptureWarning
         {
             get => IsEnabled && ContinuousCapture;
+        }
+
+        internal static int NormalizeUnitsOfMeasureIndex(int value)
+        {
+            return value switch
+            {
+                // Before the units selector was added, this setting stored Measurement::Unit
+                // enum values. Preserve the user's centimetre/millimetre choice during migration.
+                4 => 2,
+                8 => 3,
+                >= DefaultUnitsOfMeasureIndex and <= MaximumUnitsOfMeasureIndex => value,
+                _ => DefaultUnitsOfMeasureIndex,
+            };
         }
 
         private Func<string, int> SendConfigMSG { get; }

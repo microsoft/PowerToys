@@ -10,26 +10,33 @@
             <SolidColorBrush x:Key="DockItemBorderBrush" Color="Transparent" />
             <SolidColorBrush x:Key="DockItemBackgroundPointerOver" Color="#0FFFFFFF" />
             <SolidColorBrush x:Key="DockItemBackgroundPressed" Color="#0BFFFFFF" />
+            <!--  Same shape as the system's ControlElevationBorderBrush: a lit top edge over a flatter body  -->
             <LinearGradientBrush x:Key="DockItemBorderBrushPointerOver" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
                 <LinearGradientBrush.GradientStops>
-                    <GradientStop Offset="0.33" Color="#0FFFFFFF" />
-                    <GradientStop Offset="1.0" Color="#19FFFFFF" />
+                    <GradientStop Offset="0.33" Color="#19FFFFFF" />
+                    <GradientStop Offset="1.0" Color="#0FFFFFFF" />
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
-            <SolidColorBrush x:Key="DockItemBorderBrushPressed" Color="#0BFFFFFF" />
+            <!--  Pressed drops the elevation and goes flat, the way system buttons do  -->
+            <SolidColorBrush x:Key="DockItemBorderBrushPressed" Color="#12FFFFFF" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="DockItemBackground" Color="Transparent" />
             <SolidColorBrush x:Key="DockItemBorderBrush" Color="Transparent" />
             <SolidColorBrush x:Key="DockItemBackgroundPointerOver" Color="#80FFFFFF" />
             <SolidColorBrush x:Key="DockItemBackgroundPressed" Color="#4DFFFFFF" />
+            <!--  Light theme flips the ramp so the shaded edge sits at the bottom, matching ControlElevationBorderBrush  -->
             <LinearGradientBrush x:Key="DockItemBorderBrushPointerOver" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
+                <LinearGradientBrush.RelativeTransform>
+                    <ScaleTransform CenterY="0.5" ScaleY="-1" />
+                </LinearGradientBrush.RelativeTransform>
                 <LinearGradientBrush.GradientStops>
-                    <GradientStop Offset="0.33" Color="#08000000" />
-                    <GradientStop Offset="1.0" Color="#17000000" />
+                    <GradientStop Offset="0.33" Color="#17000000" />
+                    <GradientStop Offset="1.0" Color="#08000000" />
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
-            <SolidColorBrush x:Key="DockItemBorderBrushPressed" Color="#05000000" />
+            <!--  Pressed drops the elevation and goes flat, the way system buttons do  -->
+            <SolidColorBrush x:Key="DockItemBorderBrushPressed" Color="#0F000000" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="DockItemBackground" Color="Transparent" />
@@ -43,7 +50,6 @@
 
     <CornerRadius x:Key="DockItemCornerRadius">4</CornerRadius>
     <Thickness x:Key="DockItemPadding">4,0,4,0</Thickness>
-    <Thickness x:Key="DockItemMargin">2,0,2,0</Thickness>
     <Style BasedOn="{StaticResource DefaultDockItemControlStyle}" TargetType="local:DockItemControl" />
 
     <Style x:Key="DefaultDockItemControlStyle" TargetType="local:DockItemControl">
@@ -61,10 +67,24 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="local:DockItemControl">
+                        <!--  Padding, not margin: the gap around the chrome stays inside the item, so it still takes clicks  -->
                         <Grid
                             x:Name="PART_RootGrid"
-                            Padding="{StaticResource DockItemMargin}"
+                            Padding="{TemplateBinding InnerMargin}"
                             Background="Transparent">
+                            <!--  Hover/pressed chrome lives on its own layer so it can cross-fade instead of popping in  -->
+                            <Border
+                                x:Name="HoverLayer"
+                                Background="{ThemeResource DockItemBackgroundPointerOver}"
+                                BorderBrush="{ThemeResource DockItemBorderBrushPointerOver}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                IsHitTestVisible="False"
+                                Opacity="0">
+                                <Border.OpacityTransition>
+                                    <ScalarTransition Duration="0:0:0.15" />
+                                </Border.OpacityTransition>
+                            </Border>
                             <Grid
                                 x:Name="PART_BackPlate"
                                 MinWidth="32"
@@ -88,7 +108,13 @@
                                     <ContentPresenter
                                         x:Name="IconPresenter"
                                         VerticalAlignment="Center"
-                                        Content="{TemplateBinding Icon}" />
+                                        Content="{TemplateBinding Icon}"
+                                        RenderTransformOrigin="0.5,0.5">
+                                        <!--  Render transform: the icon shrinks in place, the item keeps its measured size  -->
+                                        <ContentPresenter.RenderTransform>
+                                            <ScaleTransform x:Name="IconScaleTransform" />
+                                        </ContentPresenter.RenderTransform>
+                                    </ContentPresenter>
 
                                     <!--  Text (Title + Subtitle)  -->
                                     <StackPanel
@@ -127,21 +153,52 @@
                             </Grid>
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
-                                    <VisualState x:Name="Normal" />
+                                    <VisualStateGroup.Transitions>
+                                        <!--  Ease the icon back to full size when the press ends  -->
+                                        <VisualTransition GeneratedDuration="0:0:0.15" From="Pressed" />
+                                    </VisualStateGroup.Transitions>
+                                    <!--  Every state sets HoverLayer explicitly; relying on the VSM to revert the setter leaves the chrome stuck on  -->
+                                    <VisualState x:Name="Normal">
+                                        <VisualState.Setters>
+                                            <Setter Target="HoverLayer.Opacity" Value="0" />
+                                        </VisualState.Setters>
+                                    </VisualState>
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="PART_BackPlate.Background" Value="{ThemeResource DockItemBackgroundPointerOver}" />
-                                            <Setter Target="PART_BackPlate.BorderBrush" Value="{ThemeResource DockItemBorderBrushPointerOver}" />
+                                            <Setter Target="HoverLayer.Opacity" Value="1" />
+                                            <Setter Target="HoverLayer.BorderBrush" Value="{ThemeResource DockItemBorderBrushPointerOver}" />
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Pressed">
+                                        <Storyboard>
+                                            <!--  42:34 - the icon shrinks to ~0.81 of its size, everything else stays put  -->
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="IconScaleTransform"
+                                                Storyboard.TargetProperty="ScaleX"
+                                                To="0.81"
+                                                Duration="0:0:0.09">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <CubicEase EasingMode="EaseOut" />
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="IconScaleTransform"
+                                                Storyboard.TargetProperty="ScaleY"
+                                                To="0.81"
+                                                Duration="0:0:0.09">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <CubicEase EasingMode="EaseOut" />
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
                                         <VisualState.Setters>
-                                            <Setter Target="PART_BackPlate.Background" Value="{ThemeResource DockItemBackgroundPointerOver}" />
-                                            <Setter Target="PART_BackPlate.BorderBrush" Value="{ThemeResource DockItemBorderBrushPressed}" />
+                                            <Setter Target="HoverLayer.Opacity" Value="1" />
+                                            <Setter Target="HoverLayer.BorderBrush" Value="{ThemeResource DockItemBorderBrushPressed}" />
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Disabled">
                                         <VisualState.Setters>
+                                            <Setter Target="HoverLayer.Opacity" Value="0" />
                                             <Setter Target="PART_BackPlate.Background" Value="{ThemeResource DockItemBackground}" />
                                             <Setter Target="PART_BackPlate.BorderBrush" Value="{ThemeResource DockItemBackground}" />
                                             <Setter Target="IconPresenter.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
@@ -152,11 +209,7 @@
                                 </VisualStateGroup>
                                 <VisualStateGroup x:Name="TextVisibilityStates">
                                     <VisualState x:Name="TextVisible" />
-                                    <VisualState x:Name="TitleOnly">
-                                        <VisualState.Setters>
-                                            <Setter Target="SubtitleText.Visibility" Value="Collapsed" />
-                                        </VisualState.Setters>
-                                    </VisualState>
+                                    <VisualState x:Name="TitleOnly" />
                                     <VisualState x:Name="SubtitleOnly">
                                         <VisualState.Setters>
                                             <Setter Target="TitleText.Visibility" Value="Collapsed" />
@@ -165,9 +218,16 @@
                                     </VisualState>
                                     <VisualState x:Name="TextHidden">
                                         <VisualState.Setters>
-                                            <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
                                             <Setter Target="ContentGrid.HorizontalAlignment" Value="Center" />
                                             <Setter Target="TextPanel.Visibility" Value="Collapsed" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="SubtitleVisibilityStates">
+                                    <VisualState x:Name="SubtitleVisible" />
+                                    <VisualState x:Name="SubtitleHidden">
+                                        <VisualState.Setters>
+                                            <Setter Target="SubtitleText.Visibility" Value="Collapsed" />
                                         </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>
@@ -175,8 +235,15 @@
                                     <VisualState x:Name="IconVisible" />
                                     <VisualState x:Name="IconHidden">
                                         <VisualState.Setters>
-                                            <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
                                             <Setter Target="IconPresenter.Visibility" Value="Collapsed" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="ContentSpacingStates">
+                                    <VisualState x:Name="ContentSpacingVisible" />
+                                    <VisualState x:Name="ContentSpacingHidden">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
                                         </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>
@@ -198,8 +265,7 @@
                                     <VisualState x:Name="DefaultLayout" />
                                     <VisualState x:Name="Compact">
                                         <VisualState.Setters>
-                                            <Setter Target="PART_RootGrid.Padding" Value="0" />
-                                            <Setter Target="SubtitleText.Visibility" Value="Collapsed" />
+                                            <!--  PART_RootGrid.Padding is owned by InnerMargin, which drops the edge gap when compact  -->
                                             <Setter Target="TitleText.Margin" Value="0,-1,0,0" />
                                         </VisualState.Setters>
                                     </VisualState>

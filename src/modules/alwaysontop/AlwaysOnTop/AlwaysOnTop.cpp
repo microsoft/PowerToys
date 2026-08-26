@@ -211,7 +211,21 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
 
 LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
-    if (message == WM_HOTKEY)
+    if (message == WM_QUERYENDSESSION)
+    {
+        return TRUE;
+    }
+    else if (message == WM_ENDSESSION)
+    {
+        if (wparam)
+        {
+            // This window has no WM_DESTROY -> PostQuitMessage path, so it
+            // cannot use handle_stateless_session_end_message.
+            PostQuitMessage(0);
+        }
+        return 0;
+    }
+    else if (message == WM_HOTKEY)
     {
         int hotkeyId = static_cast<int>(wparam);
         if (HWND fw{ GetForegroundWindow() })
