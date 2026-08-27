@@ -94,8 +94,14 @@ public partial class App : Application, IDisposable
             "Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd", () =>
             {
                 EtwTrace?.Dispose();
-                AppWindow?.Close();
-                Environment.Exit(0);
+                if (AppWindow is not null)
+                {
+                    AppWindow.Close();
+                }
+                else
+                {
+                    Environment.Exit(0);
+                }
             });
 
         // Connect the PT logging to the core project's logging.

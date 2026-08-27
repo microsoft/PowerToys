@@ -38,20 +38,24 @@ internal static class NodeRuntimeLocator
 
         foreach (var directory in pathDirectories)
         {
-            string candidate;
-            try
+            if (string.IsNullOrWhiteSpace(directory) || !Path.IsPathFullyQualified(directory))
             {
-                candidate = Path.Combine(directory, NodeExecutableName);
-            }
-            catch (ArgumentException)
-            {
-                // Malformed PATH entry; skip it.
                 continue;
             }
 
-            if (File.Exists(candidate))
+            try
             {
-                return candidate;
+                var canonicalDirectory = Path.GetFullPath(directory);
+                var candidate = Path.GetFullPath(Path.Combine(canonicalDirectory, NodeExecutableName));
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+            }
+            catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+            {
+                // Malformed PATH entry; skip it.
+                continue;
             }
         }
 

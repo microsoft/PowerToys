@@ -38,6 +38,7 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
     private readonly JSLazyCache<ICommandItem?> _emptyContent;
     private readonly object _getItemsLock = new();
     private readonly object _itemCacheLock = new();
+    private Task<IListItem[]>? _getItemsTask;
     private bool? _hasMoreItemsState;
     private bool _disposed;
 
@@ -109,20 +110,45 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
 
     public IListItem[] GetItems()
     {
+        Task<IListItem[]> getItemsTask;
         lock (_getItemsLock)
         {
-            try
-            {
-                var response = Connection.SendRequestAsync(
-                    "listPage/getItems",
-                    new JsonObject { ["pageId"] = _pageId },
-                    CancellationToken.None).GetAwaiter().GetResult();
+            getItemsTask = _getItemsTask ??= GetItemsCoreAsync();
+        }
 
-                if (response.Error != null)
+        try
+        {
+            return getItemsTask.GetAwaiter().GetResult();
+        }
+        finally
+        {
+            if (getItemsTask.IsCompleted)
+            {
+                lock (_getItemsLock)
                 {
-                    Logger.LogError($"GetItems error for page {_pageId}: {response.Error.Message}");
-                    return [];
+                    if (ReferenceEquals(_getItemsTask, getItemsTask))
+                    {
+                        _getItemsTask = null;
+                    }
                 }
+            }
+        }
+    }
+
+    private async Task<IListItem[]> GetItemsCoreAsync()
+    {
+        try
+        {
+            var response = await Connection.SendRequestAsync(
+                "listPage/getItems",
+                new JsonObject { ["pageId"] = _pageId },
+                CancellationToken.None).ConfigureAwait(false);
+
+            if (response.Error != null)
+            {
+                Logger.LogError($"GetItems error for page {_pageId}: {response.Error.Message}");
+                return [];
+            }
 
             UpdatePageState(response.Result);
             return ParseListItems(response.Result);

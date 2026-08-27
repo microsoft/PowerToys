@@ -117,7 +117,7 @@ internal sealed partial class JSListItemAdapter : JSObservableProxyBase, IListIt
 
     internal void UpdateData(JsonElement data)
     {
-        ReplaceData(data, RefreshableProperties);
+        ReplaceData(data, RefreshableProperties, GetNotificationId(data));
     }
 
     public override void Dispose()

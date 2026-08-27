@@ -72,4 +72,71 @@ public class NodeRuntimeLocatorTests
     {
         Assert.IsNull(NodeRuntimeLocator.ResolveNodeExecutable(Array.Empty<string>()));
     }
+
+    [TestMethod]
+    [DoNotParallelize]
+    public void ResolveNodeExecutable_RejectsCurrentAndRelativeDirectories()
+    {
+        var originalDirectory = Environment.CurrentDirectory;
+        var tempDirectory = Directory.CreateTempSubdirectory();
+        try
+        {
+            File.WriteAllText(Path.Combine(tempDirectory.FullName, "node.exe"), string.Empty);
+            Environment.CurrentDirectory = tempDirectory.FullName;
+
+            var result = NodeRuntimeLocator.ResolveNodeExecutable([".", tempDirectory.Name]);
+
+            Assert.IsNull(result);
+        }
+        finally
+        {
+            Environment.CurrentDirectory = originalDirectory;
+            tempDirectory.Delete(recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ResolveNodeExecutable_RejectsQuotedAndMalformedDirectories()
+    {
+        var tempDirectory = Directory.CreateTempSubdirectory();
+        try
+        {
+            File.WriteAllText(Path.Combine(tempDirectory.FullName, "node.exe"), string.Empty);
+
+            var result = NodeRuntimeLocator.ResolveNodeExecutable(
+            [
+                $"\"{tempDirectory.FullName}\"",
+                "\0invalid",
+            ]);
+
+            Assert.IsNull(result);
+        }
+        finally
+        {
+            tempDirectory.Delete(recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ResolveNodeExecutable_ReturnsCanonicalAbsolutePath()
+    {
+        var tempDirectory = Directory.CreateTempSubdirectory();
+        try
+        {
+            var nestedDirectory = Directory.CreateDirectory(Path.Combine(tempDirectory.FullName, "nested"));
+            var nodePath = Path.Combine(tempDirectory.FullName, "node.exe");
+            File.WriteAllText(nodePath, string.Empty);
+
+            var result = NodeRuntimeLocator.ResolveNodeExecutable(
+                [Path.Combine(nestedDirectory.FullName, "..")]);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(Path.GetFullPath(nodePath), result);
+            Assert.IsTrue(Path.IsPathFullyQualified(result));
+        }
+        finally
+        {
+            tempDirectory.Delete(recursive: true);
+        }
+    }
 }

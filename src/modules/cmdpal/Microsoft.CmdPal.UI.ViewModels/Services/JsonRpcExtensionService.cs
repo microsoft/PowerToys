@@ -76,6 +76,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
     // (directory created first, manifest written later) settle before it is loaded.
     private const int ManifestStabilityAttempts = 20;
     private static readonly TimeSpan ManifestStabilityDelay = TimeSpan.FromMilliseconds(250);
+    private static readonly TimeSpan ExtensionTeardownTimeout = TimeSpan.FromSeconds(6);
 
     private static readonly string ExtensionsPath = GetDefaultExtensionsPath();
 
@@ -136,7 +137,11 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
     public JsonRpcExtensionService(TaskScheduler taskScheduler)
     {
         _taskScheduler = taskScheduler;
-        _hotReloadDebouncer = new HotReloadDebouncer(directory => _ = HotReloadExtensionAsync(directory));
+        _hotReloadDebouncer = new HotReloadDebouncer(directory =>
+            StartObservedBackgroundTask(
+                () => HotReloadExtensionAsync(directory),
+                $"hot-reload JS extension at {directory}",
+                _reload.Token));
     }
 
     public event TypedEventHandler<IExtensionService, IEnumerable<CommandProviderWrapper>>? OnProviderAdded;
@@ -208,20 +213,13 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
         // watcher-driven load and a scan-driven load for the same directory idempotent).
         StartDirectoryWatcher();
 
-        var wrappers = new List<CommandProviderWrapper>();
-        foreach (var (directory, manifest) in DiscoverAcceptedManifests(ExtensionsPath))
-        {
-            if (ct.IsCancellationRequested || _reload.IsStopRequested)
-            {
-                break;
-            }
-
-            var wrapper = await AddExtensionGatedAsync(directory, manifest, ct).ConfigureAwait(false);
-            if (wrapper is not null)
-            {
-                wrappers.Add(wrapper);
-            }
-        }
+        var accepted = DiscoverAcceptedManifests(ExtensionsPath);
+        var wrappers = (await ExtensionTaskCoordinator.RunConcurrentlyAsync<(string Directory, JSExtensionManifest Manifest), CommandProviderWrapper>(
+            accepted,
+            item => AddExtensionGatedAsync(item.Directory, item.Manifest, ct),
+            (item, ex) => Logger.LogError($"Failed to load JS extension from {item.Directory}", ex),
+            ct)
+            .ConfigureAwait(false)).ToList();
 
         // Reconcile once more to pick up anything installed during the scan/watch gap.
         var stragglers = await AddDiscoveredNotLoadedAsync(ct).ConfigureAwait(false);
@@ -235,6 +233,8 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
 
     public async Task SignalStopAsync()
     {
+        await Task.Yield();
+
         // Request cancellation first so any in-flight, delayed watcher handlers bail out
         // before they start an extension after we have already begun shutting down.
         _reload.Stop();
@@ -258,18 +258,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
             _providerIds.Clear();
         }
 
-        foreach (var ext in toStop)
-        {
-            try
-            {
-                ext.ProcessExited -= OnExtensionProcessExited;
-                ext.SignalDispose();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to stop JS extension {ext.ExtensionDisplayName}: {ex.Message}");
-            }
-        }
+        await StopExtensionsConcurrentlyAsync(toStop, "stop").ConfigureAwait(false);
 
         // Everything was canceled above, so this only waits for already-running recovery to
         // unwind. It cannot deadlock on the directory gate: no gate is held here, and the
@@ -393,12 +382,22 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
 
     public void Dispose()
     {
-        if (_disposed)
+        List<JSExtensionWrapper> toDispose;
+        lock (_extensionsLock)
         {
-            return;
-        }
+            if (_disposed)
+            {
+                return;
+            }
 
-        _disposed = true;
+            _disposed = true;
+            _shuttingDown = true;
+            toDispose = [.. _extensions];
+            _extensions.Clear();
+            _providerWrappers.Clear();
+            _crashCounts.Clear();
+            _providerIds.Clear();
+        }
 
         _reload.Stop();
         StopDirectoryWatcher();
@@ -410,22 +409,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
         // disposed state. The wait is bounded, so disposal on the UI thread cannot hang.
         _recovery.Dispose();
 
-        List<JSExtensionWrapper> toDispose;
-        lock (_extensionsLock)
-        {
-            _shuttingDown = true;
-            toDispose = [.. _extensions];
-            _extensions.Clear();
-            _providerWrappers.Clear();
-            _crashCounts.Clear();
-            _providerIds.Clear();
-        }
-
-        foreach (var ext in toDispose)
-        {
-            ext.ProcessExited -= OnExtensionProcessExited;
-            ext.Dispose();
-        }
+        StopExtensionsConcurrentlyAsync(toDispose, "dispose").GetAwaiter().GetResult();
 
         _notifications.Dispose();
         _directoryGate.Dispose();
@@ -884,7 +868,6 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
     /// </summary>
     private async Task<List<CommandProviderWrapper>> AddDiscoveredNotLoadedAsync(CancellationToken ct)
     {
-        var added = new List<CommandProviderWrapper>();
         var accepted = DiscoverAcceptedManifests(ExtensionsPath);
 
         List<string> loadedDirectories;
@@ -896,26 +879,18 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
         var (toAdd, _) = ReconcileDirectories(accepted.Select(a => a.Directory), loadedDirectories);
         var toAddSet = new HashSet<string>(toAdd, StringComparer.OrdinalIgnoreCase);
 
-        foreach (var (directory, manifest) in accepted)
-        {
-            if (IsStopping(ct))
-            {
-                break;
-            }
+        var candidates = accepted.Where(item =>
+            !IsStopping(ct) &&
+            toAddSet.Contains(DirectoryLifecycleGate.Canonicalize(item.Directory)));
 
-            if (!toAddSet.Contains(DirectoryLifecycleGate.Canonicalize(directory)))
-            {
-                continue;
-            }
+        var added = await ExtensionTaskCoordinator.RunConcurrentlyAsync<(string Directory, JSExtensionManifest Manifest), CommandProviderWrapper>(
+            candidates,
+            item => AddExtensionGatedAsync(item.Directory, item.Manifest, ct),
+            (item, ex) => Logger.LogError($"Failed to load JS extension from {item.Directory}", ex),
+            ct)
+            .ConfigureAwait(false);
 
-            var wrapper = await AddExtensionGatedAsync(directory, manifest, ct).ConfigureAwait(false);
-            if (wrapper is not null)
-            {
-                added.Add(wrapper);
-            }
-        }
-
-        return added;
+        return [.. added];
     }
 
     /// <summary>
@@ -1416,17 +1391,13 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
 
         if (error is InternalBufferOverflowException && !_disposed)
         {
-            _ = Task.Run(async () =>
-            {
-                try
+            StartObservedBackgroundTask(
+                async () =>
                 {
                     await RefreshInstalledExtensionsAsync().ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError($"Failed to reconcile after directory watcher overflow: {ex.Message}");
-                }
-            });
+                },
+                "reconcile after directory watcher overflow",
+                _reload.Token);
         }
     }
 
@@ -1439,42 +1410,9 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
         }
 
         var token = _reload.Token;
-        _ = Task.Run(
-            async () =>
-            {
-                var manifest = await WaitForStableManifestInstanceAsync(extensionDirectory, token).ConfigureAwait(false);
-                if (manifest is null || _disposed || token.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                bool alreadyLoaded;
-                lock (_extensionsLock)
-                {
-                    alreadyLoaded = _extensions.Any(x => PathsEqual(x.ManifestDirectory, extensionDirectory));
-                }
-
-                if (alreadyLoaded)
-                {
-                    // The manifest reappeared or changed for a loaded extension: reload it
-                    // so the new manifest takes effect.
-                    await HotReloadExtensionAsync(extensionDirectory).ConfigureAwait(false);
-                    return;
-                }
-
-                if (WouldCollideWithLoaded(extensionDirectory, manifest))
-                {
-                    Logger.LogWarning(
-                        $"Skipping JS extension at {extensionDirectory}: an extension with id '{manifest.NameKey}' is already loaded.");
-                    return;
-                }
-
-                var wrapper = await AddExtensionGatedAsync(extensionDirectory, manifest, token).ConfigureAwait(false);
-                if (wrapper is not null)
-                {
-                    RaiseProviderAdded(wrapper);
-                }
-            },
+        StartObservedBackgroundTask(
+            () => HandleDirectoryEntryUpsertAsync(extensionDirectory, token),
+            $"install JS extension at {extensionDirectory}",
             token);
     }
 
@@ -1487,24 +1425,87 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
         }
 
         var token = _reload.Token;
-        _ = Task.Run(
-            async () =>
-            {
-                // If the extension directory still holds a valid manifest, this was not a
-                // real uninstall (for example a temp file was removed); keep the extension.
-                var manifestPath = Path.Combine(extensionDirectory, "package.json");
-                if (Directory.Exists(extensionDirectory) && File.Exists(manifestPath))
-                {
-                    return;
-                }
-
-                var removed = await RemoveExtensionByDirectoryGatedAsync(extensionDirectory).ConfigureAwait(false);
-                if (removed is not null)
-                {
-                    RaiseProviderRemoved(removed);
-                }
-            },
+        StartObservedBackgroundTask(
+            () => HandleDirectoryEntryRemovedAsync(extensionDirectory),
+            $"uninstall JS extension at {extensionDirectory}",
             token);
+    }
+
+    private async Task HandleDirectoryEntryUpsertAsync(string extensionDirectory, CancellationToken token)
+    {
+        var manifest = await WaitForStableManifestInstanceAsync(extensionDirectory, token).ConfigureAwait(false);
+        if (manifest is null || _disposed || token.IsCancellationRequested)
+        {
+            return;
+        }
+
+        bool alreadyLoaded;
+        lock (_extensionsLock)
+        {
+            alreadyLoaded = _extensions.Any(x => PathsEqual(x.ManifestDirectory, extensionDirectory));
+        }
+
+        if (alreadyLoaded)
+        {
+            await HotReloadExtensionAsync(extensionDirectory).ConfigureAwait(false);
+            return;
+        }
+
+        if (WouldCollideWithLoaded(extensionDirectory, manifest))
+        {
+            Logger.LogWarning(
+                $"Skipping JS extension at {extensionDirectory}: an extension with id '{manifest.NameKey}' is already loaded.");
+            return;
+        }
+
+        var wrapper = await AddExtensionGatedAsync(extensionDirectory, manifest, token).ConfigureAwait(false);
+        if (wrapper is not null)
+        {
+            RaiseProviderAdded(wrapper);
+        }
+    }
+
+    private async Task HandleDirectoryEntryRemovedAsync(string extensionDirectory)
+    {
+        // If the extension directory still holds a valid manifest, this was not a
+        // real uninstall (for example a temp file was removed); keep the extension.
+        var manifestPath = Path.Combine(extensionDirectory, "package.json");
+        if (Directory.Exists(extensionDirectory) && File.Exists(manifestPath))
+        {
+            return;
+        }
+
+        var removed = await RemoveExtensionByDirectoryGatedAsync(extensionDirectory).ConfigureAwait(false);
+        if (removed is not null)
+        {
+            RaiseProviderRemoved(removed);
+        }
+    }
+
+    private void StartObservedBackgroundTask(Func<Task> operation, string description, CancellationToken cancellationToken)
+    {
+        _ = ExtensionTaskCoordinator.RunInBackgroundAsync(
+            operation,
+            description,
+            static (description, ex) => Logger.LogError($"Failed to {description}", ex),
+            cancellationToken);
+    }
+
+    private Task StopExtensionsConcurrentlyAsync(IReadOnlyList<JSExtensionWrapper> extensions, string operation)
+    {
+        return ExtensionTaskCoordinator.RunBlockingConcurrentlyAsync(
+            extensions,
+            extension =>
+            {
+                extension.ProcessExited -= OnExtensionProcessExited;
+                extension.SignalDispose();
+            },
+            ExtensionTeardownTimeout,
+            (extension, ex) => Logger.LogError(
+                $"Failed to {operation} JS extension {extension.ExtensionDisplayName}",
+                ex),
+            () => Logger.LogWarning(
+                $"Timed out waiting for {extensions.Count} JS extension(s) to {operation} after {ExtensionTeardownTimeout.TotalSeconds} seconds."));
     }
 
     private async Task<JSExtensionManifest?> WaitForStableManifestInstanceAsync(string directory, CancellationToken ct)

@@ -8,5 +8,5 @@ namespace Microsoft.CmdPal.JsonRpc.Models;
 
 internal interface IJSPropertyChangeTarget
 {
-    void ApplyPropertyChanges(JsonElement properties);
+    void ApplyPropertyChanges(string notificationId, JsonElement properties);
 }

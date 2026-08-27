@@ -26,6 +26,24 @@ public class HotReloadDebouncerTests
         Assert.IsTrue(HotReloadDebouncer.IsRelevantChange(@"C:\ext\dist\index.js"));
     }
 
+    [DataTestMethod]
+    [DataRow(@"C:\extensions\my-extension\node_modules\package\index.js")]
+    [DataRow(@"C:\extensions\my-extension\NODE_MODULES\package\index.js")]
+    [DataRow(@"C:/extensions/my-extension/node_modules/package/index.js")]
+    public void IsRelevantChange_ExactNodeModulesSegment_IsIgnored(string path)
+    {
+        Assert.IsFalse(HotReloadDebouncer.IsRelevantChange(path));
+    }
+
+    [DataTestMethod]
+    [DataRow(@"C:\extensions\node_modules_backup\src\index.js")]
+    [DataRow(@"C:\extensions\my-node_modules-extension\src\index.js")]
+    [DataRow(@"C:\extensions\my-extension\src\fix_node_modules.ts")]
+    public void IsRelevantChange_NodeModulesTextOutsideExactSegment_IsRelevant(string path)
+    {
+        Assert.IsTrue(HotReloadDebouncer.IsRelevantChange(path));
+    }
+
     [TestMethod]
     public void Notify_RapidChanges_InvokesCallbackOnce()
     {

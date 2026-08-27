@@ -1,0 +1,103 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Microsoft.CmdPal.UI.ViewModels.Services;
+
+internal static class ExtensionTaskCoordinator
+{
+    internal static async Task<IReadOnlyList<TResult>> RunConcurrentlyAsync<TInput, TResult>(
+        IEnumerable<TInput> inputs,
+        Func<TInput, Task<TResult?>> operation,
+        Action<TInput, Exception> onError,
+        CancellationToken cancellationToken)
+        where TResult : class
+    {
+        var tasks = inputs.Select(async input =>
+        {
+            try
+            {
+                return await operation(input).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                return null;
+            }
+            catch (Exception ex)
+            {
+                onError(input, ex);
+                return null;
+            }
+        });
+
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+        return results.OfType<TResult>().ToArray();
+    }
+
+    internal static async Task RunBlockingConcurrentlyAsync<T>(
+        IReadOnlyList<T> inputs,
+        Action<T> operation,
+        TimeSpan timeout,
+        Action<T, Exception> onError,
+        Action onTimeout)
+    {
+        var tasks = inputs.Select(input => Task.Run(() =>
+        {
+            try
+            {
+                operation(input);
+            }
+            catch (Exception ex)
+            {
+                onError(input, ex);
+            }
+        }));
+
+        try
+        {
+            await Task.WhenAll(tasks).WaitAsync(timeout).ConfigureAwait(false);
+        }
+        catch (TimeoutException)
+        {
+            onTimeout();
+        }
+    }
+
+    internal static async Task ObserveAsync(
+        Task task,
+        string operation,
+        Action<string, Exception> onError,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await task.ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            onError(operation, ex);
+        }
+    }
+
+    internal static Task RunInBackgroundAsync(
+        Func<Task> operation,
+        string description,
+        Action<string, Exception> onError,
+        CancellationToken cancellationToken)
+    {
+        return ObserveAsync(
+            Task.Run(operation, cancellationToken),
+            description,
+            onError,
+            cancellationToken);
+    }
+}

@@ -15,8 +15,9 @@ namespace Microsoft.CmdPal.JsonRpc.Models;
 
 internal abstract class JSObservableProxyBase : BaseObservable, IJSPropertyChangeTarget, IDisposable
 {
-    private readonly string _commandId;
     private readonly JsonRpcConnection _connection;
+    private readonly Lock _stateLock = new();
+    private string _commandId;
     private DataBox _data;
     private bool _disposed;
 
@@ -34,40 +35,50 @@ internal abstract class JSObservableProxyBase : BaseObservable, IJSPropertyChang
 
     protected abstract bool SupportsProperty(string propertyName);
 
-    public void ApplyPropertyChanges(JsonElement properties)
+    public void ApplyPropertyChanges(string notificationId, JsonElement properties)
     {
-        var current = Data;
-        if (current.ValueKind != JsonValueKind.Object)
+        List<string> changed;
+        lock (_stateLock)
         {
-            return;
-        }
-
-        var changed = new List<string>();
-        var merged = JsonNode.Parse(current.GetRawText()) as JsonObject;
-        if (merged is null)
-        {
-            return;
-        }
-
-        foreach (var property in properties.EnumerateObject())
-        {
-            if (!SupportsProperty(property.Name))
+            if (_disposed ||
+                !string.Equals(_commandId, notificationId, StringComparison.Ordinal))
             {
-                continue;
+                return;
             }
 
-            merged[property.Name] = JsonNode.Parse(property.Value.GetRawText());
-            changed.Add(property.Name);
-        }
+            var current = Data;
+            if (current.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
 
-        if (changed.Count == 0)
-        {
-            return;
-        }
+            changed = [];
+            var merged = JsonNode.Parse(current.GetRawText()) as JsonObject;
+            if (merged is null)
+            {
+                return;
+            }
 
-        using var document = JsonDocument.Parse(merged.ToJsonString());
-        Volatile.Write(ref _data, new DataBox(document.RootElement.Clone()));
-        OnPropertyChangesApplied(changed);
+            foreach (var property in properties.EnumerateObject())
+            {
+                if (!SupportsProperty(property.Name))
+                {
+                    continue;
+                }
+
+                merged[property.Name] = JsonNode.Parse(property.Value.GetRawText());
+                changed.Add(property.Name);
+            }
+
+            if (changed.Count == 0)
+            {
+                return;
+            }
+
+            using var document = JsonDocument.Parse(merged.ToJsonString());
+            Volatile.Write(ref _data, new DataBox(document.RootElement.Clone()));
+            OnPropertyChangesApplied(changed);
+        }
 
         foreach (var property in changed)
         {
@@ -79,19 +90,44 @@ internal abstract class JSObservableProxyBase : BaseObservable, IJSPropertyChang
     {
     }
 
-    protected void ReplaceData(JsonElement data, IReadOnlyList<string> propertyNames)
+    protected void ReplaceData(JsonElement data, IReadOnlyList<string> propertyNames, string? notificationId = null)
     {
-        var current = Data;
-        if (current.ValueKind != JsonValueKind.Undefined &&
-            string.Equals(current.GetRawText(), data.GetRawText(), StringComparison.Ordinal))
+        List<string> changed;
+        lock (_stateLock)
         {
-            return;
+            if (_disposed)
+            {
+                return;
+            }
+
+            var current = Data;
+            changed = new List<string>(propertyNames.Count);
+            foreach (var propertyName in propertyNames)
+            {
+                if (!PropertyValuesEqual(current, data, propertyName))
+                {
+                    changed.Add(propertyName);
+                }
+            }
+
+            if (notificationId is not null &&
+                !string.Equals(_commandId, notificationId, StringComparison.Ordinal))
+            {
+                JSPropertyChangeRegistry.Register(_connection, notificationId, this);
+                JSPropertyChangeRegistry.Unregister(_connection, _commandId, this);
+                _commandId = notificationId;
+            }
+
+            if (changed.Count == 0)
+            {
+                return;
+            }
+
+            Volatile.Write(ref _data, new DataBox(data));
+            OnPropertyChangesApplied(changed);
         }
 
-        Volatile.Write(ref _data, new DataBox(data));
-        OnPropertyChangesApplied(propertyNames);
-
-        foreach (var propertyName in propertyNames)
+        foreach (var propertyName in changed)
         {
             OnPropertyChanged(ToAbiPropertyName(propertyName));
         }
@@ -99,13 +135,30 @@ internal abstract class JSObservableProxyBase : BaseObservable, IJSPropertyChang
 
     public virtual void Dispose()
     {
-        if (_disposed)
+        lock (_stateLock)
         {
-            return;
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            JSPropertyChangeRegistry.Unregister(_connection, _commandId, this);
+        }
+    }
+
+    private static bool PropertyValuesEqual(JsonElement current, JsonElement replacement, string propertyName)
+    {
+        JsonElement currentValue = default;
+        var hasCurrent = current.ValueKind == JsonValueKind.Object &&
+            current.TryGetProperty(propertyName, out currentValue);
+        if (replacement.ValueKind != JsonValueKind.Object ||
+            !replacement.TryGetProperty(propertyName, out var replacementValue))
+        {
+            return !hasCurrent;
         }
 
-        _disposed = true;
-        JSPropertyChangeRegistry.Unregister(_connection, _commandId, this);
+        return hasCurrent && JsonElement.DeepEquals(currentValue, replacementValue);
     }
 
     private static string ToAbiPropertyName(string propertyName)

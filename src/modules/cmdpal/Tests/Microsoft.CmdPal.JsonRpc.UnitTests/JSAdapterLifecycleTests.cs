@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -297,7 +298,7 @@ public partial class JSAdapterTests
     }
 
     [TestMethod]
-    public async Task ListPage_ConcurrentGetItemsRequestsAreSerialized()
+    public async Task ListPage_ConcurrentGetItemsRequestsShareOneRefresh()
     {
         using var fake = new JSFakeExtension();
         var requestCount = 0;
@@ -306,11 +307,8 @@ public partial class JSAdapterTests
         fake.OnRequestAsync("listPage/getItems", async _ =>
         {
             var request = Interlocked.Increment(ref requestCount);
-            if (request == 1)
-            {
-                firstRequestStarted.SetResult();
-                await releaseFirstRequest.Task;
-            }
+            firstRequestStarted.SetResult();
+            await releaseFirstRequest.Task;
 
             return new JsonObject
             {
@@ -333,9 +331,160 @@ public partial class JSAdapterTests
         var firstItems = await firstGetItems.WaitAsync(Timeout);
         var secondItems = await secondGetItems.WaitAsync(Timeout);
 
-        Assert.AreEqual("Response 2", secondItems[0].Title);
+        Assert.AreEqual(1, requestCount);
+        Assert.AreEqual("Response 1", secondItems[0].Title);
         Assert.AreSame(firstItems[0], secondItems[0]);
-        Assert.AreEqual("Response 2", firstItems[0].Title);
+        Assert.AreEqual("Response 1", firstItems[0].Title);
+    }
+
+    [TestMethod]
+    public async Task ListPage_ConcurrentFailureIsSharedAndNextCallRetries()
+    {
+        using var fake = new JSFakeExtension();
+        var requestCount = 0;
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseFailure = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        fake.OnErrorAsync("listPage/getItems", async _ =>
+        {
+            Interlocked.Increment(ref requestCount);
+            requestStarted.SetResult();
+            await releaseFailure.Task;
+            return (-32000, "failed");
+        });
+
+        using var page = new JSListPageProxy("page", fake.Connection);
+        var firstGetItems = Task.Run(page.GetItems);
+        await requestStarted.Task.WaitAsync(Timeout);
+        var secondGetItems = Task.Run(page.GetItems);
+        await Task.Delay(100);
+        Assert.AreEqual(1, Volatile.Read(ref requestCount));
+
+        releaseFailure.SetResult();
+        Assert.AreEqual(0, (await firstGetItems.WaitAsync(Timeout)).Length);
+        Assert.AreEqual(0, (await secondGetItems.WaitAsync(Timeout)).Length);
+        Assert.AreEqual(1, requestCount);
+
+        fake.ClearError("listPage/getItems");
+        fake.OnRequest("listPage/getItems", _ =>
+        {
+            Interlocked.Increment(ref requestCount);
+            return new JsonObject
+            {
+                ["items"] = new JsonArray
+                {
+                    new JsonObject { ["id"] = "retry", ["title"] = "Recovered" },
+                },
+            };
+        });
+
+        var recovered = page.GetItems();
+        Assert.AreEqual(2, requestCount);
+        Assert.AreEqual("Recovered", recovered[0].Title);
+    }
+
+    [TestMethod]
+    public void ListItem_UpdateDataRebindsEffectiveNotificationId()
+    {
+        using var fake = new JSFakeExtension();
+        using var item = new JSListItemAdapter(
+            ParseElement(new JsonObject
+            {
+                ["id"] = "stable-item",
+                ["title"] = "Before",
+                ["command"] = Command("old-command"),
+            }),
+            fake.Connection);
+
+        Assert.AreEqual(1, JSPropertyChangeRegistry.GetRegistrationCount(fake.Connection, "old-command"));
+        item.UpdateData(
+            ParseElement(new JsonObject
+            {
+                ["id"] = "stable-item",
+                ["title"] = "Reused",
+                ["command"] = Command("new-command"),
+            }));
+
+        Assert.AreEqual(0, JSPropertyChangeRegistry.GetRegistrationCount(fake.Connection, "old-command"));
+        Assert.AreEqual(1, JSPropertyChangeRegistry.GetRegistrationCount(fake.Connection, "new-command"));
+
+        JSPropertyChangeRegistry.Dispatch(
+            fake.Connection,
+            ParseElement(new JsonObject
+            {
+                ["commandId"] = "old-command",
+                ["properties"] = new JsonObject { ["title"] = "Stale" },
+            }));
+        item.ApplyPropertyChanges(
+            "old-command",
+            ParseElement(new JsonObject { ["title"] = "Captured stale dispatch" }));
+        Assert.AreEqual("Reused", item.Title);
+
+        JSPropertyChangeRegistry.Dispatch(
+            fake.Connection,
+            ParseElement(new JsonObject
+            {
+                ["commandId"] = "new-command",
+                ["properties"] = new JsonObject { ["title"] = "Current" },
+            }));
+        Assert.AreEqual("Current", item.Title);
+    }
+
+    [TestMethod]
+    public void ListItem_UpdateDataRaisesOnlyChangedPropertiesAndInvalidatesMatchingCaches()
+    {
+        using var fake = new JSFakeExtension();
+        using var item = new JSListItemAdapter(
+            ParseElement(new JsonObject
+            {
+                ["id"] = "stable-item",
+                ["title"] = "Title",
+                ["subtitle"] = "Before",
+                ["command"] = Command("command"),
+                ["details"] = new JsonObject { ["title"] = "Before details" },
+                ["moreCommands"] = new JsonArray(ContextItem("before-more")),
+            }),
+            fake.Connection);
+        var originalCommand = item.Command;
+        var originalDetails = item.Details;
+        var originalMoreCommands = item.MoreCommands;
+        var changedProperties = new List<string>();
+        item.PropChanged += (_, args) => changedProperties.Add(args.PropertyName);
+
+        item.UpdateData(
+            ParseElement(new JsonObject
+            {
+                ["id"] = "stable-item",
+                ["title"] = "Title",
+                ["subtitle"] = "After",
+                ["command"] = Command("command"),
+                ["details"] = new JsonObject { ["title"] = "Before details" },
+                ["moreCommands"] = new JsonArray(ContextItem("before-more")),
+            }));
+
+        Assert.HasCount(1, changedProperties);
+        Assert.AreEqual("Subtitle", changedProperties[0]);
+        Assert.AreSame(originalCommand, item.Command);
+        Assert.AreSame(originalDetails, item.Details);
+        Assert.AreSame(originalMoreCommands, item.MoreCommands);
+
+        changedProperties.Clear();
+        item.UpdateData(
+            ParseElement(new JsonObject
+            {
+                ["id"] = "stable-item",
+                ["title"] = "Title",
+                ["subtitle"] = "After",
+                ["command"] = Command("command"),
+                ["details"] = new JsonObject { ["title"] = "After details" },
+                ["moreCommands"] = new JsonArray(ContextItem("after-more")),
+            }));
+
+        Assert.HasCount(2, changedProperties);
+        Assert.IsTrue(changedProperties.Contains("Details"));
+        Assert.IsTrue(changedProperties.Contains("MoreCommands"));
+        Assert.AreSame(originalCommand, item.Command);
+        Assert.AreNotSame(originalDetails, item.Details);
+        Assert.AreNotSame(originalMoreCommands, item.MoreCommands);
     }
 
     [TestMethod]
@@ -628,7 +777,7 @@ public partial class JSAdapterTests
     {
         public int ApplyCount { get; private set; }
 
-        public void ApplyPropertyChanges(JsonElement properties)
+        public void ApplyPropertyChanges(string notificationId, JsonElement properties)
         {
             ApplyCount++;
         }

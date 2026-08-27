@@ -30,6 +30,7 @@ internal sealed class JSFakeExtension : IDisposable
     private readonly ConcurrentDictionary<string, Func<JsonElement, JsonNode?>> _handlers = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, Func<JsonElement, Task<JsonNode?>>> _asyncHandlers = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, (int Code, string Message)> _errors = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, Func<JsonElement, Task<(int Code, string Message)>>> _asyncErrors = new(StringComparer.Ordinal);
     private readonly CancellationTokenSource _cts = new();
     private readonly SemaphoreSlim _writeLock = new(1, 1);
     private readonly Task _pump;
@@ -56,6 +57,14 @@ internal sealed class JSFakeExtension : IDisposable
     // Answers a request method with a JSON-RPC error so tests can drive proxy
     // error handling.
     public void OnError(string method, int code, string message) => _errors[method] = (code, message);
+
+    public void OnErrorAsync(string method, Func<JsonElement, Task<(int Code, string Message)>> handler) => _asyncErrors[method] = handler;
+
+    public void ClearError(string method)
+    {
+        _errors.TryRemove(method, out _);
+        _asyncErrors.TryRemove(method, out _);
+    }
 
     public async Task PushNotificationAsync(string method, JsonNode? parameters)
     {
@@ -112,6 +121,12 @@ internal sealed class JSFakeExtension : IDisposable
                 var id = idProp.GetInt32();
                 var method = root.TryGetProperty("method", out var methodProp) ? methodProp.GetString() ?? string.Empty : string.Empty;
                 var parameters = root.TryGetProperty("params", out var paramsProp) ? paramsProp.Clone() : default;
+
+                if (_asyncErrors.TryGetValue(method, out var asyncErrorHandler))
+                {
+                    _ = RespondErrorAsync(id, asyncErrorHandler(parameters), cancellationToken);
+                    continue;
+                }
 
                 if (_errors.TryGetValue(method, out var error))
                 {
@@ -188,6 +203,24 @@ internal sealed class JSFakeExtension : IDisposable
         };
 
         await WriteFramedAsync(envelope.ToJsonString(), cancellationToken);
+    }
+
+    private async Task RespondErrorAsync(
+        int id,
+        Task<(int Code, string Message)> errorTask,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var error = await errorTask;
+            await RespondErrorAsync(id, error.Code, error.Message, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (ObjectDisposedException)
+        {
+        }
     }
 
     private async Task WriteFramedAsync(string json, CancellationToken cancellationToken)
