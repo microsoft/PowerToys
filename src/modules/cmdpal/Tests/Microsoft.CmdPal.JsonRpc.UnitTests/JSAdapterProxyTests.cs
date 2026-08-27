@@ -234,7 +234,9 @@ public class JSAdapterProxyTests
               "items": [
                 { "title": "Large by name", "details": { "title": "A", "size": "large" } },
                 { "title": "Medium by number", "details": { "title": "B", "size": 1 } },
-                { "title": "Default size", "details": { "title": "C" } }
+                { "title": "Default size", "details": { "title": "C" } },
+                { "title": "Unknown name", "details": { "title": "D", "size": "extra-large" } },
+                { "title": "Unknown number", "details": { "title": "E", "size": 99 } }
               ]
             }
             """;
@@ -247,6 +249,8 @@ public class JSAdapterProxyTests
         Assert.AreEqual((int)ContentSize.Large, GetDetailsSize(items[0].Details));
         Assert.AreEqual((int)ContentSize.Medium, GetDetailsSize(items[1].Details));
         Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[2].Details));
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[3].Details));
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[4].Details));
     }
 
     private static int GetDetailsSize(IDetails? details)

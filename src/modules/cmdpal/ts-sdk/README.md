@@ -106,7 +106,7 @@ channel. Your logging is preserved on `stderr` and through
 - Icons and colors: `IconData`, `IconInfo`, `Color`, `OptionalColor`, `Tag`, `KeyChord`.
 - Commands and results: `ICommand`, `IInvokableCommand`, `CommandResult`, `CommandResultKind`, `NavigationMode`.
 - Items: `ICommandItem`, `IListItem`, `IFallbackCommandItem`, `ContextItem`.
-- Details panel: `Details`, `DetailsElement`, and the `DetailsData` union (`tags`, `link`, `commands`, `separator`).
+- Details panel: `Details`, `DetailsSize`, `DetailsElement`, and the `DetailsData` union (`tags`, `link`, `commands`, `separator`).
 - Pages: `IPage`, `IListPage`, `IDynamicListPage`, `IContentPage`, `Filters`, `GridProperties`.
 - Content: the `Content` union (`markdown`, `form`, `tree`, `plainText`, `image`).
 - Settings and host: `ICommandSettings`, `IExtensionHost`, `ICommandProvider`.

@@ -287,7 +287,10 @@ interface Details {
   title?: string;
   body?: string;              // Markdown-formatted body text
   metadata?: DetailsElement[];
+  size?: DetailsSize;         // Defaults to 'small'
 }
+
+type DetailsSize = 'small' | 'medium' | 'large' | 0 | 1 | 2;
 
 interface DetailsElement {
   key: string;                // Label shown to the left
@@ -301,6 +304,10 @@ type DetailsData =
   | DetailsCommands    // { type: 'commands', commands: ICommand[] }
   | DetailsSeparator;  // { type: 'separator' }
 ```
+
+Use the named sizes for new extensions. The numeric values map to the host's
+`ContentSize` values and remain available when you need to mirror an existing
+host payload.
 
 ---
 

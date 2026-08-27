@@ -113,13 +113,8 @@ export class SamplePlainTextContentPage extends ContentPageBase {
 /**
  * A page showing images. Mirrors the C# `SampleImageContentPage`.
  *
-<<<<<<< HEAD
  * The C# page loads packaged JPG and SVG assets. This sample uses its bundled
  * hero PNG and sends the encoded image bytes rather than a machine-specific path.
-=======
- * The image ships with the sample, so the page works without a network
- * connection and matches the details page.
->>>>>>> d644f02e36 (reword phase-7 comments in my voice)
  */
 export class SampleImageContentPage extends ContentPageBase {
   readonly id = 'sample-image-content-page';

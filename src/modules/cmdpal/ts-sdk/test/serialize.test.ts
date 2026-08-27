@@ -144,4 +144,3 @@ describe('WireSerializer.commandItem fallback ids', () => {
     expect(new WireSerializer().commandItem(item).id).toBe('fallback-command');
   });
 });
-

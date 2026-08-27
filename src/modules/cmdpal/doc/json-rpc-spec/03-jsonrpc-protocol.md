@@ -246,6 +246,7 @@ Fetches items for a list page.
       "details": {
         "title": "Item One Details",
         "body": "**Rich** markdown description",
+        "size": "large",
         "metadata": [
           { "key": "Author", "data": { "type": "tags", "tags": [{ "text": "mjolley" }] } },
           { "key": "Link", "data": { "type": "link", "link": "https://github.com", "text": "GitHub" } }
@@ -265,6 +266,10 @@ Fetches items for a list page.
 ```
 
 `hasMoreItems` is a boolean on the response envelope (it defaults to `false` when the extension omits it). `true` tells the host that more pages remain, so the host may issue a [`listPage/loadMore`](#listpageloadmore) request when the user scrolls to the end; `false` means the current items are the full set. The value comes straight from the list page's `hasMoreItems` property.
+
+The optional `details.size` field accepts `small`, `medium`, or `large`. The
+matching host `ContentSize` values `0`, `1`, and `2` are also accepted. Missing
+or unknown values use `small`.
 
 The `section` field is ignored on any item that carries a command. The host renders a command-bearing item as a normal list item, so it never becomes a group header. `section` takes effect only on a command-less row, where it turns that row into a section header. To group command items visually, emit a standalone separator row (see below) before the group.
 

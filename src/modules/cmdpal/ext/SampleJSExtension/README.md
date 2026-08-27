@@ -43,6 +43,8 @@ inventing protocol methods:
 - Parameter pages (`SimpleParameterTest`, `ButtonParameterTest`,
   `MixedParamTestPage`) and the create-note list-parameter page. No parameter
   run protocol.
+- Prefixed token selection. `textToSuggest` can complete the whole query, but
+  token search state and caret position do not cross the JSON-RPC boundary.
 - Drag and drop via `DataPackage`. `IListItem` has no `DataPackage`, so the
   clipboard demo copies to the clipboard instead.
 - Toast icon and toast action button (`IToastArgs2`). `ToastArgs` carries a
