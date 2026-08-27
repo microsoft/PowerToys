@@ -2,11 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.InteropServices;
+using System.Text;
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
 
@@ -94,30 +98,37 @@ internal static class IncrementalAdaptiveCardVisualTree
             }
         }
 
-        var candidateImages = new List<Image>();
+        var imageUpdates = new List<ImageUpdate>();
         foreach (var update in plan.PropertyUpdates)
         {
             if (string.Equals(update.PropertyName, ImageSourceProperty, StringComparison.Ordinal))
             {
-                TryGetInlineSvgTarget(candidateNodes[update.NodeIndex], out var candidateImage, out _);
-                candidateImages.Add(candidateImage);
+                TryGetInlineSvgTarget(
+                    candidateNodes[update.NodeIndex],
+                    out var candidateImage,
+                    out var resource);
+                imageUpdates.Add(new ImageUpdate(
+                    update.NodeIndex,
+                    candidateImage,
+                    resource));
             }
         }
 
-        if (candidateImages.Count > 0)
+        var preparedImages = new Dictionary<int, SvgImageSource>();
+        if (imageUpdates.Count > 0)
         {
             using var imageLoadCancellation =
                 CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             imageLoadCancellation.CancelAfter(ImageLoadTimeout);
-            var imageLoadTasks = new Task<bool>[candidateImages.Count];
-            for (var i = 0; i < candidateImages.Count; i++)
+            var imageLoadTasks = new Task<PreparedImage?>[imageUpdates.Count];
+            for (var i = 0; i < imageUpdates.Count; i++)
             {
-                imageLoadTasks[i] = WaitForImageAsync(
-                    candidateImages[i],
+                imageLoadTasks[i] = PrepareImageAsync(
+                    imageUpdates[i],
                     imageLoadCancellation.Token);
             }
 
-            bool[] imageLoadResults;
+            PreparedImage?[] imageLoadResults;
             try
             {
                 imageLoadResults = await Task.WhenAll(imageLoadTasks);
@@ -127,9 +138,16 @@ internal static class IncrementalAdaptiveCardVisualTree
                 return false;
             }
 
-            if (imageLoadResults.Any(static loaded => !loaded))
+            foreach (var preparedImage in imageLoadResults)
             {
-                return false;
+                if (preparedImage is null)
+                {
+                    return false;
+                }
+
+                preparedImages.Add(
+                    preparedImage.NodeIndex,
+                    preparedImage.Source);
             }
         }
 
@@ -148,7 +166,7 @@ internal static class IncrementalAdaptiveCardVisualTree
             {
                 TryGetInlineSvgTarget(currentNode, out var currentImage, out _);
                 TryGetInlineSvgTarget(candidateNode, out var candidateImage, out _);
-                currentImage.Source = candidateImage.Source;
+                currentImage.Source = preparedImages[update.NodeIndex];
                 currentImage.Width = candidateImage.Width;
                 currentImage.Height = candidateImage.Height;
                 currentImage.MaxWidth = candidateImage.MaxWidth;
@@ -293,32 +311,57 @@ internal static class IncrementalAdaptiveCardVisualTree
         current.Text = candidate.Text;
     }
 
-    private static async Task<bool> WaitForImageAsync(
-        Image image,
+    private static async Task<PreparedImage?> PrepareImageAsync(
+        ImageUpdate update,
         CancellationToken cancellationToken)
     {
-        if (image.Source is null)
+        var commaIndex = update.Resource.IndexOf(',');
+        if (commaIndex <= 0)
         {
-            return false;
+            return null;
         }
 
-        var completion = new TaskCompletionSource<bool>(
-            TaskCreationOptions.RunContinuationsAsynchronously);
-        image.ImageOpened += OnImageOpened;
-        image.ImageFailed += OnImageFailed;
+        var metadata = update.Resource[..commaIndex];
+        var payload = update.Resource[(commaIndex + 1)..];
+        byte[] bytes;
         try
         {
-            return await completion.Task.WaitAsync(cancellationToken);
+            bytes = metadata.Contains(";base64", StringComparison.OrdinalIgnoreCase)
+                ? Convert.FromBase64String(payload)
+                : Encoding.UTF8.GetBytes(Uri.UnescapeDataString(payload));
         }
-        finally
+        catch (FormatException)
         {
-            image.ImageOpened -= OnImageOpened;
-            image.ImageFailed -= OnImageFailed;
+            return null;
         }
 
-        void OnImageOpened(object sender, RoutedEventArgs args) => completion.TrySetResult(true);
+        using var stream = new InMemoryRandomAccessStream();
+        using (var writer = new DataWriter(stream))
+        {
+            writer.WriteBytes(bytes);
+            await writer.StoreAsync().AsTask(cancellationToken);
+            writer.DetachStream();
+        }
 
-        void OnImageFailed(object sender, ExceptionRoutedEventArgs args) => completion.TrySetResult(false);
+        stream.Seek(0);
+        var source = new SvgImageSource();
+        if (update.CandidateImage.Source is SvgImageSource candidateSource)
+        {
+            source.RasterizePixelWidth = candidateSource.RasterizePixelWidth;
+            source.RasterizePixelHeight = candidateSource.RasterizePixelHeight;
+        }
+
+        try
+        {
+            var status = await source.SetSourceAsync(stream).AsTask(cancellationToken);
+            return status == SvgImageSourceLoadStatus.Success
+                ? new PreparedImage(update.NodeIndex, source)
+                : null;
+        }
+        catch (COMException)
+        {
+            return null;
+        }
     }
 
     private static bool TryMapInlineSvg(
@@ -447,4 +490,13 @@ internal static class IncrementalAdaptiveCardVisualTree
     }
 
     private static string NodeType(DependencyObject node) => node.GetType().FullName ?? node.GetType().Name;
+
+    private sealed record ImageUpdate(
+        int NodeIndex,
+        Image CandidateImage,
+        string Resource);
+
+    private sealed record PreparedImage(
+        int NodeIndex,
+        SvgImageSource Source);
 }

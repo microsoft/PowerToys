@@ -36,8 +36,12 @@ The updater changes plain text and inline SVG images in place.
 Markdown, actions, inputs, layout changes, and unknown changes replace the complete card.
 
 Changed SVG images load concurrently.
-A three-second timeout prevents an old image load from blocking the next update.
-A new update cancels the active update.
+The updater commits each image as soon as its SVG decode is complete.
+A three-second timeout is the maximum wait for the complete image group.
+
+The updater finishes the active update without cancellation.
+While that update runs, one pending slot keeps only the newest card.
+When the active update finishes, the updater processes the pending card.
 
 The updater validates all changes before it changes the visible tree.
 If validation fails, the updater uses the rendered candidate as the new root.

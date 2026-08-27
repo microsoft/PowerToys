@@ -20,7 +20,8 @@ public sealed partial class IncrementalAdaptiveCardUpdater
     private readonly Border _host;
     private readonly AdaptiveElementParserRegistration _elementParsers;
     private readonly AdaptiveActionParserRegistration _actionParsers;
-    private CancellationTokenSource? _activeUpdate;
+    private readonly LatestWinsUpdateQueue<UpdateRequest> _updates;
+    private Action? _cancelActiveUpdate;
     private IncrementalTreeSnapshot? _snapshot;
 
     public IncrementalAdaptiveCardUpdater(
@@ -36,6 +37,7 @@ public sealed partial class IncrementalAdaptiveCardUpdater
         _host = host;
         _elementParsers = elementParsers ?? new AdaptiveElementParserRegistration();
         _actionParsers = actionParsers ?? new AdaptiveActionParserRegistration();
+        _updates = new LatestWinsUpdateQueue<UpdateRequest>(ProcessUpdateAsync);
     }
 
     /// <summary>Gets the retained rendered card.</summary>
@@ -71,27 +73,29 @@ public sealed partial class IncrementalAdaptiveCardUpdater
     {
         ArgumentNullException.ThrowIfNull(card);
 
-        _activeUpdate?.Cancel();
-        var update = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        _activeUpdate = update;
+        var request = new UpdateRequest(
+            card,
+            cancellationToken);
+        await _updates.EnqueueAsync(request);
+    }
 
+    private async Task ProcessUpdateAsync(UpdateRequest request)
+    {
+        using var cancellation =
+            CancellationTokenSource.CreateLinkedTokenSource(request.CallerCancellation);
+        _cancelActiveUpdate = cancellation.Cancel;
         try
         {
-            await UpdateCoreAsync(card, update);
+            await UpdateCoreAsync(request.Card, cancellation.Token);
         }
         catch (OperationCanceledException) when (
-            update.IsCancellationRequested
-            && !cancellationToken.IsCancellationRequested)
+            cancellation.IsCancellationRequested
+            && !request.CallerCancellation.IsCancellationRequested)
         {
         }
         finally
         {
-            if (ReferenceEquals(_activeUpdate, update))
-            {
-                _activeUpdate = null;
-            }
-
-            update.Dispose();
+            _cancelActiveUpdate = null;
         }
     }
 
@@ -103,8 +107,9 @@ public sealed partial class IncrementalAdaptiveCardUpdater
 
     private async Task UpdateCoreAsync(
         AdaptiveCard card,
-        CancellationTokenSource update)
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var candidate = _renderer.RenderAdaptiveCard(card);
         if (candidate.FrameworkElement is not FrameworkElement candidateRoot)
         {
@@ -126,24 +131,14 @@ public sealed partial class IncrementalAdaptiveCardUpdater
                     currentRoot,
                     candidateRoot,
                     plan,
-                    update.Token))
+                    cancellationToken))
             {
-                if (!update.IsCancellationRequested
-                    && ReferenceEquals(_activeUpdate, update))
-                {
-                    _snapshot = candidateSnapshot;
-                }
-
+                _snapshot = candidateSnapshot;
                 return;
             }
         }
 
-        update.Token.ThrowIfCancellationRequested();
-        if (!ReferenceEquals(_activeUpdate, update))
-        {
-            return;
-        }
-
+        cancellationToken.ThrowIfCancellationRequested();
         RenderedCard = candidate;
         Card = card;
         _snapshot = candidateSnapshot;
@@ -152,11 +147,15 @@ public sealed partial class IncrementalAdaptiveCardUpdater
 
     private void ResetCore()
     {
-        _activeUpdate?.Cancel();
-        _activeUpdate = null;
+        _cancelActiveUpdate?.Invoke();
+        _updates.ClearPending();
         _host.Child = null;
         RenderedCard = null;
         Card = null;
         _snapshot = null;
     }
+
+    private sealed record UpdateRequest(
+        AdaptiveCard Card,
+        CancellationToken CallerCancellation);
 }
