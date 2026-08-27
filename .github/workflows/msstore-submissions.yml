@@ -67,13 +67,19 @@ jobs:
           openssl pkcs12 -in cert.pfx -nodes -passin pass: -out cert.pem
           az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --tenant ${{ secrets.AZURE_TENANT_ID }} --certificate cert.pem --allow-no-subscriptions --output none
 
-      - name: Validate Store API token acquisition
+      - name: Validate MSI/EXE Store API token acquisition
+        continue-on-error: true
         run: |-
           az account get-access-token --scope https://api.store.microsoft.com/.default --output none
 
+      - name: Validate legacy Dev Center token acquisition
+        continue-on-error: true
+        run: |-
+          az account get-access-token --scope https://manage.devcenter.microsoft.com/.default --output none
+
       - name: Configure Store Credentials
         run: |-
-          msstore reconfigure -cfp cert.pfx -c ${{ secrets.AZURE_CLIENT_ID }} -t ${{ secrets.AZURE_TENANT_ID }} -s ${{ secrets.SELLER_ID }}
+          msstore reconfigure -cfp cert.pfx -c ${{ secrets.AZURE_CLIENT_ID }} -t ${{ secrets.AZURE_TENANT_ID }} -s ${{ secrets.SELLER_ID }} -v
 
       - name: Update draft submission
         if: ${{ github.event_name == 'release' }}
