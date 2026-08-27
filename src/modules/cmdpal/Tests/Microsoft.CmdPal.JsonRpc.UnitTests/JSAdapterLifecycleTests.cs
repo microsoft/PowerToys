@@ -249,7 +249,7 @@ public partial class JSAdapterTests
     }
 
     [TestMethod]
-    public void ListPage_RemovedItemDisposesNestedProxies()
+    public void ListPage_RemovedItemKeepsHostHeldProxyLive()
     {
         using var fake = new JSFakeExtension();
         var requestCount = 0;
@@ -275,12 +275,67 @@ public partial class JSAdapterTests
 
         using var page = new JSListPageProxy("page", fake.Connection);
         var firstItems = page.GetItems();
-        _ = firstItems[0].Command;
+        var command = firstItems[0].Command;
 
         Assert.AreEqual(2, JSPropertyChangeRegistry.GetRegistrationCount(fake.Connection, "nested-command"));
 
         Assert.AreEqual(0, page.GetItems().Length);
+        Assert.AreEqual(2, JSPropertyChangeRegistry.GetRegistrationCount(fake.Connection, "nested-command"));
+
+        JSPropertyChangeRegistry.Dispatch(
+            fake.Connection,
+            ParseElement(new JsonObject
+            {
+                ["commandId"] = "nested-command",
+                ["properties"] = new JsonObject { ["name"] = "Still live" },
+            }));
+
+        Assert.AreEqual("Still live", command?.Name);
+
+        (firstItems[0] as IDisposable)?.Dispose();
         Assert.AreEqual(0, JSPropertyChangeRegistry.GetRegistrationCount(fake.Connection, "nested-command"));
+    }
+
+    [TestMethod]
+    public async Task ListPage_ConcurrentGetItemsRequestsAreSerialized()
+    {
+        using var fake = new JSFakeExtension();
+        var requestCount = 0;
+        var firstRequestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseFirstRequest = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        fake.OnRequestAsync("listPage/getItems", async _ =>
+        {
+            var request = Interlocked.Increment(ref requestCount);
+            if (request == 1)
+            {
+                firstRequestStarted.SetResult();
+                await releaseFirstRequest.Task;
+            }
+
+            return new JsonObject
+            {
+                ["items"] = new JsonArray
+                {
+                    new JsonObject { ["id"] = "row", ["title"] = $"Response {request}" },
+                },
+            };
+        });
+
+        using var page = new JSListPageProxy("page", fake.Connection);
+        var firstGetItems = Task.Run(page.GetItems);
+        await firstRequestStarted.Task.WaitAsync(Timeout);
+        var secondGetItems = Task.Run(page.GetItems);
+
+        await Task.Delay(100);
+        Assert.AreEqual(1, Volatile.Read(ref requestCount));
+
+        releaseFirstRequest.SetResult();
+        var firstItems = await firstGetItems.WaitAsync(Timeout);
+        var secondItems = await secondGetItems.WaitAsync(Timeout);
+
+        Assert.AreEqual("Response 2", secondItems[0].Title);
+        Assert.AreSame(firstItems[0], secondItems[0]);
+        Assert.AreEqual("Response 2", firstItems[0].Title);
     }
 
     [TestMethod]

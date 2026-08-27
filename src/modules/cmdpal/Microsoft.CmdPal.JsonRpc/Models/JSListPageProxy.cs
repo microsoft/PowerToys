@@ -36,6 +36,7 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
     private readonly object _stateLock = new();
     private readonly JSLazyCache<IFilters?> _filters;
     private readonly JSLazyCache<ICommandItem?> _emptyContent;
+    private readonly object _getItemsLock = new();
     private readonly object _itemCacheLock = new();
     private bool? _hasMoreItemsState;
     private bool _disposed;
@@ -108,18 +109,20 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
 
     public IListItem[] GetItems()
     {
-        try
+        lock (_getItemsLock)
         {
-            var response = Connection.SendRequestAsync(
-                "listPage/getItems",
-                new JsonObject { ["pageId"] = _pageId },
-                CancellationToken.None).GetAwaiter().GetResult();
-
-            if (response.Error != null)
+            try
             {
-                Logger.LogError($"GetItems error for page {_pageId}: {response.Error.Message}");
-                return [];
-            }
+                var response = Connection.SendRequestAsync(
+                    "listPage/getItems",
+                    new JsonObject { ["pageId"] = _pageId },
+                    CancellationToken.None).GetAwaiter().GetResult();
+
+                if (response.Error != null)
+                {
+                    Logger.LogError($"GetItems error for page {_pageId}: {response.Error.Message}");
+                    return [];
+                }
 
             UpdatePageState(response.Result);
             return ParseListItems(response.Result);
@@ -451,7 +454,6 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
                 nextQueue.Enqueue(adapter);
             }
 
-            DisposeAdapters(previousCache);
             _adapterCache = nextCache;
         }
 
@@ -462,19 +464,9 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
     {
         lock (_itemCacheLock)
         {
-            DisposeAdapters(_adapterCache);
+            // GetItems hands these adapters to the host, so the cache only owns its
+            // references. Host-held adapters remain live until their owners release them.
             _adapterCache = new Dictionary<string, Queue<JSListItemAdapter>>(StringComparer.Ordinal);
-        }
-    }
-
-    private static void DisposeAdapters(Dictionary<string, Queue<JSListItemAdapter>> cache)
-    {
-        foreach (var adapters in cache.Values)
-        {
-            while (adapters.TryDequeue(out var adapter))
-            {
-                adapter.Dispose();
-            }
         }
     }
 

@@ -28,8 +28,10 @@ internal sealed class JSFakeExtension : IDisposable
     private readonly Stream _extensionReads;
     private readonly Stream _extensionWrites;
     private readonly ConcurrentDictionary<string, Func<JsonElement, JsonNode?>> _handlers = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, Func<JsonElement, Task<JsonNode?>>> _asyncHandlers = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, (int Code, string Message)> _errors = new(StringComparer.Ordinal);
     private readonly CancellationTokenSource _cts = new();
+    private readonly SemaphoreSlim _writeLock = new(1, 1);
     private readonly Task _pump;
     private bool _isDisposed;
 
@@ -46,6 +48,8 @@ internal sealed class JSFakeExtension : IDisposable
     public JsonRpcConnection Connection { get; }
 
     public void OnRequest(string method, Func<JsonElement, JsonNode?> handler) => _handlers[method] = handler;
+
+    public void OnRequestAsync(string method, Func<JsonElement, Task<JsonNode?>> handler) => _asyncHandlers[method] = handler;
 
     public void OnResult(string method, string resultJson) => _handlers[method] = _ => JsonNode.Parse(resultJson);
 
@@ -115,6 +119,12 @@ internal sealed class JSFakeExtension : IDisposable
                     continue;
                 }
 
+                if (_asyncHandlers.TryGetValue(method, out var asyncHandler))
+                {
+                    _ = RespondAsync(id, asyncHandler(parameters), cancellationToken);
+                    continue;
+                }
+
                 JsonNode? result = null;
                 if (_handlers.TryGetValue(method, out var handler))
                 {
@@ -150,6 +160,20 @@ internal sealed class JSFakeExtension : IDisposable
         await WriteFramedAsync(message.ToJsonString(), cancellationToken);
     }
 
+    private async Task RespondAsync(int id, Task<JsonNode?> resultTask, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await RespondAsync(id, await resultTask, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+    }
+
     private async Task RespondErrorAsync(int id, int code, string message, CancellationToken cancellationToken)
     {
         var envelope = new JsonObject
@@ -168,14 +192,22 @@ internal sealed class JSFakeExtension : IDisposable
 
     private async Task WriteFramedAsync(string json, CancellationToken cancellationToken)
     {
-        var body = Encoding.UTF8.GetBytes(json);
-        var header = Encoding.ASCII.GetBytes($"Content-Length: {body.Length}\r\n\r\n");
-        var buffer = new byte[header.Length + body.Length];
-        Buffer.BlockCopy(header, 0, buffer, 0, header.Length);
-        Buffer.BlockCopy(body, 0, buffer, header.Length, body.Length);
+        await _writeLock.WaitAsync(cancellationToken);
+        try
+        {
+            var body = Encoding.UTF8.GetBytes(json);
+            var header = Encoding.ASCII.GetBytes($"Content-Length: {body.Length}\r\n\r\n");
+            var buffer = new byte[header.Length + body.Length];
+            Buffer.BlockCopy(header, 0, buffer, 0, header.Length);
+            Buffer.BlockCopy(body, 0, buffer, header.Length, body.Length);
 
-        await _extensionWrites.WriteAsync(buffer, cancellationToken);
-        await _extensionWrites.FlushAsync(cancellationToken);
+            await _extensionWrites.WriteAsync(buffer, cancellationToken);
+            await _extensionWrites.FlushAsync(cancellationToken);
+        }
+        finally
+        {
+            _writeLock.Release();
+        }
     }
 
     private static async Task<string> ReadFramedAsync(Stream stream, CancellationToken cancellationToken)
