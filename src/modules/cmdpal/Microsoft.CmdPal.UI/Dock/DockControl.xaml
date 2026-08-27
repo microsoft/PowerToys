@@ -115,9 +115,7 @@
 
             <Flyout
                 x:Name="DockPageFlyout"
-                Closed="DockPageFlyout_Closed"
                 FlyoutPresenterStyle="{StaticResource DockPageFlyoutStyle}"
-                Opened="DockPageFlyout_Opened"
                 ShouldConstrainToRootBounds="False"
                 SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}" />
 
