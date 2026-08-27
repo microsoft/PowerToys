@@ -24,7 +24,7 @@ The key files:
 
 ## `package.json` Schema
 
-CmdPal discovers extensions by finding directories with a `package.json` that contains a `cmdpal` object. Top-level npm fields provide identity; the `cmdpal` section provides CmdPal-specific metadata. The parsed `cmdpal` fields are `displayName`, `icon`, `publisher`, `main`, `debug`, and `debugPort`.
+CmdPal discovers extensions by finding directories with a `package.json` that contains a `cmdpal` object. Top-level npm fields provide identity; the `cmdpal` section provides CmdPal-specific metadata. The parsed `cmdpal` fields are `displayName`, `icon`, `publisher`, `main`, `watchPath`, `debug`, and `debugPort`.
 
 ### Full Example
 
@@ -42,6 +42,7 @@ CmdPal discovers extensions by finding directories with a `package.json` that co
     "displayName": "My Extension",
     "icon": "icon.png",
     "publisher": "your-name",
+    "watchPath": "dist",
     "debug": false,
     "debugPort": 9230
   },
@@ -82,6 +83,7 @@ CmdPal discovers extensions by finding directories with a `package.json` that co
 | `debug` | `boolean` | ❌ | When `true`, starts Node.js with `--inspect` for debugger attachment. Default: `false`. |
 | `debugPort` | `integer` | ❌ | Inspector port when `debug` is `true`. If not specified, auto-assigned starting at 9229. |
 | `main` | `string` | ❌ | Optional override of the top-level `main` field (for packages where the CmdPal entry point differs from the npm main). |
+| `watchPath` | `string` | ❌ | Relative directory watched recursively for `.js`, `.mjs`, and `.cjs` changes. When omitted, CmdPal watches the entry point's directory. |
 
 ### Validation Rules
 
@@ -94,6 +96,7 @@ CmdPal parses each `package.json` and only loads the directory as an extension w
 5. **Entry point is a JavaScript module.** The resolved entry point must end in `.js`, `.mjs`, or `.cjs`. Any other extension (for example an uncompiled `.ts` source) is rejected, because the host runs the file directly with `node`.
 6. **Entry point exists.** The resolved entry point must be an existing file on disk. A `main` that points at a file that was never built or shipped is rejected.
 7. **No symlink or junction escape.** After confirming the file exists, the resolved entry point is re-checked against the real filesystem: a symbolic link, junction, or other reparse point that redirects the entry point outside the extension directory is rejected, even when the lexical path (rule 4) stayed inside it.
+8. **Watch path stays inside the extension.** When present, `cmdpal.watchPath` must be a relative path to an existing directory inside the extension. Rooted paths, `..` escapes, and paths that traverse a symbolic link or junction are rejected. When omitted, the source watcher uses the entry point's directory.
 
 A resolved relative icon (`cmdpal.icon`) is subject to the same containment rules; see [Icon resolution](#icon-resolution).
 
@@ -146,15 +149,19 @@ JSExtensions/
 
 ### Discovery
 
-The `JsonRpcExtensionService` watches this directory with a `FileSystemWatcher`:
+The `JsonRpcExtensionService` watches this directory for extension installs and removals:
 - **New directory with valid `package.json`** (for example, a sideloaded extension copied in) is loaded automatically
 - **Directory removed** unloads the extension and terminates its Node.js process
-- **`*.js` file changed** within an extension triggers hot-reload (500ms debounce)
+
+Each loaded extension also gets a recursive source watcher. It uses `cmdpal.watchPath`
+when declared, or the entry point's directory otherwise. Changes to `.js`, `.mjs`, and
+`.cjs` files trigger hot-reload after a 500ms debounce. Changes under `node_modules` are
+ignored.
 
 This means for sideloaded development:
 - Installing an extension = copying a fully prepared directory into `JSExtensions/`
 - Uninstalling = deleting the directory
-- Updating = replacing files (hot-reload handles `*.js` changes)
+- Updating = replacing files (hot-reload handles `.js`, `.mjs`, and `.cjs` changes)
 
 Gallery installs do not rely on the watcher observing a half-written directory. The
 installer prepares the extension in a staging location outside `JSExtensions/`,
@@ -237,7 +244,7 @@ Copy-Item -Recurse ./my-extension "$env:LOCALAPPDATA\Microsoft\PowerToys\CmdPal\
 New-Item -ItemType Junction -Path "$env:LOCALAPPDATA\Microsoft\PowerToys\CmdPal\JSExtensions\my-extension" -Target (Resolve-Path ./my-extension)
 ```
 
-With a junction link, changes to your source files are reflected immediately (after build). The `*.js` file watcher triggers hot-reload automatically.
+With a junction link, changes to built `.js`, `.mjs`, or `.cjs` files under the source watch root trigger hot-reload automatically.
 
 ### Debugging
 

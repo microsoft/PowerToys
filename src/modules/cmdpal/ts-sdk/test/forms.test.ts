@@ -213,9 +213,9 @@ describe('form identity and routing', () => {
     expect(depthOne).toHaveBeenCalledTimes(1);
     expect(depthTwo).toHaveBeenCalledTimes(1);
     expect(depthThree).toHaveBeenCalledTimes(1);
-    expect(responseFor(sent, 2)?.result).toEqual({ Kind: 3 });
-    expect(responseFor(sent, 3)?.result).toEqual({ Kind: 1 });
-    expect(responseFor(sent, 4)?.result).toEqual({ Kind: 2 });
+    expect(responseFor(sent, 2)?.result).toEqual({ kind: 3 });
+    expect(responseFor(sent, 3)?.result).toEqual({ kind: 1 });
+    expect(responseFor(sent, 4)?.result).toEqual({ kind: 2 });
   });
 
   it('keeps routing a nested form by its stable id after the tree grows', async () => {

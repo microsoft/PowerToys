@@ -46,8 +46,6 @@ inventing protocol methods:
   run protocol.
 - Drag and drop via `DataPackage`. `IListItem` has no `DataPackage`, so the
   clipboard demo copies to the clipboard instead.
-- Toast icon and toast action button (`IToastArgs2`). `ToastArgs` carries a
-  message and an optional follow-up result only.
 - Details size (Small/Medium/Large). The JS `Details` type has no size, so the
   variants collapse to the default.
 - Live-updating details through targeted property change. Approximated with a
@@ -76,8 +74,10 @@ must be built first.
    npm run build
    ```
 
-`npm run build` compiles `src\*.ts` to `dist\` and copies the `assets\` folder
-(which holds the details hero image) to `dist\assets\`. Only source is
+`npm run build` compiles the TypeScript under `src\` to `dist\` and copies the
+`assets\` folder (which holds the details hero image) to `dist\assets\`. The
+manifest sets `cmdpal.watchPath` to `dist`, so built JavaScript changes trigger
+hot-reload without watching source files or `node_modules`. Only source is
 committed; `dist\` and `node_modules\` are git-ignored.
 
 ## Sideload for manual validation

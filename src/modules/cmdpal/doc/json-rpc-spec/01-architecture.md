@@ -44,8 +44,8 @@ The host tracks consecutive crashes per extension:
 
 | Crash Count | Behavior |
 |-------------|----------|
-| 1 to 3 | Extension marked as disconnected, available for restart |
-| > 3 | Extension marked as **unhealthy**, disabled until manual re-enable |
+| 1 to 3 | Host starts a fresh process and reconnects the extension automatically |
+| > 3 | Extension is disabled, but its source watcher stays active. A source change or reinstall resets the crash count and retries the load |
 
 ## Extension Discovery
 
@@ -76,15 +76,17 @@ flowchart TB
 
 ### Directory Watching
 
-The service watches the `JSExtensions` directory for:
+The service watches the `JSExtensions` directory for extension installs and removals.
+Each loaded extension also gets a recursive source watcher rooted at `cmdpal.watchPath`
+when declared, or at the entry point's directory otherwise.
 
 | Event | Behavior |
 |-------|----------|
 | **New subdirectory created** | Scans for `package.json` with `cmdpal` section, loads extension if valid |
 | **Subdirectory deleted** | Stops the extension process, removes from provider list |
-| **`*.js` file changed** (within an extension) | Hot-reloads the extension (debounced 500ms) |
+| **`.js`, `.mjs`, or `.cjs` file changed** under the source watch root | Hot-reloads the extension (debounced 500ms) |
 
-Source file watchers ignore `node_modules/` changes.
+Source watchers include subdirectories and ignore `node_modules/` changes.
 
 ## Extension Lifecycle
 
@@ -111,7 +113,7 @@ flowchart TD
 
 ### Hot-Reload (Development)
 
-When a `*.js` file changes in an extension directory:
+When a `.js`, `.mjs`, or `.cjs` file changes under the extension's source watch root:
 
 1. Change detected by `FileSystemWatcher`
 2. Debounced 500ms to coalesce rapid saves

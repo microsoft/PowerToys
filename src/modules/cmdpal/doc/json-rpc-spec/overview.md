@@ -65,7 +65,7 @@ Each JS extension runs in its own Node.js process. The host spawns the process, 
 | SDK language | TypeScript | Type safety, npm ecosystem, familiar to web developers |
 | Entry point | `cmdpal` field in `package.json` | Simple, declarative, same pattern as VS Code's contributions |
 | Icon data | Base64-encoded in JSON | No filesystem sharing needed, works with generated/fetched images |
-| Hot-reload | FileSystemWatcher on the extension directory | Immediate feedback during development |
+| Hot-reload | Recursive FileSystemWatcher on `cmdpal.watchPath` or the entry point directory | Immediate feedback during development |
 
 ---
 

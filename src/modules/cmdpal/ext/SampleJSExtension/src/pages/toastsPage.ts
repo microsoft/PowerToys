@@ -29,14 +29,52 @@ class KeepOpenToastCommand extends InvokableCommandBase {
   }
 }
 
+class UndoToastCommand extends InvokableCommandBase {
+  readonly id = 'undo-toast-action';
+  readonly name = 'Undo';
+  override icon = icon('\uE7A7');
+
+  override invoke(): CommandResult {
+    return { kind: 'showToast', args: { message: 'Delete undone!' } };
+  }
+}
+
+class ToastWithIconCommand extends InvokableCommandBase {
+  readonly id = 'toast-with-icon';
+  readonly name = 'Show toast with icon';
+
+  override invoke(): CommandResult {
+    return {
+      kind: 'showToast',
+      args: {
+        message: 'This toast has an icon next to its message.',
+        icon: icon('\uE73E'),
+        result: { kind: 'keepOpen' },
+      },
+    };
+  }
+}
+
+class ToastWithActionCommand extends InvokableCommandBase {
+  readonly id = 'toast-with-action';
+  readonly name = 'Show toast with action';
+
+  override invoke(): CommandResult {
+    return {
+      kind: 'showToast',
+      args: {
+        message: 'Item deleted.',
+        icon: icon('\uE74D'),
+        command: new UndoToastCommand(),
+        result: { kind: 'keepOpen' },
+      },
+    };
+  }
+}
+
 /**
  * Demonstrates `showToast` command results and lets the user send a custom
  * toast typed into the search box. Mirrors the C# `SampleToastsPage`.
- *
- * Not supported yet in the JS protocol: `ToastArgs` carries a `message` and an
- * optional follow-up `result` only. The C# toast icon and action button
- * (`IToastArgs2.Icon` / `IToastArgs2.Command`) have no JS equivalent, so those
- * variants are omitted.
  */
 export class SampleToastsPage extends DynamicListPageBase {
   readonly id = 'sample-toasts-page';
@@ -86,6 +124,18 @@ export class SampleToastsPage extends DynamicListPageBase {
         title: 'Short toast (keeps the palette open)',
         subtitle: 'ToastArgs.result = keepOpen',
         icon: icon('\uE8A7'),
+      }),
+      new ListItemBase({
+        command: new ToastWithIconCommand(),
+        title: 'Toast with an icon',
+        subtitle: 'ToastArgs.icon appears next to the message',
+        icon: icon('\uE73E'),
+      }),
+      new ListItemBase({
+        command: new ToastWithActionCommand(),
+        title: 'Toast with an action button',
+        subtitle: 'ToastArgs.command renders an Undo button',
+        icon: icon('\uE7A7'),
       }),
       new ListItemBase({
         command: new KeepOpenToastCommand(

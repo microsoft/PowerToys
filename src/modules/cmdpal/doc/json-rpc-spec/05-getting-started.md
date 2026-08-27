@@ -360,7 +360,10 @@ A note on context menus: nested context menus are supported. Each `ContextItem` 
 npm run build
 ```
 
-CmdPal watches each extension directory for `*.js` changes and hot-reloads within about 500 milliseconds, so after `tsc` finishes your extension reloads automatically. Changes under `node_modules` are ignored by the watcher.
+CmdPal recursively watches `cmdpal.watchPath`, or the entry point's directory when no
+watch path is declared. Changes to `.js`, `.mjs`, and `.cjs` files hot-reload within
+about 500 milliseconds, so after `tsc` finishes your extension reloads automatically.
+Changes under `node_modules` are ignored.
 
 ## Debugging tips
 

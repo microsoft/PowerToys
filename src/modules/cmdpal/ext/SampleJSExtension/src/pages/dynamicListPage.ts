@@ -34,7 +34,7 @@ export class SampleDynamicListPage extends DynamicListPageBase {
     this.notifyItemsChanged();
   }
 
-  setFilter(filterId: string): void {
+  override setFilter(filterId: string): void {
     this.filters = { ...this.filters, currentFilterId: filterId };
     this.notifyItemsChanged();
   }

@@ -200,14 +200,14 @@ Invokes a command by ID.
 **Response:** Command result. The TypeScript SDK returns `{ kind, args? }`, and the runtime serializes that object to the numeric wire shape shown here.
 ```json
 {
-  "Kind": 6,
-  "Args": {
-    "Message": "Operation complete!"
+  "kind": 6,
+  "args": {
+    "message": "Operation complete!"
   }
 }
 ```
 
-`Kind` values:
+`kind` values:
 | Value | Name | Description |
 |-------|------|-------------|
 | 0 | Dismiss | Close CmdPal |
@@ -215,8 +215,8 @@ Invokes a command by ID.
 | 2 | GoBack | Navigate back |
 | 3 | Hide | Hide CmdPal (keep state) |
 | 4 | KeepOpen | Stay on current page |
-| 5 | GoToPage | Navigate to page (requires `PageId` in args) |
-| 6 | ShowToast | Show toast notification (requires `Message` in args) |
+| 5 | GoToPage | Navigate to page (requires `pageId` in args) |
+| 6 | ShowToast | Show toast notification (requires `message` in args) |
 | 7 | Confirm | Show confirmation dialog |
 
 ---
@@ -536,8 +536,8 @@ compatibility with a host that still matches on message text.
   "params": {
     "statusId": "status-1",
     "message": {
-      "Message": "Loading data...",
-      "State": 0
+      "message": "Loading data...",
+      "state": 0
     },
     "progress": { "isIndeterminate": true },
     "context": "extension"
@@ -560,8 +560,8 @@ matches on message text.
   "params": {
     "statusId": "status-1",
     "message": {
-      "Message": "Loading data...",
-      "State": 0
+      "message": "Loading data...",
+      "state": 0
     }
   }
 }
