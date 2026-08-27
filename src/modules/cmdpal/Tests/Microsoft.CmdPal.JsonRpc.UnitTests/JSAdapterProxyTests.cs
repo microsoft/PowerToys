@@ -288,7 +288,7 @@ public class JSAdapterProxyTests
         fake.OnRequest("command/invoke", element =>
         {
             invokedCommandId = element.GetProperty("commandId").GetString();
-            return new JsonObject { ["Kind"] = 4 };
+            return new JsonObject { ["kind"] = 4 };
         });
 
         var provider = CreateProvider(fake);
