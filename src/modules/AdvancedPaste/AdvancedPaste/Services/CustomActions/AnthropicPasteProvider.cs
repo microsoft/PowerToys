@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using Microsoft.PowerToys.Settings.UI.Library;
-using System.Net.Http;
 using Microsoft.Extensions.AI;
 using Anthropic;
 
@@ -67,15 +66,14 @@ namespace AdvancedPaste.Services.CustomActions
 
             var endpoint = string.IsNullOrWhiteSpace(_config.Endpoint) ? null : _config.Endpoint.Trim();
 
-            // Setup Anthropic client. For custom endpoints, we might have to use custom HttpClient if Anthropic Client supports it.
+            // Setup Anthropic client.
             AnthropicClient client;
             if (!string.IsNullOrWhiteSpace(endpoint))
             {
-                 // We will pass the endpoint via options if available, but for now we fallback to standard behavior
-                 // if custom endpoints are unsupported by the SDK we'll throw, but we can assume AnthropicClient handles it
-                 // or just use default.
-                 var options = new AnthropicClientOptions();
-                 // options.Endpoint = new Uri(endpoint); // if this exists
+                 var options = new AnthropicClientOptions
+                 {
+                     Endpoint = new Uri(endpoint),
+                 };
                  client = new AnthropicClient(apiKey, options);
             }
             else
