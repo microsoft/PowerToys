@@ -76,7 +76,11 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
                 RebuildMetadata(model);
                 UpdateProperty(nameof(Metadata));
                 break;
-            case "Content":
+
+            // here be dragons: IDetails2 exposes a method GetContent() to build
+            // the content object. But the property change comes in under the name
+            // "Content". So yes, this intentionally uses the toolkit's property name
+            case nameof(Details.Content):
                 RebuildContent(model);
                 break;
         }
