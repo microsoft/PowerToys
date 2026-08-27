@@ -78,7 +78,7 @@ public abstract partial class CommandProvider :
     /// <returns>an array of objects that implement all the leaf interfaces we support</returns>
     public object[] GetApiExtensionStubs()
     {
-        return [new SupportCommandsWithProperties()];
+        return [new SupportCommandsWithProperties(), new SupportFormActions()];
     }
 
     /// <summary>
@@ -89,5 +89,22 @@ public abstract partial class CommandProvider :
     private sealed partial class SupportCommandsWithProperties : IExtendedAttributesProvider
     {
         public IDictionary<string, object>? GetProperties() => null;
+    }
+
+    private sealed partial class SupportFormActions : IFormContent2
+    {
+        public string TemplateJson => string.Empty;
+
+        public string DataJson => string.Empty;
+
+        public string StateJson => string.Empty;
+
+        public ICommandResult SubmitForm(string inputs, string data) => CommandResult.KeepOpen();
+
+        public ICommandResult SubmitAction(string actionId, string inputs, string data) => CommandResult.KeepOpen();
+
+#pragma warning disable CS0067
+        public event Windows.Foundation.TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
+#pragma warning restore CS0067
     }
 }
