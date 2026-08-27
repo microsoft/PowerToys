@@ -23,6 +23,25 @@ internal sealed partial class ShellItemIconLocator : IShellItemIconLocator
         ShellItemIconRequest request,
         out LocatedShellIcon locatedIcon)
     {
+        if (request.LocationMode == ShellItemIconLocationMode.FileType)
+        {
+            using var typeErrorMode = ShellThreadErrorModeScope.SuppressShellDialogs();
+            if (TryGetSystemImageListIndex(
+                    request.ItemPath,
+                    FileAttributeNormal,
+                    ShgfiSystemIconIndex | ShgfiUseFileAttributes,
+                    out var typeIconIndex))
+            {
+                locatedIcon = new LocatedShellIcon(
+                    request,
+                    ShellIconIdentity.FromSystemImageList(typeIconIndex, request.Jumbo));
+                return true;
+            }
+
+            locatedIcon = default;
+            return false;
+        }
+
         if (ShellItemIconRequestClassifier.IsDirectImagePath(request.ItemPath))
         {
             locatedIcon = new LocatedShellIcon(

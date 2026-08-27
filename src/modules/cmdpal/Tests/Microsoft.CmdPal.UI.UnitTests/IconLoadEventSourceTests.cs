@@ -27,6 +27,34 @@ public sealed class IconLoadEventSourceTests
     }
 
     [TestMethod]
+    public void ShellIconStepEtwValuesRemainStable()
+    {
+        Assert.AreEqual(0, (int)ShellIconDiagnosticStep.Request);
+        Assert.AreEqual(1, (int)ShellIconDiagnosticStep.LocationCacheHit);
+        Assert.AreEqual(2, (int)ShellIconDiagnosticStep.LocationCacheMiss);
+        Assert.AreEqual(3, (int)ShellIconDiagnosticStep.RawInFlightJoin);
+        Assert.AreEqual(4, (int)ShellIconDiagnosticStep.IdentityResolved);
+        Assert.AreEqual(5, (int)ShellIconDiagnosticStep.CanonicalCacheHit);
+        Assert.AreEqual(6, (int)ShellIconDiagnosticStep.CanonicalInFlightJoin);
+        Assert.AreEqual(7, (int)ShellIconDiagnosticStep.CanonicalNewLoad);
+        Assert.AreEqual(8, (int)ShellIconDiagnosticStep.ExtractionSucceeded);
+        Assert.AreEqual(9, (int)ShellIconDiagnosticStep.ExtractionEmpty);
+        Assert.AreEqual(10, (int)ShellIconDiagnosticStep.ExtractionFailed);
+        Assert.AreEqual(11, (int)ShellIconDiagnosticStep.AssociationChangedNotification);
+        Assert.AreEqual(12, (int)ShellIconDiagnosticStep.LocationCacheInvalidated);
+        Assert.AreEqual(13, (int)ShellIconDiagnosticStep.TypeFallbackSucceeded);
+        Assert.AreEqual(14, (int)ShellIconDiagnosticStep.TypeFallbackEmpty);
+        Assert.AreEqual(15, (int)ShellIconDiagnosticStep.TypeFallbackFailed);
+        Assert.AreEqual(16, (int)ShellIconDiagnosticStep.IntermediateDispatchAccepted);
+        Assert.AreEqual(17, (int)ShellIconDiagnosticStep.IntermediateDispatchRejected);
+        Assert.AreEqual(18, (int)ShellIconDiagnosticStep.ExactRefinementSame);
+        Assert.AreEqual(19, (int)ShellIconDiagnosticStep.ExactRefinementDifferent);
+        Assert.AreEqual(20, (int)ShellIconDiagnosticStep.ExactRefinementFailed);
+        Assert.AreEqual(21, (int)ShellIconDiagnosticStep.IntermediatePresentationApplied);
+        Assert.AreEqual(22, (int)ShellIconDiagnosticStep.IntermediatePresentationSkipped);
+    }
+
+    [TestMethod]
     public void EventPayloadsPreserveDeclaredTypesAndOrder()
     {
         using var listener = new CollectingEventListener();

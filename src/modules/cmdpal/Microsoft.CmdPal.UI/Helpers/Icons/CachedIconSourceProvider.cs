@@ -87,7 +87,7 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
                     {
                         var shellDiagnostics = IconLoadDiagnostics.BeginShellIconRequest(uncachedRequest);
                         shellDiagnostics.LocationCacheMiss();
-                        return GetShellItemIconSource(
+                        return GetShellItemIconSourceProgressively(
                             uncachedRequest,
                             icon,
                             scale,
@@ -100,7 +100,7 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
                 else if (ShellItemIconRequestClassifier.TryClassify(iconString, out var shellRequest))
                 {
                     var shellDiagnostics = IconLoadDiagnostics.BeginShellIconRequest(shellRequest);
-                    return GetShellItemIconSource(
+                    return GetShellItemIconSourceProgressively(
                         shellRequest,
                         icon,
                         scale,
@@ -130,6 +130,150 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
 
         IconLoadDiagnostics.RecordCacheLookup(_iconSize, partition, cacheSize, hit: false);
         return GetOrCreateSlowPath(key, icon, scale, theme, partition, diagnostics, demand);
+    }
+
+    private Task<IconSource?> GetShellItemIconSourceProgressively(
+        ShellItemIconRequest request,
+        IconDataViewModel icon,
+        double scale,
+        IconRequestMeasurement diagnostics,
+        IIconRequestDemand? demand,
+        ShellIconMeasurement shellDiagnostics,
+        LocatedShellIcon? knownLocation = null,
+        bool locationAlreadyChecked = false)
+    {
+        if (knownLocation is null && !locationAlreadyChecked)
+        {
+            if (_loader.ShellIconLocations.TryGet(request, out var cachedLocation))
+            {
+                shellDiagnostics.LocationCacheHit();
+                return GetShellItemIconSource(
+                    request,
+                    icon,
+                    scale,
+                    diagnostics,
+                    demand,
+                    shellDiagnostics,
+                    cachedLocation,
+                    locationAlreadyChecked: true);
+            }
+
+            shellDiagnostics.LocationCacheMiss();
+            locationAlreadyChecked = true;
+        }
+
+        if (knownLocation is not null
+            || demand is not IIconRequestProgress progress
+            || !ShellItemIconTypeRequest.TryCreate(request, out var typeRequest))
+        {
+            return GetShellItemIconSource(
+                request,
+                icon,
+                scale,
+                diagnostics,
+                demand,
+                shellDiagnostics,
+                knownLocation,
+                locationAlreadyChecked);
+        }
+
+        var typeFallbackStartedAt = shellDiagnostics.BeginTypeFallback();
+        return CompleteProgressiveShellItemLoadAsync();
+
+        async Task<IconSource?> CompleteProgressiveShellItemLoadAsync()
+        {
+            // This method is entered by the SourceRequested handler on the WinUI STA.
+            // Leave that context before either cache-miss path can mutate the in-flight
+            // dictionary. ForceYielding also covers an already-cached type icon: unlike a
+            // normally completed await, it cannot continue synchronously on the caller.
+            await Task.CompletedTask.ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+
+            IconSource? intermediate = null;
+            try
+            {
+                var typeTask = GetShellItemIconSource(
+                    typeRequest,
+                    icon,
+                    scale,
+                    diagnostics: default,
+                    demand: null,
+                    shellDiagnostics: shellDiagnostics.CreateSuboperation());
+                intermediate = await typeTask.ConfigureAwait(false);
+                var canPublish = intermediate is not null
+                    && !ShellItemIconFallback.IsFallback(intermediate);
+                var published = false;
+                if (canPublish)
+                {
+                    Action<bool>? presentationCompleted = null;
+                    if (shellDiagnostics.IsEnabled)
+                    {
+                        var completionRecorded = 0;
+                        presentationCompleted = applied =>
+                        {
+                            if (Interlocked.Exchange(ref completionRecorded, 1) == 0)
+                            {
+                                shellDiagnostics.IntermediatePresentationCompleted(typeFallbackStartedAt, applied);
+                            }
+                        };
+                    }
+
+                    try
+                    {
+                        published = progress.TryReportIntermediate(intermediate!, presentationCompleted);
+                        if (!published)
+                        {
+                            presentationCompleted?.Invoke(false);
+                        }
+                    }
+                    catch
+                    {
+                        presentationCompleted?.Invoke(false);
+
+                        // Presentation of a provisional icon is optional. A requestor
+                        // failure cannot prevent the exact Shell lookup from running.
+                    }
+                }
+
+                shellDiagnostics.TypeFallbackCompleted(
+                    typeFallbackStartedAt,
+                    hasContent: canPublish,
+                    published);
+            }
+            catch
+            {
+                // A provisional type icon must never prevent the exact Shell icon from
+                // loading. The underlying load already owns detailed failure logging.
+                shellDiagnostics.TypeFallbackFailed(typeFallbackStartedAt);
+            }
+
+            Task<IconSource?> exactTask;
+            try
+            {
+                exactTask = GetShellItemIconSource(
+                    request,
+                    icon,
+                    scale,
+                    diagnostics,
+                    demand,
+                    shellDiagnostics,
+                    knownLocation,
+                    locationAlreadyChecked);
+                var exact = await exactTask.ConfigureAwait(false);
+                shellDiagnostics.ExactRefinementCompleted(
+                    ReferenceEquals(intermediate, exact));
+                return exact ?? intermediate;
+            }
+            catch
+            {
+                shellDiagnostics.ExactRefinementFailed();
+                if (intermediate is not null)
+                {
+                    return intermediate;
+                }
+
+                throw;
+            }
+        }
     }
 
     private Task<IconSource?> GetShellItemIconSource(
@@ -176,7 +320,7 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
 
         // Before Shell localization, only identical raw requests can share work. Do not
         // cache this key: once resolved, the canonical Shell identity owns the entry.
-        var rawKey = new IconCacheKey(icon, icon.Icon, scale, ElementTheme.Default);
+        var rawKey = new IconCacheKey(icon, request.CacheIdentity, scale, ElementTheme.Default);
         var candidate = new InFlightIconLoad();
         var pending = _inFlight.GetOrAdd(rawKey, candidate);
         if (!ReferenceEquals(pending, candidate))
