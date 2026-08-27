@@ -328,6 +328,252 @@ public partial class CachedIconSourceProviderTests
 
     [TestMethod]
     [Timeout(5_000)]
+    public async Task ProgressiveShellRequestPublishesTypeIconBeforeSameIdentityCompletes()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var progress = new ProgressiveIconRequest();
+        var icon = new IconDataViewModel
+        {
+            Icon = ShellItemIconProtocol.Create(@"C:\Windows\System32\first.dll"),
+        };
+
+        var finalTask = provider.GetIconSource(icon, 1.0, demand: progress);
+
+        Assert.IsTrue(SpinWait.SpinUntil(
+            () => loader.ShellEnqueueCount == 1,
+            TimeSpan.FromSeconds(2)));
+        loader.LocateNextShellItem(42, ShellItemIconLocationMode.FileType);
+        var typeSource = CreateTestIconSource();
+        loader.CompleteNextShellOwner(typeSource);
+
+        Assert.IsTrue(SpinWait.SpinUntil(
+            () => loader.ShellEnqueueCount == 2 && progress.Intermediate is not null,
+            TimeSpan.FromSeconds(2)));
+        Assert.AreSame(typeSource, progress.Intermediate);
+
+        loader.LocateNextShellItem(42, ShellItemIconLocationMode.ExactItem);
+        Assert.AreSame(typeSource, await finalTask);
+        Assert.AreEqual(1, loader.ShellExtractionCount);
+        progress.Release();
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task ProgressiveShellRequestReplacesTypeIconWhenExactIdentityDiffers()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var progress = new ProgressiveIconRequest();
+        var icon = new IconDataViewModel
+        {
+            Icon = ShellItemIconProtocol.Create(@"C:\Windows\System32\custom.exe"),
+        };
+
+        var finalTask = provider.GetIconSource(icon, 1.0, demand: progress);
+        Assert.IsTrue(SpinWait.SpinUntil(
+            () => loader.ShellEnqueueCount == 1,
+            TimeSpan.FromSeconds(2)));
+        loader.LocateNextShellItem(7, ShellItemIconLocationMode.FileType);
+        var typeSource = CreateTestIconSource();
+        loader.CompleteNextShellOwner(typeSource);
+
+        Assert.IsTrue(SpinWait.SpinUntil(
+            () => loader.ShellEnqueueCount == 2 && progress.Intermediate is not null,
+            TimeSpan.FromSeconds(2)));
+        loader.LocateNextShellItem(99, ShellItemIconLocationMode.ExactItem);
+        var exactSource = CreateTestIconSource();
+        loader.CompleteNextShellOwner(exactSource);
+
+        Assert.AreSame(exactSource, await finalTask);
+        Assert.AreSame(typeSource, progress.Intermediate);
+        Assert.AreEqual(2, loader.ShellExtractionCount);
+        progress.Release();
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task ProgressiveShellRequestKeepsTypeIconWhenExactRefinementFails()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var progress = new ProgressiveIconRequest();
+        var icon = new IconDataViewModel
+        {
+            Icon = ShellItemIconProtocol.Create(@"C:\Windows\System32\custom.exe"),
+        };
+
+        var finalTask = provider.GetIconSource(icon, 1.0, demand: progress);
+        Assert.IsTrue(SpinWait.SpinUntil(
+            () => loader.ShellEnqueueCount == 1,
+            TimeSpan.FromSeconds(2)));
+        loader.LocateNextShellItem(7, ShellItemIconLocationMode.FileType);
+        var typeSource = CreateTestIconSource();
+        loader.CompleteNextShellOwner(typeSource);
+
+        Assert.IsTrue(SpinWait.SpinUntil(
+            () => loader.ShellEnqueueCount == 2 && progress.Intermediate is not null,
+            TimeSpan.FromSeconds(2)));
+        loader.LocateNextShellItem(99, ShellItemIconLocationMode.ExactItem);
+        loader.FailNextShellOwner(new InvalidOperationException("Exact lookup failed."));
+
+        Assert.AreSame(typeSource, await finalTask);
+        progress.Release();
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task ProgressiveShellRequestContinuesWhenIntermediatePresentationFails()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var progress = new ProgressiveIconRequest { ThrowOnIntermediate = true };
+        var icon = new IconDataViewModel
+        {
+            Icon = ShellItemIconProtocol.Create(@"C:\Windows\System32\custom.exe"),
+        };
+
+        var finalTask = provider.GetIconSource(icon, 1.0, demand: progress);
+        Assert.IsTrue(SpinWait.SpinUntil(
+            () => loader.ShellEnqueueCount == 1,
+            TimeSpan.FromSeconds(2)));
+        loader.LocateNextShellItem(7, ShellItemIconLocationMode.FileType);
+        loader.CompleteNextShellOwner(CreateTestIconSource());
+
+        Assert.IsTrue(SpinWait.SpinUntil(
+            () => loader.ShellEnqueueCount == 2,
+            TimeSpan.FromSeconds(2)));
+        loader.LocateNextShellItem(99, ShellItemIconLocationMode.ExactItem);
+        var exactSource = CreateTestIconSource();
+        loader.CompleteNextShellOwner(exactSource);
+
+        Assert.AreSame(exactSource, await finalTask);
+        progress.Release();
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task ReleasedProgressiveRequestDoesNotDemandItsDelayedExactLoad()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var progress = new ProgressiveIconRequest();
+        var icon = new IconDataViewModel
+        {
+            Icon = ShellItemIconProtocol.Create(@"C:\Windows\System32\custom.exe"),
+        };
+
+        var finalTask = provider.GetIconSource(icon, 1.0, demand: progress);
+        progress.Release();
+        Assert.IsTrue(SpinWait.SpinUntil(
+            () => loader.ShellEnqueueCount == 1,
+            TimeSpan.FromSeconds(2)));
+        loader.LocateNextShellItem(7, ShellItemIconLocationMode.FileType);
+        loader.CompleteNextShellOwner(CreateTestIconSource());
+
+        Assert.IsTrue(SpinWait.SpinUntil(
+            () => loader.ShellEnqueueCount == 2,
+            TimeSpan.FromSeconds(2)));
+        Assert.IsNotNull(loader.LastDemand);
+        Assert.IsFalse(loader.LastDemand.IsDemanded);
+
+        loader.LocateNextShellItem(99, ShellItemIconLocationMode.ExactItem);
+        loader.CompleteNextShellOwner(CreateTestIconSource());
+        await finalTask;
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task ColdTypeMissMovesCacheArbitrationOffCallingThread()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var progress = new ProgressiveIconRequest();
+        var callingThreadId = Environment.CurrentManagedThreadId;
+
+        var result = provider.GetIconSource(
+            new IconDataViewModel
+            {
+                Icon = ShellItemIconProtocol.Create(@"C:\Windows\System32\first.dll"),
+            },
+            1.0,
+            demand: progress);
+
+        Assert.IsTrue(SpinWait.SpinUntil(
+            () => loader.ShellEnqueueCount == 1,
+            TimeSpan.FromSeconds(2)));
+        Assert.AreNotEqual(callingThreadId, loader.LastShellEnqueueThreadId);
+
+        loader.LocateNextShellItem(42, ShellItemIconLocationMode.FileType);
+        var typeSource = CreateTestIconSource();
+        loader.CompleteNextShellOwner(typeSource);
+        Assert.IsTrue(SpinWait.SpinUntil(
+            () => loader.ShellEnqueueCount == 2,
+            TimeSpan.FromSeconds(2)));
+        loader.LocateNextShellItem(42, ShellItemIconLocationMode.ExactItem);
+        Assert.AreSame(typeSource, await result);
+        progress.Release();
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task CachedTypeHitMovesExactArbitrationOffCallingSynchronizationContext()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var firstProgress = new ProgressiveIconRequest();
+        var first = provider.GetIconSource(
+            new IconDataViewModel
+            {
+                Icon = ShellItemIconProtocol.Create(@"C:\Windows\System32\first.dll"),
+            },
+            1.0,
+            demand: firstProgress);
+
+        Assert.IsTrue(SpinWait.SpinUntil(
+            () => loader.ShellEnqueueCount == 1,
+            TimeSpan.FromSeconds(2)));
+        loader.LocateNextShellItem(42, ShellItemIconLocationMode.FileType);
+        var sharedTypeSource = CreateTestIconSource();
+        loader.CompleteNextShellOwner(sharedTypeSource);
+        Assert.IsTrue(SpinWait.SpinUntil(
+            () => loader.ShellEnqueueCount == 2,
+            TimeSpan.FromSeconds(2)));
+        loader.LocateNextShellItem(42, ShellItemIconLocationMode.ExactItem);
+        Assert.AreSame(sharedTypeSource, await first);
+        firstProgress.Release();
+
+        var originalContext = SynchronizationContext.Current;
+        var callingThreadId = Environment.CurrentManagedThreadId;
+        var secondProgress = new ProgressiveIconRequest();
+        Task<IconSource?> second;
+        SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+        try
+        {
+            second = provider.GetIconSource(
+                new IconDataViewModel
+                {
+                    Icon = ShellItemIconProtocol.Create(@"C:\Windows\System32\second.dll"),
+                },
+                1.0,
+                demand: secondProgress);
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(originalContext);
+        }
+
+        Assert.IsTrue(SpinWait.SpinUntil(
+            () => loader.ShellEnqueueCount == 3,
+            TimeSpan.FromSeconds(2)));
+        Assert.AreNotEqual(callingThreadId, loader.LastExactShellEnqueueThreadId);
+        loader.LocateNextShellItem(42, ShellItemIconLocationMode.ExactItem);
+        Assert.AreSame(sharedTypeSource, await second);
+        secondProgress.Release();
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
     public async Task CanonicalJoinPinsExistingLoadDemanded()
     {
         var loader = new ControllableIconLoader();
@@ -819,6 +1065,8 @@ public partial class CachedIconSourceProviderTests
         private int _shellEnqueueCount;
         private int _shellExtractionCount;
         private int _shellLocationCount;
+        private int _lastShellEnqueueThreadId;
+        private int _lastExactShellEnqueueThreadId;
 
         public bool AcceptLoads { get; set; } = true;
 
@@ -835,6 +1083,10 @@ public partial class CachedIconSourceProviderTests
         public int ShellExtractionCount => Volatile.Read(ref _shellExtractionCount);
 
         public int ShellLocationCount => Volatile.Read(ref _shellLocationCount);
+
+        public int LastShellEnqueueThreadId => Volatile.Read(ref _lastShellEnqueueThreadId);
+
+        public int LastExactShellEnqueueThreadId => Volatile.Read(ref _lastExactShellEnqueueThreadId);
 
         public IconLoadDemand? LastDemand { get; private set; }
 
@@ -894,6 +1146,12 @@ public partial class CachedIconSourceProviderTests
             _ = priority;
             _ = diagnostics;
             Interlocked.Increment(ref _shellEnqueueCount);
+            Volatile.Write(ref _lastShellEnqueueThreadId, Environment.CurrentManagedThreadId);
+            if (request.LocationMode == ShellItemIconLocationMode.ExactItem)
+            {
+                Volatile.Write(ref _lastExactShellEnqueueThreadId, Environment.CurrentManagedThreadId);
+            }
+
             LastDemand = demand;
             if (!AcceptLoads)
             {
@@ -926,11 +1184,18 @@ public partial class CachedIconSourceProviderTests
             tcs.SetException(exception);
         }
 
-        public void LocateNextShellItem(int systemImageListIndex)
+        public void LocateNextShellItem(
+            int systemImageListIndex,
+            ShellItemIconLocationMode? expectedLocationMode = null)
         {
             Assert.IsTrue(
                 _pendingShellLocations.TryDequeue(out var load),
                 "No Shell item was waiting for identity resolution.");
+            if (expectedLocationMode is not null)
+            {
+                Assert.AreEqual(expectedLocationMode.Value, load.Request.LocationMode);
+            }
+
             Interlocked.Increment(ref _shellLocationCount);
             var locatedIcon = new LocatedShellIcon(
                 load.Request,
@@ -1013,6 +1278,32 @@ public partial class CachedIconSourceProviderTests
             public TaskCompletionSource<IconSource?> Completion { get; }
 
             public IShellItemIconLoadCoordinator? Coordinator { get; }
+        }
+    }
+
+    private sealed class ProgressiveIconRequest : IIconRequestDemand, IIconRequestProgress
+    {
+        private IconRequestDemandState _demandState;
+        private IconSource? _intermediate;
+
+        public IconSource? Intermediate => Volatile.Read(ref _intermediate);
+
+        public bool ThrowOnIntermediate { get; set; }
+
+        void IIconRequestDemand.Attach(IconLoadDemand loadDemand) => _demandState.Attach(loadDemand);
+
+        public void Release() => _demandState.Release();
+
+        bool IIconRequestProgress.TryReportIntermediate(IconSource source, Action<bool>? presentationCompleted)
+        {
+            if (ThrowOnIntermediate)
+            {
+                throw new InvalidOperationException("The test requestor rejected the intermediate source.");
+            }
+
+            Volatile.Write(ref _intermediate, source);
+            presentationCompleted?.Invoke(true);
+            return true;
         }
     }
 }

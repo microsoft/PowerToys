@@ -16,6 +16,16 @@ internal readonly struct ShellIconMeasurement
         session.RecordShellIconStep(ShellIconDiagnosticStep.Request, (int)requestKind, 0);
     }
 
+    private ShellIconMeasurement(IconLoadDiagnosticsSession session)
+    {
+        _session = session;
+    }
+
+    public ShellIconMeasurement CreateSuboperation() =>
+        _session is null ? default : new ShellIconMeasurement(_session);
+
+    public bool IsEnabled => _session is not null;
+
     public void LocationCacheHit() =>
         _session?.RecordShellIconStep(ShellIconDiagnosticStep.LocationCacheHit, 0, 0);
 
@@ -33,6 +43,44 @@ internal readonly struct ShellIconMeasurement
 
     public void CanonicalNewLoad() =>
         _session?.RecordShellIconStep(ShellIconDiagnosticStep.CanonicalNewLoad, 0, 0);
+
+    public long BeginTypeFallback() => _session is null ? 0 : Stopwatch.GetTimestamp();
+
+    public void TypeFallbackCompleted(long startedAt, bool hasContent, bool dispatchAccepted)
+    {
+        _session?.RecordShellIconStep(
+            hasContent ? ShellIconDiagnosticStep.TypeFallbackSucceeded : ShellIconDiagnosticStep.TypeFallbackEmpty,
+            0,
+            ElapsedSince(startedAt));
+        if (hasContent)
+        {
+            _session?.RecordShellIconStep(
+                dispatchAccepted ? ShellIconDiagnosticStep.IntermediateDispatchAccepted : ShellIconDiagnosticStep.IntermediateDispatchRejected,
+                0,
+                0);
+        }
+    }
+
+    public void IntermediatePresentationCompleted(long startedAt, bool applied) =>
+        _session?.RecordShellIconStep(
+            applied ? ShellIconDiagnosticStep.IntermediatePresentationApplied : ShellIconDiagnosticStep.IntermediatePresentationSkipped,
+            0,
+            ElapsedSince(startedAt));
+
+    public void TypeFallbackFailed(long startedAt) =>
+        _session?.RecordShellIconStep(
+            ShellIconDiagnosticStep.TypeFallbackFailed,
+            0,
+            ElapsedSince(startedAt));
+
+    public void ExactRefinementCompleted(bool sameSource) =>
+        _session?.RecordShellIconStep(
+            sameSource ? ShellIconDiagnosticStep.ExactRefinementSame : ShellIconDiagnosticStep.ExactRefinementDifferent,
+            0,
+            0);
+
+    public void ExactRefinementFailed() =>
+        _session?.RecordShellIconStep(ShellIconDiagnosticStep.ExactRefinementFailed, 0, 0);
 
     public long BeginIdentityResolution() => _session is null ? 0 : Stopwatch.GetTimestamp();
 

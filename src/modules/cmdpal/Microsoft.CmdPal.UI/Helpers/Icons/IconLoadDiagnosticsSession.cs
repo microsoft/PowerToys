@@ -79,6 +79,8 @@ internal sealed class IconLoadDiagnosticsSession
     private readonly DiagnosticHistogram _shellIconIdentityResolutionLatency = new();
     private readonly DiagnosticHistogram _shellIconExtractionLatency = new();
     private readonly DiagnosticHistogram _shellHIconConversionLatency = new();
+    private readonly DiagnosticHistogram _shellTypeFallbackLatency = new();
+    private readonly DiagnosticHistogram _shellIntermediatePresentationLatency = new();
     private readonly ConcurrentDictionary<long, RequestDemandState> _requestDemandStates = new();
 
     // These lightweight states intentionally survive load completion so later cache hits can be
@@ -184,6 +186,16 @@ internal sealed class IconLoadDiagnosticsSession
     private long _shellIconExtractionsSucceeded;
     private long _shellIconExtractionsEmpty;
     private long _shellIconExtractionsFailed;
+    private long _shellTypeFallbacksSucceeded;
+    private long _shellTypeFallbacksEmpty;
+    private long _shellTypeFallbacksFailed;
+    private long _shellIntermediateSourcesPublished;
+    private long _shellIntermediateSourcesRejected;
+    private long _shellIntermediatePresentationsApplied;
+    private long _shellIntermediatePresentationsSkipped;
+    private long _shellExactRefinementsSame;
+    private long _shellExactRefinementsDifferent;
+    private long _shellExactRefinementsFailed;
     private long _shellIconAssociationChangedNotifications;
     private long _shellImageListRequestedPixelTotal;
     private long _shellImageListSourceWidthTotal;
@@ -306,6 +318,40 @@ internal sealed class IconLoadDiagnosticsSession
                 break;
             case ShellIconDiagnosticStep.LocationCacheInvalidated:
                 Interlocked.Increment(ref _shellIconCacheInvalidationReasons[detail]);
+                break;
+            case ShellIconDiagnosticStep.TypeFallbackSucceeded:
+                Interlocked.Increment(ref _shellTypeFallbacksSucceeded);
+                _shellTypeFallbackLatency.Record(elapsedTicks);
+                break;
+            case ShellIconDiagnosticStep.TypeFallbackEmpty:
+                Interlocked.Increment(ref _shellTypeFallbacksEmpty);
+                _shellTypeFallbackLatency.Record(elapsedTicks);
+                break;
+            case ShellIconDiagnosticStep.TypeFallbackFailed:
+                Interlocked.Increment(ref _shellTypeFallbacksFailed);
+                _shellTypeFallbackLatency.Record(elapsedTicks);
+                break;
+            case ShellIconDiagnosticStep.IntermediateDispatchAccepted:
+                Interlocked.Increment(ref _shellIntermediateSourcesPublished);
+                break;
+            case ShellIconDiagnosticStep.IntermediateDispatchRejected:
+                Interlocked.Increment(ref _shellIntermediateSourcesRejected);
+                break;
+            case ShellIconDiagnosticStep.ExactRefinementSame:
+                Interlocked.Increment(ref _shellExactRefinementsSame);
+                break;
+            case ShellIconDiagnosticStep.ExactRefinementDifferent:
+                Interlocked.Increment(ref _shellExactRefinementsDifferent);
+                break;
+            case ShellIconDiagnosticStep.ExactRefinementFailed:
+                Interlocked.Increment(ref _shellExactRefinementsFailed);
+                break;
+            case ShellIconDiagnosticStep.IntermediatePresentationApplied:
+                Interlocked.Increment(ref _shellIntermediatePresentationsApplied);
+                _shellIntermediatePresentationLatency.Record(elapsedTicks);
+                break;
+            case ShellIconDiagnosticStep.IntermediatePresentationSkipped:
+                Interlocked.Increment(ref _shellIntermediatePresentationsSkipped);
                 break;
         }
 
@@ -1721,6 +1767,20 @@ internal sealed class IconLoadDiagnosticsSession
         AppendValue(builder, "Association-change notifications received", Volatile.Read(ref _shellIconAssociationChangedNotifications), "    ");
         builder.AppendLine("    Invalidations by reason");
         AppendEnumCounts<ShellIconCacheInvalidationReason>(builder, _shellIconCacheInvalidationReasons, "      ");
+        builder.AppendLine("  Progressive type fallback");
+        AppendValue(builder, "Succeeded", Volatile.Read(ref _shellTypeFallbacksSucceeded), "    ");
+        AppendValue(builder, "Empty", Volatile.Read(ref _shellTypeFallbacksEmpty), "    ");
+        AppendValue(builder, "Failed", Volatile.Read(ref _shellTypeFallbacksFailed), "    ");
+        _shellTypeFallbackLatency.Append(builder, "Request to type fallback", "    ");
+        AppendValue(builder, "Intermediate dispatches accepted", Volatile.Read(ref _shellIntermediateSourcesPublished), "    ");
+        AppendValue(builder, "Intermediate dispatches rejected", Volatile.Read(ref _shellIntermediateSourcesRejected), "    ");
+        AppendValue(builder, "Intermediate UI updates applied", Volatile.Read(ref _shellIntermediatePresentationsApplied), "    ");
+        AppendValue(builder, "Intermediate UI updates skipped", Volatile.Read(ref _shellIntermediatePresentationsSkipped), "    ");
+        _shellIntermediatePresentationLatency.Append(builder, "Request to applied intermediate", "    ");
+        builder.AppendLine("    Exact refinement outcomes");
+        AppendValue(builder, "Same source", Volatile.Read(ref _shellExactRefinementsSame), "      ");
+        AppendValue(builder, "Different source", Volatile.Read(ref _shellExactRefinementsDifferent), "      ");
+        AppendValue(builder, "Failed", Volatile.Read(ref _shellExactRefinementsFailed), "      ");
         builder.AppendLine("  Location aliases");
         AppendValue(builder, "Cache hits", Volatile.Read(ref _shellIconLocationCacheHits), "    ");
         AppendValue(builder, "Cache misses", Volatile.Read(ref _shellIconLocationCacheMisses), "    ");
