@@ -342,6 +342,11 @@ namespace Microsoft.CommandPalette.Extensions
         String StateJson { get; };
         ICommandResult SubmitForm(String inputs, String data);
     }
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IDetails2 requires IDetails {
+        IContent[] GetContent();
+    }
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IMarkdownContent requires IContent {

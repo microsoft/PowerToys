@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -26,6 +28,8 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
     // Metadata is an array of IDetailsElement,
     //   where IDetailsElement = {IDetailsTags, IDetailsLink, IDetailsSeparator}
     public List<DetailsElementViewModel> Metadata { get; private set; } = [];
+
+    public ObservableCollection<ContentViewModel> Content { get; } = [];
 
     public DetailsViewModel(IDetails details, WeakReference<IPageContext> context)
         : base(context)
@@ -71,6 +75,9 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
             case nameof(IDetails.Metadata):
                 RebuildMetadata(model);
                 UpdateProperty(nameof(Metadata));
+                break;
+            case "Content":
+                RebuildContent(model);
                 break;
         }
     }
@@ -143,6 +150,27 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
         UpdateProperty(nameof(Size));
 
         RebuildMetadata(model);
+        RebuildContent(model);
+    }
+
+    private void RebuildContent(IDetails model)
+    {
+        List<ContentViewModel> content = [];
+        if (model is IDetails2 details2)
+        {
+            foreach (var item in details2.GetContent())
+            {
+                var viewModel = CommandPaletteContentPageViewModel.CreateViewModel(item, PageContext);
+                if (viewModel is not null)
+                {
+                    viewModel.InitializeProperties();
+                    content.Add(viewModel);
+                }
+            }
+        }
+
+        ListHelpers.InPlaceUpdateList(Content, content);
+        UpdateProperty(nameof(Content));
     }
 
     protected override void UnsafeCleanup()
