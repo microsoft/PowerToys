@@ -14,6 +14,19 @@ namespace Microsoft.CmdPal.UI.UnitTests;
 public sealed class IconLoadEventSourceTests
 {
     [TestMethod]
+    public void DemandStageEtwValuesRemainStable()
+    {
+        Assert.AreEqual(0, (int)IconLoadDemandStage.Unlinked);
+        Assert.AreEqual(1, (int)IconLoadDemandStage.BeforeEnqueue);
+        Assert.AreEqual(2, (int)IconLoadDemandStage.Queued);
+        Assert.AreEqual(3, (int)IconLoadDemandStage.WorkerActive);
+        Assert.AreEqual(4, (int)IconLoadDemandStage.Completed);
+        Assert.AreEqual(5, (int)IconLoadDemandStage.Rejected);
+        Assert.AreEqual(6, (int)IconLoadDemandStage.Abandoned);
+        Assert.AreEqual(7, (int)IconLoadDemandStage.AwaitingSharedLoad);
+    }
+
+    [TestMethod]
     public void EventPayloadsPreserveDeclaredTypesAndOrder()
     {
         using var listener = new CollectingEventListener();
@@ -52,8 +65,11 @@ public sealed class IconLoadEventSourceTests
         log.DispatcherAsyncSuspensionCompleted(11, 14, 55, isDemanded: false, 56);
         log.UiResponsivenessProbeCompleted(11, 57);
         log.SpeculativeDispatchDeferralCompleted(11, 69);
+        log.ShellIconStepCompleted(11, 70, 71, 72);
+        log.ShellImageListExtractionCompleted(11, 73, 74, 75, 76, 77);
+        log.LoadWorkerReleased(11, 14, 3);
 
-        Assert.AreEqual(31, listener.Events.Count);
+        Assert.AreEqual(34, listener.Events.Count);
         Assert.IsFalse(listener.Events.Any(e => e.EventId == 0), listener.GetEventSourceErrors());
 
         CollectionAssert.AreEqual(
@@ -92,6 +108,15 @@ public sealed class IconLoadEventSourceTests
         CollectionAssert.AreEqual(
             new object?[] { 11L, 69L },
             listener.GetEvent(38).Payload!.ToArray());
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 70, 71, 72L },
+            listener.GetEvent(39).Payload!.ToArray());
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 73, 74, 75, 76, 77L },
+            listener.GetEvent(40).Payload!.ToArray());
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 14L, 3L },
+            listener.GetEvent(41).Payload!.ToArray());
     }
 
     private sealed class CollectingEventListener : EventListener

@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -128,6 +129,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
+    [Timeout(5_000)]
     public async Task CachedProviderFallsBackWhenLoaderViolatesDirectGlyphContract()
     {
         var loader = new ControllableIconLoader { ReturnDirectGlyph = true };
@@ -285,6 +287,308 @@ public partial class CachedIconSourceProviderTests
 
     [TestMethod]
     [Timeout(5_000)]
+    public async Task DifferentLegacyPathsWithSameShellIdentityShareCanonicalLoad()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var firstIcon = new IconDataViewModel { Icon = "C:\\Files\\first.txt" };
+        var secondIcon = new IconDataViewModel { Icon = "C:\\Files\\second.txt" };
+
+        var first = provider.GetIconSource(firstIcon, 1.0);
+        var second = provider.GetIconSource(secondIcon, 1.0);
+
+        Assert.AreEqual(2, loader.ShellEnqueueCount);
+        Assert.AreEqual(0, loader.EnqueueCount);
+        loader.LocateNextShellItem(systemImageListIndex: 42);
+        loader.LocateNextShellItem(systemImageListIndex: 42);
+        Assert.AreEqual(1, loader.ShellExtractionCount);
+
+        var source = CreateTestIconSource();
+        loader.CompleteNextShellOwner(source);
+        var results = await Task.WhenAll(first, second);
+        Assert.AreSame(source, results[0]);
+        Assert.AreSame(source, results[1]);
+        Assert.IsTrue(
+            SpinWait.SpinUntil(
+                () => GetInFlightCount(provider) == 0 && GetCacheCount(provider, "_otherCache") == 1,
+                TimeSpan.FromSeconds(2)));
+
+        var repeated = provider.GetIconSource(firstIcon, 1.0);
+        Assert.AreSame(first, repeated);
+        Assert.AreEqual(2, loader.ShellEnqueueCount);
+
+        var third = provider.GetIconSource(
+            new IconDataViewModel { Icon = "C:\\Files\\third.txt" },
+            1.0);
+        loader.LocateNextShellItem(systemImageListIndex: 42);
+        Assert.AreSame(source, await third);
+        Assert.AreEqual(3, loader.ShellEnqueueCount);
+        Assert.AreEqual(1, loader.ShellExtractionCount);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task CanonicalJoinPinsExistingLoadDemanded()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var firstRequestDemand = new IconRequestDemand();
+        var secondRequestDemand = new IconRequestDemand();
+
+        var first = provider.GetIconSource(
+            new IconDataViewModel { Icon = "C:\\Files\\first.txt" },
+            1.0,
+            demand: firstRequestDemand);
+        var canonicalDemand = loader.LastDemand!;
+        var second = provider.GetIconSource(
+            new IconDataViewModel { Icon = "C:\\Files\\second.txt" },
+            1.0,
+            demand: secondRequestDemand);
+
+        loader.LocateNextShellItem(systemImageListIndex: 42);
+        loader.LocateNextShellItem(systemImageListIndex: 42);
+        firstRequestDemand.Release();
+        secondRequestDemand.Release();
+
+        Assert.IsTrue(
+            canonicalDemand.IsDemanded,
+            "The canonical load must remain demanded after a raw load joins it.");
+
+        loader.CompleteNextShellOwner(CreateTestIconSource());
+        await Task.WhenAll(first, second);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task NullCanonicalShellResultIsNotCached()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var icon = new IconDataViewModel { Icon = "C:\\Files\\report.txt" };
+
+        var first = provider.GetIconSource(icon, 1.0);
+        loader.LocateNextShellItem(systemImageListIndex: 42);
+        loader.CompleteNextShellOwner(null);
+        Assert.IsNull(await first);
+        Assert.IsTrue(
+            SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)));
+        Assert.AreEqual(0, GetCacheCount(provider, "_otherCache"));
+
+        var retry = provider.GetIconSource(icon, 1.0);
+        Assert.AreEqual(2, loader.ShellExtractionCount);
+        loader.CompleteNextShellOwner(CreateTestIconSource());
+        await retry;
+    }
+
+    [TestMethod]
+    [DoNotParallelize]
+    [Timeout(5_000)]
+    public async Task SharedShellFallbackIsNotCachedAsCanonicalResult()
+    {
+        var fallback = CreateTestIconSource();
+        var sourceField = typeof(ShellItemIconFallback).GetField(
+            "_source",
+            BindingFlags.Static | BindingFlags.NonPublic)!;
+        var previousSource = sourceField.GetValue(null);
+        sourceField.SetValue(null, fallback);
+        try
+        {
+            var loader = new ControllableIconLoader();
+            var provider = CreateProvider(loader);
+            var icon = new IconDataViewModel { Icon = "C:\\Files\\report.txt" };
+
+            var first = provider.GetIconSource(icon, 1.0);
+            loader.LocateNextShellItem(systemImageListIndex: 42);
+            loader.CompleteNextShellOwner(fallback);
+            Assert.AreSame(fallback, await first);
+            Assert.IsTrue(
+                SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)));
+            Assert.AreEqual(0, GetCacheCount(provider, "_otherCache"));
+
+            var retry = provider.GetIconSource(icon, 1.0);
+            Assert.AreEqual(2, loader.ShellExtractionCount);
+            loader.CompleteNextShellOwner(CreateTestIconSource());
+            await retry;
+        }
+        finally
+        {
+            sourceField.SetValue(null, previousSource);
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow("C:\\Files\\image.avif")]
+    [DataRow("C:\\Files\\image.heic")]
+    [DataRow("C:\\Files\\image.jfif")]
+    [Timeout(5_000)]
+    public async Task LegacyImagePathsPreserveOrdinaryImageLoading(string imagePath)
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+
+        var load = provider.GetIconSource(new IconDataViewModel { Icon = imagePath }, 1.0);
+
+        Assert.AreEqual(1, loader.EnqueueCount);
+        Assert.AreEqual(0, loader.ShellEnqueueCount);
+        loader.CompleteNext(null);
+        await load;
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task ExplicitAndLegacyShellRequestsShareCanonicalLoad()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var legacy = provider.GetIconSource(
+            new IconDataViewModel { Icon = "C:\\Files\\legacy.txt" },
+            1.0);
+        var explicitRequest = provider.GetIconSource(
+            new IconDataViewModel
+            {
+                Icon = ShellItemIconProtocol.Create("C:\\Files\\explicit.txt"),
+            },
+            1.0);
+
+        loader.LocateNextShellItem(systemImageListIndex: 73);
+        loader.LocateNextShellItem(systemImageListIndex: 73);
+        Assert.AreEqual(1, loader.ShellExtractionCount);
+
+        var source = CreateTestIconSource();
+        loader.CompleteNextShellOwner(source);
+        Assert.AreSame(source, await legacy);
+        Assert.AreSame(source, await explicitRequest);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task ExplicitShellProtocolOverridesCompanionStream()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var load = provider.GetIconSource(
+            new IconDataViewModel
+            {
+                Icon = ShellItemIconProtocol.Create("C:\\Files\\report.txt"),
+                Data = new IconDataStreamReference { Unsafe = new TestStreamReference() },
+            },
+            1.0);
+
+        Assert.AreEqual(0, loader.EnqueueCount);
+        Assert.AreEqual(1, loader.ShellEnqueueCount);
+        loader.LocateNextShellItem(systemImageListIndex: 42);
+        var source = CreateTestIconSource();
+        loader.CompleteNextShellOwner(source);
+
+        Assert.AreSame(source, await load);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task DistinctShellIdentitiesDoNotShareMaterialization()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var first = provider.GetIconSource(
+            new IconDataViewModel { Icon = "C:\\Files\\first.txt" },
+            1.0);
+        var second = provider.GetIconSource(
+            new IconDataViewModel { Icon = "C:\\Files\\second.custom" },
+            1.0);
+
+        loader.LocateNextShellItem(systemImageListIndex: 42);
+        loader.LocateNextShellItem(systemImageListIndex: 99);
+        Assert.AreEqual(2, loader.ShellExtractionCount);
+
+        var firstSource = CreateTestIconSource();
+        var secondSource = CreateTestIconSource();
+        loader.CompleteNextShellOwner(firstSource);
+        loader.CompleteNextShellOwner(secondSource);
+        Assert.AreSame(firstSource, await first);
+        Assert.AreSame(secondSource, await second);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task FailedCanonicalShellLoadCanRetryWithoutRelocatingRawPath()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var icon = new IconDataViewModel { Icon = "C:\\Files\\report.txt" };
+
+        var failed = provider.GetIconSource(icon, 1.0);
+        loader.LocateNextShellItem(systemImageListIndex: 42);
+        loader.FailNextShellOwner(new IOException("Extraction failed."));
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await failed);
+        Assert.IsTrue(SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)));
+
+        var retry = provider.GetIconSource(icon, 1.0);
+        Assert.AreEqual(1, loader.ShellLocationCount);
+        Assert.AreEqual(2, loader.ShellExtractionCount);
+
+        var source = CreateTestIconSource();
+        loader.CompleteNextShellOwner(source);
+        Assert.AreSame(source, await retry);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task ShellLocationAliasIsSharedAcrossSizeProviders()
+    {
+        var loader = new ControllableIconLoader();
+        var provider20 = new CachedIconSourceProvider(
+            loader,
+            new Size(20, 20),
+            glyphCacheSize: 16,
+            otherCacheSize: 16);
+        var provider64 = new CachedIconSourceProvider(
+            loader,
+            new Size(64, 64),
+            glyphCacheSize: 16,
+            otherCacheSize: 16);
+        var icon = new IconDataViewModel { Icon = "C:\\Files\\report.txt" };
+
+        var small = provider20.GetIconSource(icon, 1.0);
+        loader.LocateNextShellItem(systemImageListIndex: 42);
+        loader.CompleteNextShellOwner(CreateTestIconSource());
+        await small;
+
+        var large = provider64.GetIconSource(icon, 1.0);
+        Assert.AreEqual(1, loader.ShellLocationCount);
+        Assert.AreEqual(2, loader.ShellExtractionCount);
+        loader.CompleteNextShellOwner(CreateTestIconSource());
+        await large;
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task ShellLocationInvalidationSeparatesReusedImageListIndex()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var icon = new IconDataViewModel { Icon = "C:\\Files\\report.txt" };
+
+        var first = provider.GetIconSource(icon, 1.0);
+        loader.LocateNextShellItem(systemImageListIndex: 42);
+        var firstSource = CreateTestIconSource();
+        loader.CompleteNextShellOwner(firstSource);
+        Assert.AreSame(firstSource, await first);
+        Assert.IsTrue(
+            SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)));
+
+        loader.ShellIconLocations.Clear();
+
+        var refreshed = provider.GetIconSource(icon, 1.0);
+        loader.LocateNextShellItem(systemImageListIndex: 42);
+        Assert.AreEqual(2, loader.ShellExtractionCount);
+        var refreshedSource = CreateTestIconSource();
+        loader.CompleteNextShellOwner(refreshedSource);
+        Assert.AreSame(refreshedSource, await refreshed);
+        Assert.AreNotSame(firstSource, refreshedSource);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
     public async Task FailedLoadIsRemovedAndCanBeRetried()
     {
         var loader = new ControllableIconLoader();
@@ -334,6 +638,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
+    [Timeout(5_000)]
     public async Task UncachedProviderFaultsRejectedLoad()
     {
         var loader = new ControllableIconLoader { AcceptLoads = false };
@@ -346,6 +651,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
+    [Timeout(5_000)]
     public async Task UncachedProviderLoadsGlyphDirectlyWithoutQueueing()
     {
         var glyph = CreateTestIconSource();
@@ -364,6 +670,77 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
+    [Timeout(5_000)]
+    public async Task UncachedProviderRoutesLegacyPathsThroughShellLoading()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = new IconSourceProvider(loader, new Size(16, 16));
+
+        var load = provider.GetIconSource(
+            new IconDataViewModel { Icon = "C:\\Files\\report.txt" },
+            1.0);
+
+        Assert.AreEqual(0, loader.EnqueueCount);
+        Assert.AreEqual(1, loader.ShellEnqueueCount);
+        loader.LocateNextShellItem(systemImageListIndex: 42);
+        var source = CreateTestIconSource();
+        loader.CompleteNextShellOwner(source);
+
+        Assert.AreSame(source, await load);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task UncachedProviderLetsExplicitShellProtocolOverrideCompanionStream()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = new IconSourceProvider(loader, new Size(16, 16));
+        var load = provider.GetIconSource(
+            new IconDataViewModel
+            {
+                Icon = ShellItemIconProtocol.Create("C:\\Files\\report.txt"),
+                Data = new IconDataStreamReference { Unsafe = new TestStreamReference() },
+            },
+            1.0);
+
+        Assert.AreEqual(0, loader.EnqueueCount);
+        Assert.AreEqual(1, loader.ShellEnqueueCount);
+        loader.LocateNextShellItem(systemImageListIndex: 42);
+        var source = CreateTestIconSource();
+        loader.CompleteNextShellOwner(source);
+
+        Assert.AreSame(source, await load);
+    }
+
+    [TestMethod]
+    public void UncachedProviderClassifiesSharedLegacyLocationAliasAsHit()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = new IconSourceProvider(loader, new Size(16, 16));
+        var request = new ShellItemIconRequest("C:\\Files\\report.txt", jumbo: false);
+        var resolved = new LocatedShellIcon(
+            request,
+            ShellIconIdentity.FromSystemImageList(42, jumbo: false));
+        Assert.IsTrue(
+            loader.ShellIconLocations.TryAdd(
+                request,
+                resolved,
+                loader.ShellIconLocations.Generation,
+                out var cachedLocation));
+
+        Assert.IsTrue(provider.TryGetShellItemRequest(
+            request.ItemPath,
+            out var classifiedRequest,
+            out var locatedIcon,
+            out var locationCacheHit));
+        Assert.AreEqual(request, classifiedRequest);
+        Assert.IsNotNull(locatedIcon);
+        Assert.AreEqual(cachedLocation, locatedIcon.Value);
+        Assert.IsTrue(locationCacheHit);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
     public async Task UncachedProviderFallsBackWhenLoaderViolatesDirectGlyphContract()
     {
         var loader = new ControllableIconLoader { ReturnDirectGlyph = true };
@@ -435,8 +812,13 @@ public partial class CachedIconSourceProviderTests
     private sealed class ControllableIconLoader : IIconLoaderService
     {
         private readonly ConcurrentQueue<TaskCompletionSource<IconSource?>> _pending = new();
+        private readonly ConcurrentQueue<PendingShellLoad> _pendingShellLocations = new();
+        private readonly ConcurrentQueue<PendingShellLoad> _pendingShellOwners = new();
         private int _enqueueCount;
         private int _glyphAttemptCount;
+        private int _shellEnqueueCount;
+        private int _shellExtractionCount;
+        private int _shellLocationCount;
 
         public bool AcceptLoads { get; set; } = true;
 
@@ -448,7 +830,15 @@ public partial class CachedIconSourceProviderTests
 
         public int GlyphAttemptCount => Volatile.Read(ref _glyphAttemptCount);
 
+        public int ShellEnqueueCount => Volatile.Read(ref _shellEnqueueCount);
+
+        public int ShellExtractionCount => Volatile.Read(ref _shellExtractionCount);
+
+        public int ShellLocationCount => Volatile.Read(ref _shellLocationCount);
+
         public IconLoadDemand? LastDemand { get; private set; }
+
+        public ShellIconLocationCache ShellIconLocations { get; } = new();
 
         public bool TryLoadGlyph(
             string? iconString,
@@ -486,6 +876,44 @@ public partial class CachedIconSourceProviderTests
             return true;
         }
 
+        public bool TryEnqueueShellItemLoad(
+            ShellItemIconRequest request,
+            LocatedShellIcon? locatedIcon,
+            Size iconSize,
+            double scale,
+            TaskCompletionSource<IconSource?> tcs,
+            IconLoadPriority priority,
+            IconLoadMeasurement? diagnostics = null,
+            IconLoadDemand? demand = null,
+            IShellItemIconLoadCoordinator? coordinator = null,
+            ShellIconMeasurement shellDiagnostics = default)
+        {
+            _ = shellDiagnostics;
+            _ = iconSize;
+            _ = scale;
+            _ = priority;
+            _ = diagnostics;
+            Interlocked.Increment(ref _shellEnqueueCount);
+            LastDemand = demand;
+            if (!AcceptLoads)
+            {
+                return false;
+            }
+
+            var load = new PendingShellLoad(request, tcs, coordinator);
+            if (locatedIcon is null)
+            {
+                _pendingShellLocations.Enqueue(load);
+            }
+            else
+            {
+                Interlocked.Increment(ref _shellExtractionCount);
+                _pendingShellOwners.Enqueue(load);
+            }
+
+            return true;
+        }
+
         public void CompleteNext(IconSource? result)
         {
             Assert.IsTrue(_pending.TryDequeue(out var tcs), "No pending icon load was available.");
@@ -498,6 +926,93 @@ public partial class CachedIconSourceProviderTests
             tcs.SetException(exception);
         }
 
+        public void LocateNextShellItem(int systemImageListIndex)
+        {
+            Assert.IsTrue(
+                _pendingShellLocations.TryDequeue(out var load),
+                "No Shell item was waiting for identity resolution.");
+            Interlocked.Increment(ref _shellLocationCount);
+            var locatedIcon = new LocatedShellIcon(
+                load.Request,
+                ShellIconIdentity.FromSystemImageList(
+                    systemImageListIndex,
+                    load.Request.Jumbo));
+            Assert.IsTrue(
+                ShellIconLocations.TryAdd(
+                    load.Request,
+                    locatedIcon,
+                    ShellIconLocations.Generation,
+                    out var cachedLocation));
+            if (load.Coordinator?.TryJoinExistingLoad(cachedLocation, out var sharedTask) == true)
+            {
+                Forward(sharedTask, load.Completion);
+                return;
+            }
+
+            Interlocked.Increment(ref _shellExtractionCount);
+            _pendingShellOwners.Enqueue(load);
+        }
+
+        public void CompleteNextShellOwner(IconSource? result)
+        {
+            Assert.IsTrue(
+                _pendingShellOwners.TryDequeue(out var load),
+                "No canonical Shell icon load was available.");
+            load.Completion.SetResult(result);
+        }
+
+        public void FailNextShellOwner(Exception exception)
+        {
+            Assert.IsTrue(
+                _pendingShellOwners.TryDequeue(out var load),
+                "No canonical Shell icon load was available.");
+            load.Completion.SetException(exception);
+        }
+
+        private static void Forward(
+            Task<IconSource?> sharedTask,
+            TaskCompletionSource<IconSource?> completion)
+        {
+            _ = sharedTask.ContinueWith(
+                completed =>
+                {
+                    if (completed.IsCompletedSuccessfully)
+                    {
+                        completion.TrySetResult(completed.Result);
+                    }
+                    else if (completed.IsCanceled)
+                    {
+                        completion.TrySetCanceled();
+                    }
+                    else
+                    {
+                        completion.TrySetException(completed.Exception!.InnerExceptions);
+                    }
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+        }
+
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+
+        private sealed class PendingShellLoad
+        {
+            public PendingShellLoad(
+                ShellItemIconRequest request,
+                TaskCompletionSource<IconSource?> completion,
+                IShellItemIconLoadCoordinator? coordinator)
+            {
+                Request = request;
+                Completion = completion;
+                Coordinator = coordinator;
+            }
+
+            public ShellItemIconRequest Request { get; }
+
+            public TaskCompletionSource<IconSource?> Completion { get; }
+
+            public IShellItemIconLoadCoordinator? Coordinator { get; }
+        }
     }
 }

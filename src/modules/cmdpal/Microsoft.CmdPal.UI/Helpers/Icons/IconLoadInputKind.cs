@@ -17,4 +17,5 @@ internal enum IconLoadInputKind
     SvgInline,
     ThemedSvgFile,
     ThemedSvgInline,
+    ShellItemIcon,
 }

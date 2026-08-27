@@ -39,6 +39,28 @@ public class IconProtocolRegistryTests
         }
     }
 
+    [TestMethod]
+    public async Task BuiltInRegistryFindsMetadataOnlyShellItemIconProcessor()
+    {
+        var value = ShellItemIconProtocol.Create("C:\\Files\\report.txt");
+
+        var processor = IconProtocolRegistry.Find(value);
+
+        Assert.IsNotNull(processor);
+        Assert.AreSame(ShellItemIconProtocolProcessor.Instance, processor);
+        Assert.AreEqual(IconCachePartition.Other, processor.CachePartition);
+        Assert.AreEqual(IconLoadInputKind.ShellItemIcon, processor.ClassifyInput(value));
+        Assert.AreEqual(ElementTheme.Default, processor.GetCacheTheme(value, ElementTheme.Dark));
+        Assert.IsFalse(processor.TryPrepareSynchronously(
+            value,
+            20,
+            ElementTheme.Dark,
+            out var preparedIcon));
+        Assert.IsNull(preparedIcon);
+        using var processingResult = await processor.PrepareAsync(value, 20, ElementTheme.Dark);
+        Assert.AreEqual(IconProtocolProcessingResult.ResultKind.Empty, processingResult.Kind);
+    }
+
     [DataTestMethod]
     [DataRow("|Swatch|#FF0067C0|", "GeneratedSwatch", true)]
     [DataRow("|Initials|CP|#FF0067C0|circle|", "GeneratedInitials", false)]
@@ -72,6 +94,7 @@ public class IconProtocolRegistryTests
     }
 
     [TestMethod]
+    [Timeout(5_000)]
     public async Task InitialsPreparationRunsThroughAsyncProcessorPath()
     {
         const string Value = "|Initials|CP|#FF0067C0|circle|";

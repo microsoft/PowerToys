@@ -12,7 +12,6 @@ using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Indexer;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.Ext.Indexer;
 
@@ -47,7 +46,7 @@ public sealed partial class SearchEngine : IDisposable
         return BuildNotice(searchQuery);
     }
 
-    public IList<IListItem> FetchItems(int offset, int limit, uint queryCookie, out bool hasMore, out SearchNoticeInfo? notice, bool noIcons = false)
+    public IList<IListItem> FetchItems(int offset, int limit, uint queryCookie, out bool hasMore, out SearchNoticeInfo? notice)
     {
         hasMore = false;
         notice = null;
@@ -76,26 +75,6 @@ public sealed partial class SearchEngine : IDisposable
                 FileName = result.ItemDisplayName,
                 FullPath = result.LaunchUri,
             });
-
-            if (!noIcons)
-            {
-                IconInfo? icon = null;
-                try
-                {
-                    var stream = ThumbnailHelper.GetThumbnail(result.LaunchUri).Result;
-                    if (stream is not null)
-                    {
-                        var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
-                        icon = new IconInfo(data, data);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError("Failed to get the icon.", ex);
-                }
-
-                indexerListItem.Icon = icon;
-            }
 
             results.Add(indexerListItem);
         }

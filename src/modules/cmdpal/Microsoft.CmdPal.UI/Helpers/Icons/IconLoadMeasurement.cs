@@ -26,6 +26,7 @@ internal sealed class IconLoadMeasurement
     private int _queuePriority;
     private int _enqueueState;
     private int _started;
+    private int _workerReleased;
     private int _completed;
     private int _resultKind;
     private TaskCompletionSource<bool>? _enqueueWaiter;
@@ -95,6 +96,17 @@ internal sealed class IconLoadMeasurement
         var now = Stopwatch.GetTimestamp();
         Session.RecordWorkerStarted(Id, InputKind, (IconLoadPriority)_queuePriority, now - _enqueuedAt, workerCount);
         return true;
+    }
+
+    public void WorkerReleased()
+    {
+        if (Volatile.Read(ref _started) == 0
+            || Interlocked.Exchange(ref _workerReleased, 1) != 0)
+        {
+            return;
+        }
+
+        Session.RecordWorkerReleased(Id);
     }
 
     public long BeginBackgroundPreparation() => Stopwatch.GetTimestamp();

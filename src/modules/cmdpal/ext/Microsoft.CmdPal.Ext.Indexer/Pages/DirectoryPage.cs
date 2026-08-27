@@ -6,52 +6,28 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Storage.Streams;
 
 #nullable enable
 namespace Microsoft.CmdPal.Ext.Indexer;
 
-public sealed partial class DirectoryPage : ListPage, IDisposable
+public sealed partial class DirectoryPage : ListPage
 {
     private readonly string _path;
-    private readonly SupersedingAsyncValueGate<IconInfo?> _iconReloadGate;
 
     private List<IndexerListItem>? _directoryContents;
 
     public DirectoryPage(string path)
     {
         _path = path;
-        Icon = Icons.FileExplorerIcon;
+        Icon = string.IsNullOrEmpty(path)
+            ? Icons.FileExplorerIcon
+            : new IconInfo(ShellItemIconProtocol.Create(path));
         Name = Resources.Indexer_Command_Browse;
         Title = path;
-
-        _iconReloadGate = new(
-            async ct =>
-            {
-                var stream = await ThumbnailHelper.GetThumbnail(path);
-                return stream is not null ? IconInfo.FromStream(stream) : null;
-            },
-            icon =>
-            {
-                if (icon is not null)
-                {
-                    Icon = icon;
-                }
-            });
-
-        _ = _iconReloadGate.ExecuteAsync();
-    }
-
-    public void Dispose()
-    {
-        _iconReloadGate.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     public override IListItem[] GetItems()
@@ -102,28 +78,6 @@ public sealed partial class DirectoryPage : ListPage, IDisposable
             .Select(s => new IndexerItem() { FullPath = s, FileName = Path.GetFileName(s) })
             .Select(i => new IndexerListItem(i, IncludeBrowseCommand.AsDefault))
             .ToList();
-
-        _ = Task.Run(() =>
-        {
-            foreach (var item in _directoryContents)
-            {
-                IconInfo? icon = null;
-                try
-                {
-                    var stream = ThumbnailHelper.GetThumbnail(item.FilePath).Result;
-                    if (stream is not null)
-                    {
-                        var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
-                        icon = new IconInfo(data, data);
-                    }
-                }
-                catch
-                {
-                }
-
-                item.Icon = icon;
-            }
-        });
 
         return _directoryContents.ToArray();
     }

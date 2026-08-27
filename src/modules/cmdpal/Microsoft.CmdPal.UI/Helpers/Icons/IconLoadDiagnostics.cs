@@ -139,6 +139,34 @@ internal static class IconLoadDiagnostics
             reason);
     }
 
+    internal static ShellIconMeasurement BeginShellIconRequest(ShellItemIconRequest request)
+    {
+        var session = GetCurrentSession();
+        if (session is null)
+        {
+            return default;
+        }
+
+        var requestKind = Microsoft.CommandPalette.Extensions.Toolkit.ShellItemIconProtocol.IsProtocol(request.CacheIdentity)
+            ? ShellIconRequestKind.Protocol
+            : request.CacheIdentity.StartsWith("file:", StringComparison.OrdinalIgnoreCase)
+                ? ShellIconRequestKind.FileUri
+                : ShellIconRequestKind.LegacyPath;
+        return new ShellIconMeasurement(session, requestKind);
+    }
+
+    internal static void RecordShellAssociationChangedNotification() =>
+        GetCurrentSession()?.RecordShellIconStep(
+            ShellIconDiagnosticStep.AssociationChangedNotification,
+            0,
+            0);
+
+    internal static void RecordShellIconCacheInvalidation(ShellIconCacheInvalidationReason reason) =>
+        GetCurrentSession()?.RecordShellIconStep(
+            ShellIconDiagnosticStep.LocationCacheInvalidated,
+            (int)reason,
+            0);
+
     public static long BeginElementUpdate()
     {
         return GetCurrentSession() is null ? 0 : Stopwatch.GetTimestamp();
@@ -282,6 +310,11 @@ internal static class IconLoadDiagnostics
                 return protocolProcessor.ClassifyInput(iconString);
             }
 
+            if (ShellItemIconRequestClassifier.TryClassify(iconString, out _))
+            {
+                return IconLoadInputKind.ShellItemIcon;
+            }
+
             var path = iconString.AsSpan();
             var comma = path.IndexOf(',');
             if (comma >= 0)
@@ -289,9 +322,9 @@ internal static class IconLoadDiagnostics
                 path = path[..comma];
             }
 
-            if (path.EndsWith(".exe", StringComparison.Ordinal)
-                || path.EndsWith(".dll", StringComparison.Ordinal)
-                || path.EndsWith(".lnk", StringComparison.Ordinal))
+            if (path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+                || path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                || path.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase))
             {
                 return IconLoadInputKind.ShellBinary;
             }
