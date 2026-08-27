@@ -253,17 +253,6 @@ public class JSAdapterProxyTests
         Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[4].Details));
     }
 
-    private static int GetDetailsSize(IDetails? details)
-    {
-        Assert.IsNotNull(details);
-        var provider = details as IExtendedAttributesProvider;
-        Assert.IsNotNull(provider, "Details should expose extended attributes for its size.");
-        var properties = provider!.GetProperties();
-        Assert.IsNotNull(properties);
-        Assert.IsTrue(properties!.TryGetValue("Size", out var size));
-        return (int)size!;
-    }
-
     [TestMethod]
     public void ListPage_DetailsCommandInvokeSendsCommandInvokeWithId()
     {
@@ -639,6 +628,17 @@ public class JSAdapterProxyTests
         fake.OnResult("command/invoke", resultJson);
         var result = invokable.Invoke(null);
         Assert.AreEqual(expected, result.Kind);
+    }
+
+    private static int GetDetailsSize(IDetails? details)
+    {
+        Assert.IsNotNull(details);
+        var provider = details as IExtendedAttributesProvider;
+        Assert.IsNotNull(provider, "Details should expose extended attributes for its size.");
+        var properties = provider!.GetProperties();
+        Assert.IsNotNull(properties);
+        Assert.IsTrue(properties!.TryGetValue("Size", out var size));
+        return (int)size!;
     }
 
     private static JSCommandProviderProxy CreateProvider(JSFakeExtension fake) =>
