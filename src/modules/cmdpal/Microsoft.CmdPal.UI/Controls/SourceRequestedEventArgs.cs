@@ -12,9 +12,10 @@ namespace Microsoft.CmdPal.UI.Controls;
 /// <summary>
 /// See <see cref="IconBox.SourceRequested"/> event.
 /// </summary>
-public class SourceRequestedEventArgs(object? key, ElementTheme requestedTheme, double scale = 1.0) : DeferredEventArgs, IIconRequestDemand
+public class SourceRequestedEventArgs(object? key, ElementTheme requestedTheme, double scale = 1.0) : DeferredEventArgs, IIconRequestDemand, IIconRequestProgress
 {
     private IconRequestDemandState _demandState;
+    private Func<IconSource, Action<bool>?, bool>? _intermediateSourceReporter;
 
     public object? Key { get; private set; } = key;
 
@@ -39,7 +40,16 @@ public class SourceRequestedEventArgs(object? key, ElementTheme requestedTheme, 
 
     internal IconRequestMeasurement Diagnostics { get; set; }
 
+    internal void SetIntermediateSourceReporter(Func<IconSource, Action<bool>?, bool> reporter) =>
+        _intermediateSourceReporter = reporter;
+
     void IIconRequestDemand.Attach(IconLoadDemand loadDemand) => _demandState.Attach(loadDemand);
 
     void IIconRequestDemand.Release() => _demandState.Release();
+
+    bool IIconRequestProgress.TryReportIntermediate(IconSource source, Action<bool>? presentationCompleted)
+    {
+        FallbackSource = source;
+        return Volatile.Read(ref _intermediateSourceReporter)?.Invoke(source, presentationCompleted) == true;
+    }
 }

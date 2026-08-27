@@ -103,6 +103,20 @@ public class ShellItemIconLocatorTests
     }
 
     [TestMethod]
+    public void FileTypeRequestUsesAReusableRawAliasWithoutOpeningTheItem()
+    {
+        var exactRequest = new ShellItemIconRequest(
+            $"C:\\CmdPalIdentityTest\\{Guid.NewGuid():N}\\missing.txt",
+            jumbo: false);
+        Assert.IsTrue(ShellItemIconTypeRequest.TryCreate(exactRequest, out var typeRequest));
+
+        Assert.IsTrue(ShellItemIconLocator.Instance.TryLocate(typeRequest, out var located));
+        Assert.AreEqual(ShellIconIdentityKind.SystemImageList, located.Identity.Kind);
+        Assert.IsTrue(located.CacheRawRequestAlias);
+        Assert.AreEqual(ShellItemIconLocationMode.FileType, located.Request.LocationMode);
+    }
+
+    [TestMethod]
     public void ImageThumbnailsRemainPathSpecific()
     {
         var uniqueSegment = Guid.NewGuid().ToString("N");

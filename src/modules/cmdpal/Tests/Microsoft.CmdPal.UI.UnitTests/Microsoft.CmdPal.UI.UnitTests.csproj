@@ -64,6 +64,8 @@
     <Compile Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\ShellThreadErrorModeScope.cs" Link="Helpers\Icons\ShellThreadErrorModeScope.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellItemIconRequest.cs" Link="Helpers\Icons\ShellItemIconRequest.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellItemIconRequestClassifier.cs" Link="Helpers\Icons\ShellItemIconRequestClassifier.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellItemIconLocationMode.cs" Link="Helpers\Icons\ShellItemIconLocationMode.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellItemIconTypeRequest.cs" Link="Helpers\Icons\ShellItemIconTypeRequest.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellSystemImageListIconExtractor.cs" Link="Helpers\Icons\ShellSystemImageListIconExtractor.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\LocatedShellIcon.cs" Link="Helpers\Icons\LocatedShellIcon.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\SvgFileTextReader.cs" Link="Helpers\Icons\SvgFileTextReader.cs" />
@@ -99,6 +101,7 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconLoaderService.cs" Link="Helpers\Icons\IIconLoaderService.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconProtocolProcessor.cs" Link="Helpers\Icons\IIconProtocolProcessor.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconRequestDemand.cs" Link="Helpers\Icons\IIconRequestDemand.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconRequestProgress.cs" Link="Helpers\Icons\IIconRequestProgress.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconSourceProvider.cs" Link="Helpers\Icons\IIconSourceProvider.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IShellItemIconLoadCoordinator.cs" Link="Helpers\Icons\IShellItemIconLoadCoordinator.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IShellItemIconLocator.cs" Link="Helpers\Icons\IShellItemIconLocator.cs" />

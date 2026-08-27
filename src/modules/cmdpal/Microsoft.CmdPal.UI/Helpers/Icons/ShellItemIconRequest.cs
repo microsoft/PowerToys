@@ -7,10 +7,11 @@ namespace Microsoft.CmdPal.UI.Helpers;
 internal readonly record struct ShellItemIconRequest(
     string CacheIdentity,
     string ItemPath,
-    bool Jumbo)
+    bool Jumbo,
+    ShellItemIconLocationMode LocationMode = ShellItemIconLocationMode.ExactItem)
 {
     public ShellItemIconRequest(string itemPath, bool jumbo)
-        : this(itemPath, itemPath, jumbo)
+        : this(itemPath, itemPath, jumbo, ShellItemIconLocationMode.ExactItem)
     {
     }
 }

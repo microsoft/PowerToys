@@ -5,6 +5,7 @@
 using CommunityToolkit.WinUI.Deferred;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -21,6 +22,7 @@ public partial class IconBox : ContentControl
     private const double DefaultIconFontSize = 16.0;
     private static long _nextDiagnosticId;
     private readonly IconPresentationState<IconSource> _presentation = new();
+    private readonly DispatcherQueue _dispatcherQueue;
 
     private double _lastScale;
     private ElementTheme _lastTheme;
@@ -29,6 +31,9 @@ public partial class IconBox : ContentControl
     private long _requestVersion;
     private IconRequestMeasurement _activeRequestDiagnostics;
     private IIconRequestDemand? _activeRequestDemand;
+    private PendingIntermediatePresentation? _pendingIntermediatePresentation;
+    private int _intermediatePresentationScheduled;
+    private int _intermediatePresentationDisabled;
 
     // ImageIconSource does not render through IconSourceElement. Reassigning Source on
     // one realized Image left recycled rows intermittently blank in testing. Keep a
@@ -145,6 +150,7 @@ public partial class IconBox : ContentControl
 
     public IconBox()
     {
+        _dispatcherQueue = DispatcherQueue;
         TabFocusNavigation = KeyboardNavigationMode.Once;
         IsTabStop = false;
         HorizontalContentAlignment = HorizontalAlignment.Center;
@@ -341,7 +347,11 @@ public partial class IconBox : ContentControl
         _activeRequestDiagnostics = default;
         _activeRequestDemand?.Release();
         _activeRequestDemand = null;
-        return ++_requestVersion;
+        var requestVersion = ++_requestVersion;
+        CompleteIntermediatePresentation(
+            Interlocked.Exchange(ref _pendingIntermediatePresentation, null),
+            applied: false);
+        return requestVersion;
     }
 
     private void TrackActiveRequest(
@@ -695,10 +705,18 @@ public partial class IconBox : ContentControl
             diagnostics = IconLoadDiagnostics.IsRecording
                 ? IconLoadDiagnostics.BeginRequest(reason, scale, iconBox.GetDiagnosticOrigin())
                 : default;
-            eventArgs = new SourceRequestedEventArgs(sourceKey, iconBox._lastTheme, scale)
+            var requestArgs = new SourceRequestedEventArgs(sourceKey, iconBox._lastTheme, scale)
             {
                 Diagnostics = diagnostics,
             };
+            eventArgs = requestArgs;
+            requestArgs.SetIntermediateSourceReporter(
+                (source, presentationCompleted) => iconBox.TryQueueRequestIntermediate(
+                    requestVersion,
+                    sourceKey,
+                    requestArgs,
+                    source,
+                    presentationCompleted));
             iconBox.TrackActiveRequest(requestVersion, diagnostics, eventArgs);
             var invocation = sourceRequested.InvokeAsync(iconBox, eventArgs);
             if (!invocation.IsCompleted)
@@ -772,6 +790,191 @@ public partial class IconBox : ContentControl
 
         _presentation.SetRequestFallback(fallbackSource);
         UpdatePresentedSource();
+    }
+
+    private bool TryQueueRequestIntermediate(
+        long requestVersion,
+        object sourceKey,
+        IIconRequestDemand demand,
+        IconSource source,
+        Action<bool>? presentationCompleted)
+    {
+        var presentation = new PendingIntermediatePresentation(
+            requestVersion,
+            sourceKey,
+            demand,
+            source,
+            presentationCompleted);
+
+        if (_dispatcherQueue.HasThreadAccess)
+        {
+            var applied = TryApplyIntermediatePresentation(presentation);
+            CompleteIntermediatePresentation(presentation, applied);
+            return applied;
+        }
+
+        if (Volatile.Read(ref _intermediatePresentationDisabled) != 0)
+        {
+            CompleteIntermediatePresentation(presentation, applied: false);
+            return false;
+        }
+
+        var replaced = Interlocked.Exchange(ref _pendingIntermediatePresentation, presentation);
+        CompleteIntermediatePresentation(replaced, applied: false);
+
+        // Dispatcher shutdown is permanent for this control. Recheck after publishing so a
+        // producer that raced a failed enqueue cannot strand an unscheduled presentation.
+        if (Volatile.Read(ref _intermediatePresentationDisabled) != 0)
+        {
+            RejectIntermediatePresentation(presentation);
+            return false;
+        }
+
+        if (TryScheduleIntermediatePresentation())
+        {
+            return true;
+        }
+
+        RejectIntermediatePresentation(presentation);
+        return false;
+    }
+
+    private bool TryScheduleIntermediatePresentation()
+    {
+        if (Volatile.Read(ref _intermediatePresentationDisabled) != 0)
+        {
+            return false;
+        }
+
+        // Producers only replace the latest immutable value. One dispatcher callback owns
+        // draining that slot, so a fast scroll cannot enqueue one STA callback per row update.
+        if (Interlocked.CompareExchange(ref _intermediatePresentationScheduled, 1, 0) != 0)
+        {
+            return true;
+        }
+
+        try
+        {
+            if (_dispatcherQueue.TryEnqueue(ProcessPendingIntermediatePresentation))
+            {
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            // Treat a teardown exception like a rejected enqueue. This can execute on the
+            // dispatcher itself when a producer races the end of the previous callback.
+            // This can run on a background producer. Do not inspect the IconBox or its
+            // visual tree while reporting the failure.
+            Logger.LogError("Failed to queue an intermediate icon", ex);
+        }
+
+        // A rejected or failed enqueue means this dispatcher can no longer accept optional
+        // work. Disable this path before draining so racing producers reject themselves
+        // instead of publishing work that can never run.
+        Volatile.Write(ref _intermediatePresentationDisabled, 1);
+        CompleteIntermediatePresentation(
+            Interlocked.Exchange(ref _pendingIntermediatePresentation, null),
+            applied: false);
+        Volatile.Write(ref _intermediatePresentationScheduled, 0);
+        return false;
+    }
+
+    private void ProcessPendingIntermediatePresentation()
+    {
+        try
+        {
+            var presentation = Interlocked.Exchange(ref _pendingIntermediatePresentation, null);
+            if (presentation is not null)
+            {
+                var applied = TryApplyIntermediatePresentation(presentation);
+                CompleteIntermediatePresentation(presentation, applied);
+            }
+        }
+        catch (Exception ex)
+        {
+            // This callback crosses a WinUI dispatcher boundary. No managed exception may
+            // escape it, particularly in the Native AOT build.
+            Logger.LogError($"Failed to present an intermediate icon ({GetDiagnosticDescription()})", ex);
+        }
+        finally
+        {
+            Volatile.Write(ref _intermediatePresentationScheduled, 0);
+            if (Volatile.Read(ref _pendingIntermediatePresentation) is not null)
+            {
+                _ = TryScheduleIntermediatePresentation();
+            }
+        }
+    }
+
+    private bool TryApplyIntermediatePresentation(PendingIntermediatePresentation presentation)
+    {
+        try
+        {
+            if (presentation.RequestVersion != _requestVersion
+                || !ReferenceEquals(presentation.SourceKey, SourceKey)
+                || !ReferenceEquals(presentation.Demand, _activeRequestDemand))
+            {
+                return false;
+            }
+
+            _presentation.SetRequestFallback(presentation.Source);
+            UpdatePresentedSource();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to apply an intermediate icon ({GetDiagnosticDescription()})", ex);
+            return false;
+        }
+    }
+
+    private void RejectIntermediatePresentation(PendingIntermediatePresentation presentation)
+    {
+        if (ReferenceEquals(
+                Interlocked.CompareExchange(ref _pendingIntermediatePresentation, null, presentation),
+                presentation))
+        {
+            CompleteIntermediatePresentation(presentation, applied: false);
+        }
+    }
+
+    private static void CompleteIntermediatePresentation(
+        PendingIntermediatePresentation? presentation,
+        bool applied)
+    {
+        if (presentation?.PresentationCompleted is not { } presentationCompleted)
+        {
+            return;
+        }
+
+        try
+        {
+            presentationCompleted(applied);
+        }
+        catch (Exception ex)
+        {
+            // Diagnostics are optional and must not affect presentation or escape a dispatcher callback.
+            Logger.LogError("Failed to record an intermediate icon presentation", ex);
+        }
+    }
+
+    private sealed class PendingIntermediatePresentation(
+        long requestVersion,
+        object sourceKey,
+        IIconRequestDemand demand,
+        IconSource source,
+        Action<bool>? presentationCompleted)
+    {
+        public long RequestVersion { get; } = requestVersion;
+
+        public object SourceKey { get; } = sourceKey;
+
+        public IIconRequestDemand Demand { get; } = demand;
+
+        public IconSource Source { get; } = source;
+
+        public Action<bool>? PresentationCompleted { get; } = presentationCompleted;
     }
 
     private void UpdatePresentedSource()
