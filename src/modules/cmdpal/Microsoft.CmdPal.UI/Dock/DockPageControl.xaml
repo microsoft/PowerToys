@@ -14,7 +14,7 @@
 
     <Grid
         Width="500"
-        Height="560"
+        MaxHeight="560"
         Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
