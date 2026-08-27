@@ -2,20 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
-using DrawingIcon = System.Drawing.Icon;
-using DrawingImageLockMode = System.Drawing.Imaging.ImageLockMode;
-using DrawingPixelFormat = System.Drawing.Imaging.PixelFormat;
-using DrawingRectangle = System.Drawing.Rectangle;
 
 namespace Microsoft.CmdPal.UI.Helpers;
 
@@ -207,7 +201,7 @@ internal static partial class IconPathConverter
         }
     }
 
-    private static async Task<IconSource> CreateBinaryIconSourceAsync(SoftwareBitmap softwareBitmap)
+    internal static async Task<IconSource> CreateBinaryIconSourceAsync(SoftwareBitmap softwareBitmap)
     {
         var ownershipTransferred = false;
         try
@@ -254,85 +248,20 @@ internal static partial class IconPathConverter
 
     private static SoftwareBitmap? ExtractBinaryIcon(BinaryIconReference iconReference, int targetSize)
     {
-        nint iconHandle = 0;
         try
         {
             _ = NativeMethods.SHDefExtractIcon(
                 iconReference.Path,
                 iconReference.Index,
                 0,
-                out iconHandle,
+                out var iconHandle,
                 0,
                 (uint)targetSize);
-            if (iconHandle == 0)
-            {
-                return null;
-            }
-
-            using var icon = DrawingIcon.FromHandle(iconHandle);
-            using var sourceBitmap = icon.ToBitmap();
-            using var bitmap = sourceBitmap.Clone(
-                new DrawingRectangle(0, 0, sourceBitmap.Width, sourceBitmap.Height),
-                DrawingPixelFormat.Format32bppPArgb);
-
-            var rectangle = new DrawingRectangle(0, 0, bitmap.Width, bitmap.Height);
-            var bitmapData = bitmap.LockBits(rectangle, DrawingImageLockMode.ReadOnly, DrawingPixelFormat.Format32bppPArgb);
-            try
-            {
-                var bytesPerRow = checked(bitmap.Width * 4);
-                var pixelBufferLength = checked(bytesPerRow * bitmap.Height);
-                var pixels = ArrayPool<byte>.Shared.Rent(pixelBufferLength);
-                try
-                {
-                    if (bitmapData.Stride == bytesPerRow)
-                    {
-                        Marshal.Copy(bitmapData.Scan0, pixels, 0, pixelBufferLength);
-                    }
-                    else
-                    {
-                        for (var row = 0; row < bitmap.Height; row++)
-                        {
-                            var source = nint.Add(bitmapData.Scan0, row * bitmapData.Stride);
-                            Marshal.Copy(source, pixels, row * bytesPerRow, bytesPerRow);
-                        }
-                    }
-
-                    var softwareBitmap = new SoftwareBitmap(
-                        BitmapPixelFormat.Bgra8,
-                        bitmap.Width,
-                        bitmap.Height,
-                        BitmapAlphaMode.Premultiplied);
-                    try
-                    {
-                        softwareBitmap.CopyFromBuffer(pixels.AsBuffer(0, pixelBufferLength));
-                        return softwareBitmap;
-                    }
-                    catch
-                    {
-                        softwareBitmap.Dispose();
-                        throw;
-                    }
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(pixels);
-                }
-            }
-            finally
-            {
-                bitmap.UnlockBits(bitmapData);
-            }
+            return HIconSoftwareBitmapConverter.ConvertAndDestroy(iconHandle);
         }
         catch
         {
             return null;
-        }
-        finally
-        {
-            if (iconHandle != 0)
-            {
-                _ = NativeMethods.DestroyIcon(iconHandle);
-            }
         }
     }
 
@@ -418,9 +347,5 @@ internal static partial class IconPathConverter
             out nint largeIcon,
             nint smallIcon,
             uint iconSize);
-
-        [LibraryImport("user32.dll")]
-        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-        internal static partial int DestroyIcon(nint icon);
     }
 }
