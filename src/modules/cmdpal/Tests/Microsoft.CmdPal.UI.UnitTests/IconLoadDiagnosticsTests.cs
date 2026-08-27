@@ -533,6 +533,10 @@ public class IconLoadDiagnosticsTests
             sourceWidth: 32,
             sourceHeight: 32,
             hIconConversionTicks: Stopwatch.Frequency / 1_000);
+        var typeFallbackStartedAt = first.BeginTypeFallback();
+        first.TypeFallbackCompleted(typeFallbackStartedAt, hasContent: true, dispatchAccepted: true);
+        first.IntermediatePresentationCompleted(typeFallbackStartedAt, applied: true);
+        first.ExactRefinementCompleted(sameSource: true);
         IconLoadDiagnostics.RecordShellAssociationChangedNotification();
         IconLoadDiagnostics.RecordShellIconCacheInvalidation(ShellIconCacheInvalidationReason.AssociationChanged);
         IconLoadDiagnostics.RecordShellIconCacheInvalidation(ShellIconCacheInvalidationReason.ShellRestarted);
@@ -562,6 +566,24 @@ public class IconLoadDiagnosticsTests
             $"      AssociationChanged: 1{Environment.NewLine}" +
             "      ShellRestarted: 1";
         StringAssert.Contains(report.Text, invalidationBlock);
+        var progressiveBlock =
+            $"  Progressive type fallback{Environment.NewLine}" +
+            $"    Succeeded: 1{Environment.NewLine}" +
+            $"    Empty: 0{Environment.NewLine}" +
+            "    Failed: 0";
+        StringAssert.Contains(report.Text, progressiveBlock);
+        StringAssert.Contains(report.Text, "    Request to type fallback: count=1");
+        var progressiveOutcomeBlock =
+            $"    Intermediate dispatches accepted: 1{Environment.NewLine}" +
+            $"    Intermediate dispatches rejected: 0{Environment.NewLine}" +
+            $"    Intermediate UI updates applied: 1{Environment.NewLine}" +
+            $"    Intermediate UI updates skipped: 0{Environment.NewLine}" +
+            $"    Request to applied intermediate: count=1";
+        StringAssert.Contains(report.Text, progressiveOutcomeBlock);
+        var refinementBlock =
+            $"    Exact refinement outcomes{Environment.NewLine}" +
+            "      Same source: 1";
+        StringAssert.Contains(report.Text, refinementBlock);
         StringAssert.Contains(report.Text, $"  Location aliases{Environment.NewLine}    Cache hits: 1{Environment.NewLine}    Cache misses: 1");
         StringAssert.Contains(report.Text, "    Identity resolutions: 1");
         StringAssert.Contains(report.Text, $"    Resolved identity kinds{Environment.NewLine}      SystemImageList: 1");
