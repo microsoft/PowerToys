@@ -108,7 +108,7 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
         {
             await startTask.WaitAsync(ExtensionStartTimeout, ct).ConfigureAwait(false);
             Logger.LogInfo($"Started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms");
-            return ExtensionStartResult.Started(extension, new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache));
+            return ExtensionStartResult.Started(extension, CommandProviderWrapper.CreateForWinRtExtension(extension, _taskScheduler, _commandProviderCache));
         }
         catch (TimeoutException)
         {
@@ -137,7 +137,7 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
         {
             await startTask.WaitAsync(BackgroundStartTimeout, ct).ConfigureAwait(false);
 
-            var wrapper = new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
+            var wrapper = CommandProviderWrapper.CreateForWinRtExtension(extension, _taskScheduler, _commandProviderCache);
             Logger.LogInfo($"Late-started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms");
 
             OnProviderAdded?.Invoke(this, [wrapper]);
@@ -244,7 +244,7 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
         {
             try
             {
-                removedProviders.Add(new CommandProviderWrapper(ext, _taskScheduler, _commandProviderCache));
+                removedProviders.Add(CommandProviderWrapper.CreateForWinRtExtension(ext, _taskScheduler, _commandProviderCache));
             }
             catch
             {

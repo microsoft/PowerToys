@@ -5,10 +5,10 @@
 using System;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.JsonRpc.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
+namespace Microsoft.CmdPal.JsonRpc.UnitTests;
 
 /// <summary>
 /// Verifies that host notifications an extension emits while it activates, before the
@@ -20,7 +20,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 public class JSCommandProviderProxyStartupNotificationTests
 {
     private static JSCommandProviderProxy CreateProvider(JSFakeExtension fake) =>
-        new(fake.Connection, new JSExtensionManifest { Name = "startup.ext", DisplayName = "Startup Extension" });
+        new(fake.Connection, "startup.ext", "Startup Extension");
 
     [TestMethod]
     public async Task StartupStatus_EmittedBeforeHostAttaches_IsDeliveredAfterAttach()
@@ -34,7 +34,7 @@ public class JSCommandProviderProxyStartupNotificationTests
             new JsonObject
             {
                 ["statusId"] = "startup-1",
-                ["message"] = new JsonObject { ["Message"] = "Starting", ["State"] = 0 },
+                ["message"] = new JsonObject { ["message"] = "Starting", ["state"] = 0 },
             });
 
         var host = new RecordingExtensionHost();
@@ -86,6 +86,29 @@ public class JSCommandProviderProxyStartupNotificationTests
         Assert.AreEqual("first", host.Logs[0].Message);
         Assert.AreEqual("second", host.Logs[1].Message);
 
+        provider.Dispose();
+    }
+
+    [TestMethod]
+    public async Task BufferedStatus_IsDroppedWhenConnectionDisconnectsBeforeHostAttaches()
+    {
+        var fake = new JSFakeExtension();
+        var provider = CreateProvider(fake);
+
+        await fake.PushNotificationAsync(
+            "host/showStatus",
+            new JsonObject
+            {
+                ["statusId"] = "startup-1",
+                ["message"] = new JsonObject { ["message"] = "Starting", ["state"] = 0 },
+            });
+
+        fake.Dispose();
+
+        var host = new RecordingExtensionHost();
+        provider.InitializeWithHost(host);
+
+        Assert.AreEqual(0, host.Shown.Count);
         provider.Dispose();
     }
 }

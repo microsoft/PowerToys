@@ -96,6 +96,28 @@ public class HotReloadDebouncerTests
         Assert.AreEqual(0, Volatile.Read(ref count));
     }
 
+    [TestMethod]
+    public void CancelThenNotify_SameKey_OnlyInvokesReplacementCallback()
+    {
+        var fired = new CountdownEvent(1);
+        var count = 0;
+        using var debouncer = new HotReloadDebouncer(
+            _ =>
+            {
+                Interlocked.Increment(ref count);
+                fired.Signal();
+            },
+            TimeSpan.FromMilliseconds(100));
+
+        debouncer.Notify(@"C:\ext", @"C:\ext\old.js");
+        debouncer.Cancel(@"C:\ext");
+        debouncer.Notify(@"C:\ext", @"C:\ext\new.js");
+
+        Assert.IsTrue(fired.Wait(TimeSpan.FromSeconds(2)), "The replacement callback should run.");
+        Thread.Sleep(200);
+        Assert.AreEqual(1, Volatile.Read(ref count));
+    }
+
     // r3-p4-09: a debounce pending when the service stops between load generations must
     // not fire against the next generation. CancelAll advances the generation and cancels
     // every pending timer, so a callback armed before the stop is dropped.

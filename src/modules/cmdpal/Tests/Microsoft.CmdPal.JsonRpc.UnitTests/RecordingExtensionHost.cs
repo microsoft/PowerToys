@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Windows.Foundation;
 
-namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
+namespace Microsoft.CmdPal.JsonRpc.UnitTests;
 
 /// <summary>
 /// An <see cref="IExtensionHost"/> that records every status and log call in arrival

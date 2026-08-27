@@ -15,9 +15,14 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 /// watchers make, extracted so they can be tested without spinning up a real
 /// FileSystemWatcher or a Node process:
 /// <list type="bullet">
-///   <item>Churn under node_modules/.git subtrees must not trigger reloads (p4-04).</item>
+///   <item>Churn under node_modules must not trigger reloads (p4-04); other directories
+///   (for example .git) are kept out of scope by the manifest-driven watch root instead
+///   of a hardcoded ignore list.</item>
 ///   <item>Rename/delete-derived source paths still route to a reload (p4-05).</item>
 ///   <item>A manifest edit is detectable so an explicit refresh reloads it (p4-06).</item>
+///   <item>A per-extension source watcher's watch root is resolved from the manifest
+///   (p5-01), and a watch root that changes while the watcher is live is recognized as
+///   needing repair rather than silently continuing to watch a stale root (p5-02).</item>
 /// </list>
 /// </summary>
 [TestClass]
@@ -47,10 +52,14 @@ public class JsonRpcExtensionServiceWatcherRoutingTests
     }
 
     [TestMethod]
-    public void HasIgnoredDirectorySegment_GitFolder_IsTrue()
+    public void HasIgnoredDirectorySegment_GitFolder_IsFalse()
     {
+        // Unlike node_modules, .git is not a host-guessed name on the ignore list: the
+        // per-extension source watcher's scope is manifest-driven (ResolveWatchRoot), so a
+        // repository's VCS metadata is kept out of scope by not being watched in the first
+        // place rather than by the host maintaining a blocklist of directory names.
         var path = Path3(@"C:\ext\my-extension", ".git", "index");
-        Assert.IsTrue(JsonRpcExtensionService.HasIgnoredDirectorySegment(path));
+        Assert.IsFalse(JsonRpcExtensionService.HasIgnoredDirectorySegment(path));
     }
 
     [TestMethod]
@@ -96,6 +105,17 @@ public class JsonRpcExtensionServiceWatcherRoutingTests
     }
 
     [TestMethod]
+    public void ShouldReloadForSourceChange_UnderGit_IsTrueWhenSourceExtension()
+    {
+        // .git is no longer a host-guessed ignore segment. A .js file that happens to sit
+        // under .git (for example a hook or a vendored dependency) is not specially
+        // exempted; keeping it out of the watch is now the manifest's job (a narrower
+        // cmdpal.watchPath or entry-point-directory default), not a hardcoded directory name.
+        var path = Path3(@"C:\ext\my-extension", ".git", "hook.js");
+        Assert.IsTrue(JsonRpcExtensionService.ShouldReloadForSourceChange(path));
+    }
+
+    [TestMethod]
     public void ShouldReloadForSourceChange_NonSourceFile_IsFalse()
     {
         Assert.IsFalse(JsonRpcExtensionService.ShouldReloadForSourceChange(Path.Combine(@"C:\ext\my-extension", "README.md")));
@@ -136,6 +156,14 @@ public class JsonRpcExtensionServiceWatcherRoutingTests
     {
         var loaded = SampleManifest();
         var current = loaded with { EntryPointPath = @"C:\ext\my-extension\dist\index.js" };
+        Assert.IsTrue(JsonRpcExtensionService.ManifestChanged(loaded, current));
+    }
+
+    [TestMethod]
+    public void ManifestChanged_WatchDirectoryEdited_IsTrue()
+    {
+        var loaded = SampleManifest();
+        var current = loaded with { WatchDirectory = @"C:\ext\my-extension\src" };
         Assert.IsTrue(JsonRpcExtensionService.ManifestChanged(loaded, current));
     }
 
@@ -217,6 +245,140 @@ public class JsonRpcExtensionServiceWatcherRoutingTests
     {
         Assert.IsFalse(JsonRpcExtensionService.IsTopLevelExtensionChange(string.Empty, @"C:\root\ext"));
         Assert.IsFalse(JsonRpcExtensionService.IsTopLevelExtensionChange(@"C:\root", string.Empty));
+    }
+
+    [TestMethod]
+    public void ShouldRouteDirectoryRemoval_TopLevelDirectoryOrManifest_IsTrue()
+    {
+        Assert.IsTrue(JsonRpcExtensionService.ShouldRouteDirectoryRemoval(@"C:\root", @"C:\root\my-extension"));
+        Assert.IsTrue(JsonRpcExtensionService.ShouldRouteDirectoryRemoval(
+            @"C:\root", @"C:\root\my-extension\package.json"));
+    }
+
+    [TestMethod]
+    public void ShouldRouteDirectoryRemoval_NestedPath_IsFalse()
+    {
+        Assert.IsFalse(JsonRpcExtensionService.ShouldRouteDirectoryRemoval(
+            @"C:\root", @"C:\root\my-extension\dist\generated.js"));
+        Assert.IsFalse(JsonRpcExtensionService.ShouldRouteDirectoryRemoval(
+            @"C:\root", @"C:\root\my-extension\src"));
+    }
+
+    [TestMethod]
+    public void ResolveWatchRoot_NoWatchDirectory_DefaultsToEntryPointDirectory()
+    {
+        // With no cmdpal.watchPath, the watch root narrows to the entry point's own
+        // directory instead of the whole extension directory, so the host is not guessing
+        // at unrelated subfolders (VCS metadata, docs, and so on) to stay out of.
+        var manifest = SampleManifest();
+        var root = JsonRpcExtensionService.ResolveWatchRoot(@"C:\ext\my-extension", manifest);
+        Assert.AreEqual(@"C:\ext\my-extension", root);
+    }
+
+    [TestMethod]
+    public void ResolveWatchRoot_NoWatchDirectory_NarrowsToEntryPointSubdirectory()
+    {
+        // An entry point that lives in a subdirectory (for example a bundler's dist/
+        // output) narrows the default watch root to that subdirectory rather than the
+        // whole package.
+        var manifest = SampleManifest() with { EntryPointPath = @"C:\ext\my-extension\dist\index.js" };
+        var root = JsonRpcExtensionService.ResolveWatchRoot(@"C:\ext\my-extension", manifest);
+        Assert.AreEqual(@"C:\ext\my-extension\dist", root);
+    }
+
+    [TestMethod]
+    public void ResolveWatchRoot_WatchDirectorySet_OverridesEntryPointDefault()
+    {
+        // An explicit cmdpal.watchPath wins over the entry-point-directory default,
+        // letting an extension widen (or otherwise choose) its own hot-reload scope.
+        var manifest = SampleManifest() with { WatchDirectory = @"C:\ext\my-extension\src" };
+        var root = JsonRpcExtensionService.ResolveWatchRoot(@"C:\ext\my-extension", manifest);
+        Assert.AreEqual(@"C:\ext\my-extension\src", root);
+    }
+
+    [TestMethod]
+    public void ResolveWatchRoot_NoEntryPointOrWatchDirectory_FallsBackToExtensionDirectory()
+    {
+        // Defensive fallback: if neither is available (which the manifest parser does not
+        // otherwise allow), the extension directory itself is used rather than throwing.
+        var manifest = SampleManifest() with { EntryPointPath = null };
+        var root = JsonRpcExtensionService.ResolveWatchRoot(@"C:\ext\my-extension", manifest);
+        Assert.AreEqual(@"C:\ext\my-extension", root);
+    }
+
+    // p5-02: EnsureSourceFileWatcher (initial registration and hot-reload both call it) must
+    // stay idempotent when the watch root has not moved, and repair (recreate) the watcher
+    // when it has. SourceWatcherNeedsRepair is the pure decision behind that branch.
+    [TestMethod]
+    public void SourceWatcherNeedsRepair_SameWatchRoot_IsFalse()
+    {
+        // The common case: a hot-reload for an unrelated source edit resolves the same watch
+        // root the live watcher already covers, so the ensure call must be a no-op rather
+        // than tearing down and recreating a perfectly good watcher on every reload.
+        var root = @"C:\ext\my-extension";
+        Assert.IsFalse(JsonRpcExtensionService.SourceWatcherNeedsRepair(root, root));
+    }
+
+    [TestMethod]
+    public void SourceWatcherNeedsRepair_TrailingSeparatorOrCasingOnly_IsFalse()
+    {
+        // A cosmetic difference (trailing separator, casing) must not be mistaken for a
+        // real watch-root change and trigger an unnecessary watcher recreation.
+        Assert.IsFalse(JsonRpcExtensionService.SourceWatcherNeedsRepair(
+            @"C:\ext\my-extension\src", @"C:\ext\my-extension\src\"));
+        Assert.IsFalse(JsonRpcExtensionService.SourceWatcherNeedsRepair(
+            @"C:\ext\my-extension\SRC", @"C:\ext\my-extension\src"));
+    }
+
+    [TestMethod]
+    public void SourceWatcherNeedsRepair_WatchPathAddedWhileRunning_IsTrue()
+    {
+        // This is the fix for the known limitation: a manifest reloaded via hot-reload with
+        // a newly added cmdpal.watchPath must recreate the watcher at the new (narrower or
+        // relocated) root instead of leaving the original one live and silently missing
+        // edits under the declared watchPath.
+        var previousRoot = JsonRpcExtensionService.ResolveWatchRoot(@"C:\ext\my-extension", SampleManifest());
+        var currentManifest = SampleManifest() with { WatchDirectory = @"C:\ext\my-extension\src" };
+        var currentRoot = JsonRpcExtensionService.ResolveWatchRoot(@"C:\ext\my-extension", currentManifest);
+
+        Assert.IsTrue(JsonRpcExtensionService.SourceWatcherNeedsRepair(previousRoot, currentRoot));
+    }
+
+    [TestMethod]
+    public void SourceWatcherNeedsRepair_WatchPathEditedWhileRunning_IsTrue()
+    {
+        // watchPath changing from one declared directory to another (not just added or
+        // removed) must also be recognized as a repair, not just the added/removed cases.
+        var previousManifest = SampleManifest() with { WatchDirectory = @"C:\ext\my-extension\src" };
+        var previousRoot = JsonRpcExtensionService.ResolveWatchRoot(@"C:\ext\my-extension", previousManifest);
+        var currentManifest = SampleManifest() with { WatchDirectory = @"C:\ext\my-extension\lib" };
+        var currentRoot = JsonRpcExtensionService.ResolveWatchRoot(@"C:\ext\my-extension", currentManifest);
+
+        Assert.IsTrue(JsonRpcExtensionService.SourceWatcherNeedsRepair(previousRoot, currentRoot));
+    }
+
+    [TestMethod]
+    public void SourceWatcherNeedsRepair_WatchPathRemovedWhileRunning_IsTrue()
+    {
+        // Removing a previously declared watchPath falls back to the entry-point-directory
+        // default, which is a different (wider or relocated) root and must also repair.
+        var previousManifest = SampleManifest() with { WatchDirectory = @"C:\ext\my-extension\src" };
+        var previousRoot = JsonRpcExtensionService.ResolveWatchRoot(@"C:\ext\my-extension", previousManifest);
+        var currentRoot = JsonRpcExtensionService.ResolveWatchRoot(@"C:\ext\my-extension", SampleManifest());
+
+        Assert.IsTrue(JsonRpcExtensionService.SourceWatcherNeedsRepair(previousRoot, currentRoot));
+    }
+
+    [TestMethod]
+    public void SourceWatcherNeedsRepair_EntryPointDirectoryUnchanged_IsFalse()
+    {
+        // An entry point edit that stays within the same directory (for example a version
+        // bump that does not relocate the file) must not be mistaken for a watch-root move.
+        var previousRoot = JsonRpcExtensionService.ResolveWatchRoot(@"C:\ext\my-extension", SampleManifest());
+        var currentManifest = SampleManifest() with { EntryPointPath = @"C:\ext\my-extension\index.mjs" };
+        var currentRoot = JsonRpcExtensionService.ResolveWatchRoot(@"C:\ext\my-extension", currentManifest);
+
+        Assert.IsFalse(JsonRpcExtensionService.SourceWatcherNeedsRepair(previousRoot, currentRoot));
     }
 
     private static JSExtensionManifest SampleManifest() => new()

@@ -5,10 +5,10 @@
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.JsonRpc.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
+namespace Microsoft.CmdPal.JsonRpc.UnitTests;
 
 /// <summary>
 /// Verifies that status hiding cannot race disposal and strand UI (r2-p4-08). A status
@@ -26,7 +26,8 @@ public class JSCommandProviderProxyStatusDisposeRaceTests
         host = new RecordingExtensionHost();
         var provider = new JSCommandProviderProxy(
             fake.Connection,
-            new JSExtensionManifest { Name = "status.race.ext", DisplayName = "Status Race Extension" });
+            "status.race.ext",
+            "Status Race Extension");
         provider.InitializeWithHost(host);
         return provider;
     }
@@ -34,7 +35,7 @@ public class JSCommandProviderProxyStatusDisposeRaceTests
     private static JsonObject ShowStatus(string statusId, string message) => new()
     {
         ["statusId"] = statusId,
-        ["message"] = new JsonObject { ["Message"] = message, ["State"] = 0 },
+        ["message"] = new JsonObject { ["message"] = message, ["state"] = 0 },
     };
 
     [TestMethod]

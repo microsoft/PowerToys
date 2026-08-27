@@ -55,6 +55,15 @@ public sealed record JSExtensionManifest
     public string? EntryPointPath { get; init; }
 
     /// <summary>
+    /// Gets the resolved absolute directory the host should watch for hot-reload source
+    /// changes (from cmdpal.watchPath), or null when the manifest does not declare one. A
+    /// null value means the caller falls back to the directory containing
+    /// <see cref="EntryPointPath"/> rather than the whole extension directory, so hot-reload
+    /// scope is driven by what the extension declared instead of a host guess.
+    /// </summary>
+    public string? WatchDirectory { get; init; }
+
+    /// <summary>
     /// Gets a value indicating whether the Node.js process should start with the inspector attached.
     /// </summary>
     public bool Debug { get; init; }
@@ -196,6 +205,21 @@ public sealed record JSExtensionManifest
             return JSExtensionManifestParseResult.Failure(containmentError!);
         }
 
+        // Rule 6: an optional cmdpal.watchPath narrows (or relocates) the host's hot-reload
+        // scope. It is validated the same way as the entry point: it must be a relative path
+        // that resolves to an existing directory inside the extension directory, and it must
+        // not reach outside that directory through a symbolic link or junction. Absent, the
+        // caller falls back to the entry point's own directory.
+        string? watchDirectory = null;
+        if (!string.IsNullOrWhiteSpace(package.CmdPal.WatchPath))
+        {
+            watchDirectory = ResolveWatchDirectory(extensionDirectory, package.CmdPal.WatchPath, out var watchPathError);
+            if (watchDirectory is null)
+            {
+                return JSExtensionManifestParseResult.Failure(watchPathError!);
+            }
+        }
+
         var manifest = new JSExtensionManifest
         {
             Name = package.Name,
@@ -206,6 +230,7 @@ public sealed record JSExtensionManifest
             Publisher = ResolvePublisher(package),
             Main = entryPoint,
             EntryPointPath = resolvedEntryPoint,
+            WatchDirectory = watchDirectory,
             Debug = package.CmdPal.Debug,
             DebugPort = package.CmdPal.DebugPort,
             Engines = package.Engines,
@@ -309,6 +334,65 @@ public sealed record JSExtensionManifest
         if (!resolved.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         {
             error = $"The entry point '{entryPoint}' must not escape the extension directory.";
+            return null;
+        }
+
+        return resolved;
+    }
+
+    /// <summary>
+    /// Resolves and validates cmdpal.watchPath the same way <see cref="ResolveEntryPoint"/>
+    /// resolves the entry point: it must be a relative path within the extension directory
+    /// that does not traverse (via "..") or, once resolved, redirect through a reparse point
+    /// outside the extension directory. Unlike the entry point it must resolve to a directory,
+    /// not a file, since it names the host's hot-reload watch root.
+    /// </summary>
+    private static string? ResolveWatchDirectory(string extensionDirectory, string watchPath, out string? error)
+    {
+        error = null;
+
+        if (Path.IsPathRooted(watchPath))
+        {
+            error = $"The 'cmdpal.watchPath' value '{watchPath}' must be a relative path within the extension directory.";
+            return null;
+        }
+
+        string baseDirectory;
+        string resolved;
+        try
+        {
+            baseDirectory = Path.GetFullPath(extensionDirectory);
+            resolved = Path.GetFullPath(Path.Combine(baseDirectory, watchPath));
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            error = $"The 'cmdpal.watchPath' value '{watchPath}' is not a valid path.";
+            return null;
+        }
+
+        var prefix = baseDirectory.EndsWith(Path.DirectorySeparatorChar)
+            ? baseDirectory
+            : baseDirectory + Path.DirectorySeparatorChar;
+
+        if (!resolved.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(Path.TrimEndingDirectorySeparator(resolved), Path.TrimEndingDirectorySeparator(baseDirectory), StringComparison.OrdinalIgnoreCase))
+        {
+            error = $"The 'cmdpal.watchPath' value '{watchPath}' must not escape the extension directory.";
+            return null;
+        }
+
+        if (!Directory.Exists(resolved))
+        {
+            error = $"The 'cmdpal.watchPath' value '{watchPath}' does not resolve to an existing directory.";
+            return null;
+        }
+
+        // Reuse the same reparse-point walk used for the entry point: it only compares the
+        // resolved path against the extension directory as it walks up, so it works equally
+        // well for a directory as for a file.
+        if (!IsEntryPointContainmentTrusted(extensionDirectory, resolved, out _))
+        {
+            error = $"The 'cmdpal.watchPath' value '{watchPath}' traverses a symbolic link or junction, which is not allowed.";
             return null;
         }
 

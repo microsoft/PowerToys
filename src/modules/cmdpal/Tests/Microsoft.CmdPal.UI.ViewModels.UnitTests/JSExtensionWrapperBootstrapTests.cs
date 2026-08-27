@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 /// <summary>
-/// Verifies that the host launch goes through the Phase 1 SDK bootstrap (r3-p4-07). The
+/// Verifies that the host launch goes through the SDK bootstrap (r3-p4-07). The
 /// bootstrap claims and guards stdout before it dynamically imports the extension entry, so
 /// static top-level stdout writes cannot corrupt the JSON-RPC framing. The launcher must
 /// resolve the bootstrap relative to the extension's installed SDK under

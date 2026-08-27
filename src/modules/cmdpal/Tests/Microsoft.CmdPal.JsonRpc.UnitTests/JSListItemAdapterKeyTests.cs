@@ -3,10 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
-using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.JsonRpc.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
+namespace Microsoft.CmdPal.JsonRpc.UnitTests;
 
 /// <summary>
 /// Verifies the stable list-item identity used to reuse item adapters across a

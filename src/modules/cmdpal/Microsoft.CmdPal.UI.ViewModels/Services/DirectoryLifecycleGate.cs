@@ -58,7 +58,9 @@ internal sealed partial class DirectoryLifecycleGate : IDisposable
     /// <summary>
     /// Acquires exclusive access to the lifecycle of a directory. Dispose the returned
     /// handle to release it. Operations for different directories run concurrently;
-    /// operations for the same directory are serialized.
+    /// operations for the same directory are serialized. Getting the handle back only means
+    /// it is this caller's turn; it says nothing about why the caller wanted a turn, a
+    /// crash-restart included, and callers must not treat it as such.
     /// </summary>
     /// <param name="directory">The extension directory whose lifecycle is being changed.</param>
     /// <param name="cancellationToken">A token that cancels the wait.</param>

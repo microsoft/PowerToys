@@ -40,7 +40,7 @@ public sealed class BuiltInExtensionService : IExtensionService
         var wrappers = new List<CommandProviderWrapper>();
         foreach (var provider in _commandProviders)
         {
-            wrappers.Add(new CommandProviderWrapper(provider, _taskScheduler));
+            wrappers.Add(CommandProviderWrapper.CreateForBuiltIn(provider, _taskScheduler));
         }
 
         return Task.FromResult<IEnumerable<CommandProviderWrapper>>(wrappers);

@@ -5,11 +5,11 @@
 using System;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.JsonRpc.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
+namespace Microsoft.CmdPal.JsonRpc.UnitTests;
 
 /// <summary>
 /// Verifies host status lifecycle handling on the proxy (p4-06): a repeated status id
@@ -25,7 +25,8 @@ public class JSCommandProviderProxyStatusLifecycleTests
         host = new RecordingExtensionHost();
         var provider = new JSCommandProviderProxy(
             fake.Connection,
-            new JSExtensionManifest { Name = "status.ext", DisplayName = "Status Extension" });
+            "status.ext",
+            "Status Extension");
         provider.InitializeWithHost(host);
         return provider;
     }
@@ -33,7 +34,7 @@ public class JSCommandProviderProxyStatusLifecycleTests
     private static JsonObject ShowStatus(string statusId, string message, int state) => new()
     {
         ["statusId"] = statusId,
-        ["message"] = new JsonObject { ["Message"] = message, ["State"] = state },
+        ["message"] = new JsonObject { ["message"] = message, ["state"] = state },
     };
 
     [TestMethod]

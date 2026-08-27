@@ -18,8 +18,9 @@ internal sealed partial class HotReloadDebouncer : IDisposable
     private readonly TimeSpan _delay;
     private readonly Action<string> _callback;
     private readonly Lock _lock = new();
-    private readonly Dictionary<string, Timer> _timers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, TimerRegistration> _timers = new(StringComparer.OrdinalIgnoreCase);
     private bool _disposed;
+    private long _nextRegistrationId;
 
     // Monotonic load generation. A timer captures the generation current when it is
     // (re)armed; when the service stops it advances the generation so a callback that was
@@ -76,15 +77,13 @@ internal sealed partial class HotReloadDebouncer : IDisposable
 
             if (_timers.TryGetValue(key, out var existing))
             {
-                existing.Change(_delay, Timeout.InfiniteTimeSpan);
-                return;
+                existing.Timer.Dispose();
             }
 
-            // Capture the current generation so a callback that fires after a stop, but
-            // whose timer was armed before it, is dropped. A stop clears the timer map, so
-            // any timer found in the map above was armed in the current generation.
-            var state = new PendingReload(key, _generation);
-            _timers[key] = new Timer(OnTimerElapsed, state, _delay, Timeout.InfiniteTimeSpan);
+            var registrationId = ++_nextRegistrationId;
+            var state = new PendingReload(key, _generation, registrationId);
+            var timer = new Timer(OnTimerElapsed, state, _delay, Timeout.InfiniteTimeSpan);
+            _timers[key] = new TimerRegistration(timer, registrationId);
         }
     }
 
@@ -98,7 +97,7 @@ internal sealed partial class HotReloadDebouncer : IDisposable
         {
             if (_timers.TryGetValue(key, out var timer))
             {
-                timer.Dispose();
+                timer.Timer.Dispose();
                 _timers.Remove(key);
             }
         }
@@ -122,7 +121,7 @@ internal sealed partial class HotReloadDebouncer : IDisposable
             _generation++;
             foreach (var timer in _timers.Values)
             {
-                timer.Dispose();
+                timer.Timer.Dispose();
             }
 
             _timers.Clear();
@@ -141,7 +140,7 @@ internal sealed partial class HotReloadDebouncer : IDisposable
             _disposed = true;
             foreach (var timer in _timers.Values)
             {
-                timer.Dispose();
+                timer.Timer.Dispose();
             }
 
             _timers.Clear();
@@ -166,15 +165,20 @@ internal sealed partial class HotReloadDebouncer : IDisposable
                 return;
             }
 
-            if (_timers.TryGetValue(pending.Key, out var timer))
+            if (!_timers.TryGetValue(pending.Key, out var registration)
+                || registration.Id != pending.RegistrationId)
             {
-                timer.Dispose();
-                _timers.Remove(pending.Key);
+                return;
             }
+
+            registration.Timer.Dispose();
+            _timers.Remove(pending.Key);
         }
 
         _callback(pending.Key);
     }
 
-    private readonly record struct PendingReload(string Key, long Generation);
+    private readonly record struct PendingReload(string Key, long Generation, long RegistrationId);
+
+    private readonly record struct TimerRegistration(Timer Timer, long Id);
 }

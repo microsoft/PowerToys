@@ -14,8 +14,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.JsonRpc;
+using Microsoft.CmdPal.JsonRpc.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
-using Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
 using Microsoft.CommandPalette.Extensions;
 using Windows.ApplicationModel;
 
@@ -267,7 +268,7 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
             return;
         }
 
-        // Launch through the Phase 1 SDK bootstrap when it is installed so the bootstrap
+        // Launch through the SDK bootstrap when it is installed so the bootstrap
         // claims stdout for the protocol before the extension entry is dynamically imported.
         // The effective launch command is:
         //   node [--inspect=<port>] "<bootstrap>" "<entry>"
@@ -737,7 +738,7 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
     }
 
     /// <summary>
-    /// Resolves the Phase 1 SDK bootstrap loader for an installed extension. The bootstrap
+    /// Resolves the SDK bootstrap loader for an installed extension. The bootstrap
     /// claims and guards stdout before it dynamically imports the extension entry, so a
     /// static top-level stdout write cannot corrupt the JSON-RPC framing. Resolution is
     /// relative to the extension's installed SDK

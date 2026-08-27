@@ -4,10 +4,10 @@
 
 using System;
 using System.Text.Json;
-using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.JsonRpc.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
+namespace Microsoft.CmdPal.JsonRpc.UnitTests;
 
 /// <summary>
 /// Verifies that the author-specified frozen value from the initialize handshake
@@ -29,7 +29,7 @@ public class JSCommandProviderProxyFrozenTests
     public void Frozen_DefaultsToTrue_WhenNoMetadata()
     {
         using var fake = new JSFakeExtension();
-        var provider = new JSCommandProviderProxy(fake.Connection, new JSExtensionManifest { Name = "ext" });
+        var provider = new JSCommandProviderProxy(fake.Connection, "ext", "Extension");
 
         Assert.IsTrue(provider.Frozen);
 
@@ -42,7 +42,9 @@ public class JSCommandProviderProxyFrozenTests
         using var fake = new JSFakeExtension();
         var provider = new JSCommandProviderProxy(
             fake.Connection,
-            new JSExtensionManifest { Name = "ext" },
+            "ext",
+            "Extension",
+            null,
             Parse("""{ "frozen": false }"""));
 
         Assert.IsFalse(provider.Frozen);
@@ -54,9 +56,9 @@ public class JSCommandProviderProxyFrozenTests
     public void Frozen_HonorsHandshakeMetadata_False()
     {
         using var fake = new JSFakeExtension();
-        var provider = new JSCommandProviderProxy(fake.Connection, new JSExtensionManifest { Name = "ext" });
+        var provider = new JSCommandProviderProxy(fake.Connection, "ext", "Extension");
 
-        provider.SetProviderMetadata(Parse("""{ "Frozen": false }"""));
+        provider.SetProviderMetadata(Parse("""{ "frozen": false }"""));
 
         Assert.IsFalse(provider.Frozen);
 
@@ -67,7 +69,7 @@ public class JSCommandProviderProxyFrozenTests
     public void Frozen_HonorsHandshakeMetadata_True()
     {
         using var fake = new JSFakeExtension();
-        var provider = new JSCommandProviderProxy(fake.Connection, new JSExtensionManifest { Name = "ext" });
+        var provider = new JSCommandProviderProxy(fake.Connection, "ext", "Extension");
 
         provider.SetProviderMetadata(Parse("""{ "frozen": true }"""));
 

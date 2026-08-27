@@ -46,4 +46,14 @@ public sealed record JSCmdPalSection
     /// </summary>
     [JsonPropertyName("debugPort")]
     public int? DebugPort { get; init; }
+
+    /// <summary>
+    /// Gets the optional relative directory the host should watch for hot-reload source
+    /// changes. When absent, the host watches the directory containing the resolved entry
+    /// point instead of the whole package, so directories the extension never declared
+    /// (version-control metadata, docs, generated artifacts unrelated to the entry point)
+    /// are not swept in by a host guess.
+    /// </summary>
+    [JsonPropertyName("watchPath")]
+    public string? WatchPath { get; init; }
 }
