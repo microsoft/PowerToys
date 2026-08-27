@@ -19,7 +19,7 @@ public class IconPathConverterTests
     {
         var shell32Path = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.System),
-            "shell32.dll");
+            "SHELL32.DLL");
 
         using var prepared = IconPathConverter.Prepare($"{shell32Path},0", null, 32);
 

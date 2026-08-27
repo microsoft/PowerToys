@@ -12,6 +12,8 @@ namespace Microsoft.CmdPal.UI.Helpers;
 
 internal interface IIconLoaderService : IAsyncDisposable
 {
+    ShellIconLocationCache ShellIconLocations { get; }
+
     bool TryLoadGlyph(
         string? iconString,
         string? fontFamily,
@@ -30,4 +32,16 @@ internal interface IIconLoaderService : IAsyncDisposable
         IconLoadPriority priority,
         IconLoadMeasurement? diagnostics = null,
         IconLoadDemand? demand = null);
+
+    bool TryEnqueueShellItemLoad(
+        ShellItemIconRequest request,
+        LocatedShellIcon? locatedIcon,
+        Size iconSize,
+        double scale,
+        TaskCompletionSource<IconSource?> tcs,
+        IconLoadPriority priority,
+        IconLoadMeasurement? diagnostics = null,
+        IconLoadDemand? demand = null,
+        IShellItemIconLoadCoordinator? coordinator = null,
+        ShellIconMeasurement shellDiagnostics = default);
 }
