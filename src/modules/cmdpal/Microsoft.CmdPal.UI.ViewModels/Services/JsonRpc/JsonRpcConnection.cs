@@ -284,15 +284,12 @@ public sealed class JsonRpcConnection : IDisposable
             _errorPumpTask ?? Task.CompletedTask,
             _rpc.Completion,
         };
-        foreach (var task in tasks)
+        try
         {
-            try
-            {
-                task.Wait(DisposeDrainTimeout);
-            }
-            catch (AggregateException)
-            {
-            }
+            Task.WhenAll(tasks).Wait(DisposeDrainTimeout);
+        }
+        catch (AggregateException)
+        {
         }
 
         _ = DisposeTokenSourcesWhenTasksCompleteAsync(tasks, _disposalCts, _connectionClosedCts);
@@ -411,6 +408,11 @@ public sealed class JsonRpcConnection : IDisposable
         catch (ChannelClosedException)
         {
         }
+        catch (Exception ex)
+        {
+            Logger.LogError("The JSON-RPC notification pump ended unexpectedly.", ex);
+            RaiseError(ex);
+        }
     }
 
     private async Task PumpErrorStreamAsync()
@@ -457,7 +459,24 @@ public sealed class JsonRpcConnection : IDisposable
 
     private void RaiseError(Exception exception)
     {
-        Error?.Invoke(this, new JsonRpcErrorEventArgs(exception));
+        var handlers = Error;
+        if (handlers is null)
+        {
+            return;
+        }
+
+        var eventArgs = new JsonRpcErrorEventArgs(exception);
+        foreach (EventHandler<JsonRpcErrorEventArgs> handler in handlers.GetInvocationList())
+        {
+            try
+            {
+                handler(this, eventArgs);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("A JSON-RPC error event handler failed.", ex);
+            }
+        }
     }
 
     private static int GetErrorCode(RemoteRpcException exception)

@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -160,7 +162,8 @@ public partial class JsonRpcConnectionTests
     public async Task Dispose_KeepsCancellationTokensAliveUntilNotificationPumpExits()
     {
         using var cts = new CancellationTokenSource(TestTimeout);
-        var harness = CreateHarness();
+        var errorStream = new BlockingReadStream();
+        var harness = CreateHarness(errorStream: errorStream);
         var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -174,18 +177,63 @@ public partial class JsonRpcConnectionTests
 
             await WriteFramedAsync(harness.ExtensionWrites, BuildNotification("slow", new JsonObject()), cts.Token);
             await entered.Task.WaitAsync(cts.Token);
+            await errorStream.ReadStarted.WaitAsync(cts.Token);
 
             var notificationPump = harness.Host.NotificationConsumerCompletion;
-            await Task.Run(harness.Host.Dispose).WaitAsync(cts.Token);
+            var disposeDuration = await Task.Run(() =>
+            {
+                var stopwatch = Stopwatch.StartNew();
+                harness.Host.Dispose();
+                stopwatch.Stop();
+                return stopwatch.Elapsed;
+            }).WaitAsync(cts.Token);
+
+            Assert.IsTrue(disposeDuration < TimeSpan.FromSeconds(3.5), $"Dispose took {disposeDuration}.");
             Assert.IsFalse(notificationPump.IsCompleted);
 
             release.TrySetResult();
+            errorStream.Release();
             await notificationPump.WaitAsync(cts.Token);
             Assert.AreEqual(TaskStatus.RanToCompletion, notificationPump.Status);
         }
         finally
         {
             release.TrySetResult();
+            errorStream.Release();
+            harness.Host.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ThrowingErrorSubscriber_DoesNotStopOtherSubscribersOrNotificationPump()
+    {
+        using var cts = new CancellationTokenSource(TestTimeout);
+        var harness = CreateHarness();
+        var errorRaised = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var errorObserved = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var notificationReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        try
+        {
+            harness.Host.Error += (_, _) =>
+            {
+                errorRaised.TrySetResult();
+                throw new InvalidOperationException("subscriber failed");
+            };
+            harness.Host.Error += (_, _) => errorObserved.TrySetResult();
+            harness.Host.RegisterNotificationHandler("fail", _ => throw new InvalidOperationException("handler failed"));
+            harness.Host.RegisterNotificationHandler("next", _ => notificationReceived.TrySetResult());
+
+            await WriteFramedAsync(harness.ExtensionWrites, BuildNotification("fail", new JsonObject()), cts.Token);
+            await errorRaised.Task.WaitAsync(cts.Token);
+            await errorObserved.Task.WaitAsync(cts.Token);
+            await WriteFramedAsync(harness.ExtensionWrites, BuildNotification("next", new JsonObject()), cts.Token);
+
+            await notificationReceived.Task.WaitAsync(cts.Token);
+            Assert.IsFalse(harness.Host.NotificationConsumerCompletion.IsCompleted);
+        }
+        finally
+        {
             harness.Host.Dispose();
         }
     }
@@ -229,5 +277,53 @@ public partial class JsonRpcConnectionTests
         {
             harness.Host.Dispose();
         }
+    }
+
+    private sealed class BlockingReadStream : Stream
+    {
+        private readonly TaskCompletionSource _readStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<int> _release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        internal Task ReadStarted => _readStarted.Task;
+
+        public override bool CanRead => true;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => false;
+
+        public override long Length => throw new NotSupportedException();
+
+        public override long Position
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
+
+        internal void Release() => _release.TrySetResult(0);
+
+        public override void Flush()
+        {
+        }
+
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            _readStarted.TrySetResult();
+            return _release.Task;
+        }
+
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            _readStarted.TrySetResult();
+            return new ValueTask<int>(_release.Task);
+        }
+
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+        public override void SetLength(long value) => throw new NotSupportedException();
+
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 }

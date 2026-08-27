@@ -215,6 +215,31 @@ public partial class JsonRpcConnectionTests
     }
 
     [TestMethod]
+    public async Task SendNotification_WritesNotificationWithoutRequestId()
+    {
+        using var cts = new CancellationTokenSource(TestTimeout);
+        var harness = CreateHarness();
+        try
+        {
+            await harness.Host.SendNotificationAsync(
+                "statusChanged",
+                new JsonObject { ["status"] = "ready" },
+                cts.Token);
+
+            var (_, body) = await ReadFramedAsync(harness.ExtensionReads, cts.Token);
+            using var document = JsonDocument.Parse(body);
+            Assert.AreEqual("2.0", document.RootElement.GetProperty("jsonrpc").GetString());
+            Assert.AreEqual("statusChanged", document.RootElement.GetProperty("method").GetString());
+            Assert.AreEqual("ready", document.RootElement.GetProperty("params").GetProperty("status").GetString());
+            Assert.IsFalse(document.RootElement.TryGetProperty("id", out _));
+        }
+        finally
+        {
+            harness.Host.Dispose();
+        }
+    }
+
+    [TestMethod]
     public async Task Notification_IsDispatchedToHandler()
     {
         using var cts = new CancellationTokenSource(TestTimeout);
@@ -415,7 +440,7 @@ public partial class JsonRpcConnectionTests
         await Assert.ThrowsExceptionAsync<JsonRpcException>(async () => await requestTask.WaitAsync(cts.Token));
     }
 
-    private static Harness CreateHarness(TimeSpan? requestTimeout = null)
+    private static Harness CreateHarness(TimeSpan? requestTimeout = null, Stream? errorStream = null)
     {
         var toHost = new Pipe();
         var fromHost = new Pipe();
@@ -423,7 +448,7 @@ public partial class JsonRpcConnectionTests
         var host = new JsonRpcConnection(
             toHost.Reader.AsStream(),
             fromHost.Writer.AsStream(),
-            errorStream: null,
+            errorStream,
             requestTimeout: requestTimeout);
         host.StartListening();
 
