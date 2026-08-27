@@ -328,11 +328,7 @@ export class WireSerializer {
     }
   }
 
-  private withPropertyChildren<T>(
-    ownerId: string,
-    propertyName: string,
-    produce: () => T,
-  ): T {
+  private withPropertyChildren<T>(ownerId: string, propertyName: string, produce: () => T): T {
     const scope: PropertyScope = { ownerId, propertyName, children: new Set() };
     this.propertyScopes.push(scope);
     try {

@@ -646,10 +646,7 @@ export interface ICommandProvider {
    *
    * @returns The fallback command items, or `null` when none are available.
    */
-  fallbackCommands?():
-    | IFallbackCommandItem[]
-    | null
-    | Promise<IFallbackCommandItem[] | null>;
+  fallbackCommands?(): IFallbackCommandItem[] | null | Promise<IFallbackCommandItem[] | null>;
   /**
    * Resolves a command by id, for commands not returned up front.
    *

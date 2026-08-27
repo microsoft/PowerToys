@@ -160,11 +160,14 @@ export class ExtensionRuntime {
     this.send = options.send;
     this.onDispose = options.onDispose;
     this.reportFatal = options.reportFatal;
-    this.serializer = new WireSerializer((command) => {
-      this.sink(command);
-    }, (ownerId, propertyName, children) => {
-      this.reconcilePropertyChildren(ownerId, propertyName, new Set(children));
-    });
+    this.serializer = new WireSerializer(
+      (command) => {
+        this.sink(command);
+      },
+      (ownerId, propertyName, children) => {
+        this.reconcilePropertyChildren(ownerId, propertyName, new Set(children));
+      },
+    );
   }
 
   get isDisposed(): boolean {
@@ -844,17 +847,16 @@ export class ExtensionRuntime {
     const properties = propertiesValue as Record<string, unknown>;
     const serialized: Record<string, unknown> = {};
     for (const [propertyName, value] of Object.entries(properties)) {
-      const serializer = new WireSerializer((command) => {
-        this.resolved.set(command.id, command);
-      }, (ownerId, nestedPropertyName, nestedChildren) => {
-        this.reconcilePropertyChildren(ownerId, nestedPropertyName, new Set(nestedChildren));
-      });
-
-      serialized[propertyName] = serializer.observableProperty(
-        commandId,
-        propertyName,
-        value,
+      const serializer = new WireSerializer(
+        (command) => {
+          this.resolved.set(command.id, command);
+        },
+        (ownerId, nestedPropertyName, nestedChildren) => {
+          this.reconcilePropertyChildren(ownerId, nestedPropertyName, new Set(nestedChildren));
+        },
       );
+
+      serialized[propertyName] = serializer.observableProperty(commandId, propertyName, value);
     }
 
     return { ...notification, properties: serialized };

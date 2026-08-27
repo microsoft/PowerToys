@@ -183,7 +183,8 @@ const ExtensionHostBridgeProxy: IExtensionHost = {
   log: (message, state) => {
     ExtensionHost.log(message, state);
   },
-  showStatus: (message, state, progress, context) => ExtensionHost.showStatus(message, state, progress, context),
+  showStatus: (message, state, progress, context) =>
+    ExtensionHost.showStatus(message, state, progress, context),
   updateStatus: (statusId, message, state, progress) => {
     ExtensionHost.updateStatus(statusId, message, state, progress);
   },
