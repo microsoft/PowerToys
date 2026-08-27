@@ -43,6 +43,7 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
     // startup logs, statuses, and clipboard requests are not lost.
     private readonly Lock _hostLock = new();
     private readonly List<Action<IExtensionHost>> _pendingHostActions = [];
+    private readonly object _settingsLock = new();
 
     private JsonElement _providerMetadata;
 
@@ -52,7 +53,6 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
     private string _id = "unknown";
     private string _displayName = string.Empty;
     private IIconInfo _icon = new IconInfo(string.Empty);
-    private readonly object _settingsLock = new();
 
     private IExtensionHost? _host;
     private ICommandSettings? _settingsCache;

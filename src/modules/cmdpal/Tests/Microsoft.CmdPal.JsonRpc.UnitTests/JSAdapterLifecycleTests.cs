@@ -249,6 +249,41 @@ public partial class JSAdapterTests
     }
 
     [TestMethod]
+    public void ListPage_RemovedItemDisposesNestedProxies()
+    {
+        using var fake = new JSFakeExtension();
+        var requestCount = 0;
+        fake.OnRequest("listPage/getItems", _ =>
+        {
+            if (Interlocked.Increment(ref requestCount) == 1)
+            {
+                return new JsonObject
+                {
+                    ["items"] = new JsonArray
+                    {
+                        new JsonObject
+                        {
+                            ["id"] = "row",
+                            ["command"] = Command("nested-command"),
+                        },
+                    },
+                };
+            }
+
+            return new JsonObject { ["items"] = new JsonArray() };
+        });
+
+        using var page = new JSListPageProxy("page", fake.Connection);
+        var firstItems = page.GetItems();
+        _ = firstItems[0].Command;
+
+        Assert.AreEqual(2, JSPropertyChangeRegistry.GetRegistrationCount(fake.Connection, "nested-command"));
+
+        Assert.AreEqual(0, page.GetItems().Length);
+        Assert.AreEqual(0, JSPropertyChangeRegistry.GetRegistrationCount(fake.Connection, "nested-command"));
+    }
+
+    [TestMethod]
     public void ProviderSettings_ConcurrentReadsReturnOneProxy()
     {
         using var fake = new JSFakeExtension();
