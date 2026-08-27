@@ -183,6 +183,20 @@ public class JsonRpcExtensionServiceReconciliationTests
     }
 
     [TestMethod]
+    public async Task RefreshAndAwaitProviderAsync_CallerCancellation_Throws()
+    {
+        using var service = new JsonRpcExtensionService(TaskScheduler.Default);
+        using var cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSource.Cancel();
+
+        await Assert.ThrowsExactlyAsync<OperationCanceledException>(() =>
+            service.RefreshAndAwaitProviderAsync(
+                Path.Combine(_root, "missing"),
+                TimeSpan.FromSeconds(1),
+                cancellationTokenSource.Token));
+    }
+
+    [TestMethod]
     public void GetExtensionDirectoryForPath_ReturnsOwningTopLevelDirectory()
     {
         var manifestPath = Path.Combine(_root, "my-ext", "package.json");

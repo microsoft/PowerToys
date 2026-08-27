@@ -254,6 +254,12 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
             {
                 RaiseProviderAdded(wrapper);
             }
+
+            if (timeoutCts.IsCancellationRequested)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return false;
+            }
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
