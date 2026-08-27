@@ -78,7 +78,7 @@ describe('form identity and routing', () => {
 
     expect(second).toHaveBeenCalledTimes(1);
     expect(first).not.toHaveBeenCalled();
-    expect(responseFor(sent, 2)?.result).toEqual({ Kind: 2 });
+    expect(responseFor(sent, 2)?.result).toEqual({ kind: 2 });
   });
 
   it('registers nested forms inside tree content', async () => {
@@ -117,7 +117,7 @@ describe('form identity and routing', () => {
     });
 
     expect(nested).toHaveBeenCalledTimes(1);
-    expect(responseFor(sent, 2)?.result).toEqual({ Kind: 3 });
+    expect(responseFor(sent, 2)?.result).toEqual({ kind: 3 });
   });
 
   it('falls back to the first form when the host omits a formId', async () => {
@@ -143,7 +143,7 @@ describe('form identity and routing', () => {
 
     expect(first).toHaveBeenCalledTimes(1);
     expect(second).not.toHaveBeenCalled();
-    expect(responseFor(sent, 1)?.result).toEqual({ Kind: 1 });
+    expect(responseFor(sent, 1)?.result).toEqual({ kind: 1 });
   });
 
   it('assigns a deterministic formId when the author omits one', async () => {

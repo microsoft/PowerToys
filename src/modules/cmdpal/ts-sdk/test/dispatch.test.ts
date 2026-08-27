@@ -5,7 +5,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import type {
   CommandResult,
+  IContentPage,
+  ICommand,
   ICommandProvider,
+  ICommandItem,
   IFallbackCommandItem,
   IInvokableCommand,
   IListPage,
@@ -20,6 +23,8 @@ import {
 import { Settings, ToggleSetting } from '../src/index.js';
 import { setNotificationSink } from '../src/runtime/notifications.js';
 import { ListPageBase } from '../src/base/ListPageBase.js';
+import { ContentPageBase } from '../src/base/ContentPageBase.js';
+import { CommandItemBase } from '../src/base/CommandItemBase.js';
 
 interface Harness {
   runtime: ExtensionRuntime;
@@ -139,7 +144,7 @@ describe('ExtensionRuntime request dispatch', () => {
       params: { commandId: 'greet' },
     });
 
-    expect(responseFor(sent, 3)?.result).toEqual({ Kind: 6, Args: { Message: 'hi' } });
+    expect(responseFor(sent, 3)?.result).toEqual({ kind: 6, args: { message: 'hi' } });
   });
 
   it('returns a full command item by id', async () => {
@@ -156,9 +161,8 @@ describe('ExtensionRuntime request dispatch', () => {
     expect(responseFor(sent, 8)?.result).toEqual({
       id: 'pinned',
       title: 'Pinned',
-      displayName: 'Pinned',
       subtitle: 'From anywhere',
-      command: { id: 'pinned', name: 'Pinned', displayName: 'Pinned' },
+      command: { id: 'pinned', name: 'Pinned' },
     });
   });
 
@@ -176,6 +180,46 @@ describe('ExtensionRuntime request dispatch', () => {
     const result = responseFor(sent, 4)?.result as { items: Array<Record<string, unknown>> };
     expect(result.items).toHaveLength(1);
     expect(result.items[0]).toMatchObject({ id: 'item-cmd', title: 'Item One' });
+  });
+
+  it('applies filter selections to standard list pages', async () => {
+    class FilterPage extends ListPageBase {
+      readonly id = 'filtered';
+      readonly name = 'Filtered';
+      readonly title = 'Filtered';
+      override filters = {
+        currentFilterId: 'all',
+        filters: [
+          { id: 'all', name: 'All' },
+          { id: 'active', name: 'Active' },
+        ],
+      };
+
+      getItems() {
+        return [];
+      }
+    }
+
+    const page = new FilterPage();
+    const { runtime } = createHarness();
+    runtime.setProvider({
+      id: 'ext',
+      displayName: 'Ext',
+      topLevelCommands: () => [{ command: page, title: 'Filtered' }],
+    });
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 1,
+      method: 'provider/getTopLevelCommands',
+    });
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 2,
+      method: 'listPage/setFilter',
+      params: { pageId: 'filtered', filterId: 'active' },
+    });
+
+    expect(page.filters.currentFilterId).toBe('active');
   });
 
   it('reports method not found for unknown methods', async () => {
@@ -260,6 +304,243 @@ describe('ExtensionRuntime notification dispatch', () => {
         params: { commandId: 'loading', properties: { isLoading: true } },
       },
     ]);
+    setNotificationSink(null);
+  });
+
+  it('keeps an item notification identity stable when its command changes', () => {
+    const notifications: Array<{ method: string; params: unknown }> = [];
+    setNotificationSink((method, params) => notifications.push({ method, params }));
+
+    class MutableItem extends CommandItemBase {
+      replaceCommand(command: ICommand): void {
+        this.command = command;
+        this.notifyPropChanged('command');
+      }
+    }
+
+    const item = new MutableItem({
+      command: { id: 'initial-command', name: 'Initial' },
+      title: 'Item',
+    });
+    item.replaceCommand({ id: 'replacement-command', name: 'Replacement' });
+
+    expect(notifications).toEqual([
+      {
+        method: 'command/propChanged',
+        params: {
+          commandId: 'initial-command',
+          properties: {
+            command: { id: 'replacement-command', name: 'Replacement' },
+          },
+        },
+      },
+    ]);
+    setNotificationSink(null);
+  });
+
+  it('serializes and registers commands carried by property changes', async () => {
+    class MutablePage extends ListPageBase {
+      readonly id = 'mutable-page';
+      readonly name = 'Mutable';
+      readonly title = 'Mutable';
+
+      getItems() {
+        return [];
+      }
+
+      setEmptyContent(item: ICommandItem): void {
+        this.emptyContent = item;
+        this.notifyPropChanged('emptyContent');
+      }
+    }
+
+    const initialChild: IContentPage = {
+      id: 'initial-child',
+      name: 'Initial child',
+      title: 'Initial child',
+      getContent: () => [],
+    };
+    const page = new MutablePage();
+    page.emptyContent = { command: initialChild, title: 'Initial child' };
+    const { runtime, sent } = createHarness();
+    runtime.setProvider({
+      id: 'ext',
+      displayName: 'Ext',
+      topLevelCommands: () => [{ command: page, title: 'Mutable' }],
+    });
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 1,
+      method: 'provider/getTopLevelCommands',
+    });
+    setNotificationSink((method, params) => runtime.sendSdkNotification(method, params));
+
+    const updatedChild: IContentPage = {
+      id: 'updated-child',
+      name: 'Updated child',
+      title: 'Updated child',
+      getContent: () => [],
+    };
+    page.setEmptyContent({
+      command: updatedChild,
+      title: 'Updated child',
+    });
+
+    const changed = notificationsOf(sent, 'command/propChanged');
+    expect(changed.at(-1)?.params).toEqual({
+      commandId: 'mutable-page',
+      properties: {
+        emptyContent: {
+          id: 'updated-child',
+          title: 'Updated child',
+          command: {
+            id: 'updated-child',
+            name: 'Updated child',
+            pageType: 'contentPage',
+            title: 'Updated child',
+          },
+        },
+      },
+    });
+
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 2,
+      method: 'provider/getCommand',
+      params: { commandId: 'updated-child' },
+    });
+    expect(responseFor(sent, 2)?.result).toMatchObject({
+      id: 'updated-child',
+      pageType: 'contentPage',
+    });
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 3,
+      method: 'provider/getCommand',
+      params: { commandId: 'initial-child' },
+    });
+    expect(responseFor(sent, 3)?.result).toBeNull();
+    setNotificationSink(null);
+  });
+
+  it('keeps a command registered while another property still references it', async () => {
+    const sharedCommand: IContentPage = {
+      id: 'shared-child',
+      name: 'Shared child',
+      title: 'Shared child',
+      getContent: () => [],
+    };
+
+    class MutableContentPage extends ContentPageBase {
+      readonly id = 'content-owner';
+      readonly name = 'Content owner';
+      readonly title = 'Content owner';
+      override commands = [{ command: sharedCommand, title: 'Shared child' }];
+      override details = {
+        metadata: [
+          {
+            key: 'Actions',
+            data: { type: 'commands' as const, commands: [sharedCommand] },
+          },
+        ],
+      };
+
+      getContent() {
+        return [];
+      }
+
+      clearCommands(): void {
+        this.commands = [];
+        this.notifyPropChanged('commands');
+      }
+    }
+
+    const page = new MutableContentPage();
+    const { runtime, sent } = createHarness();
+    runtime.setProvider({
+      id: 'ext',
+      displayName: 'Ext',
+      topLevelCommands: () => [{ command: page, title: 'Content owner' }],
+    });
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 1,
+      method: 'provider/getTopLevelCommands',
+    });
+    setNotificationSink((method, params) => runtime.sendSdkNotification(method, params));
+
+    page.clearCommands();
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 2,
+      method: 'provider/getCommand',
+      params: { commandId: 'shared-child' },
+    });
+
+    expect(responseFor(sent, 2)?.result).toMatchObject({
+      id: 'shared-child',
+      pageType: 'contentPage',
+    });
+    setNotificationSink(null);
+  });
+
+  it('keeps a command registered while another owner still references it', async () => {
+    const sharedCommand: IContentPage = {
+      id: 'cross-owner-child',
+      name: 'Cross owner child',
+      title: 'Cross owner child',
+      getContent: () => [],
+    };
+
+    class SharedOwnerPage extends ContentPageBase {
+      readonly name = 'Shared owner';
+      readonly title = 'Shared owner';
+      override commands = [{ command: sharedCommand, title: 'Cross owner child' }];
+
+      constructor(readonly id: string) {
+        super();
+      }
+
+      getContent() {
+        return [];
+      }
+
+      clearCommands(): void {
+        this.commands = [];
+        this.notifyPropChanged('commands');
+      }
+    }
+
+    const first = new SharedOwnerPage('first-owner');
+    const second = new SharedOwnerPage('second-owner');
+    const { runtime, sent } = createHarness();
+    runtime.setProvider({
+      id: 'ext',
+      displayName: 'Ext',
+      topLevelCommands: () => [
+        { command: first, title: 'First owner' },
+        { command: second, title: 'Second owner' },
+      ],
+    });
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 1,
+      method: 'provider/getTopLevelCommands',
+    });
+    setNotificationSink((method, params) => runtime.sendSdkNotification(method, params));
+
+    first.clearCommands();
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 2,
+      method: 'provider/getCommand',
+      params: { commandId: 'cross-owner-child' },
+    });
+
+    expect(responseFor(sent, 2)?.result).toMatchObject({
+      id: 'cross-owner-child',
+      pageType: 'contentPage',
+    });
     setNotificationSink(null);
   });
 
@@ -349,7 +630,6 @@ describe('ExtensionRuntime settings integration', () => {
     expect(responseFor(sent, 1)?.result).toEqual({
       id: '__settings__',
       name: 'Settings',
-      displayName: 'Settings',
       pageType: 'contentPage',
       title: 'Extension Settings',
       isLoading: false,
@@ -370,7 +650,7 @@ describe('ExtensionRuntime settings integration', () => {
       method: 'form/submit',
       params: { pageId: '__settings__', inputs: JSON.stringify({ dark: 'true' }), data: '{}' },
     });
-    expect(responseFor(sent, 3)?.result).toEqual({ Kind: 1 });
+    expect(responseFor(sent, 3)?.result).toEqual({ kind: 1 });
     expect(settings.getSetting<ToggleSetting>('dark')?.value).toBe(true);
   });
 });

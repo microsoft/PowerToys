@@ -97,7 +97,7 @@ export function startJsonRpcServer(factory: ProviderFactory): void {
     },
   });
 
-  setNotificationSink(notify);
+  setNotificationSink((method, params) => runtime.sendSdkNotification(method, params));
   ExtensionHost.initialize(createHostBridge(notify));
 
   runtime.beginInitialization(
@@ -217,11 +217,11 @@ export function createHostBridge(
 
   const sendStatus = (statusId: string, tracked: TrackedStatus): void => {
     // Carry the SDK-minted statusId so an up-to-date host can update or hide the
-    // exact status by id, and keep the Message text so today's host (which hides
+    // exact status by id, and keep the message text so today's host (which hides
     // by message text) keeps working until it is upgraded.
     notify('host/showStatus', {
       statusId,
-      message: { Message: tracked.message, State: MESSAGE_STATE_VALUE[tracked.state] },
+      message: { message: tracked.message, state: MESSAGE_STATE_VALUE[tracked.state] },
       progress: tracked.progress,
       context: tracked.context,
     });
@@ -265,8 +265,8 @@ export function createHostBridge(
       notify('host/hideStatus', {
         statusId,
         message: {
-          Message: tracked?.message ?? statusId,
-          State: MESSAGE_STATE_VALUE[tracked?.state ?? 'info'],
+          message: tracked?.message ?? statusId,
+          state: MESSAGE_STATE_VALUE[tracked?.state ?? 'info'],
         },
       });
     },

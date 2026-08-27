@@ -12,7 +12,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const fixturesDir = join(here, '..', 'wire-fixtures');
 
 /**
- * These fixtures are consumed by the phase-3 C# tests. Set UPDATE_FIXTURES=1 to
+ * These fixtures are consumed by the C# adapter tests. Set UPDATE_FIXTURES=1 to
  * rewrite them from the serializer after an intentional wire change.
  */
 const shouldUpdate = process.env.UPDATE_FIXTURES === '1';

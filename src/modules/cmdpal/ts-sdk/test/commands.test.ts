@@ -32,7 +32,7 @@ describe('OpenUrlCommand', () => {
 
     const wire = serializeCommandResult(command.invoke());
 
-    expect(wire).toEqual({ Kind: 0 });
+    expect(wire).toEqual({ kind: 0 });
     expect(opener).toHaveBeenCalledWith('https://example.com/');
   });
 

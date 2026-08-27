@@ -1,7 +1,7 @@
 {
-  "Args": {
-    "NavigationMode": "push",
-    "PageId": "target-page"
+  "args": {
+    "navigationMode": "push",
+    "pageId": "target-page"
   },
-  "Kind": 5
+  "kind": 5
 }

@@ -32,7 +32,7 @@ describe('client-side status identity', () => {
     expect(sent[0]?.method).toBe('host/showStatus');
     expect(sent[0]?.params).toMatchObject({
       statusId: 'status-1',
-      message: { Message: 'Working', State: 0 },
+      message: { message: 'Working', state: 0 },
       progress: { isIndeterminate: false, progressPercent: 25 },
       context: 'extension',
     });
@@ -68,7 +68,7 @@ describe('client-side status identity', () => {
     expect(shows).toHaveLength(2);
     expect(shows[1]?.params).toMatchObject({
       statusId: 'status-1',
-      message: { Message: 'Almost done', State: 2 },
+      message: { message: 'Almost done', state: 2 },
       progress: { isIndeterminate: false, progressPercent: 75 },
       context: 'extension',
     });
@@ -84,7 +84,7 @@ describe('client-side status identity', () => {
     expect(hides).toHaveLength(1);
     expect(hides[0]?.params).toMatchObject({
       statusId: 'status-1',
-      message: { Message: 'Done', State: 1 },
+      message: { message: 'Done', state: 1 },
     });
   });
 });

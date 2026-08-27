@@ -96,11 +96,13 @@ export class ExtensionRuntime {
    * are released rather than accumulating.
    */
   private providerScope = new Map<string, ICommand>();
+  private providerRoots = new Set<string>();
   /**
    * Commands for the current fallback generation. Replaced wholesale each time
    * the host requests fallback commands.
    */
   private fallbackScope = new Map<string, ICommand>();
+  private fallbackRoots = new Set<string>();
   /**
    * Commands resolved on demand (a `provider/getCommand` or
    * `provider/getCommandItem` result, the settings
@@ -108,6 +110,7 @@ export class ExtensionRuntime {
    * re-resolving the same id overwrites rather than growing the registry.
    */
   private readonly resolved = new Map<string, ICommand>();
+  private readonly resolvedRoots = new Set<string>();
   private readonly pageScopes = new Map<string, PageScope>();
   private readonly fallbacks = new Map<string, IFallbackCommandItem>();
   /**
@@ -126,6 +129,8 @@ export class ExtensionRuntime {
    * outlive its owner.
    */
   private readonly resultChildren = new Map<string, Set<string>>();
+  private readonly propertyChildren = new Map<string, Map<string, Set<string>>>();
+  private readonly childOwnerCounts = new Map<string, number>();
   private readonly serializer: WireSerializer;
   private readonly send: MessageSender;
   private readonly onDispose?: () => void;
@@ -157,6 +162,8 @@ export class ExtensionRuntime {
     this.reportFatal = options.reportFatal;
     this.serializer = new WireSerializer((command) => {
       this.sink(command);
+    }, (ownerId, propertyName, children) => {
+      this.reconcilePropertyChildren(ownerId, propertyName, new Set(children));
     });
   }
 
@@ -172,6 +179,12 @@ export class ExtensionRuntime {
   /** Host application version advertised during initialize, if any. */
   get negotiatedHostVersion(): string | undefined {
     return this.hostVersion;
+  }
+
+  sendSdkNotification(method: string, params?: unknown): void {
+    const serializedParams =
+      method === 'command/propChanged' ? this.serializePropertyNotification(params) : params;
+    this.sendNotification(method, serializedParams);
   }
 
   /**
@@ -418,6 +431,7 @@ export class ExtensionRuntime {
     // recursively retiring the descendant scopes they owned.
     const previous = this.providerScope;
     this.providerScope = scope;
+    this.providerRoots = new Set(items.map((item) => item.command.id));
     this.retireMissing(previous.keys(), scope);
     this.respond(id, serialized);
   }
@@ -430,6 +444,11 @@ export class ExtensionRuntime {
     }
     const items = (await provider.fallbackCommands?.()) ?? null;
     if (!items) {
+      const previous = this.fallbackScope;
+      this.fallbackScope = new Map();
+      this.fallbackRoots = new Set();
+      this.fallbacks.clear();
+      this.retireMissing(previous.keys(), this.fallbackScope);
       this.respond(id, null);
       return;
     }
@@ -443,6 +462,7 @@ export class ExtensionRuntime {
     // and recursively retiring the descendant scopes they owned.
     const previous = this.fallbackScope;
     this.fallbackScope = scope;
+    this.fallbackRoots = new Set(items.map((item) => item.command.id));
     this.retireMissing(previous.keys(), scope);
     this.respond(id, serialized);
   }
@@ -457,6 +477,9 @@ export class ExtensionRuntime {
 
   private async getCommandItem(id: number | string, commandId: string): Promise<void> {
     const item = (await this.provider?.getCommandItem?.(commandId)) ?? null;
+    if (item) {
+      this.resolvedRoots.add(item.command.id);
+    }
     const serialized = item
       ? await this.withMapSink(this.resolved, () => this.serializer.commandItem(item))
       : null;
@@ -470,9 +493,10 @@ export class ExtensionRuntime {
       this.respond(id, null);
       return;
     }
-    // Send the whole settings page so the host can render it without another fetch.
-    // `serializer.command` registers the page with the active sink, so later
-    // content/form requests can resolve it.
+    this.resolvedRoots.add(page.id);
+    // Serialize the full settings page (not just its id) so the host can render
+    // it without a second fetch. `serializer.command` registers the page via the
+    // active sink, so a later content/form request resolves it.
     this.respond(id, this.serializer.command(page));
   }
 
@@ -642,17 +666,20 @@ export class ExtensionRuntime {
     const commands = await provider.topLevelCommands();
     for (const item of commands) {
       this.providerScope.set(item.command.id, item.command);
+      this.providerRoots.add(item.command.id);
     }
     const fallbacks = (await provider.fallbackCommands?.()) ?? null;
     if (fallbacks) {
       for (const item of fallbacks) {
         this.fallbackScope.set(item.command.id, item.command);
+        this.fallbackRoots.add(item.command.id);
         this.fallbacks.set(item.command.id, item);
       }
     }
     if (provider.settings?.settingsPage) {
       const page = provider.settings.settingsPage;
       this.resolved.set(page.id, page);
+      this.resolvedRoots.add(page.id);
     }
   }
 
@@ -722,6 +749,7 @@ export class ExtensionRuntime {
     const command = (await this.provider?.getCommand?.(commandId)) ?? null;
     if (command) {
       this.resolved.set(command.id, command);
+      this.resolvedRoots.add(command.id);
       return command;
     }
     if (!this.primed) {
@@ -757,20 +785,108 @@ export class ExtensionRuntime {
    * that own no scope.
    */
   private retire(commandId: string): void {
+    this.providerRoots.delete(commandId);
+    this.fallbackRoots.delete(commandId);
+    this.resolvedRoots.delete(commandId);
+    this.providerScope.delete(commandId);
+    this.fallbackScope.delete(commandId);
     this.resolved.delete(commandId);
     this.pageScopes.delete(commandId);
     const contentChildren = this.pageContentChildren.get(commandId);
     this.pageContentChildren.delete(commandId);
     const resultChildren = this.resultChildren.get(commandId);
     this.resultChildren.delete(commandId);
+    const propertyChildren = this.propertyChildren.get(commandId);
+    this.propertyChildren.delete(commandId);
+    const childrenToRetire = new Set<string>();
     if (contentChildren) {
       for (const childId of contentChildren) {
-        this.retire(childId);
+        this.removeChildOwner(childId);
+        childrenToRetire.add(childId);
       }
     }
     if (resultChildren) {
       for (const childId of resultChildren) {
-        this.retire(childId);
+        if (childId !== commandId) {
+          this.removeChildOwner(childId);
+          childrenToRetire.add(childId);
+        }
+      }
+    }
+    if (propertyChildren) {
+      for (const children of propertyChildren.values()) {
+        for (const childId of children) {
+          if (childId !== commandId) {
+            this.removeChildOwner(childId);
+            childrenToRetire.add(childId);
+          }
+        }
+      }
+    }
+    for (const childId of childrenToRetire) {
+      this.retireIfUnowned(childId);
+    }
+  }
+
+  private serializePropertyNotification(params: unknown): unknown {
+    const notification = asParams(params);
+    const commandId = stringField(notification, 'commandId');
+    const propertiesValue = notification.properties;
+    if (
+      !commandId ||
+      typeof propertiesValue !== 'object' ||
+      propertiesValue === null ||
+      Array.isArray(propertiesValue)
+    ) {
+      return params;
+    }
+
+    const properties = propertiesValue as Record<string, unknown>;
+    const serialized: Record<string, unknown> = {};
+    for (const [propertyName, value] of Object.entries(properties)) {
+      const serializer = new WireSerializer((command) => {
+        this.resolved.set(command.id, command);
+      }, (ownerId, nestedPropertyName, nestedChildren) => {
+        this.reconcilePropertyChildren(ownerId, nestedPropertyName, new Set(nestedChildren));
+      });
+
+      serialized[propertyName] = serializer.observableProperty(
+        commandId,
+        propertyName,
+        value,
+      );
+    }
+
+    return { ...notification, properties: serialized };
+  }
+
+  private reconcilePropertyChildren(
+    commandId: string,
+    propertyName: string,
+    current: Set<string>,
+  ): void {
+    let properties = this.propertyChildren.get(commandId);
+    if (!properties) {
+      properties = new Map();
+      this.propertyChildren.set(commandId, properties);
+    }
+
+    const previous = properties.get(propertyName);
+    this.replaceChildOwners(previous, current);
+    if (current.size > 0) {
+      properties.set(propertyName, current);
+    } else {
+      properties.delete(propertyName);
+      if (properties.size === 0) {
+        this.propertyChildren.delete(commandId);
+      }
+    }
+
+    if (previous) {
+      for (const childId of previous) {
+        if (!current.has(childId)) {
+          this.retireIfUnowned(childId);
+        }
       }
     }
   }
@@ -779,9 +895,24 @@ export class ExtensionRuntime {
   private retireMissing(ids: Iterable<string>, keep: ReadonlyMap<string, unknown>): void {
     for (const id of ids) {
       if (!keep.has(id)) {
-        this.retire(id);
+        this.retireIfUnowned(id);
       }
     }
+  }
+
+  private retireIfUnowned(commandId: string): void {
+    if (!this.isCommandOwned(commandId)) {
+      this.retire(commandId);
+    }
+  }
+
+  private isCommandOwned(commandId: string): boolean {
+    return (
+      this.providerRoots.has(commandId) ||
+      this.fallbackRoots.has(commandId) ||
+      this.resolvedRoots.has(commandId) ||
+      (this.childOwnerCounts.get(commandId) ?? 0) > 0
+    );
   }
 
   /**
@@ -792,11 +923,12 @@ export class ExtensionRuntime {
   private reconcilePageContent(pageId: string, scope: PageScope): void {
     const current = new Set(scope.commands.keys());
     const previous = this.pageContentChildren.get(pageId);
+    this.replaceChildOwners(previous, current);
     this.pageContentChildren.set(pageId, current);
     if (previous) {
       for (const childId of previous) {
         if (!current.has(childId)) {
-          this.retire(childId);
+          this.retireIfUnowned(childId);
         }
       }
     }
@@ -816,7 +948,9 @@ export class ExtensionRuntime {
     const serialized = await this.withSink(
       (command) => {
         this.resolved.set(command.id, command);
-        children.add(command.id);
+        if (command.id !== ownerId) {
+          children.add(command.id);
+        }
       },
       () => this.serializer.commandResult(result),
     );
@@ -824,13 +958,50 @@ export class ExtensionRuntime {
       const existing = this.resultChildren.get(ownerId);
       if (existing) {
         for (const childId of children) {
-          existing.add(childId);
+          if (!existing.has(childId)) {
+            existing.add(childId);
+            this.addChildOwner(childId);
+          }
         }
       } else {
         this.resultChildren.set(ownerId, children);
+        for (const childId of children) {
+          this.addChildOwner(childId);
+        }
       }
     }
     return serialized;
+  }
+
+  private replaceChildOwners(
+    previous: ReadonlySet<string> | undefined,
+    current: ReadonlySet<string>,
+  ): void {
+    if (previous) {
+      for (const childId of previous) {
+        if (!current.has(childId)) {
+          this.removeChildOwner(childId);
+        }
+      }
+    }
+    for (const childId of current) {
+      if (!previous?.has(childId)) {
+        this.addChildOwner(childId);
+      }
+    }
+  }
+
+  private addChildOwner(commandId: string): void {
+    this.childOwnerCounts.set(commandId, (this.childOwnerCounts.get(commandId) ?? 0) + 1);
+  }
+
+  private removeChildOwner(commandId: string): void {
+    const count = this.childOwnerCounts.get(commandId) ?? 0;
+    if (count <= 1) {
+      this.childOwnerCounts.delete(commandId);
+    } else {
+      this.childOwnerCounts.set(commandId, count - 1);
+    }
   }
 
   private respond(id: number | string, result: unknown): void {

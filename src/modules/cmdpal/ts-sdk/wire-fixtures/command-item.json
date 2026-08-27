@@ -1,10 +1,8 @@
 {
   "command": {
-    "displayName": "Item",
     "id": "ci-1",
     "name": "Item"
   },
-  "displayName": "Command item",
   "icon": {
     "dark": {
       "icon": ""

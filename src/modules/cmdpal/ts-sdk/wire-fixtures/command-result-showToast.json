@@ -1,6 +1,6 @@
 {
-  "Args": {
-    "Message": "Saved"
+  "args": {
+    "message": "Saved"
   },
-  "Kind": 6
+  "kind": 6
 }

@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 /**
- * Builds the canonical wire fixtures consumed by the phase-3 C# tests. Every
+ * Builds the canonical wire fixtures consumed by the C# adapter tests. Every
  * fixture is produced by the same serializer the runtime uses, so the fixtures
  * cannot drift from the code that emits them. A few fixtures (host status
  * payloads, provider metadata, and forward-compatibility cases) are shaped by
@@ -153,8 +153,7 @@ export async function buildFixtures(): Promise<Record<string, unknown>> {
 
   const fixtures: Record<string, unknown> = {};
 
-  // CommandResult kinds. The numeric Kind map and PascalCase args are the
-  // locked wire contract and must stay byte-identical.
+  // CommandResult kinds use the canonical camelCase wire contract.
   fixtures['command-result-dismiss'] = serializeCommandResult({ kind: 'dismiss' });
   fixtures['command-result-goHome'] = serializeCommandResult({ kind: 'goHome' });
   fixtures['command-result-goBack'] = serializeCommandResult({ kind: 'goBack' });
@@ -169,7 +168,7 @@ export async function buildFixtures(): Promise<Record<string, unknown>> {
     kind: 'showToast',
     args: { message: 'Saved' },
   });
-  // Nested toast continuation (p1-10): the toast carries a follow-up result.
+  // The toast can carry a follow-up result.
   fixtures['command-result-showToast-nested'] = serializeCommandResult({
     kind: 'showToast',
     args: { message: 'Saved', result: { kind: 'goHome' } },
@@ -279,31 +278,31 @@ export async function buildFixtures(): Promise<Record<string, unknown>> {
   // Status payloads (mirror the host bridge in server.ts): show, update, hide.
   fixtures['status-show'] = {
     statusId: 'status-1',
-    message: { Message: 'Working', State: MESSAGE_STATE.info },
+    message: { message: 'Working', state: MESSAGE_STATE.info },
     progress: { isIndeterminate: true },
     context: 'extension',
   };
   fixtures['status-update'] = {
     statusId: 'status-1',
-    message: { Message: 'Almost done', State: MESSAGE_STATE.success },
+    message: { message: 'Almost done', state: MESSAGE_STATE.success },
     progress: { isIndeterminate: false, progressPercent: 80 },
     context: 'extension',
   };
   fixtures['status-hide'] = {
     statusId: 'status-1',
-    message: { Message: 'Almost done', State: MESSAGE_STATE.success },
+    message: { message: 'Almost done', state: MESSAGE_STATE.success },
   };
 
   // Forward-compatibility cases the C# parser must tolerate: unknown fields are
-  // ignored, a future Kind degrades safely, and a future MessageState is kept.
+  // ignored, a future kind degrades safely, and a future message state is kept.
   fixtures['compat-omitted-optionals'] = serializer.command({ id: 'bare', name: 'Bare' });
   fixtures['compat-unknown-fields'] = {
-    Kind: 1,
-    UnknownField: 'ignored',
-    Nested: { a: 1, b: [1, 2] },
+    kind: 1,
+    unknownField: 'ignored',
+    nested: { a: 1, b: [1, 2] },
   };
-  fixtures['compat-future-command-result-kind'] = { Kind: 99 };
-  fixtures['compat-future-message-state'] = { Message: 'Future', State: 99 };
+  fixtures['compat-future-command-result-kind'] = { kind: 99 };
+  fixtures['compat-future-message-state'] = { message: 'Future', state: 99 };
 
   return fixtures;
 }

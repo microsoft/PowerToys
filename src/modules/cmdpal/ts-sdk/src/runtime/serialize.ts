@@ -24,6 +24,16 @@ import { serializeCommandResult, type WireCommandResult } from './commandResult.
 
 /** Handler captured from a form at serialize time, keyed later by its id. */
 export type FormSubmitHandler = FormContent['submitForm'];
+type PropertyChildrenSink = (
+  ownerId: string,
+  propertyName: string,
+  children: ReadonlySet<string>,
+) => void;
+type PropertyScope = {
+  ownerId: string;
+  propertyName: string;
+  children: Set<string>;
+};
 
 /**
  * Collects the forms encountered while a page's content is serialized. The
@@ -73,18 +83,30 @@ function assign(target: Record<string, unknown>, key: string, value: unknown): v
  */
 export class WireSerializer {
   private readonly register: (command: ICommand) => void;
+  private readonly reconcilePropertyChildren: PropertyChildrenSink;
+  private readonly propertyScopes: PropertyScope[] = [];
 
-  constructor(register: (command: ICommand) => void = () => {}) {
+  constructor(
+    register: (command: ICommand) => void = () => {},
+    reconcilePropertyChildren: PropertyChildrenSink = () => {},
+  ) {
     this.register = register;
+    this.reconcilePropertyChildren = reconcilePropertyChildren;
   }
 
   command(command: ICommand): Record<string, unknown> {
     this.register(command);
+    for (let index = this.propertyScopes.length - 1; index >= 0; index -= 1) {
+      const propertyScope = this.propertyScopes[index];
+      if (propertyScope && propertyScope.ownerId !== command.id) {
+        propertyScope.children.add(command.id);
+        break;
+      }
+    }
 
     const result: Record<string, unknown> = {
       id: command.id,
       name: command.name,
-      displayName: command.name,
     };
     assign(result, 'icon', command.icon ?? undefined);
 
@@ -104,17 +126,22 @@ export class WireSerializer {
     const result: Record<string, unknown> = {
       id: fallbackItem.id ?? item.command.id,
       title: item.title,
-      displayName: item.title,
     };
     assign(result, 'subtitle', item.subtitle);
     assign(result, 'icon', item.icon ?? undefined);
-    result.command = this.command(item.command);
+    result.command = this.observableProperty(item.command.id, 'command', item.command);
 
     const displayTitle = fallbackItem.displayTitle;
     assign(result, 'displayTitle', displayTitle);
 
     if (item.moreCommands && item.moreCommands.length > 0) {
-      result.moreCommands = this.contextItems(item.moreCommands);
+      result.moreCommands = this.observableProperty(
+        item.command.id,
+        'moreCommands',
+        item.moreCommands,
+      );
+    } else {
+      this.observableProperty(item.command.id, 'moreCommands', undefined);
     }
     return result;
   }
@@ -136,20 +163,27 @@ export class WireSerializer {
     const result: Record<string, unknown> = {
       id: item.command.id,
       title: item.title,
-      displayName: item.title,
     };
     assign(result, 'subtitle', item.subtitle);
     assign(result, 'section', item.section);
     assign(result, 'tags', item.tags);
     assign(result, 'textToSuggest', item.textToSuggest);
     assign(result, 'icon', item.icon ?? undefined);
-    result.command = this.command(item.command);
+    result.command = this.observableProperty(item.command.id, 'command', item.command);
 
     if (item.details) {
-      result.details = this.details(item.details);
+      result.details = this.observableProperty(item.command.id, 'details', item.details);
+    } else {
+      this.observableProperty(item.command.id, 'details', undefined);
     }
     if (item.moreCommands && item.moreCommands.length > 0) {
-      result.moreCommands = this.contextItems(item.moreCommands);
+      result.moreCommands = this.observableProperty(
+        item.command.id,
+        'moreCommands',
+        item.moreCommands,
+      );
+    } else {
+      this.observableProperty(item.command.id, 'moreCommands', undefined);
     }
     return result;
   }
@@ -239,6 +273,28 @@ export class WireSerializer {
     return serializeCommandResult(result, (command) => this.command(command));
   }
 
+  observableProperty(ownerId: string, propertyName: string, value: unknown): unknown {
+    return this.withPropertyChildren(ownerId, propertyName, () => {
+      if (value === null || value === undefined) {
+        return value;
+      }
+
+      switch (propertyName) {
+        case 'command':
+          return this.command(value as ICommand);
+        case 'emptyContent':
+          return this.commandItem(value as ICommandItem);
+        case 'moreCommands':
+        case 'commands':
+          return this.contextItems(value as ContextItem[]);
+        case 'details':
+          return this.details(value as Details);
+        default:
+          return value;
+      }
+    });
+  }
+
   private applyListPageProps(target: Record<string, unknown>, page: IListPage): void {
     assign(target, 'title', page.title);
     assign(target, 'isLoading', page.isLoading);
@@ -250,7 +306,9 @@ export class WireSerializer {
     assign(target, 'gridProperties', page.gridProperties ?? undefined);
     assign(target, 'hasMoreItems', page.hasMoreItems);
     if (page.emptyContent) {
-      target.emptyContent = this.commandItem(page.emptyContent);
+      target.emptyContent = this.observableProperty(page.id, 'emptyContent', page.emptyContent);
+    } else {
+      this.observableProperty(page.id, 'emptyContent', undefined);
     }
   }
 
@@ -259,10 +317,29 @@ export class WireSerializer {
     assign(target, 'isLoading', page.isLoading);
     assign(target, 'accentColor', page.accentColor ?? undefined);
     if (page.details) {
-      target.details = this.details(page.details);
+      target.details = this.observableProperty(page.id, 'details', page.details);
+    } else {
+      this.observableProperty(page.id, 'details', undefined);
     }
     if (page.commands && page.commands.length > 0) {
-      target.commands = this.contextItems(page.commands);
+      target.commands = this.observableProperty(page.id, 'commands', page.commands);
+    } else {
+      this.observableProperty(page.id, 'commands', undefined);
+    }
+  }
+
+  private withPropertyChildren<T>(
+    ownerId: string,
+    propertyName: string,
+    produce: () => T,
+  ): T {
+    const scope: PropertyScope = { ownerId, propertyName, children: new Set() };
+    this.propertyScopes.push(scope);
+    try {
+      return produce();
+    } finally {
+      this.propertyScopes.pop();
+      this.reconcilePropertyChildren(ownerId, propertyName, scope.children);
     }
   }
 }

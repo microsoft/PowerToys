@@ -1,8 +1,8 @@
 {
   "context": "extension",
   "message": {
-    "Message": "Working",
-    "State": 0
+    "message": "Working",
+    "state": 0
   },
   "progress": {
     "isIndeterminate": true
