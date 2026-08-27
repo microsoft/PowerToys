@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -56,11 +55,7 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
         _registry = Registries.GetValue(Connection, static _ => new PageRegistry());
         _registry.EnsureSubscribed(Connection);
 
-        var list = _registry.Pages.GetOrAdd(_pageId, static _ => new List<WeakReference<JSListPageProxy>>());
-        lock (list)
-        {
-            list.Add(new WeakReference<JSListPageProxy>(this));
-        }
+        _registry.Pages.Register(_pageId, this);
     }
 
     public event TypedEventHandler<object, IItemsChangedEventArgs>? ItemsChanged;
@@ -295,17 +290,7 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
         _emptyContent.Dispose();
         base.Dispose();
 
-        if (_registry.Pages.TryGetValue(_pageId, out var list))
-        {
-            lock (list)
-            {
-                list.RemoveAll(weak => !weak.TryGetTarget(out var target) || ReferenceEquals(target, this));
-                if (list.Count == 0)
-                {
-                    _registry.Pages.TryRemove(_pageId, out _);
-                }
-            }
-        }
+        _registry.Pages.Unregister(_pageId, this);
     }
 
     private static void DispatchItemsChanged(PageRegistry registry, JsonElement paramsElement)
@@ -319,7 +304,7 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
             }
 
             var pageId = pageProp.GetString();
-            if (pageId == null || !registry.Pages.TryGetValue(pageId, out var proxyRefs))
+            if (pageId == null)
             {
                 return;
             }
@@ -331,27 +316,7 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
                 totalItems = totalItemsProp.GetInt32();
             }
 
-            // Snapshot live proxies and prune collected ones so the registry does
-            // not grow as pages come and go.
-            List<JSListPageProxy> targets = new();
-            lock (proxyRefs)
-            {
-                proxyRefs.RemoveAll(weak => !weak.TryGetTarget(out _));
-                foreach (var weak in proxyRefs)
-                {
-                    if (weak.TryGetTarget(out var proxy))
-                    {
-                        targets.Add(proxy);
-                    }
-                }
-
-                if (proxyRefs.Count == 0)
-                {
-                    registry.Pages.TryRemove(pageId, out _);
-                }
-            }
-
-            foreach (var proxy in targets)
+            foreach (var proxy in registry.Pages.GetLiveTargets(pageId))
             {
                 proxy.UpdatePageState(paramsElement);
 
@@ -458,7 +423,7 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
         private readonly object _subscribeLock = new();
         private bool _subscribed;
 
-        public ConcurrentDictionary<string, List<WeakReference<JSListPageProxy>>> Pages { get; } = new();
+        public JSWeakReferenceRegistry<string, JSListPageProxy> Pages { get; } = new();
 
         // Binds the itemsChanged handler to the retained registry once. Binding here,
         // instead of inside the ConditionalWeakTable factory, keeps the handler from

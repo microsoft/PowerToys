@@ -52,6 +52,45 @@ public partial class JSAdapterTests
     }
 
     [TestMethod]
+    public void WeakReferenceRegistry_PrunesDeadTargetsDuringRegistration()
+    {
+        var registry = new JSWeakReferenceRegistry<string, object>();
+        var deadTarget = RegisterTemporaryTarget(registry, "page");
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        Assert.IsFalse(deadTarget.TryGetTarget(out _));
+        Assert.AreEqual(1, registry.GetRegistrationCount("page"));
+
+        var liveTarget = new object();
+        registry.Register("page", liveTarget);
+
+        Assert.AreEqual(1, registry.GetRegistrationCount("page"));
+        Assert.AreSame(liveTarget, registry.GetLiveTargets("page")[0]);
+    }
+
+    [TestMethod]
+    public void WeakReferenceRegistry_ConcurrentReplacementKeepsNewestTarget()
+    {
+        for (var i = 0; i < 128; i++)
+        {
+            var registry = new JSWeakReferenceRegistry<string, object>();
+            var oldTarget = new object();
+            var newTarget = new object();
+            registry.Register("page", oldTarget);
+
+            Parallel.Invoke(
+                () => registry.Unregister("page", oldTarget),
+                () => registry.Register("page", newTarget));
+
+            var liveTargets = registry.GetLiveTargets("page");
+            Assert.AreEqual(1, liveTargets.Count);
+            Assert.AreSame(newTarget, liveTargets[0]);
+        }
+    }
+
+    [TestMethod]
     public void NestedProxyGetters_CacheIdentityAndRegistration()
     {
         using var fake = new JSFakeExtension();
@@ -139,6 +178,7 @@ public partial class JSAdapterTests
             fake.Connection);
         var originalDetails = item.Details;
         var originalMoreCommands = item.MoreCommands;
+        var originalCommand = ((ICommandContextItem)originalMoreCommands[0]).Command;
 
         JSPropertyChangeRegistry.Dispatch(
             fake.Connection,
@@ -167,8 +207,45 @@ public partial class JSAdapterTests
         Assert.AreEqual("New details", item.Details?.Title);
         Assert.AreNotSame(originalDetails, item.Details);
         Assert.AreNotSame(originalMoreCommands, item.MoreCommands);
-        Assert.AreEqual(0, JSPropertyChangeRegistry.GetRegistrationCount(fake.Connection, "old-more"));
+        Assert.AreSame(item.MoreCommands, item.MoreCommands);
+        Assert.AreEqual(1, JSPropertyChangeRegistry.GetRegistrationCount(fake.Connection, "old-more"));
         Assert.AreEqual(1, JSPropertyChangeRegistry.GetRegistrationCount(fake.Connection, "new-more"));
+
+        JSPropertyChangeRegistry.Dispatch(
+            fake.Connection,
+            ParseElement(new JsonObject
+            {
+                ["commandId"] = "old-more",
+                ["properties"] = new JsonObject { ["name"] = "Still alive" },
+            }));
+
+        Assert.AreEqual("Still alive", originalCommand.Name);
+        (originalCommand as IDisposable)?.Dispose();
+    }
+
+    [TestMethod]
+    public async Task PageRegistries_RouteToNewestProxyAfterOlderProxyIsRemoved()
+    {
+        using var fake = new JSFakeExtension();
+        using var oldListPage = new JSListPageProxy("list-page", fake.Connection);
+        using var newListPage = new JSListPageProxy("list-page", fake.Connection);
+        using var oldContentPage = new JSContentPageProxy("content-page", fake.Connection);
+        using var newContentPage = new JSContentPageProxy("content-page", fake.Connection);
+        var listChanged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var contentChanged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        newListPage.ItemsChanged += (_, _) => listChanged.TrySetResult();
+        newContentPage.ItemsChanged += (_, _) => contentChanged.TrySetResult();
+
+        oldListPage.Dispose();
+        oldContentPage.Dispose();
+        await fake.PushNotificationAsync(
+            "listPage/itemsChanged",
+            new JsonObject { ["pageId"] = "list-page" });
+        await fake.PushNotificationAsync(
+            "contentPage/itemsChanged",
+            new JsonObject { ["pageId"] = "content-page" });
+
+        await Task.WhenAll(listChanged.Task, contentChanged.Task).WaitAsync(Timeout);
     }
 
     [TestMethod]
@@ -426,6 +503,16 @@ public partial class JSAdapterTests
         var target = new RecordingPropertyChangeTarget();
         JSPropertyChangeRegistry.Register(connection, commandId, target);
         return new WeakReference<RecordingPropertyChangeTarget>(target);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference<object> RegisterTemporaryTarget(
+        JSWeakReferenceRegistry<string, object> registry,
+        string key)
+    {
+        var target = new object();
+        registry.Register(key, target);
+        return new WeakReference<object>(target);
     }
 
     private static JsonObject Command(string id) => new()

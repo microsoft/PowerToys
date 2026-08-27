@@ -63,7 +63,7 @@ internal sealed partial class JSLazyCache<T> : IDisposable
                 return;
             }
 
-            DisposeCreatedValue();
+            // The host may still own the previous proxy, so invalidation only releases the cache reference.
             _value = default!;
             _hasValue = false;
         }
