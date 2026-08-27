@@ -18,10 +18,26 @@ internal static class JSPropertyChangeRegistry
     internal static void Register(JsonRpcConnection connection, string commandId, IJSPropertyChangeTarget target)
     {
         var registry = Registries.GetValue(connection, static _ => new Registry());
-        var targets = registry.Targets.GetOrAdd(commandId, static _ => []);
-        lock (targets)
+        while (true)
         {
-            targets.Add(new WeakReference<IJSPropertyChangeTarget>(target));
+            var targets = registry.Targets.GetOrAdd(commandId, static _ => []);
+            lock (targets)
+            {
+                if (!registry.Targets.TryGetValue(commandId, out var currentTargets) ||
+                    !ReferenceEquals(targets, currentTargets))
+                {
+                    continue;
+                }
+
+                targets.RemoveAll(reference => !reference.TryGetTarget(out _));
+                if (!targets.Exists(reference =>
+                    reference.TryGetTarget(out var current) && ReferenceEquals(current, target)))
+                {
+                    targets.Add(new WeakReference<IJSPropertyChangeTarget>(target));
+                }
+
+                return;
+            }
         }
     }
 
@@ -39,7 +55,7 @@ internal static class JSPropertyChangeRegistry
                 !reference.TryGetTarget(out var current) || ReferenceEquals(current, target));
             if (targets.Count == 0)
             {
-                registry.Targets.TryRemove(commandId, out _);
+                RemoveTargets(registry, commandId, targets);
             }
         }
     }
@@ -73,12 +89,40 @@ internal static class JSPropertyChangeRegistry
                     liveTargets.Add(target);
                 }
             }
+
+            if (targets.Count == 0)
+            {
+                RemoveTargets(registry, commandId, targets);
+            }
         }
 
         foreach (var target in liveTargets)
         {
             target.ApplyPropertyChanges(properties);
         }
+    }
+
+    internal static int GetRegistrationCount(JsonRpcConnection connection, string commandId)
+    {
+        if (!Registries.TryGetValue(connection, out var registry) ||
+            !registry.Targets.TryGetValue(commandId, out var targets))
+        {
+            return 0;
+        }
+
+        lock (targets)
+        {
+            return targets.Count;
+        }
+    }
+
+    private static void RemoveTargets(
+        Registry registry,
+        string commandId,
+        List<WeakReference<IJSPropertyChangeTarget>> targets)
+    {
+        ((ICollection<KeyValuePair<string, List<WeakReference<IJSPropertyChangeTarget>>>>)registry.Targets)
+            .Remove(new KeyValuePair<string, List<WeakReference<IJSPropertyChangeTarget>>>(commandId, targets));
     }
 
     private sealed class Registry

@@ -13,18 +13,18 @@ namespace Microsoft.CmdPal.JsonRpc.Models;
 /// The full settings page payload is kept intact, including title, name, icon,
 /// details, and commands.
 /// </summary>
-internal sealed partial class JSCommandSettingsProxy : ICommandSettings
+internal sealed partial class JSCommandSettingsProxy : ICommandSettings, IDisposable
 {
-    private readonly string _settingsPageId;
-    private readonly JsonRpcConnection _connection;
-    private readonly JsonElement _settingsPageData;
+    private readonly JSLazyCache<IContentPage> _settingsPage;
 
     public JSCommandSettingsProxy(string settingsPageId, JsonRpcConnection connection, JsonElement settingsPageData = default)
     {
-        _settingsPageId = settingsPageId;
-        _connection = connection;
-        _settingsPageData = settingsPageData;
+        _settingsPage = new JSLazyCache<IContentPage>(
+            () => new JSContentPageProxy(settingsPageId, connection, settingsPageData),
+            JSLazyCache<IContentPage>.DisposeValue);
     }
 
-    public IContentPage SettingsPage => new JSContentPageProxy(_settingsPageId, _connection, _settingsPageData);
+    public IContentPage SettingsPage => _settingsPage.Value;
+
+    public void Dispose() => _settingsPage.Dispose();
 }

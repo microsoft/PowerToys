@@ -284,6 +284,47 @@ internal static class JSModelMapper
         return items.ToArray();
     }
 
+    internal static void DisposeContextItems(IEnumerable<IContextItem> items)
+    {
+        foreach (var item in items)
+        {
+            if (item is not ICommandContextItem commandItem)
+            {
+                continue;
+            }
+
+            DisposeContextItems(commandItem.MoreCommands);
+            if (commandItem.Command is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
+    }
+
+    internal static void DisposeDetails(IDetails? details)
+    {
+        if (details is null)
+        {
+            return;
+        }
+
+        foreach (var element in details.Metadata)
+        {
+            if (element.Data is not IDetailsCommands commands)
+            {
+                continue;
+            }
+
+            foreach (var command in commands.Commands ?? [])
+            {
+                if (command is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
+        }
+    }
+
     internal static ICommandContextItem ParseContextItem(JsonElement element, JsonRpcConnection connection)
     {
         var command = JSCommandFactory.CreateCommandFromJson(GetCommandData(element), connection);

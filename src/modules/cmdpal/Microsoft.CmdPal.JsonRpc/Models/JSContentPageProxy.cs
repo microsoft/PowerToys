@@ -29,11 +29,19 @@ internal sealed partial class JSContentPageProxy : JSObservableProxyBase, IConte
 
     private readonly string _pageId;
     private readonly PageRegistry _registry;
+    private readonly JSLazyCache<IDetails?> _details;
+    private readonly JSLazyCache<IContextItem[]> _commands;
 
     public JSContentPageProxy(string pageId, JsonRpcConnection connection, JsonElement pageData = default)
         : base(pageId, connection, pageData)
     {
         _pageId = pageId ?? throw new ArgumentNullException(nameof(pageId));
+        _details = new JSLazyCache<IDetails?>(
+            () => JSModelMapper.ParseDetails(Data, Connection),
+            JSModelMapper.DisposeDetails);
+        _commands = new JSLazyCache<IContextItem[]>(
+            () => JSModelMapper.ParseContextItems(Data, "commands", Connection),
+            JSModelMapper.DisposeContextItems);
 
         _registry = Registries.GetValue(Connection, static _ => new PageRegistry());
         _registry.EnsureSubscribed(Connection);
@@ -59,9 +67,9 @@ internal sealed partial class JSContentPageProxy : JSObservableProxyBase, IConte
 
     public OptionalColor AccentColor => JSModelMapper.ParseColor(Data, "accentColor");
 
-    public IDetails? Details => JSModelMapper.ParseDetails(Data, Connection);
+    public IDetails? Details => _details.Value;
 
-    public IContextItem[] Commands => JSModelMapper.ParseContextItems(Data, "commands", Connection);
+    public IContextItem[] Commands => _commands.Value;
 
     public IContent[] GetContent()
     {
@@ -89,6 +97,8 @@ internal sealed partial class JSContentPageProxy : JSObservableProxyBase, IConte
 
     public override void Dispose()
     {
+        _details.Dispose();
+        _commands.Dispose();
         if (_registry.Pages.TryGetValue(_pageId, out var pages))
         {
             lock (pages)
@@ -110,6 +120,21 @@ internal sealed partial class JSContentPageProxy : JSObservableProxyBase, IConte
         "details" or "commands" => true,
         _ => false,
     };
+
+    protected override void OnPropertyChangesApplied(IReadOnlyList<string> propertyNames)
+    {
+        foreach (var propertyName in propertyNames)
+        {
+            if (propertyName == "details")
+            {
+                _details.Reset();
+            }
+            else if (propertyName == "commands")
+            {
+                _commands.Reset();
+            }
+        }
+    }
 
     private static JsonElement? UnwrapContent(JsonElement? result)
     {

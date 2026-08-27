@@ -35,6 +35,7 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
     // Guards _shownStatusMessages. Host status notifications and Dispose can run
     // on different threads, so reads, writes, and enumeration share one gate.
     private readonly object _statusLock = new();
+    private readonly object _settingsLock = new();
 
     // Host notifications can arrive after this proxy subscribes but before
     // InitializeWithHost attaches the host. Buffer them in arrival order so
@@ -44,8 +45,9 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
     private List<BufferedHostNotification>? _preInitNotifications = new();
     private IExtensionHost? _host;
     private ICommandSettings? _settingsCache;
+    private bool _settingsLoading;
     private bool _settingsQueried;
-    private bool _isDisposed;
+    private volatile bool _isDisposed;
 
     public JSCommandProviderProxy(
         JsonRpcConnection connection,
@@ -84,39 +86,43 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
     {
         get
         {
-            if (_settingsQueried)
+            lock (_settingsLock)
             {
-                return _settingsCache;
-            }
+                while (_settingsLoading && !_isDisposed)
+                {
+                    Monitor.Wait(_settingsLock);
+                }
 
-            _settingsQueried = true;
+                if (_isDisposed)
+                {
+                    return null;
+                }
 
-            try
-            {
-                var response = _connection.SendRequestAsync(
-                    "provider/getSettings",
-                    null,
-                    CancellationToken.None).GetAwaiter().GetResult();
-
-                if (response.Error != null ||
-                    !response.Result.HasValue ||
-                    response.Result.Value.ValueKind != JsonValueKind.Object)
+                if (_settingsQueried)
                 {
                     return _settingsCache;
                 }
 
-                var pageId = JSModelMapper.GetString(response.Result.Value, "id") ?? string.Empty;
-                if (!string.IsNullOrEmpty(pageId))
-                {
-                    _settingsCache = new JSCommandSettingsProxy(pageId, _connection, response.Result.Value.Clone());
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogDebug($"Failed to get settings for {DisplayName}: {ex.Message}");
+                _settingsLoading = true;
             }
 
-            return _settingsCache;
+            var settings = LoadSettings();
+            lock (_settingsLock)
+            {
+                _settingsLoading = false;
+                _settingsQueried = true;
+                if (_isDisposed)
+                {
+                    (settings as IDisposable)?.Dispose();
+                }
+                else
+                {
+                    _settingsCache = settings;
+                }
+
+                Monitor.PulseAll(_settingsLock);
+                return _settingsCache;
+            }
         }
     }
 
@@ -297,6 +303,12 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
             }
         }
 
+        lock (_settingsLock)
+        {
+            (_settingsCache as IDisposable)?.Dispose();
+            Monitor.PulseAll(_settingsLock);
+        }
+
         _host = null;
     }
 
@@ -318,6 +330,34 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
         _connection.RegisterNotificationHandler("host/showStatus", HandleShowStatusNotification);
         _connection.RegisterNotificationHandler("host/hideStatus", HandleHideStatusNotification);
         _connection.RegisterNotificationHandler("host/copyText", HandleCopyTextNotification);
+    }
+
+    private ICommandSettings? LoadSettings()
+    {
+        try
+        {
+            var response = _connection.SendRequestAsync(
+                "provider/getSettings",
+                null,
+                CancellationToken.None).GetAwaiter().GetResult();
+
+            if (response.Error != null ||
+                !response.Result.HasValue ||
+                response.Result.Value.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            var pageId = JSModelMapper.GetString(response.Result.Value, "id") ?? string.Empty;
+            return string.IsNullOrEmpty(pageId)
+                ? null
+                : new JSCommandSettingsProxy(pageId, _connection, response.Result.Value.Clone());
+        }
+        catch (Exception ex)
+        {
+            Logger.LogDebug($"Failed to get settings for {DisplayName}: {ex.Message}");
+            return null;
+        }
     }
 
     // Buffers a host notification until InitializeWithHost attaches the host.

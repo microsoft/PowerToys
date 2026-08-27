@@ -18,17 +18,23 @@ namespace Microsoft.CmdPal.JsonRpc.Models;
 /// </summary>
 internal sealed partial class JSCommandItemAdapter : JSObservableProxyBase, ICommandItem
 {
-    private Lazy<ICommand?> _command;
+    private readonly JSLazyCache<ICommand?> _command;
+    private readonly JSLazyCache<IContextItem[]> _moreCommands;
 
     public JSCommandItemAdapter(JsonElement data, JsonRpcConnection connection)
         : base(GetNotificationId(data), connection, data)
     {
-        _command = CreateCommand();
+        _command = new JSLazyCache<ICommand?>(
+            CreateCommand,
+            JSLazyCache<ICommand?>.DisposeValue);
+        _moreCommands = new JSLazyCache<IContextItem[]>(
+            () => JSModelMapper.ParseMoreCommands(Data, Connection),
+            JSModelMapper.DisposeContextItems);
     }
 
-    public ICommand? Command => Volatile.Read(ref _command).Value;
+    public ICommand? Command => _command.Value;
 
-    public IContextItem[] MoreCommands => JSModelMapper.ParseMoreCommands(Data, Connection);
+    public IContextItem[] MoreCommands => _moreCommands.Value;
 
     public IIconInfo Icon => JSModelMapper.TryGetIcon(Data, "icon", out var icon)
         ? icon
@@ -50,16 +56,25 @@ internal sealed partial class JSCommandItemAdapter : JSObservableProxyBase, ICom
         {
             if (propertyName == "command")
             {
-                Volatile.Write(ref _command, CreateCommand());
-                break;
+                _command.Reset();
+            }
+            else if (propertyName == "moreCommands")
+            {
+                _moreCommands.Reset();
             }
         }
     }
 
-    private Lazy<ICommand?> CreateCommand()
+    public override void Dispose()
     {
-        return new Lazy<ICommand?>(
-            () => JSCommandFactory.CreateCommandFromJson(JSModelMapper.GetCommandData(Data), Connection));
+        _moreCommands.Dispose();
+        _command.Dispose();
+        base.Dispose();
+    }
+
+    private ICommand? CreateCommand()
+    {
+        return JSCommandFactory.CreateCommandFromJson(JSModelMapper.GetCommandData(Data), Connection);
     }
 
     private static string GetNotificationId(JsonElement data)

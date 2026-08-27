@@ -35,6 +35,8 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
     private readonly string _pageId;
     private readonly PageRegistry _registry;
     private readonly object _stateLock = new();
+    private readonly JSLazyCache<IFilters?> _filters;
+    private readonly JSLazyCache<ICommandItem?> _emptyContent;
     private bool? _hasMoreItemsState;
     private bool _disposed;
 
@@ -42,6 +44,10 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
         : base(pageId, connection, pageData)
     {
         _pageId = pageId ?? throw new ArgumentNullException(nameof(pageId));
+        _filters = new JSLazyCache<IFilters?>(CreateFilters);
+        _emptyContent = new JSLazyCache<ICommandItem?>(
+            CreateEmptyContent,
+            JSLazyCache<ICommandItem?>.DisposeValue);
 
         // Get the retained registry before subscribing. ConditionalWeakTable may run
         // the factory on a thread that loses the race and discards its result. If the
@@ -77,19 +83,7 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
 
     public bool ShowDetails => JSModelMapper.GetBool(Data, "showDetails", false);
 
-    public IFilters? Filters
-    {
-        get
-        {
-            if (JSModelMapper.TryGetProperty(Data, "filters", out var filtersProp) &&
-                filtersProp.ValueKind == JsonValueKind.Object)
-            {
-                return new JSFiltersAdapter(filtersProp, Connection, _pageId);
-            }
-
-            return null;
-        }
-    }
+    public IFilters? Filters => _filters.Value;
 
     public IGridProperties? GridProperties => JSModelMapper.ParseGridProperties(Data);
 
@@ -107,19 +101,7 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
         }
     }
 
-    public ICommandItem? EmptyContent
-    {
-        get
-        {
-            if (JSModelMapper.TryGetProperty(Data, "emptyContent", out var emptyProp) &&
-                emptyProp.ValueKind == JsonValueKind.Object)
-            {
-                return new JSCommandItemAdapter(emptyProp, Connection);
-            }
-
-            return null;
-        }
-    }
+    public ICommandItem? EmptyContent => _emptyContent.Value;
 
     public IListItem[] GetItems()
     {
@@ -309,6 +291,8 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
 
         _disposed = true;
 
+        _filters.Dispose();
+        _emptyContent.Dispose();
         base.Dispose();
 
         if (_registry.Pages.TryGetValue(_pageId, out var list))
@@ -395,16 +379,42 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
 
     protected override void OnPropertyChangesApplied(IReadOnlyList<string> propertyNames)
     {
-        if (!propertyNames.Contains("hasMoreItems"))
+        foreach (var propertyName in propertyNames)
         {
-            return;
+            if (propertyName == "filters")
+            {
+                _filters.Reset();
+            }
+            else if (propertyName == "emptyContent")
+            {
+                _emptyContent.Reset();
+            }
         }
 
-        var value = JSModelMapper.GetBool(Data, "hasMoreItems", false);
-        lock (_stateLock)
+        if (propertyNames.Contains("hasMoreItems"))
         {
-            _hasMoreItemsState = value;
+            var value = JSModelMapper.GetBool(Data, "hasMoreItems", false);
+            lock (_stateLock)
+            {
+                _hasMoreItemsState = value;
+            }
         }
+    }
+
+    private IFilters? CreateFilters()
+    {
+        return JSModelMapper.TryGetProperty(Data, "filters", out var filtersProp) &&
+            filtersProp.ValueKind == JsonValueKind.Object
+            ? new JSFiltersAdapter(filtersProp, Connection, _pageId)
+            : null;
+    }
+
+    private ICommandItem? CreateEmptyContent()
+    {
+        return JSModelMapper.TryGetProperty(Data, "emptyContent", out var emptyProp) &&
+            emptyProp.ValueKind == JsonValueKind.Object
+            ? new JSCommandItemAdapter(emptyProp, Connection)
+            : null;
     }
 
     private IListItem[] ParseListItems(JsonElement? result)
