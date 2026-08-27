@@ -16,6 +16,7 @@ namespace AdvancedPaste.Services.CustomActions
             LocalModelPasteProvider.Registration,
             FoundryLocalPasteProvider.Registration,
             PhiSilicaPasteProvider.Registration,
+            AnthropicPasteProvider.Registration,
         };
 
         private static readonly IReadOnlyDictionary<AIServiceType, Func<PasteAIConfig, IPasteAIProvider>> ProviderFactories = CreateProviderFactories();

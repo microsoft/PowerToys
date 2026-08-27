@@ -20,5 +20,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         AzureAIInference,
         Ollama,
         PhiSilica,
+        Anthropic,
     }
 }
