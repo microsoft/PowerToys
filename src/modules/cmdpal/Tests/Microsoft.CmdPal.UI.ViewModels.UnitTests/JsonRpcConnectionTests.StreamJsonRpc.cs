@@ -157,6 +157,40 @@ public partial class JsonRpcConnectionTests
     }
 
     [TestMethod]
+    public async Task Dispose_KeepsCancellationTokensAliveUntilNotificationPumpExits()
+    {
+        using var cts = new CancellationTokenSource(TestTimeout);
+        var harness = CreateHarness();
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        try
+        {
+            harness.Host.RegisterNotificationHandler("slow", _ =>
+            {
+                entered.TrySetResult();
+                release.Task.GetAwaiter().GetResult();
+            });
+
+            await WriteFramedAsync(harness.ExtensionWrites, BuildNotification("slow", new JsonObject()), cts.Token);
+            await entered.Task.WaitAsync(cts.Token);
+
+            var notificationPump = harness.Host.NotificationConsumerCompletion;
+            await Task.Run(harness.Host.Dispose).WaitAsync(cts.Token);
+            Assert.IsFalse(notificationPump.IsCompleted);
+
+            release.TrySetResult();
+            await notificationPump.WaitAsync(cts.Token);
+            Assert.AreEqual(TaskStatus.RanToCompletion, notificationPump.Status);
+        }
+        finally
+        {
+            release.TrySetResult();
+            harness.Host.Dispose();
+        }
+    }
+
+    [TestMethod]
     public async Task ReentrantNotificationHandler_SendingRequest_DoesNotDeadlock()
     {
         using var cts = new CancellationTokenSource(TestTimeout);
