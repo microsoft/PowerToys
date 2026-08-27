@@ -55,6 +55,8 @@ namespace Microsoft.CmdPal.UI.ViewModels.Services;
 /// </remarks>
 public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExtensionHost, IDisposable
 {
+    internal const string GalleryInstallMarkerFileName = ".cmdpal-gallery-installing";
+
     // Consecutive crashes above this threshold disable an extension instead of restarting it.
     private const int MaxRestartAttempts = 3;
 
@@ -169,7 +171,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
     public string ExtensionsRootPath => ExtensionsPath;
 
     /// <inheritdoc />
-    public void StopExtension(string extensionDirectory, CancellationToken cancellationToken = default)
+    public async Task StopExtensionAsync(string extensionDirectory, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(extensionDirectory))
         {
@@ -178,13 +180,13 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
 
         // Use the lifecycle gate so uninstall waits behind any load, refresh, restart, or hot reload
         // for this directory and cleans every owned resource. The gallery calls this before deleting
-        // files, so wait synchronously. Awaited work on this path uses ConfigureAwait(false), and we
-        // never enter while holding the same gate, so we avoid a reentrant deadlock. The token lets
-        // Cancel stop waiting for a busy gate.
-        var removed = RemoveExtensionByDirectoryGatedAsync(extensionDirectory, cancellationToken).GetAwaiter().GetResult();
+        // files. Awaited work on this path uses ConfigureAwait(false), and we never enter while holding
+        // the same gate, so we avoid a reentrant deadlock. The token lets Cancel stop waiting for a
+        // busy gate.
+        var removed = await RemoveExtensionByDirectoryGatedAsync(extensionDirectory, cancellationToken).ConfigureAwait(false);
         if (removed is not null)
         {
-            OnProviderRemoved?.Invoke(this, [removed]);
+            RaiseProviderRemoved(removed);
         }
     }
 
@@ -250,7 +252,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
             var added = await AddDiscoveredNotLoadedAsync(timeoutCts.Token).ConfigureAwait(false);
             foreach (var wrapper in added)
             {
-                OnProviderAdded?.Invoke(this, [wrapper]);
+                RaiseProviderAdded(wrapper);
             }
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
@@ -1022,7 +1024,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
         {
             gate = await _directoryGate.AcquireAsync(directory, ct).ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (_disposed || _reload.IsStopRequested)
         {
             return null;
         }
@@ -1094,7 +1096,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
         {
             extensionWrapper = new JSExtensionWrapper(manifest, directory);
 
-            await extensionWrapper.StartExtensionAsync().ConfigureAwait(false);
+            await extensionWrapper.StartExtensionAsync(ct).ConfigureAwait(false);
 
             if (!extensionWrapper.IsRunning())
             {
@@ -1121,6 +1123,11 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
 
             var wrapper = CommandProviderWrapper.CreateForJsonRpcExtension(extensionWrapper, provider, _taskScheduler);
             return new StartedInstance(extensionWrapper, wrapper);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            extensionWrapper?.SignalDispose();
+            throw;
         }
         catch (Exception ex)
         {
@@ -1541,6 +1548,11 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
             return;
         }
 
+        if (File.Exists(Path.Combine(extensionDirectory, GalleryInstallMarkerFileName)))
+        {
+            return;
+        }
+
         var token = _reload.Token;
         StartObservedBackgroundTask(
             () => HandleDirectoryEntryUpsertAsync(extensionDirectory, token),
@@ -1693,10 +1705,17 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
         {
             // The gate is being torn down; fall through and remove best-effort.
         }
+        catch (OperationCanceledException)
+        {
+            // The uninstall never acquired the lifecycle gate, so this directory is staying put.
+            // Reopen crash recovery before handing cancellation back to the caller.
+            _recovery.CompleteDirectoryRemoval(directory);
+            throw;
+        }
 
         try
         {
-            return RemoveExtensionByDirectoryCore(directory);
+            return await RemoveExtensionByDirectoryCoreAsync(directory).ConfigureAwait(false);
         }
         finally
         {
@@ -1708,7 +1727,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
         }
     }
 
-    private CommandProviderWrapper? RemoveExtensionByDirectoryCore(string directory)
+    private async Task<CommandProviderWrapper?> RemoveExtensionByDirectoryCoreAsync(string directory)
     {
         JSExtensionWrapper? extensionToRemove;
         CommandProviderWrapper? wrapperToRemove;
@@ -1743,7 +1762,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
         if (extensionToRemove is not null)
         {
             extensionToRemove.ProcessExited -= OnExtensionProcessExited;
-            extensionToRemove.SignalDispose();
+            await extensionToRemove.SignalDisposeAsync().ConfigureAwait(false);
         }
 
         return wrapperToRemove;

@@ -28,7 +28,8 @@ public interface IJsExtensionHost
     /// </summary>
     /// <param name="extensionDirectory">The extension's directory under the JSExtensions root.</param>
     /// <param name="cancellationToken">A token to cancel a bounded wait while the provider is stopped.</param>
-    void StopExtension(string extensionDirectory, CancellationToken cancellationToken = default);
+    /// <returns>A task that completes after the extension and provider are stopped.</returns>
+    Task StopExtensionAsync(string extensionDirectory, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Determines whether <paramref name="extensionDirectory"/> contains a CmdPal manifest the host
