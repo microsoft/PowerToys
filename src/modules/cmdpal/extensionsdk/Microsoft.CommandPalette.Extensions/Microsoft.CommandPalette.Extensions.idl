@@ -490,5 +490,10 @@ namespace Microsoft.CommandPalette.Extensions
         Boolean WrapWords { get; };
     }
 
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFormContent2 requires IFormContent {
+        ICommandResult SubmitAction(String actionId, String inputs, String data);
+    }
+
 
 }
