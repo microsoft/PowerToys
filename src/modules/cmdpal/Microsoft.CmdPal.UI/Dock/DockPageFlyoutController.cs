@@ -371,6 +371,11 @@ internal sealed partial class DockPageFlyoutController :
             PInvoke.SetForegroundWindow(ownerHwnd);
             PInvoke.SetActiveWindow(ownerHwnd);
 
+            if (request.Anchor is Control anchorControl)
+            {
+                anchorControl.Focus(FocusState.Programmatic);
+            }
+
             PreparePopupForShow(request.Anchor);
             _flyout.ShowAt(
                 request.Anchor,
