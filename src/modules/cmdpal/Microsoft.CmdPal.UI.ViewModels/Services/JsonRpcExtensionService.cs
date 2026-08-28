@@ -77,10 +77,12 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
     private const int ManifestStabilityAttempts = 20;
     private static readonly TimeSpan ManifestStabilityDelay = TimeSpan.FromMilliseconds(250);
     private static readonly TimeSpan ExtensionTeardownTimeout = TimeSpan.FromSeconds(6);
+    private static readonly int MaxConcurrentExtensionStarts = Math.Max(1, Math.Min(Environment.ProcessorCount, 8));
 
     private static readonly string ExtensionsPath = GetDefaultExtensionsPath();
 
     private readonly TaskScheduler _taskScheduler;
+    private readonly SemaphoreSlim _extensionStartupGate = new(MaxConcurrentExtensionStarts, MaxConcurrentExtensionStarts);
     private readonly Lock _extensionsLock = new();
     private readonly List<JSExtensionWrapper> _extensions = [];
     private readonly List<CommandProviderWrapper> _providerWrappers = [];
@@ -218,6 +220,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
             accepted,
             item => AddExtensionGatedAsync(item.Directory, item.Manifest, ct),
             (item, ex) => Logger.LogError($"Failed to load JS extension from {item.Directory}", ex),
+            MaxConcurrentExtensionStarts,
             ct)
             .ConfigureAwait(false)).ToList();
 
@@ -887,6 +890,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
             candidates,
             item => AddExtensionGatedAsync(item.Directory, item.Manifest, ct),
             (item, ex) => Logger.LogError($"Failed to load JS extension from {item.Directory}", ex),
+            MaxConcurrentExtensionStarts,
             ct)
             .ConfigureAwait(false);
 
@@ -951,6 +955,26 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
     /// is not leaked.
     /// </summary>
     private async Task<StartedInstance?> StartInstanceAsync(string directory, JSExtensionManifest manifest, CancellationToken ct)
+    {
+        if (IsStopping(ct))
+        {
+            return null;
+        }
+
+        try
+        {
+            return await ExtensionTaskCoordinator.RunWithConcurrencyLimitAsync(
+                _extensionStartupGate,
+                () => StartInstanceWithinStartupSlotAsync(directory, manifest, ct),
+                ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            return null;
+        }
+    }
+
+    private async Task<StartedInstance?> StartInstanceWithinStartupSlotAsync(string directory, JSExtensionManifest manifest, CancellationToken ct)
     {
         if (IsStopping(ct))
         {

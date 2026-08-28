@@ -51,6 +51,9 @@ namespace Microsoft.CmdPal.UI;
 public partial class App : Application, IDisposable
 {
     private readonly GlobalErrorHandler _globalErrorHandler = new();
+    private readonly ProcessShutdownCoordinator _processShutdownCoordinator = new(
+        TimeSpan.FromSeconds(12),
+        static ex => Logger.LogError("Failed while shutting down Command Palette", ex));
 
     /// <summary>
     /// Gets the current <see cref="App"/> instance in use.
@@ -93,15 +96,12 @@ public partial class App : Application, IDisposable
         NativeEventWaiter.WaitForEventLoop(
             "Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd", () =>
             {
-                EtwTrace?.Dispose();
-                if (AppWindow is not null)
+                var window = AppWindow;
+                RequestProcessExit(() =>
                 {
-                    AppWindow.Close();
-                }
-                else
-                {
-                    Environment.Exit(0);
-                }
+                    window?.Close();
+                    EtwTrace?.Dispose();
+                });
             });
 
         // Connect the PT logging to the core project's logging.
@@ -111,6 +111,30 @@ public partial class App : Application, IDisposable
 
         // Now that CoreLogger is initialized, initialize the logger delegate in ApplicationInfoService
         appInfoService.SetLogDirectory(() => Logger.CurrentVersionLogDirectoryPath);
+    }
+
+    internal void RequestProcessExit(System.Action? closeWindow = null)
+    {
+        _processShutdownCoordinator.RequestExit(
+            closeWindow,
+            GetExtensionShutdownOperations,
+            static () => Environment.Exit(0));
+    }
+
+    private IEnumerable<Func<Task>> GetExtensionShutdownOperations()
+    {
+        return Services.GetServices<IExtensionService>()
+            .Select<IExtensionService, Func<Task>>(extensionService => async () =>
+            {
+                try
+                {
+                    await extensionService.SignalStopAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to stop extension service {extensionService.GetType().Name}", ex);
+                }
+            });
     }
 
     /// <summary>

@@ -16,13 +16,20 @@ internal static class ExtensionTaskCoordinator
         IEnumerable<TInput> inputs,
         Func<TInput, Task<TResult?>> operation,
         Action<TInput, Exception> onError,
+        int maxConcurrency,
         CancellationToken cancellationToken)
         where TResult : class
     {
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxConcurrency, 1);
+        using var concurrencyGate = new SemaphoreSlim(maxConcurrency, maxConcurrency);
         var tasks = inputs.Select(async input =>
         {
+            var entered = false;
             try
             {
+                await concurrencyGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+                entered = true;
+                cancellationToken.ThrowIfCancellationRequested();
                 return await operation(input).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -34,10 +41,35 @@ internal static class ExtensionTaskCoordinator
                 onError(input, ex);
                 return null;
             }
+            finally
+            {
+                if (entered)
+                {
+                    concurrencyGate.Release();
+                }
+            }
         });
 
         var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
         return results.OfType<TResult>().ToArray();
+    }
+
+    internal static async Task<TResult> RunWithConcurrencyLimitAsync<TResult>(
+        SemaphoreSlim concurrencyGate,
+        Func<Task<TResult>> operation,
+        CancellationToken cancellationToken)
+    {
+        await concurrencyGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return await operation().ConfigureAwait(false);
+        }
+        finally
+        {
+            concurrencyGate.Release();
+        }
     }
 
     internal static async Task RunBlockingConcurrentlyAsync<T>(

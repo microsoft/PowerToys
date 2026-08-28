@@ -118,12 +118,12 @@ internal abstract class JSObservableProxyBase : BaseObservable, IJSPropertyChang
                 _commandId = notificationId;
             }
 
+            Volatile.Write(ref _data, new DataBox(data));
             if (changed.Count == 0)
             {
                 return;
             }
 
-            Volatile.Write(ref _data, new DataBox(data));
             OnPropertyChangesApplied(changed);
         }
 

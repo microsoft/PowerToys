@@ -18,6 +18,8 @@ namespace Microsoft.CmdPal.JsonRpc.UnitTests;
 
 public partial class JSAdapterTests
 {
+    private static readonly string[] SubtitleProperty = ["Subtitle"];
+
     [TestMethod]
     public void PropertyChangeRegistry_PrunesDeadTargetsAndDeduplicatesLiveTargets()
     {
@@ -488,6 +490,91 @@ public partial class JSAdapterTests
     }
 
     [TestMethod]
+    public void ReplaceData_IdAndUnknownFieldChangesUpdateBackingDataWithoutNotifications()
+    {
+        using var fake = new JSFakeExtension();
+        using var proxy = new RecordingObservableProxy(
+            fake.Connection,
+            ParseElement(new JsonObject
+            {
+                ["id"] = "before",
+                ["title"] = "Title",
+                ["subtitle"] = "Subtitle",
+                ["unknown"] = "before",
+            }));
+        var changedProperties = new List<string>();
+        proxy.PropChanged += (_, args) => changedProperties.Add(args.PropertyName);
+
+        proxy.Update(
+            ParseElement(new JsonObject
+            {
+                ["id"] = "after",
+                ["title"] = "Title",
+                ["subtitle"] = "Subtitle",
+                ["unknown"] = "after",
+            }));
+
+        Assert.AreEqual("after", proxy.CurrentData.GetProperty("id").GetString());
+        Assert.AreEqual("after", proxy.CurrentData.GetProperty("unknown").GetString());
+        Assert.IsEmpty(changedProperties);
+    }
+
+    [TestMethod]
+    public void ReplaceData_UnchangedVisiblePropertiesStillStoresLatestPayload()
+    {
+        using var fake = new JSFakeExtension();
+        using var proxy = new RecordingObservableProxy(
+            fake.Connection,
+            ParseElement(new JsonObject
+            {
+                ["title"] = "Title",
+                ["subtitle"] = "Subtitle",
+                ["metadata"] = new JsonObject { ["version"] = 1 },
+            }));
+        var changedProperties = new List<string>();
+        proxy.PropChanged += (_, args) => changedProperties.Add(args.PropertyName);
+
+        proxy.Update(
+            ParseElement(new JsonObject
+            {
+                ["title"] = "Title",
+                ["subtitle"] = "Subtitle",
+                ["metadata"] = new JsonObject { ["version"] = 2 },
+            }));
+
+        Assert.AreEqual(2, proxy.CurrentData.GetProperty("metadata").GetProperty("version").GetInt32());
+        Assert.IsEmpty(changedProperties);
+    }
+
+    [TestMethod]
+    public void ReplaceData_SubtitleChangeUpdatesBackingDataAndRaisesOnlySubtitle()
+    {
+        using var fake = new JSFakeExtension();
+        using var proxy = new RecordingObservableProxy(
+            fake.Connection,
+            ParseElement(new JsonObject
+            {
+                ["title"] = "Title",
+                ["subtitle"] = "Before",
+                ["unknown"] = "before",
+            }));
+        var changedProperties = new List<string>();
+        proxy.PropChanged += (_, args) => changedProperties.Add(args.PropertyName);
+
+        proxy.Update(
+            ParseElement(new JsonObject
+            {
+                ["title"] = "Title",
+                ["subtitle"] = "After",
+                ["unknown"] = "after",
+            }));
+
+        Assert.AreEqual("After", proxy.CurrentData.GetProperty("subtitle").GetString());
+        Assert.AreEqual("after", proxy.CurrentData.GetProperty("unknown").GetString());
+        CollectionAssert.AreEqual(SubtitleProperty, changedProperties);
+    }
+
+    [TestMethod]
     public void ProviderSettings_ConcurrentReadsReturnOneProxy()
     {
         using var fake = new JSFakeExtension();
@@ -780,6 +867,26 @@ public partial class JSAdapterTests
         public void ApplyPropertyChanges(string notificationId, JsonElement properties)
         {
             ApplyCount++;
+        }
+    }
+
+    private sealed class RecordingObservableProxy : JSObservableProxyBase
+    {
+        internal RecordingObservableProxy(JsonRpcConnection connection, JsonElement data)
+            : base("recording", connection, data)
+        {
+        }
+
+        internal JsonElement CurrentData => Data;
+
+        internal void Update(JsonElement data)
+        {
+            ReplaceData(data, ["title", "subtitle"]);
+        }
+
+        protected override bool SupportsProperty(string propertyName)
+        {
+            return propertyName is "title" or "subtitle";
         }
     }
 }

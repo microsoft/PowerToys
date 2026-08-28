@@ -5,7 +5,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading;
 using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
@@ -62,8 +61,6 @@ public sealed partial class MainWindow : WindowEx,
     IDisposable,
     IHostWindow
 {
-    private static readonly TimeSpan ExtensionServicesShutdownTimeout = TimeSpan.FromSeconds(12);
-
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_")]
     private readonly uint WM_TASKBAR_RESTART;
@@ -86,7 +83,6 @@ public sealed partial class MainWindow : WindowEx,
     private bool _allowBreakthroughShortcut;
     private bool _suppressDpiChange;
     private bool _themeServiceInitialized;
-    private int _shutdownStarted;
 
     // The snapshot of settings last consumed by HotReloadSettings. Used to skip redundant
     // hot-reloads when a SettingsChanged notification touches settings this window doesn't
@@ -1170,8 +1166,6 @@ public sealed partial class MainWindow : WindowEx,
             }
         }
 
-        var extensionServices = serviceProvider.GetServices<IExtensionService>().ToArray();
-
         App.Current.Services.GetService<TrayIconService>()!.Destroy();
 
         // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
@@ -1181,48 +1175,7 @@ public sealed partial class MainWindow : WindowEx,
         DisposeAcrylic();
 
         _keyboardListener.Stop();
-        if (Interlocked.Exchange(ref _shutdownStarted, 1) == 0)
-        {
-            var shutdownThread = new Thread(() => StopExtensionServicesAndExit(extensionServices))
-            {
-                IsBackground = false,
-                Name = "CmdPal extension shutdown",
-            };
-            shutdownThread.Start();
-        }
-    }
-
-    private static void StopExtensionServicesAndExit(IReadOnlyList<IExtensionService> extensionServices)
-    {
-        try
-        {
-            Task.WhenAll(extensionServices.Select(ObserveExtensionStopAsync))
-                .WaitAsync(ExtensionServicesShutdownTimeout)
-                .GetAwaiter()
-                .GetResult();
-        }
-        catch (TimeoutException ex)
-        {
-            Logger.LogError(
-                $"Timed out waiting for extension services to stop after {ExtensionServicesShutdownTimeout.TotalSeconds} seconds",
-                ex);
-        }
-        finally
-        {
-            Environment.Exit(0);
-        }
-    }
-
-    private static async Task ObserveExtensionStopAsync(IExtensionService extensionService)
-    {
-        try
-        {
-            await extensionService.SignalStopAsync().ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Failed to stop extension service {extensionService.GetType().Name}", ex);
-        }
+        App.Current.RequestProcessExit();
     }
 
     private void DisposeAcrylic()
