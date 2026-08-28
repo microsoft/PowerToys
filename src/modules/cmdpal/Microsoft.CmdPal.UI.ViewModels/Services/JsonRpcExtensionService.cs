@@ -247,12 +247,12 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
 
         try
         {
-            // The lifecycle gate waits for the promoted directory to load or fail. Raise OnProviderAdded
-            // for anything that registered so the host and gallery see the same state.
-            var added = await AddDiscoveredNotLoadedAsync(timeoutCts.Token).ConfigureAwait(false);
-            foreach (var wrapper in added)
+            // Keep the gallery timeout scoped to the promoted extension. A slow extension
+            // elsewhere should not make this install roll back.
+            var added = await AddDiscoveredExtensionAsync(extensionDirectory, timeoutCts.Token).ConfigureAwait(false);
+            if (added is not null)
             {
-                RaiseProviderAdded(wrapper);
+                RaiseProviderAdded(added);
             }
 
             if (timeoutCts.IsCancellationRequested)
@@ -1011,6 +1011,32 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
             .ConfigureAwait(false);
 
         return [.. added];
+    }
+
+    private async Task<CommandProviderWrapper?> AddDiscoveredExtensionAsync(string extensionDirectory, CancellationToken ct)
+    {
+        var candidate = FindManifestByDirectory(DiscoverAcceptedManifests(ExtensionsPath), extensionDirectory);
+        if (candidate is null)
+        {
+            return null;
+        }
+
+        return await AddExtensionGatedAsync(candidate.Value.Directory, candidate.Value.Manifest, ct).ConfigureAwait(false);
+    }
+
+    internal static (string Directory, JSExtensionManifest Manifest)? FindManifestByDirectory(
+        IReadOnlyList<(string Directory, JSExtensionManifest Manifest)> manifests,
+        string extensionDirectory)
+    {
+        foreach (var manifest in manifests)
+        {
+            if (PathsEqual(manifest.Directory, extensionDirectory))
+            {
+                return manifest;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>

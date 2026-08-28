@@ -197,6 +197,23 @@ public class JsonRpcExtensionServiceReconciliationTests
     }
 
     [TestMethod]
+    public void FindManifestByDirectory_ReturnsOnlyRequestedExtension()
+    {
+        var targetDirectory = Path.Combine(_root, "target");
+        var manifests = new[]
+        {
+            (Path.Combine(_root, "other"), new JSExtensionManifest { Name = "other" }),
+            (targetDirectory, new JSExtensionManifest { Name = "target" }),
+        };
+
+        var result = JsonRpcExtensionService.FindManifestByDirectory(manifests, targetDirectory + Path.DirectorySeparatorChar);
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual(targetDirectory, result.Value.Directory);
+        Assert.AreEqual("target", result.Value.Manifest.Name);
+    }
+
+    [TestMethod]
     public void GetExtensionDirectoryForPath_ReturnsOwningTopLevelDirectory()
     {
         var manifestPath = Path.Combine(_root, "my-ext", "package.json");
