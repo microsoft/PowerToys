@@ -84,6 +84,10 @@
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\FileLocksmithCLI\FileLocksmithCLI.vcxproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <BuildProject>true</BuildProject>
+    </ProjectReference>
     <ProjectReference Include="..\FileLocksmithLibInterop\FileLocksmithLibInterop.vcxproj" />
   </ItemGroup>
 </Project>

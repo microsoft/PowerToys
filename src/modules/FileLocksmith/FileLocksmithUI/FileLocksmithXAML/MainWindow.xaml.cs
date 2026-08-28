@@ -36,10 +36,18 @@ namespace FileLocksmithUI
 
             Title = title;
             titleBar.Title = title;
+            Closed += MainWindow_Closed;
         }
 
         public void Dispose()
         {
+            Closed -= MainWindow_Closed;
+            mainPage.ViewModel.Dispose();
+        }
+
+        private void MainWindow_Closed(object sender, WindowEventArgs args)
+        {
+            Dispose();
         }
     }
 }

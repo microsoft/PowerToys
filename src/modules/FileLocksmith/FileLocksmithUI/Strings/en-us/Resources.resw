@@ -124,6 +124,14 @@
   <data name="EmptyListDescription.Text" xml:space="preserve">
     <value>No results</value>
   </data>
+  <data name="QueryFailedError" xml:space="preserve">
+    <value>File Locksmith couldn't scan the selected files. Select Reload to try again.</value>
+    <comment>Error shown when the isolated process used to scan files fails or returns invalid data.</comment>
+  </data>
+  <data name="QueryTimeoutError" xml:space="preserve">
+    <value>File Locksmith couldn't finish scanning within 30 seconds. Select Reload to try again.</value>
+    <comment>Error shown when the isolated process used to scan files exceeds its time limit.</comment>
+  </data>
   <data name="EndTask.Text" xml:space="preserve">
     <value>End task</value>
   </data>
