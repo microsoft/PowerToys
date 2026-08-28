@@ -88,6 +88,7 @@ functionality.
   - [Addenda V: Extra content types](#addenda-v-extra-content-types)
     - [Image content](#image-content)
     - [Plain text content](#plain-text-content)
+  - [Addenda VI: Adaptive Card Actions](#addenda-vi-adaptive-card-actions)
   - [Addenda VII: Rich content details](#addenda-vii-rich-content-details)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
@@ -2425,6 +2426,21 @@ interface IPlainTextContent requires IContent {
 }
 ```
 
+## Addenda VI: Adaptive Card Actions
+
+Adaptive Cards supports setting multiple actions on a card. Those actions can be
+identified by an `id` property on the action. That `id` is not necessarily
+encoded in the JSON payload of the action.
+
+For us to properly support the gammut of AC scenarios, we need to be able to
+pass the `id` of the action back to the extension. This is a relatively simple
+addition to the `IForm` interface.
+
+```csharp
+interface IFormContent2 requires IFormContent {
+    ICommandResult SubmitAction(String actionId, String inputs, String data);
+}
+```
 
 ## Addenda VII: Rich content details
 
