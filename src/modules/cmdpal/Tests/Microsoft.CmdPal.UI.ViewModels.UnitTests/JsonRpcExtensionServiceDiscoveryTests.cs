@@ -87,6 +87,88 @@ public class JsonRpcExtensionServiceDiscoveryTests
     }
 
     [TestMethod]
+    public void RecoverStaleGalleryInstallMarkers_RemovesMarkerAndRestoresDiscovery()
+    {
+        const string PackageJson = """
+        {
+            "name": "recovered-ext",
+            "main": "index.js",
+            "cmdpal": { "displayName": "Recovered" }
+        }
+        """;
+        CreateExtension("recovered", PackageJson, "index.js");
+        var directory = Path.Combine(_root, "recovered");
+        File.WriteAllText(Path.Combine(directory, JsonRpcExtensionService.GalleryInstallMarkerFileName), string.Empty);
+
+        Assert.AreEqual(0, JsonRpcExtensionService.DiscoverManifests(_root).Count);
+
+        var failures = JsonRpcExtensionService.RecoverStaleGalleryInstallMarkers(_root);
+
+        Assert.AreEqual(0, failures.Count);
+        Assert.IsFalse(JsonRpcExtensionService.HasGalleryInstallMarker(directory));
+        Assert.AreEqual(1, JsonRpcExtensionService.DiscoverManifests(_root).Count);
+    }
+
+    [TestMethod]
+    public void DiscoverManifests_ActiveGalleryInstallMarker_IsOnlyIncludedForInstaller()
+    {
+        const string PackageJson = """
+        {
+            "name": "active-ext",
+            "main": "index.js",
+            "cmdpal": { "displayName": "Active" }
+        }
+        """;
+        CreateExtension("active", PackageJson, "index.js");
+        var directory = Path.Combine(_root, "active");
+        File.WriteAllText(Path.Combine(directory, JsonRpcExtensionService.GalleryInstallMarkerFileName), string.Empty);
+
+        Assert.IsTrue(JsonRpcExtensionService.HasGalleryInstallMarker(directory));
+        Assert.AreEqual(0, JsonRpcExtensionService.DiscoverManifests(_root).Count);
+        Assert.AreEqual(1, JsonRpcExtensionService.DiscoverManifests(_root, includeGalleryInstalling: true).Count);
+        Assert.IsFalse(JsonRpcExtensionService.ShouldRemoveExtensionDuringReconciliation(directory));
+    }
+
+    [TestMethod]
+    public void RecoverStaleGalleryInstallMarkers_DeleteFailure_LeavesExtensionSuppressed()
+    {
+        const string PackageJson = """
+        {
+            "name": "blocked-ext",
+            "main": "index.js",
+            "cmdpal": { "displayName": "Blocked" }
+        }
+        """;
+        CreateExtension("blocked", PackageJson, "index.js");
+        var directory = Path.Combine(_root, "blocked");
+        File.WriteAllText(Path.Combine(directory, JsonRpcExtensionService.GalleryInstallMarkerFileName), string.Empty);
+
+        var failures = JsonRpcExtensionService.RecoverStaleGalleryInstallMarkers(
+            _root,
+            _ => throw new IOException("marker is locked"));
+
+        Assert.AreEqual(1, failures.Count);
+        Assert.AreEqual(directory, failures[0]);
+        Assert.IsTrue(JsonRpcExtensionService.HasGalleryInstallMarker(directory));
+        Assert.AreEqual(0, JsonRpcExtensionService.DiscoverManifests(_root).Count);
+    }
+
+    [TestMethod]
+    public void IsSafeStaleGalleryMarkerPath_RejectsDirectoryOutsideRoot()
+    {
+        var outsideDirectory = Path.Combine(Path.GetTempPath(), $"JSExtOutside_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(outsideDirectory);
+        try
+        {
+            Assert.IsFalse(JsonRpcExtensionService.IsSafeStaleGalleryMarkerPath(_root, outsideDirectory));
+        }
+        finally
+        {
+            Directory.Delete(outsideDirectory);
+        }
+    }
+
+    [TestMethod]
     public void DecideCrashAction_AtOrBelowLimit_Restarts()
     {
         Assert.AreEqual(JsonRpcExtensionService.CrashAction.Restart, JsonRpcExtensionService.DecideCrashAction(1, 3));

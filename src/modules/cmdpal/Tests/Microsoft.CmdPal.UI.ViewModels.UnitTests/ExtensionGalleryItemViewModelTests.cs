@@ -13,6 +13,7 @@ using Microsoft.CmdPal.Common.WinGet.Models;
 using Microsoft.CmdPal.Common.WinGet.Services;
 using Microsoft.CmdPal.UI.ViewModels.Gallery;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -809,6 +810,46 @@ public class ExtensionGalleryItemViewModelTests
     }
 
     [TestMethod]
+    public async Task InstallViaNpmCommand_UnexpectedFailure_ShowsErrorAndReenablesButton()
+    {
+        var installer = new Mock<IJsExtensionInstaller>();
+        installer.Setup(x => x.IsInstalled("sample-js-extension")).Returns(false);
+        installer
+            .Setup(x => x.InstallAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("unexpected"));
+        var logger = new Mock<ILogger<ExtensionGalleryItemViewModel>>();
+        logger.Setup(x => x.IsEnabled(LogLevel.Error)).Returns(true);
+        var viewModel = CreateViewModel(CreateJsonRpcEntry(), jsExtensionInstaller: installer.Object, logger: logger.Object);
+
+        await viewModel.InstallViaNpmCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(
+            Microsoft.CmdPal.UI.ViewModels.Properties.Resources.gallery_item_jsonrpc_action_install_failed,
+            viewModel.JsonRpcActionMessage);
+        Assert.IsFalse(viewModel.IsJsonRpcActionInProgress);
+        Assert.IsTrue(viewModel.CanInstallViaNpm);
+        installer.Verify(x => x.IsInstalled("sample-js-extension"), Times.Once);
+        VerifyErrorLogged(logger);
+    }
+
+    [TestMethod]
+    public async Task InstallViaNpmCommand_Cancellation_ShowsLocalizedStatusAndReenablesButton()
+    {
+        var viewModel = CreateJsonRpcViewModel(out var installer);
+        installer
+            .Setup(x => x.InstallAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        await viewModel.InstallViaNpmCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(
+            Microsoft.CmdPal.UI.ViewModels.Properties.Resources.npm_installer_canceled,
+            viewModel.JsonRpcActionMessage);
+        Assert.IsFalse(viewModel.IsJsonRpcActionInProgress);
+        Assert.IsTrue(viewModel.CanInstallViaNpm);
+    }
+
+    [TestMethod]
     public async Task CancelJsonRpcActionCommand_NotifiesActionStateImmediately()
     {
         var operationStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -857,6 +898,46 @@ public class ExtensionGalleryItemViewModelTests
         installer.Verify(x => x.UninstallAsync("sample-js-extension", It.IsAny<CancellationToken>()), Times.Once);
         Assert.IsFalse(viewModel.IsInstalled);
         Assert.IsTrue(viewModel.ShowInstallViaNpmButton);
+    }
+
+    [TestMethod]
+    public async Task UninstallJsonRpcCommand_UnexpectedFailure_ShowsErrorAndReenablesButton()
+    {
+        var installer = new Mock<IJsExtensionInstaller>();
+        installer.Setup(x => x.IsInstalled("sample-js-extension")).Returns(true);
+        installer
+            .Setup(x => x.UninstallAsync("sample-js-extension", It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("unexpected"));
+        var logger = new Mock<ILogger<ExtensionGalleryItemViewModel>>();
+        logger.Setup(x => x.IsEnabled(LogLevel.Error)).Returns(true);
+        var viewModel = CreateViewModel(CreateJsonRpcEntry(), jsExtensionInstaller: installer.Object, logger: logger.Object);
+
+        await viewModel.UninstallJsonRpcCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(
+            Microsoft.CmdPal.UI.ViewModels.Properties.Resources.gallery_item_jsonrpc_action_uninstall_failed,
+            viewModel.JsonRpcActionMessage);
+        Assert.IsFalse(viewModel.IsJsonRpcActionInProgress);
+        Assert.IsTrue(viewModel.CanUninstallJsonRpc);
+        installer.Verify(x => x.IsInstalled("sample-js-extension"), Times.Once);
+        VerifyErrorLogged(logger);
+    }
+
+    [TestMethod]
+    public async Task UninstallJsonRpcCommand_Cancellation_ShowsLocalizedStatusAndReenablesButton()
+    {
+        var viewModel = CreateJsonRpcViewModel(out var installer, isInstalled: true);
+        installer
+            .Setup(x => x.UninstallAsync("sample-js-extension", It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        await viewModel.UninstallJsonRpcCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(
+            Microsoft.CmdPal.UI.ViewModels.Properties.Resources.npm_installer_canceled,
+            viewModel.JsonRpcActionMessage);
+        Assert.IsFalse(viewModel.IsJsonRpcActionInProgress);
+        Assert.IsTrue(viewModel.CanUninstallJsonRpc);
     }
 
     [TestMethod]
@@ -1037,15 +1118,28 @@ public class ExtensionGalleryItemViewModelTests
         IWinGetPackageManagerService? winGetPackageManagerService = null,
         IWinGetPackageStatusService? winGetPackageStatusService = null,
         IWinGetOperationTrackerService? winGetOperationTrackerService = null,
-        IJsExtensionInstaller? jsExtensionInstaller = null)
+        IJsExtensionInstaller? jsExtensionInstaller = null,
+        ILogger<ExtensionGalleryItemViewModel>? logger = null)
     {
         return new ExtensionGalleryItemViewModel(
             entry,
-            NullLogger<ExtensionGalleryItemViewModel>.Instance,
+            logger ?? NullLogger<ExtensionGalleryItemViewModel>.Instance,
             winGetPackageManagerService,
             winGetPackageStatusService,
             winGetOperationTrackerService,
             jsExtensionInstaller);
+    }
+
+    private static void VerifyErrorLogged(Mock<ILogger<ExtensionGalleryItemViewModel>> logger)
+    {
+        logger.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception?>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     private static WinGetPackageDetails CreatePackageDetails()

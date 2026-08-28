@@ -3,12 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -148,6 +151,61 @@ public class NpmCommandRunnerTests
         var dir = CreateTempDirectory();
 
         Assert.IsNull(NpmCommandRunner.FindPackedTarball(dir));
+    }
+
+    [TestMethod]
+    public async Task TerminateAndWaitAsync_AggregateFailure_PreservesCallerCancellation()
+    {
+        var originalCancellation = new OperationCanceledException();
+
+        var thrown = await Assert.ThrowsExactlyAsync<OperationCanceledException>(async () =>
+        {
+            try
+            {
+                throw originalCancellation;
+            }
+            catch (OperationCanceledException)
+            {
+                await NpmCommandRunner.TerminateAndWaitAsync(
+                    () => false,
+                    () => throw new AggregateException(new Win32Exception("kill failed")),
+                    _ => Task.CompletedTask);
+                throw;
+            }
+        });
+
+        Assert.AreSame(originalCancellation, thrown);
+    }
+
+    [TestMethod]
+    public async Task TerminateAndWaitAsync_AggregateFailure_PreservesTimeoutHandling()
+    {
+        var timeoutHandled = false;
+
+        try
+        {
+            throw new OperationCanceledException();
+        }
+        catch (OperationCanceledException)
+        {
+            await NpmCommandRunner.TerminateAndWaitAsync(
+                () => false,
+                () => throw new AggregateException(new NotSupportedException("kill failed")),
+                _ => Task.CompletedTask);
+            timeoutHandled = true;
+        }
+
+        Assert.IsTrue(timeoutHandled);
+    }
+
+    [TestMethod]
+    public async Task TerminateAndWaitAsync_AggregateWithUnexpectedFailure_Propagates()
+    {
+        await Assert.ThrowsExactlyAsync<AggregateException>(() =>
+            NpmCommandRunner.TerminateAndWaitAsync(
+                () => false,
+                () => throw new AggregateException(new Win32Exception(), new InvalidDataException()),
+                _ => Task.CompletedTask));
     }
 
     [TestMethod]

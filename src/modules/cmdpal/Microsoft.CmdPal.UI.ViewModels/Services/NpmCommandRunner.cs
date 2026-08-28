@@ -513,24 +513,45 @@ public sealed class NpmCommandRunner : INpmCommandRunner
         return null;
     }
 
-    private static async Task TerminateAndWaitAsync(Process process)
+    private static Task TerminateAndWaitAsync(Process process) =>
+        TerminateAndWaitAsync(
+            () => process.HasExited,
+            () => process.Kill(entireProcessTree: true),
+            process.WaitForExitAsync);
+
+    internal static async Task TerminateAndWaitAsync(
+        Func<bool> hasExited,
+        Action terminateProcess,
+        Func<CancellationToken, Task> waitForExitAsync)
     {
         try
         {
-            if (!process.HasExited)
+            if (!hasExited())
             {
-                process.Kill(entireProcessTree: true);
+                terminateProcess();
 
                 // Give the OS a bounded moment to tear the tree down before staging cleanup tries to
                 // delete files that still have handles open.
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-                await process.WaitForExitAsync(cts.Token).ConfigureAwait(false);
+                await waitForExitAsync(cts.Token).ConfigureAwait(false);
             }
         }
-        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception or NotSupportedException or OperationCanceledException)
+        catch (Exception ex) when (IsExpectedTerminationException(ex))
         {
             Logger.LogError($"Failed to terminate npm process: {ex.Message}");
         }
+    }
+
+    private static bool IsExpectedTerminationException(Exception exception)
+    {
+        if (exception is InvalidOperationException or System.ComponentModel.Win32Exception or NotSupportedException or OperationCanceledException)
+        {
+            return true;
+        }
+
+        return exception is AggregateException aggregateException
+            && aggregateException.Flatten().InnerExceptions.Count > 0
+            && aggregateException.Flatten().InnerExceptions.All(IsExpectedTerminationException);
     }
 
     private static bool IsReparsePoint(string path)

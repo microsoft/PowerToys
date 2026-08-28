@@ -140,6 +140,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
     // that completes after this point must not register its extension (which would leak a
     // Node process and watcher past shutdown); it tears the fresh instance down instead.
     private bool _shuttingDown;
+    private int _startupMarkerRecoveryCompleted;
 
     public JsonRpcExtensionService(TaskScheduler taskScheduler)
     {
@@ -329,6 +330,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
         // Start the watcher before scanning so a package installed while the scan runs
         // is still observed (the per-directory gate and the already-loaded check make a
         // watcher-driven load and a scan-driven load for the same directory idempotent).
+        RecoverStaleGalleryInstallMarkersOnce();
         StartDirectoryWatcher();
 
         var accepted = DiscoverAcceptedManifests(ExtensionsPath);
@@ -414,6 +416,11 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
             var (_, toRemove) = ReconcileDirectories(accepted.Select(a => a.Directory), loadedDirectories);
             foreach (var directory in toRemove)
             {
+                if (!ShouldRemoveExtensionDuringReconciliation(directory))
+                {
+                    continue;
+                }
+
                 var removed = await RemoveExtensionByDirectoryGatedAsync(directory).ConfigureAwait(false);
                 if (removed is not null)
                 {
@@ -542,7 +549,9 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
     /// </summary>
     /// <param name="root">The extensions root directory to scan.</param>
     /// <returns>The valid extensions found, as (directory, manifest) pairs.</returns>
-    internal static IReadOnlyList<(string Directory, JSExtensionManifest Manifest)> DiscoverManifests(string root)
+    internal static IReadOnlyList<(string Directory, JSExtensionManifest Manifest)> DiscoverManifests(
+        string root,
+        bool includeGalleryInstalling = false)
     {
         var results = new List<(string, JSExtensionManifest)>();
 
@@ -564,6 +573,11 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
 
         foreach (var subdir in subdirectories)
         {
+            if (!includeGalleryInstalling && HasGalleryInstallMarker(subdir))
+            {
+                continue;
+            }
+
             var manifestPath = Path.Combine(subdir, "package.json");
             if (!File.Exists(manifestPath))
             {
@@ -581,6 +595,83 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
         }
 
         return results;
+    }
+
+    internal static IReadOnlyList<string> RecoverStaleGalleryInstallMarkers(
+        string root,
+        Action<string>? deleteMarker = null)
+    {
+        var failures = new List<string>();
+        if (string.IsNullOrEmpty(root) || !Directory.Exists(root))
+        {
+            return failures;
+        }
+
+        string[] subdirectories;
+        try
+        {
+            subdirectories = Directory.GetDirectories(root);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Logger.LogError($"Failed to enumerate stale gallery install markers in {root}: {ex.Message}");
+            return failures;
+        }
+
+        deleteMarker ??= File.Delete;
+        foreach (var subdirectory in subdirectories)
+        {
+            var markerPath = Path.Combine(subdirectory, GalleryInstallMarkerFileName);
+            if (!File.Exists(markerPath))
+            {
+                continue;
+            }
+
+            if (!IsSafeStaleGalleryMarkerPath(root, subdirectory))
+            {
+                Logger.LogError($"Refusing to remove stale gallery install marker '{markerPath}' because its directory is outside the trusted extensions root or is a reparse point.");
+                failures.Add(subdirectory);
+                continue;
+            }
+
+            try
+            {
+                deleteMarker(markerPath);
+                Logger.LogInfo($"Removed stale gallery install marker '{markerPath}'.");
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                Logger.LogError($"Failed to remove stale gallery install marker '{markerPath}': {ex.Message}");
+                failures.Add(subdirectory);
+            }
+        }
+
+        return failures;
+    }
+
+    internal static bool HasGalleryInstallMarker(string extensionDirectory) =>
+        File.Exists(Path.Combine(extensionDirectory, GalleryInstallMarkerFileName));
+
+    internal static bool ShouldRemoveExtensionDuringReconciliation(string extensionDirectory) =>
+        !HasGalleryInstallMarker(extensionDirectory);
+
+    internal static bool IsSafeStaleGalleryMarkerPath(string root, string extensionDirectory)
+    {
+        try
+        {
+            var normalizedRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
+            var normalizedDirectory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(extensionDirectory));
+            var markerPath = Path.Combine(normalizedDirectory, GalleryInstallMarkerFileName);
+
+            return string.Equals(Path.GetDirectoryName(normalizedDirectory), normalizedRoot, StringComparison.OrdinalIgnoreCase)
+                && IsUnderDirectory(markerPath, normalizedRoot)
+                && (File.GetAttributes(normalizedRoot) & FileAttributes.ReparsePoint) == 0
+                && (File.GetAttributes(normalizedDirectory) & FileAttributes.ReparsePoint) == 0;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException or PathTooLongException or System.Security.SecurityException)
+        {
+            return false;
+        }
     }
 
     /// <summary>
@@ -923,9 +1014,11 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
     /// rejected duplicates. All full (re)load and reconciliation paths go through here so
     /// they agree on the same deterministic winner.
     /// </summary>
-    private static IReadOnlyList<(string Directory, JSExtensionManifest Manifest)> DiscoverAcceptedManifests(string root)
+    private static IReadOnlyList<(string Directory, JSExtensionManifest Manifest)> DiscoverAcceptedManifests(
+        string root,
+        bool includeGalleryInstalling = false)
     {
-        var discovered = DiscoverManifests(root);
+        var discovered = DiscoverManifests(root, includeGalleryInstalling);
         var (accepted, rejected) = ResolveIdCollisions(discovered);
 
         foreach (var (directory, manifest, winnerDirectory) in rejected)
@@ -938,6 +1031,14 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
     }
 
     private bool IsStopping(CancellationToken ct) => _disposed || _reload.IsStopRequested || ct.IsCancellationRequested;
+
+    private void RecoverStaleGalleryInstallMarkersOnce()
+    {
+        if (Interlocked.Exchange(ref _startupMarkerRecoveryCompleted, 1) == 0)
+        {
+            RecoverStaleGalleryInstallMarkers(ExtensionsPath);
+        }
+    }
 
     // Provider add/remove notifications are raised through a single ordered dispatcher so a
     // consumer never observes an addition ahead of a removal that was raised before it.
@@ -1015,7 +1116,9 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
 
     private async Task<CommandProviderWrapper?> AddDiscoveredExtensionAsync(string extensionDirectory, CancellationToken ct)
     {
-        var candidate = FindManifestByDirectory(DiscoverAcceptedManifests(ExtensionsPath), extensionDirectory);
+        var candidate = FindManifestByDirectory(
+            DiscoverAcceptedManifests(ExtensionsPath, includeGalleryInstalling: true),
+            extensionDirectory);
         if (candidate is null)
         {
             return null;
@@ -1580,7 +1683,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
             return;
         }
 
-        if (File.Exists(Path.Combine(extensionDirectory, GalleryInstallMarkerFileName)))
+        if (HasGalleryInstallMarker(extensionDirectory))
         {
             return;
         }

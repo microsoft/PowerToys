@@ -36,6 +36,18 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
             new EventId(2, nameof(LogIconLoadFailed)),
             "Failed to load icon from '{IconUri}'.");
 
+    private static readonly Action<ILogger, Exception?> LogJsonRpcInstallFailedMessage =
+        LoggerMessage.Define(
+            LogLevel.Error,
+            new EventId(3, nameof(LogJsonRpcInstallFailed)),
+            "JavaScript extension install failed.");
+
+    private static readonly Action<ILogger, Exception?> LogJsonRpcUninstallFailedMessage =
+        LoggerMessage.Define(
+            LogLevel.Error,
+            new EventId(4, nameof(LogJsonRpcUninstallFailed)),
+            "JavaScript extension uninstall failed.");
+
     private const string SourceTypeWinGet = "winget";
     private const string SourceTypeStore = "msstore";
     private const string SourceTypeUrl = "url";
@@ -475,6 +487,15 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
                 JsonRpcActionMessage = result.ErrorMessage ?? Resources.gallery_item_jsonrpc_action_install_failed;
             }
         }
+        catch (OperationCanceledException)
+        {
+            JsonRpcActionMessage = Resources.npm_installer_canceled;
+        }
+        catch (Exception ex)
+        {
+            LogJsonRpcInstallFailed(_logger, ex);
+            JsonRpcActionMessage = Resources.gallery_item_jsonrpc_action_install_failed;
+        }
         finally
         {
             _jsonRpcActionCts = null;
@@ -512,6 +533,15 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
                 IsInstalledStateKnown = true;
                 JsonRpcActionMessage = result.ErrorMessage ?? Resources.gallery_item_jsonrpc_action_uninstall_failed;
             }
+        }
+        catch (OperationCanceledException)
+        {
+            JsonRpcActionMessage = Resources.npm_installer_canceled;
+        }
+        catch (Exception ex)
+        {
+            LogJsonRpcUninstallFailed(_logger, ex);
+            JsonRpcActionMessage = Resources.gallery_item_jsonrpc_action_uninstall_failed;
         }
         finally
         {
@@ -1113,6 +1143,16 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
     private static void LogIconLoadFailed(ILogger logger, string iconUri, Exception exception)
     {
         LogIconLoadFailedMessage(logger, iconUri, exception);
+    }
+
+    private static void LogJsonRpcInstallFailed(ILogger logger, Exception exception)
+    {
+        LogJsonRpcInstallFailedMessage(logger, exception);
+    }
+
+    private static void LogJsonRpcUninstallFailed(ILogger logger, Exception exception)
+    {
+        LogJsonRpcUninstallFailedMessage(logger, exception);
     }
 
     partial void OnIsInstalledChanged(bool value)

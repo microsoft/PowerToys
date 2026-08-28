@@ -156,7 +156,8 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
         }
     }
 
-    public bool IsInstalled(string extensionName) => _host.IsExtensionInstalled(extensionName);
+    public bool IsInstalled(string extensionName) =>
+        TryResolveTargetDirectory(extensionName, out _) && _host.IsExtensionInstalled(extensionName);
 
     private async Task<JsExtensionInstallResult> InstallLockedAsync(string extensionName, string targetDirectory, NpmArtifact artifact, CancellationToken cancellationToken)
     {

@@ -574,7 +574,36 @@ public class NpmJsExtensionInstallerTests
         var installer = new NpmJsExtensionInstaller(host, new FakeRunner());
 
         Assert.IsTrue(installer.IsInstalled(ExtensionName));
+        Assert.IsTrue(installer.IsInstalled(ExtensionName.ToUpperInvariant()));
         Assert.IsFalse(installer.IsInstalled("not-installed"));
+    }
+
+    [DataTestMethod]
+    [DataRow("")]
+    [DataRow(" ")]
+    [DataRow(@"C:\Windows")]
+    [DataRow(@"\\server\share")]
+    [DataRow(@"..\escape")]
+    [DataRow(@"folder\extension")]
+    [DataRow("folder/extension")]
+    public void IsInstalled_RejectsUnsafeCatalogId(string extensionName)
+    {
+        var host = CreateHost();
+        var installer = new NpmJsExtensionInstaller(host, new FakeRunner());
+
+        Assert.IsFalse(installer.IsInstalled(extensionName));
+        Assert.AreEqual(0, host.IsInstalledCallCount);
+    }
+
+    [TestMethod]
+    public void IsInstalled_AcceptsValidPackageId()
+    {
+        var host = CreateHost();
+        host.MarkInstalled("contoso.sample-extension");
+        var installer = new NpmJsExtensionInstaller(host, new FakeRunner());
+
+        Assert.IsTrue(installer.IsInstalled("contoso.sample-extension"));
+        Assert.AreEqual(1, host.IsInstalledCallCount);
     }
 
     [TestMethod]
@@ -738,6 +767,8 @@ public class NpmJsExtensionInstallerTests
 
         public int StopCallCount { get; private set; }
 
+        public int IsInstalledCallCount { get; private set; }
+
         public ConcurrentQueue<string>? OrderLog { get; set; }
 
         public Func<CancellationToken, Task>? StopHook { get; set; }
@@ -773,6 +804,7 @@ public class NpmJsExtensionInstallerTests
 
         public bool IsExtensionInstalled(string extensionName)
         {
+            IsInstalledCallCount++;
             lock (_installedGate)
             {
                 return _installed.Contains(extensionName);
