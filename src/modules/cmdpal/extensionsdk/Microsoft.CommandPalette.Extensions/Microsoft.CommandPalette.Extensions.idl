@@ -495,4 +495,5 @@ namespace Microsoft.CommandPalette.Extensions
         ICommandResult SubmitAction(String actionId, String inputs, String data);
     }
 
+
 }
