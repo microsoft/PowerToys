@@ -181,12 +181,12 @@ void KeyboardManager::LoadSettings()
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         // Retry only file-level/transient failures. A Partial result is deterministic
-        // invalid data and has already retained the last-known-good snapshot.
+        // invalid data whose valid entries have already been applied.
         loadResult = state.LoadSettingsWithResult();
     }
     if (loadResult == MappingConfigurationLoadResult::Partial)
     {
-        Logger::error(L"Keyboard Manager settings contained invalid entries; retained the last-known-good runtime snapshot.");
+        Logger::error(L"Keyboard Manager settings contained invalid entries; skipped them and loaded the valid entries.");
     }
     try
     {

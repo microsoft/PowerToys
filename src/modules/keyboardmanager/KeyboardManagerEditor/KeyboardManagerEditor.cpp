@@ -148,12 +148,11 @@ KeyboardManagerEditor::KeyboardManagerEditor(HINSTANCE hInst) :
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-        // Retry only file-level or transient failures. Partial data is deterministic
-        // and must never be opened and subsequently saved as a truncated profile.
+        // Retry only file-level or transient failures.
         loadResult = mappingConfiguration.LoadSettingsWithResult();
     }
 
-    configurationLoaded = loadResult == MappingConfigurationLoadResult::Success;
+    configurationLoaded = loadResult != MappingConfigurationLoadResult::Failure;
 }
 
 KeyboardManagerEditor::~KeyboardManagerEditor()

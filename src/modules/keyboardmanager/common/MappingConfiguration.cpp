@@ -776,7 +776,7 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
             }
 
             // Load app specific shortcut remaps
-            result = result && LoadAppSpecificShortcutRemaps(remapShortcutsData);
+            result = LoadAppSpecificShortcutRemaps(remapShortcutsData) && result;
         }
     }
     catch (...)
@@ -804,10 +804,6 @@ MappingConfigurationLoadResult MappingConfiguration::LoadSettingsFromJson(const 
     result = candidate.LoadShortcutRemaps(configFile, KeyboardManagerConstants::RemapShortcutsToTextSettingName) && result;
     result = candidate.LoadSingleKeyToTextRemaps(configFile) && result;
     result = candidate.LoadTextExpansions(configFile) && result;
-    if (!result)
-    {
-        return MappingConfigurationLoadResult::Partial;
-    }
 
     singleKeyReMap = std::move(candidate.singleKeyReMap);
     scanMap = std::move(candidate.scanMap);
@@ -818,7 +814,7 @@ MappingConfigurationLoadResult MappingConfiguration::LoadSettingsFromJson(const 
     appSpecificShortcutReMap = std::move(candidate.appSpecificShortcutReMap);
     appSpecificShortcutReMapSortedKeys = std::move(candidate.appSpecificShortcutReMapSortedKeys);
 
-    return MappingConfigurationLoadResult::Success;
+    return result ? MappingConfigurationLoadResult::Success : MappingConfigurationLoadResult::Partial;
 }
 
 MappingConfigurationLoadResult MappingConfiguration::LoadSettingsFromFile(
@@ -856,10 +852,7 @@ MappingConfigurationLoadResult MappingConfiguration::LoadSettingsFromFile(
     }
 
     const auto result = LoadSettingsFromJson(*configFile);
-    if (result == MappingConfigurationLoadResult::Success)
-    {
-        currentConfig = configurationName;
-    }
+    currentConfig = configurationName;
     return result;
 }
 

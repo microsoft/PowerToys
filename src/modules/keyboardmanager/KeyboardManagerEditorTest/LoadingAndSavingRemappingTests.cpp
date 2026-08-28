@@ -710,7 +710,7 @@ namespace RemappingUITests
             Assert::IsTrue(configuration.textExpansions.empty());
         }
 
-        TEST_METHOD (LoadSettingsFromFile_ShouldKeepSnapshotWhenExistingProfileCannotBeParsed)
+        TEST_METHOD (LoadSettingsFromFile_ShouldLeaveStateUnchangedWhenExistingProfileCannotBeParsed)
         {
             ScopedProfileTestPath corruptProfile{ L"corrupt.json" };
             {
@@ -729,6 +729,75 @@ namespace RemappingUITests
             Assert::AreEqual(std::wstring(L"previous"), configuration.currentConfig);
             Assert::AreEqual(static_cast<size_t>(1), configuration.textExpansions.size());
             Assert::AreEqual(std::wstring(TextExpansionId1), configuration.textExpansions[0].id);
+        }
+
+        TEST_METHOD (LoadSettingsFromFile_ShouldApplyValidSubsetAndUpdateConfigurationOnPartial)
+        {
+            ScopedProfileTestPath partialProfile{ L"partial.json" };
+            auto profile = CreateEmptyMappingProfile();
+            json::JsonObject keyRemap;
+            keyRemap.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(L"65"));
+            keyRemap.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(L"66"));
+            profile.GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName)
+                .GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName)
+                .Append(keyRemap);
+            auto rules = GetTextExpansionArray(profile);
+            rules.Append(CreateTextExpansionJson(
+                TextExpansionId1,
+                L"valid",
+                CreateActivationJson({ VK_SPACE }),
+                L"loaded",
+                true));
+            auto invalidRule = CreateTextExpansionJson(
+                TextExpansionId2,
+                L"invalid",
+                CreateActivationJson({ VK_SPACE }),
+                L"skipped",
+                true);
+            invalidRule.Remove(KeyboardManagerConstants::TextExpansionReplacementTextSettingName);
+            rules.Append(invalidRule);
+            json::to_file(partialProfile.path.wstring(), profile);
+
+            MappingConfiguration configuration;
+            configuration.currentConfig = L"previous";
+            Assert::IsTrue(configuration.AddSingleKeyRemap(L'C', static_cast<DWORD>(L'D')));
+            Assert::IsTrue(configuration.AddTextExpansion(CreateTextExpansionRule(TextExpansionId3)));
+
+            const auto result = configuration.LoadSettingsFromFile(L"partial-profile", partialProfile.path.wstring());
+
+            Assert::AreEqual(static_cast<int>(MappingConfigurationLoadResult::Partial), static_cast<int>(result));
+            Assert::AreEqual(std::wstring(L"partial-profile"), configuration.currentConfig);
+            Assert::AreEqual(static_cast<size_t>(1), configuration.singleKeyReMap.size());
+            Assert::IsTrue(configuration.singleKeyReMap.contains(L'A'));
+            Assert::AreEqual(static_cast<DWORD>(L'B'), std::get<DWORD>(configuration.singleKeyReMap.at(L'A')));
+            Assert::AreEqual(static_cast<size_t>(1), configuration.textExpansions.size());
+            Assert::AreEqual(std::wstring(TextExpansionId1), configuration.textExpansions[0].id);
+            Assert::AreEqual(std::wstring(L"loaded"), configuration.textExpansions[0].replacementText);
+        }
+
+        TEST_METHOD (LoadSettingsFromJson_ShouldLoadValidAppSpecificShortcutsWhenGlobalShortcutIsInvalid)
+        {
+            auto profile = CreateEmptyMappingProfile();
+            auto shortcuts = profile.GetNamedObject(KeyboardManagerConstants::RemapShortcutsSettingName);
+            shortcuts.GetNamedArray(KeyboardManagerConstants::GlobalRemapShortcutsSettingName)
+                .Append(json::value(L"invalid"));
+
+            json::JsonObject appSpecificShortcut;
+            appSpecificShortcut.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(L"17;65"));
+            appSpecificShortcut.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(L"66"));
+            appSpecificShortcut.SetNamedValue(KeyboardManagerConstants::TargetAppSettingName, json::value(L"test.exe"));
+            shortcuts.GetNamedArray(KeyboardManagerConstants::AppSpecificRemapShortcutsSettingName)
+                .Append(appSpecificShortcut);
+
+            MappingConfiguration configuration;
+            const auto result = configuration.LoadSettingsFromJson(profile);
+
+            Assert::AreEqual(static_cast<int>(MappingConfigurationLoadResult::Partial), static_cast<int>(result));
+            Assert::AreEqual(static_cast<size_t>(1), configuration.appSpecificShortcutReMap.size());
+            Assert::IsTrue(configuration.appSpecificShortcutReMap.contains(L"test.exe"));
+            const auto& appMappings = configuration.appSpecificShortcutReMap.at(L"test.exe");
+            Assert::AreEqual(static_cast<size_t>(1), appMappings.size());
+            Assert::IsTrue(appMappings.contains(Shortcut(L"17;65")));
         }
 
         TEST_METHOD (LoadTextExpansions_ShouldAcceptCanonicalSchema_NormalizeActivationAndPreserveDuplicates)
@@ -780,7 +849,7 @@ namespace RemappingUITests
             Assert::IsTrue(configuration.textExpansions.empty());
         }
 
-        TEST_METHOD (LoadTextExpansions_ShouldRejectNonCanonicalOrDuplicateGuidsWithoutCommittingPartialSnapshot)
+        TEST_METHOD (LoadTextExpansions_ShouldSkipInvalidOrDuplicateGuidsAndApplyValidSubset)
         {
             const auto existingRule = CreateTextExpansionRule(TextExpansionId3, L"existing", Shortcut(VK_TAB), L"unchanged", false);
             MappingConfiguration configuration;
@@ -792,7 +861,14 @@ namespace RemappingUITests
                      std::wstring(L"{11111111-1111-4111-8111-111111111111}") })
             {
                 auto profile = CreateEmptyMappingProfile();
-                GetTextExpansionArray(profile).Append(CreateTextExpansionJson(
+                auto rules = GetTextExpansionArray(profile);
+                rules.Append(CreateTextExpansionJson(
+                    TextExpansionId2,
+                    L"valid",
+                    CreateActivationJson({ VK_TAB }),
+                    L"loaded",
+                    true));
+                rules.Append(CreateTextExpansionJson(
                     invalidId,
                     L"brb",
                     CreateActivationJson({ VK_SPACE }),
@@ -802,7 +878,8 @@ namespace RemappingUITests
                 const auto result = configuration.LoadSettingsFromJson(profile);
                 Assert::AreEqual(static_cast<int>(MappingConfigurationLoadResult::Partial), static_cast<int>(result));
                 Assert::AreEqual(static_cast<size_t>(1), configuration.textExpansions.size());
-                Assert::AreEqual(existingRule.id, configuration.textExpansions[0].id);
+                Assert::AreEqual(std::wstring(TextExpansionId2), configuration.textExpansions[0].id);
+                Assert::AreEqual(std::wstring(L"loaded"), configuration.textExpansions[0].replacementText);
             }
 
             auto duplicateProfile = CreateEmptyMappingProfile();
@@ -823,10 +900,11 @@ namespace RemappingUITests
             const auto duplicateResult = configuration.LoadSettingsFromJson(duplicateProfile);
             Assert::AreEqual(static_cast<int>(MappingConfigurationLoadResult::Partial), static_cast<int>(duplicateResult));
             Assert::AreEqual(static_cast<size_t>(1), configuration.textExpansions.size());
-            Assert::AreEqual(existingRule.id, configuration.textExpansions[0].id);
+            Assert::AreEqual(std::wstring(TextExpansionId1), configuration.textExpansions[0].id);
+            Assert::AreEqual(std::wstring(L"first"), configuration.textExpansions[0].sourceText);
         }
 
-        TEST_METHOD (LoadTextExpansions_ShouldRejectMissingRequiredFieldsWithoutCommittingPartialSnapshot)
+        TEST_METHOD (LoadTextExpansions_ShouldSkipEntriesWithMissingRequiredFieldsAndApplyValidSubset)
         {
             MappingConfiguration configuration;
             Assert::IsTrue(configuration.AddTextExpansion(CreateTextExpansionRule(TextExpansionId3)));
@@ -839,6 +917,13 @@ namespace RemappingUITests
                      KeyboardManagerConstants::TextExpansionEnabledSettingName })
             {
                 auto profile = CreateEmptyMappingProfile();
+                auto rules = GetTextExpansionArray(profile);
+                rules.Append(CreateTextExpansionJson(
+                    TextExpansionId2,
+                    L"valid",
+                    CreateActivationJson({ VK_TAB }),
+                    L"loaded",
+                    true));
                 auto rule = CreateTextExpansionJson(
                     TextExpansionId1,
                     L"brb",
@@ -846,16 +931,17 @@ namespace RemappingUITests
                     L"replacement",
                     true);
                 rule.Remove(missingField);
-                GetTextExpansionArray(profile).Append(rule);
+                rules.Append(rule);
 
                 const auto result = configuration.LoadSettingsFromJson(profile);
                 Assert::AreEqual(static_cast<int>(MappingConfigurationLoadResult::Partial), static_cast<int>(result));
                 Assert::AreEqual(static_cast<size_t>(1), configuration.textExpansions.size());
-                Assert::AreEqual(std::wstring(TextExpansionId3), configuration.textExpansions[0].id);
+                Assert::AreEqual(std::wstring(TextExpansionId2), configuration.textExpansions[0].id);
+                Assert::AreEqual(std::wstring(L"loaded"), configuration.textExpansions[0].replacementText);
             }
         }
 
-        TEST_METHOD (LoadTextExpansions_ShouldRejectInvalidActivationShapesWithoutCommittingPartialSnapshot)
+        TEST_METHOD (LoadTextExpansions_ShouldSkipInvalidActivationShapesAndApplyValidSubset)
         {
             MappingConfiguration configuration;
             Assert::IsTrue(configuration.AddTextExpansion(CreateTextExpansionRule(TextExpansionId3)));
@@ -874,7 +960,14 @@ namespace RemappingUITests
             for (const auto& activation : invalidActivations)
             {
                 auto profile = CreateEmptyMappingProfile();
-                GetTextExpansionArray(profile).Append(CreateTextExpansionJson(
+                auto rules = GetTextExpansionArray(profile);
+                rules.Append(CreateTextExpansionJson(
+                    TextExpansionId2,
+                    L"valid",
+                    CreateActivationJson({ VK_TAB }),
+                    L"loaded",
+                    true));
+                rules.Append(CreateTextExpansionJson(
                     TextExpansionId1,
                     L"brb",
                     activation,
@@ -884,10 +977,18 @@ namespace RemappingUITests
                 const auto result = configuration.LoadSettingsFromJson(profile);
                 Assert::AreEqual(static_cast<int>(MappingConfigurationLoadResult::Partial), static_cast<int>(result));
                 Assert::AreEqual(static_cast<size_t>(1), configuration.textExpansions.size());
-                Assert::AreEqual(std::wstring(TextExpansionId3), configuration.textExpansions[0].id);
+                Assert::AreEqual(std::wstring(TextExpansionId2), configuration.textExpansions[0].id);
+                Assert::AreEqual(std::wstring(L"loaded"), configuration.textExpansions[0].replacementText);
             }
 
             auto nonArrayProfile = CreateEmptyMappingProfile();
+            auto nonArrayRules = GetTextExpansionArray(nonArrayProfile);
+            nonArrayRules.Append(CreateTextExpansionJson(
+                TextExpansionId2,
+                L"valid",
+                CreateActivationJson({ VK_TAB }),
+                L"loaded",
+                true));
             auto nonArrayRule = CreateTextExpansionJson(
                 TextExpansionId1,
                 L"brb",
@@ -895,12 +996,13 @@ namespace RemappingUITests
                 L"replacement",
                 true);
             nonArrayRule.SetNamedValue(KeyboardManagerConstants::TextExpansionActivationKeysSettingName, json::value(L"32"));
-            GetTextExpansionArray(nonArrayProfile).Append(nonArrayRule);
+            nonArrayRules.Append(nonArrayRule);
 
             const auto nonArrayResult = configuration.LoadSettingsFromJson(nonArrayProfile);
             Assert::AreEqual(static_cast<int>(MappingConfigurationLoadResult::Partial), static_cast<int>(nonArrayResult));
             Assert::AreEqual(static_cast<size_t>(1), configuration.textExpansions.size());
-            Assert::AreEqual(std::wstring(TextExpansionId3), configuration.textExpansions[0].id);
+            Assert::AreEqual(std::wstring(TextExpansionId2), configuration.textExpansions[0].id);
+            Assert::AreEqual(std::wstring(L"loaded"), configuration.textExpansions[0].replacementText);
         }
 
         TEST_METHOD (TextExpansionCrud_ShouldUseGuidPreserveOrderAndAllowDuplicateSourceAndActivation)

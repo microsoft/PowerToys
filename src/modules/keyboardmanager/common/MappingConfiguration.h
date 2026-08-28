@@ -29,6 +29,7 @@ using TextExpansionTable = std::vector<TextExpansionRule>;
 enum class MappingConfigurationLoadResult
 {
     Success = 0,
+    // The parsed profile was applied, but one or more invalid entries were skipped.
     Partial = 1,
     Failure = 2,
 };
@@ -55,10 +56,10 @@ public:
     // Load while distinguishing rejected entries from a file-level failure.
     MappingConfigurationLoadResult LoadSettingsWithResult();
 
-    // Load an already parsed profile. Invalid entries are rejected and reported as Partial.
+    // Load an already parsed profile. Valid entries are applied, while rejected entries are reported as Partial.
     MappingConfigurationLoadResult LoadSettingsFromJson(const json::JsonObject& configFile);
 
-    // Load a named profile file. A profile that has not been created yet is a valid empty snapshot.
+    // Load a named profile file. A missing profile is a valid empty snapshot; a partial profile applies its valid entries.
     MappingConfigurationLoadResult LoadSettingsFromFile(const std::wstring& configurationName, const std::wstring& filePath);
 
     bool IsConfigurationNameResolved() const;
