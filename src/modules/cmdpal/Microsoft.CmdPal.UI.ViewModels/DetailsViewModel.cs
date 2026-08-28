@@ -173,8 +173,13 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
             }
         }
 
-        ListHelpers.InPlaceUpdateList(Content, content);
-        UpdateProperty(nameof(Content));
+        // Now, back to a UI thread to update the observable collection
+        DoOnUiThread(
+            () =>
+            {
+                ListHelpers.InPlaceUpdateList(Content, content);
+                UpdateProperty(nameof(Content));
+            });
     }
 
     protected override void UnsafeCleanup()

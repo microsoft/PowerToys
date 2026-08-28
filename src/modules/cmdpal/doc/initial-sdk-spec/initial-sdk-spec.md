@@ -88,6 +88,7 @@ functionality.
   - [Addenda V: Extra content types](#addenda-v-extra-content-types)
     - [Image content](#image-content)
     - [Plain text content](#plain-text-content)
+  - [Addenda VII: Rich content details](#addenda-vii-rich-content-details)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
@@ -2423,6 +2424,28 @@ interface IPlainTextContent requires IContent {
     Boolean WrapWords { get; };
 }
 ```
+
+
+## Addenda VII: Rich content details
+
+Originally, the `IDetails` was designed for just a simple title, image, and
+markdown body. However it also makes sense to allow for more complex content in
+the details view. This is especially useful for extensions that want to provide
+richer inline content in the details view, like a card.
+
+```csharp
+interface IDetails2 requires IDetails {
+    IContent[] GetContent();
+}
+```
+
+This is a method, not a property, because we want to explicitly indicate that
+the content may be generated when it is requested. 
+
+Should an extension want to indicate that the content has changed, they can
+raise a `INotifyPropChanged` event on the `IDetails2` object for the property
+name "Content". The host will accept that as a notification that the content has
+changed. 
 
 ## Class diagram
 
