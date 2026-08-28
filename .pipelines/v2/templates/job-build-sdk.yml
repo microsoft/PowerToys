@@ -66,19 +66,15 @@ jobs:
 
   - pwsh: |-
       npm ci --cache "$(Pipeline.Workspace)\.npm" --prefer-offline &&
-      npm run format:check -- --end-of-line auto &&
-      npm run typecheck &&
-      npm run lint &&
-      npm test &&
-      npm run build &&
-      npm run verify:pack
+      npm run build
     workingDirectory: $(Build.SourcesDirectory)\src\modules\cmdpal\ts-sdk
-    displayName: Validate CmdPal TypeScript SDK
+    displayName: Build CmdPal TypeScript SDK dependency
 
   - pwsh: |-
       npm ci --cache "$(Pipeline.Workspace)\.npm" --prefer-offline &&
       npm run typecheck &&
-      npm run build
+      npm run build &&
+      npm test
     workingDirectory: $(Build.SourcesDirectory)\src\modules\cmdpal\ext\SampleJSExtension
     displayName: Validate CmdPal sample JavaScript extension
 

@@ -15,6 +15,7 @@
     "clean": "node -e \"const{rmSync}=require('node:fs');rmSync('dist',{recursive:true,force:true})\"",
     "build": "tsc -p tsconfig.json && node -e \"const{cpSync}=require('node:fs');cpSync('assets','dist/assets',{recursive:true})\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test test/*.test.mjs",
     "prepack": "npm run clean && npm run build"
   },
   "keywords": [

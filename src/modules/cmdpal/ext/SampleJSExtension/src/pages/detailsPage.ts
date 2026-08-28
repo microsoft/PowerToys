@@ -9,13 +9,13 @@ import {
   ListPageBase,
   NoOpCommand,
 } from '@microsoft/cmdpal-sdk';
-import type { DetailsElement, IListItem } from '@microsoft/cmdpal-sdk';
+import type { DetailsElement, IconInfo, IListItem } from '@microsoft/cmdpal-sdk';
 import { fileURLToPath } from 'node:url';
 import { glyphIcon, randomColor, rgb, samplePngBase64, tag } from '../util.js';
 import { sampleMarkdownText } from '../markdownText.js';
 import { ProgressStatusCommand, StatusMessageCommand } from '../commands/statusCommands.js';
 
-const heroImage = iconFromFile(fileURLToPath(new URL('../assets/hero.png', import.meta.url)));
+const heroFallback = glyphIcon('\uE91B');
 
 /**
  * Builds the shared "metadata" rows demonstrated in both the details page and
@@ -126,9 +126,13 @@ export class SampleListPageWithDetails extends ListPageBase {
 
   override icon = glyphIcon('\uE8A0');
   override showDetails = true;
+  private heroImageLoad?: Promise<IconInfo>;
 
   override async getItems(): Promise<IListItem[]> {
-    const packagedHeroImage = await heroImage;
+    this.heroImageLoad ??= Promise.resolve()
+      .then(() => iconFromFile(fileURLToPath(new URL('../assets/hero.png', import.meta.url))))
+      .catch(() => heroFallback);
+    const packagedHeroImage = await this.heroImageLoad;
     return [
       new ListItemBase({
         command: new NoOpCommand('details-default'),
