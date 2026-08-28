@@ -6506,6 +6506,7 @@ Text uses the current drawing color.</value>
   </data>
   <data name="GeneralPage_EnableQuickAccess.Description" xml:space="preserve">
     <value>Fast access to quick actions and module toggles</value>
+    <comment>Simplified Chinese: translate the full string as "快速操作和模块切换", not "快速访问快速作和模块切换".</comment>
   </data>
   <data name="GeneralPage_QuickAccessShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
