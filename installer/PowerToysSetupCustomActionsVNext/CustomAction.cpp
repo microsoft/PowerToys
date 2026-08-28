@@ -213,24 +213,11 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
     UINT er = ERROR_SUCCESS;
     std::wstring installationFolder, path, args;
     std::wstring commandLine;
-    LPWSTR installFolderProperty = nullptr;
-    LPWSTR replacedInUseFiles = nullptr;
 
     hr = WcaInitialize(hInstall, "LaunchPowerToys");
     ExitOnFailure(hr, "Failed to initialize");
-
-    hr = WcaGetProperty(L"ReplacedInUseFiles", &replacedInUseFiles);
-    ExitOnFailure(hr, "Failed to get ReplacedInUseFiles property.");
-
-    if ((replacedInUseFiles && replacedInUseFiles[0] != L'\0') || MsiGetMode(hInstall, MSIRUNMODE_REBOOTATEND) || MsiGetMode(hInstall, MSIRUNMODE_REBOOTNOW))
-    {
-        WcaLog(LOGMSG_STANDARD, "LaunchPowerToys: Skipping launch because Windows Installer requires a reboot.");
-        goto LExit;
-    }
-
-    hr = WcaGetProperty(L"INSTALLFOLDER", &installFolderProperty);
-    ExitOnFailure(hr, "Failed to get INSTALLFOLDER property.");
-    installationFolder = installFolderProperty;
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installFolder.");
 
     path = installationFolder;
     path += L"\\PowerToys.exe";
@@ -320,8 +307,6 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
     }
 
 LExit:
-    ReleaseStr(installFolderProperty);
-    ReleaseStr(replacedInUseFiles);
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
 }

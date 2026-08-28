@@ -225,17 +225,12 @@ function Get-WinUI3DuplicateFileData {
             throw "Expected $($expectedSourceFiles.Count) WinUI3Apps DuplicateFile rows but found $($winUI3Duplicates.Count) in $resolvedPath."
         }
 
-        $customActions = Invoke-MsiQuery $database 'SELECT `Action`, `Type` FROM `CustomAction`' @('Action', 'Type') @('String', 'Integer')
+        $customActions = Invoke-MsiQuery $database 'SELECT `Action` FROM `CustomAction`' @('Action') @('String')
         $legacyActions = @('SetCreateWinAppSDKHardlinksParam', 'CreateWinAppSDKHardlinks', 'SetDeleteWinAppSDKHardlinksParam', 'DeleteWinAppSDKHardlinks')
         foreach ($legacyAction in $legacyActions) {
             if ($customActions.Action -contains $legacyAction) {
                 throw "Legacy custom action $legacyAction is still present in $resolvedPath."
             }
-        }
-
-        $launchAction = @($customActions | Where-Object { $_.Action -eq 'LaunchPowerToys' })
-        if ($launchAction.Count -ne 1 -or ($launchAction[0].Type -band 0x400) -ne 0) {
-            throw "LaunchPowerToys must be an immediate custom action in $resolvedPath."
         }
 
         if ($fileRows.File -contains 'WinUI3Apps_hardlinks_txt' -or $fileRows.FileName -match '(^|\|)hardlinks\.txt$') {
@@ -256,8 +251,6 @@ function Get-WinUI3DuplicateFileData {
         Assert-ActionBefore $sequenceByAction 'UninstallPackageIdentityMSIX' 'RemoveDuplicateFiles' $resolvedPath
         Assert-ActionBefore $sequenceByAction 'RemoveDuplicateFiles' 'RemoveFiles' $resolvedPath
         Assert-ActionBefore $sequenceByAction 'RemoveDuplicateFiles' 'InstallFiles' $resolvedPath
-        Assert-ActionBefore $sequenceByAction 'InstallFinalize' 'LaunchPowerToys' $resolvedPath
-
         if ($sequenceByAction.ContainsKey('PatchFiles')) {
             Assert-ActionBefore $sequenceByAction 'PatchFiles' 'DuplicateFiles' $resolvedPath
         }
