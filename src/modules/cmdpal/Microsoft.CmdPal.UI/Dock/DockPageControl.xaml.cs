@@ -21,6 +21,7 @@ public sealed partial class DockPageControl : UserControl, IDisposable
     private readonly PageInteractionCoordinator _pageInteractions;
     private IListInteractionSource? _listInteractionSource;
     private PageViewModel? _subscribedPage;
+    private bool _isLoaded;
     private bool _isDisposed;
 
     internal DockPageNavigationViewModel Navigation { get; }
@@ -61,6 +62,8 @@ public sealed partial class DockPageControl : UserControl, IDisposable
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        _isLoaded = true;
+        UpdatePageLevelState(useTransitions: false);
         UpdateCurrentPage();
         FocusSearch();
     }
@@ -71,7 +74,18 @@ public sealed partial class DockPageControl : UserControl, IDisposable
         {
             UpdateCurrentPage();
         }
+
+        if (e.PropertyName == nameof(DockPageNavigationViewModel.CanGoBack) && _isLoaded)
+        {
+            UpdatePageLevelState(useTransitions: true);
+        }
     }
+
+    private void UpdatePageLevelState(bool useTransitions) =>
+        VisualStateManager.GoToState(
+            this,
+            Navigation.CanGoBack ? "NestedPage" : "RootPage",
+            useTransitions);
 
     private void UpdateCurrentPage()
     {
@@ -279,6 +293,7 @@ public sealed partial class DockPageControl : UserControl, IDisposable
         }
 
         _isDisposed = true;
+        _isLoaded = false;
         Loaded -= OnLoaded;
         Navigation.PropertyChanged -= Navigation_PropertyChanged;
         SearchBox.BackRequested -= SearchBox_BackRequested;
