@@ -12,7 +12,6 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class FallbackSettingsViewModel : ObservableObject
 {
-    private readonly ISettingsService _settingsService;
     private readonly ProviderSettingsViewModel _providerSettingsViewModel;
     private readonly uint? _suggestedQueryDelayMilliseconds;
     private readonly uint? _suggestedMinimumQueryLength;
@@ -31,83 +30,62 @@ public partial class FallbackSettingsViewModel : ObservableObject
 
     public bool HasResultSettings { get; private set; }
 
+    //// Limits for the number boxes, so the view and the model clamp to the same values.
+
+    public double QueryDelayUpperBound => FallbackSettings.MaximumQueryDelayMilliseconds;
+
+    public double MinimumQueryLengthUpperBound => FallbackSettings.MaximumMinimumQueryLength;
+
+    public double ItemCountLowerBound => FallbackSettings.MinimumItemCount;
+
+    public double ItemCountUpperBound => FallbackSettings.MaximumItemCount;
+
     public bool IsEnabled
     {
         get => _fallbackSettings.IsEnabled;
-        set
-        {
-            if (value != _fallbackSettings.IsEnabled)
-            {
-                var newSettings = _fallbackSettings with { IsEnabled = value };
-
-                if (!newSettings.IsEnabled)
-                {
-                    newSettings = newSettings with { IncludeInGlobalResults = false };
-                }
-
-                _fallbackSettings = newSettings;
-                _providerSettingsViewModel.UpdateFallbackSettings(Id, _fallbackSettings);
-
-                OnPropertyChanged(nameof(IsEnabled));
-                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
-            }
-        }
+        set => Update(nameof(IsEnabled), _fallbackSettings with { IsEnabled = value });
     }
 
     public bool IncludeInGlobalResults
     {
         get => _fallbackSettings.IncludeInGlobalResults;
-        set
-        {
-            if (value != _fallbackSettings.IncludeInGlobalResults)
-            {
-                var newSettings = _fallbackSettings with { IncludeInGlobalResults = value };
-
-                if (!newSettings.IsEnabled)
-                {
-                    newSettings = newSettings with { IsEnabled = true };
-                }
-
-                _fallbackSettings = newSettings;
-                _providerSettingsViewModel.UpdateFallbackSettings(Id, _fallbackSettings);
-
-                OnPropertyChanged(nameof(IncludeInGlobalResults));
-                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
-            }
-        }
+        set => Update(nameof(IncludeInGlobalResults), _fallbackSettings with { IncludeInGlobalResults = value });
     }
 
     public double QueryDelayMilliseconds
     {
         get => _fallbackSettings.QueryDelayMilliseconds ?? _suggestedQueryDelayMilliseconds ?? 0;
-        set => UpdateQuerySetting(
+        set => Update(
             nameof(QueryDelayMilliseconds),
-            _fallbackSettings with { QueryDelayMilliseconds = ToUInt32(value, 2000) });
+            _fallbackSettings with { QueryDelayMilliseconds = ToUInt32(value, FallbackSettings.MaximumQueryDelayMilliseconds) });
     }
 
     public double MinimumQueryLength
     {
         get => _fallbackSettings.MinimumQueryLength ?? _suggestedMinimumQueryLength ?? 0;
-        set => UpdateQuerySetting(
+        set => Update(
             nameof(MinimumQueryLength),
-            _fallbackSettings with { MinimumQueryLength = ToUInt32(value, 100) });
+            _fallbackSettings with { MinimumQueryLength = ToUInt32(value, FallbackSettings.MaximumMinimumQueryLength) });
     }
 
     public double MaximumVisibleItemCount
     {
         get => _fallbackSettings.MaximumVisibleItemCount ?? FallbackResultQueryManager.InitialRequestedItemCount;
-        set => UpdateQuerySetting(
+        set => Update(
             nameof(MaximumVisibleItemCount),
-            _fallbackSettings with { MaximumVisibleItemCount = Math.Max(1, ToUInt32(value, 100)) });
+            _fallbackSettings with
+            {
+                MaximumVisibleItemCount = Math.Max(
+                    FallbackSettings.MinimumItemCount,
+                    ToUInt32(value, FallbackSettings.MaximumItemCount)),
+            });
     }
 
     public FallbackSettingsViewModel(
-    TopLevelViewModel fallback,
-    FallbackSettings fallbackSettings,
-    ProviderSettingsViewModel providerSettings,
-    ISettingsService settingsService)
+        TopLevelViewModel fallback,
+        FallbackSettings fallbackSettings,
+        ProviderSettingsViewModel providerSettings)
     {
-        _settingsService = settingsService;
         _providerSettingsViewModel = providerSettings;
         _fallbackSettings = fallbackSettings;
         _suggestedQueryDelayMilliseconds = fallback.SuggestedQueryDelayMilliseconds;
@@ -125,8 +103,20 @@ public partial class FallbackSettingsViewModel : ObservableObject
         Icon.InitializeProperties();
     }
 
-    private void UpdateQuerySetting(string propertyName, FallbackSettings newSettings)
+    /// <summary>
+    /// Saves one changed setting and tells the palette to reload its commands.
+    /// </summary>
+    private void Update(string propertyName, FallbackSettings newSettings)
     {
+        // A fallback that shows in the main results must be on. Keep the two flags
+        // agreed, whichever one the user changed.
+        newSettings = newSettings.IncludeInGlobalResults && !newSettings.IsEnabled
+            ? newSettings with { IsEnabled = true }
+            : newSettings;
+        newSettings = newSettings.IsEnabled
+            ? newSettings
+            : newSettings with { IncludeInGlobalResults = false };
+
         if (newSettings == _fallbackSettings)
         {
             return;

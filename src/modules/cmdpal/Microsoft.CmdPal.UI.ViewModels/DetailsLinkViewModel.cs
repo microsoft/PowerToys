@@ -9,7 +9,8 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class DetailsLinkViewModel : DetailsElementViewModel
+public partial class DetailsLinkViewModel(IDetailsElement detailsElement, WeakReference<IPageContext> context)
+    : DetailsElementViewModel(detailsElement, context)
 {
     private static readonly string[] _initProperties = [
         nameof(Text),
@@ -18,21 +19,7 @@ public partial class DetailsLinkViewModel : DetailsElementViewModel
         nameof(IsText),
         nameof(NavigateCommand)];
 
-    private readonly ExtensionObject<IDetailsLink> _dataModel;
-
-    public DetailsLinkViewModel(IDetailsElement detailsElement, WeakReference<IPageContext> context)
-        : this(detailsElement, context, null)
-    {
-    }
-
-    internal DetailsLinkViewModel(
-        IDetailsElement detailsElement,
-        WeakReference<IPageContext> context,
-        FallbackQueryContext? fallbackContext)
-        : base(detailsElement, context, fallbackContext)
-    {
-        _dataModel = new(detailsElement.Data as IDetailsLink);
-    }
+    private readonly ExtensionObject<IDetailsLink> _dataModel = new(detailsElement.Data as IDetailsLink);
 
     public string Text { get; private set; } = string.Empty;
 
@@ -70,15 +57,18 @@ public partial class DetailsLinkViewModel : DetailsElementViewModel
             NavigateCommand = new RelayCommand(
                 () =>
                 {
-                    using var operationLease = FallbackContext?.AcquireSnapshotLease();
-                    if (FallbackContext?.HasSnapshotLease == true && operationLease is null)
+                    IDisposable? operationLease = null;
+                    if (FallbackContext is not null && !FallbackContext.TryAcquireSnapshotLease(out operationLease))
                     {
                         return;
                     }
 
-                    if (FallbackContext?.CanInvoke != false)
+                    using (operationLease)
                     {
-                        ShellHelpers.OpenInShell(Link.ToString());
+                        if (FallbackContext?.CanInvoke != false)
+                        {
+                            ShellHelpers.OpenInShell(Link.ToString());
+                        }
                     }
                 },
                 () => Link is not null && FallbackContext?.CanInvoke != false);

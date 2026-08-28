@@ -181,17 +181,20 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         {
             var model = _commandProvider.Unsafe!;
 
+            // Load the type stubs before any provider method returns extension objects.
+            // CsWinRT records the projected shape when it first sees an object. Loading
+            // the stubs later would leave fallback objects projected as v1.
+            if (model is ICommandProvider2 two)
+            {
+                UnsafePreCacheApiAdditions(two);
+            }
+
             Task<ICommandItem[]> loadTopLevelCommandsTask = new(model.TopLevelCommands);
             loadTopLevelCommandsTask.Start();
             commands = await loadTopLevelCommandsTask.ConfigureAwait(false);
 
             // On a BG thread here
             fallbacks = model.FallbackCommands();
-
-            if (model is ICommandProvider2 two)
-            {
-                UnsafePreCacheApiAdditions(two);
-            }
 
             if (model is ICommandProvider3 supportsDockBands)
             {
@@ -435,16 +438,30 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
     private void UnsafePreCacheApiAdditions(ICommandProvider2 provider)
     {
         var apiExtensions = provider.GetApiExtensionStubs();
-        Logger.LogDebug($"Provider supports {apiExtensions.Length} extensions");
+        var supportedInterfaces = new HashSet<string>(StringComparer.Ordinal);
         foreach (var a in apiExtensions)
         {
-            if (a is IExtendedAttributesProvider command2)
+            // Try every interface against every stub, and do not stop at the first
+            // match. One stub can answer to more than one of these interfaces, so a
+            // chain of "else" would skip the later casts. Each cast teaches the WinRT
+            // type cache about one interface. An interface that no cast asks for stays
+            // unknown, and the host then reads it as "not supported" for every object
+            // that comes from this extension.
+            AddIfSupported(a is IExtendedAttributesProvider, nameof(IExtendedAttributesProvider));
+            AddIfSupported(a is IFallbackCommandItem2, nameof(IFallbackCommandItem2));
+            AddIfSupported(a is IFallbackCommandItem3, nameof(IFallbackCommandItem3));
+            AddIfSupported(a is IFallbackHandler2, nameof(IFallbackHandler2));
+            AddIfSupported(a is IFallbackCommandResult, nameof(IFallbackCommandResult));
+            AddIfSupported(a is ICommandItem[], "ICommandItem[]");
+        }
+
+        Logger.LogDebug($"{ProviderId}: Pre-cached {supportedInterfaces.Count} API extension interface(s) from {apiExtensions.Length} stub(s).");
+
+        void AddIfSupported(bool supported, string interfaceName)
+        {
+            if (supported)
             {
-                Logger.LogDebug($"{ProviderId}: Found an IExtendedAttributesProvider");
-            }
-            else if (a is ICommandItem[] commands)
-            {
-                Logger.LogDebug($"{ProviderId}: Found an ICommandItem[]");
+                supportedInterfaces.Add(interfaceName);
             }
         }
     }

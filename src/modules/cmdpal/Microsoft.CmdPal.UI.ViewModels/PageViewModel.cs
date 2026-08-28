@@ -95,8 +95,6 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public ICommandProviderContext ProviderContext { get; protected set; }
 
-    internal FallbackQueryContext? FallbackContext { get; private set; }
-
     private IDisposable? _fallbackSnapshotLease;
 
     public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost, ICommandProviderContext providerContext)
@@ -113,22 +111,10 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         UpdateHasStatusMessage();
     }
 
-    internal bool AttachFallbackContext(FallbackQueryContext? fallbackContext)
+    internal void AttachFallbackContext(FallbackQueryContext? fallbackContext, IDisposable? snapshotLease)
     {
-        if (fallbackContext is null)
-        {
-            return true;
-        }
-
-        var lease = fallbackContext.AcquireSnapshotLease();
-        if (fallbackContext.HasSnapshotLease && lease is null)
-        {
-            return false;
-        }
-
-        FallbackContext = fallbackContext;
-        _fallbackSnapshotLease = lease;
-        return true;
+        InheritFallbackContext(fallbackContext);
+        _fallbackSnapshotLease = snapshotLease;
     }
 
     private void StatusMessages_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => UpdateHasStatusMessage();

@@ -8,6 +8,26 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public record FallbackSettings
 {
+    /// <summary>
+    /// Largest query delay, in milliseconds, that a user or an extension can ask for.
+    /// </summary>
+    public const uint MaximumQueryDelayMilliseconds = 2000;
+
+    /// <summary>
+    /// Largest minimum query length that a user or an extension can ask for.
+    /// </summary>
+    public const uint MaximumMinimumQueryLength = 100;
+
+    /// <summary>
+    /// Smallest number of items that one fallback can show at one time.
+    /// </summary>
+    public const uint MinimumItemCount = 1;
+
+    /// <summary>
+    /// Largest number of items that one fallback can show at one time.
+    /// </summary>
+    public const uint MaximumItemCount = 100;
+
     public bool IsEnabled { get; init; } = true;
 
     public bool IncludeInGlobalResults { get; init; }

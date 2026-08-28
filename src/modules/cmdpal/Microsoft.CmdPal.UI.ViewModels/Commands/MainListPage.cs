@@ -52,7 +52,14 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
     private readonly Dictionary<string, FallbackResultState> _fallbackResultSnapshots = new(StringComparer.Ordinal);
+
+    // Snapshot identity is reference identity: two snapshots from one extension can look
+    // equal but stand for different result sets.
     private readonly Dictionary<IFallbackCommandResult, FallbackSnapshotLease> _fallbackSnapshotLeases = new(ReferenceEqualityComparer.Instance);
+
+    // Snapshots that are closed. A late progress report can still name one, and reopening
+    // it would hand out dead extension objects. This is a weak table, not a set, because
+    // the entries must not keep closed snapshots alive for the life of the process.
     private readonly ConditionalWeakTable<IFallbackCommandResult, object> _retiredFallbackSnapshots = new();
     private readonly Lock _fallbackSnapshotLeaseLock = new();
     private readonly Lock _queryGenerationLock = new();
@@ -86,7 +93,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
     // Common fallbacks use query-independent scores, so freezing them is safe; only their live
     // titles decide whether they render.
-    private IEnumerable<RoScored<IListItem>>? _fallbackItems;
+    private RoScored<IListItem>[]? _fallbackItems;
     private IListItem[]? _fallbackResultItems;
     private IReadOnlyList<TopLevelViewModel> _fallbackResultSourceOrder = [];
 
@@ -305,19 +312,16 @@ public sealed partial class MainListPage : DynamicListPage,
         // resolved after first paint gets the right score. Cheap: only a handful are configured.
         var validScoredFallbacks = ScoreDeferredFallbacks(_globalFallbackSources, _globalFallbackQuery, _scoringFunction);
 
-        var validFallbacks = _fallbackItems?
-            .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
-            .ToList();
-
         // Remove fuzzy-only app matches for short queries so frecency-boosted weak matches don't
         // appear while typing.
         var filteredApps = FilterAppsForShortQueries(_filteredApps, _filteredAppsQueryLength);
 
+        // Create drops fallbacks whose title is still empty, so do not filter here as well.
         var result = MainListPageResultFactory.Create(
             _filteredItems,
             validScoredFallbacks,
             filteredApps,
-            validFallbacks,
+            _fallbackItems,
             _resultsSeparator,
             _fallbacksSeparator,
             AppResultLimit,
@@ -325,6 +329,9 @@ public sealed partial class MainListPage : DynamicListPage,
 
         foreach (var fallbackResultItem in result.OfType<FallbackResultListItem>())
         {
+            // A row that reaches the rendered list keeps its reference until a
+            // ListItemViewModel takes over. Rows that do not reach the list give theirs
+            // back when the query that built them is retired.
             fallbackResultItem.MarkPublished();
         }
 
@@ -1064,7 +1071,7 @@ public sealed partial class MainListPage : DynamicListPage,
             _retiredFallbackSnapshots.Add(snapshot, new object());
         }
 
-        CloseFallbackResultSnapshot(snapshot);
+        FallbackSnapshotLease.CloseSnapshot(snapshot);
     }
 
     private IListItem[] BuildFallbackResultItems()
@@ -1148,7 +1155,16 @@ public sealed partial class MainListPage : DynamicListPage,
             : Array.IndexOf(fallbackRanks, legacyIdSelector(source));
     }
 
-    private void CloseFallbackResultSnapshots()
+    /// <summary>
+    /// Drops every published snapshot and gives back the references the page holds.
+    /// </summary>
+    /// <remarks>
+    /// Releasing a reference can close an object in the extension process, which is a
+    /// cross-process call. The keystroke path must not wait for that, so it runs the
+    /// release on a pool thread. Shutdown passes true, because the process must not end
+    /// with the calls still pending.
+    /// </remarks>
+    private void CloseFallbackResultSnapshots(bool synchronously = false)
     {
         FallbackSnapshotLease[] leases;
         lock (_tlcManager.TopLevelCommands)
@@ -1167,45 +1183,30 @@ public sealed partial class MainListPage : DynamicListPage,
             return;
         }
 
-        _ = Task.Run(() =>
+        if (synchronously)
+        {
+            ReleaseOwners(leases);
+            return;
+        }
+
+        _ = Task.Run(() => ReleaseOwners(leases));
+
+        static void ReleaseOwners(FallbackSnapshotLease[] leases)
         {
             foreach (var lease in leases)
             {
                 lease.ReleaseOwner();
             }
-        });
-    }
-
-    private static void CloseFallbackResultSnapshot(IFallbackCommandResult snapshot)
-    {
-        try
-        {
-            (snapshot as IDisposable)?.Dispose();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Failed to close a fallback result snapshot.", ex);
         }
     }
 
-    private void CloseFallbackResultSnapshotsSynchronously()
+    /// <summary>
+    /// Drops one snapshot state and gives back the reference the page holds for it.
+    /// </summary>
+    private static void RetireFallbackResultState(FallbackResultState state)
     {
-        FallbackSnapshotLease[] leases;
-        lock (_tlcManager.TopLevelCommands)
-        {
-            leases = _fallbackResultSnapshots.Values.Select(state => state.Lease).ToArray();
-            foreach (var state in _fallbackResultSnapshots.Values)
-            {
-                ReleaseUnpublishedWrapperLeases(state);
-            }
-
-            _fallbackResultSnapshots.Clear();
-        }
-
-        foreach (var lease in leases)
-        {
-            lease.ReleaseOwner();
-        }
+        ReleaseUnpublishedWrapperLeases(state);
+        state.Lease.ReleaseOwner();
     }
 
     private sealed record FallbackResultState(
@@ -1514,7 +1515,7 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
-        CloseFallbackResultSnapshotsSynchronously();
+        CloseFallbackResultSnapshots(synchronously: true);
         _fallbackUpdateManager.Dispose();
         _fallbackResultQueryManager.Dispose();
         _searchTelemetry.Dispose();

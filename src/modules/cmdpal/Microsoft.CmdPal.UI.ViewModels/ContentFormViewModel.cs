@@ -16,23 +16,10 @@ using Windows.Data.Json;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ContentFormViewModel : ContentViewModel
+public partial class ContentFormViewModel(IFormContent form, WeakReference<IPageContext> context)
+    : ContentViewModel(context)
 {
-    private readonly ExtensionObject<IFormContent> _formModel;
-
-    public ContentFormViewModel(IFormContent form, WeakReference<IPageContext> context)
-        : this(form, context, null)
-    {
-    }
-
-    internal ContentFormViewModel(
-        IFormContent form,
-        WeakReference<IPageContext> context,
-        FallbackQueryContext? fallbackContext)
-        : base(context, fallbackContext)
-    {
-        _formModel = new(form);
-    }
+    private readonly ExtensionObject<IFormContent> _formModel = new(form);
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -173,13 +160,17 @@ public partial class ContentFormViewModel : ContentViewModel
 
         if (action is AdaptiveOpenUrlAction openUrlAction)
         {
-            using var operationLease = FallbackContext?.AcquireSnapshotLease();
-            if (FallbackContext?.HasSnapshotLease == true && operationLease is null)
+            IDisposable? openUrlLease = null;
+            if (FallbackContext is not null && !FallbackContext.TryAcquireSnapshotLease(out openUrlLease))
             {
                 return;
             }
 
-            WeakReferenceMessenger.Default.Send<LaunchUriMessage>(new(openUrlAction.Url));
+            using (openUrlLease)
+            {
+                WeakReferenceMessenger.Default.Send<LaunchUriMessage>(new(openUrlAction.Url));
+            }
+
             return;
         }
 
@@ -189,8 +180,10 @@ public partial class ContentFormViewModel : ContentViewModel
             var dataString = (action as AdaptiveSubmitAction)?.DataJson.Stringify() ?? string.Empty;
             var inputString = inputs.Stringify();
 
-            var operationLease = FallbackContext?.AcquireSnapshotLease();
-            if (FallbackContext?.HasSnapshotLease == true && operationLease is null)
+            // The submit runs on a pool thread, so the reference has to outlive this
+            // method. The task releases it.
+            IDisposable? operationLease = null;
+            if (FallbackContext is not null && !FallbackContext.TryAcquireSnapshotLease(out operationLease))
             {
                 return;
             }

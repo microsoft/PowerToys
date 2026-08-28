@@ -40,22 +40,11 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
     public IReadOnlyDictionary<string, ExtensionObject<object>>? Properties => _properties?.AsReadOnly();
 
-    public FallbackQueryContext? FallbackContext { get; }
-
     public CommandViewModel(ICommand? command, WeakReference<IPageContext> pageContext)
-        : this(command, pageContext, null)
-    {
-    }
-
-    internal CommandViewModel(
-        ICommand? command,
-        WeakReference<IPageContext> pageContext,
-        FallbackQueryContext? fallbackContext)
         : base(pageContext)
     {
         Model = new(command);
         Icon = new(null);
-        FallbackContext = fallbackContext;
     }
 
     public void FastInitializeProperties()

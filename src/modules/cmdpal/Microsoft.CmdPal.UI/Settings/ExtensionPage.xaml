@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.ExtensionPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -208,9 +208,9 @@
 
                                                     <controls:SettingsCard
                                                         x:Uid="Settings_Fallback_QueryDelay"
-                                                        Visibility="{x:Bind HasQuerySettings, Mode=OneWay}">
+                                                        Visibility="{x:Bind HasQuerySettings, Mode=OneTime}">
                                                         <NumberBox
-                                                            Maximum="2000"
+                                                            Maximum="{x:Bind QueryDelayUpperBound, Mode=OneTime}"
                                                             Minimum="0"
                                                             SmallChange="25"
                                                             SpinButtonPlacementMode="Compact"
@@ -219,9 +219,9 @@
 
                                                     <controls:SettingsCard
                                                         x:Uid="Settings_Fallback_MinimumQueryLength"
-                                                        Visibility="{x:Bind HasQuerySettings, Mode=OneWay}">
+                                                        Visibility="{x:Bind HasQuerySettings, Mode=OneTime}">
                                                         <NumberBox
-                                                            Maximum="100"
+                                                            Maximum="{x:Bind MinimumQueryLengthUpperBound, Mode=OneTime}"
                                                             Minimum="0"
                                                             SmallChange="1"
                                                             SpinButtonPlacementMode="Compact"
@@ -230,10 +230,10 @@
 
                                                     <controls:SettingsCard
                                                         x:Uid="Settings_Fallback_MaximumVisibleItems"
-                                                        Visibility="{x:Bind HasResultSettings, Mode=OneWay}">
+                                                        Visibility="{x:Bind HasResultSettings, Mode=OneTime}">
                                                         <NumberBox
-                                                            Maximum="100"
-                                                            Minimum="1"
+                                                            Maximum="{x:Bind ItemCountUpperBound, Mode=OneTime}"
+                                                            Minimum="{x:Bind ItemCountLowerBound, Mode=OneTime}"
                                                             SmallChange="1"
                                                             SpinButtonPlacementMode="Compact"
                                                             Value="{x:Bind MaximumVisibleItemCount, Mode=TwoWay}" />

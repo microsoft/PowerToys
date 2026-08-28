@@ -119,8 +119,6 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public DataPackageView? DataPackage { get; private set; }
 
-    internal FallbackQueryContext? FallbackContext { get; }
-
     public IReadOnlyList<IContextItemViewModel> AllCommands => _allCommandsSnapshot;
 
     private static readonly IconInfoViewModel _errorIcon;
@@ -148,8 +146,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     {
         _commandItemModel = item;
         _contextMenuFactory = contextMenuFactory;
-        FallbackContext = fallbackContext;
-        _commandState = new(new CommandViewModel(null, errorContext, fallbackContext), Owned: true);
+        InheritFallbackContext(fallbackContext);
+        _commandState = new(ShareFallbackContext(new CommandViewModel(null, errorContext)), Owned: true);
     }
 
     public void FastInitializeProperties()
@@ -553,7 +551,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     /// </remarks>
     private void ReplaceCommand(ICommand? model)
     {
-        var command = new CommandViewModel(model, PageContext, FallbackContext);
+        var command = ShareFallbackContext(new CommandViewModel(model, PageContext));
         var replaced = Interlocked.Exchange(ref _commandState, new CommandOwnership(command, Owned: true));
 
         ReleaseReplaced(replaced, command);

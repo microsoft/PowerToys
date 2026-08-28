@@ -260,8 +260,8 @@ public partial class ShellViewModel : ObservableObject,
             return;
         }
 
-        var invocationLease = fallbackContext?.AcquireSnapshotLease();
-        if (fallbackContext?.HasSnapshotLease == true && invocationLease is null)
+        IDisposable? invocationLease = null;
+        if (fallbackContext is not null && !fallbackContext.TryAcquireSnapshotLease(out invocationLease))
         {
             return;
         }
@@ -353,6 +353,14 @@ public partial class ShellViewModel : ObservableObject,
                     fallbackContext);
                 if (pageViewModel is null)
                 {
+                    // A page that came from a fallback result can go stale between the
+                    // check above and this call, because the user kept typing. That is
+                    // normal, so leave without an error.
+                    if (fallbackContext is not null)
+                    {
+                        return;
+                    }
+
                     CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
                     throw new NotSupportedException();
                 }
@@ -391,6 +399,10 @@ public partial class ShellViewModel : ObservableObject,
 
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
                 StartInvoke(message, invokable, host, invocationSender, invocationLease);
+
+                // StartInvoke now owns the reference and releases it when the command
+                // ends, which can be long after this method returns. Clear the local so
+                // the finally block below does not release it a second time.
                 invocationLease = null;
             }
         }
@@ -422,11 +434,14 @@ public partial class ShellViewModel : ObservableObject,
         object? invocationSender,
         IDisposable? invocationLease)
     {
+        // Takes ownership of invocationLease. Every path through this method either
+        // releases it or hands it to the task that does.
         // TODO GH #525 This needs more better locking.
         lock (_invokeLock)
         {
             if (_handleInvokeTask is not null)
             {
+                // Another command is already running, so this one never starts.
                 invocationLease?.Dispose();
             }
             else
@@ -556,8 +571,11 @@ public partial class ShellViewModel : ObservableObject,
                             CoreLogger.LogError(ex.ToString());
                         }
 
-                        var confirmationLease = fallbackContext?.AcquireSnapshotLease();
-                        if (fallbackContext?.HasSnapshotLease == true && confirmationLease is null)
+                        // The dialog outlives this method, so it needs its own reference
+                        // on the snapshot.
+                        IDisposable? confirmationLease = null;
+                        if (fallbackContext is not null
+                            && !fallbackContext.TryAcquireSnapshotLease(out confirmationLease))
                         {
                             break;
                         }
@@ -588,13 +606,18 @@ public partial class ShellViewModel : ObservableObject,
                             var toastCommand = a2.Command;
                             if (toastCommand is not null)
                             {
-                                command = new CommandViewModel(toastCommand, new(CurrentPage), fallbackContext);
+                                command = new CommandViewModel(toastCommand, new(CurrentPage));
+                                command.InheritFallbackContext(fallbackContext);
                                 command.InitializeProperties();
                             }
                         }
 
-                        var toastLease = command is null ? null : fallbackContext?.AcquireSnapshotLease();
-                        if (command is not null && fallbackContext?.HasSnapshotLease == true && toastLease is null)
+                        // The toast holds the command until it closes, so it needs its own
+                        // reference on the snapshot. A toast without a command reads nothing
+                        // from the snapshot and needs none.
+                        IDisposable? toastLease = null;
+                        if (command is not null && fallbackContext is not null
+                            && !fallbackContext.TryAcquireSnapshotLease(out toastLease))
                         {
                             break;
                         }

@@ -25,7 +25,6 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 {
     private const int MaximumFallbackRegexLength = 4096;
     private static readonly TimeSpan FallbackRegexTimeout = TimeSpan.FromMilliseconds(50);
-
     private readonly ISettingsService _settingsService;
     private readonly ProviderSettings _providerSettings;
     private readonly IServiceProvider _serviceProvider;
@@ -39,7 +38,6 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     private string _fallbackId = string.Empty;
 
     private string _generatedId = string.Empty;
-
     private IFallbackCommandItem3? _fallbackV2;
     private IFallbackHandler2? _fallbackQueryHandler;
     private ICommand? _fallbackPlaceholderCommand;
@@ -130,8 +128,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     internal uint EffectiveMaximumVisibleItemCount => Math.Clamp(
         GetFallbackSettings()?.MaximumVisibleItemCount ?? FallbackResultQueryManager.InitialRequestedItemCount,
-        1,
-        100);
+        FallbackSettings.MinimumItemCount,
+        FallbackSettings.MaximumItemCount);
 
     public HotkeySettings? Hotkey
     {
@@ -556,6 +554,16 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
             : template.Replace("{query}", query, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// Tests the query against a match pattern that an extension supplied.
+    /// </summary>
+    /// <remarks>
+    /// The pattern is untrusted input, so this method limits what it can cost. The
+    /// length check stops very large patterns, the timeout stops patterns that
+    /// backtrack, and the anchors make the pattern match the whole query. Without the
+    /// anchors an extension could claim every query with one dot. A pattern that is bad
+    /// in any of these ways matches nothing instead of failing the search.
+    /// </remarks>
     private static bool MatchesFallbackRegex(string query, string pattern)
     {
         if (string.IsNullOrEmpty(pattern) || pattern.Length > MaximumFallbackRegexLength)
@@ -569,6 +577,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
         catch (ArgumentException)
         {
+            // The extension supplied a pattern that does not parse.
             return false;
         }
         catch (RegexMatchTimeoutException)

@@ -136,7 +136,8 @@ public partial class DetailsViewModelTests
             CommandProviderContext.Empty,
             new object(),
             queryCancellation.Token);
-        var vm = new DetailsViewModel(details, CreatePageContext(), fallbackContext);
+        var vm = new DetailsViewModel(details, CreatePageContext());
+        vm.InheritFallbackContext(fallbackContext);
 
         vm.InitializeProperties();
 

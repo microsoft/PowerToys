@@ -78,7 +78,19 @@ public abstract partial class CommandProvider :
     /// <returns>an array of objects that implement all the leaf interfaces we support</returns>
     public object[] GetApiExtensionStubs()
     {
-        return [new SupportCommandsWithProperties()];
+        return
+        [
+            new SupportCommandsWithProperties(),
+
+            // The host receives fallbacks as IFallbackCommandItem, then asks each one
+            // for IFallbackCommandItem3. It reaches the newer interfaces only by that
+            // question, so it must know them first. Without these stubs the question
+            // gets the answer "no" and every v2 fallback drops back to v1 behavior.
+            new SupportFallbackCommandItem2(),
+            new SupportFallbackCommandItem3(),
+            new SupportFallbackResultQueries(),
+            new FallbackQueryResult(string.Empty, string.Empty, []),
+        ];
     }
 
     /// <summary>
@@ -89,5 +101,98 @@ public abstract partial class CommandProvider :
     private sealed partial class SupportCommandsWithProperties : IExtendedAttributesProvider
     {
         public IDictionary<string, object>? GetProperties() => null;
+    }
+
+    /// <summary>
+    /// Implements only IFallbackCommandItem2. CsWinRT does not register required
+    /// interfaces when the host checks an IFallbackCommandItem3 stub, so this interface
+    /// needs its own stub.
+    /// </summary>
+    private sealed partial class SupportFallbackCommandItem2 : IFallbackCommandItem2
+    {
+        public string Title => string.Empty;
+
+        public string Subtitle => string.Empty;
+
+        public IIconInfo Icon => null!;
+
+        public ICommand Command => null!;
+
+        public IContextItem[] MoreCommands => [];
+
+        public IFallbackHandler FallbackHandler => null!;
+
+        public string DisplayTitle => string.Empty;
+
+        public string Id => string.Empty;
+
+        public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged
+        {
+            add { }
+            remove { }
+        }
+    }
+
+    /// <summary>
+    /// Implements only IFallbackCommandItem3, so that CmdPal can add that interface
+    /// to its type cache before it receives real fallback objects.
+    /// </summary>
+    private sealed partial class SupportFallbackCommandItem3 : IFallbackCommandItem3
+    {
+        public string Title => string.Empty;
+
+        public string Subtitle => string.Empty;
+
+        public IIconInfo Icon => null!;
+
+        public ICommand Command => null!;
+
+        public IContextItem[] MoreCommands => [];
+
+        public IFallbackHandler FallbackHandler => null!;
+
+        public string DisplayTitle => string.Empty;
+
+        public string Id => string.Empty;
+
+        public FallbackCommandMode Mode => FallbackCommandMode.Active;
+
+        public string Name => string.Empty;
+
+        public string TitleTemplate => string.Empty;
+
+        public string SubtitleTemplate => string.Empty;
+
+        public HostMatchKind MatchKind => HostMatchKind.None;
+
+        public string MatchValue => string.Empty;
+
+        public OptionalUInt32 SuggestedQueryDelayMilliseconds => default;
+
+        public OptionalUInt32 SuggestedMinQueryLength => default;
+
+        public IFallbackHandler2 QueryHandler => null!;
+
+        public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged
+        {
+            add { }
+            remove { }
+        }
+
+        public ICommand CreateCommand(IFallbackCommandInvocationArgs args) => null!;
+    }
+
+    /// <summary>
+    /// A stub class which implements IFallbackHandler2, so that CmdPal can read the
+    /// QueryHandler of a fallback that returns results.
+    /// </summary>
+    private sealed partial class SupportFallbackResultQueries : IFallbackHandler2
+    {
+        public void UpdateQuery(string query)
+        {
+        }
+
+        public IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args)
+            => throw new NotSupportedException("This type only populates the type cache.");
     }
 }

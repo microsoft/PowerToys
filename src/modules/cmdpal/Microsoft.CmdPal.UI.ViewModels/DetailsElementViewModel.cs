@@ -11,21 +11,10 @@ public abstract partial class DetailsElementViewModel : ExtensionObjectViewModel
 {
     private readonly ExtensionObject<IDetailsElement> _model;
 
-    internal FallbackQueryContext? FallbackContext { get; }
-
     protected DetailsElementViewModel(IDetailsElement detailsElement, WeakReference<IPageContext> context)
-        : this(detailsElement, context, null)
-    {
-    }
-
-    internal DetailsElementViewModel(
-        IDetailsElement detailsElement,
-        WeakReference<IPageContext> context,
-        FallbackQueryContext? fallbackContext)
         : base(context)
     {
         _model = new(detailsElement);
-        FallbackContext = fallbackContext;
     }
 
     public string Key { get; private set; } = string.Empty;

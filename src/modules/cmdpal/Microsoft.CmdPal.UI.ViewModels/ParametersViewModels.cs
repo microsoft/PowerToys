@@ -417,10 +417,8 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
         _extensionHost = extensionHost;
         _providerContext = providerContext;
         _contextMenuFactory = contextMenuFactory;
-        FallbackContext = fallbackContext;
+        InheritFallbackContext(fallbackContext);
     }
-
-    internal FallbackQueryContext? FallbackContext { get; }
 
     public override void InitializeProperties()
     {
@@ -446,14 +444,22 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
         {
             if (PageContext.TryGetTarget(out var pageContext))
             {
+                // The list stays valid only while the snapshot that produced this
+                // parameter is open. Take the reference before building the list.
+                IDisposable? snapshotLease = null;
+                if (FallbackContext is not null && !FallbackContext.TryAcquireSnapshotLease(out snapshotLease))
+                {
+                    return;
+                }
+
                 _listViewModel = new ListViewModel(list, pageContext.Scheduler, _extensionHost, _providerContext, _contextMenuFactory);
-                _listViewModel.AttachFallbackContext(FallbackContext);
+                _listViewModel.AttachFallbackContext(FallbackContext, snapshotLease);
                 _listViewModel.InitializeProperties();
             }
         }
         else if (command is IInvokableCommand invokable)
         {
-            _commandViewModel = new CommandViewModel(invokable, this.PageContext, FallbackContext);
+            _commandViewModel = ShareFallbackContext(new CommandViewModel(invokable, this.PageContext));
             _commandViewModel.InitializeProperties();
         }
 
@@ -606,12 +612,15 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
     private readonly IContextMenuFactory _contextMenuFactory;
 
-    public ParametersPageViewModel(IParametersPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory)
+    public ParametersPageViewModel(IParametersPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory, FallbackQueryContext? fallbackContext = null)
         : base(model, scheduler, host, providerContext)
     {
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
-        _command = new(new(null), PageContext, _contextMenuFactory, FallbackContext);
+
+        // Take the context as a parameter. PageViewModel.FallbackContext is not set
+        // until the factory attaches it, which happens after this constructor returns.
+        _command = new(new(null), PageContext, _contextMenuFactory, fallbackContext);
     }
 
     /// <summary>

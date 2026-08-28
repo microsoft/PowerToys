@@ -123,7 +123,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         var extensionDetails = model.Details;
         if (extensionDetails is not null)
         {
-            Details = new(extensionDetails, PageContext, FallbackContext);
+            Details = ShareFallbackContext(new DetailsViewModel(extensionDetails, PageContext));
             Details.InitializeProperties();
         }
 
@@ -198,7 +198,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 break;
             case nameof(Details):
                 var extensionDetails = model.Details;
-                Details = extensionDetails is not null ? new(extensionDetails, PageContext, FallbackContext) : null;
+                Details = extensionDetails is not null ? ShareFallbackContext(new DetailsViewModel(extensionDetails, PageContext)) : null;
                 UpdateDetails();
                 break;
         }
