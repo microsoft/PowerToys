@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using Microsoft.CmdPal.JsonRpc;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -119,5 +120,69 @@ public class JSExtensionWrapperTests
     {
         var wrapper = CreateWrapper();
         Assert.IsNull(wrapper.GetExtensionObject());
+    }
+
+    [TestMethod]
+    public void CreateCommandProviderProxy_UsesResolvedRelativeIcon()
+    {
+        var extensionDirectory = Path.Combine(Path.GetTempPath(), $"JSExtensionWrapperTests_{Guid.NewGuid():N}");
+        var iconDirectory = Directory.CreateDirectory(Path.Combine(extensionDirectory, "assets"));
+        var iconPath = Path.Combine(iconDirectory.FullName, "icon.png");
+        File.WriteAllText(iconPath, "icon");
+
+        try
+        {
+            using var wrapper = CreateWrapperWithIcon(extensionDirectory, @"assets\icon.png");
+            using var input = new MemoryStream();
+            using var output = new MemoryStream();
+            using var connection = new JsonRpcConnection(input, output);
+            using var provider = wrapper.CreateCommandProviderProxy(connection);
+
+            Assert.AreEqual(Path.GetFullPath(iconPath), provider.Icon.Light.Icon);
+        }
+        finally
+        {
+            Directory.Delete(extensionDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void CreateCommandProviderProxy_DoesNotUseRawRootedIcon()
+    {
+        var extensionDirectory = Path.Combine(Path.GetTempPath(), $"JSExtensionWrapperTests_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(extensionDirectory);
+        var iconPath = Path.Combine(extensionDirectory, "icon.png");
+        File.WriteAllText(iconPath, "icon");
+
+        try
+        {
+            using var wrapper = CreateWrapperWithIcon(extensionDirectory, iconPath);
+            using var input = new MemoryStream();
+            using var output = new MemoryStream();
+            using var connection = new JsonRpcConnection(input, output);
+            using var provider = wrapper.CreateCommandProviderProxy(connection);
+
+            Assert.AreEqual(string.Empty, provider.Icon.Light.Icon);
+        }
+        finally
+        {
+            Directory.Delete(extensionDirectory, recursive: true);
+        }
+    }
+
+    private static JSExtensionWrapper CreateWrapperWithIcon(string extensionDirectory, string icon)
+    {
+        return new JSExtensionWrapper(
+            new JSExtensionManifest
+            {
+                Name = "test-ext",
+                DisplayName = "Test Extension",
+                Version = "1.2.3",
+                Publisher = "unit-test",
+                Main = "index.js",
+                EntryPointPath = Path.Combine(extensionDirectory, "index.js"),
+                Icon = icon,
+            },
+            extensionDirectory);
     }
 }

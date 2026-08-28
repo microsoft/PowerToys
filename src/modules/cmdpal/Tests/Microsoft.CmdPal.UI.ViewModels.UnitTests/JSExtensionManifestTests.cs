@@ -670,6 +670,156 @@ public class JSExtensionManifestTests
         Assert.AreEqual("mixedcase-name", result.Manifest!.NameKey);
     }
 
+    [DataTestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow("   ")]
+    public void ResolveIcon_MissingValue_ReturnsEmpty(string? icon)
+    {
+        var manifest = new JSExtensionManifest { Icon = icon };
+
+        Assert.AreEqual(string.Empty, manifest.ResolveIcon(_testDirectory));
+    }
+
+    [TestMethod]
+    public void ResolveIcon_Glyph_TrimsAndPreservesValue()
+    {
+        var manifest = new JSExtensionManifest { Icon = "  \uE700  " };
+
+        Assert.AreEqual("\uE700", manifest.ResolveIcon(_testDirectory));
+    }
+
+    [TestMethod]
+    public void ResolveIcon_NonFileUrl_PreservesValue()
+    {
+        const string IconUrl = "https://example.test/icon.png";
+        var manifest = new JSExtensionManifest { Icon = IconUrl };
+
+        Assert.AreEqual(IconUrl, manifest.ResolveIcon(_testDirectory));
+    }
+
+    [TestMethod]
+    public void ResolveIcon_RelativeFile_ReturnsCanonicalAbsolutePath()
+    {
+        var iconDirectory = Directory.CreateDirectory(Path.Combine(_testDirectory, "assets"));
+        var iconPath = Path.Combine(iconDirectory.FullName, "icon.tiff");
+        File.WriteAllText(iconPath, "icon");
+        var manifest = new JSExtensionManifest { Icon = @"assets\.\icon.tiff" };
+
+        Assert.AreEqual(Path.GetFullPath(iconPath), manifest.ResolveIcon(_testDirectory));
+    }
+
+    [TestMethod]
+    public void ResolveIcon_RootedFileInsideExtension_ReturnsEmpty()
+    {
+        var iconPath = Path.Combine(_testDirectory, "icon.png");
+        File.WriteAllText(iconPath, "icon");
+        var manifest = new JSExtensionManifest { Icon = iconPath };
+
+        Assert.AreEqual(string.Empty, manifest.ResolveIcon(_testDirectory));
+    }
+
+    [TestMethod]
+    public void ResolveIcon_FileUrl_ReturnsEmpty()
+    {
+        var iconPath = Path.Combine(_testDirectory, "icon.png");
+        File.WriteAllText(iconPath, "icon");
+        var manifest = new JSExtensionManifest { Icon = new Uri(iconPath).AbsoluteUri };
+
+        Assert.AreEqual(string.Empty, manifest.ResolveIcon(_testDirectory));
+    }
+
+    [TestMethod]
+    public void ResolveIcon_MissingRelativeFile_ReturnsEmpty()
+    {
+        var manifest = new JSExtensionManifest { Icon = "missing.tiff" };
+
+        Assert.AreEqual(string.Empty, manifest.ResolveIcon(_testDirectory));
+    }
+
+    [TestMethod]
+    public void ResolveIcon_MalformedRelativeFile_ReturnsEmpty()
+    {
+        var manifest = new JSExtensionManifest { Icon = "bad\0name.png" };
+
+        Assert.AreEqual(string.Empty, manifest.ResolveIcon(_testDirectory));
+    }
+
+    [TestMethod]
+    public void ResolveIcon_Traversal_ReturnsEmpty()
+    {
+        var outsidePath = Path.Combine(Path.GetTempPath(), $"JSExtensionManifestIcon_{Guid.NewGuid():N}.png");
+        File.WriteAllText(outsidePath, "icon");
+
+        try
+        {
+            var manifest = new JSExtensionManifest { Icon = Path.Combine("..", Path.GetFileName(outsidePath)) };
+
+            Assert.AreEqual(string.Empty, manifest.ResolveIcon(_testDirectory));
+        }
+        finally
+        {
+            File.Delete(outsidePath);
+        }
+    }
+
+    [TestMethod]
+    public void ResolveIcon_FileSymbolicLink_ReturnsEmpty()
+    {
+        var outsidePath = Path.Combine(Path.GetTempPath(), $"JSExtensionManifestIconTarget_{Guid.NewGuid():N}.tiff");
+        var linkPath = Path.Combine(_testDirectory, "icon.tiff");
+        File.WriteAllText(outsidePath, "icon");
+
+        try
+        {
+            try
+            {
+                File.CreateSymbolicLink(linkPath, outsidePath);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or PlatformNotSupportedException)
+            {
+                Assert.Inconclusive("A file symbolic link could not be created in this environment.");
+            }
+
+            var manifest = new JSExtensionManifest { Icon = "icon.tiff" };
+
+            Assert.AreEqual(string.Empty, manifest.ResolveIcon(_testDirectory));
+        }
+        finally
+        {
+            File.Delete(linkPath);
+            File.Delete(outsidePath);
+        }
+    }
+
+    [TestMethod]
+    public void ResolveIcon_DirectoryJunction_ReturnsEmpty()
+    {
+        var outsideDirectory = Path.Combine(Path.GetTempPath(), $"JSExtensionManifestIconTarget_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(outsideDirectory);
+        File.WriteAllText(Path.Combine(outsideDirectory, "icon.png"), "icon");
+        var junctionPath = Path.Combine(_testDirectory, "linked");
+
+        if (!TryCreateJunction(junctionPath, outsideDirectory))
+        {
+            Directory.Delete(outsideDirectory, recursive: true);
+            Assert.Inconclusive("A directory junction could not be created in this environment.");
+            return;
+        }
+
+        try
+        {
+            var manifest = new JSExtensionManifest { Icon = @"linked\icon.png" };
+
+            Assert.AreEqual(string.Empty, manifest.ResolveIcon(_testDirectory));
+        }
+        finally
+        {
+            Directory.Delete(junctionPath, recursive: false);
+            Directory.Delete(outsideDirectory, recursive: true);
+        }
+    }
+
     [TestMethod]
     public void TryParse_EntryPointThroughJunction_IsRejected()
     {

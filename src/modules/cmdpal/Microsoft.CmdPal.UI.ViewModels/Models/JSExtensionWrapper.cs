@@ -40,6 +40,7 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
 
     private readonly JSExtensionManifest _manifest;
     private readonly string _manifestDirectory;
+    private readonly string _effectiveIcon;
     private readonly Lock _lock = new();
     private readonly List<ProviderType> _providerTypes = [];
 
@@ -60,6 +61,7 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
     {
         _manifest = manifest ?? throw new ArgumentNullException(nameof(manifest));
         _manifestDirectory = manifestDirectory ?? throw new ArgumentNullException(nameof(manifestDirectory));
+        _effectiveIcon = manifest.ResolveIcon(manifestDirectory);
 
         // JS extensions currently expose a single command provider.
         AddProviderType(ProviderType.Commands);
@@ -343,11 +345,7 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
                     // notification handlers are registered in time to receive notifications
                     // (logs, statuses, clipboard requests, items-changed) that the extension
                     // emits while it activates during initialize.
-                    _commandProviderProxy = new JSCommandProviderProxy(
-                        connection,
-                        _manifest.Name ?? "unknown",
-                        _manifest.EffectiveDisplayName,
-                        _manifest.Icon);
+                    _commandProviderProxy = CreateCommandProviderProxy(connection);
                 }
             }
 
@@ -508,13 +506,18 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
                 return null;
             }
 
-            _commandProviderProxy ??= new JSCommandProviderProxy(
-                _connection,
-                _manifest.Name ?? "unknown",
-                _manifest.EffectiveDisplayName,
-                _manifest.Icon);
+            _commandProviderProxy ??= CreateCommandProviderProxy(_connection);
             return _commandProviderProxy as T;
         }
+    }
+
+    internal JSCommandProviderProxy CreateCommandProviderProxy(JsonRpcConnection connection)
+    {
+        return new JSCommandProviderProxy(
+            connection,
+            _manifest.Name ?? "unknown",
+            _manifest.EffectiveDisplayName,
+            _effectiveIcon);
     }
 
     public async Task<IEnumerable<T>> GetListOfProvidersAsync<T>()
