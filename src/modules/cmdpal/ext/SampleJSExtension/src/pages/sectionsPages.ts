@@ -10,10 +10,19 @@ import {
   Separator,
 } from '@microsoft/cmdpal-sdk';
 import type { GridProperties, IListItem } from '@microsoft/cmdpal-sdk';
-import { glyphIcon, samplePngBase64 } from '../util.js';
+import {
+  blueTilePngBase64,
+  glyphIcon,
+  greenTilePngBase64,
+  redTilePngBase64,
+} from '../util.js';
 
 let sectionPageCounter = 0;
-const sectionImage = iconFromBase64(samplePngBase64);
+const sectionImages = [
+  iconFromBase64(redTilePngBase64),
+  iconFromBase64(greenTilePngBase64),
+  iconFromBase64(blueTilePngBase64),
+] as const;
 
 /**
  * A list (or grid) page that groups items under headings. The host only shows a
@@ -48,7 +57,7 @@ export class SampleListPageWithSections extends ListPageBase {
         command: new NoOpCommand('sec1-a'),
         title: 'Sample Title',
         subtitle: "I don't do anything",
-        icon: sectionImage,
+        icon: sectionImages[0],
       }),
       new Separator(),
       new Separator('This is another section list'),
@@ -56,26 +65,26 @@ export class SampleListPageWithSections extends ListPageBase {
         command: new NoOpCommand('sec2-a'),
         title: 'Another Title',
         subtitle: "I don't do anything",
-        icon: sectionImage,
+        icon: sectionImages[1],
       }),
       new ListItemBase({
         command: new NoOpCommand('sec2-b'),
         title: 'More Titles',
         subtitle: "I don't do anything",
-        icon: sectionImage,
+        icon: sectionImages[2],
       }),
       new ListItemBase({
         command: new NoOpCommand('sec2-c'),
         title: 'Stop With The Titles',
         subtitle: "I don't do anything",
-        icon: sectionImage,
+        icon: sectionImages[0],
       }),
       new Separator(),
       new ListItemBase({
         command: new NoOpCommand('sec-sep'),
         title: 'Separators also work',
         subtitle: "But I still don't do anything",
-        icon: sectionImage,
+        icon: sectionImages[1],
       }),
       new Separator(),
       new Separator("There's another"),
@@ -83,19 +92,19 @@ export class SampleListPageWithSections extends ListPageBase {
         command: new NoOpCommand('sec3-a'),
         title: 'Sample Title',
         subtitle: "I don't do anything",
-        icon: sectionImage,
+        icon: sectionImages[2],
       }),
       new ListItemBase({
         command: new NoOpCommand('sec3-b'),
         title: 'Another Title',
         subtitle: "I don't do anything",
-        icon: sectionImage,
+        icon: sectionImages[0],
       }),
       new ListItemBase({
         command: new NoOpCommand('sec3-c'),
         title: 'More Titles',
         subtitle: "I don't do anything",
-        icon: sectionImage,
+        icon: sectionImages[1],
       }),
     ];
   }

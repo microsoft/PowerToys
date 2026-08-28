@@ -2,12 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-import {
-  iconFromBase64,
-  ListItemBase,
-  ListPageBase,
-  NoOpCommand,
-} from '@microsoft/cmdpal-sdk';
+import { iconFromBase64, ListItemBase, ListPageBase, NoOpCommand } from '@microsoft/cmdpal-sdk';
 import type { DetailsElement, IconInfo, IListItem } from '@microsoft/cmdpal-sdk';
 import {
   getHeroImage,
@@ -31,10 +26,17 @@ import { ProgressStatusCommand, StatusMessageCommand } from '../commands/statusC
  */
 export function sampleMetadata(): DetailsElement[] {
   return [
-    { key: 'Plain text', data: { type: 'link', link: '', text: 'Set just the text to get text metadata' } },
+    {
+      key: 'Plain text',
+      data: { type: 'link', link: '', text: 'Set just the text to get text metadata' },
+    },
     {
       key: 'Links',
-      data: { type: 'link', link: 'https://github.com/microsoft/PowerToys', text: 'Or metadata can be links' },
+      data: {
+        type: 'link',
+        link: 'https://github.com/microsoft/PowerToys',
+        text: 'Or metadata can be links',
+      },
     },
     {
       key: 'CmdPal will display the URL if no text is given',
@@ -151,39 +153,39 @@ export class SampleListPageWithDetails extends ListPageBase {
     },
   });
   private readonly items: IListItem[] = [
-      new ListItemBase({
-        command: new NoOpCommand('details-default'),
-        title: 'Details on ListItems',
-        details: {
-          title: 'This item has default details size',
-          body: 'Each of these items can have a `Body` formatted with **Markdown**',
-        },
-      }),
-      new ListItemBase({
-        command: new NoOpCommand('details-subtitle'),
-        title: 'This one has a subtitle too',
-        subtitle: 'Example Subtitle',
-        details: { title: 'List Item 2', body: sampleMarkdownText },
-      }),
-      new ListItemBase({
-        command: new NoOpCommand('details-tag'),
-        title: 'This one has a tag too',
-        subtitle: 'the one with a tag',
-        tags: [tag('Sample Tag')],
-        details: { title: 'List Item 3', body: '### Example of markdown details' },
-      }),
-      this.heroItem,
-      new ListItemBase({
-        command: new NoOpCommand('details-metadata'),
-        title: 'This one has metadata',
-        subtitle: 'And a large details panel',
-        details: {
-          title: 'Metadata Example',
-          body: 'Each of the sections below is some sample metadata. This item asks for a `large` details pane.',
-          metadata: sampleMetadata(),
-          size: 'large',
-        },
-      }),
+    new ListItemBase({
+      command: new NoOpCommand('details-default'),
+      title: 'Details on ListItems',
+      details: {
+        title: 'This item has default details size',
+        body: 'Each of these items can have a `Body` formatted with **Markdown**',
+      },
+    }),
+    new ListItemBase({
+      command: new NoOpCommand('details-subtitle'),
+      title: 'This one has a subtitle too',
+      subtitle: 'Example Subtitle',
+      details: { title: 'List Item 2', body: sampleMarkdownText },
+    }),
+    new ListItemBase({
+      command: new NoOpCommand('details-tag'),
+      title: 'This one has a tag too',
+      subtitle: 'the one with a tag',
+      tags: [tag('Sample Tag')],
+      details: { title: 'List Item 3', body: '### Example of markdown details' },
+    }),
+    this.heroItem,
+    new ListItemBase({
+      command: new NoOpCommand('details-metadata'),
+      title: 'This one has metadata',
+      subtitle: 'And a large details panel',
+      details: {
+        title: 'Metadata Example',
+        body: 'Each of the sections below is some sample metadata. This item asks for a `large` details pane.',
+        metadata: sampleMetadata(),
+        size: 'large',
+      },
+    }),
   ];
   private heroImageLoad?: Promise<void>;
 

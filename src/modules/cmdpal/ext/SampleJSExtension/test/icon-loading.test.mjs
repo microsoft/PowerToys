@@ -7,11 +7,20 @@ import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { afterEach, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { inflateSync } from 'node:zlib';
 import { setNotificationSink } from '../../../ts-sdk/dist/runtime/notifications.js';
 import { SampleImageContentPage } from '../dist/pages/contentPages.js';
 import { SampleListPageWithDetails } from '../dist/pages/detailsPage.js';
 import { SampleIconPage } from '../dist/pages/iconPage.js';
-import { SampleListPageWithSections } from '../dist/pages/sectionsPages.js';
+import {
+  SampleListPageWithSections,
+  SectionsIndexPage,
+} from '../dist/pages/sectionsPages.js';
+import {
+  blueTilePngBase64,
+  greenTilePngBase64,
+  redTilePngBase64,
+} from '../dist/util.js';
 
 const originalFetch = globalThis.fetch;
 const packageRoot = fileURLToPath(new URL('..', import.meta.url));
@@ -45,6 +54,47 @@ function runIsolated(source) {
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
 }
+
+function decodeOnePixelPng(base64) {
+  const png = Buffer.from(base64, 'base64');
+  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  assert.deepEqual(png.subarray(0, signature.length), signature);
+
+  const idatChunks = [];
+  let offset = signature.length;
+  let width;
+  let height;
+  while (offset < png.length) {
+    const length = png.readUInt32BE(offset);
+    const type = png.toString('ascii', offset + 4, offset + 8);
+    const data = png.subarray(offset + 8, offset + 8 + length);
+    if (type === 'IHDR') {
+      width = data.readUInt32BE(0);
+      height = data.readUInt32BE(4);
+      assert.equal(data[8], 8);
+      assert.equal(data[9], 6);
+    } else if (type === 'IDAT') {
+      idatChunks.push(data);
+    } else if (type === 'IEND') {
+      break;
+    }
+
+    offset += length + 12;
+  }
+
+  assert.equal(width, 1);
+  assert.equal(height, 1);
+  const scanline = inflateSync(Buffer.concat(idatChunks));
+  assert.equal(scanline[0], 0);
+  return [...scanline.subarray(1, 5)];
+}
+
+test('tile image constants are distinct one-pixel solid-color PNGs', () => {
+  assert.deepEqual(decodeOnePixelPng(redTilePngBase64), [220, 60, 60, 255]);
+  assert.deepEqual(decodeOnePixelPng(greenTilePngBase64), [46, 160, 67, 255]);
+  assert.deepEqual(decodeOnePixelPng(blueTilePngBase64), [54, 112, 204, 255]);
+  assert.equal(new Set([redTilePngBase64, greenTilePngBase64, blueTilePngBase64]).size, 3);
+});
 
 test('importing and constructing sample pages performs no hero file read', () => {
   runIsolated(`
@@ -203,11 +253,33 @@ test('details items return promptly and only the hero item is updated', async ()
 test('repeated content and section images keep the full hero out of list payloads', async () => {
   const heroBase64 = await readFile(new URL('../dist/assets/hero.png', import.meta.url), 'base64');
   const content = new SampleImageContentPage().getContent();
-  const sectionItems = new SampleListPageWithSections().getItems();
-  const sectionJson = JSON.stringify(sectionItems);
+  const sectionPages = new SectionsIndexPage().getItems().map((item) => item.command);
 
   assert.ok(Array.isArray(content));
   assert.ok(content.every((item) => item.type !== 'image' || item.image.light.data !== heroBase64));
-  assert.equal(sectionJson.includes(heroBase64), false);
-  assert.ok(Buffer.byteLength(sectionJson) < 10_000);
+  assert.deepEqual(
+    sectionPages.map((page) => page.gridProperties),
+    [
+      null,
+      { type: 'small' },
+      { type: 'medium', showTitle: true },
+      { type: 'gallery', showTitle: true, showSubtitle: true },
+      { type: 'gallery', showTitle: false, showSubtitle: false },
+    ],
+  );
+
+  for (const page of sectionPages) {
+    const sectionItems = page.getItems();
+    const sectionJson = JSON.stringify(sectionItems);
+    assert.equal(sectionJson.includes(heroBase64), false);
+    assert.ok(Buffer.byteLength(sectionJson) < 5_000);
+    assert.equal(
+      new Set(
+        sectionItems
+          .filter((item) => item.icon?.light?.data)
+          .map((item) => item.icon.light.data),
+      ).size,
+      3,
+    );
+  }
 });

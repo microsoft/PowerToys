@@ -10,6 +10,18 @@ import { fileURLToPath } from 'node:url';
 export const samplePngBase64 =
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
 
+/** One-pixel solid red PNG used for repeated sample tiles. */
+export const redTilePngBase64 =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mO4Y2PzHwAFoAJUbJbXZAAAAABJRU5ErkJggg==';
+
+/** One-pixel solid green PNG used for repeated sample tiles. */
+export const greenTilePngBase64 =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPQW+D8HwAEIgIRTAgebgAAAABJRU5ErkJggg==';
+
+/** One-pixel solid blue PNG used for repeated sample tiles. */
+export const blueTilePngBase64 =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mMwKzjzHwAExAJy0S1RegAAAABJRU5ErkJggg==';
+
 /** Fallback used when the bundled hero image cannot be read. */
 export const heroImageFallback = iconFromGlyph('\uE91B');
 

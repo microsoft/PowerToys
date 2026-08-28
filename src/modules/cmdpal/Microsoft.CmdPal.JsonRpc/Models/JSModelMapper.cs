@@ -23,6 +23,8 @@ namespace Microsoft.CmdPal.JsonRpc.Models;
 /// </summary>
 internal static class JSModelMapper
 {
+    internal const int JsonDiagnosticPreviewMaxLength = 128;
+
     internal static string? GetString(JsonElement element, string name)
     {
         if (element.ValueKind == JsonValueKind.Object &&
@@ -304,8 +306,22 @@ internal static class JSModelMapper
             }
         }
 
-        Logger.LogDebug($"Unknown JSON-RPC content size '{sizeProp}' for '{name}'. Using small.");
+        Logger.LogDebug(
+            $"Unknown JSON-RPC content size for '{name}'. Kind: {sizeProp.ValueKind}; value: {GetBoundedJsonPreview(sizeProp)}. Using small.");
         return ContentSize.Small;
+    }
+
+    internal static string GetBoundedJsonPreview(JsonElement element)
+    {
+        if (element.ValueKind == JsonValueKind.Undefined)
+        {
+            return "<undefined>";
+        }
+
+        var rawText = element.GetRawText();
+        return rawText.Length <= JsonDiagnosticPreviewMaxLength
+            ? rawText
+            : string.Concat(rawText.AsSpan(0, JsonDiagnosticPreviewMaxLength), "...");
     }
 
     internal static IContextItem[] ParseContextItems(JsonElement parent, string name, JsonRpcConnection connection)

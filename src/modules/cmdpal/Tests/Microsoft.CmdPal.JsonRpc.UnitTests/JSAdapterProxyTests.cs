@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -259,6 +260,22 @@ public class JSAdapterProxyTests
         Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[6].Details));
         Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[7].Details));
         Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[8].Details));
+    }
+
+    [TestMethod]
+    public void ParseContentSize_BoundsMalformedValueDiagnosticPreview()
+    {
+        var oversizedValue = new string('x', JSModelMapper.JsonDiagnosticPreviewMaxLength * 4);
+        using var document = JsonDocument.Parse(JsonSerializer.Serialize(new { size = oversizedValue }));
+        var sizeElement = document.RootElement.GetProperty("size");
+
+        var preview = JSModelMapper.GetBoundedJsonPreview(sizeElement);
+        var size = JSModelMapper.ParseContentSize(document.RootElement, "size");
+
+        Assert.AreEqual(JSModelMapper.JsonDiagnosticPreviewMaxLength + 3, preview.Length);
+        Assert.IsTrue(preview.EndsWith("...", StringComparison.Ordinal));
+        Assert.AreEqual(ContentSize.Small, size);
+        Assert.AreEqual("<undefined>", JSModelMapper.GetBoundedJsonPreview(default));
     }
 
     [TestMethod]
