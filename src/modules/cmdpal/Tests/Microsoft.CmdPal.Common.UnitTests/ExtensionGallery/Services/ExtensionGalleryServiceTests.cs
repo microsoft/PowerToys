@@ -287,10 +287,8 @@ public class ExtensionGalleryServiceTests
     [TestMethod]
     public async Task FetchExtensionsAsync_ParsesDocumentedJsonRpcGalleryExample()
     {
-        // This JSON is the gallery feed example published in
-        // doc/json-rpc-spec/04-manifest-packaging.md. It is fed through the production parser so
-        // the documentation and the real gallery model stay in sync. The example omits iconUrl
-        // so the test stays offline.
+        // This copy validates compatibility with the documented JSON shape, but it does not read
+        // the docs file. If that example changes, this fixture must be updated by hand.
         var feedDirectory = CreateTempDirectory("feed");
         var cacheDirectory = CreateTempDirectory("cache");
 

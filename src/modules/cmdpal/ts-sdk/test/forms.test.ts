@@ -218,6 +218,29 @@ describe('form identity and routing', () => {
     expect(responseFor(sent, 4)?.result).toEqual({ kind: 2 });
   });
 
+  it('assigns a deterministic formId when the author omits one', async () => {
+    const page: IContentPage = {
+      id: 'page',
+      name: 'Page',
+      title: 'Page',
+      getContent(): Content[] {
+        return [formContent(undefined, () => ({ kind: 'goHome' }))];
+      },
+    };
+    const { runtime, sent } = createHarness();
+    runtime.setProvider(providerWith(page));
+
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 1,
+      method: 'contentPage/getContent',
+      params: { pageId: 'page' },
+    });
+
+    const content = responseFor(sent, 1)?.result as Array<Record<string, unknown>>;
+    expect(content[0]?.formId).toBe('form-0');
+  });
+
   it('keeps routing a nested form by its stable id after the tree grows', async () => {
     // Mirrors the comments sample: submitting a reply mutates the tree, and the
     // next serialization must still route the same stable formId back to its
