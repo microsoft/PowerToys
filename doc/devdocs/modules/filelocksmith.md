@@ -48,7 +48,7 @@ The module adds "Unlock with File Locksmith" to the context menu in File Explore
 5. The UI reads the file path from the temporary file
 6. The UI starts `FileLocksmithCLI.exe` in a hidden worker mode and sends the selected paths over redirected standard input
 7. The worker uses `FileLocksmithLib` to scan for processes with handles to the file and returns JSON over redirected standard output
-8. The UI terminates the worker process tree if the scan exceeds 30 seconds or is canceled, and reports the failure instead of displaying an empty result
+8. The UI assigns the worker to a kill-on-close job, terminates its process tree if the scan exceeds 30 seconds or is canceled, and reports the failure instead of displaying an empty result
 9. Results are displayed in the UI, showing process information and allowing user action
 
 ### Core Functionality

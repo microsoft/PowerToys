@@ -21,6 +21,8 @@ namespace PowerToys.FileLocksmithUI.Services
     {
         internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
 
+        private static readonly Encoding Utf8WithoutByteOrderMark = new UTF8Encoding(false);
+
         private const string WorkerExecutableName = "FileLocksmithCLI.exe";
         private const string WorkerArgument = "--worker-json";
 
@@ -58,6 +60,17 @@ namespace PowerToys.FileLocksmithUI.Services
                 return new FileLocksmithQueryResult(FileLocksmithQueryStatus.Success, Array.Empty<FileLocksmithProcessInfo>());
             }
 
+            WorkerProcessJob job;
+            try
+            {
+                job = WorkerProcessJob.Create();
+            }
+            catch (Win32Exception)
+            {
+                return FailedToStart();
+            }
+
+            using var workerJob = job;
             using var process = new Process
             {
                 StartInfo = _startInfoFactory(),
@@ -76,6 +89,16 @@ namespace PowerToys.FileLocksmithUI.Services
             }
             catch (InvalidOperationException)
             {
+                return FailedToStart();
+            }
+
+            try
+            {
+                workerJob.Assign(process);
+            }
+            catch (Win32Exception)
+            {
+                await TerminateAsync(process);
                 return FailedToStart();
             }
 
@@ -184,16 +207,20 @@ namespace PowerToys.FileLocksmithUI.Services
             var installedPath = Path.Combine(AppContext.BaseDirectory, WorkerExecutableName);
             var buildOutputPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", WorkerExecutableName));
             var workerPath = File.Exists(installedPath) ? installedPath : buildOutputPath;
+            return CreateWorkerStartInfo(workerPath);
+        }
 
+        internal static ProcessStartInfo CreateWorkerStartInfo(string workerPath)
+        {
             var startInfo = new ProcessStartInfo(workerPath)
             {
                 CreateNoWindow = true,
                 RedirectStandardError = true,
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
-                StandardErrorEncoding = Encoding.UTF8,
-                StandardInputEncoding = Encoding.UTF8,
-                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Utf8WithoutByteOrderMark,
+                StandardInputEncoding = Utf8WithoutByteOrderMark,
+                StandardOutputEncoding = Utf8WithoutByteOrderMark,
                 UseShellExecute = false,
             };
             startInfo.ArgumentList.Add(WorkerArgument);

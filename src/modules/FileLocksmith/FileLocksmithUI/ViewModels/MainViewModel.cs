@@ -200,10 +200,16 @@ namespace PowerToys.FileLocksmithUI.ViewModels
         }
 
         [RelayCommand]
-        public void RestartElevated()
+        public async Task RestartElevated()
         {
             if (NativeMethods.StartAsElevated(paths))
             {
+                _cancelQuery?.Cancel();
+                if (LoadProcessesCommand.ExecutionTask is not null)
+                {
+                    await LoadProcessesCommand.ExecutionTask;
+                }
+
                 // TODO gentler exit
                 Environment.Exit(0);
             }

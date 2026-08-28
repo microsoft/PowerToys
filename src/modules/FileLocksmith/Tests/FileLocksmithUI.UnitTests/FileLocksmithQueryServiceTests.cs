@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -70,6 +71,31 @@ namespace PowerToys.FileLocksmithUI.UnitTests
             Assert.AreEqual(FileLocksmithQueryStatus.TimedOut, result.Status);
             Assert.AreNotEqual(0, workerPid);
             Assert.IsFalse(IsProcessRunning(workerPid), "The timed-out worker process was left running.");
+        }
+
+        [TestMethod]
+        public async Task FindProcessesAsyncUsesBomFreeUtf8WithRealWorker()
+        {
+            var testPath = Path.Combine(Path.GetTempPath(), $"File Locksmith \u6d4b\u8bd5 {Guid.NewGuid():N}.txt");
+            await File.WriteAllTextAsync(testPath, string.Empty);
+
+            try
+            {
+                var workerPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "FileLocksmithCLI.exe"));
+                Assert.IsTrue(File.Exists(workerPath), $"The File Locksmith worker was not built at {workerPath}.");
+                var service = new FileLocksmithQueryService(
+                    () => FileLocksmithQueryService.CreateWorkerStartInfo(workerPath),
+                    TimeSpan.FromMinutes(2),
+                    null);
+
+                var result = await service.FindProcessesAsync(new[] { testPath }, CancellationToken.None);
+
+                Assert.AreEqual(FileLocksmithQueryStatus.Success, result.Status);
+            }
+            finally
+            {
+                File.Delete(testPath);
+            }
         }
 
         private static FileLocksmithQueryService CreateService(
