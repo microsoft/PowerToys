@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System.Drawing.Drawing2D;
@@ -185,16 +185,28 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                     }
 
                     var cacheKey = SvgPreviewCacheHelper.BuildCacheKey("v1", VirtualHostName, SvgContents);
-                    var cacheFolder = Path.Combine(_webView2UserDataFolder, "Cache");
+                    var cacheFolder = Path.Combine(_webView2UserDataFolder, "SvgPreviewCache");
                     var cacheFilePath = SvgPreviewCacheHelper.GetCacheFilePath(cacheFolder, cacheKey);
 
+                    bool useCacheFile = true;
                     if (!File.Exists(cacheFilePath) || new FileInfo(cacheFilePath).Length == 0)
                     {
-                        File.WriteAllText(cacheFilePath, SvgContents);
+                        useCacheFile = SvgPreviewCacheHelper.WriteCacheFileAtomic(cacheFilePath, SvgContents);
+                        if (useCacheFile)
+                        {
+                            SvgPreviewCacheHelper.ManageCacheSize(cacheFolder);
+                        }
+                        else
+                        {
+                            _browser.NavigateToString(SvgContents);
+                        }
                     }
 
-                    _localFileURI = new Uri(cacheFilePath);
-                    _browser.Source = _localFileURI;
+                    if (useCacheFile)
+                    {
+                        _localFileURI = new Uri(cacheFilePath);
+                        _browser.Source = _localFileURI;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -339,7 +351,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         }
 
         /// <summary>
-        /// Cleanup the previously created tmp html files from svg files bigger than 2MB.
+        /// Ensures the WebView2 user data folder exists.
         /// </summary>
         private void EnsureWebView2UserDataFolder()
         {
