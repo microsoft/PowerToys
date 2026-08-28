@@ -973,6 +973,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/powerrename/PowerRename.UITests.Next/PowerRename.UITests.Next.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/powerrename/unittests/PowerRenameLibUnitTests.vcxproj" Id="2151f984-e006-4a9f-92ef-c6dde3dc8413">
       <BuildDependency Project="src/modules/powerrename/dll/PowerRenameExt.vcxproj" />
       <BuildDependency Project="src/modules/powerrename/lib/PowerRenameLib.vcxproj" />

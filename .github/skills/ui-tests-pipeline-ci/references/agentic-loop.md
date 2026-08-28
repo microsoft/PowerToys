@@ -11,11 +11,46 @@ Azure DevOps REST APIs. This avoids per-call authentication prompts and works fo
 builds, timelines, logs, preview/queue, stage retry/cancel, test results, artifacts, and result
 attachments.
 
-Dot-source the bundled helper and validate the session once:
+### Required one-command readiness gate
+
+Before the first Azure operation in each agent session, run the preflight in a fresh PowerShell 7
+process:
+
+```pwsh
+pwsh -NoLogo -NoProfile -File `
+  .github\skills\ui-tests-pipeline-ci\scripts\Test-AzureDevOpsSetup.ps1
+```
+
+Do not proceed unless it exits `0`, reports `Ready: true`, and every required check is `PASS`. The
+default probe uses `refs/heads/main`, module `FancyZones.UITests.Next`, and dynamically selects one
+of the ten newest completed pipeline builds for build/log/artifact checks plus the first test-bearing
+build in that set for Azure Test checks. The JSON reports these separately as `ProbeBuildId` and
+`ProbeTestBuildId`. It creates no build and changes no Azure or repository state.
+
+Use explicit probe inputs when diagnosing a particular branch or known build:
+
+```pwsh
+pwsh -NoLogo -NoProfile -File `
+  .github\skills\ui-tests-pipeline-ci\scripts\Test-AzureDevOpsSetup.ps1 `
+  -ProbeBranch refs/heads/<branch> `
+  -ProbeModule <Module.UITests> `
+  -ProbeBuildId <KNOWN_COMPLETED_BUILD_ID>
+```
+
+For the check inventory, precise capability claims, and first-time remediation, read
+[setup-preflight.md](setup-preflight.md) only when setup fails or the user asks about readiness.
+The preflight deliberately performs no mutation.
+
+The agent never starts an interactive sign-in or installs tools. If preflight fails, stop and report
+the exact failed check. The user performs any required setup outside the agent, then the agent reruns
+the same preflight. Never pass credentials through chat or run `az login` from the agent.
+
+### Use the REST helper after preflight
+
+Dot-source the bundled helper for actual work only after preflight passes:
 
 ```pwsh
 . .\.github\skills\ui-tests-pipeline-ci\scripts\AzureDevOps.ps1
-Test-AzDevOpsSession
 ```
 
 The helper obtains a token for Azure DevOps resource
@@ -26,8 +61,8 @@ after every request. Repeated reads and actual pipeline queueing were verified w
 
 Never run `az login` through an agent, request credentials, print or persist a token/header, enable
 command tracing around authentication, or commit downloaded internal evidence. If
-`Test-AzDevOpsSession` fails, ask the user to authenticate outside the agent and stop with an access
-blocker. Do not fall back to another transport.
+the preflight fails, ask the user to resolve its exact failed check and stop with an access blocker.
+Do not fall back to another transport.
 
 `Invoke-AzDevOpsRest` accepts a project-relative REST path and returns `{ Body, Headers }`:
 
