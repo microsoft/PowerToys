@@ -431,10 +431,12 @@ Tells the host to re-fetch the provider's top-level or fallback command items.
   "jsonrpc": "2.0",
   "method": "provider/itemsChanged",
   "params": {
-    "totalItems": 10
+    "totalItems": -1
   }
 }
 ```
+
+`CommandProviderBase.notifyItemsChanged()` sends this canonical payload. SDK authors should use that protected helper instead of constructing the notification directly.
 
 ---
 

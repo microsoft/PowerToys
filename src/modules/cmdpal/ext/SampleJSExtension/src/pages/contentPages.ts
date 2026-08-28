@@ -2,9 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-import { ContentPageBase } from '@microsoft/cmdpal-sdk';
+import { ContentPageBase, iconFromFile } from '@microsoft/cmdpal-sdk';
 import type { CommandResult, Content, FormContent } from '@microsoft/cmdpal-sdk';
-import { icon } from '../util.js';
+import { fileURLToPath } from 'node:url';
+import { glyphIcon } from '../util.js';
 
 const loremIpsum =
   "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.";
@@ -68,7 +69,7 @@ export class SampleContentPage extends ContentPageBase {
   readonly name = 'Open';
   readonly title = 'Sample Content';
 
-  override icon = icon('\uECA5');
+  override icon = glyphIcon('\uECA5');
 
   override getContent(): Content[] {
     return [
@@ -84,7 +85,7 @@ export class SamplePlainTextContentPage extends ContentPageBase {
   readonly name = 'Plain Text';
   readonly title = 'Sample Plain Text Content';
 
-  override icon = icon('\uE8D2');
+  override icon = glyphIcon('\uE8D2');
 
   override getContent(): Content[] {
     return [
@@ -105,19 +106,19 @@ export class SamplePlainTextContentPage extends ContentPageBase {
 /**
  * A page showing images. Mirrors the C# `SampleImageContentPage`.
  *
- * Approximation: the C# page loads packaged JPG and SVG assets. This sample
- * ships no binary assets, so a hosted image URL stands in.
+ * The C# page loads packaged JPG and SVG assets. This sample uses its bundled
+ * hero PNG and sends the encoded image bytes rather than a machine-specific path.
  */
 export class SampleImageContentPage extends ContentPageBase {
   readonly id = 'sample-image-content-page';
   readonly name = 'Image';
   readonly title = 'Sample Image Content';
 
-  override icon = icon('\uE722');
+  override icon = glyphIcon('\uE722');
 
-  override getContent(): Content[] {
-    const image = icon(
-      'https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/Logo.png',
+  override async getContent(): Promise<Content[]> {
+    const image = await iconFromFile(
+      fileURLToPath(new URL('../assets/hero.png', import.meta.url)),
     );
     return [
       { type: 'image', image },
@@ -132,7 +133,7 @@ export class SampleTreeContentPage extends ContentPageBase {
   readonly name = 'Sample Content';
   readonly title = 'Sample Content';
 
-  override icon = icon('\uE81E');
+  override icon = glyphIcon('\uE81E');
 
   override getContent(): Content[] {
     const nestedForm: FormContent = {

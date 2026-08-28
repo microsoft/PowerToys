@@ -4,7 +4,7 @@
 
 import { DynamicListPageBase, InvokableCommandBase, ListItemBase, NoOpCommand } from '@microsoft/cmdpal-sdk';
 import type { CommandResult, IListItem } from '@microsoft/cmdpal-sdk';
-import { icon } from '../util.js';
+import { glyphIcon } from '../util.js';
 import { ShowToastCommand, StatusMessageCommand } from '../commands/statusCommands.js';
 
 /** Shows a toast that keeps the palette open, carrying a caller-supplied message. */
@@ -32,7 +32,7 @@ class KeepOpenToastCommand extends InvokableCommandBase {
 class UndoToastCommand extends InvokableCommandBase {
   readonly id = 'undo-toast-action';
   readonly name = 'Undo';
-  override icon = icon('\uE7A7');
+  override icon = glyphIcon('\uE7A7');
 
   override invoke(): CommandResult {
     return { kind: 'showToast', args: { message: 'Delete undone!' } };
@@ -48,7 +48,7 @@ class ToastWithIconCommand extends InvokableCommandBase {
       kind: 'showToast',
       args: {
         message: 'This toast has an icon next to its message.',
-        icon: icon('\uE73E'),
+        icon: glyphIcon('\uE73E'),
         result: { kind: 'keepOpen' },
       },
     };
@@ -64,7 +64,7 @@ class ToastWithActionCommand extends InvokableCommandBase {
       kind: 'showToast',
       args: {
         message: 'Item deleted.',
-        icon: icon('\uE74D'),
+        icon: glyphIcon('\uE74D'),
         command: new UndoToastCommand(),
         result: { kind: 'keepOpen' },
       },
@@ -81,7 +81,7 @@ export class SampleToastsPage extends DynamicListPageBase {
   readonly name = 'Toast Notifications';
   readonly title = 'Toast Notification Samples';
 
-  override icon = icon('\uE789');
+  override icon = glyphIcon('\uE789');
   override placeholderText = 'Type a custom message and press Enter...';
 
   override setSearchText(text: string): void {
@@ -98,13 +98,13 @@ export class SampleToastsPage extends DynamicListPageBase {
             command: new KeepOpenToastCommand('custom-toast', 'Send custom toast', query),
             title: `Show toast: "${query}"`,
             subtitle: 'Uses a showToast result and keeps the palette open',
-            icon: icon('\uE724'),
+            icon: glyphIcon('\uE724'),
           })
         : new ListItemBase({
             command: new NoOpCommand('toast-hint'),
             title: 'Type a message above to send a custom toast',
             subtitle: "Start typing - the first item becomes a 'Show toast' action",
-            icon: icon('\uE8BD'),
+            icon: glyphIcon('\uE8BD'),
           });
 
     return [
@@ -113,7 +113,7 @@ export class SampleToastsPage extends DynamicListPageBase {
         command: new ShowToastCommand('Hello from the Command Palette!', 'short-toast'),
         title: 'Short toast (dismisses the palette)',
         subtitle: 'A showToast result with the default dismiss follow-up',
-        icon: icon('\uE91C'),
+        icon: glyphIcon('\uE91C'),
       }),
       new ListItemBase({
         command: new KeepOpenToastCommand(
@@ -123,19 +123,19 @@ export class SampleToastsPage extends DynamicListPageBase {
         ),
         title: 'Short toast (keeps the palette open)',
         subtitle: 'ToastArgs.result = keepOpen',
-        icon: icon('\uE8A7'),
+        icon: glyphIcon('\uE8A7'),
       }),
       new ListItemBase({
         command: new ToastWithIconCommand(),
         title: 'Toast with an icon',
         subtitle: 'ToastArgs.icon appears next to the message',
-        icon: icon('\uE73E'),
+        icon: glyphIcon('\uE73E'),
       }),
       new ListItemBase({
         command: new ToastWithActionCommand(),
         title: 'Toast with an action button',
         subtitle: 'ToastArgs.command renders an Undo button',
-        icon: icon('\uE7A7'),
+        icon: glyphIcon('\uE7A7'),
       }),
       new ListItemBase({
         command: new KeepOpenToastCommand(
@@ -145,7 +145,7 @@ export class SampleToastsPage extends DynamicListPageBase {
         ),
         title: 'Long, wrapping toast',
         subtitle: 'Verifies multi-line wrapping inside the banner',
-        icon: icon('\uE7C3'),
+        icon: glyphIcon('\uE7C3'),
       }),
       new ListItemBase({
         command: new StatusMessageCommand(
@@ -155,7 +155,7 @@ export class SampleToastsPage extends DynamicListPageBase {
         ),
         title: 'In-page status message (different path)',
         subtitle: 'Uses the host status bridge - renders inline, NOT in the toast window',
-        icon: icon('\uE7BA'),
+        icon: glyphIcon('\uE7BA'),
       }),
     ];
   }

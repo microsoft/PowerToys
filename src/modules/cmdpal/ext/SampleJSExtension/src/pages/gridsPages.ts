@@ -4,7 +4,7 @@
 
 import { ListItemBase, ListPageBase, NoOpCommand } from '@microsoft/cmdpal-sdk';
 import type { GridProperties, IListItem } from '@microsoft/cmdpal-sdk';
-import { icon } from '../util.js';
+import { glyphIcon } from '../util.js';
 
 let galleryPageCounter = 0;
 
@@ -12,8 +12,8 @@ let galleryPageCounter = 0;
  * A gallery/grid page rendered with a caller-supplied layout. Mirrors the C#
  * `SampleGalleryListPage`.
  *
- * The C# sample decorates its items with bundled image assets. This sample ships
- * no binary assets, so Segoe Fluent glyphs stand in for the images.
+ * The C# sample decorates its items with several bundled images. This sample
+ * ships one hero PNG, so the grid uses Segoe Fluent glyphs for its repeated tiles.
  */
 export class SampleGalleryListPage extends ListPageBase {
   readonly id: string;
@@ -43,7 +43,7 @@ export class SampleGalleryListPage extends ListPageBase {
           command: new NoOpCommand(`gallery-item-${index}`),
           title,
           subtitle: "I don't do anything",
-          icon: icon(glyphs[index] ?? '\uE753'),
+          icon: glyphIcon(glyphs[index] ?? '\uE753'),
         }),
     );
   }
@@ -58,7 +58,7 @@ export class SampleGridsListPage extends ListPageBase {
   readonly name = 'Grid and gallery lists';
   readonly title = 'Grid and gallery lists';
 
-  override icon = icon('\uE7C5');
+  override icon = glyphIcon('\uE7C5');
 
   override getItems(): IListItem[] {
     return [
@@ -66,37 +66,37 @@ export class SampleGridsListPage extends ListPageBase {
         command: new SampleGalleryListPage({ type: 'gallery', showTitle: true, showSubtitle: true }),
         title: 'Gallery list page (title and subtitle)',
         subtitle: 'A sample gallery list page with images',
-        icon: icon('\uE909'),
+        icon: glyphIcon('\uE909'),
       }),
       new ListItemBase({
         command: new SampleGalleryListPage({ type: 'gallery', showTitle: true, showSubtitle: false }),
         title: 'Gallery list page (title, no subtitle)',
         subtitle: 'A sample gallery list page with images',
-        icon: icon('\uE909'),
+        icon: glyphIcon('\uE909'),
       }),
       new ListItemBase({
         command: new SampleGalleryListPage({ type: 'gallery', showTitle: false, showSubtitle: false }),
         title: 'Gallery list page (no title, no subtitle)',
         subtitle: 'A sample gallery list page with images',
-        icon: icon('\uE909'),
+        icon: glyphIcon('\uE909'),
       }),
       new ListItemBase({
         command: new SampleGalleryListPage({ type: 'small' }),
         title: 'Small grid list page',
         subtitle: 'A sample grid list page with text items',
-        icon: icon('\uE8B9'),
+        icon: glyphIcon('\uE8B9'),
       }),
       new ListItemBase({
         command: new SampleGalleryListPage({ type: 'medium', showTitle: true }),
         title: 'Medium grid (with title)',
         subtitle: 'A sample grid list page with text items',
-        icon: icon('\uE8B9'),
+        icon: glyphIcon('\uE8B9'),
       }),
       new ListItemBase({
         command: new SampleGalleryListPage({ type: 'medium', showTitle: false }),
         title: 'Medium grid (hidden title)',
         subtitle: 'A sample grid list page with text items',
-        icon: icon('\uE8B9'),
+        icon: glyphIcon('\uE8B9'),
       }),
     ];
   }

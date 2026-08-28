@@ -10,7 +10,7 @@ import {
   OpenUrlCommand,
 } from '@microsoft/cmdpal-sdk';
 import type { ContextItem, IListItem, KeyChord } from '@microsoft/cmdpal-sdk';
-import { icon, tag } from '../util.js';
+import { glyphIcon, tag } from '../util.js';
 import { SampleMarkdownPage } from './markdownPages.js';
 import { SampleListPageWithDetails } from './detailsPage.js';
 import {
@@ -42,7 +42,7 @@ export class SampleListPage extends ListPageBase {
   readonly name = 'Sample List Page';
   readonly title = 'Sample List Page';
 
-  override icon = icon('\uEA37');
+  override icon = glyphIcon('\uEA37');
 
   override getItems(): IListItem[] {
     const secondCommand = new StatusMessageCommand(
@@ -51,11 +51,11 @@ export class SampleListPage extends ListPageBase {
       'ctx-secondary',
     );
     secondCommand.name = 'Secondary command';
-    secondCommand.icon = icon('\uF147');
+    secondCommand.icon = glyphIcon('\uF147');
 
     const thirdCommand = new StatusMessageCommand('Third command invoked', 'error', 'ctx-third');
     thirdCommand.name = 'Do 3';
-    thirdCommand.icon = icon('\uF148');
+    thirdCommand.icon = glyphIcon('\uF148');
 
     const deeperCommand = new StatusMessageCommand(
       'Second-level command invoked',
@@ -63,7 +63,7 @@ export class SampleListPage extends ListPageBase {
       'ctx-deeper',
     );
     deeperCommand.name = 'A command one level down';
-    deeperCommand.icon = icon('\uF149');
+    deeperCommand.icon = glyphIcon('\uF149');
 
     const deepestCommand = new StatusMessageCommand(
       'You reached the deepest command',
@@ -71,7 +71,7 @@ export class SampleListPage extends ListPageBase {
       'ctx-deepest',
     );
     deepestCommand.name = 'The deepest command';
-    deepestCommand.icon = icon('\uF14A');
+    deepestCommand.icon = glyphIcon('\uF14A');
 
     const primaryContext = new StatusMessageCommand(
       'Primary command invoked',
@@ -79,7 +79,7 @@ export class SampleListPage extends ListPageBase {
       'ctx-primary',
     );
     primaryContext.name = 'Primary command';
-    primaryContext.icon = icon('\uF146');
+    primaryContext.icon = glyphIcon('\uF146');
 
     // `moreCommands` on a context item nests a submenu, and each nested item
     // can nest again. Here "We can go deeper..." opens a second level, which in
@@ -93,18 +93,18 @@ export class SampleListPage extends ListPageBase {
       {
         command: thirdCommand,
         title: 'We can go deeper...',
-        icon: icon('\uF148'),
+        icon: glyphIcon('\uF148'),
         requestedShortcut: keyChord(CTRL, 0x32),
         moreCommands: [
           {
             command: deeperCommand,
             title: 'Another level down',
-            icon: icon('\uF149'),
+            icon: glyphIcon('\uF149'),
             moreCommands: [
               {
                 command: deepestCommand,
                 title: 'The deepest level',
-                icon: icon('\uF14A'),
+                icon: glyphIcon('\uF14A'),
               },
             ],
           },
@@ -154,7 +154,7 @@ export class SampleListPage extends ListPageBase {
         command: primaryContext,
         title: 'You can add context menu items too. Press Ctrl+K',
         subtitle: 'Try pressing Ctrl+1 with me selected',
-        icon: icon('\uE712'),
+        icon: glyphIcon('\uE712'),
         moreCommands,
       }),
       new ListItemBase({

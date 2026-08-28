@@ -5,15 +5,13 @@
 import { iconFromGlyph } from '@microsoft/cmdpal-sdk';
 import type { IconInfo, OptionalColor, Tag } from '@microsoft/cmdpal-sdk';
 
-/**
- * Builds an {@link IconInfo} from a glyph, file path, or URL string.
- *
- * The Command Palette host resolves the string the same way the C# toolkit's
- * `new IconInfo(string)` does, so a Segoe Fluent glyph, an absolute file path,
- * and an https URL all work through the same helper.
- */
-export function icon(value: string): IconInfo {
-  return iconFromGlyph(value);
+/** A tiny PNG used when a sample needs inline base64 without a file or network request. */
+export const samplePngBase64 =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+
+/** Builds an {@link IconInfo} from a font glyph or Unicode character. */
+export function glyphIcon(glyph: string): IconInfo {
+  return iconFromGlyph(glyph);
 }
 
 /** Builds an opaque {@link OptionalColor} from red, green, and blue channels. */

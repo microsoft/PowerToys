@@ -4,7 +4,7 @@
 
 import { DynamicListPageBase, ListItemBase, NoOpCommand } from '@microsoft/cmdpal-sdk';
 import type { Filters, IListItem } from '@microsoft/cmdpal-sdk';
-import { icon } from '../util.js';
+import { glyphIcon } from '../util.js';
 
 /**
  * A dynamic list page that rebuilds its items from the search text and offers
@@ -18,14 +18,14 @@ export class SampleDynamicListPage extends DynamicListPageBase {
   readonly name = 'Dynamic List';
   readonly title = 'Dynamic List';
 
-  override icon = icon('\uE721');
+  override icon = glyphIcon('\uE721');
 
   override filters: Filters = {
     currentFilterId: 'all',
     filters: [
       { id: 'all', name: 'All' },
-      { id: 'mod2', name: 'Every 2nd', icon: icon('2') },
-      { id: 'mod3', name: 'Every 3rd (and long name)', icon: icon('3') },
+      { id: 'mod2', name: 'Every 2nd', icon: glyphIcon('2') },
+      { id: 'mod3', name: 'Every 3rd (and long name)', icon: glyphIcon('3') },
     ],
   };
 
@@ -41,16 +41,21 @@ export class SampleDynamicListPage extends DynamicListPageBase {
 
   override getItems(): IListItem[] {
     const chars = [...(this.searchText ?? '')];
+    if (chars.length === 0) {
+      return [
+        new ListItemBase({
+          command: new NoOpCommand('dyn-empty'),
+          title: 'Start typing in the search box',
+          subtitle:
+            'Notice how the number of items changes for this page when you type in the filter box',
+        }),
+      ];
+    }
+
     let items: IListItem[] = chars.map(
       (ch, index) =>
         new ListItemBase({ command: new NoOpCommand(`dyn-${index}`), title: ch }),
     );
-
-    if (items.length === 0) {
-      items = [
-        new ListItemBase({ command: new NoOpCommand('dyn-empty'), title: 'Start typing in the search box' }),
-      ];
-    }
 
     switch (this.filters.currentFilterId) {
       case 'mod2':

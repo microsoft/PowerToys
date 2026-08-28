@@ -406,7 +406,7 @@ ExtensionHost.hideStatus(statusId);
 | Extension not showing | Check that `package.json` has a `cmdpal` section, a non-empty `name`, and a `main` that resolves to a built file. Build before installing. |
 | Blank page | Check that `getItems` or `getContent` returns data. |
 | Command does nothing | Ensure `invoke` returns a valid `CommandResult`, for example `{ kind: 'showToast', args: { message: '...' } }`. |
-| Images not loading | Use `iconFromUrl` or `iconFromBase64`. Only absolute file paths are supported for `file://` sources. |
+| Images not loading | Use `iconFromFile` for packaged files, `iconFromUrl` for URLs, or `iconFromBase64` for inline bytes. These helpers avoid sending machine-specific file paths. |
 | Import fails at runtime | Relative imports in your own code must end with `.js`, because the project uses `NodeNext` module resolution. |
 
 ## Next steps

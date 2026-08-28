@@ -4,7 +4,7 @@
 
 import { DynamicListPageBase, ListItemBase, NoOpCommand } from '@microsoft/cmdpal-sdk';
 import type { IListItem } from '@microsoft/cmdpal-sdk';
-import { icon } from '../util.js';
+import { glyphIcon } from '../util.js';
 import { LiveRefresh } from '../liveRefresh.js';
 
 /**
@@ -23,7 +23,7 @@ export class SampleUpdatingItemsPage extends DynamicListPageBase {
   readonly name = 'Open';
   readonly title = 'List page with items that change';
 
-  override icon = icon('\uE72C');
+  override icon = glyphIcon('\uE72C');
 
   private readonly refresh = new LiveRefresh(500, () => this.notifyItemsChanged());
 

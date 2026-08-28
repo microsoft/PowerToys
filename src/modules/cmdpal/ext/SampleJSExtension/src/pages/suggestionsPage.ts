@@ -4,7 +4,7 @@
 
 import { DynamicListPageBase, ListItemBase, NoOpCommand } from '@microsoft/cmdpal-sdk';
 import type { IListItem } from '@microsoft/cmdpal-sdk';
-import { icon } from '../util.js';
+import { glyphIcon } from '../util.js';
 
 /**
  * A demo of prefixed "nested" search suggestions. Mirrors the intent of the C#
@@ -21,7 +21,7 @@ export class SampleSuggestionsPage extends DynamicListPageBase {
   readonly name = 'Open';
   readonly title = 'Sample prefixed search';
 
-  override icon = icon('\uE779');
+  override icon = glyphIcon('\uE779');
   override placeholderText = "Type a query, and use '@' to add a person";
 
   override setSearchText(text: string): void {
@@ -50,7 +50,7 @@ export class SampleSuggestionsPage extends DynamicListPageBase {
         command: new NoOpCommand('suggestions-query'),
         title: text,
         subtitle: 'no tokens',
-        icon: icon('\uE8F2'),
+        icon: glyphIcon('\uE8F2'),
       }),
     ];
   }

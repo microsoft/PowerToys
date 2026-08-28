@@ -90,9 +90,8 @@ export class SampleMarkdownDetails extends ContentPageBase {
 /**
  * A page demonstrating images in markdown. Mirrors `SampleMarkdownImagesPage`.
  *
- * Approximation: the C# page loads packaged PNG/SVG assets and embeds large
- * base64 data URLs. This sample ships no binary assets, so only the web URL and
- * the sizing query string examples are reproduced, with a note about the rest.
+ * The sample ships a hero PNG for file-based icon examples. This page keeps the
+ * markdown example focused on a first-party URL and a small inline data URI.
  */
 export class SampleMarkdownImagesPage extends ContentPageBase {
   readonly id = 'sample-markdown-images-page';
@@ -108,12 +107,11 @@ export class SampleMarkdownImagesPage extends ContentPageBase {
       '## Available sources:',
       '',
       '- `![Alt Text](https://url)`',
-      '- `![Alt Text](file://url)` (only absolute paths are supported)',
       '- `![Alt Text](data:<mime>;[base64,]<data>)` (only for small amounts of data)',
       '',
-      '> Note: the C# sample also demonstrates packaged file URLs (PNG and SVG) and',
-      '> large base64 data URLs. Those are omitted here because this sample ships no',
-      '> binary assets and large data URLs can block the UI while parsing.',
+      '> Note: the C# sample also demonstrates packaged file URLs and large base64',
+      '> data URLs. The JS sample reads packaged icon files with `iconFromFile` instead',
+      '> of sending machine-specific paths, and keeps inline data small.',
       '',
       '## Examples:',
       '',

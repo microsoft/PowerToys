@@ -4,7 +4,7 @@
 
 import { ContentPageBase, ExtensionHost } from '@microsoft/cmdpal-sdk';
 import type { CommandResult, Content, FormContent, TreeContent } from '@microsoft/cmdpal-sdk';
-import { icon } from '../util.js';
+import { glyphIcon } from '../util.js';
 
 const postTemplate = JSON.stringify({
   $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
@@ -133,7 +133,7 @@ export class SampleCommentsPage extends ContentPageBase {
   readonly name = 'View Posts';
   readonly title = 'View Posts';
 
-  override icon = icon('\uE90A');
+  override icon = glyphIcon('\uE90A');
 
   private readonly posts: Post[] = [
     post('First', ["Oh very insightful. I hadn't considered that", 'Second', 'ah the ol switcheroo']),

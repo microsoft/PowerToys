@@ -2,9 +2,17 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-import { CopyTextCommand, ListItemBase, ListPageBase } from '@microsoft/cmdpal-sdk';
+import {
+  CopyTextCommand,
+  iconFromBase64,
+  iconFromFile,
+  iconFromUrl,
+  ListItemBase,
+  ListPageBase,
+} from '@microsoft/cmdpal-sdk';
 import type { Details, IListItem, Tag } from '@microsoft/cmdpal-sdk';
-import { icon } from '../util.js';
+import { fileURLToPath } from 'node:url';
+import { glyphIcon, samplePngBase64 } from '../util.js';
 
 /*
  * Quick intro to Unicode in source code:
@@ -64,7 +72,7 @@ function codePointTags(value: string): Tag[] {
 }
 
 function buildIconItem(glyph: string, title: string, description: string): IListItem {
-  const iconInfo = icon(glyph);
+  const iconInfo = glyphIcon(glyph);
   const details: Details = {
     heroImage: iconInfo,
     title,
@@ -93,14 +101,47 @@ export class SampleIconPage extends ListPageBase {
   readonly name = 'Sample Icon Page';
   readonly title = 'Sample Icon Page';
 
-  override icon = icon('\uE8BA');
+  override icon = glyphIcon('\uE8BA');
   override showDetails = true;
 
   private readonly items = iconSamples.map(([glyph, title, description]) =>
     buildIconItem(glyph, title, description),
   );
+  private readonly packagedFileIcon = iconFromFile(
+    fileURLToPath(new URL('../assets/hero.png', import.meta.url)),
+  );
+  private readonly firstPartyUrlIcon = iconFromUrl(
+    'https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/icons/PowerToys%20icon/Vintage/Logo-HiRes.png',
+  );
 
-  override getItems(): IListItem[] {
-    return this.items;
+  override async getItems(): Promise<IListItem[]> {
+    const [fileIcon, urlIcon] = await Promise.all([
+      this.packagedFileIcon,
+      this.firstPartyUrlIcon,
+    ]);
+    const sourceItems = [
+      new ListItemBase({
+        command: new CopyTextCommand('assets/hero.png', 'Copy packaged file path'),
+        title: 'Packaged file icon',
+        subtitle: 'iconFromFile reads the bundled PNG and sends its bytes, not a machine path',
+        icon: fileIcon,
+      }),
+      new ListItemBase({
+        command: new CopyTextCommand(
+          'https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/icons/PowerToys%20icon/Vintage/Logo-HiRes.png',
+          'Copy first-party URL',
+        ),
+        title: 'First-party URL icon',
+        subtitle: 'iconFromUrl fetches the image when this page is opened',
+        icon: urlIcon,
+      }),
+      new ListItemBase({
+        command: new CopyTextCommand(samplePngBase64, 'Copy inline base64'),
+        title: 'Inline base64 icon',
+        subtitle: 'iconFromBase64 sends image bytes without a file or network request',
+        icon: iconFromBase64(samplePngBase64),
+      }),
+    ];
+    return [...sourceItems, ...this.items];
   }
 }

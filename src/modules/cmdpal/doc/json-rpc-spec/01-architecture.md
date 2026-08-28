@@ -221,16 +221,16 @@ flowchart LR
 
 ### Icon Data Pipeline
 
-JS extensions can provide icons in three formats:
+JS extensions can provide icons in four wire formats:
 
 | Format | `IconData` field | C# handling |
 |--------|------------------|-------------|
 | **Font glyph** | `icon: "\uE91B"` | `IconPathConverter.IconSourceMUX` produces a `FontIconSource` |
-| **File/URI path** | `icon: "C:\\path\\icon.png"` | `IconPathConverter.IconSourceMUX` produces a `BitmapImage` |
+| **URI** | `icon: "https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/icons/PowerToys%20icon/Vintage/Logo-HiRes.png"` | `IconPathConverter.IconSourceMUX` produces a `BitmapImage` |
 | **Base64 data** | `data: "iVBOR..."` | `JSModelMapper.ParseIconData` produces an `InMemoryRandomAccessStream` backing a `BitmapImage` |
 | **Data URI** | `data: "data:image/png;base64,..."` | `JSModelMapper.ParseIconData` parses the data URI, decodes it, and streams the result |
 
-For base64 images, the TS extension fetches/encodes the image data at runtime. The SDK provides helper functions (`iconFromUrl`, `iconFromFile`, `iconFromBase64`) to simplify this.
+For local files, `iconFromFile` reads and encodes the bytes in the extension process, so no machine-specific path crosses the protocol boundary. The SDK also provides `iconFromGlyph`, `iconFromUrl`, and `iconFromBase64`. Manifest icons are separate: a relative `cmdpal.icon` file is resolved inside the installed extension directory.
 
 ## Security Considerations
 

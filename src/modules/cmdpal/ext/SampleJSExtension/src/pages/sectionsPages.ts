@@ -4,7 +4,7 @@
 
 import { ListItemBase, ListPageBase, NoOpCommand, Separator } from '@microsoft/cmdpal-sdk';
 import type { GridProperties, IListItem } from '@microsoft/cmdpal-sdk';
-import { icon } from '../util.js';
+import { glyphIcon } from '../util.js';
 
 let sectionPageCounter = 0;
 
@@ -21,7 +21,7 @@ export class SampleListPageWithSections extends ListPageBase {
   readonly name = 'Sample Gallery List Page';
   readonly title = 'Sample Gallery List Page';
 
-  override icon = icon('\uE7C5');
+  override icon = glyphIcon('\uE7C5');
 
   constructor(gridProperties?: GridProperties) {
     super();
@@ -85,7 +85,7 @@ export class SectionsIndexPage extends ListPageBase {
   readonly name = 'Sections Index Page';
   readonly title = 'Sections Index Page';
 
-  override icon = icon('\uF168');
+  override icon = glyphIcon('\uF168');
 
   override getItems(): IListItem[] {
     return [

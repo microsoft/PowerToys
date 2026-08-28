@@ -11,7 +11,7 @@ import {
   ToggleSetting,
 } from '@microsoft/cmdpal-sdk';
 import type { Content, SettingChoice } from '@microsoft/cmdpal-sdk';
-import { icon } from '../util.js';
+import { glyphIcon } from '../util.js';
 
 const choices: SettingChoice[] = [
   { title: 'The first choice in the list is the default choice', value: '0' },
@@ -30,7 +30,7 @@ export class SampleSettingsPage extends ContentPageBase {
   readonly name = 'Sample Settings';
   readonly title = 'Sample Settings';
 
-  override icon = icon('\uE713');
+  override icon = glyphIcon('\uE713');
 
   private readonly settings = new Settings();
 

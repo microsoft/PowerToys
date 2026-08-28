@@ -2,22 +2,20 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-import { ListItemBase, ListPageBase, NoOpCommand } from '@microsoft/cmdpal-sdk';
+import {
+  iconFromBase64,
+  iconFromFile,
+  ListItemBase,
+  ListPageBase,
+  NoOpCommand,
+} from '@microsoft/cmdpal-sdk';
 import type { DetailsElement, IListItem } from '@microsoft/cmdpal-sdk';
 import { fileURLToPath } from 'node:url';
-import { icon, randomColor, rgb, tag } from '../util.js';
+import { glyphIcon, randomColor, rgb, samplePngBase64, tag } from '../util.js';
 import { sampleMarkdownText } from '../markdownText.js';
 import { ProgressStatusCommand, StatusMessageCommand } from '../commands/statusCommands.js';
 
-/**
- * Absolute path to the hero image that ships with the sample. The build copies
- * `assets/` into `dist/assets/`, so this file sits next to the compiled output
- * at `dist/assets/hero.png`. Resolving it from `import.meta.url` keeps the path
- * relative to wherever the extension is installed, and the host's icon loader
- * resolves an absolute file path the same way it resolves a glyph or URL. This
- * avoids depending on a network fetch to render the hero image.
- */
-const heroImagePath = fileURLToPath(new URL('../assets/hero.png', import.meta.url));
+const heroImage = iconFromFile(fileURLToPath(new URL('../assets/hero.png', import.meta.url)));
 
 /**
  * Builds the shared "metadata" rows demonstrated in both the details page and
@@ -50,8 +48,8 @@ export function sampleMetadata(): DetailsElement[] {
           { text: 'Colored text', foreground: rgb(255, 0, 0) },
           { text: 'Colored backgrounds', background: rgb(0, 0, 255) },
           { text: 'Colored everything', foreground: rgb(255, 255, 0), background: rgb(0, 0, 255) },
-          { text: 'Icons too', icon: icon('\uE735'), foreground: rgb(255, 255, 0) },
-          { text: '', icon: icon('https://i.imgur.com/t9qgDTM.png') },
+          { text: 'Icons too', icon: glyphIcon('\uE735'), foreground: rgb(255, 255, 0) },
+          { text: '', icon: iconFromBase64(samplePngBase64) },
           { text: 'this', foreground: randomColor(), background: randomColor() },
           { text: 'baby', foreground: randomColor(), background: randomColor() },
           { text: 'can', foreground: randomColor(), background: randomColor() },
@@ -96,7 +94,7 @@ function buildStatusButton(
 ): StatusMessageCommand {
   const command = new StatusMessageCommand(message, state, id);
   command.name = name;
-  command.icon = icon(glyph);
+  command.icon = glyphIcon(glyph);
   return command;
 }
 
@@ -108,7 +106,7 @@ function buildProgressButton(
   glyph: string,
 ): ProgressStatusCommand {
   const command = new ProgressStatusCommand(name, workingMessage, doneMessage, id);
-  command.icon = icon(glyph);
+  command.icon = glyphIcon(glyph);
   return command;
 }
 
@@ -126,10 +124,11 @@ export class SampleListPageWithDetails extends ListPageBase {
   readonly name = 'Sample List Page with Details';
   readonly title = 'Sample List Page with Details';
 
-  override icon = icon('\uE8A0');
+  override icon = glyphIcon('\uE8A0');
   override showDetails = true;
 
-  override getItems(): IListItem[] {
+  override async getItems(): Promise<IListItem[]> {
+    const packagedHeroImage = await heroImage;
     return [
       new ListItemBase({
         command: new NoOpCommand('details-default'),
@@ -157,7 +156,7 @@ export class SampleListPageWithDetails extends ListPageBase {
         title: 'This one has a hero image',
         details: {
           title: 'Hero Image Example',
-          heroImage: icon(heroImagePath),
+          heroImage: packagedHeroImage,
           body: 'It is literally an image of a hero',
         },
       }),

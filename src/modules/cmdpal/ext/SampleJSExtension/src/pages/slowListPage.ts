@@ -4,7 +4,7 @@
 
 import { ListItemBase, ListPageBase, NoOpCommand } from '@microsoft/cmdpal-sdk';
 import type { IListItem } from '@microsoft/cmdpal-sdk';
-import { icon } from '../util.js';
+import { glyphIcon } from '../util.js';
 
 /**
  * A list page that takes a few seconds to produce its items. Mirrors the C#
@@ -16,7 +16,7 @@ export class SlowListPage extends ListPageBase {
   readonly name = 'Slow List Page';
   readonly title = 'This page simulates a slow load';
 
-  override icon = icon('\uEA79');
+  override icon = glyphIcon('\uEA79');
 
   override async getItems(): Promise<IListItem[]> {
     await new Promise((resolve) => setTimeout(resolve, 5000));

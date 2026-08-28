@@ -25,7 +25,7 @@ tags, and command behavior match the C# sample as closely as the JS SDK allows:
 - Dynamic list page that rebuilds items from the query, with filters.
 - Grid and gallery layouts.
 - OnLoad demo.
-- Icon page covering many icon-string forms.
+- Icon page covering glyph, packaged file, first-party URL, and inline base64 sources.
 - Slow loading list page.
 - Prefix suggestions (`@` people, `/` commands).
 - Content pages: mixed markdown plus form, plain text, image, and nested tree.
@@ -95,7 +95,7 @@ its `node_modules\`. To sideload this sample after building it:
 ```powershell
 $dest = "$env:LOCALAPPDATA\Microsoft\PowerToys\CmdPal\JSExtensions\SampleJSExtension"
 New-Item -ItemType Directory -Force -Path $dest | Out-Null
-Copy-Item package.json, dist, node_modules -Destination $dest -Recurse -Force
+Copy-Item package.json, assets, dist, node_modules -Destination $dest -Recurse -Force
 ```
 
 Then open Command Palette. The provider appears as "Sample Pages Commands (JS)"

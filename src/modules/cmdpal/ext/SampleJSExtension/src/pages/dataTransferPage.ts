@@ -4,7 +4,7 @@
 
 import { CopyTextCommand, ListItemBase, ListPageBase, NoOpCommand } from '@microsoft/cmdpal-sdk';
 import type { IListItem } from '@microsoft/cmdpal-sdk';
-import { icon } from '../util.js';
+import { glyphIcon } from '../util.js';
 
 /**
  * A demo of clipboard integration. Mirrors the C# `SampleDataTransferPage`.
@@ -19,7 +19,7 @@ export class SampleDataTransferPage extends ListPageBase {
   readonly name = 'Open';
   readonly title = 'Clipboard and Drag-and-Drop Demo';
 
-  override icon = icon('\uE8C8');
+  override icon = glyphIcon('\uE8C8');
 
   override getItems(): IListItem[] {
     return [
@@ -37,7 +37,7 @@ export class SampleDataTransferPage extends ListPageBase {
         command: new NoOpCommand('data-transfer-image'),
         title: 'Item with an image',
         subtitle: 'The C# sample drags a bitmap and a file; image payloads are not supported from JS',
-        icon: icon('\uEB9F'),
+        icon: glyphIcon('\uEB9F'),
       }),
     ];
   }

@@ -4,7 +4,7 @@
 
 import { DynamicListPageBase, ListItemBase, NoOpCommand } from '@microsoft/cmdpal-sdk';
 import type { IListItem } from '@microsoft/cmdpal-sdk';
-import { icon } from '../util.js';
+import { glyphIcon } from '../util.js';
 import { LiveRefresh } from '../liveRefresh.js';
 
 /**
@@ -26,7 +26,7 @@ export class SampleLiveDetailsPage extends DynamicListPageBase {
   readonly name = 'Live Updating Details';
   readonly title = 'Live Updating Details';
 
-  override icon = icon('\uE916');
+  override icon = glyphIcon('\uE916');
   override showDetails = true;
 
   private counter = 0;

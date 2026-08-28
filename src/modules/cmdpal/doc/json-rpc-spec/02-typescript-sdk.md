@@ -33,7 +33,7 @@ The shipped package is ESM (`"type": "module"`) and exposes `./dist/index.js` wi
 
 ```typescript
 interface IconData {
-  icon?: string;          // Font glyph character or file/URI path
+  icon?: string;          // Font glyph character or URI
   data?: string | null;   // Base64-encoded image data or data URI
 }
 
@@ -45,7 +45,8 @@ interface IconInfo {
 
 Icons can be provided as:
 - **Font glyphs:** `{ icon: '\uE91B' }`, for Segoe Fluent Icons / MDL2 Assets
-- **File paths:** `{ icon: 'C:\\path\\to\\icon.png' }`
+- **Local files:** `await iconFromFile('./assets/icon.png')`, which sends encoded bytes rather than a machine-specific path
+- **URLs:** `await iconFromUrl('https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/icons/PowerToys%20icon/Vintage/Logo-HiRes.png')`
 - **Base64 data:** `{ data: 'iVBORw0KGgo...' }`, with raw base64-encoded image bytes
 - **Data URIs:** `{ data: 'data:image/png;base64,iVBOR...' }`
 
@@ -594,7 +595,7 @@ const icon = iconFromGlyph('\uE91B');
 const icon = iconFromBase64('iVBORw0KGgoAAAANSUhEUg...');
 
 // Fetch image from URL (async, downloads and encodes as base64)
-const icon = await iconFromUrl('https://example.com/icon.png');
+const icon = await iconFromUrl('https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/icons/PowerToys%20icon/Vintage/Logo-HiRes.png');
 
 // Read local file (async, reads and encodes as base64)
 const icon = await iconFromFile('./assets/icon.png');
@@ -646,6 +647,19 @@ const provider = activate({ extensionId: 'my-extension', extensionDirectory: pro
 ```
 
 ### Notifications
+
+```typescript
+import { CommandProviderBase } from '@microsoft/cmdpal-sdk';
+
+class RefreshableProvider extends CommandProviderBase {
+  refreshCommands(): void {
+    // Sends provider/itemsChanged with { totalItems: -1 }.
+    this.notifyItemsChanged();
+  }
+}
+```
+
+For page and property notifications, the corresponding observable base classes expose protected helpers. The lower-level `sendNotification` API remains available for protocol work:
 
 ```typescript
 import { sendNotification } from '@microsoft/cmdpal-sdk';

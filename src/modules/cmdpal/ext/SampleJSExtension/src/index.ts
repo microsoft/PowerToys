@@ -4,7 +4,7 @@
 
 import { CommandItemBase, CommandProviderBase, run } from '@microsoft/cmdpal-sdk';
 import type { ICommandItem } from '@microsoft/cmdpal-sdk';
-import { icon } from './util.js';
+import { glyphIcon } from './util.js';
 import { SamplesListPage } from './samplesListPage.js';
 
 /**
@@ -16,7 +16,7 @@ class SampleProvider extends CommandProviderBase {
   readonly id = 'SampleJSExtension';
   readonly displayName = 'Sample Pages Commands (JS)';
 
-  override icon = icon('\uE82D');
+  override icon = glyphIcon('\uE82D');
 
   private readonly samplesPage = new SamplesListPage();
 
@@ -26,7 +26,7 @@ class SampleProvider extends CommandProviderBase {
         command: this.samplesPage,
         title: 'Sample Pages (JS)',
         subtitle: 'View example commands',
-        icon: icon('\uE82D'),
+        icon: glyphIcon('\uE82D'),
       }),
     ];
   }

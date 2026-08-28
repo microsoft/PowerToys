@@ -78,7 +78,7 @@ CmdPal discovers extensions by finding directories with a `package.json` that co
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `displayName` | `string` | ❌ | Human-readable name shown in CmdPal UI. Falls back to `name` if not provided. |
-| `icon` | `string` | ❌ | Icon glyph character (e.g., `"\uE943"`) or a relative path to an icon file (PNG recommended) inside the package. A relative path is resolved against the package's own directory and must stay inside it; see [Icon resolution](#icon-resolution). |
+| `icon` | `string` | ❌ | Icon glyph character (e.g., `"\uE943"`), non-file URL, or a relative path to an icon file (PNG recommended) inside the package. Relative files are resolved against the package directory and must stay inside it; rooted filesystem paths and file URLs are rejected. See [Icon resolution](#icon-resolution). |
 | `publisher` | `string` | ❌ | Author or publisher name. When omitted, the top-level npm `author` name is used as a fallback. |
 | `debug` | `boolean` | ❌ | When `true`, starts Node.js with `--inspect` for debugger attachment. Default: `false`. |
 | `debugPort` | `integer` | ❌ | Inspector port when `debug` is `true`. If not specified, auto-assigned starting at 9229. |
@@ -104,13 +104,14 @@ A resolved relative icon (`cmdpal.icon`) is subject to the same containment rule
 
 The `cmdpal.icon` value is interpreted as follows:
 
-- A **glyph** (for example, `"\uE943"`) or an **absolute URI** (for example, an
-  `https://` or `ms-appx://` value) is used exactly as written.
+- A **glyph** (for example, `"\uE943"`) or a **non-file URL** (for example, an
+  `https://` value) is trimmed and then used as written.
 - A **relative file path** (for example, `"icon.png"` or `"assets/icon.png"`) is
   resolved against the extension's own installed directory, which is the folder that
   contains its `package.json`.
+- A **rooted filesystem path** or **file URL** is rejected.
 
-A resolved relative icon must stay **inside** the package directory. The path is
+A resolved relative file icon must stay **inside** the package directory. The path is
 rejected (and the extension shows no icon rather than loading an out-of-package file)
 when:
 
