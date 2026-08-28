@@ -549,9 +549,14 @@ public sealed class NpmCommandRunner : INpmCommandRunner
             return true;
         }
 
-        return exception is AggregateException aggregateException
-            && aggregateException.Flatten().InnerExceptions.Count > 0
-            && aggregateException.Flatten().InnerExceptions.All(IsExpectedTerminationException);
+        if (exception is not AggregateException aggregateException)
+        {
+            return false;
+        }
+
+        var flattenedException = aggregateException.Flatten();
+        return flattenedException.InnerExceptions.Count > 0
+            && flattenedException.InnerExceptions.All(IsExpectedTerminationException);
     }
 
     private static bool IsReparsePoint(string path)

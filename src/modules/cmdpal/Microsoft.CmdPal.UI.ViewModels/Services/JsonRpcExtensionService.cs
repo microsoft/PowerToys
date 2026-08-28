@@ -327,10 +327,9 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
             return [];
         }
 
-        // Start the watcher before scanning so a package installed while the scan runs
-        // is still observed (the per-directory gate and the already-loaded check make a
-        // watcher-driven load and a scan-driven load for the same directory idempotent).
         RecoverStaleGalleryInstallMarkersOnce();
+
+        // Start the watcher before scanning so installs during the scan are still observed.
         StartDirectoryWatcher();
 
         var accepted = DiscoverAcceptedManifests(ExtensionsPath);
