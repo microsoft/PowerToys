@@ -51,6 +51,9 @@ internal static class ExtensionTaskCoordinator
         });
 
         var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+        // Cancellation is not partial success. The current reload may stop here, and the next
+        // reload stops every service before rediscovering all providers.
         cancellationToken.ThrowIfCancellationRequested();
         return results.OfType<TResult>().ToArray();
     }

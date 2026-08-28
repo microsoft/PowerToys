@@ -82,6 +82,9 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
     private static readonly string ExtensionsPath = GetDefaultExtensionsPath();
 
     private readonly TaskScheduler _taskScheduler;
+
+    // This gate lives for the service lifetime. Disposing it while a start owns a permit
+    // could make its matching Release throw.
     private readonly SemaphoreSlim _extensionStartupGate = new(MaxConcurrentExtensionStarts, MaxConcurrentExtensionStarts);
     private readonly Lock _extensionsLock = new();
     private readonly List<JSExtensionWrapper> _extensions = [];
