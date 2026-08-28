@@ -1,8 +1,17 @@
-# Command Palette incremental Adaptive Card rendering
+# Incremental Adaptive Card rendering
+
+> [!WARNING] 
+> Here be basilisks!
+>
+> This entire library is maintained by LLMs. Humans didn't write the code, and no human actually owns this code. 
+>
+> This library was generated to experiment with the big picture problem "can we update the content of a rendered Adaptive Card without replacing the entire card?"
+>
+> I would fully suspect that this is not the correct approach to solve this problem. It is _an_ approach however, and it's one that works well enough to continue experimenting with.
 
 `IncrementalAdaptiveCardUpdater` renders an Adaptive Card into a stable `Border`.
 Later calls update safe properties without replacing the visible form.
-Unsupported changes replace the complete card.
+Unsupported changes replace the complete card. This allows the card to quickly update its content without losing the user's input or focus, or flickering images.
 
 ## Use the updater
 
