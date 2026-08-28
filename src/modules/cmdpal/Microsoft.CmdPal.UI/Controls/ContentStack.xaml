@@ -1,0 +1,217 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.ContentStack"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:extViews="using:Microsoft.CmdPal.UI.ExtViews.Controls"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:images="using:Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders"
+    xmlns:local="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:tk="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:Microsoft.CmdPal.UI"
+    xmlns:vm="using:Microsoft.CmdPal.UI.ViewModels">
+    <UserControl.Resources>
+        <!--  MarkdownThemes uses CLR properties; ThemeResource expressions cannot be assigned here.  -->
+        <tk:MarkdownThemes
+            x:Key="MarkdownTheme"
+            H3FontSize="12"
+            H3FontWeight="Normal"
+            InlineCodeBackground="{StaticResource ControlFillColorDefaultBrush}"
+            InlineCodeBorderBrush="{StaticResource ControlElevationBorderBrush}"
+            InlineCodeCornerRadius="2"
+            InlineCodeForeground="{StaticResource TextFillColorSecondaryBrush}"
+            InlineCodePadding="2,0,2,1" />
+        <images:ImageProvider x:Key="ImageProvider" />
+        <tk:MarkdownConfig
+            x:Key="MarkdownConfig"
+            ImageProvider="{StaticResource ImageProvider}"
+            Themes="{StaticResource MarkdownTheme}" />
+
+        <DataTemplate x:Key="FormTemplate" x:DataType="vm:ContentFormViewModel">
+            <local:ContentFormControl ViewModel="{x:Bind}" />
+        </DataTemplate>
+        <DataTemplate x:Key="MarkdownTemplate" x:DataType="vm:ContentMarkdownViewModel">
+            <tk:MarkdownTextBlock
+                Config="{StaticResource MarkdownConfig}"
+                Text="{x:Bind Body, Mode=OneWay}"
+                UseEmphasisExtras="True"
+                UsePipeTables="True" />
+        </DataTemplate>
+        <DataTemplate x:Key="TextTemplate" x:DataType="vm:ContentTextViewModel">
+            <TextBlock
+                IsTextSelectionEnabled="True"
+                Text="{x:Bind Text, Mode=OneWay}"
+                TextWrapping="Wrap" />
+        </DataTemplate>
+        <DataTemplate x:Key="PlainTextTemplate" x:DataType="vm:ContentPlainTextViewModel">
+            <extViews:PlainTextContentViewer
+                Text="{x:Bind Text, Mode=OneWay}"
+                UseMonospace="{x:Bind UseMonospace, Mode=OneWay}"
+                WordWrapEnabled="{x:Bind WordWrapEnabled, Mode=OneWay}" />
+        </DataTemplate>
+        <DataTemplate x:Key="ImageTemplate" x:DataType="vm:ContentImageViewModel">
+            <extViews:ImageContentViewer DataContext="{x:Bind}" />
+        </DataTemplate>
+        <DataTemplate x:Key="TreeTemplate" x:DataType="vm:ContentTreeViewModel">
+            <StackPanel Spacing="8">
+                <local:ContentStack ItemsSource="{x:Bind Root, Mode=OneWay}" />
+                <local:ContentStack Margin="8,0,0,0" ItemsSource="{x:Bind Children, Mode=OneWay}" />
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="HeaderTemplate" x:DataType="vm:ContentHeaderViewModel">
+            <StackPanel>
+                <local:IconBox
+                    Width="64"
+                    Height="64"
+                    Margin="0,0,0,12"
+                    HorizontalAlignment="Left"
+                    AutomationProperties.AccessibilityView="Raw"
+                    SourceKey="{x:Bind Image, Mode=OneWay}"
+                    SourceRequested="{x:Bind help:IconProvider.SourceRequested64}"
+                    Visibility="{x:Bind HasImage, Mode=OneWay}" />
+                <TextBlock
+                    AutomationProperties.HeadingLevel="Level2"
+                    FontSize="18"
+                    FontWeight="SemiBold"
+                    IsTextSelectionEnabled="True"
+                    Text="{x:Bind Title, Mode=OneWay}"
+                    TextWrapping="WrapWholeWords"
+                    Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToCollapsed(Title), Mode=OneWay}" />
+                <TextBlock
+                    Margin="0,4,0,0"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    IsTextSelectionEnabled="True"
+                    Text="{x:Bind Subtitle, Mode=OneWay}"
+                    TextWrapping="WrapWholeWords"
+                    Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToCollapsed(Subtitle), Mode=OneWay}" />
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="PropertyTemplate" x:DataType="vm:ContentPropertyViewModel">
+            <local:ContentPropertyControl ViewModel="{x:Bind}" />
+        </DataTemplate>
+        <DataTemplate x:Key="PropertyGridTemplate" x:DataType="vm:ContentPropertyGridViewModel">
+            <local:ContentStack ItemsSource="{x:Bind Properties, Mode=OneWay}" />
+        </DataTemplate>
+        <DataTemplate x:Key="SeparatorTemplate" x:DataType="vm:ContentSeparatorViewModel">
+            <StackPanel Margin="0,8,0,4">
+                <TextBlock
+                    AutomationProperties.HeadingLevel="Level3"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                    Text="{x:Bind Title, Mode=OneWay}"
+                    TextWrapping="WrapWholeWords"
+                    Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToCollapsed(Title), Mode=OneWay}" />
+                <Border
+                    BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                    BorderThickness="0,0,0,1"
+                    Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToVisible(Title), Mode=OneWay}" />
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="SectionTemplate" x:DataType="vm:ContentSectionViewModel">
+            <StackPanel Spacing="8">
+                <TextBlock
+                    Margin="0,8,0,0"
+                    AutomationProperties.HeadingLevel="Level3"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                    Text="{x:Bind Title, Mode=OneWay}"
+                    TextWrapping="WrapWholeWords"
+                    Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToCollapsed(Title), Mode=OneWay}" />
+                <Border
+                    Margin="0,8,0,0"
+                    BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                    BorderThickness="0,0,0,1"
+                    Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToVisible(Title), Mode=OneWay}" />
+                <local:ContentStack ItemsSource="{x:Bind VisibleContent, Mode=OneWay}" />
+                <local:ContentExpansionButton
+                    HorizontalAlignment="Stretch"
+                    HiddenItemCount="{x:Bind HiddenItemCount, Mode=OneWay}"
+                    IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
+                    Style="{StaticResource SubtleButtonStyle}"
+                    Visibility="{x:Bind CanExpand, Mode=OneWay}" />
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="LinkTemplate" x:DataType="vm:ContentLinkViewModel">
+            <StackPanel>
+                <TextBlock
+                    IsTextSelectionEnabled="True"
+                    Text="{x:Bind Text, Mode=OneWay}"
+                    TextWrapping="WrapWholeWords"
+                    Visibility="{x:Bind IsText, Mode=OneWay}" />
+                <HyperlinkButton
+                    Padding="0"
+                    Command="{x:Bind NavigateCommand}"
+                    Visibility="{x:Bind IsLink, Mode=OneWay}">
+                    <TextBlock Text="{x:Bind Text, Mode=OneWay}" TextWrapping="WrapWholeWords" />
+                </HyperlinkButton>
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="TagTemplate" x:DataType="vm:TagViewModel">
+            <local:Tag
+                HorizontalAlignment="Left"
+                AutomationProperties.Name="{x:Bind Text, Mode=OneWay}"
+                BackgroundColor="{x:Bind Background, Mode=OneWay}"
+                FontSize="12"
+                ForegroundColor="{x:Bind Foreground, Mode=OneWay}"
+                Icon="{x:Bind Icon, Mode=OneWay}"
+                Text="{x:Bind Text, Mode=OneWay}"
+                ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
+        </DataTemplate>
+        <DataTemplate x:Key="TagsTemplate" x:DataType="vm:ContentTagsViewModel">
+            <ItemsControl
+                IsTabStop="False"
+                ItemTemplate="{StaticResource TagTemplate}"
+                ItemsSource="{x:Bind Tags, Mode=OneWay}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <tk:WrapPanel HorizontalSpacing="4" VerticalSpacing="4" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </DataTemplate>
+        <DataTemplate x:Key="CommandTemplate" x:DataType="vm:CommandViewModel">
+            <Button
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Left"
+                AutomationProperties.AutomationId="{x:Bind Id, Mode=OneWay}"
+                AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
+                Click="Command_Click"
+                Style="{StaticResource SubtleButtonStyle}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <local:IconBox
+                        Width="16"
+                        Height="16"
+                        SourceKey="{x:Bind Icon, Mode=OneWay}"
+                        SourceRequested="{x:Bind help:IconProvider.SourceRequested20}"
+                        Visibility="{x:Bind HasIcon, Mode=OneWay}" />
+                    <TextBlock Text="{x:Bind Name, Mode=OneWay}" TextWrapping="WrapWholeWords" />
+                </StackPanel>
+            </Button>
+        </DataTemplate>
+        <DataTemplate x:Key="CommandsTemplate" x:DataType="vm:ContentCommandsViewModel">
+            <ItemsControl
+                IsTabStop="False"
+                ItemTemplate="{StaticResource CommandTemplate}"
+                ItemsSource="{x:Bind Commands, Mode=OneWay}" />
+        </DataTemplate>
+        <ui:ContentTemplateSelector
+            x:Key="ContentTemplateSelector"
+            CommandsTemplate="{StaticResource CommandsTemplate}"
+            FormTemplate="{StaticResource FormTemplate}"
+            HeaderTemplate="{StaticResource HeaderTemplate}"
+            ImageTemplate="{StaticResource ImageTemplate}"
+            LinkTemplate="{StaticResource LinkTemplate}"
+            MarkdownTemplate="{StaticResource MarkdownTemplate}"
+            PlainTextTemplate="{StaticResource PlainTextTemplate}"
+            PropertyGridTemplate="{StaticResource PropertyGridTemplate}"
+            PropertyTemplate="{StaticResource PropertyTemplate}"
+            SectionTemplate="{StaticResource SectionTemplate}"
+            SeparatorTemplate="{StaticResource SeparatorTemplate}"
+            TagsTemplate="{StaticResource TagsTemplate}"
+            TextTemplate="{StaticResource TextTemplate}"
+            TreeTemplate="{StaticResource TreeTemplate}" />
+    </UserControl.Resources>
+    <ItemsRepeater ItemTemplate="{StaticResource ContentTemplateSelector}" ItemsSource="{x:Bind ItemsSource, Mode=OneWay}">
+        <ItemsRepeater.Layout>
+            <StackLayout Spacing="8" />
+        </ItemsRepeater.Layout>
+    </ItemsRepeater>
+</UserControl>

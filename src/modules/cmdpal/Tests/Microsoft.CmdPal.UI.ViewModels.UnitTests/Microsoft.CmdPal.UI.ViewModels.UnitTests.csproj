@@ -29,4 +29,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <!-- Exercise the sample's asynchronous snapshots without packaging its executable. -->
+    <Compile Include="..\..\ext\SamplePagesExtension\Pages\SampleDeferredDetails.cs" Link="Samples\SampleDeferredDetails.cs" />
+  </ItemGroup>
 </Project>

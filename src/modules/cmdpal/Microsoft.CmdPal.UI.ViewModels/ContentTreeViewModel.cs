@@ -1,164 +1,78 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPageContext> context) :
-    ContentViewModel(context)
+public partial class ContentTreeViewModel : ObservedContentViewModel<ITreeContent>
 {
-    public ExtensionObject<ITreeContent> Model { get; } = new(_tree);
+    private readonly ContentCollectionViewModel _root;
+    private readonly ContentCollectionViewModel _children;
 
-    // Remember - "observable" properties from the model (via PropChanged)
-    // cannot be marked [ObservableProperty]
-    public ContentViewModel? RootContent { get; protected set; }
+    public ObservableCollection<ContentViewModel> Root => _root.Items;
 
-    public ObservableCollection<ContentViewModel> Children { get; } = [];
+    public ContentViewModel? RootContent => Root.FirstOrDefault();
+
+    public ObservableCollection<ContentViewModel> Children => _children.Items;
 
     public bool HasChildren => Children.Count > 0;
 
-    // This is the content that's actually bound in XAML. We needed a
-    // collection, even if the collection is just a single item.
-    public ObservableCollection<ContentViewModel> Root => RootContent is not null ? [RootContent] : [];
-
-    public override void InitializeProperties()
+    public ContentTreeViewModel(ITreeContent model, WeakReference<IPageContext> context)
+        : base(model, context)
     {
-        var model = Model.Unsafe;
-        if (model is null)
-        {
-            return;
-        }
-
-        var root = model.RootContent;
-        if (root is not null)
-        {
-            RootContent = ViewModelFromContent(root, PageContext);
-            RootContent?.InitializeProperties();
-            UpdateProperty(nameof(RootContent));
-            UpdateProperty(nameof(Root));
-        }
-
-        FetchContent();
-        model.PropChanged += Model_PropChanged;
-        model.ItemsChanged += Model_ItemsChanged;
+        _root = new(context);
+        _children = new(context);
+        _root.Updated += Root_Updated;
+        _children.Updated += Children_Updated;
     }
 
-    // Theoretically, we should unify this with the one in CommandPalettePageViewModelFactory
-    // and maybe just have a ContentViewModelFactory or something
-    public ContentViewModel? ViewModelFromContent(IContent content, WeakReference<IPageContext> context)
+    protected override void SubscribeToModel()
     {
-        ContentViewModel? viewModel = content switch
-        {
-            IFormContent form => new ContentFormViewModel(form, context),
-            IMarkdownContent markdown => new ContentMarkdownViewModel(markdown, context),
-            ITreeContent tree => new ContentTreeViewModel(tree, context),
-            IPlainTextContent plainText => new ContentPlainTextViewModel(plainText, context),
-            IImageContent image => new ContentImageViewModel(image, context),
-            _ => null,
-        };
-        return viewModel;
+        base.SubscribeToModel();
+        Model.ItemsChanged += Model_ItemsChanged;
     }
 
-    // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
-    private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchContent();
+    protected override void ReadProperties()
+    {
+        var root = Model.RootContent;
+        _root.Update(root is null ? [] : [root]);
+        _children.Update(Model.GetChildren());
+    }
 
-    private void Model_PropChanged(object sender, IPropChangedEventArgs args)
+    private void Root_Updated(object? sender, EventArgs e) => UpdateProperty(nameof(RootContent));
+
+    private void Children_Updated(object? sender, EventArgs e) => UpdateProperty(nameof(HasChildren));
+
+    private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => RefreshProperties();
+
+    protected override void UnsubscribeFromModel()
     {
         try
         {
-            var propName = args.PropertyName;
-            FetchProperty(propName);
+            Model.ItemsChanged -= Model_ItemsChanged;
         }
-        catch (Exception ex)
+        finally
         {
-            ShowException(ex);
+            base.UnsubscribeFromModel();
         }
-    }
-
-    protected void FetchProperty(string propertyName)
-    {
-        var model = Model.Unsafe;
-        if (model is null)
-        {
-            return; // throw?
-        }
-
-        switch (propertyName)
-        {
-            case nameof(RootContent):
-                var root = model.RootContent;
-                if (root is not null)
-                {
-                    RootContent = ViewModelFromContent(root, PageContext);
-                }
-                else
-                {
-                    root = null;
-                }
-
-                UpdateProperty(nameof(Root));
-
-                break;
-        }
-
-        UpdateProperty(propertyName);
-    }
-
-    //// Run on background thread, from InitializeAsync or Model_ItemsChanged
-    private void FetchContent()
-    {
-        List<ContentViewModel> newContent = [];
-        try
-        {
-            var newItems = Model.Unsafe!.GetChildren();
-
-            foreach (var item in newItems)
-            {
-                var viewModel = ViewModelFromContent(item, PageContext);
-                if (viewModel is not null)
-                {
-                    viewModel.InitializeProperties();
-                    newContent.Add((ContentViewModel)viewModel);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            ShowException(ex);
-            throw;
-        }
-
-        // Now, back to a UI thread to update the observable collection
-        DoOnUiThread(
-        () =>
-        {
-            ListHelpers.InPlaceUpdateList(Children, newContent);
-        });
-
-        UpdateProperty(nameof(HasChildren));
     }
 
     protected override void UnsafeCleanup()
     {
-        base.UnsafeCleanup();
-        RootContent?.SafeCleanup();
-        foreach (var item in Children)
+        try
         {
-            item.SafeCleanup();
+            // Stop callbacks before revoking events or disposing child observers.
+            base.UnsafeCleanup();
         }
-
-        Children.Clear();
-        var model = Model.Unsafe;
-        if (model is not null)
+        finally
         {
-            model.PropChanged -= Model_PropChanged;
-            model.ItemsChanged -= Model_ItemsChanged;
+            _root.Updated -= Root_Updated;
+            _children.Updated -= Children_Updated;
+            _root.SafeCleanup();
+            _children.SafeCleanup();
         }
     }
 }

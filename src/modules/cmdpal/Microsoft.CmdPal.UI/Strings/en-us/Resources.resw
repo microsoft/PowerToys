@@ -1482,4 +1482,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>The path has an invalid format.</value>
     <comment>Validation error shown when a single path does not match its configured regular expression.</comment>
   </data>
+  <data name="ContentSection_ShowMoreFormat" xml:space="preserve">
+    <value>Show {0} more</value>
+    <comment>Expands a content section. {0} is the number of hidden direct children.</comment>
+  </data>
+  <data name="ContentSection_ShowFewer" xml:space="preserve">
+    <value>Show fewer</value>
+    <comment>Collapses a content section to its preview.</comment>
+  </data>
 </root>

@@ -181,37 +181,6 @@
                 ImageProvider="{StaticResource ImageProvider}"
                 Themes="{StaticResource DefaultMarkdownThemeConfig}" />
 
-            <StackLayout x:Key="DetailsContentLayout" Orientation="Vertical" Spacing="8" />
-
-            <cmdpalUI:ContentTemplateSelector
-                x:Key="DetailsContentTemplateSelector"
-                FormTemplate="{StaticResource DetailsFormContentTemplate}"
-                ImageTemplate="{StaticResource DetailsImageContentTemplate}"
-                MarkdownTemplate="{StaticResource DetailsMarkdownContentTemplate}"
-                PlainTextTemplate="{StaticResource DetailsPlainTextContentTemplate}" />
-
-            <DataTemplate x:Key="DetailsFormContentTemplate" x:DataType="viewModels:ContentFormViewModel">
-                <cpcontrols:ContentFormControl ViewModel="{x:Bind}" />
-            </DataTemplate>
-
-            <DataTemplate x:Key="DetailsMarkdownContentTemplate" x:DataType="viewModels:ContentMarkdownViewModel">
-                <tkcontrols:MarkdownTextBlock
-                    Config="{StaticResource DefaultMarkdownConfig}"
-                    Text="{x:Bind Body, Mode=OneWay}"
-                    UseEmphasisExtras="True"
-                    UsePipeTables="True" />
-            </DataTemplate>
-
-            <DataTemplate x:Key="DetailsPlainTextContentTemplate" x:DataType="viewModels:ContentPlainTextViewModel">
-                <extViews:PlainTextContentViewer
-                    Text="{x:Bind Text, Mode=OneWay}"
-                    UseMonospace="{x:Bind UseMonospace, Mode=OneWay}"
-                    WordWrapEnabled="{x:Bind WordWrapEnabled, Mode=OneWay}" />
-            </DataTemplate>
-
-            <DataTemplate x:Key="DetailsImageContentTemplate" x:DataType="viewModels:ContentImageViewModel">
-                <extViews:ImageContentViewer DataContext="{x:Bind}" />
-            </DataTemplate>
         </ResourceDictionary>
     </Page.Resources>
 
@@ -487,61 +456,55 @@
                             To="24,0,0"
                             Duration="0:0:0.187" />
                     </animations:Implicit.HideAnimations>
-                    <Grid Margin="16">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
+                    <StackPanel Margin="16">
+                        <Grid Visibility="{x:Bind ViewModel.Details.IsLegacy, Mode=OneWay}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
 
-                        <cpcontrols:IconBox
-                            x:Name="HeroImageBorder"
-                            Width="64"
-                            Margin="0,0,16,16"
-                            HorizontalAlignment="Left"
-                            AutomationProperties.AccessibilityView="Raw"
-                            SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
-                            SourceRequested="{x:Bind help:IconProvider.SourceRequested64}"
-                            Visibility="{x:Bind HasHeroImage, Mode=OneWay}" />
+                            <cpcontrols:IconBox
+                                x:Name="HeroImageBorder"
+                                Width="64"
+                                Margin="0,0,16,16"
+                                HorizontalAlignment="Left"
+                                AutomationProperties.AccessibilityView="Raw"
+                                SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
+                                SourceRequested="{x:Bind help:IconProvider.SourceRequested64}"
+                                Visibility="{x:Bind HasHeroImage, Mode=OneWay}" />
 
-                        <TextBlock
-                            Grid.Row="1"
-                            FontSize="18"
-                            FontWeight="SemiBold"
-                            Text="{x:Bind ViewModel.Details.Title, Mode=OneWay}"
-                            TextWrapping="WrapWholeWords"
-                            Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Text="{x:Bind ViewModel.Details.Title, Mode=OneWay}"
+                                TextWrapping="WrapWholeWords"
+                                Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
 
-                        <tkcontrols:MarkdownTextBlock
-                            Grid.Row="2"
-                            Margin="0,4,0,24"
-                            Background="Transparent"
-                            Config="{StaticResource DefaultMarkdownConfig}"
-                            IsTabStop="False"
-                            Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}"
-                            UseEmphasisExtras="True"
-                            UsePipeTables="True" />
+                            <tkcontrols:MarkdownTextBlock
+                                Grid.Row="2"
+                                Margin="0,4,0,24"
+                                Background="Transparent"
+                                Config="{StaticResource DefaultMarkdownConfig}"
+                                IsTabStop="False"
+                                Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}"
+                                UseEmphasisExtras="True"
+                                UsePipeTables="True" />
 
-                        <ItemsRepeater
-                            Grid.Row="3"
-                            Margin="0,4,0,16"
-                            IsTabStop="False"
-                            ItemTemplate="{StaticResource DetailsContentTemplateSelector}"
-                            ItemsSource="{x:Bind ViewModel.Details.Content, Mode=OneWay}"
-                            Layout="{StaticResource DetailsContentLayout}" />
-
-                        <ItemsRepeater
-                            Grid.Row="4"
-                            IsTabStop="False"
-                            ItemTemplate="{StaticResource DetailsDataTemplateSelector}"
-                            ItemsSource="{x:Bind ViewModel.Details.Metadata, Mode=OneWay}">
-                            <ItemsRepeater.Layout>
-                                <StackLayout Spacing="12" />
-                            </ItemsRepeater.Layout>
-                        </ItemsRepeater>
-                    </Grid>
+                            <ItemsRepeater
+                                Grid.Row="3"
+                                IsTabStop="False"
+                                ItemTemplate="{StaticResource DetailsDataTemplateSelector}"
+                                ItemsSource="{x:Bind ViewModel.Details.Metadata, Mode=OneWay}">
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Spacing="12" />
+                                </ItemsRepeater.Layout>
+                            </ItemsRepeater>
+                        </Grid>
+                        <cpcontrols:ContentStack ItemsSource="{x:Bind ViewModel.Details.Content, Mode=OneWay}" Visibility="{x:Bind ViewModel.Details.IsContentOnly, Mode=OneWay}" />
+                    </StackPanel>
                 </ScrollViewer>
                 <!--  /DetailsContent  -->
             </Grid>

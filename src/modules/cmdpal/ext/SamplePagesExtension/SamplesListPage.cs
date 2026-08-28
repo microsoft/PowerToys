@@ -13,6 +13,12 @@ public partial class SamplesListPage : ListPage
 {
     private readonly IListItem[] _commands = [
 
+        new ListItem(new SampleComposedContentSamplesPage())
+        {
+            Title = "Composed content samples",
+            Subtitle = "Rich Details, expandable sections, property grids and lazy loading",
+        },
+
         // List pages
         new ListItem(new SampleListPage())
         {
