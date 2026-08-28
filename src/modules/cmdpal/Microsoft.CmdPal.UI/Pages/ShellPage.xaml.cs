@@ -88,6 +88,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private bool _suppressSelectOnNextLoad;
     private bool _pendingTopBarFocusRestore;
     private bool _isDisposed;
+    private int _detailsRequestId;
 
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
 
@@ -427,6 +428,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
 
         var details = message.Details;
+        var requestId = Interlocked.Increment(ref _detailsRequestId);
         var wasVisible = ViewModel.IsDetailsVisible;
 
         // GH #322:
@@ -442,6 +444,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         void ShowDetails()
         {
+            if (_isDisposed || requestId != Volatile.Read(ref _detailsRequestId))
+            {
+                return;
+            }
+
             // Since immediate=true means we're called synchronously from this method, we need to check
             // if we're on the UI thread and re-queue if not.
             if (!_queue.HasThreadAccess)
@@ -457,8 +464,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             try
             {
+                if (!ViewModel.TrySetDetails(details))
+                {
+                    return;
+                }
+
                 DetailsContent.ChangeView(null, 0, null, true);
-                ViewModel.Details = details;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
                 ViewModel.IsDetailsVisible = true;
             }
@@ -471,6 +482,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(HideDetailsMessage message)
     {
+        Interlocked.Increment(ref _detailsRequestId);
+
         // Debounce the hide through the same timer used for show. If a
         // ShowDetailsMessage arrives before this fires, it cancels the
         // pending hide - preventing the panel from flickering closed and
@@ -485,7 +498,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void HideDetails()
     {
-        ViewModel.Details = null;
+        Interlocked.Increment(ref _detailsRequestId);
+        _debounceTimer.Stop();
+        ViewModel.TrySetDetails(null);
         ViewModel.IsDetailsVisible = false;
     }
 
@@ -1155,6 +1170,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
 
         _isDisposed = true;
+        HideDetails();
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _settingsService.SettingsChanged -= OnSettingsChanged;
 

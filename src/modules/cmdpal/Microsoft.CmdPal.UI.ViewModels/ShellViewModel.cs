@@ -26,6 +26,7 @@ public partial class ShellViewModel : ObservableObject,
     private readonly IPageViewModelFactoryService _pageViewModelFactory;
     private readonly Lock _invokeLock = new();
     private Task? _handleInvokeTask;
+    private IDisposable? _detailsPresentation;
 
     // Cancellation token source for page loading/navigation operations
     private CancellationTokenSource? _navigationCts;
@@ -34,7 +35,7 @@ public partial class ShellViewModel : ObservableObject,
     public partial bool IsLoaded { get; set; } = false;
 
     [ObservableProperty]
-    public partial DetailsViewModel? Details { get; set; }
+    public partial DetailsViewModel? Details { get; private set; }
 
     [ObservableProperty]
     public partial bool IsDetailsVisible { get; set; }
@@ -119,6 +120,36 @@ public partial class ShellViewModel : ObservableObject,
         WeakReferenceMessenger.Default.Register<PerformCommandMessage>(this);
         WeakReferenceMessenger.Default.Register<HandleCommandResultMessage>(this);
         WeakReferenceMessenger.Default.Register<WindowHiddenMessage>(this);
+    }
+
+    public bool TrySetDetails(DetailsViewModel? details)
+    {
+        if (ReferenceEquals(Details, details))
+        {
+            return true;
+        }
+
+        var presentation = details?.TryAcquirePresentation();
+        if (details is not null && presentation is null)
+        {
+            // A debounced request may have been superseded and cleaned up.
+            return false;
+        }
+
+        var previous = _detailsPresentation;
+        _detailsPresentation = presentation;
+        try
+        {
+            Details = details;
+        }
+        finally
+        {
+            // PropertyChanged must detach the old bindings before cleanup can
+            // clear their observable content collections.
+            previous?.Dispose();
+        }
+
+        return true;
     }
 
     [RelayCommand]
@@ -590,6 +621,7 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Dispose()
     {
+        TrySetDetails(null);
         _handleInvokeTask?.Dispose();
         _navigationCts?.Dispose();
 

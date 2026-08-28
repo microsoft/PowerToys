@@ -22,12 +22,28 @@ internal sealed partial class SampleListPageWithDetails : ListPage
         return [
             new ListItem(new NoOpCommand())
             {
+                Title = "Composed content (Small)",
+                Details = new ContentDetails { Content = SampleComposedContent.Create() },
+            },
+            new ListItem(new NoOpCommand())
+            {
+                Title = "Composed content (Medium)",
+                Details = new ContentDetails { Size = ContentSize.Medium, Content = SampleComposedContent.Create() },
+            },
+            new ListItem(new NoOpCommand())
+            {
+                Title = "Composed content (Large)",
+                Details = new ContentDetails { Size = ContentSize.Large, Content = SampleComposedContent.Create() },
+            },
+            new ListItem(new NoOpCommand())
+            {
                 Title = "Details with rich content (Small)",
-                Details = new Details()
+                Details = new ContentDetails()
                 {
                     Title = "Details can contain rich content",
                     Body = "The content below is provided through `IDetails2`.",
                     Content = [
+                        new HeaderContent { Title = "Details can contain rich content", Subtitle = "Forms, Markdown and plain text" },
                         new FormContent()
                         {
                             TemplateJson = """

@@ -17,11 +17,14 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 {
     private readonly ExtensionObject<IContentPage> _model;
+    private readonly ContentCollectionViewModel _content;
     private readonly Lock _commandsLock = new();
+    private readonly Lock _detailsLock = new();
+    private int _detailsVersion;
+    private bool _detailsStopped;
     private volatile CommandSnapshot _snapshot = CommandSnapshot.Empty;
 
-    [ObservableProperty]
-    public partial ObservableCollection<ContentViewModel> Content { get; set; } = [];
+    public ObservableCollection<ContentViewModel> Content => _content.Items;
 
     private List<IContextItemViewModel> Commands { get; } = [];
 
@@ -53,6 +56,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         : base(model, scheduler, host, providerContext)
     {
         _model = new(model);
+        _content = new(PageContext, ViewModelFromContent);
     }
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
@@ -61,36 +65,15 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchContent()
     {
-        List<ContentViewModel> newContent = [];
         try
         {
-            var newItems = _model.Unsafe!.GetContent();
-
-            foreach (var item in newItems)
-            {
-                var viewModel = ViewModelFromContent(item, PageContext);
-                if (viewModel is not null)
-                {
-                    viewModel.InitializeProperties();
-                    newContent.Add(viewModel);
-                }
-            }
+            _content.Update(_model.Unsafe!.GetContent(), focusSoleContent: true);
         }
         catch (Exception ex)
         {
             ShowException(ex, _model?.Unsafe?.Name);
             throw;
         }
-
-        var oneContent = newContent.Count == 1;
-        newContent.ForEach(c => c.OnlyControlOnPage = oneContent);
-
-        // Now, back to a UI thread to update the observable collection
-        DoOnUiThread(
-        () =>
-        {
-            ListHelpers.InPlaceUpdateList(Content, newContent);
-        });
     }
 
     public virtual ContentViewModel? ViewModelFromContent(IContent content, WeakReference<IPageContext> context)
@@ -118,13 +101,6 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         {
             ListHelpers.InPlaceUpdateList(Commands, commands);
             RefreshCommandSnapshotsUnsafe();
-        }
-
-        var extensionDetails = model.Details;
-        if (extensionDetails is not null)
-        {
-            Details = new(extensionDetails, PageContext);
-            Details.InitializeProperties();
         }
 
         UpdateDetails();
@@ -197,8 +173,6 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
                 break;
             case nameof(Details):
-                var extensionDetails = model.Details;
-                Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
                 UpdateDetails();
                 break;
         }
@@ -208,21 +182,67 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
     private void UpdateDetails()
     {
-        UpdateProperty(nameof(Details));
-        UpdateProperty(nameof(HasDetails));
-
-        DoOnUiThread(
-            () =>
+        int request;
+        lock (_detailsLock)
+        {
+            if (_detailsStopped)
             {
-                if (HasDetails)
+                return;
+            }
+
+            request = ++_detailsVersion;
+        }
+
+        var extensionDetails = _model.Unsafe?.Details;
+        DetailsViewModel? next = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
+        try
+        {
+            // Keep the current Details until the candidate is fully initialized.
+            // No extension getter or cleanup runs under _detailsLock.
+            next?.InitializeProperties();
+
+            DetailsViewModel? previous;
+            DetailsViewModel? published;
+            lock (_detailsLock)
+            {
+                if (_detailsStopped || request != _detailsVersion)
                 {
-                    WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(Details));
+                    return;
+                }
+
+                previous = Details;
+                Details = published = next;
+                next = null;
+            }
+
+            previous?.SafeCleanup();
+            UpdateProperty(nameof(Details), nameof(HasDetails));
+
+            DoOnUiThread(() =>
+            {
+                lock (_detailsLock)
+                {
+                    if (_detailsStopped || !ReferenceEquals(Details, published))
+                    {
+                        return;
+                    }
+                }
+
+                if (published is not null)
+                {
+                    WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(published));
                 }
                 else
                 {
                     WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
                 }
             });
+        }
+        finally
+        {
+            // Failed, superseded, or stopped candidates were never handed off.
+            next?.SafeCleanup();
+        }
     }
 
     private List<IContextItemViewModel> BuildCommandViewModels(IContextItem[]? items)
@@ -314,9 +334,17 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
     protected override void UnsafeCleanup()
     {
-        base.UnsafeCleanup();
+        DetailsViewModel? details;
+        lock (_detailsLock)
+        {
+            _detailsStopped = true;
+            ++_detailsVersion;
+            details = Details;
+            Details = null;
+        }
 
-        Details?.SafeCleanup();
+        base.UnsafeCleanup();
+        details?.SafeCleanup();
 
         List<IContextItemViewModel> removedItems;
         lock (_commandsLock)
@@ -328,12 +356,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
         CleanupCommandViewModels(removedItems);
 
-        foreach (var item in Content)
-        {
-            item.SafeCleanup();
-        }
-
-        Content.Clear();
+        _content.SafeCleanup();
 
         var model = _model.Unsafe;
         if (model is not null)

@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.ContentPropertyControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.CmdPal.UI.Controls"
+    SizeChanged="Control_SizeChanged">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="LabelColumn" Width="*" />
+            <ColumnDefinition x:Name="ValueColumn" Width="0" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock
+            x:Name="LabelText"
+            Margin="0,0,0,4"
+            VerticalAlignment="Top"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            IsTextSelectionEnabled="True"
+            Style="{StaticResource CaptionTextBlockStyle}"
+            Text="{x:Bind ViewModel.Label, Mode=OneWay}"
+            TextWrapping="WrapWholeWords" />
+        <local:ContentStack
+            x:Name="ValueContent"
+            Grid.Row="1"
+            AutomationProperties.LabeledBy="{Binding ElementName=LabelText}"
+            ItemsSource="{x:Bind ViewModel.ValueContent, Mode=OneWay}" />
+    </Grid>
+</UserControl>

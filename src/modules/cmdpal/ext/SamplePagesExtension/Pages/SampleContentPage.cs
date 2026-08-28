@@ -12,9 +12,10 @@ namespace SamplePagesExtension;
 internal sealed partial class SampleContentPage : ContentPage
 {
     private readonly SampleContentForm sampleForm = new();
+    private readonly IContent[] _composed = SampleComposedContent.Create();
     private readonly MarkdownContent sampleMarkdown = new() { Body = "# Sample page with mixed content \n This page has both markdown, and form content" };
 
-    public override IContent[] GetContent() => [sampleMarkdown, sampleForm];
+    public override IContent[] GetContent() => [sampleMarkdown, .. _composed, sampleForm];
 
     public SampleContentPage()
     {

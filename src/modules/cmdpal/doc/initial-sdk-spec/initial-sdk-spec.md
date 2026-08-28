@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2026-02-05
+last updated: 2026-08-28
 issue id: n/a
 ---
 
@@ -56,6 +56,7 @@ functionality.
         - [Empty content](#empty-content)
         - [Filtering the list](#filtering-the-list)
       - [Content Pages](#content-pages)
+        - [Composed content](#composed-content)
         - [Markdown Content](#markdown-content)
         - [Form Content](#form-content)
     - [Other types](#other-types)
@@ -85,6 +86,9 @@ functionality.
     - [Nov 2025 status](#nov-2025-status)
   - [Addenda IV: Dock bands](#addenda-iv-dock-bands)
     - [Pinning nested commands to the dock (and top level)](#pinning-nested-commands-to-the-dock-and-top-level)
+  - [Addenda V: Extra content types](#addenda-v-extra-content-types)
+    - [Image content](#image-content)
+    - [Plain text content](#plain-text-content)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
@@ -819,8 +823,21 @@ interface IListItem requires ICommandItem {
     String TextToSuggest { get; };
 }
 
-interface IGridProperties  {
-    Windows.Foundation.Size TileSize { get; };
+[uuid("50C6F080-1CBE-4CE4-B92F-DA2F116ED524")]
+interface IGridProperties requires INotifyPropChanged { }
+
+[uuid("05914D59-6ECB-4992-9CF2-5982B5120A26")]
+interface ISmallGridLayout requires IGridProperties { }
+
+interface IMediumGridLayout requires IGridProperties
+{
+    Boolean ShowTitle { get; };
+}
+
+interface IGalleryGridLayout requires IGridProperties
+{
+    Boolean ShowTitle { get; };
+    Boolean ShowSubtitle { get; };
 }
 
 interface IListPage requires IPage, INotifyItemsChanged {
@@ -942,9 +959,10 @@ of grouped results, they're free to have as many sections as they like.
 
 When the `GridProperties` property is set to null, DevPal will display the items
 as a simple list, grouping them by section. When the `GridProperties` property
-is set to a non-null value, DevPal will display the items as a grid, with each
-item in the grid being a `TileSize` square. Grids are useful for showing items
-that are more visual in nature, like images or icons.
+is set to a non-null value, DevPal uses the implemented layout interface:
+`ISmallGridLayout`, `IMediumGridLayout`, or `IGalleryGridLayout`. Medium and
+gallery layouts can show titles, and gallery layouts can also show subtitles.
+Grids are useful for visual content such as images or icons.
 
 Each item in the list may also include an optional `Details` property. This
 allows the extension to provide additional information about the item, like a
@@ -1125,7 +1143,7 @@ interface IFilterItem {}
 [uuid("0a923c7f-5b7b-431d-9898-3c8c841d02ed")]
 interface ISeparatorFilterItem requires IFilterItem {}
 
-interface IFilter requires IFilterItem {
+interface IFilter requires INotifyPropChanged, IFilterItem {
     String Id { get; };
     String Name { get; };
     IIconInfo Icon { get; };
@@ -1133,7 +1151,7 @@ interface IFilter requires IFilterItem {
 
 interface IFilters {
     String CurrentFilterId { get; set; };
-    IFilterItem[] Filters();
+    IFilterItem[] GetFilters();
 }
 ```
 
@@ -1200,6 +1218,10 @@ interface IFormContent requires IContent {
     ICommandResult SubmitForm(String inputs, String data);
 }
 
+interface IDetails2 requires IDetails {
+    IContent[] GetContent();
+}
+
 interface IMarkdownContent requires IContent {
     String Body { get; };
 }
@@ -1207,6 +1229,55 @@ interface IMarkdownContent requires IContent {
 interface ITreeContent requires IContent, INotifyItemsChanged {
     IContent RootContent { get; };
     IContent[] GetChildren();
+}
+
+// Reusable content primitives. Array properties are complete snapshots;
+// replacements are announced through IContent.PropChanged.
+// Compact, selectable literal text without a document viewer surface.
+interface ITextContent requires IContent {
+    String Text { get; };
+}
+
+interface IHeaderContent requires IContent {
+    IIconInfo Image { get; };
+    String Title { get; };
+    // Empty means no subtitle or reserved subtitle space.
+    String Subtitle { get; };
+}
+
+interface IPropertyContent requires IContent {
+    String Label { get; };
+    IContent Value { get; };
+}
+
+interface IPropertyGridContent requires IContent {
+    IPropertyContent[] Properties { get; };
+}
+
+interface ISectionContent requires IContent {
+    // Empty displays a divider instead of a section heading.
+    String Title { get; };
+    IContent[] Content { get; };
+    // -1: all children; 0: heading only; positive: first N direct children.
+    // Expansion is host-owned presentation state, not a loading contract.
+    Int32 PreviewItemCount { get; };
+}
+
+interface ILinkContent requires IContent {
+    String Text { get; };
+    Windows.Foundation.Uri Link { get; };
+}
+
+interface ITagsContent requires IContent {
+    ITag[] Tags { get; };
+}
+
+interface ICommandsContent requires IContent {
+    ICommand[] Commands { get; };
+}
+
+interface ISeparatorContent requires IContent {
+    String Title { get; };
 }
 
 interface IContentPage requires IPage, INotifyItemsChanged {
@@ -1226,6 +1297,40 @@ user can take on the page. These are the commands that will be shown in the "Mor
 actions" flyout. Unlike the `List` page, the `Commands` property is not
 associated with any specific item on the page, rather, these commands are global
 to the page itself.
+
+##### Composed content
+
+The additional content primitives are prototype APIs shared by content pages,
+Details, and nested content. They do not introduce another Details renderer.
+
+| Interface | Purpose |
+| --- | --- |
+| `ITextContent` | Compact selectable, wrapping literal text for property values and short descriptions. It has no text-area chrome and does not parse Markdown. |
+| `IHeaderContent` | Optional image, title, and optional subtitle. Empty subtitle means no reserved subtitle space. |
+| `IPropertyContent` | A label and an arbitrary `IContent` value. |
+| `IPropertyGridContent` | Property rows, aligned in columns when wide and stacked when narrow. |
+| `ISectionContent` | Heading or unnamed divider followed by nested content, with an optional preview and expansion footer. |
+| `ILinkContent` | A link, using its URI as the label when text is empty, or plain text when there is no URI. |
+| `ITagsContent` | Existing tags, with colors, icons and tooltips. |
+| `ICommandsContent` | Existing commands with their normal result handling. |
+| `ISeparatorContent` | A named heading or unnamed divider. |
+
+For sections, `PreviewItemCount` counts direct children: `-1` shows all, `0` shows
+none until expanded, and a positive count shows the first N. The footer is omitted
+when there is no overflow. Expansion is host-owned presentation state and does
+not request or defer loading; hidden child models are still initialized.
+
+Array properties are complete snapshots. Replace the array and raise `PropChanged`
+for its property name; in-place array mutations do not notify the host. Retain
+unchanged content object identities to preserve their view models and section
+expansion state. Trees and content pages keep their existing `ItemsChanged` events.
+
+Content is rendered in array order. An image may precede a header, followed by a
+property grid. `TextContent` is the toolkit class for compact text values;
+`PlainTextContent` retains its separate document viewer.
+
+See the [composed-content prototype guide](../composed-content-prototype.md) for
+samples, manual checks and the separate future work on host loading state.
 
 ##### Markdown Content
 
@@ -1416,6 +1521,14 @@ interface ITag {
 
 [uuid("6a6dd345-37a3-4a1e-914d-4f658a4d583d")]
 interface IDetailsData {}
+[contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+enum ContentSize
+{
+    Small = 0,
+    Medium = 1,
+    Large = 2,
+};
+
 interface IDetailsElement {
     String Key { get; };
     IDetailsData Data { get; };
@@ -1439,6 +1552,18 @@ interface IDetailsCommands requires IDetailsData {
 [uuid("58070392-02bb-4e89-9beb-47ceb8c3d741")]
 interface IDetailsSeparator requires IDetailsData {}
 ```
+
+`IDetails2` (defined with the content interfaces above) opts into ordered `IContent`
+composition through the existing `IDetails` slot. On a supporting host, that
+content is authoritative: the host does not prepend the legacy hero, title, body,
+or metadata. The toolkit's `ContentDetails` provides this opt-in; ordinary
+`Details` remains on the legacy path. Legacy fields can still be populated for
+older hosts.
+
+For updates, `ContentDetails` also implements `INotifyPropChanged` and announces
+replacement snapshots with the property name `Content`. Keep `GetContent()` fast;
+a provider can return a cached preview and publish a new snapshot when background
+work finishes. This does not introduce a loading or cancellation interface.
 
 #### `INotifyPropChanged`
 
@@ -1485,6 +1610,10 @@ interface IFallbackHandler {
 interface IFallbackCommandItem requires ICommandItem {
     IFallbackHandler FallbackHandler{ get; };
     String DisplayTitle { get; };
+};
+
+interface IFallbackCommandItem2 requires IFallbackCommandItem {
+    String Id { get; };
 };
 
 interface ICommandProvider requires Windows.Foundation.IClosable, INotifyItemsChanged
@@ -2355,6 +2484,48 @@ because that method is was designed for two main purposes:
 In neither of those scenarios was the full "display" of the item needed. In
 pinning scenarios, however, we need everything that the user would see in the UI
 for that item, which is all in the `ICommandItem`.
+## Addenda V: Extra content types
+
+Extra content types for [Content Pages](#content-pages) views so we can provide extra functionality to the user.
+
+### Image content
+
+Image content is dedicated to displaying a single image. The host will attempt to display the entire
+image in the UI or a scaled down preview, while respecting the max width and height. If possible, the host will
+provide UI controls to display the image 1:1, save it or copy it to the clipboard.
+Non-positive maximum width or height means no limit for that dimension.
+
+```csharp
+interface IImageContent requires IContent {
+    IIconInfo Image { get; };
+    Int32 MaxWidth { get; };
+    Int32 MaxHeight { get; };
+}
+```
+
+### Plain text content
+
+Developers can declare that the content is unformatted plain text and provide
+hints about how to render it, such as what font to use and whether to
+wrap words or not. Users can control the view settings.
+
+This is a block text-area/document viewer. Use `ITextContent` for compact text
+inside a property row or a short description.
+
+```csharp
+enum FontFamily
+{
+    UserInterface,
+    Monospace,
+};
+
+interface IPlainTextContent requires IContent {
+    String Text { get; };
+    FontFamily FontFamily { get; };
+    Boolean WrapWords { get; };
+}
+```
+
 ## Class diagram
 
 This is a diagram attempting to show the relationships between the various types we've defined for the SDK. Some elements are omitted for clarity. (Notably, `IconData` and `IPropChanged`, which are used in many places.)
@@ -2447,8 +2618,17 @@ classDiagram
     ITag "*" *-- IListItem
     IFallbackHandler "?" *-- IListItem
 
-    class IGridProperties  {
-        Windows.Foundation.Size TileSize
+    IGridProperties --|> INotifyPropChanged
+    class IGridProperties
+    ISmallGridLayout --|> IGridProperties
+    IMediumGridLayout --|> IGridProperties
+    IGalleryGridLayout --|> IGridProperties
+    class IMediumGridLayout {
+        Boolean ShowTitle
+    }
+    class IGalleryGridLayout {
+        Boolean ShowTitle
+        Boolean ShowSubtitle
     }
 
     IListPage --|> IPage
@@ -2607,19 +2787,23 @@ Is that just a `Details` object? A markdown body?
 
 ### Generating the `.idl`
 
-The `.idl` for this SDK can be generated directly from this file. To do so, run the following command:
+This Markdown file is the source for the SDK definitions. Do not edit
+`extensionsdk/Microsoft.CommandPalette.Extensions/Microsoft.CommandPalette.Extensions.idl`
+directly. API declarations use `csharp` or `c#` fences; implementation examples use
+`cs` fences and are not emitted by the generator. The `c#` declarations are emitted
+first so their types are available to later declarations.
+
+Install the generator dependency with `python -m pip install mistletoe`, and ensure
+its `mistletoe` command is on `PATH`. From `src/modules/cmdpal`, regenerate with:
 
 ```ps1
-.\generate-interface.ps1 > .\Microsoft.DevPalette.Extensions.idl
+.\doc\initial-sdk-spec\generate-interface.ps1 |
+    Set-Content -Encoding utf8 .\extensionsdk\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.idl
 ```
 
-(After a `pip3 install mistletoe`)
-
-Or, to generate straight to the place I'm consuming it from:
-
-```ps1
-.\doc\initial-sdk-spec\generate-interface.ps1 > .\extensionsdk\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.Toolkit.idl
-```
+Review the generated diff along with the Markdown changes. Existing interface
+members, UUIDs and `requires` declarations must be preserved when reconciling old
+source drift. Regenerating a second time should produce no further changes.
 
 ### Adding APIs
 

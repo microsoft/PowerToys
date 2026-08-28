@@ -10,30 +10,50 @@ namespace Microsoft.CmdPal.UI;
 
 public partial class ContentTemplateSelector : DataTemplateSelector
 {
-    // Define the (currently empty) data templates to return
-    // These will be "filled-in" in the XAML code.
     public DataTemplate? FormTemplate { get; set; }
 
     public DataTemplate? MarkdownTemplate { get; set; }
 
     public DataTemplate? TreeTemplate { get; set; }
 
+    public DataTemplate? TextTemplate { get; set; }
+
     public DataTemplate? PlainTextTemplate { get; set; }
 
     public DataTemplate? ImageTemplate { get; set; }
 
-    protected override DataTemplate? SelectTemplateCore(object item)
+    public DataTemplate? HeaderTemplate { get; set; }
+
+    public DataTemplate? PropertyTemplate { get; set; }
+
+    public DataTemplate? PropertyGridTemplate { get; set; }
+
+    public DataTemplate? SectionTemplate { get; set; }
+
+    public DataTemplate? LinkTemplate { get; set; }
+
+    public DataTemplate? TagsTemplate { get; set; }
+
+    public DataTemplate? CommandsTemplate { get; set; }
+
+    public DataTemplate? SeparatorTemplate { get; set; }
+
+    protected override DataTemplate? SelectTemplateCore(object item) => item switch
     {
-        return item is ContentViewModel element
-            ? element switch
-            {
-                ContentFormViewModel => FormTemplate,
-                ContentMarkdownViewModel => MarkdownTemplate,
-                ContentTreeViewModel => TreeTemplate,
-                ContentImageViewModel => ImageTemplate,
-                ContentPlainTextViewModel => PlainTextTemplate,
-                _ => null,
-            }
-            : null;
-    }
+        ContentFormViewModel => FormTemplate,
+        ContentMarkdownViewModel => MarkdownTemplate,
+        ContentTreeViewModel => TreeTemplate,
+        ContentTextViewModel => TextTemplate,
+        ContentPlainTextViewModel => PlainTextTemplate,
+        ContentImageViewModel => ImageTemplate,
+        ContentHeaderViewModel => HeaderTemplate,
+        ContentPropertyViewModel => PropertyTemplate,
+        ContentPropertyGridViewModel => PropertyGridTemplate,
+        ContentSectionViewModel => SectionTemplate,
+        ContentLinkViewModel => LinkTemplate,
+        ContentTagsViewModel => TagsTemplate,
+        ContentCommandsViewModel => CommandsTemplate,
+        ContentSeparatorViewModel => SeparatorTemplate,
+        _ => null,
+    };
 }
