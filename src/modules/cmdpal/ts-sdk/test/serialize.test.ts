@@ -72,20 +72,12 @@ describe('WireSerializer.contextItems', () => {
 });
 
 describe('WireSerializer.details', () => {
-  it('serializes a string size', () => {
-    const details: Details = { title: 'A', size: 'large' };
+  it.each(['small', 'medium', 'large'] as const)('serializes the %s size', (size) => {
+    const details: Details = { title: 'A', size };
 
     const wire = new WireSerializer().details(details);
 
-    expect(wire.size).toBe('large');
-  });
-
-  it('serializes a numeric ContentSize', () => {
-    const details: Details = { title: 'B', size: 1 };
-
-    const wire = new WireSerializer().details(details);
-
-    expect(wire.size).toBe(1);
+    expect(wire.size).toBe(size);
   });
 
   it('omits size when it is not set', () => {

@@ -3,25 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 import {
-  iconFromFile,
+  iconFromBase64,
   ListItemBase,
   ListPageBase,
   NoOpCommand,
   Separator,
 } from '@microsoft/cmdpal-sdk';
 import type { GridProperties, IListItem } from '@microsoft/cmdpal-sdk';
-import { fileURLToPath } from 'node:url';
-import { glyphIcon } from '../util.js';
+import { glyphIcon, samplePngBase64 } from '../util.js';
 
 let sectionPageCounter = 0;
-
-/**
- * Path to the bundled image used by the grid and gallery items. The C# sample
- * gives every item a local image too, and `import.meta.url` keeps this working
- * from the installed extension without a network fetch.
- */
-const sectionImagePath = fileURLToPath(new URL('../assets/hero.png', import.meta.url));
-const sectionImage = await iconFromFile(sectionImagePath);
+const sectionImage = iconFromBase64(samplePngBase64);
 
 /**
  * A list (or grid) page that groups items under headings. The host only shows a
@@ -33,8 +25,8 @@ const sectionImage = await iconFromFile(sectionImagePath);
  *
  * A titled `Separator` renders as heading text. An untitled one renders as a
  * divider line, so the sample emits both when it needs a visible break between
- * groups. Items also keep a local image icon so grid and gallery pages show
- * pictures instead of empty tiles.
+ * groups. Items use a tiny inline image so grid and gallery pages show pictures
+ * without repeating the full hero payload for every tile.
  */
 export class SampleListPageWithSections extends ListPageBase {
   readonly id: string;

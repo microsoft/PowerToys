@@ -32,7 +32,7 @@ export type ContentType = 'markdown' | 'form' | 'tree' | 'plainText' | 'image';
 export type GridLayoutType = 'small' | 'medium' | 'gallery';
 
 /** Size of the details pane shown alongside a list item or content page. */
-export type DetailsSize = 'small' | 'medium' | 'large' | 0 | 1 | 2;
+export type DetailsSize = 'small' | 'medium' | 'large';
 
 /** Font family used by plain text content. */
 export type FontFamily = 'userInterface' | 'monospace';
@@ -349,9 +349,7 @@ export interface Details {
   /** Labeled metadata rows shown below the body. */
   metadata?: DetailsElement[];
   /**
-   * Size of the details pane. Named values are preferred, and the matching
-   * numeric `ContentSize` values are accepted for host compatibility.
-   * Omitted values default to 'small'.
+   * Size of the details pane. Omitted values default to 'small'.
    */
   size?: DetailsSize;
 }

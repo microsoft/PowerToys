@@ -2,17 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-import { ContentPageBase, iconFromFile } from '@microsoft/cmdpal-sdk';
+import { ContentPageBase, iconFromBase64 } from '@microsoft/cmdpal-sdk';
 import type { CommandResult, Content, FormContent } from '@microsoft/cmdpal-sdk';
-import { fileURLToPath } from 'node:url';
-import { glyphIcon } from '../util.js';
+import { glyphIcon, samplePngBase64 } from '../util.js';
 
-/**
- * Load the bundled image once so every content request can reuse it.
- * `import.meta.url` keeps the path tied to the installed extension.
- */
-const localImagePath = fileURLToPath(new URL('../assets/hero.png', import.meta.url));
-const localImage = await iconFromFile(localImagePath);
+const localImage = iconFromBase64(samplePngBase64);
 
 const loremIpsum =
   "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.";
@@ -113,8 +107,8 @@ export class SamplePlainTextContentPage extends ContentPageBase {
 /**
  * A page showing images. Mirrors the C# `SampleImageContentPage`.
  *
- * The C# page loads packaged JPG and SVG assets. This sample uses its bundled
- * hero PNG and sends the encoded image bytes rather than a machine-specific path.
+ * The C# page loads packaged JPG and SVG assets. This sample uses a tiny inline
+ * PNG so repeated content blocks do not each serialize the full bundled image.
  */
 export class SampleImageContentPage extends ContentPageBase {
   readonly id = 'sample-image-content-page';

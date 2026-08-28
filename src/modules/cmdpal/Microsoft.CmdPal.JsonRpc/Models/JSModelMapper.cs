@@ -254,42 +254,57 @@ internal static class JSModelMapper
             Body = GetString(detailsProp, "body") ?? string.Empty,
             HeroImage = GetIcon(detailsProp, "heroImage"),
             Metadata = ParseMetadata(detailsProp, connection),
-            Size = ParseContentSize(detailsProp),
+            Size = ParseContentSize(detailsProp, "size"),
         };
     }
 
     /// <summary>
-    /// Reads the optional details "size" field. The wire format can send the
-    /// names (small, medium, large) or the numeric <see cref="ContentSize"/> value
-    /// used by the host (0, 1, 2). Missing or unknown values fall back to <see cref="ContentSize.Small"/>.
+    /// Reads an optional content size. Named values are matched without regard
+    /// to case, while numeric values remain accepted as compatibility leniency.
+    /// Missing or unknown values fall back to <see cref="ContentSize.Small"/>.
     /// </summary>
-    internal static ContentSize ParseContentSize(JsonElement parent)
+    internal static ContentSize ParseContentSize(JsonElement parent, string name)
     {
-        if (!TryGetProperty(parent, "size", out var sizeProp))
+        if (!TryGetProperty(parent, name, out var sizeProp))
         {
             return ContentSize.Small;
         }
 
         if (sizeProp.ValueKind == JsonValueKind.Number && sizeProp.TryGetInt32(out var numeric))
         {
-            return numeric switch
+            var parsed = numeric switch
             {
+                (int)ContentSize.Small => ContentSize.Small,
                 (int)ContentSize.Medium => ContentSize.Medium,
                 (int)ContentSize.Large => ContentSize.Large,
-                _ => ContentSize.Small,
+                _ => (ContentSize?)null,
             };
-        }
 
-        if (sizeProp.ValueKind == JsonValueKind.String)
-        {
-            return sizeProp.GetString()?.ToLowerInvariant() switch
+            if (parsed.HasValue)
             {
-                "medium" => ContentSize.Medium,
-                "large" => ContentSize.Large,
-                _ => ContentSize.Small,
-            };
+                return parsed.Value;
+            }
+        }
+        else if (sizeProp.ValueKind == JsonValueKind.String)
+        {
+            var value = sizeProp.GetString();
+            if (string.Equals(value, "small", StringComparison.OrdinalIgnoreCase))
+            {
+                return ContentSize.Small;
+            }
+
+            if (string.Equals(value, "medium", StringComparison.OrdinalIgnoreCase))
+            {
+                return ContentSize.Medium;
+            }
+
+            if (string.Equals(value, "large", StringComparison.OrdinalIgnoreCase))
+            {
+                return ContentSize.Large;
+            }
         }
 
+        Logger.LogDebug($"Unknown JSON-RPC content size '{sizeProp}' for '{name}'. Using small.");
         return ContentSize.Small;
     }
 
@@ -457,13 +472,22 @@ internal static class JSModelMapper
         var showTitle = GetBool(gridProp, "showTitle", true);
         var showSubtitle = GetBool(gridProp, "showSubtitle", true);
 
-        return layout switch
+        if (string.Equals(layout, "small", StringComparison.OrdinalIgnoreCase))
         {
-            "small" => new SmallGridLayout(),
-            "medium" => new MediumGridLayout { ShowTitle = showTitle },
-            "gallery" => new GalleryGridLayout { ShowTitle = showTitle, ShowSubtitle = showSubtitle },
-            _ => null,
-        };
+            return new SmallGridLayout();
+        }
+
+        if (string.Equals(layout, "medium", StringComparison.OrdinalIgnoreCase))
+        {
+            return new MediumGridLayout { ShowTitle = showTitle };
+        }
+
+        if (string.Equals(layout, "gallery", StringComparison.OrdinalIgnoreCase))
+        {
+            return new GalleryGridLayout { ShowTitle = showTitle, ShowSubtitle = showSubtitle };
+        }
+
+        return null;
     }
 
     internal static IFilterItem[] ParseFilterItems(JsonElement parent)

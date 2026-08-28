@@ -290,7 +290,7 @@ interface Details {
   size?: DetailsSize;         // Defaults to 'small'
 }
 
-type DetailsSize = 'small' | 'medium' | 'large' | 0 | 1 | 2;
+type DetailsSize = 'small' | 'medium' | 'large';
 
 interface DetailsElement {
   key: string;                // Label shown to the left
@@ -304,10 +304,6 @@ type DetailsData =
   | DetailsCommands    // { type: 'commands', commands: ICommand[] }
   | DetailsSeparator;  // { type: 'separator' }
 ```
-
-Use the named sizes for new extensions. The numeric values map to the host's
-`ContentSize` values and remain available when you need to mirror an existing
-host payload.
 
 ---
 
@@ -607,6 +603,10 @@ const icon = await iconFromUrl('https://raw.githubusercontent.com/microsoft/Powe
 // Read local file (async, reads and encodes as base64)
 const icon = await iconFromFile('./assets/icon.png');
 ```
+
+Base64 data is serialized into every item that uses it, and the protocol does
+not deduplicate repeated images. Use a relative path for the manifest icon, and
+keep inline payloads small when the same image appears across many items.
 
 ---
 
