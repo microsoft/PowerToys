@@ -67,6 +67,11 @@ jobs:
     fetchDepth: 1
     fetchTags: false
 
+  - pwsh: |
+      & "$(build.sourcesdirectory)\.pipelines\removeTestSigningCertificates.ps1" `
+        -CertificateMarkerPath "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
+    displayName: Remove stale UI-test signing certificates
+
   - ${{ if eq(parameters.useLatestWebView2, true) }}:
     - powershell: |
         $edge_url = 'https://go.microsoft.com/fwlink/?linkid=2084649&Channel=Canary&language=en'
@@ -181,25 +186,54 @@ jobs:
   # register on unsigned PR builds and the UI tests can drive the real modern (Win11 tier-1) context
   # menu instead of the signing-free fallback. Test-only trust anchor; asserts no security. All roots
   # are searched recursively (buildNow run-in-place tree + complete machine/per-user installs).
-  # Image Resizer has no Windows 11 classic-menu fallback, so its focused and all-module jobs require
-  # the signed/trusted package; unrelated jobs keep this setup best-effort.
+  # Focused and all-module jobs that exercise a modern context menu require the corresponding
+  # signed/trusted package; unrelated jobs keep this setup best-effort. The certificate thumbprint
+  # is recorded under Agent.WorkFolder and removed from every trust/private-key store before signing
+  # and in the always-running cleanup step below. The durable marker makes interrupted cleanup
+  # retryable on persistent agents.
   - pwsh: |
       $packageRoots = @(
         "$(Pipeline.Workspace)\$(TestArtifactsName)",
         "$env:ProgramFiles\PowerToys",
         "$env:LOCALAPPDATA\PowerToys")
       $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
-      $requiresImageResizer = '$(TestPlatform)' -ne 'x64Win10' -and (
-        [string]::IsNullOrWhiteSpace($modulesRaw) -or
-        @($modulesRaw -split ';' | Where-Object { $_ -match 'ImageResizer' }).Count -gt 0)
+      $selectedModules = @($modulesRaw -split ';' | Where-Object { $_ })
+      $allModules = [string]::IsNullOrWhiteSpace($modulesRaw)
+      $requiresModernContextMenu = '$(TestPlatform)' -ne 'x64Win10'
+      $requiresPowerRename = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename' }).Count -gt 0
+      $requiredPackages = @()
+      $requiredAuthenticodeFiles = @()
+      $certificateMarkerPath = "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
 
-      if ($requiresImageResizer) {
-        & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" `
-          -PackageRoot $packageRoots `
-          -RequiredPackage 'ImageResizerContextMenuPackage.msix'
+      if ($requiresModernContextMenu -and ($allModules -or @($selectedModules | Where-Object { $_ -match 'ImageResizer' }).Count -gt 0)) {
+        $requiredPackages += 'ImageResizerContextMenuPackage.msix'
+      }
+
+      if ($requiresModernContextMenu -and $requiresPowerRename) {
+        $requiredPackages += 'PowerRenameContextMenuPackage.msix'
+      }
+
+      if ($requiresPowerRename) {
+        $requiredAuthenticodeFiles += 'PowerToys.exe', 'PowerToys.Settings.exe'
+      }
+
+      if ($requiredPackages.Count -gt 0 -or $requiredAuthenticodeFiles.Count -gt 0) {
+        $signingArguments = @{
+          PackageRoot = $packageRoots
+          CertificateMarkerPath = $certificateMarkerPath
+        }
+        if ($requiredPackages.Count -gt 0) {
+          $signingArguments.RequiredPackage = $requiredPackages
+        }
+        if ($requiredAuthenticodeFiles.Count -gt 0) {
+          $signingArguments.RequiredAuthenticodeFile = $requiredAuthenticodeFiles
+        }
+        & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" @signingArguments
       } else {
         try {
-          & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" -PackageRoot $packageRoots
+          & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" `
+            -PackageRoot $packageRoots `
+            -CertificateMarkerPath $certificateMarkerPath
         } catch {
           Write-Host "##vso[task.logissue type=warning]Sparse MSIX signing skipped: $($_.Exception.Message)"
         }
@@ -327,4 +361,10 @@ jobs:
   - pwsh: |
       Get-Process -Name 'WinAppDriver' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     displayName: Stop WinAppDriver
+    condition: always()
+
+  - pwsh: |
+      & "$(build.sourcesdirectory)\.pipelines\removeTestSigningCertificates.ps1" `
+        -CertificateMarkerPath "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
+    displayName: Remove UI-test signing certificates
     condition: always()

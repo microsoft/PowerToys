@@ -171,6 +171,7 @@ safe-outputs:
           with:
             python-version: "3.12"
         - name: Rebuild current deterministic evidence
+          id: refresh
           env:
             GITHUB_TOKEN: ${{ github.token }}
             ISSUE_TRIAGE_FORCE_EVIDENCE: "true"
@@ -181,11 +182,13 @@ safe-outputs:
             "$RUNNER_TEMP/verified-triage-event.json"
             "$RUNNER_TEMP/verified-evidence.json"
         - name: Rebuild sanitized bug report context
+          if: steps.refresh.outputs.should_process == 'true'
           run: >-
             python .github/scripts/issue-triage/bug-report-analyzer.py
             "$RUNNER_TEMP/verified-triage-event.json"
             "$RUNNER_TEMP/verified-bug-report-context.md"
         - name: Verify agent output against current evidence
+          if: steps.refresh.outputs.should_process == 'true'
           run: >-
             python .github/scripts/issue-triage/verify-agent-output.py
             "$GH_AW_AGENT_OUTPUT"
@@ -193,6 +196,7 @@ safe-outputs:
             "$RUNNER_TEMP/verified-bug-report-context.md"
             "$RUNNER_TEMP/verified-triage-output.json"
         - name: Upsert canonical triage summary
+          if: steps.refresh.outputs.should_process == 'true'
           uses: actions/github-script@v9.0.0
           env:
             ISSUE_TRIAGE_VERIFIED_OUTPUT: ${{ runner.temp }}/verified-triage-output.json
@@ -402,6 +406,19 @@ safe-outputs:
               }
 
               const issueNumber = context.issue.number;
+              const getCurrentIssue = async () => {
+                const response = await github.rest.issues.get({
+                  ...context.repo,
+                  issue_number: issueNumber
+                });
+                return response.data;
+              };
+              const skipWriteIfClosed = async action => {
+                const currentIssue = await getCurrentIssue();
+                if (currentIssue.state === 'open') return false;
+                core.notice(`Issue is closed; ${action} was skipped.`);
+                return true;
+              };
               const allowedDuplicateNumbers = new Set(
                 verified.requested_duplicate_numbers
               );
@@ -591,6 +608,7 @@ safe-outputs:
               );
               const body = bodyLines.join('\n');
 
+              if (await skipWriteIfClosed('triage publication')) return;
               const comments = await github.paginate(github.rest.issues.listComments, {
                 ...context.repo,
                 issue_number: issueNumber,
@@ -604,6 +622,7 @@ safe-outputs:
                 )
                 .sort((left, right) => left.id - right.id)[0];
 
+              if (await skipWriteIfClosed('triage publication')) return;
               let comment;
               if (canonical) {
                 comment = await github.rest.issues.updateComment({
@@ -626,6 +645,7 @@ safe-outputs:
                 );
               }
 
+              if (await skipWriteIfClosed('triage label updates')) return;
               const needsAuthorFeedback =
                 needsEnglishTranslation || hasMissingInformation;
               const currentLabels = new Set(
@@ -657,7 +677,9 @@ safe-outputs:
                 });
               }
               if (verifiedDuplicates.length) {
+                if (await skipWriteIfClosed('the duplicate suggestion')) return;
                 const strongest = verifiedDuplicates[0];
+                const suggestionStartedAt = Math.floor(Date.now() / 1000);
                 const response = await github.request(
                   'PATCH /repos/{owner}/{repo}/issues/{issue_number}',
                   {
@@ -680,14 +702,27 @@ safe-outputs:
                 );
 
                 if (response.data?.state === 'closed') {
-                  await github.rest.issues.update({
-                    ...context.repo,
-                    issue_number: issueNumber,
-                    state: 'open'
-                  });
-                  core.setFailed(
-                    'GitHub applied the close instead of holding it for review; the issue was reopened'
-                  );
+                  const currentIssue = await getCurrentIssue();
+                  const closedAt = Date.parse(currentIssue.closed_at);
+                  const closedBySuggestion =
+                    currentIssue.state === 'closed' &&
+                    currentIssue.closed_by?.login === 'github-actions[bot]' &&
+                    Number.isFinite(closedAt) &&
+                    Math.floor(closedAt / 1000) >= suggestionStartedAt;
+                  if (closedBySuggestion) {
+                    await github.rest.issues.update({
+                      ...context.repo,
+                      issue_number: issueNumber,
+                      state: 'open'
+                    });
+                    core.setFailed(
+                      'GitHub applied the close instead of holding it for review; the issue was reopened'
+                    );
+                  } else {
+                    core.setFailed(
+                      'GitHub returned the issue as closed after the duplicate suggestion, but the workflow did not reopen it because the closure was not caused by this request'
+                    );
+                  }
                 }
               }
 ---
