@@ -149,6 +149,34 @@
     <value>Size: {0}</value>
     <comment>File Size label for the unsupported files view. {0} is the size.</comment>
   </data>
+  <data name="UnsupportedFile_FolderContains" xml:space="preserve">
+    <value>Contains: {0}</value>
+    <comment>Contains label for folder contents. {0} is the formatted folder contents description.</comment>
+  </data>
+  <data name="UnsupportedFile_FolderFileCount_Single" xml:space="preserve">
+    <value>1 file</value>
+    <comment>Single file count</comment>
+  </data>
+  <data name="UnsupportedFile_FolderFileCount_Plural" xml:space="preserve">
+    <value>{0:N0} files</value>
+    <comment>{0:N0} is the plural file count.</comment>
+  </data>
+  <data name="UnsupportedFile_FolderDirectoryCount_Single" xml:space="preserve">
+    <value>1 folder</value>
+    <comment>Single directory/folder count</comment>
+  </data>
+  <data name="UnsupportedFile_FolderDirectoryCount_Plural" xml:space="preserve">
+    <value>{0:N0} folders</value>
+    <comment>{0:N0} is the plural directory/folder count.</comment>
+  </data>
+  <data name="UnsupportedFile_FolderContains_Scanning" xml:space="preserve">
+    <value>Scanning...</value>
+    <comment>Status text shown while folder content enumeration is in progress.</comment>
+  </data>
+  <data name="UnsupportedFile_FolderContains_Incomplete" xml:space="preserve">
+    <value>incomplete</value>
+    <comment>Short tag appended to folder contents when enumeration encounters an error.</comment>
+  </data>
   <data name="UnsupportedFile_DateModified" xml:space="preserve">
     <value>Date Modified: {0}</value>
     <comment>Date Modified label for the unsupported files view. {0} is the date.</comment>
