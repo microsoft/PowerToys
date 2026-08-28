@@ -11,6 +11,8 @@ namespace Microsoft.PowerToys.UITest.Next;
 public enum Key : byte
 {
     Ctrl = 0x11,
+    LCtrl = 0xA2,
+    RCtrl = 0xA3,
     Shift = 0x10,
     LShift = 0xA0,
     Alt = 0x12,
@@ -81,6 +83,7 @@ public enum Key : byte
     F10 = 0x79,
     F11 = 0x7A,
     F12 = 0x7B,
+    OemPeriod = 0xBE,
 }
 
 /// <summary>
@@ -122,7 +125,9 @@ public static class KeyboardHelper
                     keybd_event(VK_LWIN, 0, 0, UIntPtr.Zero);
                     winDown = true;
                     break;
-                case Key.Ctrl: chord.Append('^'); break;
+                case Key.Ctrl:
+                case Key.LCtrl:
+                case Key.RCtrl: chord.Append('^'); break;
                 case Key.Shift:
                 case Key.LShift: chord.Append('+'); break;
                 case Key.Alt: chord.Append('%'); break;
@@ -153,6 +158,7 @@ public static class KeyboardHelper
                 case Key.F10: chord.Append("{F10}"); break;
                 case Key.F11: chord.Append("{F11}"); break;
                 case Key.F12: chord.Append("{F12}"); break;
+                case Key.OemPeriod: chord.Append('.'); break;
                 default:
                     // Letter / digit keys map to their lowercase character for SendKeys.
                     chord.Append(((char)k).ToString().ToLowerInvariant());
@@ -210,6 +216,7 @@ public static class KeyboardHelper
     }
 
     private static bool IsExtended(Key key) => key is
+        Key.RCtrl or
         Key.Left or Key.Up or Key.Right or Key.Down or
         Key.Home or Key.End or Key.PageUp or Key.PageDown or
         Key.Insert or Key.Delete;

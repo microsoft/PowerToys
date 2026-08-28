@@ -1,0 +1,268 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
+using System.Text.Json.Nodes;
+using Microsoft.PowerToys.UITest.Next;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace MouseUtils.UITests;
+
+internal static class MouseUtilsTestHelper
+{
+    private static readonly string[] ShortcutSeparators = [" + ", "+", " "];
+
+    internal const string InputOutputNavItemId = "InputOutputNavItem";
+    internal const string MouseUtilitiesNavItemId = "MouseUtilitiesNavItem";
+
+    internal static void NavigateToMouseUtilities(UITestBase testBase)
+    {
+        Step(testBase, "Navigating to Mouse Utilities settings");
+        if (!testBase.Session.Has(By.AccessibilityId(MouseUtilitiesNavItemId), 500))
+        {
+            testBase.Session.Find<NavigationViewItem>(By.AccessibilityId(InputOutputNavItemId), 5_000).Click(msPostAction: 500);
+        }
+
+        testBase.Session.Find<NavigationViewItem>(By.AccessibilityId(MouseUtilitiesNavItemId), 5_000).Click(msPostAction: 800);
+    }
+
+    internal static ToggleSwitch SetModuleEnabled(UITestBase testBase, string toggleId, bool enabled)
+    {
+        Step(testBase, $"Setting {toggleId} to {(enabled ? "On" : "Off")}");
+        var expectedState = enabled ? "On" : "Off";
+        ToggleSwitch? toggle = null;
+        for (var attempt = 1; attempt <= 3; attempt++)
+        {
+            toggle = testBase.Session.Find<ToggleSwitch>(By.AccessibilityId(toggleId), 10_000);
+            var actualState = toggle.GetProperty("ToggleState");
+            if (actualState.Equals(expectedState, StringComparison.OrdinalIgnoreCase))
+            {
+                return toggle;
+            }
+
+            var oppositeState = enabled ? "Off" : "On";
+            if (!actualState.Equals(oppositeState, StringComparison.OrdinalIgnoreCase))
+            {
+                Step(testBase, $"{toggleId} returned unreadable ToggleState '{actualState}' on attempt {attempt}/3; reacquiring it");
+                if (toggle.WaitForProperty("ToggleState", expectedState, 3_000))
+                {
+                    return toggle;
+                }
+
+                continue;
+            }
+
+            toggle.Invoke(msPostAction: 500);
+            if (toggle.WaitForProperty("ToggleState", expectedState, 15_000))
+            {
+                return toggle;
+            }
+
+            Step(testBase, $"{toggleId} did not reach {expectedState} on attempt {attempt}/3; reacquiring it");
+        }
+
+        Assert.Fail($"{toggleId} did not reach {expectedState} after three coordinate-free attempts.");
+        return toggle!;
+    }
+
+    internal static WindowControl.ProcessWindow WaitForWindowClass(string className, int timeoutMs = 10_000)
+    {
+        var result = WaitHelper.WaitForStable(
+            () => WindowControl.EnumerateAllWindows().FirstOrDefault(window =>
+                window.ClassName.Equals(className, StringComparison.OrdinalIgnoreCase)),
+            window => window.Hwnd != IntPtr.Zero,
+            timeoutMs,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 100);
+
+        Assert.IsTrue(result.Succeeded, $"Top-level window class '{className}' did not appear within {timeoutMs} ms.");
+        return result.LastObservation;
+    }
+
+    internal static Key[] ReadShortcut(UITestBase testBase, string groupId, int ordinal = 0)
+    {
+        Element? group = null;
+        for (var attempt = 0; attempt < 12 && group is null; attempt++)
+        {
+            group = testBase.Session.FindAll<Element>(By.AccessibilityId(groupId), 0).FirstOrDefault();
+            if (group is null)
+            {
+                MouseHelper.ScrollDown();
+                Thread.Sleep(150);
+            }
+        }
+
+        Assert.IsNotNull(group, $"Settings group '{groupId}' was not found after scrolling the Mouse Utilities page.");
+        group.ScrollIntoView();
+        var buttons = testBase.Session.FindAll<Button>(By.AccessibilityId("EditButton"), 5_000)
+            .Where(button =>
+                button.X >= group!.X &&
+                button.X < group.X + group.Width &&
+                button.Y >= group.Y &&
+                button.Y < group.Y + group.Height)
+            .OrderBy(button => button.Y)
+            .ToList();
+
+        Assert.IsTrue(
+            buttons.Count > ordinal,
+            $"Expected shortcut button {ordinal} inside '{groupId}', but found {buttons.Count}.");
+
+        var shortcutText = buttons[ordinal].HelpText;
+        var keys = ParseShortcutText(shortcutText);
+        Assert.IsTrue(
+            keys.Any(key => key is not (Key.LWin or Key.Ctrl or Key.Shift or Key.Alt)),
+            $"Shortcut text '{shortcutText}' from '{groupId}' did not contain a main key.");
+        Step(testBase, $"Shortcut from {groupId}: '{shortcutText}' => [{string.Join(", ", keys)}]");
+        return keys;
+    }
+
+    internal static Key[] ParseShortcutText(string shortcutText)
+    {
+        var keys = new List<Key>();
+        foreach (var raw in shortcutText.Split(ShortcutSeparators, StringSplitOptions.RemoveEmptyEntries))
+        {
+            var token = raw.Trim();
+            Key? key = token.ToLowerInvariant() switch
+            {
+                "win" or "windows" => Key.LWin,
+                "ctrl" or "control" => Key.Ctrl,
+                "shift" => Key.Shift,
+                "alt" => Key.Alt,
+                _ when token.Length == 1 && token[0] is >= '0' and <= '9' =>
+                    Enum.TryParse<Key>("Num" + token, out var number) ? number : null,
+                _ when token.Length > 0 && char.IsLetter(token[0]) && Enum.TryParse<Key>(token, true, out var parsed) => parsed,
+                _ => null,
+            };
+
+            if (key.HasValue)
+            {
+                keys.Add(key.Value);
+            }
+        }
+
+        return keys.ToArray();
+    }
+
+    internal static void ReplaceModuleSettings(string moduleName, string settingsJson)
+    {
+        SettingsConfigHelper.UpdateModuleSettings(
+            moduleName,
+            settingsJson,
+            current =>
+            {
+                var desired = JsonNode.Parse(settingsJson)?.AsObject()
+                    ?? throw new InvalidOperationException($"Settings seed for '{moduleName}' is not a JSON object.");
+                current.Clear();
+                foreach (var property in desired)
+                {
+                    current[property.Key] = property.Value?.DeepClone();
+                }
+            });
+    }
+
+    internal static void RunWithClientAreaAnimationsEnabled(Action action)
+    {
+        const int spiGetClientAreaAnimation = 0x1042;
+        const int spiSetClientAreaAnimation = 0x1043;
+        var originalValue = 0;
+        Assert.IsTrue(
+            SystemParametersInfo(spiGetClientAreaAnimation, 0, ref originalValue, 0),
+            "Could not read the Windows client-area animation setting.");
+
+        Exception? actionFailure = null;
+        try
+        {
+            if (originalValue == 0)
+            {
+                var enabled = 1;
+                Assert.IsTrue(
+                    SystemParametersInfo(spiSetClientAreaAnimation, 0, ref enabled, 0),
+                    "Could not enable Windows client-area animations for the timing fixture.");
+            }
+
+            action();
+        }
+        catch (Exception ex)
+        {
+            actionFailure = ex;
+        }
+
+        var restored = true;
+        var restoreError = 0;
+        if (originalValue == 0)
+        {
+            var disabled = 0;
+            restored = SystemParametersInfo(spiSetClientAreaAnimation, 0, ref disabled, 0);
+            if (!restored)
+            {
+                restoreError = Marshal.GetLastWin32Error();
+            }
+        }
+
+        if (actionFailure is not null)
+        {
+            if (!restored)
+            {
+                throw new AggregateException(
+                    "The test action failed and the Windows client-area animation setting could not be restored.",
+                    actionFailure,
+                    new InvalidOperationException($"SystemParametersInfoW failed with Win32 error {restoreError}."));
+            }
+
+            ExceptionDispatchInfo.Capture(actionFailure).Throw();
+        }
+
+        Assert.IsTrue(restored, $"Could not restore the Windows client-area animation setting. Win32 error: {restoreError}.");
+    }
+
+    internal static IDisposable PreserveClientAreaAnimationsEnabled()
+    {
+        const int spiGetClientAreaAnimation = 0x1042;
+        const int spiSetClientAreaAnimation = 0x1043;
+        var originalValue = 0;
+        Assert.IsTrue(
+            SystemParametersInfo(spiGetClientAreaAnimation, 0, ref originalValue, 0),
+            "Could not read the Windows client-area animation setting before module launch.");
+
+        if (originalValue == 0)
+        {
+            var enabled = 1;
+            Assert.IsTrue(
+                SystemParametersInfo(spiSetClientAreaAnimation, 0, ref enabled, 0),
+                "Could not enable Windows client-area animations before module launch.");
+        }
+
+        return new ClientAreaAnimationsSnapshot(originalValue);
+    }
+
+    internal static void Step(UITestBase testBase, string message) =>
+        testBase.TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
+
+    [DllImport("user32.dll", EntryPoint = "SystemParametersInfoW", SetLastError = true)]
+    private static extern bool SystemParametersInfo(int uiAction, int uiParam, ref int pvParam, int fWinIni);
+
+    private sealed class ClientAreaAnimationsSnapshot(int originalValue) : IDisposable
+    {
+        private bool disposed;
+
+        public void Dispose()
+        {
+            if (disposed)
+            {
+                return;
+            }
+
+            disposed = true;
+            if (originalValue == 0)
+            {
+                const int spiSetClientAreaAnimation = 0x1043;
+                var disabled = 0;
+                var restored = SystemParametersInfo(spiSetClientAreaAnimation, 0, ref disabled, 0);
+                var error = restored ? 0 : Marshal.GetLastWin32Error();
+                Assert.IsTrue(restored, $"Could not restore the Windows client-area animation setting after the test class. Win32 error: {error}.");
+            }
+        }
+    }
+}
