@@ -11,6 +11,12 @@ public:
 
     virtual bool Start() = 0;
     virtual void Stop() noexcept = 0;
+    // A backend can fault itself after a bounded input-recovery failure.
+    virtual bool IsReady() const noexcept = 0;
+    // Returns true when a raw physical cycle must bypass remaps to release key state
+    // left behind by an abandoned partial SendInput sequence.
+    virtual bool HasRecoveryKeyState() const noexcept = 0;
+    virtual bool HandleRecoveryKeyEvent(const LowlevelKeyboardEvent* data) noexcept = 0;
 
     // Called only after the event has passed all higher-priority Keyboard Manager
     // handlers and will be delivered to the foreground application.

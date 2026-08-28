@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "TextExpansionController.h"
 
+#include <algorithm>
 #include <utility>
 
 #include <common/interop/shared_constants.h>
@@ -80,14 +81,35 @@ TextExpansionController::~TextExpansionController()
     Stop();
 }
 
-bool TextExpansionController::Start()
+bool TextExpansionController::Start(KeyboardManagerInput::InputInterface& input)
 {
-    if (backendReady.load(std::memory_order_acquire))
+    if (IsBackendReady())
     {
         return true;
     }
 
     const bool started = backend && backend->Start();
+    backendRecoveryPending.store(
+        backend && backend->HasRecoveryKeyState(),
+        std::memory_order_release);
+    if (started)
+    {
+        try
+        {
+            std::scoped_lock lock(pressStateMutex);
+            inputState = &input;
+            arming.store(HasPressedActionKey(), std::memory_order_release);
+            armingReleaseObserved.store(false, std::memory_order_release);
+            UpdateTrackedPressStateLocked();
+        }
+        catch (...)
+        {
+            backend->Stop();
+            backendRecoveryPending.store(backend->HasRecoveryKeyState(), std::memory_order_release);
+            backendReady.store(false, std::memory_order_release);
+            return false;
+        }
+    }
     backendReady.store(started, std::memory_order_release);
     return started;
 }
@@ -100,6 +122,7 @@ void TextExpansionController::Stop() noexcept
     if (backend)
     {
         backend->Stop();
+        backendRecoveryPending.store(backend->HasRecoveryKeyState(), std::memory_order_release);
     }
 
     std::scoped_lock lock(pressStateMutex);
@@ -107,6 +130,10 @@ void TextExpansionController::Stop() noexcept
     recoverySuppressedKeys.clear();
     higherPriorityModifierKeys.clear();
     pendingActivationRelease.reset();
+    inputState = nullptr;
+    arming.store(false, std::memory_order_release);
+    armingReleaseObserved.store(false, std::memory_order_release);
+    hasTrackedPressState.store(false, std::memory_order_release);
 }
 
 TextExpansionController::EventDisposition TextExpansionController::BeginKeyboardEvent(
@@ -125,49 +152,115 @@ TextExpansionController::EventDisposition TextExpansionController::BeginKeyboard
         return EventDisposition::Ignore;
     }
 
+    const bool backendReadySnapshot = backendReady.load(std::memory_order_acquire);
+    const bool trackedPressState = hasTrackedPressState.load(std::memory_order_acquire);
+    const bool recoveryPending = backendRecoveryPending.load(std::memory_order_acquire);
+    if (!backendReadySnapshot && !trackedPressState && !recoveryPending)
+    {
+        return EventDisposition::Ignore;
+    }
+
     const DWORD physicalKey = data->lParam->vkCode;
-    if (HandlePendingActivationReleaseEvent(physicalKey, keyDown, keyUp))
+    const size_t physicalKeyIdentity =
+        Helpers::GetPhysicalKeyEventIndex(data).value_or(static_cast<size_t>(physicalKey));
+    if (recoveryPending && backend && backend->HandleRecoveryKeyEvent(data))
+    {
+        backendRecoveryPending.store(backend->HasRecoveryKeyState(), std::memory_order_release);
+        if (keyUp)
+        {
+            std::scoped_lock lock(pressStateMutex);
+            actionKeyPresses.erase(physicalKeyIdentity);
+            recoverySuppressedKeys.erase(physicalKeyIdentity);
+            higherPriorityModifierKeys.erase(physicalKey);
+            UpdateTrackedPressStateLocked();
+        }
+        return EventDisposition::ForcePassThrough;
+    }
+
+    const bool backendIsReady = IsBackendReady();
+    if (!backendIsReady && !hasTrackedPressState.load(std::memory_order_acquire))
+    {
+        return EventDisposition::Ignore;
+    }
+
+    if (HandlePendingActivationReleaseEvent(physicalKey, physicalKeyIdentity, keyDown, keyUp))
     {
         return EventDisposition::Suppress;
     }
 
     {
         std::scoped_lock lock(pressStateMutex);
-        if (const auto suppressed = recoverySuppressedKeys.find(physicalKey);
+        if (const auto suppressed = recoverySuppressedKeys.find(physicalKeyIdentity);
             suppressed != recoverySuppressedKeys.end())
         {
             if (keyUp)
             {
                 recoverySuppressedKeys.erase(suppressed);
+                UpdateTrackedPressStateLocked();
             }
-            return EventDisposition::Suppress;
+            // Once recovery has faulted, no delayed synthetic key-up remains. Let the
+            // current physical press finish so its real key-up can restore key state.
+            return backendIsReady ? EventDisposition::Suppress : EventDisposition::Continue;
         }
     }
 
+    const bool blockNewInput = backendIsReady && backend->ShouldBlockNewInput();
+
     if (Helpers::IsModifierKey(Helpers::ClearKeyNumpadOrigin(physicalKey)))
     {
+        if (blockNewInput && keyDown)
+        {
+            {
+                std::scoped_lock lock(pressStateMutex);
+                recoverySuppressedKeys.insert(physicalKeyIdentity);
+                UpdateTrackedPressStateLocked();
+            }
+            QueueBackendWork(0);
+            return EventDisposition::Suppress;
+        }
+
         std::scoped_lock lock(pressStateMutex);
         if (keyUp)
         {
             higherPriorityModifierKeys.erase(physicalKey);
+            UpdateTrackedPressStateLocked();
         }
         // Modifier events not owned by a pending activation/recovery press continue
         // through the normal remap pipeline.
         return EventDisposition::Continue;
     }
 
+    bool suppressPassthroughRepeat = false;
     {
         std::scoped_lock lock(pressStateMutex);
-        const auto activePress = actionKeyPresses.find(physicalKey);
+        const auto activePress = actionKeyPresses.find(physicalKeyIdentity);
         if (activePress != actionKeyPresses.end())
         {
             const bool suppress = activePress->second == ActionKeyPressDisposition::Suppressed;
             if (keyUp)
             {
                 actionKeyPresses.erase(activePress);
+                UpdateTrackedPressStateLocked();
             }
-            return suppress ? EventDisposition::Suppress : EventDisposition::Continue;
+            else if (!suppress && blockNewInput)
+            {
+                suppressPassthroughRepeat = true;
+            }
+            if (!suppressPassthroughRepeat)
+            {
+                return suppress ? EventDisposition::Suppress : EventDisposition::Continue;
+            }
         }
+    }
+
+    if (ShouldForceArmingEvent(physicalKey, keyDown))
+    {
+        return EventDisposition::ForcePassThrough;
+    }
+    if (suppressPassthroughRepeat)
+    {
+        QueueBackendWork(0);
+        return EventDisposition::Suppress;
     }
 
     if (keyUp)
@@ -175,10 +268,18 @@ TextExpansionController::EventDisposition TextExpansionController::BeginKeyboard
         return EventDisposition::Continue;
     }
 
-    if (backend && backend->ShouldBlockNewInput())
+    if (!backendIsReady)
     {
-        std::scoped_lock lock(pressStateMutex);
-        recoverySuppressedKeys.insert(physicalKey);
+        return EventDisposition::Ignore;
+    }
+
+    if (blockNewInput)
+    {
+        {
+            std::scoped_lock lock(pressStateMutex);
+            recoverySuppressedKeys.insert(physicalKeyIdentity);
+            UpdateTrackedPressStateLocked();
+        }
         QueueBackendWork(0);
         return EventDisposition::Suppress;
     }
@@ -188,14 +289,15 @@ TextExpansionController::EventDisposition TextExpansionController::BeginKeyboard
     // Expansion activation after a settings or modifier-state change.
     {
         std::scoped_lock lock(pressStateMutex);
-        actionKeyPresses.emplace(physicalKey, ActionKeyPressDisposition::Passthrough);
+        actionKeyPresses.emplace(physicalKeyIdentity, ActionKeyPressDisposition::Passthrough);
+        UpdateTrackedPressStateLocked();
     }
     return EventDisposition::FreshActionKeyDown;
 }
 
 void TextExpansionController::NotifyHigherPriorityEventHandled(LowlevelKeyboardEvent* data) noexcept
 {
-    if (!data || !data->lParam || !IsKeyDown(data->wParam) ||
+    if (!IsBackendReady() || !data || !data->lParam || !IsKeyDown(data->wParam) ||
         (data->lParam->dwExtraInfo & CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG) != 0)
     {
         return;
@@ -208,12 +310,13 @@ void TextExpansionController::NotifyHigherPriorityEventHandled(LowlevelKeyboardE
     {
         std::scoped_lock lock(pressStateMutex);
         higherPriorityModifierKeys.insert(physicalKey);
+        UpdateTrackedPressStateLocked();
     }
 }
 
 void TextExpansionController::TrackKeyboardEvent(LowlevelKeyboardEvent* data) noexcept
 {
-    if (!backendReady.load(std::memory_order_acquire) || !backend)
+    if (!IsBackendReady())
     {
         return;
     }
@@ -230,7 +333,7 @@ void TextExpansionController::TrackKeyboardEvent(LowlevelKeyboardEvent* data) no
 
 void TextExpansionController::ResetBuffer() noexcept
 {
-    if (backend)
+    if (IsBackendReady())
     {
         backend->ResetBuffer();
     }
@@ -238,15 +341,32 @@ void TextExpansionController::ResetBuffer() noexcept
 
 intptr_t TextExpansionController::TryActivate(
     KeyboardManagerInput::InputInterface& input,
-    const DWORD physicalKey,
+    LowlevelKeyboardEvent* data,
     const TextExpansionTable& rules) noexcept
 {
+    if (!IsBackendReady() || !data || !data->lParam)
+    {
+        return 0;
+    }
+
+    const DWORD physicalKey = data->lParam->vkCode;
+    const size_t physicalKeyIdentity =
+        Helpers::GetPhysicalKeyEventIndex(data).value_or(static_cast<size_t>(physicalKey));
     const DWORD actionKey = Helpers::ClearKeyNumpadOrigin(physicalKey);
 
     {
         std::scoped_lock lock(pressStateMutex);
-        if (!higherPriorityModifierKeys.empty())
+        if (!higherPriorityModifierKeys.empty() || arming.load(std::memory_order_acquire))
         {
+            return 0;
+        }
+        if (std::any_of(
+                actionKeyPresses.begin(),
+                actionKeyPresses.end(),
+                [physicalKeyIdentity](const auto& press) { return press.first != physicalKeyIdentity; }))
+        {
+            // A held non-modifier can repeat while the replacement transaction is
+            // waiting to commit, changing the target text behind the frozen suffix.
             return 0;
         }
     }
@@ -279,7 +399,7 @@ intptr_t TextExpansionController::TryActivate(
         return 0;
     }
 
-    if (candidates.empty() || !matchedActivation || !backendReady.load(std::memory_order_acquire) || !backend)
+    if (candidates.empty() || !matchedActivation || !IsBackendReady())
     {
         return 0;
     }
@@ -317,11 +437,12 @@ intptr_t TextExpansionController::TryActivate(
             std::scoped_lock lock(pressStateMutex);
             pendingActivationRelease = PendingActivationRelease{
                 .generation = generation,
-                .physicalActionKey = physicalKey,
+                .physicalActionKeyIdentity = physicalKeyIdentity,
                 .actionReleased = false,
                 .activationModifierKeys = modifierKeys,
                 .pressedActivationModifierKeys = modifierKeys,
             };
+            UpdateTrackedPressStateLocked();
         }
         suppress = true;
     }
@@ -329,7 +450,7 @@ intptr_t TextExpansionController::TryActivate(
     if (suppress)
     {
         std::scoped_lock lock(pressStateMutex);
-        if (const auto activePress = actionKeyPresses.find(physicalKey); activePress != actionKeyPresses.end())
+        if (const auto activePress = actionKeyPresses.find(physicalKeyIdentity); activePress != actionKeyPresses.end())
         {
             activePress->second = ActionKeyPressDisposition::Suppressed;
         }
@@ -346,7 +467,7 @@ intptr_t TextExpansionController::TryActivate(
 
 TextExpansionResult TextExpansionController::CompletePendingActivation(const uint64_t generation) noexcept
 {
-    if (!backendReady.load(std::memory_order_acquire) || !backend)
+    if (!IsBackendReady())
     {
         return TextExpansionResult::FailedUnchanged;
     }
@@ -356,7 +477,7 @@ TextExpansionResult TextExpansionController::CompletePendingActivation(const uin
         if (generation == 0)
         {
             cleanupMessageQueued.store(false, std::memory_order_release);
-            backend->RetryPendingCleanup();
+            RetryPendingBackendWork();
             return TextExpansionResult::FailedUnchanged;
         }
 
@@ -376,6 +497,7 @@ TextExpansionResult TextExpansionController::CompletePendingActivation(const uin
                     return TextExpansionResult::FailedUnchanged;
                 }
                 pendingActivationRelease.reset();
+                UpdateTrackedPressStateLocked();
             }
         }
 
@@ -389,7 +511,7 @@ TextExpansionResult TextExpansionController::CompletePendingActivation(const uin
         }
 
         const auto result = backend->CompletePendingActivation();
-        backend->RetryPendingCleanup();
+        RetryPendingBackendWork();
         return result;
     }
     catch (...)
@@ -432,6 +554,7 @@ bool TextExpansionController::QueueBackendWork(const uint64_t generation) noexce
 
 bool TextExpansionController::HandlePendingActivationReleaseEvent(
     const DWORD physicalKey,
+    const size_t physicalKeyIdentity,
     const bool keyDown,
     const bool keyUp) noexcept
 {
@@ -445,7 +568,7 @@ bool TextExpansionController::HandlePendingActivationReleaseEvent(
         }
 
         auto& pending = *pendingActivationRelease;
-        if (physicalKey == pending.physicalActionKey)
+        if (physicalKeyIdentity == pending.physicalActionKeyIdentity)
         {
             if (keyDown)
             {
@@ -473,13 +596,13 @@ bool TextExpansionController::HandlePendingActivationReleaseEvent(
             // Any modifier pressed after Prepare (including the opposite side or a
             // repress of an original side) is recovery input, not part of activation.
             pending.suppressedNewModifierKeys.insert(physicalKey);
-            recoverySuppressedKeys.insert(physicalKey);
+            recoverySuppressedKeys.insert(physicalKeyIdentity);
             suppress = true;
         }
         else if (isModifier && keyUp && pending.suppressedNewModifierKeys.contains(physicalKey))
         {
             pending.suppressedNewModifierKeys.erase(physicalKey);
-            recoverySuppressedKeys.erase(physicalKey);
+            recoverySuppressedKeys.erase(physicalKeyIdentity);
             suppress = true;
         }
         else if (keyUp && pending.activationModifierKeys.contains(physicalKey))
@@ -516,6 +639,7 @@ bool TextExpansionController::HandlePendingActivationReleaseEvent(
         if (pendingActivationRelease && pendingActivationRelease->generation == generationToQueue)
         {
             pendingActivationRelease.reset();
+            UpdateTrackedPressStateLocked();
         }
     }
 
@@ -529,29 +653,142 @@ bool TextExpansionController::HandlePendingActivationReleaseEvent(
 
 bool TextExpansionController::HasPendingWork() const noexcept
 {
+    if (arming.load(std::memory_order_acquire) &&
+        armingReleaseObserved.load(std::memory_order_acquire) &&
+        !HasPressedActionKey())
+    {
+        arming.store(false, std::memory_order_release);
+        armingReleaseObserved.store(false, std::memory_order_release);
+    }
+
+    if (!hasTrackedPressState.load(std::memory_order_acquire) &&
+        !backendReady.load(std::memory_order_acquire))
+    {
+        return false;
+    }
+
     {
         std::scoped_lock lock(pressStateMutex);
         if (!actionKeyPresses.empty() || !recoverySuppressedKeys.empty() ||
-            !higherPriorityModifierKeys.empty())
+            !higherPriorityModifierKeys.empty() || arming.load(std::memory_order_acquire) ||
+            pendingActivationRelease.has_value())
         {
             return true;
         }
     }
 
-    return backend && backend->HasPendingWork();
+    const bool backendPending = backendReady.load(std::memory_order_acquire) &&
+                                backend && backend->HasPendingWork();
+    if (!backendPending)
+    {
+        hasTrackedPressState.store(false, std::memory_order_release);
+    }
+    return backendPending;
 }
 
 bool TextExpansionController::HasPendingBackendWork() const noexcept
 {
-    return backend && backend->HasPendingWork();
+    return backendReady.load(std::memory_order_acquire) && backend && backend->HasPendingWork();
 }
 
 void TextExpansionController::RetryPendingBackendWork() noexcept
 {
-    if (backend)
+    if (backendReady.load(std::memory_order_acquire) && backend)
     {
         backend->RetryPendingCleanup();
+        backendRecoveryPending.store(backend->HasRecoveryKeyState(), std::memory_order_release);
+        if (!backend->IsReady())
+        {
+            backendReady.store(false, std::memory_order_release);
+        }
     }
+}
+
+bool TextExpansionController::IsBackendReady() noexcept
+{
+    if (!backendReady.load(std::memory_order_acquire) || !backend)
+    {
+        return false;
+    }
+
+    if (!backend->IsReady())
+    {
+        backendRecoveryPending.store(backend->HasRecoveryKeyState(), std::memory_order_release);
+        backendReady.store(false, std::memory_order_release);
+        return false;
+    }
+    return true;
+}
+
+bool TextExpansionController::HasPressedActionKey() const noexcept
+{
+    if (!inputState)
+    {
+        return false;
+    }
+
+    try
+    {
+        for (DWORD key = 1; key <= 0xFF; ++key)
+        {
+            if (key == VK_LBUTTON || key == VK_RBUTTON || key == VK_MBUTTON ||
+                key == VK_XBUTTON1 || key == VK_XBUTTON2)
+            {
+                continue;
+            }
+            if (!Helpers::IsModifierKey(key) && inputState->GetVirtualKeyState(static_cast<int>(key)))
+            {
+                return true;
+            }
+        }
+    }
+    catch (...)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool TextExpansionController::ShouldForceArmingEvent(
+    const DWORD physicalKey,
+    const bool keyDown) noexcept
+{
+    if (!arming.load(std::memory_order_acquire) ||
+        Helpers::IsModifierKey(Helpers::ClearKeyNumpadOrigin(physicalKey)))
+    {
+        return false;
+    }
+
+    if (!keyDown || HasPressedActionKey())
+    {
+        if (!keyDown)
+        {
+            armingReleaseObserved.store(true, std::memory_order_release);
+            if (!HasPressedActionKey())
+            {
+                arming.store(false, std::memory_order_release);
+                armingReleaseObserved.store(false, std::memory_order_release);
+                std::scoped_lock lock(pressStateMutex);
+                UpdateTrackedPressStateLocked();
+            }
+        }
+        return true;
+    }
+
+    arming.store(false, std::memory_order_release);
+    armingReleaseObserved.store(false, std::memory_order_release);
+    std::scoped_lock lock(pressStateMutex);
+    UpdateTrackedPressStateLocked();
+    return false;
+}
+
+void TextExpansionController::UpdateTrackedPressStateLocked() noexcept
+{
+    hasTrackedPressState.store(
+        !actionKeyPresses.empty() || !recoverySuppressedKeys.empty() ||
+            !higherPriorityModifierKeys.empty() || arming.load(std::memory_order_acquire) ||
+            pendingActivationRelease.has_value(),
+        std::memory_order_release);
 }
 
 bool TextExpansionController::ActivationMatches(

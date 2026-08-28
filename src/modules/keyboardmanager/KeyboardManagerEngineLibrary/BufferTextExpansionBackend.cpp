@@ -23,6 +23,47 @@ namespace
         return message == WM_KEYUP || message == WM_SYSKEYUP;
     }
 
+    std::optional<size_t> GetInjectedInputIdentity(const INPUT& event) noexcept
+    {
+        if (event.type != INPUT_KEYBOARD ||
+            (event.ki.dwFlags & KEYEVENTF_UNICODE) != 0 ||
+            event.ki.wVk == 0 || event.ki.wVk == KeyboardManagerConstants::DUMMY_KEY)
+        {
+            return std::nullopt;
+        }
+
+        const UINT mappedScanCode = MapVirtualKeyW(event.ki.wVk, MAPVK_VK_TO_VSC_EX);
+        DWORD scanCode = event.ki.wScan & 0xFF;
+        if (scanCode == 0)
+        {
+            scanCode = mappedScanCode & 0xFF;
+        }
+        if (scanCode == 0)
+        {
+            return std::nullopt;
+        }
+
+        constexpr size_t keyCount = 256;
+        const bool extended = (event.ki.dwFlags & KEYEVENTF_EXTENDEDKEY) != 0 ||
+                              (mappedScanCode & 0xFF00) != 0;
+        return static_cast<size_t>(scanCode) +
+               (extended ? keyCount : 0);
+    }
+
+    void RecordAbandonedKeyUps(const std::vector<INPUT>& inputs, std::bitset<512>& keys) noexcept
+    {
+        for (const auto& event : inputs)
+        {
+            if (event.type == INPUT_KEYBOARD && (event.ki.dwFlags & KEYEVENTF_KEYUP) != 0)
+            {
+                if (const auto identity = GetInjectedInputIdentity(event))
+                {
+                    keys.set(*identity);
+                }
+            }
+        }
+    }
+
     constexpr bool IsHighSurrogate(const wchar_t value) noexcept
     {
         const auto codeUnit = static_cast<uint16_t>(value);
@@ -356,37 +397,6 @@ namespace
         return input.SendVirtualInput(sentEvents);
     }
 
-    void AppendTextUnit(std::vector<INPUT>& events, const wchar_t value)
-    {
-        if (value == L'\r' || value == L'\n')
-        {
-            Helpers::SetKeyEvent(
-                events,
-                INPUT_KEYBOARD,
-                VK_RETURN,
-                0,
-                KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-            Helpers::SetKeyEvent(
-                events,
-                INPUT_KEYBOARD,
-                VK_RETURN,
-                KEYEVENTF_KEYUP,
-                KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-            return;
-        }
-
-        INPUT down{};
-        down.type = INPUT_KEYBOARD;
-        down.ki.dwFlags = KEYEVENTF_UNICODE;
-        down.ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
-        down.ki.wScan = value;
-        events.push_back(down);
-
-        INPUT up = down;
-        up.ki.dwFlags |= KEYEVENTF_KEYUP;
-        events.push_back(up);
-    }
-
     TextExpansionResult SendBackspaces(
         KeyboardManagerInput::InputInterface& input,
         const size_t count,
@@ -445,7 +455,7 @@ namespace
         const std::function<void(std::vector<INPUT>)>& queueCleanup)
     {
         std::vector<INPUT> unit;
-        unit.reserve(2);
+        unit.reserve(4);
         for (size_t index = 0; index < text.size(); ++index)
         {
             if (!isTargetCurrent())
@@ -461,10 +471,16 @@ namespace
             }
 
             unit.clear();
-            AppendTextUnit(unit, value);
+            Helpers::SetTextInputUnit(
+                unit,
+                value,
+                KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
             if (IsHighSurrogate(value) && index + 1 < text.size() && IsLowSurrogate(text[index + 1]))
             {
-                AppendTextUnit(unit, text[++index]);
+                Helpers::SetTextInputUnit(
+                    unit,
+                    text[++index],
+                    KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
             }
             const auto result = input.SendVirtualInput(unit);
             if (result.status == KeyboardManagerInput::SendVirtualInputStatus::None)
@@ -499,6 +515,14 @@ BufferTextExpansionBackend::BufferTextExpansionBackend(
 bool BufferTextExpansionBackend::Start()
 {
     {
+        std::scoped_lock lock(pendingCleanupMutex);
+        if (!pendingCleanup.empty() || abandonedKeyUps.any())
+        {
+            return false;
+        }
+        cleanupAttemptsWithoutProgress = 0;
+    }
+    {
         std::scoped_lock lock(bufferMutex);
         ResetBufferLocked();
         capsLockOn = (GetKeyState(VK_CAPITAL) & 0x0001) != 0;
@@ -524,12 +548,45 @@ void BufferTextExpansionBackend::Stop() noexcept
     }
 
     ReleaseCapturedModifiers(modifierKeys);
-    RetryPendingCleanup();
+    // The queue is closed once started is false. Every retry either consumes at
+    // least one event or reaches the bounded no-progress fault threshold.
+    while (HasPendingWork())
+    {
+        RetryPendingCleanup();
+    }
     {
         std::scoped_lock lock(bufferMutex);
         ResetBufferLocked();
         capsLockPressed = false;
     }
+}
+
+bool BufferTextExpansionBackend::IsReady() const noexcept
+{
+    return started.load(std::memory_order_acquire);
+}
+
+bool BufferTextExpansionBackend::HasRecoveryKeyState() const noexcept
+{
+    std::scoped_lock lock(pendingCleanupMutex);
+    return abandonedKeyUps.any();
+}
+
+bool BufferTextExpansionBackend::HandleRecoveryKeyEvent(const LowlevelKeyboardEvent* data) noexcept
+{
+    const auto identity = Helpers::GetPhysicalKeyEventIndex(data);
+    if (!identity)
+    {
+        return false;
+    }
+
+    std::scoped_lock lock(pendingCleanupMutex);
+    const bool matches = abandonedKeyUps.test(*identity);
+    if (matches && IsKeyUp(data->wParam))
+    {
+        abandonedKeyUps.reset(*identity);
+    }
+    return matches;
 }
 
 void BufferTextExpansionBackend::TrackKeyboardEvent(const LowlevelKeyboardEvent* data) noexcept
@@ -936,13 +993,60 @@ void BufferTextExpansionBackend::RetryPendingCleanup() noexcept
     const size_t injectedCount = (std::min)(cleanup.size(), static_cast<size_t>(result.injectedEventCount));
     if (injectedCount == cleanup.size())
     {
+        std::scoped_lock lock(pendingCleanupMutex);
+        if (pendingCleanup.empty())
+        {
+            cleanupAttemptsWithoutProgress = 0;
+        }
         return;
     }
 
-    std::vector<INPUT> remaining(cleanup.begin() + injectedCount, cleanup.end());
-    std::scoped_lock lock(pendingCleanupMutex);
-    remaining.insert(remaining.end(), pendingCleanup.begin(), pendingCleanup.end());
-    pendingCleanup = std::move(remaining);
+    cleanup.erase(cleanup.begin(), cleanup.begin() + injectedCount);
+    bool recoveryExhausted = false;
+    {
+        std::scoped_lock lock(pendingCleanupMutex);
+        if (injectedCount != 0)
+        {
+            cleanupAttemptsWithoutProgress = 0;
+        }
+        else
+        {
+            ++cleanupAttemptsWithoutProgress;
+        }
+
+        if (cleanupAttemptsWithoutProgress >= MaximumCleanupAttemptsWithoutProgress)
+        {
+            started.store(false, std::memory_order_release);
+            RecordAbandonedKeyUps(cleanup, abandonedKeyUps);
+            RecordAbandonedKeyUps(pendingCleanup, abandonedKeyUps);
+            pendingCleanup.clear();
+            cleanupAttemptsWithoutProgress = 0;
+            recoveryExhausted = true;
+        }
+        else
+        {
+            try
+            {
+                cleanup.insert(cleanup.end(), pendingCleanup.begin(), pendingCleanup.end());
+                pendingCleanup = std::move(cleanup);
+            }
+            catch (...)
+            {
+                started.store(false, std::memory_order_release);
+                RecordAbandonedKeyUps(cleanup, abandonedKeyUps);
+                RecordAbandonedKeyUps(pendingCleanup, abandonedKeyUps);
+                pendingCleanup.clear();
+                cleanupAttemptsWithoutProgress = 0;
+                recoveryExhausted = true;
+            }
+        }
+    }
+
+    if (recoveryExhausted)
+    {
+        ResetBuffer();
+        Logger::error(L"Keyboard Manager Text Expansion cleanup could not recover; disabling Text Expansion until affected keys are released and settings are reloaded.");
+    }
 }
 
 bool BufferTextExpansionBackend::ShouldBlockNewInput() const noexcept

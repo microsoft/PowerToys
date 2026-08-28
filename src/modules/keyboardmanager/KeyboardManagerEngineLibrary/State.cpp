@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "State.h"
+#include <algorithm>
 #include <optional>
 
 // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
@@ -39,6 +40,25 @@ bool State::CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName
     }
 
     return false;
+}
+
+bool State::HasInvokedShortcutRemap() const noexcept
+{
+    const auto tableHasInvokedRemap = [](const ShortcutRemapTable& table) {
+        return std::any_of(table.begin(), table.end(), [](const auto& entry) {
+            return entry.second.isShortcutInvoked;
+        });
+    };
+
+    if (tableHasInvokedRemap(osLevelShortcutReMap))
+    {
+        return true;
+    }
+
+    return std::any_of(
+        appSpecificShortcutReMap.begin(),
+        appSpecificShortcutReMap.end(),
+        [&](const auto& appEntry) { return tableHasInvokedRemap(appEntry.second); });
 }
 
 // Function to get the source and target of a shortcut remap given the source shortcut. Returns nullopt if it isn't remapped

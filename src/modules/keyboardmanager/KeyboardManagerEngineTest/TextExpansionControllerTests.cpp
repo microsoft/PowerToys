@@ -28,9 +28,11 @@ namespace TextExpansionEngineTests
                 const DWORD key,
                 const WPARAM message = WM_KEYDOWN,
                 const DWORD flags = 0,
-                const ULONG_PTR extraInfo = 0)
+                const ULONG_PTR extraInfo = 0,
+                const DWORD scanCode = 0)
             {
                 keyboardData.vkCode = key;
+                keyboardData.scanCode = scanCode;
                 keyboardData.flags = flags;
                 keyboardData.dwExtraInfo = extraInfo;
                 event.wParam = message;
@@ -58,8 +60,10 @@ namespace TextExpansionEngineTests
         {
         public:
             bool startResult = true;
+            bool ready = false;
             bool pendingWork = false;
             bool prepared = false;
+            DWORD recoveryKey = 0;
             TextExpansionResult prepareResult = TextExpansionResult::NoMatch;
             TextExpansionResult completeResult = TextExpansionResult::Replaced;
             TextExpansionResult cancelResult = TextExpansionResult::FailedUnchanged;
@@ -81,13 +85,39 @@ namespace TextExpansionEngineTests
             bool Start() override
             {
                 ++startCalls;
-                return startResult;
+                ready = startResult;
+                return ready;
             }
 
             void Stop() noexcept override
             {
                 ++stopCalls;
+                ready = false;
                 prepared = false;
+            }
+
+            bool IsReady() const noexcept override
+            {
+                return ready;
+            }
+
+            bool HasRecoveryKeyState() const noexcept override
+            {
+                return recoveryKey != 0;
+            }
+
+            bool HandleRecoveryKeyEvent(const LowlevelKeyboardEvent* data) noexcept override
+            {
+                if (!data || !data->lParam || recoveryKey == 0 ||
+                    Helpers::ClearKeyNumpadOrigin(data->lParam->vkCode) != recoveryKey)
+                {
+                    return false;
+                }
+                if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+                {
+                    recoveryKey = 0;
+                }
+                return true;
             }
 
             void TrackKeyboardEvent(const LowlevelKeyboardEvent* data) noexcept override
@@ -172,7 +202,7 @@ namespace TextExpansionEngineTests
                         }
                         return queueResult;
                     });
-                Assert::IsTrue(controller->Start());
+                Assert::IsTrue(controller->Start(input));
             }
 
             TextExpansionController::EventDisposition Begin(
@@ -186,7 +216,8 @@ namespace TextExpansionEngineTests
 
             intptr_t Activate(const DWORD key, const TextExpansionTable& rules)
             {
-                return controller->TryActivate(input, key, rules);
+                TestKeyEvent event(key);
+                return controller->TryActivate(input, &event.event, rules);
             }
 
             TextExpansionResult Complete()
@@ -268,13 +299,17 @@ namespace TextExpansionEngineTests
             auto backend = std::make_unique<FakeTextExpansionBackend>();
             auto* backendView = backend.get();
             TextExpansionController controller(std::move(backend));
+            KeyboardManagerInput::MockedInput input;
 
-            Assert::IsTrue(controller.Start());
-            Assert::IsTrue(controller.Start());
+            Assert::IsTrue(controller.Start(input));
+            Assert::IsTrue(controller.Start(input));
             Assert::AreEqual(1, backendView->startCalls);
 
             controller.Stop();
             Assert::AreEqual(1, backendView->stopCalls);
+            TestKeyEvent stoppedKey('A');
+            AssertDisposition(TextExpansionController::EventDisposition::Ignore, controller.BeginKeyboardEvent(&stoppedKey.event));
+            Assert::IsFalse(controller.HasPendingWork());
         }
 
         TEST_METHOD (TrackKeyboardEventAndResetBuffer_ShouldForwardToBackend)
@@ -456,6 +491,20 @@ namespace TextExpansionEngineTests
             AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(numpadEnter, WM_KEYUP, LLKHF_UP));
             AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(numpadEnter));
             Assert::AreEqual(1, fixture.backend->activateCalls);
+        }
+
+        TEST_METHOD (NumpadAliasChange_ShouldKeepPhysicalPressPairedByScanCode)
+        {
+            ControllerFixture fixture;
+            constexpr DWORD numpadScanCode = 0x52;
+            TestKeyEvent down(VK_NUMPAD0, WM_KEYDOWN, 0, 0, numpadScanCode);
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.controller->BeginKeyboardEvent(&down.event));
+            Assert::IsTrue(fixture.controller->HasPendingWork());
+
+            const DWORD numpadInsert = VK_INSERT | Helpers::GetNumpadOriginEncodingBit();
+            TestKeyEvent up(numpadInsert, WM_KEYUP, LLKHF_UP, 0, numpadScanCode);
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.controller->BeginKeyboardEvent(&up.event));
+            Assert::IsFalse(fixture.controller->HasPendingWork());
         }
 
         TEST_METHOD (Shortcut_ShouldRequireExactModifierSet)
@@ -737,6 +786,58 @@ namespace TextExpansionEngineTests
             Assert::IsTrue(fixture.controller->HasPendingWork());
         }
 
+        TEST_METHOD (PendingBackendWork_ShouldSuppressAndPairNewModifierPress)
+        {
+            ControllerFixture fixture;
+            fixture.backend->pendingWork = true;
+
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_LCONTROL));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_LCONTROL));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_LCONTROL, WM_KEYUP, LLKHF_UP));
+        }
+
+        TEST_METHOD (BackendRecoveryFault_ShouldPassSuppressedPhysicalPressThroughToItsKeyUp)
+        {
+            ControllerFixture fixture;
+            fixture.backend->pendingWork = true;
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_LCONTROL));
+
+            fixture.backend->pendingWork = false;
+            fixture.backend->ready = false;
+            fixture.backend->recoveryKey = VK_LCONTROL;
+            fixture.controller->RetryPendingBackendWork();
+
+            AssertDisposition(TextExpansionController::EventDisposition::ForcePassThrough, fixture.Begin(VK_LCONTROL));
+            AssertDisposition(TextExpansionController::EventDisposition::ForcePassThrough, fixture.Begin(VK_LCONTROL, WM_KEYUP, LLKHF_UP));
+            Assert::IsFalse(fixture.controller->HasPendingWork());
+        }
+
+        TEST_METHOD (PendingBackendWork_ShouldSuppressPreexistingKeyRepeatButPassItsKeyUp)
+        {
+            ControllerFixture fixture;
+
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin('B'));
+            fixture.backend->pendingWork = true;
+
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin('B'));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin('B', WM_KEYUP, LLKHF_UP));
+        }
+
+        TEST_METHOD (HeldActionKey_ShouldPreventPreparingActivation)
+        {
+            ControllerFixture fixture;
+            fixture.backend->prepareResult = TextExpansionResult::Prepared;
+            const TextExpansionTable rules{ MakeRule(L"rule-id", L"ab", { VK_SPACE }, L"expanded") };
+
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin('B'));
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
+            Assert::AreEqual(0, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
+            Assert::AreEqual(0, fixture.backend->activateCalls);
+
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin('B', WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
+        }
+
         TEST_METHOD (PreparedActivation_ShouldBlockAndPairOtherPhysicalInputUntilCompletion)
         {
             ControllerFixture fixture;
@@ -854,7 +955,27 @@ namespace TextExpansionEngineTests
             Assert::AreEqual(1, fixture.backend->completeCalls);
         }
 
-        TEST_METHOD (BackendStartFailure_ShouldLeaveActivationAsPassthrough)
+        TEST_METHOD (InactiveBackend_ShouldIgnoreKeyboardEventsWithoutTrackingPresses)
+        {
+            auto backend = std::make_unique<FakeTextExpansionBackend>();
+            auto* backendView = backend.get();
+            TextExpansionController controller(std::move(backend));
+
+            TestKeyEvent actionDown(VK_SPACE);
+            TestKeyEvent actionUp(VK_SPACE, WM_KEYUP, LLKHF_UP);
+            TestKeyEvent modifierDown(VK_LCONTROL);
+            AssertDisposition(TextExpansionController::EventDisposition::Ignore, controller.BeginKeyboardEvent(&actionDown.event));
+            AssertDisposition(TextExpansionController::EventDisposition::Ignore, controller.BeginKeyboardEvent(&actionUp.event));
+            AssertDisposition(TextExpansionController::EventDisposition::Ignore, controller.BeginKeyboardEvent(&modifierDown.event));
+            controller.TrackKeyboardEvent(&actionDown.event);
+            controller.ResetBuffer();
+
+            Assert::IsFalse(controller.HasPendingWork());
+            Assert::AreEqual(0, backendView->trackCalls);
+            Assert::AreEqual(0, backendView->resetBufferCalls);
+        }
+
+        TEST_METHOD (BackendStartFailure_ShouldRemainInactive)
         {
             auto backend = std::make_unique<FakeTextExpansionBackend>();
             auto* backendView = backend.get();
@@ -863,11 +984,97 @@ namespace TextExpansionEngineTests
             KeyboardManagerInput::MockedInput input;
             const TextExpansionTable rules{ MakeRule(L"rule-id", L"brb", { VK_SPACE }, L"expanded") };
 
-            Assert::IsFalse(controller.Start());
+            Assert::IsFalse(controller.Start(input));
             TestKeyEvent down(VK_SPACE);
-            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, controller.BeginKeyboardEvent(&down.event));
-            Assert::AreEqual(0, static_cast<int>(controller.TryActivate(input, VK_SPACE, rules)));
+            AssertDisposition(TextExpansionController::EventDisposition::Ignore, controller.BeginKeyboardEvent(&down.event));
+            Assert::AreEqual(0, static_cast<int>(controller.TryActivate(input, &down.event, rules)));
             Assert::AreEqual(0, backendView->activateCalls);
+            Assert::IsFalse(controller.HasPendingWork());
+        }
+
+        TEST_METHOD (Start_ShouldTreatAlreadyHeldActionKeyAsPreexistingUntilItsKeyUp)
+        {
+            auto backend = std::make_unique<FakeTextExpansionBackend>();
+            auto* backendView = backend.get();
+            backendView->prepareResult = TextExpansionResult::Prepared;
+            TextExpansionController controller(std::move(backend));
+            KeyboardManagerInput::MockedInput input;
+            input.SetKeyboardState(VK_F8, true);
+            const TextExpansionTable rules{ MakeRule(L"rule-id", L"brb", { VK_F8 }, L"expanded") };
+
+            Assert::IsTrue(controller.Start(input));
+            TestKeyEvent repeat(VK_F8);
+            AssertDisposition(TextExpansionController::EventDisposition::ForcePassThrough, controller.BeginKeyboardEvent(&repeat.event));
+            controller.TrackKeyboardEvent(&repeat.event);
+            Assert::AreEqual(1, backendView->trackCalls);
+            Assert::AreEqual(0, backendView->activateCalls);
+
+            input.SetKeyboardState(VK_F8, false);
+            TestKeyEvent up(VK_F8, WM_KEYUP, LLKHF_UP);
+            AssertDisposition(TextExpansionController::EventDisposition::ForcePassThrough, controller.BeginKeyboardEvent(&up.event));
+            Assert::IsFalse(controller.HasPendingWork());
+
+            TestKeyEvent freshDown(VK_F8);
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, controller.BeginKeyboardEvent(&freshDown.event));
+            Assert::AreEqual(1, static_cast<int>(controller.TryActivate(input, &freshDown.event, rules)));
+            Assert::AreEqual(1, backendView->activateCalls);
+        }
+
+        TEST_METHOD (Arming_ShouldSurviveNumpadVirtualKeyAliasChanges)
+        {
+            auto backend = std::make_unique<FakeTextExpansionBackend>();
+            TextExpansionController controller(std::move(backend));
+            KeyboardManagerInput::MockedInput input;
+            input.SetKeyboardState(VK_NUMPAD0, true);
+            Assert::IsTrue(controller.Start(input));
+
+            constexpr DWORD numpadScanCode = 0x52;
+            const DWORD numpadInsert = VK_INSERT | Helpers::GetNumpadOriginEncodingBit();
+            TestKeyEvent repeat(numpadInsert, WM_KEYDOWN, 0, 0, numpadScanCode);
+            AssertDisposition(TextExpansionController::EventDisposition::ForcePassThrough, controller.BeginKeyboardEvent(&repeat.event));
+            TestKeyEvent up(numpadInsert, WM_KEYUP, LLKHF_UP, 0, numpadScanCode);
+            AssertDisposition(TextExpansionController::EventDisposition::ForcePassThrough, controller.BeginKeyboardEvent(&up.event));
+
+            input.SetKeyboardState(VK_NUMPAD0, false);
+            Assert::IsFalse(controller.HasPendingWork());
+            TestKeyEvent freshDown('B');
+            TestKeyEvent freshUp('B', WM_KEYUP, LLKHF_UP);
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, controller.BeginKeyboardEvent(&freshDown.event));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, controller.BeginKeyboardEvent(&freshUp.event));
+            Assert::IsFalse(controller.HasPendingWork());
+        }
+
+        TEST_METHOD (Start_ShouldArmForHeldCancelKey)
+        {
+            auto backend = std::make_unique<FakeTextExpansionBackend>();
+            TextExpansionController controller(std::move(backend));
+            KeyboardManagerInput::MockedInput input;
+            input.SetKeyboardState(VK_CANCEL, true);
+            Assert::IsTrue(controller.Start(input));
+
+            input.SetKeyboardState(VK_CANCEL, false);
+            TestKeyEvent up(VK_CANCEL, WM_KEYUP, LLKHF_UP);
+            AssertDisposition(TextExpansionController::EventDisposition::ForcePassThrough, controller.BeginKeyboardEvent(&up.event));
+        }
+
+        TEST_METHOD (Arming_ShouldWaitForEveryHeldActionKeyRelease)
+        {
+            auto backend = std::make_unique<FakeTextExpansionBackend>();
+            TextExpansionController controller(std::move(backend));
+            KeyboardManagerInput::MockedInput input;
+            input.SetKeyboardState('A', true);
+            input.SetKeyboardState('B', true);
+            Assert::IsTrue(controller.Start(input));
+
+            TestKeyEvent aUp('A', WM_KEYUP, LLKHF_UP);
+            AssertDisposition(TextExpansionController::EventDisposition::ForcePassThrough, controller.BeginKeyboardEvent(&aUp.event));
+            input.SetKeyboardState('A', false);
+            Assert::IsTrue(controller.HasPendingWork());
+
+            TestKeyEvent bUp('B', WM_KEYUP, LLKHF_UP);
+            AssertDisposition(TextExpansionController::EventDisposition::ForcePassThrough, controller.BeginKeyboardEvent(&bUp.event));
+            input.SetKeyboardState('B', false);
+            Assert::IsFalse(controller.HasPendingWork());
         }
 
         TEST_METHOD (InjectedEvents_ShouldBeIgnored)

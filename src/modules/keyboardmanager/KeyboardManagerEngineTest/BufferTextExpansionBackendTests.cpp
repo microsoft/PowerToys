@@ -9,6 +9,7 @@
 #include "MockedInput.h"
 
 #include <algorithm>
+#include <array>
 #include <cstdint>
 #include <common/interop/shared_constants.h>
 #include <functional>
@@ -595,7 +596,7 @@ namespace TextExpansionEngineTests
             Assert::AreEqual(std::wstring(), fixture.input.GetInjectedUnicodeText());
         }
 
-        TEST_METHOD (Complete_ShouldEmitCrLfAsOneBareEnterPress)
+        TEST_METHOD (Complete_ShouldEmitCrLfAsOneShiftEnterPress)
         {
             BackendFixture fixture;
             fixture.TrackText(L"a");
@@ -606,23 +607,239 @@ namespace TextExpansionEngineTests
             AssertResult(TextExpansionResult::Prepared, fixture.Prepare(request));
             AssertResult(TextExpansionResult::Replaced, fixture.Complete());
 
-            std::vector<INPUT> enterEvents;
+            std::vector<INPUT> newlineEvents;
             for (const auto& batch : fixture.input.GetSentInputBatches())
             {
-                for (const auto& input : batch)
+                if (std::any_of(batch.begin(), batch.end(), [](const INPUT& input) {
+                        return input.type == INPUT_KEYBOARD && input.ki.wVk == VK_RETURN;
+                    }))
                 {
-                    if (input.type == INPUT_KEYBOARD && input.ki.wVk == VK_RETURN)
-                    {
-                        enterEvents.push_back(input);
-                    }
-                    Assert::AreNotEqual(static_cast<WORD>(VK_SHIFT), input.ki.wVk);
+                    newlineEvents = batch;
                 }
             }
 
-            Assert::AreEqual(static_cast<size_t>(2), enterEvents.size());
-            Assert::IsTrue((enterEvents[0].ki.dwFlags & KEYEVENTF_KEYUP) == 0);
-            Assert::IsTrue((enterEvents[1].ki.dwFlags & KEYEVENTF_KEYUP) != 0);
+            Assert::AreEqual(static_cast<size_t>(4), newlineEvents.size());
+            Assert::AreEqual(static_cast<WORD>(VK_SHIFT), newlineEvents[0].ki.wVk);
+            Assert::IsTrue((newlineEvents[0].ki.dwFlags & KEYEVENTF_KEYUP) == 0);
+            Assert::AreEqual(static_cast<WORD>(VK_RETURN), newlineEvents[1].ki.wVk);
+            Assert::IsTrue((newlineEvents[1].ki.dwFlags & KEYEVENTF_KEYUP) == 0);
+            Assert::AreEqual(static_cast<WORD>(VK_RETURN), newlineEvents[2].ki.wVk);
+            Assert::IsTrue((newlineEvents[2].ki.dwFlags & KEYEVENTF_KEYUP) != 0);
+            Assert::AreEqual(static_cast<WORD>(VK_SHIFT), newlineEvents[3].ki.wVk);
+            Assert::IsTrue((newlineEvents[3].ki.dwFlags & KEYEVENTF_KEYUP) != 0);
             Assert::AreEqual(std::wstring(L"firstsecond"), fixture.input.GetInjectedUnicodeText());
+        }
+
+        TEST_METHOD (Complete_ShouldRecoverEveryPartialShiftEnterPrefix)
+        {
+            for (size_t injectedPrefix = 1; injectedPrefix <= 3; ++injectedPrefix)
+            {
+                BackendFixture fixture;
+                fixture.TrackText(L"a");
+                const auto request = fixture.Request(
+                    { VK_SPACE },
+                    { { L"a", L"\n", 0 } });
+                AssertResult(TextExpansionResult::Prepared, fixture.Prepare(request));
+
+                size_t sendCalls = 0;
+                fixture.input.SetSendVirtualInputInjectedCount([&](const std::vector<INPUT>& inputs) {
+                    ++sendCalls;
+                    if (sendCalls == 1)
+                    {
+                        return inputs.size();
+                    }
+                    if (sendCalls == 2)
+                    {
+                        return injectedPrefix;
+                    }
+                    if (sendCalls == 3)
+                    {
+                        return static_cast<size_t>(0);
+                    }
+                    return inputs.size();
+                });
+
+                AssertResult(TextExpansionResult::FailedChangedOrUnknown, fixture.Complete());
+                Assert::IsTrue(fixture.backend->ShouldBlockNewInput());
+
+                const auto& attemptedBatches = fixture.input.GetSentInputBatches();
+                Assert::AreEqual(static_cast<size_t>(3), attemptedBatches.size());
+                Assert::AreEqual(static_cast<size_t>(4), attemptedBatches[1].size());
+                const auto& cleanup = attemptedBatches[2];
+                if (injectedPrefix == 2)
+                {
+                    Assert::AreEqual(static_cast<size_t>(2), cleanup.size());
+                    Assert::AreEqual(static_cast<WORD>(VK_RETURN), cleanup[0].ki.wVk);
+                    Assert::IsTrue((cleanup[0].ki.dwFlags & KEYEVENTF_KEYUP) != 0);
+                    Assert::AreEqual(static_cast<WORD>(VK_SHIFT), cleanup[1].ki.wVk);
+                }
+                else
+                {
+                    Assert::AreEqual(static_cast<size_t>(1), cleanup.size());
+                    Assert::AreEqual(static_cast<WORD>(VK_SHIFT), cleanup[0].ki.wVk);
+                }
+                Assert::IsTrue((cleanup.back().ki.dwFlags & KEYEVENTF_KEYUP) != 0);
+
+                fixture.backend->RetryPendingCleanup();
+                Assert::IsFalse(fixture.backend->ShouldBlockNewInput());
+            }
+        }
+
+        TEST_METHOD (CleanupPermanentFailure_ShouldStopBlockingAndDisableBackend)
+        {
+            BackendFixture fixture;
+            fixture.TrackText(L"a");
+            const auto request = fixture.Request(
+                { VK_SPACE },
+                { { L"a", L"expanded", 0 } });
+            AssertResult(TextExpansionResult::Prepared, fixture.Prepare(request));
+
+            size_t sendCalls = 0;
+            fixture.input.SetSendVirtualInputInjectedCount([&](const std::vector<INPUT>&) {
+                ++sendCalls;
+                return sendCalls == 1 ? static_cast<size_t>(1) : static_cast<size_t>(0);
+            });
+
+            AssertResult(TextExpansionResult::FailedChangedOrUnknown, fixture.Complete());
+            Assert::IsTrue(fixture.backend->ShouldBlockNewInput());
+            for (size_t retry = 0; retry < 32; ++retry)
+            {
+                fixture.backend->RetryPendingCleanup();
+            }
+
+            Assert::IsFalse(fixture.backend->ShouldBlockNewInput());
+            Assert::IsFalse(fixture.backend->IsReady());
+            Assert::IsTrue(sendCalls < 20);
+            AssertResult(TextExpansionResult::UnsupportedContext, fixture.Prepare(request));
+            TestKeyEvent recoveryDown(VK_BACK, 0x0E);
+            Assert::IsTrue(fixture.backend->HandleRecoveryKeyEvent(&recoveryDown.event));
+            Assert::IsFalse(fixture.backend->Start());
+            TestKeyEvent recoveryUp(VK_BACK, 0x0E, WM_KEYUP, LLKHF_UP);
+            Assert::IsTrue(fixture.backend->HandleRecoveryKeyEvent(&recoveryUp.event));
+            fixture.input.SetKeyboardState(VK_BACK, false);
+            Assert::IsTrue(fixture.backend->Start());
+        }
+
+        TEST_METHOD (ModifierReleasePartialFailure_ShouldRetryOnlyMissingModifierUp)
+        {
+            BackendFixture fixture;
+            fixture.TrackText(L"a");
+            fixture.SetLeftCtrl(true);
+            const auto request = fixture.Request(
+                { VK_CONTROL, VK_SPACE },
+                { { L"a", L"expanded", 0 } },
+                { VK_LCONTROL });
+            AssertResult(TextExpansionResult::Prepared, fixture.Prepare(request));
+
+            size_t sendCalls = 0;
+            fixture.input.SetSendVirtualInputInjectedCount([&](const std::vector<INPUT>& inputs) {
+                ++sendCalls;
+                if (sendCalls == 1)
+                {
+                    return static_cast<size_t>(2);
+                }
+                if (sendCalls == 2)
+                {
+                    return static_cast<size_t>(0);
+                }
+                return inputs.size();
+            });
+
+            AssertResult(TextExpansionResult::FailedChangedOrUnknown, fixture.Complete());
+            Assert::IsTrue(fixture.backend->ShouldBlockNewInput());
+            const auto& batches = fixture.input.GetSentInputBatches();
+            Assert::AreEqual(static_cast<size_t>(2), batches.size());
+            Assert::AreEqual(static_cast<size_t>(1), batches[1].size());
+            Assert::AreEqual(static_cast<WORD>(VK_LCONTROL), batches[1][0].ki.wVk);
+            Assert::IsTrue((batches[1][0].ki.dwFlags & KEYEVENTF_KEYUP) != 0);
+
+            fixture.backend->RetryPendingCleanup();
+            Assert::IsFalse(fixture.backend->ShouldBlockNewInput());
+            Assert::IsFalse(fixture.input.GetVirtualKeyState(VK_LCONTROL));
+        }
+
+        TEST_METHOD (CleanupFault_ShouldRecoverEachPhysicalShiftEnterKey)
+        {
+            BackendFixture fixture;
+            fixture.TrackText(L"a");
+            const auto request = fixture.Request(
+                { VK_SPACE },
+                { { L"a", L"\n", 0 } });
+            AssertResult(TextExpansionResult::Prepared, fixture.Prepare(request));
+
+            size_t sendCalls = 0;
+            fixture.input.SetSendVirtualInputInjectedCount([&](const std::vector<INPUT>& inputs) {
+                ++sendCalls;
+                if (sendCalls == 1)
+                {
+                    return inputs.size();
+                }
+                return sendCalls == 2 ? static_cast<size_t>(2) : static_cast<size_t>(0);
+            });
+
+            AssertResult(TextExpansionResult::FailedChangedOrUnknown, fixture.Complete());
+            for (size_t retry = 0; retry < 32; ++retry)
+            {
+                fixture.backend->RetryPendingCleanup();
+            }
+
+            Assert::IsFalse(fixture.backend->IsReady());
+            TestKeyEvent rightShiftDown(VK_RSHIFT, 0x36);
+            TestKeyEvent rightShiftUp(VK_RSHIFT, 0x36, WM_KEYUP, LLKHF_UP);
+            Assert::IsFalse(fixture.backend->HandleRecoveryKeyEvent(&rightShiftDown.event));
+            Assert::IsFalse(fixture.backend->HandleRecoveryKeyEvent(&rightShiftUp.event));
+
+            TestKeyEvent leftShiftDown(VK_LSHIFT, 0x2A);
+            TestKeyEvent leftShiftUp(VK_LSHIFT, 0x2A, WM_KEYUP, LLKHF_UP);
+            Assert::IsTrue(fixture.backend->HandleRecoveryKeyEvent(&leftShiftDown.event));
+            Assert::IsTrue(fixture.backend->HandleRecoveryKeyEvent(&leftShiftUp.event));
+            fixture.input.SetKeyboardState(VK_SHIFT, false);
+            Assert::IsFalse(fixture.backend->Start());
+
+            TestKeyEvent enterDown(VK_RETURN, 0x1C);
+            TestKeyEvent enterUp(VK_RETURN, 0x1C, WM_KEYUP, LLKHF_UP);
+            Assert::IsTrue(fixture.backend->HandleRecoveryKeyEvent(&enterDown.event));
+            Assert::IsTrue(fixture.backend->HandleRecoveryKeyEvent(&enterUp.event));
+            fixture.input.SetKeyboardState(VK_RETURN, false);
+            Assert::IsTrue(fixture.backend->Start());
+        }
+
+        TEST_METHOD (ModifierCleanupFault_ShouldPreserveLeftRightPhysicalIdentity)
+        {
+            constexpr std::array<DWORD, 8> modifiers{
+                VK_LWIN, VK_RWIN, VK_LCONTROL, VK_RCONTROL,
+                VK_LMENU, VK_RMENU, VK_LSHIFT, VK_RSHIFT,
+            };
+
+            for (const DWORD modifier : modifiers)
+            {
+                BackendFixture fixture;
+                fixture.TrackText(L"a");
+                const auto request = fixture.Request(
+                    { VK_SPACE },
+                    { { L"a", L"expanded", 0 } },
+                    { modifier });
+                AssertResult(TextExpansionResult::Prepared, fixture.Prepare(request));
+
+                size_t sendCalls = 0;
+                fixture.input.SetSendVirtualInputInjectedCount([&](const std::vector<INPUT>&) {
+                    ++sendCalls;
+                    return sendCalls == 1 ? static_cast<size_t>(2) : static_cast<size_t>(0);
+                });
+                AssertResult(TextExpansionResult::FailedChangedOrUnknown, fixture.Complete());
+                for (size_t retry = 0; retry < 32; ++retry)
+                {
+                    fixture.backend->RetryPendingCleanup();
+                }
+
+                const UINT mappedScan = MapVirtualKeyW(modifier, MAPVK_VK_TO_VSC_EX);
+                const DWORD scanCode = mappedScan & 0xFF;
+                const DWORD downFlags = (mappedScan & 0xFF00) != 0 ? LLKHF_EXTENDED : 0;
+                TestKeyEvent down(modifier, scanCode, WM_KEYDOWN, downFlags);
+                TestKeyEvent up(modifier, scanCode, WM_KEYUP, downFlags | LLKHF_UP);
+                Assert::IsTrue(fixture.backend->HandleRecoveryKeyEvent(&down.event));
+                Assert::IsTrue(fixture.backend->HandleRecoveryKeyEvent(&up.event));
+            }
         }
 
         TEST_METHOD (CancelPendingActivation_ShouldClearPendingWorkWithoutInput)
@@ -671,6 +888,27 @@ namespace TextExpansionEngineTests
 
             Assert::IsTrue(fixture.backend->Start());
             AssertResult(TextExpansionResult::NoMatch, fixture.Prepare(request));
+        }
+
+        TEST_METHOD (Stop_ShouldDrainCleanupWhenEveryRetryMakesPartialProgress)
+        {
+            BackendFixture fixture;
+            fixture.TrackText(L"a");
+            const auto request = fixture.Request(
+                { VK_SPACE },
+                { { L"a", L"expanded", 0 } },
+                { VK_LWIN, VK_RWIN, VK_LCONTROL, VK_RCONTROL,
+                  VK_LMENU, VK_RMENU, VK_LSHIFT, VK_RSHIFT });
+            AssertResult(TextExpansionResult::Prepared, fixture.Prepare(request));
+            fixture.input.SetSendVirtualInputInjectedCount([](const std::vector<INPUT>& inputs) {
+                return inputs.empty() ? static_cast<size_t>(0) : static_cast<size_t>(1);
+            });
+
+            fixture.backend->Stop();
+
+            Assert::IsFalse(fixture.backend->HasPendingWork());
+            Assert::IsFalse(fixture.backend->IsReady());
+            Assert::AreEqual(static_cast<size_t>(10), fixture.input.GetSentInputBatches().size());
         }
     };
 }

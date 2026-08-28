@@ -26,7 +26,7 @@ namespace KeyboardEventHandlers
     */
 
     // Function to handle a shortcut remap
-    intptr_t HandleShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp = std::nullopt) noexcept;
+    intptr_t HandleShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp = std::nullopt, bool allowRemapTransition = true) noexcept;
 
     // Function to reset chord matching
     void ResetAllStartedChords(State& state, const std::optional<std::wstring>& activatedApp);
@@ -75,9 +75,11 @@ namespace KeyboardEventHandlers
 
     // Function to handle an os-level shortcut remap
     intptr_t HandleOSLevelShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
+    intptr_t HandleOSLevelShortcutRemapEventWithOptions(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, bool allowRemapTransition) noexcept;
 
     // Function to handle an app-specific shortcut remap
     intptr_t HandleAppSpecificShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
+    intptr_t HandleAppSpecificShortcutRemapEventWithOptions(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, bool allowRemapTransition) noexcept;
 
     // Function to generate a unicode string in response to a single keypress
     intptr_t HandleSingleKeyToTextRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state);

@@ -1,4 +1,6 @@
 #pragma once
+#include <bitset>
+
 #include <common/hooks/LowlevelKeyboardEvent.h>
 #include <common/utils/EventWaiter.h>
 #include <keyboardmanager/common/Input.h>
@@ -23,7 +25,7 @@ public:
     bool HasRegisteredRemappings() const;
 
     // Applies a settings notification on the hook-owning thread. Reload is deferred
-    // until any Text Expansion transaction and physical press finishes.
+    // until active remap and Text Expansion transactions finish.
     void ReloadSettings();
     void CompletePendingTextExpansion() noexcept;
 
@@ -72,9 +74,11 @@ private:
     void LoadSettings();
     void ArmDeferredReloadTimer() noexcept;
     void QueueDeferredSettingsReloadIfReady() noexcept;
+    bool HasPendingInputWork() const noexcept;
 
     UINT_PTR deferredReloadTimer = 0;
     uint64_t textExpansionInstanceId = 0;
+    std::bitset<512> activeRemapPresses;
 
     // Function called by the hook procedure to handle the events. This is the starting point function for remapping
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;

@@ -88,6 +88,7 @@ namespace
             return rule.enabled;
         });
     }
+
 }
 
 KeyboardManager::KeyboardManager()
@@ -115,11 +116,6 @@ KeyboardManager::KeyboardManager()
                 get_last_error_or_default(errorCode));
             return false;
         });
-    if (HasEnabledTextExpansion(state.textExpansions) && !textExpansionController->Start())
-    {
-        Logger::error(L"Failed to start the Keyboard Manager Buffer Text Expansion backend.");
-    }
-
     auto changeSettingsCallback = [](DWORD err) {
         Logger::trace(L"{} event was signaled", KeyboardManagerConstants::SettingsEventName);
         if (err != ERROR_SUCCESS)
@@ -210,7 +206,7 @@ void KeyboardManager::LoadSettings()
 void KeyboardManager::ReloadSettings()
 {
     deferredReloadPosted.store(false, std::memory_order_release);
-    if (textExpansionController && textExpansionController->HasPendingWork())
+    if (HasPendingInputWork())
     {
         settingsReloadDeferred.store(true, std::memory_order_release);
         ArmDeferredReloadTimer();
@@ -239,21 +235,6 @@ void KeyboardManager::ReloadSettings()
         Logger::error("Failed to load settings");
     }
     loadingSettings.store(false, std::memory_order_release);
-
-    if (textExpansionController)
-    {
-        if (HasEnabledTextExpansion(state.textExpansions))
-        {
-            if (!textExpansionController->Start())
-            {
-                Logger::error(L"Failed to start the Keyboard Manager Buffer Text Expansion backend after settings reload.");
-            }
-        }
-        else
-        {
-            textExpansionController->Stop();
-        }
-    }
 
     if (HasRegisteredRemappingsUnchecked())
     {
@@ -309,7 +290,7 @@ void CALLBACK KeyboardManager::DeferredReloadTimerProc(HWND, UINT, const UINT_PT
 void KeyboardManager::QueueDeferredSettingsReloadIfReady() noexcept
 {
     if (!settingsReloadDeferred.load(std::memory_order_acquire) ||
-        (textExpansionController && textExpansionController->HasPendingWork()) ||
+        HasPendingInputWork() ||
         deferredReloadPosted.exchange(true, std::memory_order_acq_rel))
     {
         return;
@@ -388,7 +369,21 @@ void KeyboardManager::StartLowlevelKeyboardHook()
         }
     }
 
-    if (hookHandle && !mouseHookHandle && HasEnabledTextExpansion(state.textExpansions))
+    bool textExpansionReady = false;
+    if (hookHandle && HasEnabledTextExpansion(state.textExpansions) && textExpansionController)
+    {
+        textExpansionReady = textExpansionController->Start(inputHandler);
+        if (!textExpansionReady)
+        {
+            Logger::error(L"Failed to start the Keyboard Manager Buffer Text Expansion backend.");
+        }
+    }
+    else if (textExpansionController)
+    {
+        textExpansionController->Stop();
+    }
+
+    if (hookHandle && textExpansionReady && !mouseHookHandle)
     {
         mouseHookHandle = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, GetModuleHandle(NULL), NULL);
         if (!mouseHookHandle)
@@ -451,6 +446,12 @@ bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
            !(state.appSpecificShortcutReMap.empty() && state.appSpecificShortcutReMapSortedKeys.empty() && state.osLevelShortcutReMap.empty() && state.osLevelShortcutReMapSortedKeys.empty() && state.singleKeyReMap.empty() && state.singleKeyToTextReMap.empty());
 }
 
+bool KeyboardManager::HasPendingInputWork() const noexcept
+{
+    return activeRemapPresses.any() || state.HasInvokedShortcutRemap() ||
+           (textExpansionController && textExpansionController->HasPendingWork());
+}
+
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
     // If key has suppress flag, then suppress it
@@ -459,28 +460,65 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
         return 1;
     }
 
+    const bool keyDown = data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN;
+    const bool keyUp = data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP;
+    const bool injectedByKeyboardManager =
+        (data->lParam->dwExtraInfo & CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG) != 0;
+    const DWORD physicalKey = data->lParam->vkCode;
+    const auto physicalPressIndex = Helpers::GetPhysicalKeyEventIndex(data);
+    const bool remapPressWasActive = !injectedByKeyboardManager && physicalPressIndex &&
+                                     activeRemapPresses.test(*physicalPressIndex);
+    if (remapPressWasActive && keyUp)
+    {
+        // The matching key-up must still traverse the old remap snapshot. The bit can
+        // be cleared now because deferred reload is queued only after this hook returns.
+        activeRemapPresses.reset(*physicalPressIndex);
+    }
+
+    const auto rememberHandledRemapPress = [&] {
+        if (!injectedByKeyboardManager && keyDown && physicalPressIndex)
+        {
+            activeRemapPresses.set(*physicalPressIndex);
+        }
+    };
+
     const auto textExpansionDisposition = textExpansionController ?
                                               textExpansionController->BeginKeyboardEvent(data) :
                                               TextExpansionController::EventDisposition::Ignore;
-    const DWORD textExpansionPhysicalKey = data->lParam->vkCode;
+    if (textExpansionDisposition == TextExpansionController::EventDisposition::ForcePassThrough)
+    {
+        // Arming events still reach the foreground application, so track them unless
+        // the buffer is already suspended. A faulted recovery backend makes this a no-op.
+        const bool bufferSuspended = settingsReloadDeferred.load(std::memory_order_acquire) ||
+                                     loadingSettings.load(std::memory_order_acquire) ||
+                                     (editorIsRunningEvent != nullptr &&
+                                      WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0);
+        if (bufferSuspended)
+        {
+            textExpansionController->ResetBuffer();
+        }
+        else
+        {
+            textExpansionController->TrackKeyboardEvent(data);
+        }
+        return 0;
+    }
     if (textExpansionDisposition == TextExpansionController::EventDisposition::Suppress)
     {
         return 1;
     }
 
-    if (settingsReloadDeferred.load(std::memory_order_acquire))
+    const bool reloadDeferred = settingsReloadDeferred.load(std::memory_order_acquire);
+    if (reloadDeferred && textExpansionController && !injectedByKeyboardManager)
     {
-        if (textExpansionController)
-        {
-            textExpansionController->ResetBuffer();
-        }
-        QueueDeferredSettingsReloadIfReady();
-        return 0;
+        // Keep the old remap snapshot active until every intercepted press gets its
+        // matching release, but do not collect text for a configuration being replaced.
+        textExpansionController->ResetBuffer();
     }
 
     if (loadingSettings)
     {
-        if (textExpansionController)
+        if (textExpansionController && !injectedByKeyboardManager)
         {
             textExpansionController->ResetBuffer();
         }
@@ -488,24 +526,34 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
     }
 
     // Suspend remapping if remap key/shortcut window is opened
-    if (editorIsRunningEvent != nullptr && WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0)
+    const bool editorIsOpen = editorIsRunningEvent != nullptr &&
+                              WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0;
+    const bool shortcutRemapWasInvoked = editorIsOpen && state.HasInvokedShortcutRemap();
+    const bool drainShortcutOnly = editorIsOpen && shortcutRemapWasInvoked && !remapPressWasActive;
+    if (editorIsOpen)
     {
-        if (textExpansionController)
+        if (textExpansionController && !injectedByKeyboardManager)
         {
             // Remapping is suspended while the editor is open, but the buffer backend
             // still needs physical toggle-key transitions such as Caps Lock.
             textExpansionController->TrackKeyboardEvent(data);
             textExpansionController->ResetBuffer();
         }
-        return 0;
+        if (!remapPressWasActive && !shortcutRemapWasInvoked)
+        {
+            return 0;
+        }
     }
 
     // Remap a key
-    intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(inputHandler, data, state);
+    intptr_t SingleKeyRemapResult = drainShortcutOnly ?
+                                          0 :
+                                          KeyboardEventHandlers::HandleSingleKeyRemapEvent(inputHandler, data, state);
 
     // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts and hence the event should be suppressed here.
     if (SingleKeyRemapResult == 1)
     {
+        rememberHandledRemapPress();
         if (textExpansionController)
         {
             textExpansionController->NotifyHigherPriorityEventHandled(data);
@@ -519,11 +567,16 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
     */
 
     // Handle an app-specific shortcut remapping
-    intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(inputHandler, data, state);
+    intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEventWithOptions(
+        inputHandler,
+        data,
+        state,
+        !editorIsOpen);
 
     // If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
     if (AppSpecificShortcutRemapResult == 1)
     {
+        rememberHandledRemapPress();
         if (textExpansionController)
         {
             textExpansionController->NotifyHigherPriorityEventHandled(data);
@@ -531,10 +584,13 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
         return 1;
     }
 
-    intptr_t SingleKeyToTextRemapResult = KeyboardEventHandlers::HandleSingleKeyToTextRemapEvent(inputHandler, data, state);
+    intptr_t SingleKeyToTextRemapResult = drainShortcutOnly ?
+                                                0 :
+                                                KeyboardEventHandlers::HandleSingleKeyToTextRemapEvent(inputHandler, data, state);
 
     if (SingleKeyToTextRemapResult == 1)
     {
+        rememberHandledRemapPress();
         if (textExpansionController)
         {
             textExpansionController->NotifyHigherPriorityEventHandled(data);
@@ -544,9 +600,14 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
 
     // Handle an os-level shortcut remapping. Existing remaps always take precedence
     // over a new Text Expansion activation using the same key or shortcut.
-    const intptr_t OSLevelShortcutRemapResult = KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(inputHandler, data, state);
+    const intptr_t OSLevelShortcutRemapResult = KeyboardEventHandlers::HandleOSLevelShortcutRemapEventWithOptions(
+        inputHandler,
+        data,
+        state,
+        !editorIsOpen);
     if (OSLevelShortcutRemapResult == 1)
     {
+        rememberHandledRemapPress();
         if (textExpansionController)
         {
             textExpansionController->NotifyHigherPriorityEventHandled(data);
@@ -554,12 +615,13 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
         return 1;
     }
 
-    if (textExpansionDisposition == TextExpansionController::EventDisposition::FreshActionKeyDown &&
+    if (!reloadDeferred && !editorIsOpen &&
+        textExpansionDisposition == TextExpansionController::EventDisposition::FreshActionKeyDown &&
         textExpansionController)
     {
         const intptr_t activationResult = textExpansionController->TryActivate(
             inputHandler,
-            textExpansionPhysicalKey,
+            data,
             state.textExpansions);
         if (activationResult == 1)
         {
@@ -567,7 +629,7 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
         }
     }
 
-    if (textExpansionController)
+    if (textExpansionController && !reloadDeferred && !editorIsOpen)
     {
         textExpansionController->TrackKeyboardEvent(data);
     }

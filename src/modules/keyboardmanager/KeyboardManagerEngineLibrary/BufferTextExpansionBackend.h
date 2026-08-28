@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <bitset>
 #include <cstdint>
 #include <functional>
 #include <mutex>
@@ -56,6 +57,9 @@ public:
 
     bool Start() override;
     void Stop() noexcept override;
+    bool IsReady() const noexcept override;
+    bool HasRecoveryKeyState() const noexcept override;
+    bool HandleRecoveryKeyEvent(const LowlevelKeyboardEvent* data) noexcept override;
     void TrackKeyboardEvent(const LowlevelKeyboardEvent* data) noexcept override;
     void ResetBuffer() noexcept override;
     TextExpansionResult PrepareActivation(const TextExpansionRequest& request) override;
@@ -100,4 +104,8 @@ private:
 
     mutable std::mutex pendingCleanupMutex;
     std::vector<INPUT> pendingCleanup;
+    size_t cleanupAttemptsWithoutProgress = 0;
+    std::bitset<512> abandonedKeyUps;
+
+    static constexpr size_t MaximumCleanupAttemptsWithoutProgress = 8;
 };

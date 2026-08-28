@@ -23,6 +23,7 @@ public:
         Continue,
         FreshActionKeyDown,
         Suppress,
+        ForcePassThrough,
     };
 
     explicit TextExpansionController(
@@ -30,7 +31,7 @@ public:
         std::function<bool(uint64_t)> queuePendingActivation = {});
     ~TextExpansionController();
 
-    bool Start();
+    bool Start(KeyboardManagerInput::InputInterface& input);
     void Stop() noexcept;
 
     // Called before editor/reload gates and before existing remaps. It fixes the
@@ -43,7 +44,7 @@ public:
     // Called only for a fresh action-key down that existing remaps did not consume.
     intptr_t TryActivate(
         KeyboardManagerInput::InputInterface& input,
-        DWORD physicalActionKey,
+        LowlevelKeyboardEvent* data,
         const TextExpansionTable& rules) noexcept;
     TextExpansionResult CompletePendingActivation(uint64_t generation) noexcept;
 
@@ -61,7 +62,7 @@ private:
     struct PendingActivationRelease
     {
         uint64_t generation = 0;
-        DWORD physicalActionKey = 0;
+        size_t physicalActionKeyIdentity = 0;
         bool actionReleased = false;
         bool commitQueued = false;
         std::unordered_set<DWORD> activationModifierKeys;
@@ -73,8 +74,12 @@ private:
         KeyboardManagerInput::InputInterface& input,
         const Shortcut& activation,
         DWORD physicalActionKey) const noexcept;
+    bool IsBackendReady() noexcept;
+    bool HasPressedActionKey() const noexcept;
+    bool ShouldForceArmingEvent(DWORD physicalKey, bool keyDown) noexcept;
+    void UpdateTrackedPressStateLocked() noexcept;
     bool QueueBackendWork(uint64_t generation) noexcept;
-    bool HandlePendingActivationReleaseEvent(DWORD physicalKey, bool keyDown, bool keyUp) noexcept;
+    bool HandlePendingActivationReleaseEvent(DWORD physicalKey, size_t physicalKeyIdentity, bool keyDown, bool keyUp) noexcept;
 
     std::unique_ptr<ITextExpansionBackend> backend;
     std::function<bool(uint64_t)> queuePendingActivation;
@@ -82,10 +87,15 @@ private:
     std::atomic_uint64_t nextActivationGeneration = 0;
     std::atomic_uint64_t pendingActivationGeneration = 0;
     std::atomic_bool cleanupMessageQueued = false;
+    std::atomic_bool backendRecoveryPending = false;
+    mutable std::atomic_bool hasTrackedPressState = false;
+    mutable std::atomic_bool arming = false;
+    mutable std::atomic_bool armingReleaseObserved = false;
+    KeyboardManagerInput::InputInterface* inputState = nullptr;
 
     mutable std::mutex pressStateMutex;
-    std::unordered_map<DWORD, ActionKeyPressDisposition> actionKeyPresses;
-    std::unordered_set<DWORD> recoverySuppressedKeys;
+    std::unordered_map<size_t, ActionKeyPressDisposition> actionKeyPresses;
+    std::unordered_set<size_t> recoverySuppressedKeys;
     std::unordered_set<DWORD> higherPriorityModifierKeys;
     std::optional<PendingActivationRelease> pendingActivationRelease;
 };

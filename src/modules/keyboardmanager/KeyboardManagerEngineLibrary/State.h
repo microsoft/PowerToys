@@ -23,6 +23,10 @@ public:
 
     bool CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName);
 
+    // Returns whether any OS-level or app-specific shortcut transaction still
+    // owns synthetic key state that must be released before settings are replaced.
+    bool HasInvokedShortcutRemap() const noexcept;
+
     // Function to get the source and target of a shortcut remap given the source shortcut. Returns nullopt if it isn't remapped
     ShortcutRemapTable& GetShortcutRemapTable(const std::optional<std::wstring>& appName);
 
