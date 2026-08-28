@@ -115,7 +115,7 @@ channel. Your logging is preserved on `stderr` and through
 
 `base/` provides ergonomic base classes so authors implement only what they need:
 
-- `CommandProviderBase` is the entry point for an extension.
+- `CommandProviderBase` is the entry point for an extension. Its protected `notifyItemsChanged()` method tells the host to re-fetch top-level and fallback commands.
 - `ListPageBase`, `DynamicListPageBase`, and `ContentPageBase` back the page kinds.
 - `InvokableCommandBase`, `CommandItemBase`, `ListItemBase`, `FallbackCommandItemBase`, and `Separator` build list content.
 - `Settings` (with `ToggleSetting`, `TextSetting`, and `ChoiceSetSetting`) renders an auto-generated settings form.
@@ -140,7 +140,7 @@ channel. Your logging is preserved on `stderr` and through
 - `ExtensionHost` is the bridge back to the host (`log`, `showStatus`, `hideStatus`, `copyToClipboard`).
 - `sendNotification(method, params)` emits an Extension to Host notification.
 
-The server dispatches every Host to Extension request (`initialize`, `provider/getTopLevelCommands`, `provider/getFallbackCommands`, `provider/getCommand`, `provider/getCommandItem`, `provider/getSettings`, `command/invoke`, `listPage/getItems`, `listPage/setSearchText`, `listPage/setFilter`, `listPage/loadMore`, `fallback/updateQuery`, `contentPage/getContent`, `form/submit`, `dispose`) and can emit Extension to Host notifications (`listPage/itemsChanged`, `contentPage/itemsChanged`, `command/propChanged`, `host/logMessage`, `host/showStatus`, `host/hideStatus`, `host/copyText`).
+The server dispatches every Host to Extension request (`initialize`, `provider/getTopLevelCommands`, `provider/getFallbackCommands`, `provider/getCommand`, `provider/getCommandItem`, `provider/getSettings`, `command/invoke`, `listPage/getItems`, `listPage/setSearchText`, `listPage/setFilter`, `listPage/loadMore`, `fallback/updateQuery`, `contentPage/getContent`, `form/submit`, `dispose`) and can emit Extension to Host notifications (`provider/itemsChanged`, `listPage/itemsChanged`, `contentPage/itemsChanged`, `command/propChanged`, `host/logMessage`, `host/showStatus`, `host/hideStatus`, `host/copyText`).
 
 ## Development
 

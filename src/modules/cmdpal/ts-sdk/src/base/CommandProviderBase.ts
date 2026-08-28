@@ -11,6 +11,7 @@ import type {
   IFallbackCommandItem,
   IconInfo,
 } from '../types.js';
+import { sendNotification } from '../runtime/notifications.js';
 
 /**
  * Base class for Command Palette extension providers. Extend it to expose
@@ -94,6 +95,14 @@ export abstract class CommandProviderBase implements ICommandProvider {
    */
   initializeWithHost(host: IExtensionHost): void {
     this.host = host;
+  }
+
+  /**
+   * Tells the host that this provider's top-level or fallback command items
+   * have changed and should be re-fetched.
+   */
+  protected notifyItemsChanged(): void {
+    sendNotification('provider/itemsChanged', { totalItems: -1 });
   }
 
   /** Releases resources before the extension process exits. Override as needed. */
