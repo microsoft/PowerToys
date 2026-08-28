@@ -39,6 +39,8 @@ public sealed partial class ListItemsView : UserControl,
     IRecipient<ActivateSelectedListItemMessage>,
     IRecipient<ActivateSecondaryCommandMessage>
 {
+    private readonly Dictionary<SelectorItem, ListItemRealizationRegistration> _realizedItems = new(64);
+
     private InputSource _lastInputSource;
 
     private int _itemsUpdatedVersion;
@@ -88,6 +90,7 @@ public sealed partial class ListItemsView : UserControl,
     {
         _isLoaded = true;
         RegisterMessenger();
+        RegisterExistingRealizedItems();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -95,6 +98,7 @@ public sealed partial class ListItemsView : UserControl,
         _isLoaded = false;
         UnregisterMessenger();
         CancelPendingContextMenuOpen();
+        ReleaseRealizedItems();
     }
 
     private void RegisterMessenger()
@@ -303,6 +307,8 @@ public sealed partial class ListItemsView : UserControl,
 
     private void Items_Loaded(object sender, RoutedEventArgs e)
     {
+        RegisterExistingRealizedItems();
+
         // Find the ScrollViewer in the ItemView (ItemsList or ItemsGrid)
         var listViewScrollViewer = FindScrollViewer(ItemView);
 
@@ -314,6 +320,89 @@ public sealed partial class ListItemsView : UserControl,
         // Mirrors the back-navigation initial-selection behavior previously
         // owned by ListPage.OnNavigatedTo.
         EnsureInitialSelection();
+    }
+
+    private void Items_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        try
+        {
+            var container = args.ItemContainer;
+            if (args.InRecycleQueue || args.Item is not ListItemViewModel item)
+            {
+                ReleaseRealizedItem(container);
+                return;
+            }
+
+            RegisterRealizedItem(container, item);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to track a realized list item", ex);
+        }
+    }
+
+    private void RegisterRealizedItem(SelectorItem container, ListItemViewModel item)
+    {
+        if (_realizedItems.TryGetValue(container, out var existing))
+        {
+            // Demand belongs to the item, not its current coordinator. A refetch
+            // replays a live registration even when this container is unchanged.
+            if (existing.IsFor(item))
+            {
+                return;
+            }
+
+            existing.Release();
+            _realizedItems.Remove(container);
+        }
+
+        var registration = item.BeginRealization();
+        if (registration.IsValid)
+        {
+            _realizedItems.Add(container, registration);
+        }
+    }
+
+    private void RegisterExistingRealizedItems()
+    {
+        try
+        {
+            // Unloading releases demand. Loading the same view need not raise
+            // ContainerContentChanging again. Only visit realized panel children,
+            // never the potentially very large Items collection.
+            if (ItemsList.ItemsPanelRoot is { } panel)
+            {
+                foreach (var child in panel.Children)
+                {
+                    if (child is SelectorItem container && ItemsList.ItemFromContainer(container) is ListItemViewModel item)
+                    {
+                        RegisterRealizedItem(container, item);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to restore realized list item demand", ex);
+        }
+    }
+
+    private void ReleaseRealizedItem(SelectorItem container)
+    {
+        if (_realizedItems.Remove(container, out var registration))
+        {
+            registration.Release();
+        }
+    }
+
+    private void ReleaseRealizedItems()
+    {
+        foreach (var registration in _realizedItems.Values)
+        {
+            registration.Release();
+        }
+
+        _realizedItems.Clear();
     }
 
     private void ListViewScrollViewer_ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
@@ -640,6 +729,8 @@ public sealed partial class ListItemsView : UserControl,
     {
         if (d is ListItemsView @this)
         {
+            @this.ReleaseRealizedItems();
+
             if (e.OldValue is ListViewModel old)
             {
                 old.ItemsUpdated -= @this.Page_ItemsUpdated;

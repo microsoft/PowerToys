@@ -44,6 +44,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private readonly Lock _listLock = new();
     private readonly IContextMenuFactory _contextMenuFactory;
 
+    // Background fetches alone take this lock. Selection, realization, and teardown
+    // never acquire it, so installing a coordinator cannot block the UI thread.
+    private readonly Lock _initializationCoordinatorLock = new();
+
     // Reentrancy guard for FilteredItems mutations. WinUI3's ListView processes
     // CollectionChanged synchronously, and its layout pass can pump the message
     // loop — which lets a second DoOnUiThread task start mutating FilteredItems
@@ -100,6 +104,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private bool _isDynamic;
 
     private Task? _initializeItemsTask;
+    private ListItemInitializationCoordinator? _itemInitializationCoordinator;
+
+    private int _initializationStopped;
 
     // For cancelling the task to load the properties from the items in the list
     private CancellationTokenSource? _cancellationTokenSource;
@@ -422,11 +429,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
             {
                 ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
-                item?.SafeInitializeProperties();
+                item?.InitializePropertiesOnce();
             }
-
-            // Cancel any ongoing property initialization for the previous list.
-            CancelAndDisposeTokenSource(ref _cancellationTokenSource);
 
             ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
@@ -497,22 +501,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
             }
         }
 
-        var initializeItemsCts = new CancellationTokenSource();
-        _cancellationTokenSource = initializeItemsCts;
-        var initializeItemsToken = initializeItemsCts.Token;
-
-        _initializeItemsTask = new Task(() =>
-        {
-            InitializeItemsTask(initializeItemsToken);
-        });
-        _initializeItemsTask.Start();
+        StartItemInitialization(fetchGeneration, cancellationToken);
 
         DoOnUiThread(
             () =>
             {
                 lock (_fetchStateLock)
                 {
-                    if (!IsLatestFetchGeneration(fetchGeneration))
+                    if (Volatile.Read(ref _initializationStopped) != 0 || !IsLatestFetchGeneration(fetchGeneration))
                     {
                         return;
                     }
@@ -562,38 +558,55 @@ public partial class ListViewModel : PageViewModel, IDisposable
             });
     }
 
-    private void InitializeItemsTask(CancellationToken ct)
+    private void StartItemInitialization(int fetchGeneration, CancellationToken fetchCancellationToken)
     {
-        // Were we already canceled?
-        if (ct.IsCancellationRequested)
-        {
-            return;
-        }
+        System.Diagnostics.Debug.Assert(!IsCurrentThreadUiThread(), "Coordinator installation belongs to the background fetch.");
 
-        ListItemViewModel[] iterable;
-        lock (_listLock)
+        lock (_initializationCoordinatorLock)
         {
-            iterable = Items.ToArray();
-        }
-
-        foreach (var item in iterable)
-        {
-            if (ct.IsCancellationRequested)
+            if (Volatile.Read(ref _initializationStopped) != 0 || fetchCancellationToken.IsCancellationRequested ||
+                !IsLatestFetchGeneration(fetchGeneration))
             {
                 return;
             }
 
-            // TODO: GH #502
-            // We should probably remove the item from the list if it
-            // entered the error state. I had issues doing that without having
-            // multiple threads muck with `Items` (and possibly FilteredItems!)
-            // at once.
-            item.SafeInitializeProperties();
-
-            if (ct.IsCancellationRequested)
+            ListItemViewModel[] itemSnapshot;
+            lock (_listLock)
             {
+                itemSnapshot = Items.ToArray();
+            }
+
+            // Serialize only background installations. A superseded fetch must not
+            // attach items to an older coordinator after a newer one was installed.
+            var initializeItemsCts = new CancellationTokenSource();
+            var initializeItemsToken = initializeItemsCts.Token;
+            var coordinator = new ListItemInitializationCoordinator(itemSnapshot);
+            var previousCoordinator = Interlocked.Exchange(ref _itemInitializationCoordinator, coordinator);
+            var previousCancellation = Interlocked.Exchange(ref _cancellationTokenSource, initializeItemsCts);
+
+            // The constructor above must reattach and replay live demand before Stop:
+            // stopping (or a racing producer observing it) can discard queue entries
+            // whose publishers already returned success. Item-owned demand survives
+            // that discard only because the replacement has already replayed it.
+            previousCoordinator?.Stop();
+            CancelAndDisposeTokenSource(ref previousCancellation);
+
+            // Teardown never waits for the background-only lock. Close its race with
+            // publication here; a Stop after this check is also safe before Run starts.
+            if (Volatile.Read(ref _initializationStopped) != 0)
+            {
+                coordinator.Stop();
+                Interlocked.CompareExchange(ref _itemInitializationCoordinator, null, coordinator);
+                if (Interlocked.CompareExchange(ref _cancellationTokenSource, null, initializeItemsCts) == initializeItemsCts)
+                {
+                    initializeItemsCts.Dispose();
+                }
+
                 return;
             }
+
+            _initializeItemsTask = new Task(() => coordinator.Run(initializeItemsToken));
+            _initializeItemsTask.Start();
         }
     }
 
@@ -850,47 +863,78 @@ public partial class ListViewModel : PageViewModel, IDisposable
         var ct = cts.Token;
 
         _ = Task.Run(
-            () =>
+            async () =>
             {
-                if (ct.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                if (!item.SafeSlowInit())
+                try
                 {
                     if (ct.IsCancellationRequested)
                     {
                         return;
                     }
 
-                    WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+                    var initialized = await item.RequestInitializationAsync(ct).ConfigureAwait(false);
 
-                    return;
-                }
+                    if (!initialized || ct.IsCancellationRequested)
+                    {
+                        if (!ct.IsCancellationRequested)
+                        {
+                            WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+                        }
 
-                if (ct.IsCancellationRequested)
-                {
-                    return;
-                }
+                        return;
+                    }
 
-                // SafeSlowInit completed on a background thread — details
-                // messages will be marshalled to the UI thread by the receiver.
-                if (ShowDetails && item.HasDetails)
-                {
-                    WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(item.Details));
-                }
-                else
-                {
-                    WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
-                }
+                    if (!item.SafeSlowInit())
+                    {
+                        if (ct.IsCancellationRequested)
+                        {
+                            return;
+                        }
 
-                var suggestion = item.TextToSuggest;
-                DoOnUiThread(() =>
+                        WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+
+                        return;
+                    }
+
+                    if (ct.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    // SafeSlowInit completed on a background thread — details
+                    // messages will be marshalled to the UI thread by the receiver.
+                    if (ShowDetails && item.HasDetails)
+                    {
+                        WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(item.Details));
+                    }
+                    else
+                    {
+                        WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+                    }
+
+                    var suggestion = item.TextToSuggest;
+                    DoOnUiThread(() =>
+                    {
+                        if (ct.IsCancellationRequested)
+                        {
+                            return;
+                        }
+
+                        TextToSuggest = suggestion;
+                        WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(suggestion));
+                    });
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
                 {
-                    TextToSuggest = suggestion;
-                    WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(suggestion));
-                });
+                }
+                catch (Exception ex)
+                {
+                    CoreLogger.LogError("Failed to initialize the selected list item", ex);
+                    if (!ct.IsCancellationRequested)
+                    {
+                        WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+                    }
+                }
             },
             ct);
     }
@@ -1133,23 +1177,27 @@ public partial class ListViewModel : PageViewModel, IDisposable
     public void Dispose()
     {
         GC.SuppressFinalize(this);
+        Interlocked.Exchange(ref _initializationStopped, 1);
+        CancelAndDisposeTokenSource(ref _selectedItemCts);
         CancelAndDisposeTokenSource(ref _cancellationTokenSource);
+        Interlocked.Exchange(ref _itemInitializationCoordinator, null)?.Stop();
         CancelAndDisposeTokenSource(ref filterCancellationTokenSource);
         CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
-        CancelAndDisposeTokenSource(ref _selectedItemCts);
     }
 
     protected override void UnsafeCleanup()
     {
+        Interlocked.Exchange(ref _initializationStopped, 1);
         base.UnsafeCleanup();
 
         EmptyContent?.SafeCleanup();
         EmptyContent = new(new(null), PageContext, contextMenuFactory: null); // necessary?
 
+        CancelAndDisposeTokenSource(ref _selectedItemCts);
         CancelAndDisposeTokenSource(ref _cancellationTokenSource);
+        Interlocked.Exchange(ref _itemInitializationCoordinator, null)?.Stop();
         CancelAndDisposeTokenSource(ref filterCancellationTokenSource);
         CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
-        CancelAndDisposeTokenSource(ref _selectedItemCts);
 
         lock (_listLock)
         {
