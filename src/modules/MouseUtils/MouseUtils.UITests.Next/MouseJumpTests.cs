@@ -124,12 +124,7 @@ public class MouseJumpTests : UITestBase
 
         MouseUtilsTestHelper.NavigateToMouseUtilities(this);
         MouseUtilsTestHelper.SetModuleEnabled(this, ToggleId, false);
-        MouseUtilsTestHelper.EnsureModuleStateApplied(
-            this,
-            ModuleName,
-            enabled: false,
-            () => WaitForProcess(expected: false),
-            "Mouse Jump process did not exit after disabling the module.");
+        Assert.IsTrue(WaitForProcess(expected: false), "Mouse Jump process did not exit after disabling the module.");
         using var disabledActivation = new WindowShowWatcher(previewClassName);
         KeyboardHelper.SendKeys(Key.LWin, Key.Shift, Key.D);
         Assert.IsFalse(disabledActivation.Wait(2_000), "Mouse Jump preview appeared while the module was disabled.");

@@ -132,11 +132,8 @@ public class MousePointerCrosshairsTests : UITestBase
     {
         MouseUtilsTestHelper.NavigateToMouseUtilities(this);
         MouseUtilsTestHelper.SetModuleEnabled(this, ToggleId, false);
-        MouseUtilsTestHelper.EnsureModuleStateApplied(
-            this,
-            ModuleName,
-            enabled: false,
-            () => NamedEventHelper.WaitUntilUnavailable(NamedEventHelper.MouseCrosshairsToggle),
+        Assert.IsTrue(
+            NamedEventHelper.WaitUntilUnavailable(NamedEventHelper.MouseCrosshairsToggle),
             "Crosshairs trigger event remained available after disabling the module.");
 
         using (var disabledWatcher = new WindowShowWatcher(WindowClass))
@@ -146,11 +143,8 @@ public class MousePointerCrosshairsTests : UITestBase
         }
 
         MouseUtilsTestHelper.SetModuleEnabled(this, ToggleId, true);
-        MouseUtilsTestHelper.EnsureModuleStateApplied(
-            this,
-            ModuleName,
-            enabled: true,
-            () => NamedEventHelper.WaitUntilAvailable(NamedEventHelper.MouseCrosshairsToggle),
+        Assert.IsTrue(
+            NamedEventHelper.WaitUntilAvailable(NamedEventHelper.MouseCrosshairsToggle),
             "Crosshairs trigger event was not recreated after enabling the module.");
         var window = MouseUtilsTestHelper.WaitForWindowClass(WindowClass);
         using var enabledWatcher = new WindowShowWatcher(WindowClass, window.Hwnd.ToInt64());

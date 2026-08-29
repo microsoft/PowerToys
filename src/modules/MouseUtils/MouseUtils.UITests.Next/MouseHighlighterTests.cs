@@ -133,11 +133,8 @@ public class MouseHighlighterTests : UITestBase
 
         MouseUtilsTestHelper.NavigateToMouseUtilities(this);
         MouseUtilsTestHelper.SetModuleEnabled(this, ToggleId, false);
-        MouseUtilsTestHelper.EnsureModuleStateApplied(
-            this,
-            ModuleName,
-            enabled: false,
-            () => NamedEventHelper.WaitUntilUnavailable(NamedEventHelper.MouseHighlighterToggle),
+        Assert.IsTrue(
+            NamedEventHelper.WaitUntilUnavailable(NamedEventHelper.MouseHighlighterToggle),
             "Mouse Highlighter trigger event remained available after disabling the module.");
         using var disabledWatcher = new WindowShowWatcher(WindowClass);
         KeyboardHelper.SendKeys(Key.LWin, Key.Shift, Key.O);

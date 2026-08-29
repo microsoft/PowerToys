@@ -73,11 +73,8 @@ public class CursorWrapTests : UITestBase
 
         toggle.Toggle(false);
         Assert.IsTrue(toggle.WaitForProperty("ToggleState", "Off", 5_000), "CursorWrap toggle did not reach Off.");
-        MouseUtilsTestHelper.EnsureModuleStateApplied(
-            this,
-            ModuleName,
-            enabled: false,
-            () => NamedEventHelper.WaitUntilUnavailable(NamedEventHelper.CursorWrapToggle),
+        Assert.IsTrue(
+            NamedEventHelper.WaitUntilUnavailable(NamedEventHelper.CursorWrapToggle),
             "CursorWrap trigger event remained available after the module was disabled.");
         AssertDoesNotWrap(CursorEdge.Left);
     }
