@@ -4,11 +4,28 @@
 $scriptPath = Join-Path $PSScriptRoot '..\resolveUiTestModules.ps1'
 
 function New-UITestProject {
-    param([Parameter(Mandatory)][string] $RelativePath)
+    param(
+        [Parameter(Mandatory)]
+        [string] $RelativePath,
+
+        [ValidateSet('Next', 'Legacy', 'None')]
+        [string] $Framework = 'Next'
+    )
 
     $path = Join-Path $TestDrive $RelativePath
     New-Item -ItemType Directory -Path (Split-Path $path) -Force | Out-Null
-    '<Project Sdk="Microsoft.NET.Sdk" />' | Set-Content -LiteralPath $path
+    $projectReference = switch ($Framework) {
+        'Next' { '<ProjectReference Include="..\UITestAutomation.Next\UITestAutomation.Next.csproj" />' }
+        'Legacy' { '<ProjectReference Include="..\UITestAutomation\UITestAutomation.csproj" />' }
+        default { '' }
+    }
+    @"
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    $projectReference
+  </ItemGroup>
+</Project>
+"@ | Set-Content -LiteralPath $path
 }
 
 Describe 'resolveUiTestModules' {
@@ -25,10 +42,10 @@ Describe 'resolveUiTestModules' {
         $result.UiTestModules | Should Be @('FileLocksmith.UITests')
     }
 
-    It 'prefers all Next projects over legacy projects in the same module' {
-        New-UITestProject 'src\modules\fancyzones\FancyZones.UITests\FancyZones.UITests.csproj'
+    It 'selects projects using the Next framework and ignores legacy siblings' {
+        New-UITestProject 'src\modules\fancyzones\FancyZones.UITests\FancyZones.UITests.csproj' -Framework Legacy
         New-UITestProject 'src\modules\fancyzones\FancyZones.UITests.Next\FancyZones.UITests.Next.csproj'
-        New-UITestProject 'src\modules\fancyzones\FancyZonesEditor.UITests\FancyZonesEditor.UITests.csproj'
+        New-UITestProject 'src\modules\fancyzones\FancyZonesEditor.UITests\FancyZonesEditor.UITests.csproj' -Framework Legacy
         New-UITestProject 'src\modules\fancyzones\FancyZonesEditor.UITests.Next\FancyZonesEditor.UITests.Next.csproj'
 
         $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile 'src/modules/fancyzones/dll/FancyZones.cpp'
@@ -39,8 +56,9 @@ Describe 'resolveUiTestModules' {
         )
     }
 
-    It 'ignores modules without UI tests and non-module changes' {
-        New-UITestProject 'src\modules\Example\Tests\Example.UnitTests\Example.UnitTests.csproj'
+    It 'ignores modules with only legacy UI tests and non-module changes' {
+        New-UITestProject 'src\modules\Example\Tests\Example.UITests\Example.UITests.csproj' -Framework Legacy
+        New-UITestProject 'src\modules\Example\Tests\Example.UnitTests\Example.UnitTests.csproj' -Framework None
 
         $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile @(
             'doc/devdocs/modules/example.md',

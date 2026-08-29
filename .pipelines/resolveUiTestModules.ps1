@@ -32,14 +32,15 @@ $uiTestModules = foreach ($module in $touchedModules) {
         continue
     }
 
-    $projects = @(
-        Get-ChildItem -LiteralPath $moduleRoot -Filter '*.csproj' -File -Recurse |
-            Where-Object { $_.BaseName -match '\.UITests(?:\.Next)?$' }
-    )
-    $nextProjects = @($projects | Where-Object { $_.BaseName -match '\.UITests\.Next$' })
-    $selectedProjects = if ($nextProjects.Count -gt 0) { $nextProjects } else { $projects }
-
-    $selectedProjects | ForEach-Object { $_.BaseName }
+    Get-ChildItem -LiteralPath $moduleRoot -Filter '*.csproj' -File -Recurse |
+        Where-Object {
+            [xml] $project = Get-Content -LiteralPath $_.FullName -Raw
+            @($project.SelectNodes("//*[local-name()='ProjectReference']")) |
+                Where-Object {
+                    ($_.Include -replace '\\', '/') -match '/UITestAutomation\.Next/UITestAutomation\.Next\.csproj$'
+                }
+        } |
+        ForEach-Object { $_.BaseName }
 }
 
 [PSCustomObject]@{
