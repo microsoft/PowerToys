@@ -19,6 +19,11 @@ internal sealed partial class AllIssueSamplesIndexPage : ListPage
     {
         return new IListItem[]
         {
+            new ListItem(new SamplePageForGridVirtualization())
+            {
+                Title = "Grid virtualization and recycling",
+                Subtitle = "10,000 gallery items with repeated and empty sections. Check rapid scrolling, arrow rollover and page navigation, filtering, load more, context menus, and Back/reopen.",
+            },
             new ListItem(new SamplePageForIssue42827_FilterDropDownStaysVisibleAfterSwitchingFromListToContentPage())
             {
                 Title = "Issue 42827 - Filter Drop Down Stays Visible After Switching From List To Content Page",

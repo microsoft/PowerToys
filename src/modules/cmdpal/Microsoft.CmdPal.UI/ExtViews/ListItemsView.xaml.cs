@@ -60,6 +60,8 @@ public sealed partial class ListItemsView : UserControl,
 
     private bool _isLoaded;
     private bool _isMessengerRegistered;
+    private ScrollViewer? _itemsScrollViewer;
+    private ListViewBase? _itemsScrollViewerOwner;
 
     public ListViewModel? ViewModel
     {
@@ -76,9 +78,7 @@ public sealed partial class ListItemsView : UserControl,
     public ListItemsView()
     {
         this.InitializeComponent();
-        this.ItemView.Loaded += Items_Loaded;
-        this.ItemView.PreviewKeyDown += Items_PreviewKeyDown;
-        this.ItemView.PointerPressed += Items_PointerPressed;
+        GridItems.Invalidated += GridItems_Invalidated;
 
         this.Loaded += OnLoaded;
         this.Unloaded += OnUnloaded;
@@ -87,12 +87,18 @@ public sealed partial class ListItemsView : UserControl,
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         _isLoaded = true;
+        SynchronizeGridItems();
         RegisterMessenger();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         _isLoaded = false;
+
+        // Release before the native panel tears down. A reattached grid rebuilds
+        // its groups from the source, which is what it does after any teardown.
+        ReleaseGridProjection();
+        SetItemsScrollViewer(null);
         UnregisterMessenger();
         CancelPendingContextMenuOpen();
     }
@@ -146,6 +152,11 @@ public sealed partial class ListItemsView : UserControl,
         // may return an incorrect index because item containers are not yet rendered.
         _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
         {
+            if (!_isLoaded)
+            {
+                return;
+            }
+
             // Only do this if we truly have no selection.
             if (ItemView.SelectedItem is null)
             {
@@ -154,7 +165,14 @@ public sealed partial class ListItemsView : UserControl,
                 {
                     using (SuppressSelectionChangedScope())
                     {
-                        ItemView.SelectedIndex = firstUsefulIndex;
+                        if (_stickySelectedItem is { IsInteractive: true } && ItemView.Items.Contains(_stickySelectedItem))
+                        {
+                            ItemView.SelectedItem = _stickySelectedItem;
+                        }
+                        else
+                        {
+                            ItemView.SelectedIndex = firstUsefulIndex;
+                        }
                     }
                 }
             }
@@ -215,7 +233,7 @@ public sealed partial class ListItemsView : UserControl,
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
     private void Items_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_suppressSelectionChanged)
+        if (_suppressSelectionChanged || !ReferenceEquals(sender, ItemView))
         {
             return;
         }
@@ -231,6 +249,10 @@ public sealed partial class ListItemsView : UserControl,
         }
 
         _stickySelectedItem = li;
+        if (!_isGridNavigationSelection)
+        {
+            _gridNavigationColumn = null;
+        }
 
         // User explicitly changed selection — any pending force-first intent
         // is superseded by the user's navigation.
@@ -251,7 +273,7 @@ public sealed partial class ListItemsView : UserControl,
         if (listViewPeer is not null)
         {
             UIHelper.AnnounceActionForAccessibility(
-                ItemsList,
+                ItemView,
                 li.Title,
                 "CommandPaletteSelectedItemChanged");
         }
@@ -259,6 +281,12 @@ public sealed partial class ListItemsView : UserControl,
 
     private void ScrollToItem(ListItemViewModel li)
     {
+        if (ViewModel?.IsGridView == true)
+        {
+            ScrollGridToItem(li);
+            return;
+        }
+
         var scrollTarget = li;
 
         // If the previous item is a separator, also scroll it into view to provide
@@ -303,17 +331,44 @@ public sealed partial class ListItemsView : UserControl,
 
     private void Items_Loaded(object sender, RoutedEventArgs e)
     {
-        // Find the ScrollViewer in the ItemView (ItemsList or ItemsGrid)
-        var listViewScrollViewer = FindScrollViewer(ItemView);
-
-        if (listViewScrollViewer is not null)
+        if (sender is ListViewBase view && ReferenceEquals(view, ItemView))
         {
-            listViewScrollViewer.ViewChanged += ListViewScrollViewer_ViewChanged;
+            SynchronizeGridItems();
+            SetItemsScrollViewer(view);
+            EnsureInitialSelection();
+        }
+    }
+
+    private void Items_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if (ReferenceEquals(sender, _itemsScrollViewerOwner))
+        {
+            SetItemsScrollViewer(null);
         }
 
-        // Mirrors the back-navigation initial-selection behavior previously
-        // owned by ListPage.OnNavigatedTo.
-        EnsureInitialSelection();
+        // The grid also unloads while the page stays on a grid ViewModel, when
+        // ShowEmptyContent swaps the presenter. Filtering to no matches empties
+        // FilteredItems and flips ShowEmptyContent from the same VM update, so
+        // the group removals can otherwise land after the panel is torn down.
+        if (ReferenceEquals(sender, ItemsGrid))
+        {
+            ReleaseGridProjection();
+        }
+    }
+
+    private void SetItemsScrollViewer(ListViewBase? owner)
+    {
+        if (_itemsScrollViewer is not null)
+        {
+            _itemsScrollViewer.ViewChanged -= ListViewScrollViewer_ViewChanged;
+        }
+
+        _itemsScrollViewerOwner = owner;
+        _itemsScrollViewer = owner is null ? null : FindScrollViewer(owner);
+        if (_itemsScrollViewer is not null)
+        {
+            _itemsScrollViewer.ViewChanged += ListViewScrollViewer_ViewChanged;
+        }
     }
 
     private void ListViewScrollViewer_ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
@@ -462,6 +517,12 @@ public sealed partial class ListItemsView : UserControl,
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
 
+        if (ViewModel?.IsGridView == true)
+        {
+            HandleGridArrowNavigation(VirtualKey.PageDown);
+            return;
+        }
+
         var indexes = CalculateTargetIndexPageUpDownScrollTo(true);
         if (indexes is null)
         {
@@ -480,6 +541,12 @@ public sealed partial class ListItemsView : UserControl,
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
+
+        if (ViewModel?.IsGridView == true)
+        {
+            HandleGridArrowNavigation(VirtualKey.PageUp);
+            return;
+        }
 
         var indexes = CalculateTargetIndexPageUpDownScrollTo(false);
         if (indexes is null)
@@ -640,6 +707,9 @@ public sealed partial class ListItemsView : UserControl,
     {
         if (d is ListItemsView @this)
         {
+            Interlocked.Increment(ref @this._itemsUpdatedVersion);
+            @this.CancelPendingGridActions();
+            @this.CancelPendingContextMenuOpen();
             if (e.OldValue is ListViewModel old)
             {
                 old.ItemsUpdated -= @this.Page_ItemsUpdated;
@@ -650,6 +720,15 @@ public sealed partial class ListItemsView : UserControl,
             @this._forceFirstPending = false;
             @this._stickySelectedItem = null;
             @this._lastPushedToVm = null;
+
+            if (@this._isLoaded || e.NewValue is null)
+            {
+                @this.SynchronizeGridItems();
+            }
+            else
+            {
+                @this.GridItems.SetSource(null);
+            }
 
             if (e.NewValue is ListViewModel page)
             {
@@ -675,15 +754,30 @@ public sealed partial class ListItemsView : UserControl,
     // GetItems or a change in the filter.
     private void Page_ItemsUpdated(ListViewModel sender, ItemsUpdatedEventArgs args)
     {
+        if (!ReferenceEquals(sender, ViewModel))
+        {
+            return;
+        }
+
         var version = Interlocked.Increment(ref _itemsUpdatedVersion);
+
+        if (args.ForceFirstItem)
+        {
+            CancelPendingGridActions();
+        }
 
         // Latch: once any update requests force-first, keep it until consumed.
         _forceFirstPending |= args.ForceFirstItem;
         var forceFirstItem = _forceFirstPending;
         var ensureSelectionVisible = args.EnsureSelectionVisible;
 
-        // Try to handle selection immediately — items should already be available
-        // since FilteredItems is a direct ObservableCollection bound as ItemsSource.
+        if (_isLoaded)
+        {
+            SynchronizeGridItems();
+        }
+
+        // Try to handle selection immediately after updating the presentation.
+        // The grouped CollectionViewSource may still be processing its changes.
         // TrySetSelectionAfterUpdate clears _forceFirstPending internally once
         // selection stabilizes (no repair needed), so we don't clear it here.
         if (TrySetSelectionAfterUpdate(sender, version, forceFirstItem, ensureSelectionVisible))
@@ -729,8 +823,14 @@ public sealed partial class ListItemsView : UserControl,
             return true;
         }
 
-        // Use the stable source of truth, not ItemView.Items (which can be transiently empty)
-        if (vm.FilteredItems.Count == 0)
+        if (vm.IsGridView && GridItems.HasPendingChanges)
+        {
+            return false;
+        }
+
+        // Structural rows are group headers, not selectable items in grid mode.
+        // Use the stable source of truth, not the possibly transient ItemView.Items.
+        if (vm.FilteredItems.Count == 0 || (vm.IsGridView && GridItems.ItemCount == 0))
         {
             using (SuppressSelectionChangedScope())
             {
@@ -816,12 +916,16 @@ public sealed partial class ListItemsView : UserControl,
 
                 _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
                 {
-                    if (version != Volatile.Read(ref _itemsUpdatedVersion))
+                    if (!IsSelectionScrollCurrent(version, stickyRestored ?? firstSelected))
                     {
                         return;
                     }
 
                     ItemView.UpdateLayout();
+                    if (!IsSelectionScrollCurrent(version, stickyRestored ?? firstSelected))
+                    {
+                        return;
+                    }
 
                     if (stickyRestored is not null && ensureSelectionVisible)
                     {
@@ -832,7 +936,7 @@ public sealed partial class ListItemsView : UserControl,
                         ScrollToItem(firstSelected);
                         ResetScrollToTop();
                     }
-                    else
+                    else if (stickyRestored is null)
                     {
                         ResetScrollToTop();
                     }
@@ -849,13 +953,16 @@ public sealed partial class ListItemsView : UserControl,
             {
                 _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
                 {
-                    if (version != Volatile.Read(ref _itemsUpdatedVersion))
+                    if (!IsSelectionScrollCurrent(version, selectedItem))
                     {
                         return;
                     }
 
                     ItemView.UpdateLayout();
-                    ScrollToItem(selectedItem);
+                    if (IsSelectionScrollCurrent(version, selectedItem))
+                    {
+                        ScrollToItem(selectedItem);
+                    }
                 });
             }
         }
@@ -863,6 +970,9 @@ public sealed partial class ListItemsView : UserControl,
         PushSelectionToVm();
         return true;
     }
+
+    private bool IsSelectionScrollCurrent(long version, ListItemViewModel? item)
+        => _isLoaded && version == Volatile.Read(ref _itemsUpdatedVersion) && ReferenceEquals(ItemView.SelectedItem, item);
 
     private static ScrollViewer? FindScrollViewer(DependencyObject parent)
     {
@@ -882,132 +992,6 @@ public sealed partial class ListItemsView : UserControl,
         }
 
         return null;
-    }
-
-    // Find a logical neighbor in the requested direction using containers' positions.
-    private void HandleGridArrowNavigation(VirtualKey key)
-    {
-        if (ItemView.Items.Count == 0)
-        {
-            return;
-        }
-
-        var currentIndex = ItemView.SelectedIndex;
-        if (currentIndex < 0)
-        {
-            // -1 is a valid value (no item currently selected)
-            currentIndex = 0;
-            ItemView.SelectedIndex = 0;
-        }
-
-        try
-        {
-            // Try to compute using container positions; if not available, fall back to simple +/-1.
-            var currentContainer = ItemView.ContainerFromIndex(currentIndex) as FrameworkElement;
-            if (currentContainer is not null && currentContainer.ActualWidth != 0 && currentContainer.ActualHeight != 0)
-            {
-                // Use center of current container as reference
-                var curPoint = currentContainer.TransformToVisual(ItemView).TransformPoint(new Point(0, 0));
-                var curCenterX = curPoint.X + (currentContainer.ActualWidth / 2.0);
-                var curCenterY = curPoint.Y + (currentContainer.ActualHeight / 2.0);
-
-                var bestScore = double.MaxValue;
-                var bestIndex = currentIndex;
-
-                for (var i = 0; i < ItemView.Items.Count; i++)
-                {
-                    if (i == currentIndex)
-                    {
-                        continue;
-                    }
-
-                    if (IsSeparator(ItemView.Items[i]))
-                    {
-                        continue;
-                    }
-
-                    if (ItemView.ContainerFromIndex(i) is FrameworkElement c && c.ActualWidth > 0 && c.ActualHeight > 0)
-                    {
-                        var p = c.TransformToVisual(ItemView).TransformPoint(new Point(0, 0));
-                        var centerX = p.X + (c.ActualWidth / 2.0);
-                        var centerY = p.Y + (c.ActualHeight / 2.0);
-
-                        var dx = centerX - curCenterX;
-                        var dy = centerY - curCenterY;
-
-                        var candidate = false;
-                        var score = double.MaxValue;
-
-                        switch (key)
-                        {
-                            case VirtualKey.Left:
-                                if (dx < 0)
-                                {
-                                    candidate = true;
-                                    score = Math.Abs(dy) + (Math.Abs(dx) * 0.7);
-                                }
-
-                                break;
-                            case VirtualKey.Right:
-                                if (dx > 0)
-                                {
-                                    candidate = true;
-                                    score = Math.Abs(dy) + (Math.Abs(dx) * 0.7);
-                                }
-
-                                break;
-                            case VirtualKey.Up:
-                                if (dy < 0)
-                                {
-                                    candidate = true;
-                                    score = Math.Abs(dx) + (Math.Abs(dy) * 0.7);
-                                }
-
-                                break;
-                            case VirtualKey.Down:
-                                if (dy > 0)
-                                {
-                                    candidate = true;
-                                    score = Math.Abs(dx) + (Math.Abs(dy) * 0.7);
-                                }
-
-                                break;
-                        }
-
-                        if (candidate && score < bestScore)
-                        {
-                            bestScore = score;
-                            bestIndex = i;
-                        }
-                    }
-                }
-
-                if (bestIndex != currentIndex)
-                {
-                    ItemView.SelectedIndex = bestIndex;
-                }
-
-                return;
-            }
-        }
-        catch
-        {
-            // ignore transform errors and fall back
-        }
-
-        // fallback linear behavior
-        var fallback = key switch
-        {
-            VirtualKey.Left => Math.Max(0, currentIndex - 1),
-            VirtualKey.Right => Math.Min(ItemView.Items.Count - 1, currentIndex + 1),
-            VirtualKey.Up => Math.Max(0, currentIndex - 1),
-            VirtualKey.Down => Math.Min(ItemView.Items.Count - 1, currentIndex + 1),
-            _ => currentIndex,
-        };
-        if (fallback != currentIndex)
-        {
-            ItemView.SelectedIndex = fallback;
-        }
     }
 
     private void Items_OnContextRequested(UIElement sender, ContextRequestedEventArgs e)
@@ -1074,6 +1058,8 @@ public sealed partial class ListItemsView : UserControl,
                 case VirtualKey.Right:
                 case VirtualKey.Up:
                 case VirtualKey.Down:
+                case VirtualKey.PageUp:
+                case VirtualKey.PageDown:
                     _lastInputSource = InputSource.Keyboard;
                     _scrollOnNextSelectionChange = true;
                     HandleGridArrowNavigation(e.Key);
@@ -1281,7 +1267,13 @@ public sealed partial class ListItemsView : UserControl,
         // can't resurrect an old context menu on the wrong item.
         if (requestId != Volatile.Read(ref _pendingContextMenuOpenRequestId) ||
             !ReferenceEquals(ItemView.SelectedItem, item) ||
-            !item.CanOpenContextMenu)
+            !IsContextMenuAnchorCurrent(item, element))
+        {
+            // Complete the request so its hydration listener is detached.
+            return true;
+        }
+
+        if (!item.CanOpenContextMenu)
         {
             return false;
         }
@@ -1290,7 +1282,8 @@ public sealed partial class ListItemsView : UserControl,
             () =>
             {
                 if (requestId != Volatile.Read(ref _pendingContextMenuOpenRequestId) ||
-                    !ReferenceEquals(ItemView.SelectedItem, item))
+                    !ReferenceEquals(ItemView.SelectedItem, item) ||
+                    !IsContextMenuAnchorCurrent(item, element))
                 {
                     return;
                 }
@@ -1306,6 +1299,27 @@ public sealed partial class ListItemsView : UserControl,
         return true;
     }
 
+    private bool IsContextMenuAnchorCurrent(ListItemViewModel item, FrameworkElement element)
+    {
+        if (!element.IsLoaded || !ReferenceEquals(element.XamlRoot, ItemView.XamlRoot))
+        {
+            return false;
+        }
+
+        var anchorItem = element is SelectorItem container ? ItemView.ItemFromContainer(container) : element.DataContext;
+        if (!ReferenceEquals(anchorItem, item) || _itemsScrollViewer is null ||
+            element.Visibility != Visibility.Visible || element.ActualWidth <= 0 || element.ActualHeight <= 0)
+        {
+            return false;
+        }
+
+        // Native virtualization can retain a correctly mapped container outside
+        // the viewport. It must not anchor a menu requested before scrolling.
+        var bounds = element.TransformToVisual(_itemsScrollViewer).TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
+        return bounds.Left < _itemsScrollViewer.ViewportWidth && bounds.Right > 0 &&
+            bounds.Top < _itemsScrollViewer.ViewportHeight && bounds.Bottom > 0;
+    }
+
     private void CancelPendingContextMenuOpen()
     {
         Interlocked.Increment(ref _pendingContextMenuOpenRequestId);
@@ -1315,8 +1329,9 @@ public sealed partial class ListItemsView : UserControl,
 
     private IDisposable SuppressSelectionChangedScope()
     {
+        var wasSuppressed = _suppressSelectionChanged;
         _suppressSelectionChanged = true;
-        return new ActionOnDispose(() => _suppressSelectionChanged = false);
+        return new ActionOnDispose(() => _suppressSelectionChanged = wasSuppressed);
     }
 
     private sealed partial class ActionOnDispose(Action action) : IDisposable
