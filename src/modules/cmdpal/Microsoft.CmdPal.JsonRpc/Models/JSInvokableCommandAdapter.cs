@@ -50,7 +50,7 @@ internal sealed partial class JSInvokableCommandAdapter : JSObservableProxyBase,
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to invoke command {Id}: {ex.Message}");
+            Logger.LogError($"Failed to invoke command {Id}.", ex);
             return CommandResult.KeepOpen();
         }
     }

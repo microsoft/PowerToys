@@ -85,7 +85,7 @@ internal sealed partial class JSContentPageProxy : JSObservableProxyBase, IConte
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to get content for page {_pageId}: {ex.Message}");
+            Logger.LogError($"Failed to get content for page {_pageId}.", ex);
             return [];
         }
     }

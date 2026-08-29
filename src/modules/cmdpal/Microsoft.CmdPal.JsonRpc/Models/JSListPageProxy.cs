@@ -118,7 +118,7 @@ internal sealed partial class JSListPageProxy : JSObservableProxyBase, IListPage
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to get items for page {_pageId}: {ex.Message}");
+            Logger.LogError($"Failed to get items for page {_pageId}.", ex);
             return [];
         }
     }

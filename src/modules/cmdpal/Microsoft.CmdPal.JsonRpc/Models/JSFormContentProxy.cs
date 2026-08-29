@@ -67,7 +67,7 @@ internal sealed partial class JSFormContentProxy : BaseObservable, IFormContent
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to submit form for page {_pageId}: {ex.Message}");
+            Logger.LogError($"Failed to submit form for page {_pageId}.", ex);
             return CommandResult.KeepOpen();
         }
     }

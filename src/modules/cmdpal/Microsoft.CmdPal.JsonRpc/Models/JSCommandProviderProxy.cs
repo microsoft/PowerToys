@@ -145,7 +145,7 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to get top-level commands: {ex.Message}");
+            Logger.LogError("Failed to get top-level commands.", ex);
             return [];
         }
     }
