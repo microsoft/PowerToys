@@ -13,6 +13,13 @@ namespace Microsoft.CmdPal.UI.UnitTests;
 [TestClass]
 public class GeneratedIconProtocolTests
 {
+    private const string TestInitialsPathData = "M4 4H28V28H4Z";
+
+    // Protocol serialization must not depend on graphics or installed fonts. The
+    // processor integration tests exercise the real renderer and its tile fallback.
+    private static readonly GeneratedIconProtocolProcessor TestProcessor = new(TryCreateTestInitialsPathData);
+    private static readonly IIconProtocolProcessor[] TestProcessors = [TestProcessor];
+
     [DataTestMethod]
     [DataRow("|Swatch|#07A|", "#0077AA", null)]
     [DataRow("|Swatch|#807A|", "#0077AA", "0.533")]
@@ -297,7 +304,7 @@ public class GeneratedIconProtocolTests
         string? value,
         ElementTheme theme)
     {
-        var processor = IconProtocolRegistry.Find(value);
+        var processor = IconProtocolRegistry.Find(value, TestProcessors);
         if (processor is null)
         {
             return (false, []);
@@ -352,6 +359,22 @@ public class GeneratedIconProtocolTests
         }
 
         return geometry;
+    }
+
+    private static bool TryCreateTestInitialsPathData(
+        string text,
+        out string pathData,
+        out bool useEvenOddFill)
+    {
+        useEvenOddFill = false;
+        if (text == "\U0010FFFF")
+        {
+            pathData = string.Empty;
+            return false;
+        }
+
+        pathData = TestInitialsPathData;
+        return true;
     }
 
     private static XName SvgName(string localName) => XName.Get(localName, "http://www.w3.org/2000/svg");
