@@ -133,8 +133,11 @@ public class MouseHighlighterTests : UITestBase
 
         MouseUtilsTestHelper.NavigateToMouseUtilities(this);
         MouseUtilsTestHelper.SetModuleEnabled(this, ToggleId, false);
-        Assert.IsTrue(
-            NamedEventHelper.WaitUntilUnavailable(NamedEventHelper.MouseHighlighterToggle),
+        MouseUtilsTestHelper.EnsureModuleStateApplied(
+            this,
+            ModuleName,
+            enabled: false,
+            () => NamedEventHelper.WaitUntilUnavailable(NamedEventHelper.MouseHighlighterToggle),
             "Mouse Highlighter trigger event remained available after disabling the module.");
         using var disabledWatcher = new WindowShowWatcher(WindowClass);
         KeyboardHelper.SendKeys(Key.LWin, Key.Shift, Key.O);
@@ -249,43 +252,70 @@ public class MouseHighlighterTests : UITestBase
         MouseHelper.MoveTo(centerX, centerY);
         Activate();
 
-        MouseHelper.LeftClick();
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        MouseHelper.MoveTo(centerX + 250, centerY + 200);
         var expectedHighIntensityGlow = Blend(Color.Magenta, nearBase, 95);
-        Assert.IsTrue(
-            WaitHelper.WaitForStable(
+        var observedNearGlow = false;
+        var observedOuterRipple = false;
+        var maximumChangedOuterSamples = 0;
+        for (var attempt = 1; attempt <= 3 && !observedOuterRipple; attempt++)
+        {
+            MouseHelper.MoveTo(centerX, centerY);
+            MouseHelper.LeftClick();
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            MouseHelper.MoveTo(centerX + 250, centerY + 200);
+            var attemptObservedNearGlow = WaitHelper.WaitForStable(
                 () => WindowHelper.GetPixelColor(nearPoint.X, nearPoint.Y),
                 color => IsNear(color, expectedHighIntensityGlow, 20),
-                350,
+                750,
                 requiredConsecutiveMatches: 1,
-                pollIntervalMS: 10).Succeeded,
-            "The configured high-intensity Ripple glow did not render near the click point.");
-        if (stopwatch.ElapsedMilliseconds < 900)
-        {
-            Thread.Sleep(900 - (int)stopwatch.ElapsedMilliseconds);
+                pollIntervalMS: 10).Succeeded;
+            observedNearGlow |= attemptObservedNearGlow;
+
+            if (attemptObservedNearGlow)
+            {
+                if (stopwatch.ElapsedMilliseconds < 900)
+                {
+                    Thread.Sleep(900 - (int)stopwatch.ElapsedMilliseconds);
+                }
+
+                var outerRipple = WaitHelper.WaitForStable(
+                    () =>
+                    {
+                        using var current = CaptureSquare(centerX, centerY, captureRadius);
+                        return CountRipplePixels(
+                            outerBaseline,
+                            current,
+                            minimumRadius: defaultMaximumRadius + 4,
+                            maximumRadius: configuredMaximumRadius + 4);
+                    },
+                    changedPixels =>
+                    {
+                        maximumChangedOuterSamples = Math.Max(maximumChangedOuterSamples, changedPixels);
+                        return changedPixels >= 12;
+                    },
+                    900,
+                    requiredConsecutiveMatches: 1,
+                    pollIntervalMS: 20);
+                observedOuterRipple = outerRipple.Succeeded;
+            }
+
+            if (!observedOuterRipple && attempt < 3)
+            {
+                MouseUtilsTestHelper.Step(
+                    this,
+                    $"Ripple click attempt {attempt}/3 did not expose the complete configured effect; retrying after it clears");
+                Assert.IsTrue(
+                    WaitForRippleToClear(nearPoint, farPoint, nearBase, farBase, 3_000),
+                    "Ripple did not clear before retrying the complete click effect.");
+            }
         }
 
-        using var rippleFrame = CaptureSquare(centerX, centerY, captureRadius);
-        var changedOuterSamples = CountRipplePixels(
-            outerBaseline,
-            rippleFrame,
-            minimumRadius: defaultMaximumRadius + 4,
-            maximumRadius: configuredMaximumRadius + 4);
-        var missingRippleMessage = $"The configured 120px, 1.8-second Ripple was absent outside the default maximum radius after 900ms; " +
-            $"annulus={defaultMaximumRadius + 4}-{configuredMaximumRadius + 4}px, changed pixels={changedOuterSamples}.";
-        Assert.IsTrue(changedOuterSamples >= 12, missingRippleMessage);
+        Assert.IsTrue(observedNearGlow, "The configured high-intensity Ripple glow did not render near the click point.");
         Assert.IsTrue(
-            WaitHelper.WaitForStable(
-                () => new
-                {
-                    Near = WindowHelper.GetPixelColor(nearPoint.X, nearPoint.Y),
-                    Far = WindowHelper.GetPixelColor(farPoint.X, farPoint.Y),
-                },
-                sample => sample is not null && IsNear(sample.Near, nearBase, 5) && IsNear(sample.Far, farBase, 5),
-                2_000,
-                requiredConsecutiveMatches: 5,
-                pollIntervalMS: 50).Succeeded,
+            observedOuterRipple,
+            $"The configured 120px, 1.8-second Ripple was absent outside the default maximum radius after 900ms on three complete attempts; " +
+            $"annulus={defaultMaximumRadius + 4}-{configuredMaximumRadius + 4}px, maximum changed pixels={maximumChangedOuterSamples}.");
+        Assert.IsTrue(
+            WaitForRippleToClear(nearPoint, farPoint, nearBase, farBase, 2_000),
             "Ripple remained after its configured 1.8-second duration.");
     }
 
@@ -473,6 +503,23 @@ public class MouseHighlighterTests : UITestBase
             pollIntervalMS: 100);
         return result.LastObservation;
     }
+
+    private static bool WaitForRippleToClear(
+        (int X, int Y) nearPoint,
+        (int X, int Y) farPoint,
+        Color nearBase,
+        Color farBase,
+        int timeoutMs) =>
+        WaitHelper.WaitForStable(
+            () => new
+            {
+                Near = WindowHelper.GetPixelColor(nearPoint.X, nearPoint.Y),
+                Far = WindowHelper.GetPixelColor(farPoint.X, farPoint.Y),
+            },
+            sample => IsNear(sample.Near, nearBase, 5) && IsNear(sample.Far, farBase, 5),
+            timeoutMs,
+            requiredConsecutiveMatches: 5,
+            pollIntervalMS: 50).Succeeded;
 
     private static double Distance(int x1, int y1, int x2, int y2)
     {

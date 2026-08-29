@@ -131,9 +131,12 @@ public class MousePointerCrosshairsTests : UITestBase
     public void DisabledModuleRejectsActivationAndChangedShortcutWorks()
     {
         MouseUtilsTestHelper.NavigateToMouseUtilities(this);
-        var toggle = MouseUtilsTestHelper.SetModuleEnabled(this, ToggleId, false);
-        Assert.IsTrue(
-            NamedEventHelper.WaitUntilUnavailable(NamedEventHelper.MouseCrosshairsToggle),
+        MouseUtilsTestHelper.SetModuleEnabled(this, ToggleId, false);
+        MouseUtilsTestHelper.EnsureModuleStateApplied(
+            this,
+            ModuleName,
+            enabled: false,
+            () => NamedEventHelper.WaitUntilUnavailable(NamedEventHelper.MouseCrosshairsToggle),
             "Crosshairs trigger event remained available after disabling the module.");
 
         using (var disabledWatcher = new WindowShowWatcher(WindowClass))
@@ -142,10 +145,12 @@ public class MousePointerCrosshairsTests : UITestBase
             Assert.IsFalse(disabledWatcher.Wait(1_500), "The changed shortcut showed Crosshairs while the module was disabled.");
         }
 
-        toggle.Toggle(true);
-        Assert.IsTrue(toggle.WaitForProperty("ToggleState", "On", 5_000), "Crosshairs toggle did not return to On.");
-        Assert.IsTrue(
-            NamedEventHelper.WaitUntilAvailable(NamedEventHelper.MouseCrosshairsToggle),
+        MouseUtilsTestHelper.SetModuleEnabled(this, ToggleId, true);
+        MouseUtilsTestHelper.EnsureModuleStateApplied(
+            this,
+            ModuleName,
+            enabled: true,
+            () => NamedEventHelper.WaitUntilAvailable(NamedEventHelper.MouseCrosshairsToggle),
             "Crosshairs trigger event was not recreated after enabling the module.");
         var window = MouseUtilsTestHelper.WaitForWindowClass(WindowClass);
         using var enabledWatcher = new WindowShowWatcher(WindowClass, window.Hwnd.ToInt64());

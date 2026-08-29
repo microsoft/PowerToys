@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
@@ -65,6 +67,58 @@ internal static class MouseUtilsTestHelper
 
         Assert.Fail($"{toggleId} did not reach {expectedState} after three coordinate-free attempts.");
         return toggle!;
+    }
+
+    internal static void EnsureModuleStateApplied(
+        UITestBase testBase,
+        string moduleName,
+        bool enabled,
+        Func<bool> waitForRuntimeState,
+        string failureMessage)
+    {
+        var runnerProcesses = GetProcessStartTimes(PowerToysModule.Runner);
+        var settingsProcesses = GetProcessStartTimes(PowerToysModule.PowerToysSettings);
+        var settingsPipeRejected = HasUnsignedSettingsPipeRejection(runnerProcesses, settingsProcesses);
+
+        if (!settingsPipeRejected)
+        {
+            if (waitForRuntimeState())
+            {
+                return;
+            }
+
+            runnerProcesses = GetProcessStartTimes(PowerToysModule.Runner);
+            settingsProcesses = GetProcessStartTimes(PowerToysModule.PowerToysSettings);
+            settingsPipeRejected = HasUnsignedSettingsPipeRejection(runnerProcesses, settingsProcesses);
+        }
+
+        if (!settingsPipeRejected)
+        {
+            Assert.Fail(failureMessage);
+            return;
+        }
+
+        if (WaitForModuleEnabledSetting(moduleName, enabled))
+        {
+            Assert.IsTrue(waitForRuntimeState(), failureMessage);
+            return;
+        }
+
+        var persistedState = WaitForReadableModuleEnabledSetting(moduleName);
+        Assert.IsTrue(
+            persistedState.HasValue,
+            $"Could not read enabled.{moduleName} after the Settings pipe client was rejected.");
+        Assert.AreEqual(
+            !enabled,
+            persistedState.Value,
+            $"enabled.{moduleName} reached an unexpected state after the Settings pipe client was rejected.");
+
+        Step(testBase, $"The Release runner rejected the test-signed Settings pipe client; seeding and restarting it to apply enabled.{moduleName}={enabled.ToString().ToLowerInvariant()}");
+        testBase.RestartScope(enabled ? [moduleName] : []);
+        Assert.IsTrue(
+            waitForRuntimeState(),
+            $"{failureMessage} The persisted state was not applied after restarting the runner.");
+        NavigateToMouseUtilities(testBase);
     }
 
     internal static WindowControl.ProcessWindow WaitForWindowClass(string className, int timeoutMs = 10_000)
@@ -239,6 +293,117 @@ internal static class MouseUtilsTestHelper
 
     internal static void Step(UITestBase testBase, string message) =>
         testBase.TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
+
+    private static Dictionary<int, DateTime> GetProcessStartTimes(PowerToysModule module)
+    {
+        var processes = new Dictionary<int, DateTime>();
+        foreach (var process in Process.GetProcessesByName(SessionHelper.GetProcessName(module)))
+        {
+            using (process)
+            {
+                try
+                {
+                    processes[process.Id] = process.StartTime;
+                }
+                catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
+                {
+                }
+            }
+        }
+
+        return processes;
+    }
+
+    private static bool HasUnsignedSettingsPipeRejection(
+        IReadOnlyDictionary<int, DateTime> runnerProcesses,
+        IReadOnlyDictionary<int, DateTime> settingsProcesses)
+    {
+        if (runnerProcesses.Count == 0 || settingsProcesses.Count == 0)
+        {
+            return false;
+        }
+
+        var runnerLogs = Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, "RunnerLogs");
+        if (!Directory.Exists(runnerLogs))
+        {
+            return false;
+        }
+
+        foreach (var path in Directory.EnumerateFiles(runnerLogs, "runner-log*.log"))
+        {
+            try
+            {
+                using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                using var reader = new StreamReader(stream);
+                while (reader.ReadLine() is { } line)
+                {
+                    if (line.Contains("Rejected unauthenticated Settings pipe client", StringComparison.Ordinal) &&
+                        line.Contains("reason=not-microsoft-signed", StringComparison.Ordinal) &&
+                        TryReadLogTimestamp(line, out var timestamp) &&
+                        runnerProcesses.Any(process =>
+                            timestamp >= process.Value.AddSeconds(-1) &&
+                            line.Contains($"[p-{process.Key}]", StringComparison.Ordinal)) &&
+                        settingsProcesses.Any(process =>
+                            timestamp >= process.Value.AddSeconds(-1) &&
+                            line.Contains($"pid={process.Key} ", StringComparison.Ordinal)))
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryReadLogTimestamp(string line, out DateTime timestamp)
+    {
+        const int timestampLength = 26;
+        timestamp = default;
+        return line.Length > timestampLength + 1 &&
+               DateTime.TryParseExact(
+                   line.AsSpan(1, timestampLength),
+                   "yyyy-MM-dd HH:mm:ss.ffffff",
+                   CultureInfo.InvariantCulture,
+                   DateTimeStyles.AssumeLocal,
+                   out timestamp);
+    }
+
+    private static bool WaitForModuleEnabledSetting(string moduleName, bool enabled) =>
+        WaitHelper.WaitForStable(
+            () => ReadModuleEnabledSetting(moduleName),
+            value => value == enabled,
+            5_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 100).Succeeded;
+
+    private static bool? WaitForReadableModuleEnabledSetting(string moduleName)
+    {
+        var result = WaitHelper.WaitForStable(
+            () => ReadModuleEnabledSetting(moduleName),
+            value => value.HasValue,
+            2_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 100);
+        return result.Succeeded ? result.LastObservation : null;
+    }
+
+    private static bool? ReadModuleEnabledSetting(string moduleName)
+    {
+        try
+        {
+            var path = Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, "settings.json");
+            var root = JsonNode.Parse(File.ReadAllText(path));
+            return root?["enabled"]?[moduleName]?.GetValue<bool>();
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
     [DllImport("user32.dll", EntryPoint = "SystemParametersInfoW", SetLastError = true)]
     private static extern bool SystemParametersInfo(int uiAction, int uiParam, ref int pvParam, int fWinIni);

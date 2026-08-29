@@ -120,8 +120,11 @@ public class FindMyMouseTests : UITestBase
     {
         MouseUtilsTestHelper.NavigateToMouseUtilities(this);
         var toggle = MouseUtilsTestHelper.SetModuleEnabled(this, ToggleId, false);
-        Assert.IsTrue(
-            NamedEventHelper.WaitUntilUnavailable(NamedEventHelper.FindMyMouseTrigger),
+        MouseUtilsTestHelper.EnsureModuleStateApplied(
+            this,
+            ModuleName,
+            enabled: false,
+            () => NamedEventHelper.WaitUntilUnavailable(NamedEventHelper.FindMyMouseTrigger),
             "Find My Mouse trigger event remained available after disabling the module.");
 
         using (var disabledWatcher = new WindowShowWatcher(WindowClass))
@@ -132,8 +135,11 @@ public class FindMyMouseTests : UITestBase
 
         _ = toggle;
         MouseUtilsTestHelper.SetModuleEnabled(this, ToggleId, true);
-        Assert.IsTrue(
-            NamedEventHelper.WaitUntilAvailable(NamedEventHelper.FindMyMouseTrigger),
+        MouseUtilsTestHelper.EnsureModuleStateApplied(
+            this,
+            ModuleName,
+            enabled: true,
+            () => NamedEventHelper.WaitUntilAvailable(NamedEventHelper.FindMyMouseTrigger),
             "Find My Mouse trigger event was not recreated after enabling.");
         var window = MouseUtilsTestHelper.WaitForWindowClass(WindowClass);
         using var enabledWatcher = new WindowShowWatcher(WindowClass, window.Hwnd.ToInt64());
