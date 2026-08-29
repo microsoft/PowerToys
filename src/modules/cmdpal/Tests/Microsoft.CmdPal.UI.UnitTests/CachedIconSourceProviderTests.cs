@@ -214,9 +214,9 @@ public partial class CachedIconSourceProviderTests
     {
         var loader = new ControllableIconLoader();
         var provider = CreateProvider(loader);
-        var precomposed = new IconDataViewModel { Icon = "|Initials|Å|#0067C0|circle|" };
-        var decomposed = new IconDataViewModel { Icon = "|Initials|A\u030A|#0067C0|circle|" };
-        var percentEncoded = new IconDataViewModel { Icon = "|Initials|%C3%85|#0067C0|circle|" };
+        var precomposed = CreateIcon("|Initials|Å|#0067C0|circle|");
+        var decomposed = CreateIcon("|Initials|A\u030A|#0067C0|circle|");
+        var percentEncoded = CreateIcon("|Initials|%C3%85|#0067C0|circle|");
 
         var first = provider.GetIconSource(precomposed, 1.0, theme: ElementTheme.Light);
         loader.CompleteNext(null);
