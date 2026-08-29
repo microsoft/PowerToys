@@ -261,6 +261,16 @@ internal static class GeneratedIconProtocol
 
     public static bool TryCreateInitialsSvg(string? value, ElementTheme theme, out byte[] svg)
     {
+        return TryCreateInitialsSvg(
+            value,
+            theme,
+            InitialsTextRenderer.TryCreatePathData,
+            out svg);
+    }
+
+    internal static bool TryCreateInitialsSvg(
+        string? value, ElementTheme theme, InitialsPathFactory createPathData, out byte[] svg)
+    {
         svg = [];
 
         try
@@ -277,7 +287,7 @@ internal static class GeneratedIconProtocol
                 return false;
             }
 
-            var hasGlyph = InitialsTextRenderer.TryCreatePathData(
+            var hasGlyph = createPathData(
                 initials,
                 out var pathData,
                 out var useEvenOddFill);

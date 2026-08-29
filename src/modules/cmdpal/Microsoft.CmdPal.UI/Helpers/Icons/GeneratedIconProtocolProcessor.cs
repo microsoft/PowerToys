@@ -8,10 +8,14 @@ namespace Microsoft.CmdPal.UI.Helpers;
 
 internal sealed class GeneratedIconProtocolProcessor : IIconProtocolProcessor
 {
-    public static GeneratedIconProtocolProcessor Instance { get; } = new();
+    private readonly InitialsPathFactory _createInitialsPathData;
 
-    private GeneratedIconProtocolProcessor()
+    public static GeneratedIconProtocolProcessor Instance { get; } = new(InitialsTextRenderer.TryCreatePathData);
+
+    internal GeneratedIconProtocolProcessor(InitialsPathFactory createInitialsPathData)
     {
+        ArgumentNullException.ThrowIfNull(createInitialsPathData);
+        _createInitialsPathData = createInitialsPathData;
     }
 
     public IconCachePartition CachePartition => IconCachePartition.Other;
@@ -67,7 +71,11 @@ internal sealed class GeneratedIconProtocolProcessor : IIconProtocolProcessor
         return await Task.Run(
             () =>
             {
-                var preparedIcon = GeneratedIconProtocol.TryCreateInitialsSvg(value, theme, out var svg)
+                var preparedIcon = GeneratedIconProtocol.TryCreateInitialsSvg(
+                    value,
+                    theme,
+                    _createInitialsPathData,
+                    out var svg)
                     ? IconPathConverter.PreparedIcon.FromSvgData(svg, targetSize)
                     : IconPathConverter.PreparedIcon.Empty();
                 return IconProtocolProcessingResult.FromPreparedIcon(preparedIcon);
