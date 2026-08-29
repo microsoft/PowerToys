@@ -5,6 +5,7 @@
 using System.Drawing;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static MouseUtils.UITests.MouseUtilsTestHelper;
 
 namespace MouseUtils.UITests;
 
@@ -16,6 +17,10 @@ public class MouseHighlighterTests : UITestBase
     private const string WindowClass = "MouseHighlighter";
     private static readonly IDisposable ModuleSettings = SettingsConfigHelper.PreserveModuleSettings(ModuleName);
     private static IDisposable? clientAreaAnimations;
+
+    static MouseHighlighterTests()
+    {
+    }
 
     public MouseHighlighterTests()
         : base(PowerToysModule.PowerToysSettings, enableModules: new[] { ModuleName })
@@ -32,14 +37,7 @@ public class MouseHighlighterTests : UITestBase
     [ClassCleanup]
     public static void RestoreClassState()
     {
-        try
-        {
-            clientAreaAnimations?.Dispose();
-        }
-        finally
-        {
-            ModuleSettings.Dispose();
-        }
+        DisposeAll(clientAreaAnimations, ModuleSettings);
     }
 
     protected override void PrepareTestState()
@@ -95,7 +93,7 @@ public class MouseHighlighterTests : UITestBase
         MouseHelper.MoveTo(centerX, centerY);
 
         MouseHelper.LeftDown();
-        AssertPixelNear(centerX + 25, centerY, Color.Red, "left-button circle");
+        AssertPixelNear(centerX + 25, centerY, Color.Red, 5, "left-button circle");
         MouseHelper.MoveBy(180, 100, steps: 20, delayMs: 20);
         var moved = MouseHelper.GetMousePosition();
         AssertColorNearPoint(moved.X, moved.Y, Color.Red, 45, "left-button circle did not follow the drag");
@@ -103,7 +101,7 @@ public class MouseHighlighterTests : UITestBase
 
         MouseHelper.MoveTo(centerX, centerY);
         MouseHelper.RightDown();
-        AssertPixelNear(centerX + 25, centerY, Color.Lime, "right-button circle");
+        AssertPixelNear(centerX + 25, centerY, Color.Lime, 5, "right-button circle");
         MouseHelper.MoveBy(-180, 100, steps: 20, delayMs: 20);
         moved = MouseHelper.GetMousePosition();
         AssertColorNearPoint(moved.X, moved.Y, Color.Lime, 45, "right-button circle did not follow the drag");
@@ -163,9 +161,9 @@ public class MouseHighlighterTests : UITestBase
             MouseHelper.LeftDown();
             var expectedInner = Blend(Color.Red, innerBase, 128);
             var expectedFadePoint = Blend(Color.Red, fadeBase, 128);
-            AssertPixelNear(inner.X, inner.Y, expectedInner, "semi-transparent left circle inside its 100px radius and 70px pressed radius");
-            AssertPixelNear(fadePoint.X, fadePoint.Y, expectedFadePoint, "semi-transparent left circle inside its pressed radius");
-            AssertPixelNear(outer.X, outer.Y, outerBase, "desktop outside the configured 100px radius");
+            AssertPixelNear(inner.X, inner.Y, expectedInner, 5, "semi-transparent left circle inside its 100px radius and 70px pressed radius");
+            AssertPixelNear(fadePoint.X, fadePoint.Y, expectedFadePoint, 5, "semi-transparent left circle inside its pressed radius");
+            AssertPixelNear(outer.X, outer.Y, outerBase, 5, "desktop outside the configured 100px radius");
             var fullContrast = ColorDistance(expectedFadePoint, fadeBase);
             var fadeStopwatch = System.Diagnostics.Stopwatch.StartNew();
             MouseHelper.LeftUp();
@@ -194,7 +192,7 @@ public class MouseHighlighterTests : UITestBase
 
             MouseHelper.RightDown();
             var expectedRight = Blend(Color.Lime, fadeBase, 128);
-            AssertPixelNear(fadePoint.X, fadePoint.Y, expectedRight, "semi-transparent right circle inside its 70px radius");
+            AssertPixelNear(fadePoint.X, fadePoint.Y, expectedRight, 5, "semi-transparent right circle inside its 70px radius");
             MouseHelper.RightUp();
         });
     }
@@ -219,16 +217,16 @@ public class MouseHighlighterTests : UITestBase
         MouseHelper.MoveTo(centerX, centerY);
         Activate();
 
-        AssertPixelNear(inside.X, inside.Y, insideBase, "transparent Spotlight hole inside the configured radius");
-        AssertPixelNear(outside.X, outside.Y, Blend(Color.Red, outsideBase, 128), "Spotlight tint outside the configured radius");
+        AssertPixelNear(inside.X, inside.Y, insideBase, 5, "transparent Spotlight hole inside the configured radius");
+        AssertPixelNear(outside.X, outside.Y, Blend(Color.Red, outsideBase, 128), 5, "Spotlight tint outside the configured radius");
 
         MouseHelper.MoveBy(160, 80, steps: 20, delayMs: 20);
         var moved = MouseHelper.GetMousePosition();
         Assert.IsTrue(
             Distance(moved.X, moved.Y, calibratedTarget.X, calibratedTarget.Y) <= 10,
             $"Calibrated relative movement ended at ({calibratedTarget.X},{calibratedTarget.Y}), but overlay movement ended at ({moved.X},{moved.Y}).");
-        AssertPixelNear(movedInside.X, movedInside.Y, movedInsideBase, "transparent Spotlight hole after cursor movement");
-        AssertPixelNear(movedOutside.X, movedOutside.Y, Blend(Color.Red, movedOutsideBase, 128), "Spotlight tint after cursor movement");
+        AssertPixelNear(movedInside.X, movedInside.Y, movedInsideBase, 5, "transparent Spotlight hole after cursor movement");
+        AssertPixelNear(movedOutside.X, movedOutside.Y, Blend(Color.Red, movedOutsideBase, 128), 5, "Spotlight tint after cursor movement");
     }
 
     [TestMethod]
@@ -239,8 +237,10 @@ public class MouseHighlighterTests : UITestBase
         var (centerX, centerY) = WindowHelper.GetScreenCenter();
         var nearPoint = (X: centerX + 10, Y: centerY);
         var farPoint = (X: centerX + 100, Y: centerY);
-        var defaultMaximumRadius = (int)Math.Ceiling(60 * 1.4);
-        var configuredMaximumRadius = (int)Math.Ceiling(120 * 1.4);
+        const double rendererRadiusScale = 1.4;
+        const int minimumChangedAnnulusPixels = 12;
+        var defaultMaximumRadius = (int)Math.Ceiling(60 * rendererRadiusScale);
+        var configuredMaximumRadius = (int)Math.Ceiling(120 * rendererRadiusScale);
         var captureRadius = configuredMaximumRadius + 10;
         MouseHelper.MoveTo(centerX - 250, centerY - 200);
         var nearBase = GetStablePixel(nearPoint.X, nearPoint.Y);
@@ -287,7 +287,7 @@ public class MouseHighlighterTests : UITestBase
                     changedPixels =>
                     {
                         maximumChangedOuterSamples = Math.Max(maximumChangedOuterSamples, changedPixels);
-                        return changedPixels >= 12;
+                        return changedPixels >= minimumChangedAnnulusPixels;
                     },
                     900,
                     requiredConsecutiveMatches: 1,
@@ -447,9 +447,14 @@ public class MouseHighlighterTests : UITestBase
 
     private static void AssertRippleRingNear(int centerX, int centerY, string message)
     {
+        // The configured 120px ripple renders its held magenta ring across radii 42-69; requiring
+        // magenta to dominate green by 30 rejects neutral desktop pixels without demanding exact alpha.
+        const int heldRingMinimumRadius = 42;
+        const int heldRingRadiusCount = 28;
+        const int magentaChannelDominance = 30;
         Assert.IsTrue(
             WaitHelper.WaitForStable(
-                () => Enumerable.Range(42, 28)
+                () => Enumerable.Range(heldRingMinimumRadius, heldRingRadiusCount)
                     .SelectMany(radius => new[]
                     {
                         WindowHelper.GetPixelColor(centerX + radius, centerY),
@@ -457,7 +462,7 @@ public class MouseHighlighterTests : UITestBase
                         WindowHelper.GetPixelColor(centerX, centerY + radius),
                         WindowHelper.GetPixelColor(centerX, centerY - radius),
                     })
-                    .Count(color => color.R > color.G + 30 && color.B > color.G + 30),
+                    .Count(color => color.R > color.G + magentaChannelDominance && color.B > color.G + magentaChannelDominance),
                 count => count >= 2,
                 1_500,
                 requiredConsecutiveMatches: 1,
@@ -484,23 +489,6 @@ public class MouseHighlighterTests : UITestBase
             message);
     }
 
-    private static Color GetStablePixel(int x, int y)
-    {
-        Color? previous = null;
-        var result = WaitHelper.WaitForStable(
-            () => WindowHelper.GetPixelColor(x, y),
-            color =>
-            {
-                var matchesPrevious = previous.HasValue && color.ToArgb() == previous.Value.ToArgb();
-                previous = color;
-                return matchesPrevious;
-            },
-            2_000,
-            requiredConsecutiveMatches: 4,
-            pollIntervalMS: 100);
-        return result.LastObservation;
-    }
-
     private static bool WaitForRippleToClear(
         (int X, int Y) nearPoint,
         (int X, int Y) farPoint,
@@ -517,13 +505,6 @@ public class MouseHighlighterTests : UITestBase
             timeoutMs,
             requiredConsecutiveMatches: 5,
             pollIntervalMS: 50).Succeeded;
-
-    private static double Distance(int x1, int y1, int x2, int y2)
-    {
-        var deltaX = x2 - x1;
-        var deltaY = y2 - y1;
-        return Math.Sqrt((deltaX * deltaX) + (deltaY * deltaY));
-    }
 
     private static Bitmap CaptureSquare(int centerX, int centerY, int radius)
     {
@@ -543,6 +524,7 @@ public class MouseHighlighterTests : UITestBase
 
     private static int CountRipplePixels(Bitmap baseline, Bitmap current, int minimumRadius, int maximumRadius)
     {
+        const int minimumColorDistanceImprovement = 6;
         var center = baseline.Width / 2;
         var minimumSquared = minimumRadius * minimumRadius;
         var maximumSquared = maximumRadius * maximumRadius;
@@ -561,7 +543,7 @@ public class MouseHighlighterTests : UITestBase
 
                 var before = baseline.GetPixel(x, y);
                 var after = current.GetPixel(x, y);
-                if (ColorDistance(after, Color.Magenta) <= ColorDistance(before, Color.Magenta) - 6)
+                if (ColorDistance(after, Color.Magenta) <= ColorDistance(before, Color.Magenta) - minimumColorDistanceImprovement)
                 {
                     count++;
                 }
@@ -608,35 +590,6 @@ public class MouseHighlighterTests : UITestBase
         var blue = first.B - second.B;
         return Math.Sqrt((red * red) + (green * green) + (blue * blue));
     }
-
-    private static Color Blend(Color foreground, Color background, int alpha)
-    {
-        var inverse = 255 - alpha;
-        return Color.FromArgb(
-            ((foreground.R * alpha) + (background.R * inverse) + 127) / 255,
-            ((foreground.G * alpha) + (background.G * inverse) + 127) / 255,
-            ((foreground.B * alpha) + (background.B * inverse) + 127) / 255);
-    }
-
-    private static void AssertPixelNear(int x, int y, Color expected, string description)
-    {
-        Assert.IsTrue(
-            WaitHelper.WaitForStable(
-                () => WindowHelper.GetPixelColor(x, y),
-                color => IsNear(color, expected, 5),
-                5_000,
-                requiredConsecutiveMatches: 2,
-                pollIntervalMS: 50).Succeeded,
-            $"Unexpected {description} at ({x},{y}); expected {expected}, observed {WindowHelper.GetPixelColor(x, y)}.");
-    }
-
-    private static void AssertColorNear(Color actual, Color expected, int tolerance, string message) =>
-        Assert.IsTrue(IsNear(actual, expected, tolerance), $"{message}. Expected {expected}; observed {actual}.");
-
-    private static bool IsNear(Color actual, Color expected, int tolerance) =>
-        Math.Abs(actual.R - expected.R) <= tolerance &&
-        Math.Abs(actual.G - expected.G) <= tolerance &&
-        Math.Abs(actual.B - expected.B) <= tolerance;
 
     private sealed record HighlighterConfiguration(
         int ShortcutCode = (int)Key.H,

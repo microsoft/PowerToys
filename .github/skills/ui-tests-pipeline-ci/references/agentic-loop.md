@@ -262,14 +262,17 @@ source SHA.
 
 Run the setup preflight first. Keep the waiter attached to the active agent turn; do not use an
 async/background mode, end the response, or call `task_complete` while it runs. The waiter validates
-identity on every read, polls every 120 seconds, prevents system sleep, and returns on terminal
-status, timeout, or a genuine query failure.
+identity on every read, polls every 120 seconds, requests system sleep prevention, and returns on
+terminal status, timeout, or a genuine query failure.
 
-When it emits `Event=terminal`, immediately query timeline, logs, tests, and artifacts and apply the
-completion standard. If it times out while builds are progressing, invoke another bounded foreground
-wait. For authentication or repeated query errors, rerun the setup preflight and follow its blocker
-rules. After a failed terminal run, diagnose, fix, rerun local gates, queue the next authorized
-attempt, and invoke a new waiter.
+Read the waiter's JSON-lines `Event`: `progress` is a successful nonterminal read, `query-error` is a
+retryable read failure, `terminal` means every build completed, and `timeout` ends the bounded wait.
+Require at least one `progress` or `terminal` record before attributing a nonzero exit to Azure DevOps;
+otherwise diagnose the waiter invocation itself. On `terminal`, immediately query timeline, logs,
+tests, and artifacts and apply the completion standard. If it times out while builds are progressing,
+invoke another bounded foreground wait. For authentication or repeated query errors, rerun the setup
+preflight and follow its blocker rules. After a failed terminal run, diagnose, fix, rerun local gates,
+queue the next authorized attempt, and invoke a new waiter.
 
 This mechanism relies on a client that keeps a synchronous shell tool call attached to the active
 agent turn. Copilot CLI in autopilot mode supports that execution model. If the current client cannot

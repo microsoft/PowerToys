@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Drawing;
+using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static MouseUtils.UITests.MouseUtilsTestHelper;
 
 namespace MouseUtils.UITests;
 
@@ -16,6 +18,11 @@ public class FindMyMouseTests : UITestBase
     private const string WindowClass = "FindMyMouse";
     private static readonly IDisposable ModuleSettings = SettingsConfigHelper.PreserveModuleSettings(ModuleName);
     private static IDisposable? clientAreaAnimations;
+    private NotepadFixture? notepadFixture;
+
+    static FindMyMouseTests()
+    {
+    }
 
     public FindMyMouseTests()
         : base(PowerToysModule.PowerToysSettings, enableModules: new[] { ModuleName })
@@ -32,14 +39,7 @@ public class FindMyMouseTests : UITestBase
     [ClassCleanup]
     public static void RestoreClassState()
     {
-        try
-        {
-            clientAreaAnimations?.Dispose();
-        }
-        finally
-        {
-            ModuleSettings.Dispose();
-        }
+        DisposeAll(clientAreaAnimations, ModuleSettings);
     }
 
     protected override void PrepareTestState()
@@ -83,6 +83,8 @@ public class FindMyMouseTests : UITestBase
         KeyboardHelper.ReleaseKey(Key.LCtrl);
         KeyboardHelper.ReleaseKey(Key.RCtrl);
         KeyboardHelper.ReleaseKey(Key.LWin);
+        notepadFixture?.Dispose();
+        notepadFixture = null;
     }
 
     [TestMethod]
@@ -161,8 +163,8 @@ public class FindMyMouseTests : UITestBase
 
         var expectedSpotlight = Blend(Color.Lime, spotlightBase, 128);
         var expectedBackground = Blend(Color.Red, backgroundBase, 128);
-        AssertPixelNear(spotlightPoint.X, spotlightPoint.Y, expectedSpotlight, "spotlight color/alpha inside the configured radius");
-        AssertPixelNear(backgroundPoint.X, backgroundPoint.Y, expectedBackground, "background color/alpha outside the configured radius");
+        AssertPixelNear(spotlightPoint.X, spotlightPoint.Y, expectedSpotlight, 4, "spotlight color/alpha inside the configured radius");
+        AssertPixelNear(backgroundPoint.X, backgroundPoint.Y, expectedBackground, 4, "background color/alpha outside the configured radius");
     }
 
     [TestMethod]
@@ -289,12 +291,10 @@ public class FindMyMouseTests : UITestBase
             Assert.IsFalse(excluded.Wait(1_500), "Find My Mouse activated while excluded PowerToys.Settings.exe owned foreground.");
         }
 
-        using var notepad = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("notepad.exe") { UseShellExecute = true });
-        Assert.IsNotNull(notepad, "Could not start the allowed foreground Notepad fixture.");
+        notepadFixture = NotepadFixture.Start();
         try
         {
-            var notepadWindow = WindowsFinder.WaitForWindowByProcess("notepad", 10_000);
-            Assert.IsNotNull(notepadWindow, "Notepad did not create a visible window.");
+            var notepadWindow = notepadFixture.Window;
             Assert.IsTrue(
                 WindowControl.WaitForForeground(new IntPtr(notepadWindow.WindowHandle), 5_000, 2),
                 $"Notepad could not become foreground. Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
@@ -305,31 +305,40 @@ public class FindMyMouseTests : UITestBase
         }
         finally
         {
-            WindowControl.TryKillProcessTreeByNameAndWait("notepad", 5_000);
+            notepadFixture.Dispose();
+            notepadFixture = null;
         }
     }
 
-    private static string CreateSettings(FindMyMouseConfiguration configuration) => $$"""
+        private static string CreateSettings(FindMyMouseConfiguration configuration) => new JsonObject
         {
-          "name": "FindMyMouse",
-          "version": "1.1",
-          "properties": {
-            "activation_method": { "value": {{configuration.ActivationMethod}} },
-            "include_win_key": { "value": {{configuration.IncludeWinKey.ToString().ToLowerInvariant()}} },
-            "activation_shortcut": { "win": true, "ctrl": false, "alt": false, "shift": true, "code": 70, "key": "" },
-            "do_not_activate_on_game_mode": { "value": false },
-            "background_color": { "value": "{{configuration.BackgroundColor}}" },
-            "spotlight_color": { "value": "{{configuration.SpotlightColor}}" },
-            "spotlight_radius": { "value": {{configuration.Radius}} },
-            "animation_duration_ms": { "value": {{configuration.AnimationDurationMs}} },
-            "spotlight_initial_zoom": { "value": {{configuration.InitialZoom}} },
-            "excluded_apps": { "value": "{{configuration.ExcludedApps}}" },
-            "shaking_minimum_distance": { "value": 100 },
-            "shaking_interval_ms": { "value": 2000 },
-            "shaking_factor": { "value": 150 }
-          }
-        }
-        """;
+                ["name"] = "FindMyMouse",
+                ["version"] = "1.1",
+                ["properties"] = new JsonObject
+                {
+                        ["activation_method"] = new JsonObject { ["value"] = configuration.ActivationMethod },
+                        ["include_win_key"] = new JsonObject { ["value"] = configuration.IncludeWinKey },
+                        ["activation_shortcut"] = new JsonObject
+                        {
+                                ["win"] = true,
+                                ["ctrl"] = false,
+                                ["alt"] = false,
+                                ["shift"] = true,
+                                ["code"] = 70,
+                                ["key"] = string.Empty,
+                        },
+                        ["do_not_activate_on_game_mode"] = new JsonObject { ["value"] = false },
+                        ["background_color"] = new JsonObject { ["value"] = configuration.BackgroundColor },
+                        ["spotlight_color"] = new JsonObject { ["value"] = configuration.SpotlightColor },
+                        ["spotlight_radius"] = new JsonObject { ["value"] = configuration.Radius },
+                        ["animation_duration_ms"] = new JsonObject { ["value"] = configuration.AnimationDurationMs },
+                        ["spotlight_initial_zoom"] = new JsonObject { ["value"] = configuration.InitialZoom },
+                        ["excluded_apps"] = new JsonObject { ["value"] = configuration.ExcludedApps },
+                        ["shaking_minimum_distance"] = new JsonObject { ["value"] = 100 },
+                        ["shaking_interval_ms"] = new JsonObject { ["value"] = 2000 },
+                        ["shaking_factor"] = new JsonObject { ["value"] = 150 },
+                },
+        }.ToJsonString();
 
     private static void DoubleTap(Key controlKey)
     {
@@ -362,47 +371,6 @@ public class FindMyMouseTests : UITestBase
         }
 
         Assert.Fail($"Find My Mouse did not activate from {description} after three attempts.");
-    }
-
-    private static Color Blend(Color foreground, Color background, int alpha)
-    {
-        var inverse = 255 - alpha;
-        return Color.FromArgb(
-            ((foreground.R * alpha) + (background.R * inverse) + 127) / 255,
-            ((foreground.G * alpha) + (background.G * inverse) + 127) / 255,
-            ((foreground.B * alpha) + (background.B * inverse) + 127) / 255);
-    }
-
-    private static Color GetStablePixel(int x, int y)
-    {
-        Color? previous = null;
-        var result = WaitHelper.WaitForStable(
-            () => WindowHelper.GetPixelColor(x, y),
-            color =>
-            {
-                var matchesPrevious = previous.HasValue && color.ToArgb() == previous.Value.ToArgb();
-                previous = color;
-                return matchesPrevious;
-            },
-            2_000,
-            requiredConsecutiveMatches: 4,
-            pollIntervalMS: 100);
-        return result.LastObservation;
-    }
-
-    private static void AssertPixelNear(int x, int y, Color expected, string description)
-    {
-        const int tolerance = 4;
-        var result = WaitHelper.WaitForStable(
-            () => WindowHelper.GetPixelColor(x, y),
-            actual =>
-                Math.Abs(actual.R - expected.R) <= tolerance &&
-                Math.Abs(actual.G - expected.G) <= tolerance &&
-                Math.Abs(actual.B - expected.B) <= tolerance,
-            5_000,
-            requiredConsecutiveMatches: 2,
-            pollIntervalMS: 100);
-        Assert.IsTrue(result.Succeeded, $"Unexpected {description} at ({x},{y}). Expected {expected}; observed {result.LastObservation}.");
     }
 
     private sealed record FindMyMouseConfiguration(

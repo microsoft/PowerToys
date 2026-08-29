@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static MouseUtils.UITests.MouseUtilsTestHelper;
 
 namespace MouseUtils.UITests;
 
@@ -16,7 +17,13 @@ public class MouseJumpTests : UITestBase
     private const string ProcessName = "PowerToys.MouseJump.WinUI3";
     private const string WindowTitle = "MouseJump.WinUI3";
     private const string ToggleId = "MouseUtils_MouseJumpToggleId";
+    private const int DefaultBorderThickness = 6;
     private static readonly IDisposable ModuleSettings = SettingsConfigHelper.PreserveModuleSettings(ModuleName);
+    private NotepadFixture? notepadFixture;
+
+    static MouseJumpTests()
+    {
+    }
 
     public MouseJumpTests()
         : base(PowerToysModule.PowerToysSettings, enableModules: new[] { ModuleName })
@@ -66,7 +73,8 @@ public class MouseJumpTests : UITestBase
     {
         await CaptureFailureArtifactsBeforeCleanupAsync();
         KeyboardHelper.SendKeys(Key.Esc);
-        WindowControl.TryKillProcessTreeByNameAndWait("notepad", 5_000);
+        notepadFixture?.Dispose();
+        notepadFixture = null;
         WindowControl.TryKillProcessTreeByNameAndWait(ProcessName, 10_000);
     }
 
@@ -82,10 +90,9 @@ public class MouseJumpTests : UITestBase
         Assert.IsTrue(
             NamedEventHelper.WaitUntilAvailable(NamedEventHelper.MouseJumpShowPreview),
             "Mouse Jump did not create its show-preview event.");
-        var hwnd = WaitForPreviewHwnd();
-        Assert.AreNotEqual(IntPtr.Zero, hwnd, "Mouse Jump did not create its hidden preview HWND.");
+        var previewWindow = WaitForPreviewWindow();
 
-        using var shortcutWatcher = new WindowShowWatcher(GetPreviewWindow().ClassName, hwnd.ToInt64());
+        using var shortcutWatcher = new WindowShowWatcher(previewWindow.ClassName, previewWindow.Hwnd.ToInt64());
         KeyboardHelper.SendKeys(Key.LWin, Key.Shift, Key.D);
         Assert.IsTrue(shortcutWatcher.Wait(10_000), "The default Win+Shift+D shortcut did not show Mouse Jump.");
     }
@@ -98,11 +105,11 @@ public class MouseJumpTests : UITestBase
     public void PreviewClickMovesCursorAndDisableStopsActivation()
     {
         var preview = ShowPreview();
-        var previewClassName = GetPreviewWindow().ClassName;
+        var previewClassName = WaitForPreviewWindow().ClassName;
         var bounds = WindowHelper.GetWindowBounds(new IntPtr(preview.WindowHandle));
         var clickX = bounds.Left + ((bounds.Right - bounds.Left) / 2);
         var clickY = bounds.Top + ((bounds.Bottom - bounds.Top) / 2);
-        using (var watcher = new WindowShowWatcher(GetPreviewWindow().ClassName, preview.WindowHandle))
+        using (var watcher = new WindowShowWatcher(previewClassName, preview.WindowHandle))
         {
             var previewHwnd = new IntPtr(preview.WindowHandle);
             WindowControl.WaitForForeground(previewHwnd, 2_000);
@@ -136,15 +143,14 @@ public class MouseJumpTests : UITestBase
     [TestCategory("Mouse Utils #40")]
     public void ChangedShortcutActivatesPreview()
     {
-        var hwnd = WaitForPreviewHwnd();
-        var className = GetPreviewWindow().ClassName;
-        using (var defaultShortcut = new WindowShowWatcher(className, hwnd.ToInt64()))
+        var previewWindow = WaitForPreviewReady();
+        using (var defaultShortcut = new WindowShowWatcher(previewWindow.ClassName, previewWindow.Hwnd.ToInt64()))
         {
             KeyboardHelper.SendKeys(Key.LWin, Key.Shift, Key.D);
             Assert.IsFalse(defaultShortcut.Wait(1_500), "The old Mouse Jump shortcut still showed the preview.");
         }
 
-        using var changedShortcut = new WindowShowWatcher(className, hwnd.ToInt64());
+        using var changedShortcut = new WindowShowWatcher(previewWindow.ClassName, previewWindow.Hwnd.ToInt64());
         KeyboardHelper.SendKeys(Key.LWin, Key.Shift, Key.Z);
         Assert.IsTrue(changedShortcut.Wait(10_000), "Changed Win+Shift+Z shortcut did not show Mouse Jump.");
     }
@@ -157,11 +163,9 @@ public class MouseJumpTests : UITestBase
         Assert.IsTrue(
             WindowControl.WaitForForeground(new IntPtr(preview.WindowHandle), 5_000, 2),
             $"Mouse Jump was not foreground before the focus-loss transition. Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
-        using var focusWatcher = new WindowShowWatcher(GetPreviewWindow().ClassName, preview.WindowHandle);
-        using var notepad = Process.Start(new ProcessStartInfo("notepad.exe") { UseShellExecute = true });
-        Assert.IsNotNull(notepad, "Could not start the focus-loss Notepad fixture.");
-        var notepadWindow = WindowsFinder.WaitForWindowByProcess("notepad", 10_000);
-        Assert.IsNotNull(notepadWindow, "Notepad did not create a visible window.");
+        using var focusWatcher = new WindowShowWatcher(WaitForPreviewWindow().ClassName, preview.WindowHandle);
+        notepadFixture = NotepadFixture.Start();
+        var notepadWindow = notepadFixture.Window;
         Assert.IsTrue(
             WindowControl.WaitForForeground(new IntPtr(notepadWindow.WindowHandle), 5_000, 2),
             "Notepad could not gain foreground to exercise Mouse Jump focus-loss dismissal.");
@@ -181,7 +185,8 @@ public class MouseJumpTests : UITestBase
 
         var primary = MonitorInfo.GetPrimary();
         Assert.IsNotNull(primary, "No primary monitor was reported.");
-        var renderedContentAspectRatio = (width - 12d) / (height - 12d);
+        var borderContribution = 2d * DefaultBorderThickness;
+        var renderedContentAspectRatio = (width - borderContribution) / (height - borderContribution);
         var displayAspectRatio = primary.Width / (double)primary.Height;
         Assert.IsTrue(
             Math.Abs(renderedContentAspectRatio - displayAspectRatio) <= 0.02,
@@ -257,16 +262,7 @@ public class MouseJumpTests : UITestBase
 
     private static Session ShowPreview()
     {
-        Assert.IsTrue(
-            NamedEventHelper.WaitUntilAvailable(NamedEventHelper.MouseJumpShowPreview),
-            "Mouse Jump module did not create its show-preview event.");
-        if (!WaitForProcess(expected: true, timeoutMs: 1_000))
-        {
-            KeyboardHelper.SendKeys(Key.LWin, Key.Shift, Key.D);
-            Assert.IsTrue(WaitForProcess(expected: true), "Mouse Jump WinUI3 process did not start after activation.");
-        }
-
-        Assert.AreNotEqual(IntPtr.Zero, WaitForPreviewHwnd(), "Mouse Jump hidden preview HWND was not created.");
+        _ = WaitForPreviewReady();
 
         for (var attempt = 1; attempt <= 3; attempt++)
         {
@@ -290,43 +286,66 @@ public class MouseJumpTests : UITestBase
 
     private static WindowControl.ProcessWindow GetPreviewWindow()
     {
-        var processIds = Process.GetProcessesByName(ProcessName).Select(process => process.Id).ToArray();
-        return WindowControl.EnumerateProcessWindows(processIds)
-            .FirstOrDefault(window => window.Title.Equals(WindowTitle, StringComparison.OrdinalIgnoreCase));
+        var processes = Process.GetProcessesByName(ProcessName);
+        try
+        {
+            var processIds = processes.Select(process => process.Id).ToArray();
+            return WindowControl.EnumerateProcessWindows(processIds)
+                .FirstOrDefault(window => window.Title.Equals(WindowTitle, StringComparison.OrdinalIgnoreCase));
+        }
+        finally
+        {
+            foreach (var process in processes)
+            {
+                process.Dispose();
+            }
+        }
     }
 
-    private static IntPtr WaitForPreviewHwnd()
+    private static WindowControl.ProcessWindow WaitForPreviewReady()
+    {
+        Assert.IsTrue(
+            NamedEventHelper.WaitUntilAvailable(NamedEventHelper.MouseJumpShowPreview),
+            "Mouse Jump module did not create its show-preview event.");
+        Assert.IsTrue(WaitForProcess(expected: true), "Mouse Jump WinUI3 process did not start.");
+        return WaitForPreviewWindow();
+    }
+
+    private static WindowControl.ProcessWindow WaitForPreviewWindow()
     {
         var result = WaitHelper.WaitForStable(
             GetPreviewWindow,
-            window => window.Hwnd != IntPtr.Zero,
+            window => window.Hwnd != IntPtr.Zero && !string.IsNullOrWhiteSpace(window.ClassName),
             15_000,
             requiredConsecutiveMatches: 2,
             pollIntervalMS: 100);
-        return result.LastObservation.Hwnd;
+        Assert.IsTrue(result.Succeeded, "Mouse Jump did not create a preview window with a usable HWND and class name.");
+        return result.LastObservation;
     }
 
     private static bool WaitForProcess(bool expected, int timeoutMs = 15_000)
     {
         return WaitHelper.WaitForStable(
-            () => Process.GetProcessesByName(ProcessName).Length > 0,
+            () =>
+            {
+                var processes = Process.GetProcessesByName(ProcessName);
+                try
+                {
+                    return processes.Length > 0;
+                }
+                finally
+                {
+                    foreach (var process in processes)
+                    {
+                        process.Dispose();
+                    }
+                }
+            },
             running => running == expected,
             timeoutMs,
             requiredConsecutiveMatches: 2,
             pollIntervalMS: 100).Succeeded;
     }
-
-    private static double Distance(int x1, int y1, int x2, int y2)
-    {
-        var deltaX = x2 - x1;
-        var deltaY = y2 - y1;
-        return Math.Sqrt((deltaX * deltaX) + (deltaY * deltaY));
-    }
-
-    private static bool IsNear(Color actual, Color expected, int tolerance) =>
-        Math.Abs(actual.R - expected.R) <= tolerance &&
-        Math.Abs(actual.G - expected.G) <= tolerance &&
-        Math.Abs(actual.B - expected.B) <= tolerance;
 
     private sealed record MouseJumpConfiguration(
         int ShortcutCode = (int)Key.D,
@@ -335,7 +354,7 @@ public class MouseJumpTests : UITestBase
         string PreviewType = "Bezelled",
         string BackgroundColor1 = "#0D57D2",
         string BackgroundColor2 = "#0344C0",
-        int BorderThickness = 6,
+        int BorderThickness = DefaultBorderThickness,
         string BorderColor = "#0078D4",
         int BorderPadding = 4,
         int BezelThickness = 12,
@@ -343,4 +362,4 @@ public class MouseJumpTests : UITestBase
         int ScreenMargin = 4,
         string ScreenColor1 = "#191970",
         string ScreenColor2 = "#191970");
-    }
+}

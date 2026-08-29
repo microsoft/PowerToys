@@ -11,7 +11,12 @@ namespace MouseUtils.UITests;
 public class CursorWrapTests : UITestBase
 {
     private const string ModuleName = "CursorWrap";
+    private const string ToggleId = "MouseUtils_CursorWrapToggleId";
     private static readonly IDisposable ModuleSettings = SettingsConfigHelper.PreserveModuleSettings(ModuleName);
+
+    static CursorWrapTests()
+    {
+    }
 
     public CursorWrapTests()
         : base(PowerToysModule.PowerToysSettings, enableModules: new[] { ModuleName })
@@ -56,9 +61,7 @@ public class CursorWrapTests : UITestBase
     public void ShortcutTogglesWrappingAndModuleDisableStopsIt()
     {
         MouseUtilsTestHelper.NavigateToMouseUtilities(this);
-        var toggle = Session.Find<ToggleSwitch>(By.Name("CursorWrap"), 5_000);
-        toggle.Toggle(true);
-        Assert.IsTrue(toggle.WaitForProperty("ToggleState", "On", 5_000), "CursorWrap toggle did not reach On.");
+        var toggle = MouseUtilsTestHelper.SetModuleEnabled(this, ToggleId, true);
         Assert.IsTrue(
             NamedEventHelper.WaitUntilAvailable(NamedEventHelper.CursorWrapToggle),
             "CursorWrap did not create its trigger event after being enabled.");
@@ -71,8 +74,8 @@ public class CursorWrapTests : UITestBase
         KeyboardHelper.SendKeys(Key.LWin, Key.Alt, Key.U);
         AssertDoesNotWrap(CursorEdge.Left);
 
-        toggle.Toggle(false);
-        Assert.IsTrue(toggle.WaitForProperty("ToggleState", "Off", 5_000), "CursorWrap toggle did not reach Off.");
+        toggle = MouseUtilsTestHelper.SetModuleEnabled(this, ToggleId, false);
+        Assert.IsFalse(toggle.IsOn, "CursorWrap toggle should be off.");
         Assert.IsTrue(
             NamedEventHelper.WaitUntilUnavailable(NamedEventHelper.CursorWrapToggle),
             "CursorWrap trigger event remained available after the module was disabled.");

@@ -64,6 +64,7 @@ public static class MouseHelper
     private static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
 
     /// <summary>Move the OS cursor to absolute screen coordinates.</summary>
+    /// <exception cref="Win32Exception"><c>SetCursorPos</c> rejected the requested position.</exception>
     public static void MoveTo(int x, int y)
     {
         if (!SetCursorPos(x, y))

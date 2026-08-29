@@ -5,6 +5,7 @@
 using System.Drawing;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static MouseUtils.UITests.MouseUtilsTestHelper;
 
 namespace MouseUtils.UITests;
 
@@ -18,6 +19,10 @@ public class MousePointerCrosshairsTests : UITestBase
 
     private static readonly IDisposable ModuleSettings = SettingsConfigHelper.PreserveModuleSettings(ModuleName);
 
+    static MousePointerCrosshairsTests()
+    {
+    }
+
     public MousePointerCrosshairsTests()
         : base(PowerToysModule.PowerToysSettings, enableModules: new[] { ModuleName })
     {
@@ -27,8 +32,8 @@ public class MousePointerCrosshairsTests : UITestBase
     {
         var configuration = TestContext.TestName switch
         {
-            "DisabledModuleRejectsActivationAndChangedShortcutWorks" => new CrosshairsConfiguration(ShortcutCode: (int)Key.O),
-            "HorizontalOrientationFixedLengthAndBorderAreApplied" => new CrosshairsConfiguration(
+            nameof(DisabledModuleRejectsActivationAndChangedShortcutWorks) => new CrosshairsConfiguration(ShortcutCode: (int)Key.O),
+            nameof(HorizontalOrientationFixedLengthAndBorderAreApplied) => new CrosshairsConfiguration(
                 Color: "#00FF00",
                 Radius: 35,
                 Thickness: 12,
@@ -38,7 +43,7 @@ public class MousePointerCrosshairsTests : UITestBase
                 FixedLengthEnabled: true,
                 FixedLength: 120),
             nameof(OpacityBlendsWithDesktop) => new CrosshairsConfiguration(Opacity: 50),
-            "AutoActivateStartsVisible" => new CrosshairsConfiguration(AutoActivate: true),
+            nameof(AutoActivateStartsVisible) => new CrosshairsConfiguration(AutoActivate: true),
             _ => new CrosshairsConfiguration(),
         };
 
@@ -162,6 +167,8 @@ public class MousePointerCrosshairsTests : UITestBase
         MouseHelper.MoveTo(centerX, centerY);
         Assert.IsTrue(NamedEventHelper.WaitAndSignal(NamedEventHelper.MouseCrosshairsToggle), "Crosshairs trigger event was unavailable.");
 
+        // Radius 35 leaves the center gap; 12px core plus 6px border determines the Y probes, and
+        // fixed length 120 from the gap determines the arm-end probes around X=150.
         var result = WaitHelper.WaitForStable(
             () => new
             {
@@ -356,20 +363,6 @@ public class MousePointerCrosshairsTests : UITestBase
             ? new CrosshairsOrigin((int)verticalPixels.Average(), (int)horizontalPixels.Average())
             : null;
     }
-
-    private static Color Blend(Color foreground, Color background, int alpha)
-    {
-        var inverse = 255 - alpha;
-        return Color.FromArgb(
-            ((foreground.R * alpha) + (background.R * inverse) + 127) / 255,
-            ((foreground.G * alpha) + (background.G * inverse) + 127) / 255,
-            ((foreground.B * alpha) + (background.B * inverse) + 127) / 255);
-    }
-
-    private static bool IsNear(Color actual, Color expected, int tolerance) =>
-        Math.Abs(actual.R - expected.R) <= tolerance &&
-        Math.Abs(actual.G - expected.G) <= tolerance &&
-        Math.Abs(actual.B - expected.B) <= tolerance;
 
     private static string CreateSettings(CrosshairsConfiguration configuration) => $$"""
                 {

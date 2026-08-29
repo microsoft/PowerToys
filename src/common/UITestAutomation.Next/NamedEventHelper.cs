@@ -68,7 +68,7 @@ public static class NamedEventHelper
             handle.Dispose();
             return true;
         }
-        catch (Exception)
+        catch (WaitHandleCannotBeOpenedException)
         {
             return false;
         }

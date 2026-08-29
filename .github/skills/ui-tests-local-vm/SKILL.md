@@ -194,10 +194,10 @@ pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
   -ReuseStagedPayload
 ```
 
-The controller starts the VM if needed, prevents automatic host sleep, verifies the interactive
-standard-user desktop, dispatches the guest runner, and waits synchronously for matching
-`status.json`. It fails early if the guest task never starts or exits without status, summarizes TRX,
-and leaves the persistent VM running by default.
+The controller starts the VM if needed, requests automatic host sleep prevention, verifies the
+interactive standard-user desktop, dispatches the guest runner, and waits synchronously for matching
+`status.json`. It reports whether sleep prevention succeeded, fails early if the guest task never
+starts or exits without status, summarizes TRX, and leaves the persistent VM running by default.
 
 ## Non-negotiable rules
 
@@ -240,7 +240,7 @@ and leaves the persistent VM running by default.
   distinguish assertions, skipped/inconclusive tests, zero tests, timeout, or infrastructure failure.
 - Keep the VM after normal runs for iteration. Stop it explicitly when idle; delete its VHDX only for
   an intentional baseline reset.
-- The controller blocks automatic host sleep while active. It cannot override manual sleep, lid-close
-  policy, reboot, shutdown, or power loss; leave the host powered and configured accordingly.
+- The controller requests automatic host sleep prevention and reports `HostSleepPrevented`; failure
+  is a warning. It cannot override manual sleep, lid-close policy, reboot, shutdown, or power loss.
 - Final clean-profile claims require a restored baseline checkpoint or a recreated guest. Restore with
   `Reset-LocalVm.ps1 -Restore`.

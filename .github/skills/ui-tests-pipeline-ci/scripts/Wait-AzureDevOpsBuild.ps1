@@ -78,15 +78,19 @@ $lastOutputUtc = [DateTime]::MinValue
 $lastBuilds = @()
 $consecutiveErrors = 0
 $waitHandle = [Threading.ManualResetEventSlim]::new($false)
+$executionStateContinuous = [uint32]2147483648
+$executionStateSystemRequired = [uint32]2147483649
 $executionStateSet = $false
 
 try
 {
     if ($IsWindows)
     {
-        if (-not ('PowerToys.UiTests.Ci.NativeMethods' -as [type]))
+        try
         {
-            Add-Type -TypeDefinition @'
+            if (-not ('PowerToys.UiTests.Ci.NativeMethods' -as [type]))
+            {
+                Add-Type -TypeDefinition @'
 using System.Runtime.InteropServices;
 
 namespace PowerToys.UiTests.Ci
@@ -98,12 +102,17 @@ namespace PowerToys.UiTests.Ci
     }
 }
 '@
-        }
+            }
 
-        $executionStateSet = [PowerToys.UiTests.Ci.NativeMethods]::SetThreadExecutionState([uint32]2147483649) -ne 0
-        if (-not $executionStateSet)
+            $executionStateSet = [PowerToys.UiTests.Ci.NativeMethods]::SetThreadExecutionState($executionStateSystemRequired) -ne 0
+            if (-not $executionStateSet)
+            {
+                Write-Warning 'System sleep prevention was rejected; the Azure DevOps wait will continue.'
+            }
+        }
+        catch
         {
-            throw 'Failed to prevent system sleep while waiting for Azure DevOps builds.'
+            Write-Warning "System sleep prevention is unavailable; the Azure DevOps wait will continue: $($_.Exception.Message)"
         }
     }
 
@@ -161,34 +170,11 @@ namespace PowerToys.UiTests.Ci
         $builds = @(
             foreach ($response in $responses)
             {
-                $id = $response.RequestedId
-                $build = $response.Build
-                if ([int]$build.id -ne $id)
-                {
-                    throw "Requested build $id but Azure DevOps returned build $($build.id)."
-                }
-
-                if ([string]$build.sourceBranch -cne $ExpectedBranch)
-                {
-                    throw "Build $id source branch '$($build.sourceBranch)' does not match '$ExpectedBranch'."
-                }
-
-                if ([string]$build.sourceVersion -ine $expectedSourceVersionNormalized)
-                {
-                    throw "Build $id source version '$($build.sourceVersion)' does not match '$ExpectedSourceVersion'."
-                }
-
-                [pscustomobject]@{
-                    Id = [int]$build.id
-                    BuildNumber = [string]$build.buildNumber
-                    Status = [string]$build.status
-                    Result = [string]$build.result
-                    QueueTime = $build.queueTime
-                    StartTime = $build.startTime
-                    FinishTime = $build.finishTime
-                    LastChangedDate = $build.lastChangedDate
-                    WebUrl = [string]$build._links.web.href
-                }
+                ConvertTo-AzDevOpsBuildSnapshot `
+                    -Build $response.Build `
+                    -RequestedId $response.RequestedId `
+                    -ExpectedBranch $ExpectedBranch `
+                    -ExpectedSourceVersion $expectedSourceVersionNormalized
             }
         )
         $lastBuilds = $builds
@@ -239,7 +225,16 @@ finally
 {
     if ($executionStateSet)
     {
-        $null = [PowerToys.UiTests.Ci.NativeMethods]::SetThreadExecutionState([uint32]2147483648)
+        # Best effort: the request is per-thread and PowerShell may resume finally on another thread.
+        # Process exit clears any request that remains associated with the original thread.
+        try
+        {
+            $null = [PowerToys.UiTests.Ci.NativeMethods]::SetThreadExecutionState($executionStateContinuous)
+        }
+        catch
+        {
+            Write-Warning "System sleep-prevention cleanup failed: $($_.Exception.Message)"
+        }
     }
 
     $waitHandle.Dispose()

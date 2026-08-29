@@ -95,8 +95,9 @@ not begin on the constrained profile: first prove the test and product behavior 
 and RAM.
 
 Run the controller synchronously in the foreground and keep the active agent turn attached. It
-prevents automatic host sleep and returns only after matching status/TRX evidence or a bounded
-controller failure. It cannot override manual sleep, lid-close policy, reboot, or power loss.
+requests automatic host sleep prevention, reports `HostSleepPrevented`, and returns only after
+matching status/TRX evidence or a bounded controller failure. It cannot override manual sleep,
+lid-close policy, reboot, or power loss.
 
 ```pwsh
 pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `

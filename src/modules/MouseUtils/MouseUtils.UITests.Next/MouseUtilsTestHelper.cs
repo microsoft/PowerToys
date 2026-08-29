@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
+using System.Drawing;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
@@ -12,7 +14,8 @@ namespace MouseUtils.UITests;
 
 internal static class MouseUtilsTestHelper
 {
-    private static readonly string[] ShortcutSeparators = [" + ", "+", " "];
+    private const int SpiGetClientAreaAnimation = 0x1042;
+    private const int SpiSetClientAreaAnimation = 0x1043;
 
     internal const string InputOutputNavItemId = "InputOutputNavItem";
     internal const string MouseUtilitiesNavItemId = "MouseUtilitiesNavItem";
@@ -81,70 +84,6 @@ internal static class MouseUtilsTestHelper
         return result.LastObservation;
     }
 
-    internal static Key[] ReadShortcut(UITestBase testBase, string groupId, int ordinal = 0)
-    {
-        Element? group = null;
-        for (var attempt = 0; attempt < 12 && group is null; attempt++)
-        {
-            group = testBase.Session.FindAll<Element>(By.AccessibilityId(groupId), 0).FirstOrDefault();
-            if (group is null)
-            {
-                MouseHelper.ScrollDown();
-                Thread.Sleep(150);
-            }
-        }
-
-        Assert.IsNotNull(group, $"Settings group '{groupId}' was not found after scrolling the Mouse Utilities page.");
-        group.ScrollIntoView();
-        var buttons = testBase.Session.FindAll<Button>(By.AccessibilityId("EditButton"), 5_000)
-            .Where(button =>
-                button.X >= group!.X &&
-                button.X < group.X + group.Width &&
-                button.Y >= group.Y &&
-                button.Y < group.Y + group.Height)
-            .OrderBy(button => button.Y)
-            .ToList();
-
-        Assert.IsTrue(
-            buttons.Count > ordinal,
-            $"Expected shortcut button {ordinal} inside '{groupId}', but found {buttons.Count}.");
-
-        var shortcutText = buttons[ordinal].HelpText;
-        var keys = ParseShortcutText(shortcutText);
-        Assert.IsTrue(
-            keys.Any(key => key is not (Key.LWin or Key.Ctrl or Key.Shift or Key.Alt)),
-            $"Shortcut text '{shortcutText}' from '{groupId}' did not contain a main key.");
-        Step(testBase, $"Shortcut from {groupId}: '{shortcutText}' => [{string.Join(", ", keys)}]");
-        return keys;
-    }
-
-    internal static Key[] ParseShortcutText(string shortcutText)
-    {
-        var keys = new List<Key>();
-        foreach (var raw in shortcutText.Split(ShortcutSeparators, StringSplitOptions.RemoveEmptyEntries))
-        {
-            var token = raw.Trim();
-            Key? key = token.ToLowerInvariant() switch
-            {
-                "win" or "windows" => Key.LWin,
-                "ctrl" or "control" => Key.Ctrl,
-                "shift" => Key.Shift,
-                "alt" => Key.Alt,
-                _ when token.Length == 1 && token[0] is >= '0' and <= '9' =>
-                    Enum.TryParse<Key>("Num" + token, out var number) ? number : null,
-                _ when token.Length > 0 && char.IsLetter(token[0]) && Enum.TryParse<Key>(token, true, out var parsed) => parsed,
-                _ => null,
-            };
-
-            if (key.HasValue)
-            {
-                keys.Add(key.Value);
-            }
-        }
-
-        return keys.ToArray();
-    }
-
     internal static void ReplaceModuleSettings(string moduleName, string settingsJson)
     {
         SettingsConfigHelper.UpdateModuleSettings(
@@ -163,25 +102,13 @@ internal static class MouseUtilsTestHelper
     }
 
     internal static void RunWithClientAreaAnimationsEnabled(Action action)
-    {
-        const int spiGetClientAreaAnimation = 0x1042;
-        const int spiSetClientAreaAnimation = 0x1043;
-        var originalValue = 0;
-        Assert.IsTrue(
-            SystemParametersInfo(spiGetClientAreaAnimation, 0, ref originalValue, 0),
-            "Could not read the Windows client-area animation setting.");
+        => RunWithCleanup(action, PreserveClientAreaAnimationsEnabled());
 
+    private static void RunWithCleanup(Action action, IDisposable cleanup)
+    {
         Exception? actionFailure = null;
         try
         {
-            if (originalValue == 0)
-            {
-                var enabled = 1;
-                Assert.IsTrue(
-                    SystemParametersInfo(spiSetClientAreaAnimation, 0, ref enabled, 0),
-                    "Could not enable Windows client-area animations for the timing fixture.");
-            }
-
             action();
         }
         catch (Exception ex)
@@ -189,48 +116,271 @@ internal static class MouseUtilsTestHelper
             actionFailure = ex;
         }
 
-        var restored = true;
-        var restoreError = 0;
-        if (originalValue == 0)
+        Exception? restoreFailure = null;
+        try
         {
-            var disabled = 0;
-            restored = SystemParametersInfo(spiSetClientAreaAnimation, 0, ref disabled, 0);
-            if (!restored)
-            {
-                restoreError = Marshal.GetLastWin32Error();
-            }
+            cleanup.Dispose();
+        }
+        catch (Exception ex)
+        {
+            restoreFailure = ex;
         }
 
         if (actionFailure is not null)
         {
-            if (!restored)
+            if (restoreFailure is not null)
             {
                 throw new AggregateException(
                     "The test action failed and the Windows client-area animation setting could not be restored.",
                     actionFailure,
-                    new InvalidOperationException($"SystemParametersInfoW failed with Win32 error {restoreError}."));
+                    restoreFailure);
             }
 
             ExceptionDispatchInfo.Capture(actionFailure).Throw();
         }
 
-        Assert.IsTrue(restored, $"Could not restore the Windows client-area animation setting. Win32 error: {restoreError}.");
+        if (restoreFailure is not null)
+        {
+            ExceptionDispatchInfo.Capture(restoreFailure).Throw();
+        }
+    }
+
+    internal static void DisposeAll(params IDisposable?[] snapshots)
+    {
+        var failures = new List<Exception>();
+        foreach (var snapshot in snapshots)
+        {
+            try
+            {
+                snapshot?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                failures.Add(ex);
+            }
+        }
+
+        if (failures.Count == 1)
+        {
+            ExceptionDispatchInfo.Capture(failures[0]).Throw();
+        }
+
+        if (failures.Count > 1)
+        {
+            throw new AggregateException("Multiple Mouse Utils test-state restorations failed.", failures);
+        }
+    }
+
+    internal static Color Blend(Color foreground, Color background, int alpha)
+    {
+        var inverse = 255 - alpha;
+        return Color.FromArgb(
+            ((foreground.R * alpha) + (background.R * inverse) + 127) / 255,
+            ((foreground.G * alpha) + (background.G * inverse) + 127) / 255,
+            ((foreground.B * alpha) + (background.B * inverse) + 127) / 255);
+    }
+
+    internal static Color GetStablePixel(int x, int y)
+    {
+        Color? previous = null;
+        var result = WaitHelper.WaitForStable(
+            () => WindowHelper.GetPixelColor(x, y),
+            color =>
+            {
+                var matchesPrevious = previous.HasValue && color.ToArgb() == previous.Value.ToArgb();
+                previous = color;
+                return matchesPrevious;
+            },
+            2_000,
+            requiredConsecutiveMatches: 4,
+            pollIntervalMS: 100);
+        return result.LastObservation;
+    }
+
+    internal static void AssertPixelNear(int x, int y, Color expected, int tolerance, string description)
+    {
+        var result = WaitHelper.WaitForStable(
+            () => WindowHelper.GetPixelColor(x, y),
+            actual => IsNear(actual, expected, tolerance),
+            5_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 100);
+        Assert.IsTrue(
+            result.Succeeded,
+            $"Unexpected {description} at ({x},{y}). Expected {expected}; observed {result.LastObservation}.");
+    }
+
+    internal static bool IsNear(Color actual, Color expected, int tolerance) =>
+        Math.Abs(actual.R - expected.R) <= tolerance &&
+        Math.Abs(actual.G - expected.G) <= tolerance &&
+        Math.Abs(actual.B - expected.B) <= tolerance;
+
+    internal static double Distance(int x1, int y1, int x2, int y2)
+    {
+        var deltaX = x2 - x1;
+        var deltaY = y2 - y1;
+        return Math.Sqrt((deltaX * deltaX) + (deltaY * deltaY));
+    }
+
+    internal sealed class NotepadFixture : IDisposable
+    {
+        private const string ProcessName = "notepad";
+        private readonly string filePath;
+        private readonly bool ownsProcess;
+        private bool disposed;
+
+        private NotepadFixture(string filePath, Session window, bool ownsProcess)
+        {
+            this.filePath = filePath;
+            Window = window;
+            this.ownsProcess = ownsProcess;
+        }
+
+        internal Session Window { get; }
+
+        internal static NotepadFixture Start()
+        {
+            var existingProcessIds = GetProcessIds();
+            var filePath = Path.Combine(Path.GetTempPath(), $"PowerToys-MouseUtils-{Guid.NewGuid():N}.txt");
+            File.WriteAllText(filePath, string.Empty);
+            var fileName = Path.GetFileName(filePath);
+            var baseFileName = Path.GetFileNameWithoutExtension(filePath);
+
+            try
+            {
+                Session? window = null;
+                for (var attempt = 1; attempt <= 2 && window is null; attempt++)
+                {
+                    using var launcher = Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "notepad.exe",
+                        Arguments = $"\"{filePath}\"",
+                        UseShellExecute = true,
+                    });
+                    Assert.IsNotNull(launcher, "Could not start the Notepad fixture.");
+                    window = WindowsFinder.WaitForWindowByApp(
+                        ProcessName,
+                        candidate =>
+                            candidate.Title.Contains(fileName, StringComparison.OrdinalIgnoreCase) ||
+                            candidate.Title.Contains($"{baseFileName} - Notepad", StringComparison.OrdinalIgnoreCase),
+                        timeoutMS: 15_000);
+                }
+
+                Assert.IsNotNull(window, $"Notepad did not open the unique fixture document '{fileName}'.");
+                return new NotepadFixture(filePath, window, !existingProcessIds.Contains(window.ProcessId));
+            }
+            catch
+            {
+                File.Delete(filePath);
+                throw;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (disposed)
+            {
+                return;
+            }
+
+            disposed = true;
+            var closed = CloseDocumentTab();
+            if (!closed && ownsProcess)
+            {
+                try
+                {
+                    using var process = Process.GetProcessById(Window.ProcessId);
+                    process.Kill(entireProcessTree: true);
+                    process.WaitForExit(5_000);
+                    closed = true;
+                }
+                catch
+                {
+                }
+            }
+
+            if (closed)
+            {
+                try
+                {
+                    File.Delete(filePath);
+                }
+                catch (IOException)
+                {
+                }
+                catch (UnauthorizedAccessException)
+                {
+                }
+            }
+        }
+
+        private bool CloseDocumentTab()
+        {
+            var windowHandle = new IntPtr(Window.WindowHandle);
+            if (!WindowControl.WaitForForeground(windowHandle, 3_000, requiredConsecutiveMatches: 2))
+            {
+                return false;
+            }
+
+            try
+            {
+                KeyboardHelper.PressKey(Key.Ctrl);
+                Thread.Sleep(50);
+                KeyboardHelper.SendKey(Key.W);
+            }
+            finally
+            {
+                KeyboardHelper.ReleaseKey(Key.Ctrl);
+            }
+
+            var deadline = DateTime.UtcNow.AddSeconds(3);
+            while (DateTime.UtcNow < deadline)
+            {
+                if (!IsOpen())
+                {
+                    return true;
+                }
+
+                Thread.Sleep(100);
+            }
+
+            return !IsOpen();
+        }
+
+        private bool IsOpen() => WindowsFinder.ListByApp(ProcessName).Any(candidate =>
+            candidate.Hwnd == Window.WindowHandle &&
+            (candidate.Title.Contains(Path.GetFileName(filePath), StringComparison.OrdinalIgnoreCase) ||
+             candidate.Title.Contains(Path.GetFileNameWithoutExtension(filePath), StringComparison.OrdinalIgnoreCase)));
+
+        private static HashSet<int> GetProcessIds()
+        {
+            var processes = Process.GetProcessesByName(ProcessName);
+            try
+            {
+                return processes.Select(process => process.Id).ToHashSet();
+            }
+            finally
+            {
+                foreach (var process in processes)
+                {
+                    process.Dispose();
+                }
+            }
+        }
     }
 
     internal static IDisposable PreserveClientAreaAnimationsEnabled()
     {
-        const int spiGetClientAreaAnimation = 0x1042;
-        const int spiSetClientAreaAnimation = 0x1043;
         var originalValue = 0;
         Assert.IsTrue(
-            SystemParametersInfo(spiGetClientAreaAnimation, 0, ref originalValue, 0),
+            SystemParametersInfo(SpiGetClientAreaAnimation, 0, ref originalValue, 0),
             "Could not read the Windows client-area animation setting before module launch.");
 
         if (originalValue == 0)
         {
             var enabled = 1;
             Assert.IsTrue(
-                SystemParametersInfo(spiSetClientAreaAnimation, 0, ref enabled, 0),
+                SystemParametersInfo(SpiSetClientAreaAnimation, 0, ref enabled, 0),
                 "Could not enable Windows client-area animations before module launch.");
         }
 
@@ -257,11 +407,13 @@ internal static class MouseUtilsTestHelper
             disposed = true;
             if (originalValue == 0)
             {
-                const int spiSetClientAreaAnimation = 0x1043;
                 var disabled = 0;
-                var restored = SystemParametersInfo(spiSetClientAreaAnimation, 0, ref disabled, 0);
-                var error = restored ? 0 : Marshal.GetLastWin32Error();
-                Assert.IsTrue(restored, $"Could not restore the Windows client-area animation setting after the test class. Win32 error: {error}.");
+                var restored = SystemParametersInfo(SpiSetClientAreaAnimation, 0, ref disabled, 0);
+                if (!restored)
+                {
+                    throw new InvalidOperationException(
+                        $"Could not restore the Windows client-area animation setting. Win32 error: {Marshal.GetLastWin32Error()}.");
+                }
             }
         }
     }

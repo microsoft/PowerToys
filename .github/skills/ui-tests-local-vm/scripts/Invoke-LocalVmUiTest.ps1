@@ -385,8 +385,9 @@ $testTaskName = "PowerToysUiTest-Run-$runId"
 $controllerResult = $null
 $executionStateSet = $false
 try {
-    if (-not ('PowerToys.UiTests.LocalVm.NativeMethods' -as [type])) {
-        Add-Type -TypeDefinition @'
+    try {
+        if (-not ('PowerToys.UiTests.LocalVm.NativeMethods' -as [type])) {
+            Add-Type -TypeDefinition @'
 using System.Runtime.InteropServices;
 
 namespace PowerToys.UiTests.LocalVm
@@ -398,12 +399,19 @@ namespace PowerToys.UiTests.LocalVm
     }
 }
 '@
+        }
+
+        $executionStateSet = [PowerToys.UiTests.LocalVm.NativeMethods]::SetThreadExecutionState($executionStateSystemRequired) -ne 0
+        if ($executionStateSet) {
+            Write-Host 'Host automatic sleep prevention: active'
+        }
+        else {
+            Write-Warning 'Host automatic sleep prevention was rejected; the local VM run will continue.'
+        }
     }
-    $executionStateSet = [PowerToys.UiTests.LocalVm.NativeMethods]::SetThreadExecutionState($executionStateSystemRequired) -ne 0
-    if (-not $executionStateSet) {
-        throw 'Failed to prevent host system sleep during the local VM UI-test run.'
+    catch {
+        Write-Warning "Host automatic sleep prevention is unavailable; the local VM run will continue: $($_.Exception.Message)"
     }
-    Write-Host 'Host automatic sleep prevention: active'
 
     if (-not $SkipStart) {
         $startScript = Join-Path $vmRootPath 'Start-LocalVm.ps1'
@@ -761,7 +769,12 @@ finally {
         }
     }
     if ($executionStateSet) {
-        $null = [PowerToys.UiTests.LocalVm.NativeMethods]::SetThreadExecutionState($executionStateContinuous)
+        try {
+            $null = [PowerToys.UiTests.LocalVm.NativeMethods]::SetThreadExecutionState($executionStateContinuous)
+        }
+        catch {
+            Write-Warning "Host sleep-prevention cleanup failed: $($_.Exception.Message)"
+        }
     }
 }
 
