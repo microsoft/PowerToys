@@ -222,6 +222,79 @@ restart), when the enabled-module set changes, or to recover from a terminal fai
 
 ---
 
+## Principle 5a — Keep module lifecycle tests on real Release Settings IPC
+
+The Runner is the server for the Settings named pipe and owns module enable/disable lifecycle. Since
+the security hardening in #49527, a **Release** Runner accepts `PowerToys.Settings.exe` only when the
+client is in the Runner-relative `WinUI3Apps` directory, has the allow-listed basename and matching
+file version, and carries an intact Microsoft Authenticode signature chaining to `LocalMachine\Root`.
+Debug builds relax only the signature check; directory, basename, and version checks remain active.
+
+This creates a deceptive CI symptom:
+
+| Environment | Expected behavior |
+|---|---|
+| Local Debug Runner + unsigned Settings | Direct Settings lifecycle works because `_DEBUG` compiles out only the signature requirement. |
+| Installed Microsoft-signed Release build | Direct Settings lifecycle works through the production authentication path. |
+| Unsigned PR Release build without test setup | The switch may visibly change, but the Runner rejects the client before dispatch/persistence; module events/processes remain alive. |
+
+Do not treat an older green Settings-toggle test as proof that unsigned Release IPC is healthy. It
+may predate #49527, run against Debug, install officially signed bits, or assert only `ToggleState`
+without checking a Runner-owned effect. Establish the build configuration, signing path, and runtime
+assertion before comparing suites.
+
+The UIA `ToggleState` is therefore **not** proof that enable/disable reached the Runner. A lifecycle
+test must assert both the switch state and the immediate product effect: process start/exit, named
+event availability, window/shortcut behavior, registration, or another module-owned signal.
+
+### Diagnose before changing tests
+
+When several Settings-driven lifecycle tests fail together in Release CI while feature tests pass:
+
+1. Read the attached `RunnerLogs\runner-log_*.log` before editing code.
+2. Classify the exact rejection:
+
+| Runner reason | Route |
+|---|---|
+| `not-microsoft-signed` for the expected `PowerToys.Settings.exe` path | Missing CI companion-signing opt-in. Fix pipeline setup, not the test. |
+| `bad-directory`, `bad-basename`, or `version-mismatch` | Packaging/layout/version defect. Signing alone is not the fix. |
+| No authentication rejection | Continue ordinary test/product diagnosis; do not assume IPC authentication. |
+
+The authentication source of truth is `src/runner/settings_window.cpp` plus
+`src/common/interop/pipe_caller_auth.cpp`.
+
+### Reuse the existing CI mechanism
+
+Do not create a second signing script or a module-specific test bypass. The UI Test Automation
+pipeline already has the supported mechanism:
+
+- `.pipelines/signSparsePackages.ps1 -RequiredAuthenticodeFile` signs unpackaged companion binaries
+  with a disposable test certificate whose subject matches the Microsoft publisher expected by the
+  Release verifier. It imports the test root into `LocalMachine\Root`/`TrustedPeople`, validates the
+  signatures, records the certificate marker, and removes trust/private keys in pipeline cleanup.
+- `.pipelines/v2/templates/job-test-project.yml` computes `$requiresAuthenticatedSettingsIpc` from
+  the selected `uiTestModules` and passes both `PowerToys.exe` and `PowerToys.Settings.exe` as required
+  Authenticode files. Its package roots cover the run-in-place artifact, machine-level install, and
+  per-user install.
+
+For a new selected suite that drives module enable/disable through Settings:
+
+1. Add the exact project family to the existing `$requiresAuthenticatedSettingsIpc` selection
+  condition. Preserve existing project families and all-module behavior.
+2. Keep both companion filenames in the shared required-file list. Do not copy the signing block.
+3. Preview the pipeline and require the signing branch in every requested platform/install-mode job.
+4. In CI logs, require `Successfully signed` and `Verified required Authenticode file(s)` for both
+  Runner and Settings before accepting the run.
+5. Keep the tests unchanged in shape: drive the real switch, verify `ToggleState`, then assert the
+  runtime effect directly.
+
+**Forbidden workaround:** never make a lifecycle test pass by writing the global `enabled` map and
+restarting PowerToys after `not-microsoft-signed`. That tests startup from seeded state, not the user
+workflow, hides a broken Settings-to-Runner contract, and duplicates infrastructure the pipeline
+already provides. Never weaken or compile out the Release authentication policy for UI tests.
+
+---
+
 ## Principle 6 — Everything on-screen, DPI-correct, from a clean profile
 
 The whole "passes local, fails CI" cluster is environment differences a dev box papers over. Each has
@@ -307,6 +380,9 @@ likely extra CI iteration.
 - [ ] Pipeline helper processes have no visible foreground-capable windows; detached consoles start hidden
 - [ ] Process lifecycle is explicit per scenario: close/preserve/input-idle/process-tree restart
 - [ ] Module settings are seeded and hot-reloaded, not applied by relaunching PowerToys (P5 / Recipe 17)
+- [ ] Settings-driven module lifecycle tests assert both ToggleState and the immediate Runner-owned
+  effect; selected suites are covered by `$requiresAuthenticatedSettingsIpc` and reuse
+  `RequiredAuthenticodeFile` for Runner + Settings (P5a / Recipe 2)
 - [ ] Renderer readiness is separate from window/title readiness; composed visuals use visible DWM capture
 - [ ] Explorer-driven tests verify exact selected paths and focused path via `ExplorerShell` (Recipe 13)
 - [ ] Explorer view mode/icon size is set through `ExplorerShell`, then independently verified by item geometry
