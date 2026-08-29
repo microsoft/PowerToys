@@ -13,6 +13,7 @@ jobs:
     - checkout: self
       clean: true
       submodules: false
+      persistCredentials: True
       fetchTags: false
       fetchDepth: 0
 
