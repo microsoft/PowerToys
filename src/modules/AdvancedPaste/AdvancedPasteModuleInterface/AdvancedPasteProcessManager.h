@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include <common/utils/OnThreadExecutor.h>
+#include <common/interop/two_way_pipe_message_ipc.h>
 #include <atlfile.h>
 #include <string>
 #include <atomic>
@@ -32,5 +33,5 @@ private:
     OnThreadExecutor m_thread_executor; // all internal operations are done on background thread with task queue
     std::atomic<bool> m_enabled = false; // written on main thread, read on background thread
     HANDLE m_hProcess = 0;
-    std::unique_ptr<CAtlFile> m_write_pipe;
+    TwoWayPipeMessageIPC* m_write_pipe = nullptr;
 };

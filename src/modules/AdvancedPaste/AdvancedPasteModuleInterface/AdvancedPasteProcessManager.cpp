@@ -130,86 +130,26 @@ HRESULT AdvancedPasteProcessManager::start_named_pipe_server(const std::wstring&
 {
     m_write_pipe = nullptr;
 
-    const constexpr DWORD BUFSIZE = 4096 * 4;
-
     const auto full_pipe_name = std::format(L"\\\\.\\pipe\\{}", pipe_name);
 
-    const auto hPipe = CreateNamedPipe(
-        full_pipe_name.c_str(),     // pipe name
-        PIPE_ACCESS_OUTBOUND |      // write access
-            FILE_FLAG_OVERLAPPED,   // overlapped mode
-        PIPE_TYPE_MESSAGE |         // message type pipe
-            PIPE_READMODE_MESSAGE | // message-read mode
-            PIPE_WAIT,              // blocking mode
-        1,                          // max. instances
-        BUFSIZE,                    // output buffer size
-        0,                          // input buffer size
-        0,                          // client time-out
-        NULL);                      // default security attribute
-
-    if (hPipe == NULL || hPipe == INVALID_HANDLE_VALUE)
-    {
-        Logger::error(L"Error creating handle for named pipe");
-        return E_FAIL;
-    }
-
-    // Create overlapped event to wait for client to connect to pipe.
-    OVERLAPPED overlapped = { 0 };
-    overlapped.hEvent = CreateEvent(nullptr, true, false, nullptr);
-    if (!overlapped.hEvent)
-    {
-        Logger::error(L"Error creating overlapped event for named pipe");
-        CloseHandle(hPipe);
-        return E_FAIL;
-    }
+    m_write_pipe = new TwoWayPipeMessageIPC(L"", full_pipe_name, [](const std::wstring&) {});
 
     const auto clean_up_and_fail = [&]() {
-        CloseHandle(overlapped.hEvent);
-        CloseHandle(hPipe);
+        m_write_pipe->end();
         return E_FAIL;
     };
 
-    if (!ConnectNamedPipe(hPipe, &overlapped))
+    try
     {
-        const auto lastError = GetLastError();
-
-        if (lastError != ERROR_IO_PENDING && lastError != ERROR_PIPE_CONNECTED)
-        {
-            Logger::error(L"Error connecting to named pipe");
-            return clean_up_and_fail();
-        }
+        m_write_pipe->start(nullptr);
+    }
+    catch (...)
+    {
+        Logger::error(L"Named pipe initialization failed; terminating Advanced Paste process");
+        return clean_up_and_fail();
     }
 
-    // Wait for client. AdvancedPaste under sparse identity can take >5s on cold start to
-    // bootstrap WinAppSDK + DI host before connecting back to this pipe.
-    const constexpr DWORD client_timeout_millis = 15000;
-    switch (WaitForSingleObject(overlapped.hEvent, client_timeout_millis))
-    {
-        case WAIT_OBJECT_0:
-        {
-            DWORD bytes_transferred = 0;
-            if (GetOverlappedResult(hPipe, &overlapped, &bytes_transferred, FALSE))
-            {
-                CloseHandle(overlapped.hEvent);
-                m_write_pipe = std::make_unique<CAtlFile>(hPipe);
-
-                Logger::trace(L"Advanced Paste successfully connected to named pipe");
-
-                return S_OK;
-            }
-            else
-            {
-                Logger::error(L"Error waiting for Advanced Paste to connect to named pipe");
-                return clean_up_and_fail();
-            }
-        }
-
-        case WAIT_TIMEOUT:
-        case WAIT_FAILED:
-        default:
-            Logger::error(L"Error waiting for Advanced Paste to connect to named pipe");
-            return clean_up_and_fail();
-    }
+    return S_OK;
 }
 
 void AdvancedPasteProcessManager::refresh()
@@ -266,8 +206,6 @@ void AdvancedPasteProcessManager::send_named_pipe_message(const std::wstring& me
     if (m_write_pipe)
     {
         const auto message = message_arg.empty() ? std::format(L"{}\r\n", message_type) : std::format(L"{} {}\r\n", message_type, message_arg);
-
-        const CString file_name(message.c_str());
-        m_write_pipe->Write(file_name, file_name.GetLength() * sizeof(TCHAR));
+        m_write_pipe->send(message);
     }
 }

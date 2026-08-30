@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "pipe_caller_auth.h"
 
 #include <wincrypt.h>
