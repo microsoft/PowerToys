@@ -95,6 +95,23 @@ public sealed class AlwaysOnTopTests : UITestBase
             }
         }
 
+        if (fixture is not null)
+        {
+            try
+            {
+                if (fixture.IsPinned)
+                {
+                    Step("Cleanup: unpinning the fixture before destroying its window");
+                    TogglePin(expected: false);
+                    _ = WaitForBorder(expected: false, timeoutMs: 5_000);
+                }
+            }
+            catch (Exception ex)
+            {
+                TestContext.WriteLine($"Pinned fixture cleanup failed: {ex.Message}");
+            }
+        }
+
         fixture?.Dispose();
         fixture = null;
 
