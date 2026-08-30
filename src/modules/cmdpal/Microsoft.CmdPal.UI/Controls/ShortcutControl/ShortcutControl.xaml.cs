@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.System;
+using HotkeySettingsControlHook = Microsoft.CmdPal.UI.Library.HotkeySettingsControlHook;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
