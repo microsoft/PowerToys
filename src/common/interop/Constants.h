@@ -24,7 +24,6 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring AdvancedPasteCustomActionMessage();
         static hstring AdvancedPasteTerminateAppMessage();
         static hstring AdvancedPasteShowUIEvent();
-        static hstring AlwaysOnTopPinEvent();
         static hstring MeasureToolTriggerEvent();
         static hstring FindMyMouseTriggerEvent();
         static hstring MouseHighlighterTriggerEvent();
@@ -62,6 +61,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring CropAndLockThumbnailEvent();
         static hstring CropAndLockReparentEvent();
         static hstring CropAndLockScreenshotEvent();
+        static hstring CropAndLockExitEvent();
         static hstring ShowEnvironmentVariablesSharedEvent();
         static hstring ShowEnvironmentVariablesAdminSharedEvent();
         static hstring WorkspacesLaunchEditorEvent();
@@ -83,6 +83,11 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring MWBReconnectEvent();
         static hstring OpenNewKeyboardManagerEvent();
         static hstring KeyboardManagerEngineInstanceMutex();
+        static hstring AlwaysOnTopPinEvent();
+        static hstring AlwaysOnTopTerminateEvent();
+        static hstring ZoomItRefreshSettingsEvent();
+        static hstring TerminateKBMSharedEvent();
+        static hstring LightSwitchManualOverrideEvent();
     };
 }
 

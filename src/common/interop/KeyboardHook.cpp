@@ -66,6 +66,15 @@ namespace winrt::PowerToys::Interop::implementation
     {
         if (nCode == HC_ACTION)
         {
+            const auto* info = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+
+            // Don't swallow injected keys (e.g., SendInput / KEYEVENTF_UNICODE from modules like PowerAccent).
+            // Let them propagate normally.
+            if ((info->flags & LLKHF_INJECTED) != 0)
+            {
+                return CallNextHookEx(NULL, nCode, wParam, lParam);
+            }
+
             std::vector<KeyboardHook*> instances_copy;
             {
                 /* Use a copy of instances, to iterate through the copy without needing to maintain the lock */

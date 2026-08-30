@@ -59,6 +59,7 @@ namespace PowerToys
             static String CropAndLockThumbnailEvent();
             static String CropAndLockReparentEvent();
             static String CropAndLockScreenshotEvent();
+            static String CropAndLockExitEvent();
             static String ShowEnvironmentVariablesSharedEvent();
             static String ShowEnvironmentVariablesAdminSharedEvent();
             static String WorkspacesLaunchEditorEvent();
@@ -80,6 +81,10 @@ namespace PowerToys
             static String MWBReconnectEvent();
             static String OpenNewKeyboardManagerEvent();
             static String KeyboardManagerEngineInstanceMutex();
+            static String AlwaysOnTopTerminateEvent();
+            static String ZoomItRefreshSettingsEvent();
+            static String TerminateKBMSharedEvent();
+            static String LightSwitchManualOverrideEvent();
         }
     }
 }
