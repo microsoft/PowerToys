@@ -67,7 +67,7 @@ internal static class TopLevelCommandResolver
         bool recentCommandsFirst = false)
         where TCommand : class
     {
-        var eligibleCommands = new List<TCommand>();
+        var eligibleCommands = new List<(TCommand Command, (string ProviderId, string CommandId) Key)>();
         var commandsByProviderAndId = new Dictionary<(string ProviderId, string CommandId), TCommand>();
         var commandsById = new Dictionary<string, TCommand>(StringComparer.Ordinal);
 
@@ -78,14 +78,15 @@ internal static class TopLevelCommandResolver
                 continue;
             }
 
-            if (includeRegular)
-            {
-                eligibleCommands.Add(command);
-            }
-
             var providerId = providerIdSelector(command);
             var commandId = commandIdSelector(command);
-            commandsByProviderAndId.TryAdd((providerId, commandId), command);
+            var key = (providerId, commandId);
+            if (includeRegular)
+            {
+                eligibleCommands.Add((command, key));
+            }
+
+            commandsByProviderAndId.TryAdd(key, command);
             if (!string.IsNullOrEmpty(commandId))
             {
                 commandsById.TryAdd(commandId, command);
@@ -173,9 +174,8 @@ internal static class TopLevelCommandResolver
         if (includeRegular)
         {
             var regularCommands = new List<TCommand>(eligibleCommands.Count);
-            foreach (var command in eligibleCommands)
+            foreach (var (command, key) in eligibleCommands)
             {
-                var key = (providerIdSelector(command), commandIdSelector(command));
                 if (!featuredCommandKeys.Contains(key))
                 {
                     regularCommands.Add(command);
