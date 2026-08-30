@@ -54,6 +54,7 @@
     <ClCompile Include="quick_access_host.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\common\interop\pipe_caller_auth.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -130,6 +131,9 @@
     <CopyFileToFolders Include="svgs\icon.ico" />
     <CopyFileToFolders Include="svgs\PowerToysDark.ico" />
     <CopyFileToFolders Include="svgs\PowerToysWhite.ico" />
+    <CopyFileToFolders Include="svgs\iconUpdate.ico" />
+    <CopyFileToFolders Include="svgs\PowerToysDarkUpdate.ico" />
+    <CopyFileToFolders Include="svgs\PowerToysWhiteUpdate.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="runner.base.rc" />
@@ -144,8 +148,5 @@
     <EmbeddedResource Include="Resources.resx">
       <Filter>Resource Files</Filter>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
 </Project>

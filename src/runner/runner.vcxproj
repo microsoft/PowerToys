@@ -31,7 +31,6 @@
   <ImportGroup Label="Shared" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <WindowsAppSdkUndockedRegFreeWinRTInitialize>true</WindowsAppSdkUndockedRegFreeWinRTInitialize>
@@ -73,7 +72,7 @@
     </ClCompile>
     <ClCompile Include="powertoy_module.cpp" />
     <ClCompile Include="main.cpp" />
-  <ClCompile Include="quick_access_host.cpp" />
+    <ClCompile Include="quick_access_host.cpp" />
     <ClCompile Include="restart_elevated.cpp" />
     <ClCompile Include="centralized_kb_hook.cpp" />
     <ClCompile Include="settings_telemetry.cpp" />
@@ -90,7 +89,7 @@
     <ClInclude Include="bug_report.h" />
     <ClInclude Include="bug_report_dialog.h" />
     <ClInclude Include="centralized_hotkeys.h" />
-  <ClInclude Include="quick_access_host.h" />
+    <ClInclude Include="quick_access_host.h" />
     <ClInclude Include="general_settings.h" />
     <ClInclude Include="hotkey_conflict_detector.h" />
     <ClInclude Include="pch.h" />
@@ -122,9 +121,6 @@
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\common\COMUtils\COMUtils.vcxproj">
-      <Project>{7319089e-46d6-4400-bc65-e39bdf1416ee}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\common\Display\Display.vcxproj">
       <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
     </ProjectReference>

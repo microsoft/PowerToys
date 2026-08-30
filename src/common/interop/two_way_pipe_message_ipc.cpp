@@ -279,6 +279,8 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pi
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::end()
 {
     {
+        if (!input_queue_thread.joinable() || !output_queue_thread.joinable())
+            return;
         std::unique_lock lock(lifecycle_mutex);
         if (lifecycle_state == LifecycleState::NotStarted || lifecycle_state == LifecycleState::Stopped)
         {

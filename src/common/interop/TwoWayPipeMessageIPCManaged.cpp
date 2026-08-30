@@ -12,7 +12,13 @@ namespace winrt::PowerToys::Interop::implementation
         if (_callback != nullptr)
         {
             _internalReadCallback = [this](const std::wstring& msg) {
-                this->_callback(msg);
+                try
+                {
+                    this->_callback(msg);
+                }
+                catch (...)
+                {
+                }
             };
         }
         _pipe = new TwoWayPipeMessageIPC(std::wstring{ inputPipeName }, std::wstring{ outputPipeName }, _internalReadCallback);
