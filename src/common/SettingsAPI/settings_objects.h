@@ -3,68 +3,16 @@
 #include "../utils/json.h"
 
 #include <cwctype>
+#include <cctype>
+#include <utility>
+#include <vector>
+#include <array>
+#include <algorithm>
+#include <iterator>
 
 namespace PowerToysSettings
 {
     class HotkeyObject;
-
-    class Settings
-    {
-    public:
-        Settings(
-            const HINSTANCE hinstance, // Module handle of the PowerToy DLL 'IMAGE_DOS_HEADER __ImageBase'
-            std::wstring_view powertoy_name);
-
-        // Add additional general information to the PowerToy settings.
-        void set_description(UINT resource_id);
-        void set_description(std::wstring_view description);
-
-        void set_icon_key(std::wstring_view icon_key);
-        void set_overview_link(std::wstring_view overview_link);
-        void set_video_link(std::wstring_view video_link);
-
-        // Add properties to the PowerToy settings.
-        void add_bool_toggle(std::wstring_view name, UINT description_resource_id, bool value);
-        void add_bool_toggle(std::wstring_view name, std::wstring_view description, bool value);
-
-        void add_int_spinner(std::wstring_view name, UINT description_resource_id, int value, int min, int max, int step);
-        void add_int_spinner(std::wstring_view name, std::wstring_view description, int value, int min, int max, int step);
-
-        void add_string(std::wstring_view name, UINT description_resource_id, std::wstring_view value);
-        void add_string(std::wstring_view name, std::wstring_view description, std::wstring_view value);
-
-        void add_multiline_string(std::wstring_view name, UINT description_resource_id, std::wstring_view value);
-        void add_multiline_string(std::wstring_view name, std::wstring_view description, std::wstring_view value);
-
-        void add_color_picker(std::wstring_view name, UINT description_resource_id, std::wstring_view value);
-        void add_color_picker(std::wstring_view name, std::wstring_view description, std::wstring_view value);
-
-        void add_hotkey(std::wstring_view name, UINT description_resource_id, const HotkeyObject& hotkey);
-        void add_hotkey(std::wstring_view name, std::wstring_view description, const HotkeyObject& hotkey);
-
-        void add_choice_group(std::wstring_view name, UINT description_resource_id, std::wstring_view value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids);
-        void add_choice_group(std::wstring_view name, std::wstring_view description, std::wstring_view value, const std::vector<std::pair<std::wstring, std::wstring>>& keys_and_texts);
-
-        void add_dropdown(std::wstring_view name, UINT description_resource_id, std::wstring_view value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids);
-        void add_dropdown(std::wstring_view name, std::wstring_view description, std::wstring_view value, const std::vector<std::pair<std::wstring, std::wstring>>& keys_and_texts);
-
-        void add_custom_action(std::wstring_view name, UINT description_resource_id, UINT button_text_resource_id, UINT ext_description_resource_id);
-        void add_custom_action(std::wstring_view name, UINT description_resource_id, UINT button_text_resource_id, std::wstring_view value);
-        void add_custom_action(std::wstring_view name, std::wstring_view description, std::wstring_view button_text, std::wstring_view value);
-
-        void add_header_szLarge(std::wstring_view name, std::wstring_view description, std::wstring_view value);
-        // Serialize the internal json to a string.
-        std::wstring serialize();
-        // Serialize the internal json to the input buffer.
-        bool serialize_to_buffer(wchar_t* buffer, int* buffer_size);
-
-    private:
-        json::JsonObject m_json;
-        int m_curr_priority = 0; // For keeping order when adding elements.
-        HINSTANCE m_instance;
-
-        std::wstring get_resource(UINT resource_id);
-    };
 
     class PowerToyValues
     {
