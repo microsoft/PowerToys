@@ -250,7 +250,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
 
     private void ObservedItem_PropChanged(object? sender, IPropChangedEventArgs args)
     {
-        if (args.PropertyName is nameof(IListItem.Title) or nameof(IListItem.Icon))
+        if (args.PropertyName is nameof(IListItem.Title) or nameof(IListItem.Icon) or nameof(CommandItem.DataPackage))
         {
             QueueRebuild();
         }

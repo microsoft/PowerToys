@@ -17,7 +17,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 
@@ -1116,31 +1115,7 @@ public sealed partial class ListItemsView : UserControl,
                 return;
             }
 
-            // copy properties
-            foreach (var (key, value) in item.DataPackage.Properties)
-            {
-                try
-                {
-                    e.Data.Properties[key] = value;
-                }
-                catch (Exception)
-                {
-                    // noop - skip any properties that fail
-                }
-            }
-
-            // setup e.Data formats as deferred renderers to read from the item's DataPackage
-            foreach (var format in item.DataPackage.AvailableFormats)
-            {
-                try
-                {
-                    e.Data.SetDataProvider(format, request => DelayRenderer(request, item, format));
-                }
-                catch (Exception)
-                {
-                    // noop - skip any formats that fail
-                }
-            }
+            DataPackageTransfer.Copy(item.DataPackage, e.Data);
 
             WeakReferenceMessenger.Default.Send(new DragStartedMessage());
         }
@@ -1148,39 +1123,6 @@ public sealed partial class ListItemsView : UserControl,
         {
             WeakReferenceMessenger.Default.Send(new DragCompletedMessage());
             Logger.LogError("Failed to start dragging an item", ex);
-        }
-    }
-
-    private static void DelayRenderer(DataProviderRequest request, ListItemViewModel item, string format)
-    {
-        var deferral = request.GetDeferral();
-        try
-        {
-            item.DataPackage?.GetDataAsync(format)
-                .AsTask()
-                .ContinueWith(dataTask =>
-                {
-                    try
-                    {
-                        if (dataTask.IsCompletedSuccessfully)
-                        {
-                            request.SetData(dataTask.Result);
-                        }
-                        else if (dataTask.IsFaulted && dataTask.Exception is not null)
-                        {
-                            Logger.LogError($"Failed to get data for format '{format}' during drag-and-drop", dataTask.Exception);
-                        }
-                    }
-                    finally
-                    {
-                        deferral.Complete();
-                    }
-                });
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Failed to set data for format '{format}' during drag-and-drop", ex);
-            deferral.Complete();
         }
     }
 
