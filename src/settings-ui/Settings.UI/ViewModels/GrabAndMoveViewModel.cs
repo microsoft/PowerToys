@@ -162,6 +162,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool SnapToEdges
+        {
+            get => _moduleSettings.Properties.SnapToEdges.Value;
+
+            set
+            {
+                if (_moduleSettings.Properties.SnapToEdges.Value != value)
+                {
+                    _moduleSettings.Properties.SnapToEdges.Value = value;
+                    NotifyModuleSettingsChanged();
+                    OnPropertyChanged(nameof(SnapToEdges));
+                }
+            }
+        }
+
         public string ExcludedApps
         {
             get => _moduleSettings.Properties.ExcludedApps.Value;

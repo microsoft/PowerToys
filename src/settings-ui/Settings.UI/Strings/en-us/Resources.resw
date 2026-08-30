@@ -6623,6 +6623,13 @@ Text uses the current drawing color.</value>
   <data name="GrabAndMove_ShowGeometry.Description" xml:space="preserve">
     <value>Display the window position and size on the overlay during drag and resize operations</value>
   </data>
+  <data name="GrabAndMove_SnapToEdges.Header" xml:space="preserve">
+    <value>Snap windows to screen edges while dragging</value>
+    <comment>When enabled, releasing a dragged window near an edge snaps it to that half, near a corner snaps it to that quarter, and near the top edge maximizes it.</comment>
+  </data>
+  <data name="GrabAndMove_SnapToEdges.Description" xml:space="preserve">
+    <value>Release a dragged window near an edge or corner to snap it to that half or quarter of the screen, or near the top edge to maximize it</value>
+  </data>
   <data name="GrabAndMove_UseAltResize.Header" xml:space="preserve">
     <value>Resize windows with the modifier key + right-click</value>
     <comment>Hold the modifier key and right-click, then drag from the nearest edge or corner to resize the window</comment>
