@@ -24,6 +24,7 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
@@ -77,6 +78,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly ToastWindow _toast = new();
 
     private readonly CompositeFormat _pageNavigatedAnnouncement;
+    private readonly string _quickAccessShelfChangeOrderDragCaption;
 
     private readonly ISettingsService _settingsService;
 
@@ -218,6 +220,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         var pageAnnouncementFormat = ResourceLoaderInstance.GetString("ScreenReader_Announcement_NavigatedToPage0");
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
+        _quickAccessShelfChangeOrderDragCaption = ResourceLoaderInstance.GetString("QuickAccessShelfChangeOrderDragCaption");
 
         if (App.Current.Services.GetRequiredService<ISettingsService>().Settings.EnableDock)
         {
@@ -1019,9 +1022,21 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             _draggedQuickAccessShelfItem = item;
             _quickAccessShelfDragToken = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+            if (item.DataPackage is not null)
+            {
+                DataPackageTransfer.Copy(item.DataPackage, args.Data);
+            }
+            else
+            {
+                args.Data.RequestedOperation = DataPackageOperation.Move;
+            }
+
             args.Data.Properties[QuickAccessShelfDragProperty] = _quickAccessShelfDragToken;
             args.Data.SetData(QuickAccessShelfDragProperty, _quickAccessShelfDragToken);
-            args.Data.RequestedOperation = DataPackageOperation.Move;
+            args.AllowedOperations =
+                args.Data.RequestedOperation |
+                DataPackageOperation.Move |
+                (item.DataPackage is null ? DataPackageOperation.None : DataPackageOperation.Copy);
 
             QuickAccessShelfRemoveDropTarget.BorderThickness = new Thickness(1);
             QuickAccessShelfRemoveDropTarget.Visibility = Visibility.Visible;
@@ -1060,6 +1075,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var placeAfter = e.GetPosition(targetGrid).X >= targetGrid.ActualWidth / 2;
         SetQuickAccessShelfDropTarget(targetGrid, placeAfter);
         e.AcceptedOperation = DataPackageOperation.Move;
+        e.DragUIOverride.Caption = _quickAccessShelfChangeOrderDragCaption;
+        e.DragUIOverride.IsCaptionVisible = true;
         e.Handled = true;
     }
 
@@ -1100,6 +1117,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         QuickAccessShelfRemoveDropTarget.BorderThickness = new Thickness(2);
         e.AcceptedOperation = DataPackageOperation.Move;
+        e.DragUIOverride.Caption = AutomationProperties.GetName(QuickAccessShelfRemoveDropTarget);
+        e.DragUIOverride.IsCaptionVisible = true;
         e.Handled = true;
     }
 
@@ -1112,6 +1131,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         QuickAccessShelfPinDropTarget.BorderThickness = new Thickness(2);
         e.AcceptedOperation = DataPackageOperation.Move;
+        e.DragUIOverride.Caption = AutomationProperties.GetName(QuickAccessShelfPinDropTarget);
+        e.DragUIOverride.IsCaptionVisible = true;
         e.Handled = true;
     }
 

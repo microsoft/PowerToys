@@ -467,6 +467,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Alt+{0}</value>
     <comment>Tooltip shortcut text for a quick access item. {0} is a digit from 1 through 9.</comment>
   </data>
+  <data name="QuickAccessShelfChangeOrderDragCaption" xml:space="preserve">
+    <value>Change order</value>
+    <comment>Drag-over caption shown when reordering commands on the quick access shelf.</comment>
+  </data>
   <data name="QuickAccessOverflowButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More quick access commands</value>
   </data>
