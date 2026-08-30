@@ -46,7 +46,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
         _recentCommands = _appStateService.State.RecentCommands;
         _configuration = CreateConfiguration(recentCommandsPlacement, pinnedCommandLimit, recentCommandLimit);
         _scheduler = scheduler;
-        _topLevelCommandManager.PinnedCommands.CollectionChanged += Commands_CollectionChanged;
+        _topLevelCommandManager.PinnedCommandsChanged += PinnedCommands_Changed;
         _topLevelCommandManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
         _appStateService.StateChanged += AppStateService_StateChanged;
         AllAppsCommandProvider.Page.PropChanged += AllApps_PropChanged;
@@ -100,6 +100,11 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
     }
 
     private void Commands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        QueueRebuild();
+    }
+
+    private void PinnedCommands_Changed(object? sender, EventArgs e)
     {
         QueueRebuild();
     }
@@ -168,11 +173,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
         var configuration = _configuration;
         var includeRecentCommands = IncludesRecentCommands(configuration.RecentCommandsPlacement);
 
-        PinnedCommandSettings[] pinnedCommands;
-        lock (_topLevelCommandManager.PinnedCommands)
-        {
-            pinnedCommands = [.. _topLevelCommandManager.PinnedCommands];
-        }
+        var pinnedCommands = _topLevelCommandManager.GetPinnedCommandsSnapshot();
 
         TopLevelViewModel[] availableCommands;
         lock (_topLevelCommandManager.TopLevelCommands)
@@ -333,7 +334,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
         }
 
         _isDisposed = true;
-        _topLevelCommandManager.PinnedCommands.CollectionChanged -= Commands_CollectionChanged;
+        _topLevelCommandManager.PinnedCommandsChanged -= PinnedCommands_Changed;
         _topLevelCommandManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
         _appStateService.StateChanged -= AppStateService_StateChanged;
         AllAppsCommandProvider.Page.PropChanged -= AllApps_PropChanged;
