@@ -62,11 +62,9 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly Separator _fallbacksSeparator = new(Resources.fallbacks);
     private readonly Separator _commandsSeparator = new(Resources.home_sections_commands_title);
 
-    private IListItem[]? _cachedPinnedViewModels;
-    private IListItem[]? _cachedRecentViewModels;
-    private IListItem[]? _cachedRegularViewModels;
-    private bool _defaultViewDirty = true;
+    private DefaultViewCache? _defaultViewCache;
     private volatile RecentCommandsManager _recentCommands;
+    private int _defaultViewGeneration;
     private RecentCommandsPlacement _recentCommandsOnHome;
     private int _recentCommandsDisplayLimit = SettingsModel.DefaultRecentCommandsDisplayLimit;
 
@@ -134,7 +132,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
-        _tlcManager.PinnedCommands.CollectionChanged += PinnedCommands_CollectionChanged;
+        _tlcManager.PinnedCommandsChanged += PinnedCommands_Changed;
 
         _refreshThrottledDebouncedAction = new ThrottledDebouncedAction(
             () =>
@@ -203,21 +201,21 @@ public sealed partial class MainListPage : DynamicListPage,
             IsLoading = ActuallyLoading();
             if (!AllAppsCommandProvider.Page.IsLoading && _recentCommandsOnHome != RecentCommandsPlacement.Hidden)
             {
-                _defaultViewDirty = true;
+                InvalidateDefaultView();
                 RequestRefresh(fullRefresh: false);
             }
         }
     }
 
-    private void PinnedCommands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    private void PinnedCommands_Changed(object? sender, EventArgs e)
     {
-        _defaultViewDirty = true;
+        InvalidateDefaultView();
         RaiseItemsChanged();
     }
 
     private void Commands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        _defaultViewDirty = true;
+        InvalidateDefaultView();
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
         if (_includeApps != _filteredItemsIncludesApps)
         {
@@ -239,7 +237,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _recentCommands = args.RecentCommands;
         if (_recentCommandsOnHome != RecentCommandsPlacement.Hidden)
         {
-            _defaultViewDirty = true;
+            InvalidateDefaultView();
             RequestRefresh(fullRefresh: false);
         }
     }
@@ -437,14 +435,8 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private IListItem[] GetDefaultViewItems()
     {
-        if (_defaultViewDirty)
-        {
-            RebuildDefaultViewCache();
-        }
+        var (_, pinned, recent, regular) = GetDefaultViewCache();
 
-        var pinned = _cachedPinnedViewModels!;
-        var recent = _cachedRecentViewModels!;
-        var regular = _cachedRegularViewModels!;
         var pinnedCount = pinned.Length;
         var recentCount = recent.Length;
         var regularCount = regular.Length;
@@ -489,13 +481,28 @@ public sealed partial class MainListPage : DynamicListPage,
         return result;
     }
 
-    private void RebuildDefaultViewCache()
+    private DefaultViewCache GetDefaultViewCache()
     {
-        PinnedCommandSettings[] pinnedSettings;
-        lock (_tlcManager.PinnedCommands)
+        var existing = Volatile.Read(ref _defaultViewCache);
+        var generation = Volatile.Read(ref _defaultViewGeneration);
+        if (existing?.Generation == generation)
         {
-            pinnedSettings = [.. _tlcManager.PinnedCommands];
+            return existing;
         }
+
+        var rebuilt = BuildDefaultViewCache(existing, generation);
+        if (generation == Volatile.Read(ref _defaultViewGeneration))
+        {
+            Interlocked.CompareExchange(ref _defaultViewCache, rebuilt, existing);
+        }
+
+        var current = Volatile.Read(ref _defaultViewCache);
+        return current?.Generation == Volatile.Read(ref _defaultViewGeneration) ? current : rebuilt;
+    }
+
+    private DefaultViewCache BuildDefaultViewCache(DefaultViewCache? existing, int generation)
+    {
+        var pinnedSettings = _tlcManager.GetPinnedCommandsSnapshot();
 
         TopLevelViewModel[] allCommands;
         lock (_tlcManager.TopLevelCommands)
@@ -514,16 +521,18 @@ public sealed partial class MainListPage : DynamicListPage,
             recentCommandLimit: _recentCommandsDisplayLimit,
             recentCommandsFirst: _recentCommandsOnHome == RecentCommandsPlacement.BeforePinned);
 
-        var previousRecentViewModels = _cachedRecentViewModels;
-        _cachedPinnedViewModels = [.. sections.Pinned];
-        _cachedRecentViewModels = sections.Recent
+        var recent = sections.Recent
             .Select(item => (IListItem)RecentCommandListItem.CreateOrReuse(
-                previousRecentViewModels,
+                existing?.Recent,
                 item,
                 IdForTopLevelOrAppItem(item)))
             .ToArray();
-        _cachedRegularViewModels = [.. sections.Regular];
-        _defaultViewDirty = false;
+        return new(generation, [.. sections.Pinned], recent, [.. sections.Regular]);
+    }
+
+    private void InvalidateDefaultView()
+    {
+        Interlocked.Increment(ref _defaultViewGeneration);
     }
 
     private void ClearResults()
@@ -1059,7 +1068,7 @@ public sealed partial class MainListPage : DynamicListPage,
     public void Receive(UpdateFallbackItemsMessage message)
     {
         _tlcManager.RebuildPinnedCache();
-        _defaultViewDirty = true;
+        InvalidateDefaultView();
         RequestRefresh(fullRefresh: false);
     }
 
@@ -1074,7 +1083,7 @@ public sealed partial class MainListPage : DynamicListPage,
         {
             _recentCommandsOnHome = settings.RecentCommandsOnHome;
             _recentCommandsDisplayLimit = settings.RecentCommandsDisplayLimit;
-            _defaultViewDirty = true;
+            InvalidateDefaultView();
             RequestRefresh(fullRefresh: false);
         }
 
@@ -1143,7 +1152,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
-        _tlcManager.PinnedCommands.CollectionChanged -= PinnedCommands_CollectionChanged;
+        _tlcManager.PinnedCommandsChanged -= PinnedCommands_Changed;
         _appStateService.StateChanged -= AppStateService_StateChanged;
 
         AllAppsCommandProvider.Page.PropChanged -= AllApps_PropChanged;
@@ -1156,4 +1165,10 @@ public sealed partial class MainListPage : DynamicListPage,
         WeakReferenceMessenger.Default.UnregisterAll(this);
         GC.SuppressFinalize(this);
     }
+
+    private sealed record DefaultViewCache(
+        int Generation,
+        IListItem[] Pinned,
+        IListItem[] Recent,
+        IListItem[] Regular);
 }
