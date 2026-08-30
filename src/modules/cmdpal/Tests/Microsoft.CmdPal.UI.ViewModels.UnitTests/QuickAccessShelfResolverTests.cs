@@ -2,9 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
@@ -73,6 +76,24 @@ public partial class QuickAccessShelfResolverTests
         Assert.IsTrue(recent.CanPin);
         Assert.IsTrue(pinned.IsPinned);
         Assert.IsFalse(pinned.CanPin);
+    }
+
+    [TestMethod]
+    public async Task ShelfItemDataPackage_PreservesRequestedOperationPropertiesAndDeferredFormats()
+    {
+        var source = new DataPackage { RequestedOperation = DataPackageOperation.Link };
+        source.Properties["TestProperty"] = "TestValue";
+        source.SetText("Test payload");
+        var item = new ListItem { Title = "Recent", DataPackageView = source.GetView() };
+        var shelfItem = QuickAccessShelfItem.CreateOrReuse([], item, shortcutIndex: 0, startsNewSection: false);
+        var destination = new DataPackage();
+
+        DataPackageTransfer.Copy(shelfItem.DataPackage!, destination);
+
+        var destinationView = destination.GetView();
+        Assert.AreEqual(DataPackageOperation.Link, destinationView.RequestedOperation);
+        Assert.AreEqual("TestValue", destinationView.Properties["TestProperty"]);
+        Assert.AreEqual("Test payload", await destinationView.GetTextAsync().AsTask());
     }
 
     [TestMethod]
