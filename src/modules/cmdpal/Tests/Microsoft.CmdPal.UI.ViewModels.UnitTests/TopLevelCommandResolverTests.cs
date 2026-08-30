@@ -148,6 +148,25 @@ public class TopLevelCommandResolverTests
         CollectionAssert.AreEqual(new[] { regular }, sections.Regular.ToArray());
     }
 
+    [TestMethod]
+    public void Resolve_UsesFirstPassKeyForRegularCommands()
+    {
+        var command = new TestCommand("provider-a", "command", IsEligible: true);
+        var providerIdReads = 0;
+
+        var sections = TopLevelCommandResolver.Resolve(
+            [new PinnedCommandSettings("provider-a", "command")],
+            [],
+            [command],
+            _ => ++providerIdReads == 1 ? "provider-a" : "provider-b",
+            static command => command.CommandId,
+            static command => command.IsEligible);
+
+        Assert.AreEqual(1, providerIdReads);
+        CollectionAssert.AreEqual(new[] { command }, sections.Pinned.ToArray());
+        Assert.AreEqual(0, sections.Regular.Count);
+    }
+
     [DataTestMethod]
     [DataRow(false, "Command", true)]
     [DataRow(true, "Command", false)]
