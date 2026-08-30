@@ -10,6 +10,5 @@ namespace notifications
     const inline wchar_t PreviewModulesDontShowAgainRegistryPath[] = LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\DontShowMeThisDialogAgain\{7e29e2b2-b31c-4dcd-b7b0-79c078b02430})";
     const inline int64_t PreviewModulesDisableIntervalInDays = 30;
 
-    bool disable_toast(const wchar_t* registry_path);
     bool is_toast_disabled(const wchar_t* registry_path, const int64_t disable_interval_in_days);
 }

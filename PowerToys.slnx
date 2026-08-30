@@ -419,7 +419,6 @@
   </Folder>
   <Folder Name="/modules/CropAndLock/">
     <Project Path="src/modules/CropAndLock/CropAndLock/CropAndLock.vcxproj" Id="f5e1146e-b7b3-4e11-85fd-270a500bd78c" />
-    <Project Path="src/modules/CropAndLock/CropAndLockModuleInterface/CropAndLockModuleInterface.vcxproj" Id="3157fa75-86cf-4ee2-8f62-c43f776493c6" />
   </Folder>
   <Folder Name="/modules/EnvironmentVariables/">
     <Project Path="src/modules/EnvironmentVariables/EnvironmentVariables/EnvironmentVariables.csproj">
@@ -450,7 +449,6 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/fancyzones/FancyZonesLib/FancyZonesLib.vcxproj" Id="f9c68edf-ac74-4b77-9af1-005d9c9f6a99" />
-    <Project Path="src/modules/fancyzones/FancyZonesModuleInterface/FancyZonesModuleInterface.vcxproj" Id="48804216-2a0e-4168-a6d8-9cd068d14227" />
   </Folder>
   <Folder Name="/modules/fancyzones/Tests/">
     <Project Path="src/modules/fancyzones/FancyZones.FuzzTests/FancyZones.FuzzTests.csproj">
@@ -517,29 +515,6 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/Hosts/Hosts.UITests/HostsEditor.UITests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-  </Folder>
-  <Folder Name="/modules/imageresizer/">
-    <Project Path="src/modules/imageresizer/dll/ImageResizerExt.vcxproj" Id="0b43679e-edfa-4da0-ad30-f4628b308b1b" />
-    <Project Path="src/modules/imageresizer/ImageResizerCLI/ImageResizerCLI.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/imageresizer/ImageResizerContextMenu/ImageResizerContextMenu.vcxproj" Id="93b72a06-c8bd-484f-a6f7-c9f280b150bf" />
-    <Project Path="src/modules/imageresizer/ImageResizerLib/ImageResizerLib.vcxproj" Id="18b3db45-4ffe-4d01-97d6-5223feee1853" />
-    <Project Path="src/modules/imageresizer/ui/ImageResizerUI.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-  </Folder>
-  <Folder Name="/modules/imageresizer/Tests/">
-    <Project Path="src/modules/imageresizer/tests/ImageResizer.UITests/ImageResizer.UITests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/imageresizer/tests/ImageResizer.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -649,6 +624,29 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/launcher/Wox.Plugin/Wox.Plugin.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/launcher/imageresizer/">
+    <Project Path="src/modules/imageresizer/dll/ImageResizerExt.vcxproj" Id="0b43679e-edfa-4da0-ad30-f4628b308b1b" />
+    <Project Path="src/modules/imageresizer/ImageResizerCLI/ImageResizerCLI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/imageresizer/ImageResizerContextMenu/ImageResizerContextMenu.vcxproj" Id="93b72a06-c8bd-484f-a6f7-c9f280b150bf" />
+    <Project Path="src/modules/imageresizer/ImageResizerLib/ImageResizerLib.vcxproj" Id="18b3db45-4ffe-4d01-97d6-5223feee1853" />
+    <Project Path="src/modules/imageresizer/ui/ImageResizerUI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/launcher/imageresizer/Tests/">
+    <Project Path="src/modules/imageresizer/tests/ImageResizer.UITests/ImageResizer.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/imageresizer/tests/ImageResizer.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -878,7 +876,6 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/MouseWithoutBorders/ModuleInterface/MouseWithoutBordersModuleInterface.vcxproj" Id="2833c9c6-ab32-4048-a5c7-a70898337b57" />
   </Folder>
   <Folder Name="/modules/MouseWithoutBorders/Tests/">
     <Project Path="src/modules/MouseWithoutBorders/MouseWithoutBorders.UnitTests/MouseWithoutBorders.UnitTests.csproj">
@@ -1255,7 +1252,6 @@
     <BuildDependency Project="src/modules/colorPicker/ColorPickerUI/ColorPickerUI.csproj" />
     <BuildDependency Project="src/modules/fancyzones/editor/FancyZonesEditor/FancyZonesEditor.csproj" />
     <BuildDependency Project="src/modules/fancyzones/FancyZonesLib/FancyZonesLib.vcxproj" />
-    <BuildDependency Project="src/modules/fancyzones/FancyZonesModuleInterface/FancyZonesModuleInterface.vcxproj" />
     <BuildDependency Project="src/modules/GrabAndMove/GrabAndMove/GrabAndMove.vcxproj" />
     <BuildDependency Project="src/modules/GrabAndMove/GrabAndMoveModuleInterface/GrabAndMoveModuleInterface.vcxproj" />
     <BuildDependency Project="src/modules/imageresizer/dll/ImageResizerExt.vcxproj" />
@@ -1273,7 +1269,6 @@
     <BuildDependency Project="src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj" />
     <BuildDependency Project="src/PackageIdentity/PackageIdentity.vcxproj" />
   </Project>
-  <Project Path="src/runner/UnitTests/UnitTests-Runner.vcxproj" Id="97bdacf8-261d-4e23-a708-a27e0b60e444" />
   <Project Path="src/RunnerV2/RunnerV2.csproj">
     <Platform Solution="*|ARM64" Project="ARM64" />
     <Platform Solution="*|x64" Project="x64" />

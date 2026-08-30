@@ -1,5 +1,4 @@
 #include "pch.h"
-#define SUPRESS_LOGGER
 #include "../utils/elevation.h"
 #include "Elevation.h"
 #include "Elevation.g.cpp"

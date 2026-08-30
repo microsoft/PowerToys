@@ -19,7 +19,6 @@
     <ProjectReference Include="..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
     <ProjectReference Include="..\modules\poweraccent\PowerAccent.UI\PowerAccent.UI.csproj" />
     <ProjectReference Include="..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
-    <ProjectReference Include="..\Update\Update.csproj" />
   </ItemGroup>
 
   <ItemGroup>

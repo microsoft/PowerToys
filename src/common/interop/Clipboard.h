@@ -14,4 +14,3 @@ namespace winrt::PowerToys::Interop::factory_implementation
     {
     };
 }
-#pragma once
