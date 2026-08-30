@@ -41,6 +41,7 @@ public static class MouseHelper
 
     private const uint INPUT_MOUSE = 0;
 
+    private const uint MouseEventMove = 0x01;
     private const uint MOUSEEVENTF_LEFTDOWN = 0x02;
     private const uint MOUSEEVENTF_LEFTUP = 0x04;
     private const uint MOUSEEVENTF_RIGHTDOWN = 0x08;
@@ -52,10 +53,10 @@ public static class MouseHelper
     private const int ClickDelayMs = 100;
     private const int WheelTick = 120;
 
-    [DllImport("user32.dll")]
+    [DllImport("user32.dll", SetLastError = true)]
     private static extern bool SetCursorPos(int x, int y);
 
-    [DllImport("user32.dll")]
+    [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GetCursorPos(out POINT lpPoint);
 
@@ -63,12 +64,49 @@ public static class MouseHelper
     private static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
 
     /// <summary>Move the OS cursor to absolute screen coordinates.</summary>
-    public static void MoveTo(int x, int y) => SetCursorPos(x, y);
+    /// <exception cref="Win32Exception"><c>SetCursorPos</c> rejected the requested position.</exception>
+    public static void MoveTo(int x, int y)
+    {
+        if (!SetCursorPos(x, y))
+        {
+            throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
+    }
+
+    /// <summary>
+    /// Move the cursor by a relative delta using real mouse input. Stepped movement is useful for
+    /// utilities that observe low-level or raw mouse movement rather than only the final position.
+    /// </summary>
+    public static void MoveBy(int deltaX, int deltaY, int steps = 1, int delayMs = 15)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(steps);
+        ArgumentOutOfRangeException.ThrowIfNegative(delayMs);
+
+        var previousX = 0;
+        var previousY = 0;
+        for (var step = 1; step <= steps; step++)
+        {
+            var targetX = (int)Math.Round((double)deltaX * step / steps);
+            var targetY = (int)Math.Round((double)deltaY * step / steps);
+            SendMouseInput(MouseEventMove, dx: targetX - previousX, dy: targetY - previousY);
+            previousX = targetX;
+            previousY = targetY;
+
+            if (delayMs > 0 && step < steps)
+            {
+                Thread.Sleep(delayMs);
+            }
+        }
+    }
 
     /// <summary>Current cursor position in screen pixels.</summary>
     public static (int X, int Y) GetMousePosition()
     {
-        GetCursorPos(out var p);
+        if (!GetCursorPos(out var p))
+        {
+            throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
+
         return (p.X, p.Y);
     }
 
@@ -178,7 +216,7 @@ public static class MouseHelper
     /// Button and wheel events fire at the current cursor position, so <paramref name="data"/>
     /// only carries the wheel delta for <c>MOUSEEVENTF_WHEEL</c>.
     /// </summary>
-    private static void SendMouseInput(uint flags, int data = 0)
+    private static void SendMouseInput(uint flags, int data = 0, int dx = 0, int dy = 0)
     {
         var inputs = new INPUT[]
         {
@@ -187,8 +225,8 @@ public static class MouseHelper
                 Type = INPUT_MOUSE,
                 Mi = new MOUSEINPUT
                 {
-                    Dx = 0,
-                    Dy = 0,
+                    Dx = dx,
+                    Dy = dy,
                     MouseData = (uint)data,
                     DwFlags = flags,
                     Time = 0,

@@ -11,6 +11,8 @@ namespace Microsoft.PowerToys.UITest.Next;
 public enum Key : byte
 {
     Ctrl = 0x11,
+    LCtrl = 0xA2,
+    RCtrl = 0xA3,
     Shift = 0x10,
     LShift = 0xA0,
     Alt = 0x12,
@@ -81,6 +83,7 @@ public enum Key : byte
     F10 = 0x79,
     F11 = 0x7A,
     F12 = 0x7B,
+    OemPeriod = 0xBE,
 }
 
 /// <summary>
@@ -102,16 +105,48 @@ public static class KeyboardHelper
 
     private const uint KEYEVENTF_KEYUP = 0x2;
     private const uint KEYEVENTF_EXTENDEDKEY = 0x1;
-    private const byte VK_LWIN = 0x5B;
 
     /// <summary>
-    /// Send a chord of keys. If the chord contains <see cref="Key.LWin"/>, LWIN is held via
-    /// <c>keybd_event</c> while the remaining keys are sent via <see cref="FormsSendKeys.SendWait"/>.
-    /// Otherwise everything goes through SendKeys.SendWait (the modifier-aware Windows path).
+    /// Send a chord of keys. LWIN and side-specific Ctrl keys are held via <c>keybd_event</c> while
+    /// the remaining keys are sent via <see cref="FormsSendKeys.SendWait"/>. Otherwise everything
+    /// goes through SendKeys.SendWait (the modifier-aware Windows path).
     /// </summary>
     public static void SendKeys(params Key[] keys)
     {
-        bool winDown = false;
+        var (chord, heldKeys) = CreateChordPlan(keys);
+        foreach (var key in heldKeys)
+        {
+            PressKey(key);
+        }
+
+        try
+        {
+            if (chord.Length > 0)
+            {
+                FormsSendKeys.SendWait(chord);
+            }
+            else if (heldKeys.Count > 0)
+            {
+                Thread.Sleep(20);
+            }
+        }
+        finally
+        {
+            for (var index = heldKeys.Count - 1; index >= 0; index--)
+            {
+                ReleaseKey(heldKeys[index]);
+            }
+        }
+    }
+
+    internal static (string Chord, IReadOnlyList<Key> HeldKeys) CreateChordPlan(params Key[] keys)
+    {
+        if (keys.Contains(Key.OemPeriod))
+        {
+            throw new NotSupportedException($"Use {nameof(SendKey)} for OEM keys so input follows the active keyboard layout.");
+        }
+
+        var heldKeys = new List<Key>();
         var chord = new System.Text.StringBuilder();
 
         foreach (var k in keys)
@@ -119,10 +154,12 @@ public static class KeyboardHelper
             switch (k)
             {
                 case Key.LWin:
-                    keybd_event(VK_LWIN, 0, 0, UIntPtr.Zero);
-                    winDown = true;
+                case Key.LCtrl:
+                case Key.RCtrl:
+                    heldKeys.Add(k);
                     break;
-                case Key.Ctrl: chord.Append('^'); break;
+                case Key.Ctrl:
+                    chord.Append('^'); break;
                 case Key.Shift:
                 case Key.LShift: chord.Append('+'); break;
                 case Key.Alt: chord.Append('%'); break;
@@ -160,20 +197,7 @@ public static class KeyboardHelper
             }
         }
 
-        try
-        {
-            if (chord.Length > 0)
-            {
-                FormsSendKeys.SendWait(chord.ToString());
-            }
-        }
-        finally
-        {
-            if (winDown)
-            {
-                keybd_event(VK_LWIN, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
-            }
-        }
+        return (chord.ToString(), heldKeys);
     }
 
     /// <summary>
@@ -210,6 +234,7 @@ public static class KeyboardHelper
     }
 
     private static bool IsExtended(Key key) => key is
+        Key.RCtrl or
         Key.Left or Key.Up or Key.Right or Key.Down or
         Key.Home or Key.End or Key.PageUp or Key.PageDown or
         Key.Insert or Key.Delete;
