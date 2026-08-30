@@ -46,6 +46,7 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly AliasManager _aliasManager;
     private readonly ISettingsService _settingsService;
     private readonly IAppStateService _appStateService;
+    private readonly IListPage _allAppsPage;
     private readonly ScoringFunction<IListItem> _scoringFunction;
     private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
@@ -115,6 +116,25 @@ public sealed partial class MainListPage : DynamicListPage,
         IFuzzyMatcherProvider fuzzyMatcherProvider,
         ISettingsService settingsService,
         IAppStateService appStateService)
+        : this(
+            topLevelCommandManager,
+            aliasManager,
+            fuzzyMatcherProvider,
+            settingsService,
+            appStateService,
+            AllAppsCommandProvider.Page)
+    {
+    }
+
+    // Temp constructor for unit tests so they can avoid AllAppsCommandProvider.Page dependency
+    // TODO: Replace with a proper abstraction during AllApps refactor.
+    internal MainListPage(
+        TopLevelCommandManager topLevelCommandManager,
+        AliasManager aliasManager,
+        IFuzzyMatcherProvider fuzzyMatcherProvider,
+        ISettingsService settingsService,
+        IAppStateService appStateService,
+        IListPage allAppsPage)
     {
         Id = "com.microsoft.cmdpal.home";
         Title = Resources.builtin_home_name;
@@ -124,6 +144,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _settingsService = settingsService;
         _aliasManager = aliasManager;
         _appStateService = appStateService;
+        _allAppsPage = allAppsPage;
         _recentCommands = _appStateService.State.RecentCommands;
         _tlcManager = topLevelCommandManager;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
@@ -173,8 +194,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
         // The all apps page will kick off a BG thread to start loading apps.
         // We just want to know when it is done.
-        var allApps = AllAppsCommandProvider.Page;
-        allApps.PropChanged += AllApps_PropChanged;
+        _allAppsPage.PropChanged += AllApps_PropChanged;
 
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
@@ -196,10 +216,10 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private void AllApps_PropChanged(object? sender, IPropChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(AllAppsCommandProvider.Page.IsLoading))
+        if (e.PropertyName == nameof(IListPage.IsLoading))
         {
             IsLoading = ActuallyLoading();
-            if (!AllAppsCommandProvider.Page.IsLoading && _recentCommandsOnHome != RecentCommandsPlacement.Hidden)
+            if (!_allAppsPage.IsLoading && _recentCommandsOnHome != RecentCommandsPlacement.Hidden)
             {
                 InvalidateDefaultView();
                 RequestRefresh(fullRefresh: false);
@@ -716,7 +736,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
                 if (includeAppsSnapshot)
                 {
-                    var allNewApps = AllAppsCommandProvider.Page.GetItems().Cast<AppListItem>().ToList();
+                    var allNewApps = _allAppsPage.GetItems().Cast<AppListItem>().ToList();
 
                     // We need to remove pinned apps from allNewApps so they don't show twice.
                     var pinnedCommandIds = _settingsService.Settings.GetPinnedCommandIds(AllAppsCommandProvider.WellKnownId);
@@ -884,8 +904,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private bool ActuallyLoading()
     {
-        var allApps = AllAppsCommandProvider.Page;
-        return allApps.IsLoading || _tlcManager.IsLoading;
+        return _allAppsPage.IsLoading || _tlcManager.IsLoading;
     }
 
     // Almost verbatim ListHelpers.ScoreListItem. Fallbacks tier by the same title match as any
@@ -1155,7 +1174,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _tlcManager.PinnedCommandsChanged -= PinnedCommands_Changed;
         _appStateService.StateChanged -= AppStateService_StateChanged;
 
-        AllAppsCommandProvider.Page.PropChanged -= AllApps_PropChanged;
+        _allAppsPage.PropChanged -= AllApps_PropChanged;
 
         if (_settingsService is not null)
         {
