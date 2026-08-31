@@ -34,7 +34,7 @@ public sealed class PowerAccentEndToEndTests : UITestBase
     [TestCategory("PowerAccent")]
     public void ArrowKeysCycleAndCommitSelectedCharacter()
     {
-        ReplaceSettings(new Settings(
+        ReplaceSettings(this, new Settings(
             Activation: ActivationKey.LeftRightArrow,
             InputTimeMs: 200,
             SelectedLanguage: "FR"));
@@ -78,7 +78,7 @@ public sealed class PowerAccentEndToEndTests : UITestBase
     [TestCategory("PowerAccent")]
     public void SpaceCyclesForwardAndShiftSpaceCyclesBackward()
     {
-        ReplaceSettings(new Settings(
+        ReplaceSettings(this, new Settings(
             Activation: ActivationKey.Space,
             InputTimeMs: 200,
             SelectedLanguage: "FR"));
@@ -118,7 +118,7 @@ public sealed class PowerAccentEndToEndTests : UITestBase
     [TestCategory("PowerAccent")]
     public void DisablingQuickAccentStopsActivation()
     {
-        ReplaceSettings(new Settings(
+        ReplaceSettings(this, new Settings(
             Activation: ActivationKey.Space,
             InputTimeMs: 200,
             SelectedLanguage: "FR"));
@@ -154,7 +154,7 @@ public sealed class PowerAccentEndToEndTests : UITestBase
     public void ActivationKeySettingIsApplied(int activationKey, string triggerName)
     {
         var activation = (ActivationKey)activationKey;
-        ReplaceSettings(new Settings(
+        ReplaceSettings(this, new Settings(
             Activation: activation,
             InputTimeMs: 200,
             HoldDurationMs: 250,
@@ -194,7 +194,7 @@ public sealed class PowerAccentEndToEndTests : UITestBase
     [TestCategory("PowerAccent")]
     public void CurrencyLanguageLimitsAvailableCharacters()
     {
-        ReplaceSettings(new Settings(
+        ReplaceSettings(this, new Settings(
             Activation: ActivationKey.Space,
             InputTimeMs: 200,
             SelectedLanguage: "CUR"));
@@ -236,7 +236,7 @@ public sealed class PowerAccentEndToEndTests : UITestBase
     [TestCategory("PowerAccent")]
     public void ToolbarPositionSettingIsApplied(string position, string horizontalAnchor, string verticalAnchor)
     {
-        ReplaceSettings(new Settings(
+        ReplaceSettings(this, new Settings(
             Activation: ActivationKey.Space,
             ToolbarPosition: position,
             InputTimeMs: 200,
@@ -259,7 +259,7 @@ public sealed class PowerAccentEndToEndTests : UITestBase
     public void InputDelayDistinguishesFalseStartFromSelection()
     {
         const int inputTimeMs = 900;
-        ReplaceSettings(new Settings(
+        ReplaceSettings(this, new Settings(
             Activation: ActivationKey.Space,
             InputTimeMs: inputTimeMs,
             SelectedLanguage: "FR"));
@@ -293,7 +293,7 @@ public sealed class PowerAccentEndToEndTests : UITestBase
     [TestCategory("PowerAccent")]
     public void ExcludedApplicationDoesNotActivate()
     {
-        ReplaceSettings(new Settings(
+        ReplaceSettings(this, new Settings(
             Activation: ActivationKey.Space,
             InputTimeMs: 200,
             SelectedLanguage: "FR",
@@ -312,7 +312,7 @@ public sealed class PowerAccentEndToEndTests : UITestBase
     [TestCategory("PowerAccent")]
     public void SortByFrequencyMovesUsedCharacterFirst()
     {
-        ReplaceSettings(new Settings(
+        ReplaceSettings(this, new Settings(
             Activation: ActivationKey.Space,
             InputTimeMs: 200,
             SelectedLanguage: "FR",
@@ -361,7 +361,7 @@ public sealed class PowerAccentEndToEndTests : UITestBase
         using var clipboard = PreserveClipboardText();
         using var notepad = NotepadFixture.Start(this);
 
-        ReplaceSettings(new Settings(
+        ReplaceSettings(this, new Settings(
             Activation: ActivationKey.LeftRightArrow,
             InputTimeMs: 200,
             SelectedLanguage: "FR",
@@ -376,7 +376,7 @@ public sealed class PowerAccentEndToEndTests : UITestBase
                 toolbar => Assert.AreEqual("ä", GetSelectedCharacter(toolbar, FrenchACharacters))),
             "The default right-arrow selection should start in the right half.");
 
-        ReplaceSettings(new Settings(
+        ReplaceSettings(this, new Settings(
             Activation: ActivationKey.LeftRightArrow,
             InputTimeMs: 200,
             SelectedLanguage: "FR",

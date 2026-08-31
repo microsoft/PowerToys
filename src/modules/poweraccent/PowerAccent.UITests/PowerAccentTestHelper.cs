@@ -25,7 +25,7 @@ internal static class PowerAccentTestHelper
     private const int DwmCloakedAttribute = 14;
     private const int DwmExtendedFrameBoundsAttribute = 9;
     private const int OverlayStartupTimeoutMs = 30_000;
-    private const int SettingsReloadDelayMs = 600;
+    private const int SettingsReloadDelayMs = 2_000;
 
     [DllImport("dwmapi.dll")]
     private static extern int DwmGetWindowAttribute(IntPtr hwnd, int attribute, out int value, int valueSize);
@@ -70,11 +70,17 @@ internal static class PowerAccentTestHelper
 
     internal static void PrepareDefaultState()
     {
-        ReplaceSettings(new Settings(), waitForReload: false);
+        WriteSettings(new Settings(), waitForReload: false);
         File.Delete(UsageInfoPath);
     }
 
-    internal static void ReplaceSettings(Settings settings, bool waitForReload = true)
+    internal static void ReplaceSettings(UITestBase testBase, Settings settings)
+    {
+        WaitForOverlayState(testBase, revealed: false, timeoutMs: OverlayStartupTimeoutMs);
+        WriteSettings(settings, waitForReload: true);
+    }
+
+    private static void WriteSettings(Settings settings, bool waitForReload)
     {
         var desired = CreateSettings(settings);
         SettingsConfigHelper.UpdateModuleSettings(
