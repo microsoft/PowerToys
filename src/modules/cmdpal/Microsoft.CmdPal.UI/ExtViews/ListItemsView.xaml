@@ -44,6 +44,7 @@
         <Style x:Key="IconGridViewItemStyle" TargetType="GridViewItem">
             <!--  Include the former panel spacing in the native cell's margin.  -->
             <Setter Property="Margin" Value="0,0,12,12" />
+            <Setter Property="AllowFocusOnInteraction" Value="False" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Template">
@@ -108,6 +109,7 @@
         </Style>
 
         <Style x:Key="GalleryGridViewItemStyle" TargetType="GridViewItem">
+            <Setter Property="AllowFocusOnInteraction" Value="False" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Margin" Value="0,0,8,8" />
@@ -272,6 +274,7 @@
             x:Key="ListSingleRowItemContainerStyle"
             BasedOn="{StaticResource DefaultListViewItemStyle}"
             TargetType="ListViewItem">
+            <Setter Property="AllowFocusOnInteraction" Value="False" />
             <Setter Property="MinHeight" Value="{StaticResource SingleRowListViewItemHeight}" />
             <Setter Property="Height" Value="{StaticResource SingleRowListViewItemHeight}" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
