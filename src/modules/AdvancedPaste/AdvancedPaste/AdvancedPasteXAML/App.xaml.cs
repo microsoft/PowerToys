@@ -143,7 +143,6 @@ namespace AdvancedPaste
         {
             _dispatcherQueue.TryEnqueue(async () =>
             {
-                Debugger.Launch();
                 var messageParts = message.Split();
                 var messageType = messageParts.First();
 
