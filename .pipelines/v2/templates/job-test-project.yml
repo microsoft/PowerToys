@@ -22,6 +22,15 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
+  - name: autoSelectUiTests
+    type: boolean
+    default: false
+  - name: dependsOn
+    type: object
+    default: []
+  - name: condition
+    type: string
+    default: ''
   - name: installMode
     type: string
     default: 'machine'
@@ -35,6 +44,9 @@ parameters:
 jobs:
 - job: Test${{ parameters.platform }}${{ parameters.configuration }}${{ parameters.jobSuffix }}
   displayName: Test ${{ parameters.platform }} ${{ parameters.configuration }}${{ parameters.jobSuffix }}
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: ${{ parameters.condition }}
+  continueOnError: ${{ parameters.autoSelectUiTests }}
   timeoutInMinutes: 300
   variables:
     ${{ if or(eq(parameters.platform, 'x64Win10'), eq(parameters.platform, 'x64Win11')) }}:
@@ -45,6 +57,8 @@ jobs:
     BuildConfiguration: ${{ parameters.configuration }}
     SrcPath: $(Build.Repository.LocalPath)
     TestArtifactsName: build-${{ variables.BuildPlatform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
+    ${{ if eq(parameters.autoSelectUiTests, true) }}:
+      AutoUiTestModules: $[ dependencies.Resolve.outputs['resolve.uiTestModules'] ]
   pool:
     ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
       ${{ if ne(parameters.platform, 'ARM64') }}:
@@ -197,10 +211,14 @@ jobs:
         "$env:ProgramFiles\PowerToys",
         "$env:LOCALAPPDATA\PowerToys")
       $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
+      if (-not [string]::IsNullOrWhiteSpace($env:AUTO_UI_TEST_MODULES)) {
+        $modulesRaw = $env:AUTO_UI_TEST_MODULES
+      }
       $selectedModules = @($modulesRaw -split ';' | Where-Object { $_ })
       $allModules = [string]::IsNullOrWhiteSpace($modulesRaw)
       $requiresModernContextMenu = '$(TestPlatform)' -ne 'x64Win10'
       $requiresPowerRename = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename' }).Count -gt 0
+      $requiresAuthenticatedSettingsIpc = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename|MouseUtils' }).Count -gt 0
       $requiredPackages = @()
       $requiredAuthenticodeFiles = @()
       $certificateMarkerPath = "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
@@ -213,7 +231,7 @@ jobs:
         $requiredPackages += 'PowerRenameContextMenuPackage.msix'
       }
 
-      if ($requiresPowerRename) {
+      if ($requiresAuthenticatedSettingsIpc) {
         $requiredAuthenticodeFiles += 'PowerToys.exe', 'PowerToys.Settings.exe'
       }
 
@@ -239,6 +257,9 @@ jobs:
         }
       }
     displayName: "Sign sparse MSIX packages (test trust)"
+    ${{ if eq(parameters.autoSelectUiTests, true) }}:
+      env:
+        AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 
   # Start WinAppDriver once for the whole job — WinAppDriver's documented CI pattern
   # (https://github.com/microsoft/WinAppDriver/blob/master/Docs/CI_AzureDevOps.md). Launching it
@@ -286,6 +307,9 @@ jobs:
 
       # uiTestModules is a template parameter; flatten it to a delimited string for the script.
       $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
+      if (-not [string]::IsNullOrWhiteSpace($env:AUTO_UI_TEST_MODULES)) {
+        $modulesRaw = $env:AUTO_UI_TEST_MODULES
+      }
       $modules = @()
       if (-not [string]::IsNullOrWhiteSpace($modulesRaw)) {
         $modules = $modulesRaw -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
@@ -296,7 +320,10 @@ jobs:
       $entries = Get-ChildItem -Path $artifactRoot -Filter '*.runtimeconfig.json' -File -Recurse -ErrorAction SilentlyContinue |
         Where-Object { $_.Name -like '*UITests*' -and $_.FullName -match '\\tests\\' }
       if ($modules.Count -gt 0) {
-        $entries = $entries | Where-Object { $n = $_.Name; ($modules | Where-Object { $n -like "*$_*" }).Count -gt 0 }
+        $entries = $entries | Where-Object {
+          $projectName = $_.Name -replace '\.runtimeconfig\.json$', ''
+          $modules -contains $projectName
+        }
       }
 
       # Run each test assembly once (a project reference can copy a runner into a sibling's output).
@@ -346,6 +373,8 @@ jobs:
     # set `env: { platform: $(TestPlatform) }`; the MTP migration to this pwsh step dropped it.
     env:
       platform: $(TestPlatform)
+      ${{ if eq(parameters.autoSelectUiTests, true) }}:
+        AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 
   - task: PublishTestResults@2
     displayName: "Publish UI Test Results"

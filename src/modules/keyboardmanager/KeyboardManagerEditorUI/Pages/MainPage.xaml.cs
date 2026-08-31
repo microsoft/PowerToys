@@ -188,6 +188,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.KeyOrShortcut);
             UnifiedMappingControl.SetActionKeys(remapping.RemappedKeys.ToList());
             UnifiedMappingControl.SetAppSpecific(!remapping.IsAllApps, remapping.AppName);
+            UnifiedMappingControl.SetCondition(remapping.Condition);
             RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
             await ShowRemappingDialog();
         }
@@ -213,6 +214,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.SetTriggerKeys(disabledMapping.Shortcut.ToList());
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.Disable);
             UnifiedMappingControl.SetAppSpecific(!disabledMapping.IsAllApps, disabledMapping.AppName);
+            UnifiedMappingControl.SetCondition(disabledMapping.Condition);
             RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
             await ShowRemappingDialog();
         }
@@ -541,6 +543,10 @@ namespace KeyboardManagerEditorUI.Pages
                 case UnifiedMappingControl.ActionType.KeyOrShortcut:
                     mapping.OperationType = ShortcutOperationType.RemapShortcut;
                     mapping.TargetKeys = GetKeyCodes(mappingService, UnifiedMappingControl.GetActionKeys()) ?? string.Empty;
+
+                    // The dual-key condition (Always / Alone-tap) only applies to a single-key trigger;
+                    // the control returns Always when the toggle is hidden for multi-key shortcuts.
+                    mapping.Condition = UnifiedMappingControl.GetCondition();
                     break;
 
                 case UnifiedMappingControl.ActionType.Text:
@@ -566,6 +572,10 @@ namespace KeyboardManagerEditorUI.Pages
                 case UnifiedMappingControl.ActionType.Disable:
                     mapping.OperationType = ShortcutOperationType.RemapShortcut;
                     mapping.TargetKeys = VkDisabledString;
+
+                    // A single-key disable can also be "alone" (tapping alone does nothing while the key
+                    // still works in combination); preserve the condition so it routes to the alone table.
+                    mapping.Condition = UnifiedMappingControl.GetCondition();
                     break;
 
                 case UnifiedMappingControl.ActionType.MouseClick:
@@ -610,9 +620,24 @@ namespace KeyboardManagerEditorUI.Pages
                     return false;
                 }
 
-                return mapping.TargetKeys.Contains(';')
-                    ? mappingService.AddSingleKeyMapping(originalKey, mapping.TargetKeys)
-                    : int.TryParse(mapping.TargetKeys, out int targetKey) && mappingService.AddSingleKeyMapping(originalKey, targetKey);
+                // Route "alone" (dual-key tap) single-key remaps to the separate alone table so the
+                // key still passes through as a modifier when held in combination.
+                bool isAlone = mapping.Condition == SingleKeyRemapCondition.Alone;
+                if (mapping.TargetKeys.Contains(';'))
+                {
+                    return isAlone
+                        ? mappingService.AddSingleKeyAloneMapping(originalKey, mapping.TargetKeys)
+                        : mappingService.AddSingleKeyMapping(originalKey, mapping.TargetKeys);
+                }
+
+                if (!int.TryParse(mapping.TargetKeys, out int targetKey))
+                {
+                    return false;
+                }
+
+                return isAlone
+                    ? mappingService.AddSingleKeyAloneMapping(originalKey, targetKey)
+                    : mappingService.AddSingleKeyMapping(originalKey, targetKey);
             }
 
             return mappingService.AddShortcutMapping(mapping);
@@ -633,7 +658,15 @@ namespace KeyboardManagerEditorUI.Pages
 
             if (mapping.OperationType == ShortcutOperationType.RemapShortcut && originalKeys.Length == 1)
             {
-                return int.TryParse(originalKeys[0], out int originalKey) && mappingService.DeleteSingleKeyMapping(originalKey);
+                if (!int.TryParse(originalKeys[0], out int originalKey))
+                {
+                    return false;
+                }
+
+                // Delete from whichever table the remap lives in, matching how it was added.
+                return mapping.Condition == SingleKeyRemapCondition.Alone
+                    ? mappingService.DeleteSingleKeyAloneMapping(originalKey)
+                    : mappingService.DeleteSingleKeyMapping(originalKey);
             }
 
             return mappingService.DeleteShortcutMapping(mapping.OriginalKeys, mapping.TargetApp);
@@ -644,6 +677,10 @@ namespace KeyboardManagerEditorUI.Pages
                 entry.Value.IsActive &&
                 !entry.Key.Equals(replacingId, StringComparison.OrdinalIgnoreCase) &&
                 KeyboardManagerInterop.AreShortcutsEqual(entry.Value.Shortcut.OriginalKeys, replacementMapping.OriginalKeys) &&
+
+                // An Always and an Alone remap of the same key are distinct (separate engine tables),
+                // so only treat it as a duplicate when the condition matches too.
+                entry.Value.Shortcut.Condition == replacementMapping.Condition &&
                 (string.IsNullOrEmpty(entry.Value.Shortcut.TargetApp) ||
                  string.IsNullOrEmpty(replacementMapping.TargetApp) ||
                  entry.Value.Shortcut.TargetApp.Equals(replacementMapping.TargetApp, StringComparison.OrdinalIgnoreCase)));
@@ -919,6 +956,9 @@ namespace KeyboardManagerEditorUI.Pages
                     AppName = mapping.TargetApp ?? string.Empty,
                     Id = shortcutSettings.Id,
                     IsActive = shortcutSettings.IsActive,
+
+                    // Round-trip the dual-key condition so the list badge and edit dialog reflect Alone.
+                    Condition = mapping.Condition,
                 };
 
                 if (isDisabled)

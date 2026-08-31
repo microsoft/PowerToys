@@ -241,32 +241,42 @@ Modules: [<exact project stems>]
 State: <notStarted|inProgress|...>
 ```
 
-After any interruption, scheduled wake, or user turn, query every exact checkpointed build ID before
-other Azure work. Never rediscover by adopting the newest run.
+After any interruption or user turn, query every exact checkpointed build ID before other Azure
+work. Never rediscover by adopting the newest run.
 
-### One-hour scheduled continuation
+### Agent-owned foreground completion waiter
 
-Do not leave a nonterminal build with a passive handoff. Full builds normally take 60-90 minutes and
-test-only validation about 40 minutes. Arm one one-shot host wake-up at a time; after each wake,
-query exact build IDs and re-arm for one hour only if work remains nonterminal.
+After queueing and checkpointing, invoke the bundled waiter synchronously in the foreground:
 
-Monitoring state is scoped to exact build IDs. If the user reports a tracked build's status and asks
-to stop its now-obsolete watcher, remove only that build's task/marker. Do not treat that as a
-standing opt-out: every later build queued by the agent must immediately receive a fresh one-shot
-continuation and remain monitored until terminal unless the user explicitly opts out for that new
-build.
+```pwsh
+pwsh -NoLogo -NoProfile -File `
+  .github\skills\ui-tests-pipeline-ci\scripts\Wait-AzureDevOpsBuild.ps1 `
+  -BuildId <BUILD_ID> `
+  -ExpectedBranch <EXACT_REFS_HEADS_BRANCH> `
+  -ExpectedSourceVersion <40_CHARACTER_SOURCE_SHA>
+```
 
-The scheduled action only wakes the agent. Do not put `az`, a token, build parameters, or any Azure
-request in it. On Windows without a native agent scheduler:
+For an explicitly authorized supplemental architecture run, pass both checkpointed IDs to one
+invocation, for example `-BuildId 123456789,123456790`. Every ID must share the expected branch and
+source SHA.
 
-1. Persist build IDs, unique task name, marker under `$env:TEMP`, scheduled UTC/local time, and
-   watcher terminal ID in session state.
-2. Register a current-user, limited one-shot task for `(Get-Date).AddHours(1)` whose only action
-   writes the marker. Use an encoded PowerShell command for deterministic quoting.
-3. Start one asynchronous `FileSystemWatcher` terminal for the marker. Do not use `Start-Sleep`, a
-   timer loop, or repeated Azure requests.
-4. On notification, remove marker and task, then query exact IDs through `Invoke-AzDevOpsRest`.
-5. Re-arm only after an authenticated status query confirms a build remains nonterminal.
+Run the setup preflight first. Keep the waiter attached to the active agent turn; do not use an
+async/background mode, end the response, or call `task_complete` while it runs. The waiter validates
+identity on every read, polls every 120 seconds, requests system sleep prevention, and returns on
+terminal status, timeout, or a genuine query failure.
+
+Read the waiter's JSON-lines `Event`: `progress` is a successful nonterminal read, `query-error` is a
+retryable read failure, `terminal` means every build completed, and `timeout` ends the bounded wait.
+Require at least one `progress` or `terminal` record before attributing a nonzero exit to Azure DevOps;
+otherwise diagnose the waiter invocation itself. On `terminal`, immediately query timeline, logs,
+tests, and artifacts and apply the completion standard. If it times out while builds are progressing,
+invoke another bounded foreground wait. For authentication or repeated query errors, rerun the setup
+preflight and follow its blocker rules. After a failed terminal run, diagnose, fix, rerun local gates,
+queue the next authorized attempt, and invoke a new waiter.
+
+This mechanism relies on a client that keeps a synchronous shell tool call attached to the active
+agent turn. Copilot CLI in autopilot mode supports that execution model. If the current client cannot
+do so, state that limitation before queueing.
 
 ## 5. Monitor exact builds
 

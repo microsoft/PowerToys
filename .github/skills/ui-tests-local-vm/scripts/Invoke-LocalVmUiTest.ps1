@@ -83,6 +83,9 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$executionStateContinuous = [uint32]2147483648
+$executionStateSystemRequired = [uint32]2147483649
+$scheduledTaskRunningResult = 267009
 
 if ($PSVersionTable.PSVersion.Major -lt 7) {
     throw 'Run this controller with PowerShell 7 (pwsh).'
@@ -215,6 +218,44 @@ function Start-InteractiveTask {
     } -ArgumentList $TaskName, $Executable, $Arguments, $UserName, $ExecutionTimeLimitMinutes
 }
 
+function Get-InteractiveTaskInfo {
+    param(
+        [Parameter(Mandatory)][System.Management.Automation.Runspaces.PSSession]$Session,
+        [Parameter(Mandatory)][string]$TaskName,
+        [ValidateRange(1, 10)][int]$Attempts = 3
+    )
+
+    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+        try {
+            return Invoke-Command -Session $Session -ScriptBlock {
+                param($Name)
+
+                $task = Get-ScheduledTask -TaskName $Name -ErrorAction SilentlyContinue
+                $info = Get-ScheduledTaskInfo -TaskName $Name -ErrorAction SilentlyContinue
+                $state = if ($null -ne $task) { [string]$task.State } else { 'Missing' }
+                $lastTaskResult = if ($null -ne $info) { [int]$info.LastTaskResult } else { $null }
+                $lastRunTimeUtc = if ($null -ne $info -and $info.LastRunTime.Year -gt 2000) {
+                    $info.LastRunTime.ToUniversalTime().ToString('o')
+                }
+                else {
+                    $null
+                }
+                [pscustomobject]@{
+                    State = $state
+                    LastTaskResult = $lastTaskResult
+                    LastRunTimeUtc = $lastRunTimeUtc
+                }
+            } -ArgumentList $TaskName -ErrorAction Stop
+        }
+        catch {
+            if ($attempt -eq $Attempts) {
+                throw
+            }
+            Start-Sleep -Milliseconds 250
+        }
+    }
+}
+
 $requiredFiles = @($TestsArchive, $ProductArchive, $WinAppCliArchive, $DotNetArchive)
 if (-not [string]::IsNullOrWhiteSpace($ProductOverlayArchive)) {
     $requiredFiles += $ProductOverlayArchive
@@ -342,7 +383,36 @@ $evidenceExported = $false
 $probeTaskName = "PowerToysUiTest-Probe-$runId"
 $testTaskName = "PowerToysUiTest-Run-$runId"
 $controllerResult = $null
+$executionStateSet = $false
 try {
+    try {
+        if (-not ('PowerToys.UiTests.LocalVm.NativeMethods' -as [type])) {
+            Add-Type -TypeDefinition @'
+using System.Runtime.InteropServices;
+
+namespace PowerToys.UiTests.LocalVm
+{
+    public static class NativeMethods
+    {
+        [DllImport("kernel32.dll")]
+        public static extern uint SetThreadExecutionState(uint executionState);
+    }
+}
+'@
+        }
+
+        $executionStateSet = [PowerToys.UiTests.LocalVm.NativeMethods]::SetThreadExecutionState($executionStateSystemRequired) -ne 0
+        if ($executionStateSet) {
+            Write-Host 'Host automatic sleep prevention: active'
+        }
+        else {
+            Write-Warning 'Host automatic sleep prevention was rejected; the local VM run will continue.'
+        }
+    }
+    catch {
+        Write-Warning "Host automatic sleep prevention is unavailable; the local VM run will continue: $($_.Exception.Message)"
+    }
+
     if (-not $SkipStart) {
         $startScript = Join-Path $vmRootPath 'Start-LocalVm.ps1'
         if (-not (Test-Path $startScript -PathType Leaf)) {
@@ -516,12 +586,7 @@ Add-Type -AssemblyName System.Windows.Forms
             break
         }
         if ([DateTime]::UtcNow -ge $probeDeadline) {
-            $probeTaskInfo = Invoke-Command -Session $session -ScriptBlock {
-                param($Name)
-                $task = Get-ScheduledTask -TaskName $Name -ErrorAction SilentlyContinue
-                $info = Get-ScheduledTaskInfo -TaskName $Name -ErrorAction SilentlyContinue
-                [pscustomobject]@{ State = [string]$task.State; LastTaskResult = $info.LastTaskResult }
-            } -ArgumentList $probeTaskName
+            $probeTaskInfo = Get-InteractiveTaskInfo -Session $session -TaskName $probeTaskName
             throw "Interactive desktop probe did not complete. Task state: $($probeTaskInfo.State); result: $($probeTaskInfo.LastTaskResult)."
         }
         Start-Sleep -Seconds 1
@@ -546,6 +611,7 @@ Add-Type -AssemblyName System.Windows.Forms
 
     $runnerArguments = '-NoLogo -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "{0}" -RequestPath "{1}"' -f $guestRunnerPath, $guestRequestPath
     $taskLimitMinutes = [Math]::Min(1440, $TimeoutMinutes + 5)
+    $taskDispatchedUtc = [DateTime]::UtcNow
     $testTask = Start-InteractiveTask `
         -Session $session -TaskName $testTaskName `
         -Executable $guestPowerShell -Arguments $runnerArguments `
@@ -553,6 +619,8 @@ Add-Type -AssemblyName System.Windows.Forms
     Write-Host "UI-test task: $($testTask.TaskName), user $($testTask.UserId)"
 
     $deadline = [DateTime]::UtcNow.AddMinutes($TimeoutMinutes)
+    $taskStartDeadline = $taskDispatchedUtc.AddSeconds(30)
+    $nextTaskCheckUtc = $taskDispatchedUtc.AddSeconds(5)
     $lastProgress = $null
     $status = $null
     do {
@@ -571,6 +639,25 @@ Add-Type -AssemblyName System.Windows.Forms
             $status = $candidate
             break
         }
+        if ([DateTime]::UtcNow -ge $nextTaskCheckUtc) {
+            $taskInfo = Get-InteractiveTaskInfo -Session $session -TaskName $testTaskName
+            $nextTaskCheckUtc = [DateTime]::UtcNow.AddSeconds(5)
+            $taskIsActive = $taskInfo.State -in @('Running', 'Queued') -or $taskInfo.LastTaskResult -eq $scheduledTaskRunningResult
+            if (-not $taskIsActive -and
+                [string]::IsNullOrWhiteSpace($taskInfo.LastRunTimeUtc) -and
+                [DateTime]::UtcNow -ge $taskStartDeadline) {
+                throw "Local VM UI-test task did not start within 30 seconds. Task state: $($taskInfo.State); result: $($taskInfo.LastTaskResult)."
+            }
+            if (-not $taskIsActive -and -not [string]::IsNullOrWhiteSpace($taskInfo.LastRunTimeUtc)) {
+                $candidate = Read-GuestJson `
+                    -Context $guestContext -Session $session -RelativePath $statusRelative -Attempts 20
+                if ($null -ne $candidate -and $candidate.RunId -eq $runId) {
+                    $status = $candidate
+                    break
+                }
+                throw "Local VM UI-test task ended without matching status.json. Task state: $($taskInfo.State); result: $($taskInfo.LastTaskResult); last run UTC: $($taskInfo.LastRunTimeUtc)."
+            }
+        }
         if ([DateTime]::UtcNow -ge $deadline) {
             # Absorb a status file that was still being created when the deadline elapsed.
             $candidate = Read-GuestJson `
@@ -579,12 +666,7 @@ Add-Type -AssemblyName System.Windows.Forms
                 $status = $candidate
                 break
             }
-            $taskInfo = Invoke-Command -Session $session -ScriptBlock {
-                param($Name)
-                $task = Get-ScheduledTask -TaskName $Name -ErrorAction SilentlyContinue
-                $info = Get-ScheduledTaskInfo -TaskName $Name -ErrorAction SilentlyContinue
-                [pscustomobject]@{ State = [string]$task.State; LastTaskResult = $info.LastTaskResult }
-            } -ArgumentList $testTaskName
+            $taskInfo = Get-InteractiveTaskInfo -Session $session -TaskName $testTaskName
             throw "Local VM UI-test run timed out. Task state: $($taskInfo.State); result: $($taskInfo.LastTaskResult)."
         }
         Start-Sleep -Seconds 1
@@ -608,6 +690,7 @@ Add-Type -AssemblyName System.Windows.Forms
     }
     $controllerResult = [pscustomobject]@{
         Controller = $controllerName
+        HostSleepPrevented = $executionStateSet
         RunId = $runId
         BuildLabel = $status.BuildLabel
         Status = $effectiveStatus
@@ -683,6 +766,14 @@ finally {
             catch {
                 Write-Warning "The requested post-run VM stop failed: $($_.Exception.Message)"
             }
+        }
+    }
+    if ($executionStateSet) {
+        try {
+            $null = [PowerToys.UiTests.LocalVm.NativeMethods]::SetThreadExecutionState($executionStateContinuous)
+        }
+        catch {
+            Write-Warning "Host sleep-prevention cleanup failed: $($_.Exception.Message)"
         }
     }
 }
