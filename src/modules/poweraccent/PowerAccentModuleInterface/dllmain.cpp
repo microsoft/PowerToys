@@ -162,7 +162,7 @@ public:
                     TerminateProcess(p_info.hProcess, 1);
                 }
 
-                ResetEvent(exitEvent);
+                // Auto-reset events clear when a waiter consumes the signal; resetting here can race the listener.
                 CloseHandle(exitEvent);
                 CloseHandle(p_info.hProcess);
             }
