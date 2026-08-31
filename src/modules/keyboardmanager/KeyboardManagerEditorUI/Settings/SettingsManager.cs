@@ -200,6 +200,11 @@ namespace KeyboardManagerEditorUI.Settings
                     OperationType = ShortcutOperationType.RemapShortcut,
                     OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
                     TargetKeys = mapping.TargetKey,
+
+                    // GetSingleKeyMappings surfaces both the regular and the "alone" (dual-key) tables,
+                    // tagging the latter with IsAlone; preserve that as the per-entry Condition so an
+                    // alone remap round-trips instead of loading back as an unconditional (Always) one.
+                    Condition = mapping.IsAlone ? SingleKeyRemapCondition.Alone : SingleKeyRemapCondition.Always,
                 };
                 AddShortcutMapping(settings, shortcutMapping, settings.ActiveProfile);
             }
@@ -253,6 +258,7 @@ namespace KeyboardManagerEditorUI.Settings
                     OperationType = ShortcutOperationType.RemapShortcut,
                     OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
                     TargetKeys = mapping.TargetKey,
+                    Condition = mapping.IsAlone ? SingleKeyRemapCondition.Alone : SingleKeyRemapCondition.Always,
                 }));
                 activeMappings.AddRange(service.GetKeyToTextMappings().Select(mapping => new ShortcutKeyMapping
                 {
@@ -814,7 +820,12 @@ namespace KeyboardManagerEditorUI.Settings
 
         private static bool HasSameTriggerAndScope(ShortcutKeyMapping first, ShortcutKeyMapping second) =>
             first.OriginalKeys == second.OriginalKeys &&
-            string.Equals(first.TargetApp ?? string.Empty, second.TargetApp ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+            string.Equals(first.TargetApp ?? string.Empty, second.TargetApp ?? string.Empty, StringComparison.OrdinalIgnoreCase) &&
+
+            // A single-key remap and its "alone" (tap) counterpart live in separate engine tables and
+            // are distinct mappings, so the correlation key must include Condition; otherwise reconcile
+            // would collapse an Always and an Alone remap of the same key into one entry.
+            first.Condition == second.Condition;
 
         private static bool MappingsEquivalent(ShortcutKeyMapping first, ShortcutKeyMapping second) =>
             HasSameTriggerAndScope(first, second) &&
