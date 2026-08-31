@@ -4,4 +4,4 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-public record EnterDockEditModeMessage();
+public record ShowHideTaskbarMessage(bool ShowTaskbar);

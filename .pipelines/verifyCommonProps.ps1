@@ -32,6 +32,10 @@ foreach ($csprojFile in $csprojFiles) {
     if ($filename -eq 'TemplateCmdPalExtension.csproj') {
         continue
     }
+    # this is a test tool project
+    if ($csprojFile -like '*TaskbarMonitor.csproj') {
+        continue
+    }
 
     $importExists = $false
 

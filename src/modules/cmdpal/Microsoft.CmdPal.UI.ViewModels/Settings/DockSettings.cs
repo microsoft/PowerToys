@@ -101,6 +101,19 @@ public record DockSettings
         init => _endBands = new(value);
     }
 
+    private ImmutableList<DockBandSettings>? _taskbarBands = ImmutableList.Create(
+        new DockBandSettings
+        {
+            ProviderId = "com.microsoft.cmdpal.builtin.datetime",
+            CommandId = "com.microsoft.cmdpal.timedate.dockBand",
+        });
+
+    public ImmutableList<DockBandSettings> TaskbarBands
+    {
+        get => _taskbarBands ?? ImmutableList<DockBandSettings>.Empty;
+        init => _taskbarBands = value;
+    }
+
     public bool ShowLabels { get; init; } = true;
 
     /// <summary>
@@ -138,10 +151,12 @@ public record DockSettings
     {
         get
         {
-            // Start with global bands
+            // Start with global bands (including taskbar — taskbar is a single
+            // global list rather than per-monitor)
             var result = StartBands.Select(b => (b.ProviderId, b.CommandId))
                 .Concat(CenterBands.Select(b => (b.ProviderId, b.CommandId)))
-                .Concat(EndBands.Select(b => (b.ProviderId, b.CommandId)));
+                .Concat(EndBands.Select(b => (b.ProviderId, b.CommandId)))
+                .Concat(TaskbarBands.Select(b => (b.ProviderId, b.CommandId)));
 
             // Include per-monitor bands so that commands pinned to specific
             // monitors are loaded as TopLevelViewModels and appear in the dock.

@@ -266,6 +266,7 @@
                                     <VisualState x:Name="Compact">
                                         <VisualState.Setters>
                                             <!--  PART_RootGrid.Padding is owned by InnerMargin, which drops the edge gap when compact  -->
+                                            <Setter Target="PART_BackPlate.Padding" Value="2,0,2,0" />
                                             <Setter Target="TitleText.Margin" Value="0,-1,0,0" />
                                         </VisualState.Setters>
                                     </VisualState>

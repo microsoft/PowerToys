@@ -217,8 +217,9 @@ public sealed partial class DockItemControl : Control
 
         // Before the first layout pass there's no height to square against yet.
         var square = !vertical && IsIconOnly && _backPlate.ActualHeight > 0;
-        var minWidth = square ? _backPlate.ActualHeight : _backPlateMinSize;
-        var minHeight = vertical ? _backPlateMinSize : 0;
+        var minimumChromeSize = IsCompact ? 0 : _backPlateMinSize;
+        var minWidth = square ? _backPlate.ActualHeight : minimumChromeSize;
+        var minHeight = vertical ? minimumChromeSize : 0;
 
         if (Math.Abs(_backPlate.MinWidth - minWidth) > 0.5)
         {

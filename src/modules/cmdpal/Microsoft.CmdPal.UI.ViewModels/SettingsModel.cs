@@ -105,6 +105,8 @@ public record SettingsModel
 
     public bool EnableDock { get; init; }
 
+    public bool EnableTaskbar { get; init; }
+
     private DockSettings? _dockSettings = new();
 
     public DockSettings DockSettings

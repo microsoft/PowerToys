@@ -24,6 +24,7 @@ IsWindowEnabled
 SetFocus
 SetActiveWindow
 MonitorFromWindow
+MonitorFromPoint
 GetMonitorInfo
 GetDpiForMonitor
 WM_HOTKEY
@@ -148,6 +149,13 @@ GetWindowPlacement
 WINDOWPLACEMENT
 WM_DPICHANGED
 
+FindWindow
+FindWindowEx
+SetParent
+CreateRectRgn
+SetWindowRgn
+IsWindowVisible
+WM_DESTROY
 QUERY_USER_NOTIFICATION_STATE
 EnumWindows
 EnumDisplayMonitors

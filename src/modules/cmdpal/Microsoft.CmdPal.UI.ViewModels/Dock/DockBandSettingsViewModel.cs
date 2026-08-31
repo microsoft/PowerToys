@@ -122,6 +122,12 @@ public partial class DockBandSettingsViewModel : ObservableObject
             return DockPinSide.End;
         }
 
+        var inTaskbar = dockSettings.TaskbarBands.Any(b => b.CommandId == _dockSettingsModel.CommandId);
+        if (inTaskbar)
+        {
+            return DockPinSide.Taskbar;
+        }
+
         return DockPinSide.None;
     }
 
@@ -150,6 +156,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
                         StartBands = ReplaceInList(dockSettings.StartBands, commandId, newModel),
                         CenterBands = ReplaceInList(dockSettings.CenterBands, commandId, newModel),
                         EndBands = ReplaceInList(dockSettings.EndBands, commandId, newModel),
+                        TaskbarBands = ReplaceInList(dockSettings.TaskbarBands, commandId, newModel),
                     },
                 };
             },
@@ -192,6 +199,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
                 StartBands = dockSettings.StartBands.RemoveAll(b => b.CommandId == commandId),
                 CenterBands = dockSettings.CenterBands.RemoveAll(b => b.CommandId == commandId),
                 EndBands = dockSettings.EndBands.RemoveAll(b => b.CommandId == commandId),
+                TaskbarBands = dockSettings.TaskbarBands.RemoveAll(b => b.CommandId == commandId),
             };
 
             // Add to the selected side
@@ -200,6 +208,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
                 DockPinSide.Start => newDock with { StartBands = newDock.StartBands.Insert(index ?? newDock.StartBands.Count, _dockSettingsModel) },
                 DockPinSide.Center => newDock with { CenterBands = newDock.CenterBands.Insert(index ?? newDock.CenterBands.Count, _dockSettingsModel) },
                 DockPinSide.End => newDock with { EndBands = newDock.EndBands.Insert(index ?? newDock.EndBands.Count, _dockSettingsModel) },
+                DockPinSide.Taskbar => newDock with { TaskbarBands = newDock.TaskbarBands.Insert(index ?? newDock.TaskbarBands.Count, _dockSettingsModel) },
                 _ => newDock,
             };
 
@@ -220,6 +229,7 @@ public enum DockPinSide
     Start,
     Center,
     End,
+    Taskbar,
 }
 
 public enum ShowLabelsOption

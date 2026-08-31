@@ -314,6 +314,17 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
+    public bool EnableTaskbar
+    {
+        get => _settingsService.Settings.EnableTaskbar;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { EnableTaskbar = value });
+            WeakReferenceMessenger.Default.Send(new ShowHideTaskbarMessage(value));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(EnableTaskbar)));
+        }
+    }
+
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = new();
 
     public ObservableCollection<FallbackSettingsViewModel> FallbackRankings { get; set; } = new();

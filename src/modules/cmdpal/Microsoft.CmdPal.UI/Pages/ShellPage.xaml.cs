@@ -16,6 +16,8 @@ using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.Settings;
+using Microsoft.CmdPal.UI.Taskbar;
+using Microsoft.CmdPal.UI.Utilities;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -28,6 +30,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
+using WinUIEx;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using VirtualKey = Windows.System.VirtualKey;
 
@@ -45,6 +48,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ShowConfirmationMessage>,
     IRecipient<ShowToastMessage>,
     IRecipient<ShowHideDockMessage>,
+    IRecipient<ShowHideTaskbarMessage>,
     IRecipient<ShowPinToDockDialogMessage>,
     IRecipient<ExpandCompactModeMessage>,
     INotifyPropertyChanged,
@@ -73,6 +77,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private SettingsWindow? _settingsWindow;
     private DockWindowManager? _dockWindowManager;
+    private TaskbarWindow? _taskbarWindow;
 
     private CancellationTokenSource? _focusAfterLoadedCts;
     private WeakReference<Page>? _lastNavigatedPageRef;
@@ -155,6 +160,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<ShowToastMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ShowHideDockMessage>(this);
+        WeakReferenceMessenger.Default.Register<ShowHideTaskbarMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowPinToDockDialogMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
@@ -178,6 +184,55 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             _dockWindowManager = App.Current.Services.GetService<DockWindowManager>();
             _dockWindowManager?.ShowDocks();
         }
+
+        if (App.Current.Services.GetRequiredService<ISettingsService>().Settings.EnableTaskbar)
+        {
+            _ = CreateAndShowTaskbarAsync();
+        }
+    }
+
+    private async Task CreateAndShowTaskbarAsync()
+    {
+        // Capture dispatcher before crossing to a background thread.
+        var dispatcher = DispatcherQueue;
+
+        // Run the expensive first UIA measurement on a background thread.
+        var metrics = await Task.Run(() =>
+        {
+            var m = new TaskbarMetrics();
+            m.Update();
+            return m;
+        });
+
+        // Window creation + Show MUST happen on the UI thread.
+        // WinUI 3 has no SynchronizationContext, so we can't rely on
+        // await resuming on the UI thread. Explicitly dispatch.
+        dispatcher.TryEnqueue(() =>
+        {
+            // The setting may have been toggled back off while the
+            // background metrics measurement was running. Don't create
+            // an orphan window that shows while the feature is disabled.
+            var stillEnabled = App.Current.Services
+                .GetRequiredService<ISettingsService>()
+                .Settings.EnableTaskbar;
+            if (!stillEnabled)
+            {
+                metrics.Dispose();
+                return;
+            }
+
+            // Guard against a concurrent creation having already run
+            // (e.g. rapid off→on→off→on) so we don't leak a window.
+            if (_taskbarWindow is not null)
+            {
+                metrics.Dispose();
+                _taskbarWindow.Show();
+                return;
+            }
+
+            _taskbarWindow = new TaskbarWindow(metrics);
+            _taskbarWindow.Show();
+        });
     }
 
     /// <summary>
@@ -681,6 +736,32 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 _dockWindowManager?.HideDocks();
             }
         });
+    }
+
+    public void Receive(ShowHideTaskbarMessage message)
+    {
+        if (message.ShowTaskbar)
+        {
+            if (_taskbarWindow is null)
+            {
+                _ = CreateAndShowTaskbarAsync();
+            }
+            else
+            {
+                DispatcherQueue.TryEnqueue(() => _taskbarWindow.Show());
+            }
+        }
+        else
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_taskbarWindow is not null)
+                {
+                    _taskbarWindow.Close();
+                    _taskbarWindow = null;
+                }
+            });
+        }
     }
 
     private void ToggleFilterFocus()
@@ -1281,6 +1362,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var dockWindowManager = _dockWindowManager;
         _dockWindowManager = null;
         dockWindowManager?.Dispose();
+
+        _taskbarWindow?.Dispose();
 
         GC.SuppressFinalize(this);
     }

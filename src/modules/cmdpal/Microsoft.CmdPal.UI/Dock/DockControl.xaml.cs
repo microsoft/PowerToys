@@ -27,7 +27,7 @@ using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
-public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditModeMessage>, IRecipient<ExitDockEditModeMessage>, IRecipient<CrossMonitorBandDropMessage>, IDisposable
+public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeMessage>, IRecipient<ExitEditModeMessage>, IRecipient<CrossMonitorBandDropMessage>, IDisposable
 {
     private readonly DockViewModel _viewModel;
     private readonly DockPageFlyoutController _pageFlyoutController;
@@ -89,7 +89,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
     {
         if (d is DockControl control && e.NewValue is bool isEditMode)
         {
-            control.UpdateEditMode(isEditMode);
+            control.UpdateEditMode(isEditMode, control._showFlyout);
         }
     }
 
@@ -112,6 +112,8 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         Loaded += DockControl_Loaded;
         Unloaded += DockControl_Unloaded;
 
+        ViewModel.CenterItems.CollectionChanged += CenterItems_CollectionChanged;
+
         // Start with edit mode disabled - normal click behavior
         UpdateEditMode(false);
     }
@@ -119,8 +121,8 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
     private void DockControl_Loaded(object sender, RoutedEventArgs e)
     {
         WeakReferenceMessenger.Default.UnregisterAll(this);
-        WeakReferenceMessenger.Default.Register<EnterDockEditModeMessage>(this);
-        WeakReferenceMessenger.Default.Register<ExitDockEditModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<EnterEditModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<ExitEditModeMessage>(this);
         WeakReferenceMessenger.Default.Register<CrossMonitorBandDropMessage>(this);
         _pageFlyoutController.Activate();
 
@@ -176,31 +178,31 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         ContentGrid.IsCenterVisible = IsEditMode || ViewModel.CenterItems.Count > 0;
     }
 
-    public void Receive(EnterDockEditModeMessage message)
+    public void Receive(EnterEditModeMessage message)
     {
         // Message may arrive from a background thread, dispatch to UI thread
         DispatcherQueue.TryEnqueue(() =>
         {
-            EnterEditMode();
+            EnterEditMode(showFlyout: message.Origin == EditModeOrigin.Dock);
         });
     }
 
-    public void Receive(ExitDockEditModeMessage message)
+    public void Receive(ExitEditModeMessage message)
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            if (message.Discard)
+            if (message.Save)
             {
-                DiscardEditMode();
+                ExitEditMode();
             }
             else
             {
-                ExitEditMode();
+                DiscardEditMode();
             }
         });
     }
 
-    private void UpdateEditMode(bool isEditMode)
+    private void UpdateEditMode(bool isEditMode, bool showFlyout = true)
     {
         // Update center visibility based on edit mode and center items
         UpdateCenterVisibility();
@@ -218,7 +220,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         EndListView.CanReorderItems = isEditMode;
         EndListView.AllowDrop = isEditMode;
 
-        if (isEditMode)
+        if (isEditMode && showFlyout)
         {
             EditButtonsTeachingTip.PreferredPlacement = DockSide switch
             {
@@ -230,7 +232,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
             };
         }
 
-        UpdateEditModeTeachingTip();
+        EditButtonsTeachingTip.IsOpen = isEditMode && showFlyout;
     }
 
     private void UpdateEditModeTeachingTip()
@@ -264,8 +266,13 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         }
     }
 
-    internal void EnterEditMode()
+    // Whether this control is showing the save/discard flyout
+    private bool _showFlyout;
+
+    internal void EnterEditMode(bool showFlyout = true)
     {
+        _showFlyout = showFlyout;
+
         // Snapshot current state so we can restore on discard
         ViewModel.SnapshotBandOrder();
         IsEditMode = true;
@@ -289,12 +296,14 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
 
     private void DoneEditingButton_Click(object sender, RoutedEventArgs e)
     {
-        WeakReferenceMessenger.Default.Send(new ExitDockEditModeMessage(Discard: false));
+        // Tell both dock and taskbar (and every monitor's dock) to exit edit mode
+        WeakReferenceMessenger.Default.Send(new ExitEditModeMessage(Save: true));
     }
 
     private void DiscardEditingButton_Click(object sender, RoutedEventArgs e)
     {
-        WeakReferenceMessenger.Default.Send(new ExitDockEditModeMessage(Discard: true));
+        // Tell both dock and taskbar (and every monitor's dock) to discard edit mode
+        WeakReferenceMessenger.Default.Send(new ExitEditModeMessage(Save: false));
     }
 
     internal void UpdateSettings(DockSettings settings, DockSide? effectiveSide = null)
@@ -608,6 +617,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         if (e.Items.Count > 0 && e.Items[0] is DockBandViewModel band)
         {
             _draggedBand = band;
+            ViewModel.DraggedBand = band;
             e.Data.RequestedOperation = DataPackageOperation.Move;
 
             // Only advertise cross-monitor data when we have a real monitor ID.
@@ -623,7 +633,9 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
 
     private void BandListView_DragOver(object sender, DragEventArgs e)
     {
-        if (_draggedBand != null || e.DataView.Properties.ContainsKey("DockBandId"))
+        if (_draggedBand != null
+            || ViewModel.DraggedBand != null
+            || e.DataView.Properties.ContainsKey("DockBandId"))
         {
             e.AcceptedOperation = DataPackageOperation.Move;
         }
@@ -663,6 +675,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         }
 
         _draggedBand = null;
+        ViewModel.DraggedBand = null;
     }
 
     private void StartListView_Drop(object sender, DragEventArgs e)
@@ -685,7 +698,9 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
 
     private void HandleCrossListDrop(DockPinSide targetSide, DragEventArgs e)
     {
-        if (_draggedBand != null)
+        // Use local _draggedBand for same-window drags, fall back to shared
+        // ViewModel.DraggedBand for cross-window drags (e.g. from taskbar)
+        if (_draggedBand != null || ViewModel.DraggedBand != null)
         {
             HandleLocalCrossListDrop(targetSide, e);
             return;
@@ -703,9 +718,17 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
 
     private void HandleLocalCrossListDrop(DockPinSide targetSide, DragEventArgs e)
     {
+        var draggedBand = _draggedBand ?? ViewModel.DraggedBand;
+        if (draggedBand == null)
+        {
+            return;
+        }
+
         // Check which list the band is currently in
-        var isInStart = ViewModel.StartItems.Contains(_draggedBand!);
-        var isInCenter = ViewModel.CenterItems.Contains(_draggedBand!);
+        var isInStart = ViewModel.StartItems.Contains(draggedBand);
+        var isInCenter = ViewModel.CenterItems.Contains(draggedBand);
+        var isInEnd = ViewModel.EndItems.Contains(draggedBand);
+        var isInTaskbar = ViewModel.TaskbarItems.Contains(draggedBand);
 
         DockPinSide sourceSide;
         if (isInStart)
@@ -716,9 +739,17 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         {
             sourceSide = DockPinSide.Center;
         }
-        else
+        else if (isInEnd)
         {
             sourceSide = DockPinSide.End;
+        }
+        else if (isInTaskbar)
+        {
+            sourceSide = DockPinSide.Taskbar;
+        }
+        else
+        {
+            return;
         }
 
         // Only handle cross-list drops here; same-list reorders are handled in DragItemsCompleted
@@ -740,7 +771,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
             var dropIndex = GetDropIndex(targetListView, e, targetCollection.Count);
 
             // Move the band to the new side (without saving - save happens on Done)
-            ViewModel.MoveBandWithoutSaving(_draggedBand!, targetSide, dropIndex);
+            ViewModel.MoveBandWithoutSaving(draggedBand, targetSide, dropIndex);
             e.Handled = true;
         }
     }
