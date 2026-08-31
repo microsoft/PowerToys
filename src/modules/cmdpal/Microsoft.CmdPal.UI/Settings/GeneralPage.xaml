@@ -43,7 +43,7 @@
                         FontWeight="SemiBold"
                         NavigateUri="https://aka.ms/cmdpal" />
 
-                    <TextBlock x:Uid="ActivationSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <TextBlock x:Uid="Settings_GeneralPage_ActivationSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
                     <controls:SettingsExpander
                         x:Uid="Settings_GeneralPage_ActivationKey_SettingsExpander"
                         AutomationProperties.AutomationId="CmdPal_GeneralPage_ActivationKey"
@@ -100,74 +100,16 @@
                             <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After180Seconds" />
                         </ComboBox>
                     </controls:SettingsCard>
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_HighlightSearch_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE933;}">
-                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_HighlightSearch" IsOn="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
-                    </controls:SettingsCard>
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_KeepPreviousQuery_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE81C;}">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_KeepPreviousQuery" IsOn="{x:Bind viewModel.KeepPreviousQuery, Mode=TwoWay}" />
                     </controls:SettingsCard>
-                    <controls:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
-                        <ComboBox
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            AutomationProperties.AutomationId="CmdPal_GeneralPage_MonitorPosition"
-                            SelectedIndex="{x:Bind viewModel.MonitorPositionIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="Run_Radio_Position_Cursor" />
-                            <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor" />
-                            <ComboBoxItem x:Uid="Run_Radio_Position_Focus" />
-                            <ComboBoxItem x:Uid="Run_Radio_Position_In_Place" />
-                            <ComboBoxItem x:Uid="Run_Radio_Position_LastPosition" />
-                        </ComboBox>
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_HighlightSearch_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE933;}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_HighlightSearch" IsOn="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
                     </controls:SettingsCard>
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ToastPosition_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75A;}">
-                        <controls:SettingsCard.Description>
-                            <StackPanel>
-                                <TextBlock x:Uid="Settings_GeneralPage_ToastPosition_Description" TextWrapping="Wrap" />
-                                <HyperlinkButton
-                                    x:Uid="Settings_GeneralPage_ToastPosition_OpenSystemSettings_Hyperlink"
-                                    Padding="0"
-                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_ToastPosition_OpenSystemSettings"
-                                    Click="OpenSystemSettings_Click"
-                                    Visibility="{x:Bind viewModel.IsToastPositionFromSystemSettings, Mode=OneWay}" />
-                            </StackPanel>
-                        </controls:SettingsCard.Description>
-                        <ComboBox
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            AutomationProperties.AutomationId="CmdPal_GeneralPage_ToastPosition"
-                            SelectedIndex="{x:Bind viewModel.ToastPositionIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_ToastPosition_Item_UseSystemSettings" />
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_ToastPosition_Item_BottomCenter" />
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_ToastPosition_Item_TopLeft" />
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_ToastPosition_Item_TopCenter" />
-                        </ComboBox>
-                    </controls:SettingsCard>
-
-                    <controls:SettingsExpander x:Uid="Settings_GeneralPage_CompactMode_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE73F;}">
-                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_CompactMode" IsOn="{x:Bind viewModel.CompactMode, Mode=TwoWay}" />
-                        <controls:SettingsExpander.Items>
-                            <controls:SettingsCard
-                                x:Uid="Settings_GeneralPage_CompactCenterHeight_SettingsCard"
-                                HeaderIcon="{ui:FontIcon Glyph=&#xE74A;}"
-                                IsEnabled="{x:Bind viewModel.CompactMode, Mode=OneWay}">
-                                <Slider
-                                    Width="100"
-                                    Height="100"
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_CompactCenterHeight"
-                                    Maximum="100"
-                                    Minimum="0"
-                                    Orientation="Vertical"
-                                    StepFrequency="5"
-                                    TickFrequency="25"
-                                    TickPlacement="Outside"
-                                    Value="{x:Bind viewModel.CompactCenterHeightPercentage, Mode=TwoWay}" />
-                            </controls:SettingsCard>
-                        </controls:SettingsExpander.Items>
-                    </controls:SettingsExpander>
 
                     <!--  'Behavior' section  -->
 
-                    <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
-
+                    <TextBlock x:Uid="Settings_GeneralPage_AppBehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_ShowSystemTrayIcon" IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
                     </controls:SettingsCard>
@@ -178,16 +120,14 @@
 
                     <!--  'For Developers' section  -->
 
-                    <TextBlock x:Uid="ForDevelopersSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
-
+                    <TextBlock x:Uid="Settings_GeneralPage_ForDevelopersSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_AllowExternalReload_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_AllowExternalReload" IsOn="{x:Bind viewModel.AllowExternalReload, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <!--  'About' section  -->
 
-                    <TextBlock x:Uid="AboutSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
-
+                    <TextBlock x:Uid="Settings_GeneralPage_AboutSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
                     <controls:SettingsExpander
                         x:Uid="Settings_GeneralPage_About_SettingsExpander"
                         AutomationProperties.AutomationId="CmdPal_GeneralPage_About"

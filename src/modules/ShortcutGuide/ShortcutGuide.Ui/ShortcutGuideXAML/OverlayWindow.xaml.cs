@@ -66,6 +66,8 @@ namespace ShortcutGuide
 
         internal string CloseType => _closeType;
 
+        internal event EventHandler? ClosingStarted;
+
         public MainPaneControl MainPaneControl => this.MainPane;
 
         internal TaskbarPaneControl TaskbarPaneControl => this.TaskbarPane;
@@ -124,12 +126,6 @@ namespace ShortcutGuide
                 }
             };
 
-            // Edge-to-edge overlay: opt into the aggressive full-bleed DWM
-            // hardening so the OS never reveals a 1-px frame seam around the
-            // monitor-sized transparent window. The baseline chrome is already
-            // applied by the base constructor.
-            this.ApplyFullBleedHardening();
-
             // Pre-size and position BEFORE Activate so the first frame the
             // user sees is already at the correct work-area size on the
             // cursor's monitor. Doing this in OnActivated produces a single
@@ -146,12 +142,11 @@ namespace ShortcutGuide
 
             this.Activated += OnActivated;
 
-            // Esc closes the overlay regardless of which pseudo-window has
-            // keyboard focus (handled at the Window.Content root because the
-            // event bubbles up from whichever inner element has focus).
+            // Handle Esc before focused controls such as AutoSuggestBox can
+            // consume it, so search is cleared before the overlay closes.
             if (this.Content is UIElement contentRoot)
             {
-                contentRoot.KeyUp += OnContentKeyUp;
+                contentRoot.PreviewKeyDown += OnContentPreviewKeyDown;
             }
 
             ApplyThemeFromSettings();
@@ -223,12 +218,25 @@ namespace ShortcutGuide
             }
         }
 
-        private void OnContentKeyUp(object sender, KeyRoutedEventArgs e)
+        private void OnContentPreviewKeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == VirtualKey.Escape)
             {
+                if (e.KeyStatus.WasKeyDown)
+                {
+                    e.Handled = true;
+                    return;
+                }
+
+                if (this.MainPane.TryClearSearch())
+                {
+                    e.Handled = true;
+                    return;
+                }
+
                 _closeType = "Escape";
                 CloseAnimated();
+                e.Handled = true;
             }
         }
 
@@ -296,6 +304,7 @@ namespace ShortcutGuide
             }
 
             _isClosing = true;
+            ClosingStarted?.Invoke(this, EventArgs.Empty);
 
             // Collapse both pseudo-windows so their Implicit.HideAnimations play
             this.MainPane.Visibility = Visibility.Collapsed;
@@ -363,6 +372,7 @@ namespace ShortcutGuide
         /// </summary>
         public void ShowOverlay()
         {
+            _closeTimer?.Stop();
             _isClosing = false;
 
             RepositionToCursorMonitor();
@@ -478,11 +488,8 @@ namespace ShortcutGuide
 
             // Cross-monitor moves can trigger WM_DPICHANGED, and Windows may
             // reset some of our DWM attributes (border color, corner pref)
-            // during that transition. Re-apply them defensively so the
-            // overlay never reveals an OS-drawn 1-px stroke or rounded
-            // shadow.
+            // during that transition. Re-apply the baseline transparent chrome.
             this.ApplyTransparentChrome();
-            this.ApplyFullBleedHardening();
 
             // The taskbar pane is anchored against the bottom of the work area,
             // so any move/resize needs a fresh layout pass.

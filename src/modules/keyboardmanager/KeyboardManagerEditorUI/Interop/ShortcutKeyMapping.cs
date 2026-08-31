@@ -10,6 +10,14 @@ using System.Threading.Tasks;
 
 namespace KeyboardManagerEditorUI.Interop
 {
+    // Condition for a single-key remap (dual-key / tap-alone). "Always" is the legacy unconditional
+    // behavior; "Alone" applies the remap only when the source key is tapped by itself.
+    public enum SingleKeyRemapCondition
+    {
+        Always = 0,
+        Alone = 1,
+    }
+
     public class ShortcutKeyMapping
     {
         public string OriginalKeys { get; set; } = string.Empty;
@@ -19,6 +27,8 @@ namespace KeyboardManagerEditorUI.Interop
         public string TargetApp { get; set; } = string.Empty;
 
         public ShortcutOperationType OperationType { get; set; }
+
+        public bool ExactMatch { get; set; }
 
         public string TargetText { get; set; } = string.Empty;
 
@@ -35,6 +45,10 @@ namespace KeyboardManagerEditorUI.Interop
         public StartWindowType Visibility { get; set; } = StartWindowType.Normal;
 
         public string UriToOpen { get; set; } = string.Empty;
+
+        // Condition for single-key remaps (Always/Alone). Only meaningful for single-key key-to-key
+        // or key-to-shortcut remaps; ignored for shortcuts and text remaps.
+        public SingleKeyRemapCondition Condition { get; set; } = SingleKeyRemapCondition.Always;
 
         public enum ElevationLevel
         {
@@ -72,6 +86,7 @@ namespace KeyboardManagerEditorUI.Interop
                    TargetKeys == other.TargetKeys &&
                    TargetApp == other.TargetApp &&
                    OperationType == other.OperationType &&
+                   ExactMatch == other.ExactMatch &&
                    TargetText == other.TargetText &&
                    ProgramPath == other.ProgramPath &&
                    ProgramArgs == other.ProgramArgs &&
@@ -79,7 +94,8 @@ namespace KeyboardManagerEditorUI.Interop
                    Elevation == other.Elevation &&
                    IfRunningAction == other.IfRunningAction &&
                    Visibility == other.Visibility &&
-                   UriToOpen == other.UriToOpen;
+                   UriToOpen == other.UriToOpen &&
+                   Condition == other.Condition;
         }
 
         public override int GetHashCode()
@@ -89,6 +105,7 @@ namespace KeyboardManagerEditorUI.Interop
             hash.Add(TargetKeys);
             hash.Add(TargetApp);
             hash.Add(OperationType);
+            hash.Add(ExactMatch);
             hash.Add(TargetText);
             hash.Add(ProgramPath);
             hash.Add(ProgramArgs);
@@ -97,6 +114,7 @@ namespace KeyboardManagerEditorUI.Interop
             hash.Add(IfRunningAction);
             hash.Add(Visibility);
             hash.Add(UriToOpen);
+            hash.Add(Condition);
             return hash.ToHashCode();
         }
     }

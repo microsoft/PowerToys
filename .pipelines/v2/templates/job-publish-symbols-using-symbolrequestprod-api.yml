@@ -11,6 +11,9 @@ parameters:
   - name: versionNumber
     type: string
     default: '0.0.1'
+  - name: releaseIntent
+    type: string
+    default: auto
   - name: resolvedVersionNumber
     type: string
     default: ''
@@ -60,6 +63,7 @@ jobs:
       if ([string]::IsNullOrWhiteSpace($effectiveVersionNumber) -or $effectiveVersionNumber.StartsWith('$(')) {
         $metadata = .pipelines/resolveBuildMetadata.ps1 `
           -VersionOverride '${{ parameters.versionNumber }}' `
+          -ReleaseIntent '${{ parameters.releaseIntent }}' `
           -BuildDate '$(versionDate)' `
           -DailyVersionSequence '$(dailyVersionSequence)'
         if ($${{ parameters.includePublicSymbolServer }} -and -not $metadata.AllowPublicSymbols) {
@@ -82,11 +86,6 @@ jobs:
     inputs:
       itemPattern: '**/*.pdb'
       targetPath: '$(Build.SourcesDirectory)/symbolStaging'
-
-  - powershell: |-
-      Get-PackageProvider -Name NuGet -ForceBootstrap
-      Install-Module -Verbose -AllowClobber -Force Az.Accounts, Az.Storage, Az.Network, Az.Resources, Az.Compute
-    displayName: Install Azure Module Dependencies
 
   # Transit the Azure token from the Service Connection into a secret variable for the rest of the pipeline to use.
   - task: AzurePowerShell@5

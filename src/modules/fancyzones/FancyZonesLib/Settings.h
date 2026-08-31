@@ -56,6 +56,8 @@ struct Settings
     bool windowSwitching = true;
     PowerToysSettings::HotkeyObject nextTabHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_NEXT);
     PowerToysSettings::HotkeyObject prevTabHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_PRIOR);
+    bool monitorRotation = false;
+    PowerToysSettings::HotkeyObject monitorRotationHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, true, false, 'X');
     std::wstring excludedApps = L"";
     std::vector<std::wstring> excludedAppsArray;
 };

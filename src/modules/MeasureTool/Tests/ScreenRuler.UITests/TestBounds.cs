@@ -23,5 +23,16 @@ namespace ScreenRuler.UITests
             TestHelper.PerformBoundsToolTest(this);
             TestHelper.CleanupTest(this);
         }
+
+        [TestMethod("ScreenRuler.BoundsToolDipClipboard")]
+        [TestCategory("Spacing")]
+        public void TestScreenRulerBoundsToolDipClipboard()
+        {
+            TestHelper.InitializeTest(this, "bounds DIP test");
+            TestHelper.SetExtraMeasurementUnit(this, "Display-independent pixels (DIP)");
+            TestHelper.PerformBoundsToolTest(this, "DIP");
+            TestHelper.SetExtraMeasurementUnit(this, "Show only pixels");
+            TestHelper.CleanupTest(this);
+        }
     }
 }

@@ -152,9 +152,15 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
         }
     }
 
+    // C#/WinRT projects S_OK as null and every failed HRESULT as a non-null Exception.
+    internal static bool IsSuccessfulPackageOperation(bool isComplete, Exception? errorCode)
+    {
+        return isComplete && errorCode is null;
+    }
+
     private void Catalog_PackageInstalling(PackageCatalog sender, PackageInstallingEventArgs args)
     {
-        if (args.IsComplete)
+        if (IsSuccessfulPackageOperation(args.IsComplete, args.ErrorCode))
         {
             _ = HandlePackageInstalledAsync(args.Package);
         }
@@ -162,7 +168,7 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
 
     private void Catalog_PackageUninstalling(PackageCatalog sender, PackageUninstallingEventArgs args)
     {
-        if (args.IsComplete)
+        if (IsSuccessfulPackageOperation(args.IsComplete, args.ErrorCode))
         {
             _ = HandlePackageUninstalledAsync(args.Package);
         }
@@ -170,7 +176,7 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
 
     private void Catalog_PackageUpdating(PackageCatalog sender, PackageUpdatingEventArgs args)
     {
-        if (args.IsComplete)
+        if (IsSuccessfulPackageOperation(args.IsComplete, args.ErrorCode))
         {
             _ = HandlePackageUpdatedAsync(args.TargetPackage);
         }

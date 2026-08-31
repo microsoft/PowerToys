@@ -932,6 +932,7 @@ lcid
 LCIDTo
 lcl
 Lclean
+lctrl
 Ldone
 Ldr
 LEFTALIGN
@@ -967,6 +968,7 @@ lng
 LOADFROMFILE
 LOBYTE
 localappdata
+localmdimages
 localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
@@ -1539,6 +1541,7 @@ RAWPATH
 rbhid
 Rbuttondown
 rclsid
+rctrl
 RCW
 RCZOOMIT
 rdp

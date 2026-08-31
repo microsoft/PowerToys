@@ -117,6 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Attribution_AltWindowCycle.Text" xml:space="preserve">
+    <value>Wzhudev's work on AltBackTick</value>
+    <comment>Wzhudev is a person's GitHub username and AltBackTick is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
   <data name="Attribution_Rooler.Text" xml:space="preserve">
     <value>Inspired by Rooler</value>
     <comment>Rooler is a name of the tool.</comment>
@@ -243,6 +247,9 @@
   <data name="MeasureTool_UnitsOfMeasure.Header" xml:space="preserve">
     <value>Extra units of measurement</value>
   </data>
+  <data name="MeasureTool_UnitsOfMeasure.Description" xml:space="preserve">
+    <value>Display-independent pixels adjust for Windows display scaling</value>
+  </data>
   <data name="MeasureTool_UnitsOfMeasure_Pixels.Content" xml:space="preserve">
     <value>Show only pixels</value>
   </data>
@@ -254,6 +261,9 @@
   </data>
   <data name="MeasureTool_UnitsOfMeasure_Millimeters.Content" xml:space="preserve">
     <value>Millimeters</value>
+  </data>
+  <data name="MeasureTool_UnitsOfMeasure_DIP.Content" xml:space="preserve">
+    <value>Display-independent pixels (DIP)</value>
   </data>
   <data name="MeasureTool_PixelTolerance.Header" xml:space="preserve">
     <value>Pixel tolerance for edge detection</value>
@@ -912,6 +922,18 @@ opera.exe</value>
   <data name="FancyZones_HotkeyPrevTabControl.Header" xml:space="preserve">
     <value>Previous window</value>
   </data>
+  <data name="FancyZones_MonitorRotation.Header" xml:space="preserve">
+    <value>Rotate windows across monitors</value>
+  </data>
+  <data name="FancyZones_MonitorRotation.Description" xml:space="preserve">
+    <value>Hold the shortcut and press Left or Right arrow to rotate open windows across all monitors.</value>
+  </data>
+  <data name="FancyZones_MonitorRotationHotkeyControl.Header" xml:space="preserve">
+    <value>Rotation mode shortcut</value>
+  </data>
+  <data name="FancyZones_MonitorRotationHotkeyControl.Description" xml:space="preserve">
+    <value>Hold this shortcut, then press Left or Right arrow to choose the rotation direction.</value>
+  </data>
   <data name="FancyZones_LaunchEditorButtonControl.Header" xml:space="preserve">
     <value>Open layout editor</value>
     <comment>launches the FancyZones layout editor application</comment>
@@ -1076,6 +1098,12 @@ opera.exe</value>
     <value>.md, .markdown, .mdown, .mkdn, .mkd, .mdwn, .mdtxt, .mdtext</value>
     <comment>{Locked}</comment>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_MD_LocalImages.Header" xml:space="preserve">
+    <value>Show local images</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_MD_LocalImages.Description" xml:space="preserve">
+    <value>Display images stored in the Markdown document's folder, including images on the same network share, in the preview. Remote/online images remain blocked.</value>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Header" xml:space="preserve">
     <value>Source code files (Monaco)</value>
     <comment>File type, do not translate</comment>
@@ -1230,6 +1258,28 @@ opera.exe</value>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Shortcut Guide</value>
     <comment>do not loc the Product name. Do you want this feature on / off</comment>
+  </data>
+  <data name="ShortcutGuide_WindowsKeyAction.Header" xml:space="preserve">
+    <value>Hold Windows key</value>
+  </data>
+  <data name="ShortcutGuide_WindowsKeyAction.Description" xml:space="preserve">
+    <value>Choose what happens after holding the Windows key</value>
+  </data>
+  <data name="ShortcutGuide_WindowsKeyAction_Off.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="ShortcutGuide_WindowsKeyAction_TaskbarIndicators.Content" xml:space="preserve">
+    <value>Show taskbar indicators</value>
+  </data>
+  <data name="ShortcutGuide_WindowsKeyAction_OpenShortcutGuide.Content" xml:space="preserve">
+    <value>Open Shortcut Guide</value>
+  </data>
+  <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
+    <value>Hold duration (ms)</value>
+    <comment>ms = milliseconds</comment>
+  </data>
+  <data name="ShortcutGuide_CloseOnWindowsKeyRelease.Content" xml:space="preserve">
+    <value>Close Shortcut Guide when the Windows key is released</value>
   </data>
   <data name="ShortcutGuide_WindowPosition.Header" xml:space="preserve">
     <value>Window position</value>
@@ -2539,7 +2589,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>An update is available:</value>
   </data>
   <data name="General_UpdateAvailableTitle" xml:space="preserve">
-    <value>An update is available:</value>
+    <value>An update is available</value>
   </data>
   <data name="General_PreviewUpdateAvailableTitle" xml:space="preserve">
     <value>Preview update available:</value>
@@ -2572,7 +2622,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>An update is ready to install:</value>
   </data>
   <data name="General_UpToDate.Title" xml:space="preserve">
-    <value>PowerToys is up to date</value>
+    <value>You're up to date</value>
   </data>
   <data name="General_CantCheck.Title" xml:space="preserve">
     <value>Network error. Please try again later</value>
@@ -6521,6 +6571,7 @@ Text uses the current drawing color.</value>
   </data>
   <data name="GeneralPage_EnableQuickAccess.Description" xml:space="preserve">
     <value>Fast access to quick actions and module toggles</value>
+    <comment>Simplified Chinese: translate the full string as "快速操作和模块切换", not "快速访问快速作和模块切换".</comment>
   </data>
   <data name="GeneralPage_QuickAccessShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>

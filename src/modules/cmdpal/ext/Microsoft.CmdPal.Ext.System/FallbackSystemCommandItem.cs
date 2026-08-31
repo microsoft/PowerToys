@@ -14,6 +14,15 @@ internal sealed partial class FallbackSystemCommandItem : FallbackCommandItem
 {
     private const string _id = "com.microsoft.cmdpal.builtin.system.fallback";
 
+    private readonly ISettingsInterface _settings;
+
+    // Whether Windows Update was waiting for a restart the last time the command list
+    // was built. Unlike the other inputs this can change during a session, so we track
+    // it and rebuild the list when it flips instead of capturing it once.
+    private bool _isUpdatePending;
+
+    private List<IListItem> systemCommands;
+
     public FallbackSystemCommandItem(ISettingsInterface settings)
         : base(new NoOpCommand(), Resources.Microsoft_plugin_ext_fallback_display_title, _id)
     {
@@ -21,15 +30,20 @@ internal sealed partial class FallbackSystemCommandItem : FallbackCommandItem
         Subtitle = string.Empty;
         Icon = Icons.LockIcon;
 
-        var isBootedInUefiMode = settings.GetSystemFirmwareType() == FirmwareType.Uefi;
-        var hideEmptyRB = settings.HideEmptyRecycleBin();
-        var confirmSystemCommands = settings.ShowDialogToConfirmCommand();
-        var showSuccessOnEmptyRB = settings.ShowSuccessMessageAfterEmptyingRecycleBin();
-
-        systemCommands = Commands.GetSystemCommands(isBootedInUefiMode, hideEmptyRB, confirmSystemCommands, showSuccessOnEmptyRB);
+        _settings = settings;
+        _isUpdatePending = settings.IsUpdatePending();
+        systemCommands = BuildSystemCommands(_isUpdatePending);
     }
 
-    private readonly List<IListItem> systemCommands;
+    private List<IListItem> BuildSystemCommands(bool isUpdatePending)
+    {
+        var isBootedInUefiMode = _settings.GetSystemFirmwareType() == FirmwareType.Uefi;
+        var hideEmptyRB = _settings.HideEmptyRecycleBin();
+        var confirmSystemCommands = _settings.ShowDialogToConfirmCommand();
+        var showSuccessOnEmptyRB = _settings.ShowSuccessMessageAfterEmptyingRecycleBin();
+
+        return Commands.GetSystemCommands(isBootedInUefiMode, isUpdatePending, hideEmptyRB, confirmSystemCommands, showSuccessOnEmptyRB);
+    }
 
     public override void UpdateQuery(string query)
     {
@@ -39,6 +53,17 @@ internal sealed partial class FallbackSystemCommandItem : FallbackCommandItem
             Title = string.Empty;
             Subtitle = string.Empty;
             return;
+        }
+
+        // The update-pending state can change while CmdPal is running (an update gets
+        // staged, or a restart clears it). Re-check it and rebuild the list only when it
+        // changes so the "Update and restart"/"shut down" items don't go stale. The
+        // underlying WUAPI query is cached, so this stays cheap per keystroke.
+        var isUpdatePending = _settings.IsUpdatePending();
+        if (isUpdatePending != _isUpdatePending)
+        {
+            _isUpdatePending = isUpdatePending;
+            systemCommands = BuildSystemCommands(isUpdatePending);
         }
 
         IListItem? result = null;

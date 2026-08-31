@@ -73,6 +73,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly LocalKeyboardListener _localKeyboardListener;
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private readonly ICmdPalProtocolActivation _protocolActivation;
+    private readonly ViewModels.Models.IMonitorService _monitorService;
     private readonly IThemeService _themeService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
     private readonly List<long> _breakthroughTimestamps = [];
@@ -135,6 +136,7 @@ public sealed partial class MainWindow : WindowEx,
     public MainWindow()
     {
         _protocolActivation = App.Current.Services.GetRequiredService<ICmdPalProtocolActivation>();
+        _monitorService = App.Current.Services.GetRequiredService<ViewModels.Models.IMonitorService>();
 
         InitializeComponent();
 
@@ -1767,6 +1769,14 @@ public sealed partial class MainWindow : WindowEx,
 
                     return (LRESULT)IntPtr.Zero;
                 }
+
+            // Unlike DockWindow instances, MainWindow always exists, so it's the one
+            // reliable place to catch topology changes. Without this, the Settings page's
+            // monitor list goes stale whenever no dock window is around to see WM_DISPLAYCHANGE.
+            case PInvoke.WM_DISPLAYCHANGE:
+                Logger.LogDebug("MainWindow WM_DISPLAYCHANGE");
+                _monitorService.NotifyMonitorsChanged();
+                break;
 
             default:
                 if (uMsg == WM_TASKBAR_RESTART)
