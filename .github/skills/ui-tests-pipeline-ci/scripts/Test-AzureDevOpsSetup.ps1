@@ -415,7 +415,7 @@ if ($pipelineId -ne 0)
         }
 
         $moduleAssignments = @($preview.finalYaml -split "`n" |
-                Where-Object { $_ -match '\$modulesRaw\s*=' } |
+                Where-Object { $_ -match "^\s*\`$modulesRaw\s*=\s*'[^']*'\s*$" } |
                 ForEach-Object { $_.Trim() })
         $expectedModuleAssignment = "`$modulesRaw = '$ProbeModule'"
         if ($moduleAssignments.Count -eq 0 -or
