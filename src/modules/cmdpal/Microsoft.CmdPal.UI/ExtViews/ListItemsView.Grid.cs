@@ -28,7 +28,11 @@ public sealed partial class ListItemsView
 
     public GridItemsViewModel GridItems { get; private set; } = new();
 
-    public CollectionViewSource GridItemsSource { get; } = new() { IsSourceGrouped = true };
+    public CollectionViewSource GridItemsSource { get; } = new()
+    {
+        IsSourceGrouped = true,
+        ItemsPath = new PropertyPath(nameof(GridItemGroupViewModel.Items)),
+    };
 
     private double GridHeaderHeight => (double)Resources["ListViewSectionHeight"] + (double)Resources["GridItemSpacing"];
 

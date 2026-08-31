@@ -35,20 +35,20 @@ public class GridItemsViewModelTests
         Assert.AreEqual(5, grid.Groups.Count);
         Assert.AreEqual(3, grid.ItemCount);
         Assert.IsNull(grid.Groups[0].Header);
-        Assert.AreSame(first, grid.Groups[0][0]);
+        Assert.AreSame(first, grid.Groups[0].Items[0]);
         Assert.AreSame(header, grid.Groups[1].Header);
-        Assert.AreSame(second, grid.Groups[1][0]);
+        Assert.AreSame(second, grid.Groups[1].Items[0]);
         Assert.IsTrue(grid.Groups[2].IsSeparator);
-        Assert.AreEqual(0, grid.Groups[2].Count);
+        Assert.AreEqual(0, grid.Groups[2].Items.Count);
         Assert.AreSame(repeatedTitle, grid.Groups[3].Header);
-        Assert.AreSame(third, grid.Groups[3][0]);
-        Assert.AreEqual(0, grid.Groups[4].Count);
+        Assert.AreSame(third, grid.Groups[3].Items[0]);
+        Assert.AreEqual(0, grid.Groups[4].Items.Count);
         Assert.AreSame(grid.Groups[3], grid.GroupFromItemIndex(2));
         Assert.IsNull(grid.GroupFromItemIndex(3));
     });
 
     [TestMethod]
-    public Task Updates_ReuseGroupsAndTilesWithoutResetNotifications() => OnPresentationThread(() =>
+    public Task Updates_ReuseGroupsAndTilesWithoutResetOrHeaderNotifications() => OnPresentationThread(() =>
     {
         var header = Header("Group");
         var first = Tile();
@@ -58,6 +58,7 @@ public class GridItemsViewModelTests
         using var grid = CreateGrid(source);
         var group = grid.Groups[0];
         var resetCount = 0;
+        var headerNotificationCount = 0;
         void Changed(object? sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.Action == NotifyCollectionChangedAction.Reset)
@@ -67,21 +68,23 @@ public class GridItemsViewModelTests
         }
 
         grid.Groups.CollectionChanged += Changed;
-        group.CollectionChanged += Changed;
+        group.Items.CollectionChanged += Changed;
+        group.PropertyChanged += (_, _) => headerNotificationCount++;
 
         source.Add(third);
         grid.Synchronize();
         Assert.AreSame(group, grid.Groups[0]);
-        Assert.AreSame(first, group[0]);
-        Assert.AreSame(third, group[2]);
+        Assert.AreSame(first, group.Items[0]);
+        Assert.AreSame(third, group.Items[2]);
 
         source.Move(3, 1);
         grid.Synchronize();
         Assert.AreSame(group, grid.Groups[0]);
-        CollectionAssert.AreEqual(new[] { third, first, second }, group);
+        CollectionAssert.AreEqual(new[] { third, first, second }, group.Items);
         Assert.AreEqual(0, grid.IndexOf(third));
         Assert.AreEqual(2, grid.IndexOf(second));
         Assert.AreEqual(0, resetCount);
+        Assert.AreEqual(0, headerNotificationCount);
     });
 
     [TestMethod]
@@ -125,7 +128,7 @@ public class GridItemsViewModelTests
         Assert.AreSame(secondGroup, grid.Groups[1]);
         Assert.AreSame(firstHeader, firstGroup.Header);
         Assert.AreSame(secondHeader, secondGroup.Header);
-        Assert.AreSame(replacement, firstGroup[0]);
+        Assert.AreSame(replacement, firstGroup.Items[0]);
         Assert.AreEqual(-1, grid.IndexOf(first));
         Assert.AreEqual(0, grid.IndexOf(replacement));
     });
@@ -179,7 +182,7 @@ public class GridItemsViewModelTests
         grid.Synchronize();
         Assert.AreEqual(1, grid.Groups.Count);
         Assert.AreSame(prefix, grid.Groups[0]);
-        CollectionAssert.AreEqual(new[] { first, second }, prefix);
+        CollectionAssert.AreEqual(new[] { first, second }, prefix.Items);
     });
 
     [TestMethod]
@@ -191,7 +194,7 @@ public class GridItemsViewModelTests
         ObservableCollection<ListItemViewModel> source = [first];
         using var grid = CreateGrid(source);
         var changed = false;
-        grid.Groups[0].CollectionChanged += (_, _) =>
+        grid.Groups[0].Items.CollectionChanged += (_, _) =>
         {
             if (!changed)
             {
@@ -206,7 +209,7 @@ public class GridItemsViewModelTests
         Assert.IsTrue(grid.HasPendingChanges);
         grid.Synchronize();
         Assert.IsFalse(grid.HasPendingChanges);
-        CollectionAssert.AreEqual(new[] { first, second, third }, grid.Groups[0]);
+        CollectionAssert.AreEqual(new[] { first, second, third }, grid.Groups[0].Items);
     });
 
     [TestMethod]
@@ -224,7 +227,7 @@ public class GridItemsViewModelTests
         grid.SetSource(source);
         grid.Synchronize();
         Assert.AreSame(group, grid.Groups[0]);
-        Assert.AreEqual(2, group.Count);
+        Assert.AreEqual(2, group.Items.Count);
 
         grid.SetSource(null);
         grid.Synchronize();
@@ -368,7 +371,7 @@ public class GridItemsViewModelTests
         var item = Tile();
         for (var i = 0; i < count; i++)
         {
-            result.Add(item);
+            result.Items.Add(item);
         }
 
         return result;

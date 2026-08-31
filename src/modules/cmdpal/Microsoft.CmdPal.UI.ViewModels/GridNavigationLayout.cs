@@ -33,19 +33,20 @@ public sealed class GridNavigationLayout
         var top = 0.0;
         foreach (var group in groups)
         {
+            var itemCount = group.Items.Count;
             if (group.HasHeader)
             {
                 top += headerHeight;
             }
 
-            if (group.Count == 0)
+            if (itemCount == 0)
             {
                 continue;
             }
 
-            var rows = 1 + ((group.Count - 1) / columns);
-            _groups.Add(new GroupLayout(_itemCount, group.Count, rows, top));
-            _itemCount += group.Count;
+            var rows = 1 + ((itemCount - 1) / columns);
+            _groups.Add(new GroupLayout(_itemCount, itemCount, rows, top));
+            _itemCount += itemCount;
             top += rows * itemHeight;
         }
     }

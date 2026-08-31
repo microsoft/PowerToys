@@ -3,17 +3,18 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using System.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 /// <summary>
 /// A contiguous run of grid tiles, preceded by an optional section or separator.
-/// The collection itself is the group consumed by CollectionViewSource.
 /// </summary>
-[WinRT.GeneratedBindableCustomProperty([nameof(Title)], [])]
-public sealed partial class GridItemGroupViewModel : ObservableCollection<ListItemViewModel>
+[WinRT.GeneratedBindableCustomProperty([nameof(Title), nameof(Items)], [])]
+public sealed partial class GridItemGroupViewModel : ObservableObject
 {
+    public ObservableCollection<ListItemViewModel> Items { get; } = [];
+
     public ListItemViewModel? Header { get; }
 
     public bool HasHeader => Header is not null;
@@ -48,19 +49,19 @@ public sealed partial class GridItemGroupViewModel : ObservableCollection<ListIt
         if (Title != title)
         {
             Title = title;
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(Title)));
+            OnPropertyChanged(nameof(Title));
         }
 
         if (IsSectionHeader != isSectionHeader)
         {
             IsSectionHeader = isSectionHeader;
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsSectionHeader)));
+            OnPropertyChanged(nameof(IsSectionHeader));
         }
 
         if (IsSeparator != isSeparator)
         {
             IsSeparator = isSeparator;
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsSeparator)));
+            OnPropertyChanged(nameof(IsSeparator));
         }
     }
 }

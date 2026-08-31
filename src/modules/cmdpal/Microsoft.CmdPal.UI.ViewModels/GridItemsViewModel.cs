@@ -110,15 +110,15 @@ public sealed partial class GridItemsViewModel : IDisposable
 
                 current.FirstItemIndex = itemCount;
                 current.RefreshHeader();
-                ListHelpers.InPlaceUpdateList(current, tiles, out _);
+                ListHelpers.InPlaceUpdateList(current.Items, tiles, out _);
 
                 // ListItemViewModel equality compares extension models. The
                 // projection must still publish the source's current wrappers.
                 for (var i = 0; i < tiles.Count; i++)
                 {
-                    if (!ReferenceEquals(current[i], tiles[i]))
+                    if (!ReferenceEquals(current.Items[i], tiles[i]))
                     {
-                        current[i] = tiles[i];
+                        current.Items[i] = tiles[i];
                     }
                 }
 
