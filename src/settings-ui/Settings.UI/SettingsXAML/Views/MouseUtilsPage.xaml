@@ -367,6 +367,128 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
+                <controls:SettingsGroup x:Uid="MouseUtils_LaserPointer" AutomationProperties.AutomationId="MouseUtils_LaserPointerTestId">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsLaserPointerEnabledGpoConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="MouseUtilsEnableLaserPointer"
+                            x:Uid="MouseUtils_Enable_LaserPointer"
+                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/LaserPointer.png}"
+                            IsEnabled="{x:Bind ViewModel.IsLaserPointerEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="MouseUtils_LaserPointerToggleId"
+                                IsOn="{x:Bind ViewModel.IsLaserPointerEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
+                    <tkcontrols:SettingsExpander
+                        Name="MouseUtilsLaserPointerActivation"
+                        x:Uid="MouseUtils_LaserPointer_ActivationShortcut"
+                        AutomationProperties.AutomationId="MouseUtils_LaserPointerActivationShortcutId"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsEnabled="{x:Bind ViewModel.IsLaserPointerEnabled, Mode=OneWay}">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.LaserPointerActivationShortcut, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="MouseUtils_LaserPointer_SuppressActivationButton" IsChecked="{x:Bind ViewModel.LaserPointerSuppressActivationButton, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.LaserPointerAutoActivate, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                    <tkcontrols:SettingsCard
+                        Name="MouseUtilsLaserPointerActivationButton"
+                        x:Uid="MouseUtils_LaserPointer_ActivationButton"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE962;}"
+                        IsEnabled="{x:Bind ViewModel.IsLaserPointerEnabled, Mode=OneWay}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.LaserPointerActivationButton, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="MouseUtils_LaserPointer_ActivationButton_Left" />
+                            <ComboBoxItem x:Uid="MouseUtils_LaserPointer_ActivationButton_Right" />
+                            <ComboBoxItem x:Uid="MouseUtils_LaserPointer_ActivationButton_Middle" />
+                            <ComboBoxItem x:Uid="MouseUtils_LaserPointer_ActivationButton_X1" />
+                            <ComboBoxItem x:Uid="MouseUtils_LaserPointer_ActivationButton_X2" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="MouseUtilsLaserPointerAlwaysOnButton"
+                        x:Uid="MouseUtils_LaserPointer_AlwaysOnButton"
+                        AutomationProperties.AutomationId="MouseUtils_LaserPointerAlwaysOnButtonId"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE962;}"
+                        IsEnabled="{x:Bind ViewModel.IsLaserPointerEnabled, Mode=OneWay}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.LaserPointerAlwaysOnButtonIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="MouseUtils_LaserPointer_AlwaysOnButton_None" />
+                            <ComboBoxItem x:Uid="MouseUtils_LaserPointer_ActivationButton_Middle" />
+                            <ComboBoxItem x:Uid="MouseUtils_LaserPointer_ActivationButton_X1" />
+                            <ComboBoxItem x:Uid="MouseUtils_LaserPointer_ActivationButton_X2" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="MouseUtilsLaserPointerPenActivation"
+                        x:Uid="MouseUtils_LaserPointer_PenActivationShortcut"
+                        AutomationProperties.AutomationId="MouseUtils_LaserPointerPenActivationShortcutId"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE70F;}"
+                        IsEnabled="{x:Bind ViewModel.IsLaserPointerEnabled, Mode=OneWay}">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.LaserPointerPenActivationShortcut, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="MouseUtilsLaserPointerSize"
+                        x:Uid="MouseUtils_LaserPointer_Size"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE1C2;}"
+                        IsEnabled="{x:Bind ViewModel.IsLaserPointerEnabled, Mode=OneWay}">
+                        <NumberBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            LargeChange="5"
+                            Maximum="200"
+                            Minimum="1"
+                            SmallChange="1"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{x:Bind ViewModel.LaserPointerSize, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsExpander
+                        Name="MouseUtilsLaserPointerAppearance"
+                        x:Uid="MouseUtils_LaserPointer_Appearance"
+                        AutomationProperties.AutomationId="MouseUtils_LaserPointerAppearanceId"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
+                        IsEnabled="{x:Bind ViewModel.IsLaserPointerEnabled, Mode=OneWay}">
+                        <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.LaserPointerColor, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_LaserPointer_DecayTimeMs">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="100"
+                                    Maximum="10000"
+                                    Minimum="100"
+                                    SmallChange="50"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.LaserPointerDecayTimeMs, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_LaserPointer_DecayLength">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Maximum="500"
+                                    Minimum="2"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.LaserPointerDecayLength, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_LaserPointer_Streamline">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Maximum="95"
+                                    Minimum="0"
+                                    SmallChange="5"
+                                    StepFrequency="5"
+                                    Value="{x:Bind ViewModel.LaserPointerStreamline, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="MouseUtils_LaserPointer_Glow" IsChecked="{x:Bind ViewModel.LaserPointerGlowEnabled, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+
                 <panels:MouseJumpPanel x:Name="MouseUtils_MouseJump_Panel" x:Uid="MouseUtils_MouseJump_Panel" />
 
                 <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs" AutomationProperties.AutomationId="MouseUtils_MousePointerCrosshairsTestId">

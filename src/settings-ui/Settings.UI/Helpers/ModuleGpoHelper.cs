@@ -33,6 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.KeyboardManager: return GPOWrapper.GetConfiguredKeyboardManagerEnabledValue();
                 case ModuleType.LightSwitch: return GPOWrapper.GetConfiguredLightSwitchEnabledValue();
                 case ModuleType.MouseHighlighter: return GPOWrapper.GetConfiguredMouseHighlighterEnabledValue();
+                case ModuleType.LaserPointer: return GPOWrapper.GetConfiguredLaserPointerEnabledValue();
                 case ModuleType.MouseJump: return GPOWrapper.GetConfiguredMouseJumpEnabledValue();
                 case ModuleType.MousePointerCrosshairs: return GPOWrapper.GetConfiguredMousePointerCrosshairsEnabledValue();
                 case ModuleType.MouseWithoutBorders: return GPOWrapper.GetConfiguredMouseWithoutBordersEnabledValue();
@@ -75,6 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.ImageResizer => typeof(ImageResizerPage),
                 ModuleType.KeyboardManager => typeof(KeyboardManagerPage),
                 ModuleType.MouseHighlighter => typeof(MouseUtilsPage),
+                ModuleType.LaserPointer => typeof(MouseUtilsPage),
                 ModuleType.MouseJump => typeof(MouseUtilsPage),
                 ModuleType.MousePointerCrosshairs => typeof(MouseUtilsPage),
                 ModuleType.MouseWithoutBorders => typeof(MouseWithoutBordersPage),

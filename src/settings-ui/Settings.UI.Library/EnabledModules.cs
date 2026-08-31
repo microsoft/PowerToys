@@ -545,6 +545,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool laserPointer; // defaulting to off
+
+        [JsonPropertyName("LaserPointer")]
+        public bool LaserPointer
+        {
+            get => laserPointer;
+            set
+            {
+                if (laserPointer != value)
+                {
+                    LogTelemetryEvent(value);
+                    laserPointer = value;
+                }
+            }
+        }
+
         private bool lightSwitch;
 
         [JsonPropertyName("LightSwitch")]

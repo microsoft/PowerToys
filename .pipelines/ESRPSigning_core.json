@@ -195,6 +195,7 @@
 
             "PowerToys.FindMyMouse.dll",
             "PowerToys.MouseHighlighter.dll",
+            "PowerToys.LaserPointer.dll",
             "PowerToys.MouseJump.dll",
             "PowerToys.MouseJump.Common.dll",
             "WinUI3Apps\\PowerToys.MouseJump.HotKeys.dll",

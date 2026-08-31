@@ -31,6 +31,7 @@ internal static class ModuleGpoHelper
             ModuleType.KeyboardManager => GPOWrapper.GetConfiguredKeyboardManagerEnabledValue(),
             ModuleType.LightSwitch => GPOWrapper.GetConfiguredLightSwitchEnabledValue(),
             ModuleType.MouseHighlighter => GPOWrapper.GetConfiguredMouseHighlighterEnabledValue(),
+            ModuleType.LaserPointer => GPOWrapper.GetConfiguredLaserPointerEnabledValue(),
             ModuleType.MouseJump => GPOWrapper.GetConfiguredMouseJumpEnabledValue(),
             ModuleType.MousePointerCrosshairs => GPOWrapper.GetConfiguredMousePointerCrosshairsEnabledValue(),
             ModuleType.MouseWithoutBorders => GPOWrapper.GetConfiguredMouseWithoutBordersEnabledValue(),
