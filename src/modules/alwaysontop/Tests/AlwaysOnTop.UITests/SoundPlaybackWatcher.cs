@@ -3,12 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.AlwaysOnTop.UITests;
 
+/// <summary>
+/// Uses a level-1 NTFS oplock to observe the product opening its sound file without requiring an
+/// audio endpoint. The signal is machine-wide, so callers verify it has not fired before triggering
+/// the product action.
+/// </summary>
 internal sealed class SoundPlaybackWatcher : IDisposable
 {
     private const uint FsctlRequestOplockLevel1 = 0x00090000;
@@ -21,35 +25,16 @@ internal sealed class SoundPlaybackWatcher : IDisposable
     private const uint FileFlagOverlapped = 0x40000000;
 
     private readonly string targetPath;
-    private readonly string mediaDirectory;
-    private readonly bool createdTarget;
-    private readonly bool createdDirectory;
+    private readonly Action<string>? log;
     private readonly SafeFileHandle fileHandle;
     private readonly EventWaitHandle oplockBroken = new(false, EventResetMode.ManualReset);
     private readonly IntPtr overlapped;
     private bool disposed;
 
-    private SoundPlaybackWatcher(string productRoot)
+    private SoundPlaybackWatcher(string targetPath, Action<string>? log)
     {
-        mediaDirectory = Path.Combine(productRoot, "Media");
-        targetPath = Path.Combine(mediaDirectory, "Speech On.wav");
-        createdDirectory = !Directory.Exists(mediaDirectory);
-        Directory.CreateDirectory(mediaDirectory);
-
-        createdTarget = !File.Exists(targetPath);
-        if (createdTarget)
-        {
-            var sourcePath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.Windows),
-                "Media",
-                "Speech On.wav");
-            if (!File.Exists(sourcePath))
-            {
-                throw new FileNotFoundException("The Windows Speech On sound used by the test fixture is unavailable.", sourcePath);
-            }
-
-            File.Copy(sourcePath, targetPath);
-        }
+        this.targetPath = targetPath;
+        this.log = log;
 
         fileHandle = CreateFileW(
             targetPath,
@@ -79,31 +64,21 @@ internal sealed class SoundPlaybackWatcher : IDisposable
             fileHandle.Dispose();
             Marshal.FreeHGlobal(overlapped);
             oplockBroken.Dispose();
-            DeleteFixtureFiles();
             throw;
         }
     }
 
     internal string FilePath => targetPath;
 
-    internal static SoundPlaybackWatcher Create()
+    internal static SoundPlaybackWatcher Create(string targetPath, Action<string>? log = null)
     {
-        var processes = Process.GetProcessesByName("PowerToys.AlwaysOnTop");
-        try
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetPath);
+        if (!File.Exists(targetPath))
         {
-            var executable = processes
-                .Select(process => process.MainModule?.FileName)
-                .FirstOrDefault(path => !string.IsNullOrWhiteSpace(path))
-                ?? throw new InvalidOperationException("The PowerToys.AlwaysOnTop executable path is unavailable.");
-            return new SoundPlaybackWatcher(Path.GetDirectoryName(executable)!);
+            throw new FileNotFoundException("The Always On Top sound file used by the playback watcher is unavailable.", targetPath);
         }
-        finally
-        {
-            foreach (var process in processes)
-            {
-                process.Dispose();
-            }
-        }
+
+        return new SoundPlaybackWatcher(targetPath, log);
     }
 
     internal bool WaitForAccess(int timeoutMs)
@@ -118,54 +93,29 @@ internal sealed class SoundPlaybackWatcher : IDisposable
             return;
         }
 
-        _ = CancelIoEx(fileHandle, overlapped);
-        if (!GetOverlappedResult(fileHandle, overlapped, out _, wait: true))
-        {
-            const int errorOperationAborted = 995;
-            var error = Marshal.GetLastWin32Error();
-            if (error != errorOperationAborted)
-            {
-                throw new Win32Exception(error, $"Completing the oplock request for '{targetPath}' failed.");
-            }
-        }
-
-        fileHandle.Dispose();
-        Marshal.FreeHGlobal(overlapped);
-        oplockBroken.Dispose();
         disposed = true;
-        DeleteFixtureFiles();
-    }
-
-    private void DeleteFixtureFiles()
-    {
-        if (createdTarget)
+        try
         {
-            DeleteFileWithRetry(targetPath);
+            _ = CancelIoEx(fileHandle, overlapped);
+            if (!GetOverlappedResult(fileHandle, overlapped, out _, wait: true))
+            {
+                const int errorOperationAborted = 995;
+                var error = Marshal.GetLastWin32Error();
+                if (error != errorOperationAborted)
+                {
+                    log?.Invoke($"Completing the sound-file oplock for '{targetPath}' failed: {new Win32Exception(error).Message}");
+                }
+            }
         }
-
-        if (createdDirectory && Directory.Exists(mediaDirectory) && !Directory.EnumerateFileSystemEntries(mediaDirectory).Any())
+        catch (Exception ex)
         {
-            Directory.Delete(mediaDirectory);
+            log?.Invoke($"Disposing the sound-file oplock for '{targetPath}' failed: {ex.Message}");
         }
-    }
-
-    private static void DeleteFileWithRetry(string path)
-    {
-        for (var attempt = 1; attempt <= 50; attempt++)
+        finally
         {
-            try
-            {
-                File.Delete(path);
-                return;
-            }
-            catch (IOException) when (attempt < 50)
-            {
-                Thread.Sleep(100);
-            }
-            catch (UnauthorizedAccessException) when (attempt < 50)
-            {
-                Thread.Sleep(100);
-            }
+            fileHandle.Dispose();
+            Marshal.FreeHGlobal(overlapped);
+            oplockBroken.Dispose();
         }
     }
 

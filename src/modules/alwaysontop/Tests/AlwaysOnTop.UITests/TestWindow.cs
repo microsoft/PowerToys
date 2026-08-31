@@ -11,7 +11,6 @@ internal sealed class TestWindow : IDisposable
 {
     private const int GwlExStyle = -20;
     private const long WsExTopmost = 0x00000008L;
-    private const uint WmClose = 0x0010;
     private const string PinnedProperty = "AlwaysOnTop_Pinned";
 
     private readonly ManualResetEventSlim ready = new();
@@ -108,11 +107,7 @@ internal sealed class TestWindow : IDisposable
         for (var attempt = 1; attempt <= 3; attempt++)
         {
             var foreground = WindowControl.GetForegroundWindowInfo();
-            if (foreground.ProcessName.Equals("ShellExperienceHost", StringComparison.OrdinalIgnoreCase)
-                && foreground.Title.Equals("New notification", StringComparison.OrdinalIgnoreCase))
-            {
-                DismissNotification(foreground.Hwnd);
-            }
+            DesktopHygiene.DismissForegroundShellSurface(foreground);
 
             WindowControl.TryBringToForeground(handle);
             var fixtureBounds = WindowHelper.GetWindowBounds(handle);
@@ -187,10 +182,6 @@ internal sealed class TestWindow : IDisposable
     [DllImport("user32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
     private static extern IntPtr GetPropW(IntPtr hWnd, string lpString);
 
-    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool PostMessageW(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam);
-
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool IsWindow(IntPtr hWnd);
@@ -226,45 +217,6 @@ internal sealed class TestWindow : IDisposable
         }
 
         return handle;
-    }
-
-    private static void DismissNotification(IntPtr notificationHwnd)
-    {
-        var notification = WindowsFinder.WaitForWindow(
-            window => window.Hwnd == notificationHwnd.ToInt64(),
-            timeoutMS: 1_000);
-        if (notification?.Has<Button>(By.Name("No thanks"), timeoutMS: 2_000) == true)
-        {
-            notification.Find<Button>(By.Name("No thanks"), timeoutMS: 2_000).Invoke(msPostAction: 500);
-        }
-
-        if (!IsConfirmedForeground(notificationHwnd))
-        {
-            return;
-        }
-
-        _ = PostMessageW(notificationHwnd, WmClose, IntPtr.Zero, IntPtr.Zero);
-        Thread.Sleep(250);
-        if (!IsConfirmedForeground(notificationHwnd))
-        {
-            return;
-        }
-
-        var display = WindowHelper.GetDisplaySize();
-        MouseHelper.LeftClickAt(display.Width - 100, display.Height - 84);
-        Thread.Sleep(500);
-        if (!IsConfirmedForeground(notificationHwnd))
-        {
-            return;
-        }
-
-        KeyboardHelper.SendKeys(Key.Alt, Key.F4);
-        Thread.Sleep(500);
-    }
-
-    private static bool IsConfirmedForeground(IntPtr hwnd)
-    {
-        return WindowControl.GetForegroundWindowInfo().Hwnd == hwnd;
     }
 
     private static T InvokeWithTimeout<T>(System.Windows.Forms.Form target, Func<T> action)

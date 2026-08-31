@@ -53,7 +53,7 @@ internal static class AlwaysOnTopSettingsSeed
             });
     }
 
-    internal static void Apply(params (string Name, object Value)[] settings)
+    internal static void Apply(params (string Name, JsonNode? Value)[] settings)
     {
         SettingsConfigHelper.UpdateModuleSettings(
             ModuleName,
@@ -73,17 +73,11 @@ internal static class AlwaysOnTopSettingsSeed
             });
     }
 
-    private static void SetValue(JsonObject properties, string name, object value)
+    private static void SetValue(JsonObject properties, string name, JsonNode? value)
     {
         properties[name] = new JsonObject
         {
-            ["value"] = value switch
-            {
-                bool booleanValue => JsonValue.Create(booleanValue),
-                int integerValue => JsonValue.Create(integerValue),
-                string stringValue => JsonValue.Create(stringValue),
-                _ => throw new ArgumentException($"Unsupported Always On Top setting type: {value.GetType().Name}."),
-            },
+            ["value"] = value?.DeepClone(),
         };
     }
 }

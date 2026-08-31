@@ -4,6 +4,9 @@
 
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.Globalization;
+using System.Runtime.InteropServices;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,6 +17,9 @@ public sealed class AlwaysOnTopTests : UITestBase
 {
     private const string AlwaysOnTopProcessName = "PowerToys.AlwaysOnTop";
     private const string BorderWindowClass = "AlwaysOnTop_Border";
+
+    // The module's file watcher has no acknowledgement signal. Use this only before negative
+    // assertions where no product state can prove that the new setting has loaded.
     private const int SettingsReloadDelayMs = 3_000;
     private static readonly Key[] ActivationShortcut = [Key.LWin, Key.Ctrl, Key.T];
     private static IDisposable? originalModuleSettings;
@@ -71,7 +77,7 @@ public sealed class AlwaysOnTopTests : UITestBase
 
         Step("Applying the default Always On Top test settings");
         AlwaysOnTopSettingsSeed.ApplyBaseline();
-        Thread.Sleep(SettingsReloadDelayMs);
+        WaitForSettingsReloadWithoutObservableSignal();
     }
 
     [TestCleanup]
@@ -81,6 +87,7 @@ public sealed class AlwaysOnTopTests : UITestBase
 
         CleanupExtraVirtualDesktop();
 
+        // Exclusive D3D device release can fail transiently while Windows leaves full-screen mode.
         for (var attempt = 1; attempt <= 2 && fullScreen is not null; attempt++)
         {
             try
@@ -101,6 +108,7 @@ public sealed class AlwaysOnTopTests : UITestBase
             {
                 if (fixture.IsPinned)
                 {
+                    // Destroying a pinned target can race the product's border timer with a stale HWND.
                     Step("Cleanup: unpinning the fixture before destroying its window");
                     TogglePin(expected: false);
                     _ = WaitForBorder(expected: false, timeoutMs: 5_000);
@@ -118,7 +126,6 @@ public sealed class AlwaysOnTopTests : UITestBase
         try
         {
             AlwaysOnTopSettingsSeed.ApplyBaseline();
-            Thread.Sleep(SettingsReloadDelayMs);
         }
         catch (Exception ex)
         {
@@ -156,6 +163,7 @@ public sealed class AlwaysOnTopTests : UITestBase
 
         Step("Creating and switching to a new virtual desktop");
         KeyboardHelper.SendKeys(Key.LWin, Key.Ctrl, Key.D);
+        extraVirtualDesktopCreated = true;
         var switchedAway = WaitHelper.WaitForStable(
             () => VirtualDesktopHelper.IsWindowOnCurrentDesktop(fixture.Handle),
             isCurrent => isCurrent == false,
@@ -163,7 +171,6 @@ public sealed class AlwaysOnTopTests : UITestBase
             requiredConsecutiveMatches: 2,
             pollIntervalMS: 100);
         Assert.IsTrue(switchedAway.Succeeded, "Windows did not switch away from the fixture's original virtual desktop.");
-        extraVirtualDesktopCreated = true;
         AssertBorderState(expected: false, timeoutMs: 15_000);
         AssertPinState(expected: true);
 
@@ -251,7 +258,6 @@ public sealed class AlwaysOnTopTests : UITestBase
             ("frame-accent-color", false),
             ("round-corners-enabled", false),
             ("sound-enabled", false));
-        Thread.Sleep(SettingsReloadDelayMs);
 
         fixture = TestWindow.Create("Always On Top border settings fixture");
         TogglePin(expected: true);
@@ -282,7 +288,8 @@ public sealed class AlwaysOnTopTests : UITestBase
             requiredConsecutiveMatches: 2,
             pollIntervalMS: 250);
 
-        var updateDiagnostics = $"Last border={update.LastObservation.Border.Width}x{update.LastObservation.Border.Height}, magenta={update.LastObservation.HasUpdatedColor}.";
+        var updateDiagnostics = FormattableString.Invariant(
+            $"Last border={update.LastObservation.Border.Width}x{update.LastObservation.Border.Height}, magenta={update.LastObservation.HasUpdatedColor}.");
         Assert.IsTrue(update.Succeeded, $"The live border update did not settle. {updateDiagnostics}");
     }
 
@@ -292,11 +299,17 @@ public sealed class AlwaysOnTopTests : UITestBase
     public void SoundSettingControlsPlaybackAttempt()
     {
         fixture = TestWindow.Create("Always On Top sound fixture");
+        using var soundFile = SoundFileFixture.Create(TestContext.WriteLine);
         AlwaysOnTopSettingsSeed.Apply(("sound-enabled", true), ("frame-enabled", false));
-        Thread.Sleep(SettingsReloadDelayMs);
+        WaitForSettingsReloadWithoutObservableSignal();
 
-        using (var enabledWatcher = SoundPlaybackWatcher.Create())
+        // The oplock proves that the product opened the sound file; speaker output is intentionally
+        // not asserted because Hyper-V and CI agents do not expose a stable audio endpoint.
+        using (var enabledWatcher = SoundPlaybackWatcher.Create(soundFile.FilePath, TestContext.WriteLine))
         {
+            Assert.IsFalse(
+                enabledWatcher.WaitForAccess(timeoutMs: 250),
+                "Another process opened the pin sound file before Always On Top was triggered.");
             Step($"Watching access to '{enabledWatcher.FilePath}' with sound enabled");
             TogglePin(expected: true);
             Assert.IsTrue(
@@ -306,20 +319,23 @@ public sealed class AlwaysOnTopTests : UITestBase
 
         Step("Disabling sound and returning the fixture to an unpinned state");
         AlwaysOnTopSettingsSeed.Apply(("sound-enabled", false));
-        Thread.Sleep(SettingsReloadDelayMs);
+        WaitForSettingsReloadWithoutObservableSignal();
         TogglePin(expected: false);
 
-        using (var disabledWatcher = SoundPlaybackWatcher.Create())
+        using (var disabledWatcher = SoundPlaybackWatcher.Create(soundFile.FilePath, TestContext.WriteLine))
         {
+            Assert.IsFalse(
+                disabledWatcher.WaitForAccess(timeoutMs: 250),
+                "Another process opened the pin sound file before the disabled-sound check.");
             Step($"Watching access to '{disabledWatcher.FilePath}' with sound disabled");
             TogglePin(expected: true);
             Assert.IsFalse(
-                disabledWatcher.WaitForAccess(timeoutMs: 2_000),
+                disabledWatcher.WaitForAccess(timeoutMs: 3_000),
                 "Always On Top opened its pin sound file even though sound was disabled.");
         }
 
         TestContext.WriteLine(
-            "Playback gating is validated by forcing the product's existing PlaySound call to fail only when invoked; " +
+            "Playback gating is validated by observing the relative sound file opened by PlaySound; " +
             "the Hyper-V guest has no stable audio-capture endpoint for asserting speaker output.");
     }
 
@@ -333,16 +349,15 @@ public sealed class AlwaysOnTopTests : UITestBase
 
         Step($"Excluding the fixture process '{fixture.ProcessFileName}'");
         AlwaysOnTopSettingsSeed.Apply(("excluded-apps", fixture.ProcessFileName));
-        Thread.Sleep(SettingsReloadDelayMs);
+        WaitForSettingsReloadWithoutObservableSignal();
         fixture.Focus();
         KeyboardHelper.SendKeys(ActivationShortcut);
         Thread.Sleep(2_000);
-        Assert.IsFalse(fixture.IsPinned, "Always On Top marked the Direct3D fixture as pinned while Game Mode blocking was enabled.");
+        AssertPinState(expected: false);
         AssertBorderState(expected: false);
 
         Step("Removing the exclusion and pinning the fixture");
         AlwaysOnTopSettingsSeed.Apply(("excluded-apps", string.Empty));
-        Thread.Sleep(SettingsReloadDelayMs);
         TogglePin(expected: true);
         AssertBorderState(expected: true);
 
@@ -373,7 +388,7 @@ public sealed class AlwaysOnTopTests : UITestBase
 
         Step("Enabling the Always On Top Game Mode block");
         AlwaysOnTopSettingsSeed.Apply(("do-not-activate-on-game-mode", true));
-        Thread.Sleep(SettingsReloadDelayMs);
+        WaitForSettingsReloadWithoutObservableSignal();
         fixture.Focus();
         KeyboardHelper.SendKeys(ActivationShortcut);
         Thread.Sleep(2_000);
@@ -393,7 +408,6 @@ public sealed class AlwaysOnTopTests : UITestBase
 
         Step("Disabling the Game Mode block and verifying the same shortcut outside Game Mode");
         AlwaysOnTopSettingsSeed.Apply(("do-not-activate-on-game-mode", false));
-        Thread.Sleep(SettingsReloadDelayMs);
 
         TogglePin(expected: true);
         AssertPinState(expected: true);
@@ -463,7 +477,8 @@ public sealed class AlwaysOnTopTests : UITestBase
             requiredConsecutiveMatches: 2,
             pollIntervalMS: 100);
 
-        var diagnostics = $"Last HWND={result.LastObservation.Hwnd}, size={result.LastObservation.Width}x{result.LastObservation.Height}.";
+        var diagnostics = FormattableString.Invariant(
+            $"Last HWND={result.LastObservation.Hwnd}, size={result.LastObservation.Width}x{result.LastObservation.Height}.");
         Assert.IsTrue(result.Succeeded, $"The Always On Top border did not reach expected visibility within {timeoutMs} ms. {diagnostics}");
         return result.LastObservation;
     }
@@ -496,6 +511,8 @@ public sealed class AlwaysOnTopTests : UITestBase
 
         var candidateCenter = WindowHelper.GetWindowCenter(candidate.Hwnd);
         var centerDistance = Math.Abs(candidateCenter.CenterX - targetCenter.CenterX) + Math.Abs(candidateCenter.CenterY - targetCenter.CenterY);
+
+        // Border and target centers should coincide; tolerate DWM shadow and DPI rounding only.
         return centerDistance <= 32 ? candidate : default;
     }
 
@@ -517,12 +534,15 @@ public sealed class AlwaysOnTopTests : UITestBase
         var rightMargin = borderBounds.Right - frame.Right;
         var bottomMargin = borderBounds.Bottom - frame.Bottom;
 
-        Assert.IsTrue(
-            leftMargin is > 0 and <= 64
+        var marginDiagnostics = FormattableString.Invariant(
+            $"Margins: L={leftMargin}, T={topMargin}, R={rightMargin}, B={bottomMargin}.");
+
+        // Bound the maximized DWM inset while requiring near-symmetric opposite edges.
+        var surroundsFrame = leftMargin is > 0 and <= 64
             && topMargin is > 0 and <= 64
             && rightMargin is > 0 and <= 64
-            && bottomMargin is > 0 and <= 64,
-            $"The border did not surround the maximized DWM frame. Margins: L={leftMargin}, T={topMargin}, R={rightMargin}, B={bottomMargin}.");
+            && bottomMargin is > 0 and <= 64;
+        Assert.IsTrue(surroundsFrame, $"The border did not surround the maximized DWM frame. {marginDiagnostics}");
         Assert.IsTrue(Math.Abs(leftMargin - rightMargin) <= 4, "The maximized border was not horizontally symmetric.");
         Assert.IsTrue(Math.Abs(topMargin - bottomMargin) <= 4, "The maximized border was not vertically symmetric.");
     }
@@ -552,10 +572,28 @@ public sealed class AlwaysOnTopTests : UITestBase
             return false;
         }
 
-        using var image = new Bitmap(width, height);
+        using var image = new Bitmap(width, height, PixelFormat.Format32bppArgb);
         using (var graphics = Graphics.FromImage(image))
         {
             graphics.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, image.Size);
+        }
+
+        var bitmapData = image.LockBits(
+            new Rectangle(0, 0, width, height),
+            ImageLockMode.ReadOnly,
+            PixelFormat.Format32bppArgb);
+        var stride = Math.Abs(bitmapData.Stride);
+        var pixels = new byte[stride * height];
+        try
+        {
+            for (var y = 0; y < height; y++)
+            {
+                Marshal.Copy(IntPtr.Add(bitmapData.Scan0, y * bitmapData.Stride), pixels, y * stride, stride);
+            }
+        }
+        finally
+        {
+            image.UnlockBits(bitmapData);
         }
 
         var band = Math.Min(Math.Max(thickness + 2, 4), Math.Min(width, height) / 3);
@@ -566,12 +604,12 @@ public sealed class AlwaysOnTopTests : UITestBase
             for (var y = 1; y < band; y += 2)
             {
                 samples += 2;
-                if (ColorsMatch(image.GetPixel(x, y), expectedColor))
+                if (PixelMatches(pixels, stride, x, y, expectedColor))
                 {
                     matches++;
                 }
 
-                if (ColorsMatch(image.GetPixel(x, height - 1 - y), expectedColor))
+                if (PixelMatches(pixels, stride, x, height - 1 - y, expectedColor))
                 {
                     matches++;
                 }
@@ -583,27 +621,32 @@ public sealed class AlwaysOnTopTests : UITestBase
             for (var x = 1; x < band; x += 2)
             {
                 samples += 2;
-                if (ColorsMatch(image.GetPixel(x, y), expectedColor))
+                if (PixelMatches(pixels, stride, x, y, expectedColor))
                 {
                     matches++;
                 }
 
-                if (ColorsMatch(image.GetPixel(width - 1 - x, y), expectedColor))
+                if (PixelMatches(pixels, stride, width - 1 - x, y, expectedColor))
                 {
                     matches++;
                 }
             }
         }
 
+        // Require a meaningful share of the sampled edge band while allowing DWM-composited pixels.
         return matches >= Math.Max(8, samples / 12);
     }
 
-    private static bool ColorsMatch(Color actual, Color expected)
+    private static bool PixelMatches(byte[] pixels, int stride, int x, int y, Color expected)
     {
+        var rowOffset = y * stride;
+        var pixelOffset = rowOffset + (x * 4);
         const int tolerance = 24;
-        return Math.Abs(actual.R - expected.R) <= tolerance
-            && Math.Abs(actual.G - expected.G) <= tolerance
-            && Math.Abs(actual.B - expected.B) <= tolerance;
+
+        // Absorb small DWM blending and color-management differences at the rendered edge.
+        return Math.Abs(pixels[pixelOffset + 2] - expected.R) <= tolerance
+            && Math.Abs(pixels[pixelOffset + 1] - expected.G) <= tolerance
+            && Math.Abs(pixels[pixelOffset] - expected.B) <= tolerance;
     }
 
     private static bool WaitForProcess(bool expected, int timeoutMs)
@@ -638,15 +681,21 @@ public sealed class AlwaysOnTopTests : UITestBase
             return;
         }
 
+        var fixtureHandle = fixture?.Handle;
+        if (fixtureHandle is null)
+        {
+            TestContext.WriteLine("Virtual desktop cleanup has no fixture handle; it will not close any desktop.");
+            return;
+        }
+
         try
         {
-            var fixtureOnCurrentDesktop = fixture is not null
-                && VirtualDesktopHelper.IsWindowOnCurrentDesktop(fixture.Handle);
+            var fixtureOnCurrentDesktop = VirtualDesktopHelper.IsWindowOnCurrentDesktop(fixtureHandle.Value);
             if (fixtureOnCurrentDesktop)
             {
                 KeyboardHelper.SendKeys(Key.LWin, Key.Ctrl, Key.Right);
                 var switchedToCreatedDesktop = WaitHelper.WaitForStable(
-                    () => VirtualDesktopHelper.IsWindowOnCurrentDesktop(fixture!.Handle),
+                    () => VirtualDesktopHelper.IsWindowOnCurrentDesktop(fixtureHandle.Value),
                     isCurrent => isCurrent == false,
                     timeoutMS: 10_000,
                     requiredConsecutiveMatches: 2,
@@ -660,7 +709,7 @@ public sealed class AlwaysOnTopTests : UITestBase
 
             KeyboardHelper.SendKeys(Key.LWin, Key.Ctrl, Key.F4);
             var returnedToOriginalDesktop = WaitHelper.WaitForStable(
-                () => VirtualDesktopHelper.IsWindowOnCurrentDesktop(fixture!.Handle),
+                () => VirtualDesktopHelper.IsWindowOnCurrentDesktop(fixtureHandle.Value),
                 isCurrent => isCurrent == true,
                 timeoutMS: 10_000,
                 requiredConsecutiveMatches: 2,
@@ -682,6 +731,12 @@ public sealed class AlwaysOnTopTests : UITestBase
 
     private void Step(string message)
     {
-        TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
+        var timestamp = DateTime.UtcNow.ToString("HH:mm:ss.fff", CultureInfo.InvariantCulture);
+        TestContext.WriteLine($"[{timestamp}] {message}");
+    }
+
+    private static void WaitForSettingsReloadWithoutObservableSignal()
+    {
+        Thread.Sleep(SettingsReloadDelayMs);
     }
 }

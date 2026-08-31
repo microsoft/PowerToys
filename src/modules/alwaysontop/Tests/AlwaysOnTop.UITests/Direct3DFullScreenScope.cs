@@ -8,10 +8,10 @@ namespace Microsoft.AlwaysOnTop.UITests;
 
 internal sealed class Direct3DFullScreenScope : IDisposable
 {
-    private const uint D3dSdkVersion = 32;
+    private const uint D3dSdkVersion = 32; // D3D_SDK_VERSION from d3d9.h.
     private const uint D3dCreateFpuPreserve = 0x00000002;
     private const uint D3dCreateSoftwareVertexProcessing = 0x00000020;
-    private const uint D3dPresentIntervalImmediate = 0x80000000;
+    private const uint D3dPresentIntervalImmediate = 0x80000000; // D3DPRESENT_INTERVAL_IMMEDIATE.
     private const int D3dSwapEffectDiscard = 1;
     private const int D3dDevTypeHardware = 1;
     private const int D3dDevTypeReference = 2;
@@ -103,6 +103,7 @@ internal sealed class Direct3DFullScreenScope : IDisposable
             throw new InvalidOperationException("Direct3DCreate9 returned a null interface.");
         }
 
+        // IDirect3D9 slot 8: GetAdapterDisplayMode (after the three IUnknown slots).
         var getDisplayMode = GetComMethod<GetAdapterDisplayModeDelegate>(direct3D, 8);
         var modeResult = getDisplayMode(direct3D, 0, out var mode);
         if (modeResult < 0)
@@ -131,9 +132,10 @@ internal sealed class Direct3DFullScreenScope : IDisposable
             PresentationInterval = D3dPresentIntervalImmediate,
         };
 
+        // IDirect3D9 slot 16: CreateDevice.
         var createDevice = GetComMethod<CreateDeviceDelegate>(direct3D, 16);
         var behaviorFlags = D3dCreateFpuPreserve | D3dCreateSoftwareVertexProcessing;
-        var createResult = createDevice(
+        var hardwareCreateResult = createDevice(
             direct3D,
             0,
             D3dDevTypeHardware,
@@ -142,9 +144,10 @@ internal sealed class Direct3DFullScreenScope : IDisposable
             ref parameters,
             out device);
 
-        if (createResult < 0)
+        int? referenceCreateResult = null;
+        if (hardwareCreateResult < 0)
         {
-            createResult = createDevice(
+            referenceCreateResult = createDevice(
                 direct3D,
                 0,
                 D3dDevTypeReference,
@@ -154,11 +157,14 @@ internal sealed class Direct3DFullScreenScope : IDisposable
                 out device);
         }
 
-        if (createResult < 0 || device == IntPtr.Zero)
+        if ((referenceCreateResult ?? hardwareCreateResult) < 0 || device == IntPtr.Zero)
         {
-            throw new InvalidOperationException($"IDirect3D9::CreateDevice failed with HRESULT 0x{createResult:X8}.");
+            var referenceResult = referenceCreateResult.HasValue ? $"0x{referenceCreateResult.Value:X8}" : "not attempted";
+            throw new InvalidOperationException(
+                $"IDirect3D9::CreateDevice failed. HAL=0x{hardwareCreateResult:X8}; REF={referenceResult}.");
         }
 
+        // IDirect3DDevice9 slot 17: Present.
         var present = GetComMethod<PresentDelegate>(device, 17);
         _ = present(device, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
     }
