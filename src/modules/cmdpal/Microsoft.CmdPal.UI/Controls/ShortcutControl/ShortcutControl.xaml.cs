@@ -15,6 +15,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.System;
 using HotkeySettingsControlHook = Microsoft.CmdPal.UI.Library.HotkeySettingsControlHook;
+using NativeKeyboardHelper = Microsoft.CmdPal.UI.Library.NativeKeyboardHelper;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
