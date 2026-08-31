@@ -28,6 +28,27 @@ internal static class Launch
         return WindowsIdentity.GetCurrent().Owner.IsWellKnown(WellKnownSidType.BuiltinAdministratorsSid);
     }
 
+    private static void RevertToSelfOrFailFast()
+    {
+        int lastError = 0;
+        ImpersonationHelper.RevertToSelfOrFailFast(
+            () =>
+            {
+                bool result = NativeMethods.RevertToSelf();
+                if (!result)
+                {
+                    lastError = Marshal.GetLastWin32Error();
+                }
+
+                return result;
+            },
+            milliseconds => System.Threading.Thread.Sleep(milliseconds),
+            message => Environment.FailFast(message),
+            () => string.Concat(
+                $"{nameof(NativeMethods.RevertToSelf)} did not succeed after " +
+                $"{ImpersonationHelper.RevertToSelfAttempts} attempts. Last error: {lastError}."));
+    }
+
     internal static bool ImpersonateLoggedOnUserAndDoSomething(Action targetFunc)
     {
         if (Common.RunWithNoAdminRight)
@@ -47,6 +68,8 @@ internal static class Launch
             IntPtr hUserToken = IntPtr.Zero, hUserTokenDup = IntPtr.Zero;
             try
             {
+                RevertToSelfOrFailFast();
+
                 dwSessionId = (uint)Process.GetCurrentProcess().SessionId;
                 uint rv = NativeMethods.WTSQueryUserToken(dwSessionId, ref hUserToken);
                 var lastError = rv == 0 ? Marshal.GetLastWin32Error() : 0;
@@ -62,31 +85,47 @@ internal static class Launch
                 if (!NativeMethods.DuplicateToken(hUserToken, (int)NativeMethods.SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation, ref hUserTokenDup))
                 {
                     Logger.TelemetryLogTrace($"{nameof(NativeMethods.DuplicateToken)} Failed! {Logger.GetStackTrace(new StackTrace())}", SeverityLevel.Warning);
-                    _ = NativeMethods.CloseHandle(hUserToken);
-                    _ = NativeMethods.CloseHandle(hUserTokenDup);
                     return false;
                 }
 
                 if (NativeMethods.ImpersonateLoggedOnUser(hUserTokenDup))
                 {
-                    targetFunc();
-                    _ = NativeMethods.RevertToSelf();
-                    _ = NativeMethods.CloseHandle(hUserToken);
-                    _ = NativeMethods.CloseHandle(hUserTokenDup);
-                    return true;
+                    try
+                    {
+                        targetFunc();
+                        return true;
+                    }
+                    finally
+                    {
+                        RevertToSelfOrFailFast();
+                    }
                 }
                 else
                 {
                     Logger.Log("ImpersonateLoggedOnUser Failed!");
-                    _ = NativeMethods.CloseHandle(hUserToken);
-                    _ = NativeMethods.CloseHandle(hUserTokenDup);
                     return false;
                 }
+            }
+            catch (FatalImpersonationException)
+            {
+                throw;
             }
             catch (Exception e)
             {
                 Logger.Log(e);
                 return false;
+            }
+            finally
+            {
+                if (hUserToken != IntPtr.Zero)
+                {
+                    _ = NativeMethods.CloseHandle(hUserToken);
+                }
+
+                if (hUserTokenDup != IntPtr.Zero)
+                {
+                    _ = NativeMethods.CloseHandle(hUserTokenDup);
+                }
             }
         }
     }
