@@ -75,6 +75,9 @@ public sealed partial class ListItemsView : UserControl,
 
     private ListViewBase ItemView => ViewModel?.IsGridView == true ? ItemsGrid : ItemsList;
 
+    private ScrollViewer? CurrentScrollViewer
+        => ReferenceEquals(_itemsScrollViewerOwner, ItemView) ? _itemsScrollViewer : null;
+
     public ListItemsView()
     {
         this.InitializeComponent();
@@ -760,6 +763,15 @@ public sealed partial class ListItemsView : UserControl,
         }
 
         var version = Interlocked.Increment(ref _itemsUpdatedVersion);
+        ProcessItemsUpdated(sender, args, version);
+    }
+
+    private void ProcessItemsUpdated(ListViewModel sender, ItemsUpdatedEventArgs args, long version)
+    {
+        if (!ReferenceEquals(sender, ViewModel) || version != Volatile.Read(ref _itemsUpdatedVersion))
+        {
+            return;
+        }
 
         if (args.ForceFirstItem)
         {
@@ -1307,17 +1319,32 @@ public sealed partial class ListItemsView : UserControl,
         }
 
         var anchorItem = element is SelectorItem container ? ItemView.ItemFromContainer(container) : element.DataContext;
-        if (!ReferenceEquals(anchorItem, item) || _itemsScrollViewer is null ||
-            element.Visibility != Visibility.Visible || element.ActualWidth <= 0 || element.ActualHeight <= 0)
+        var scrollViewer = CurrentScrollViewer;
+        var viewport = (FrameworkElement?)scrollViewer ?? ItemView;
+        var viewportWidth = scrollViewer?.ViewportWidth ?? ItemView.ActualWidth;
+        var viewportHeight = scrollViewer?.ViewportHeight ?? ItemView.ActualHeight;
+
+        if (!ReferenceEquals(anchorItem, item) ||
+            element.Visibility != Visibility.Visible || element.ActualWidth <= 0 || element.ActualHeight <= 0 ||
+            viewportWidth <= 0 || viewportHeight <= 0)
         {
             return false;
         }
 
         // Native virtualization can retain a correctly mapped container outside
         // the viewport. It must not anchor a menu requested before scrolling.
-        var bounds = element.TransformToVisual(_itemsScrollViewer).TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
-        return bounds.Left < _itemsScrollViewer.ViewportWidth && bounds.Right > 0 &&
-            bounds.Top < _itemsScrollViewer.ViewportHeight && bounds.Bottom > 0;
+        try
+        {
+            var bounds = element.TransformToVisual(viewport).TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
+            return bounds.Left < viewportWidth && bounds.Right > 0 &&
+                bounds.Top < viewportHeight && bounds.Bottom > 0;
+        }
+        catch
+        {
+            // The element can still be loaded while its presenter is being
+            // replaced. A failed transform means it is no longer a valid anchor.
+            return false;
+        }
     }
 
     private void CancelPendingContextMenuOpen()
