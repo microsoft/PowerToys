@@ -11,4 +11,6 @@ public class LocalKeyboardListenerKeyStateChangedEventArgs(VirtualKey key, bool 
     public VirtualKey Key { get; } = key;
 
     public bool IsDown { get; } = isDown;
+
+    public bool Handled { get; set; }
 }
