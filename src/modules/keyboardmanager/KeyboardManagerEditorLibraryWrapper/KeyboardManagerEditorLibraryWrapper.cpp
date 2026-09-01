@@ -2,6 +2,7 @@
 #include "KeyboardManagerEditorLibraryWrapper.h"
 #include <algorithm>
 #include <cstring>
+#include <filesystem>
 #include <vector>
 #include <string>
 #include <memory>
@@ -28,6 +29,20 @@ extern "C"
         return static_cast<MappingConfiguration*>(config)->LoadSettings();
     }
 
+    bool MappingSettingsFileExists(void* config)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+        auto path = PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + mappingConfig->currentConfig + L".json";
+        std::error_code error;
+        bool exists = std::filesystem::exists(path, error);
+        return exists || error.value() != 0;
+    }
+
+    bool MappingConfigurationNameWasResolved(void* config)
+    {
+        return static_cast<MappingConfiguration*>(config)->IsConfigurationNameResolved();
+    }
+
     bool SaveMappingSettings(void* config)
     {
         return static_cast<MappingConfiguration*>(config)->SaveSettingsToFile();
@@ -39,6 +54,11 @@ extern "C"
         wchar_t* buffer = new wchar_t[len + 1];
         wcscpy_s(buffer, len + 1, str.c_str());
         return buffer;
+    }
+
+    wchar_t* GetMappingConfigurationName(void* config)
+    {
+        return AllocateAndCopyString(static_cast<MappingConfiguration*>(config)->currentConfig);
     }
 
     int GetSingleKeyRemapCount(void* config)
@@ -54,6 +74,52 @@ extern "C"
         std::vector<std::pair<DWORD, KeyShortcutTextUnion>> allMappings;
 
         for (const auto& kv : mappingConfig->singleKeyReMap)
+        {
+            allMappings.push_back(kv);
+        }
+
+        if (index < 0 || index >= allMappings.size())
+        {
+            return false;
+        }
+
+        const auto& kv = allMappings[index];
+        mapping->originalKey = static_cast<int>(kv.first);
+
+        // Remap to single key
+        if (kv.second.index() == 0)
+        {
+            mapping->targetKey = AllocateAndCopyString(std::to_wstring(std::get<DWORD>(kv.second)));
+            mapping->isShortcut = false;
+        }
+        // Remap to shortcut
+        else if (kv.second.index() == 1)
+        {
+            mapping->targetKey = AllocateAndCopyString(std::get<Shortcut>(kv.second).ToHstringVK().c_str());
+            mapping->isShortcut = true;
+        }
+        else
+        {
+            mapping->targetKey = AllocateAndCopyString(L"");
+            mapping->isShortcut = false;
+        }
+
+        return true;
+    }
+
+    int GetSingleKeyAloneRemapCount(void* config)
+    {
+        auto mapping = static_cast<MappingConfiguration*>(config);
+        return static_cast<int>(mapping->aloneSingleKeyReMap.size());
+    }
+
+    bool GetSingleKeyAloneRemap(void* config, int index, SingleKeyMapping* mapping)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        std::vector<std::pair<DWORD, KeyShortcutTextUnion>> allMappings;
+
+        for (const auto& kv : mappingConfig->aloneSingleKeyReMap)
         {
             allMappings.push_back(kv);
         }
@@ -326,6 +392,11 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         std::wstring origKeysStr = origShortcut.ToHstringVK().c_str();
         mapping->originalKeys = AllocateAndCopyString(origKeysStr);
         mapping->targetApp = AllocateAndCopyString(app);
+        mapping->exactMatch = origShortcut.exactMatch ? 1 : 0;
+        mapping->startInDirectory = nullptr;
+        mapping->elevation = 0;
+        mapping->ifRunningAction = 0;
+        mapping->visibility = 0;
 
         if (targetShortcutUnion.index() == 0)
         {
@@ -347,15 +418,19 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             switch (targetShortcut.operationType)
             {
             case Shortcut::OperationType::RunProgram:
-                mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
+                mapping->targetKeys = AllocateAndCopyString(L"");
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(targetShortcut.runProgramFilePath);
                 mapping->programArgs = AllocateAndCopyString(targetShortcut.runProgramArgs);
+                mapping->startInDirectory = AllocateAndCopyString(targetShortcut.runProgramStartInDir);
+                mapping->elevation = static_cast<int>(targetShortcut.elevationLevel);
+                mapping->ifRunningAction = static_cast<int>(targetShortcut.alreadyRunningAction);
+                mapping->visibility = static_cast<int>(targetShortcut.startWindowType);
                 mapping->uriToOpen = AllocateAndCopyString(L"");
                 break;
 
             case Shortcut::OperationType::OpenURI:
-                mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
+                mapping->targetKeys = AllocateAndCopyString(L"");
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(L"");
                 mapping->programArgs = AllocateAndCopyString(L"");
@@ -375,7 +450,7 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         {
             std::wstring text = std::get<std::wstring>(targetShortcutUnion);
             mapping->targetKeys = AllocateAndCopyString(L"");
-            mapping->operationType = 0;
+            mapping->operationType = 3;
             mapping->targetText = AllocateAndCopyString(text);
             mapping->programPath = AllocateAndCopyString(L"");
             mapping->programArgs = AllocateAndCopyString(L"");
@@ -429,6 +504,11 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         mapping->originalKeys = AllocateAndCopyString(origKeysStr);
 
         mapping->targetApp = AllocateAndCopyString(app);
+        mapping->exactMatch = origShortcut.exactMatch ? 1 : 0;
+        mapping->startInDirectory = nullptr;
+        mapping->elevation = 0;
+        mapping->ifRunningAction = 0;
+        mapping->visibility = 0;
 
         if (targetShortcutUnion.index() == 0)
         {
@@ -449,15 +529,19 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
 
             if (targetShortcut.operationType == Shortcut::OperationType::RunProgram)
             {
-                mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
+                mapping->targetKeys = AllocateAndCopyString(L"");
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(targetShortcut.runProgramFilePath);
                 mapping->programArgs = AllocateAndCopyString(targetShortcut.runProgramArgs);
+                mapping->startInDirectory = AllocateAndCopyString(targetShortcut.runProgramStartInDir);
+                mapping->elevation = static_cast<int>(targetShortcut.elevationLevel);
+                mapping->ifRunningAction = static_cast<int>(targetShortcut.alreadyRunningAction);
+                mapping->visibility = static_cast<int>(targetShortcut.startWindowType);
                 mapping->uriToOpen = AllocateAndCopyString(L"");
             }
             else if (targetShortcut.operationType == Shortcut::OperationType::OpenURI)
             {
-                mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
+                mapping->targetKeys = AllocateAndCopyString(L"");
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(L"");
                 mapping->programArgs = AllocateAndCopyString(L"");
@@ -476,7 +560,7 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         {
             std::wstring text = std::get<std::wstring>(targetShortcutUnion);
             mapping->targetKeys = AllocateAndCopyString(L"");
-            mapping->operationType = 0;
+            mapping->operationType = 3;
             mapping->targetText = AllocateAndCopyString(text);
             mapping->programPath = AllocateAndCopyString(L"");
             mapping->programArgs = AllocateAndCopyString(L"");
@@ -523,6 +607,26 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         return mappingConfig->AddSingleKeyRemap(static_cast<DWORD>(originalKey), targetShortcut);
     }
 
+    bool AddSingleKeyAloneRemap(void* config, int originalKey, int targetKey)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+        return mappingConfig->AddSingleKeyAloneRemap(static_cast<DWORD>(originalKey), static_cast<DWORD>(targetKey));
+    }
+
+    bool AddSingleKeyAloneToShortcutRemap(void* config, int originalKey, const wchar_t* targetKeys)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        if (!targetKeys)
+        {
+            return false;
+        }
+
+        Shortcut targetShortcut(targetKeys);
+
+        return mappingConfig->AddSingleKeyAloneRemap(static_cast<DWORD>(originalKey), targetShortcut);
+    }
+
     bool AddShortcutRemap(void* config,
                           const wchar_t* originalKeys,
                           const wchar_t* targetKeys,
@@ -533,11 +637,13 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
                           const wchar_t* startDirectory,
                           int elevation,
                           int ifRunningAction,
-                          int visibility)
+                          int visibility,
+                          int exactMatch)
     {
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
 
         Shortcut originalShortcut(originalKeys);
+        originalShortcut.exactMatch = exactMatch != 0;
 
         KeyShortcutTextUnion targetShortcut;
 
@@ -660,6 +766,20 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         if (it != mappingConfig->singleKeyReMap.end())
         {
             mappingConfig->singleKeyReMap.erase(it);
+            return true;
+        }
+
+        return false;
+    }
+
+    bool DeleteSingleKeyAloneRemap(void* config, int originalKey)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        auto it = mappingConfig->aloneSingleKeyReMap.find(static_cast<DWORD>(originalKey));
+        if (it != mappingConfig->aloneSingleKeyReMap.end())
+        {
+            mappingConfig->aloneSingleKeyReMap.erase(it);
             return true;
         }
 

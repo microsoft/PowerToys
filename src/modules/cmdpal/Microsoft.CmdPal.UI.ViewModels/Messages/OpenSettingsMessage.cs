@@ -4,4 +4,4 @@
 
 namespace Microsoft.CmdPal.UI.Messages;
 
-public record OpenSettingsMessage(string SettingsPageTag = "");
+public record OpenSettingsMessage(string SettingsPageTag = "", string? ExtensionGalleryId = null);

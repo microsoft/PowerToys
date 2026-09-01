@@ -330,6 +330,22 @@
 	<data name="StartInSelectButtonTooltip.Text" xml:space="preserve">
     <value>Select start directory</value>
   </data>
+  <data name="ConditionComboBox.Header" xml:space="preserve">
+    <value>Condition</value>
+    <comment>Header for the dropdown that chooses when a single-key remap applies (always, or only on a solo tap).</comment>
+  </data>
+  <data name="AloneBadge.Text" xml:space="preserve">
+    <value>Alone</value>
+    <comment>Small badge shown in the remap list marking a single-key remap that only fires on a solo tap.</comment>
+  </data>
+  <data name="Condition_Always.Content" xml:space="preserve">
+    <value>Always</value>
+    <comment>Single-key remap applies unconditionally.</comment>
+  </data>
+  <data name="Condition_Alone.Content" xml:space="preserve">
+    <value>Alone (tap)</value>
+    <comment>Single-key remap applies only when the key is tapped by itself, not combined with other keys.</comment>
+  </data>
   <data name="ElevationComboBox.Header" xml:space="preserve">
     <value>Run as</value>
   </data>

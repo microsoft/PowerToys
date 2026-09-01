@@ -120,6 +120,12 @@ namespace Wox.Plugin
         public string ActionKeyword { get; set; }
 
         /// <summary>
+        /// Gets or sets the launcher-assigned generation used to correlate asynchronous result updates.
+        /// Plugins that reconstruct a query for <see cref="ResultUpdatedEventArgs"/> must preserve this value.
+        /// </summary>
+        public long QueryGeneration { get; set; }
+
+        /// <summary>
         /// Gets return first search split by space if it has
         /// </summary>
         public string FirstSearch => SplitSearch(0);

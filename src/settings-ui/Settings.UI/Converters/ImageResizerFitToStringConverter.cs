@@ -16,9 +16,9 @@ public sealed partial class ImageResizerFitToStringConverter : IValueConverter
     // Maps each ResizeFit to its localized string.
     private static readonly Dictionary<ResizeFit, string> FitToText = new()
     {
-        { ResizeFit.Fill,    Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Fit_Fill_ThirdPersonSingular") },
-        { ResizeFit.Fit,     Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Fit_Fit_ThirdPersonSingular") },
-        { ResizeFit.Stretch, Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Fit_Stretch_ThirdPersonSingular") },
+        { ResizeFit.Fill,    Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Sizes_Fit_Fill/Content") },
+        { ResizeFit.Fit,     Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Sizes_Fit_Fit/Content") },
+        { ResizeFit.Stretch, Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Sizes_Fit_Stretch/Content") },
     };
 
     public object Convert(object value, Type targetType, object parameter, string language)

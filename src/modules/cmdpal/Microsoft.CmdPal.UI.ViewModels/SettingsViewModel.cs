@@ -69,6 +69,15 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
+    public bool AllowAltF4
+    {
+        get => _settingsService.Settings.AllowAltF4;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { AllowAltF4 = value });
+        }
+    }
+
     public bool ShowAppDetails
     {
         get => _settingsService.Settings.ShowAppDetails;

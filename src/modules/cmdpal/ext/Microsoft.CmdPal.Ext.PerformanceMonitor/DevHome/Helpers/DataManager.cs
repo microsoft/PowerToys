@@ -45,6 +45,14 @@ internal sealed partial class DataManager : IDisposable
         }
     }
 
+    private void GetDiskData()
+    {
+        lock (_systemData.DiskStats)
+        {
+            _systemData.DiskStats.GetData();
+        }
+    }
+
     private void GetGPUData()
     {
         lock (_systemData.GPUStats)
@@ -107,6 +115,13 @@ internal sealed partial class DataManager : IDisposable
                         break;
                     }
 
+                case DataType.Disk:
+                    {
+                        // disk
+                        GetDiskData();
+                        break;
+                    }
+
                 case DataType.Battery:
                     {
                         GetBatteryData();
@@ -146,6 +161,7 @@ internal sealed partial class DataManager : IDisposable
             DataType.GPU => "GPU.FirstUpdate",
             DataType.Memory => "Memory.FirstUpdate",
             DataType.Network => "Network.FirstUpdate",
+            DataType.Disk => "Disk.FirstUpdate",
             DataType.Battery => "Battery.FirstUpdate",
             _ => null,
         };
@@ -164,6 +180,14 @@ internal sealed partial class DataManager : IDisposable
         lock (_systemData.NetworkStats)
         {
             return _systemData.NetworkStats;
+        }
+    }
+
+    internal DiskStats GetDiskStats()
+    {
+        lock (_systemData.DiskStats)
+        {
+            return _systemData.DiskStats;
         }
     }
 
