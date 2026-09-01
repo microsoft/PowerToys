@@ -32,14 +32,14 @@ namespace ColorPicker.Helpers
         private const int BaseZoomImageSize = 50;
         private const int MaxZoomLevel = 4;
         private const int MinZoomLevel = 0;
-        private const int WindowChrome = 30; // Border (12) + canvas (3) margins on each side.
+        private const int WindowChrome = 32; // Border margin (12), canvas margin (3), and border (1) on each side.
 
         // The magnifier window is a constant size for the whole session — the level-4 (factor 8)
         // bounding box — so the centred card always fits and never clips. Only the inner card
-        // animates its size (Composition scale in ZoomView), so there is no per-step window resize
+        // animates its size (Width/Height in ZoomView), so there is no per-step window resize
         // and no shrink-trim bookkeeping. Expressed in device-independent pixels (DIP); it is scaled
         // to the target monitor's physical pixels when the window is first shown.
-        private const int MaxWindowSize = (BaseZoomImageSize * 8) + WindowChrome; // 50*8 + 30 = 430
+        private const int MaxWindowSize = (BaseZoomImageSize * 8) + WindowChrome; // 50*8 + 32 = 432
 
         private static readonly Bitmap _bmp = new Bitmap(BaseZoomImageSize, BaseZoomImageSize, PixelFormat.Format32bppArgb);
         private static readonly Graphics _graphics = Graphics.FromImage(_bmp);
@@ -181,10 +181,7 @@ namespace ColorPicker.Helpers
 
             _zoomFactorValue = Math.Pow(ZoomFactor, _currentZoomLevel - 1);
 
-            // The size the card is animating FROM: the previous level's factor (or the current one
-            // on first appearance, which makes the scale a no-op snap).
-            double previousFactor = _previousZoomLevel >= 1 ? Math.Pow(ZoomFactor, _previousZoomLevel - 1) : _zoomFactorValue;
-            ShowZoomWindow(point, previousFactor);
+            ShowZoomWindow(point);
         }
 
         /// <summary>
@@ -233,7 +230,7 @@ namespace ColorPicker.Helpers
             }
         }
 
-        private void ShowZoomWindow(Point point, double previousFactor)
+        private void ShowZoomWindow(Point point)
         {
             if (_capturedBitmap == null)
             {
@@ -242,12 +239,10 @@ namespace ColorPicker.Helpers
 
             _zoomWindow ??= new ZoomWindow();
 
-            // Draw the capture at the FINAL zoom factor now; the compositor scales that crisp texture
-            // during the resize tween (see ZoomView.AnimateResize).
-            _zoomWindow.ZoomViewControl.SetZoom(_capturedBitmap, _zoomFactorValue);
-
             if (!_zoomWindowVisible)
             {
+                _zoomWindow.ZoomViewControl.SetZoom(_capturedBitmap, _zoomFactorValue);
+
                 // First appearance this session. Give the window its constant max size (the level-4
                 // bounding box, so the centred card never clips) and center it on the cursor ONCE,
                 // then leave it there for the rest of the session — matching the WPF behavior, which
@@ -294,8 +289,9 @@ namespace ColorPicker.Helpers
             }
             else
             {
-                // Same already-shown, laid-out window: animate the card between the old and new size.
-                _zoomWindow.ZoomViewControl.AnimateResize(previousFactor, _zoomFactorValue);
+                // Same already-shown, laid-out window: animate the image from the size currently on
+                // screen, even when a preceding wheel-step animation is still in flight.
+                _zoomWindow.ZoomViewControl.AnimateResize(_capturedBitmap, _zoomFactorValue);
             }
         }
     }

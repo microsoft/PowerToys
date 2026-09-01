@@ -8,9 +8,9 @@ using System.Numerics;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.UI;
-using Microsoft.UI.Composition;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml.Media.Animation;
 using Windows.Foundation;
 using Windows.UI;
 
@@ -27,20 +27,13 @@ namespace ColorPicker.Views
     {
         private const int BaseZoomImageSize = 50;
         private const double CursorSamplePatchSize = 4;
-
-        // Card (Border) on-screen size = canvas (50*factor) + canvas Margin (3*2) + BorderThickness (1*2).
-        private const double CardChrome = 8;
-        private static readonly TimeSpan ResizeDuration = TimeSpan.FromMilliseconds(200);
+        internal const int ResizeDurationMilliseconds = 200;
 
         private CanvasBitmap _zoomBitmap;
         private Color[] _zoomPixels;
-        private double _zoomFactor = 1;
 
-        private Visual _cardVisual;
-        private bool _centerPinned;
+        private Storyboard _resizeStoryboard;
         private Vector2 _pointerOffsetFromHostCenter;
-        private bool _suppressOverlays;
-        private int _resizeAnimationGeneration;
 
         public ZoomView()
         {
@@ -53,18 +46,20 @@ namespace ColorPicker.Views
         /// </summary>
         public void SetZoom(CanvasBitmap bitmap, double zoomFactor)
         {
+            StopResizeAnimation();
+            ApplyZoom(bitmap, zoomFactor);
+        }
+
+        private void ApplyZoom(CanvasBitmap bitmap, double zoomFactor)
+        {
             if (!ReferenceEquals(_zoomBitmap, bitmap))
             {
-                CancelOverlaySuppression();
-
                 // Cache the source pixels once per capture so the brightness-adaptive grid does not
                 // read back from the GPU on every draw.
                 _zoomBitmap = bitmap;
                 _zoomPixels = bitmap?.GetPixelColors();
                 _pointerOffsetFromHostCenter = Vector2.Zero;
             }
-
-            _zoomFactor = zoomFactor;
 
             var size = BaseZoomImageSize * zoomFactor;
             ZoomCanvas.Width = size;
@@ -73,77 +68,57 @@ namespace ColorPicker.Views
         }
 
         /// <summary>
-        /// Animates the card from its previous on-screen size to the current one (already set by the
-        /// last <see cref="SetZoom"/>) by scaling its Composition <see cref="Visual"/> about its own
-        /// centre, so the magnified centre pixel stays under the cursor. Port of the WPF
-        /// <c>ResizeBehavior</c> feel: grow eases out (≈SineEase EaseOut), shrink eases in
-        /// (≈QuadraticEase EaseIn), both 200ms. The host <see cref="ZoomWindow"/> is a fixed max size,
-        /// so the briefly-larger card during a shrink never clips and no window resize is needed.
+        /// Animates only the captured image from its current rendered size to the requested zoom
+        /// size. This mirrors the WPF <c>ResizeBehavior</c>: an in-flight animation is handed off
+        /// from its presentation value, the border chrome stays fixed, grow uses Sine EaseOut,
+        /// shrink uses Quadratic EaseIn, and both directions take 200ms.
         /// </summary>
-        public void AnimateResize(double previousZoomFactor, double currentZoomFactor)
+        public void AnimateResize(CanvasBitmap bitmap, double currentZoomFactor)
         {
-            // The new size is in the layout tree from SetZoom; force layout so the pinned CenterPoint
-            // and the keyframes are computed against the correct (new) card size.
+            // Read the layout size before stopping the old storyboard. Its base Width/Height already
+            // contain the prior target, while ActualWidth/ActualHeight are the values on screen now.
             UpdateLayout();
+            double currentWidth = GetRenderedDimension(ZoomCanvas.ActualWidth, ZoomCanvas.Width);
+            double currentHeight = GetRenderedDimension(ZoomCanvas.ActualHeight, ZoomCanvas.Height);
 
-            _cardVisual ??= ElementCompositionPreview.GetElementVisual(ZoomCard);
-            var compositor = _cardVisual.Compositor;
+            StopResizeAnimation();
+            ApplyZoom(bitmap, currentZoomFactor);
 
-            // Pin the scale origin to the live centre of the card (its size changes per zoom step).
-            if (!_centerPinned)
+            ResizeAnimationPlan widthPlan = GetResizeAnimationPlan(currentWidth, currentZoomFactor);
+            ResizeAnimationPlan heightPlan = GetResizeAnimationPlan(currentHeight, currentZoomFactor);
+            if (!widthPlan.ShouldAnimate && !heightPlan.ShouldAnimate)
             {
-                var center = compositor.CreateExpressionAnimation("Vector3(this.Target.Size.X * 0.5, this.Target.Size.Y * 0.5, 0)");
-                _cardVisual.StartAnimation("CenterPoint", center);
-                _centerPinned = true;
-            }
-
-            double oldSize = (BaseZoomImageSize * previousZoomFactor) + CardChrome;
-            double newSize = (BaseZoomImageSize * currentZoomFactor) + CardChrome;
-            float startScale = newSize > 0 ? (float)(oldSize / newSize) : 1f;
-
-            // No size change (or first appearance): snap, no tween.
-            if (Math.Abs(startScale - 1f) < 0.001f)
-            {
-                CancelOverlaySuppression();
-                _cardVisual.StopAnimation("Scale");
-                _cardVisual.Scale = Vector3.One;
-                ZoomCanvas.Invalidate();
                 return;
             }
 
-            bool growing = startScale < 1f;
-
-            // Easing chosen to match the WPF ResizeBehavior: grow ≈ SineEase EaseOut, shrink ≈
-            // QuadraticEase EaseIn (the standard cubic-bezier approximations; no Sine/Quad primitive
-            // exists in Composition, and the difference is imperceptible over 200ms at ≤2x scale).
-            CompositionEasingFunction easing = growing
-                ? compositor.CreateCubicBezierEasingFunction(new Vector2(0.39f, 0.575f), new Vector2(0.565f, 1f))
-                : compositor.CreateCubicBezierEasingFunction(new Vector2(0.55f, 0.085f), new Vector2(0.68f, 0.53f));
-
-            var anim = compositor.CreateVector3KeyFrameAnimation();
-            anim.InsertKeyFrame(0f, new Vector3(startScale, startScale, 1f));
-            anim.InsertKeyFrame(1f, Vector3.One, easing);
-            anim.Duration = ResizeDuration;
-
-            // Starting a new Scale animation implicitly replaces any in-flight one (handoff) — a fast
-            // scroll burst never compounds. Suppress the grid/highlight while the card is scaled:
-            // their host-relative pointer offset would otherwise scale away from the physical cursor.
-            int animationGeneration = ++_resizeAnimationGeneration;
-            _suppressOverlays = true;
-            ZoomCanvas.Invalidate();
-            _cardVisual.StopAnimation("Scale");
-
-            CompositionScopedBatch batch = compositor.CreateScopedBatch(CompositionBatchTypes.Animation);
-            _cardVisual.StartAnimation("Scale", anim);
-            batch.Completed += (_, _) => DispatcherQueue.TryEnqueue(() =>
+            var storyboard = new Storyboard();
+            if (widthPlan.ShouldAnimate)
             {
-                if (animationGeneration == _resizeAnimationGeneration)
+                var widthAnimation = CreateDimensionAnimation(widthPlan);
+                Storyboard.SetTarget(widthAnimation, ZoomCanvas);
+                Storyboard.SetTargetProperty(widthAnimation, "Width");
+                storyboard.Children.Add(widthAnimation);
+            }
+
+            if (heightPlan.ShouldAnimate)
+            {
+                var heightAnimation = CreateDimensionAnimation(heightPlan);
+                Storyboard.SetTarget(heightAnimation, ZoomCanvas);
+                Storyboard.SetTargetProperty(heightAnimation, "Height");
+                storyboard.Children.Add(heightAnimation);
+            }
+
+            storyboard.Completed += (_, _) =>
+            {
+                if (ReferenceEquals(_resizeStoryboard, storyboard))
                 {
-                    _suppressOverlays = false;
+                    _resizeStoryboard = null;
                     ZoomCanvas.Invalidate();
                 }
-            });
-            batch.End();
+            };
+
+            _resizeStoryboard = storyboard;
+            storyboard.Begin();
         }
 
         /// <summary>
@@ -153,22 +128,16 @@ namespace ColorPicker.Views
         /// </summary>
         public void ClearBitmap()
         {
-            CancelOverlaySuppression();
+            StopResizeAnimation();
             _zoomBitmap = null;
             _zoomPixels = null;
             _pointerOffsetFromHostCenter = Vector2.Zero;
         }
 
-        /// <summary>Cancels any in-flight scale and snaps the card to its natural size.</summary>
+        /// <summary>Cancels any in-flight resize and snaps the image to its requested size.</summary>
         public void ResetScale()
         {
-            CancelOverlaySuppression();
-            if (_cardVisual != null)
-            {
-                _cardVisual.StopAnimation("Scale");
-                _cardVisual.Scale = Vector3.One;
-            }
-
+            StopResizeAnimation();
             ZoomCanvas.Invalidate();
         }
 
@@ -193,11 +162,12 @@ namespace ColorPicker.Views
         internal bool TryGetPointerColor(out DrawingColor color)
         {
             color = DrawingColor.Transparent;
-            double canvasSize = BaseZoomImageSize * _zoomFactor;
-            if (_suppressOverlays || _zoomPixels == null ||
+            double canvasWidth = GetRenderedDimension(ZoomCanvas.ActualWidth, ZoomCanvas.Width);
+            double canvasHeight = GetRenderedDimension(ZoomCanvas.ActualHeight, ZoomCanvas.Height);
+            if (_zoomPixels == null ||
                 !TryGetPointerSample(
-                    canvasSize,
-                    canvasSize,
+                    canvasWidth,
+                    canvasHeight,
                     _pointerOffsetFromHostCenter,
                     BaseZoomImageSize,
                     out _,
@@ -237,7 +207,7 @@ namespace ColorPicker.Views
             // light and very dark regions), and faded toward the magnifier edge so the cursor area
             // reads clearest (the shader's radius reveal). The pointer pixel gets an adaptive
             // (dark-or-light) highlight so it stays visible even on a white pixel.
-            if (_zoomFactor < 4 || _zoomPixels == null || _suppressOverlays)
+            if (_zoomPixels == null || !ShouldDrawPixelGrid(w, h))
             {
                 return;
             }
@@ -341,11 +311,60 @@ namespace ColorPicker.Views
                 CursorSamplePatchSize,
                 CursorSamplePatchSize);
 
-        private void CancelOverlaySuppression()
+        internal static bool ShouldDrawPixelGrid(double canvasWidth, double canvasHeight)
+            => Math.Min(canvasWidth, canvasHeight) / BaseZoomImageSize >= 4;
+
+        internal static ResizeAnimationPlan GetResizeAnimationPlan(
+            double currentRenderedSize,
+            double currentZoomFactor)
         {
-            _resizeAnimationGeneration++;
-            _suppressOverlays = false;
+            double targetSize = BaseZoomImageSize * currentZoomFactor;
+            bool shouldAnimate = currentRenderedSize > 0 &&
+                                 targetSize > 0 &&
+                                 Math.Abs(currentRenderedSize - targetSize) >= 0.001;
+
+            return new ResizeAnimationPlan(
+                currentRenderedSize,
+                targetSize,
+                shouldAnimate,
+                currentRenderedSize < targetSize ? ResizeEasing.SineEaseOut : ResizeEasing.QuadraticEaseIn);
         }
+
+        internal static double GetRenderedDimension(double actualSize, double requestedSize)
+            => actualSize > 0 && !double.IsNaN(actualSize) && !double.IsInfinity(actualSize)
+                ? actualSize
+                : requestedSize;
+
+        private static DoubleAnimation CreateDimensionAnimation(ResizeAnimationPlan plan)
+            => new()
+            {
+                From = plan.From,
+                To = plan.To,
+                Duration = new Duration(TimeSpan.FromMilliseconds(ResizeDurationMilliseconds)),
+                EasingFunction = plan.Easing == ResizeEasing.SineEaseOut
+                    ? new SineEase { EasingMode = EasingMode.EaseOut }
+                    : new QuadraticEase { EasingMode = EasingMode.EaseIn },
+                EnableDependentAnimation = true,
+                FillBehavior = FillBehavior.Stop,
+            };
+
+        private void StopResizeAnimation()
+        {
+            _resizeStoryboard?.Stop();
+            _resizeStoryboard = null;
+        }
+
+        internal enum ResizeEasing
+        {
+            SineEaseOut,
+            QuadraticEaseIn,
+        }
+
+        internal readonly record struct ResizeAnimationPlan(
+            double From,
+            double To,
+            bool ShouldAnimate,
+            ResizeEasing Easing);
 
         // Perceived luminance (Rec. 601) above ~55% — used to pick a contrasting grid/highlight color.
         private static bool IsLight(Color c) => ((0.299 * c.R) + (0.587 * c.G) + (0.114 * c.B)) > 140.0;

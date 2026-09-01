@@ -87,5 +87,44 @@ namespace ColorPicker.UnitTests.Views
             Assert.AreEqual(expectedOffset, offset.X, 0.001);
             Assert.AreEqual(expectedOffset, offset.Y, 0.001);
         }
+
+        [TestMethod]
+        public void Resize_animation_plan_uses_rendered_size_and_wpf_easing()
+        {
+            ZoomView.ResizeAnimationPlan growing = ZoomView.GetResizeAnimationPlan(75, currentZoomFactor: 2);
+            Assert.AreEqual(75, growing.From, 0.001);
+            Assert.AreEqual(100, growing.To, 0.001);
+            Assert.IsTrue(growing.ShouldAnimate);
+            Assert.AreEqual(ZoomView.ResizeEasing.SineEaseOut, growing.Easing);
+
+            ZoomView.ResizeAnimationPlan shrinking = ZoomView.GetResizeAnimationPlan(250, currentZoomFactor: 4);
+            Assert.AreEqual(250, shrinking.From, 0.001);
+            Assert.AreEqual(200, shrinking.To, 0.001);
+            Assert.IsTrue(shrinking.ShouldAnimate);
+            Assert.AreEqual(ZoomView.ResizeEasing.QuadraticEaseIn, shrinking.Easing);
+
+            // A quick logical zoom-out may still have to grow visually when the interrupted larger
+            // step has not yet reached the new target. WPF selects easing from presentation values.
+            ZoomView.ResizeAnimationPlan reversing = ZoomView.GetResizeAnimationPlan(150, currentZoomFactor: 4);
+            Assert.AreEqual(150, reversing.From, 0.001);
+            Assert.AreEqual(200, reversing.To, 0.001);
+            Assert.AreEqual(ZoomView.ResizeEasing.SineEaseOut, reversing.Easing);
+
+            Assert.IsFalse(ZoomView.GetResizeAnimationPlan(200, currentZoomFactor: 4).ShouldAnimate);
+            Assert.IsFalse(ZoomView.GetResizeAnimationPlan(0, currentZoomFactor: 2).ShouldAnimate);
+            Assert.AreEqual(200, ZoomView.ResizeDurationMilliseconds);
+        }
+
+        [DataTestMethod]
+        [DataRow(100.0, false)]
+        [DataRow(199.9, false)]
+        [DataRow(200.0, true)]
+        [DataRow(400.0, true)]
+        public void Pixel_grid_waits_until_the_animated_cells_are_large_enough(
+            double canvasSize,
+            bool expected)
+        {
+            Assert.AreEqual(expected, ZoomView.ShouldDrawPixelGrid(canvasSize, canvasSize));
+        }
     }
 }

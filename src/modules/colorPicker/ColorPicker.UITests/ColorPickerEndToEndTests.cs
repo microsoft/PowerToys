@@ -64,6 +64,8 @@ public class ColorPickerEndToEndTests : UITestBase
         }
         """;
 
+    private const double ZoomWindowSizeInDips = 432;
+
     private static readonly string ColorPickerSettingsDirectory = Path.Combine(
         SettingsConfigHelper.PowerToysSettingsRoot,
         "ColorPicker");
@@ -331,7 +333,7 @@ public class ColorPickerEndToEndTests : UITestBase
             long zoomWindowHandle = zoomWindow!.WindowHandle;
             var (zoomLeft, _, zoomRight, _) = WindowHelper.GetWindowBounds(new IntPtr(zoomWindowHandle));
             Assert.IsTrue(zoomRight > zoomLeft, "Could not resolve the zoom window bounds.");
-            double zoomDpiScale = (zoomRight - zoomLeft) / 430.0;
+            double zoomDpiScale = (zoomRight - zoomLeft) / ZoomWindowSizeInDips;
             (int zoomAnchorX, int zoomAnchorY) = MouseHelper.GetMousePosition();
 
             Thread.Sleep(750); // Window show/layout plus at least one color-sampling timer tick.
@@ -362,6 +364,13 @@ public class ColorPickerEndToEndTests : UITestBase
             MouseHelper.MoveTo(zoomAnchorX, zoomAnchorY);
             Thread.Sleep(750);
 
+            // Exercise a rapid direction reversal while the 4x -> 8x animation is still in flight.
+            // The final 8x assertion below verifies the runtime settles cleanly after both handoffs;
+            // the animation plan unit test locks how each presentation value maps to its new target.
+            MouseHelper.ScrollUp();
+            Thread.Sleep(50);
+            MouseHelper.ScrollDown();
+            Thread.Sleep(50);
             MouseHelper.ScrollUp();
             Thread.Sleep(750);
             string factorEightHex = ReadOverlayColor(overlay);
