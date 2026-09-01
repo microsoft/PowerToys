@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
+using System.Linq;
 
 using ColorPicker.Helpers;
+using ColorPicker.ViewModelContracts;
 using ColorPicker.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -26,7 +28,25 @@ namespace ColorPicker.Views
 
         private void HistoryContextFlyout_Opening(object sender, object e)
         {
-            bool hasSelection = HistoryColors.SelectedItems.Count > 0;
+            // WinUI can duplicate value-type items in SelectedItems when selection is set before
+            // the ListView loads. Snapshot distinct ARGB values so commands match the visible selection.
+            var selectedColors = HistoryColors.SelectedItems.OfType<Windows.UI.Color>().Distinct().ToList();
+            bool hasSelection = selectedColors.Count > 0;
+
+            // MenuFlyout is detached from the visual tree in WinUI, so neither its inherited
+            // DataContext nor an ElementName binding to HistoryColors is reliable. Refresh the
+            // commands and their parameters every time the menu opens.
+            if (DataContext is IColorEditorViewModel viewModel)
+            {
+                RemoveMenuItem.CommandParameter = selectedColors;
+                ExportByColorMenuItem.CommandParameter = selectedColors;
+                ExportByFormatMenuItem.CommandParameter = selectedColors;
+
+                RemoveMenuItem.Command = viewModel.RemoveColorsCommand;
+                ExportByColorMenuItem.Command = viewModel.ExportColorsGroupedByColorCommand;
+                ExportByFormatMenuItem.Command = viewModel.ExportColorsGroupedByFormatCommand;
+            }
+
             RemoveMenuItem.IsEnabled = hasSelection;
             ExportMenuItem.IsEnabled = hasSelection;
         }

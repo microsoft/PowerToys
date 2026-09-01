@@ -19,9 +19,8 @@ using ColorPicker.ViewModelContracts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
-using Windows.Storage;
-using Windows.Storage.Pickers;
-using Windows.Storage.Provider;
+using Microsoft.UI;
+using Microsoft.Windows.Storage.Pickers;
 using Windows.UI;
 
 namespace ColorPicker.ViewModels
@@ -231,46 +230,39 @@ namespace ColorPicker.ViewModels
                 return;
             }
 
-            var colors = SerializationHelper.ConvertToDesiredColorFormats((IList)colorsToExport, ColorRepresentations, method);
-
-            // WinUI 3 replaces WPF's SaveFileDialog with the WinRT FileSavePicker, which must be
-            // anchored to the owning window's HWND in a desktop (unpackaged) app.
-            var picker = new FileSavePicker
+            try
             {
-                SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
-                SuggestedFileName = ResourceLoaderInstance.GetString("Export_SuggestedFileName"),
-            };
-            picker.FileTypeChoices.Add(
-                ResourceLoaderInstance.GetString("Export_TextFileType"),
-                new List<string> { ".txt" });
-            picker.FileTypeChoices.Add(
-                ResourceLoaderInstance.GetString("Export_JsonFileType"),
-                new List<string> { ".json" });
-            WinRT.Interop.InitializeWithWindow.Initialize(picker, WindowHandle);
+                var colors = SerializationHelper.ConvertToDesiredColorFormats((IList)colorsToExport, ColorRepresentations, method);
 
-            var file = await picker.PickSaveFileAsync();
-            if (file != null)
-            {
-                var extension = Path.GetExtension(file.Name);
-
-                var contentToWrite = extension.ToUpperInvariant() switch
+                // The Windows App SDK picker uses the in-process Win32 common item dialog, so it
+                // works for both normal and elevated PowerToys processes. It also returns a path
+                // directly, without the legacy StorageFile update transaction that failed here.
+                var picker = new FileSavePicker(Win32Interop.GetWindowIdFromWindow(WindowHandle))
                 {
-                    ".TXT" => colors.ToTxt(';'),
-                    ".JSON" => colors.ToJson(),
-                    _ => string.Empty,
+                    SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+                    SuggestedFileName = ResourceLoaderInstance.GetString("Export_SuggestedFileName"),
+                    DefaultFileExtension = ".txt",
                 };
+                picker.FileTypeChoices.Add(
+                    ResourceLoaderInstance.GetString("Export_TextFileType"),
+                    new List<string> { ".txt" });
+                picker.FileTypeChoices.Add(
+                    ResourceLoaderInstance.GetString("Export_JsonFileType"),
+                    new List<string> { ".json" });
 
-                CachedFileManager.DeferUpdates(file);
-                await FileIO.WriteTextAsync(file, contentToWrite);
-                var status = await CachedFileManager.CompleteUpdatesAsync(file);
-                if (status is FileUpdateStatus.Complete or FileUpdateStatus.CompleteAndRenamed)
+                var file = await picker.PickSaveFileAsync();
+                if (file != null)
                 {
+                    var extension = Path.GetExtension(file.Path);
+                    var contentToWrite = colors.ToFileContent(extension);
+
+                    await File.WriteAllTextAsync(file.Path, contentToWrite);
                     SessionEventHelper.Event.EditorColorsExported = true;
                 }
-                else
-                {
-                    Logger.LogError($"Export failed with file update status: {status}");
-                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to export selected colors", ex);
             }
         }
 

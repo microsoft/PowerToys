@@ -140,8 +140,7 @@ namespace ColorPicker.Helpers
             {
                 _colorEditorWindow = new ColorEditorWindow(this);
 
-                // The export commands' FileSavePicker needs the editor window's HWND
-                // (InitializeWithWindow); assign it here, once the window exists.
+                // Export converts the editor HWND to the WindowId required by FileSavePicker.
                 _colorEditorViewModel.WindowHandle = _colorEditorWindow.GetWindowHandle();
                 _colorEditorWindow.ContentPresenter.Content = new Views.ColorEditorView { DataContext = _colorEditorViewModel };
                 _colorEditorViewModel.OpenColorPickerRequested += ColorEditorViewModel_OpenColorPickerRequested;

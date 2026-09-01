@@ -124,5 +124,15 @@ namespace ColorPicker.Helpers
 
             return JsonSerializer.Serialize(source, options);
         }
+
+        internal static string ToFileContent(this Dictionary<string, Dictionary<string, string>> source, string extension)
+        {
+            return extension.ToUpperInvariant() switch
+            {
+                ".TXT" => source.ToTxt(';'),
+                ".JSON" => source.ToJson(),
+                _ => throw new InvalidOperationException($"Unsupported export file extension: {extension}"),
+            };
+        }
     }
 }

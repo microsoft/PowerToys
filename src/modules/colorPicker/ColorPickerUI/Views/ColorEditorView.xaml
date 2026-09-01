@@ -56,9 +56,7 @@
                     <MenuFlyout x:Name="HistoryContextFlyout" Opening="HistoryContextFlyout_Opening">
                         <MenuFlyoutItem
                             x:Name="RemoveMenuItem"
-                            x:Uid="Remove"
-                            Command="{Binding RemoveColorsCommand}"
-                            CommandParameter="{Binding SelectedItems, ElementName=HistoryColors}">
+                            x:Uid="Remove">
                             <MenuFlyoutItem.Icon>
                                 <FontIcon Glyph="&#xE74D;" />
                             </MenuFlyoutItem.Icon>
@@ -69,18 +67,14 @@
                             </MenuFlyoutSubItem.Icon>
                             <MenuFlyoutItem
                                 x:Name="ExportByColorMenuItem"
-                                x:Uid="Export_by_color"
-                                Command="{Binding ExportColorsGroupedByColorCommand}"
-                                CommandParameter="{Binding SelectedItems, ElementName=HistoryColors}">
+                                x:Uid="Export_by_color">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="&#xE790;" />
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
                             <MenuFlyoutItem
                                 x:Name="ExportByFormatMenuItem"
-                                x:Uid="Export_by_format"
-                                Command="{Binding ExportColorsGroupedByFormatCommand}"
-                                CommandParameter="{Binding SelectedItems, ElementName=HistoryColors}">
+                                x:Uid="Export_by_format">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="&#xE943;" />
                                 </MenuFlyoutItem.Icon>
@@ -234,6 +228,7 @@
                                         Style="{StaticResource CaptionTextBlockStyle}"
                                         Text="{x:Bind FormatName, Mode=OneWay}"
                                         TextTrimming="CharacterEllipsis"
+                                        TextWrapping="NoWrap"
                                         ToolTipService.ToolTip="{x:Bind FormatName, Mode=OneWay}" />
                                     <TextBlock
                                         Grid.Column="1"

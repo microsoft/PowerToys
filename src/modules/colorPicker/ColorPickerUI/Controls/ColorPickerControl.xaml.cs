@@ -380,8 +380,9 @@ namespace ColorPicker.Controls
 
         private void NumberBox_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
-            // WinUI has no PreviewTextInput; reject any non-digit edit before it is applied.
-            args.Cancel = !Regex.IsMatch(args.NewText, "^[0-9]*$");
+            // WinUI has no NumberBox text-change preview. Keep an empty value valid while the user
+            // edits, but reject non-numeric and out-of-byte-range values before they are applied.
+            args.Cancel = !IsRgbTextValid(args.NewText);
         }
 
         private void RGBNumberBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -400,24 +401,18 @@ namespace ColorPicker.Controls
         }
 
         private static byte GetValueFromNumberBox(TextBox numberBox, byte previousValue)
+            => GetValidatedRgbValue(numberBox.Text, previousValue);
+
+        internal static byte GetValidatedRgbValue(string text, byte previousValue)
         {
-            int minimum = 0;
-            int maximum = 255;
-            double? parsedValue = ParseDouble(numberBox.Text);
-
-            if (parsedValue != null)
-            {
-                var parsedValueByte = (byte)parsedValue;
-
-                if (parsedValueByte >= minimum && parsedValueByte <= maximum)
-                {
-                    return parsedValueByte;
-                }
-            }
-
-            // not valid input, return previous value
-            return previousValue;
+            return byte.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out byte value)
+                ? value
+                : previousValue;
         }
+
+        internal static bool IsRgbTextValid(string text)
+            => string.IsNullOrEmpty(text) ||
+               byte.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out _);
 
         public static double? ParseDouble(string text)
         {
