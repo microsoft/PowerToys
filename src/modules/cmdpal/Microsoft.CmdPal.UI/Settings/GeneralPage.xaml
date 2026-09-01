@@ -129,8 +129,8 @@
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AutomationProperties.AutomationId="CmdPal_GeneralPage_RecentCommandsDisplayLimit"
-                            Maximum="10"
-                            Minimum="1"
+                            Maximum="{x:Bind viewModel.MaxRecentCommandsDisplayLimit}"
+                            Minimum="{x:Bind viewModel.MinRecentCommandsDisplayLimit}"
                             SmallChange="1"
                             SpinButtonPlacementMode="Compact"
                             Value="{x:Bind viewModel.RecentCommandsDisplayLimit, Mode=TwoWay}" />
