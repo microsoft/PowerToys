@@ -33,6 +33,8 @@ namespace Peek.FilePreviewer.Controls
 
         public string FormatFileSize(string? fileSize) => ReadableStringHelper.FormatResourceString("UnsupportedFile_FileSize", fileSize);
 
+        public string FormatFolderContains(string? folderContents) => ReadableStringHelper.FormatResourceString("UnsupportedFile_FolderContains", folderContents);
+
         public string FormatFileDateModified(string? fileDateModified) => ReadableStringHelper.FormatResourceString("UnsupportedFile_DateModified", fileDateModified);
     }
 }
