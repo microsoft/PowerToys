@@ -208,7 +208,11 @@ namespace KeyboardManagerEditorUI.Helpers
         public static bool IsDuplicateMapping(List<string> keys, bool isEditMode, KeyboardMappingService mappingService, string appName, string? editingId = null)
         {
             string shortcutKeysString = BuildKeyCodeString(keys, mappingService);
+
+            // Only rows that are active belong to the current profile's engine configuration;
+            // inactive ones are retained metadata for other profiles and must not block an edit.
             int matches = SettingsManager.EditorSettings.ShortcutSettingsDictionary
+                .Where(kvp => kvp.Value.IsActive)
                 .Where(kvp => editingId == null || kvp.Key != editingId)
                 .Count(kvp => KeyboardManagerInterop.AreShortcutsEqual(kvp.Value.Shortcut.OriginalKeys, shortcutKeysString) &&
                               (string.IsNullOrEmpty(kvp.Value.Shortcut.TargetApp) || string.IsNullOrEmpty(appName) || kvp.Value.Shortcut.TargetApp == appName));
@@ -320,6 +324,13 @@ namespace KeyboardManagerEditorUI.Helpers
 
             foreach (var kvp in SettingsManager.EditorSettings.ShortcutSettingsDictionary)
             {
+                // Inactive rows are retained for other profiles and are not part of the
+                // candidate engine configuration, so they cannot conflict with this edit.
+                if (!kvp.Value.IsActive)
+                {
+                    continue;
+                }
+
                 if (editingId != null && kvp.Key == editingId)
                 {
                     continue; // exclude the row being edited by identity, not by count
