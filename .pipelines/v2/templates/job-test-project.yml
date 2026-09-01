@@ -236,59 +236,7 @@ jobs:
       }
 
       if ($requiredAuthenticodeFiles.Count -gt 0) {
-        $processNames = @('PowerToys', 'PowerToys.Settings')
-        $deadline = [DateTime]::UtcNow.AddSeconds(30)
-        $stableAbsentSamples = 0
-        $remainingDetails = @()
-        $stopFailures = @()
-
-        do {
-          $stopFailures = @()
-          foreach ($processName in $processNames) {
-            foreach ($process in @(Get-Process -Name $processName -ErrorAction SilentlyContinue)) {
-              try {
-                if (-not $process.HasExited) {
-                  Write-Host "Stopping $processName (pid $($process.Id)) before Authenticode signing."
-                  $process.Kill($true)
-                  if (-not $process.WaitForExit(5000)) {
-                    $stopFailures += "$processName pid $($process.Id) did not exit within 5 seconds."
-                  }
-                }
-              } catch [System.InvalidOperationException] {
-                # The process exited between enumeration and inspection.
-              } catch {
-                $stopFailures += "Failed to stop $processName pid $($process.Id): $($_.Exception.Message)"
-              } finally {
-                $process.Dispose()
-              }
-            }
-          }
-
-          Start-Sleep -Milliseconds 250
-
-          $remaining = @($processNames | ForEach-Object {
-            Get-Process -Name $_ -ErrorAction SilentlyContinue
-          })
-          try {
-            $remainingDetails = @($remaining | ForEach-Object { "$($_.ProcessName) pid $($_.Id)" })
-            if ($remaining.Count -eq 0) {
-              $stableAbsentSamples++
-            } else {
-              $stableAbsentSamples = 0
-            }
-          } finally {
-            $remaining | ForEach-Object { $_.Dispose() }
-          }
-
-          if ($stableAbsentSamples -ge 3) {
-            break
-          }
-        } while ([DateTime]::UtcNow -lt $deadline)
-
-        if ($stableAbsentSamples -lt 3) {
-          $details = @($remainingDetails + $stopFailures)
-          throw "Could not stop PowerToys processes before Authenticode signing: $($details -join ' ')"
-        }
+        & "$(build.sourcesdirectory)\.pipelines\stopPowerToysProcesses.ps1"
       }
 
       if ($requiredPackages.Count -gt 0 -or $requiredAuthenticodeFiles.Count -gt 0) {

@@ -21,6 +21,7 @@ public sealed class PowerAccentEndToEndTests : UITestBase
 
     protected override void PrepareTestState()
     {
+        AssertInputEnvironment();
         Assert.IsTrue(
             WindowControl.TryKillProcessTreeByNameAndWait(ProcessName, timeoutMS: 30_000),
             "A previous PowerToys.PowerAccent process did not exit before the next test launch.");
@@ -126,22 +127,23 @@ public sealed class PowerAccentEndToEndTests : UITestBase
         using var clipboard = PreserveClipboardText();
         NavigateToSettings(this);
 
-        try
-        {
-            SetModuleEnabled(this, enabled: false);
-            Assert.IsTrue(WaitForProcess(expected: false), "PowerToys.PowerAccent did not stop after disabling Quick Accent.");
+        RunWithCleanup(
+            () =>
+            {
+                SetModuleEnabled(this, enabled: false);
+                Assert.IsTrue(WaitForProcess(expected: false), "PowerToys.PowerAccent did not stop after disabling Quick Accent.");
 
-            using var notepad = NotepadFixture.Start(this);
-            Assert.AreEqual(
-                "a ",
-                RunUnmodifiedGesture(notepad, Key.A, Key.Space),
-                "With Quick Accent disabled, the letter and activation key should pass through unchanged.");
-        }
-        finally
-        {
-            SetModuleEnabled(this, enabled: true);
-            Assert.IsTrue(WaitForProcess(expected: true), "PowerToys.PowerAccent did not restart after re-enabling Quick Accent.");
-        }
+                using var notepad = NotepadFixture.Start(this);
+                Assert.AreEqual(
+                    "a ",
+                    RunUnmodifiedGesture(notepad, Key.A, Key.Space),
+                    "With Quick Accent disabled, the letter and activation key should pass through unchanged.");
+            },
+            () =>
+            {
+                SetModuleEnabled(this, enabled: true);
+                Assert.IsTrue(WaitForProcess(expected: true), "PowerToys.PowerAccent did not restart after re-enabling Quick Accent.");
+            });
     }
 
     [DataTestMethod]

@@ -159,7 +159,7 @@ public:
                     Logger::warn(L"Failed to signal exit event for PowerToys QuickAccent. {}", get_last_error_or_default(GetLastError()));
                     forceTerminate = true;
                 }
-                else if (WaitForSingleObject(p_info.hProcess, 5000) != WAIT_OBJECT_0)
+                else if (WaitForSingleObject(p_info.hProcess, 1500) != WAIT_OBJECT_0)
                 {
                     Logger::warn(L"PowerToys QuickAccent did not exit after the exit event; terminating it.");
                     forceTerminate = true;
@@ -173,7 +173,7 @@ public:
                     }
                     else
                     {
-                        WaitForSingleObject(p_info.hProcess, 5000);
+                        WaitForSingleObject(p_info.hProcess, 500);
                     }
                 }
 
