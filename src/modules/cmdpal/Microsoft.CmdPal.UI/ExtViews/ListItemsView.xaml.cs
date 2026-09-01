@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
@@ -12,6 +14,7 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -19,6 +22,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 using Windows.System;
+using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
 
@@ -36,10 +40,14 @@ public sealed partial class ListItemsView : UserControl,
     IRecipient<NavigatePageDownCommand>,
     IRecipient<NavigatePageUpCommand>,
     IRecipient<ActivateSelectedListItemMessage>,
-    IRecipient<ActivateSecondaryCommandMessage>,
-    IRecipient<NumberedShortcutCuesVisibilityChangedMessage>
+    IRecipient<ActivateSecondaryCommandMessage>
 {
     private const double ListShortcutCueHorizontalOffset = -16;
+
+    private static readonly CompositeFormat _numberedShortcutAcceleratorFormat =
+        CompositeFormat.Parse(RS_.GetString("ListItemNumberedShortcutAcceleratorFormat"));
+
+    private readonly AccessKeyModeController _accessKeyMode;
 
     private InputSource _lastInputSource;
 
@@ -65,6 +73,7 @@ public sealed partial class ListItemsView : UserControl,
     private bool _areNumberedShortcutCuesVisible;
     private bool _numberedShortcutCueUpdatePending;
     private Border[]? _numberedShortcutCues;
+    private SelectorItem?[]? _numberedShortcutCueContainers;
     private RectangleGeometry? _numberedShortcutCueClip;
     private ListViewBase? _numberedShortcutCueTrackedView;
     private ScrollViewer? _numberedShortcutCueScrollViewer;
@@ -85,6 +94,7 @@ public sealed partial class ListItemsView : UserControl,
 
     public ListItemsView()
     {
+        _accessKeyMode = App.Current.Services.GetRequiredService<AccessKeyModeController>();
         this.InitializeComponent();
         this.ItemView.Loaded += Items_Loaded;
         this.ItemView.PreviewKeyDown += Items_PreviewKeyDown;
@@ -96,19 +106,22 @@ public sealed partial class ListItemsView : UserControl,
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        if (_isLoaded)
+        {
+            return;
+        }
+
         _isLoaded = true;
         RegisterMessenger();
-        _areNumberedShortcutCuesVisible = false;
-        StopNumberedShortcutCueTracking();
-        HideNumberedShortcutCues();
+        _accessKeyMode.IsActiveChanged += AccessKeyMode_IsActiveChanged;
+        SetNumberedShortcutCuesVisibility(_accessKeyMode.IsActive);
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         _isLoaded = false;
-        _areNumberedShortcutCuesVisible = false;
-        StopNumberedShortcutCueTracking();
-        HideNumberedShortcutCues();
+        _accessKeyMode.IsActiveChanged -= AccessKeyMode_IsActiveChanged;
+        SetNumberedShortcutCuesVisibility(false);
         UnregisterMessenger();
         CancelPendingContextMenuOpen();
     }
@@ -129,7 +142,6 @@ public sealed partial class ListItemsView : UserControl,
         WeakReferenceMessenger.Default.Register<NavigatePageUpCommand>(this);
         WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
-        WeakReferenceMessenger.Default.Register<NumberedShortcutCuesVisibilityChangedMessage>(this);
         _isMessengerRegistered = true;
     }
 
@@ -148,7 +160,6 @@ public sealed partial class ListItemsView : UserControl,
         WeakReferenceMessenger.Default.Unregister<NavigatePageUpCommand>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
-        WeakReferenceMessenger.Default.Unregister<NumberedShortcutCuesVisibilityChangedMessage>(this);
         _isMessengerRegistered = false;
     }
 
@@ -764,14 +775,12 @@ public sealed partial class ListItemsView : UserControl,
             });
     }
 
-    public void Receive(NumberedShortcutCuesVisibilityChangedMessage message)
-    {
-        if (!ReferenceEquals(XamlRoot, message.XamlRoot))
-        {
-            return;
-        }
+    private void AccessKeyMode_IsActiveChanged(object? sender, EventArgs e) =>
+        SetNumberedShortcutCuesVisibility(_accessKeyMode.IsActive);
 
-        var isVisible = ShowNumberedShortcutCues && message.IsVisible;
+    private void SetNumberedShortcutCuesVisibility(bool isActive)
+    {
+        var isVisible = ShowNumberedShortcutCues && isActive;
         if (_areNumberedShortcutCuesVisible == isVisible)
         {
             return;
@@ -829,6 +838,7 @@ public sealed partial class ListItemsView : UserControl,
         var borderStyle = (Style)Resources["NumberedShortcutCueBorderStyle"];
         var textStyle = (Style)Resources["NumberedShortcutCueTextStyle"];
         var cues = new Border[NumberedItemShortcuts.ShortcutCount];
+        _numberedShortcutCueContainers = new SelectorItem?[cues.Length];
         for (var index = 0; index < cues.Length; index++)
         {
             var cue = new Border
@@ -943,6 +953,7 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
+        ClearNumberedShortcutAccelerators();
         var cueIndex = 0;
         foreach (var item in ViewModel.FilteredItems)
         {
@@ -955,6 +966,7 @@ public sealed partial class ListItemsView : UserControl,
             if (itemView.ContainerFromItem(item) is SelectorItem container &&
                 container.ContentTemplateRoot is FrameworkElement anchor)
             {
+                SetNumberedShortcutAccelerator(container, cueIndex);
                 PositionNumberedShortcutCue(cue, anchor, itemView);
             }
             else
@@ -1024,6 +1036,34 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
+    private void SetNumberedShortcutAccelerator(SelectorItem container, int shortcutIndex)
+    {
+        _numberedShortcutCueContainers![shortcutIndex] = container;
+        var acceleratorKey = string.Format(
+            CultureInfo.CurrentCulture,
+            _numberedShortcutAcceleratorFormat,
+            NumberedItemShortcuts.IndexToShortcutDigit(shortcutIndex));
+        AutomationProperties.SetAcceleratorKey(container, acceleratorKey);
+    }
+
+    private void ClearNumberedShortcutAccelerators()
+    {
+        if (_numberedShortcutCueContainers is null)
+        {
+            return;
+        }
+
+        foreach (var container in _numberedShortcutCueContainers)
+        {
+            if (container is not null)
+            {
+                AutomationProperties.SetAcceleratorKey(container, string.Empty);
+            }
+        }
+
+        Array.Clear(_numberedShortcutCueContainers);
+    }
+
     private void HideNumberedShortcutCues()
     {
         if (_numberedShortcutCues is null)
@@ -1031,6 +1071,7 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
+        ClearNumberedShortcutAccelerators();
         foreach (var cue in _numberedShortcutCues)
         {
             cue.Visibility = Visibility.Collapsed;

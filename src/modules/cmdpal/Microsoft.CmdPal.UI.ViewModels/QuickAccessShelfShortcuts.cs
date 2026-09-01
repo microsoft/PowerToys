@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CommandPalette.Extensions;
 using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -24,25 +25,27 @@ public static class QuickAccessShelfShortcuts
         !ctrl &&
         !win;
 
-    public static bool IsSelectionShortcut(VirtualKey key, bool ctrl, bool alt, bool shift, bool win) =>
-        alt &&
-        IsSelectionAccessKey(ctrl, shift, win) &&
-        GetTopRowShortcutIndex(key) >= 0;
-
     public static SelectionShortcutTarget ResolveSelectionShortcut(
-        VirtualKey key,
-        bool ctrl,
-        bool alt,
-        bool shift,
-        bool win,
-        int visibleItemCount)
+        KeyChord chord,
+        int visibleItemCount,
+        bool isAccessKeyModeActive)
     {
-        if (!IsSelectionShortcut(key, ctrl, alt, shift, win))
+        var index = GetTopRowShortcutIndex((VirtualKey)chord.Vkey);
+        var modifiers = chord.Modifiers;
+        var isDirectAccessKey =
+            (modifiers == VirtualKeyModifiers.Menu ||
+             modifiers == (VirtualKeyModifiers.Menu | VirtualKeyModifiers.Shift)) &&
+            index >= 0;
+        var isLatchedAccessKeySequence =
+            isAccessKeyModeActive &&
+            (modifiers == VirtualKeyModifiers.None || modifiers == VirtualKeyModifiers.Shift) &&
+            index >= 0;
+        if (!isDirectAccessKey && !isLatchedAccessKeySequence)
         {
             return SelectionShortcutTarget.None;
         }
 
-        return GetTopRowShortcutIndex(key) < visibleItemCount
+        return index < visibleItemCount
             ? SelectionShortcutTarget.Visible
             : SelectionShortcutTarget.Unavailable;
     }

@@ -41,7 +41,7 @@ public sealed partial class SettingsWindow : WindowEx,
         public const string Internal = "Internal";
     }
 
-    private readonly LocalKeyboardListener _localKeyboardListener;
+    private readonly LocalKeyboardListener _localKeyboardListener = new();
 
     private readonly NavigationViewItem? _internalNavItem;
 
@@ -82,7 +82,6 @@ public sealed partial class SettingsWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<OpenExtensionGalleryScreenshotViewerMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
 
-        _localKeyboardListener = new LocalKeyboardListener();
         _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
         _localKeyboardListener.Start();
         Closed += SettingsWindow_Closed;
@@ -293,6 +292,7 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void Window_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
     {
+        _localKeyboardListener.EnableRaisingEvents = args.WindowActivationState != WindowActivationState.Deactivated;
         WeakReferenceMessenger.Default.Send<Microsoft.UI.Xaml.WindowActivatedEventArgs>(args);
     }
 
