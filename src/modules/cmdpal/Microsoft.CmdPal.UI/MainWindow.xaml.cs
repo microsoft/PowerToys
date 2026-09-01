@@ -27,6 +27,7 @@ using Microsoft.UI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.Windows.AppLifecycle;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;
@@ -39,6 +40,7 @@ using Windows.Win32.Graphics.Dwm;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinUIEx;
+using KeyChordHelpers = Microsoft.CommandPalette.Extensions.Toolkit.KeyChordHelpers;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
@@ -72,12 +74,13 @@ public sealed partial class MainWindow : WindowEx,
     private readonly WNDPROC? _originalWndProc;
     private readonly List<TopLevelHotkey> _hotkeys = [];
     private readonly KeyboardListener _keyboardListener;
-    private readonly LocalKeyboardListener _localKeyboardListener;
+    private readonly LocalKeyboardListener _localKeyboardListener = new();
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private readonly ICmdPalProtocolActivation _protocolActivation;
     private readonly ViewModels.Models.IMonitorService _monitorService;
     private readonly IThemeService _themeService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
+    private readonly AccessKeyModeController _accessKeyMode;
     private readonly List<long> _breakthroughTimestamps = [];
 
     private bool _ignoreHotKeyWhenFullScreen = true;
@@ -86,11 +89,6 @@ public sealed partial class MainWindow : WindowEx,
     private bool _suppressDpiChange;
     private bool _themeServiceInitialized;
     private bool _isRestarting;
-    private bool _areNumberedShortcutCuesVisible;
-    private bool _isAltKeyDown;
-    private bool _isAltTapCandidate;
-    private bool _wereNumberedShortcutCuesVisibleOnAltDown;
-    private bool _numberedShortcutCueDismissPending;
 
     // The snapshot of settings last consumed by HotReloadSettings. Used to skip redundant
     // hot-reloads when a SettingsChanged notification touches settings this window doesn't
@@ -145,6 +143,7 @@ public sealed partial class MainWindow : WindowEx,
     {
         _protocolActivation = App.Current.Services.GetRequiredService<ICmdPalProtocolActivation>();
         _monitorService = App.Current.Services.GetRequiredService<ViewModels.Models.IMonitorService>();
+        _accessKeyMode = App.Current.Services.GetRequiredService<AccessKeyModeController>();
 
         InitializeComponent();
 
@@ -219,6 +218,7 @@ public sealed partial class MainWindow : WindowEx,
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
         SizeChanged += WindowSizeChanged;
         RootElement.Loaded += RootElementLoaded;
+        RootElement.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootElement_PointerPressed), true);
 
         // Load our settings, and then also wire up a settings changed handler
         HotReloadSettings();
@@ -233,7 +233,6 @@ public sealed partial class MainWindow : WindowEx,
             Summon(string.Empty);
         });
 
-        _localKeyboardListener = new LocalKeyboardListener();
         _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
         _localKeyboardListener.KeyStateChanged += LocalKeyboardListener_OnKeyStateChanged;
         _localKeyboardListener.Start();
@@ -298,91 +297,43 @@ public sealed partial class MainWindow : WindowEx,
 
     private void LocalKeyboardListener_OnKeyStateChanged(object? sender, LocalKeyboardListenerKeyStateChangedEventArgs e)
     {
-        if (IsAltKey(e.Key))
-        {
-            HandleAltKeyStateChanged(e.IsDown);
-            return;
-        }
-
         if (!e.IsDown)
         {
+            _accessKeyMode.HandleKeyUp(e.Key);
             return;
         }
 
-        if (_isAltKeyDown)
+        var modifiers = KeyModifiers.GetCurrent();
+        var chord = KeyChordHelpers.FromModifiers(
+            ctrl: modifiers.Ctrl,
+            alt: modifiers.Alt,
+            shift: modifiers.Shift,
+            win: modifiers.Win,
+            vkey: e.Key);
+        var exitGeneration = _accessKeyMode.HandleKeyDown(chord);
+
+        if (RootElement.MainContent is ShellPage shellPage &&
+            shellPage.TryHandleAccessKey(chord))
         {
-            _isAltTapCandidate = false;
+            AccessKeyManager.ExitDisplayMode();
+            e.Handled = true;
         }
 
-        // Keep the latched cues visible while a modifier is pressed so Alt, then
-        // Shift+number can still select an item. Dismiss after the actual access key
-        // has passed through WinUI's input routing.
-        if (_areNumberedShortcutCuesVisible && !IsModifierKey(e.Key))
+        if (exitGeneration is long generation)
         {
-            QueueNumberedShortcutCueDismissal();
+            QueueAccessKeyModeExit(generation);
         }
     }
 
-    private void HandleAltKeyStateChanged(bool isDown)
+    private void QueueAccessKeyModeExit(long generation)
     {
-        if (isDown)
+        if (!DispatcherQueue.TryEnqueue(() => _accessKeyMode.ExitIfCurrent(generation)))
         {
-            var isMainWindowForeground = PInvoke.GetForegroundWindow() == _hwnd;
-            var modifiers = KeyModifiers.GetCurrent();
-
-            _isAltKeyDown = isMainWindowForeground;
-            _isAltTapCandidate = isMainWindowForeground && !modifiers.Ctrl && !modifiers.Shift && !modifiers.Win;
-            _wereNumberedShortcutCuesVisibleOnAltDown = _areNumberedShortcutCuesVisible;
-            return;
-        }
-
-        var shouldToggleCues =
-            _isAltKeyDown &&
-            _isAltTapCandidate &&
-            PInvoke.GetForegroundWindow() == _hwnd;
-        var wereCuesVisible = _wereNumberedShortcutCuesVisibleOnAltDown;
-        ResetAltTapState();
-
-        if (shouldToggleCues)
-        {
-            SetNumberedShortcutCuesVisibility(!wereCuesVisible);
+            _accessKeyMode.ExitIfCurrent(generation);
         }
     }
 
-    private void QueueNumberedShortcutCueDismissal()
-    {
-        if (_numberedShortcutCueDismissPending)
-        {
-            return;
-        }
-
-        _numberedShortcutCueDismissPending = true;
-        if (!DispatcherQueue.TryEnqueue(() =>
-        {
-            _numberedShortcutCueDismissPending = false;
-            SetNumberedShortcutCuesVisibility(false);
-        }))
-        {
-            _numberedShortcutCueDismissPending = false;
-            SetNumberedShortcutCuesVisibility(false);
-        }
-    }
-
-    private void ResetAltTapState()
-    {
-        _isAltKeyDown = false;
-        _isAltTapCandidate = false;
-        _wereNumberedShortcutCuesVisibleOnAltDown = false;
-    }
-
-    private static bool IsAltKey(VirtualKey key) =>
-        key is VirtualKey.Menu or VirtualKey.LeftMenu or VirtualKey.RightMenu;
-
-    private static bool IsModifierKey(VirtualKey key) =>
-        key is VirtualKey.Shift or VirtualKey.LeftShift or VirtualKey.RightShift or
-            VirtualKey.Control or VirtualKey.LeftControl or VirtualKey.RightControl or
-            VirtualKey.Menu or VirtualKey.LeftMenu or VirtualKey.RightMenu or
-            VirtualKey.LeftWindows or VirtualKey.RightWindows;
+    private void RootElement_PointerPressed(object sender, PointerRoutedEventArgs e) => _accessKeyMode.Exit();
 
     private void SettingsChangedHandler(ISettingsService sender, SettingsModel args)
     {
@@ -1266,8 +1217,7 @@ public sealed partial class MainWindow : WindowEx,
     {
         if (!isVisibleToUser)
         {
-            ResetAltTapState();
-            SetNumberedShortcutCuesVisibility(false);
+            _accessKeyMode.Exit();
         }
 
         if (IsVisibleToUser == isVisibleToUser)
@@ -1277,17 +1227,6 @@ public sealed partial class MainWindow : WindowEx,
 
         IsVisibleToUser = isVisibleToUser;
         IsVisibleToUserChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void SetNumberedShortcutCuesVisibility(bool isVisible)
-    {
-        if (_areNumberedShortcutCuesVisible == isVisible)
-        {
-            return;
-        }
-
-        _areNumberedShortcutCuesVisible = isVisible;
-        WeakReferenceMessenger.Default.Send(new NumberedShortcutCuesVisibilityChangedMessage(RootElement.XamlRoot, isVisible));
     }
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
@@ -1306,6 +1245,7 @@ public sealed partial class MainWindow : WindowEx,
         // Workaround by turning it off before shutdown.
         App.Current.DebugSettings.FailFastOnErrors = false;
         _localKeyboardListener.Dispose();
+        (RootElement.MainContent as ShellPage)?.Dispose();
         DisposeAcrylic();
 
         _keyboardListener.Stop();
@@ -1558,6 +1498,8 @@ public sealed partial class MainWindow : WindowEx,
 
     internal void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
+        _localKeyboardListener.EnableRaisingEvents = args.WindowActivationState != WindowActivationState.Deactivated;
+
         if (!_themeServiceInitialized && args.WindowActivationState != WindowActivationState.Deactivated)
         {
             try
@@ -1573,8 +1515,7 @@ public sealed partial class MainWindow : WindowEx,
 
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
-            ResetAltTapState();
-            SetNumberedShortcutCuesVisibility(false);
+            _accessKeyMode.Exit();
 
             // Save the current window position before hiding the window
             // but not when opened from dock — preserve the pre-dock size.
@@ -1903,8 +1844,7 @@ public sealed partial class MainWindow : WindowEx,
         switch (uMsg)
         {
             case PInvoke.WM_ACTIVATEAPP when wParam.Value == 0:
-                ResetAltTapState();
-                SetNumberedShortcutCuesVisibility(false);
+                _accessKeyMode.Exit();
                 break;
 
             // Prevent the window from maximizing when double-clicking the title bar area

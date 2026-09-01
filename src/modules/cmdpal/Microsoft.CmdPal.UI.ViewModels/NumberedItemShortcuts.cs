@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
+using Microsoft.CommandPalette.Extensions;
 using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -20,23 +21,22 @@ public static class NumberedItemShortcuts
     public readonly record struct Shortcut(int Index, ShortcutAction Action);
 
     public static Shortcut? Resolve(
-        VirtualKey key,
-        bool ctrl,
-        bool alt,
-        bool shift,
-        bool win,
+        KeyChord chord,
         ShortcutAction plainAltAction,
-        bool isAccessKeyModeActive = false)
+        bool isAccessKeyModeActive)
     {
-        var index = GetTopRowShortcutIndex(key);
-        var isDirectAltChord = alt && !ctrl && !win;
-        var isAccessKeySequence = isAccessKeyModeActive && !alt && !ctrl && !win;
+        var index = GetTopRowShortcutIndex((VirtualKey)chord.Vkey);
+        var modifiers = chord.Modifiers;
+        var isDirectAltChord =
+            modifiers == VirtualKeyModifiers.Menu ||
+            modifiers == (VirtualKeyModifiers.Menu | VirtualKeyModifiers.Shift);
+        var isAccessKeySequence = isAccessKeyModeActive && modifiers is VirtualKeyModifiers.None or VirtualKeyModifiers.Shift;
         if (index < 0 || (!isDirectAltChord && !isAccessKeySequence))
         {
             return null;
         }
 
-        return new(index, shift ? ShortcutAction.Select : plainAltAction);
+        return new(index, modifiers.HasFlag(VirtualKeyModifiers.Shift) ? ShortcutAction.Select : plainAltAction);
     }
 
     public static int GetTopRowShortcutIndex(VirtualKey key)
@@ -63,36 +63,6 @@ public static class NumberedItemShortcuts
         }
 
         return targets;
-    }
-
-    public static int GetShortcutIndex<T>(IReadOnlyList<T> items, int itemIndex, Func<T, bool> isEligible)
-    {
-        if (itemIndex < 0 || itemIndex >= items.Count)
-        {
-            return -1;
-        }
-
-        var shortcutIndex = 0;
-        for (var index = 0; index <= itemIndex; index++)
-        {
-            if (!isEligible(items[index]))
-            {
-                continue;
-            }
-
-            if (index == itemIndex)
-            {
-                return shortcutIndex < ShortcutCount ? shortcutIndex : -1;
-            }
-
-            shortcutIndex++;
-            if (shortcutIndex == ShortcutCount)
-            {
-                return -1;
-            }
-        }
-
-        return -1;
     }
 
     public static string IndexToShortcutDigit(int index) =>

@@ -26,6 +26,26 @@ internal sealed partial class LocalKeyboardListener : IDisposable
     /// </summary>
     public event EventHandler<LocalKeyboardListenerKeyStateChangedEventArgs>? KeyStateChanged;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether keyboard events are raised.
+    /// </summary>
+    public bool EnableRaisingEvents
+    {
+        get => _enableRaisingEvents;
+        set
+        {
+            if (_enableRaisingEvents && !value)
+            {
+                _suppressedKeys.Clear();
+            }
+
+            _enableRaisingEvents = value;
+        }
+    }
+
+    private readonly HashSet<VirtualKey> _suppressedKeys = [];
+
+    private bool _enableRaisingEvents;
     private bool _disposed;
     private UnhookWindowsHookExSafeHandle? _handle;
     private HOOKPROC? _hookProc; // Keep reference to prevent GC collection
@@ -131,11 +151,31 @@ internal sealed partial class LocalKeyboardListener : IDisposable
                 var virtualKey = (VirtualKey)wParam.Value;
                 if (IsKeyDownHook(lParam))
                 {
-                    InvokeKeyDown(virtualKey);
+                    if (EnableRaisingEvents && InvokeKeyDown(virtualKey))
+                    {
+                        if (EnableRaisingEvents)
+                        {
+                            _suppressedKeys.Add(virtualKey);
+                        }
+
+                        return (LRESULT)1;
+                    }
                 }
                 else if (IsKeyUpHook(lParam))
                 {
-                    InvokeKeyUp(virtualKey);
+                    if (EnableRaisingEvents)
+                    {
+                        InvokeKeyUp(virtualKey);
+                    }
+
+                    if (_suppressedKeys.Remove(virtualKey))
+                    {
+                        return (LRESULT)1;
+                    }
+                }
+                else if (_suppressedKeys.Contains(virtualKey))
+                {
+                    return (LRESULT)1;
                 }
             }
         }
@@ -148,13 +188,17 @@ internal sealed partial class LocalKeyboardListener : IDisposable
         return PInvoke.CallNextHookEx(null, nCode, wParam, lParam);
     }
 
-    private void InvokeKeyDown(VirtualKey virtualKey)
+    private bool InvokeKeyDown(VirtualKey virtualKey)
     {
-        if (!_disposed)
+        if (_disposed)
         {
-            KeyPressed?.Invoke(this, new LocalKeyboardListenerKeyPressedEventArgs(virtualKey));
-            KeyStateChanged?.Invoke(this, new LocalKeyboardListenerKeyStateChangedEventArgs(virtualKey, true));
+            return false;
         }
+
+        KeyPressed?.Invoke(this, new LocalKeyboardListenerKeyPressedEventArgs(virtualKey));
+        var args = new LocalKeyboardListenerKeyStateChangedEventArgs(virtualKey, true);
+        KeyStateChanged?.Invoke(this, args);
+        return args.Handled;
     }
 
     private void InvokeKeyUp(VirtualKey virtualKey)

@@ -34,7 +34,9 @@ using Microsoft.UI.Xaml.Media.Animation;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
+using KeyChordHelpers = Microsoft.CommandPalette.Extensions.Toolkit.KeyChordHelpers;
 using VirtualKey = Windows.System.VirtualKey;
+using VirtualKeyModifiers = Windows.System.VirtualKeyModifiers;
 
 namespace Microsoft.CmdPal.UI.Pages;
 
@@ -61,7 +63,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ShowPinToDockDialogMessage>,
     IRecipient<ExpandCompactModeMessage>,
     IRecipient<CloseContextMenuMessage>,
-    IRecipient<NumberedShortcutCuesVisibilityChangedMessage>,
     INotifyPropertyChanged,
     IDisposable
 {
@@ -90,6 +91,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly ExternalCommandLinkCoordinator _externalCommandLinks;
 
     private readonly IContextMenuFactory _contextMenuFactory;
+
+    private readonly AccessKeyModeController _accessKeyMode;
 
     // The last compact-layout settings we reacted to. Lets us ignore hot-reloads of unrelated
     // settings and only re-evaluate the layout when one of these settings changes.
@@ -128,7 +131,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private uint? _quickAccessShelfPendingDragPointerId;
     private Point _quickAccessShelfPendingDragStart;
     private bool _quickAccessShelfStartDragPending;
-    private bool _isNumberedShortcutCueModeActive;
+
+    // The keyboard hook reads this synchronously, so update it only when XAML focus changes.
+    private bool _canHandleAccessKeys = true;
     private bool _isDisposed;
     private IHostWindow? _hostWindow;
 
@@ -205,6 +210,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         ViewModel = viewModel;
         _settingsService = settingsService;
         _contextMenuFactory = App.Current.Services.GetRequiredService<IContextMenuFactory>();
+        _accessKeyMode = App.Current.Services.GetRequiredService<AccessKeyModeController>();
         var settings = _settingsService.Settings;
         _compactMode = settings.CompactMode;
         _quickAccessShelfEnabled = settings.ShowQuickAccessShelf;
@@ -255,7 +261,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
         WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
-        WeakReferenceMessenger.Default.Register<NumberedShortcutCuesVisibilityChangedMessage>(this);
 
         // The compact-mode setting can be toggled while the palette is open. React to the
         // hot-reload so the expanded/collapsed layout updates immediately instead of waiting
@@ -270,6 +275,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         AddHandler(PointerCanceledEvent, new PointerEventHandler(ShellPage_OnPointerCanceled), true);
         AddHandler(PointerCaptureLostEvent, new PointerEventHandler(ShellPage_OnPointerCaptureLost), true);
         AddHandler(LosingFocusEvent, new TypedEventHandler<UIElement, LosingFocusEventArgs>(ShellPage_LosingFocus), false);
+        FocusManager.GotFocus += FocusManager_GotFocus;
+        FocusManager.LosingFocus += FocusManager_LosingFocus;
 
         RootFrame.Navigate(typeof(LoadingPage), new AsyncNavigationRequest(ViewModel, CancellationToken.None));
 
@@ -305,14 +312,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
                 PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnEsc());
             }
-        }
-    }
-
-    public void Receive(NumberedShortcutCuesVisibilityChangedMessage message)
-    {
-        if (ReferenceEquals(XamlRoot, message.XamlRoot))
-        {
-            _isNumberedShortcutCueModeActive = message.IsVisible;
         }
     }
 
@@ -832,6 +831,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void RootFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
     {
+        _accessKeyMode.InvalidateScope();
+
         // A real navigation always loads a fresh page that we do want to focus/select, so
         // clear any stale suppression left over from a prior compact expand. (If this
         // navigation itself expands compact mode, UpdateCompactModeForCurrentPage below
@@ -1729,24 +1730,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             return false;
         }
 
-        switch (QuickAccessShelfShortcuts.ResolveSelectionShortcut(
-            e.Key,
-            modifiers.Ctrl,
-            modifiers.Alt,
-            modifiers.Shift,
-            modifiers.Win,
-            QuickAccessShelf.VisibleItemCount))
-        {
-            case QuickAccessShelfShortcuts.SelectionShortcutTarget.Visible:
-                // Let the matching native access key move focus to the requested shelf item.
-                return false;
-            case QuickAccessShelfShortcuts.SelectionShortcutTarget.Unavailable:
-                // Reserve shelf selection chords even when their targets are in overflow so
-                // they cannot invoke a context shortcut on the currently focused shelf item.
-                e.Handled = true;
-                return true;
-        }
-
         if (e.Key == VirtualKey.Enter && modifiers.OnlyCtrl)
         {
             e.Handled = true;
@@ -1773,19 +1756,55 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         return true;
     }
 
-    private bool TryHandleListPageNumberedShortcut(KeyRoutedEventArgs e, KeyModifiers modifiers)
+    private bool TryHandleQuickAccessShelfAccessKey(KeyChord chord)
+    {
+        if (!IsQuickAccessShelfVisible)
+        {
+            return false;
+        }
+
+        var key = (VirtualKey)chord.Vkey;
+        switch (QuickAccessShelfShortcuts.ResolveSelectionShortcut(
+            chord,
+            QuickAccessShelf.VisibleItemCount,
+            _accessKeyMode.IsActive))
+        {
+            case QuickAccessShelfShortcuts.SelectionShortcutTarget.Visible:
+                var item = QuickAccessShelf.VisibleItems[QuickAccessShelfShortcuts.GetTopRowShortcutIndex(key)];
+                if (chord.Modifiers.HasFlag(VirtualKeyModifiers.Shift))
+                {
+                    var button = QuickAccessShelfItemsHost.FindDescendants()
+                        .OfType<Button>()
+                        .FirstOrDefault(candidate => ReferenceEquals(candidate.Tag, item));
+                    if (button is null)
+                    {
+                        return true;
+                    }
+
+                    _ = button.Focus(FocusState.Keyboard);
+                }
+                else
+                {
+                    InvokeQuickAccessShelfItem(item);
+                }
+
+                return true;
+            case QuickAccessShelfShortcuts.SelectionShortcutTarget.Unavailable:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private bool TryHandleListPageNumberedShortcut(KeyChord chord)
     {
         var plainAltAction = _settingsService.Settings.ListItemAltNumberBehavior == AltNumberShortcutBehavior.Select
             ? NumberedItemShortcuts.ShortcutAction.Select
             : NumberedItemShortcuts.ShortcutAction.Invoke;
         var shortcut = NumberedItemShortcuts.Resolve(
-            e.Key,
-            modifiers.Ctrl,
-            modifiers.Alt,
-            modifiers.Shift,
-            modifiers.Win,
+            chord,
             plainAltAction,
-            _isNumberedShortcutCueModeActive);
+            _accessKeyMode.IsActive);
 
         if (shortcut is null ||
             !ItemActionsAllowed ||
@@ -1794,12 +1813,47 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             return false;
         }
 
-        // Reserve numbered ListPage chords even when the projected list has no matching
-        // item, so they cannot fall through to a requested shortcut on the current item.
-        e.Handled = true;
         listPage.HandleNumberedShortcut(shortcut.Value);
         return true;
     }
+
+    internal bool TryHandleAccessKey(KeyChord chord)
+    {
+        if (!_canHandleAccessKeys ||
+            NumberedItemShortcuts.GetTopRowShortcutIndex((VirtualKey)chord.Vkey) < 0)
+        {
+            return false;
+        }
+
+        return IsQuickAccessShelfVisible
+            ? TryHandleQuickAccessShelfAccessKey(chord)
+            : TryHandleListPageNumberedShortcut(chord);
+    }
+
+    private void FocusManager_GotFocus(object? sender, FocusManagerGotFocusEventArgs e)
+    {
+        if (XamlRoot is { } xamlRoot &&
+            e.NewFocusedElement is FrameworkElement element &&
+            ReferenceEquals(element.XamlRoot, xamlRoot))
+        {
+            _canHandleAccessKeys = IsFocusWithinShell(element);
+        }
+    }
+
+    private void FocusManager_LosingFocus(object? sender, LosingFocusEventArgs e)
+    {
+        if (e.NewFocusedElement is null &&
+            XamlRoot is { } xamlRoot &&
+            e.OldFocusedElement is FrameworkElement oldElement &&
+            ReferenceEquals(oldElement.XamlRoot, xamlRoot))
+        {
+            _canHandleAccessKeys = true;
+        }
+    }
+
+    private bool IsFocusWithinShell(FrameworkElement element) =>
+        ReferenceEquals(element, this) ||
+        ReferenceEquals(element.FindAscendant<ShellPage>(), this);
 
     private static bool ShouldDispatchQuickAccessShelfContextShortcut(VirtualKey key, KeyModifiers modifiers)
     {
@@ -1960,12 +2014,19 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 break;
             default:
                 {
-                    if (shellPage.TryHandleQuickAccessShelfItemKeyDown(e, modifiers))
+                    var chord = KeyChordHelpers.FromModifiers(
+                        ctrl: modifiers.Ctrl,
+                        alt: modifiers.Alt,
+                        shift: modifiers.Shift,
+                        win: modifiers.Win,
+                        vkey: e.Key);
+                    if (shellPage.TryHandleAccessKey(chord))
                     {
+                        e.Handled = true;
                         break;
                     }
 
-                    if (shellPage.TryHandleListPageNumberedShortcut(e, modifiers))
+                    if (shellPage.TryHandleQuickAccessShelfItemKeyDown(e, modifiers))
                     {
                         break;
                     }
@@ -2335,6 +2396,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
 
         WeakReferenceMessenger.Default.UnregisterAll(this);
+        FocusManager.GotFocus -= FocusManager_GotFocus;
+        FocusManager.LosingFocus -= FocusManager_LosingFocus;
         _settingsService.SettingsChanged -= OnSettingsChanged;
         QuickAccessShelf.VisibleItems.CollectionChanged -= QuickAccessShelfVisibleItems_CollectionChanged;
         QuickAccessShelf.PropertyChanged -= QuickAccessShelf_PropertyChanged;
