@@ -308,7 +308,7 @@
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     AutomationProperties.AutomationId="CmdPal_GeneralPage_QuickAccessShelfPinnedCommandLimit"
-                                    Maximum="9"
+                                    Maximum="{x:Bind ViewModel.MaxQuickAccessShelfPinnedCommandLimit}"
                                     Minimum="0"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
