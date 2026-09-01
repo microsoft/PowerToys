@@ -11,6 +11,14 @@
 #include <dxgi1_3.h>
 #include <shellscalingapi.h>
 
+// Raw input from the pen digitizer. The pen has to be read below the pointer stack:
+// once an app consumes pointer input (any scrollable surface does), Windows stops
+// promoting pen to mouse messages and a low level mouse hook goes blind.
+// hidsdi.h is the documented user-space entry point: it defines NTSTATUS and then pulls
+// in hidusage.h and hidpi.h in the order they expect. Including hidpi.h directly fails
+// to compile, because its inline helpers return NTSTATUS before anything defines it.
+#include <hidsdi.h>
+
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.UI.h>
 

@@ -141,6 +141,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _laserPointerSuppressActivationButton = LaserPointerSettingsConfig.Properties.SuppressActivationButton.Value;
             _laserPointerAutoActivate = LaserPointerSettingsConfig.Properties.AutoActivate.Value;
             _laserPointerGlowEnabled = LaserPointerSettingsConfig.Properties.GlowEnabled.Value;
+            _laserPointerPenRenderWhenClose = LaserPointerSettingsConfig.Properties.PenRenderWhenClose.Value;
             _laserPointerSize = LaserPointerSettingsConfig.Properties.LaserSize.Value;
             _laserPointerDecayTimeMs = LaserPointerSettingsConfig.Properties.DecayTimeMs.Value;
             _laserPointerDecayLength = LaserPointerSettingsConfig.Properties.DecayLength.Value;
@@ -1486,6 +1487,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        // When off, the tip has to touch the screen; when on, the trail follows the pen
+        // as soon as the digitizer can see it.
+        public bool LaserPointerPenRenderWhenClose
+        {
+            get => _laserPointerPenRenderWhenClose;
+            set
+            {
+                if (_laserPointerPenRenderWhenClose != value)
+                {
+                    _laserPointerPenRenderWhenClose = value;
+                    LaserPointerSettingsConfig.Properties.PenRenderWhenClose.Value = value;
+                    NotifyLaserPointerPropertyChanged();
+                }
+            }
+        }
+
         public bool LaserPointerGlowEnabled
         {
             get => _laserPointerGlowEnabled;
@@ -1666,6 +1683,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _laserPointerSuppressActivationButton;
         private bool _laserPointerAutoActivate;
         private bool _laserPointerGlowEnabled;
+        private bool _laserPointerPenRenderWhenClose;
         private int _laserPointerSize;
         private int _laserPointerDecayTimeMs;
         private int _laserPointerDecayLength;

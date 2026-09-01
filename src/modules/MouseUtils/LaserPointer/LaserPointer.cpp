@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <unordered_map>
 #include <vector>
 
 namespace
@@ -53,6 +54,9 @@ namespace
     // The sample rate the decay length setting was calibrated against, expressed as
     // samples per render tick. Sampling used to happen once per tick, so one.
     constexpr float REFERENCE_SAMPLES_PER_TICK = 1.0f;
+
+    // How long without pen input before the stroke is considered finished.
+    constexpr uint64_t PEN_IDLE_TIMEOUT_MS = 200;
 
     // Maps a low level mouse message onto the button it belongs to. Returns false for
     // anything that is not a button transition (moves, wheel).
@@ -102,6 +106,14 @@ private:
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
 
     LRESULT HandleMouseInput(WPARAM message, const MSLLHOOKSTRUCT* data) noexcept;
+
+    // Raw input path for the pen. Registered while the pen is armed; sees the digitizer
+    // directly, so it keeps working over content that consumes pointer input.
+    void RegisterPenRawInput();
+    void UnregisterPenRawInput();
+    void HandleRawInput(HRAWINPUT handle) noexcept;
+    bool ReadPenReport(RAWINPUT* input, POINT& screenPoint, bool& tipDown) noexcept;
+
 
     void ArmMouse();
     void DisarmMouse();
@@ -195,6 +207,32 @@ private:
     // Smoothed samples-per-tick, used to keep the trail the same visible length no
     // matter how fast the mouse reports. See OnRenderTick.
     float m_samplesPerTick = REFERENCE_SAMPLES_PER_TICK;
+
+    // Diagnostic flag, reset on each pen arm. See HandleMouseInput.
+    // Pen presence is time-based; see HandleMouseInput.
+    uint64_t m_lastPenInputMs = 0;
+    UINT m_lastPenMessage = 0;
+    int m_penMessagesLogged = 0;
+    bool m_penAwaitingFirstSample = false;
+    bool m_penStrokeOpen = false;
+
+    // Raw input state.
+    bool m_rawInputRegistered = false;
+    std::vector<BYTE> m_rawInputBuffer;
+    int m_rawInputLogCount = 0;
+
+    // Per-device HID description, cached because fetching preparsed data on every
+    // report would dominate the cost of reading one.
+    struct PenDevice
+    {
+        std::vector<BYTE> preparsed;
+        USAGE usagePage = 0;
+        USAGE usage = 0;
+        LONG minX = 0, maxX = 0, minY = 0, maxY = 0;
+        bool haveX = false, haveY = false;
+        bool usable = false;
+    };
+    std::unordered_map<HANDLE, PenDevice> m_penDevices;
 
     // The two shortcuts arm independently, so the pen can be used without the mouse.
     bool m_mouseArmed = false;
@@ -558,8 +596,12 @@ void LaserPointerOverlay::BeginDrawing()
     m_pendingPoints.clear();
     m_samplesPerTick = REFERENCE_SAMPLES_PER_TICK;
 
+    // The hook has already recorded the position that started this stroke, so the cursor
+    // is only a fallback for the case where nothing has been seen yet. Seeding from it
+    // unconditionally put one stray point wherever the mouse happened to sit: a hovering
+    // pen does not move the system cursor, so that point could be anywhere on screen.
     POINT cursorPosition{};
-    if (GetCursorPos(&cursorPosition))
+    if (!m_hasLatestPosition && GetCursorPos(&cursorPosition))
     {
         m_latestPosition = cursorPosition;
         m_hasLatestPosition = true;
@@ -663,13 +705,14 @@ void LaserPointerOverlay::ArmPen()
 {
     m_penArmed = true;
     m_penContact = false;
+    m_lastPenInputMs = 0;
+    m_lastPenMessage = 0;
+    m_penMessagesLogged = 0;
+    m_penAwaitingFirstSample = false;
+    m_penStrokeOpen = false;
 
     UpdateHook();
-    if (m_mouseHook == nullptr)
-    {
-        m_penArmed = false;
-        return;
-    }
+    RegisterPenRawInput();
 
     Logger::info("Laser Pointer pen armed.");
 }
@@ -685,8 +728,13 @@ void LaserPointerOverlay::DisarmPen()
     m_penArmed = false;
     m_penContact = false;
 
+    UnregisterPenRawInput();
     UpdateHook();
     ReleaseIfIdle();
+    if (!m_mouseArmed && !m_drawing)
+    {
+        HideOverlay();
+    }
 }
 
 // Drops anything still on screen once no input source can start a stroke. The always-on
@@ -722,6 +770,8 @@ void LaserPointerOverlay::Disarm()
     m_pendingPoints.clear();
     m_stroke.Clear();
     m_pastStrokes.clear();
+
+    UnregisterPenRawInput();
 
     if (m_mouseHook != nullptr)
     {
@@ -764,13 +814,17 @@ void LaserPointerOverlay::SwitchPenActivationMode()
 
 LRESULT LaserPointerOverlay::HandleMouseInput(WPARAM message, const MSLLHOOKSTRUCT* data) noexcept
 {
+    const bool fromPen = IsFromPen(data->dwExtraInfo);
+
     m_latestPosition = data->pt;
     m_hasLatestPosition = true;
 
-    // Keep every position the hook reports rather than collapsing to the newest one.
-    // The render tick drains this, so the trail follows the mouse's real path instead of
-    // a ~62 Hz resampling of it.
-    if (m_drawing)
+    // The mouse keeps every position the hook reports, so its trail follows the real
+    // path rather than a ~62 Hz resampling of it. The pen deliberately does not: a
+    // digitizer that drops in and out of range replays the gap as a straight line of
+    // ghost points, and a laser pointer wants to look live far more than it wants an
+    // accurate record of the stroke. One sample per render tick is plenty.
+    if (m_drawing && !fromPen)
     {
         if (m_pendingPoints.size() >= MAX_PENDING_POINTS)
         {
@@ -786,25 +840,72 @@ LRESULT LaserPointerOverlay::HandleMouseInput(WPARAM message, const MSLLHOOKSTRU
         PostMessage(m_hwnd, WM_WAKE_RENDER_LOOP, WAKE_RESUME, 0);
     }
 
-    const bool fromPen = IsFromPen(data->dwExtraInfo);
     const bool wasDrawing = m_drawing;
     bool suppress = false;
 
+    // Diagnostic: reports each distinct message seen from the pen while armed, up to a
+    // small cap, so the promoted message sequence is visible without flooding the log.
+    if (m_penArmed && fromPen && m_penMessagesLogged < 8 && message != m_lastPenMessage)
+    {
+        m_lastPenMessage = static_cast<UINT>(message);
+        ++m_penMessagesLogged;
+        Logger::info("Laser Pointer pen message: msg=0x{:X} extraInfo=0x{:X} at ({},{})",
+                     static_cast<unsigned int>(message),
+                     static_cast<unsigned long long>(data->dwExtraInfo),
+                     data->pt.x,
+                     data->pt.y);
+    }
+
     if (fromPen)
     {
-        // The pen tip touching down is the natural draw gesture, whichever mouse button
-        // happens to be configured. Pen events are never swallowed so the pen keeps
-        // working normally underneath.
         if (m_penArmed)
         {
-            if (message == WM_LBUTTONDOWN)
+            if (m_settings.penRenderWhenClose)
             {
+                // Proximity mode: any pen activity counts as presence, so the trail
+                // follows the pen without it touching. Tip-down is not reliably promoted
+                // to WM_LBUTTONDOWN anyway, because an app that pans consumes the
+                // pointer input first.
+                m_penContact = (message != WM_LBUTTONUP);
+            }
+            else if (message == WM_LBUTTONDOWN)
+            {
+                // Contact mode: explicit tip down and up, nothing while hovering.
                 m_penContact = true;
             }
             else if (message == WM_LBUTTONUP)
             {
                 m_penContact = false;
             }
+
+            if (m_penContact)
+            {
+                if (!wasDrawing && !m_penStrokeOpen)
+                {
+                    // Opening sample: the cursor is still travelling from wherever the
+                    // mouse was, so this position is not trustworthy. Drop it and start
+                    // the trail from the next one.
+                    m_penStrokeOpen = true;
+                    m_penAwaitingFirstSample = true;
+                }
+                else
+                {
+                    m_penAwaitingFirstSample = false;
+                }
+            }
+            else
+            {
+                m_penStrokeOpen = false;
+                m_penAwaitingFirstSample = false;
+            }
+
+            m_lastPenInputMs = GetTickCount64();
+
+            // While armed the pen is a laser, not an input device. Letting pen input
+            // reach the app was tried and removed: over scrollable content the app takes
+            // ownership of the pointer stream, Windows stops promoting it to mouse
+            // messages, and the trail dies mid-stroke.
+            suppress = true;
         }
     }
     else
@@ -842,6 +943,249 @@ LRESULT LaserPointerOverlay::HandleMouseInput(WPARAM message, const MSLLHOOKSTRU
     }
 
     return suppress ? 1 : 0;
+}
+
+void LaserPointerOverlay::RegisterPenRawInput()
+{
+    if (m_rawInputRegistered || m_hwnd == nullptr)
+    {
+        return;
+    }
+
+    // RIDEV_INPUTSINK delivers input even while another app is in the foreground, which
+    // is the whole point: the pen is normally used over somebody else's window.
+    RAWINPUTDEVICE devices[1]{};
+    devices[0].usUsagePage = HID_USAGE_PAGE_DIGITIZER;
+    devices[0].usUsage = HID_USAGE_DIGITIZER_PEN;
+    devices[0].dwFlags = RIDEV_INPUTSINK;
+    devices[0].hwndTarget = m_hwnd;
+
+    if (!RegisterRawInputDevices(devices, ARRAYSIZE(devices), sizeof(RAWINPUTDEVICE)))
+    {
+        Logger::error("Laser Pointer could not register raw pen input: {}", GetLastError());
+        return;
+    }
+
+    m_rawInputRegistered = true;
+    m_rawInputLogCount = 0;
+    Logger::info("Laser Pointer registered raw pen input.");
+}
+
+void LaserPointerOverlay::UnregisterPenRawInput()
+{
+    if (!m_rawInputRegistered)
+    {
+        return;
+    }
+
+    RAWINPUTDEVICE devices[1]{};
+    devices[0].usUsagePage = HID_USAGE_PAGE_DIGITIZER;
+    devices[0].usUsage = HID_USAGE_DIGITIZER_PEN;
+    devices[0].dwFlags = RIDEV_REMOVE;
+
+    RegisterRawInputDevices(devices, ARRAYSIZE(devices), sizeof(RAWINPUTDEVICE));
+    m_rawInputRegistered = false;
+    m_penDevices.clear();
+    Logger::info("Laser Pointer unregistered raw pen input.");
+}
+
+// Pulls X, Y and the tip switch out of one HID report. Returns false when the device
+// does not describe itself in a way this can use.
+bool LaserPointerOverlay::ReadPenReport(RAWINPUT* input, POINT& screenPoint, bool& tipDown) noexcept
+{
+    auto it = m_penDevices.find(input->header.hDevice);
+    if (it == m_penDevices.end())
+    {
+        PenDevice device;
+
+        UINT size = 0;
+        if (GetRawInputDeviceInfo(input->header.hDevice, RIDI_PREPARSEDDATA, nullptr, &size) != 0 || size == 0)
+        {
+            m_penDevices.emplace(input->header.hDevice, device);
+            return false;
+        }
+
+        device.preparsed.resize(size);
+        if (GetRawInputDeviceInfo(input->header.hDevice, RIDI_PREPARSEDDATA, device.preparsed.data(), &size) == static_cast<UINT>(-1))
+        {
+            m_penDevices.emplace(input->header.hDevice, device);
+            return false;
+        }
+
+        auto preparsed = reinterpret_cast<PHIDP_PREPARSED_DATA>(device.preparsed.data());
+        HIDP_CAPS caps{};
+        if (HidP_GetCaps(preparsed, &caps) != HIDP_STATUS_SUCCESS)
+        {
+            m_penDevices.emplace(input->header.hDevice, device);
+            return false;
+        }
+
+        if (caps.NumberInputValueCaps != 0)
+        {
+            std::vector<HIDP_VALUE_CAPS> valueCaps(caps.NumberInputValueCaps);
+            USHORT valueCapsLength = caps.NumberInputValueCaps;
+            if (HidP_GetValueCaps(HidP_Input, valueCaps.data(), &valueCapsLength, preparsed) == HIDP_STATUS_SUCCESS)
+            {
+                for (USHORT i = 0; i < valueCapsLength; ++i)
+                {
+                    const HIDP_VALUE_CAPS& vc = valueCaps[i];
+                    if (vc.UsagePage != HID_USAGE_PAGE_GENERIC || vc.IsRange)
+                    {
+                        continue;
+                    }
+                    if (vc.NotRange.Usage == HID_USAGE_GENERIC_X && vc.LogicalMax > vc.LogicalMin)
+                    {
+                        device.minX = vc.LogicalMin;
+                        device.maxX = vc.LogicalMax;
+                        device.haveX = true;
+                    }
+                    else if (vc.NotRange.Usage == HID_USAGE_GENERIC_Y && vc.LogicalMax > vc.LogicalMin)
+                    {
+                        device.minY = vc.LogicalMin;
+                        device.maxY = vc.LogicalMax;
+                        device.haveY = true;
+                    }
+                }
+            }
+        }
+
+        device.usable = device.haveX && device.haveY;
+        Logger::info("Laser Pointer pen device: usable={} x=[{},{}] y=[{},{}]",
+                     device.usable,
+                     device.minX,
+                     device.maxX,
+                     device.minY,
+                     device.maxY);
+
+        it = m_penDevices.emplace(input->header.hDevice, std::move(device)).first;
+    }
+
+    PenDevice& device = it->second;
+    if (!device.usable)
+    {
+        return false;
+    }
+
+    auto preparsed = reinterpret_cast<PHIDP_PREPARSED_DATA>(device.preparsed.data());
+    PCHAR report = reinterpret_cast<PCHAR>(input->data.hid.bRawData);
+    const ULONG reportLength = input->data.hid.dwSizeHid;
+
+    ULONG x = 0;
+    ULONG y = 0;
+    if (HidP_GetUsageValue(HidP_Input, HID_USAGE_PAGE_GENERIC, 0, HID_USAGE_GENERIC_X, &x, preparsed, report, reportLength) != HIDP_STATUS_SUCCESS ||
+        HidP_GetUsageValue(HidP_Input, HID_USAGE_PAGE_GENERIC, 0, HID_USAGE_GENERIC_Y, &y, preparsed, report, reportLength) != HIDP_STATUS_SUCCESS)
+    {
+        return false;
+    }
+
+    // The tip switch separates contact from hover. Its absence is not fatal, since
+    // proximity mode does not care, so failure here simply reports "not touching".
+    tipDown = false;
+    ULONG usageCount = 16;
+    USAGE usages[16]{};
+    if (HidP_GetUsages(HidP_Input, HID_USAGE_PAGE_DIGITIZER, 0, usages, &usageCount, preparsed, report, reportLength) == HIDP_STATUS_SUCCESS)
+    {
+        for (ULONG i = 0; i < usageCount; ++i)
+        {
+            if (usages[i] == HID_USAGE_DIGITIZER_TIP_SWITCH)
+            {
+                tipDown = true;
+                break;
+            }
+        }
+    }
+
+    // Digitizer coordinates are logical units spanning the whole tablet surface; map
+    // them onto the virtual desktop.
+    const int virtualLeft = GetSystemMetrics(SM_XVIRTUALSCREEN);
+    const int virtualTop = GetSystemMetrics(SM_YVIRTUALSCREEN);
+    const int virtualWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    const int virtualHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+
+    const double spanX = static_cast<double>(device.maxX) - static_cast<double>(device.minX);
+    const double spanY = static_cast<double>(device.maxY) - static_cast<double>(device.minY);
+    if (spanX <= 0.0 || spanY <= 0.0)
+    {
+        return false;
+    }
+
+    const double offsetX = static_cast<double>(x) - static_cast<double>(device.minX);
+    const double offsetY = static_cast<double>(y) - static_cast<double>(device.minY);
+    screenPoint.x = virtualLeft + static_cast<LONG>((offsetX / spanX) * virtualWidth);
+    screenPoint.y = virtualTop + static_cast<LONG>((offsetY / spanY) * virtualHeight);
+    return true;
+}
+
+void LaserPointerOverlay::HandleRawInput(HRAWINPUT handle) noexcept
+{
+    UINT size = 0;
+    if (GetRawInputData(handle, RID_INPUT, nullptr, &size, sizeof(RAWINPUTHEADER)) != 0 || size == 0)
+    {
+        return;
+    }
+
+    if (m_rawInputBuffer.size() < size)
+    {
+        m_rawInputBuffer.resize(size);
+    }
+
+    if (GetRawInputData(handle, RID_INPUT, m_rawInputBuffer.data(), &size, sizeof(RAWINPUTHEADER)) != size)
+    {
+        return;
+    }
+
+    RAWINPUT* input = reinterpret_cast<RAWINPUT*>(m_rawInputBuffer.data());
+
+    if (m_rawInputLogCount < 3)
+    {
+        ++m_rawInputLogCount;
+        Logger::info("Laser Pointer raw input: type={} sizeHid={} count={}",
+                     input->header.dwType,
+                     input->header.dwType == RIM_TYPEHID ? input->data.hid.dwSizeHid : 0u,
+                     input->header.dwType == RIM_TYPEHID ? input->data.hid.dwCount : 0u);
+    }
+
+    if (input->header.dwType != RIM_TYPEHID || !m_penArmed)
+    {
+        return;
+    }
+
+    POINT screenPoint{};
+    bool tipDown = false;
+    if (!ReadPenReport(input, screenPoint, tipDown))
+    {
+        return;
+    }
+
+    const bool wantDraw = m_settings.penRenderWhenClose || tipDown;
+    const bool wasDrawing = m_drawing;
+
+    m_latestPosition = screenPoint;
+    m_hasLatestPosition = true;
+    m_lastPenInputMs = GetTickCount64();
+
+    if (wantDraw)
+    {
+        m_penContact = true;
+        m_penAwaitingFirstSample = false;
+        if (!wasDrawing)
+        {
+            BeginDrawing();
+        }
+        else if (!m_renderLoopRunning)
+        {
+            ShowOverlay();
+            StartRenderLoop();
+        }
+    }
+    else if (m_penContact)
+    {
+        m_penContact = false;
+        if (wasDrawing)
+        {
+            EndDrawing();
+        }
+    }
 }
 
 LRESULT CALLBACK LaserPointerOverlay::MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept
@@ -883,6 +1227,25 @@ float LaserPointerOverlay::DpiScaleForPoint(POINT screenPoint) const
 void LaserPointerOverlay::OnRenderTick()
 {
     const uint64_t now = GetTickCount64();
+
+    // The pen has no dependable tip-up message, so a gap in pen input is what ends the
+    // stroke. Without this the trail would never stop growing once the pen went away.
+    // Only proximity mode needs this: contact mode gets an explicit tip-up, and a pen
+    // held still against the screen must not have its stroke cut short.
+    if (m_penContact && m_settings.penRenderWhenClose && (now - m_lastPenInputMs) > PEN_IDLE_TIMEOUT_MS)
+    {
+        m_penContact = false;
+        if (m_drawing && !m_activationButtonHeld && !m_alwaysOnButtonHeld)
+        {
+            EndDrawing();
+        }
+    }
+
+    if (m_drawing && m_penAwaitingFirstSample)
+    {
+        // Wait for a position reported after the stroke began.
+        return;
+    }
 
     if (m_drawing && m_hasLatestPosition)
     {
@@ -1064,7 +1427,15 @@ LRESULT CALLBACK LaserPointerOverlay::WndProc(HWND hWnd, UINT message, WPARAM wP
         instance->UpdateHook();
         return 0;
 
+    case WM_INPUT:
+        instance->HandleRawInput(reinterpret_cast<HRAWINPUT>(lParam));
+        return DefWindowProc(hWnd, message, wParam, lParam);
+
     case WM_NCHITTEST:
+        // Always click-through. Capturing pen here needed GetCurrentInputMessageSource
+        // to identify the device, and it reports IMDT_UNAVAILABLE on real hardware, so
+        // the only thing a capturing window achieved was swallowing mouse and touchpad
+        // input. The pen is handled in the mouse hook instead, where it does arrive.
         return HTTRANSPARENT;
 
     case WM_SWITCH_ACTIVATION_MODE:

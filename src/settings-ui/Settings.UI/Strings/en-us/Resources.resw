@@ -6665,6 +6665,15 @@ Text uses the current drawing color.</value>
   <data name="MouseUtils_LaserPointer_ActivationButton.Description" xml:space="preserve">
     <value>The button that draws the laser trail while it is held down</value>
   </data>
+  <data name="MouseUtils_LaserPointer_PenRenderWhenClose.Header" xml:space="preserve">
+    <value>Pen drawing</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_PenRenderWhenClose_Check.Header" xml:space="preserve">
+    <value>Render when pen gets close</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_PenRenderWhenClose_Check.Description" xml:space="preserve">
+    <value>Draw the trail as soon as the screen detects the pen nearby. When off, the pen tip has to touch the screen.</value>
+  </data>
   <data name="MouseUtils_LaserPointer_PenActivationShortcut.Header" xml:space="preserve">
     <value>Pen activation</value>
   </data>

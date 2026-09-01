@@ -10,8 +10,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class LaserPointerProperties
     {
-        // 60% transparent: alpha 0x66 is 40% opaque.
-        public const string DefaultLaserColor = "#66FF2D2D";
+        // 40% transparent: alpha 0x99 is 60% opaque.
+        public const string DefaultLaserColor = "#99FF2D2D";
 
         // -1 = None, 0 = Left, 1 = Right, 2 = Middle, 3 = X1 (back), 4 = X2 (forward).
         public const int ActivationButtonNone = -1;
@@ -45,6 +45,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("auto_activate")]
         public BoolProperty AutoActivate { get; set; }
 
+        // false: the trail is drawn only while the tip touches the screen.
+        // true: the trail follows the pen as soon as it is in range.
+        [JsonPropertyName("pen_render_when_close")]
+        public BoolProperty PenRenderWhenClose { get; set; }
+
         [JsonPropertyName("glow_enabled")]
         public BoolProperty GlowEnabled { get; set; }
 
@@ -71,6 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             AlwaysOnButton = new IntProperty(ActivationButtonNone);
             SuppressActivationButton = new BoolProperty(true);
             AutoActivate = new BoolProperty(false);
+            PenRenderWhenClose = new BoolProperty(false);
             GlowEnabled = new BoolProperty(true);
             LaserColor = new StringProperty(DefaultLaserColor);
             LaserSize = new IntProperty(10);

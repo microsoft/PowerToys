@@ -8,6 +8,9 @@ constexpr int LASER_POINTER_DEFAULT_DECAY_LENGTH = 50;
 constexpr int LASER_POINTER_DEFAULT_STREAMLINE_PERCENT = 75;
 constexpr bool LASER_POINTER_DEFAULT_AUTO_ACTIVATE = false;
 constexpr bool LASER_POINTER_DEFAULT_GLOW_ENABLED = true;
+// Off by default: the pen tip has to touch the screen. Turning it on starts the trail as
+// soon as the pen is near enough for the digitizer to report it.
+constexpr bool LASER_POINTER_DEFAULT_PEN_RENDER_WHEN_CLOSE = false;
 constexpr bool LASER_POINTER_DEFAULT_SUPPRESS_ACTIVATION_BUTTON = true;
 
 // Which physical button draws the trail while held.
@@ -47,8 +50,11 @@ struct LaserPointerSettings
     bool suppressActivationButton = LASER_POINTER_DEFAULT_SUPPRESS_ACTIVATION_BUTTON;
     bool autoActivate = LASER_POINTER_DEFAULT_AUTO_ACTIVATE;
     bool glowEnabled = LASER_POINTER_DEFAULT_GLOW_ENABLED;
+    // false: the trail is drawn only while the tip is actually touching.
+    // true: the trail follows the pen as soon as it is in range.
+    bool penRenderWhenClose = LASER_POINTER_DEFAULT_PEN_RENDER_WHEN_CLOSE;
 
-    winrt::Windows::UI::Color laserColor = winrt::Windows::UI::ColorHelper::FromArgb(102, 255, 45, 45);
+    winrt::Windows::UI::Color laserColor = winrt::Windows::UI::ColorHelper::FromArgb(153, 255, 45, 45);
     int size = LASER_POINTER_DEFAULT_SIZE;
     int decayTimeMs = LASER_POINTER_DEFAULT_DECAY_TIME_MS;
     int decayLength = LASER_POINTER_DEFAULT_DECAY_LENGTH;

@@ -20,6 +20,7 @@ namespace
     const wchar_t JSON_KEY_SUPPRESS_ACTIVATION_BUTTON[] = L"suppress_activation_button";
     const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
     const wchar_t JSON_KEY_GLOW_ENABLED[] = L"glow_enabled";
+    const wchar_t JSON_KEY_PEN_RENDER_WHEN_CLOSE[] = L"pen_render_when_close";
     const wchar_t JSON_KEY_LASER_COLOR[] = L"laser_color";
     const wchar_t JSON_KEY_LASER_SIZE[] = L"laser_size";
     const wchar_t JSON_KEY_DECAY_TIME_MS[] = L"decay_time_ms";
@@ -316,6 +317,16 @@ public:
             }
             try
             {
+                // Parse pen proximity rendering
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_PEN_RENDER_WHEN_CLOSE);
+                laserPointerSettings.penRenderWhenClose = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize pen proximity rendering from settings. Will use default value");
+            }
+            try
+            {
                 // Parse glow enabled
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_GLOW_ENABLED);
                 laserPointerSettings.glowEnabled = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
@@ -434,10 +445,11 @@ public:
 
         m_laserPointerSettings = laserPointerSettings;
 
-        Logger::info("Laser Pointer settings resolved: button={} alwaysOn={} suppress={} size={} decayMs={}",
+        Logger::info("Laser Pointer settings resolved: button={} alwaysOn={} suppress={} penClose={} size={} decayMs={}",
                      static_cast<int>(m_laserPointerSettings.activationButton),
                      static_cast<int>(m_laserPointerSettings.alwaysOnButton),
                      m_laserPointerSettings.suppressActivationButton,
+                     m_laserPointerSettings.penRenderWhenClose,
                      m_laserPointerSettings.size,
                      m_laserPointerSettings.decayTimeMs);
     }
