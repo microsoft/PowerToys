@@ -14,7 +14,7 @@ Welcome to the PowerToys developer documentation. This documentation provides in
    - Windows 11 SDK (10.0.22621.0)
    - Windows 11 SDK (10.0.26100.3916)
 1. .NET 8 SDK
-1. Enable long paths in Windows (see [Enable Long Paths](https://docs.microsoft.com/windows/win32/fileio/maximum-file-path-limitation#enabling-long-paths-in-windows-10-version-1607-and-later) for details)
+1. Enable long paths in Windows (see [Enable Long Paths](https://learn.microsoft.com/windows/win32/fileio/maximum-file-path-limitation#enabling-long-paths-in-windows-10-version-1607-and-later) for details)
 
 > **Tip:** You can install Visual Studio with all required workloads automatically using the [WinGet configuration files](https://github.com/microsoft/PowerToys/tree/main/.config) in the repository:
 > ```powershell

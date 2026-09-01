@@ -73,22 +73,6 @@ configuration:
       - addLabel:
           label: Needs-Team-Response
       description: 
-    # ─── When PR author pushes commits, swap Needs-Author-Feedback → Needs-Triage ───
-    - if:
-      - payloadType: Pull_Request
-      - isAction:
-          action: Synchronize
-      - isActivitySender:
-          issueAuthor: True
-      - hasLabel:
-          label: Needs-Author-Feedback
-      - isOpen
-      then:
-      - addLabel:
-          label: Needs-Triage
-      - removeLabel:
-          label: Needs-Author-Feedback
-      description: 
     # ─── Remove "Status-No recent activity" on any issue update (not close) ───
     - if:
       - payloadType: Issues

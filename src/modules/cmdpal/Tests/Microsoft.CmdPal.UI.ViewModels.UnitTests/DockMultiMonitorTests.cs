@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Text.Json;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -271,27 +272,103 @@ public class DockMultiMonitorTests
     }
 
     [TestMethod]
-    public void Reconciler_FuzzyMatch_DoesNotMatchNonPrimaryMonitors()
+    public void Reconciler_UnmatchedSecondary_DoesNotConsumeExistingConfig()
     {
-        // Config has stale stable ID for a non-primary monitor
+        // A secondary ID change is ambiguous, so preserve the old config and create a
+        // separate default rather than moving the old settings onto the new monitor.
         var configs = ImmutableList.Create(
             new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, Enabled = true, IsPrimary = true },
-            new DockMonitorConfig { MonitorDeviceId = @"\\?\DISPLAY#STALE#4&eee&0&UID333#{guidStale}", Enabled = true, IsPrimary = false, IsCustomized = true, LastSeen = DateTime.UtcNow });
+            new DockMonitorConfig
+            {
+                MonitorDeviceId = @"\\?\DISPLAY#STALE#4&eee&0&UID333#{guidStale}",
+                Enabled = true,
+                IsPrimary = false,
+                IsCustomized = true,
+                StartBands = ImmutableList.Create(new DockBandSettings { ProviderId = "p", CommandId = "c" }),
+                LastSeen = DateTime.UtcNow,
+            });
 
-        // Current monitors have primary + a different secondary
+        // Current monitors have primary + a secondary whose stable ID changed
         var monitors = new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor };
 
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
-        // Primary keeps its config, new secondary gets a fresh customized config,
-        // stale secondary is retained at end for future reconnection
         Assert.AreEqual(3, result.Count);
-        Assert.AreEqual(PrimaryMonitor.StableId, result[0].MonitorDeviceId);
-        Assert.AreEqual(SecondaryMonitor.StableId, result[1].MonitorDeviceId);
-        Assert.IsTrue(result[1].IsCustomized, "New secondary should get an empty-bands customized config.");
-        Assert.AreEqual(0, result[1].StartBands?.Count ?? 0, "New secondary should start with empty bands.");
-        Assert.AreEqual(@"\\?\DISPLAY#STALE#4&eee&0&UID333#{guidStale}", result[2].MonitorDeviceId, "Stale config should be preserved.");
-        Assert.IsTrue(result[2].IsCustomized, "Stale config should retain its customizations.");
+        var newConfig = result.FirstOrDefault(c => c.MonitorDeviceId == SecondaryMonitor.StableId);
+        var retainedConfig = result.FirstOrDefault(c => c.MonitorDeviceId.Contains("STALE", StringComparison.OrdinalIgnoreCase));
+        Assert.IsNotNull(newConfig);
+        Assert.IsNotNull(retainedConfig);
+        Assert.IsFalse(newConfig!.Enabled, "An unmatched secondary monitor should get a disabled default.");
+        Assert.AreEqual(1, retainedConfig!.StartBands?.Count ?? 0, "The old config should remain available for reconnection.");
+    }
+
+    [TestMethod]
+    public void Reconciler_MultipleUnmatchedSecondaryMonitors_PreservesConfigs()
+    {
+        // Two unmatched secondary monitors and one unmatched secondary config: ambiguous,
+        // so reconciliation must not guess and should fall back to creating fresh configs.
+        var thirdMonitor = SecondaryMonitor with
+        {
+            DeviceId = @"\\.\DISPLAY3",
+            StableId = @"\\?\DISPLAY#THIRD#4&ccc&0&UID333#{guid3}",
+            DisplayName = "Display 3",
+        };
+
+        var configs = ImmutableList.Create(
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, Enabled = true, IsPrimary = true },
+            new DockMonitorConfig
+            {
+                MonitorDeviceId = @"\\?\DISPLAY#STALE#4&eee&0&UID333#{guidStale}",
+                Enabled = true,
+                IsPrimary = false,
+                IsCustomized = true,
+                LastSeen = DateTime.UtcNow,
+            });
+
+        var monitors = new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor, thirdMonitor };
+
+        var result = MonitorConfigReconciler.Reconcile(configs, monitors);
+
+        // Both new secondary monitors get fresh configs; the stale one is retained for reconnection.
+        Assert.AreEqual(4, result.Count);
+        Assert.IsTrue(result.Any(c => c.MonitorDeviceId == SecondaryMonitor.StableId));
+        Assert.IsTrue(result.Any(c => c.MonitorDeviceId == thirdMonitor.StableId));
+        Assert.IsTrue(result.Any(c => c.MonitorDeviceId == @"\\?\DISPLAY#STALE#4&eee&0&UID333#{guidStale}"));
+    }
+
+    [TestMethod]
+    public void Reconciler_TransientStableIdFallbackToDeviceId_PreservesExistingConfig()
+    {
+        // Simulates the StableId momentarily falling back to the volatile GDI DeviceId
+        // right after WM_DISPLAYCHANGE (Display Configuration API not yet settled).
+        // The fallback is ambiguous, so keep the stable-ID config instead of moving it.
+        var degradedSecondary = SecondaryMonitor with { StableId = SecondaryMonitor.DeviceId };
+
+        var configs = ImmutableList.Create(
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, Enabled = true, IsPrimary = true },
+            new DockMonitorConfig
+            {
+                MonitorDeviceId = SecondaryMonitor.StableId,
+                Enabled = true,
+                IsPrimary = false,
+                IsCustomized = true,
+                StartBands = ImmutableList.Create(new DockBandSettings { ProviderId = "p", CommandId = "c" }),
+                LastSeen = DateTime.UtcNow,
+            });
+
+        var monitors = new List<MonitorInfo> { PrimaryMonitor, degradedSecondary };
+
+        var result = MonitorConfigReconciler.Reconcile(configs, monitors);
+
+        Assert.AreEqual(3, result.Count);
+        var retainedConfig = result.FirstOrDefault(c => c.MonitorDeviceId == SecondaryMonitor.StableId);
+        var fallbackConfig = result.FirstOrDefault(c => c.MonitorDeviceId == degradedSecondary.StableId);
+        Assert.IsNotNull(retainedConfig, "The existing stable-ID config should remain available.");
+        Assert.IsNotNull(fallbackConfig, "The ambiguous fallback monitor should receive a default config.");
+        Assert.IsTrue(retainedConfig!.Enabled);
+        Assert.IsTrue(retainedConfig.IsCustomized);
+        Assert.AreEqual(1, retainedConfig.StartBands?.Count ?? 0, "Pinned bands should remain with the original config.");
+        Assert.IsFalse(fallbackConfig!.Enabled, "An unmatched secondary monitor should start disabled.");
     }
 
     // --- JSON serialization round-trip ---

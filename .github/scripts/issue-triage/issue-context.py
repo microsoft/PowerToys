@@ -31,6 +31,7 @@ TECHNICAL_PATTERN = re.compile(
 VERSION_PATTERN = re.compile(
     r"\b(?:v)?(\d+(?:\.\d+){1,3}(?:-[A-Za-z0-9.-]+)?)\b"
 )
+VERSION_CHANNEL_HEADING = "Microsoft PowerToys version and release channel"
 BUG_HEADINGS = (
     "Microsoft PowerToys version",
     "Installation method",
@@ -146,6 +147,9 @@ class GitHubApi:
                 break
         return comments
 
+    def get_issue(self, issue_number):
+        return self.request(f"/repos/{self.repository}/issues/{issue_number}")
+
     def list_labels(self):
         labels = []
         for page in range(1, 5):
@@ -201,7 +205,8 @@ def reproduction_quality(body):
     action_markers = len(
         re.findall(
             r"(?:^|\s)(?:\d+[.)]|[-*])\s+|\b(?:open|launch|click|press|select|"
-            r"enable|disable|connect|disconnect|type|drag|run|choose|restart)\b",
+            r"enable|disable|connect|disconnect|type|drag|run|choose|restart|"
+            r"create|make|configure|remap|hold|use)\b",
             steps,
             re.IGNORECASE | re.MULTILINE,
         )
@@ -244,7 +249,9 @@ def reproduction_quality(body):
 
 
 def parse_version(body):
-    section = extract_section(body, "Microsoft PowerToys version")
+    section = extract_section(body, VERSION_CHANNEL_HEADING)
+    if not section:
+        section = extract_section(body, "Microsoft PowerToys version")
     match = VERSION_PATTERN.search(section)
     return match.group(1) if match else "Not provided"
 
@@ -328,7 +335,10 @@ def language_signal(title, body):
     prose = re.sub(r"https?://\S+", " ", prose)
     prose = re.sub(
         r"^###\s+(?:[^\w\r\n]+\s*)?(?:"
-        + "|".join(re.escape(heading) for heading in BUG_HEADINGS)
+        + "|".join(
+            re.escape(heading)
+            for heading in (VERSION_CHANNEL_HEADING, *BUG_HEADINGS)
+        )
         + r")\s*$",
         " ",
         prose,
@@ -403,6 +413,55 @@ def product_label(area, labels):
         if normalized_label == normalized_area:
             return name
     return "None"
+
+
+def title_bracket_segments(title):
+    match = re.match(r"\s*((?:\[[^\]]*\]\s*)+)", title or "")
+    if not match:
+        return []
+    return [
+        segment.strip()
+        for segment in re.findall(r"\[([^\]]*)\]", match.group(1))
+        if segment.strip()
+    ]
+
+
+def title_product_label(title, labels):
+    for segment in title_bracket_segments(title):
+        candidate = product_label(segment, labels)
+        if candidate != "None":
+            return candidate
+    return "None"
+
+
+def available_product_labels(labels):
+    names = {
+        label.get("name", "") if isinstance(label, dict) else str(label)
+        for label in labels
+    }
+    return sorted(name for name in names if name.startswith("Product-"))
+
+
+def allowed_product_labels(title, body, labels, deterministic_label):
+    if deterministic_label != "None":
+        return [deterministic_label]
+
+    normalized_text = " " + re.sub(
+        r"[^a-z0-9]+",
+        " ",
+        f"{title or ''}\n{body or ''}".lower(),
+    ).strip() + " "
+    candidates = []
+    for label in available_product_labels(labels):
+        product_name = label[len("Product-"):]
+        normalized_name = re.sub(r"[^a-z0-9]+", " ", product_name.lower()).strip()
+        if (
+            normalized_name
+            and normalized_name != "general"
+            and f" {normalized_name} " in normalized_text
+        ):
+            candidates.append(label)
+    return candidates[:5]
 
 
 def build_queries(repository, title, body, label):
@@ -533,6 +592,17 @@ def existing_input_hash(comments):
 
 def should_process(event, report_comment):
     action = event.get("action")
+    issue = event.get("issue") or {}
+    issue_labels = {
+        (label.get("name", "") if isinstance(label, dict) else str(label)).lower()
+        for label in (issue.get("labels") or [])
+    }
+    # Never triage the automated dedupe-digest issue. It is bot-authored and
+    # aggregates untrusted text from many issues, so re-triaging it wastes AI
+    # credits and creates a prompt-injection surface. See
+    # .github/workflows/dedupe-digest.yml (DIGEST_LABEL).
+    if "dedupe-digest" in issue_labels:
+        return False, False
     if "comment" not in event:
         if (
             action == "reopened"
@@ -593,6 +663,8 @@ def render_context(issue, facts, queries, candidates, digest):
         f"Issue kind: {facts['issue_kind']}",
         f"Detected area: {facts['area']}",
         f"Candidate product label: {facts['product_label']}",
+        "Allowed product label candidates: "
+        + (", ".join(facts.get("allowed_product_labels", [])) or "None"),
         f"PowerToys version: {facts['version']}",
         "Latest stable PowerToys version: "
         f"{facts.get('latest_stable_version', 'Unavailable')}",
@@ -622,40 +694,28 @@ def render_context(issue, facts, queries, candidates, digest):
     return "\n".join(lines) + "\n"
 
 
-def prepare(event, api):
-    issue = event.get("issue")
-    if not isinstance(issue, dict) or not isinstance(issue.get("number"), int):
-        raise ValueError("Event does not contain an issue")
-    if issue.get("pull_request"):
-        write_noop("Pull request comments are handled by the deterministic PR intake workflow")
-        return (
-            "# Deterministic issue evidence\n\nAgent execution was skipped.\n",
-            event,
-            False,
-        )
-    comments = api.list_comments(issue["number"])
-    author = issue.get("user", {}).get("login")
-    report_comment = latest_author_report_comment(comments, author)
-    process, force = should_process(event, report_comment)
-    digest = input_hash(issue, report_comment)
-    if not process:
-        write_noop("No relevant issue content, author report, or maintainer refresh command changed")
-        return (
-            "# Deterministic issue evidence\n\nAgent execution was skipped.\n",
-            event,
-            False,
-        )
-    if not force and existing_input_hash(comments) == digest:
-        write_noop("The triage-relevant issue content has not changed")
-        return (
-            "# Deterministic issue evidence\n\nAgent execution was skipped.\n",
-            event,
-            False,
-        )
-
+def collect_evidence(issue, report_comment, api):
     labels = api.list_labels()
-    area = parse_area(issue.get("body", ""), issue.get("title", ""))
+    body = issue.get("body", "")
+    title = issue.get("title", "")
+    area_section = extract_section(body, "Area(s) with issue?")
+    has_explicit_area = bool(
+        area_section
+        and area_section.lower() not in {"_no response_", "no response", "n/a"}
+    )
+    area = parse_area(body, title)
     desired_label = product_label(area, labels)
+    title_label = title_product_label(title, labels)
+    if title_label != "None" and (desired_label == "None" or not has_explicit_area):
+        desired_label = title_label
+        if area == "Unknown" or not has_explicit_area:
+            area = title_label[len("Product-"):]
+    product_candidates = allowed_product_labels(
+        title,
+        body,
+        labels,
+        desired_label,
+    )
     issue_for_ranking = dict(issue)
     issue_for_ranking["labels"] = list(issue.get("labels") or [])
     if desired_label != "None":
@@ -667,6 +727,7 @@ def prepare(event, api):
         "issue_kind": "BUG" if is_bug_template(issue.get("body", "")) else "OTHER",
         "area": area,
         "product_label": desired_label,
+        "allowed_product_labels": product_candidates,
         "version": reported_version,
         "latest_stable_version": stable_version,
         "version_status": version_status(reported_version, stable_version),
@@ -678,6 +739,79 @@ def prepare(event, api):
         ),
         "author_body_status": author_body_status(issue.get("body", "")),
     }
+    digest = input_hash(issue, report_comment)
+    evidence = {
+        "input_sha256": digest,
+        "suggested_area": area,
+        "candidate_product_label": desired_label,
+        "allowed_product_labels": product_candidates,
+        "powertoys_version": reported_version,
+        "issue_kind": facts["issue_kind"],
+        "reproduction_quality": facts["reproduction_quality"],
+        "bug_report_requirement": facts["bug_report_requirement"],
+        "duplicate_candidate_numbers": [
+            candidate["number"] for candidate in candidates
+        ],
+        "issue_author": issue.get("user", {}).get("login"),
+        "current_labels": [
+            label.get("name", "") if isinstance(label, dict) else str(label)
+            for label in issue.get("labels", [])
+        ],
+    }
+    return facts, queries, candidates, evidence
+
+
+def prepare_with_evidence(event, api, force_evidence=False):
+    issue = event.get("issue")
+    if not isinstance(issue, dict) or not isinstance(issue.get("number"), int):
+        raise ValueError("Event does not contain an issue")
+    if issue.get("pull_request"):
+        write_noop("Pull request comments are handled by the deterministic PR intake workflow")
+        return (
+            "# Deterministic issue evidence\n\nAgent execution was skipped.\n",
+            event,
+            False,
+            None,
+        )
+    if force_evidence:
+        issue = api.get_issue(issue["number"])
+        event = dict(event)
+        event["issue"] = issue
+    if str(issue.get("state") or "").lower() == "closed":
+        write_noop("Closed issues are not triaged")
+        return (
+            "# Deterministic issue evidence\n\nAgent execution was skipped.\n",
+            event,
+            False,
+            None,
+        )
+    comments = api.list_comments(issue["number"])
+    author = issue.get("user", {}).get("login")
+    report_comment = latest_author_report_comment(comments, author)
+    process, force = should_process(event, report_comment)
+    digest = input_hash(issue, report_comment)
+    if not force_evidence and not process:
+        write_noop("No relevant issue content, author report, or maintainer refresh command changed")
+        return (
+            "# Deterministic issue evidence\n\nAgent execution was skipped.\n",
+            event,
+            False,
+            None,
+        )
+    if not force_evidence and not force and existing_input_hash(comments) == digest:
+        write_noop("The triage-relevant issue content has not changed")
+        return (
+            "# Deterministic issue evidence\n\nAgent execution was skipped.\n",
+            event,
+            False,
+            None,
+        )
+
+    facts, queries, candidates, evidence = collect_evidence(
+        issue,
+        report_comment,
+        api,
+    )
     normalized_event = dict(event)
     if report_comment:
         normalized_event["comment"] = report_comment
@@ -685,24 +819,39 @@ def prepare(event, api):
         render_context(issue, facts, queries, candidates, digest),
         normalized_event,
         True,
+        evidence,
     )
 
 
+def prepare(event, api):
+    context, normalized_event, should_process_event, _ = prepare_with_evidence(
+        event,
+        api,
+    )
+    return context, normalized_event, should_process_event
+
+
 def main():
-    if len(sys.argv) != 4:
+    if len(sys.argv) not in {4, 5}:
         print(
-            "Usage: issue-context.py EVENT_JSON OUTPUT_MARKDOWN NORMALIZED_EVENT_JSON",
+            "Usage: issue-context.py EVENT_JSON OUTPUT_MARKDOWN "
+            "NORMALIZED_EVENT_JSON [EVIDENCE_JSON]",
             file=sys.stderr,
         )
         return 2
     event_path, context_path, normalized_event_path = sys.argv[1:4]
+    evidence_path = sys.argv[4] if len(sys.argv) == 5 else None
     with open(event_path, "r", encoding="utf-8") as event_file:
         event = json.load(event_file)
     api = GitHubApi(
         os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN"),
         os.environ.get("GITHUB_REPOSITORY"),
     )
-    context, normalized_event, should_process_event = prepare(event, api)
+    context, normalized_event, should_process_event, evidence = prepare_with_evidence(
+        event,
+        api,
+        force_evidence=os.environ.get("ISSUE_TRIAGE_FORCE_EVIDENCE") == "true",
+    )
     for output_path, payload in (
         (context_path, context),
         (normalized_event_path, json.dumps(normalized_event, ensure_ascii=True)),
@@ -712,6 +861,13 @@ def main():
             output_file.write(payload)
             if not payload.endswith("\n"):
                 output_file.write("\n")
+    if evidence_path and should_process_event:
+        if evidence is None:
+            raise ValueError("Deterministic evidence was not generated")
+        os.makedirs(os.path.dirname(os.path.abspath(evidence_path)), exist_ok=True)
+        with open(evidence_path, "w", encoding="utf-8", newline="\n") as output_file:
+            json.dump(evidence, output_file, ensure_ascii=True, sort_keys=True)
+            output_file.write("\n")
     write_step_output("should_process", "true" if should_process_event else "false")
     print("Prepared deterministic issue evidence and duplicate candidates")
     return 0

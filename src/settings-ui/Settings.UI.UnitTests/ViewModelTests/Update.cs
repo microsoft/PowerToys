@@ -58,13 +58,17 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void CheckForUpdatesShouldShowProgressAndSendCurrentSettings()
+        public void CheckForUpdatesShouldShowProgressAndSendActionOnly()
         {
             string sentMessage = null;
             var generalSettings = new GeneralSettings
             {
                 IncludePrereleaseUpdates = true,
             };
+            generalSettings.Enabled.AlwaysOnTop = false;
+            generalSettings.Enabled.FancyZones = false;
+            generalSettings.Enabled.PowerLauncher = true;
+            var settingsBeforeCheck = generalSettings.ToJsonString();
             var viewModel = CreateViewModel(
                 new TestSettingsRepository(generalSettings),
                 new UpdatingSettings(),
@@ -80,9 +84,12 @@ namespace ViewModelTests
             Assert.IsTrue(viewModel.IsActivityVisible);
             Assert.IsFalse(viewModel.CanStartAction);
 
-            var action = JsonSerializer.Deserialize<GeneralSettingsCustomAction>(sentMessage);
-            Assert.IsTrue(action.GeneralSettingsAction.GeneralSettings.IncludePrereleaseUpdates);
-            Assert.AreEqual("check_for_updates", action.GeneralSettingsAction.GeneralSettings.CustomActionName);
+            using var message = JsonDocument.Parse(sentMessage);
+            var generalAction = message.RootElement.GetProperty("action").GetProperty("general");
+            Assert.AreEqual("check_for_updates", generalAction.GetProperty("action_name").GetString());
+            Assert.IsFalse(generalAction.TryGetProperty("enabled", out _));
+            Assert.IsFalse(generalAction.TryGetProperty("include_prerelease_updates", out _));
+            Assert.AreEqual(settingsBeforeCheck, generalSettings.ToJsonString());
         }
 
         [TestMethod]

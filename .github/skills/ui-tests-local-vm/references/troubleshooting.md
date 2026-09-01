@@ -32,7 +32,8 @@ Classify the first failed boundary before changing test code.
 
 | Symptom | Boundary | Action |
 |---|---|---|
-| No `status.json` but the task ended | Guest runner/finalization | Inspect scheduled-task `LastTaskResult`, the guest-local transcript, and the request path. A completed UI is not a completion signal. |
+| No `status.json` but the task ended | Guest runner/finalization | The controller stops on the bounded task-state check. Inspect `LastTaskResult`, the guest-local transcript, and the request path; task exit is not completion. |
+| Test task remains `Ready` and has no `LastRunTime` | Task dispatch | The controller stops after the 30-second launch deadline. Verify the interactive PTUser session and Task Scheduler rather than waiting for the suite timeout. |
 | Interactive `powershell.exe` task stays `Running`, but a local `cmd.exe` probe writes immediately | PTUser PowerShell task host | Stop and unregister only the failed task. Stage and extract payloads through the administrator session, then run a guest-local `.cmd` as an `Interactive`/`Limited` PTUser task. Write the exit code and TRX locally and export one evidence archive afterwards. |
 | `status.json` exists but is temporarily empty | Create/write race | Wait for parseable JSON with matching `RunId`; never finish on file existence alone. The controller already does this. |
 | One attachment subtree fails export | Transient copy failure | Inspect `ExportErrors`. The shared runner uses bounded `robocopy` retries for directories and writes status even when an artifact cannot be copied. |

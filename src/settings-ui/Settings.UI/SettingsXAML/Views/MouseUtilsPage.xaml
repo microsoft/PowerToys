@@ -31,7 +31,10 @@
                             x:Uid="MouseUtils_Enable_CursorWrap"
                             HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CursorWrap.png}"
                             IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                            <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=TwoWay}" />
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="MouseUtils_CursorWrapToggleId"
+                                IsOn="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
 

@@ -4,9 +4,7 @@ name: AI Issue Triage
 description: Maintain one concise issue summary with likely duplicates and missing-information guidance.
 on:
   issues:
-    types: [opened, edited, reopened]
-  issue_comment:
-    types: [created]
+    types: [opened, edited]
   roles: all
 user-rate-limit:
   max-runs-per-window: 5
@@ -14,7 +12,37 @@ user-rate-limit:
 concurrency:
   group: issue-triage-${{ github.event.issue.number }}
   cancel-in-progress: true
-engine: copilot
+engine:
+  id: copilot
+  args:
+    - "--deny-tool"
+    - "write"
+    - "--deny-tool"
+    - "shell(cat)"
+    - "--deny-tool"
+    - "shell(date)"
+    - "--deny-tool"
+    - "shell(echo)"
+    - "--deny-tool"
+    - "shell(grep)"
+    - "--deny-tool"
+    - "shell(head)"
+    - "--deny-tool"
+    - "shell(ls)"
+    - "--deny-tool"
+    - "shell(printf)"
+    - "--deny-tool"
+    - "shell(pwd)"
+    - "--deny-tool"
+    - "shell(sort)"
+    - "--deny-tool"
+    - "shell(tail)"
+    - "--deny-tool"
+    - "shell(uniq)"
+    - "--deny-tool"
+    - "shell(wc)"
+    - "--deny-tool"
+    - "shell(yq)"
 model: small
 max-turns: 5
 max-ai-credits: 10
@@ -25,6 +53,11 @@ permissions:
   contents: read
   issues: read
   copilot-requests: write
+tools:
+  bash: [safeoutputs]
+  edit: false
+  github: false
+  cli-proxy: true
 steps:
   - name: Set up Python
     uses: actions/setup-python@v7.0.0
@@ -37,13 +70,14 @@ steps:
       GH_AW_SAFE_OUTPUTS: ${{ runner.temp }}/gh-aw/safeoutputs/outputs.jsonl
     run: >-
       python .github/scripts/issue-triage/issue-context.py "$GITHUB_EVENT_PATH"
-      ".github/issue-context.md" ".github/triage-event.json"
+      "/tmp/gh-aw/issue-context.md"
+      "/tmp/gh-aw/triage-event.json"
   - name: Prepare sanitized bug report context
     if: steps.prepare.outputs.should_process == 'true'
     run: >-
       python .github/scripts/issue-triage/bug-report-analyzer.py
-      ".github/triage-event.json"
-      ".github/bug-report-context.md"
+      "/tmp/gh-aw/triage-event.json"
+      "/tmp/gh-aw/bug-report-context.md"
 safe-outputs:
   report-failure-as-issue: false
   noop:
@@ -52,9 +86,12 @@ safe-outputs:
     publish-triage-summary:
       description: Create or update the canonical triage summary for the triggering issue.
       runs-on: ubuntu-slim
-      if: needs.detection.result == 'success'
+      if: >-
+        needs.detection.result == 'success' &&
+        needs.detection.outputs.detection_success == 'true'
       output: The canonical triage summary was published.
       permissions:
+        contents: read
         issues: write
       inputs:
         summary:
@@ -124,8 +161,45 @@ safe-outputs:
           type: choice
           options: [ENGLISH, NON_ENGLISH, UNCERTAIN]
       steps:
+        - name: Check out trusted workflow source
+          uses: actions/checkout@v7.0.1
+          with:
+            ref: ${{ github.sha }}
+            persist-credentials: false
+        - name: Set up Python
+          uses: actions/setup-python@v7.0.0
+          with:
+            python-version: "3.12"
+        - name: Rebuild current deterministic evidence
+          id: refresh
+          env:
+            GITHUB_TOKEN: ${{ github.token }}
+            ISSUE_TRIAGE_FORCE_EVIDENCE: "true"
+          run: >-
+            python .github/scripts/issue-triage/issue-context.py
+            "$GITHUB_EVENT_PATH"
+            "$RUNNER_TEMP/verified-issue-context.md"
+            "$RUNNER_TEMP/verified-triage-event.json"
+            "$RUNNER_TEMP/verified-evidence.json"
+        - name: Rebuild sanitized bug report context
+          if: steps.refresh.outputs.should_process == 'true'
+          run: >-
+            python .github/scripts/issue-triage/bug-report-analyzer.py
+            "$RUNNER_TEMP/verified-triage-event.json"
+            "$RUNNER_TEMP/verified-bug-report-context.md"
+        - name: Verify agent output against current evidence
+          if: steps.refresh.outputs.should_process == 'true'
+          run: >-
+            python .github/scripts/issue-triage/verify-agent-output.py
+            "$GH_AW_AGENT_OUTPUT"
+            "$RUNNER_TEMP/verified-evidence.json"
+            "$RUNNER_TEMP/verified-bug-report-context.md"
+            "$RUNNER_TEMP/verified-triage-output.json"
         - name: Upsert canonical triage summary
+          if: steps.refresh.outputs.should_process == 'true'
           uses: actions/github-script@v9.0.0
+          env:
+            ISSUE_TRIAGE_VERIFIED_OUTPUT: ${{ runner.temp }}/verified-triage-output.json
           with:
             script: |
               const fs = require('fs');
@@ -145,6 +219,12 @@ safe-outputs:
                 core.setFailed('The agent did not provide a triage summary');
                 return;
               }
+              const verifiedPath = process.env.ISSUE_TRIAGE_VERIFIED_OUTPUT;
+              if (!verifiedPath || !fs.existsSync(verifiedPath)) {
+                core.setFailed('Verified triage output is unavailable');
+                return;
+              }
+              const verified = JSON.parse(fs.readFileSync(verifiedPath, 'utf8'));
 
               const bounded = (value, max, fallback) => {
                 if (typeof value !== 'string') return fallback;
@@ -193,25 +273,12 @@ safe-outputs:
                 .replace(/\b(?:machine|computer|user)(?:name)?\b\s*[:=]\s*[^\s,;]+/gi, '<identity>=<redacted>');
 
               const summary = bounded(item.summary, 800, 'The issue needs maintainer review.');
-              const inputSha256 = String(item.input_sha256 || '').toLowerCase();
-              if (!/^[0-9a-f]{64}$/.test(inputSha256)) {
-                core.setFailed('input_sha256 is invalid');
-                return;
-              }
-              const area = bounded(item.suggested_area, 100, 'Unknown');
-              const requestedProductLabel = bounded(item.product_label, 100, 'None');
-              const issueBody = String(context.payload.issue?.body || '');
-              const versionSection = issueBody.match(
-                /###\s+Microsoft PowerToys version\s*\r?\n+([\s\S]*?)(?=\r?\n###|\s*$)/i
-              )?.[1] || '';
-              const reportedVersion = versionSection.match(
-                /\b(?:v)?(\d+(?:\.\d+){1,3}(?:-[A-Za-z0-9.-]+)?)\b/
-              )?.[1];
-              const powertoysVersion = reportedVersion || bounded(
-                item.powertoys_version,
-                50,
-                'Not provided'
-              );
+              const inputSha256 = verified.input_sha256;
+              const area = verified.suggested_area;
+              const requestedProductLabel = verified.product_label;
+              const powertoysVersion = verified.powertoys_version;
+              const reportedVersion =
+                powertoysVersion === 'Not provided' ? null : powertoysVersion;
               const numericVersion = value => {
                 const match = String(value || '').match(
                   /\b(?:v)?(\d+(?:\.\d+){1,3})(?:-[A-Za-z0-9.-]+)?\b/
@@ -268,10 +335,7 @@ safe-outputs:
                 800,
                 hasMissingInformation ? 'Additional investigation details are needed.' : 'None'
               );
-              const requestedIssueKind = String(item.issue_kind || '').toUpperCase();
-              const issueKind = ['BUG', 'OTHER'].includes(requestedIssueKind)
-                ? requestedIssueKind
-                : 'OTHER';
+              const issueKind = verified.issue_kind;
               if (
                 issueKind === 'OTHER' &&
                 /\b(?:bug report|report ZIP|ZIP file)\b/i.test(missingInformation)
@@ -279,30 +343,9 @@ safe-outputs:
                 hasMissingInformation = false;
                 missingInformation = 'None';
               }
-              const requestedReproductionQuality = String(
-                item.reproduction_quality || ''
-              ).toUpperCase();
-              const reproductionQuality = [
-                'SUFFICIENT', 'INSUFFICIENT', 'NOT_APPLICABLE'
-              ].includes(requestedReproductionQuality)
-                ? requestedReproductionQuality
-                : 'NOT_APPLICABLE';
-              const requestedBugReportRequirement = String(
-                item.bug_report_requirement || ''
-              ).toUpperCase();
-              const bugReportRequirement = [
-                'REQUIRED', 'RECOMMENDED', 'OPTIONAL', 'NOT_APPLICABLE'
-              ].includes(requestedBugReportRequirement)
-                ? requestedBugReportRequirement
-                : issueKind === 'BUG' ? 'RECOMMENDED' : 'NOT_APPLICABLE';
-              const requestedBugReportStatus = String(
-                item.bug_report_status || ''
-              ).toUpperCase();
-              const bugReportStatus = [
-                'ANALYZED', 'NOT_FOUND', 'REJECTED', 'NOT_APPLICABLE'
-              ].includes(requestedBugReportStatus)
-                ? requestedBugReportStatus
-                : 'NOT_APPLICABLE';
+              const reproductionQuality = verified.reproduction_quality;
+              const bugReportRequirement = verified.bug_report_requirement;
+              const bugReportStatus = verified.bug_report_status;
               const requestedBugReportConfidence = String(
                 item.bug_report_confidence || ''
               ).toUpperCase();
@@ -363,12 +406,29 @@ safe-outputs:
               }
 
               const issueNumber = context.issue.number;
+              const getCurrentIssue = async () => {
+                const response = await github.rest.issues.get({
+                  ...context.repo,
+                  issue_number: issueNumber
+                });
+                return response.data;
+              };
+              const skipWriteIfClosed = async action => {
+                const currentIssue = await getCurrentIssue();
+                if (currentIssue.state === 'open') return false;
+                core.notice(`Issue is closed; ${action} was skipped.`);
+                return true;
+              };
+              const allowedDuplicateNumbers = new Set(
+                verified.requested_duplicate_numbers
+              );
               const verifiedDuplicates = [];
               const seen = new Set();
               for (const candidate of requestedDuplicates) {
                 const number = Number(candidate?.number);
                 if (!Number.isSafeInteger(number) || number <= 0 ||
-                    number === issueNumber || seen.has(number)) {
+                    number === issueNumber || seen.has(number) ||
+                    !allowedDuplicateNumbers.has(number)) {
                   continue;
                 }
                 seen.add(number);
@@ -409,7 +469,7 @@ safe-outputs:
                     ].join('\n')
                   ).join('\n\n')
                 : '';
-              const author = context.payload.issue?.user?.login;
+              const author = verified.issue_author;
               const authorActions = [];
               if (hasMissingInformation) {
                 authorActions.push(
@@ -452,9 +512,6 @@ safe-outputs:
               const productLabels = repositoryLabels
                 .map(label => label.name)
                 .filter(name => name.startsWith('Product-'));
-              const versionLabels = repositoryLabels
-                .map(label => label.name)
-                .filter(name => /^\d+\.\d+(?:\.\d+)?(?:-.+)?$/.test(name));
               const normalizeLabel = value => String(value)
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, '');
@@ -466,11 +523,6 @@ safe-outputs:
                 ) ||
                 productLabels.find(
                   label => label.toLowerCase() === requestedProductLabel.toLowerCase()
-                ) ||
-                null;
-              const desiredVersionLabel =
-                versionLabels.find(
-                  label => label.toLowerCase() === powertoysVersion.toLowerCase()
                 ) ||
                 null;
 
@@ -556,6 +608,7 @@ safe-outputs:
               );
               const body = bodyLines.join('\n');
 
+              if (await skipWriteIfClosed('triage publication')) return;
               const comments = await github.paginate(github.rest.issues.listComments, {
                 ...context.repo,
                 issue_number: issueNumber,
@@ -569,6 +622,7 @@ safe-outputs:
                 )
                 .sort((left, right) => left.id - right.id)[0];
 
+              if (await skipWriteIfClosed('triage publication')) return;
               let comment;
               if (canonical) {
                 comment = await github.rest.issues.updateComment({
@@ -591,12 +645,11 @@ safe-outputs:
                 );
               }
 
+              if (await skipWriteIfClosed('triage label updates')) return;
               const needsAuthorFeedback =
                 needsEnglishTranslation || hasMissingInformation;
               const currentLabels = new Set(
-                (context.payload.issue?.labels || [])
-                  .map(label => typeof label === 'string' ? label : label?.name)
-                  .filter(Boolean)
+                verified.current_labels
               );
               if (needsAuthorFeedback && !currentLabels.has('Needs-Author-Feedback')) {
                 await github.rest.issues.addLabels({
@@ -623,31 +676,10 @@ safe-outputs:
                   labels: [desiredProductLabel]
                 });
               }
-              for (const currentLabel of currentLabels) {
-                if (
-                  versionLabels.includes(currentLabel) &&
-                  currentLabel !== desiredVersionLabel
-                ) {
-                  try {
-                    await github.rest.issues.removeLabel({
-                      ...context.repo,
-                      issue_number: issueNumber,
-                      name: currentLabel
-                    });
-                  } catch (error) {
-                    if (error.status !== 404) throw error;
-                  }
-                }
-              }
-              if (desiredVersionLabel && !currentLabels.has(desiredVersionLabel)) {
-                await github.rest.issues.addLabels({
-                  ...context.repo,
-                  issue_number: issueNumber,
-                  labels: [desiredVersionLabel]
-                });
-              }
               if (verifiedDuplicates.length) {
+                if (await skipWriteIfClosed('the duplicate suggestion')) return;
                 const strongest = verifiedDuplicates[0];
+                const suggestionStartedAt = Math.floor(Date.now() / 1000);
                 const response = await github.request(
                   'PATCH /repos/{owner}/{repo}/issues/{issue_number}',
                   {
@@ -670,14 +702,27 @@ safe-outputs:
                 );
 
                 if (response.data?.state === 'closed') {
-                  await github.rest.issues.update({
-                    ...context.repo,
-                    issue_number: issueNumber,
-                    state: 'open'
-                  });
-                  core.setFailed(
-                    'GitHub applied the close instead of holding it for review; the issue was reopened'
-                  );
+                  const currentIssue = await getCurrentIssue();
+                  const closedAt = Date.parse(currentIssue.closed_at);
+                  const closedBySuggestion =
+                    currentIssue.state === 'closed' &&
+                    currentIssue.closed_by?.login === 'github-actions[bot]' &&
+                    Number.isFinite(closedAt) &&
+                    Math.floor(closedAt / 1000) >= suggestionStartedAt;
+                  if (closedBySuggestion) {
+                    await github.rest.issues.update({
+                      ...context.repo,
+                      issue_number: issueNumber,
+                      state: 'open'
+                    });
+                    core.setFailed(
+                      'GitHub applied the close instead of holding it for review; the issue was reopened'
+                    );
+                  } else {
+                    core.setFailed(
+                      'GitHub returned the issue as closed after the duplicate suggestion, but the workflow did not reopen it because the closure was not caused by this request'
+                    );
+                  }
                 }
               }
 ---
@@ -686,9 +731,8 @@ safe-outputs:
 
 ## Task
 
-A GitHub issue was opened, edited, reopened, received a new author bug report,
-or received `/triage refresh` from a maintainer. Read
-`.github/issue-context.md` and `.github/bug-report-context.md` exactly once.
+A GitHub issue was opened or edited. Read `/tmp/gh-aw/issue-context.md` and
+`/tmp/gh-aw/bug-report-context.md` exactly once.
 They contain deterministic, bounded issue facts, ranked duplicate candidates,
 redacted diagnostics, and a coarse language signal. Never download attachments
 or search GitHub yourself. Judge the supplied candidates, summarize the issue,
@@ -708,7 +752,7 @@ duplicate exists, and no author action is needed.
 
 ## Duplicate judgment
 
-- Consider only candidates supplied in `.github/issue-context.md`.
+- Consider only candidates supplied in `/tmp/gh-aw/issue-context.md`.
 - The deterministic retrieval score is not a duplicate verdict.
 - Exclude the triggering issue.
 - Return at most five candidates and only include high-confidence matches.
@@ -768,12 +812,12 @@ the rest of triage from running.
 Call `publish_triage_summary` exactly once with:
 
 - `input_sha256`: copy the exact `Input SHA-256` value from
-  `.github/issue-context.md`.
+  `/tmp/gh-aw/issue-context.md`.
 - `summary`: a factual one- or two-sentence summary.
 - `suggested_area`: copy `Detected area` from the deterministic evidence.
 - `product_label`: copy `Candidate product label` from the deterministic
-  evidence. When the evidence says `None`, send the literal string `None`;
-  never send JSON null.
+  evidence. When it says `None`, you may select one exact label from
+  `Allowed product label candidates`, or send `None`. Never invent a label.
 - `powertoys_version`: copy `PowerToys version` from the deterministic evidence.
 
 The deterministic publisher independently verifies the latest stable release.
@@ -809,6 +853,7 @@ documented literal such as `None`, `Not provided`, or a short status explanation
 instead of JSON null.
 
 Do not manage labels or issue state directly. The deterministic publisher
-manages `Needs-Author-Feedback`, product/version labels, and the pending native
-duplicate-close suggestion from this single output. Every close suggestion
-remains pending for a human to accept or decline.
+manages `Needs-Author-Feedback`, product labels, and the pending native
+duplicate-close suggestion from this single output. It never adds or removes
+version labels. Every close suggestion remains pending for a human to accept or
+decline.

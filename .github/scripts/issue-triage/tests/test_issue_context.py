@@ -1,4 +1,6 @@
 import importlib.util
+import json
+import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -45,9 +47,16 @@ _No response_
 class FakeApi:
     repository = "owner/repo"
 
-    def __init__(self, results=None, comments=None, latest_release=None):
+    def __init__(
+        self,
+        results=None,
+        comments=None,
+        latest_release=None,
+        current_issue=None,
+    ):
         self.results = results or []
         self.comments = comments or []
+        self.current_issue = current_issue
         self.latest_release = latest_release or {
             "tag_name": "v0.100.2",
             "prerelease": False,
@@ -56,6 +65,9 @@ class FakeApi:
 
     def list_comments(self, _issue_number):
         return self.comments
+
+    def get_issue(self, _issue_number):
+        return self.current_issue
 
     def list_labels(self):
         return [{"name": "Product-Keyboard Manager"}]
@@ -76,6 +88,16 @@ class IssueContextTests(unittest.TestCase):
         self.assertEqual(CONTEXT.parse_area(BUG_BODY), "Keyboard Manager")
         self.assertEqual(CONTEXT.parse_version(BUG_BODY), "0.100.2")
         self.assertEqual(CONTEXT.reproduction_quality(BUG_BODY), "SUFFICIENT")
+
+    def test_parses_combined_version_and_release_channel(self):
+        body = BUG_BODY.replace(
+            "### Microsoft PowerToys version\n\n0.100.2",
+            "### Microsoft PowerToys version and release channel\n\n"
+            "0.101.2211.0 - Preview (Insider)",
+        )
+
+        self.assertTrue(CONTEXT.is_bug_template(body))
+        self.assertEqual(CONTEXT.parse_version(body), "0.101.2211.0")
 
     def test_version_status_distinguishes_outdated_current_and_preview(self):
         self.assertEqual(
@@ -128,6 +150,20 @@ class IssueContextTests(unittest.TestCase):
         self.assertEqual(
             CONTEXT.extract_section(body, "Actual Behavior"),
             "Nothing happens and the current settings page remains open.",
+        )
+        self.assertEqual(CONTEXT.reproduction_quality(body), "SUFFICIENT")
+
+    def test_natural_language_shortcut_reproduction_is_sufficient(self):
+        body = BUG_BODY.replace(
+            "1. Open Keyboard Manager.\n"
+            "2. Select Remap a shortcut.\n"
+            "3. Press a key and observe that the editor closes.",
+            "Make a key remap, (alt (left) + tab), then try and use it. "
+            "It's disabled!\n\n"
+            "Now hold alt + tab, then press w, or any other key. It activates it.",
+        ).replace(
+            "The editor exits.",
+            "Alt+Tab still functions when using other keys alongside it.",
         )
         self.assertEqual(CONTEXT.reproduction_quality(body), "SUFFICIENT")
 
@@ -272,6 +308,130 @@ class IssueContextTests(unittest.TestCase):
             "Product-General",
         )
 
+    def test_title_prefix_maps_to_existing_product_label(self):
+        labels = [{"name": "Product-Screen Ruler"}, {"name": "Product-FancyZones"}]
+        self.assertEqual(
+            CONTEXT.title_bracket_segments("[Screen Ruler] Settings crash"),
+            ["Screen Ruler"],
+        )
+        self.assertEqual(
+            CONTEXT.title_bracket_segments("[Screen Ruler][Settings] crash"),
+            ["Screen Ruler", "Settings"],
+        )
+        self.assertEqual(CONTEXT.title_bracket_segments("No brackets here"), [])
+        self.assertEqual(
+            CONTEXT.title_product_label("[Screen Ruler] Settings crash", labels),
+            "Product-Screen Ruler",
+        )
+        self.assertEqual(
+            CONTEXT.title_product_label("[Bug] something broke", labels),
+            "None",
+        )
+
+    def test_available_product_labels_are_sorted_and_filtered(self):
+        labels = [
+            {"name": "Product-Screen Ruler"},
+            {"name": "Needs-Triage"},
+            {"name": "Product-Awake"},
+        ]
+        self.assertEqual(
+            CONTEXT.available_product_labels(labels),
+            ["Product-Awake", "Product-Screen Ruler"],
+        )
+
+    def test_allowed_product_labels_require_explicit_issue_text(self):
+        labels = [
+            {"name": "Product-Screen Ruler"},
+            {"name": "Product-FancyZones"},
+            {"name": "Product-General"},
+        ]
+        self.assertEqual(
+            CONTEXT.allowed_product_labels(
+                "Ruler settings problem",
+                "The Screen Ruler overlay is misplaced.",
+                labels,
+                "None",
+            ),
+            ["Product-Screen Ruler"],
+        )
+
+    def test_prepare_labels_bracketed_title_without_area_section(self):
+        issue = {
+            "number": 42,
+            "title": "[Screen Ruler] Settings crashes on legacy units value",
+            "body": (
+                "## Description\n\nSettings crashes when leaving the Screen "
+                "Ruler page with a legacy measurement-unit value."
+            ),
+            "user": {"login": "alice"},
+            "labels": [],
+        }
+
+        class ScreenRulerApi(FakeApi):
+            def list_labels(self):
+                return [{"name": "Product-Screen Ruler"}]
+
+        context, _, should_process = CONTEXT.prepare(
+            {"action": "opened", "issue": issue},
+            ScreenRulerApi(),
+        )
+        self.assertTrue(should_process)
+        self.assertIn("Detected area: Screen Ruler", context)
+        self.assertIn("Candidate product label: Product-Screen Ruler", context)
+        self.assertIn(
+            "Allowed product label candidates: Product-Screen Ruler",
+            context,
+        )
+
+    def test_title_prefix_overrides_inferred_area_without_template_selection(self):
+        issue = {
+            "number": 42,
+            "title": "[Screen Ruler] FancyZones-style overlay is misplaced",
+            "body": "The FancyZones overlay comparison shows the ruler is misplaced.",
+            "user": {"login": "alice"},
+            "labels": [],
+        }
+
+        class ProductApi(FakeApi):
+            def list_labels(self):
+                return [
+                    {"name": "Product-FancyZones"},
+                    {"name": "Product-Screen Ruler"},
+                ]
+
+        context, _, _ = CONTEXT.prepare(
+            {"action": "opened", "issue": issue},
+            ProductApi(),
+        )
+        self.assertIn("Detected area: Screen Ruler", context)
+        self.assertIn("Candidate product label: Product-Screen Ruler", context)
+
+    def test_explicit_template_area_takes_precedence_over_title_prefix(self):
+        issue = {
+            "number": 42,
+            "title": "[Screen Ruler] FancyZones editor issue",
+            "body": (
+                "### Area(s) with issue?\n\nFancyZones\n\n"
+                "### Description\n\nThe FancyZones editor is misplaced."
+            ),
+            "user": {"login": "alice"},
+            "labels": [],
+        }
+
+        class ProductApi(FakeApi):
+            def list_labels(self):
+                return [
+                    {"name": "Product-FancyZones"},
+                    {"name": "Product-Screen Ruler"},
+                ]
+
+        context, _, _ = CONTEXT.prepare(
+            {"action": "opened", "issue": issue},
+            ProductApi(),
+        )
+        self.assertIn("Detected area: FancyZones", context)
+        self.assertIn("Candidate product label: Product-FancyZones", context)
+
     def test_context_redacts_report_attachment_urls(self):
         context = CONTEXT.render_context(
             {
@@ -338,6 +498,17 @@ class IssueContextTests(unittest.TestCase):
         }
         self.assertEqual(CONTEXT.should_process(event, None), (False, False))
 
+    def test_dedupe_digest_issue_is_never_triaged(self):
+        event = {
+            "action": "opened",
+            "sender": {"login": "github-actions[bot]"},
+            "issue": {
+                "number": 11,
+                "labels": [{"name": "dedupe-digest"}],
+            },
+        }
+        self.assertEqual(CONTEXT.should_process(event, None), (False, False))
+
     def test_unrelated_comment_writes_noop(self):
         event = {
             "action": "created",
@@ -373,6 +544,31 @@ class IssueContextTests(unittest.TestCase):
         self.assertFalse(should_process)
         self.assertEqual(api.queries, [])
 
+    def test_closed_issue_writes_noop_without_api_reads(self):
+        event = {
+            "action": "edited",
+            "issue": {
+                "number": 10,
+                "state": "closed",
+                "title": "Keyboard Manager exits",
+                "body": BUG_BODY,
+                "user": {"login": "alice"},
+                "labels": [],
+            },
+        }
+        api = FakeApi()
+        with (
+            mock.patch.object(CONTEXT, "write_noop") as noop,
+            mock.patch.object(
+                api,
+                "list_comments",
+                side_effect=AssertionError("Closed issues must not read comments"),
+            ),
+        ):
+            _, _, should_process = CONTEXT.prepare(event, api)
+        noop.assert_called_once_with("Closed issues are not triaged")
+        self.assertFalse(should_process)
+
     def test_prepare_emits_bounded_ranked_candidates(self):
         issue = {
             "number": 10,
@@ -401,6 +597,126 @@ class IssueContextTests(unittest.TestCase):
         self.assertIn("Author body status: PRESENT", context)
         self.assertEqual(normalized["issue"]["number"], 10)
         self.assertTrue(should_process)
+
+    def test_force_evidence_uses_current_issue_and_emits_allowlists(self):
+        stale_issue = {
+            "number": 10,
+            "title": "Old title",
+            "body": "",
+            "user": {"login": "alice"},
+            "labels": [],
+        }
+        current_issue = {
+            "number": 10,
+            "title": "Screen Ruler overlay problem",
+            "body": "The Screen Ruler overlay is misplaced.",
+            "user": {"login": "alice"},
+            "labels": [],
+        }
+
+        class VerificationApi(FakeApi):
+            def list_labels(self):
+                return [{"name": "Product-Screen Ruler"}]
+
+        _, normalized, should_process, evidence = CONTEXT.prepare_with_evidence(
+            {"action": "edited", "issue": stale_issue},
+            VerificationApi(current_issue=current_issue),
+            force_evidence=True,
+        )
+        self.assertTrue(should_process)
+        self.assertEqual(normalized["issue"]["title"], current_issue["title"])
+        self.assertEqual(
+            evidence["allowed_product_labels"],
+            ["Product-Screen Ruler"],
+        )
+
+    def test_force_evidence_skips_issue_closed_after_trigger(self):
+        stale_issue = {
+            "number": 10,
+            "state": "open",
+            "title": "Keyboard Manager exits",
+            "body": BUG_BODY,
+            "user": {"login": "alice"},
+            "labels": [],
+        }
+        current_issue = {**stale_issue, "state": "closed"}
+        api = FakeApi(current_issue=current_issue)
+
+        with (
+            mock.patch.object(CONTEXT, "write_noop") as noop,
+            mock.patch.object(
+                api,
+                "list_comments",
+                side_effect=AssertionError("Closed issues must not read comments"),
+            ),
+        ):
+            _, normalized, should_process, evidence = CONTEXT.prepare_with_evidence(
+                {"action": "opened", "issue": stale_issue},
+                api,
+                force_evidence=True,
+            )
+
+        noop.assert_called_once_with("Closed issues are not triaged")
+        self.assertEqual(normalized["issue"]["state"], "closed")
+        self.assertFalse(should_process)
+        self.assertIsNone(evidence)
+
+    def test_main_cleanly_skips_closed_issue_during_evidence_refresh(self):
+        stale_issue = {
+            "number": 10,
+            "state": "open",
+            "title": "Keyboard Manager exits",
+            "body": BUG_BODY,
+            "user": {"login": "alice"},
+            "labels": [],
+        }
+        current_issue = {**stale_issue, "state": "closed"}
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            event_path = root / "event.json"
+            context_path = root / "context.md"
+            normalized_event_path = root / "normalized-event.json"
+            evidence_path = root / "evidence.json"
+            output_path = root / "github-output.txt"
+            event_path.write_text(
+                json.dumps({"action": "opened", "issue": stale_issue}),
+                encoding="utf-8",
+            )
+
+            with (
+                mock.patch.object(
+                    CONTEXT,
+                    "GitHubApi",
+                    return_value=FakeApi(current_issue=current_issue),
+                ),
+                mock.patch.object(
+                    CONTEXT.sys,
+                    "argv",
+                    [
+                        "issue-context.py",
+                        str(event_path),
+                        str(context_path),
+                        str(normalized_event_path),
+                        str(evidence_path),
+                    ],
+                ),
+                mock.patch.dict(
+                    CONTEXT.os.environ,
+                    {
+                        "GITHUB_OUTPUT": str(output_path),
+                        "ISSUE_TRIAGE_FORCE_EVIDENCE": "true",
+                    },
+                    clear=True,
+                ),
+            ):
+                self.assertEqual(CONTEXT.main(), 0)
+
+            self.assertFalse(evidence_path.exists())
+            self.assertEqual(
+                output_path.read_text(encoding="utf-8"),
+                "should_process=false\n",
+            )
 
     def test_candidate_retrieval_only_returns_older_issues(self):
         issue = {

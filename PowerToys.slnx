@@ -169,6 +169,10 @@
   <Folder Name="/modules/AlwaysOnTop/">
     <Project Path="src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.vcxproj" Id="1dc3be92-ce89-43fb-8110-9c043a2fe7a2" />
     <Project Path="src/modules/alwaysontop/AlwaysOnTopModuleInterface/AlwaysOnTopModuleInterface.vcxproj" Id="48a0a19e-a0be-4256-acf8-cc3b80291af9" />
+    <Project Path="src/modules/alwaysontop/Tests/AlwaysOnTop.UITests/AlwaysOnTop.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/modules/awake/">
     <Project Path="src/modules/awake/Awake.ModuleServices/Awake.ModuleServices.csproj">
@@ -349,6 +353,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.PowerToys.UnitTests/Microsoft.CmdPal.Ext.PowerToys.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.Registry.UnitTests/Microsoft.CmdPal.Ext.Registry.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -458,7 +466,15 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/fancyzones/FancyZones.UITests.Next/FancyZones.UITests.Next.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/fancyzones/FancyZonesEditor.UITests/FancyZonesEditor.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/fancyzones/FancyZonesEditor.UITests.Next/FancyZonesEditor.UITests.Next.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -593,10 +609,18 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/MouseUtils/MouseUtils.UITests.Next/MouseUtils.UITests.Next.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/modules/keyboardmanager/Tests/">
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEditorTest/KeyboardManagerEditorTest.vcxproj" Id="62173d9a-6724-4c00-a1c8-fb646480a9ec" />
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEngineTest/KeyboardManagerEngineTest.vcxproj" Id="7f4b3a60-bc27-45a7-8000-68b0b6ea7466" />
+    <Project Path="src/modules/keyboardmanager/Tests/KeyboardManager.UITests/KeyboardManager.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/modules/launcher/">
     <Project Path="src/modules/launcher/Microsoft.Launcher/Microsoft.Launcher.vcxproj" Id="e364f67b-bb12-4e91-b639-355866ebcd8b">
@@ -841,6 +865,7 @@
     </Project>
   </Folder>
   <Folder Name="/modules/MeasureTool/Tests/">
+    <Project Path="src/modules/MeasureTool/Tests/MeasureToolCore.UnitTests/MeasureToolCore.UnitTests.vcxproj" Id="1b76e770-b56f-486f-89d9-9dfe7c5289e8" />
     <Project Path="src/modules/MeasureTool/Tests/ScreenRuler.UITests/ScreenRuler.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -954,6 +979,10 @@
       <Build Solution="*|ARM64" Project="false" />
     </Project>
     <Project Path="src/modules/powerrename/PowerRenameUITest/PowerRename.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/powerrename/PowerRename.UITests.Next/PowerRename.UITests.Next.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -1219,6 +1248,7 @@
     <File Path="src/.editorconfig" />
     <File Path="src/Common.Dotnet.AotCompatibility.props" />
     <File Path="src/Common.Dotnet.CsWinRT.props" />
+    <File Path="src/Common.Dotnet.props" />
     <File Path="src/Common.SelfContained.props" />
     <File Path="src/Monaco.props" />
     <File Path="src/Solution.props" />

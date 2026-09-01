@@ -1,8 +1,8 @@
 # AI-assisted issue triage
 
 The workflow in `.github/workflows/issue-triage.md` maintains one canonical
-triage comment for newly opened, edited, or reopened issues. It combines
-deterministic preprocessing with one bounded GitHub Copilot pass.
+triage comment when an issue is opened or its original title/body is edited. It
+combines deterministic preprocessing with one bounded GitHub Copilot pass.
 
 ## Rules
 
@@ -19,12 +19,16 @@ deterministic preprocessing with one bounded GitHub Copilot pass.
 - Mention the author once and list only needed or recommended actions.
 - Apply `Needs-Author-Feedback` when blocking information or an English
   translation is required. Removing the label disables scheduled closure.
-- Add a matching primary `Product-*` label and the reported version label
-  without removing existing product or maintainer labels.
+- Add a matching primary `Product-*` label without removing existing product or
+  maintainer labels.
+- Never add, remove, or otherwise manage version labels.
 - Submit duplicate closure as a native GitHub suggestion. A maintainer must
   accept or decline it; acceptance closes the issue as a duplicate and links
   it to the selected canonical issue.
 - Never close an issue directly from the model output.
+- Skip closed issues before agent execution and recheck their state immediately
+  before publishing. Never reopen a closure that cannot be attributed to the
+  workflow's duplicate-suggestion request.
 
 ## Reproduction and diagnostics
 
@@ -49,25 +53,36 @@ that retain `Needs-Author-Feedback` for seven days without activity.
 
 - An author comment removes `Needs-Author-Feedback` and returns the item to
   team triage.
-- A PR push removes `Needs-Author-Feedback`.
+- A push to a non-draft PR reruns PR intake, which recalculates
+  `Needs-Author-Feedback`.
 - Manual label removal immediately makes the item ineligible for scheduled
   closure.
 
 ## Cost and safety controls
 
 - The `small` model alias is limited to five turns and 10 AI credits per run.
-- A content hash skips unchanged edits and unrelated comments.
+- The workflow subscribes only to issue creation and edits to the original
+  issue; comments and reopen events do not trigger it.
 - Per-user rate limits, daily AI-credit limits, and per-issue concurrency bound
-  repeated execution.
-- The agent has read-only issue/repository access. A separate validated
-  safe-output job owns comment, label, and duplicate-suggestion writes.
+  repeated issue creation or edits.
+- The agent has no general shell or GitHub API tools. Its only shell command is
+  the structured safe-output CLI proxy, and Copilot's file-write tool is
+  explicitly denied to work around gh-aw v0.86.2 treating `edit: false` as
+  writable.
+- Threat detection fails closed; publication requires an explicit successful
+  detection result.
+- The publishing job rebuilds evidence from the current issue and accepts only
+  deterministic product-label candidates, duplicate candidates, hashes, and
+  classifications. Stale or manipulated model output fails before any write.
+- A separate validated safe-output job owns comment, label, and
+  duplicate-suggestion writes.
 
 ## Retired automation
 
 - The GitHub Models-based automatic issue deduplicator is removed.
 - The GitHub Models-based issue/PR area labeler is removed. This workflow
-  replaces issue labeling only; automatic PR product labeling is intentionally
-  not replaced here.
+  replaces issue labeling; deterministic changed-path product labeling for pull
+  requests is handled by `.github/workflows/pr-intake.yml`.
 - The Azure Pipelines XAML Styler verification step is removed. The local
   `.pipelines/applyXamlStyling.ps1` developer tool remains available.
 

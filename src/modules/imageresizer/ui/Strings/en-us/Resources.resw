@@ -302,6 +302,45 @@
   <data name="CLI_NoInputFiles" xml:space="preserve">
     <value>No input files or pipe specified. Showing usage.</value>
   </data>
+  <data name="CLI_ErrorUnknownOption" xml:space="preserve">
+    <value>Unrecognized option '{0}'. Use '--' before a file name that starts with '-', or prefix it with '.\'.</value>
+  </data>
+  <data name="CLI_ErrorInvalidDimension" xml:space="preserve">
+    <value>Width and height must be finite numbers greater than or equal to zero.</value>
+  </data>
+  <data name="CLI_ErrorZeroDimensions" xml:space="preserve">
+    <value>Width and height cannot both be zero for a custom size.</value>
+  </data>
+  <data name="CLI_ErrorPercentWidthRequired" xml:space="preserve">
+    <value>A positive width is required for percentage-based Fit and Fill sizes.</value>
+  </data>
+  <data name="CLI_ErrorSizeIndexOutOfRange" xml:space="preserve">
+    <value>Size index {0} is out of range. The maximum valid index is {1}.</value>
+  </data>
+  <data name="Error_DimensionOutOfRange" xml:space="preserve">
+    <value>The requested output dimensions are outside the supported range.</value>
+  </data>
+  <data name="CLI_ErrorFileNotFound" xml:space="preserve">
+    <value>Input file not found.</value>
+  </data>
+  <data name="CLI_ErrorUnsupportedFileType" xml:space="preserve">
+    <value>Unsupported image file type.</value>
+  </data>
+  <data name="CLI_ErrorInvalidInputPath" xml:space="preserve">
+    <value>Invalid input path: {0}</value>
+  </data>
+  <data name="CLI_ErrorWildcardInDirectory" xml:space="preserve">
+    <value>Wildcards are supported only in the file name portion of a path.</value>
+  </data>
+  <data name="CLI_ErrorNoWildcardMatches" xml:space="preserve">
+    <value>No files matched the wildcard pattern.</value>
+  </data>
+  <data name="CLI_ErrorProcessingFallback" xml:space="preserve">
+    <value>Image processing failed with {0} (HRESULT 0x{1:X8}).</value>
+  </data>
+  <data name="CLI_WarningShrinkOnlyPercent" xml:space="preserve">
+    <value>Warning: Shrink-only is ignored for percentage-based sizes.</value>
+  </data>
   <data name="CLI_ConfigTitle" xml:space="preserve">
     <value>ImageResizer - Current Configuration</value>
   </data>
@@ -375,7 +414,7 @@
     <value>  PowerToys.ImageResizerCLI.exe --width 800 --height 600 image.jpg</value>
   </data>
   <data name="CLI_UsageExamplePercent" xml:space="preserve">
-    <value>  PowerToys.ImageResizerCLI.exe -w 50 -h 50 -u Percent *.jpg</value>
+    <value>  PowerToys.ImageResizerCLI.exe -w 50 -h 50 -u Percent "*.jpg"</value>
   </data>
   <data name="CLI_UsageExamplePreset" xml:space="preserve">
     <value>  PowerToys.ImageResizerCLI.exe --size 0 -d "C:\Output" photo.png</value>
@@ -387,7 +426,7 @@
     <value>Set output filename format (%1=original name, %2=size name)</value>
   </data>
   <data name="CLI_Option_Files" xml:space="preserve">
-    <value>Image files to resize</value>
+    <value>Image files to resize (wildcards are supported in file names)</value>
   </data>
   <data name="CLI_Option_Fit" xml:space="preserve">
     <value>Set fit mode (Fill, Fit, Stretch)</value>
@@ -414,7 +453,7 @@
     <value>Show current configuration</value>
   </data>
   <data name="CLI_Option_ShrinkOnly" xml:space="preserve">
-    <value>Only shrink images, don't enlarge</value>
+    <value>Only shrink images for non-percentage sizes</value>
   </data>
   <data name="CLI_Option_RemoveMetadata" xml:space="preserve">
     <value>Remove metadata from resized images</value>
