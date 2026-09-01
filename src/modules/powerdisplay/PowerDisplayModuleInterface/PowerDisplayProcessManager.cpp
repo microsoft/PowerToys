@@ -204,7 +204,7 @@ void PowerDisplayProcessManager::send_named_pipe_message(const std::wstring& mes
 {
     if (m_write_pipe)
     {
-        const auto message = message_arg.empty() ? std::format(L"{}\r\n", message_type) : std::format(L"{} {}\r\n", message_type, message_arg);
+        const auto message = message_arg.empty() ? message_type : std::format(L"{} {}", message_type, message_arg);
         m_write_pipe->send(message);
     }
 }
