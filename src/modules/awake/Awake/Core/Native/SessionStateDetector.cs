@@ -3,29 +3,72 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 
 namespace Awake.Core.Native;
 
-public static class SessionStateDetector
+internal static partial class SessionStateDetector
 {
+    private const int WtsCurrentSession = -1;
+    private const int WtsSessionInfoEx = 25;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Wtsinfoex
+    {
+        public int Level;
+        public int Reserved;
+        public WtsinfoexLevel Data;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    private struct WtsinfoexLevel
+    {
+        [FieldOffset(0)]
+        public WtsinfoexLevel1 Level1;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct WtsinfoexLevel1
+    {
+        public int SessionId;
+        public int SessionState;
+        public int SessionFlags;
+    }
+
+    [LibraryImport("wtsapi32.dll", EntryPoint = "WTSQuerySessionInformationW", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool WTSQuerySessionInformation(
+        IntPtr hServer,
+        int sessionId,
+        int infoClass,
+        out IntPtr ppBuffer,
+        out int bytesReturned);
+
+    [LibraryImport("wtsapi32.dll")]
+    private static partial void WTSFreeMemory(IntPtr memory);
+
     public static bool IsWorkstationLocked()
     {
-        var hDesktop = Bridge.OpenInputDesktop(0, false, Constants.DESKTOP_SWITCHDESKTOP);
-
-        if (hDesktop == IntPtr.Zero)
+        if (!WTSQuerySessionInformation(
+                IntPtr.Zero,
+                WtsCurrentSession,
+                WtsSessionInfoEx,
+                out var buffer,
+                out _))
         {
-            // Cannot open the input desktop => secure desktop (lock screen) is active
-            return true;
+            // The session state is unknown. Do not assume the session is locked.
+            return false;
         }
 
         try
         {
-            // If we cannot switch to the input desktop, the session is locked
-            return !Bridge.SwitchDesktop(hDesktop);
+            var info = Marshal.PtrToStructure<Wtsinfoex>(buffer);
+
+            return info.Data.Level1.SessionFlags == 0;
         }
         finally
         {
-            Bridge.CloseDesktop(hDesktop);
+            WTSFreeMemory(buffer);
         }
     }
 }

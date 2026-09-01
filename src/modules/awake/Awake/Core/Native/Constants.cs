@@ -58,8 +58,5 @@ namespace Awake.Core.Native
 
         // Attach Console
         internal const int ATTACH_PARENT_PROCESS = -1;
-
-        // Detect Workstation Lock
-        internal const uint DESKTOP_SWITCHDESKTOP = 0x0100;
     }
 }

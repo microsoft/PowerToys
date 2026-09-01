@@ -76,7 +76,7 @@ namespace Awake.Core
             lock (StateLock)
             {
                 SystemEvents.SessionSwitch += OnSessionSwitch;
-                IsScreenLocked = SessionStateDetector.IsWorkstationLocked();
+                IsScreenLocked = SessionStateController.InitializeLockState(SessionStateDetector.IsWorkstationLocked);
             }
         }
 
@@ -158,9 +158,7 @@ namespace Awake.Core
 
         private static ExecutionState ComputeAwakeState(bool keepDisplayOn)
         {
-            return keepDisplayOn && !IsScreenLocked
-                ? ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_DISPLAY_REQUIRED | ExecutionState.ES_CONTINUOUS
-                : ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_CONTINUOUS;
+            return AwakeStateCalculator.ComputeAwakeState(keepDisplayOn, IsScreenLocked);
         }
 
         /// <summary>
@@ -609,15 +607,7 @@ namespace Awake.Core
         {
             lock (StateLock)
             {
-                if (e.Reason == SessionSwitchReason.SessionLock)
-                {
-                    IsScreenLocked = true;
-                }
-                else if (e.Reason == SessionSwitchReason.SessionUnlock)
-                {
-                    IsScreenLocked = false;
-                }
-
+                IsScreenLocked = SessionStateController.ApplySessionSwitch(e.Reason, IsScreenLocked);
                 ReapplyAwakeState();
             }
         }
