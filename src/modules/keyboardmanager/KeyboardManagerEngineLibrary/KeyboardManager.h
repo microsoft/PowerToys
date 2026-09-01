@@ -33,6 +33,13 @@ private:
     // Returns whether there are any remappings available without waiting for settings to load
     bool HasRegisteredRemappingsUnchecked() const;
 
+    // Companion low-level mouse hook shared by buffered Text Expansion and "Alone" remaps.
+    // Button presses invalidate the text buffer; button/wheel input promotes a held alone key
+    // to a real modifier for combinations such as Ctrl+Click and Ctrl+Wheel.
+    void StartLowlevelMouseHook();
+    void StopLowlevelMouseHook();
+    void HandleMouseHookEvent() noexcept;
+
     // Contains the non localized module name
     std::wstring moduleName = KeyboardManagerConstants::ModuleName;
 
@@ -42,6 +49,7 @@ private:
 
     // Required for Unhook in old versions of Windows
     static HHOOK hookHandleCopy;
+    static HHOOK mouseHookHandleCopy;
 
     // Static pointer to the current KeyboardManager object required for accessing the HandleKeyboardHookEvent function in the hook procedure
     // Only global or static variables can be accessed in a hook procedure CALLBACK

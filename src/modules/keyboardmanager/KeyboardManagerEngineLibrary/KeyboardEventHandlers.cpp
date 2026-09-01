@@ -88,6 +88,202 @@ namespace
 
 namespace KeyboardEventHandlers
 {
+    // Append a key event for an alone key's ORIGINAL (source) key while preserving its numpad origin.
+    // Alone keys are tracked by the value of `data->lParam->vkCode`, which is stored numpad-origin
+    // encoded (see EncodeKeyNumpadOrigin in KeyboardManager.cpp): the marker rides in bit 31, so a bare
+    // `static_cast<WORD>` would drop it and re-inject e.g. a NumLock-off numpad navigation key as its
+    // extended (arrow-cluster) twin. Clear the marker to recover the real VK, then force the injected
+    // event's extended flag to match the physical origin.
+    void AppendAloneSourceKeyEvent(std::vector<INPUT>& keyEventList, DWORD encodedKey, bool keyUp) noexcept
+    {
+        const DWORD plainKey = Helpers::ClearKeyNumpadOrigin(encodedKey);
+        const DWORD flags = keyUp ? KEYEVENTF_KEYUP : 0;
+        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(plainKey), flags, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+
+        if (Helpers::IsNumpadOriginated(encodedKey))
+        {
+            // Numpad origin: override SetKeyEvent's VK-based extended default. This is the inverse of
+            // EncodeKeyNumpadOrigin -- for the navigation keys a numpad origin means NOT extended, while
+            // for VK_RETURN / VK_DIVIDE it means extended.
+            INPUT& injected = keyEventList.back();
+            if (plainKey == VK_RETURN || plainKey == VK_DIVIDE)
+            {
+                injected.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+            }
+            else
+            {
+                injected.ki.dwFlags &= ~KEYEVENTF_EXTENDEDKEY;
+            }
+        }
+    }
+
+    // See header. Injects the original key-down for each pending alone key (except `exceptKey`) and
+    // marks it as a started combination, so a subsequent mouse/keyboard action is seen with the real
+    // modifier held. Its matching real key-up is injected later when the alone key is released.
+    void PromotePendingAloneKeysToCombination(KeyboardManagerInput::InputInterface& ii, State& state, DWORD exceptKey) noexcept
+    {
+        for (const DWORD pendingKey : state.GetPendingAloneKeys())
+        {
+            if (pendingKey == exceptKey)
+            {
+                // Auto-repeat of the alone key itself; keep it a tap candidate.
+                continue;
+            }
+
+            std::vector<INPUT> keyEventList;
+            AppendAloneSourceKeyEvent(keyEventList, pendingKey, /*keyUp*/ false);
+            if (!ii.SendVirtualInput(keyEventList))
+            {
+                // Injection was blocked (e.g. by UIPI). Don't mark this as a started combination,
+                // otherwise the eventual key-up would inject an unmatched real key-up while the physical
+                // key-down was swallowed. Mirrors the injection-failure handling in HandleSingleKeyRemapEvent.
+                continue;
+            }
+
+            state.SetAloneCombination(pendingKey);
+        }
+    }
+
+    // Handle an "Alone" single key remap (dual-key / Karabiner to_if_alone). Semantics:
+    //  - Pressing an alone-mapped key does NOT inject anything yet (lazy): we wait to see whether it
+    //    is tapped alone or used in combination. The physical key-down is suppressed meanwhile.
+    //  - If another key is pressed while the alone key is held, that is a combination: the alone key's
+    //    ORIGINAL key-down is injected as a real key/modifier (so e.g. Right Ctrl behaves as Ctrl), and
+    //    the alone action is cancelled. The matching real key-up is injected when the alone key is released.
+    //  - If the alone key is released with no other key in between, that is a tap: the remapped alone
+    //    action is injected on release (as a down+up tap).
+    // Timeout-based cancellation (hold too long => not a tap) is intentionally out of scope for now;
+    // it needs an injectable clock to be unit-testable and will be added with that abstraction.
+    intptr_t HandleSingleKeyAloneRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
+    {
+        // Ignore our own injected events to avoid re-processing / recursion.
+        if (GeneratedByKBM(data))
+        {
+            return 0;
+        }
+
+        const DWORD vk = data->lParam->vkCode;
+        const bool isKeyUp = (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP);
+        const bool isKeyDown = (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN);
+
+        // Detect, before any state below is mutated, whether another alone-mapped key is already held
+        // (pending or already in a combination) as this key goes down. If so, this key is being pressed
+        // in combination with that one -- it was NOT tapped alone -- so it must not become a solo-tap
+        // candidate that would fire its alone action on release.
+        const bool pressedInCombination = isKeyDown && state.HasOtherHeldAloneKey(vk);
+
+        // Step 1: a key-down of a DIFFERENT key while alone keys are pending means those pending keys
+        // are now being used in combination. Flush them by injecting their original key-down as a real
+        // key/modifier so the in-combination behavior (e.g. Right Ctrl acting as Ctrl) works. (A click
+        // or scroll does the same via the mouse hook; see PromotePendingAloneKeysToCombination.)
+        if (isKeyDown)
+        {
+            PromotePendingAloneKeysToCombination(ii, state, vk);
+        }
+
+        // Step 2: handle the alone-mapped key's own events.
+        const auto aloneRemap = state.GetSingleKeyAloneRemap(vk);
+        if (aloneRemap)
+        {
+            auto it = aloneRemap.value();
+
+            if (isKeyDown)
+            {
+                // Suppress the physical key-down. Become a tap candidate on the first down; while already
+                // in a combination (real key-down injected), just keep suppressing auto-repeats.
+                if (!state.IsAloneCombination(vk))
+                {
+                    if (pressedInCombination)
+                    {
+                        // Pressed while another alone key was held: treat as a combination, not a tap.
+                        // Inject the real key-down now and mark it a combination so its release only
+                        // releases the real key and never fires the alone action.
+                        std::vector<INPUT> keyEventList;
+                        AppendAloneSourceKeyEvent(keyEventList, vk, /*keyUp*/ false);
+                        if (!ii.SendVirtualInput(keyEventList))
+                        {
+                            // Injection was blocked (e.g. by UIPI): let the physical key-down through
+                            // instead of suppressing it into a combination we could not start, so it is
+                            // not swallowed with no matching injected key. Its later physical key-up then
+                            // also passes through (the key is neither pending nor a combination).
+                            return 0;
+                        }
+                        state.SetAloneCombination(vk);
+                    }
+                    else
+                    {
+                        state.SetAlonePending(vk);
+                    }
+                }
+                return 1;
+            }
+
+            if (isKeyUp)
+            {
+                if (state.IsAlonePending(vk))
+                {
+                    // Tapped alone: fire the remapped alone action as a tap (down + up).
+                    std::vector<INPUT> keyEventList;
+                    const auto& target = it->second;
+                    if (target.index() == 0)
+                    {
+                        const DWORD targetKey = std::get<DWORD>(target);
+                        // A disabled alone target means "tapping alone does nothing".
+                        if (targetKey != CommonSharedConstants::VK_DISABLED)
+                        {
+                            // Filter artificial KBM key codes (e.g. VK_WIN_BOTH -> VK_LWIN) before
+                            // injecting, mirroring HandleSingleKeyRemapEvent; otherwise a "Win (Both)"
+                            // alone target would inject the invalid virtual key 0x104 and do nothing.
+                            const DWORD filteredTargetKey = Helpers::FilterArtificialKeys(targetKey);
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filteredTargetKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filteredTargetKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        }
+                    }
+                    else if (target.index() == 1)
+                    {
+                        // Shortcut-valued alone target: a tap fires the whole shortcut as a
+                        // press-and-release (modifiers down, action-key down, then released in
+                        // reverse). Mirrors the key-to-shortcut injection in HandleSingleKeyRemapEvent.
+                        const Shortcut targetShortcut = std::get<Shortcut>(target);
+                        // Filter the action key too (e.g. VK_WIN_BOTH -> VK_LWIN), mirroring the
+                        // key-to-shortcut path in HandleSingleKeyRemapEvent.
+                        const DWORD filteredActionKey = Helpers::FilterArtificialKeys(targetShortcut.GetActionKey());
+                        Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filteredActionKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filteredActionKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                    }
+                    // NOTE: text-valued alone targets are a later phase (no producer yet).
+
+                    if (!keyEventList.empty())
+                    {
+                        ii.SendVirtualInput(keyEventList);
+                    }
+
+                    state.ClearAloneKeyState(vk);
+                    return 1;
+                }
+
+                if (state.IsAloneCombination(vk))
+                {
+                    // Was used in combination: release the real key we injected on its key-down (matching
+                    // its numpad origin, so a numpad-originated key is released as the same key we pressed).
+                    std::vector<INPUT> keyEventList;
+                    AppendAloneSourceKeyEvent(keyEventList, vk, /*keyUp*/ true);
+                    ii.SendVirtualInput(keyEventList);
+
+                    state.ClearAloneKeyState(vk);
+                    return 1;
+                }
+
+                // Not tracked (already resolved): pass the key-up through.
+                return 0;
+            }
+        }
+
+        return 0;
+    }
+
     // Function to handle a single key remap
     intptr_t HandleSingleKeyRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
     {

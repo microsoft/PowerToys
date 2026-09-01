@@ -172,7 +172,9 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
                     var model = _formModel.Unsafe!;
                     if (model != null)
                     {
-                        var result = model.SubmitForm(inputString, dataString);
+                        var result = model is IFormContent2 form2
+                            ? form2.SubmitAction(action.Id, inputString, dataString)
+                            : model.SubmitForm(inputString, dataString);
                         WeakReferenceMessenger.Default.Send<HandleCommandResultMessage>(new(new(result)));
                     }
                 }

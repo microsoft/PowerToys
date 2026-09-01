@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ViewModelTests
@@ -192,6 +193,37 @@ namespace ViewModelTests
             Assert.AreEqual(expectedResult.Count, result.Count);
             Assert.IsTrue(expectedResult[0].Compare(result[0]));
             Assert.IsTrue(expectedResult[1].Compare(result[1]));
+        }
+
+        [TestMethod]
+        public void FilterRemapKeysList_ShouldPreserveConditionWhenCombiningModifierSides()
+        {
+            var remaps = new List<KeysDataModel>
+            {
+                new() { OriginalKeys = "162", NewRemapKeys = "65", Condition = "alone" },
+                new() { OriginalKeys = "163", NewRemapKeys = "65", Condition = "alone" },
+            };
+
+            KeyboardManagerPage.FilterRemapKeysList(remaps);
+
+            Assert.AreEqual(1, remaps.Count);
+            Assert.AreEqual("17", remaps[0].OriginalKeys);
+            Assert.AreEqual("65", remaps[0].NewRemapKeys);
+            Assert.AreEqual("alone", remaps[0].Condition);
+        }
+
+        [TestMethod]
+        public void FilterRemapKeysList_ShouldNotCombineDifferentConditions()
+        {
+            var remaps = new List<KeysDataModel>
+            {
+                new() { OriginalKeys = "162", NewRemapKeys = "65" },
+                new() { OriginalKeys = "163", NewRemapKeys = "65", Condition = "alone" },
+            };
+
+            KeyboardManagerPage.FilterRemapKeysList(remaps);
+
+            Assert.AreEqual(2, remaps.Count);
         }
     }
 }

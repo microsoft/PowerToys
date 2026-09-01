@@ -1,6 +1,6 @@
 ---
 name: ui-tests-migration
-description: "Migrate and stabilize PowerToys UI tests from WinAppDriver/Selenium to Microsoft.PowerToys.UITest.Next and winappcli. Use for ports, new UITest projects, flaky CI tests, persistent local-VM validation on Hyper-V, resettable clean-baseline runs, Explorer/Shell selection, preview handlers, thumbnail providers, hotkey activation, stateful process lifecycle, composed WinUI/WebView visual baselines, or cross-window/foreground failures. Covers APIs, scaffolding, test design, diagnostics, agentic execution, and CI hardening. Keywords: UI test, UITests, UITestAutomation.Next, winappcli, WinAppDriver, Selenium, local VM, Hyper-V, checkpoint, migrate, port, flaky, CI stability, Explorer, Shell extension, WebView2."
+description: "Migrate and stabilize PowerToys UI tests from WinAppDriver/Selenium to Microsoft.PowerToys.UITest.Next and winappcli. Use for ports, new UITest projects, flaky CI tests, persistent local-VM validation on Hyper-V, resettable clean-baseline runs, Settings IPC authentication/test signing, Explorer/Shell selection, preview handlers, thumbnail providers, hotkey activation, stateful process lifecycle, composed WinUI/WebView visual baselines, or cross-window/foreground failures. Covers APIs, scaffolding, test design, diagnostics, agentic execution, and CI hardening. Keywords: UI test, UITests, UITestAutomation.Next, winappcli, WinAppDriver, Selenium, Settings IPC, not-microsoft-signed, Authenticode, local VM, Hyper-V, checkpoint, migrate, flaky, CI stability, Explorer, Shell extension, WebView2."
 license: Complete terms in LICENSE.txt
 ---
 
@@ -89,8 +89,10 @@ module, which tests) comes from the calling prompt.
 8. **[references/ci-stability.md](references/ci-stability.md)** — the CI-stability capstone: the
   Win32-window vs UIA-element mental model, state-boundary worksheet, stable-sample waits, retry
   semantics, foreground/integrity constraints, process lifecycle, composed visual capture, and a
-  **pre-flight checklist** to apply BEFORE the first CI push so the first run *validates* instead of
-  *discovers*. Read this to spend one CI iteration instead of six.
+  **pre-flight checklist** to apply BEFORE the first CI push. It also covers Release Runner/Settings
+  IPC authentication, the existing CI companion-signing mechanism, and why a visible Settings toggle
+  must never be rescued with a settings-file/restart fallback. Read this to spend one CI iteration
+  instead of six.
 9. **[ui-tests-local-vm](../ui-tests-local-vm/SKILL.md)** — the live desktop execution loop:
   scaffold or reuse a persistent Hyper-V VM, run as a true standard user, refresh only
   changed payloads, iterate through durable TRX/evidence, and restore or recreate the baseline for
@@ -154,6 +156,11 @@ Create a TODO list and work top-to-bottom. Each step links to the reference that
   (stable authoritative signals, retry classification, foreground/integrity, lifecycle reset
   scope, non-activating helper processes, composed capture, DPI manifest, single-module enable,
   first-run suppression)
+- [ ] 7a. If a test changes a module's enabled state through Settings, keep the real Settings UI +
+  immediate runtime assertion. Verify the selected UITest project is covered by the existing
+  `$requiresAuthenticatedSettingsIpc` companion-signing path in
+  `.pipelines/v2/templates/job-test-project.yml`; never add a test-side settings/restart fallback
+  for Release CI — [references/ci-stability.md](references/ci-stability.md#principle-5a--keep-module-lifecycle-tests-on-real-release-settings-ipc)
 - [ ] 8. Build the new project to exit code 0 — this SKILL.md "Build & validate"
 - [ ] 9. Run one deterministic test in the local VM and diagnose the first failure
       — ../ui-tests-local-vm/SKILL.md
@@ -262,6 +269,10 @@ $exe = "<repo>\x64\Debug\tests\<Module>.UITests.Next\net10.0-windows10.0.26100.0
   resending the chord may close a healthy window. Restart only after a terminal readiness failure.
 - **Do NOT replace or weaken visual baselines before proving capture is correct.** Foreground HWND,
   DWM z-order, composed WebView content, theme, and platform are separate failure sources.
+- **Do NOT work around a Release Runner `not-microsoft-signed` Settings rejection in test code.** Do
+  not seed the global enabled map, restart PowerToys, bypass authentication, or weaken the lifecycle
+  assertion. Reuse the pipeline's existing Runner/Settings companion-signing mechanism; see
+  [references/ci-stability.md](references/ci-stability.md#principle-5a--keep-module-lifecycle-tests-on-real-release-settings-ipc).
 
 ## What is NICE to do
 

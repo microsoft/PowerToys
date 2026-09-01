@@ -544,6 +544,44 @@ namespace TextExpansionEngineTests
             Assert::IsFalse(fixture.controller->HasPendingWork());
         }
 
+        TEST_METHOD (AloneModifier_ShouldRemainEligibleForActivationChord)
+        {
+            ControllerFixture fixture;
+            fixture.backend->prepareResult = TextExpansionResult::Prepared;
+            fixture.SetLeftCtrl(true);
+            const TextExpansionTable rules{ MakeRule(L"rule-id", L"brb", { VK_CONTROL, VK_SPACE }, L"expanded") };
+
+            TestKeyEvent ctrlDown(VK_LCONTROL);
+            AssertDisposition(
+                TextExpansionController::EventDisposition::Continue,
+                fixture.controller->BeginKeyboardEvent(&ctrlDown.event));
+            fixture.controller->NotifyAloneRemapEventHandled(&ctrlDown.event, false);
+            Assert::AreEqual(0, fixture.backend->resetBufferCalls);
+
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
+            Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
+            Assert::AreEqual(1, fixture.backend->activateCalls);
+        }
+
+        TEST_METHOD (AloneTap_ShouldInvalidateBufferedTextOnRelease)
+        {
+            ControllerFixture fixture;
+            TestKeyEvent ctrlDown(VK_LCONTROL);
+            TestKeyEvent ctrlUp(VK_LCONTROL, WM_KEYUP, LLKHF_UP);
+
+            AssertDisposition(
+                TextExpansionController::EventDisposition::Continue,
+                fixture.controller->BeginKeyboardEvent(&ctrlDown.event));
+            fixture.controller->NotifyAloneRemapEventHandled(&ctrlDown.event, false);
+            Assert::AreEqual(0, fixture.backend->resetBufferCalls);
+
+            AssertDisposition(
+                TextExpansionController::EventDisposition::Continue,
+                fixture.controller->BeginKeyboardEvent(&ctrlUp.event));
+            fixture.controller->NotifyAloneRemapEventHandled(&ctrlUp.event, true);
+            Assert::AreEqual(1, fixture.backend->resetBufferCalls);
+        }
+
         TEST_METHOD (SameActionKey_ShouldPassOnlyExactActivationCandidates)
         {
             ControllerFixture fixture;

@@ -31,6 +31,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("newRemapKeys")]
         public string NewRemapKeys { get; set; }
 
+        // Optional condition for single-key remaps. Legacy profiles omit this field, which the
+        // Keyboard Manager engine interprets as the unconditional ("always") behavior.
+        [JsonPropertyName("condition")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string Condition { get; set; }
+
         [JsonPropertyName("unicodeText")]
         public string NewRemapString { get; set; }
 

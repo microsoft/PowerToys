@@ -314,6 +314,37 @@ void TextExpansionController::NotifyHigherPriorityEventHandled(LowlevelKeyboardE
     }
 }
 
+void TextExpansionController::NotifyAloneRemapEventHandled(
+    LowlevelKeyboardEvent* data,
+    const bool wasPending) noexcept
+{
+    if (!data || !data->lParam ||
+        (data->lParam->dwExtraInfo & CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG) != 0)
+    {
+        return;
+    }
+
+    const DWORD physicalKey = data->lParam->vkCode;
+    const bool sourceIsModifier =
+        Helpers::IsModifierKey(Helpers::ClearKeyNumpadOrigin(physicalKey));
+    if (IsKeyDown(data->wParam))
+    {
+        if (!sourceIsModifier)
+        {
+            NotifyHigherPriorityEventHandled(data);
+        }
+        return;
+    }
+
+    if (wasPending && IsKeyUp(data->wParam))
+    {
+        // A completed Alone tap injected a different action. A modifier source is
+        // intentionally ignored on key-down because it can still become the original
+        // modifier in a Text Expansion activation chord.
+        ResetBuffer();
+    }
+}
+
 void TextExpansionController::TrackKeyboardEvent(LowlevelKeyboardEvent* data) noexcept
 {
     if (!IsBackendReady())

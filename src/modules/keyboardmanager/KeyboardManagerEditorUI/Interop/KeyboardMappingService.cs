@@ -29,7 +29,7 @@ namespace KeyboardManagerEditorUI.Interop
 
             MappingConfigurationLoadResult loadResult = (MappingConfigurationLoadResult)KeyboardManagerInterop.LoadMappingSettingsWithResult(_configHandle);
             ConfigurationName = KeyboardManagerInterop.GetStringAndFree(KeyboardManagerInterop.GetMappingConfigurationName(_configHandle));
-            if (loadResult != MappingConfigurationLoadResult.Success)
+            if (loadResult == MappingConfigurationLoadResult.Failure)
             {
                 KeyboardManagerInterop.DestroyMappingConfiguration(_configHandle);
                 _configHandle = IntPtr.Zero;
@@ -54,6 +54,23 @@ namespace KeyboardManagerEditorUI.Interop
                         OriginalKey = mapping.OriginalKey,
                         TargetKey = KeyboardManagerInterop.GetStringAndFree(mapping.TargetKey),
                         IsShortcut = mapping.IsShortcut,
+                    });
+                }
+            }
+
+            // Also surface "Alone" (dual-key) remaps, tagged so the UI can show the condition.
+            int aloneCount = KeyboardManagerInterop.GetSingleKeyAloneRemapCount(_configHandle);
+            for (int i = 0; i < aloneCount; i++)
+            {
+                var mapping = default(SingleKeyMapping);
+                if (KeyboardManagerInterop.GetSingleKeyAloneRemap(_configHandle, i, ref mapping))
+                {
+                    result.Add(new KeyMapping
+                    {
+                        OriginalKey = mapping.OriginalKey,
+                        TargetKey = KeyboardManagerInterop.GetStringAndFree(mapping.TargetKey),
+                        IsShortcut = mapping.IsShortcut,
+                        IsAlone = true,
                     });
                 }
             }
@@ -253,6 +270,28 @@ namespace KeyboardManagerEditorUI.Interop
             }
         }
 
+        public bool AddSingleKeyAloneMapping(int originalKey, int targetKey)
+        {
+            return KeyboardManagerInterop.AddSingleKeyAloneRemap(_configHandle, originalKey, targetKey);
+        }
+
+        public bool AddSingleKeyAloneMapping(int originalKey, string targetKeys)
+        {
+            if (string.IsNullOrEmpty(targetKeys))
+            {
+                return false;
+            }
+
+            if (!targetKeys.Contains(';') && int.TryParse(targetKeys, out int targetKey))
+            {
+                return KeyboardManagerInterop.AddSingleKeyAloneRemap(_configHandle, originalKey, targetKey);
+            }
+            else
+            {
+                return KeyboardManagerInterop.AddSingleKeyAloneToShortcutRemap(_configHandle, originalKey, targetKeys);
+            }
+        }
+
         public bool AddSingleKeyToTextMapping(int originalKey, string targetText)
         {
             if (string.IsNullOrEmpty(targetText))
@@ -366,7 +405,7 @@ namespace KeyboardManagerEditorUI.Interop
 
         public bool ReloadSettings()
         {
-            return (MappingConfigurationLoadResult)KeyboardManagerInterop.LoadMappingSettingsWithResult(_configHandle) == MappingConfigurationLoadResult.Success;
+            return (MappingConfigurationLoadResult)KeyboardManagerInterop.LoadMappingSettingsWithResult(_configHandle) != MappingConfigurationLoadResult.Failure;
         }
 
         internal bool SaveSettingsAndVerify()
@@ -409,8 +448,14 @@ namespace KeyboardManagerEditorUI.Interop
             IEnumerable<ShortcutKeyMapping> firstShortcutMappings,
             IEnumerable<ShortcutKeyMapping> secondShortcutMappings)
         {
-            var firstSingleKeys = firstSingleKeyMappings.OrderBy(mapping => mapping.OriginalKey).ToList();
-            var secondSingleKeys = secondSingleKeyMappings.OrderBy(mapping => mapping.OriginalKey).ToList();
+            var firstSingleKeys = firstSingleKeyMappings
+                .OrderBy(mapping => mapping.OriginalKey)
+                .ThenBy(mapping => mapping.IsAlone)
+                .ToList();
+            var secondSingleKeys = secondSingleKeyMappings
+                .OrderBy(mapping => mapping.OriginalKey)
+                .ThenBy(mapping => mapping.IsAlone)
+                .ToList();
             var firstTexts = firstTextMappings.OrderBy(mapping => mapping.OriginalKey).ToList();
             var secondTexts = secondTextMappings.OrderBy(mapping => mapping.OriginalKey).ToList();
             var firstShortcuts = OrderShortcutMappings(firstShortcutMappings).ToList();
@@ -420,7 +465,8 @@ namespace KeyboardManagerEditorUI.Interop
                    firstSingleKeys.Zip(secondSingleKeys).All(pair =>
                        pair.First.OriginalKey == pair.Second.OriginalKey &&
                        string.Equals(pair.First.TargetKey, pair.Second.TargetKey, StringComparison.Ordinal) &&
-                       pair.First.IsShortcut == pair.Second.IsShortcut) &&
+                       pair.First.IsShortcut == pair.Second.IsShortcut &&
+                       pair.First.IsAlone == pair.Second.IsAlone) &&
                    firstTexts.Count == secondTexts.Count &&
                    firstTexts.Zip(secondTexts).All(pair =>
                        pair.First.OriginalKey == pair.Second.OriginalKey &&
@@ -444,6 +490,11 @@ namespace KeyboardManagerEditorUI.Interop
         public bool DeleteSingleKeyMapping(int originalKey)
         {
             return KeyboardManagerInterop.DeleteSingleKeyRemap(_configHandle, originalKey);
+        }
+
+        public bool DeleteSingleKeyAloneMapping(int originalKey)
+        {
+            return KeyboardManagerInterop.DeleteSingleKeyAloneRemap(_configHandle, originalKey);
         }
 
         public bool DeleteSingleKeyToTextMapping(int originalKey)

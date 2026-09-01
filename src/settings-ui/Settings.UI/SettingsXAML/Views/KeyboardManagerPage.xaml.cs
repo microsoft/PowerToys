@@ -60,12 +60,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             KeysDataModel secondRemap = remapKeysList.Find(x => uint.Parse(x.OriginalKeys, CultureInfo.InvariantCulture) == rightKey);
             if (firstRemap != null && secondRemap != null)
             {
-                if (firstRemap.NewRemapKeys == secondRemap.NewRemapKeys)
+                if (firstRemap.NewRemapKeys == secondRemap.NewRemapKeys &&
+                    firstRemap.Condition == secondRemap.Condition)
                 {
                     KeysDataModel combinedRemap = new KeysDataModel
                     {
                         OriginalKeys = combinedKey.ToString(CultureInfo.InvariantCulture),
                         NewRemapKeys = firstRemap.NewRemapKeys,
+                        Condition = firstRemap.Condition,
                     };
                     remapKeysList.Insert(remapKeysList.IndexOf(firstRemap), combinedRemap);
                     remapKeysList.Remove(firstRemap);

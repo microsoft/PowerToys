@@ -38,6 +38,7 @@ public:
     // handling for this entire physical key press on its first down transition.
     EventDisposition BeginKeyboardEvent(LowlevelKeyboardEvent* data) noexcept;
     void NotifyHigherPriorityEventHandled(LowlevelKeyboardEvent* data) noexcept;
+    void NotifyAloneRemapEventHandled(LowlevelKeyboardEvent* data, bool wasPending) noexcept;
     void TrackKeyboardEvent(LowlevelKeyboardEvent* data) noexcept;
     void ResetBuffer() noexcept;
 
