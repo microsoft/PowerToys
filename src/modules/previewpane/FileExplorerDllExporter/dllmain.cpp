@@ -111,17 +111,17 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void** ppv)
     else if (IsEqualCLSID(CLSID_PdfPreviewHandler, rclsid))
     {
         logFilePath.append(LogSettings::pdfPrevLogPath);
-        pClassFactory = new ClassFactory(LogSettings::pdfPrevLoggerName, logFilePath.wstring(), CommonSharedConstants::DEV_FILES_PREVIEW_RESIZE_EVENT, L"PowerToys.PdfPreviewHandler.exe");
+        pClassFactory = new ClassFactory(LogSettings::pdfPrevLoggerName, logFilePath.wstring(), CommonSharedConstants::PDF_PREVIEW_RESIZE_EVENT, L"PowerToys.PdfPreviewHandler.exe");
     }
     else if (IsEqualCLSID(CLSID_QoiPreviewHandler, rclsid))
     {
         logFilePath.append(LogSettings::qoiPrevLogPath);
-        pClassFactory = new ClassFactory(LogSettings::qoiPrevLoggerName, logFilePath.wstring(), CommonSharedConstants::DEV_FILES_PREVIEW_RESIZE_EVENT, L"PowerToys.QoiPreviewHandler.exe");
+        pClassFactory = new ClassFactory(LogSettings::qoiPrevLoggerName, logFilePath.wstring(), CommonSharedConstants::QOI_PREVIEW_RESIZE_EVENT, L"PowerToys.QoiPreviewHandler.exe");
     }
     else if (IsEqualCLSID(CLSID_SvgPreviewHandler, rclsid))
     {
         logFilePath.append(LogSettings::svgPrevLogPath);
-        pClassFactory = new ClassFactory(LogSettings::svgPrevLoggerName, logFilePath.wstring(), CommonSharedConstants::DEV_FILES_PREVIEW_RESIZE_EVENT, L"PowerToys.SvgPreviewHandler.exe");
+        pClassFactory = new ClassFactory(LogSettings::svgPrevLoggerName, logFilePath.wstring(), CommonSharedConstants::SVG_PREVIEW_RESIZE_EVENT, L"PowerToys.SvgPreviewHandler.exe");
     }
     else if (IsEqualCLSID(CLSID_BgcodeThumbnailProvider, rclsid))
     {
