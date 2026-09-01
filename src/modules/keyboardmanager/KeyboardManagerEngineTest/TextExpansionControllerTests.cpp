@@ -954,7 +954,7 @@ namespace TextExpansionEngineTests
             Assert::IsFalse(fixture.controller->HasPendingWork());
         }
 
-        TEST_METHOD (OrderedReplay_ShouldKeepReloadBlockedUntilReplayIsObserved)
+        TEST_METHOD (MissingReplayAcknowledgement_ShouldClearOnPhysicalRelease)
         {
             ControllerFixture fixture;
             fixture.backend->prepareResult = TextExpansionResult::Prepared;
@@ -967,16 +967,69 @@ namespace TextExpansionEngineTests
             AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
             Assert::IsTrue(fixture.controller->HasPendingWork());
 
-            AssertDisposition(
-                TextExpansionController::EventDisposition::FreshActionKeyDown,
-                fixture.Begin(
-                    'A',
-                    WM_KEYDOWN,
-                    0,
-                    0,
-                    KeyboardManagerConstants::KEYBOARDMANAGER_TEXT_EXPANSION_REPLAY_FLAG));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin('A', WM_KEYUP, LLKHF_UP));
+            Assert::IsFalse(fixture.controller->HasPendingWork());
+        }
+
+        TEST_METHOD (MissingReplayAcknowledgement_ShouldUseNextPhysicalDownAsFreshPress)
+        {
+            ControllerFixture fixture;
+            fixture.backend->prepareResult = TextExpansionResult::Prepared;
+            fixture.backend->replayRecovery = {};
+            const TextExpansionTable rules{ MakeRule(L"rule-id", L"brb", { VK_SPACE }, L"expanded") };
+
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
+            Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin('A'));
             Assert::IsTrue(fixture.controller->HasPendingWork());
+
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin('A'));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
             AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin('A', WM_KEYUP, LLKHF_UP));
+            Assert::IsFalse(fixture.controller->HasPendingWork());
+        }
+
+        TEST_METHOD (MissingReplayAcknowledgement_ShouldIgnoreDifferentPhysicalIdentity)
+        {
+            ControllerFixture fixture;
+            fixture.backend->prepareResult = TextExpansionResult::Prepared;
+            fixture.backend->replayRecovery = {};
+            const TextExpansionTable rules{ MakeRule(L"rule-id", L"brb", { VK_SPACE }, L"expanded") };
+
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
+            Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin('A', WM_KEYDOWN, 0, 0x1E));
+
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin('B', WM_KEYDOWN, 0, 0x30));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin('B', WM_KEYUP, LLKHF_UP, 0x30));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
+            Assert::IsTrue(fixture.controller->HasPendingWork());
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin('A', WM_KEYUP, LLKHF_UP, 0x1E));
+            Assert::IsFalse(fixture.controller->HasPendingWork());
+        }
+
+        TEST_METHOD (MissingReplayAcknowledgement_ShouldKeepKeypadAndExtendedIdentitySeparate)
+        {
+            ControllerFixture fixture;
+            fixture.backend->prepareResult = TextExpansionResult::Prepared;
+            fixture.backend->replayRecovery = {};
+            const TextExpansionTable rules{ MakeRule(L"rule-id", L"brb", { VK_SPACE }, L"expanded") };
+            const DWORD numpadInsert = VK_INSERT | Helpers::GetNumpadOriginEncodingBit();
+
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
+            Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
+            AssertDisposition(
+                TextExpansionController::EventDisposition::Suppress,
+                fixture.Begin(numpadInsert, WM_KEYDOWN, 0, 0x52));
+
+            AssertDisposition(
+                TextExpansionController::EventDisposition::Continue,
+                fixture.Begin(VK_INSERT, WM_KEYUP, LLKHF_EXTENDED | LLKHF_UP, 0x52));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
+            Assert::IsTrue(fixture.controller->HasPendingWork());
+            AssertDisposition(
+                TextExpansionController::EventDisposition::Suppress,
+                fixture.Begin(numpadInsert, WM_KEYUP, LLKHF_UP, 0x52));
             Assert::IsFalse(fixture.controller->HasPendingWork());
         }
 

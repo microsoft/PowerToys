@@ -104,6 +104,8 @@ private:
 
     mutable std::mutex activationMutex;
     std::optional<PendingActivation> pendingActivation;
+    mutable std::mutex recoveryMutex;
+    std::atomic_bool recoveryInProgress = false;
 
     mutable std::mutex pendingCleanupMutex;
     std::vector<INPUT> pendingCleanup;

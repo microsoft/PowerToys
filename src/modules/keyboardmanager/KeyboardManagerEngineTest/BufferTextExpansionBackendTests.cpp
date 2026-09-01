@@ -10,12 +10,17 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
+#include <chrono>
+#include <condition_variable>
 #include <cstdint>
 #include <common/interop/shared_constants.h>
 #include <functional>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/BufferTextExpansionBackend.h>
 #include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
+#include <mutex>
+#include <thread>
 #include <utility>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -975,8 +980,9 @@ namespace TextExpansionEngineTests
                 const DWORD downFlags = (mappedScan & 0xFF00) != 0 ? LLKHF_EXTENDED : 0;
                 TestKeyEvent down(modifier, scanCode, WM_KEYDOWN, downFlags);
                 TestKeyEvent up(modifier, scanCode, WM_KEYUP, downFlags | LLKHF_UP);
-                Assert::IsTrue(fixture.backend->HandleRecoveryKeyEvent(&down.event));
-                Assert::IsTrue(fixture.backend->HandleRecoveryKeyEvent(&up.event));
+                const std::wstring message = L"modifier=" + std::to_wstring(modifier);
+                Assert::IsTrue(fixture.backend->HandleRecoveryKeyEvent(&down.event), message.c_str());
+                Assert::IsTrue(fixture.backend->HandleRecoveryKeyEvent(&up.event), message.c_str());
             }
         }
 
@@ -1044,6 +1050,262 @@ namespace TextExpansionEngineTests
             Assert::AreEqual(static_cast<WORD>(scanCode), trigger[1].ki.wScan);
             Assert::IsTrue((trigger[1].ki.dwFlags & KEYEVENTF_EXTENDEDKEY) != 0);
             Assert::IsTrue((trigger[1].ki.dwFlags & KEYEVENTF_KEYUP) != 0);
+        }
+
+        TEST_METHOD (RecoverPendingActivation_ShouldAllowReplayActionToReenterPrepare)
+        {
+            BackendFixture fixture;
+            fixture.TrackText(L"brb");
+            AssertResult(TextExpansionResult::Prepared, fixture.Prepare(fixture.Request()));
+            const auto replayRequest = fixture.Request(
+                { 'A' },
+                { { L"another", L"replacement", 0 } });
+            std::optional<TextExpansionResult> reentrantCompleteResult;
+            std::optional<TextExpansionResult> reentrantCancelResult;
+            std::optional<TextExpansionResult> reentrantResult;
+            fixture.input.SetHookProc([&](LowlevelKeyboardEvent* event) {
+                if (event && event->lParam &&
+                    event->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_TEXT_EXPANSION_REPLAY_FLAG)
+                {
+                    reentrantCompleteResult = fixture.backend->CompletePendingActivation();
+                    reentrantCancelResult = fixture.backend->CancelPendingActivation();
+                    reentrantResult = fixture.Prepare(replayRequest);
+                }
+                return 0;
+            });
+
+            const TextExpansionRecoveryRequest recovery{
+                .actionKey = VK_SPACE,
+                .replayKey = 'A',
+                .replayScanCode = 0x1E,
+            };
+            Assert::IsTrue(fixture.backend->RecoverPendingActivation(recovery));
+            Assert::IsTrue(reentrantCompleteResult.has_value());
+            AssertResult(TextExpansionResult::FailedUnchanged, *reentrantCompleteResult);
+            Assert::IsTrue(reentrantCancelResult.has_value());
+            AssertResult(TextExpansionResult::FailedUnchanged, *reentrantCancelResult);
+            Assert::IsTrue(reentrantResult.has_value());
+            AssertResult(TextExpansionResult::NoMatch, *reentrantResult);
+            Assert::IsFalse(fixture.backend->HasPendingWork());
+        }
+
+        TEST_METHOD (Stop_ShouldWaitForInFlightRecoveryToFinish)
+        {
+            using namespace std::chrono_literals;
+
+            BackendFixture fixture;
+            fixture.TrackText(L"brb");
+            AssertResult(TextExpansionResult::Prepared, fixture.Prepare(fixture.Request()));
+
+            std::mutex gateMutex;
+            std::condition_variable gateChanged;
+            bool replayEntered = false;
+            bool releaseReplay = false;
+            fixture.input.SetHookProc([&](LowlevelKeyboardEvent* event) {
+                if (event && event->lParam &&
+                    event->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_TEXT_EXPANSION_REPLAY_FLAG)
+                {
+                    std::unique_lock lock(gateMutex);
+                    replayEntered = true;
+                    gateChanged.notify_all();
+                    gateChanged.wait_for(lock, 5s, [&] { return releaseReplay; });
+                }
+                return 0;
+            });
+
+            std::atomic_bool recovered = false;
+            std::thread recoveryThread([&] {
+                recovered.store(
+                    fixture.backend->RecoverPendingActivation({
+                        .actionKey = VK_SPACE,
+                        .replayKey = 'A',
+                        .replayScanCode = 0x1E,
+                    }),
+                    std::memory_order_release);
+            });
+
+            bool observedReplay = false;
+            {
+                std::unique_lock lock(gateMutex);
+                observedReplay = gateChanged.wait_for(lock, 5s, [&] { return replayEntered; });
+            }
+
+            std::atomic_bool stopReturned = false;
+            std::thread stopThread([&] {
+                fixture.backend->Stop();
+                stopReturned.store(true, std::memory_order_release);
+            });
+            const auto stopEntryDeadline = std::chrono::steady_clock::now() + 5s;
+            while (fixture.backend->IsReady() && std::chrono::steady_clock::now() < stopEntryDeadline)
+            {
+                std::this_thread::yield();
+            }
+            const bool stopEntered = !fixture.backend->IsReady();
+            std::this_thread::sleep_for(50ms);
+            const bool returnedBeforeRecoveryFinished = stopReturned.load(std::memory_order_acquire);
+
+            {
+                std::scoped_lock lock(gateMutex);
+                releaseReplay = true;
+            }
+            gateChanged.notify_all();
+            recoveryThread.join();
+            stopThread.join();
+
+            Assert::IsTrue(observedReplay);
+            Assert::IsTrue(stopEntered);
+            Assert::IsFalse(returnedBeforeRecoveryFinished);
+            Assert::IsTrue(recovered.load(std::memory_order_acquire));
+            Assert::IsTrue(stopReturned.load(std::memory_order_acquire));
+            Assert::IsFalse(fixture.backend->IsReady());
+        }
+
+        TEST_METHOD (RecoverPendingActivation_ShouldReplayKeypadAliasesByPhysicalScanCode)
+        {
+            struct ReplayCase
+            {
+                DWORD key;
+                DWORD scanCode;
+                bool extended;
+            };
+            constexpr std::array cases{
+                ReplayCase{ VK_NUMPAD0, 0x52, false },
+                ReplayCase{ VK_NUMPAD4, 0x4B, false },
+                ReplayCase{ VK_INSERT, 0x52, false },
+                ReplayCase{ VK_INSERT, 0x52, true },
+                ReplayCase{ VK_LEFT, 0x4B, false },
+                ReplayCase{ VK_LEFT, 0x4B, true },
+                ReplayCase{ VK_DECIMAL, 0x53, false },
+                ReplayCase{ VK_DELETE, 0x53, false },
+                ReplayCase{ VK_DELETE, 0x53, true },
+                ReplayCase{ VK_RETURN, 0x1C, false },
+                ReplayCase{ VK_RETURN, 0x1C, true },
+                ReplayCase{ VK_DIVIDE, 0x35, true },
+                ReplayCase{ VK_CLEAR, 0x4C, false },
+            };
+
+            for (const auto& testCase : cases)
+            {
+                BackendFixture fixture;
+                fixture.TrackText(L"brb");
+                AssertResult(
+                    TextExpansionResult::Prepared,
+                    fixture.Prepare(fixture.Request({ VK_NUMLOCK })));
+                const TextExpansionRecoveryRequest recovery{
+                    .actionKey = VK_NUMLOCK,
+                    .actionScanCode = 0x45,
+                    .replayKey = testCase.key,
+                    .replayScanCode = testCase.scanCode,
+                    .replayExtended = testCase.extended,
+                };
+
+                Assert::IsTrue(fixture.backend->RecoverPendingActivation(recovery));
+                const INPUT& replay = fixture.input.GetSentInputBatches().front().back();
+                Assert::AreEqual(static_cast<WORD>(0), replay.ki.wVk);
+                Assert::AreEqual(static_cast<WORD>(testCase.scanCode), replay.ki.wScan);
+                Assert::IsTrue((replay.ki.dwFlags & KEYEVENTF_SCANCODE) != 0);
+                Assert::AreEqual(
+                    testCase.extended,
+                    (replay.ki.dwFlags & KEYEVENTF_EXTENDEDKEY) != 0);
+                Assert::AreEqual(
+                    KeyboardManagerConstants::KEYBOARDMANAGER_TEXT_EXPANSION_REPLAY_FLAG,
+                    replay.ki.dwExtraInfo);
+            }
+        }
+
+        TEST_METHOD (RecoverPendingActivation_ShouldMapMissingKeypadScanCode)
+        {
+            struct ReplayCase
+            {
+                DWORD key;
+                bool extended;
+            };
+            constexpr std::array cases{
+                ReplayCase{ VK_INSERT, false },
+                ReplayCase{ VK_INSERT, true },
+                ReplayCase{ VK_DIVIDE, true },
+            };
+
+            for (const auto& testCase : cases)
+            {
+                BackendFixture fixture;
+                fixture.TrackText(L"brb");
+                AssertResult(TextExpansionResult::Prepared, fixture.Prepare(fixture.Request({ VK_NUMLOCK })));
+                const TextExpansionRecoveryRequest recovery{
+                    .actionKey = VK_NUMLOCK,
+                    .actionScanCode = 0x45,
+                    .replayKey = testCase.key,
+                    .replayExtended = testCase.extended,
+                };
+
+                Assert::IsTrue(fixture.backend->RecoverPendingActivation(recovery));
+                const INPUT& replay = fixture.input.GetSentInputBatches().front().back();
+                Assert::AreEqual(static_cast<WORD>(0), replay.ki.wVk);
+                Assert::AreNotEqual(static_cast<WORD>(0), replay.ki.wScan);
+                Assert::IsTrue((replay.ki.dwFlags & KEYEVENTF_SCANCODE) != 0);
+                Assert::AreEqual(testCase.extended, (replay.ki.dwFlags & KEYEVENTF_EXTENDEDKEY) != 0);
+            }
+        }
+
+        TEST_METHOD (RecoverPendingActivation_ShouldKeepSpecialKeysOnVirtualKeyPath)
+        {
+            struct ReplayCase
+            {
+                DWORD key;
+                DWORD scanCode;
+                bool extended;
+            };
+            constexpr std::array cases{
+                ReplayCase{ VK_PAUSE, 0x45, false },
+                ReplayCase{ VK_SNAPSHOT, 0x37, true },
+                ReplayCase{ VK_CANCEL, 0x46, true },
+                ReplayCase{ VK_PROCESSKEY, 0, false },
+                ReplayCase{ 'A', 0x1E, false },
+            };
+
+            for (const auto& testCase : cases)
+            {
+                BackendFixture fixture;
+                fixture.TrackText(L"brb");
+                AssertResult(TextExpansionResult::Prepared, fixture.Prepare(fixture.Request()));
+                const TextExpansionRecoveryRequest recovery{
+                    .actionKey = VK_SPACE,
+                    .replayKey = testCase.key,
+                    .replayScanCode = testCase.scanCode,
+                    .replayExtended = testCase.extended,
+                };
+
+                Assert::IsTrue(fixture.backend->RecoverPendingActivation(recovery));
+                const INPUT& replay = fixture.input.GetSentInputBatches().front().back();
+                Assert::AreEqual(static_cast<WORD>(testCase.key), replay.ki.wVk);
+                Assert::AreEqual(static_cast<WORD>(testCase.scanCode), replay.ki.wScan);
+                Assert::IsFalse((replay.ki.dwFlags & KEYEVENTF_SCANCODE) != 0);
+                Assert::AreEqual(
+                    testCase.extended,
+                    (replay.ki.dwFlags & KEYEVENTF_EXTENDEDKEY) != 0);
+            }
+        }
+
+        TEST_METHOD (RecoverPendingActivation_ShouldReplayPacketAsUnicodeInput)
+        {
+            BackendFixture fixture;
+            fixture.TrackText(L"brb");
+            AssertResult(TextExpansionResult::Prepared, fixture.Prepare(fixture.Request()));
+            const TextExpansionRecoveryRequest recovery{
+                .actionKey = VK_SPACE,
+                .replayKey = VK_PACKET,
+                .replayScanCode = static_cast<DWORD>(L'x'),
+            };
+
+            Assert::IsTrue(fixture.backend->RecoverPendingActivation(recovery));
+            const INPUT& replay = fixture.input.GetSentInputBatches().front().back();
+            Assert::AreEqual(static_cast<WORD>(0), replay.ki.wVk);
+            Assert::AreEqual(static_cast<WORD>(L'x'), replay.ki.wScan);
+            Assert::IsTrue((replay.ki.dwFlags & KEYEVENTF_UNICODE) != 0);
+            Assert::IsFalse((replay.ki.dwFlags & KEYEVENTF_SCANCODE) != 0);
+            Assert::AreEqual(
+                KeyboardManagerConstants::KEYBOARDMANAGER_TEXT_EXPANSION_REPLAY_FLAG,
+                replay.ki.dwExtraInfo);
         }
 
         TEST_METHOD (RecoverPendingActivation_ShouldNotReplayTriggerIntoChangedContext)

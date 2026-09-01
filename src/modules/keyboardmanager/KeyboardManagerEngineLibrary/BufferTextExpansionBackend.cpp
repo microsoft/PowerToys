@@ -23,29 +23,118 @@ namespace
         return message == WM_KEYUP || message == WM_SYSKEYUP;
     }
 
+    constexpr bool ShouldReplayByScanCode(const DWORD key) noexcept
+    {
+        if (key >= VK_NUMPAD0 && key <= VK_NUMPAD9)
+        {
+            return true;
+        }
+
+        switch (key)
+        {
+        case VK_CLEAR:
+        case VK_PRIOR:
+        case VK_NEXT:
+        case VK_END:
+        case VK_HOME:
+        case VK_LEFT:
+        case VK_UP:
+        case VK_RIGHT:
+        case VK_DOWN:
+        case VK_INSERT:
+        case VK_DELETE:
+        case VK_DECIMAL:
+        case VK_RETURN:
+        case VK_DIVIDE:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    void SetReplayKeyDownEvent(
+        INPUT& event,
+        const DWORD key,
+        const DWORD capturedScanCode,
+        const bool capturedExtended) noexcept
+    {
+        event = {};
+        event.type = INPUT_KEYBOARD;
+        event.ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_TEXT_EXPANSION_REPLAY_FLAG;
+
+        if (key == VK_PACKET)
+        {
+            event.ki.wScan = static_cast<WORD>(capturedScanCode);
+            event.ki.dwFlags = KEYEVENTF_UNICODE;
+            return;
+        }
+
+        if (!ShouldReplayByScanCode(key))
+        {
+            event.ki.wVk = static_cast<WORD>(key);
+            event.ki.wScan = capturedScanCode != 0 ?
+                                 static_cast<WORD>(capturedScanCode) :
+                                 static_cast<WORD>(MapVirtualKeyW(key, MAPVK_VK_TO_VSC));
+            event.ki.dwFlags = capturedExtended ? KEYEVENTF_EXTENDEDKEY : 0;
+            return;
+        }
+
+        DWORD scanCode = capturedScanCode & 0xFF;
+        if (scanCode == 0)
+        {
+            const UINT mappedScanCode = MapVirtualKeyW(key, MAPVK_VK_TO_VSC_EX);
+            scanCode = mappedScanCode & 0xFF;
+        }
+
+        if (scanCode == 0)
+        {
+            event.ki.wVk = static_cast<WORD>(key);
+            event.ki.dwFlags = capturedExtended ? KEYEVENTF_EXTENDEDKEY : 0;
+            return;
+        }
+
+        event.ki.wScan = static_cast<WORD>(scanCode);
+        event.ki.dwFlags = KEYEVENTF_SCANCODE | (capturedExtended ? KEYEVENTF_EXTENDEDKEY : 0);
+    }
+
     std::optional<size_t> GetInjectedInputIdentity(const INPUT& event) noexcept
     {
         if (event.type != INPUT_KEYBOARD ||
             (event.ki.dwFlags & KEYEVENTF_UNICODE) != 0 ||
-            event.ki.wVk == 0 || event.ki.wVk == KeyboardManagerConstants::DUMMY_KEY)
+            event.ki.wVk == KeyboardManagerConstants::DUMMY_KEY)
         {
             return std::nullopt;
         }
 
-        const UINT mappedScanCode = MapVirtualKeyW(event.ki.wVk, MAPVK_VK_TO_VSC_EX);
+        const bool scanCodeInput = (event.ki.dwFlags & KEYEVENTF_SCANCODE) != 0;
         DWORD scanCode = event.ki.wScan & 0xFF;
-        if (scanCode == 0)
+        bool extended = (event.ki.dwFlags & KEYEVENTF_EXTENDEDKEY) != 0;
+        if (scanCodeInput)
         {
-            scanCode = mappedScanCode & 0xFF;
+            if (scanCode == 0)
+            {
+                return std::nullopt;
+            }
         }
-        if (scanCode == 0)
+        else
         {
-            return std::nullopt;
+            if (event.ki.wVk == 0)
+            {
+                return std::nullopt;
+            }
+            const UINT mappedScanCode = MapVirtualKeyW(event.ki.wVk, MAPVK_VK_TO_VSC_EX);
+            if (scanCode == 0)
+            {
+                scanCode = mappedScanCode & 0xFF;
+            }
+            extended = extended || (mappedScanCode & 0xFF00) != 0;
+            if (scanCode == 0)
+            {
+                return std::nullopt;
+            }
         }
 
         constexpr size_t keyCount = 256;
-        const bool extended = (event.ki.dwFlags & KEYEVENTF_EXTENDEDKEY) != 0 ||
-                              (mappedScanCode & 0xFF00) != 0;
         return static_cast<size_t>(scanCode) +
                (extended ? keyCount : 0);
     }
@@ -308,6 +397,15 @@ namespace
         }
     };
 
+    struct RecoveryCompletionGuard
+    {
+        std::atomic_bool& active;
+        ~RecoveryCompletionGuard()
+        {
+            active.store(false, std::memory_order_release);
+        }
+    };
+
     std::vector<INPUT> CreateCleanupForInjectedPrefix(
         const std::vector<INPUT>& inputs,
         const size_t injectedCount)
@@ -333,7 +431,23 @@ namespace
                 outstandingDowns.rend(),
                 [&](const INPUT& down) {
                     const bool unicode = (event.ki.dwFlags & KEYEVENTF_UNICODE) != 0;
-                    return unicode ? down.ki.wScan == event.ki.wScan : down.ki.wVk == event.ki.wVk;
+                    if (unicode)
+                    {
+                        return (down.ki.dwFlags & KEYEVENTF_UNICODE) != 0 &&
+                               down.ki.wScan == event.ki.wScan;
+                    }
+
+                    const bool scanCode = (event.ki.dwFlags & KEYEVENTF_SCANCODE) != 0;
+                    if (scanCode)
+                    {
+                        return (down.ki.dwFlags & KEYEVENTF_SCANCODE) != 0 &&
+                               down.ki.wScan == event.ki.wScan &&
+                               (down.ki.dwFlags & KEYEVENTF_EXTENDEDKEY) ==
+                                   (event.ki.dwFlags & KEYEVENTF_EXTENDEDKEY);
+                    }
+
+                    return (down.ki.dwFlags & (KEYEVENTF_UNICODE | KEYEVENTF_SCANCODE)) == 0 &&
+                           down.ki.wVk == event.ki.wVk;
                 });
             if (matchingDown != outstandingDowns.rend())
             {
@@ -526,6 +640,7 @@ bool BufferTextExpansionBackend::Start()
 void BufferTextExpansionBackend::Stop() noexcept
 {
     started.store(false, std::memory_order_release);
+    std::scoped_lock recoveryLock(recoveryMutex);
 
     uint8_t modifierMask = 0;
     {
@@ -754,6 +869,24 @@ TextExpansionResult BufferTextExpansionBackend::PrepareActivation(const TextExpa
     }
 
     std::scoped_lock activationLock(activationMutex);
+    if (!started.load(std::memory_order_acquire))
+    {
+        return TextExpansionResult::UnsupportedContext;
+    }
+    if (recoveryInProgress.load(std::memory_order_acquire))
+    {
+        // A replayed physical key must pass through the normal remap and tracking
+        // pipeline, but it cannot start a second expansion transaction while the
+        // recovery batch that contains it is still being delivered.
+        return TextExpansionResult::NoMatch;
+    }
+    {
+        std::scoped_lock lock(pendingCleanupMutex);
+        if (!pendingCleanup.empty())
+        {
+            return TextExpansionResult::FailedChangedOrUnknown;
+        }
+    }
     if (activationInProgress.exchange(true, std::memory_order_acq_rel))
     {
         return TextExpansionResult::FailedUnchanged;
@@ -887,17 +1020,23 @@ TextExpansionResult BufferTextExpansionBackend::CompletePendingActivation() noex
 bool BufferTextExpansionBackend::RecoverPendingActivation(
     const TextExpansionRecoveryRequest& request) noexcept
 {
-    std::scoped_lock activationLock(activationMutex);
-    if (!pendingActivation || request.actionKey == 0 || request.replayKey == 0)
+    std::scoped_lock recoveryLock(recoveryMutex);
+    bool targetStillCurrent = false;
     {
-        return false;
-    }
+        std::scoped_lock activationLock(activationMutex);
+        if (!pendingActivation || request.actionKey == 0 || request.replayKey == 0)
+        {
+            return false;
+        }
 
-    const bool targetStillCurrent = IsTargetContextCurrent(
-        pendingActivation->targetContext,
-        pendingActivation->contextEpoch);
-    pendingActivation.reset();
-    activationInProgress.store(false, std::memory_order_release);
+        targetStillCurrent = IsTargetContextCurrent(
+            pendingActivation->targetContext,
+            pendingActivation->contextEpoch);
+        pendingActivation.reset();
+        activationInProgress.store(false, std::memory_order_release);
+        recoveryInProgress.store(true, std::memory_order_release);
+    }
+    RecoveryCompletionGuard recoveryGuard{ recoveryInProgress };
 
     {
         std::scoped_lock bufferLock(bufferMutex);
@@ -956,13 +1095,11 @@ bool BufferTextExpansionBackend::RecoverPendingActivation(
         const size_t modifierReleaseEnd = recoveryEvents.size();
 
         INPUT replay{};
-        replay.type = INPUT_KEYBOARD;
-        replay.ki.wVk = static_cast<WORD>(request.replayKey);
-        replay.ki.wScan = request.replayScanCode != 0 ?
-                              static_cast<WORD>(request.replayScanCode) :
-                              static_cast<WORD>(MapVirtualKeyW(request.replayKey, MAPVK_VK_TO_VSC));
-        replay.ki.dwFlags = request.replayExtended ? KEYEVENTF_EXTENDEDKEY : 0;
-        replay.ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_TEXT_EXPANSION_REPLAY_FLAG;
+        SetReplayKeyDownEvent(
+            replay,
+            request.replayKey,
+            request.replayScanCode,
+            request.replayExtended);
         recoveryEvents.push_back(replay);
 
         const auto result = input.SendVirtualInput(recoveryEvents);

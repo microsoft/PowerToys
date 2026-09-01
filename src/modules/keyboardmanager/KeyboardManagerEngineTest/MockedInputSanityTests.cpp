@@ -74,6 +74,51 @@ namespace RemappingLogicTests
             Assert::IsFalse(mockedInputHandler.GetVirtualKeyState('B'));
         }
 
+        TEST_METHOD (MockedInput_ShouldTranslateScanCodeInputForHook)
+        {
+            KBDLLHOOKSTRUCT observed{};
+            mockedInputHandler.SetHookProc([&](LowlevelKeyboardEvent* event) {
+                if (event && event->lParam)
+                {
+                    observed = *event->lParam;
+                }
+                return 0;
+            });
+            const std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wScan = 0x1E, .dwFlags = KEYEVENTF_SCANCODE } },
+            };
+
+            const auto result = mockedInputHandler.SendVirtualInput(inputs);
+
+            Assert::IsTrue(result.IsComplete());
+            Assert::AreEqual(static_cast<DWORD>('A'), observed.vkCode);
+            Assert::AreEqual(static_cast<DWORD>(0x1E), observed.scanCode);
+            Assert::IsFalse((observed.flags & LLKHF_EXTENDED) != 0);
+            Assert::IsTrue(mockedInputHandler.GetVirtualKeyState('A'));
+        }
+
+        TEST_METHOD (MockedInput_ShouldExposeUnicodeInputAsPacketToHook)
+        {
+            KBDLLHOOKSTRUCT observed{};
+            mockedInputHandler.SetHookProc([&](LowlevelKeyboardEvent* event) {
+                if (event && event->lParam)
+                {
+                    observed = *event->lParam;
+                }
+                return 0;
+            });
+            const std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wScan = static_cast<WORD>(L'x'), .dwFlags = KEYEVENTF_UNICODE } },
+            };
+
+            const auto result = mockedInputHandler.SendVirtualInput(inputs);
+
+            Assert::IsTrue(result.IsComplete());
+            Assert::AreEqual(static_cast<DWORD>(VK_PACKET), observed.vkCode);
+            Assert::AreEqual(static_cast<DWORD>(L'x'), observed.scanCode);
+            Assert::AreEqual(std::wstring(L"x"), mockedInputHandler.GetInjectedUnicodeText());
+        }
+
         TEST_METHOD (MockedInput_ShouldReportNoneWhenNoEventsAreInjected)
         {
             mockedInputHandler.SetSendVirtualInputInjectedCount([](const std::vector<INPUT>&) {

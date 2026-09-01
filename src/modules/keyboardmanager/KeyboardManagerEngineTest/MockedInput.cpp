@@ -34,6 +34,21 @@ SendVirtualInputResult MockedInput::SendVirtualInput(const std::vector<INPUT>& i
     {
         const INPUT& input = inputs[inputIndex];
         LowlevelKeyboardEvent keyEvent{};
+        DWORD virtualKey = input.ki.wVk;
+        if ((input.ki.dwFlags & KEYEVENTF_UNICODE) != 0)
+        {
+            virtualKey = VK_PACKET;
+        }
+        else if ((input.ki.dwFlags & KEYEVENTF_SCANCODE) != 0 && input.ki.wScan != 0)
+        {
+            const UINT scanCode = input.ki.wScan |
+                                  ((input.ki.dwFlags & KEYEVENTF_EXTENDEDKEY) != 0 ? 0xE000 : 0);
+            const UINT mappedKey = MapVirtualKeyW(scanCode, MAPVK_VSC_TO_VK_EX);
+            if (mappedKey != 0)
+            {
+                virtualKey = mappedKey;
+            }
+        }
 
         // Distinguish between key and sys key by checking if the key is either F10 (for syskeydown) or if the key message is sent while Alt is held down. SYSKEY messages are also sent if there is no window in focus, but that has not been mocked since it would require many changes. More details on key messages at https://learn.microsoft.com/windows/win32/inputdev/wm-syskeydown
         if (input.ki.dwFlags & KEYEVENTF_KEYUP)
@@ -49,7 +64,7 @@ SendVirtualInputResult MockedInput::SendVirtualInput(const std::vector<INPUT>& i
         }
         else
         {
-            if (input.ki.wVk == VK_F10 || keyboardState[VK_MENU] == true)
+            if (virtualKey == VK_F10 || keyboardState[VK_MENU] == true)
             {
                 keyEvent.wParam = WM_SYSKEYDOWN;
             }
@@ -60,8 +75,10 @@ SendVirtualInputResult MockedInput::SendVirtualInput(const std::vector<INPUT>& i
         }
         KBDLLHOOKSTRUCT lParam = {};
 
-        // Set only vkCode and dwExtraInfo since other values are unused
-        lParam.vkCode = input.ki.wVk;
+        lParam.vkCode = virtualKey;
+        lParam.scanCode = input.ki.wScan;
+        lParam.flags = ((input.ki.dwFlags & KEYEVENTF_EXTENDEDKEY) != 0 ? LLKHF_EXTENDED : 0) |
+                       ((input.ki.dwFlags & KEYEVENTF_KEYUP) != 0 ? LLKHF_UP : 0);
         lParam.dwExtraInfo = input.ki.dwExtraInfo;
         keyEvent.lParam = &lParam;
 
@@ -85,10 +102,13 @@ SendVirtualInputResult MockedInput::SendVirtualInput(const std::vector<INPUT>& i
             }
 
             // If key up flag is set, then set keyboard state to false
-            keyboardState[input.ki.wVk] = (input.ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
+            if (virtualKey < keyboardState.size())
+            {
+                keyboardState[virtualKey] = (input.ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
+            }
 
             // Handling modifier key codes
-            switch (input.ki.wVk)
+            switch (virtualKey)
             {
             case VK_CONTROL:
                 if (input.ki.dwFlags & KEYEVENTF_KEYUP)

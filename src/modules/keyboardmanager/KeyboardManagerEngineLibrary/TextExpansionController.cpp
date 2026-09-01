@@ -148,11 +148,18 @@ TextExpansionController::EventDisposition TextExpansionController::BeginKeyboard
 
     const DWORD physicalKey = data->lParam->vkCode;
     const size_t physicalKeyIdentity = GetPhysicalKeyIdentity(data, physicalKey);
-    if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_TEXT_EXPANSION_REPLAY_FLAG)
+    bool suppressOrphanReplayKeyUp = false;
     {
         std::scoped_lock lock(pressStateMutex);
-        pendingReplayKeys.reset(physicalKeyIdentity);
-        UpdateTrackedPressStateLocked();
+        if (pendingReplayKeys.test(physicalKeyIdentity))
+        {
+            const bool replayObserved =
+                data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_TEXT_EXPANSION_REPLAY_FLAG;
+            pendingReplayKeys.reset(physicalKeyIdentity);
+            suppressOrphanReplayKeyUp = !replayObserved && keyUp &&
+                                       !actionKeyPresses.test(physicalKeyIdentity);
+            UpdateTrackedPressStateLocked();
+        }
     }
     if (recoveryPending && backend && backend->HandleRecoveryKeyEvent(data))
     {
@@ -174,11 +181,6 @@ TextExpansionController::EventDisposition TextExpansionController::BeginKeyboard
     }
 
     bool backendIsReady = IsBackendReady();
-    if (!backendIsReady && !hasTrackedPressState.load(std::memory_order_acquire))
-    {
-        return EventDisposition::Ignore;
-    }
-
     const auto interruption = keyDown ?
                                   InterruptPendingActivationForNewInput(
                                       physicalKey,
@@ -195,6 +197,17 @@ TextExpansionController::EventDisposition TextExpansionController::BeginKeyboard
     if (HandlePendingActivationReleaseEvent(physicalKey, physicalKeyIdentity, keyDown, keyUp))
     {
         return EventDisposition::Suppress;
+    }
+    if (suppressOrphanReplayKeyUp)
+    {
+        // SendInput can report a complete batch even when an earlier low-level hook
+        // consumes the replay before this hook observes it. Retire the acknowledgement
+        // marker on the matching physical release and suppress the unmatched key-up.
+        return EventDisposition::Suppress;
+    }
+    if (!backendIsReady && !hasTrackedPressState.load(std::memory_order_acquire))
+    {
+        return EventDisposition::Ignore;
     }
 
     {
