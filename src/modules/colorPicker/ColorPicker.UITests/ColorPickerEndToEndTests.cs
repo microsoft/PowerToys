@@ -17,19 +17,17 @@ namespace Microsoft.ColorPicker.UITests;
 ///   4. Read the activation shortcut from the page's <c>ShortcutControl</c> (the EditButton
 ///      exposes <c>HotkeySettings.ToString()</c> via <c>AutomationProperties.HelpText</c>).
 ///   5. Clear the clipboard, move the cursor, send the shortcut chord.
-///   6. Wait for the picker overlay window and read the displayed HEX from the overlay's
-///      automation-peer TextBlock (AutomationId="ColorHexAutomationPeer").
+///   6. Wait for the picker overlay window and read the displayed HEX from its accessible
+///      color TextBlock (AutomationId="ColorTextBlock").
 ///   7. Zoom to 4x and 8x, then move across the highlighted source pixel and verify its color is unchanged.
 ///   8. Left-click to capture. ColorPicker writes the captured color to the clipboard.
 ///   9. Read the captured value from the clipboard and assert it matches the overlay HEX.
 ///  10. Wait for the editor window and assert the captured value appears in its tree.
 /// </summary>
 /// <remarks>
-/// The overlay's visible ColorTextBlock uses its accessible name for screen-reader announcements,
-/// which can include the friendly color name (e.g. "White"), not just the HEX. To keep the raw
-/// value stable for UI automation, ColorPickerView.xaml carries a hidden sibling TextBlock with
-/// <c>AutomationId="ColorHexAutomationPeer"</c> — a test-only UIA hook that lets us read the
-/// actually-displayed HEX value without affecting the visual layout or accessibility UX.
+/// The deterministic settings disable friendly color names, so the visible color TextBlock's
+/// accessible name is the exact HEX value shown to the user. Reading that real accessibility
+/// surface also catches regressions where the displayed color is no longer exposed to UIA.
 /// </remarks>
 [TestClass]
 public class ColorPickerEndToEndTests : UITestBase
@@ -53,6 +51,9 @@ public class ColorPickerEndToEndTests : UITestBase
             "activationaction": 1,
             "primaryclickaction": 0,
             "colorhistorylimit": 20,
+            "showcolorname": {
+              "value": false
+            },
             "visiblecolorformats": {
               "HEX": {
                 "Key": true,
@@ -196,7 +197,7 @@ public class ColorPickerEndToEndTests : UITestBase
             // If currently OFF, prime ON first so OFF→ON→OFF gives us a real lifecycle signal.
             if (!toggle.IsOn)
             {
-                toggle.Toggle(true);
+                SetToggleState(toggle, true);
                 Assert.IsTrue(
                     toggle.WaitForProperty("ToggleState", "On", timeoutMS: 5_000),
                     "Priming: toggle UI did not flip to On.");
@@ -205,7 +206,7 @@ public class ColorPickerEndToEndTests : UITestBase
                     "Priming: PowerToys.ColorPickerUI did not start after enabling.");
             }
 
-            toggle.Toggle(false);
+            SetToggleState(toggle, false);
             Assert.IsTrue(
                 toggle.WaitForProperty("ToggleState", "Off", timeoutMS: 5_000),
                 "Toggle UI did not flip to Off.");
@@ -215,7 +216,7 @@ public class ColorPickerEndToEndTests : UITestBase
             TestContext.WriteLine("Toggled OFF; ColorPickerUI process exited.");
 
             // -- 4. Toggle the module ON and verify the runner respawns ColorPickerUI -------
-            toggle.Toggle(true);
+            SetToggleState(toggle, true);
             Assert.IsTrue(
                 toggle.WaitForProperty("ToggleState", "On", timeoutMS: 5_000),
                 "Toggle UI did not flip to On.");
@@ -308,26 +309,13 @@ public class ColorPickerEndToEndTests : UITestBase
 
             TestContext.WriteLine($"Picker overlay appeared: hwnd={overlay!.WindowHandle}");
 
-            // -- 9. Read the displayed HEX from the overlay's automation-peer TextBlock -----
-            // The peer is a Visibility=Visible, Opacity=0 TextBlock added to ColorPickerView.xaml
-            // specifically so UIA-driven tests can read the live HEX value. It is bound to
-            // the same `ColorText` source as the visible TextBlock, so it always matches
-            // what the user sees.
-            string overlayHex = string.Empty;
-            try
-            {
-                var peer = overlay.Find(By.AccessibilityId("ColorHexAutomationPeer"), timeoutMS: 2_000);
-                overlayHex = peer.Name;
-                TestContext.WriteLine($"Overlay HEX (from automation peer): '{overlayHex}'");
-            }
-            catch (Exception ex)
-            {
-                TestContext.WriteLine($"Could not read ColorHexAutomationPeer: {ex.Message}");
-            }
+            // -- 9. Read the displayed HEX from the overlay's accessible TextBlock ----------
+            string overlayHex = ReadOverlayColor(overlay);
+            TestContext.WriteLine($"Overlay HEX (from visible color text): '{overlayHex}'");
 
             Assert.IsFalse(
                 string.IsNullOrEmpty(overlayHex),
-                "Failed to read the overlay's HEX value from the ColorHexAutomationPeer TextBlock.");
+                "Failed to read the overlay's HEX value from the visible ColorTextBlock.");
 
             // -- 10. Zoom without moving the cursor; the magnifier must not alter the sample --
             // Establish the baseline from the factor-1 magnifier after its captured image is on
@@ -477,7 +465,7 @@ public class ColorPickerEndToEndTests : UITestBase
             {
                 if (toggle.IsOn != initialIsOn)
                 {
-                    toggle.Toggle(initialIsOn);
+                    SetToggleState(toggle, initialIsOn);
                 }
             }
             catch
@@ -488,7 +476,16 @@ public class ColorPickerEndToEndTests : UITestBase
 
     private static string ReadOverlayColor(Session overlay)
     {
-        return overlay.Find(By.AccessibilityId("ColorHexAutomationPeer"), timeoutMS: 2_000).Name;
+        return overlay.Find(By.AccessibilityId("ColorTextBlock"), timeoutMS: 2_000).Name;
+    }
+
+    private static void SetToggleState(ToggleSwitch toggle, bool value)
+    {
+        if (toggle.IsOn != value)
+        {
+            // Keep this lifecycle check coordinate-free; the remaining scenario deliberately uses real input.
+            toggle.Invoke();
+        }
     }
 
     /// <summary>

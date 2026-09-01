@@ -9,12 +9,12 @@ using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.UI;
 using Microsoft.UI.Composition;
-using Microsoft.UI.Input;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
-using Microsoft.UI.Xaml.Input;
 using Windows.Foundation;
 using Windows.UI;
+
+using DrawingColor = System.Drawing.Color;
 
 namespace ColorPicker.Views
 {
@@ -172,19 +172,44 @@ namespace ColorPicker.Views
             ZoomCanvas.Invalidate();
         }
 
-        private void ZoomView_PointerMoved(object sender, PointerRoutedEventArgs e)
+        internal bool UpdatePointerPosition(
+            Point pointerPosition,
+            Point windowCenterPosition,
+            double fallbackRasterizationScale,
+            out DrawingColor color)
         {
-            if (e.Pointer.PointerDeviceType != PointerDeviceType.Mouse || ActualWidth <= 0 || ActualHeight <= 0)
+            double actualRasterizationScale = XamlRoot?.RasterizationScale ?? 0;
+            double rasterizationScale = actualRasterizationScale > 0
+                ? actualRasterizationScale
+                : fallbackRasterizationScale;
+            _pointerOffsetFromHostCenter = GetPointerOffsetFromScreenPosition(
+                pointerPosition,
+                windowCenterPosition,
+                rasterizationScale);
+            ZoomCanvas.Invalidate();
+            return TryGetPointerColor(out color);
+        }
+
+        internal bool TryGetPointerColor(out DrawingColor color)
+        {
+            color = DrawingColor.Transparent;
+            double canvasSize = BaseZoomImageSize * _zoomFactor;
+            if (_suppressOverlays || _zoomPixels == null ||
+                !TryGetPointerSample(
+                    canvasSize,
+                    canvasSize,
+                    _pointerOffsetFromHostCenter,
+                    BaseZoomImageSize,
+                    out _,
+                    out int pixelX,
+                    out int pixelY))
             {
-                return;
+                return false;
             }
 
-            Point position = e.GetCurrentPoint(this).Position;
-            _pointerOffsetFromHostCenter = GetPointerOffsetFromHostCenter(
-                position,
-                new Size(ActualWidth, ActualHeight),
-                XamlRoot?.RasterizationScale ?? 1.0);
-            ZoomCanvas.Invalidate();
+            Color pixel = _zoomPixels[(pixelY * BaseZoomImageSize) + pixelX];
+            color = DrawingColor.FromArgb(pixel.A, pixel.R, pixel.G, pixel.B);
+            return true;
         }
 
         private void ZoomCanvas_Draw(CanvasControl sender, CanvasDrawEventArgs args)
@@ -297,18 +322,16 @@ namespace ColorPicker.Views
             return true;
         }
 
-        internal static Vector2 GetPointerOffsetFromHostCenter(
+        internal static Vector2 GetPointerOffsetFromScreenPosition(
             Point pointerPosition,
-            Size hostSize,
+            Point windowCenterPosition,
             double rasterizationScale)
         {
-            double pixelCenterCorrection = rasterizationScale > 0
-                ? 0.5 / rasterizationScale
-                : 0.5;
+            double scale = rasterizationScale > 0 ? rasterizationScale : 1.0;
 
             return new Vector2(
-                (float)(pointerPosition.X + pixelCenterCorrection - (hostSize.Width * 0.5)),
-                (float)(pointerPosition.Y + pixelCenterCorrection - (hostSize.Height * 0.5)));
+                (float)(((pointerPosition.X + 0.5) - windowCenterPosition.X) / scale),
+                (float)(((pointerPosition.Y + 0.5) - windowCenterPosition.Y) / scale));
         }
 
         internal static Rect GetCursorSamplePatchBounds(Vector2 pointerPosition)

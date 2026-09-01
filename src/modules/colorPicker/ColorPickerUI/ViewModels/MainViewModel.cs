@@ -32,6 +32,7 @@ namespace ColorPicker.ViewModels
         private string _colorText;
         private Brush _colorBrush;
         private string _colorName;
+        private string _lastColorRepresentationFormat;
 
         public MainViewModel(
             IMouseInfoProvider mouseInfoProvider,
@@ -67,6 +68,7 @@ namespace ColorPicker.ViewModels
             {
                 SetColorDetails(mouseInfoProvider.CurrentColor);
                 mouseInfoProvider.MouseColorChanged += Mouse_ColorChanged;
+                mouseInfoProvider.MousePositionChanged += MouseInfoProvider_MousePositionChanged;
                 mouseInfoProvider.OnPrimaryMouseDown += MouseInfoProvider_OnPrimaryMouseDown;
                 mouseInfoProvider.OnMouseWheel += MouseInfoProvider_OnMouseWheel;
                 mouseInfoProvider.OnSecondaryMouseUp += MouseInfoProvider_OnSecondaryMouseUp;
@@ -147,7 +149,44 @@ namespace ColorPicker.ViewModels
 
         private void Mouse_ColorChanged(object sender, System.Drawing.Color color)
         {
+            if (_zoomWindowHelper.TryGetZoomColor(out var zoomColor))
+            {
+                color = zoomColor;
+                if (IsCurrentColorAndFormat(color))
+                {
+                    return;
+                }
+            }
+
             SetColorDetails(color);
+        }
+
+        private void MouseInfoProvider_MousePositionChanged(object sender, Point position)
+        {
+            if (_zoomWindowHelper.UpdatePointerPosition(position, out var zoomColor) && !IsCurrentColor(zoomColor))
+            {
+                SetColorDetails(zoomColor);
+            }
+        }
+
+        private bool IsCurrentColor(System.Drawing.Color color)
+        {
+            if (ColorBrush is not SolidColorBrush brush)
+            {
+                return false;
+            }
+
+            var current = brush.Color;
+            return current.A == color.A && current.R == color.R && current.G == color.G && current.B == color.B;
+        }
+
+        private bool IsCurrentColorAndFormat(System.Drawing.Color color)
+        {
+            return IsCurrentColor(color) &&
+                   string.Equals(
+                       _lastColorRepresentationFormat,
+                       _userSettings.CopiedColorRepresentationFormat.Value,
+                       StringComparison.Ordinal);
         }
 
         private void MouseInfoProvider_OnPrimaryMouseDown(object sender, IntPtr wParam)
@@ -230,8 +269,9 @@ namespace ColorPicker.ViewModels
 
         private void SetColorDetails(System.Drawing.Color color)
         {
+            _lastColorRepresentationFormat = _userSettings.CopiedColorRepresentationFormat.Value;
             ColorBrush = new SolidColorBrush(new Color { A = color.A, R = color.R, G = color.G, B = color.B });
-            ColorText = ColorRepresentationHelper.GetStringRepresentation(color, _userSettings.CopiedColorRepresentationFormat.Value);
+            ColorText = ColorRepresentationHelper.GetStringRepresentation(color, _lastColorRepresentationFormat);
             ColorName = ColorRepresentationHelper.GetColorNameFromColorIdentifier(ColorNameHelper.GetColorNameIdentifier(color));
         }
 

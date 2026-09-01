@@ -6,7 +6,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
-    PointerMoved="ZoomView_PointerMoved"
     mc:Ignorable="d">
     <Border
         x:Name="ZoomCard"
@@ -19,7 +18,7 @@
         CornerRadius="{ThemeResource ControlCornerRadius}">
         <!--
             A single Win2D CanvasControl draws the zoomed (nearest-neighbor) capture plus a
-            brightness-adaptive pixel grid + center highlight, replacing the WPF ShaderEffect
+            brightness-adaptive pixel grid + pointer highlight, replacing the WPF ShaderEffect
             (the grid color adapts to local pixel brightness and fades toward the edges).
         -->
         <canvas:CanvasControl

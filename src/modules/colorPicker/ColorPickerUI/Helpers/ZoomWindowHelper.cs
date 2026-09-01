@@ -51,6 +51,7 @@ namespace ColorPicker.Helpers
         private ZoomWindow _zoomWindow;
         private CanvasBitmap _capturedBitmap;
         private double _zoomFactorValue = 1;
+        private double _zoomDpiScale = 1;
         private bool _zoomWindowVisible;
 
         public ZoomWindowHelper(AppStateHandler appStateHandler)
@@ -78,6 +79,36 @@ namespace ColorPicker.Helpers
             }
 
             SetZoomImage(position);
+        }
+
+        internal bool UpdatePointerPosition(Point position, out Color color)
+        {
+            color = Color.Transparent;
+            if (_zoomWindowVisible && _zoomWindow != null && _capturedBitmap != null)
+            {
+                var windowPosition = _zoomWindow.AppWindow.Position;
+                var windowSize = _zoomWindow.AppWindow.Size;
+                var windowCenter = new Point(
+                    windowPosition.X + (windowSize.Width / 2.0),
+                    windowPosition.Y + (windowSize.Height / 2.0));
+
+                return _zoomWindow.ZoomViewControl.UpdatePointerPosition(
+                    position,
+                    windowCenter,
+                    _zoomDpiScale,
+                    out color);
+            }
+
+            return false;
+        }
+
+        internal bool TryGetZoomColor(out Color color)
+        {
+            color = Color.Transparent;
+            return _zoomWindowVisible &&
+                   _zoomWindow != null &&
+                   _capturedBitmap != null &&
+                   _zoomWindow.ZoomViewControl.TryGetPointerColor(out color);
         }
 
         public void CloseZoomWindow()
@@ -238,6 +269,7 @@ namespace ColorPicker.Helpers
 
                 double dpiScale = FlyoutWindowHelper.GetDpiScale(targetDisplay);
                 int sizePhysical = FlyoutWindowHelper.ScaleToPhysicalPixels(MaxWindowSize, dpiScale);
+                _zoomDpiScale = dpiScale;
 
                 // Center the window on the cursor. Cursor coordinates and AppWindow geometry are
                 // physical pixels; the card is centred inside the constant-size window.

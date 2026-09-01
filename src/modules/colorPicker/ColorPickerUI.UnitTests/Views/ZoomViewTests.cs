@@ -68,17 +68,20 @@ namespace ColorPicker.UnitTests.Views
         }
 
         [DataTestMethod]
-        [DataRow(1.0, 215.0, 0.5)]
-        [DataRow(1.5, 214.6666666667, 0.0)]
-        [DataRow(2.0, 215.0, 0.25)]
-        public void Pointer_offset_uses_the_physical_sample_pixel_center(
+        [DataRow(1.0, 100.0, 100.0, 0.5)]
+        [DataRow(1.5, 100.0, 100.5, 0.0)]
+        [DataRow(1.25, 101.0, 100.0, 1.2)]
+        [DataRow(2.0, 100.0, 100.0, 0.25)]
+        [DataRow(0.0, 103.0, 100.0, 3.5)]
+        public void Pointer_offset_uses_the_physical_pixel_and_window_centers(
             double rasterizationScale,
             double pointerPosition,
+            double windowCenterPosition,
             double expectedOffset)
         {
-            Vector2 offset = ZoomView.GetPointerOffsetFromHostCenter(
+            Vector2 offset = ZoomView.GetPointerOffsetFromScreenPosition(
                 new Point(pointerPosition, pointerPosition),
-                new Size(430, 430),
+                new Point(windowCenterPosition, windowCenterPosition),
                 rasterizationScale);
 
             Assert.AreEqual(expectedOffset, offset.X, 0.001);

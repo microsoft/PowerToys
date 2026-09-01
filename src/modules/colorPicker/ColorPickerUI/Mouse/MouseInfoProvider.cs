@@ -207,7 +207,7 @@ namespace ColorPicker.Mouse
             }
 
             var zoomIn = delta > 0;
-            OnMouseWheel?.Invoke(this, new Tuple<Point, bool>(_previousMousePosition, zoomIn));
+            OnMouseWheel?.Invoke(this, new Tuple<Point, bool>(GetCursorPosition(), zoomIn));
         }
 
         private void MouseHook_OnPrimaryMouseDown(object sender, IntPtr wParam)
