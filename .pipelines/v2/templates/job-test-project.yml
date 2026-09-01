@@ -237,42 +237,57 @@ jobs:
 
       if ($requiredAuthenticodeFiles.Count -gt 0) {
         $processNames = @('PowerToys', 'PowerToys.Settings')
+        $deadline = [DateTime]::UtcNow.AddSeconds(30)
+        $stableAbsentSamples = 0
+        $remainingDetails = @()
         $stopFailures = @()
 
-        foreach ($processName in $processNames) {
-          foreach ($process in @(Get-Process -Name $processName -ErrorAction SilentlyContinue)) {
-            try {
-              if (-not $process.HasExited) {
-                Write-Host "Stopping $processName (pid $($process.Id)) before Authenticode signing."
-                $process.Kill($true)
-                if (-not $process.WaitForExit(10000)) {
-                  $stopFailures += "$processName pid $($process.Id) did not exit within 10 seconds."
+        do {
+          $stopFailures = @()
+          foreach ($processName in $processNames) {
+            foreach ($process in @(Get-Process -Name $processName -ErrorAction SilentlyContinue)) {
+              try {
+                if (-not $process.HasExited) {
+                  Write-Host "Stopping $processName (pid $($process.Id)) before Authenticode signing."
+                  $process.Kill($true)
+                  if (-not $process.WaitForExit(5000)) {
+                    $stopFailures += "$processName pid $($process.Id) did not exit within 5 seconds."
+                  }
                 }
+              } catch [System.InvalidOperationException] {
+                # The process exited between enumeration and inspection.
+              } catch {
+                $stopFailures += "Failed to stop $processName pid $($process.Id): $($_.Exception.Message)"
+              } finally {
+                $process.Dispose()
               }
-            } catch [System.InvalidOperationException] {
-              # The process exited between enumeration and inspection.
-            } catch {
-              $stopFailures += "Failed to stop $processName pid $($process.Id): $($_.Exception.Message)"
-            } finally {
-              $process.Dispose()
             }
           }
-        }
 
-        if ($stopFailures.Count -gt 0) {
-          throw "Could not prepare companion binaries for signing: $($stopFailures -join ' ')"
-        }
+          Start-Sleep -Milliseconds 250
 
-        $remaining = @($processNames | ForEach-Object {
-          Get-Process -Name $_ -ErrorAction SilentlyContinue
-        })
-        try {
-          if ($remaining.Count -gt 0) {
-            $details = $remaining | ForEach-Object { "$($_.ProcessName) pid $($_.Id)" }
-            throw "PowerToys processes remain before Authenticode signing: $($details -join ', ')"
+          $remaining = @($processNames | ForEach-Object {
+            Get-Process -Name $_ -ErrorAction SilentlyContinue
+          })
+          try {
+            $remainingDetails = @($remaining | ForEach-Object { "$($_.ProcessName) pid $($_.Id)" })
+            if ($remaining.Count -eq 0) {
+              $stableAbsentSamples++
+            } else {
+              $stableAbsentSamples = 0
+            }
+          } finally {
+            $remaining | ForEach-Object { $_.Dispose() }
           }
-        } finally {
-          $remaining | ForEach-Object { $_.Dispose() }
+
+          if ($stableAbsentSamples -ge 3) {
+            break
+          }
+        } while ([DateTime]::UtcNow -lt $deadline)
+
+        if ($stableAbsentSamples -lt 3) {
+          $details = @($remainingDetails + $stopFailures)
+          throw "Could not stop PowerToys processes before Authenticode signing: $($details -join ' ')"
         }
       }
 

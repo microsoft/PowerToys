@@ -153,13 +153,28 @@ public:
             else
             {
                 Logger::trace(L"Signaled exit event for PowerToys QuickAccent.");
+                bool forceTerminate = false;
                 if (!SetEvent(exitEvent))
                 {
                     Logger::warn(L"Failed to signal exit event for PowerToys QuickAccent. {}", get_last_error_or_default(GetLastError()));
+                    forceTerminate = true;
+                }
+                else if (WaitForSingleObject(p_info.hProcess, 5000) != WAIT_OBJECT_0)
+                {
+                    Logger::warn(L"PowerToys QuickAccent did not exit after the exit event; terminating it.");
+                    forceTerminate = true;
+                }
 
-                    // For some reason, we couldn't process the signal correctly, so we still
-                    // need to terminate the PowerAccent process.
-                    TerminateProcess(p_info.hProcess, 1);
+                if (forceTerminate && p_info.hProcess)
+                {
+                    if (!TerminateProcess(p_info.hProcess, 1))
+                    {
+                        Logger::warn(L"Failed to terminate PowerToys QuickAccent. {}", get_last_error_or_default(GetLastError()));
+                    }
+                    else
+                    {
+                        WaitForSingleObject(p_info.hProcess, 5000);
+                    }
                 }
 
                 // Auto-reset events clear when a waiter consumes the signal; resetting here can race the listener.

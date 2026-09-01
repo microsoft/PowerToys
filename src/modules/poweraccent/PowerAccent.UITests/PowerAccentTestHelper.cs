@@ -698,20 +698,26 @@ internal static class PowerAccentTestHelper
 
             try
             {
-                using var launcher = Process.Start(new ProcessStartInfo
+                Session? window = null;
+                for (var attempt = 1; attempt <= 2 && window is null; attempt++)
                 {
-                    FileName = "notepad.exe",
-                    Arguments = $"\"{filePath}\"",
-                    UseShellExecute = true,
-                });
-                Assert.IsNotNull(launcher, "Could not start the Notepad fixture.");
+                    Step(testBase, $"Opening Notepad fixture (attempt {attempt}/2)");
+                    using var launcher = Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "notepad.exe",
+                        Arguments = $"\"{filePath}\"",
+                        UseShellExecute = true,
+                    });
+                    Assert.IsNotNull(launcher, "Could not start the Notepad fixture.");
 
-                var window = WindowsFinder.WaitForWindowByApp(
-                    "notepad",
-                    candidate =>
-                        candidate.Title.Contains(fileName, StringComparison.OrdinalIgnoreCase) ||
-                        candidate.Title.Contains(baseFileName, StringComparison.OrdinalIgnoreCase),
-                    timeoutMS: 15_000);
+                    window = WindowsFinder.WaitForWindowByApp(
+                        "notepad",
+                        candidate =>
+                            candidate.Title.Contains(fileName, StringComparison.OrdinalIgnoreCase) ||
+                            candidate.Title.Contains(baseFileName, StringComparison.OrdinalIgnoreCase),
+                        timeoutMS: 15_000);
+                }
+
                 Assert.IsNotNull(window, $"Notepad did not open the fixture document '{fileName}'.");
                 return new NotepadFixture(testBase, filePath, window);
             }
