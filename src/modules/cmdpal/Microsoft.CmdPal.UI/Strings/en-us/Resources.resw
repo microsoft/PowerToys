@@ -479,6 +479,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Alt+{0} to run; Alt+Shift+{0} to select</value>
     <comment>Tooltip shortcut text for running or selecting a quick access item. {0} is a digit from 1 through 9.</comment>
   </data>
+  <data name="ListItemNumberedShortcutAcceleratorFormat" xml:space="preserve">
+    <value>Alt+{0}</value>
+    <comment>UI Automation accelerator key for a numbered list item. {0} is a digit from 1 through 9. Localize the modifier key name and separator as appropriate.</comment>
+  </data>
   <data name="QuickAccessShelfChangeOrderDragCaption" xml:space="preserve">
     <value>Change order</value>
     <comment>Drag-over caption shown when reordering commands on the quick access shelf.</comment>

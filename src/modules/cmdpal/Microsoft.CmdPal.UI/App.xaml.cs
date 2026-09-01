@@ -251,6 +251,7 @@ public partial class App : Application, IDisposable
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();
         services.AddSingleton<HotkeyManager>();
+        services.AddSingleton<AccessKeyModeController>();
 
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<TrayIconService>();
