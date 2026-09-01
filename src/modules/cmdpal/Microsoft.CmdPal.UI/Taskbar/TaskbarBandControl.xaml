@@ -104,6 +104,16 @@
                 </Style.Setters>
             </Style>
 
+            <Style
+                x:Name="TaskbarPageFlyoutStyle"
+                BasedOn="{StaticResource ContextMenuFlyoutStyle}"
+                TargetType="FlyoutPresenter">
+                <Setter Property="MinWidth" Value="500" />
+                <Setter Property="MaxWidth" Value="500" />
+                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+                <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
+            </Style>
+
             <Flyout
                 x:Name="ContextMenuFlyout"
                 FlyoutPresenterStyle="{StaticResource ContextMenuFlyoutStyle}"
@@ -112,6 +122,12 @@
                 SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
                 <cpcontrols:ContextMenu x:Name="ContextControl" />
             </Flyout>
+
+            <Flyout
+                x:Name="TaskbarPageFlyout"
+                FlyoutPresenterStyle="{StaticResource TaskbarPageFlyoutStyle}"
+                ShouldConstrainToRootBounds="False"
+                SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}" />
 
             <!--  Edit mode context menu for taskbar bands  -->
             <MenuFlyout x:Name="EditModeContextMenu" ShouldConstrainToRootBounds="False">

@@ -19,5 +19,5 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid x:Name="ContentGrid" />
+    <Border x:Name="CardHost" />
 </UserControl>

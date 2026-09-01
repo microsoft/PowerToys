@@ -11,6 +11,7 @@ using Microsoft.CmdPal.UI.Utilities;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
@@ -60,7 +61,16 @@ public sealed partial class TaskbarWindow : WindowEx,
         var viewModel = serviceProvider.GetRequiredService<DockViewModel>();
         _themeService = serviceProvider.GetRequiredService<IThemeService>();
 
-        _bandsControl = new TaskbarBandControl(viewModel);
+        _bandsControl = new TaskbarBandControl(
+            viewModel,
+            () => metrics.Edge switch
+            {
+                TaskbarEdge.Top => DockSide.Top,
+                TaskbarEdge.Bottom => DockSide.Bottom,
+                TaskbarEdge.Left => DockSide.Left,
+                TaskbarEdge.Right => DockSide.Right,
+                _ => DockSide.Bottom,
+            });
 
         InitializeComponent();
         ApplySystemTheme();
@@ -921,6 +931,7 @@ public sealed partial class TaskbarWindow : WindowEx,
             _autoHidePollTimer?.Stop();
             _taskbarWatcher.Changed -= OnTaskbarChanged;
             _taskbarWatcher.Dispose();
+            _bandsControl.Dispose();
             _taskbarMetrics.Dispose();
             WeakReferenceMessenger.Default.UnregisterAll(this);
             _disposed = true;

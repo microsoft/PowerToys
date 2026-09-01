@@ -2,19 +2,21 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Dock;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 
@@ -23,16 +25,29 @@ namespace Microsoft.CmdPal.UI.Taskbar;
 public sealed partial class TaskbarBandControl : UserControl,
     IRecipient<EnterEditModeMessage>,
     IRecipient<ExitEditModeMessage>,
-    IRecipient<CrossMonitorBandDropMessage>
+    IRecipient<CrossMonitorBandDropMessage>,
+    IDisposable
 {
-    private DockViewModel _viewModel;
+    private sealed record PendingOverflowPageRequest(
+        PerformCommandMessage Message,
+        FrameworkElement Anchor,
+        Point Position);
+
+    private readonly DockViewModel _viewModel;
+    private readonly DockPageFlyoutController _pageFlyoutController;
+    private readonly Func<DockSide> _taskbarSide;
     private bool _isEditMode;
     private bool _showFlyout;
     private DockBandViewModel? _editModeContextBand;
     private DockBandViewModel? _draggedBand;
+    private Point? _bandContextMenuPalettePos;
+    private FrameworkElement? _bandContextMenuTarget;
+    private DockItemViewModel? _bandContextMenuItem;
+    private PendingOverflowPageRequest? _pendingOverflowPageRequest;
+    private bool _disposed;
 
     /// <summary>
-    /// Minimum width (in DIPs) the band area should occupy during edit
+    /// Gets a value indicating whether minimum width (in DIPs) the band area should occupy during edit
     /// mode, snapshotted when editing starts.
     /// </summary>
     internal bool IsEditMode => _isEditMode;
@@ -45,14 +60,31 @@ public sealed partial class TaskbarBandControl : UserControl,
     /// </summary>
     internal IntPtr OwnerHwnd { get; set; }
 
-    internal TaskbarBandControl(DockViewModel viewModel)
+    internal TaskbarBandControl(DockViewModel viewModel, Func<DockSide> taskbarSide)
     {
         _viewModel = viewModel;
+        _taskbarSide = taskbarSide;
         InitializeComponent();
+
+        var services = App.Current.Services;
+        _pageFlyoutController = new(
+            TaskbarPageFlyout,
+            DispatcherQueue,
+            TaskScheduler.FromCurrentSynchronizationContext(),
+            services.GetRequiredService<IPageViewModelFactoryService>(),
+            services.GetRequiredService<IAppHostService>(),
+            () => OwnerHwnd,
+            taskbarSide,
+            () => !_isEditMode,
+            () => Focus(FocusState.Programmatic));
+        _pageFlyoutController.Activate();
 
         BandsListView.ItemsSource = _viewModel.TaskbarItems;
 
         ContextControl.CloseRequested += ContextControl_CloseRequested;
+        ContextControl.ViewModel.CommandInvoked += ContextMenu_CommandInvoked;
+        ContextControl.ViewModel.CommandInvoking += ContextMenu_CommandInvoking;
+        MoreButton.Flyout.Closed += MoreButtonFlyout_Closed;
         WeakReferenceMessenger.Default.Register<EnterEditModeMessage>(this);
         WeakReferenceMessenger.Default.Register<ExitEditModeMessage>(this);
         WeakReferenceMessenger.Default.Register<CrossMonitorBandDropMessage>(this);
@@ -348,12 +380,10 @@ public sealed partial class TaskbarBandControl : UserControl,
 
         if (sender is DockItemControl dockItem && dockItem.DataContext is DockBandViewModel band && dockItem.Tag is DockItemViewModel item)
         {
-            var borderPos = dockItem.TransformToVisual(null).TransformPoint(new Point(0, 0));
-            var borderCenter = new Point(
-                borderPos.X + (dockItem.ActualWidth / 2),
-                borderPos.Y + (dockItem.ActualHeight / 2));
+            var anchor = GetInvocationAnchor(dockItem);
+            var anchorCenter = GetElementCenter(anchor);
 
-            InvokeItem(item, borderCenter);
+            InvokeItem(item, anchor, anchorCenter);
             e.Handled = true;
         }
     }
@@ -381,8 +411,14 @@ public sealed partial class TaskbarBandControl : UserControl,
 
             if (item.HasMoreCommands)
             {
-                ContextControl.ViewModel.SelectedItem = item;
+                var anchor = GetInvocationAnchor(dockItem);
+                _bandContextMenuPalettePos = GetElementCenter(anchor);
+                _bandContextMenuTarget = anchor;
+                _bandContextMenuItem = item;
+
+                ContextControl.SetCommandContext(item);
                 ContextControl.ShowFilterBox = true;
+                ContextControl.PrepareForOpen(GetContextMenuFilterLocation());
                 ContextMenuFlyout.ShowAt(
                     dockItem,
                     new FlyoutShowOptions()
@@ -420,20 +456,31 @@ public sealed partial class TaskbarBandControl : UserControl,
         }
     }
 
-    private void InvokeItem(DockItemViewModel item, Point pos)
+    private void InvokeItem(DockItemViewModel item, FrameworkElement anchor, Point pos)
     {
         var command = item.Command;
+        var hwnd = OwnerHwnd;
         try
         {
-            PerformCommandMessage m = new(command.Model);
-            m.WithAnimation = false;
-            m.TransientPage = true;
-            WeakReferenceMessenger.Default.Send(m);
-
-            var isPage = command.Model.Unsafe is not IInvokableCommand;
-            if (isPage)
+            PerformCommandMessage message = new(command.Model, item.Model)
             {
-                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, OwnerHwnd));
+                WithAnimation = false,
+                TransientPage = true,
+            };
+            AddSourceContext(message, item);
+
+            if (command.Model.Unsafe is IPage)
+            {
+                if (!DeferPageUntilOverflowCloses(message, anchor, pos))
+                {
+                    StartPageRequest(message, anchor, pos);
+                }
+            }
+            else
+            {
+                message.OnBeforeShowConfirmation = () =>
+                    WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd));
+                WeakReferenceMessenger.Default.Send(message);
             }
         }
         catch (COMException e)
@@ -445,6 +492,151 @@ public sealed partial class TaskbarBandControl : UserControl,
     private void ContextMenuFlyout_Opened(object sender, object e)
     {
         ContextControl.FocusSearchBox();
+        ContextControl.AnnounceOpened();
+    }
+
+    private ContextMenuFilterLocation GetContextMenuFilterLocation()
+    {
+        return _taskbarSide() == DockSide.Bottom
+            ? ContextMenuFilterLocation.Bottom
+            : ContextMenuFilterLocation.Top;
+    }
+
+    private FrameworkElement GetInvocationAnchor(DockItemControl dockItem)
+    {
+        DependencyObject? parent = dockItem;
+        while (parent is not null)
+        {
+            if (ReferenceEquals(parent, OverflowListView))
+            {
+                return MoreButton;
+            }
+
+            parent = VisualTreeHelper.GetParent(parent);
+        }
+
+        return dockItem;
+    }
+
+    private static Point GetElementCenter(FrameworkElement element)
+    {
+        var position = element.TransformToVisual(null).TransformPoint(new Point(0, 0));
+        return new Point(
+            position.X + (element.ActualWidth / 2),
+            position.Y + (element.ActualHeight / 2));
+    }
+
+    private bool DeferPageUntilOverflowCloses(
+        PerformCommandMessage message,
+        FrameworkElement anchor,
+        Point position)
+    {
+        if (ReferenceEquals(anchor, MoreButton) && MoreButton.Flyout?.IsOpen == true)
+        {
+            _pendingOverflowPageRequest = new(message, anchor, position);
+            MoreButton.Flyout.Hide();
+            return true;
+        }
+
+        return false;
+    }
+
+    private void MoreButtonFlyout_Closed(object? sender, object e)
+    {
+        var pending = _pendingOverflowPageRequest;
+        _pendingOverflowPageRequest = null;
+        if (!_disposed && pending is not null)
+        {
+            StartPageRequest(pending.Message, pending.Anchor, pending.Position);
+        }
+    }
+
+    private void StartPageRequest(
+        PerformCommandMessage message,
+        FrameworkElement anchor,
+        Point position)
+    {
+        var result = _pageFlyoutController.Open(message, anchor, position);
+        if (result == DockPageFlyoutController.RequestResult.Started)
+        {
+            WeakReferenceMessenger.Default.Send(message);
+        }
+        else if (result == DockPageFlyoutController.RequestResult.Failed)
+        {
+            _pageFlyoutController.PreparePaletteFallback(message, position);
+            WeakReferenceMessenger.Default.Send(message);
+        }
+    }
+
+    private void ContextMenu_CommandInvoked(object? sender, CommandItemViewModel command)
+    {
+        ClearBandContextMenuInvocation();
+    }
+
+    private void ClearBandContextMenuInvocation()
+    {
+        _bandContextMenuPalettePos = null;
+        _bandContextMenuTarget = null;
+        _bandContextMenuItem = null;
+    }
+
+    private void ContextMenu_CommandInvoking(object? sender, PerformCommandMessage message)
+    {
+        var pos = _bandContextMenuPalettePos;
+        var target = _bandContextMenuTarget;
+        var item = _bandContextMenuItem;
+        if (pos is null || target is null || item is null)
+        {
+            return;
+        }
+
+        AddSourceContext(message, item);
+        if (message.Command.Unsafe is IPage)
+        {
+            if (ContextMenuFlyout.IsOpen)
+            {
+                ContextMenuFlyout.Hide();
+            }
+
+            if (DeferPageUntilOverflowCloses(message, target, pos.Value))
+            {
+                message.CancelSend();
+                ClearBandContextMenuInvocation();
+                return;
+            }
+
+            var result = _pageFlyoutController.Open(message, target, pos.Value);
+            if (result == DockPageFlyoutController.RequestResult.Deferred)
+            {
+                message.CancelSend();
+                ClearBandContextMenuInvocation();
+            }
+            else if (result == DockPageFlyoutController.RequestResult.Failed)
+            {
+                _pageFlyoutController.PreparePaletteFallback(message, pos.Value);
+            }
+
+            return;
+        }
+
+        var hwnd = OwnerHwnd;
+        var capturedPos = pos.Value;
+        message.OnBeforeShowConfirmation = () =>
+            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(capturedPos, hwnd));
+    }
+
+    private static void AddSourceContext(PerformCommandMessage message, DockItemViewModel item)
+    {
+        if (!item.PageContext.TryGetTarget(out var pageContext))
+        {
+            return;
+        }
+
+        message.SourceProviderContext = pageContext.ProviderContext;
+        if (pageContext.ProviderContext is CommandProviderWrapper provider)
+        {
+            message.SourceExtensionHost = provider.ExtensionHost;
+        }
     }
 
     private void ContextControl_CloseRequested(object? sender, EventArgs e)
@@ -501,8 +693,10 @@ public sealed partial class TaskbarBandControl : UserControl,
         var item = _viewModel.GetContextMenuForTaskbar();
         if (item.HasMoreCommands)
         {
-            ContextControl.ViewModel.SelectedItem = item;
+            ClearBandContextMenuInvocation();
+            ContextControl.SetCommandContext(item);
             ContextControl.ShowFilterBox = false;
+            ContextControl.PrepareForOpen(GetContextMenuFilterLocation());
             ContextMenuFlyout.ShowAt(
                 (FrameworkElement)sender,
                 new FlyoutShowOptions()
@@ -685,5 +879,23 @@ public sealed partial class TaskbarBandControl : UserControl,
         {
             view.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent);
         }
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        ContextControl.CloseRequested -= ContextControl_CloseRequested;
+        ContextControl.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
+        ContextControl.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
+        MoreButton.Flyout.Closed -= MoreButtonFlyout_Closed;
+        _pendingOverflowPageRequest = null;
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+        _pageFlyoutController.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
