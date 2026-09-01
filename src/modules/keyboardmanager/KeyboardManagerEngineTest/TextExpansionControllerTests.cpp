@@ -63,7 +63,9 @@ namespace TextExpansionEngineTests
             bool ready = false;
             bool pendingWork = false;
             bool prepared = false;
+            bool recoveryResult = true;
             DWORD recoveryKey = 0;
+            std::function<void(const TextExpansionRecoveryRequest&)> replayRecovery;
             TextExpansionResult prepareResult = TextExpansionResult::NoMatch;
             TextExpansionResult completeResult = TextExpansionResult::Replaced;
             TextExpansionResult cancelResult = TextExpansionResult::FailedUnchanged;
@@ -72,15 +74,18 @@ namespace TextExpansionEngineTests
             int stopCalls = 0;
             int activateCalls = 0;
             int completeCalls = 0;
+            int recoveryCalls = 0;
             int cancelCalls = 0;
             int cleanupCalls = 0;
             int trackCalls = 0;
             int resetBufferCalls = 0;
             DWORD lastTrackedKey = 0;
             WPARAM lastTrackedMessage = 0;
-            Shortcut lastActivation;
+            std::shared_ptr<const TextExpansionIndex> lastIndex;
+            DWORD lastActionKey = 0;
+            uint8_t lastModifierMask = 0;
             std::vector<DWORD> lastActivationModifierKeys;
-            std::vector<TextExpansionCandidate> lastCandidates;
+            TextExpansionRecoveryRequest lastRecovery;
 
             bool Start() override
             {
@@ -138,11 +143,22 @@ namespace TextExpansionEngineTests
             TextExpansionResult PrepareActivation(const TextExpansionRequest& request) override
             {
                 ++activateCalls;
-                lastActivation = request.activationShortcut;
+                lastIndex = request.index;
+                lastActionKey = request.actionKey;
+                lastModifierMask = request.modifierMask;
                 lastActivationModifierKeys = request.activationModifierKeys;
-                lastCandidates = request.candidates;
                 prepared = prepareResult == TextExpansionResult::Prepared;
                 return prepareResult;
+            }
+
+            const TextExpansionIndex::IndexedRule* FindLastRule(const std::wstring_view trackedText) const
+            {
+                if (!lastIndex)
+                {
+                    return nullptr;
+                }
+                const auto match = lastIndex->FindLongestMatch(lastActionKey, lastModifierMask, trackedText);
+                return match ? lastIndex->GetRule(*match) : nullptr;
             }
 
             TextExpansionResult CompletePendingActivation() noexcept override
@@ -161,6 +177,18 @@ namespace TextExpansionEngineTests
                 ++cancelCalls;
                 prepared = false;
                 return cancelResult;
+            }
+
+            bool RecoverPendingActivation(const TextExpansionRecoveryRequest& request) noexcept override
+            {
+                ++recoveryCalls;
+                lastRecovery = request;
+                prepared = false;
+                if (recoveryResult && replayRecovery)
+                {
+                    replayRecovery(request);
+                }
+                return recoveryResult;
             }
 
             void RetryPendingCleanup() noexcept override
@@ -203,21 +231,40 @@ namespace TextExpansionEngineTests
                         return queueResult;
                     });
                 Assert::IsTrue(controller->Start(input));
+                backend->replayRecovery = [this](const TextExpansionRecoveryRequest& request) {
+                    TestKeyEvent replay(
+                        request.replayKey,
+                        WM_KEYDOWN,
+                        request.replayExtended ? LLKHF_EXTENDED : 0,
+                        KeyboardManagerConstants::KEYBOARDMANAGER_TEXT_EXPANSION_REPLAY_FLAG,
+                        request.replayScanCode);
+                    controller->BeginKeyboardEvent(&replay.event);
+                };
             }
 
             TextExpansionController::EventDisposition Begin(
                 const DWORD key,
                 const WPARAM message = WM_KEYDOWN,
-                const DWORD flags = 0)
+                const DWORD flags = 0,
+                const DWORD scanCode = 0,
+                const ULONG_PTR extraInfo = 0)
             {
-                TestKeyEvent keyEvent(key, message, flags);
+                TestKeyEvent keyEvent(key, message, flags, extraInfo, scanCode);
                 return controller->BeginKeyboardEvent(&keyEvent.event);
             }
 
-            intptr_t Activate(const DWORD key, const TextExpansionTable& rules)
+            intptr_t Activate(
+                const DWORD key,
+                const TextExpansionTable& rules,
+                const DWORD flags = 0,
+                const DWORD scanCode = 0)
             {
-                TestKeyEvent event(key);
-                return controller->TryActivate(input, &event.event, rules);
+                TestKeyEvent event(key, WM_KEYDOWN, flags, 0, scanCode);
+                if (!controller->SetTextExpansions(rules))
+                {
+                    return 0;
+                }
+                return controller->TryActivate(input, &event.event);
             }
 
             TextExpansionResult Complete()
@@ -337,9 +384,10 @@ namespace TextExpansionEngineTests
             AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
             Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
             Assert::AreEqual(1, fixture.backend->activateCalls);
-            Assert::AreEqual(static_cast<DWORD>(VK_SPACE), fixture.backend->lastActivation.GetActionKey());
-            Assert::AreEqual(static_cast<size_t>(1), fixture.backend->lastCandidates.size());
-            Assert::AreEqual(std::wstring(L"brb"), fixture.backend->lastCandidates[0].sourceText);
+            Assert::AreEqual(static_cast<DWORD>(VK_SPACE), fixture.backend->lastActionKey);
+            const auto* matchedRule = fixture.backend->FindLastRule(L"brb");
+            Assert::IsNotNull(matchedRule);
+            Assert::AreEqual(std::wstring(L"brb"), matchedRule->sourceText);
             Assert::AreEqual(0, fixture.queueCalls);
             Assert::AreEqual(0, fixture.backend->completeCalls);
 
@@ -347,6 +395,8 @@ namespace TextExpansionEngineTests
             Assert::AreEqual(1, fixture.queueCalls);
             Assert::AreEqual(static_cast<size_t>(1), fixture.queuedGenerations.size());
             AssertResult(TextExpansionResult::Replaced, fixture.Complete());
+            Assert::IsFalse(fixture.controller->HasPendingWork());
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
         }
 
         TEST_METHOD (ArbitraryCapturedSingleKey_ShouldNotBeRestrictedByExpansionAllowlist)
@@ -358,7 +408,7 @@ namespace TextExpansionEngineTests
             AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_F8));
             Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_F8, rules)));
             Assert::AreEqual(1, fixture.backend->activateCalls);
-            Assert::AreEqual(static_cast<DWORD>(VK_F8), fixture.backend->lastActivation.GetActionKey());
+            Assert::AreEqual(static_cast<DWORD>(VK_F8), fixture.backend->lastActionKey);
         }
 
         TEST_METHOD (CtrlSpace_ShouldUseNormalCapturedShortcutSemantics)
@@ -371,9 +421,7 @@ namespace TextExpansionEngineTests
             AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
             Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
             Assert::AreEqual(1, fixture.backend->activateCalls);
-            Assert::AreEqual(
-                static_cast<int>(ModifierKey::Both),
-                static_cast<int>(fixture.backend->lastActivation.ctrlKey));
+            Assert::AreEqual(static_cast<int>(1u << 2), static_cast<int>(fixture.backend->lastModifierMask));
             Assert::AreEqual(static_cast<size_t>(1), fixture.backend->lastActivationModifierKeys.size());
             AssertContainsKey(fixture.backend->lastActivationModifierKeys, VK_LCONTROL);
         }
@@ -390,11 +438,8 @@ namespace TextExpansionEngineTests
             Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_RETURN, rules)));
             Assert::AreEqual(1, fixture.backend->activateCalls);
             Assert::AreEqual(
-                static_cast<int>(ModifierKey::Both),
-                static_cast<int>(fixture.backend->lastActivation.ctrlKey));
-            Assert::AreEqual(
-                static_cast<int>(ModifierKey::Both),
-                static_cast<int>(fixture.backend->lastActivation.shiftKey));
+                static_cast<int>((1u << 2) | (1u << 6)),
+                static_cast<int>(fixture.backend->lastModifierMask));
             Assert::AreEqual(static_cast<size_t>(2), fixture.backend->lastActivationModifierKeys.size());
             AssertContainsKey(fixture.backend->lastActivationModifierKeys, VK_LCONTROL);
             AssertContainsKey(fixture.backend->lastActivationModifierKeys, VK_LSHIFT);
@@ -446,7 +491,7 @@ namespace TextExpansionEngineTests
             AssertResult(TextExpansionResult::Replaced, fixture.Complete());
         }
 
-        TEST_METHOD (CtrlEnter_NewOppositeSideModifierPress_ShouldDelayCommitUntilItIsReleased)
+        TEST_METHOD (CtrlEnter_NewOppositeSideModifierPress_ShouldRecoverTriggerAndPassModifier)
         {
             ControllerFixture fixture;
             fixture.backend->prepareResult = TextExpansionResult::Prepared;
@@ -459,15 +504,21 @@ namespace TextExpansionEngineTests
 
             AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_RETURN, WM_KEYUP, LLKHF_UP));
             AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_RCONTROL));
+            Assert::AreEqual(1, fixture.backend->recoveryCalls);
+            Assert::AreEqual(static_cast<DWORD>(VK_RETURN), fixture.backend->lastRecovery.actionKey);
+            Assert::AreEqual(static_cast<DWORD>(VK_RCONTROL), fixture.backend->lastRecovery.replayKey);
+            Assert::AreEqual(static_cast<size_t>(0), fixture.backend->lastRecovery.releasedActivationModifierKeys.size());
+            Assert::AreEqual(0, fixture.backend->completeCalls);
             fixture.SetRightCtrl(true);
-            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_LCONTROL, WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_LCONTROL, WM_KEYUP, LLKHF_UP));
             fixture.SetLeftCtrl(false);
             Assert::AreEqual(0, fixture.queueCalls);
 
-            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_RCONTROL, WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_RCONTROL, WM_KEYUP, LLKHF_UP));
             fixture.SetRightCtrl(false);
-            Assert::AreEqual(1, fixture.queueCalls);
-            AssertResult(TextExpansionResult::Replaced, fixture.Complete());
+            Assert::AreEqual(0, fixture.queueCalls);
+            Assert::AreEqual(0, fixture.backend->cancelCalls);
+            Assert::IsFalse(fixture.controller->HasPendingWork());
         }
 
         TEST_METHOD (MainEnterRule_ShouldActivateFromNumpadEnterAndKeepPhysicalPressPaired)
@@ -479,7 +530,7 @@ namespace TextExpansionEngineTests
 
             AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(numpadEnter));
             Assert::AreEqual(1, static_cast<int>(fixture.Activate(numpadEnter, rules)));
-            Assert::AreEqual(static_cast<DWORD>(VK_RETURN), fixture.backend->lastActivation.GetActionKey());
+            Assert::AreEqual(static_cast<DWORD>(VK_RETURN), fixture.backend->lastActionKey);
             Assert::AreEqual(0, fixture.queueCalls);
 
             AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(numpadEnter));
@@ -594,9 +645,10 @@ namespace TextExpansionEngineTests
 
             AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
             Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
-            Assert::AreEqual(static_cast<size_t>(1), fixture.backend->lastCandidates.size());
-            Assert::AreEqual(std::wstring(L"ctrl replacement"), fixture.backend->lastCandidates[0].replacementText);
-            Assert::AreEqual(static_cast<size_t>(1), fixture.backend->lastCandidates[0].profileIndex);
+            const auto* matchedRule = fixture.backend->FindLastRule(L"brb");
+            Assert::IsNotNull(matchedRule);
+            Assert::AreEqual(std::wstring(L"ctrl replacement"), matchedRule->replacementText);
+            Assert::AreEqual(static_cast<size_t>(1), matchedRule->profileIndex);
         }
 
         TEST_METHOD (ChordRule_ShouldNotActivate)
@@ -701,11 +753,10 @@ namespace TextExpansionEngineTests
 
             AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
             Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
-            Assert::AreEqual(static_cast<size_t>(2), fixture.backend->lastCandidates.size());
-            Assert::AreEqual(std::wstring(L"first"), fixture.backend->lastCandidates[0].replacementText);
-            Assert::AreEqual(static_cast<size_t>(0), fixture.backend->lastCandidates[0].profileIndex);
-            Assert::AreEqual(std::wstring(L"second"), fixture.backend->lastCandidates[1].replacementText);
-            Assert::AreEqual(static_cast<size_t>(1), fixture.backend->lastCandidates[1].profileIndex);
+            const auto* matchedRule = fixture.backend->FindLastRule(L"brb");
+            Assert::IsNotNull(matchedRule);
+            Assert::AreEqual(std::wstring(L"first"), matchedRule->replacementText);
+            Assert::AreEqual(static_cast<size_t>(0), matchedRule->profileIndex);
         }
 
         TEST_METHOD (DisabledRules_ShouldNotReachBackend)
@@ -719,11 +770,12 @@ namespace TextExpansionEngineTests
 
             AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
             Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
-            Assert::AreEqual(static_cast<size_t>(1), fixture.backend->lastCandidates.size());
-            Assert::AreEqual(std::wstring(L"enabled"), fixture.backend->lastCandidates[0].replacementText);
+            const auto* matchedRule = fixture.backend->FindLastRule(L"brb");
+            Assert::IsNotNull(matchedRule);
+            Assert::AreEqual(std::wstring(L"enabled"), matchedRule->replacementText);
         }
 
-        TEST_METHOD (PendingActivation_ShouldSuppressOppositeSideAndRecoveryModifiersUntilAllAreReleased)
+        TEST_METHOD (PendingActivation_NewModifiersShouldRecoverThenContinueNormally)
         {
             ControllerFixture fixture;
             fixture.backend->prepareResult = TextExpansionResult::Prepared;
@@ -736,25 +788,28 @@ namespace TextExpansionEngineTests
             Assert::AreEqual(0, fixture.queueCalls);
 
             AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_RCONTROL));
+            Assert::AreEqual(1, fixture.backend->recoveryCalls);
+            Assert::AreEqual(static_cast<DWORD>(VK_RETURN), fixture.backend->lastRecovery.actionKey);
+            Assert::AreEqual(static_cast<DWORD>(VK_RCONTROL), fixture.backend->lastRecovery.replayKey);
             fixture.SetRightCtrl(true);
-            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_LSHIFT));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_LSHIFT));
+            Assert::AreEqual(1, fixture.backend->recoveryCalls);
             fixture.SetLeftShift(true);
             AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_RETURN, WM_KEYUP, LLKHF_UP));
             Assert::AreEqual(0, fixture.queueCalls);
 
-            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_LCONTROL, WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_LCONTROL, WM_KEYUP, LLKHF_UP));
             fixture.SetLeftCtrl(false);
-            Assert::AreEqual(0, fixture.queueCalls);
-            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_RCONTROL, WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_RCONTROL, WM_KEYUP, LLKHF_UP));
             fixture.SetRightCtrl(false);
-            Assert::AreEqual(0, fixture.queueCalls);
-            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_LSHIFT, WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_LSHIFT, WM_KEYUP, LLKHF_UP));
             fixture.SetLeftShift(false);
-            Assert::AreEqual(1, fixture.queueCalls);
-            AssertResult(TextExpansionResult::Replaced, fixture.Complete());
+            Assert::AreEqual(0, fixture.queueCalls);
+            Assert::AreEqual(0, fixture.backend->completeCalls);
+            Assert::IsFalse(fixture.controller->HasPendingWork());
         }
 
-        TEST_METHOD (PendingActivation_ShouldSuppressOriginalModifierRepressAndWaitForItsRelease)
+        TEST_METHOD (PendingActivation_OriginalModifierRepressShouldRecoverAndContinueNormally)
         {
             ControllerFixture fixture;
             fixture.backend->prepareResult = TextExpansionResult::Prepared;
@@ -769,13 +824,19 @@ namespace TextExpansionEngineTests
             fixture.SetLeftCtrl(false);
             Assert::AreEqual(0, fixture.queueCalls);
             AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_LCONTROL));
+            Assert::AreEqual(1, fixture.backend->recoveryCalls);
+            Assert::AreEqual(static_cast<DWORD>(VK_RETURN), fixture.backend->lastRecovery.actionKey);
+            Assert::AreEqual(static_cast<DWORD>(VK_LCONTROL), fixture.backend->lastRecovery.replayKey);
+            Assert::AreEqual(static_cast<size_t>(1), fixture.backend->lastRecovery.releasedActivationModifierKeys.size());
+            AssertContainsKey(fixture.backend->lastRecovery.releasedActivationModifierKeys, VK_LCONTROL);
             fixture.SetLeftCtrl(true);
             AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_RETURN, WM_KEYUP, LLKHF_UP));
             Assert::AreEqual(0, fixture.queueCalls);
-            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_LCONTROL, WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_LCONTROL, WM_KEYUP, LLKHF_UP));
             fixture.SetLeftCtrl(false);
-            Assert::AreEqual(1, fixture.queueCalls);
-            AssertResult(TextExpansionResult::Replaced, fixture.Complete());
+            Assert::AreEqual(0, fixture.queueCalls);
+            Assert::AreEqual(0, fixture.backend->completeCalls);
+            Assert::IsFalse(fixture.controller->HasPendingWork());
         }
 
         TEST_METHOD (PendingActivation_ShouldSuppressOriginalWinAndAltReleaseUntilActionIsReleased)
@@ -861,7 +922,7 @@ namespace TextExpansionEngineTests
             AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin('B', WM_KEYUP, LLKHF_UP));
         }
 
-        TEST_METHOD (HeldActionKey_ShouldPreventPreparingActivation)
+        TEST_METHOD (HeldSourceKey_ShouldAllowPreparingActivation)
         {
             ControllerFixture fixture;
             fixture.backend->prepareResult = TextExpansionResult::Prepared;
@@ -869,14 +930,17 @@ namespace TextExpansionEngineTests
 
             AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin('B'));
             AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
-            Assert::AreEqual(0, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
-            Assert::AreEqual(0, fixture.backend->activateCalls);
+            Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
+            Assert::AreEqual(1, fixture.backend->activateCalls);
 
             AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin('B', WM_KEYUP, LLKHF_UP));
-            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
+            Assert::AreEqual(0, fixture.queueCalls);
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
+            Assert::AreEqual(1, fixture.queueCalls);
+            AssertResult(TextExpansionResult::Replaced, fixture.Complete());
         }
 
-        TEST_METHOD (PreparedActivation_ShouldBlockAndPairOtherPhysicalInputUntilCompletion)
+        TEST_METHOD (PreparedActivation_ShouldCancelAndPassOtherPhysicalInput)
         {
             ControllerFixture fixture;
             fixture.backend->prepareResult = TextExpansionResult::Prepared;
@@ -886,15 +950,223 @@ namespace TextExpansionEngineTests
             Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
             Assert::AreEqual(0, fixture.queueCalls);
             AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin('A'));
-            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin('A'));
-            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin('A', WM_KEYUP, LLKHF_UP));
-            Assert::AreEqual(0, fixture.queueCalls);
+            Assert::AreEqual(1, fixture.backend->recoveryCalls);
+            Assert::AreEqual(0, fixture.backend->cancelCalls);
+            Assert::AreEqual(static_cast<DWORD>(VK_SPACE), fixture.backend->lastRecovery.actionKey);
+            Assert::AreEqual(static_cast<DWORD>('A'), fixture.backend->lastRecovery.replayKey);
 
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin('A', WM_KEYUP, LLKHF_UP));
+            Assert::AreEqual(0, fixture.queueCalls);
+            Assert::AreEqual(0, fixture.backend->completeCalls);
+            Assert::IsFalse(fixture.controller->HasPendingWork());
+        }
+
+        TEST_METHOD (OrderedReplay_ShouldKeepReloadBlockedUntilReplayIsObserved)
+        {
+            ControllerFixture fixture;
+            fixture.backend->prepareResult = TextExpansionResult::Prepared;
+            fixture.backend->replayRecovery = {};
+            const TextExpansionTable rules{ MakeRule(L"rule-id", L"brb", { VK_SPACE }, L"expanded") };
+
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
+            Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin('A'));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
+            Assert::IsTrue(fixture.controller->HasPendingWork());
+
+            AssertDisposition(
+                TextExpansionController::EventDisposition::FreshActionKeyDown,
+                fixture.Begin(
+                    'A',
+                    WM_KEYDOWN,
+                    0,
+                    0,
+                    KeyboardManagerConstants::KEYBOARDMANAGER_TEXT_EXPANSION_REPLAY_FLAG));
+            Assert::IsTrue(fixture.controller->HasPendingWork());
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin('A', WM_KEYUP, LLKHF_UP));
+            Assert::IsFalse(fixture.controller->HasPendingWork());
+        }
+
+        TEST_METHOD (QueuedActivation_ShouldBeInvalidatedByNewPhysicalInput)
+        {
+            ControllerFixture fixture;
+            fixture.backend->prepareResult = TextExpansionResult::Prepared;
+            const TextExpansionTable rules{ MakeRule(L"rule-id", L"brb", { VK_SPACE }, L"expanded") };
+
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
+            Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
             AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
             Assert::AreEqual(1, fixture.queueCalls);
 
-            AssertResult(TextExpansionResult::Replaced, fixture.Complete());
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin('A'));
+            Assert::AreEqual(1, fixture.backend->recoveryCalls);
+            Assert::AreEqual(0, fixture.backend->cancelCalls);
+            Assert::AreEqual(static_cast<DWORD>(VK_SPACE), fixture.backend->lastRecovery.actionKey);
+            Assert::AreEqual(static_cast<DWORD>('A'), fixture.backend->lastRecovery.replayKey);
+            AssertResult(TextExpansionResult::FailedUnchanged, fixture.Complete());
+            Assert::AreEqual(0, fixture.backend->completeCalls);
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin('A', WM_KEYUP, LLKHF_UP));
+            Assert::IsFalse(fixture.controller->HasPendingWork());
+        }
+
+        TEST_METHOD (QueuedActivation_SecondActionPressShouldRecoverAndReplay)
+        {
+            ControllerFixture fixture;
+            fixture.backend->prepareResult = TextExpansionResult::Prepared;
+            const TextExpansionTable rules{ MakeRule(L"rule-id", L"brb", { VK_SPACE }, L"expanded") };
+
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
+            Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
+            Assert::AreEqual(1, fixture.queueCalls);
+
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_SPACE));
+            Assert::AreEqual(1, fixture.backend->recoveryCalls);
+            Assert::AreEqual(static_cast<DWORD>(VK_SPACE), fixture.backend->lastRecovery.replayKey);
+            AssertResult(TextExpansionResult::FailedUnchanged, fixture.Complete());
+            Assert::AreEqual(0, fixture.backend->completeCalls);
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
+            Assert::IsFalse(fixture.controller->HasPendingWork());
+        }
+
+        TEST_METHOD (PreparedActivation_ShouldRecoverBeforeNewModifierUsesNormalRemapPipeline)
+        {
+            ControllerFixture fixture;
+            fixture.backend->prepareResult = TextExpansionResult::Prepared;
+            const TextExpansionTable rules{ MakeRule(L"rule-id", L"brb", { VK_CONTROL, VK_SPACE }, L"expanded") };
+
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_LCONTROL));
+            fixture.SetLeftCtrl(true);
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
+            Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_LSHIFT));
+            Assert::AreEqual(1, fixture.backend->recoveryCalls);
+            fixture.SetLeftShift(true);
+
             AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin('A'));
+            Assert::AreEqual(1, fixture.backend->recoveryCalls);
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin('A', WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_LSHIFT, WM_KEYUP, LLKHF_UP));
+            fixture.SetLeftShift(false);
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_LCONTROL, WM_KEYUP, LLKHF_UP));
+            fixture.SetLeftCtrl(false);
+            Assert::IsFalse(fixture.controller->HasPendingWork());
+        }
+
+        TEST_METHOD (ActivationRecoveryFailure_ShouldKeepNewPhysicalPressPairedAndSuppressed)
+        {
+            ControllerFixture fixture;
+            fixture.backend->prepareResult = TextExpansionResult::Prepared;
+            fixture.backend->recoveryResult = false;
+            const TextExpansionTable rules{ MakeRule(L"rule-id", L"brb", { VK_SPACE }, L"expanded") };
+
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
+            Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin('A'));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin('A', WM_KEYUP, LLKHF_UP));
+            Assert::IsFalse(fixture.controller->HasPendingWork());
+        }
+
+        TEST_METHOD (PreparedNumpadEnterActivation_ShouldPreservePhysicalTriggerIdentityDuringRecovery)
+        {
+            ControllerFixture fixture;
+            fixture.backend->prepareResult = TextExpansionResult::Prepared;
+            constexpr DWORD scanCode = 0x1C;
+            const DWORD numpadEnter = Helpers::EncodeKeyNumpadOrigin(VK_RETURN, true);
+            const TextExpansionTable rules{ MakeRule(L"rule-id", L"sig", { VK_RETURN }, L"signature") };
+
+            AssertDisposition(
+                TextExpansionController::EventDisposition::FreshActionKeyDown,
+                fixture.Begin(numpadEnter, WM_KEYDOWN, LLKHF_EXTENDED, scanCode));
+            Assert::AreEqual(
+                1,
+                static_cast<int>(fixture.Activate(numpadEnter, rules, LLKHF_EXTENDED, scanCode)));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin('A'));
+            Assert::AreEqual(static_cast<DWORD>(VK_RETURN), fixture.backend->lastRecovery.actionKey);
+            Assert::AreEqual(scanCode, fixture.backend->lastRecovery.actionScanCode);
+            Assert::IsTrue(fixture.backend->lastRecovery.actionExtended);
+            Assert::AreEqual(static_cast<DWORD>('A'), fixture.backend->lastRecovery.replayKey);
+            AssertDisposition(
+                TextExpansionController::EventDisposition::Suppress,
+                fixture.Begin(numpadEnter, WM_KEYUP, LLKHF_EXTENDED | LLKHF_UP, scanCode));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin('A', WM_KEYUP, LLKHF_UP));
+        }
+
+        TEST_METHOD (PreparedModifierActivation_ShouldRecoverWithoutReleasingHeldModifier)
+        {
+            ControllerFixture fixture;
+            fixture.backend->prepareResult = TextExpansionResult::Prepared;
+            const TextExpansionTable rules{ MakeRule(L"rule-id", L"brb", { VK_CONTROL, VK_SPACE }, L"expanded") };
+
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_LCONTROL));
+            fixture.SetLeftCtrl(true);
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
+            Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
+
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin('A'));
+            Assert::AreEqual(1, fixture.backend->recoveryCalls);
+            Assert::AreEqual(0, fixture.backend->cancelCalls);
+            Assert::AreEqual(static_cast<size_t>(0), fixture.backend->lastRecovery.releasedActivationModifierKeys.size());
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin('A', WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_LCONTROL, WM_KEYUP, LLKHF_UP));
+            fixture.SetLeftCtrl(false);
+            Assert::AreEqual(0, fixture.queueCalls);
+            Assert::IsFalse(fixture.controller->HasPendingWork());
+        }
+
+        TEST_METHOD (PreparedModifierActivation_ShouldRecoverReleasedModifierAndPassNewInput)
+        {
+            ControllerFixture fixture;
+            fixture.backend->prepareResult = TextExpansionResult::Prepared;
+            const TextExpansionTable rules{ MakeRule(L"rule-id", L"brb", { VK_CONTROL, VK_SPACE }, L"expanded") };
+
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_LCONTROL));
+            fixture.SetLeftCtrl(true);
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
+            Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_LCONTROL, WM_KEYUP, LLKHF_UP));
+            fixture.SetLeftCtrl(false);
+
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin('A'));
+            Assert::AreEqual(1, fixture.backend->recoveryCalls);
+            Assert::AreEqual(0, fixture.backend->cancelCalls);
+            Assert::AreEqual(static_cast<size_t>(1), fixture.backend->lastRecovery.releasedActivationModifierKeys.size());
+            AssertContainsKey(fixture.backend->lastRecovery.releasedActivationModifierKeys, VK_LCONTROL);
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin('A', WM_KEYUP, LLKHF_UP));
+            Assert::AreEqual(0, fixture.queueCalls);
+            Assert::IsFalse(fixture.controller->HasPendingWork());
+        }
+
+        TEST_METHOD (PreparedMultiModifierActivation_ShouldRecoverPartialModifierReleaseAndPassNewInput)
+        {
+            ControllerFixture fixture;
+            fixture.backend->prepareResult = TextExpansionResult::Prepared;
+            const TextExpansionTable rules{ MakeRule(L"rule-id", L"brb", { VK_CONTROL, VK_SHIFT, VK_SPACE }, L"expanded") };
+
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_LCONTROL));
+            fixture.SetLeftCtrl(true);
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_LSHIFT));
+            fixture.SetLeftShift(true);
+            AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, fixture.Begin(VK_SPACE));
+            Assert::AreEqual(1, static_cast<int>(fixture.Activate(VK_SPACE, rules)));
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_LCONTROL, WM_KEYUP, LLKHF_UP));
+            fixture.SetLeftCtrl(false);
+
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin('A'));
+            Assert::AreEqual(1, fixture.backend->recoveryCalls);
+            Assert::AreEqual(0, fixture.backend->cancelCalls);
+            Assert::AreEqual(static_cast<size_t>(1), fixture.backend->lastRecovery.releasedActivationModifierKeys.size());
+            AssertContainsKey(fixture.backend->lastRecovery.releasedActivationModifierKeys, VK_LCONTROL);
+            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin('A', WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_LSHIFT, WM_KEYUP, LLKHF_UP));
+            fixture.SetLeftShift(false);
+            Assert::IsFalse(fixture.controller->HasPendingWork());
         }
 
         TEST_METHOD (QueueFailureAfterRelease_ShouldCancelButKeepEntireTriggerPressSuppressedWhenRollbackIsExact)
@@ -937,7 +1209,7 @@ namespace TextExpansionEngineTests
             AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_SPACE, WM_KEYUP, LLKHF_UP));
         }
 
-        TEST_METHOD (QueuedActivation_ShouldDeferCompletionAndRequeueSameGenerationWhenActivationKeysAreRepressed)
+        TEST_METHOD (QueuedActivation_SecondActionPressShouldRecoverBeforeModifierRepress)
         {
             ControllerFixture fixture;
             fixture.backend->prepareResult = TextExpansionResult::Prepared;
@@ -952,26 +1224,29 @@ namespace TextExpansionEngineTests
             AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_LCONTROL, WM_KEYUP, LLKHF_UP));
             fixture.SetLeftCtrl(false);
             Assert::AreEqual(1, fixture.queueCalls);
-            const uint64_t generation = fixture.queuedGenerations.front();
 
             AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_RETURN));
-            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_LCONTROL));
+            Assert::AreEqual(1, fixture.backend->recoveryCalls);
+            Assert::AreEqual(static_cast<DWORD>(VK_RETURN), fixture.backend->lastRecovery.actionKey);
+            Assert::AreEqual(static_cast<DWORD>(VK_RETURN), fixture.backend->lastRecovery.replayKey);
+            Assert::AreEqual(static_cast<size_t>(1), fixture.backend->lastRecovery.releasedActivationModifierKeys.size());
+            AssertContainsKey(fixture.backend->lastRecovery.releasedActivationModifierKeys, VK_LCONTROL);
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_LCONTROL));
             fixture.SetLeftCtrl(true);
 
             AssertResult(TextExpansionResult::FailedUnchanged, fixture.Complete());
             Assert::AreEqual(0, fixture.backend->completeCalls);
             Assert::AreEqual(static_cast<size_t>(0), fixture.queuedGenerations.size());
 
-            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_RETURN, WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_RETURN, WM_KEYUP, LLKHF_UP));
             Assert::AreEqual(1, fixture.queueCalls);
-            AssertDisposition(TextExpansionController::EventDisposition::Suppress, fixture.Begin(VK_LCONTROL, WM_KEYUP, LLKHF_UP));
+            AssertDisposition(TextExpansionController::EventDisposition::Continue, fixture.Begin(VK_LCONTROL, WM_KEYUP, LLKHF_UP));
             fixture.SetLeftCtrl(false);
-            Assert::AreEqual(2, fixture.queueCalls);
-            Assert::AreEqual(static_cast<size_t>(1), fixture.queuedGenerations.size());
-            Assert::AreEqual(generation, fixture.queuedGenerations.front());
-
-            AssertResult(TextExpansionResult::Replaced, fixture.Complete());
-            Assert::AreEqual(1, fixture.backend->completeCalls);
+            Assert::AreEqual(1, fixture.queueCalls);
+            Assert::AreEqual(static_cast<size_t>(0), fixture.queuedGenerations.size());
+            Assert::AreEqual(0, fixture.backend->completeCalls);
+            Assert::AreEqual(0, fixture.backend->cancelCalls);
+            Assert::IsFalse(fixture.controller->HasPendingWork());
         }
 
         TEST_METHOD (StaleGeneration_ShouldNotCommitNewPendingActivation)
@@ -1023,9 +1298,10 @@ namespace TextExpansionEngineTests
             const TextExpansionTable rules{ MakeRule(L"rule-id", L"brb", { VK_SPACE }, L"expanded") };
 
             Assert::IsFalse(controller.Start(input));
+            Assert::IsTrue(controller.SetTextExpansions(rules));
             TestKeyEvent down(VK_SPACE);
             AssertDisposition(TextExpansionController::EventDisposition::Ignore, controller.BeginKeyboardEvent(&down.event));
-            Assert::AreEqual(0, static_cast<int>(controller.TryActivate(input, &down.event, rules)));
+            Assert::AreEqual(0, static_cast<int>(controller.TryActivate(input, &down.event)));
             Assert::AreEqual(0, backendView->activateCalls);
             Assert::IsFalse(controller.HasPendingWork());
         }
@@ -1040,6 +1316,7 @@ namespace TextExpansionEngineTests
             input.SetKeyboardState(VK_F8, true);
             const TextExpansionTable rules{ MakeRule(L"rule-id", L"brb", { VK_F8 }, L"expanded") };
 
+            Assert::IsTrue(controller.SetTextExpansions(rules));
             Assert::IsTrue(controller.Start(input));
             TestKeyEvent repeat(VK_F8);
             AssertDisposition(TextExpansionController::EventDisposition::ForcePassThrough, controller.BeginKeyboardEvent(&repeat.event));
@@ -1054,7 +1331,7 @@ namespace TextExpansionEngineTests
 
             TestKeyEvent freshDown(VK_F8);
             AssertDisposition(TextExpansionController::EventDisposition::FreshActionKeyDown, controller.BeginKeyboardEvent(&freshDown.event));
-            Assert::AreEqual(1, static_cast<int>(controller.TryActivate(input, &freshDown.event, rules)));
+            Assert::AreEqual(1, static_cast<int>(controller.TryActivate(input, &freshDown.event)));
             Assert::AreEqual(1, backendView->activateCalls);
         }
 

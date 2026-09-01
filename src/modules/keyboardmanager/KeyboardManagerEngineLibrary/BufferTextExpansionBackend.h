@@ -4,6 +4,7 @@
 #include <bitset>
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <optional>
 #include <string>
@@ -64,6 +65,7 @@ public:
     void ResetBuffer() noexcept override;
     TextExpansionResult PrepareActivation(const TextExpansionRequest& request) override;
     TextExpansionResult CompletePendingActivation() noexcept override;
+    bool RecoverPendingActivation(const TextExpansionRecoveryRequest& request) noexcept override;
     TextExpansionResult CancelPendingActivation() noexcept override;
     void RetryPendingCleanup() noexcept override;
     bool ShouldBlockNewInput() const noexcept override;
@@ -72,9 +74,10 @@ public:
 private:
     struct PendingActivation
     {
+        std::shared_ptr<const TextExpansionIndex> index;
+        size_t ruleIndex = 0;
         std::vector<DWORD> activationModifierKeys;
         size_t backspaceCount = 0;
-        std::wstring replacementText;
         InputContext targetContext;
         uint64_t contextEpoch = 0;
     };

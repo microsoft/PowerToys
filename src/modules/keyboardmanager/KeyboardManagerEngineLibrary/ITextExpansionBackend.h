@@ -31,6 +31,11 @@ public:
     // low-level hook has returned before SendInput starts delivering replacement
     // text to the target application.
     virtual TextExpansionResult CompletePendingActivation() noexcept = 0;
+    // Cancels Prepare, reconstructs the swallowed trigger press, and then replays the
+    // interrupted physical key-down in that order. The replay uses a dedicated marker
+    // that still traverses the normal remap pipeline. Returns false when exact input
+    // recovery could not be completed, in which case the controller remains fail-closed.
+    virtual bool RecoverPendingActivation(const TextExpansionRecoveryRequest& request) noexcept = 0;
     virtual TextExpansionResult CancelPendingActivation() noexcept = 0;
     virtual void RetryPendingCleanup() noexcept = 0;
     virtual bool ShouldBlockNewInput() const noexcept = 0;

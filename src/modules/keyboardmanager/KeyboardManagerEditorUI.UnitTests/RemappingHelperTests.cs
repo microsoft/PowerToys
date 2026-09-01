@@ -616,6 +616,15 @@ namespace KeyboardManagerEditorUI.UnitTests
                 new[] { changed }));
         }
 
+        [DataTestMethod]
+        [DataRow(MappingConfigurationLoadResult.Success, true)]
+        [DataRow(MappingConfigurationLoadResult.Partial, false)]
+        [DataRow(MappingConfigurationLoadResult.Failure, false)]
+        public void IsCompleteLoadResult_ShouldOnlyAcceptSuccess(MappingConfigurationLoadResult loadResult, bool expected)
+        {
+            Assert.AreEqual(expected, KeyboardMappingService.IsCompleteLoadResult(loadResult));
+        }
+
         [TestMethod]
         public void ReconcileMappings_ShouldRepairNullGlobalScopeInPlace()
         {

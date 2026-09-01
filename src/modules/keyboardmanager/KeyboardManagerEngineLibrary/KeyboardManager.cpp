@@ -117,6 +117,10 @@ KeyboardManager::KeyboardManager()
                 get_last_error_or_default(errorCode));
             return false;
         });
+    if (!textExpansionController->SetTextExpansions(state.textExpansions))
+    {
+        Logger::error(L"Failed to build the Keyboard Manager Text Expansion activation index.");
+    }
     auto changeSettingsCallback = [](DWORD err) {
         Logger::trace(L"{} event was signaled", KeyboardManagerConstants::SettingsEventName);
         if (err != ERROR_SUCCESS)
@@ -184,6 +188,11 @@ void KeyboardManager::LoadSettings()
     if (loadResult == MappingConfigurationLoadResult::Partial)
     {
         Logger::error(L"Keyboard Manager settings contained invalid entries; skipped them and loaded the valid entries.");
+    }
+    if (loadResult != MappingConfigurationLoadResult::Failure && textExpansionController &&
+        !textExpansionController->SetTextExpansions(state.textExpansions))
+    {
+        Logger::error(L"Failed to rebuild the Keyboard Manager Text Expansion activation index.");
     }
 
     // The reload above rebuilt the alone remap table; discard any leftover alone runtime state so a key
@@ -418,7 +427,7 @@ void KeyboardManager::StartLowlevelKeyboardHook()
     }
 
     bool textExpansionReady = false;
-    if (hookHandle && HasEnabledTextExpansion(state.textExpansions) && textExpansionController)
+    if (hookHandle && textExpansionController && textExpansionController->HasConfiguredTextExpansions())
     {
         textExpansionReady = textExpansionController->Start(inputHandler);
         if (!textExpansionReady)
@@ -739,8 +748,7 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
     {
         const intptr_t activationResult = textExpansionController->TryActivate(
             inputHandler,
-            data,
-            state.textExpansions);
+            data);
         if (activationResult == 1)
         {
             return 1;

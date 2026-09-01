@@ -14,6 +14,7 @@
 #include <common/interop/shared_constants.h>
 #include <functional>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/BufferTextExpansionBackend.h>
+#include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <utility>
 
@@ -24,6 +25,43 @@ namespace TextExpansionEngineTests
     namespace
     {
         using InputContext = BufferTextExpansionBackend::InputContext;
+
+        struct TestCandidate
+        {
+            std::wstring sourceText;
+            std::wstring replacementText;
+            size_t profileIndex = 0;
+        };
+
+        uint8_t GetModifierMask(
+            const Shortcut& activation,
+            const std::vector<DWORD>& capturedModifiers)
+        {
+            uint8_t mask = 0;
+            const auto append = [&](const ModifierKey expected, const DWORD left, const DWORD right, const uint8_t leftBit, const uint8_t rightBit) {
+                if (expected == ModifierKey::Left)
+                {
+                    mask |= leftBit;
+                }
+                else if (expected == ModifierKey::Right)
+                {
+                    mask |= rightBit;
+                }
+                else if (expected == ModifierKey::Both)
+                {
+                    const bool leftCaptured = std::find(capturedModifiers.begin(), capturedModifiers.end(), left) != capturedModifiers.end();
+                    const bool rightCaptured = std::find(capturedModifiers.begin(), capturedModifiers.end(), right) != capturedModifiers.end();
+                    mask |= leftCaptured || rightCaptured ?
+                                static_cast<uint8_t>((leftCaptured ? leftBit : 0) | (rightCaptured ? rightBit : 0)) :
+                                leftBit;
+                }
+            };
+            append(activation.winKey, VK_LWIN, VK_RWIN, 1u << 0, 1u << 1);
+            append(activation.ctrlKey, VK_LCONTROL, VK_RCONTROL, 1u << 2, 1u << 3);
+            append(activation.altKey, VK_LMENU, VK_RMENU, 1u << 4, 1u << 5);
+            append(activation.shiftKey, VK_LSHIFT, VK_RSHIFT, 1u << 6, 1u << 7);
+            return mask;
+        }
 
         struct TestKeyEvent
         {
@@ -143,15 +181,30 @@ namespace TextExpansionEngineTests
 
             TextExpansionRequest Request(
                 const std::initializer_list<int32_t> activationKeys = { VK_SPACE },
-                std::vector<TextExpansionCandidate> candidates = {
+                std::vector<TestCandidate> candidates = {
                     { L"brb", L"be right back", 0 },
                 },
                 std::vector<DWORD> activationModifierKeys = {})
             {
+                const Shortcut activation{ std::vector<int32_t>(activationKeys) };
+                TextExpansionTable rules;
+                rules.reserve(candidates.size());
+                for (size_t index = 0; index < candidates.size(); ++index)
+                {
+                    const auto& candidate = candidates[index];
+                    rules.push_back(TextExpansionRule{
+                        .id = std::to_wstring(candidate.profileIndex),
+                        .sourceText = candidate.sourceText,
+                        .activation = activation,
+                        .replacementText = candidate.replacementText,
+                        .enabled = true,
+                    });
+                }
                 return {
-                    .activationShortcut = Shortcut(std::vector<int32_t>(activationKeys)),
+                    .index = std::make_shared<const TextExpansionIndex>(rules),
+                    .actionKey = Helpers::ClearKeyNumpadOrigin(activation.GetActionKey()),
+                    .modifierMask = GetModifierMask(activation, activationModifierKeys),
                     .activationModifierKeys = std::move(activationModifierKeys),
-                    .candidates = std::move(candidates),
                 };
             }
 
@@ -184,6 +237,62 @@ namespace TextExpansionEngineTests
     TEST_CLASS (BufferTextExpansionBackendTests)
     {
     public:
+        TEST_METHOD (TextExpansionIndex_ShouldChooseLongestSuffixAndEarliestExactTie)
+        {
+            const TextExpansionTable rules{
+                { L"0", L"rb", Shortcut(std::vector<int32_t>{ VK_CONTROL, VK_SPACE }), L"short", true },
+                { L"1", L"brb", Shortcut(std::vector<int32_t>{ VK_CONTROL, VK_SPACE }), L"first-long", true },
+                { L"2", L"brb", Shortcut(std::vector<int32_t>{ VK_LCONTROL, VK_SPACE }), L"second-long", true },
+                { L"3", L"brb", Shortcut(VK_SPACE), L"plain", true },
+            };
+            const TextExpansionIndex index(rules);
+
+            const auto match = index.FindLongestMatch(VK_SPACE, 1u << 2, L"please brb");
+            Assert::IsTrue(match.has_value());
+            const auto* rule = index.GetRule(*match);
+            Assert::IsNotNull(rule);
+            Assert::AreEqual(std::wstring(L"first-long"), rule->replacementText);
+            Assert::AreEqual(static_cast<size_t>(1), rule->profileIndex);
+        }
+
+        TEST_METHOD (TextExpansionIndex_ShouldRespectLeftRightModifierSemantics)
+        {
+            const TextExpansionTable rules{
+                { L"left", L"sig", Shortcut(std::vector<int32_t>{ VK_LCONTROL, VK_RETURN }), L"left", true },
+                { L"both", L"sig", Shortcut(std::vector<int32_t>{ VK_CONTROL, VK_RETURN }), L"either", true },
+            };
+            const TextExpansionIndex index(rules);
+
+            const auto leftMatch = index.FindLongestMatch(VK_RETURN, 1u << 2, L"sig");
+            const auto rightMatch = index.FindLongestMatch(VK_RETURN, 1u << 3, L"sig");
+            Assert::IsTrue(leftMatch.has_value());
+            Assert::IsTrue(rightMatch.has_value());
+            Assert::AreEqual(std::wstring(L"left"), index.GetRule(*leftMatch)->replacementText);
+            Assert::AreEqual(std::wstring(L"either"), index.GetRule(*rightMatch)->replacementText);
+        }
+
+        TEST_METHOD (TextExpansionIndex_LookupWorkShouldBeBoundedByTrackedTextNotRuleCount)
+        {
+            TextExpansionTable rules;
+            constexpr size_t ruleCount = 10000;
+            rules.reserve(ruleCount + 1);
+            for (size_t index = 0; index < ruleCount; ++index)
+            {
+                const auto suffix = std::to_wstring(index);
+                rules.push_back({ suffix, L"x" + suffix, Shortcut(VK_F8), L"unused", true });
+            }
+            rules.push_back({ L"target", L"target", Shortcut(VK_F8), L"matched", true });
+            const TextExpansionIndex index(rules);
+
+            size_t traversedCodeUnits = 0;
+            const std::wstring trackedText = L"prefix target";
+            const auto match = index.FindLongestMatch(VK_F8, 0, trackedText, &traversedCodeUnits);
+            Assert::IsTrue(match.has_value());
+            Assert::AreEqual(std::wstring(L"matched"), index.GetRule(*match)->replacementText);
+            Assert::IsTrue(traversedCodeUnits <= trackedText.size());
+            Assert::IsTrue(traversedCodeUnits <= KeyboardManagerConstants::MaxTextExpansionSourceLength);
+        }
+
         TEST_METHOD (PrepareAndComplete_ShouldChooseLongestTypedSuffixAndBackspaceFullSource)
         {
             BackendFixture fixture;
@@ -209,6 +318,21 @@ namespace TextExpansionEngineTests
             Assert::IsTrue((batches[3][0].ki.dwFlags & KEYEVENTF_UNICODE) != 0);
             Assert::AreEqual(static_cast<WORD>(L'l'), batches[3][0].ki.wScan);
             Assert::AreEqual(std::wstring(L"longest"), fixture.input.GetInjectedUnicodeText());
+        }
+
+        TEST_METHOD (PreparedActivation_ShouldOwnImmutableIndexSnapshotUntilCompletion)
+        {
+            BackendFixture fixture;
+            fixture.TrackText(L"brb");
+            {
+                const auto request = fixture.Request(
+                    { VK_SPACE },
+                    { { L"brb", L"snapshot", 0 } });
+                AssertResult(TextExpansionResult::Prepared, fixture.Prepare(request));
+            }
+
+            AssertResult(TextExpansionResult::Replaced, fixture.Complete());
+            Assert::AreEqual(std::wstring(L"snapshot"), fixture.input.GetInjectedUnicodeText());
         }
 
         TEST_METHOD (TrackKeyboardEvent_ShouldAppendPhysicalKeyTextEventAndActivate)
@@ -855,6 +979,263 @@ namespace TextExpansionEngineTests
             Assert::AreEqual(static_cast<size_t>(0), fixture.input.GetSentInputBatches().size());
             AssertResult(TextExpansionResult::FailedUnchanged, fixture.Complete());
             AssertResult(TextExpansionResult::NoMatch, fixture.Prepare(request));
+        }
+
+        TEST_METHOD (RecoverPendingActivation_ShouldRestoreTriggerWithoutReleasingHeldModifier)
+        {
+            BackendFixture fixture;
+            fixture.TrackText(L"brb");
+            const auto request = fixture.Request(
+                { VK_CONTROL, VK_SPACE },
+                { { L"brb", L"be right back", 0 } },
+                { VK_LCONTROL });
+
+            AssertResult(TextExpansionResult::Prepared, fixture.Prepare(request));
+            const TextExpansionRecoveryRequest recovery{ .actionKey = VK_SPACE, .replayKey = 'A' };
+            Assert::IsTrue(fixture.backend->RecoverPendingActivation(recovery));
+            Assert::IsFalse(fixture.backend->HasPendingWork());
+            const auto& batches = fixture.input.GetSentInputBatches();
+            Assert::AreEqual(static_cast<size_t>(1), batches.size());
+            Assert::AreEqual(static_cast<size_t>(3), batches.front().size());
+            Assert::AreEqual(static_cast<WORD>(VK_SPACE), batches.front()[0].ki.wVk);
+            Assert::IsTrue((batches.front()[0].ki.dwFlags & KEYEVENTF_KEYUP) == 0);
+            Assert::AreEqual(static_cast<WORD>(VK_SPACE), batches.front()[1].ki.wVk);
+            Assert::IsTrue((batches.front()[1].ki.dwFlags & KEYEVENTF_KEYUP) != 0);
+            Assert::AreEqual(static_cast<WORD>('A'), batches[0][2].ki.wVk);
+            Assert::AreEqual(
+                KeyboardManagerConstants::KEYBOARDMANAGER_TEXT_EXPANSION_REPLAY_FLAG,
+                batches[0][2].ki.dwExtraInfo);
+        }
+
+        TEST_METHOD (RecoverPendingActivation_ShouldPreserveExtendedTriggerIdentity)
+        {
+            BackendFixture fixture;
+            fixture.TrackText(L"brb");
+            AssertResult(TextExpansionResult::Prepared, fixture.Prepare(fixture.Request()));
+            constexpr DWORD scanCode = 0x1C;
+            const TextExpansionRecoveryRequest recovery{
+                .actionKey = VK_RETURN,
+                .actionScanCode = scanCode,
+                .actionExtended = true,
+                .replayKey = 'A',
+            };
+
+            Assert::IsTrue(fixture.backend->RecoverPendingActivation(recovery));
+            const auto& trigger = fixture.input.GetSentInputBatches().front();
+            Assert::AreEqual(static_cast<size_t>(3), trigger.size());
+            Assert::AreEqual(static_cast<WORD>(VK_RETURN), trigger[0].ki.wVk);
+            Assert::AreEqual(static_cast<WORD>(scanCode), trigger[0].ki.wScan);
+            Assert::IsTrue((trigger[0].ki.dwFlags & KEYEVENTF_EXTENDEDKEY) != 0);
+            Assert::AreEqual(static_cast<WORD>(VK_RETURN), trigger[1].ki.wVk);
+            Assert::AreEqual(static_cast<WORD>(scanCode), trigger[1].ki.wScan);
+            Assert::IsTrue((trigger[1].ki.dwFlags & KEYEVENTF_EXTENDEDKEY) != 0);
+            Assert::IsTrue((trigger[1].ki.dwFlags & KEYEVENTF_KEYUP) != 0);
+        }
+
+        TEST_METHOD (RecoverPendingActivation_ShouldNotReplayTriggerIntoChangedContext)
+        {
+            BackendFixture fixture;
+            fixture.TrackText(L"brb");
+            AssertResult(TextExpansionResult::Prepared, fixture.Prepare(fixture.Request()));
+            fixture.currentContext = MakeContext(2);
+
+            const TextExpansionRecoveryRequest recovery{ .actionKey = VK_SPACE, .replayKey = 'A' };
+            Assert::IsTrue(fixture.backend->RecoverPendingActivation(recovery));
+            const auto& batches = fixture.input.GetSentInputBatches();
+            Assert::AreEqual(static_cast<size_t>(1), batches.size());
+            Assert::AreEqual(static_cast<WORD>('A'), batches[0][0].ki.wVk);
+            Assert::IsFalse(fixture.backend->HasPendingWork());
+        }
+
+        TEST_METHOD (RecoverPendingActivation_ShouldReleaseSuppressedModifierWithoutReplayingTriggerIntoChangedContext)
+        {
+            BackendFixture fixture;
+            fixture.TrackText(L"brb");
+            const auto request = fixture.Request(
+                { VK_CONTROL, VK_SPACE },
+                { { L"brb", L"be right back", 0 } },
+                { VK_LCONTROL });
+            AssertResult(TextExpansionResult::Prepared, fixture.Prepare(request));
+            fixture.currentContext = MakeContext(2);
+
+            const TextExpansionRecoveryRequest recovery{
+                .actionKey = VK_SPACE,
+                .replayKey = 'A',
+                .releasedActivationModifierKeys = { VK_LCONTROL },
+            };
+            Assert::IsTrue(fixture.backend->RecoverPendingActivation(recovery));
+            const auto& batches = fixture.input.GetSentInputBatches();
+            Assert::AreEqual(static_cast<size_t>(1), batches.size());
+            Assert::AreEqual(static_cast<size_t>(4), batches.front().size());
+            Assert::AreEqual(static_cast<WORD>(VK_LCONTROL), batches.front()[2].ki.wVk);
+            Assert::IsTrue((batches.front()[2].ki.dwFlags & KEYEVENTF_KEYUP) != 0);
+            Assert::IsTrue(std::none_of(batches.begin(), batches.end(), [](const std::vector<INPUT>& batch) {
+                return std::any_of(batch.begin(), batch.end(), [](const INPUT& event) {
+                    return event.ki.wVk == VK_SPACE;
+                });
+            }));
+            Assert::IsFalse(fixture.backend->HasPendingWork());
+        }
+
+        TEST_METHOD (RecoverPendingActivation_ShouldRestoreTriggerBeforeReleasedModifier)
+        {
+            BackendFixture fixture;
+            fixture.TrackText(L"brb");
+            const auto request = fixture.Request(
+                { VK_CONTROL, VK_SPACE },
+                { { L"brb", L"be right back", 0 } },
+                { VK_LCONTROL });
+
+            AssertResult(TextExpansionResult::Prepared, fixture.Prepare(request));
+            const TextExpansionRecoveryRequest recovery{
+                .actionKey = VK_SPACE,
+                .replayKey = 'A',
+                .releasedActivationModifierKeys = { VK_LCONTROL },
+            };
+            Assert::IsTrue(fixture.backend->RecoverPendingActivation(recovery));
+            const auto& batches = fixture.input.GetSentInputBatches();
+            Assert::AreEqual(static_cast<size_t>(1), batches.size());
+            Assert::AreEqual(static_cast<WORD>(VK_SPACE), batches[0][0].ki.wVk);
+            Assert::AreEqual(static_cast<size_t>(6), batches[0].size());
+            Assert::AreEqual(static_cast<WORD>(VK_LCONTROL), batches[0][4].ki.wVk);
+            Assert::IsTrue((batches[0][4].ki.dwFlags & KEYEVENTF_KEYUP) != 0);
+            Assert::AreEqual(static_cast<WORD>('A'), batches[0][5].ki.wVk);
+        }
+
+        TEST_METHOD (RecoverPendingActivation_ShouldQueueTriggerKeyUpAfterPartialTap)
+        {
+            BackendFixture fixture;
+            fixture.TrackText(L"brb");
+            AssertResult(TextExpansionResult::Prepared, fixture.Prepare(fixture.Request()));
+            size_t sendCalls = 0;
+            fixture.input.SetSendVirtualInputInjectedCount([&](const std::vector<INPUT>& inputs) {
+                ++sendCalls;
+                if (sendCalls == 1)
+                {
+                    return static_cast<size_t>(1);
+                }
+                if (sendCalls == 2)
+                {
+                    return static_cast<size_t>(0);
+                }
+                return inputs.size();
+            });
+
+            const TextExpansionRecoveryRequest recovery{ .actionKey = VK_SPACE, .replayKey = 'A' };
+            Assert::IsFalse(fixture.backend->RecoverPendingActivation(recovery));
+            Assert::IsTrue(fixture.backend->ShouldBlockNewInput());
+            const auto& batches = fixture.input.GetSentInputBatches();
+            Assert::AreEqual(static_cast<size_t>(2), batches.size());
+            Assert::AreEqual(static_cast<size_t>(3), batches[0].size());
+            Assert::AreEqual(static_cast<size_t>(1), batches[1].size());
+            Assert::AreEqual(static_cast<WORD>(VK_SPACE), batches[1][0].ki.wVk);
+            Assert::IsTrue((batches[1][0].ki.dwFlags & KEYEVENTF_KEYUP) != 0);
+
+            fixture.backend->RetryPendingCleanup();
+            Assert::IsFalse(fixture.backend->ShouldBlockNewInput());
+        }
+
+        TEST_METHOD (RecoverPendingActivation_ShouldQueueUninjectedModifierRelease)
+        {
+            BackendFixture fixture;
+            fixture.TrackText(L"brb");
+            const auto request = fixture.Request(
+                { VK_CONTROL, VK_SPACE },
+                { { L"brb", L"be right back", 0 } },
+                { VK_LCONTROL });
+            AssertResult(TextExpansionResult::Prepared, fixture.Prepare(request));
+            size_t sendCalls = 0;
+            fixture.input.SetSendVirtualInputInjectedCount([&](const std::vector<INPUT>& inputs) {
+                ++sendCalls;
+                if (sendCalls == 1)
+                {
+                    return static_cast<size_t>(4);
+                }
+                if (sendCalls == 2)
+                {
+                    return static_cast<size_t>(0);
+                }
+                return inputs.size();
+            });
+
+            const TextExpansionRecoveryRequest recovery{
+                .actionKey = VK_SPACE,
+                .replayKey = 'A',
+                .releasedActivationModifierKeys = { VK_LCONTROL },
+            };
+            Assert::IsFalse(fixture.backend->RecoverPendingActivation(recovery));
+            Assert::IsTrue(fixture.backend->ShouldBlockNewInput());
+            const auto& batches = fixture.input.GetSentInputBatches();
+            Assert::AreEqual(static_cast<size_t>(2), batches.size());
+            Assert::AreEqual(static_cast<size_t>(1), batches[1].size());
+            Assert::AreEqual(static_cast<WORD>(VK_LCONTROL), batches[1][0].ki.wVk);
+            Assert::IsTrue((batches[1][0].ki.dwFlags & KEYEVENTF_KEYUP) != 0);
+
+            fixture.backend->RetryPendingCleanup();
+            Assert::IsFalse(fixture.backend->ShouldBlockNewInput());
+        }
+
+        TEST_METHOD (RecoverPendingActivation_ShouldQueueDummyBeforeUninjectedModifierRelease)
+        {
+            BackendFixture fixture;
+            fixture.TrackText(L"brb");
+            const auto request = fixture.Request(
+                { VK_CONTROL, VK_SPACE },
+                { { L"brb", L"be right back", 0 } },
+                { VK_LCONTROL });
+            AssertResult(TextExpansionResult::Prepared, fixture.Prepare(request));
+            size_t sendCalls = 0;
+            fixture.input.SetSendVirtualInputInjectedCount([&](const std::vector<INPUT>& inputs) {
+                ++sendCalls;
+                if (sendCalls == 1)
+                {
+                    return static_cast<size_t>(2);
+                }
+                if (sendCalls == 2)
+                {
+                    return static_cast<size_t>(0);
+                }
+                return inputs.size();
+            });
+
+            const TextExpansionRecoveryRequest recovery{
+                .actionKey = VK_SPACE,
+                .replayKey = 'A',
+                .releasedActivationModifierKeys = { VK_LCONTROL },
+            };
+            Assert::IsFalse(fixture.backend->RecoverPendingActivation(recovery));
+            Assert::IsTrue(fixture.backend->ShouldBlockNewInput());
+            const auto& batches = fixture.input.GetSentInputBatches();
+            Assert::AreEqual(static_cast<size_t>(2), batches.size());
+            Assert::AreEqual(static_cast<size_t>(3), batches[1].size());
+            Assert::AreEqual(static_cast<WORD>(KeyboardManagerConstants::DUMMY_KEY), batches[1][0].ki.wVk);
+            Assert::IsTrue((batches[1][0].ki.dwFlags & KEYEVENTF_KEYUP) == 0);
+            Assert::AreEqual(static_cast<WORD>(KeyboardManagerConstants::DUMMY_KEY), batches[1][1].ki.wVk);
+            Assert::IsTrue((batches[1][1].ki.dwFlags & KEYEVENTF_KEYUP) != 0);
+            Assert::AreEqual(static_cast<WORD>(VK_LCONTROL), batches[1][2].ki.wVk);
+            Assert::IsTrue((batches[1][2].ki.dwFlags & KEYEVENTF_KEYUP) != 0);
+
+            fixture.backend->RetryPendingCleanup();
+            Assert::IsFalse(fixture.backend->ShouldBlockNewInput());
+        }
+
+        TEST_METHOD (CancelPendingActivation_ShouldReleaseCapturedModifier)
+        {
+            BackendFixture fixture;
+            fixture.TrackText(L"brb");
+            const auto request = fixture.Request(
+                { VK_CONTROL, VK_SPACE },
+                { { L"brb", L"be right back", 0 } },
+                { VK_LCONTROL });
+
+            AssertResult(TextExpansionResult::Prepared, fixture.Prepare(request));
+            AssertResult(TextExpansionResult::FailedChangedOrUnknown, fixture.backend->CancelPendingActivation());
+            Assert::IsFalse(fixture.backend->HasPendingWork());
+            const auto& batches = fixture.input.GetSentInputBatches();
+            Assert::AreEqual(static_cast<size_t>(1), batches.size());
+            Assert::AreEqual(static_cast<size_t>(3), batches.front().size());
+            Assert::AreEqual(static_cast<WORD>(VK_LCONTROL), batches.front()[2].ki.wVk);
+            Assert::IsTrue((batches.front()[2].ki.dwFlags & KEYEVENTF_KEYUP) != 0);
         }
 
         TEST_METHOD (Prepare_ShouldRejectSecondActivationWithoutReplacingFirstPendingRequest)

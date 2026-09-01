@@ -29,7 +29,7 @@ namespace KeyboardManagerEditorUI.Interop
 
             MappingConfigurationLoadResult loadResult = (MappingConfigurationLoadResult)KeyboardManagerInterop.LoadMappingSettingsWithResult(_configHandle);
             ConfigurationName = KeyboardManagerInterop.GetStringAndFree(KeyboardManagerInterop.GetMappingConfigurationName(_configHandle));
-            if (loadResult == MappingConfigurationLoadResult.Failure)
+            if (!IsCompleteLoadResult(loadResult))
             {
                 KeyboardManagerInterop.DestroyMappingConfiguration(_configHandle);
                 _configHandle = IntPtr.Zero;
@@ -405,8 +405,13 @@ namespace KeyboardManagerEditorUI.Interop
 
         public bool ReloadSettings()
         {
-            return (MappingConfigurationLoadResult)KeyboardManagerInterop.LoadMappingSettingsWithResult(_configHandle) != MappingConfigurationLoadResult.Failure;
+            return IsCompleteLoadResult((MappingConfigurationLoadResult)KeyboardManagerInterop.LoadMappingSettingsWithResult(_configHandle));
         }
+
+        // The editor must not save a partially loaded profile because doing so would
+        // overwrite entries that the current version could not understand or validate.
+        internal static bool IsCompleteLoadResult(MappingConfigurationLoadResult loadResult) =>
+            loadResult == MappingConfigurationLoadResult.Success;
 
         internal bool SaveSettingsAndVerify()
         {

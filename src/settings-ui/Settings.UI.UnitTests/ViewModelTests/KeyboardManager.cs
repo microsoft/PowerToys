@@ -3,11 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.IO.Abstractions.TestingHelpers;
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace ViewModelTests
 {
@@ -224,6 +227,94 @@ namespace ViewModelTests
             KeyboardManagerPage.FilterRemapKeysList(remaps);
 
             Assert.AreEqual(2, remaps.Count);
+        }
+
+        [TestMethod]
+        public void LoadProfile_InvalidTextExpansionEnabledType_DoesNotOverwriteProfile()
+        {
+            const string Profile = """
+                {
+                  "textReplacements": {
+                    "inProcess": [
+                      {
+                        "id": "11111111-1111-4111-8111-111111111111",
+                        "sourceText": "brb",
+                        "activationKeys": [32],
+                        "replacementText": "be right back",
+                        "enabled": "true"
+                      }
+                    ]
+                  }
+                }
+                """;
+
+            AssertInvalidProfileIsNotOverwritten(Profile);
+        }
+
+        [TestMethod]
+        public void LoadProfile_InvalidTextExpansionActivationKeyType_DoesNotOverwriteProfile()
+        {
+            const string Profile = """
+                {
+                  "textReplacements": {
+                    "inProcess": [
+                      {
+                        "id": "11111111-1111-4111-8111-111111111111",
+                        "sourceText": "brb",
+                        "activationKeys": ["32"],
+                        "replacementText": "be right back",
+                        "enabled": true
+                      }
+                    ]
+                  }
+                }
+                """;
+
+            AssertInvalidProfileIsNotOverwritten(Profile);
+        }
+
+        [TestMethod]
+        public void LoadProfile_InvalidSingleKeyConditionType_DoesNotOverwriteProfile()
+        {
+            const string Profile = """
+                {
+                  "remapKeys": {
+                    "inProcess": [
+                      {
+                        "originalKeys": "65",
+                        "newRemapKeys": "66",
+                        "condition": 1
+                      }
+                    ]
+                  }
+                }
+                """;
+
+            AssertInvalidProfileIsNotOverwritten(Profile);
+        }
+
+        private static void AssertInvalidProfileIsNotOverwritten(string profileContents)
+        {
+            var fileSystem = new MockFileSystem();
+            var settingsUtils = new SettingsUtils(fileSystem);
+            settingsUtils.SaveSettings(new KeyboardManagerSettings().ToJsonString(), Module);
+
+            const string ProfileFileName = "default.json";
+            string profilePath = settingsUtils.GetSettingsFilePath(Module, ProfileFileName);
+            fileSystem.File.WriteAllText(profilePath, profileContents);
+
+            var generalSettingsRepository = new Mock<ISettingsRepository<GeneralSettings>>();
+            generalSettingsRepository.SetupGet(repository => repository.SettingsConfig).Returns(new GeneralSettings());
+
+            var viewModel = new KeyboardManagerViewModel(
+                settingsUtils,
+                generalSettingsRepository.Object,
+                _ => 0,
+                _ => 0);
+
+            Assert.AreEqual(profileContents, fileSystem.File.ReadAllText(profilePath));
+            Assert.IsFalse(viewModel.LoadProfile());
+            Assert.AreEqual(profileContents, fileSystem.File.ReadAllText(profilePath));
         }
     }
 }

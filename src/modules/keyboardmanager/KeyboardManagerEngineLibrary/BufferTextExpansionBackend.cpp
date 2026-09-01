@@ -134,20 +134,6 @@ namespace
         text.erase(eraseFrom);
     }
 
-    constexpr size_t Utf16ScalarCount(const std::wstring_view text) noexcept
-    {
-        size_t count = 0;
-        for (size_t index = 0; index < text.size(); ++index)
-        {
-            if (IsHighSurrogate(text[index]) && index + 1 < text.size() && IsLowSurrogate(text[index + 1]))
-            {
-                ++index;
-            }
-            ++count;
-        }
-        return count;
-    }
-
     void SetKeyboardStateKey(BYTE keyState[256], const int key, const bool pressed) noexcept
     {
         if (pressed)
@@ -748,7 +734,8 @@ void BufferTextExpansionBackend::ResetBuffer() noexcept
 
 TextExpansionResult BufferTextExpansionBackend::PrepareActivation(const TextExpansionRequest& request)
 {
-    if (!started.load(std::memory_order_acquire) || request.candidates.empty())
+    if (!started.load(std::memory_order_acquire) || !request.index ||
+        !request.index->HasActivation(request.actionKey, request.modifierMask))
     {
         return TextExpansionResult::UnsupportedContext;
     }
@@ -779,18 +766,27 @@ TextExpansionResult BufferTextExpansionBackend::PrepareActivation(const TextExpa
             return TextExpansionResult::NoMatch;
         }
 
-        const auto selected = SelectTextExpansionCandidate(request.candidates, buffer);
+        const auto selected = request.index->FindLongestMatch(
+            request.actionKey,
+            request.modifierMask,
+            buffer);
         if (!selected)
         {
             activationInProgress.store(false, std::memory_order_release);
             return TextExpansionResult::NoMatch;
         }
 
-        const auto& candidate = request.candidates[*selected];
+        const auto* rule = request.index->GetRule(*selected);
+        if (!rule)
+        {
+            activationInProgress.store(false, std::memory_order_release);
+            return TextExpansionResult::FailedUnchanged;
+        }
         pendingActivation = PendingActivation{
+            .index = request.index,
+            .ruleIndex = *selected,
             .activationModifierKeys = request.activationModifierKeys,
-            .backspaceCount = Utf16ScalarCount(candidate.sourceText),
-            .replacementText = candidate.replacementText,
+            .backspaceCount = rule->backspaceCount,
             .targetContext = currentContext,
             .contextEpoch = contextEpoch.load(std::memory_order_acquire),
         };
@@ -817,6 +813,11 @@ TextExpansionResult BufferTextExpansionBackend::CompletePendingActivation() noex
     PendingActivation activation = std::move(*pendingActivation);
     pendingActivation.reset();
     ActivationCompletionGuard completionGuard{ activationInProgress };
+    const auto* rule = activation.index ? activation.index->GetRule(activation.ruleIndex) : nullptr;
+    if (!rule)
+    {
+        return TextExpansionResult::FailedUnchanged;
+    }
     const auto& modifierKeys = activation.activationModifierKeys;
     bool inputStreamMutated = !modifierKeys.empty();
     bool modifierReleaseAttempted = false;
@@ -862,7 +863,7 @@ TextExpansionResult BufferTextExpansionBackend::CompletePendingActivation() noex
 
         return SendReplacementText(
             input,
-            activation.replacementText,
+            rule->replacementText,
             inputStreamMutated,
             isTargetCurrent,
             queueCleanup);
@@ -875,6 +876,116 @@ TextExpansionResult BufferTextExpansionBackend::CompletePendingActivation() noex
         }
         return inputStreamMutated ? TextExpansionResult::FailedChangedOrUnknown :
                                     TextExpansionResult::FailedUnchanged;
+    }
+}
+
+bool BufferTextExpansionBackend::RecoverPendingActivation(
+    const TextExpansionRecoveryRequest& request) noexcept
+{
+    std::scoped_lock activationLock(activationMutex);
+    if (!pendingActivation || request.actionKey == 0 || request.replayKey == 0)
+    {
+        return false;
+    }
+
+    const bool targetStillCurrent = IsTargetContextCurrent(
+        pendingActivation->targetContext,
+        pendingActivation->contextEpoch);
+    pendingActivation.reset();
+    activationInProgress.store(false, std::memory_order_release);
+
+    {
+        std::scoped_lock bufferLock(bufferMutex);
+        ResetBufferLocked();
+    }
+    try
+    {
+        static_assert(
+            (KeyboardManagerConstants::KEYBOARDMANAGER_TEXT_EXPANSION_REPLAY_FLAG &
+             CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG) == 0);
+
+        // SendInput guarantees that one INPUT array is inserted serially without
+        // interleaving. Suppress the current physical down and submit one ordered
+        // batch: old trigger tap, swallowed modifier releases, replayed current down.
+        std::vector<INPUT> recoveryEvents;
+        recoveryEvents.reserve(5 + request.releasedActivationModifierKeys.size());
+        if (targetStillCurrent)
+        {
+            INPUT actionDown{};
+            actionDown.type = INPUT_KEYBOARD;
+            actionDown.ki.wVk = static_cast<WORD>(request.actionKey);
+            actionDown.ki.wScan = request.actionScanCode != 0 ?
+                                      static_cast<WORD>(request.actionScanCode) :
+                                      static_cast<WORD>(MapVirtualKeyW(request.actionKey, MAPVK_VK_TO_VSC));
+            actionDown.ki.dwFlags = request.actionExtended ? KEYEVENTF_EXTENDEDKEY : 0;
+            actionDown.ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+            recoveryEvents.push_back(actionDown);
+            INPUT actionUp = actionDown;
+            actionUp.ki.dwFlags |= KEYEVENTF_KEYUP;
+            recoveryEvents.push_back(actionUp);
+        }
+
+        const size_t dummyStart = recoveryEvents.size();
+        size_t firstModifierRelease = dummyStart;
+        if (!request.releasedActivationModifierKeys.empty())
+        {
+            Helpers::SetDummyKeyEvent(
+                recoveryEvents,
+                KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+            firstModifierRelease = recoveryEvents.size();
+            for (const DWORD key : request.releasedActivationModifierKeys)
+            {
+                Helpers::SetKeyEvent(
+                    recoveryEvents,
+                    INPUT_KEYBOARD,
+                    static_cast<WORD>(key),
+                    KEYEVENTF_KEYUP,
+                    KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+            }
+        }
+        const size_t modifierReleaseEnd = recoveryEvents.size();
+
+        INPUT replay{};
+        replay.type = INPUT_KEYBOARD;
+        replay.ki.wVk = static_cast<WORD>(request.replayKey);
+        replay.ki.wScan = request.replayScanCode != 0 ?
+                              static_cast<WORD>(request.replayScanCode) :
+                              static_cast<WORD>(MapVirtualKeyW(request.replayKey, MAPVK_VK_TO_VSC));
+        replay.ki.dwFlags = request.replayExtended ? KEYEVENTF_EXTENDEDKEY : 0;
+        replay.ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_TEXT_EXPANSION_REPLAY_FLAG;
+        recoveryEvents.push_back(replay);
+
+        const auto result = input.SendVirtualInput(recoveryEvents);
+        if (result.IsComplete())
+        {
+            return true;
+        }
+
+        auto cleanup = CreateCleanupForInjectedPrefix(recoveryEvents, result.injectedEventCount);
+        if (!request.releasedActivationModifierKeys.empty() &&
+            static_cast<size_t>(result.injectedEventCount) <= dummyStart)
+        {
+            // No dummy event reached the input stream. Preserve the existing
+            // modifier-release guard before retrying uninjected Win/Alt/Ctrl/Shift ups.
+            Helpers::SetDummyKeyEvent(
+                cleanup,
+                KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+        }
+        const size_t firstUninjectedModifier =
+            (std::max)(firstModifierRelease, static_cast<size_t>(result.injectedEventCount));
+        for (size_t index = firstUninjectedModifier; index < modifierReleaseEnd; ++index)
+        {
+            cleanup.push_back(recoveryEvents[index]);
+        }
+        QueuePendingCleanup(std::move(cleanup));
+        return false;
+    }
+    catch (...)
+    {
+        // The physical modifier-up events were already swallowed. Best-effort release
+        // them even if recovery batch construction or submission faults.
+        ReleaseCapturedModifiers(request.releasedActivationModifierKeys);
+        return false;
     }
 }
 
