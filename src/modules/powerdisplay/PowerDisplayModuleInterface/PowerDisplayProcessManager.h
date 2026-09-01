@@ -57,5 +57,5 @@ private:
     OnThreadExecutor m_thread_executor; // all internal operations are done on background thread with task queue
     std::atomic<bool> m_enabled = false; // written on main thread, read on background thread
     HANDLE m_hProcess = 0;
-    TwoWayPipeMessageIPC* m_write_pipe = nullptr;
+    std::unique_ptr<TwoWayPipeMessageIPC> m_write_pipe = nullptr;
 };

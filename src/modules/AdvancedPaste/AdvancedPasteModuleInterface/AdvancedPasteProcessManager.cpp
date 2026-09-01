@@ -90,6 +90,11 @@ void AdvancedPasteProcessManager::terminate_process()
 {
     if (m_hProcess != 0)
     {
+        if (m_write_pipe.get())
+        {
+            m_write_pipe->end();
+        }
+
         TerminateProcess(m_hProcess, 1);
         CloseHandle(m_hProcess);
         m_hProcess = 0;
@@ -128,11 +133,14 @@ HRESULT AdvancedPasteProcessManager::start_process(const std::wstring& pipe_name
 
 HRESULT AdvancedPasteProcessManager::start_named_pipe_server(const std::wstring& pipe_name)
 {
-    m_write_pipe = nullptr;
-
     const auto full_pipe_name = std::format(L"\\\\.\\pipe\\{}", pipe_name);
 
-    m_write_pipe = new TwoWayPipeMessageIPC(L"", full_pipe_name, [](const std::wstring&) {});
+    if (m_write_pipe.get())
+    {
+        m_write_pipe->end();
+    }
+
+    m_write_pipe.reset(new TwoWayPipeMessageIPC(L"", full_pipe_name, [](const std::wstring&) {}));
 
     const auto clean_up_and_fail = [&]() {
         m_write_pipe->end();
@@ -203,7 +211,7 @@ void AdvancedPasteProcessManager::refresh()
 
 void AdvancedPasteProcessManager::send_named_pipe_message(const std::wstring& message_type, const std::wstring& message_arg)
 {
-    if (m_write_pipe)
+    if (m_write_pipe.get())
     {
         const auto message = message_arg.empty() ? message_type : std::format(L"{} {}", message_type, message_arg);
         m_write_pipe->send(message);
