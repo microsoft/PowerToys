@@ -362,21 +362,26 @@ namespace
 
     KeyboardManagerInput::SendVirtualInputResult SendModifierReleases(
         KeyboardManagerInput::InputInterface& input,
-        const std::vector<DWORD>& modifierKeys,
+        const uint8_t modifierMask,
         std::vector<INPUT>& sentEvents)
     {
-        if (modifierKeys.empty())
+        if (modifierMask == 0)
         {
             return { KeyboardManagerInput::SendVirtualInputStatus::Complete, 0 };
         }
 
         Helpers::SetDummyKeyEvent(sentEvents, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-        for (const DWORD key : modifierKeys)
+        for (size_t index = 0; index < TextExpansionModifiers::Keys.size(); ++index)
         {
+            const uint8_t bit = TextExpansionModifiers::Bits[index];
+            if ((modifierMask & bit) == 0)
+            {
+                continue;
+            }
             Helpers::SetKeyEvent(
                 sentEvents,
                 INPUT_KEYBOARD,
-                static_cast<WORD>(key),
+                static_cast<WORD>(TextExpansionModifiers::Keys[index]),
                 KEYEVENTF_KEYUP,
                 KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
         }
@@ -522,18 +527,18 @@ void BufferTextExpansionBackend::Stop() noexcept
 {
     started.store(false, std::memory_order_release);
 
-    std::vector<DWORD> modifierKeys;
+    uint8_t modifierMask = 0;
     {
         std::scoped_lock lock(activationMutex);
         if (pendingActivation)
         {
-            modifierKeys = pendingActivation->activationModifierKeys;
+            modifierMask = pendingActivation->activationModifierMask;
             pendingActivation.reset();
         }
         activationInProgress.store(false, std::memory_order_release);
     }
 
-    ReleaseCapturedModifiers(modifierKeys);
+    ReleaseCapturedModifiers(modifierMask);
     // The queue is closed once started is false. Every retry either consumes at
     // least one event or reaches the bounded no-progress fault threshold.
     while (HasPendingWork())
@@ -785,7 +790,7 @@ TextExpansionResult BufferTextExpansionBackend::PrepareActivation(const TextExpa
         pendingActivation = PendingActivation{
             .index = request.index,
             .ruleIndex = *selected,
-            .activationModifierKeys = request.activationModifierKeys,
+            .activationModifierMask = request.modifierMask,
             .backspaceCount = rule->backspaceCount,
             .targetContext = currentContext,
             .contextEpoch = contextEpoch.load(std::memory_order_acquire),
@@ -818,8 +823,8 @@ TextExpansionResult BufferTextExpansionBackend::CompletePendingActivation() noex
     {
         return TextExpansionResult::FailedUnchanged;
     }
-    const auto& modifierKeys = activation.activationModifierKeys;
-    bool inputStreamMutated = !modifierKeys.empty();
+    const uint8_t modifierMask = activation.activationModifierMask;
+    bool inputStreamMutated = modifierMask != 0;
     bool modifierReleaseAttempted = false;
 
     try
@@ -827,13 +832,13 @@ TextExpansionResult BufferTextExpansionBackend::CompletePendingActivation() noex
         if (!IsTargetContextCurrent(activation.targetContext, activation.contextEpoch))
         {
             modifierReleaseAttempted = true;
-            ReleaseCapturedModifiers(modifierKeys);
-            return modifierKeys.empty() ? TextExpansionResult::FailedUnchanged :
-                                          TextExpansionResult::FailedChangedOrUnknown;
+            ReleaseCapturedModifiers(modifierMask);
+            return modifierMask == 0 ? TextExpansionResult::FailedUnchanged :
+                                       TextExpansionResult::FailedChangedOrUnknown;
         }
 
         modifierReleaseAttempted = true;
-        if (!ReleaseCapturedModifiers(modifierKeys))
+        if (!ReleaseCapturedModifiers(modifierMask))
         {
             return TextExpansionResult::FailedChangedOrUnknown;
         }
@@ -872,7 +877,7 @@ TextExpansionResult BufferTextExpansionBackend::CompletePendingActivation() noex
     {
         if (!modifierReleaseAttempted)
         {
-            ReleaseCapturedModifiers(modifierKeys);
+            ReleaseCapturedModifiers(modifierMask);
         }
         return inputStreamMutated ? TextExpansionResult::FailedChangedOrUnknown :
                                     TextExpansionResult::FailedUnchanged;
@@ -908,7 +913,7 @@ bool BufferTextExpansionBackend::RecoverPendingActivation(
         // interleaving. Suppress the current physical down and submit one ordered
         // batch: old trigger tap, swallowed modifier releases, replayed current down.
         std::vector<INPUT> recoveryEvents;
-        recoveryEvents.reserve(5 + request.releasedActivationModifierKeys.size());
+        recoveryEvents.reserve(5 + TextExpansionModifiers::Count(request.releasedActivationModifierMask));
         if (targetStillCurrent)
         {
             INPUT actionDown{};
@@ -927,18 +932,23 @@ bool BufferTextExpansionBackend::RecoverPendingActivation(
 
         const size_t dummyStart = recoveryEvents.size();
         size_t firstModifierRelease = dummyStart;
-        if (!request.releasedActivationModifierKeys.empty())
+        if (request.releasedActivationModifierMask != 0)
         {
             Helpers::SetDummyKeyEvent(
                 recoveryEvents,
                 KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
             firstModifierRelease = recoveryEvents.size();
-            for (const DWORD key : request.releasedActivationModifierKeys)
+            for (size_t index = 0; index < TextExpansionModifiers::Keys.size(); ++index)
             {
+                const uint8_t bit = TextExpansionModifiers::Bits[index];
+                if ((request.releasedActivationModifierMask & bit) == 0)
+                {
+                    continue;
+                }
                 Helpers::SetKeyEvent(
                     recoveryEvents,
                     INPUT_KEYBOARD,
-                    static_cast<WORD>(key),
+                    static_cast<WORD>(TextExpansionModifiers::Keys[index]),
                     KEYEVENTF_KEYUP,
                     KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
             }
@@ -962,7 +972,7 @@ bool BufferTextExpansionBackend::RecoverPendingActivation(
         }
 
         auto cleanup = CreateCleanupForInjectedPrefix(recoveryEvents, result.injectedEventCount);
-        if (!request.releasedActivationModifierKeys.empty() &&
+        if (request.releasedActivationModifierMask != 0 &&
             static_cast<size_t>(result.injectedEventCount) <= dummyStart)
         {
             // No dummy event reached the input stream. Preserve the existing
@@ -984,7 +994,7 @@ bool BufferTextExpansionBackend::RecoverPendingActivation(
     {
         // The physical modifier-up events were already swallowed. Best-effort release
         // them even if recovery batch construction or submission faults.
-        ReleaseCapturedModifiers(request.releasedActivationModifierKeys);
+        ReleaseCapturedModifiers(request.releasedActivationModifierMask);
         return false;
     }
 }
@@ -997,12 +1007,12 @@ TextExpansionResult BufferTextExpansionBackend::CancelPendingActivation() noexce
         return TextExpansionResult::FailedUnchanged;
     }
 
-    const auto modifierKeys = pendingActivation->activationModifierKeys;
+    const uint8_t modifierMask = pendingActivation->activationModifierMask;
     pendingActivation.reset();
     activationInProgress.store(false, std::memory_order_release);
-    ReleaseCapturedModifiers(modifierKeys);
-    return modifierKeys.empty() ? TextExpansionResult::FailedUnchanged :
-                                  TextExpansionResult::FailedChangedOrUnknown;
+    ReleaseCapturedModifiers(modifierMask);
+    return modifierMask == 0 ? TextExpansionResult::FailedUnchanged :
+                               TextExpansionResult::FailedChangedOrUnknown;
 }
 
 BufferTextExpansionBackend::InputContext BufferTextExpansionBackend::GetCurrentContext() const noexcept
@@ -1035,9 +1045,9 @@ void BufferTextExpansionBackend::ResetBufferLocked() noexcept
 }
 
 bool BufferTextExpansionBackend::ReleaseCapturedModifiers(
-    const std::vector<DWORD>& modifierKeys) noexcept
+    const uint8_t modifierMask) noexcept
 {
-    if (modifierKeys.empty())
+    if (modifierMask == 0)
     {
         return true;
     }
@@ -1045,7 +1055,7 @@ bool BufferTextExpansionBackend::ReleaseCapturedModifiers(
     std::vector<INPUT> modifierEvents;
     try
     {
-        const auto result = SendModifierReleases(input, modifierKeys, modifierEvents);
+        const auto result = SendModifierReleases(input, modifierMask, modifierEvents);
         if (!result.IsComplete())
         {
             QueuePendingCleanup(CreateUninjectedSuffix(modifierEvents, result.injectedEventCount));

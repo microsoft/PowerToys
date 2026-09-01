@@ -76,7 +76,7 @@ private:
     {
         std::shared_ptr<const TextExpansionIndex> index;
         size_t ruleIndex = 0;
-        std::vector<DWORD> activationModifierKeys;
+        uint8_t activationModifierMask = 0;
         size_t backspaceCount = 0;
         InputContext targetContext;
         uint64_t contextEpoch = 0;
@@ -86,7 +86,7 @@ private:
     bool IsTargetContextCurrent(const InputContext& expected, uint64_t expectedEpoch) const noexcept;
     void ResetBufferLocked() noexcept;
     void QueuePendingCleanup(std::vector<INPUT> cleanup);
-    bool ReleaseCapturedModifiers(const std::vector<DWORD>& modifierKeys) noexcept;
+    bool ReleaseCapturedModifiers(uint8_t modifierMask) noexcept;
 
     KeyboardManagerInput::InputInterface& input;
     TextProvider textProvider;

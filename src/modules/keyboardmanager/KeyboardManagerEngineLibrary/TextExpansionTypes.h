@@ -21,6 +21,78 @@ enum class TextExpansionResult : uint8_t
     FailedChangedOrUnknown,
 };
 
+namespace TextExpansionModifiers
+{
+    // Keep side-specific modifier state in one byte so low-level hook matching and
+    // pending-press bookkeeping never need dynamically allocated collections.
+    inline constexpr uint8_t LeftWin = 1u << 0;
+    inline constexpr uint8_t RightWin = 1u << 1;
+    inline constexpr uint8_t LeftCtrl = 1u << 2;
+    inline constexpr uint8_t RightCtrl = 1u << 3;
+    inline constexpr uint8_t LeftAlt = 1u << 4;
+    inline constexpr uint8_t RightAlt = 1u << 5;
+    inline constexpr uint8_t LeftShift = 1u << 6;
+    inline constexpr uint8_t RightShift = 1u << 7;
+    inline constexpr uint8_t All =
+        LeftWin | RightWin | LeftCtrl | RightCtrl |
+        LeftAlt | RightAlt | LeftShift | RightShift;
+    inline constexpr std::array<uint8_t, 8> Bits{
+        LeftWin,
+        RightWin,
+        LeftCtrl,
+        RightCtrl,
+        LeftAlt,
+        RightAlt,
+        LeftShift,
+        RightShift,
+    };
+    inline constexpr std::array<DWORD, 8> Keys{
+        VK_LWIN,
+        VK_RWIN,
+        VK_LCONTROL,
+        VK_RCONTROL,
+        VK_LMENU,
+        VK_RMENU,
+        VK_LSHIFT,
+        VK_RSHIFT,
+    };
+
+    constexpr uint8_t BitForKey(const DWORD key) noexcept
+    {
+        switch (key)
+        {
+        case VK_LWIN:
+            return LeftWin;
+        case VK_RWIN:
+            return RightWin;
+        case VK_LCONTROL:
+            return LeftCtrl;
+        case VK_RCONTROL:
+            return RightCtrl;
+        case VK_LMENU:
+            return LeftAlt;
+        case VK_RMENU:
+            return RightAlt;
+        case VK_LSHIFT:
+            return LeftShift;
+        case VK_RSHIFT:
+            return RightShift;
+        default:
+            return 0;
+        }
+    }
+
+    constexpr size_t Count(const uint8_t mask) noexcept
+    {
+        size_t count = 0;
+        for (uint8_t remaining = mask; remaining != 0; remaining >>= 1)
+        {
+            count += remaining & 1u;
+        }
+        return count;
+    }
+}
+
 // Immutable configuration-time index. Each action key owns one reverse UTF-16
 // trie. Terminal nodes contain an O(1) table from the exact left/right modifier
 // state to the earliest matching profile rule, so hook-time lookup is bounded by
@@ -81,7 +153,6 @@ struct TextExpansionRequest
     std::shared_ptr<const TextExpansionIndex> index;
     DWORD actionKey = 0;
     uint8_t modifierMask = 0;
-    std::vector<DWORD> activationModifierKeys;
 };
 
 struct TextExpansionRecoveryRequest
@@ -92,5 +163,5 @@ struct TextExpansionRecoveryRequest
     DWORD replayKey = 0;
     DWORD replayScanCode = 0;
     bool replayExtended = false;
-    std::vector<DWORD> releasedActivationModifierKeys;
+    uint8_t releasedActivationModifierMask = 0;
 };

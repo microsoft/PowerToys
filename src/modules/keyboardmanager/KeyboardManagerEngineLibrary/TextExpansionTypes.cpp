@@ -9,15 +9,6 @@
 
 namespace
 {
-    constexpr uint8_t LeftWinMask = 1u << 0;
-    constexpr uint8_t RightWinMask = 1u << 1;
-    constexpr uint8_t LeftCtrlMask = 1u << 2;
-    constexpr uint8_t RightCtrlMask = 1u << 3;
-    constexpr uint8_t LeftAltMask = 1u << 4;
-    constexpr uint8_t RightAltMask = 1u << 5;
-    constexpr uint8_t LeftShiftMask = 1u << 6;
-    constexpr uint8_t RightShiftMask = 1u << 7;
-
     struct MutableNode
     {
         std::map<wchar_t, uint32_t> children;
@@ -50,10 +41,26 @@ namespace
     constexpr bool ActivationMatchesMask(const Shortcut& activation, const uint8_t modifierMask) noexcept
     {
         return !activation.HasChord() &&
-               ModifierMatches(modifierMask, activation.winKey, LeftWinMask, RightWinMask) &&
-               ModifierMatches(modifierMask, activation.ctrlKey, LeftCtrlMask, RightCtrlMask) &&
-               ModifierMatches(modifierMask, activation.altKey, LeftAltMask, RightAltMask) &&
-               ModifierMatches(modifierMask, activation.shiftKey, LeftShiftMask, RightShiftMask);
+               ModifierMatches(
+                   modifierMask,
+                   activation.winKey,
+                   TextExpansionModifiers::LeftWin,
+                   TextExpansionModifiers::RightWin) &&
+               ModifierMatches(
+                   modifierMask,
+                   activation.ctrlKey,
+                   TextExpansionModifiers::LeftCtrl,
+                   TextExpansionModifiers::RightCtrl) &&
+               ModifierMatches(
+                   modifierMask,
+                   activation.altKey,
+                   TextExpansionModifiers::LeftAlt,
+                   TextExpansionModifiers::RightAlt) &&
+               ModifierMatches(
+                   modifierMask,
+                   activation.shiftKey,
+                   TextExpansionModifiers::LeftShift,
+                   TextExpansionModifiers::RightShift);
     }
 
     constexpr size_t Utf16ScalarCount(const std::wstring_view text) noexcept

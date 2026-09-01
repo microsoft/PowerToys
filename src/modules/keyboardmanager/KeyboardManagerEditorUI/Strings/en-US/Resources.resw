@@ -568,6 +568,14 @@
   <data name="ServiceDownBanner.Message" xml:space="preserve">
     <value>Remappings will not function and you will be unable to edit any entries until the service is restored.</value>
   </data>
+  <data name="TextExpansionEnabledToggle_AutomationName" xml:space="preserve">
+    <value>Enable or disable text expansion {0} with {1} to {2}</value>
+    <comment>{0} is the source text, {1} is the activation key or shortcut, and {2} is the replacement text.</comment>
+  </data>
+  <data name="TextExpansionMenuButton_AutomationName" xml:space="preserve">
+    <value>More options for text expansion {0} with {1} to {2}</value>
+    <comment>{0} is the source text, {1} is the activation key or shortcut, and {2} is the replacement text.</comment>
+  </data>
   <data name="CheckServiceBtn.Content" xml:space="preserve">
     <value>Check service status</value>
   </data>

@@ -1,12 +1,11 @@
 #pragma once
 
 #include <atomic>
+#include <bitset>
 #include <functional>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <unordered_map>
-#include <unordered_set>
 
 #include <common/hooks/LowlevelKeyboardEvent.h>
 #include <keyboardmanager/common/InputInterface.h>
@@ -55,12 +54,6 @@ public:
     void RetryPendingBackendWork() noexcept;
 
 private:
-    enum class ActionKeyPressDisposition : uint8_t
-    {
-        Passthrough,
-        Suppressed,
-    };
-
     enum class PendingActivationInterruption : uint8_t
     {
         None,
@@ -77,9 +70,9 @@ private:
         size_t physicalActionKeyIdentity = 0;
         bool actionReleased = false;
         bool commitQueued = false;
-        std::unordered_set<DWORD> activationModifierKeys;
-        std::unordered_set<DWORD> pressedActivationModifierKeys;
-        std::unordered_set<DWORD> suppressedNewModifierKeys;
+        uint8_t activationModifierMask = 0;
+        uint8_t pressedActivationModifierMask = 0;
+        uint8_t suppressedNewModifierMask = 0;
     };
 
     bool IsBackendReady() noexcept;
@@ -108,9 +101,10 @@ private:
     KeyboardManagerInput::InputInterface* inputState = nullptr;
 
     mutable std::mutex pressStateMutex;
-    std::unordered_map<size_t, ActionKeyPressDisposition> actionKeyPresses;
-    std::unordered_set<size_t> recoverySuppressedKeys;
-    std::unordered_set<size_t> pendingReplayKeys;
-    std::unordered_set<DWORD> higherPriorityModifierKeys;
+    std::bitset<512> actionKeyPresses;
+    std::bitset<512> suppressedActionKeyPresses;
+    std::bitset<512> recoverySuppressedKeys;
+    std::bitset<512> pendingReplayKeys;
+    std::bitset<256> higherPriorityModifierKeys;
     std::optional<PendingActivationRelease> pendingActivationRelease;
 };

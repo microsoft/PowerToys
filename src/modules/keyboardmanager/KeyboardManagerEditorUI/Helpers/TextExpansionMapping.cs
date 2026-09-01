@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace KeyboardManagerEditorUI.Helpers
 {
@@ -19,5 +20,19 @@ namespace KeyboardManagerEditorUI.Helpers
         public string ReplacementText { get; set; } = string.Empty;
 
         public bool IsEnabled { get; set; } = true;
+
+        public string EnabledAutomationName => FormatAutomationName("TextExpansionEnabledToggle_AutomationName");
+
+        public string MenuAutomationName => FormatAutomationName("TextExpansionMenuButton_AutomationName");
+
+        private string FormatAutomationName(string resourceKey)
+        {
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                ResourceHelper.GetString(resourceKey),
+                SourceText,
+                string.Join(" + ", ActivationKeyNames),
+                ReplacementText);
+        }
     }
 }

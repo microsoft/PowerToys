@@ -9,14 +9,7 @@
 
 namespace
 {
-    constexpr uint8_t LeftWinMask = 1u << 0;
-    constexpr uint8_t RightWinMask = 1u << 1;
-    constexpr uint8_t LeftCtrlMask = 1u << 2;
-    constexpr uint8_t RightCtrlMask = 1u << 3;
-    constexpr uint8_t LeftAltMask = 1u << 4;
-    constexpr uint8_t RightAltMask = 1u << 5;
-    constexpr uint8_t LeftShiftMask = 1u << 6;
-    constexpr uint8_t RightShiftMask = 1u << 7;
+    constexpr size_t PhysicalKeyStateCount = 512;
 
     constexpr bool IsKeyDown(const WPARAM message) noexcept
     {
@@ -37,36 +30,25 @@ namespace
                 mask |= bit;
             }
         };
-        append(VK_LWIN, LeftWinMask);
-        append(VK_RWIN, RightWinMask);
-        append(VK_LCONTROL, LeftCtrlMask);
-        append(VK_RCONTROL, RightCtrlMask);
-        append(VK_LMENU, LeftAltMask);
-        append(VK_RMENU, RightAltMask);
-        append(VK_LSHIFT, LeftShiftMask);
-        append(VK_RSHIFT, RightShiftMask);
+        append(VK_LWIN, TextExpansionModifiers::LeftWin);
+        append(VK_RWIN, TextExpansionModifiers::RightWin);
+        append(VK_LCONTROL, TextExpansionModifiers::LeftCtrl);
+        append(VK_RCONTROL, TextExpansionModifiers::RightCtrl);
+        append(VK_LMENU, TextExpansionModifiers::LeftAlt);
+        append(VK_RMENU, TextExpansionModifiers::RightAlt);
+        append(VK_LSHIFT, TextExpansionModifiers::LeftShift);
+        append(VK_RSHIFT, TextExpansionModifiers::RightShift);
         return mask;
     }
 
-    std::vector<DWORD> GetPressedActivationModifiers(const uint8_t modifierMask)
+    size_t GetPhysicalKeyIdentity(const LowlevelKeyboardEvent* data, const DWORD physicalKey) noexcept
     {
-        std::vector<DWORD> keys;
-        keys.reserve(8);
-        const auto append = [&](const uint8_t bit, const DWORD key) {
-            if ((modifierMask & bit) != 0)
-            {
-                keys.push_back(key);
-            }
-        };
-        append(LeftWinMask, VK_LWIN);
-        append(RightWinMask, VK_RWIN);
-        append(LeftCtrlMask, VK_LCONTROL);
-        append(RightCtrlMask, VK_RCONTROL);
-        append(LeftAltMask, VK_LMENU);
-        append(RightAltMask, VK_RMENU);
-        append(LeftShiftMask, VK_LSHIFT);
-        append(RightShiftMask, VK_RSHIFT);
-        return keys;
+        if (const auto identity = Helpers::GetPhysicalKeyEventIndex(data);
+            identity && *identity < PhysicalKeyStateCount)
+        {
+            return *identity;
+        }
+        return static_cast<size_t>(Helpers::ClearKeyNumpadOrigin(physicalKey) & 0xFF);
     }
 }
 
@@ -128,10 +110,11 @@ void TextExpansionController::Stop() noexcept
     }
 
     std::scoped_lock lock(pressStateMutex);
-    actionKeyPresses.clear();
-    recoverySuppressedKeys.clear();
-    pendingReplayKeys.clear();
-    higherPriorityModifierKeys.clear();
+    actionKeyPresses.reset();
+    suppressedActionKeyPresses.reset();
+    recoverySuppressedKeys.reset();
+    pendingReplayKeys.reset();
+    higherPriorityModifierKeys.reset();
     pendingActivationRelease.reset();
     inputState = nullptr;
     arming.store(false, std::memory_order_release);
@@ -164,12 +147,11 @@ TextExpansionController::EventDisposition TextExpansionController::BeginKeyboard
     }
 
     const DWORD physicalKey = data->lParam->vkCode;
-    const size_t physicalKeyIdentity =
-        Helpers::GetPhysicalKeyEventIndex(data).value_or(static_cast<size_t>(physicalKey));
+    const size_t physicalKeyIdentity = GetPhysicalKeyIdentity(data, physicalKey);
     if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_TEXT_EXPANSION_REPLAY_FLAG)
     {
         std::scoped_lock lock(pressStateMutex);
-        pendingReplayKeys.erase(physicalKeyIdentity);
+        pendingReplayKeys.reset(physicalKeyIdentity);
         UpdateTrackedPressStateLocked();
     }
     if (recoveryPending && backend && backend->HandleRecoveryKeyEvent(data))
@@ -178,9 +160,14 @@ TextExpansionController::EventDisposition TextExpansionController::BeginKeyboard
         if (keyUp)
         {
             std::scoped_lock lock(pressStateMutex);
-            actionKeyPresses.erase(physicalKeyIdentity);
-            recoverySuppressedKeys.erase(physicalKeyIdentity);
-            higherPriorityModifierKeys.erase(physicalKey);
+            actionKeyPresses.reset(physicalKeyIdentity);
+            suppressedActionKeyPresses.reset(physicalKeyIdentity);
+            recoverySuppressedKeys.reset(physicalKeyIdentity);
+            const DWORD normalizedKey = Helpers::ClearKeyNumpadOrigin(physicalKey);
+            if (normalizedKey <= 0xFF)
+            {
+                higherPriorityModifierKeys.reset(normalizedKey);
+            }
             UpdateTrackedPressStateLocked();
         }
         return EventDisposition::ForcePassThrough;
@@ -212,12 +199,11 @@ TextExpansionController::EventDisposition TextExpansionController::BeginKeyboard
 
     {
         std::scoped_lock lock(pressStateMutex);
-        if (const auto suppressed = recoverySuppressedKeys.find(physicalKeyIdentity);
-            suppressed != recoverySuppressedKeys.end())
+        if (recoverySuppressedKeys.test(physicalKeyIdentity))
         {
             if (keyUp)
             {
-                recoverySuppressedKeys.erase(suppressed);
+                recoverySuppressedKeys.reset(physicalKeyIdentity);
                 UpdateTrackedPressStateLocked();
             }
             // Once recovery has faulted, no delayed synthetic key-up remains. Let the
@@ -234,7 +220,7 @@ TextExpansionController::EventDisposition TextExpansionController::BeginKeyboard
         {
             {
                 std::scoped_lock lock(pressStateMutex);
-                recoverySuppressedKeys.insert(physicalKeyIdentity);
+                recoverySuppressedKeys.set(physicalKeyIdentity);
                 UpdateTrackedPressStateLocked();
             }
             QueueBackendWork(0);
@@ -244,7 +230,11 @@ TextExpansionController::EventDisposition TextExpansionController::BeginKeyboard
         std::scoped_lock lock(pressStateMutex);
         if (keyUp)
         {
-            higherPriorityModifierKeys.erase(physicalKey);
+            const DWORD normalizedKey = Helpers::ClearKeyNumpadOrigin(physicalKey);
+            if (normalizedKey <= 0xFF)
+            {
+                higherPriorityModifierKeys.reset(normalizedKey);
+            }
             UpdateTrackedPressStateLocked();
         }
         // Modifier events not owned by a pending activation/recovery press continue
@@ -255,13 +245,13 @@ TextExpansionController::EventDisposition TextExpansionController::BeginKeyboard
     bool suppressPassthroughRepeat = false;
     {
         std::scoped_lock lock(pressStateMutex);
-        const auto activePress = actionKeyPresses.find(physicalKeyIdentity);
-        if (activePress != actionKeyPresses.end())
+        if (actionKeyPresses.test(physicalKeyIdentity))
         {
-            const bool suppress = activePress->second == ActionKeyPressDisposition::Suppressed;
+            const bool suppress = suppressedActionKeyPresses.test(physicalKeyIdentity);
             if (keyUp)
             {
-                actionKeyPresses.erase(activePress);
+                actionKeyPresses.reset(physicalKeyIdentity);
+                suppressedActionKeyPresses.reset(physicalKeyIdentity);
                 UpdateTrackedPressStateLocked();
             }
             else if (!suppress && blockNewInput)
@@ -299,7 +289,7 @@ TextExpansionController::EventDisposition TextExpansionController::BeginKeyboard
     {
         {
             std::scoped_lock lock(pressStateMutex);
-            recoverySuppressedKeys.insert(physicalKeyIdentity);
+            recoverySuppressedKeys.set(physicalKeyIdentity);
             UpdateTrackedPressStateLocked();
         }
         QueueBackendWork(0);
@@ -311,7 +301,8 @@ TextExpansionController::EventDisposition TextExpansionController::BeginKeyboard
     // Expansion activation after a settings or modifier-state change.
     {
         std::scoped_lock lock(pressStateMutex);
-        actionKeyPresses.emplace(physicalKeyIdentity, ActionKeyPressDisposition::Passthrough);
+        actionKeyPresses.set(physicalKeyIdentity);
+        suppressedActionKeyPresses.reset(physicalKeyIdentity);
         UpdateTrackedPressStateLocked();
     }
     return EventDisposition::FreshActionKeyDown;
@@ -331,7 +322,11 @@ void TextExpansionController::NotifyHigherPriorityEventHandled(LowlevelKeyboardE
     if (Helpers::IsModifierKey(Helpers::ClearKeyNumpadOrigin(physicalKey)))
     {
         std::scoped_lock lock(pressStateMutex);
-        higherPriorityModifierKeys.insert(physicalKey);
+        const DWORD normalizedKey = Helpers::ClearKeyNumpadOrigin(physicalKey);
+        if (normalizedKey <= 0xFF)
+        {
+            higherPriorityModifierKeys.set(normalizedKey);
+        }
         UpdateTrackedPressStateLocked();
     }
 }
@@ -425,8 +420,7 @@ intptr_t TextExpansionController::TryActivate(
     }
 
     const DWORD physicalKey = data->lParam->vkCode;
-    const size_t physicalKeyIdentity =
-        Helpers::GetPhysicalKeyEventIndex(data).value_or(static_cast<size_t>(physicalKey));
+    const size_t physicalKeyIdentity = GetPhysicalKeyIdentity(data, physicalKey);
     const DWORD actionKey = Helpers::ClearKeyNumpadOrigin(physicalKey);
     const auto index = textExpansionIndex.load(std::memory_order_acquire);
     const uint8_t modifierMask = GetPressedModifierMask(input);
@@ -437,7 +431,7 @@ intptr_t TextExpansionController::TryActivate(
 
     {
         std::scoped_lock lock(pressStateMutex);
-        if (!higherPriorityModifierKeys.empty() || arming.load(std::memory_order_acquire))
+        if (higherPriorityModifierKeys.any() || arming.load(std::memory_order_acquire))
         {
             return 0;
         }
@@ -452,14 +446,12 @@ intptr_t TextExpansionController::TryActivate(
     }
 
     TextExpansionResult result = TextExpansionResult::FailedUnchanged;
-    const auto pressedActivationModifiers = GetPressedActivationModifiers(modifierMask);
     try
     {
         TextExpansionRequest request{
             .index = index,
             .actionKey = actionKey,
             .modifierMask = modifierMask,
-            .activationModifierKeys = pressedActivationModifiers,
         };
         result = backend->PrepareActivation(request);
     }
@@ -479,9 +471,6 @@ intptr_t TextExpansionController::TryActivate(
         }
         pendingActivationGeneration.store(generation, std::memory_order_release);
         {
-            const std::unordered_set<DWORD> modifierKeys(
-                pressedActivationModifiers.begin(),
-                pressedActivationModifiers.end());
             std::scoped_lock lock(pressStateMutex);
             pendingActivationRelease = PendingActivationRelease{
                 .generation = generation,
@@ -490,8 +479,8 @@ intptr_t TextExpansionController::TryActivate(
                 .physicalActionExtended = (data->lParam->flags & LLKHF_EXTENDED) != 0,
                 .physicalActionKeyIdentity = physicalKeyIdentity,
                 .actionReleased = false,
-                .activationModifierKeys = modifierKeys,
-                .pressedActivationModifierKeys = modifierKeys,
+                .activationModifierMask = modifierMask,
+                .pressedActivationModifierMask = modifierMask,
             };
             UpdateTrackedPressStateLocked();
         }
@@ -501,9 +490,9 @@ intptr_t TextExpansionController::TryActivate(
     if (suppress)
     {
         std::scoped_lock lock(pressStateMutex);
-        if (const auto activePress = actionKeyPresses.find(physicalKeyIdentity); activePress != actionKeyPresses.end())
+        if (actionKeyPresses.test(physicalKeyIdentity))
         {
-            activePress->second = ActionKeyPressDisposition::Suppressed;
+            suppressedActionKeyPresses.set(physicalKeyIdentity);
         }
     }
 
@@ -538,8 +527,8 @@ TextExpansionResult TextExpansionController::CompletePendingActivation(const uin
             {
                 const bool callbackOwnsReadyCommit = pendingActivationRelease->commitQueued &&
                                                      pendingActivationRelease->actionReleased &&
-                                                     pendingActivationRelease->pressedActivationModifierKeys.empty() &&
-                                                     pendingActivationRelease->suppressedNewModifierKeys.empty();
+                                                     pendingActivationRelease->pressedActivationModifierMask == 0 &&
+                                                     pendingActivationRelease->suppressedNewModifierMask == 0;
                 if (!callbackOwnsReadyCommit)
                 {
                     // This queued callback raced with a new physical press. Let that
@@ -627,8 +616,10 @@ TextExpansionController::PendingActivationInterruption TextExpansionController::
             // must interrupt/replay like any other newer input.
             return PendingActivationInterruption::None;
         }
-        if (Helpers::IsModifierKey(Helpers::ClearKeyNumpadOrigin(physicalKey)) &&
-            pending.pressedActivationModifierKeys.contains(physicalKey))
+        const uint8_t physicalModifierBit =
+            TextExpansionModifiers::BitForKey(Helpers::ClearKeyNumpadOrigin(physicalKey));
+        if (physicalModifierBit != 0 &&
+            (pending.pressedActivationModifierMask & physicalModifierBit) != 0)
         {
             // Repeats of an original activation modifier remain owned by the pending
             // press. A genuinely new or re-pressed modifier cancels first, then its
@@ -642,22 +633,16 @@ TextExpansionController::PendingActivationInterruption TextExpansionController::
         recovery.replayKey = Helpers::ClearKeyNumpadOrigin(physicalKey);
         recovery.replayScanCode = scanCode;
         recovery.replayExtended = extended;
-        recovery.releasedActivationModifierKeys.reserve(pending.activationModifierKeys.size());
-        for (const DWORD key : pending.activationModifierKeys)
-        {
-            if (!pending.pressedActivationModifierKeys.contains(key))
-            {
-                recovery.releasedActivationModifierKeys.push_back(key);
-            }
-        }
+        recovery.releasedActivationModifierMask = static_cast<uint8_t>(
+            pending.activationModifierMask & ~pending.pressedActivationModifierMask);
 
-        if (!pending.suppressedNewModifierKeys.empty())
+        if (pending.suppressedNewModifierMask != 0)
         {
             // This state can remain only after an earlier failed interruption. Raw
             // replay would bypass the modifier's normal remap and can leave it stuck.
             return PendingActivationInterruption::None;
         }
-        currentPressWasAlreadyTracked = actionKeyPresses.contains(physicalKeyIdentity);
+        currentPressWasAlreadyTracked = actionKeyPresses.test(physicalKeyIdentity);
 
         uint64_t expectedGeneration = pendingActivationRelease->generation;
         if (!pendingActivationGeneration.compare_exchange_strong(
@@ -672,7 +657,7 @@ TextExpansionController::PendingActivationInterruption TextExpansionController::
         }
 
         pendingActivationRelease.reset();
-        pendingReplayKeys.insert(physicalKeyIdentity);
+        pendingReplayKeys.set(physicalKeyIdentity);
         UpdateTrackedPressStateLocked();
     }
     catch (...)
@@ -688,10 +673,10 @@ TextExpansionController::PendingActivationInterruption TextExpansionController::
 
     {
         std::scoped_lock lock(pressStateMutex);
-        pendingReplayKeys.erase(physicalKeyIdentity);
+        pendingReplayKeys.reset(physicalKeyIdentity);
         if (!currentPressWasAlreadyTracked)
         {
-            recoverySuppressedKeys.insert(physicalKeyIdentity);
+            recoverySuppressedKeys.set(physicalKeyIdentity);
         }
         UpdateTrackedPressStateLocked();
     }
@@ -724,49 +709,56 @@ bool TextExpansionController::HandlePendingActivationReleaseEvent(
             if (keyDown)
             {
                 pending.actionReleased = false;
-                actionKeyPresses[physicalKeyIdentity] = ActionKeyPressDisposition::Suppressed;
+                actionKeyPresses.set(physicalKeyIdentity);
+                suppressedActionKeyPresses.set(physicalKeyIdentity);
             }
             else if (keyUp)
             {
                 pending.actionReleased = true;
-                actionKeyPresses.erase(physicalKeyIdentity);
+                actionKeyPresses.reset(physicalKeyIdentity);
+                suppressedActionKeyPresses.reset(physicalKeyIdentity);
             }
         }
 
         const bool isModifier = Helpers::IsModifierKey(Helpers::ClearKeyNumpadOrigin(physicalKey));
-        if (pending.pressedActivationModifierKeys.contains(physicalKey))
+        const uint8_t physicalModifierBit =
+            TextExpansionModifiers::BitForKey(Helpers::ClearKeyNumpadOrigin(physicalKey));
+        if (physicalModifierBit != 0 &&
+            (pending.pressedActivationModifierMask & physicalModifierBit) != 0)
         {
             // The original modifier down was already delivered before Prepare. Swallow
             // its repeats and physical up; Complete will inject a dummy plus its key-up.
             suppress = true;
             if (keyUp)
             {
-                pending.pressedActivationModifierKeys.erase(physicalKey);
+                pending.pressedActivationModifierMask &= static_cast<uint8_t>(~physicalModifierBit);
             }
         }
         else if (isModifier && keyDown)
         {
             // Any modifier pressed after Prepare (including the opposite side or a
             // repress of an original side) is recovery input, not part of activation.
-            pending.suppressedNewModifierKeys.insert(physicalKey);
-            recoverySuppressedKeys.insert(physicalKeyIdentity);
+            pending.suppressedNewModifierMask |= physicalModifierBit;
+            recoverySuppressedKeys.set(physicalKeyIdentity);
             suppress = true;
         }
-        else if (isModifier && keyUp && pending.suppressedNewModifierKeys.contains(physicalKey))
+        else if (isModifier && keyUp && physicalModifierBit != 0 &&
+                 (pending.suppressedNewModifierMask & physicalModifierBit) != 0)
         {
-            pending.suppressedNewModifierKeys.erase(physicalKey);
-            recoverySuppressedKeys.erase(physicalKeyIdentity);
+            pending.suppressedNewModifierMask &= static_cast<uint8_t>(~physicalModifierBit);
+            recoverySuppressedKeys.reset(physicalKeyIdentity);
             suppress = true;
         }
-        else if (keyUp && pending.activationModifierKeys.contains(physicalKey))
+        else if (keyUp && physicalModifierBit != 0 &&
+                 (pending.activationModifierMask & physicalModifierBit) != 0)
         {
             // Do not leak duplicate original-side key-up events before the committed
             // synthetic release.
             suppress = true;
         }
 
-        if (pending.actionReleased && pending.pressedActivationModifierKeys.empty() &&
-            pending.suppressedNewModifierKeys.empty() && !pending.commitQueued)
+        if (pending.actionReleased && pending.pressedActivationModifierMask == 0 &&
+            pending.suppressedNewModifierMask == 0 && !pending.commitQueued)
         {
             generationToQueue = pending.generation;
             pending.commitQueued = true;
@@ -822,8 +814,8 @@ bool TextExpansionController::HasPendingWork() const noexcept
 
     {
         std::scoped_lock lock(pressStateMutex);
-        if (!actionKeyPresses.empty() || !recoverySuppressedKeys.empty() || !pendingReplayKeys.empty() ||
-            !higherPriorityModifierKeys.empty() || arming.load(std::memory_order_acquire) ||
+        if (actionKeyPresses.any() || recoverySuppressedKeys.any() || pendingReplayKeys.any() ||
+            higherPriorityModifierKeys.any() || arming.load(std::memory_order_acquire) ||
             pendingActivationRelease.has_value())
         {
             return true;
@@ -938,8 +930,8 @@ bool TextExpansionController::ShouldForceArmingEvent(
 void TextExpansionController::UpdateTrackedPressStateLocked() noexcept
 {
     hasTrackedPressState.store(
-        !actionKeyPresses.empty() || !recoverySuppressedKeys.empty() || !pendingReplayKeys.empty() ||
-            !higherPriorityModifierKeys.empty() || arming.load(std::memory_order_acquire) ||
+        actionKeyPresses.any() || recoverySuppressedKeys.any() || pendingReplayKeys.any() ||
+            higherPriorityModifierKeys.any() || arming.load(std::memory_order_acquire) ||
             pendingActivationRelease.has_value(),
         std::memory_order_release);
 }
