@@ -51,7 +51,6 @@ public sealed partial class ContextMenu : UserControl
 
         ViewModel = new ContextMenuViewModel(App.Current.Services.GetRequiredService<IFuzzyMatcherProvider>());
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-
     }
 
     public void SetCommandContext(ICommandBarContext? context)

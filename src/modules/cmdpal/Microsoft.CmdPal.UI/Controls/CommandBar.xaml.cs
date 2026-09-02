@@ -15,9 +15,7 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
-public sealed partial class CommandBar : UserControl,
-    ICurrentPageAware,
-    ICommandBarInteractionTarget
+public sealed partial class CommandBar : UserControl, ICurrentPageAware, ICommandBarInteractionTarget
 {
     private long _commandContextVersion;
 
@@ -40,7 +38,6 @@ public sealed partial class CommandBar : UserControl,
         this.InitializeComponent();
         ContextControl.CloseRequested += (_, _) => CloseContextMenu();
         ContextControl.FocusSearchRequested += (_, _) => FocusSearchRequested?.Invoke(this, EventArgs.Empty);
-
     }
 
     public void SetCommandContext(ICommandBarContext? context)

@@ -20,9 +20,9 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public event EventHandler<PageSearchSuggestionChangedEventArgs>? SearchSuggestionChanged;
 
-    public event EventHandler<ParameterFocusRequestedEventArgs>? ParameterFocusRequested;
-
     public event EventHandler? FocusSearchRequested;
+
+    public event EventHandler<ParameterFocusRequestedEventArgs>? ParameterFocusRequested;
 
     public TaskScheduler Scheduler { get; private set; }
 
@@ -241,11 +241,11 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     protected internal void SetSearchSuggestion(string suggestion) =>
         SearchSuggestionChanged?.Invoke(this, new(suggestion));
 
-    protected internal void RequestParameterFocus(ParameterValueRunViewModel parameter) =>
-        ParameterFocusRequested?.Invoke(this, new(parameter));
-
     protected internal void RequestSearchFocus() =>
         FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+
+    protected internal void RequestParameterFocus(ParameterValueRunViewModel parameter) =>
+        ParameterFocusRequested?.Invoke(this, new(parameter));
 
     internal virtual bool OwnsCommandSource(PageViewModel source) => ReferenceEquals(this, source);
 

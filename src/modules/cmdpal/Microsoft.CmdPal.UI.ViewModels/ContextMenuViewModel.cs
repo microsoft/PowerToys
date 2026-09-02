@@ -5,6 +5,7 @@
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;

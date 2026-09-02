@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -21,9 +22,9 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
 
     public event EventHandler<PageSearchSuggestionChangedEventArgs>? SearchSuggestionChanged;
 
-    public event EventHandler<ParameterFocusRequestedEventArgs>? ParameterFocusRequested;
-
     public event EventHandler? FocusSearchRequested;
+
+    public event EventHandler<ParameterFocusRequestedEventArgs>? ParameterFocusRequested;
 
     public event EventHandler<PageDragStateChangedEventArgs>? DragStateChanged;
 
@@ -46,8 +47,9 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         _page.CommandBarContextChanged += Page_CommandBarContextChanged;
         _page.DetailsChanged += Page_DetailsChanged;
         _page.SearchSuggestionChanged += Page_SearchSuggestionChanged;
-        _page.ParameterFocusRequested += Page_ParameterFocusRequested;
         _page.FocusSearchRequested += Page_FocusSearchRequested;
+        _page.ParameterFocusRequested += Page_ParameterFocusRequested;
+
         commandBar.SetCommandContext(GetInitialCommandContext(_page));
         DetailsChanged?.Invoke(this, new(GetInitialDetails(_page)));
         SearchSuggestionChanged?.Invoke(this, new(_page.TextToSuggest));
@@ -64,12 +66,14 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         DetachTarget();
         _target = target;
         _eventSource = target as IPageInteractionEventSource;
-        if (_eventSource is not null)
+        if (_eventSource is null)
         {
-            _eventSource.ContextMenuCloseRequested += Target_ContextMenuCloseRequested;
-            _eventSource.FocusSearchRequested += Target_FocusSearchRequested;
-            _eventSource.DragStateChanged += Target_DragStateChanged;
+            return;
         }
+
+        _eventSource.ContextMenuCloseRequested += Target_ContextMenuCloseRequested;
+        _eventSource.FocusSearchRequested += Target_FocusSearchRequested;
+        _eventSource.DragStateChanged += Target_DragStateChanged;
     }
 
     public void NavigatePrevious() => _target?.NavigatePrevious();
@@ -119,14 +123,6 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         }
     }
 
-    private void Page_ParameterFocusRequested(object? sender, ParameterFocusRequestedEventArgs e)
-    {
-        if (ReferenceEquals(sender, _page))
-        {
-            ParameterFocusRequested?.Invoke(this, e);
-        }
-    }
-
     private void Page_FocusSearchRequested(object? sender, EventArgs e)
     {
         if (ReferenceEquals(sender, _page))
@@ -135,11 +131,11 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         }
     }
 
-    private void Target_FocusSearchRequested(object? sender, EventArgs e)
+    private void Page_ParameterFocusRequested(object? sender, ParameterFocusRequestedEventArgs e)
     {
-        if (ReferenceEquals(sender, _eventSource))
+        if (ReferenceEquals(sender, _page))
         {
-            FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+            ParameterFocusRequested?.Invoke(this, e);
         }
     }
 
@@ -148,6 +144,14 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         if (ReferenceEquals(sender, _eventSource))
         {
             commandBar.CloseContextMenu();
+        }
+    }
+
+    private void Target_FocusSearchRequested(object? sender, EventArgs e)
+    {
+        if (ReferenceEquals(sender, _eventSource))
+        {
+            FocusSearchRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 
@@ -180,8 +184,8 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         _page.CommandBarContextChanged -= Page_CommandBarContextChanged;
         _page.DetailsChanged -= Page_DetailsChanged;
         _page.SearchSuggestionChanged -= Page_SearchSuggestionChanged;
-        _page.ParameterFocusRequested -= Page_ParameterFocusRequested;
         _page.FocusSearchRequested -= Page_FocusSearchRequested;
+        _page.ParameterFocusRequested -= Page_ParameterFocusRequested;
         _page = null;
     }
 
