@@ -214,7 +214,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         DoOnUiThread(
             () =>
             {
-                SetDetails(HasDetails ? Details : null);
+                SetDetails(Details);
             });
     }
 
