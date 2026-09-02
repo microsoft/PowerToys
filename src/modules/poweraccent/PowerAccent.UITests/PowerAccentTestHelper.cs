@@ -22,18 +22,10 @@ internal static class PowerAccentTestHelper
     internal static readonly string[] CurrencySCharacters = ["$", "₪"];
     internal static readonly string[] FrenchACharacters = ["à", "â", "á", "ä", "ã", "æ"];
 
-    private const int DwmCloakedAttribute = 14;
-    private const int DwmExtendedFrameBoundsAttribute = 9;
     private const int EnglishUnitedStatesLanguageId = 0x0409;
     private const int OverlayStartupTimeoutMs = 30_000;
     private const int SettingsReloadTimeoutMs = 30_000;
     private const int VkCapital = 0x14;
-
-    [DllImport("dwmapi.dll")]
-    private static extern int DwmGetWindowAttribute(IntPtr hwnd, int attribute, out int value, int valueSize);
-
-    [DllImport("dwmapi.dll", EntryPoint = "DwmGetWindowAttribute")]
-    private static extern int DwmGetWindowRectAttribute(IntPtr hwnd, int attribute, out NativeRect value, int valueSize);
 
     [DllImport("user32.dll")]
     private static extern uint GetDpiForWindow(IntPtr hwnd);
@@ -43,15 +35,6 @@ internal static class PowerAccentTestHelper
 
     [DllImport("user32.dll")]
     private static extern short GetKeyState(int virtualKey);
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct NativeRect
-    {
-        public int Left;
-        public int Top;
-        public int Right;
-        public int Bottom;
-    }
 
     internal enum ActivationKey
     {
@@ -584,7 +567,7 @@ internal static class PowerAccentTestHelper
     {
         var bounds = GetStableVisibleBounds(toolbar);
         var handle = new IntPtr(toolbar.WindowHandle);
-        var workArea = System.Windows.Forms.Screen.FromHandle(handle).WorkingArea;
+        var monitor = MonitorInfo.GetFromWindow(handle);
         var centerY = bounds.Top + ((bounds.Bottom - bounds.Top) / 2);
         var characterList = toolbar.Find<Element>(By.AccessibilityId("QuickAccentCharacterList"), 5_000);
         var dpiScale = Math.Max(1d, GetDpiForWindow(handle) / 96d);
@@ -598,9 +581,9 @@ internal static class PowerAccentTestHelper
         var positioningWidth = characterList.Width + (int)Math.Ceiling(horizontalChromeDip * dpiScale);
         var horizontalExpected = horizontalAnchor switch
         {
-            "Left" => workArea.Left + edgeOffset,
-            "Center" => workArea.Left + (int)Math.Round((workArea.Width - positioningWidth) / 2d),
-            "Right" => workArea.Right - positioningWidth - edgeOffset,
+            "Left" => monitor.WorkLeft + edgeOffset,
+            "Center" => monitor.WorkLeft + (int)Math.Round((monitor.WorkWidth - positioningWidth) / 2d),
+            "Right" => monitor.WorkRight - positioningWidth - edgeOffset,
             _ => throw new ArgumentOutOfRangeException(nameof(horizontalAnchor), horizontalAnchor, "Unknown horizontal anchor."),
         };
 
@@ -613,12 +596,15 @@ internal static class PowerAccentTestHelper
         };
         var verticalExpected = verticalAnchor switch
         {
-            "Top" => workArea.Top + edgeOffset,
-            "Center" => workArea.Top + (workArea.Height / 2),
-            "Bottom" => workArea.Bottom - edgeOffset,
+            "Top" => monitor.WorkTop + edgeOffset,
+            "Center" => monitor.WorkTop + (monitor.WorkHeight / 2),
+            "Bottom" => monitor.WorkBottom - edgeOffset,
             _ => throw new ArgumentOutOfRangeException(nameof(verticalAnchor), verticalAnchor, "Unknown vertical anchor."),
         };
 
+        var workArea = $"{monitor.DeviceName} " +
+                       $"({monitor.WorkLeft},{monitor.WorkTop})-({monitor.WorkRight},{monitor.WorkBottom}) " +
+                       $"{monitor.WorkWidth}x{monitor.WorkHeight}";
         var placementDetails = $"Toolbar visible bounds are ({bounds.Left},{bounds.Top})-({bounds.Right},{bounds.Bottom}); " +
                                $"character list=({characterList.X},{characterList.Y}) {characterList.Width}x{characterList.Height}; " +
                                $"positioning width={positioningWidth}; work area={workArea}";
@@ -724,7 +710,7 @@ internal static class PowerAccentTestHelper
         var hasPrevious = false;
         var previous = default((int Left, int Top, int Right, int Bottom));
         var result = WaitHelper.WaitForStable(
-            () => GetVisibleBounds(handle),
+            () => WindowHelper.GetVisibleBounds(handle),
             bounds =>
             {
                 var valid = bounds.Right > bounds.Left && bounds.Bottom > bounds.Top;
@@ -743,22 +729,6 @@ internal static class PowerAccentTestHelper
             result.Succeeded,
             failure);
         return result.LastObservation;
-    }
-
-    private static (int Left, int Top, int Right, int Bottom) GetVisibleBounds(IntPtr hwnd)
-    {
-        var result = DwmGetWindowRectAttribute(
-            hwnd,
-            DwmExtendedFrameBoundsAttribute,
-            out var bounds,
-            Marshal.SizeOf<NativeRect>());
-        if (result != 0)
-        {
-            throw new InvalidOperationException(
-                $"DwmGetWindowAttribute(DWMWA_EXTENDED_FRAME_BOUNDS) failed for HWND {hwnd} with HRESULT 0x{result:X8}.");
-        }
-
-        return (bounds.Left, bounds.Top, bounds.Right, bounds.Bottom);
     }
 
     private static OverlayObservation? ObserveOverlay()
@@ -782,20 +752,9 @@ internal static class PowerAccentTestHelper
                 return null;
             }
 
-            var result = DwmGetWindowAttribute(
-                window.Hwnd,
-                DwmCloakedAttribute,
-                out var cloaked,
-                sizeof(int));
-            if (result != 0)
-            {
-                throw new InvalidOperationException(
-                    $"DwmGetWindowAttribute(DWMWA_CLOAKED) failed for HWND {window.Hwnd} with HRESULT 0x{result:X8}.");
-            }
-
             return new OverlayObservation(
                 window,
-                IsCloaked: cloaked != 0,
+                IsCloaked: WindowHelper.IsWindowCloaked(window.Hwnd),
                 WindowHelper.GetWindowBounds(window.Hwnd));
         }
         finally
