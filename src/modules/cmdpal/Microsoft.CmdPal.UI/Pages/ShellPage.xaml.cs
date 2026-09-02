@@ -35,7 +35,6 @@ namespace Microsoft.CmdPal.UI.Pages;
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
 public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
-    IRecipient<NavigateBackMessage>,
     IRecipient<OpenSettingsMessage>,
     IRecipient<HotkeySummonMessage>,
     IRecipient<ClearSearchMessage>,
@@ -134,6 +133,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _pageInteractions.DetailsChanged += PageInteractions_DetailsChanged;
         _pageInteractions.FocusSearchRequested += PageInteractions_FocusSearchRequested;
         _pageInteractions.DragStateChanged += PageInteractions_DragStateChanged;
+        SearchBox.BackRequested += SearchBox_BackRequested;
         SearchBox.NavigationRequested += SearchBox_NavigationRequested;
         MainCommandBar.FocusSearchRequested += MainCommandBar_FocusSearchRequested;
         FiltersDropDown.FocusSearchRequested += FiltersDropDown_FocusSearchRequested;
@@ -142,7 +142,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         ViewModel.GoBackRequested += ViewModel_GoBackRequested;
 
         // how we are doing navigation around
-        WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
         WeakReferenceMessenger.Default.Register<OpenSettingsMessage>(this);
         WeakReferenceMessenger.Default.Register<HotkeySummonMessage>(this);
         WeakReferenceMessenger.Default.Register<SettingsWindowClosedMessage>(this);
@@ -190,13 +189,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    public void Receive(NavigateBackMessage message)
+    private void HandleNavigateBack(bool fromBackspace = false)
     {
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
         if (RootFrame.CanGoBack)
         {
-            if (!message.FromBackspace ||
+            if (!fromBackspace ||
                 settings.BackspaceGoesBack)
             {
                 GoBack();
@@ -204,7 +203,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
         else
         {
-            if (!message.FromBackspace)
+            if (!fromBackspace)
             {
                 // If we can't go back then we must be at the top and thus escape again should quit.
                 WeakReferenceMessenger.Default.Send(new DismissMessage());
@@ -754,6 +753,22 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
+    private void SearchBox_BackRequested(object? sender, SearchBarBackRequestedEventArgs e)
+    {
+        switch (e.Kind)
+        {
+            case SearchBarBackRequestKind.GoBack:
+                HandleNavigateBack(e.FromBackspace);
+                break;
+            case SearchBarBackRequestKind.Dismiss:
+                WeakReferenceMessenger.Default.Send(new DismissMessage(ForceGoHome: true));
+                break;
+            case SearchBarBackRequestKind.Hide:
+                WeakReferenceMessenger.Default.Send(new HideWindowMessage());
+                break;
+        }
+    }
+
     private void PageInteractions_FocusSearchRequested(object? sender, EventArgs e) => RequestTopBarFocusRestore();
 
     private void MainCommandBar_FocusSearchRequested(object? sender, EventArgs e) => RequestTopBarFocusRestore();
@@ -763,7 +778,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private void PageInteractions_DragStateChanged(object? sender, PageDragStateChangedEventArgs e) =>
         DragStateChanged?.Invoke(this, e);
 
-    private void BackButton_Clicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+    private void BackButton_Clicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => HandleNavigateBack();
 
     private void RootFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
     {
@@ -1012,7 +1027,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         switch (e.Key)
         {
             case VirtualKey.Left when modifiers.OnlyAlt: // Alt+Left arrow
-                WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+                ((ShellPage)sender).HandleNavigateBack();
                 e.Handled = true;
                 break;
             case VirtualKey.Home when modifiers.OnlyAlt: // Alt+Home
@@ -1062,7 +1077,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         if (e.Key == VirtualKey.Escape)
         {
-            WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+            HandleNavigateBack();
             e.Handled = true;
         }
     }
@@ -1104,7 +1119,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 var ptrPt = e.GetCurrentPoint(this);
                 if (ptrPt.Properties.IsXButton1Pressed)
                 {
-                    WeakReferenceMessenger.Default.Send(new NavigateBackMessage());
+                    HandleNavigateBack();
                 }
             }
         }
@@ -1218,6 +1233,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         ViewModel.PageNavigationRequested -= ViewModel_PageNavigationRequested;
         ViewModel.GoHomeRequested -= ViewModel_GoHomeRequested;
         ViewModel.GoBackRequested -= ViewModel_GoBackRequested;
+        SearchBox.BackRequested -= SearchBox_BackRequested;
         _pageInteractions.DetailsChanged -= PageInteractions_DetailsChanged;
         _pageInteractions.FocusSearchRequested -= PageInteractions_FocusSearchRequested;
         _pageInteractions.DragStateChanged -= PageInteractions_DragStateChanged;

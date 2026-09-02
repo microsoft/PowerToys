@@ -75,6 +75,8 @@ public sealed partial class SearchBar : UserControl, INotifyPropertyChanged, ICu
 
     public event EventHandler? ActiveFocusTargetChanged;
 
+    public event EventHandler<SearchBarBackRequestedEventArgs>? BackRequested;
+
     public event EventHandler<SearchBarNavigationRequestedEventArgs>? NavigationRequested;
 
     private static void OnCurrentPageViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -182,22 +184,22 @@ public sealed partial class SearchBar : UserControl, INotifyPropertyChanged, ICu
             switch (Settings.EscapeKeyBehaviorSetting)
             {
                 case EscapeKeyBehavior.AlwaysGoBack:
-                    WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+                    RequestBack();
                     break;
 
                 case EscapeKeyBehavior.AlwaysDismiss:
-                    WeakReferenceMessenger.Default.Send<DismissMessage>(new(ForceGoHome: true));
+                    BackRequested?.Invoke(this, new(SearchBarBackRequestKind.Dismiss));
                     break;
 
                 case EscapeKeyBehavior.AlwaysHide:
-                    WeakReferenceMessenger.Default.Send<HideWindowMessage>(new());
+                    BackRequested?.Invoke(this, new(SearchBarBackRequestKind.Hide));
                     break;
 
                 case EscapeKeyBehavior.ClearSearchFirstThenGoBack:
                 default:
                     if (string.IsNullOrEmpty(FilterBox.Text))
                     {
-                        WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+                        RequestBack();
                     }
                     else
                     {
@@ -221,7 +223,7 @@ public sealed partial class SearchBar : UserControl, INotifyPropertyChanged, ICu
                 if (!_isBackspaceHeld)
                 {
                     // Navigate back on single backspace when empty
-                    WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new(true));
+                    RequestBack(fromBackspace: true);
                 }
 
                 e.Handled = true;
@@ -874,6 +876,11 @@ public sealed partial class SearchBar : UserControl, INotifyPropertyChanged, ICu
         {
             FocusActiveControl();
         }
+    }
+
+    private void RequestBack(bool fromBackspace = false)
+    {
+        BackRequested?.Invoke(this, new(SearchBarBackRequestKind.GoBack, fromBackspace));
     }
 
     private void RequestNavigation(SearchBarNavigationDirection direction)
