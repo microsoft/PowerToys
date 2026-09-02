@@ -16,7 +16,7 @@ namespace Microsoft.CmdPal.UI;
 /// a list parameter is active. List rendering, selection, and keyboard navigation
 /// are handled by the embedded <see cref="ListItemsView"/>.
 /// </summary>
-public sealed partial class ParametersPage : Page
+public sealed partial class ParametersPage : Page, IPageInteractionTarget
 {
     public ParametersPageViewModel? ViewModel
     {
@@ -32,6 +32,18 @@ public sealed partial class ParametersPage : Page
     {
         this.InitializeComponent();
     }
+
+    public void NavigatePrevious() => ActiveList.NavigatePrevious();
+
+    public void NavigateNext() => ActiveList.NavigateNext();
+
+    public void NavigateLeft() => ActiveList.NavigateLeft();
+
+    public void NavigateRight() => ActiveList.NavigateRight();
+
+    public void NavigatePageUp() => ActiveList.NavigatePageUp();
+
+    public void NavigatePageDown() => ActiveList.NavigatePageDown();
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {

@@ -135,6 +135,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         this.InitializeComponent();
 
         _pageInteractions = new(MainCommandBar);
+        SearchBox.NavigationRequested += SearchBox_NavigationRequested;
 
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
@@ -715,6 +716,31 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _pendingTopBarFocusRestore = true;
     }
 
+    private void SearchBox_NavigationRequested(object? sender, SearchBarNavigationRequestedEventArgs e)
+    {
+        switch (e.Direction)
+        {
+            case SearchBarNavigationDirection.Previous:
+                _pageInteractions.NavigatePrevious();
+                break;
+            case SearchBarNavigationDirection.Next:
+                _pageInteractions.NavigateNext();
+                break;
+            case SearchBarNavigationDirection.Left:
+                _pageInteractions.NavigateLeft();
+                break;
+            case SearchBarNavigationDirection.Right:
+                _pageInteractions.NavigateRight();
+                break;
+            case SearchBarNavigationDirection.PageUp:
+                _pageInteractions.NavigatePageUp();
+                break;
+            case SearchBarNavigationDirection.PageDown:
+                _pageInteractions.NavigatePageDown();
+                break;
+        }
+    }
+
     private void BackButton_Clicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
 
     private void RootFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
@@ -757,6 +783,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
 
         _pageInteractions.AttachPage(ViewModel.CurrentPage);
+        _pageInteractions.AttachTarget(e.Content as IPageInteractionTarget);
 
         if (e.Content is Page element)
         {
@@ -1163,6 +1190,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _isDisposed = true;
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _settingsService.SettingsChanged -= OnSettingsChanged;
+        SearchBox.NavigationRequested -= SearchBox_NavigationRequested;
         _pageInteractions.Dispose();
 
         if (_hostWindow is not null)

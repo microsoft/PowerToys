@@ -18,7 +18,7 @@ namespace Microsoft.CmdPal.UI;
 /// <see cref="ListItemsView"/> so it can be reused (for example, by
 /// <see cref="ParametersPage"/>).
 /// </summary>
-public sealed partial class ListPage : Page
+public sealed partial class ListPage : Page, IPageInteractionTarget
 {
     internal ListViewModel? ViewModel
     {
@@ -35,6 +35,18 @@ public sealed partial class ListPage : Page
         this.InitializeComponent();
         this.NavigationCacheMode = NavigationCacheMode.Disabled;
     }
+
+    public void NavigatePrevious() => ListView.NavigatePrevious();
+
+    public void NavigateNext() => ListView.NavigateNext();
+
+    public void NavigateLeft() => ListView.NavigateLeft();
+
+    public void NavigateRight() => ListView.NavigateRight();
+
+    public void NavigatePageUp() => ListView.NavigatePageUp();
+
+    public void NavigatePageDown() => ListView.NavigatePageDown();
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {

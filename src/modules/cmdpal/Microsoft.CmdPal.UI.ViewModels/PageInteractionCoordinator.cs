@@ -9,9 +9,12 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget commandBar) : IDisposable
 {
     private PageViewModel? _page;
+    private IPageInteractionTarget? _target;
     private bool _isDisposed;
 
     public PageViewModel? CurrentPage => _page;
+
+    public IPageInteractionTarget? CurrentTarget => _target;
 
     public void AttachPage(PageViewModel? page)
     {
@@ -32,6 +35,24 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         _page.CommandBarContextChanged += Page_CommandBarContextChanged;
         commandBar.SetCommandContext(GetInitialCommandContext(_page));
     }
+
+    public void AttachTarget(IPageInteractionTarget? target)
+    {
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
+        _target = target;
+    }
+
+    public void NavigatePrevious() => _target?.NavigatePrevious();
+
+    public void NavigateNext() => _target?.NavigateNext();
+
+    public void NavigateLeft() => _target?.NavigateLeft();
+
+    public void NavigateRight() => _target?.NavigateRight();
+
+    public void NavigatePageUp() => _target?.NavigatePageUp();
+
+    public void NavigatePageDown() => _target?.NavigatePageDown();
 
     private void Page_CommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e)
     {
@@ -68,6 +89,7 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         }
 
         DetachPage();
+        _target = null;
         _isDisposed = true;
         GC.SuppressFinalize(this);
     }

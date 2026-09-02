@@ -30,12 +30,6 @@ namespace Microsoft.CmdPal.UI;
 /// <see cref="ParametersPage"/> so list rendering behavior stays in one place.
 /// </summary>
 public sealed partial class ListItemsView : UserControl,
-    IRecipient<NavigateNextCommand>,
-    IRecipient<NavigatePreviousCommand>,
-    IRecipient<NavigateLeftCommand>,
-    IRecipient<NavigateRightCommand>,
-    IRecipient<NavigatePageDownCommand>,
-    IRecipient<NavigatePageUpCommand>,
     IRecipient<ActivateSelectedListItemMessage>,
     IRecipient<ActivateSecondaryCommandMessage>
 {
@@ -105,12 +99,6 @@ public sealed partial class ListItemsView : UserControl,
         }
 
         // RegisterAll isn't AOT compatible
-        WeakReferenceMessenger.Default.Register<NavigateNextCommand>(this);
-        WeakReferenceMessenger.Default.Register<NavigatePreviousCommand>(this);
-        WeakReferenceMessenger.Default.Register<NavigateLeftCommand>(this);
-        WeakReferenceMessenger.Default.Register<NavigateRightCommand>(this);
-        WeakReferenceMessenger.Default.Register<NavigatePageDownCommand>(this);
-        WeakReferenceMessenger.Default.Register<NavigatePageUpCommand>(this);
         WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
         _isMessengerRegistered = true;
@@ -123,12 +111,6 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
-        WeakReferenceMessenger.Default.Unregister<NavigateNextCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<NavigatePreviousCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<NavigateLeftCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<NavigateRightCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<NavigatePageDownCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<NavigatePageUpCommand>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
         _isMessengerRegistered = false;
@@ -360,7 +342,7 @@ public sealed partial class ListItemsView : UserControl,
         ViewModel.UpdateSelectedItemCommand.Execute(li);
     }
 
-    public void Receive(NavigateNextCommand message)
+    public void NavigateNext()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
@@ -379,7 +361,7 @@ public sealed partial class ListItemsView : UserControl,
         PushSelectionToVm();
     }
 
-    public void Receive(NavigatePreviousCommand message)
+    public void NavigatePrevious()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
@@ -397,7 +379,7 @@ public sealed partial class ListItemsView : UserControl,
         PushSelectionToVm();
     }
 
-    public void Receive(NavigateLeftCommand message)
+    public void NavigateLeft()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
@@ -415,7 +397,7 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
-    public void Receive(NavigateRightCommand message)
+    public void NavigateRight()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
@@ -457,7 +439,7 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
-    public void Receive(NavigatePageDownCommand message)
+    public void NavigatePageDown()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
@@ -476,7 +458,7 @@ public sealed partial class ListItemsView : UserControl,
         PushSelectionToVm();
     }
 
-    public void Receive(NavigatePageUpCommand message)
+    public void NavigatePageUp()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;

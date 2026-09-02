@@ -79,6 +79,8 @@ public sealed partial class SearchBar : UserControl,
 
     public event EventHandler? ActiveFocusTargetChanged;
 
+    public event EventHandler<SearchBarNavigationRequestedEventArgs>? NavigationRequested;
+
     private static void OnCurrentPageViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         //// TODO: If the Debounce timer hasn't fired, we may want to store the current Filter in the OldValue/prior VM, but we don't want that to go actually do work...
@@ -264,7 +266,7 @@ public sealed partial class SearchBar : UserControl,
         }
         else if (e.Key == VirtualKey.Up)
         {
-            WeakReferenceMessenger.Default.Send<NavigatePreviousCommand>();
+            RequestNavigation(SearchBarNavigationDirection.Previous);
 
             e.Handled = true;
         }
@@ -276,7 +278,7 @@ public sealed partial class SearchBar : UserControl,
             // Special handling is required if we're in grid view.
             if (isGridView)
             {
-                WeakReferenceMessenger.Default.Send<NavigateLeftCommand>();
+                RequestNavigation(SearchBarNavigationDirection.Left);
                 e.Handled = true;
             }
         }
@@ -313,25 +315,25 @@ public sealed partial class SearchBar : UserControl,
                 // Special handling is required if we're in grid view.
                 if (isGridView)
                 {
-                    WeakReferenceMessenger.Default.Send<NavigateRightCommand>();
+                    RequestNavigation(SearchBarNavigationDirection.Right);
                     e.Handled = true;
                 }
             }
         }
         else if (e.Key == VirtualKey.Down)
         {
-            WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
+            RequestNavigation(SearchBarNavigationDirection.Next);
 
             e.Handled = true;
         }
         else if (e.Key == VirtualKey.PageDown)
         {
-            WeakReferenceMessenger.Default.Send<NavigatePageDownCommand>();
+            RequestNavigation(SearchBarNavigationDirection.PageDown);
             e.Handled = true;
         }
         else if (e.Key == VirtualKey.PageUp)
         {
-            WeakReferenceMessenger.Default.Send<NavigatePageUpCommand>();
+            RequestNavigation(SearchBarNavigationDirection.PageUp);
             e.Handled = true;
         }
 
@@ -779,22 +781,22 @@ public sealed partial class SearchBar : UserControl,
         }
         else if (e.Key == VirtualKey.Up)
         {
-            WeakReferenceMessenger.Default.Send<NavigatePreviousCommand>();
+            RequestNavigation(SearchBarNavigationDirection.Previous);
             e.Handled = true;
         }
         else if (e.Key == VirtualKey.Down)
         {
-            WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
+            RequestNavigation(SearchBarNavigationDirection.Next);
             e.Handled = true;
         }
         else if (e.Key == VirtualKey.PageDown)
         {
-            WeakReferenceMessenger.Default.Send<NavigatePageDownCommand>();
+            RequestNavigation(SearchBarNavigationDirection.PageDown);
             e.Handled = true;
         }
         else if (e.Key == VirtualKey.PageUp)
         {
-            WeakReferenceMessenger.Default.Send<NavigatePageUpCommand>();
+            RequestNavigation(SearchBarNavigationDirection.PageUp);
             e.Handled = true;
         }
     }
@@ -834,5 +836,10 @@ public sealed partial class SearchBar : UserControl,
                 element.Focus(FocusState.Keyboard);
             }
         }
+    }
+
+    private void RequestNavigation(SearchBarNavigationDirection direction)
+    {
+        NavigationRequested?.Invoke(this, new(direction));
     }
 }

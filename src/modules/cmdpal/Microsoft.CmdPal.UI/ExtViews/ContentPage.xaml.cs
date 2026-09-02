@@ -16,6 +16,7 @@ namespace Microsoft.CmdPal.UI;
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
 public sealed partial class ContentPage : Page,
+    IPageInteractionTarget,
      IRecipient<ActivateSelectedListItemMessage>,
      IRecipient<ActivateSecondaryCommandMessage>
 {
@@ -42,6 +43,30 @@ public sealed partial class ContentPage : Page,
         // Unhook from everything to ensure nothing can reach us
         // between this point and our complete and utter destruction.
         WeakReferenceMessenger.Default.UnregisterAll(this);
+    }
+
+    public void NavigatePrevious()
+    {
+    }
+
+    public void NavigateNext()
+    {
+    }
+
+    public void NavigateLeft()
+    {
+    }
+
+    public void NavigateRight()
+    {
+    }
+
+    public void NavigatePageUp()
+    {
+    }
+
+    public void NavigatePageDown()
+    {
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
