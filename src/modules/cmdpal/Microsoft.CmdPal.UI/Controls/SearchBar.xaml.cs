@@ -714,21 +714,23 @@ public sealed partial class SearchBar : UserControl,
 
     private void StringParameter_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (sender is TextBox textBox &&
-            textBox.DataContext is StringParameterRunViewModel stringParam &&
-            CurrentPageViewModel is ParametersPageViewModel parametersPage)
+        if (sender is not TextBox textBox ||
+            textBox.DataContext is not StringParameterRunViewModel stringParam ||
+            CurrentPageViewModel is not ParametersPageViewModel parametersPage)
         {
-            if (e.Key == VirtualKey.Enter)
-            {
-                if (parametersPage.ShowCommand)
-                {
-                    parametersPage.TrySubmit();
-                }
-                else
-                {
-                    parametersPage.FocusNextParameter(stringParam);
-                }
-            }
+            return;
+        }
+
+        switch (StringParameterEnterRouting.GetAction(e.Key, textBox.AcceptsReturn, parametersPage.ShowCommand))
+        {
+            case StringParameterEnterAction.Submit:
+                parametersPage.TrySubmit();
+                e.Handled = true;
+                break;
+            case StringParameterEnterAction.FocusNext:
+                parametersPage.FocusNextParameter(stringParam);
+                e.Handled = true;
+                break;
         }
     }
 
