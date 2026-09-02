@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <unordered_map>
 #include <vector>
 
@@ -69,6 +70,17 @@ namespace
 
     // How long without pen input before the stroke is considered finished.
     constexpr uint64_t PEN_IDLE_TIMEOUT_MS = 200;
+
+    // How long after the last digitizer report the pen still counts as present. Reports
+    // stop the moment it leaves range, so this only has to bridge the gap between two
+    // consecutive ones - long enough to survive a stutter, short enough that the overlay
+    // stops capturing promptly once the pen is put down.
+    constexpr uint64_t PEN_RANGE_TIMEOUT_MS = 350;
+
+    // How far from the pen's last reported position the overlay still answers a hit test.
+    // Only has to cover how far the pen can travel between two digitizer reports, which
+    // at their rate is a few pixels; the rest is margin.
+    constexpr LONG PEN_CAPTURE_RADIUS_PX = 64;
 
     // Maps a low level mouse message onto the button it belongs to. Returns false for
     // anything that is not a button transition (moves, wheel).
@@ -157,6 +169,16 @@ private:
     // it is cut down to that border, so everything else stays clickable.
     void UpdateOverlayRegion(bool trailVisible);
 
+    // True while the digitizer is actively reporting and the pen is armed.
+    bool PenPresent(uint64_t nowMs) const noexcept;
+
+    // Makes the overlay hit-testable while the pen is present, so pen input lands here
+    // instead of the window underneath.
+    void UpdatePenCapture(uint64_t nowMs);
+
+    // Whether a hit test at this screen point should be treated as the pen.
+    bool NearLastPenPoint(POINT screenPoint) const noexcept;
+
     // While only the border is showing the overlay sits directly above the mirrored
     // window rather than above everything, so other windows can cover it.
     void UpdateOverlayZOrder(bool trailVisible, uint64_t nowMs);
@@ -239,6 +261,8 @@ private:
     UINT m_lastPenMessage = 0;
     int m_penMessagesLogged = 0;
     bool m_penAwaitingFirstSample = false;
+    bool m_penCapturing = false;
+    POINT m_lastPenPoint{};
     bool m_penStrokeOpen = false;
 
     // Mirrors the window that was in front when the laser was armed, so per-window
@@ -541,6 +565,50 @@ void LaserPointerOverlay::DrawTrails(ID2D1DeviceContext* context, uint64_t nowMs
     }
 
     RenderStroke(context, m_stroke, nowMs);
+}
+
+// The pen is the only thing that can be at the pen's position, so the hit-test point is
+// what separates it from the mouse. Capturing the whole screen while the pen was in
+// range worked, but it also swallowed mouse clicks anywhere on it; confining that to a
+// small patch around the pen leaves the rest of the screen click-through as usual.
+bool LaserPointerOverlay::NearLastPenPoint(POINT screenPoint) const noexcept
+{
+    return std::abs(screenPoint.x - m_lastPenPoint.x) <= PEN_CAPTURE_RADIUS_PX &&
+           std::abs(screenPoint.y - m_lastPenPoint.y) <= PEN_CAPTURE_RADIUS_PX;
+}
+
+bool LaserPointerOverlay::PenPresent(uint64_t nowMs) const noexcept
+{
+    return m_penArmed && m_lastPenInputMs != 0 && (nowMs - m_lastPenInputMs) < PEN_RANGE_TIMEOUT_MS;
+}
+
+// Suppressing pen input through the mouse hook only works where Windows promotes it to
+// mouse messages. Over the taskbar and anything using DirectManipulation the app claims
+// the pointer stream first, so promotion is delayed or never happens and the first
+// contact scrolls the app instead of drawing - intermittently, depending on whether the
+// app decided to take the gesture.
+//
+// Standing in front of it is the reliable answer: while the pen is armed and in range,
+// the overlay stops being click-through, so contact hit-tests to this window and the app
+// below never sees it. This needed a trustworthy "is that a pen?" signal, which is what
+// failed last time - GetCurrentInputMessageSource reports IMDT_UNAVAILABLE on real
+// hardware. The raw digitizer reports supply it directly, and they arrive during hover,
+// before the first contact. Outside that window the overlay is click-through as before,
+// so the mouse is untouched, and on a machine with no digitizer this never engages.
+void LaserPointerOverlay::UpdatePenCapture(uint64_t nowMs)
+{
+    const bool capture = PenPresent(nowMs);
+    if (capture == m_penCapturing || m_hwnd == nullptr)
+    {
+        return;
+    }
+
+    m_penCapturing = capture;
+
+    // WM_NCHITTEST alone is not enough: a WS_EX_TRANSPARENT window is passed over before
+    // it is ever asked, so the style has to come off for the duration.
+    const LONG_PTR exStyle = GetWindowLongPtr(m_hwnd, GWL_EXSTYLE);
+    SetWindowLongPtr(m_hwnd, GWL_EXSTYLE, capture ? (exStyle & ~WS_EX_TRANSPARENT) : (exStyle | WS_EX_TRANSPARENT));
 }
 
 // The border belongs to the window being shared, so it should be covered when that
@@ -1030,6 +1098,7 @@ void LaserPointerOverlay::DisarmPen()
     Logger::info("Laser Pointer pen disarmed.");
     m_penArmed = false;
     m_penContact = false;
+    UpdatePenCapture(GetTickCount64());
 
     UnregisterPenRawInput();
     UpdateHook();
@@ -1072,6 +1141,7 @@ void LaserPointerOverlay::Disarm()
 {
     m_mouseArmed = false;
     m_penArmed = false;
+    UpdatePenCapture(GetTickCount64());
     m_drawing = false;
     m_activationButtonHeld = false;
     m_alwaysOnButtonHeld = false;
@@ -1481,10 +1551,26 @@ void LaserPointerOverlay::HandleRawInput(HRAWINPUT handle) noexcept
 
     const bool wantDraw = m_settings.penRenderWhenClose || tipDown;
     const bool wasDrawing = m_drawing;
+    const uint64_t nowMs = GetTickCount64();
+
+    // Measured before the timestamp is updated: a gap this long means the pen left range
+    // and came back somewhere else, and the samples either side must not be joined.
+    const bool resumedAfterGap = m_lastPenInputMs != 0 && (nowMs - m_lastPenInputMs) > PEN_RANGE_TIMEOUT_MS;
 
     m_latestPosition = screenPoint;
     m_hasLatestPosition = true;
-    m_lastPenInputMs = GetTickCount64();
+    m_lastPenPoint = screenPoint;
+    m_lastPenInputMs = nowMs;
+
+    // Hover reports come in before the pen touches, and this is what turns that into a
+    // window ready to catch the contact. Waiting for the render tick would be too late:
+    // with nothing drawn the loop is parked, so nothing would be capturing yet.
+    UpdatePenCapture(nowMs);
+    if (!m_renderLoopRunning)
+    {
+        ShowOverlay();
+        StartRenderLoop();
+    }
 
     if (wantDraw)
     {
@@ -1507,6 +1593,27 @@ void LaserPointerOverlay::HandleRawInput(HRAWINPUT handle) noexcept
         {
             EndDrawing();
         }
+    }
+
+    // The digitizer reports far faster than the 16 ms render tick, so every report is
+    // kept rather than only the one that happens to be current when a frame is drawn.
+    // Sampling once per frame is what made pen lines look angular next to the mouse's,
+    // which feeds the hook every position it sees. BeginDrawing clears the buffer, so
+    // this has to come after it.
+    if (m_drawing && wantDraw)
+    {
+        if (resumedAfterGap)
+        {
+            // Don't bridge a hover gap: the straight run of points across it is exactly
+            // the ghosting that buffering pen input caused the first time round.
+            m_pendingPoints.clear();
+        }
+
+        if (m_pendingPoints.size() >= MAX_PENDING_POINTS)
+        {
+            m_pendingPoints.erase(m_pendingPoints.begin());
+        }
+        m_pendingPoints.push_back({ screenPoint, nowMs });
     }
 }
 
@@ -1619,7 +1726,13 @@ void LaserPointerOverlay::OnRenderTick()
     // reason to keep rendering.
     const bool presenterActive = m_presenter.Active();
     const bool noticeActive = now < m_presenterNoticeUntilMs;
-    bool hasContent = m_stroke.Prune(now) || noticeActive || presenterActive;
+
+    // A pen in range keeps the overlay up even with nothing drawn: a hidden window is
+    // never hit-tested, and capturing the pen is the whole point of being up.
+    const bool penPresent = PenPresent(now);
+    UpdatePenCapture(now);
+
+    bool hasContent = m_stroke.Prune(now) || noticeActive || presenterActive || penPresent;
 
     for (auto it = m_pastStrokes.begin(); it != m_pastStrokes.end();)
     {
@@ -1649,7 +1762,9 @@ void LaserPointerOverlay::OnRenderTick()
 
     // A trail is showing whenever there is stroke content or the label is still up; the
     // border on its own does not need the full surface.
-    const bool trailVisible = !m_stroke.Empty() || !m_pastStrokes.empty() || noticeActive;
+    // Capturing the pen needs the whole surface hit-testable and in front of the app, so
+    // it rules out the border-only frame region and the drop out of the topmost band.
+    const bool trailVisible = !m_stroke.Empty() || !m_pastStrokes.empty() || noticeActive || m_penCapturing;
     UpdateOverlayRegion(trailVisible);
     UpdateOverlayZOrder(trailVisible, now);
 
@@ -1773,11 +1888,29 @@ LRESULT CALLBACK LaserPointerOverlay::WndProc(HWND hWnd, UINT message, WPARAM wP
         return DefWindowProc(hWnd, message, wParam, lParam);
 
     case WM_NCHITTEST:
-        // Always click-through. Capturing pen here needed GetCurrentInputMessageSource
-        // to identify the device, and it reports IMDT_UNAVAILABLE on real hardware, so
-        // the only thing a capturing window achieved was swallowing mouse and touchpad
-        // input. The pen is handled in the mouse hook instead, where it does arrive.
-        return HTTRANSPARENT;
+    {
+        // Click-through except for a small patch around an armed pen that is in range,
+        // which is where its next contact will land. See UpdatePenCapture.
+        if (!instance->m_penCapturing)
+        {
+            return HTTRANSPARENT;
+        }
+
+        const POINT hit{ static_cast<LONG>(static_cast<short>(LOWORD(lParam))),
+                         static_cast<LONG>(static_cast<short>(HIWORD(lParam))) };
+        return instance->NearLastPenPoint(hit) ? HTCLIENT : HTTRANSPARENT;
+    }
+
+    // Whatever the pen does while captured is swallowed here. Not calling DefWindowProc
+    // also stops these being promoted to mouse messages, so the hook does not see the
+    // same contact a second time.
+    case WM_POINTERDOWN:
+    case WM_POINTERUPDATE:
+    case WM_POINTERUP:
+    case WM_POINTERENTER:
+    case WM_POINTERLEAVE:
+    case WM_POINTERCAPTURECHANGED:
+        return 0;
 
     case WM_SWITCH_ACTIVATION_MODE:
         if (instance->m_mouseArmed)
