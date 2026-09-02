@@ -1058,9 +1058,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     // The CommandBar handles item keybindings; skip them while collapsed so a chord can't hit the hidden selection.
                     if (((ShellPage)sender).ItemActionsAllowed)
                     {
-                        TryCommandKeybindingMessage msg = new(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key);
-                        WeakReferenceMessenger.Default.Send(msg);
-                        e.Handled = msg.Handled;
+                        e.Handled = ((ShellPage)sender)._pageInteractions.TryCommandKeybinding(
+                            modifiers.Ctrl,
+                            modifiers.Alt,
+                            modifiers.Shift,
+                            modifiers.Win,
+                            e.Key);
                     }
 
                     break;

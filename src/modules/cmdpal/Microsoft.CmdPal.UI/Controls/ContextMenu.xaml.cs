@@ -4,7 +4,6 @@
 
 using System.Globalization;
 using System.Text;
-using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.Helpers;
@@ -20,14 +19,10 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
-public sealed partial class ContextMenu : UserControl,
-    IRecipient<TryCommandKeybindingMessage>
+public sealed partial class ContextMenu : UserControl
 {
     public static readonly DependencyProperty ShowFilterBoxProperty =
         DependencyProperty.Register(nameof(ShowFilterBox), typeof(bool), typeof(ContextMenu), new PropertyMetadata(true));
-
-    public static readonly DependencyProperty SubscribeToCommandBarProperty =
-        DependencyProperty.Register(nameof(SubscribeToCommandBar), typeof(bool), typeof(ContextMenu), new PropertyMetadata(true, OnSubscribeToCommandBarChanged));
 
     private static readonly CompositeFormat _contextMenuOpenedFormat =
         CompositeFormat.Parse(ResourceLoaderInstance.GetString("ScreenReader_Announcement_ContextMenuOpened"));
@@ -44,17 +39,6 @@ public sealed partial class ContextMenu : UserControl,
         set => SetValue(ShowFilterBoxProperty, value);
     }
 
-    /// <summary>
-    /// Gets or sets a value indicating whether this control listens to the command bar's
-    /// selection and keybinding messages. Set to false for standalone usage (e.g. dock)
-    /// where the caller manages selection and opening directly.
-    /// </summary>
-    public bool SubscribeToCommandBar
-    {
-        get => (bool)GetValue(SubscribeToCommandBarProperty);
-        set => SetValue(SubscribeToCommandBarProperty, value);
-    }
-
     public ContextMenuViewModel ViewModel { get; }
 
     public event EventHandler? CloseRequested;
@@ -68,43 +52,6 @@ public sealed partial class ContextMenu : UserControl,
         ViewModel = new ContextMenuViewModel(App.Current.Services.GetRequiredService<IFuzzyMatcherProvider>());
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
-        if (SubscribeToCommandBar)
-        {
-            HookCommandBar();
-        }
-    }
-
-    private static void OnSubscribeToCommandBarChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        if (d is ContextMenu control)
-        {
-            if (e.NewValue is true)
-            {
-                control.HookCommandBar();
-            }
-            else
-            {
-                control.UnhookCommandBar();
-            }
-        }
-    }
-
-    private void HookCommandBar()
-    {
-        var messenger = WeakReferenceMessenger.Default;
-
-        if (!messenger.IsRegistered<TryCommandKeybindingMessage>(this))
-        {
-            messenger.Register<TryCommandKeybindingMessage>(this);
-        }
-
-    }
-
-    private void UnhookCommandBar()
-    {
-        var messenger = WeakReferenceMessenger.Default;
-
-        messenger.Unregister<TryCommandKeybindingMessage>(this);
     }
 
     public void SetCommandContext(ICommandBarContext? context)
@@ -156,25 +103,21 @@ public sealed partial class ContextMenu : UserControl,
         });
     }
 
-    public void Receive(TryCommandKeybindingMessage msg)
+    public ContextKeybindingResult TryCommandKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
     {
-        var result = ViewModel?.CheckKeybinding(msg.Ctrl, msg.Alt, msg.Shift, msg.Win, msg.Key);
+        var result = ViewModel.CheckKeybinding(ctrl, alt, shift, win, key) ?? ContextKeybindingResult.Unhandled;
 
         if (result == ContextKeybindingResult.Hide)
         {
-            msg.Handled = true;
             RequestClose();
             UpdateUiForStackChange();
         }
         else if (result == ContextKeybindingResult.KeepOpen)
         {
             UpdateUiForStackChange();
-            msg.Handled = true;
         }
-        else if (result == ContextKeybindingResult.Unhandled)
-        {
-            msg.Handled = false;
-        }
+
+        return result;
     }
 
     private void CommandsDropdown_ItemClick(object sender, ItemClickEventArgs e)

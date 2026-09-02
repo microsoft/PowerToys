@@ -13,4 +13,6 @@ public interface ICommandBarInteractionTarget
     void OpenContextMenu();
 
     void CloseContextMenu();
+
+    bool TryCommandKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key);
 }

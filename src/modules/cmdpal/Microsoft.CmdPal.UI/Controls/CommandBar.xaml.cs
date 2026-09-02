@@ -16,7 +16,6 @@ namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class CommandBar : UserControl,
     IRecipient<OpenContextMenuMessage>,
-    IRecipient<TryCommandKeybindingMessage>,
     ICurrentPageAware,
     ICommandBarInteractionTarget
 {
@@ -44,7 +43,6 @@ public sealed partial class CommandBar : UserControl,
 
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
-        WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
     }
 
     public void SetCommandContext(ICommandBarContext? context)
@@ -137,28 +135,28 @@ public sealed partial class CommandBar : UserControl,
         }
     }
 
-    public void Receive(TryCommandKeybindingMessage msg)
+    public bool TryCommandKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
     {
-        if (!ViewModel.ShouldShowContextMenu)
+        if (!(ContextControl.ViewModel.SelectedItem?.CanOpenContextMenu ?? false))
         {
-            return;
+            return false;
         }
 
-        var result = ViewModel?.CheckKeybinding(msg.Ctrl, msg.Alt, msg.Shift, msg.Win, msg.Key);
+        var result = ViewModel.CheckKeybinding(ctrl, alt, shift, win, key);
 
         if (result == ContextKeybindingResult.Hide)
         {
-            msg.Handled = true;
+            CloseContextMenu();
+            return true;
         }
-        else if (result == ContextKeybindingResult.KeepOpen)
+
+        if (result == ContextKeybindingResult.KeepOpen)
         {
-            WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
-            msg.Handled = true;
+            OpenContextMenu();
+            return true;
         }
-        else if (result == ContextKeybindingResult.Unhandled)
-        {
-            msg.Handled = false;
-        }
+
+        return false;
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]

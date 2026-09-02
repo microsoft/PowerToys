@@ -92,6 +92,9 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
 
     public void CloseContextMenu() => commandBar.CloseContextMenu();
 
+    public bool TryCommandKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key) =>
+        commandBar.TryCommandKeybinding(ctrl, alt, shift, win, key);
+
     private void Page_CommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e)
     {
         if (ReferenceEquals(sender, _page))
