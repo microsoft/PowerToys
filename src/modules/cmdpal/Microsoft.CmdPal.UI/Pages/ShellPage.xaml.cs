@@ -39,8 +39,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<OpenSettingsMessage>,
     IRecipient<HotkeySummonMessage>,
     IRecipient<FocusSearchBoxMessage>,
-    IRecipient<ShowDetailsMessage>,
-    IRecipient<HideDetailsMessage>,
     IRecipient<ClearSearchMessage>,
     IRecipient<LaunchUriMessage>,
     IRecipient<SettingsWindowClosedMessage>,
@@ -135,6 +133,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         this.InitializeComponent();
 
         _pageInteractions = new(MainCommandBar);
+        _pageInteractions.DetailsChanged += PageInteractions_DetailsChanged;
         SearchBox.NavigationRequested += SearchBox_NavigationRequested;
 
         // how we are doing navigation around
@@ -143,9 +142,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<HotkeySummonMessage>(this);
         WeakReferenceMessenger.Default.Register<FocusSearchBoxMessage>(this);
         WeakReferenceMessenger.Default.Register<SettingsWindowClosedMessage>(this);
-
-        WeakReferenceMessenger.Default.Register<ShowDetailsMessage>(this);
-        WeakReferenceMessenger.Default.Register<HideDetailsMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<LaunchUriMessage>(this);
@@ -424,14 +420,29 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _settingsWindow.Navigate(pageTag, extensionGalleryId);
     }
 
-    public void Receive(ShowDetailsMessage message)
+    private void PageInteractions_DetailsChanged(object? sender, PageDetailsChangedEventArgs e)
     {
-        if (ViewModel is null || ViewModel.CurrentPage is null)
+        var sourcePage = _pageInteractions.CurrentPage;
+        if (e.Details is null)
         {
+            _debounceTimer.Debounce(
+                () =>
+                {
+                    if (ReferenceEquals(sourcePage, _pageInteractions.CurrentPage))
+                    {
+                        HideDetails();
+                    }
+                },
+                interval: TimeSpan.FromMilliseconds(150),
+                immediate: false);
             return;
         }
 
-        var details = message.Details;
+        ShowDetails(sourcePage, e.Details);
+    }
+
+    private void ShowDetails(PageViewModel? sourcePage, DetailsViewModel details)
+    {
         var wasVisible = ViewModel.IsDetailsVisible;
 
         // GH #322:
@@ -443,15 +454,20 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // timer so the UI settles between updates. Use immediate=true for
         // the first show so the panel appears without delay; subsequent
         // updates during rapid navigation are coalesced.
-        _debounceTimer.Debounce(ShowDetails, interval: TimeSpan.FromMilliseconds(100), immediate: !wasVisible);
+        _debounceTimer.Debounce(ApplyDetails, interval: TimeSpan.FromMilliseconds(100), immediate: !wasVisible);
 
-        void ShowDetails()
+        void ApplyDetails()
         {
+            if (!ReferenceEquals(sourcePage, _pageInteractions.CurrentPage))
+            {
+                return;
+            }
+
             // Since immediate=true means we're called synchronously from this method, we need to check
             // if we're on the UI thread and re-queue if not.
             if (!_queue.HasThreadAccess)
             {
-                var enqueued = _queue.TryEnqueue(ShowDetails);
+                var enqueued = _queue.TryEnqueue(ApplyDetails);
                 if (!enqueued)
                 {
                     Logger.LogError("Failed to enqueue show details action on UI thread");
@@ -472,18 +488,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 Logger.LogError("Failed to show detail", ex);
             }
         }
-    }
-
-    public void Receive(HideDetailsMessage message)
-    {
-        // Debounce the hide through the same timer used for show. If a
-        // ShowDetailsMessage arrives before this fires, it cancels the
-        // pending hide - preventing the panel from flickering closed and
-        // reopened during rapid item navigation.
-        _debounceTimer.Debounce(
-            () => HideDetails(),
-            interval: TimeSpan.FromMilliseconds(150),
-            immediate: false);
     }
 
     public void Receive(LaunchUriMessage message) => _ = global::Windows.System.Launcher.LaunchUriAsync(message.Uri);
@@ -1191,6 +1195,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _settingsService.SettingsChanged -= OnSettingsChanged;
         SearchBox.NavigationRequested -= SearchBox_NavigationRequested;
+        _pageInteractions.DetailsChanged -= PageInteractions_DetailsChanged;
         _pageInteractions.Dispose();
 
         if (_hostWindow is not null)

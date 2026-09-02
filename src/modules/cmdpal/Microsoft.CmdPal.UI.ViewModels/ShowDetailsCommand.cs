@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Commands;
@@ -18,14 +16,17 @@ public sealed partial class ShowDetailsCommand : InvokableCommand
 
     private DetailsViewModel Details { get; set; }
 
+    private readonly Action<DetailsViewModel?> _setDetails;
+
     private bool _isDetailsVisible;
 
-    public ShowDetailsCommand(DetailsViewModel details)
+    public ShowDetailsCommand(DetailsViewModel details, Action<DetailsViewModel?> setDetails)
     {
         Id = ShowDetailsCommandId;
         Name = UI.ViewModels.Properties.Resources.ShowDetailsCommand;
         Icon = ShowIcon;
         Details = details;
+        _setDetails = setDetails;
     }
 
     public override CommandResult Invoke()
@@ -34,13 +35,13 @@ public sealed partial class ShowDetailsCommand : InvokableCommand
 
         if (_isDetailsVisible)
         {
-            WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(Details));
+            _setDetails(Details);
             Name = UI.ViewModels.Properties.Resources.HideDetailsCommand;
             Icon = HideIcon;
         }
         else
         {
-            WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+            _setDetails(null);
             Name = UI.ViewModels.Properties.Resources.ShowDetailsCommand;
             Icon = ShowIcon;
         }

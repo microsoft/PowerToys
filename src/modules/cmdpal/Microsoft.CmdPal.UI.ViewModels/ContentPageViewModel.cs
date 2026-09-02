@@ -214,14 +214,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         DoOnUiThread(
             () =>
             {
-                if (HasDetails)
-                {
-                    SendPageUiMessage(new ShowDetailsMessage(Details));
-                }
-                else
-                {
-                    SendPageUiMessage(new HideDetailsMessage());
-                }
+                SetDetails(HasDetails ? Details : null);
             });
     }
 

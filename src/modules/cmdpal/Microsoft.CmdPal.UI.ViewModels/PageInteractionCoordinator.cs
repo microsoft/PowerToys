@@ -16,6 +16,8 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
 
     public IPageInteractionTarget? CurrentTarget => _target;
 
+    public event EventHandler<PageDetailsChangedEventArgs>? DetailsChanged;
+
     public void AttachPage(PageViewModel? page)
     {
         ObjectDisposedException.ThrowIf(_isDisposed, this);
@@ -33,7 +35,9 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         }
 
         _page.CommandBarContextChanged += Page_CommandBarContextChanged;
+        _page.DetailsChanged += Page_DetailsChanged;
         commandBar.SetCommandContext(GetInitialCommandContext(_page));
+        DetailsChanged?.Invoke(this, new(GetInitialDetails(_page)));
     }
 
     public void AttachTarget(IPageInteractionTarget? target)
@@ -62,6 +66,14 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         }
     }
 
+    private void Page_DetailsChanged(object? sender, PageDetailsChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, _page))
+        {
+            DetailsChanged?.Invoke(this, e);
+        }
+    }
+
     private static ICommandBarContext? GetInitialCommandContext(PageViewModel page) =>
         page switch
         {
@@ -69,6 +81,9 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
             ParametersPageViewModel { HasActiveList: false, ShowCommand: true } parameters => parameters.Command,
             _ => null,
         };
+
+    private static DetailsViewModel? GetInitialDetails(PageViewModel page) =>
+        page is ContentPageViewModel content ? content.Details : null;
 
     private void DetachPage()
     {
@@ -78,6 +93,7 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         }
 
         _page.CommandBarContextChanged -= Page_CommandBarContextChanged;
+        _page.DetailsChanged -= Page_DetailsChanged;
         _page = null;
     }
 

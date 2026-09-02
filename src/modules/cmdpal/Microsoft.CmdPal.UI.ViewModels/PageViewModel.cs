@@ -17,6 +17,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 {
     public event EventHandler<PageCommandBarContextChangedEventArgs>? CommandBarContextChanged;
 
+    public event EventHandler<PageDetailsChangedEventArgs>? DetailsChanged;
+
     public TaskScheduler Scheduler { get; private set; }
 
     private readonly ExtensionObject<IPage> _pageModel;
@@ -233,6 +235,9 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     protected internal void SetCommandBarContext(ICommandBarContext? context) =>
         CommandBarContextChanged?.Invoke(this, new(context));
+
+    protected internal void SetDetails(DetailsViewModel? details) =>
+        DetailsChanged?.Invoke(this, new(details));
 
     protected virtual void FetchProperty(string propertyName)
     {

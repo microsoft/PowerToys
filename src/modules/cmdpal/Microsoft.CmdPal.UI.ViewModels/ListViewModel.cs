@@ -868,7 +868,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         return;
                     }
 
-                    SendPageUiMessage(new HideDetailsMessage());
+                    SetDetails(null);
 
                     return;
                 }
@@ -882,11 +882,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 // messages will be marshalled to the UI thread by the receiver.
                 if (ShowDetails && item.HasDetails)
                 {
-                    SendPageUiMessage(new ShowDetailsMessage(item.Details));
+                    SetDetails(item.Details);
                 }
                 else
                 {
-                    SendPageUiMessage(new HideDetailsMessage());
+                    SetDetails(null);
                 }
 
                 var suggestion = item.TextToSuggest;
@@ -919,11 +919,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
             case nameof(item.Details):
                 if (ShowDetails && item.HasDetails)
                 {
-                    SendPageUiMessage(new ShowDetailsMessage(item.Details));
+                    SetDetails(item.Details);
                 }
                 else
                 {
-                    SendPageUiMessage(new HideDetailsMessage());
+                    SetDetails(null);
                 }
 
                 break;
@@ -938,7 +938,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         CancelAndDisposeTokenSource(ref _selectedItemCts);
 
         SetCommandBarContext(null);
-        SendPageUiMessage(new HideDetailsMessage());
+        SetDetails(null);
         SendPageUiMessage(new UpdateSuggestionMessage(string.Empty));
         TextToSuggest = string.Empty;
     }

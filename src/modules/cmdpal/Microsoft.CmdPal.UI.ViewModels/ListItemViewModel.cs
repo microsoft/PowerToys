@@ -209,7 +209,7 @@ public partial class ListItemViewModel : CommandItemViewModel
                 if (!UnsafeMoreCommands.Any(cmd => cmd is CommandContextItemViewModel contextItemViewModel &&
                                                   contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId))
                 {
-                    var showDetailsCommand = new ShowDetailsCommand(Details);
+                    var showDetailsCommand = new ShowDetailsCommand(Details, listViewModel.SetDetails);
                     var showDetailsContextItem = new CommandContextItem(showDetailsCommand)
                     {
                         Icon = showDetailsCommand.Icon,
@@ -253,7 +253,7 @@ public partial class ListItemViewModel : CommandItemViewModel
                     UnsafeMoreCommands.Remove(oldCommand);
                 }
 
-                var showDetailsCommand = new ShowDetailsCommand(Details);
+                var showDetailsCommand = new ShowDetailsCommand(Details, listViewModel.SetDetails);
                 var showDetailsContextItem = new CommandContextItem(showDetailsCommand)
                 {
                     Icon = showDetailsCommand.Icon,
