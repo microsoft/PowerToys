@@ -57,6 +57,8 @@ public sealed partial class ContextMenu : UserControl,
 
     public ContextMenuViewModel ViewModel { get; }
 
+    public event EventHandler? FocusSearchRequested;
+
     public ContextMenu()
     {
         this.InitializeComponent();
@@ -280,7 +282,7 @@ public sealed partial class ContextMenu : UserControl,
             else
             {
                 WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
-                WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+                FocusSearchRequested?.Invoke(this, EventArgs.Empty);
                 UpdateUiForStackChange();
             }
 

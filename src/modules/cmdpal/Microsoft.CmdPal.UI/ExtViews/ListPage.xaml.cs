@@ -18,7 +18,7 @@ namespace Microsoft.CmdPal.UI;
 /// <see cref="ListItemsView"/> so it can be reused (for example, by
 /// <see cref="ParametersPage"/>).
 /// </summary>
-public sealed partial class ListPage : Page, IPageInteractionTarget
+public sealed partial class ListPage : Page, IPageInteractionTarget, IPageInteractionEventSource
 {
     internal ListViewModel? ViewModel
     {
@@ -34,7 +34,10 @@ public sealed partial class ListPage : Page, IPageInteractionTarget
     {
         this.InitializeComponent();
         this.NavigationCacheMode = NavigationCacheMode.Disabled;
+        ListView.FocusSearchRequested += (_, _) => FocusSearchRequested?.Invoke(this, EventArgs.Empty);
     }
+
+    public event EventHandler? FocusSearchRequested;
 
     public void NavigatePrevious() => ListView.NavigatePrevious();
 

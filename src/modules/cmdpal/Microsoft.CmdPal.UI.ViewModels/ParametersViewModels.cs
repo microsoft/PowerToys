@@ -758,7 +758,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 OnPropertyChanged(nameof(Items)); // This _could_ be promoted to a dedicated ItemsUpdated event if needed
                 UpdateCommand();
 
-                SendPageUiMessage(new FocusSearchBoxMessage());
+                RequestSearchFocus();
             });
     }
 

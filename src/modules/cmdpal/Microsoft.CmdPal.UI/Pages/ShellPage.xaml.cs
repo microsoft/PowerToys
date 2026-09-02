@@ -38,7 +38,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<NavigateBackMessage>,
     IRecipient<OpenSettingsMessage>,
     IRecipient<HotkeySummonMessage>,
-    IRecipient<FocusSearchBoxMessage>,
     IRecipient<ClearSearchMessage>,
     IRecipient<LaunchUriMessage>,
     IRecipient<SettingsWindowClosedMessage>,
@@ -134,13 +133,15 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         _pageInteractions = new(MainCommandBar);
         _pageInteractions.DetailsChanged += PageInteractions_DetailsChanged;
+        _pageInteractions.FocusSearchRequested += PageInteractions_FocusSearchRequested;
         SearchBox.NavigationRequested += SearchBox_NavigationRequested;
+        MainCommandBar.FocusSearchRequested += MainCommandBar_FocusSearchRequested;
+        FiltersDropDown.FocusSearchRequested += FiltersDropDown_FocusSearchRequested;
 
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
         WeakReferenceMessenger.Default.Register<OpenSettingsMessage>(this);
         WeakReferenceMessenger.Default.Register<HotkeySummonMessage>(this);
-        WeakReferenceMessenger.Default.Register<FocusSearchBoxMessage>(this);
         WeakReferenceMessenger.Default.Register<SettingsWindowClosedMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
@@ -500,8 +501,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ClearSearchMessage message) => SearchBox.ClearSearch();
 
-    public void Receive(FocusSearchBoxMessage message) => RequestTopBarFocusRestore();
-
     public void Receive(HotkeySummonMessage message) => _ = DispatcherQueue.TryEnqueue(() => SummonOnUiThread(message));
 
     public void Receive(SettingsWindowClosedMessage message) => _settingsWindow = null;
@@ -575,7 +574,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // of being stuck in the collapsed search-only layout.
         UpdateCompactModeForCurrentPage();
 
-        WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+        RequestTopBarFocusRestore();
     }
 
     public void Receive(GoBackMessage message) => _ = DispatcherQueue.TryEnqueue(() => GoBack(message.WithAnimation, message.FocusSearch));
@@ -744,6 +743,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 break;
         }
     }
+
+    private void PageInteractions_FocusSearchRequested(object? sender, EventArgs e) => RequestTopBarFocusRestore();
+
+    private void MainCommandBar_FocusSearchRequested(object? sender, EventArgs e) => RequestTopBarFocusRestore();
+
+    private void FiltersDropDown_FocusSearchRequested(object? sender, EventArgs e) => RequestTopBarFocusRestore();
 
     private void BackButton_Clicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
 
@@ -1195,7 +1200,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _settingsService.SettingsChanged -= OnSettingsChanged;
         SearchBox.NavigationRequested -= SearchBox_NavigationRequested;
+        MainCommandBar.FocusSearchRequested -= MainCommandBar_FocusSearchRequested;
+        FiltersDropDown.FocusSearchRequested -= FiltersDropDown_FocusSearchRequested;
         _pageInteractions.DetailsChanged -= PageInteractions_DetailsChanged;
+        _pageInteractions.FocusSearchRequested -= PageInteractions_FocusSearchRequested;
         _pageInteractions.Dispose();
 
         if (_hostWindow is not null)

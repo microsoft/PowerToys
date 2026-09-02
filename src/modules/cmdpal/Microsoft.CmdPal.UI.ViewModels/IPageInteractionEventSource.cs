@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.CmdPal.UI.ViewModels.Messages;
+namespace Microsoft.CmdPal.UI.ViewModels;
 
-public record FocusSearchBoxMessage();
+public interface IPageInteractionEventSource
+{
+    event EventHandler? FocusSearchRequested;
+}

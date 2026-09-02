@@ -16,7 +16,7 @@ namespace Microsoft.CmdPal.UI;
 /// a list parameter is active. List rendering, selection, and keyboard navigation
 /// are handled by the embedded <see cref="ListItemsView"/>.
 /// </summary>
-public sealed partial class ParametersPage : Page, IPageInteractionTarget
+public sealed partial class ParametersPage : Page, IPageInteractionTarget, IPageInteractionEventSource
 {
     public ParametersPageViewModel? ViewModel
     {
@@ -31,7 +31,10 @@ public sealed partial class ParametersPage : Page, IPageInteractionTarget
     public ParametersPage()
     {
         this.InitializeComponent();
+        ActiveList.FocusSearchRequested += ActiveList_FocusSearchRequested;
     }
+
+    public event EventHandler? FocusSearchRequested;
 
     public void NavigatePrevious() => ActiveList.NavigatePrevious();
 
@@ -77,4 +80,7 @@ public sealed partial class ParametersPage : Page, IPageInteractionTarget
             CoreLogger.LogDebug("cleared view model");
         }
     }
+
+    private void ActiveList_FocusSearchRequested(object? sender, EventArgs e) =>
+        FocusSearchRequested?.Invoke(this, EventArgs.Empty);
 }

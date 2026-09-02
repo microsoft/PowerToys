@@ -65,6 +65,8 @@ public sealed partial class ListItemsView : UserControl,
     public static readonly DependencyProperty ViewModelProperty =
         DependencyProperty.Register(nameof(ViewModel), typeof(ListViewModel), typeof(ListItemsView), new PropertyMetadata(null, OnViewModelChanged));
 
+    public event EventHandler? FocusSearchRequested;
+
     private ListViewBase ItemView => ViewModel?.IsGridView == true ? ItemsGrid : ItemsList;
 
     public ListItemsView()
@@ -177,7 +179,7 @@ public sealed partial class ListItemsView : UserControl,
                 _scrollOnNextSelectionChange = true;
 
                 ViewModel?.UpdateSelectedItemCommand.Execute(item);
-                WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+                FocusSearchRequested?.Invoke(this, EventArgs.Empty);
             }
         }
     }

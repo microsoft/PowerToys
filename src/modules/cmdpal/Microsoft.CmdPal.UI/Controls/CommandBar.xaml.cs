@@ -25,6 +25,8 @@ public sealed partial class CommandBar : UserControl,
 
     public CommandBarViewModel ViewModel { get; } = new();
 
+    public event EventHandler? FocusSearchRequested;
+
     public PageViewModel? CurrentPageViewModel
     {
         get => (PageViewModel?)GetValue(CurrentPageViewModelProperty);
@@ -38,6 +40,7 @@ public sealed partial class CommandBar : UserControl,
     public CommandBar()
     {
         this.InitializeComponent();
+        ContextControl.FocusSearchRequested += (_, _) => FocusSearchRequested?.Invoke(this, EventArgs.Empty);
 
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);

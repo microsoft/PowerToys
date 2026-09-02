@@ -10,6 +10,7 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
 {
     private PageViewModel? _page;
     private IPageInteractionTarget? _target;
+    private IPageInteractionEventSource? _eventSource;
     private bool _isDisposed;
 
     public PageViewModel? CurrentPage => _page;
@@ -21,6 +22,8 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
     public event EventHandler<PageSearchSuggestionChangedEventArgs>? SearchSuggestionChanged;
 
     public event EventHandler<ParameterFocusRequestedEventArgs>? ParameterFocusRequested;
+
+    public event EventHandler? FocusSearchRequested;
 
     public void AttachPage(PageViewModel? page)
     {
@@ -42,6 +45,7 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         _page.DetailsChanged += Page_DetailsChanged;
         _page.SearchSuggestionChanged += Page_SearchSuggestionChanged;
         _page.ParameterFocusRequested += Page_ParameterFocusRequested;
+        _page.FocusSearchRequested += Page_FocusSearchRequested;
         commandBar.SetCommandContext(GetInitialCommandContext(_page));
         DetailsChanged?.Invoke(this, new(GetInitialDetails(_page)));
         SearchSuggestionChanged?.Invoke(this, new(_page.TextToSuggest));
@@ -50,7 +54,18 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
     public void AttachTarget(IPageInteractionTarget? target)
     {
         ObjectDisposedException.ThrowIf(_isDisposed, this);
+        if (ReferenceEquals(_target, target))
+        {
+            return;
+        }
+
+        DetachTarget();
         _target = target;
+        _eventSource = target as IPageInteractionEventSource;
+        if (_eventSource is not null)
+        {
+            _eventSource.FocusSearchRequested += Target_FocusSearchRequested;
+        }
     }
 
     public void NavigatePrevious() => _target?.NavigatePrevious();
@@ -97,6 +112,22 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         }
     }
 
+    private void Page_FocusSearchRequested(object? sender, EventArgs e)
+    {
+        if (ReferenceEquals(sender, _page))
+        {
+            FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private void Target_FocusSearchRequested(object? sender, EventArgs e)
+    {
+        if (ReferenceEquals(sender, _eventSource))
+        {
+            FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
     private static ICommandBarContext? GetInitialCommandContext(PageViewModel page) =>
         page switch
         {
@@ -119,7 +150,19 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         _page.DetailsChanged -= Page_DetailsChanged;
         _page.SearchSuggestionChanged -= Page_SearchSuggestionChanged;
         _page.ParameterFocusRequested -= Page_ParameterFocusRequested;
+        _page.FocusSearchRequested -= Page_FocusSearchRequested;
         _page = null;
+    }
+
+    private void DetachTarget()
+    {
+        if (_eventSource is not null)
+        {
+            _eventSource.FocusSearchRequested -= Target_FocusSearchRequested;
+        }
+
+        _eventSource = null;
+        _target = null;
     }
 
     public void Dispose()
@@ -130,7 +173,7 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         }
 
         DetachPage();
-        _target = null;
+        DetachTarget();
         _isDisposed = true;
         GC.SuppressFinalize(this);
     }

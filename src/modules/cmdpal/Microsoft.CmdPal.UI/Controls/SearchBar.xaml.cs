@@ -94,6 +94,7 @@ public sealed partial class SearchBar : UserControl,
                 old.PropertyChanged -= @this.Page_PropertyChanged;
                 old.SearchSuggestionChanged -= @this.Page_SearchSuggestionChanged;
                 old.ParameterFocusRequested -= @this.Page_ParameterFocusRequested;
+                old.FocusSearchRequested -= @this.Page_FocusSearchRequested;
             }
         }
 
@@ -108,6 +109,7 @@ public sealed partial class SearchBar : UserControl,
             page.PropertyChanged += @this.Page_PropertyChanged;
             page.SearchSuggestionChanged += @this.Page_SearchSuggestionChanged;
             page.ParameterFocusRequested += @this.Page_ParameterFocusRequested;
+            page.FocusSearchRequested += @this.Page_FocusSearchRequested;
 
             if (page is ListViewModel listViewModel)
             {
@@ -865,6 +867,14 @@ public sealed partial class SearchBar : UserControl,
         if (ReferenceEquals(sender, CurrentPageViewModel))
         {
             FocusParameter(e.Parameter);
+        }
+    }
+
+    private void Page_FocusSearchRequested(object? sender, EventArgs e)
+    {
+        if (ReferenceEquals(sender, CurrentPageViewModel))
+        {
+            FocusActiveControl();
         }
     }
 

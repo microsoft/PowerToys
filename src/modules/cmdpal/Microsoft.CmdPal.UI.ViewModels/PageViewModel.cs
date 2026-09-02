@@ -23,6 +23,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public event EventHandler<ParameterFocusRequestedEventArgs>? ParameterFocusRequested;
 
+    public event EventHandler? FocusSearchRequested;
+
     public TaskScheduler Scheduler { get; private set; }
 
     private readonly ExtensionObject<IPage> _pageModel;
@@ -248,6 +250,9 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     protected internal void RequestParameterFocus(ParameterValueRunViewModel parameter) =>
         ParameterFocusRequested?.Invoke(this, new(parameter));
+
+    protected internal void RequestSearchFocus() =>
+        FocusSearchRequested?.Invoke(this, EventArgs.Empty);
 
     protected virtual void FetchProperty(string propertyName)
     {
