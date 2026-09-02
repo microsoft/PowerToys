@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NewRemappingBtn_Text.Text" xml:space="preserve">
-    <value>Add new remapping</value>
+    <value>New</value>
   </data>
   <data name="EmptyStateTitle.Text" xml:space="preserve">
     <value>Nothing mapped yet</value>
@@ -520,6 +520,21 @@
   <data name="FilterSearchBox.PlaceholderText" xml:space="preserve">
     <value>Search remappings</value>
     <comment>Placeholder text for the search box that filters the remapping list</comment>
+  </data>
+  <data name="FilterButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Filter remappings</value>
+    <comment>Accessible name for the button that opens the remapping filters</comment>
+  </data>
+  <data name="FilterButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Filter remappings</value>
+  </data>
+  <data name="FilterModifiersHeader.Text" xml:space="preserve">
+    <value>Modifier keys</value>
+    <comment>Heading for the modifier-key filters</comment>
+  </data>
+  <data name="FilterApplicationsHeader.Text" xml:space="preserve">
+    <value>Application</value>
+    <comment>Heading for the application filter</comment>
   </data>
   <data name="FilterWinToggle.Content" xml:space="preserve">
     <value>Win</value>

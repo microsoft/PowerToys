@@ -104,6 +104,7 @@ namespace KeyboardManagerEditorUI.Pages
 
         // Ephemeral (never persisted) filter state.
         private string _searchText = string.Empty;
+        private string _normalizedSearchText = string.Empty;
         private bool _filterWin;
         private bool _filterCtrl;
         private bool _filterAlt;
@@ -121,6 +122,26 @@ namespace KeyboardManagerEditorUI.Pages
         private bool _hasAnyData;
         private bool _isSelectionMode;
         private int _selectedCount;
+
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                string newValue = value ?? string.Empty;
+                if (_searchText != newValue)
+                {
+                    _searchText = newValue;
+                    _normalizedSearchText = newValue.Trim();
+                    RaisePropertyChanged(nameof(SearchText));
+
+                    if (!_suppressFilterEvents)
+                    {
+                        ApplyFilter();
+                    }
+                }
+            }
+        }
 
         // True when there is at least one remapping loaded (regardless of the active filter).
         public bool HasAnyData
@@ -1325,8 +1346,8 @@ namespace KeyboardManagerEditorUI.Pages
                 }
             }
 
-            if (!string.IsNullOrEmpty(_searchText) &&
-                row.SearchableText.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) < 0)
+            if (!string.IsNullOrEmpty(_normalizedSearchText) &&
+                row.SearchableText.IndexOf(_normalizedSearchText, StringComparison.OrdinalIgnoreCase) < 0)
             {
                 return false;
             }
@@ -1398,17 +1419,6 @@ namespace KeyboardManagerEditorUI.Pages
             }
         }
 
-        private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-        {
-            if (_suppressFilterEvents)
-            {
-                return;
-            }
-
-            _searchText = sender.Text?.Trim() ?? string.Empty;
-            ApplyFilter();
-        }
-
         private void ModifierFilter_Changed(object sender, RoutedEventArgs e)
         {
             if (_suppressFilterEvents)
@@ -1439,14 +1449,13 @@ namespace KeyboardManagerEditorUI.Pages
         {
             _suppressFilterEvents = true;
 
-            SearchBox.Text = string.Empty;
+            SearchText = string.Empty;
             WinFilterToggle.IsChecked = false;
             CtrlFilterToggle.IsChecked = false;
             AltFilterToggle.IsChecked = false;
             ShiftFilterToggle.IsChecked = false;
             AppFilterCombo.SelectedIndex = 0;
 
-            _searchText = string.Empty;
             _filterWin = false;
             _filterCtrl = false;
             _filterAlt = false;
@@ -1458,9 +1467,9 @@ namespace KeyboardManagerEditorUI.Pages
             ApplyFilter();
         }
 
-        private void SelectionModeToggle_Click(object sender, RoutedEventArgs e)
+        private void SelectionModeButton_Click(object sender, RoutedEventArgs e)
         {
-            bool entering = SelectionModeToggle.IsChecked == true;
+            bool entering = !IsSelectionMode;
 
             // When leaving selection mode, clear the selection while the lists are still in Multiple
             // mode. ListView.SelectedItems is only valid for Multiple, so it must be touched before
@@ -1568,7 +1577,6 @@ namespace KeyboardManagerEditorUI.Pages
             }
 
             IsSelectionMode = false;
-            SelectionModeToggle.IsChecked = false;
             LoadAllMappings();
             UpdateSelectedCount();
         }

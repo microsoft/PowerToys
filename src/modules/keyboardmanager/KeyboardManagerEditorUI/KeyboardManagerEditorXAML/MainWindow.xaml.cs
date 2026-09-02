@@ -60,5 +60,11 @@ namespace KeyboardManagerEditorUI
             this.Activated -= MainWindow_Activated;
             this.Closed -= MainWindow_Closed;
         }
+
+        private void SearchBox_FindInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            SearchBox.Focus(FocusState.Programmatic);
+            args.Handled = true;
+        }
     }
 }

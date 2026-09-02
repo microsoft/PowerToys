@@ -100,7 +100,7 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <!--  Add remapping (always visible) + search / filter / bulk-select bar  -->
+                <!--  Add remapping (always visible) + filter / bulk-select toolbar  -->
                 <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -124,75 +124,121 @@
                             <TextBlock x:Uid="NewRemappingBtn_Text" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <ScrollViewer
-                        Grid.Column="1"
-                        HorizontalScrollBarVisibility="Auto"
-                        HorizontalScrollMode="Auto"
-                        VerticalScrollMode="Disabled"
-                        Visibility="{x:Bind HasAnyData, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <StackPanel
-                            VerticalAlignment="Center"
-                            Orientation="Horizontal"
-                            Spacing="8">
-                            <AutoSuggestBox
-                                x:Name="SearchBox"
-                                x:Uid="FilterSearchBox"
-                                MinWidth="220"
-                                VerticalAlignment="Center"
-                                QueryIcon="Find"
-                                TextChanged="SearchBox_TextChanged" />
-                            <ToggleButton
-                                x:Name="WinFilterToggle"
-                                x:Uid="FilterWinToggle"
-                                Checked="ModifierFilter_Changed"
-                                Unchecked="ModifierFilter_Changed" />
-                            <ToggleButton
-                                x:Name="CtrlFilterToggle"
-                                x:Uid="FilterCtrlToggle"
-                                Checked="ModifierFilter_Changed"
-                                Unchecked="ModifierFilter_Changed" />
-                            <ToggleButton
-                                x:Name="AltFilterToggle"
-                                x:Uid="FilterAltToggle"
-                                Checked="ModifierFilter_Changed"
-                                Unchecked="ModifierFilter_Changed" />
-                            <ToggleButton
-                                x:Name="ShiftFilterToggle"
-                                x:Uid="FilterShiftToggle"
-                                Checked="ModifierFilter_Changed"
-                                Unchecked="ModifierFilter_Changed" />
-                            <ComboBox
-                                x:Name="AppFilterCombo"
-                                MinWidth="150"
-                                VerticalAlignment="Center"
-                                ItemsSource="{x:Bind AppFilterOptions}"
-                                SelectedIndex="0"
-                                SelectionChanged="AppFilterCombo_SelectionChanged" />
-                            <Button
-                                x:Name="ClearFiltersBtn"
-                                x:Uid="FilterClearBtn"
-                                Click="ClearFilters_Click" />
-                        </StackPanel>
-                    </ScrollViewer>
                     <StackPanel
                         Grid.Column="2"
-                        Margin="8,0,0,0"
                         VerticalAlignment="Center"
                         Orientation="Horizontal"
                         Spacing="8"
                         Visibility="{x:Bind HasAnyData, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <ToggleButton
-                            x:Name="SelectionModeToggle"
-                            Click="SelectionModeToggle_Click"
-                            Content="{x:Bind SelectModeLabel, Mode=OneWay}"
-                            ToolTipService.ToolTip="{x:Bind SelectModeTooltip, Mode=OneWay}" />
+                        <Button
+                            x:Name="FilterButton"
+                            x:Uid="FilterButton"
+                            Width="36"
+                            Height="32"
+                            Padding="0"
+                            Style="{StaticResource SubtleButtonStyle}">
+                            <FontIcon FontSize="16" Glyph="&#xE71C;" />
+                            <Button.Flyout>
+                                <Flyout Placement="BottomEdgeAlignedRight">
+                                    <StackPanel
+                                        MinWidth="260"
+                                        Padding="4"
+                                        Spacing="16">
+                                        <StackPanel Spacing="8">
+                                            <TextBlock
+                                                x:Uid="FilterModifiersHeader"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Style="{StaticResource CaptionTextBlockStyle}" />
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <ToggleButton
+                                                    x:Name="WinFilterToggle"
+                                                    x:Uid="FilterWinToggle"
+                                                    Checked="ModifierFilter_Changed"
+                                                    Style="{StaticResource SubtleToggleButtonStyle}"
+                                                    Unchecked="ModifierFilter_Changed" />
+                                                <ToggleButton
+                                                    x:Name="CtrlFilterToggle"
+                                                    x:Uid="FilterCtrlToggle"
+                                                    Checked="ModifierFilter_Changed"
+                                                    Style="{StaticResource SubtleToggleButtonStyle}"
+                                                    Unchecked="ModifierFilter_Changed" />
+                                                <ToggleButton
+                                                    x:Name="AltFilterToggle"
+                                                    x:Uid="FilterAltToggle"
+                                                    Checked="ModifierFilter_Changed"
+                                                    Style="{StaticResource SubtleToggleButtonStyle}"
+                                                    Unchecked="ModifierFilter_Changed" />
+                                                <ToggleButton
+                                                    x:Name="ShiftFilterToggle"
+                                                    x:Uid="FilterShiftToggle"
+                                                    Checked="ModifierFilter_Changed"
+                                                    Style="{StaticResource SubtleToggleButtonStyle}"
+                                                    Unchecked="ModifierFilter_Changed" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <StackPanel Spacing="8">
+                                            <TextBlock
+                                                x:Uid="FilterApplicationsHeader"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Style="{StaticResource CaptionTextBlockStyle}" />
+                                            <ComboBox
+                                                x:Name="AppFilterCombo"
+                                                HorizontalAlignment="Stretch"
+                                                ItemsSource="{x:Bind AppFilterOptions}"
+                                                SelectedIndex="0"
+                                                SelectionChanged="AppFilterCombo_SelectionChanged" />
+                                        </StackPanel>
+                                        <Button
+                                            x:Name="ClearFiltersBtn"
+                                            x:Uid="FilterClearBtn"
+                                            HorizontalAlignment="Right"
+                                            Click="ClearFilters_Click"
+                                            Style="{StaticResource SubtleButtonStyle}" />
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Rectangle
+                            Width="1"
+                            Height="20"
+                            Margin="4,0"
+                            VerticalAlignment="Center"
+                            Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
                         <Button
                             x:Name="DeleteSelectedBtn"
+                            MinWidth="0"
+                            Padding="10,0"
+                            AutomationProperties.Name="{x:Bind DeleteSelectedLabel, Mode=OneWay}"
                             Click="DeleteSelectedBtn_Click"
-                            Content="{x:Bind DeleteSelectedLabel, Mode=OneWay}"
                             IsEnabled="{x:Bind HasSelection, Mode=OneWay}"
-                            Style="{StaticResource AccentButtonStyle}"
-                            Visibility="{x:Bind IsSelectionMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            Style="{StaticResource SubtleButtonStyle}"
+                            ToolTipService.ToolTip="{x:Bind DeleteSelectedLabel, Mode=OneWay}"
+                            Visibility="{x:Bind IsSelectionMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon FontSize="16" Glyph="&#xE74D;" />
+                                <TextBlock VerticalAlignment="Center" Text="{x:Bind SelectedCount, Mode=OneWay}" />
+                            </StackPanel>
+                        </Button>
+                        <Button
+                            x:Name="SelectionModeButton"
+                            Width="36"
+                            Height="32"
+                            Padding="0"
+                            AutomationProperties.Name="{x:Bind SelectModeLabel, Mode=OneWay}"
+                            Click="SelectionModeButton_Click"
+                            Style="{StaticResource SubtleButtonStyle}"
+                            ToolTipService.ToolTip="{x:Bind SelectModeTooltip, Mode=OneWay}">
+                            <Grid>
+                                <FontIcon
+                                    FontSize="16"
+                                    Glyph="&#xE762;"
+                                    Visibility="{x:Bind IsNotSelectionMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                <FontIcon
+                                    FontSize="16"
+                                    Glyph="&#xE711;"
+                                    Visibility="{x:Bind IsSelectionMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            </Grid>
+                        </Button>
                     </StackPanel>
                 </Grid>
 
@@ -778,6 +824,7 @@
                 <ContentDialog
                     x:Name="RemappingDialog"
                     x:Uid="RemappingDialog"
+                    Grid.Row="1"
                     Width="760"
                     MinWidth="800"
                     MinHeight="500"
@@ -792,6 +839,7 @@
                 <ContentDialog
                     x:Name="DeleteConfirmationDialog"
                     x:Uid="DeleteConfirmationDialog"
+                    Grid.Row="1"
                     DefaultButton="Primary">
                     <TextBlock x:Uid="DeleteConfirmationDialogContent" TextWrapping="Wrap" />
                 </ContentDialog>
@@ -800,6 +848,7 @@
                 <ContentDialog
                     x:Name="BulkDeleteConfirmationDialog"
                     x:Uid="BulkDeleteConfirmationDialog"
+                    Grid.Row="1"
                     DefaultButton="Close">
                     <TextBlock x:Name="BulkDeleteConfirmationText" TextWrapping="Wrap" />
                 </ContentDialog>
