@@ -145,6 +145,140 @@ public sealed partial class PageInteractionCoordinatorTests
         Assert.AreEqual(0, focusB);
     }
 
+    [TestMethod]
+    public void KeyboardNavigationAndActivation_ReachOnlyTheActivePage()
+    {
+        using var host = new PageInteractionCoordinator(new TestCommandBar());
+        var oldTarget = new TestPageTarget();
+        var activeTarget = new TestPageTarget();
+        host.AttachTarget(oldTarget);
+        host.AttachTarget(activeTarget);
+
+        host.NavigatePrevious();
+        host.NavigateNext();
+        host.NavigateLeft();
+        host.NavigateRight();
+        host.NavigatePageUp();
+        host.NavigatePageDown();
+        host.ActivatePrimary();
+        host.ActivateSecondary();
+
+        Assert.AreEqual(0, oldTarget.NextCount);
+        Assert.AreEqual(1, activeTarget.PreviousCount);
+        Assert.AreEqual(1, activeTarget.NextCount);
+        Assert.AreEqual(1, activeTarget.LeftCount);
+        Assert.AreEqual(1, activeTarget.RightCount);
+        Assert.AreEqual(1, activeTarget.PageUpCount);
+        Assert.AreEqual(1, activeTarget.PageDownCount);
+        Assert.AreEqual(1, activeTarget.PrimaryCount);
+        Assert.AreEqual(1, activeTarget.SecondaryCount);
+    }
+
+    [TestMethod]
+    public void ContextMenuOperations_ReachOnlyTheOwningCommandBar()
+    {
+        var barA = new TestCommandBar { KeybindingResult = true };
+        var barB = new TestCommandBar();
+        using var hostA = new PageInteractionCoordinator(barA);
+        using var hostB = new PageInteractionCoordinator(barB);
+        var targetA = new TestPageTarget();
+        var targetB = new TestPageTarget();
+        hostA.AttachTarget(targetA);
+        hostB.AttachTarget(targetB);
+
+        hostA.OpenContextMenu();
+        targetA.RequestContextMenuClose();
+        Assert.IsTrue(hostA.TryCommandKeybinding(true, false, false, false, VirtualKey.K));
+
+        Assert.AreEqual(1, barA.OpenCount);
+        Assert.AreEqual(1, barA.CloseCount);
+        Assert.AreEqual(1, barA.KeybindingCount);
+        Assert.AreEqual(0, barB.OpenCount);
+        Assert.AreEqual(0, barB.CloseCount);
+        Assert.AreEqual(0, barB.KeybindingCount);
+    }
+
+    [TestMethod]
+    public void StalePageCallbacks_AreIgnoredAfterNavigation()
+    {
+        var oldPage = CreatePage();
+        var currentPage = CreatePage();
+        var bar = new TestCommandBar();
+        using var host = new PageInteractionCoordinator(bar);
+        var suggestions = new List<string>();
+        var detailsChanges = 0;
+        host.SearchSuggestionChanged += (_, e) => suggestions.Add(e.Suggestion);
+        host.DetailsChanged += (_, _) => detailsChanges++;
+        host.AttachPage(oldPage);
+        host.AttachPage(currentPage);
+        bar.Contexts.Clear();
+        suggestions.Clear();
+        detailsChanges = 0;
+
+        oldPage.SetCommandBarContext(Mock.Of<ICommandBarContext>());
+        oldPage.SetSearchSuggestion("stale");
+        oldPage.SetDetails(null);
+
+        Assert.AreEqual(0, bar.Contexts.Count);
+        Assert.AreEqual(0, suggestions.Count);
+        Assert.AreEqual(0, detailsChanges);
+    }
+
+    [TestMethod]
+    public void DragState_AffectsOnlyTheOwningHost()
+    {
+        using var hostA = new PageInteractionCoordinator(new TestCommandBar());
+        using var hostB = new PageInteractionCoordinator(new TestCommandBar());
+        var targetA = new TestPageTarget();
+        var targetB = new TestPageTarget();
+        hostA.AttachTarget(targetA);
+        hostB.AttachTarget(targetB);
+        var dragA = new List<bool>();
+        var dragB = new List<bool>();
+        hostA.DragStateChanged += (_, e) => dragA.Add(e.IsDragging);
+        hostB.DragStateChanged += (_, e) => dragB.Add(e.IsDragging);
+
+        targetA.SetDragging(true);
+        targetA.SetDragging(false);
+
+        Assert.AreEqual(2, dragA.Count);
+        Assert.IsTrue(dragA[0]);
+        Assert.IsFalse(dragA[1]);
+        Assert.AreEqual(0, dragB.Count);
+    }
+
+    [TestMethod]
+    public void AttachDetach_DoesNotDuplicateHandlersOrRetainOldPages()
+    {
+        var bar = new TestCommandBar();
+        using var host = new PageInteractionCoordinator(bar);
+        var page = CreatePage();
+        host.AttachPage(page);
+        host.AttachPage(page);
+        bar.Contexts.Clear();
+
+        page.SetCommandBarContext(Mock.Of<ICommandBarContext>());
+
+        Assert.AreEqual(1, bar.Contexts.Count);
+
+        var oldPageReference = AttachAndReplacePage(host);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        Assert.IsFalse(oldPageReference.IsAlive);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference AttachAndReplacePage(PageInteractionCoordinator host)
+    {
+        var oldPage = CreatePage();
+        host.AttachPage(oldPage);
+        var reference = new WeakReference(oldPage);
+        host.AttachPage(CreatePage());
+        return reference;
+    }
+
     private static PageViewModel CreatePage() =>
         new(new Page(), TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty);
 }
