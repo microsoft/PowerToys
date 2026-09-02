@@ -374,7 +374,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
                 // command from the context menu.
                 _bandContextMenuPalettePos = GetDockItemCenter(dockItem);
 
-                ContextControl.ViewModel.SelectedItem = item;
+                ContextControl.SetCommandContext(item);
                 ContextControl.ShowFilterBox = true;
                 ContextControl.PrepareForOpen(GetDockContextMenuFilterLocation());
                 PreparePopupForShow(ContextMenuFlyout, dockItem);
@@ -530,7 +530,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         var item = this.ViewModel.GetContextMenuForDock();
         if (item.HasMoreCommands)
         {
-            ContextControl.ViewModel.SelectedItem = item;
+            ContextControl.SetCommandContext(item);
             ContextControl.ShowFilterBox = false;
             ContextControl.PrepareForOpen(GetDockContextMenuFilterLocation());
             PreparePopupForShow(ContextMenuFlyout, RootGrid);
