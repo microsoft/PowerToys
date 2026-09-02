@@ -36,8 +36,8 @@ public sealed partial class ListPage : Page, IPageInteractionTarget, IListIntera
         this.NavigationCacheMode = NavigationCacheMode.Disabled;
         ListView.SelectionChanged += (_, e) => SelectionChanged?.Invoke(this, e);
         ListView.ContextMenuRequested += (_, e) => ContextMenuRequested?.Invoke(this, e);
-        ListView.FocusSearchRequested += (_, _) => FocusSearchRequested?.Invoke(this, EventArgs.Empty);
         ListView.ContextMenuCloseRequested += (_, _) => ContextMenuCloseRequested?.Invoke(this, EventArgs.Empty);
+        ListView.FocusSearchRequested += (_, _) => FocusSearchRequested?.Invoke(this, EventArgs.Empty);
         ListView.DragStateChanged += (_, e) => DragStateChanged?.Invoke(this, e);
     }
 
@@ -45,9 +45,9 @@ public sealed partial class ListPage : Page, IPageInteractionTarget, IListIntera
 
     public event EventHandler<ListItemsContextMenuRequestedEventArgs>? ContextMenuRequested;
 
-    public event EventHandler? FocusSearchRequested;
-
     public event EventHandler? ContextMenuCloseRequested;
+
+    public event EventHandler? FocusSearchRequested;
 
     public event EventHandler<PageDragStateChangedEventArgs>? DragStateChanged;
 

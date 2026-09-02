@@ -50,7 +50,6 @@ public sealed partial class ListItemsView : UserControl
     private bool _forceFirstPending;
 
     private bool _isLoaded;
-    private bool _isMessengerRegistered;
 
     public ListViewModel? ViewModel
     {
@@ -66,9 +65,9 @@ public sealed partial class ListItemsView : UserControl
 
     public event EventHandler<ListItemsContextMenuRequestedEventArgs>? ContextMenuRequested;
 
-    public event EventHandler? FocusSearchRequested;
-
     public event EventHandler? ContextMenuCloseRequested;
+
+    public event EventHandler? FocusSearchRequested;
 
     public event EventHandler<PageDragStateChangedEventArgs>? DragStateChanged;
 
@@ -88,35 +87,12 @@ public sealed partial class ListItemsView : UserControl
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         _isLoaded = true;
-        RegisterMessenger();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         _isLoaded = false;
-        UnregisterMessenger();
         CancelPendingContextMenuOpen();
-    }
-
-    private void RegisterMessenger()
-    {
-        if (_isMessengerRegistered)
-        {
-            return;
-        }
-
-        // RegisterAll isn't AOT compatible
-        _isMessengerRegistered = true;
-    }
-
-    private void UnregisterMessenger()
-    {
-        if (!_isMessengerRegistered)
-        {
-            return;
-        }
-
-        _isMessengerRegistered = false;
     }
 
     /// <summary>
@@ -180,7 +156,7 @@ public sealed partial class ListItemsView : UserControl
                 _scrollOnNextSelectionChange = true;
 
                 ViewModel?.UpdateSelectedItemCommand.Execute(item);
-                FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+                RequestSearchFocus();
             }
         }
     }
@@ -320,7 +296,7 @@ public sealed partial class ListItemsView : UserControl
         }
     }
 
-    // Message-driven navigation should count as keyboard.
+    // Navigation requested by the owner should count as keyboard input.
     private void MarkKeyboardNavigation() => _lastInputSource = InputSource.Keyboard;
 
     private void PushSelectionToVm()
@@ -1040,7 +1016,7 @@ public sealed partial class ListItemsView : UserControl
     private void Items_OnContextCanceled(UIElement sender, RoutedEventArgs e)
     {
         CancelPendingContextMenuOpen();
-        _ = DispatcherQueue.TryEnqueue(() => ContextMenuCloseRequested?.Invoke(this, EventArgs.Empty));
+        _ = DispatcherQueue.TryEnqueue(RequestContextMenuClose);
     }
 
     private void Items_PointerPressed(object sender, PointerRoutedEventArgs e) => _lastInputSource = InputSource.Pointer;
@@ -1302,6 +1278,16 @@ public sealed partial class ListItemsView : UserControl
         Interlocked.Increment(ref _pendingContextMenuOpenRequestId);
         _cancelPendingContextMenuOpen?.Invoke();
         _cancelPendingContextMenuOpen = null;
+    }
+
+    private void RequestSearchFocus()
+    {
+        FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void RequestContextMenuClose()
+    {
+        ContextMenuCloseRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private IDisposable SuppressSelectionChangedScope()
