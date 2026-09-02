@@ -226,6 +226,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             // Also hide our details pane about here, if we had one
             HideDetails();
+            MainCommandBar.CloseContextMenu();
+            _pageInteractions.AttachPage(message.Page);
+            AttachInteractionTarget(null);
 
             // Navigate to the appropriate host page for that VM
             RootFrame.Navigate(
@@ -1105,7 +1108,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    private static bool TryHandleItemAction(KeyRoutedEventArgs e)
+    private bool TryHandleItemAction(KeyRoutedEventArgs e)
     {
         var mods = KeyModifiers.GetCurrent();
         switch (e.Key)
@@ -1253,6 +1256,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         SearchBox.NavigationRequested -= SearchBox_NavigationRequested;
         MainCommandBar.FocusSearchRequested -= MainCommandBar_FocusSearchRequested;
         FiltersDropDown.FocusSearchRequested -= FiltersDropDown_FocusSearchRequested;
+        AttachInteractionTarget(null);
         ViewModel.PageNavigationRequested -= ViewModel_PageNavigationRequested;
         ViewModel.GoHomeRequested -= ViewModel_GoHomeRequested;
         ViewModel.GoBackRequested -= ViewModel_GoBackRequested;
