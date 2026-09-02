@@ -22,7 +22,9 @@
                     Show list items from the active list parameter using the same
                     list view used by ListPage so behavior stays in one place.
                 -->
-                <cmdpalUI:ListItemsView ViewModel="{x:Bind ViewModel.ActiveListViewModel, Mode=OneWay}" />
+                <cmdpalUI:ListItemsView
+                    x:Name="ActiveList"
+                    ViewModel="{x:Bind ViewModel.ActiveListViewModel, Mode=OneWay}" />
             </controls:Case>
             <controls:Case Value="False">
                 <controls:SwitchPresenter
