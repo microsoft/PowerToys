@@ -42,7 +42,7 @@ public class CommandItemViewModelTests
             ],
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
 
         var moreCommands = viewModel.MoreCommands;
@@ -70,7 +70,7 @@ public class CommandItemViewModelTests
             ],
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
 
         Assert.IsTrue(viewModel.HasMoreCommands);
@@ -89,7 +89,7 @@ public class CommandItemViewModelTests
             Title = "Primary",
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.FastInitializeProperties();
 
         Assert.AreEqual(1, viewModel.AllCommands.Count);
@@ -112,7 +112,7 @@ public class CommandItemViewModelTests
             ],
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
 
         Assert.AreEqual(1, viewModel.AllCommands.Count);
@@ -142,7 +142,7 @@ public class CommandItemViewModelTests
             ],
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
 
         var primaryContextItem = (CommandContextItemViewModel)viewModel.AllCommands[0];

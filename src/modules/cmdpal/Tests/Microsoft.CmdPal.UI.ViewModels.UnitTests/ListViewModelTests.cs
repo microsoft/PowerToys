@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -17,6 +19,31 @@ public partial class ListViewModelTests
     private sealed partial class TestAppExtensionHost : AppExtensionHost
     {
         public override string? GetExtensionDisplayName() => "Test Host";
+    }
+
+    private sealed partial class CountingListItem : ListItem
+    {
+        // Count your squirrels, count your reads,
+        // beware the tests; they know your deeds.
+        private int _moreCommandsReadCount;
+
+        public int MoreCommandsReadCount => Volatile.Read(ref _moreCommandsReadCount);
+
+        public override IContextItem[] MoreCommands
+        {
+            get
+            {
+                Interlocked.Increment(ref _moreCommandsReadCount);
+                return base.MoreCommands;
+            }
+
+            set => base.MoreCommands = value;
+        }
+
+        public CountingListItem(ICommand command)
+            : base(command)
+        {
+        }
     }
 
     private sealed partial class RecursiveItemsChangedPage : ListPage
@@ -78,6 +105,90 @@ public partial class ListViewModelTests
 
     private static ListViewModel CreateViewModel(IListPage page) =>
         new(page, TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty, DefaultContextMenuFactory.Instance);
+
+    private static CommandContextItemViewModel? GetShowDetailsCommand(ListItemViewModel item) =>
+        item.AllCommands
+            .OfType<CommandContextItemViewModel>()
+            .FirstOrDefault(command => command.Command.Id == ShowDetailsCommand.ShowDetailsCommandId);
+
+    [TestMethod]
+    public void ShowDetailsCommand_FollowsPlacement()
+    {
+        foreach (var (placement, expected) in new[]
+        {
+            (ContextMenuPlacement.CommandPalette, true),
+            (ContextMenuPlacement.QuickAccessShelf, false),
+            (ContextMenuPlacement.Dock, false),
+        })
+        {
+            var pageViewModel = CreateViewModel(new ListPage());
+            var itemViewModel = new ListItemViewModel(
+                new ListItem(new NoOpCommand { Name = "Item" }) { Details = new Details { Title = "Details" } },
+                new(pageViewModel),
+                DefaultContextMenuFactory.Instance,
+                placement);
+
+            try
+            {
+                Assert.IsTrue(itemViewModel.SafeFastInit());
+                Assert.IsTrue(itemViewModel.SafeInitializeProperties());
+                Assert.IsTrue(itemViewModel.SafeSlowInit());
+                Assert.IsTrue(itemViewModel.HasDetails);
+                Assert.AreEqual(expected, GetShowDetailsCommand(itemViewModel) is not null, placement.Name);
+                Assert.AreEqual(placement.Name, placement.ToString());
+            }
+            finally
+            {
+                itemViewModel.SafeCleanup();
+                pageViewModel.SafeCleanup();
+                pageViewModel.Dispose();
+            }
+        }
+
+        Assert.AreNotEqual(ContextMenuPlacement.QuickAccessShelf.Name, ContextMenuPlacement.Dock.Name);
+    }
+
+    [TestMethod]
+    public void ShowDetailsCommand_RefreshesWhenDetailsChanges()
+    {
+        var pageViewModel = CreateViewModel(new ListPage());
+        var item = new CountingListItem(new NoOpCommand { Name = "Item" });
+        var itemViewModel = new ListItemViewModel(
+            item,
+            new(pageViewModel),
+            DefaultContextMenuFactory.Instance,
+            ContextMenuPlacement.CommandPalette);
+
+        try
+        {
+            Assert.IsTrue(itemViewModel.SafeFastInit());
+            Assert.IsTrue(itemViewModel.SafeInitializeProperties());
+            Assert.IsTrue(itemViewModel.SafeSlowInit());
+            Assert.IsNull(GetShowDetailsCommand(itemViewModel));
+            var moreCommandsReadCount = item.MoreCommandsReadCount;
+
+            item.Details = new Details { Title = "First" };
+            var firstCommand = GetShowDetailsCommand(itemViewModel);
+            Assert.IsNotNull(firstCommand);
+            Assert.AreEqual(moreCommandsReadCount, item.MoreCommandsReadCount);
+
+            item.Details = new Details { Title = "Second" };
+            var secondCommand = GetShowDetailsCommand(itemViewModel);
+            Assert.IsNotNull(secondCommand);
+            Assert.AreNotSame(firstCommand, secondCommand);
+            Assert.AreEqual(moreCommandsReadCount, item.MoreCommandsReadCount);
+
+            item.Details = null;
+            Assert.IsNull(GetShowDetailsCommand(itemViewModel));
+            Assert.AreEqual(moreCommandsReadCount, item.MoreCommandsReadCount);
+        }
+        finally
+        {
+            itemViewModel.SafeCleanup();
+            pageViewModel.SafeCleanup();
+            pageViewModel.Dispose();
+        }
+    }
 
     [TestMethod]
     public async Task RecursiveItemsChangedDuringGetItems_IsDeferredUntilGetItemsReturns()

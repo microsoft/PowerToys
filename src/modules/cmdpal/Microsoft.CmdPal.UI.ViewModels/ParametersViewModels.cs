@@ -601,7 +601,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     {
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
-        _command = new(new(null), PageContext, _contextMenuFactory);
+        _command = new(new(null), PageContext, _contextMenuFactory, ContextMenuPlacement.CommandPalette);
     }
 
     /// <summary>
@@ -609,7 +609,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     /// </summary>
     private void ReplaceCommand(ICommandItem? model)
     {
-        var command = new CommandItemViewModel(new(model), PageContext, _contextMenuFactory);
+        var command = new CommandItemViewModel(new(model), PageContext, _contextMenuFactory, ContextMenuPlacement.CommandPalette);
         var replaced = Interlocked.Exchange(ref _command, command);
 
         if (!ReferenceEquals(replaced, command))
