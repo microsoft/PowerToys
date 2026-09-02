@@ -88,6 +88,8 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
 
     public void ActivateSecondary() => _target?.ActivateSecondary();
 
+    public void OpenContextMenu() => commandBar.OpenContextMenu();
+
     public void CloseContextMenu() => commandBar.CloseContextMenu();
 
     private void Page_CommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e)

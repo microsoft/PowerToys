@@ -70,9 +70,16 @@ public sealed partial class CommandBar : UserControl,
         ContextControl.SetCommandContext(context);
     }
 
-    public void Receive(OpenContextMenuMessage message)
+    public void OpenContextMenu() =>
+        OpenContextMenu(null, null, null, ContextMenuFilterLocation.Bottom);
+
+    private void OpenContextMenu(
+        FrameworkElement? element,
+        FlyoutPlacementMode? flyoutPlacementMode,
+        Windows.Foundation.Point? point,
+        ContextMenuFilterLocation contextMenuFilterLocation)
     {
-        if (message.Element is null)
+        if (element is null)
         {
             // This is invoked from the "More" button on the command bar
             if (!ViewModel.ShouldShowContextMenu)
@@ -80,7 +87,7 @@ public sealed partial class CommandBar : UserControl,
                 return;
             }
 
-            ContextControl.PrepareForOpen(message.ContextMenuFilterLocation);
+            ContextControl.PrepareForOpen(contextMenuFilterLocation);
 
             _ = DispatcherQueue.TryEnqueue(
                 () =>
@@ -102,22 +109,25 @@ public sealed partial class CommandBar : UserControl,
                 return;
             }
 
-            ContextControl.PrepareForOpen(message.ContextMenuFilterLocation);
+            ContextControl.PrepareForOpen(contextMenuFilterLocation);
 
             _ = DispatcherQueue.TryEnqueue(
             () =>
             {
                 ContextMenuFlyout.ShowAt(
-                    message.Element!,
+                    element,
                     new FlyoutShowOptions()
                     {
                         ShowMode = FlyoutShowMode.Standard,
-                        Placement = (FlyoutPlacementMode)message.FlyoutPlacementMode!,
-                        Position = message.Point,
+                        Placement = (FlyoutPlacementMode)flyoutPlacementMode!,
+                        Position = point,
                     });
             });
         }
     }
+
+    public void Receive(OpenContextMenuMessage message) =>
+        OpenContextMenu(message.Element, message.FlyoutPlacementMode, message.Point, message.ContextMenuFilterLocation);
 
     public void CloseContextMenu()
     {
@@ -170,7 +180,7 @@ public sealed partial class CommandBar : UserControl,
 
     private void MoreCommandsButton_Clicked(object sender, RoutedEventArgs e)
     {
-        WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
+        OpenContextMenu();
     }
 
     /// <summary>

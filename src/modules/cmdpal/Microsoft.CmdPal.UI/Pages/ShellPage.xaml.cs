@@ -1099,7 +1099,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             // Ctrl+K
             case VirtualKey.K when mods.OnlyCtrl:
-                WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new(null, null, null, ContextMenuFilterLocation.Bottom));
+                _pageInteractions.OpenContextMenu();
                 break;
             default:
                 return false;

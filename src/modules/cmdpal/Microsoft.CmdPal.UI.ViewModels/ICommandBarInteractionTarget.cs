@@ -10,5 +10,7 @@ public interface ICommandBarInteractionTarget
 {
     void SetCommandContext(ICommandBarContext? context);
 
+    void OpenContextMenu();
+
     void CloseContextMenu();
 }
