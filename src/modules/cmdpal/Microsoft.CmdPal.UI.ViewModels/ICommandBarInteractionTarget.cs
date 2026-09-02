@@ -9,4 +9,6 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public interface ICommandBarInteractionTarget
 {
     void SetCommandContext(ICommandBarContext? context);
+
+    void CloseContextMenu();
 }

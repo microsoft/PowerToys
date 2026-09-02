@@ -66,6 +66,7 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         _eventSource = target as IPageInteractionEventSource;
         if (_eventSource is not null)
         {
+            _eventSource.ContextMenuCloseRequested += Target_ContextMenuCloseRequested;
             _eventSource.FocusSearchRequested += Target_FocusSearchRequested;
             _eventSource.DragStateChanged += Target_DragStateChanged;
         }
@@ -86,6 +87,8 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
     public void ActivatePrimary() => _target?.ActivatePrimary();
 
     public void ActivateSecondary() => _target?.ActivateSecondary();
+
+    public void CloseContextMenu() => commandBar.CloseContextMenu();
 
     private void Page_CommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e)
     {
@@ -135,6 +138,14 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         }
     }
 
+    private void Target_ContextMenuCloseRequested(object? sender, EventArgs e)
+    {
+        if (ReferenceEquals(sender, _eventSource))
+        {
+            commandBar.CloseContextMenu();
+        }
+    }
+
     private void Target_DragStateChanged(object? sender, PageDragStateChangedEventArgs e)
     {
         if (ReferenceEquals(sender, _eventSource))
@@ -173,6 +184,7 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
     {
         if (_eventSource is not null)
         {
+            _eventSource.ContextMenuCloseRequested -= Target_ContextMenuCloseRequested;
             _eventSource.FocusSearchRequested -= Target_FocusSearchRequested;
             _eventSource.DragStateChanged -= Target_DragStateChanged;
         }

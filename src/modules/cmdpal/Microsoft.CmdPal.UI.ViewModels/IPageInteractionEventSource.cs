@@ -6,6 +6,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public interface IPageInteractionEventSource
 {
+    event EventHandler? ContextMenuCloseRequested;
+
     event EventHandler? FocusSearchRequested;
 
     event EventHandler<PageDragStateChangedEventArgs>? DragStateChanged;

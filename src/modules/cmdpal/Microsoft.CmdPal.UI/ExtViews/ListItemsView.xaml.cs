@@ -65,6 +65,8 @@ public sealed partial class ListItemsView : UserControl
 
     public event EventHandler? FocusSearchRequested;
 
+    public event EventHandler? ContextMenuCloseRequested;
+
     public event EventHandler<PageDragStateChangedEventArgs>? DragStateChanged;
 
     private ListViewBase ItemView => ViewModel?.IsGridView == true ? ItemsGrid : ItemsList;
@@ -1031,7 +1033,7 @@ public sealed partial class ListItemsView : UserControl
     private void Items_OnContextCanceled(UIElement sender, RoutedEventArgs e)
     {
         CancelPendingContextMenuOpen();
-        _ = DispatcherQueue.TryEnqueue(() => WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>());
+        _ = DispatcherQueue.TryEnqueue(() => ContextMenuCloseRequested?.Invoke(this, EventArgs.Empty));
     }
 
     private void Items_PointerPressed(object sender, PointerRoutedEventArgs e) => _lastInputSource = InputSource.Pointer;

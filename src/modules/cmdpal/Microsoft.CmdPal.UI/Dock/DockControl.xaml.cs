@@ -27,7 +27,7 @@ using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
-public sealed partial class DockControl : UserControl, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>, IRecipient<ExitDockEditModeMessage>, IRecipient<CrossMonitorBandDropMessage>
+public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditModeMessage>, IRecipient<ExitDockEditModeMessage>, IRecipient<CrossMonitorBandDropMessage>
 {
     private DockViewModel _viewModel;
 
@@ -95,6 +95,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     {
         _viewModel = viewModel;
         InitializeComponent();
+        ContextControl.CloseRequested += ContextControl_CloseRequested;
         Loaded += DockControl_Loaded;
         Unloaded += DockControl_Unloaded;
 
@@ -105,7 +106,6 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     private void DockControl_Loaded(object sender, RoutedEventArgs e)
     {
         WeakReferenceMessenger.Default.UnregisterAll(this);
-        WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<EnterDockEditModeMessage>(this);
         WeakReferenceMessenger.Default.Register<ExitDockEditModeMessage>(this);
         WeakReferenceMessenger.Default.Register<CrossMonitorBandDropMessage>(this);
@@ -506,7 +506,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         ContextControl.AnnounceOpened();
     }
 
-    public void Receive(CloseContextMenuMessage message)
+    private void ContextControl_CloseRequested(object? sender, EventArgs e)
     {
         if (ContextMenuFlyout.IsOpen)
         {

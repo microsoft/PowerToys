@@ -57,6 +57,8 @@ public sealed partial class ContextMenu : UserControl,
 
     public ContextMenuViewModel ViewModel { get; }
 
+    public event EventHandler? CloseRequested;
+
     public event EventHandler? FocusSearchRequested;
 
     public ContextMenu()
@@ -161,7 +163,7 @@ public sealed partial class ContextMenu : UserControl,
         if (result == ContextKeybindingResult.Hide)
         {
             msg.Handled = true;
-            WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
+            RequestClose();
             UpdateUiForStackChange();
         }
         else if (result == ContextKeybindingResult.KeepOpen)
@@ -181,7 +183,7 @@ public sealed partial class ContextMenu : UserControl,
         {
             if (InvokeCommand(item) == ContextKeybindingResult.Hide)
             {
-                WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
+                RequestClose();
             }
 
             UpdateUiForStackChange();
@@ -202,7 +204,7 @@ public sealed partial class ContextMenu : UserControl,
         if (result == ContextKeybindingResult.Hide)
         {
             e.Handled = true;
-            WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
+            RequestClose();
             UpdateUiForStackChange();
         }
         else if (result == ContextKeybindingResult.KeepOpen)
@@ -223,7 +225,7 @@ public sealed partial class ContextMenu : UserControl,
         if (e.Key == VirtualKey.Escape)
         {
             // Close the context menu (if not already handled)
-            WeakReferenceMessenger.Default.Send(new CloseContextMenuMessage());
+            RequestClose();
 
             // Find the parent CommandBar and set focus to MoreCommandsButton
             var parent = this.FindParent<CommandBar>();
@@ -263,7 +265,7 @@ public sealed partial class ContextMenu : UserControl,
             {
                 if (InvokeCommand(item) == ContextKeybindingResult.Hide)
                 {
-                    WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
+                    RequestClose();
                 }
 
                 UpdateUiForStackChange();
@@ -281,8 +283,7 @@ public sealed partial class ContextMenu : UserControl,
             }
             else
             {
-                WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
-                FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+                RequestClose(focusSearch: true);
                 UpdateUiForStackChange();
             }
 
@@ -446,4 +447,13 @@ public sealed partial class ContextMenu : UserControl,
     }
 
     private ContextKeybindingResult InvokeCommand(CommandItemViewModel command) => ViewModel.InvokeCommand(command);
+
+    private void RequestClose(bool focusSearch = false)
+    {
+        CloseRequested?.Invoke(this, EventArgs.Empty);
+        if (focusSearch)
+        {
+            FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+        }
+    }
 }

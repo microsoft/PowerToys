@@ -16,7 +16,6 @@ namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class CommandBar : UserControl,
     IRecipient<OpenContextMenuMessage>,
-    IRecipient<CloseContextMenuMessage>,
     IRecipient<TryCommandKeybindingMessage>,
     ICurrentPageAware,
     ICommandBarInteractionTarget
@@ -40,11 +39,11 @@ public sealed partial class CommandBar : UserControl,
     public CommandBar()
     {
         this.InitializeComponent();
+        ContextControl.CloseRequested += (_, _) => CloseContextMenu();
         ContextControl.FocusSearchRequested += (_, _) => FocusSearchRequested?.Invoke(this, EventArgs.Empty);
 
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
-        WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
     }
 
@@ -120,7 +119,7 @@ public sealed partial class CommandBar : UserControl,
         }
     }
 
-    public void Receive(CloseContextMenuMessage message)
+    public void CloseContextMenu()
     {
         if (ContextMenuFlyout.IsOpen)
         {
