@@ -15,6 +15,7 @@ namespace
     const wchar_t JSON_KEY_VALUE[] = L"value";
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
     const wchar_t JSON_KEY_PEN_ACTIVATION_SHORTCUT[] = L"pen_activation_shortcut";
+    const wchar_t JSON_KEY_PRESENTER_ACTIVATION_SHORTCUT[] = L"presenter_activation_shortcut";
     const wchar_t JSON_KEY_ACTIVATION_BUTTON[] = L"activation_button";
     const wchar_t JSON_KEY_ALWAYS_ON_BUTTON[] = L"always_on_button";
     const wchar_t JSON_KEY_SUPPRESS_ACTIVATION_BUTTON[] = L"suppress_activation_button";
@@ -69,7 +70,8 @@ private:
     {
         HotkeyMouse = 0,
         HotkeyPen = 1,
-        HotkeyCount = 2,
+        HotkeyPresenter = 2,
+        HotkeyCount = 3,
     };
 
     Hotkey m_hotkeys[HotkeyCount]{};
@@ -193,13 +195,17 @@ public:
             return false;
         }
 
-        if (hotkeyId == HotkeyPen)
+        switch (hotkeyId)
         {
+        case HotkeyPen:
             LaserPointerSwitchPen();
-        }
-        else
-        {
+            break;
+        case HotkeyPresenter:
+            LaserPointerSwitchPresenter();
+            break;
+        default:
             LaserPointerSwitch();
+            break;
         }
 
         return true;
@@ -254,6 +260,7 @@ public:
         {
             parse_hotkey(settingsObject, JSON_KEY_ACTIVATION_SHORTCUT, HotkeyMouse, L"activation");
             parse_hotkey(settingsObject, JSON_KEY_PEN_ACTIVATION_SHORTCUT, HotkeyPen, L"pen activation");
+            parse_hotkey(settingsObject, JSON_KEY_PRESENTER_ACTIVATION_SHORTCUT, HotkeyPresenter, L"presenter activation");
             try
             {
                 // Parse activation button
@@ -439,9 +446,10 @@ public:
         }
         m_hotkeys[HotkeyMouse].id = static_cast<int>(HotkeyMouse);
 
-        // The pen shortcut has no default: leaving it unset means the pen is only armed
-        // by the mouse shortcut, which is how the module behaved before it existed.
+        // Neither the pen nor the presenter shortcut has a default. Leaving one unset is
+        // how that half of the module stays switched off.
         m_hotkeys[HotkeyPen].id = static_cast<int>(HotkeyPen);
+        m_hotkeys[HotkeyPresenter].id = static_cast<int>(HotkeyPresenter);
 
         m_laserPointerSettings = laserPointerSettings;
 

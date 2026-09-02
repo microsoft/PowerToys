@@ -46,6 +46,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     () => Properties.PenActivationShortcut,
                     value => Properties.PenActivationShortcut = value ?? Properties.DefaultPenActivationShortcut,
                     "MouseUtils_LaserPointer_PenActivationShortcut"),
+
+                new HotkeyAccessor(
+                    () => Properties.PresenterActivationShortcut,
+                    value => Properties.PresenterActivationShortcut = value ?? Properties.DefaultPresenterActivationShortcut,
+                    "MouseUtils_LaserPointer_PresenterActivationShortcut"),
             };
 
             return hotkeyAccessors.ToArray();

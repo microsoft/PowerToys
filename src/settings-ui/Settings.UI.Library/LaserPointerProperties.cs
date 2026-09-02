@@ -20,16 +20,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [CmdConfigureIgnore]
         public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x4C);
 
-        // The pen shortcut has no default. Leaving it unset is how pen support is turned
-        // off: nothing else can arm the pen.
+        // Neither of these has a default. Leaving one unset is how that half of the
+        // module stays switched off.
         [CmdConfigureIgnore]
         public HotkeySettings DefaultPenActivationShortcut => new HotkeySettings();
+
+        [CmdConfigureIgnore]
+        public HotkeySettings DefaultPresenterActivationShortcut => new HotkeySettings();
 
         [JsonPropertyName("activation_shortcut")]
         public HotkeySettings ActivationShortcut { get; set; }
 
         [JsonPropertyName("pen_activation_shortcut")]
         public HotkeySettings PenActivationShortcut { get; set; }
+
+        // Toggles the shareable mirror window. Independent of the laser itself, so it can
+        // stay up for a whole presentation.
+        [JsonPropertyName("presenter_activation_shortcut")]
+        public HotkeySettings PresenterActivationShortcut { get; set; }
 
         [JsonPropertyName("activation_button")]
         public IntProperty ActivationButton { get; set; }
@@ -72,6 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             ActivationShortcut = DefaultActivationShortcut;
             PenActivationShortcut = DefaultPenActivationShortcut;
+            PresenterActivationShortcut = DefaultPresenterActivationShortcut;
             ActivationButton = new IntProperty(ActivationButtonMiddle);
             AlwaysOnButton = new IntProperty(ActivationButtonNone);
             SuppressActivationButton = new BoolProperty(true);

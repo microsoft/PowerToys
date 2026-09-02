@@ -67,4 +67,7 @@ bool LaserPointerIsEnabled();
 // Arms/disarms the mouse. The pen has its own shortcut so it can be used on its own.
 void LaserPointerSwitch();
 void LaserPointerSwitchPen();
+// Independent of the laser: mirrors the window in front into an off-screen window that
+// screen sharing can pick up, and keeps mirroring it until switched off again.
+void LaserPointerSwitchPresenter();
 void LaserPointerApplySettings(LaserPointerSettings settings);

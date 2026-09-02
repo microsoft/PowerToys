@@ -438,6 +438,14 @@
                         <ptcontrols:CheckBoxWithDescriptionControl x:Uid="MouseUtils_LaserPointer_PenRenderWhenClose_Check" IsChecked="{x:Bind ViewModel.LaserPointerPenRenderWhenClose, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
+                        Name="MouseUtilsLaserPointerPresenter"
+                        x:Uid="MouseUtils_LaserPointer_PresenterActivationShortcut"
+                        AutomationProperties.AutomationId="MouseUtils_LaserPointerPresenterShortcutId"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
+                        IsEnabled="{x:Bind ViewModel.IsLaserPointerEnabled, Mode=OneWay}">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.LaserPointerPresenterActivationShortcut, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
                         Name="MouseUtilsLaserPointerSize"
                         x:Uid="MouseUtils_LaserPointer_Size"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE1C2;}"

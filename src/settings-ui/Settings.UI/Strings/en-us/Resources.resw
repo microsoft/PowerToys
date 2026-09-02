@@ -6719,6 +6719,13 @@ Text uses the current drawing color.</value>
   <data name="MouseUtils_LaserPointer_Appearance.Description" xml:space="preserve">
     <value>Color, thickness and fade of the laser trail</value>
   </data>
+  <data name="MouseUtils_LaserPointer_PresenterActivationShortcut.Header" xml:space="preserve">
+    <value>Shareable window</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_PresenterActivationShortcut.Description" xml:space="preserve">
+    <value>Shortcut that mirrors the window in front into a window named "Present: ...", with the laser trail drawn into it. Share that window instead, so people see the laser pointer even when you share a single window rather than the whole screen. It stays up until you press the shortcut again, independently of the laser pointer itself.</value>
+    <comment>"Present: ..." is a window title prefix and should keep its formatting.</comment>
+  </data>
   <data name="MouseUtils_LaserPointer_Size.Header" xml:space="preserve">
     <value>Thickness</value>
   </data>

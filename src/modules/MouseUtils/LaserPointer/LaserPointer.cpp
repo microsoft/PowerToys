@@ -8,6 +8,7 @@
 #include "LaserPointer.h"
 #include "LaserStroke.h"
 #include "trace.h"
+#include "PresenterWindow.h"
 
 #include <algorithm>
 #include <cmath>
@@ -39,6 +40,17 @@ namespace
     constexpr WPARAM WAKE_END = 0;
     constexpr WPARAM WAKE_BEGIN = 1;
     constexpr WPARAM WAKE_RESUME = 2;
+
+    // How long the name of the mirrored window stays on screen. The border itself has
+    // no timeout: like the one Teams draws, it stays for as long as sharing is live.
+    constexpr uint64_t PRESENTER_NOTICE_MS = 2500;
+
+    // Teams marks a shared window with a red outline; this matches it so the two do not
+    // look like different things happening.
+    constexpr float PRESENTER_BORDER_R = 0.769f; // #C4314B
+    constexpr float PRESENTER_BORDER_G = 0.192f;
+    constexpr float PRESENTER_BORDER_B = 0.294f;
+    constexpr float PRESENTER_BORDER_WIDTH = 5.0f;
 
     constexpr bool IsFromPen(ULONG_PTR extraInfo) noexcept
     {
@@ -98,6 +110,7 @@ struct LaserPointerOverlay
     void Terminate();
     void SwitchActivationMode();
     void SwitchPenActivationMode();
+    void SwitchPresenterMode();
     void ApplySettings(LaserPointerSettings settings);
     void QueueSettings(LaserPointerSettings settings);
 
@@ -116,6 +129,7 @@ private:
 
 
     void ArmMouse();
+    void TogglePresenter();
     void DisarmMouse();
     void ArmPen();
     void DisarmPen();
@@ -134,8 +148,18 @@ private:
     void ReleaseGraphics();
     bool EnsureOverlayGeometry();
     void Render(uint64_t nowMs);
-    void RenderStroke(const LaserPointerCore::LaserStroke& stroke, uint64_t nowMs);
-    void FillOutline(const LaserPointerCore::LaserStroke& stroke, uint64_t nowMs, float widthScale, const D2D1_COLOR_F& color);
+    void RenderStroke(ID2D1DeviceContext* context, const LaserPointerCore::LaserStroke& stroke, uint64_t nowMs);
+    void FillOutline(ID2D1DeviceContext* context, const LaserPointerCore::LaserStroke& stroke, uint64_t nowMs, float widthScale, const D2D1_COLOR_F& color);
+    void DrawTrails(ID2D1DeviceContext* context, uint64_t nowMs);
+    void DrawPresenterNotice(uint64_t nowMs);
+
+    // The overlay spans the whole desktop. While it is only showing the sharing border
+    // it is cut down to that border, so everything else stays clickable.
+    void UpdateOverlayRegion(bool trailVisible);
+
+    // While only the border is showing the overlay sits directly above the mirrored
+    // window rather than above everything, so other windows can cover it.
+    void UpdateOverlayZOrder(bool trailVisible, uint64_t nowMs);
     void ShowOverlay();
     void HideOverlay();
 
@@ -148,6 +172,7 @@ private:
     static constexpr DWORD WM_WAKE_RENDER_LOOP = WM_APP + 2;
     static constexpr DWORD WM_TERMINATE_OVERLAY = WM_APP + 3;
     static constexpr DWORD WM_SWITCH_PEN_ACTIVATION_MODE = WM_APP + 4;
+    static constexpr DWORD WM_SWITCH_PRESENTER_MODE = WM_APP + 5;
 
     HINSTANCE m_hinstance = nullptr;
     HWND m_hwndOwner = nullptr;
@@ -216,6 +241,24 @@ private:
     bool m_penAwaitingFirstSample = false;
     bool m_penStrokeOpen = false;
 
+    // Mirrors the window that was in front when the laser was armed, so per-window
+    // screen sharing can see the trail.
+    PresenterWindow m_presenter;
+
+    // Short-lived confirmation of which window is being mirrored.
+    uint64_t m_presenterNoticeUntilMs = 0;
+    RECT m_presenterNoticeRect{};
+    std::wstring m_presenterNoticeText;
+    bool m_overlayRegionIsFrame = false;
+    // What the frame region was last built from, so it can follow a window that moves.
+    RECT m_overlayRegionRect{};
+    bool m_overlayBelowTopmost = false;
+    uint64_t m_lastZOrderMs = 0;
+    HWND m_overlayZOrderAfter = nullptr;
+
+    winrt::com_ptr<IDWriteFactory> m_dwriteFactory;
+    winrt::com_ptr<IDWriteTextFormat> m_noticeFormat;
+
     // Raw input state.
     bool m_rawInputRegistered = false;
     std::vector<BYTE> m_rawInputBuffer;
@@ -252,6 +295,19 @@ bool LaserPointerOverlay::CreateGraphics()
     {
         const D2D1_FACTORY_OPTIONS factoryOptions = { D2D1_DEBUG_LEVEL_NONE };
         winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, factoryOptions, m_d2dFactory.put()));
+
+        // Only used for the short confirmation of which window is being mirrored.
+        winrt::check_hresult(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
+                                                 __uuidof(IDWriteFactory),
+                                                 reinterpret_cast<IUnknown**>(m_dwriteFactory.put())));
+        winrt::check_hresult(m_dwriteFactory->CreateTextFormat(L"Segoe UI",
+                                                              nullptr,
+                                                              DWRITE_FONT_WEIGHT_SEMI_BOLD,
+                                                              DWRITE_FONT_STYLE_NORMAL,
+                                                              DWRITE_FONT_STRETCH_NORMAL,
+                                                              20.0f,
+                                                              L"",
+                                                              m_noticeFormat.put()));
 
         UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
         HRESULT hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, m_d3dDevice.put(), nullptr, nullptr);
@@ -416,7 +472,7 @@ bool LaserPointerOverlay::EnsureOverlayGeometry()
     }
 }
 
-void LaserPointerOverlay::FillOutline(const LaserPointerCore::LaserStroke& stroke, uint64_t nowMs, float widthScale, const D2D1_COLOR_F& color)
+void LaserPointerOverlay::FillOutline(ID2D1DeviceContext* context, const LaserPointerCore::LaserStroke& stroke, uint64_t nowMs, float widthScale, const D2D1_COLOR_F& color)
 {
     if (stroke.BuildOutline(nowMs, m_outline, widthScale) < 3)
     {
@@ -448,15 +504,20 @@ void LaserPointerOverlay::FillOutline(const LaserPointerCore::LaserStroke& strok
         return;
     }
 
-    m_brush->SetColor(color);
-    m_d2dContext->FillGeometry(geometry.get(), m_brush.get());
+    winrt::com_ptr<ID2D1SolidColorBrush> brush;
+    if (FAILED(context->CreateSolidColorBrush(color, brush.put())))
+    {
+        return;
+    }
+
+    context->FillGeometry(geometry.get(), brush.get());
 }
 
 // Draws one trail: an optional soft halo, then the solid body. Both are filled outlines
 // built from the same centerline rather than overlapping stamps, so a semi transparent
 // laser colour keeps a single, even alpha instead of darkening wherever the stroke
 // overlaps itself.
-void LaserPointerOverlay::RenderStroke(const LaserPointerCore::LaserStroke& stroke, uint64_t nowMs)
+void LaserPointerOverlay::RenderStroke(ID2D1DeviceContext* context, const LaserPointerCore::LaserStroke& stroke, uint64_t nowMs)
 {
     const auto& c = m_settings.laserColor;
     const float r = c.R / 255.0f;
@@ -466,10 +527,177 @@ void LaserPointerOverlay::RenderStroke(const LaserPointerCore::LaserStroke& stro
 
     if (m_settings.glowEnabled)
     {
-        FillOutline(stroke, nowMs, GLOW_WIDTH_SCALE, D2D1::ColorF(r, g, b, a * GLOW_ALPHA_SCALE));
+        FillOutline(context, stroke, nowMs, GLOW_WIDTH_SCALE, D2D1::ColorF(r, g, b, a * GLOW_ALPHA_SCALE));
     }
 
-    FillOutline(stroke, nowMs, 1.0f, D2D1::ColorF(r, g, b, a));
+    FillOutline(context, stroke, nowMs, 1.0f, D2D1::ColorF(r, g, b, a));
+}
+
+void LaserPointerOverlay::DrawTrails(ID2D1DeviceContext* context, uint64_t nowMs)
+{
+    for (const auto& past : m_pastStrokes)
+    {
+        RenderStroke(context, past, nowMs);
+    }
+
+    RenderStroke(context, m_stroke, nowMs);
+}
+
+// The border belongs to the window being shared, so it should be covered when that
+// window is. Sitting at the top of the z-order made it hover over everything, which
+// reads as a bug rather than an indicator. Only the trail needs to be above all windows.
+void LaserPointerOverlay::UpdateOverlayZOrder(bool trailVisible, uint64_t nowMs)
+{
+    const bool borderOnly = m_presenter.Active() && !trailVisible;
+
+    if (!borderOnly)
+    {
+        if (m_overlayBelowTopmost)
+        {
+            SetWindowPos(m_hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+            m_overlayBelowTopmost = false;
+    m_overlayZOrderAfter = nullptr;
+            m_overlayZOrderAfter = nullptr;
+        }
+        return;
+    }
+
+    // Checked periodically rather than every frame: the mirrored window can be raised or
+    // lowered by the user at any time, but polling the z-order on every tick is wasteful.
+    constexpr uint64_t Z_ORDER_REFRESH_MS = 400;
+    if (m_overlayBelowTopmost && (nowMs - m_lastZOrderMs) < Z_ORDER_REFRESH_MS)
+    {
+        return;
+    }
+
+    m_lastZOrderMs = nowMs;
+
+    // SetWindowPos places the window *after* the one it is given, so passing the target
+    // would bury the border behind it. What is wanted is the slot the target itself
+    // occupies, which means inserting after whatever currently sits above it.
+    HWND above = GetWindow(m_presenter.Target(), GW_HWNDPREV);
+    while (above != nullptr && (above == m_hwnd || above == m_hwndOwner))
+    {
+        above = GetWindow(above, GW_HWNDPREV);
+    }
+
+    // Nothing to do when the overlay is already in the right slot. Re-issuing the same
+    // SetWindowPos on a timer makes the border blink for no reason.
+    if (m_overlayBelowTopmost && above == m_overlayZOrderAfter)
+    {
+        return;
+    }
+
+    // Topmost has to be dropped first, or inserting after an ordinary window still
+    // leaves this in the topmost band.
+    if (!m_overlayBelowTopmost)
+    {
+        SetWindowPos(m_hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+        m_overlayBelowTopmost = true;
+    }
+
+    // No window above the target means it is already at the front, so the overlay goes to
+    // the front of the ordinary band - still below anything genuinely topmost.
+    SetWindowPos(m_hwnd, above != nullptr ? above : HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+    m_overlayZOrderAfter = above;
+}
+
+// A full-screen window is not click-through in practice, even with WS_EX_TRANSPARENT and
+// HTTRANSPARENT: while it was only visible for the instant a trail was being drawn that
+// went unnoticed, but keeping it up for a whole sharing session swallows every click.
+// Restricting the window to the border itself means there is physically nothing over the
+// rest of the screen to intercept anything.
+void LaserPointerOverlay::UpdateOverlayRegion(bool trailVisible)
+{
+    const bool wantFrame = m_presenter.Active() && !trailVisible;
+
+    if (!wantFrame)
+    {
+        if (m_overlayRegionIsFrame)
+        {
+            // The trail can be drawn anywhere, so the whole surface is needed again.
+            SetWindowRgn(m_hwnd, nullptr, FALSE);
+            m_overlayRegionIsFrame = false;
+        }
+        return;
+    }
+
+    // Window-relative, since the overlay is positioned across the virtual desktop.
+    const RECT target = m_presenter.TargetRect();
+
+    // Rebuilt whenever the shared window moves or resizes: the border already follows it
+    // every frame, and a stale region would leave the clickable hole behind.
+    if (m_overlayRegionIsFrame &&
+        target.left == m_overlayRegionRect.left && target.top == m_overlayRegionRect.top &&
+        target.right == m_overlayRegionRect.right && target.bottom == m_overlayRegionRect.bottom)
+    {
+        return;
+    }
+
+    const int width = static_cast<int>(PRESENTER_BORDER_WIDTH) + 1;
+    const int left = target.left - m_overlayBounds.left;
+    const int top = target.top - m_overlayBounds.top;
+    const int right = target.right - m_overlayBounds.left;
+    const int bottom = target.bottom - m_overlayBounds.top;
+
+    const HRGN frame = CreateRectRgn(left, top, right, bottom);
+    const HRGN hole = CreateRectRgn(left + width, top + width, right - width, bottom - width);
+    CombineRgn(frame, frame, hole, RGN_DIFF);
+    DeleteObject(hole);
+
+    // SetWindowRgn takes ownership of the region on success. Redraw is left to the
+    // render loop: asking the window manager to repaint on every region change made the
+    // border blink.
+    SetWindowRgn(m_hwnd, frame, FALSE);
+    m_overlayRegionIsFrame = true;
+    m_overlayRegionRect = target;
+}
+
+// Marks the window being mirrored, the way a conferencing app marks the window it is
+// sharing: a border for as long as sharing lasts, plus its name for the first moments so
+// a wrong pick is obvious immediately rather than being discovered later.
+//
+// The border is drawn on the overlay, not into the mirror, so it stays local to this
+// machine and never appears in what remote viewers see.
+void LaserPointerOverlay::DrawPresenterNotice(uint64_t nowMs)
+{
+    if (!m_presenter.Active() || !m_brush)
+    {
+        return;
+    }
+
+    // Read the rect every frame: the mirrored window can be moved or resized while it is
+    // being shared, and a stale outline would be worse than none.
+    const RECT target = m_presenter.TargetRect();
+    const auto rect = D2D1::RectF(static_cast<float>(target.left) + PRESENTER_BORDER_WIDTH * 0.5f,
+                                  static_cast<float>(target.top) + PRESENTER_BORDER_WIDTH * 0.5f,
+                                  static_cast<float>(target.right) - PRESENTER_BORDER_WIDTH * 0.5f,
+                                  static_cast<float>(target.bottom) - PRESENTER_BORDER_WIDTH * 0.5f);
+
+    m_brush->SetColor(D2D1::ColorF(PRESENTER_BORDER_R, PRESENTER_BORDER_G, PRESENTER_BORDER_B, 1.0f));
+    m_d2dContext->DrawRectangle(rect, m_brush.get(), PRESENTER_BORDER_WIDTH);
+
+    if (nowMs >= m_presenterNoticeUntilMs || !m_noticeFormat)
+    {
+        return;
+    }
+
+    // The name fades out over its last third so it does not simply vanish.
+    const uint64_t remaining = m_presenterNoticeUntilMs - nowMs;
+    const float fade = (std::min)(1.0f, static_cast<float>(remaining) / (PRESENTER_NOTICE_MS / 3.0f));
+
+    const std::wstring label = L"Capturing: " + m_presenterNoticeText;
+    const auto labelRect = D2D1::RectF(rect.left + 12.0f, rect.top + 10.0f, rect.right - 12.0f, rect.top + 44.0f);
+
+    m_brush->SetColor(D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.55f * fade));
+    m_d2dContext->FillRectangle(D2D1::RectF(labelRect.left - 8.0f, labelRect.top - 4.0f, labelRect.right, labelRect.bottom + 4.0f), m_brush.get());
+
+    m_brush->SetColor(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.95f * fade));
+    m_d2dContext->DrawTextW(label.c_str(),
+                            static_cast<UINT32>(label.length()),
+                            m_noticeFormat.get(),
+                            labelRect,
+                            m_brush.get());
 }
 
 void LaserPointerOverlay::Render(uint64_t nowMs)
@@ -487,12 +715,8 @@ void LaserPointerOverlay::Render(uint64_t nowMs)
         -static_cast<float>(m_overlayBounds.left),
         -static_cast<float>(m_overlayBounds.top)));
 
-    for (const auto& past : m_pastStrokes)
-    {
-        RenderStroke(past, nowMs);
-    }
-
-    RenderStroke(m_stroke, nowMs);
+    DrawTrails(m_d2dContext.get(), nowMs);
+    DrawPresenterNotice(nowMs);
 
     m_d2dContext->SetTransform(D2D1::Matrix3x2F::Identity());
 
@@ -529,7 +753,10 @@ void LaserPointerOverlay::ShowOverlay()
     }
 
     ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
-    SetWindowPos(m_hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+    if (!m_overlayBelowTopmost)
+    {
+        SetWindowPos(m_hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+    }
     m_overlayVisible = true;
 }
 
@@ -539,6 +766,14 @@ void LaserPointerOverlay::HideOverlay()
     {
         return;
     }
+
+    if (m_overlayRegionIsFrame)
+    {
+        SetWindowRgn(m_hwnd, nullptr, FALSE);
+        m_overlayRegionIsFrame = false;
+    }
+    m_overlayBelowTopmost = false;
+    m_overlayZOrderAfter = nullptr;
 
     ShowWindow(m_hwnd, SW_HIDE);
     m_overlayVisible = false;
@@ -686,6 +921,74 @@ void LaserPointerOverlay::ArmMouse()
     Logger::info("Laser Pointer mouse armed, waiting for button {}.", static_cast<int>(m_settings.activationButton));
 }
 
+// The window under the pointer wins over the focused one. Focus is invisible state and
+// is usually still on whatever was clicked last - Teams, or the settings window - while
+// the window being pointed at is exactly the one the user means.
+static HWND PickPresenterTarget() noexcept
+{
+    POINT cursor{};
+    if (GetCursorPos(&cursor))
+    {
+        // The overlay answers HTTRANSPARENT, so WindowFromPoint looks straight through
+        // it; GA_ROOT turns a child control into the top-level window that owns it.
+        if (const HWND under = WindowFromPoint(cursor))
+        {
+            const HWND root = GetAncestor(under, GA_ROOT);
+            if (PresenterWindow::IsPresentableWindow(root))
+            {
+                return root;
+            }
+        }
+    }
+
+    // Pointing at the desktop or the taskbar falls back to whatever has focus.
+    const HWND foreground = GetForegroundWindow();
+    return PresenterWindow::IsPresentableWindow(foreground) ? foreground : nullptr;
+}
+
+// Toggles the mirror. It is deliberately independent of the laser: a presenter turns it
+// on once, shares it in Teams, and leaves it up for the whole session while the laser
+// comes and goes.
+void LaserPointerOverlay::TogglePresenter()
+{
+    if (m_presenter.Active())
+    {
+        m_presenter.Stop();
+        if (!m_drawing)
+        {
+            StopRenderLoop();
+            HideOverlay();
+        }
+        return;
+    }
+
+    const HWND target = PickPresenterTarget();
+    if (target == nullptr)
+    {
+        // The taskbar, the desktop and our own windows are not worth mirroring; the
+        // laser still works on screen as usual.
+        Logger::info("Laser Pointer presenter not started: nothing presentable under the pointer.");
+        return;
+    }
+
+    if (!m_presenter.Start(m_hinstance, target, m_d3dDevice.get(), m_d2dDevice.get()))
+    {
+        Logger::warn("Laser Pointer presenter could not start.");
+        return;
+    }
+
+    // The mirror lives off screen, so without this the user has no way of telling which
+    // window was picked until they open the sharing picker. Outline it and name it.
+    m_presenterNoticeRect = m_presenter.TargetRect();
+    m_presenterNoticeText = m_presenter.TargetTitle();
+    m_presenterNoticeUntilMs = GetTickCount64() + PRESENTER_NOTICE_MS;
+
+    // The mirror has to keep refreshing even with no trail on screen, because the window
+    // it mirrors carries on changing.
+    ShowOverlay();
+    StartRenderLoop();
+}
+
 void LaserPointerOverlay::DisarmMouse()
 {
     if (!m_mouseArmed)
@@ -731,7 +1034,7 @@ void LaserPointerOverlay::DisarmPen()
     UnregisterPenRawInput();
     UpdateHook();
     ReleaseIfIdle();
-    if (!m_mouseArmed && !m_drawing)
+    if (!m_mouseArmed && !m_drawing && !m_presenter.Active())
     {
         HideOverlay();
     }
@@ -752,6 +1055,12 @@ void LaserPointerOverlay::ReleaseIfIdle()
     m_stroke.Clear();
     m_pastStrokes.clear();
 
+    // The presenter border outlives the laser, so the surface has to stay up for it.
+    if (m_presenter.Active())
+    {
+        return;
+    }
+
     StopRenderLoop();
     HideOverlay();
 }
@@ -771,6 +1080,7 @@ void LaserPointerOverlay::Disarm()
     m_stroke.Clear();
     m_pastStrokes.clear();
 
+    m_presenter.Stop();
     UnregisterPenRawInput();
 
     if (m_mouseHook != nullptr)
@@ -793,6 +1103,18 @@ void LaserPointerOverlay::SwitchActivationMode()
     if (window != nullptr)
     {
         PostMessage(window, WM_SWITCH_ACTIVATION_MODE, 0, 0);
+    }
+}
+
+void LaserPointerOverlay::SwitchPresenterMode()
+{
+    AcquireSRWLockShared(&m_hwndLock);
+    const HWND window = m_hwnd;
+    ReleaseSRWLockShared(&m_hwndLock);
+
+    if (window != nullptr)
+    {
+        PostMessage(window, WM_SWITCH_PRESENTER_MODE, 0, 0);
     }
 }
 
@@ -1284,7 +1606,20 @@ void LaserPointerOverlay::OnRenderTick()
         }
     }
 
-    bool hasContent = m_stroke.Prune(now);
+    if (m_presenter.Active())
+    {
+        if (!m_presenter.Present([this, now](ID2D1DeviceContext* context) { DrawTrails(context, now); }))
+        {
+            Logger::info("Laser Pointer presenter ended (target window gone or device lost).");
+            m_presenter.Stop();
+        }
+    }
+
+    // The border is drawn for the whole session, so the mirror being up is itself a
+    // reason to keep rendering.
+    const bool presenterActive = m_presenter.Active();
+    const bool noticeActive = now < m_presenterNoticeUntilMs;
+    bool hasContent = m_stroke.Prune(now) || noticeActive || presenterActive;
 
     for (auto it = m_pastStrokes.begin(); it != m_pastStrokes.end();)
     {
@@ -1311,6 +1646,12 @@ void LaserPointerOverlay::OnRenderTick()
         m_stroke.Clear();
         return;
     }
+
+    // A trail is showing whenever there is stroke content or the label is still up; the
+    // border on its own does not need the full surface.
+    const bool trailVisible = !m_stroke.Empty() || !m_pastStrokes.empty() || noticeActive;
+    UpdateOverlayRegion(trailVisible);
+    UpdateOverlayZOrder(trailVisible, now);
 
     if (!m_overlayVisible)
     {
@@ -1447,6 +1788,10 @@ LRESULT CALLBACK LaserPointerOverlay::WndProc(HWND hWnd, UINT message, WPARAM wP
         {
             instance->ArmMouse();
         }
+        return 0;
+
+    case WM_SWITCH_PRESENTER_MODE:
+        instance->TogglePresenter();
         return 0;
 
     case WM_SWITCH_PEN_ACTIVATION_MODE:
@@ -1607,6 +1952,15 @@ void LaserPointerSwitchPen()
     {
         Logger::info("Switching Laser Pointer pen activation mode.");
         LaserPointerOverlay::instance->SwitchPenActivationMode();
+    }
+}
+
+void LaserPointerSwitchPresenter()
+{
+    if (LaserPointerOverlay::instance != nullptr)
+    {
+        Logger::info("Switching Laser Pointer presenter window.");
+        LaserPointerOverlay::instance->SwitchPresenterMode();
     }
 }
 
