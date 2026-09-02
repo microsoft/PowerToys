@@ -223,7 +223,7 @@ public class ItemActionControllerTests
             RequestedShortcut = chord,
             MoreCommands = hasSubmenu ? [new CommandContextItem(new NoOpCommand { Name = "Child" })] : [],
         };
-        var command = new CommandContextItemViewModel(model, new(_pageContext));
+        var command = new CommandContextItemViewModel(model, new(_pageContext), ContextMenuPlacement.CommandPalette);
         try
         {
             command.SlowInitializeProperties();

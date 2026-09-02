@@ -68,7 +68,7 @@ public partial class CommandItemViewModelTests
             ],
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
 
         var allCommands = viewModel.AllCommands;
@@ -84,7 +84,7 @@ public partial class CommandItemViewModelTests
         var item = new ListItem(new NoOpCommand { Name = "Primary" });
         item.GetProperties()[WellKnownExtensionAttributes.DockCommandId] = "provider.item.dock";
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.InitializeProperties();
 
         Assert.AreEqual("provider.item.dock", viewModel.DockCommandId);
@@ -97,7 +97,7 @@ public partial class CommandItemViewModelTests
         var item = new PropertiesTestItem();
         item.GetProperties()[WellKnownExtensionAttributes.DockCommandId] = "provider.item.dock";
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         try
         {
             viewModel.InitializeProperties();
@@ -124,7 +124,7 @@ public partial class CommandItemViewModelTests
         var pageContext = new TestPageContext();
         var child = new ListItem(new NoOpCommand()) { Title = "Child" };
         var band = new WrappedDockItem([child], "provider.band", "Band");
-        var viewModel = new CommandItemViewModel(new(band), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(band), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.InitializeProperties();
 
         var items = DockBandViewModel.GetItemsForDisplay(viewModel);
@@ -148,7 +148,7 @@ public partial class CommandItemViewModelTests
             ],
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
 
         Assert.IsTrue(viewModel.HasSubmenu);
@@ -175,7 +175,7 @@ public partial class CommandItemViewModelTests
             MoreCommands = [.. moreCommands],
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
 
         Assert.IsFalse(viewModel.HasOverflowCommands);
@@ -196,7 +196,7 @@ public partial class CommandItemViewModelTests
             ],
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
 
         Assert.IsTrue(viewModel.HasOverflowCommands);
@@ -213,7 +213,7 @@ public partial class CommandItemViewModelTests
             Title = "Primary",
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.FastInitializeProperties();
 
         Assert.AreEqual(1, viewModel.AllCommands.Count);
@@ -233,7 +233,7 @@ public partial class CommandItemViewModelTests
             Name = "List page",
         };
         var item = new CommandItem(page) { Title = page.Name };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
 
         viewModel.FastInitializeProperties();
 
@@ -257,7 +257,7 @@ public partial class CommandItemViewModelTests
             ],
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
 
         Assert.AreEqual(1, viewModel.AllCommands.Count);
@@ -287,7 +287,7 @@ public partial class CommandItemViewModelTests
             ],
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
 
         var primaryContextItem = (CommandContextItemViewModel)viewModel.AllCommands[0];
@@ -331,7 +331,7 @@ public partial class CommandItemViewModelTests
         };
         var viewModel = isDock
             ? new DockItemViewModel(new(item), new(pageContext), true, true, DefaultContextMenuFactory.Instance)
-            : new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+            : new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
 
         Assert.AreSame(viewModel, viewModel.PrimaryCommand);
@@ -378,7 +378,7 @@ public partial class CommandItemViewModelTests
         {
             MoreCommands = [new CommandContextItem(new NoOpCommand { Name = "Secondary" }), requested],
         };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
         try
         {
@@ -418,7 +418,7 @@ public partial class CommandItemViewModelTests
         };
         var viewModel = isDock
             ? new DockItemViewModel(new(item), new(pageContext), true, true, DefaultContextMenuFactory.Instance)
-            : new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+            : new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
         var readCount = item.MenuReadCount;
         var snapshot = viewModel.AllCommands;
@@ -457,14 +457,14 @@ public partial class CommandItemViewModelTests
             Command = new NoOpCommand { Name = "Primary" },
             MoreCommands = [new CommandContextItem(new NoOpCommand { Name = "Secondary" })],
         };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
         viewModel.ApplyPendingUpdates();
         await uiTasks.StartNew(() => { });
 
         using var services = new ServiceCollection().AddSingleton(Mock.Of<ISettingsService>()).BuildServiceProvider();
         var adapter = new TopLevelViewModel(viewModel, TopLevelType.Normal, CommandPaletteHost.Instance, CommandProviderContext.Empty, new(), services, item, DefaultContextMenuFactory.Instance);
-        var wrappedViewModel = new CommandItemViewModel(new(adapter), new(pageContext), DefaultContextMenuFactory.Instance);
+        var wrappedViewModel = new CommandItemViewModel(new(adapter), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         wrappedViewModel.SlowInitializeProperties();
         var wrappedNotified = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         wrappedViewModel.PropertyChanged += (_, args) =>
@@ -544,7 +544,7 @@ public partial class CommandItemViewModelTests
             var item = new CommandItem(new NoOpCommand { Name = isDock ? string.Empty : "Root" }) { MoreCommands = [parent] };
             var viewModel = isDock
                 ? new DockItemViewModel(new(item), new(pageContext), true, true, DefaultContextMenuFactory.Instance)
-                : new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+                : new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
             viewModel.SlowInitializeProperties();
             var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
             menu.PrepareForOpen(viewModel);
@@ -614,8 +614,8 @@ public partial class CommandItemViewModelTests
         var second = new CommandContextItem(new NoOpCommand { Name = "Second" }) { RequestedShortcut = key };
         var firstItem = new CommandItem(new NoOpCommand()) { MoreCommands = [first] };
         var secondItem = new CommandItem(new NoOpCommand()) { MoreCommands = [second] };
-        var firstViewModel = new CommandItemViewModel(new(firstItem), new(pageContext), DefaultContextMenuFactory.Instance);
-        var secondViewModel = new CommandItemViewModel(new(secondItem), new(pageContext), DefaultContextMenuFactory.Instance);
+        var firstViewModel = new CommandItemViewModel(new(firstItem), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
+        var secondViewModel = new CommandItemViewModel(new(secondItem), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         firstViewModel.SlowInitializeProperties();
         secondViewModel.SlowInitializeProperties();
         var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
@@ -654,7 +654,7 @@ public partial class CommandItemViewModelTests
         var item = new CommandItem(new NoOpCommand()) { MoreCommands = hasVisibleDuplicate ? [hidden, visible] : [hidden] };
         var viewModel = isDock
             ? new DockItemViewModel(new(item), new(pageContext), true, true, DefaultContextMenuFactory.Instance)
-            : new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+            : new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
 
         try
@@ -692,7 +692,7 @@ public partial class CommandItemViewModelTests
             MoreCommands = [child],
         };
         var item = new CommandItem(new NoOpCommand { Name = "Root" }) { MoreCommands = [parent] };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
         var parentCommand = (CommandContextItemViewModel)viewModel.SecondaryCommand!;
         var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
@@ -740,8 +740,8 @@ public partial class CommandItemViewModelTests
     public void SecondaryActivation_RequiresTheCommandInTheDisplayedSnapshot()
     {
         var pageContext = new TestPageContext();
-        var first = new CommandContextItemViewModel(new CommandContextItem(new NoOpCommand { Name = "First" }), new(pageContext));
-        var second = new CommandContextItemViewModel(new CommandContextItem(new NoOpCommand { Name = "Second" }), new(pageContext));
+        var first = new CommandContextItemViewModel(new CommandContextItem(new NoOpCommand { Name = "First" }), new(pageContext), ContextMenuPlacement.CommandPalette);
+        var second = new CommandContextItemViewModel(new CommandContextItem(new NoOpCommand { Name = "Second" }), new(pageContext), ContextMenuPlacement.CommandPalette);
         IContextItemViewModel[] commands = [first];
         CommandItemViewModel secondary = first;
         var context = new Mock<ICommandBarContext>();
@@ -797,7 +797,7 @@ public partial class CommandItemViewModelTests
         }
 
         var item = new CommandItem(new NoOpCommand { Name = hasPrimary ? "Primary" : string.Empty }) { MoreCommands = [.. entries] };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
 
         Assert.IsTrue(viewModel.HasSubmenu);
@@ -817,7 +817,7 @@ public partial class CommandItemViewModelTests
             MoreCommands = [new CommandContextItem(new NoOpCommand { Name = "Leaf" })],
         };
         var item = new CommandItem(new NoOpCommand { Name = "Root" }) { MoreCommands = [parent] };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
         var parentViewModel = (CommandContextItemViewModel)viewModel.SecondaryCommand!;
         var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
@@ -873,7 +873,7 @@ public partial class CommandItemViewModelTests
             MoreCommands = [nested],
         };
         var item = new CommandItem(new NoOpCommand { Name = "Root" }) { MoreCommands = [parent] };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
         var parentViewModel = (CommandContextItemViewModel)viewModel.SecondaryCommand!;
         var nestedViewModel = (CommandContextItemViewModel)parentViewModel.SecondaryCommand!;
@@ -946,7 +946,7 @@ public partial class CommandItemViewModelTests
             ],
         };
         var item = new CommandItem(new NoOpCommand { Name = "Root" }) { MoreCommands = [parent] };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
         var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
 
@@ -994,7 +994,7 @@ public partial class CommandItemViewModelTests
         var parent = new CommandContextItem(new NoOpCommand { Name = "Parent" }) { IsCritical = true };
         var leaf = new CommandContextItem(new NoOpCommand { Name = "Leaf" }) { RequestedShortcut = new(0, (int)VirtualKey.F8, 0) };
         var item = new CommandItem(new NoOpCommand { Name = "Root" }) { MoreCommands = [parent, leaf] };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         await Task.Run(viewModel.SlowInitializeProperties);
         var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
         var changed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1057,7 +1057,7 @@ public partial class CommandItemViewModelTests
         {
             MoreCommands = [new CommandContextItem(new NoOpCommand { Name = "Secondary" })],
         };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
         var previousContext = new Mock<ICommandBarContext>();
         previousContext.SetupGet(context => context.AllCommands).Returns(viewModel.AllCommands);
@@ -1135,7 +1135,7 @@ public partial class CommandItemViewModelTests
             MoreCommands = [new Separator("Group"), new CommandContextItem(new NoOpCommand())],
         };
         var item = new CommandItem(new NoOpCommand { Name = "Root" }) { MoreCommands = [parent] };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
         var parentViewModel = viewModel.AllCommands.OfType<CommandContextItemViewModel>()
             .Single(command => ReferenceEquals(command.Model.Unsafe, parent));
@@ -1174,7 +1174,7 @@ public partial class CommandItemViewModelTests
         {
             MoreCommands = [new CommandContextItem(first), new CommandContextItem(second)],
         };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
         var commands = viewModel.AllCommands.OfType<CommandContextItemViewModel>().ToArray();
         var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
@@ -1254,14 +1254,14 @@ public partial class CommandItemViewModelTests
             Command = primary,
             MoreCommands = [new CommandContextItem(new NoOpCommand { Name = "Secondary" })],
         };
-        var source = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var source = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         source.SlowInitializeProperties();
         source.ApplyPendingUpdates();
         await uiTasks.StartNew(() => { });
 
         using var services = new ServiceCollection().AddSingleton(Mock.Of<ISettingsService>()).BuildServiceProvider();
         var adapter = new TopLevelViewModel(source, TopLevelType.Normal, CommandPaletteHost.Instance, CommandProviderContext.Empty, new(), services, item, DefaultContextMenuFactory.Instance);
-        var wrapped = new ListItemViewModel(adapter, new(pageContext), DefaultContextMenuFactory.Instance);
+        var wrapped = new ListItemViewModel(adapter, new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         wrapped.SlowInitializeProperties();
         var secondary = (CommandContextItemViewModel)wrapped.SecondaryCommand!;
         var reads = item.MenuReadCount;
@@ -1305,7 +1305,7 @@ public partial class CommandItemViewModelTests
         {
             MoreCommands = commands.Select(command => new CommandContextItem(command)).ToArray(),
         };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         viewModel.SlowInitializeProperties();
         var children = viewModel.AllCommands.OfType<CommandContextItemViewModel>().ToArray();
 
@@ -1364,7 +1364,7 @@ public partial class CommandItemViewModelTests
             MoreCommands = [new CommandContextItem(new NoOpCommand { Name = "Leaf before" })],
         };
         var item = new CommandItem(new NoOpCommand { Name = "Root" }) { MoreCommands = [parent] };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         await Task.Run(viewModel.SlowInitializeProperties);
         var parentViewModel = (CommandContextItemViewModel)viewModel.SecondaryCommand!;
         var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));

@@ -8,7 +8,15 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public interface IContextMenuFactory
 {
-    List<IContextItemViewModel> UnsafeBuildAndInitMoreCommands(IContextItem[] items, CommandItemViewModel commandItem);
+    List<IContextItemViewModel> UnsafeBuildAndInitMoreCommands(
+        IContextItem[] items,
+        CommandItemViewModel commandItem,
+        ContextMenuPlacement placement);
+
+    List<IContextItemViewModel>? UpdateMoreCommandsForDetails(
+        IReadOnlyList<IContextItemViewModel> items,
+        CommandItemViewModel commandItem,
+        ContextMenuPlacement placement);
 
     void AddMoreCommandsToTopLevel(
         TopLevelViewModel topLevelItem,

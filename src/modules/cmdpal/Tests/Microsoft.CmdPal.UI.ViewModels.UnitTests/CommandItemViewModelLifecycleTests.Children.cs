@@ -120,7 +120,7 @@ public partial class CommandItemViewModelLifecycleTests
         var context = new TestPageContext();
         var command = new TestCommand();
         var item = new TestCommandItem { CommandValue = command };
-        var viewModel = new CommandItemViewModel(new(item), new(context), null);
+        var viewModel = new CommandItemViewModel(new(item), new(context), null, ContextMenuPlacement.CommandPalette);
 
         await RunWithCleanup(viewModel, viewModel.InitializeProperties, block =>
         {
@@ -150,7 +150,7 @@ public partial class CommandItemViewModelLifecycleTests
         var context = new TestPageContext();
         var command = new TestCommand();
         var item = new TestCommandItem { CommandValue = command };
-        var viewModel = new CommandItemViewModel(new(item), new(context), null);
+        var viewModel = new CommandItemViewModel(new(item), new(context), null, ContextMenuPlacement.CommandPalette);
 
         try
         {
@@ -183,7 +183,7 @@ public partial class CommandItemViewModelLifecycleTests
         var context = new TestPageContext();
         var command = new TestCommand();
         var item = new TestCommandItem { CommandValue = command };
-        var viewModel = new CommandItemViewModel(new(item), new(context), null);
+        var viewModel = new CommandItemViewModel(new(item), new(context), null, ContextMenuPlacement.CommandPalette);
         var originalCommand = viewModel.Command;
 
         Action<Action> configureBlock = commandIdentity
@@ -203,7 +203,7 @@ public partial class CommandItemViewModelLifecycleTests
         var previous = new TestCommand();
         var next = new TestCommand();
         var item = new TestCommandItem { CommandValue = previous };
-        var viewModel = new CommandItemViewModel(new(item), new(context), null);
+        var viewModel = new CommandItemViewModel(new(item), new(context), null, ContextMenuPlacement.CommandPalette);
         viewModel.InitializeProperties();
         item.CommandValue = next;
 
@@ -221,7 +221,7 @@ public partial class CommandItemViewModelLifecycleTests
         var context = new TestPageContext();
         var command = new TestCommand { Name = "Primary" };
         var item = new TestCommandItem { CommandValue = command };
-        var viewModel = new CommandItemViewModel(new(item), new(context), null);
+        var viewModel = new CommandItemViewModel(new(item), new(context), null, ContextMenuPlacement.CommandPalette);
 
         try
         {
@@ -247,7 +247,7 @@ public partial class CommandItemViewModelLifecycleTests
         var context = new TestPageContext();
         var command = new TestCommand { Name = "Primary" };
         var item = new TestCommandItem { CommandValue = command };
-        var viewModel = new CommandItemViewModel(new(item), new(context), null);
+        var viewModel = new CommandItemViewModel(new(item), new(context), null, ContextMenuPlacement.CommandPalette);
 
         await RunWithCleanup(viewModel, viewModel.FastInitializeProperties, block => command.BeforeSubscribe = block);
 
@@ -262,12 +262,12 @@ public partial class CommandItemViewModelLifecycleTests
         {
             var list = new TestListItem { ReadDerivedProperty = readDerivedProperty };
             item = list;
-            return new ListItemViewModel(list, new(context), DefaultContextMenuFactory.Instance);
+            return new ListItemViewModel(list, new(context), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
         }
 
         var contextItem = new TestContextItem { ReadDerivedProperty = readDerivedProperty };
         item = contextItem;
-        return new CommandContextItemViewModel(contextItem, new(context));
+        return new CommandContextItemViewModel(contextItem, new(context), ContextMenuPlacement.CommandPalette);
     }
 
     private static async Task RunWithCleanup(ExtensionObjectViewModel viewModel, Action operation, Action<Action> configureBlock)

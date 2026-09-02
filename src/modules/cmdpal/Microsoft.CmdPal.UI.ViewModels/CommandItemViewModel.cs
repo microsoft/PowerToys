@@ -21,6 +21,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     private readonly IContextMenuFactory? _contextMenuFactory;
 
+    private readonly ContextMenuPlacement _contextMenuPlacement;
+
     private readonly Lock _contextItemsLock = new();
     private readonly List<IContextItemViewModel> _contextItems = [];
     private volatile int _contextItemsVersion;
@@ -143,11 +145,15 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     public CommandItemViewModel(
         ExtensionObject<ICommandItem> item,
         WeakReference<IPageContext> errorContext,
-        IContextMenuFactory? contextMenuFactory)
+        IContextMenuFactory? contextMenuFactory,
+        ContextMenuPlacement contextMenuPlacement)
         : base(errorContext)
     {
+        ArgumentNullException.ThrowIfNull(contextMenuPlacement);
+
         _commandItemModel = item;
         _contextMenuFactory = contextMenuFactory;
+        _contextMenuPlacement = contextMenuPlacement;
         _commandState = new(new CommandViewModel(null, errorContext), Owned: true);
     }
 
@@ -519,7 +525,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
-        var defaultContextItem = new CommandContextItemViewModel(new CommandContextItem(commandModel), PageContext)
+        var defaultContextItem = new CommandContextItemViewModel(new CommandContextItem(commandModel), PageContext, _contextMenuPlacement)
         {
             _itemTitle = Name,
             Subtitle = Subtitle,
@@ -690,7 +696,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
         var more = model.MoreCommands;
         var factory = _contextMenuFactory ?? DefaultContextMenuFactory.Instance;
-        var results = factory.UnsafeBuildAndInitMoreCommands(more, this);
+        var results = factory.UnsafeBuildAndInitMoreCommands(more, this, _contextMenuPlacement);
 
         List<IContextItemViewModel>? freedItems;
         lock (_contextItemsLock)
@@ -722,6 +728,36 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             CoreLogger.LogError("Error refreshing context menu in CommandItemViewModel", ex);
             ShowException(ex, _commandItemModel?.Unsafe?.Title);
         }
+    }
+
+    protected void RefreshContextMenuForDetails()
+    {
+        // Model_PropChanged handles exceptions for this synchronous path.
+        IContextItemViewModel[] items;
+        lock (_contextItemsLock)
+        {
+            items = [.. _contextItems];
+        }
+
+        var factory = _contextMenuFactory ?? DefaultContextMenuFactory.Instance;
+        var results = factory.UpdateMoreCommandsForDetails(items, this, _contextMenuPlacement);
+        if (results is null)
+        {
+            return;
+        }
+
+        List<IContextItemViewModel> freedItems;
+        lock (_contextItemsLock)
+        {
+            ListHelpers.InPlaceUpdateList(_contextItems, results, out freedItems);
+            RefreshContextMenuSnapshotUnsafe(contextItemsChanged: true);
+        }
+
+        freedItems.OfType<CommandContextItemViewModel>()
+                  .ToList()
+                  .ForEach(c => c.SafeCleanup());
+
+        NotifyContextMenuChanged();
     }
 
     protected override void UnsafeCleanup()

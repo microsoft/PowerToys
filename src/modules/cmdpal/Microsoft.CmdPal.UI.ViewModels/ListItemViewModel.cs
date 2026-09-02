@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -73,8 +72,12 @@ public partial class ListItemViewModel : CommandItemViewModel
         }
     }
 
-    public ListItemViewModel(IListItem model, WeakReference<IPageContext> context, IContextMenuFactory contextMenuFactory)
-        : base(new(model), context, contextMenuFactory)
+    public ListItemViewModel(
+        IListItem model,
+        WeakReference<IPageContext> context,
+        IContextMenuFactory contextMenuFactory,
+        ContextMenuPlacement contextMenuPlacement)
+        : base(new(model), context, contextMenuFactory, contextMenuPlacement)
     {
         Model = new ExtensionObject<IListItem>(model);
     }
@@ -112,10 +115,12 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     public override void SlowInitializeProperties()
     {
-        base.SlowInitializeProperties();
+        // Do not short-circuit when already selected. Re-selection preserves the
+        // existing behavior of re-reading extension-owned values.
         var model = Model.Unsafe;
         if (model is null || IsCleanedUp)
         {
+            base.SlowInitializeProperties();
             return;
         }
 
@@ -127,7 +132,7 @@ public partial class ListItemViewModel : CommandItemViewModel
             UpdateProperty(nameof(Details), nameof(HasDetails));
         }
 
-        AddShowDetailsCommands();
+        base.SlowInitializeProperties();
 
         TextToSuggest = model.TextToSuggest;
         UpdateProperty(nameof(TextToSuggest));
@@ -167,11 +172,8 @@ public partial class ListItemViewModel : CommandItemViewModel
                 Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
                 Details?.InitializeProperties();
                 UpdateProperty(nameof(Details), nameof(HasDetails));
-                UpdateShowDetailsCommand();
+                RefreshContextMenuForDetails();
                 existingReference?.SafeCleanup();
-                break;
-            case nameof(model.MoreCommands):
-                AddShowDetailsCommands();
                 break;
             case nameof(model.Title):
                 UpdateProperty(nameof(Title));
@@ -196,82 +198,6 @@ public partial class ListItemViewModel : CommandItemViewModel
     public override bool Equals(object? obj) => obj is ListItemViewModel vm && vm.Model.Equals(this.Model);
 
     public override int GetHashCode() => Model.GetHashCode();
-
-    private void AddShowDetailsCommands()
-    {
-        // If the parent page has ShowDetails = false and we have details,
-        // then we should add a show details action in the context menu.
-        if (HasDetails &&
-            PageContext.TryGetTarget(out var pageContext) &&
-            pageContext is ListViewModel listViewModel &&
-            !listViewModel.ShowDetails)
-        {
-            var addedCommand = false;
-            lock (ContextItemsLock)
-            {
-                // Check if "Show Details" action already exists to prevent duplicates
-                if (!UnsafeContextItems.Any(cmd => cmd is CommandContextItemViewModel contextItemViewModel &&
-                                                  contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId))
-                {
-                    var showDetailsCommand = new ShowDetailsCommand(Details);
-                    var showDetailsContextItem = new CommandContextItem(showDetailsCommand)
-                    {
-                        Icon = showDetailsCommand.Icon,
-                    };
-                    var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
-                    showDetailsContextItemViewModel.SlowInitializeProperties();
-                    UnsafeContextItems.Add(showDetailsContextItemViewModel);
-                    RefreshContextMenuSnapshotUnsafe(contextItemsChanged: true);
-                    addedCommand = true;
-                }
-            }
-
-            if (addedCommand)
-            {
-                NotifyContextMenuChanged();
-            }
-        }
-    }
-
-    // This method is called when the details change to make sure we
-    // have the latest details in the show details command.
-    private void UpdateShowDetailsCommand()
-    {
-        // If the parent page has ShowDetails = false and we have details,
-        // then we should add a show details action in the context menu.
-        if (HasDetails &&
-            PageContext.TryGetTarget(out var pageContext) &&
-            pageContext is ListViewModel listViewModel &&
-            !listViewModel.ShowDetails)
-        {
-            CommandContextItemViewModel? oldCommand = null;
-            lock (ContextItemsLock)
-            {
-                oldCommand = UnsafeContextItems
-                    .OfType<CommandContextItemViewModel>()
-                    .FirstOrDefault(contextItemViewModel => contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId);
-
-                if (oldCommand is not null)
-                {
-                    UnsafeContextItems.Remove(oldCommand);
-                }
-
-                var showDetailsCommand = new ShowDetailsCommand(Details);
-                var showDetailsContextItem = new CommandContextItem(showDetailsCommand)
-                {
-                    Icon = showDetailsCommand.Icon,
-                };
-                var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
-                showDetailsContextItemViewModel.SlowInitializeProperties();
-                UnsafeContextItems.Add(showDetailsContextItemViewModel);
-                RefreshContextMenuSnapshotUnsafe(contextItemsChanged: true);
-            }
-
-            oldCommand?.SafeCleanup();
-
-            NotifyContextMenuChanged();
-        }
-    }
 
     private void UpdateTags(ITag[]? newTagsFromModel)
     {

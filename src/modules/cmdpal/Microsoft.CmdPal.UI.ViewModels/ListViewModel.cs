@@ -152,7 +152,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
-        EmptyContent = new(new(null), PageContext, contextMenuFactory: null);
+        EmptyContent = new(new(null), PageContext, contextMenuFactory: null, contextMenuPlacement: ContextMenuPlacement.CommandPalette);
     }
 
     internal void SetLaunchOptions(ListPageLaunchOptions launchOptions)
@@ -445,7 +445,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         continue;
                     }
 
-                    var viewModel = new ListItemViewModel(item, new(this), _contextMenuFactory);
+                    var viewModel = new ListItemViewModel(item, new(this), _contextMenuFactory, ContextMenuPlacement.CommandPalette);
 
                     // If an item fails to load, silently ignore it.
                     if (viewModel.SafeFastInit())
@@ -1124,7 +1124,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         UpdateProperty(nameof(SearchText));
         UpdateProperty(nameof(InitialSearchText));
 
-        EmptyContent = new(new(model.EmptyContent), PageContext, _contextMenuFactory);
+        EmptyContent = new(new(model.EmptyContent), PageContext, _contextMenuFactory, ContextMenuPlacement.CommandPalette);
         EmptyContent.SlowInitializeProperties();
 
         Filters?.PropertyChanged -= FiltersPropertyChanged;
@@ -1275,7 +1275,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 SearchText = model.SearchText;
                 break;
             case nameof(EmptyContent):
-                EmptyContent = new(new(model.EmptyContent), PageContext, contextMenuFactory: null);
+                EmptyContent = new(new(model.EmptyContent), PageContext, contextMenuFactory: null, contextMenuPlacement: ContextMenuPlacement.CommandPalette);
                 EmptyContent.SlowInitializeProperties();
                 break;
             case nameof(Filters):
@@ -1531,7 +1531,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         base.UnsafeCleanup();
 
         EmptyContent?.SafeCleanup();
-        EmptyContent = new(new(null), PageContext, contextMenuFactory: null); // necessary?
+        EmptyContent = new(new(null), PageContext, contextMenuFactory: null, contextMenuPlacement: ContextMenuPlacement.CommandPalette); // necessary?
 
         lock (_listLock)
         {

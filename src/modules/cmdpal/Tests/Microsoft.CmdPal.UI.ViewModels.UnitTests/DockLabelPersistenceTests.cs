@@ -273,7 +273,8 @@ public sealed partial class DockLabelPersistenceTests
         var root = new CommandItemViewModel(
             new(new CommandItem(page) { Title = page.Title }),
             new(context),
-            DefaultContextMenuFactory.Instance);
+            DefaultContextMenuFactory.Instance,
+            ContextMenuPlacement.CommandPalette);
         root.SlowInitializeProperties();
 
         return (

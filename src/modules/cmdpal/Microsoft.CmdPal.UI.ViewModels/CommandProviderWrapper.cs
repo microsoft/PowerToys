@@ -454,7 +454,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         IContextMenuFactory? contextMenuFactory,
         ICommandProviderContext providerContext)
     {
-        CommandItemViewModel commandItemViewModel = new(new(item), new(TopLevelPageContext), contextMenuFactory);
+        CommandItemViewModel commandItemViewModel = new(new(item), new(TopLevelPageContext), contextMenuFactory, ContextMenuPlacement.CommandPalette);
         TopLevelViewModel? topLevelViewModel = null;
         try
         {
