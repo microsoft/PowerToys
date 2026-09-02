@@ -51,6 +51,26 @@ public sealed partial class ParametersPage : Page, IPageInteractionTarget, IPage
 
     public void NavigatePageDown() => ActiveList.NavigatePageDown();
 
+    public void ActivatePrimary()
+    {
+        if (ViewModel?.HasActiveList == true)
+        {
+            ActiveList.ActivatePrimary();
+        }
+        else
+        {
+            ViewModel?.TrySubmit();
+        }
+    }
+
+    public void ActivateSecondary()
+    {
+        if (ViewModel?.HasActiveList == true)
+        {
+            ActiveList.ActivateSecondary();
+        }
+    }
+
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         if (e.Parameter is not AsyncNavigationRequest navigationRequest)

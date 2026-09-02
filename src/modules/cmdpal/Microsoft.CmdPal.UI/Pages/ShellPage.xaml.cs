@@ -1089,12 +1089,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             // Ctrl+Enter
             case VirtualKey.Enter when mods.OnlyCtrl:
-                WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
+                _pageInteractions.ActivateSecondary();
                 break;
 
             // Enter
             case VirtualKey.Enter when mods.None:
-                WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
+                _pageInteractions.ActivatePrimary();
                 break;
 
             // Ctrl+K

@@ -29,9 +29,7 @@ namespace Microsoft.CmdPal.UI;
 /// empty-content branch. Hosted by both <see cref="ListPage"/> and
 /// <see cref="ParametersPage"/> so list rendering behavior stays in one place.
 /// </summary>
-public sealed partial class ListItemsView : UserControl,
-    IRecipient<ActivateSelectedListItemMessage>,
-    IRecipient<ActivateSecondaryCommandMessage>
+public sealed partial class ListItemsView : UserControl
 {
     private InputSource _lastInputSource;
 
@@ -103,8 +101,6 @@ public sealed partial class ListItemsView : UserControl,
         }
 
         // RegisterAll isn't AOT compatible
-        WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
-        WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
         _isMessengerRegistered = true;
     }
 
@@ -115,8 +111,6 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
-        WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
-        WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
         _isMessengerRegistered = false;
     }
 
@@ -419,7 +413,7 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
-    public void Receive(ActivateSelectedListItemMessage message)
+    public void ActivatePrimary()
     {
         if (ViewModel?.ShowEmptyContent ?? false)
         {
@@ -431,7 +425,7 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
-    public void Receive(ActivateSecondaryCommandMessage message)
+    public void ActivateSecondary()
     {
         if (ViewModel?.ShowEmptyContent ?? false)
         {

@@ -17,4 +17,8 @@ public interface IPageInteractionTarget
     void NavigatePageUp();
 
     void NavigatePageDown();
+
+    void ActivatePrimary();
+
+    void ActivateSecondary();
 }

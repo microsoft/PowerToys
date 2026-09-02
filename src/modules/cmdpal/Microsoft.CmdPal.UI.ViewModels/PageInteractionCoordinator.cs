@@ -83,6 +83,10 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
 
     public void NavigatePageDown() => _target?.NavigatePageDown();
 
+    public void ActivatePrimary() => _target?.ActivatePrimary();
+
+    public void ActivateSecondary() => _target?.ActivateSecondary();
+
     private void Page_CommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e)
     {
         if (ReferenceEquals(sender, _page))
