@@ -39,23 +39,74 @@ public static class VisualAssert
             Assert.Fail("Unable to determine the caller method and class name.");
         }
 
-        scenarioSubname = string.IsNullOrWhiteSpace(scenarioSubname)
+        var scenario = string.IsNullOrWhiteSpace(scenarioSubname)
             ? string.Join("_", callerClassName, callerName, EnvironmentConfig.Platform)
             : string.Join("_", callerClassName, callerName, scenarioSubname.Trim(), EnvironmentConfig.Platform);
 
-        var assembly = callerMethod!.DeclaringType!.Assembly;
+        AssertAgainstBaseline(
+            testContext,
+            callerMethod!.DeclaringType!.Assembly,
+            scenario,
+            path => session.ScreenshotVisibleWindow(path));
+    }
+
+    /// <summary>
+    /// Asserts that the current visual state of one element matches its embedded baseline image.
+    /// This preserves the legacy harness's element-cropped visual assertion behavior.
+    /// </summary>
+    [RequiresUnreferencedCode("This method uses reflection which may not be compatible with trimming.")]
+    public static void AreEqual(TestContext? testContext, Element element, string scenarioSubname = "")
+    {
+        if (!EnvironmentConfig.IsInPipeline)
+        {
+            Console.WriteLine("Skip visual validation in the local run.");
+            return;
+        }
+
+        Assert.IsNotNull(element);
+        Assert.IsNotNull(element.Owner, "Element is not bound to a Session.");
+
+        var callerMethod = new StackTrace().GetFrame(1)?.GetMethod();
+        var callerName = callerMethod?.Name;
+        var callerClassName = callerMethod?.DeclaringType?.Name;
+        if (string.IsNullOrEmpty(callerName) || string.IsNullOrEmpty(callerClassName))
+        {
+            Assert.Fail("Unable to determine the caller method and class name.");
+        }
+
+        var scenario = string.IsNullOrWhiteSpace(scenarioSubname)
+            ? string.Join("_", callerClassName, callerName, EnvironmentConfig.Platform)
+            : string.Join("_", callerClassName, callerName, scenarioSubname.Trim(), EnvironmentConfig.Platform);
+
+        AssertAgainstBaseline(
+            testContext,
+            callerMethod!.DeclaringType!.Assembly,
+            scenario,
+            path =>
+            {
+                element.Owner!.EnsureForeground();
+                element.Owner.Screenshot(path, element, captureScreen: true);
+            });
+    }
+
+    private static void AssertAgainstBaseline(
+        TestContext? testContext,
+        System.Reflection.Assembly assembly,
+        string scenario,
+        Action<string> capture)
+    {
         var baselineImageResourceName = assembly.GetManifestResourceNames()
-            .FirstOrDefault(name => Path.GetFileNameWithoutExtension(name).EndsWith(scenarioSubname, StringComparison.Ordinal));
-        var testImagePath = GetTempFilePath(scenarioSubname, "test", ".png");
+            .FirstOrDefault(name => Path.GetFileNameWithoutExtension(name).EndsWith(scenario, StringComparison.Ordinal));
+        var testImagePath = GetTempFilePath(scenario, "test", ".png");
 
         if (string.IsNullOrEmpty(baselineImageResourceName))
         {
-            session.ScreenshotVisibleWindow(testImagePath);
+            capture(testImagePath);
             testContext?.AddResultFile(testImagePath);
-            Assert.Fail($"Baseline image for scenario {scenarioSubname} can't be found; test image saved to {testImagePath}.");
+            Assert.Fail($"Baseline image for scenario {scenario} can't be found; test image saved to {testImagePath}.");
         }
 
-        var baselineImagePath = GetTempFilePath(scenarioSubname, "baseline", Path.GetExtension(baselineImageResourceName));
+        var baselineImagePath = GetTempFilePath(scenario, "baseline", Path.GetExtension(baselineImageResourceName));
         using var stream = assembly.GetManifestResourceStream(baselineImageResourceName);
         if (stream is null)
         {
@@ -67,7 +118,7 @@ public static class VisualAssert
         var similarity = 0d;
         do
         {
-            session.ScreenshotVisibleWindow(testImagePath);
+            capture(testImagePath);
             using var testImage = new Bitmap(testImagePath);
             similarity = CalculateSimilarity(baselineImage, testImage);
             if (similarity >= SimilarityThreshold)
@@ -86,7 +137,7 @@ public static class VisualAssert
         testContext?.AddResultFile(baselineImagePath);
         testContext?.AddResultFile(testImagePath);
         Assert.Fail(
-            $"Visual result for scenario {scenarioSubname} did not reach {SimilarityThreshold}% similarity " +
+            $"Visual result for scenario {scenario} did not reach {SimilarityThreshold}% similarity " +
             $"within {VisualRetryTimeoutMS / 1_000}s (last similarity: {similarity:F2}%). " +
             $"Baseline: {baselineImagePath}; test image: {testImagePath}.");
     }
