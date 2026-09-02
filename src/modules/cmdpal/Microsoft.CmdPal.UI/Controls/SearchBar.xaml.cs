@@ -29,7 +29,6 @@ namespace Microsoft.CmdPal.UI.Controls;
 public sealed partial class SearchBar : UserControl,
     INotifyPropertyChanged,
     IRecipient<GoHomeMessage>,
-    IRecipient<FocusParamMessage>,
     ICurrentPageAware
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
@@ -94,6 +93,7 @@ public sealed partial class SearchBar : UserControl,
             {
                 old.PropertyChanged -= @this.Page_PropertyChanged;
                 old.SearchSuggestionChanged -= @this.Page_SearchSuggestionChanged;
+                old.ParameterFocusRequested -= @this.Page_ParameterFocusRequested;
             }
         }
 
@@ -107,6 +107,7 @@ public sealed partial class SearchBar : UserControl,
 
             page.PropertyChanged += @this.Page_PropertyChanged;
             page.SearchSuggestionChanged += @this.Page_SearchSuggestionChanged;
+            page.ParameterFocusRequested += @this.Page_ParameterFocusRequested;
 
             if (page is ListViewModel listViewModel)
             {
@@ -138,7 +139,6 @@ public sealed partial class SearchBar : UserControl,
     {
         this.InitializeComponent();
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
-        WeakReferenceMessenger.Default.Register<FocusParamMessage>(this);
     }
 
     public void ClearSearch()
@@ -848,9 +848,8 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
-    public void Receive(FocusParamMessage message)
+    private void FocusParameter(ParameterRunViewModel? parameter)
     {
-        var parameter = message.Parameter;
         if (parameter != null)
         {
             var container = ParametersBar.ContainerFromItem(parameter);
@@ -858,6 +857,14 @@ public sealed partial class SearchBar : UserControl,
             {
                 element.Focus(FocusState.Keyboard);
             }
+        }
+    }
+
+    private void Page_ParameterFocusRequested(object? sender, ParameterFocusRequestedEventArgs e)
+    {
+        if (ReferenceEquals(sender, CurrentPageViewModel))
+        {
+            FocusParameter(e.Parameter);
         }
     }
 

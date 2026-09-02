@@ -900,7 +900,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 {
                     if (found)
                     {
-                        SendPageUiMessage(new FocusParamMessage(pv));
+                        RequestParameterFocus(pv);
                         return;
                     }
                     else if (firstWithoutValue is null && pv.NeedsValue)
@@ -912,7 +912,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
             if (firstWithoutValue is not null)
             {
-                SendPageUiMessage(new FocusParamMessage(firstWithoutValue));
+                RequestParameterFocus(firstWithoutValue);
             }
         }
     }
