@@ -207,6 +207,11 @@ public sealed partial class SearchBar : UserControl,
 
     private void FilterBox_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
+        if (e.Handled)
+        {
+            return;
+        }
+
         if (e.Key == VirtualKey.Back)
         {
             if (string.IsNullOrEmpty(FilterBox.Text))
@@ -262,26 +267,14 @@ public sealed partial class SearchBar : UserControl,
                 }
             }
         }
-        else if (e.Key == VirtualKey.Up)
-        {
-            WeakReferenceMessenger.Default.Send<NavigatePreviousCommand>();
-
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.Left)
-        {
-            // Check if we're in a grid view, and if so, send grid navigation command
-            var isGridView = CurrentPageViewModel is ListViewModel { IsGridView: true };
-
-            // Special handling is required if we're in grid view.
-            if (isGridView)
-            {
-                WeakReferenceMessenger.Default.Send<NavigateLeftCommand>();
-                e.Handled = true;
-            }
-        }
         else if (e.Key == VirtualKey.Right)
         {
+            // Only unmodified Right accepts suggestions.
+            if (!KeyModifiers.GetCurrent().None)
+            {
+                return;
+            }
+
             // Check if the "replace search text with suggestion" feature from 0.4-0.5 is enabled.
             // If it isn't, then only use the suggestion when the caret is at the end of the input.
             if (!IsTextToSuggestEnabled)
@@ -303,40 +296,21 @@ public sealed partial class SearchBar : UserControl,
                 _lastText = null;
                 DoFilterBoxUpdate();
             }
-
-            // Wouldn't want to perform text completion *and* move the selected item, so only perform this if text suggestion wasn't performed.
-            if (!e.Handled)
-            {
-                // Check if we're in a grid view, and if so, send grid navigation command
-                var isGridView = CurrentPageViewModel is ListViewModel { IsGridView: true };
-
-                // Special handling is required if we're in grid view.
-                if (isGridView)
-                {
-                    WeakReferenceMessenger.Default.Send<NavigateRightCommand>();
-                    e.Handled = true;
-                }
-            }
         }
-        else if (e.Key == VirtualKey.Down)
-        {
-            WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
 
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.PageDown)
+        if (!e.Handled && TryHandleListNavigation(e.Key))
         {
-            WeakReferenceMessenger.Default.Send<NavigatePageDownCommand>();
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.PageUp)
-        {
-            WeakReferenceMessenger.Default.Send<NavigatePageUpCommand>();
             e.Handled = true;
         }
 
         if (InSuggestion)
         {
+            // Preserve the inline suggestion when paging is left to the TextBox.
+            if (!e.Handled && (e.Key is VirtualKey.PageUp or VirtualKey.PageDown))
+            {
+                return;
+            }
+
             if (
                  e.Key == VirtualKey.Back ||
                  e.Key == VirtualKey.Delete
@@ -380,6 +354,41 @@ public sealed partial class SearchBar : UserControl,
             _inSuggestion = false;
             _lastText = null;
         }
+    }
+
+    private bool TryHandleListNavigation(VirtualKey key)
+    {
+        switch (key)
+        {
+            case VirtualKey.Up when IsNoneModifierDown():
+                WeakReferenceMessenger.Default.Send<NavigatePreviousCommand>();
+                return true;
+
+            case VirtualKey.Down when IsNoneModifierDown():
+                WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
+                return true;
+
+            case VirtualKey.Left when CurrentPageViewModel is ListViewModel { IsGridView: true } && IsNoneModifierDown():
+                WeakReferenceMessenger.Default.Send<NavigateLeftCommand>();
+                return true;
+
+            case VirtualKey.Right when CurrentPageViewModel is ListViewModel { IsGridView: true } && IsNoneModifierDown():
+                WeakReferenceMessenger.Default.Send<NavigateRightCommand>();
+                return true;
+
+            case VirtualKey.PageUp when IsNoneModifierDown():
+                WeakReferenceMessenger.Default.Send<NavigatePageUpCommand>();
+                return true;
+
+            case VirtualKey.PageDown when IsNoneModifierDown():
+                WeakReferenceMessenger.Default.Send<NavigatePageDownCommand>();
+                return true;
+
+            default:
+                return false;
+        }
+
+        static bool IsNoneModifierDown() => KeyModifiers.GetCurrent().None;
     }
 
     // TextCommandBarFlyout rebuilds its commands on every open, so re-append ours each time.
@@ -743,7 +752,8 @@ public sealed partial class SearchBar : UserControl,
 
     private void ListParameter_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (sender is not TextBox textBox ||
+        if (e.Handled ||
+            sender is not TextBox textBox ||
             CurrentPageViewModel is not ParametersPageViewModel parametersPage)
         {
             return;
@@ -777,24 +787,8 @@ public sealed partial class SearchBar : UserControl,
                 parametersPage.SetActiveListParameter(null);
             }
         }
-        else if (e.Key == VirtualKey.Up)
+        else if (TryHandleListNavigation(e.Key))
         {
-            WeakReferenceMessenger.Default.Send<NavigatePreviousCommand>();
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.Down)
-        {
-            WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.PageDown)
-        {
-            WeakReferenceMessenger.Default.Send<NavigatePageDownCommand>();
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.PageUp)
-        {
-            WeakReferenceMessenger.Default.Send<NavigatePageUpCommand>();
             e.Handled = true;
         }
     }
