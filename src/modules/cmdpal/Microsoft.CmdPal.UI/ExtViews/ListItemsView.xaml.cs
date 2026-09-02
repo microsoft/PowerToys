@@ -63,6 +63,10 @@ public sealed partial class ListItemsView : UserControl
     public static readonly DependencyProperty ViewModelProperty =
         DependencyProperty.Register(nameof(ViewModel), typeof(ListViewModel), typeof(ListItemsView), new PropertyMetadata(null, OnViewModelChanged));
 
+    public event EventHandler<ListItemsSelectionChangedEventArgs>? SelectionChanged;
+
+    public event EventHandler<ListItemsContextMenuRequestedEventArgs>? ContextMenuRequested;
+
     public event EventHandler? FocusSearchRequested;
 
     public event EventHandler? ContextMenuCloseRequested;
@@ -220,6 +224,7 @@ public sealed partial class ListItemsView : UserControl
 
         // Do not Task.Run (it reorders selection updates).
         vm?.UpdateSelectedItemCommand.Execute(li);
+        SelectionChanged?.Invoke(this, new(li));
 
         // Only scroll when explicitly requested by navigation/click handlers.
         if (_scrollOnNextSelectionChange)
@@ -329,6 +334,7 @@ public sealed partial class ListItemsView : UserControl
         if (ItemView.SelectedItem is not ListItemViewModel li || IsSeparator(li))
         {
             ViewModel.UpdateSelectedItemCommand.Execute(null);
+            SelectionChanged?.Invoke(this, new(ViewModel.ShowEmptyContent ? ViewModel.EmptyContent : null));
             return;
         }
 
@@ -340,6 +346,7 @@ public sealed partial class ListItemsView : UserControl
         _lastPushedToVm = li;
         _stickySelectedItem = li;
         ViewModel.UpdateSelectedItemCommand.Execute(li);
+        SelectionChanged?.Invoke(this, new(li));
     }
 
     public void NavigateNext()
@@ -648,6 +655,7 @@ public sealed partial class ListItemsView : UserControl
             }
             else if (e.NewValue is null)
             {
+                @this.SelectionChanged?.Invoke(@this, new(null));
                 Logger.LogDebug("cleared view model");
             }
         }
@@ -1279,6 +1287,14 @@ public sealed partial class ListItemsView : UserControl
 
                 WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
                     new OpenContextMenuMessage(
+                        element,
+                        FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                        pos,
+                        ContextMenuFilterLocation.Top));
+                ContextMenuRequested?.Invoke(
+                    this,
+                    new(
+                        item,
                         element,
                         FlyoutPlacementMode.BottomEdgeAlignedLeft,
                         pos,
