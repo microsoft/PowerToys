@@ -352,6 +352,13 @@ public sealed partial class SearchBar : UserControl,
 
     private bool TryHandleListNavigation(VirtualKey key)
     {
+        var listViewModel = CurrentPageViewModel switch
+        {
+            ListViewModel listPage => listPage,
+            ParametersPageViewModel parametersPage => parametersPage.ActiveListViewModel,
+            _ => null,
+        };
+
         switch (key)
         {
             case VirtualKey.Up when IsNoneModifierDown():
@@ -362,11 +369,11 @@ public sealed partial class SearchBar : UserControl,
                 WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
                 return true;
 
-            case VirtualKey.Left when CurrentPageViewModel is ListViewModel { IsGridView: true } && IsNoneModifierDown():
+            case VirtualKey.Left when listViewModel is { IsGridView: true } && IsNoneModifierDown():
                 WeakReferenceMessenger.Default.Send<NavigateLeftCommand>();
                 return true;
 
-            case VirtualKey.Right when CurrentPageViewModel is ListViewModel { IsGridView: true } && IsNoneModifierDown():
+            case VirtualKey.Right when listViewModel is { IsGridView: true } && IsNoneModifierDown():
                 WeakReferenceMessenger.Default.Send<NavigateRightCommand>();
                 return true;
 
