@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -13,8 +12,7 @@ using DispatcherQueueTimer = Microsoft.UI.Dispatching.DispatcherQueueTimer;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed partial class CommandBarViewModel : ObservableObject,
-    IRecipient<UpdateCommandBarMessage>
+public sealed partial class CommandBarViewModel : ObservableObject
 {
     private readonly DispatcherQueueTimer _debounceTimer;
 
@@ -81,12 +79,11 @@ public sealed partial class CommandBarViewModel : ObservableObject,
         }
 
         _debounceTimer = dispatcherQueue.CreateTimer();
-        WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
     }
 
-    public void Receive(UpdateCommandBarMessage message)
+    public void QueueSelectedItem(ICommandBarContext? context)
     {
-        _pendingSelectedItem = message.ViewModel;
+        _pendingSelectedItem = context;
 
         // immediate: false is intentional — the timer tick always fires on the
         // dispatcher queue thread, which guarantees ApplyPendingSelectedItem

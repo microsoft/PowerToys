@@ -579,14 +579,34 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         {
             if (_activeListViewModel != value)
             {
+                if (_activeListViewModel is not null)
+                {
+                    _activeListViewModel.CommandBarContextChanged -= ActiveList_CommandBarContextChanged;
+                }
+
                 _activeListViewModel = value;
+
+                if (_activeListViewModel is not null)
+                {
+                    _activeListViewModel.CommandBarContextChanged += ActiveList_CommandBarContextChanged;
+                }
+
                 UpdateProperty(nameof(ActiveListViewModel));
                 UpdateProperty(nameof(HasActiveList));
+                SetCommandBarContext(_activeListViewModel is null && ShowCommand ? Command : null);
             }
         }
     }
 
     public bool HasActiveList => _activeListViewModel != null;
+
+    private void ActiveList_CommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, _activeListViewModel))
+        {
+            SetCommandBarContext(e.Context);
+        }
+    }
 
     private CommandParameterRunViewModel? _activeListParam;
 
@@ -771,7 +791,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         DoOnUiThread(
            () =>
            {
-               SendPageUiMessage(new UpdateCommandBarMessage(Command));
+               SetCommandBarContext(Command);
            });
     }
 

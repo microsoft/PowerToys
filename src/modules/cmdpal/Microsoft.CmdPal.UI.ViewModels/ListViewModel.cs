@@ -844,7 +844,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _lastSelectedItem = item;
         _lastSelectedItem.PropertyChanged += SelectedItemPropertyChanged;
 
-        SendPageUiMessage(new UpdateCommandBarMessage(item));
+        SetCommandBarContext(item);
 
         // Cancel any in-flight slow init from a previous selection and defer
         // the expensive work (extension IPC for MoreCommands, details) so
@@ -914,7 +914,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             case nameof(item.SecondaryCommand):
             case nameof(item.AllCommands):
             case nameof(item.Name):
-                SendPageUiMessage(new UpdateCommandBarMessage(item));
+                SetCommandBarContext(item);
                 break;
             case nameof(item.Details):
                 if (ShowDetails && item.HasDetails)
@@ -937,7 +937,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         CancelAndDisposeTokenSource(ref _selectedItemCts);
 
-        SendPageUiMessage(new UpdateCommandBarMessage(null));
+        SetCommandBarContext(null);
         SendPageUiMessage(new HideDetailsMessage());
         SendPageUiMessage(new UpdateSuggestionMessage(string.Empty));
         TextToSuggest = string.Empty;
@@ -1115,7 +1115,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         DoOnUiThread(
            () =>
            {
-               SendPageUiMessage(new UpdateCommandBarMessage(EmptyContent));
+               SetCommandBarContext(EmptyContent);
            });
     }
 

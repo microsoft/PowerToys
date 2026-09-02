@@ -15,6 +15,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 {
+    public event EventHandler<PageCommandBarContextChangedEventArgs>? CommandBarContextChanged;
+
     public TaskScheduler Scheduler { get; private set; }
 
     private readonly ExtensionObject<IPage> _pageModel;
@@ -228,6 +230,9 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     {
         WeakReferenceMessenger.Default.Send<TMessage>(message);
     }
+
+    protected internal void SetCommandBarContext(ICommandBarContext? context) =>
+        CommandBarContextChanged?.Invoke(this, new(context));
 
     protected virtual void FetchProperty(string propertyName)
     {

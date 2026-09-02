@@ -70,6 +70,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private readonly ISettingsService _settingsService;
 
+    private readonly PageInteractionCoordinator _pageInteractions;
+
     // The last compact-mode setting we reacted to. Lets us ignore hot-reloads of unrelated
     // settings and only re-evaluate the layout when compact mode itself changes.
     private bool _compactMode;
@@ -131,6 +133,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         this.ExpandedMode = !_compactMode;
 
         this.InitializeComponent();
+
+        _pageInteractions = new(MainCommandBar);
 
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
@@ -752,6 +756,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             Logger.LogWarning("Unrecognized target for shell navigation: " + e.Parameter);
         }
 
+        _pageInteractions.AttachPage(ViewModel.CurrentPage);
+
         if (e.Content is Page element)
         {
             _lastNavigatedPageRef = new WeakReference<Page>(element);
@@ -1157,6 +1163,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _isDisposed = true;
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _settingsService.SettingsChanged -= OnSettingsChanged;
+        _pageInteractions.Dispose();
 
         if (_hostWindow is not null)
         {

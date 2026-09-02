@@ -9,13 +9,6 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-/// <summary>
-/// Used to update the command bar at the bottom to reflect the commands for a list item
-/// </summary>
-public record UpdateCommandBarMessage(ICommandBarContext? ViewModel)
-{
-}
-
 public interface IContextMenuContext : INotifyPropertyChanged
 {
     public IReadOnlyList<IContextItemViewModel> MoreCommands { get; }
@@ -26,14 +19,6 @@ public interface IContextMenuContext : INotifyPropertyChanged
 
     public IReadOnlyList<IContextItemViewModel> AllCommands { get; }
 
-    /// <summary>
-    /// Generates a mapping of key -> command item for this particular item's
-    /// MoreCommands. (This won't include the primary Command, but it will
-    /// include the secondary one). This map can be used to quickly check if a
-    /// shortcut key was pressed
-    /// </summary>
-    /// <returns>a dictionary of KeyChord -> Context commands, for all commands
-    /// that have a shortcut key set.</returns>
     public Dictionary<KeyChord, CommandContextItemViewModel> Keybindings()
     {
         var result = new Dictionary<KeyChord, CommandContextItemViewModel>();
@@ -61,11 +46,6 @@ public interface IContextMenuContext : INotifyPropertyChanged
     }
 }
 
-// Represents everything the command bar needs to know about to show command
-// buttons at the bottom.
-//
-// This is implemented by both ListItemViewModel and ContentPageViewModel,
-// the two things with sub-commands.
 public interface ICommandBarContext : IContextMenuContext
 {
     public string SecondaryCommandName { get; }

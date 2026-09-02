@@ -5,7 +5,6 @@
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
@@ -16,8 +15,7 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ContextMenuViewModel : ObservableObject,
-    IRecipient<UpdateCommandBarMessage>
+public partial class ContextMenuViewModel : ObservableObject
 {
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
 
@@ -49,24 +47,7 @@ public partial class ContextMenuViewModel : ObservableObject,
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
     }
 
-    public void HookCommandBar()
-    {
-        var messenger = WeakReferenceMessenger.Default;
-        if (!messenger.IsRegistered<UpdateCommandBarMessage>(this))
-        {
-            messenger.Register<UpdateCommandBarMessage>(this);
-        }
-    }
-
-    public void UnhookCommandBar()
-    {
-        WeakReferenceMessenger.Default.Unregister<UpdateCommandBarMessage>(this);
-    }
-
-    public void Receive(UpdateCommandBarMessage message)
-    {
-        SelectedItem = message.ViewModel;
-    }
+    public void SetCommandContext(ICommandBarContext? context) => SelectedItem = context;
 
     public void UpdateContextItems()
     {

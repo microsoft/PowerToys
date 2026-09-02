@@ -329,9 +329,6 @@ public partial class ShellViewModel : ObservableObject,
                 pageViewModel.IsRootPage = isMainPage;
                 pageViewModel.HasBackButton = IsNested;
 
-                // Clear command bar, ViewModel initialization can already set new commands if it wants to
-                OnUIThread(() => WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)));
-
                 // Kick off async loading of our ViewModel
                 LoadPageViewModelAsync(pageViewModel, navigationToken)
                     .ContinueWith(

@@ -18,8 +18,11 @@ public sealed partial class CommandBar : UserControl,
     IRecipient<OpenContextMenuMessage>,
     IRecipient<CloseContextMenuMessage>,
     IRecipient<TryCommandKeybindingMessage>,
-    ICurrentPageAware
+    ICurrentPageAware,
+    ICommandBarInteractionTarget
 {
+    private long _commandContextVersion;
+
     public CommandBarViewModel ViewModel { get; } = new();
 
     public PageViewModel? CurrentPageViewModel
@@ -40,6 +43,29 @@ public sealed partial class CommandBar : UserControl,
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
+    }
+
+    public void SetCommandContext(ICommandBarContext? context)
+    {
+        var version = Interlocked.Increment(ref _commandContextVersion);
+        if (!DispatcherQueue.HasThreadAccess)
+        {
+            _ = DispatcherQueue.TryEnqueue(() => ApplyCommandContext(context, version));
+            return;
+        }
+
+        ApplyCommandContext(context, version);
+    }
+
+    private void ApplyCommandContext(ICommandBarContext? context, long version)
+    {
+        if (version != Volatile.Read(ref _commandContextVersion))
+        {
+            return;
+        }
+
+        ViewModel.QueueSelectedItem(context);
+        ContextControl.SetCommandContext(context);
     }
 
     public void Receive(OpenContextMenuMessage message)

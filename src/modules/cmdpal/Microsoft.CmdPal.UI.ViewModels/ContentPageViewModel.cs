@@ -135,7 +135,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         DoOnUiThread(
         () =>
         {
-            SendPageUiMessage(new UpdateCommandBarMessage(this));
+            SetCommandBarContext(this);
         });
     }
 
@@ -192,7 +192,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 DoOnUiThread(
                 () =>
                 {
-                    SendPageUiMessage(new UpdateCommandBarMessage(this));
+                    SetCommandBarContext(this);
                 });
 
                 break;

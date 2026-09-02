@@ -21,7 +21,6 @@ using Windows.System;
 namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class ContextMenu : UserControl,
-    IRecipient<UpdateCommandBarMessage>,
     IRecipient<TryCommandKeybindingMessage>
 {
     public static readonly DependencyProperty ShowFilterBoxProperty =
@@ -90,27 +89,24 @@ public sealed partial class ContextMenu : UserControl,
     {
         var messenger = WeakReferenceMessenger.Default;
 
-        if (!messenger.IsRegistered<UpdateCommandBarMessage>(this))
-        {
-            messenger.Register<UpdateCommandBarMessage>(this);
-        }
-
         if (!messenger.IsRegistered<TryCommandKeybindingMessage>(this))
         {
             messenger.Register<TryCommandKeybindingMessage>(this);
         }
 
-        ViewModel.HookCommandBar();
     }
 
     private void UnhookCommandBar()
     {
         var messenger = WeakReferenceMessenger.Default;
 
-        messenger.Unregister<UpdateCommandBarMessage>(this);
         messenger.Unregister<TryCommandKeybindingMessage>(this);
+    }
 
-        ViewModel.UnhookCommandBar();
+    public void SetCommandContext(ICommandBarContext? context)
+    {
+        ViewModel.SetCommandContext(context);
+        UpdateUiForStackChange();
     }
 
     internal void PrepareForOpen(ContextMenuFilterLocation filterLocation)
@@ -154,11 +150,6 @@ public sealed partial class ContextMenu : UserControl,
                 announcement,
                 "ContextMenuOpened");
         });
-    }
-
-    public void Receive(UpdateCommandBarMessage message)
-    {
-        UpdateUiForStackChange();
     }
 
     public void Receive(TryCommandKeybindingMessage msg)
