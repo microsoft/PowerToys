@@ -5,6 +5,8 @@
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -24,6 +26,12 @@ public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
 
     public bool StartsNewSection { get; }
 
+    public bool IsPinned { get; }
+
+    public bool CanPin { get; }
+
+    public DataPackageView? DataPackage { get; }
+
     public string ShortcutDigit => QuickAccessShelfResolver.IndexToShortcutDigit(_shortcutIndex);
 
     private QuickAccessShelfItem(
@@ -32,7 +40,10 @@ public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
         object? sourceIcon,
         IconInfoViewModel icon,
         int shortcutIndex,
-        bool startsNewSection)
+        bool startsNewSection,
+        bool isPinned,
+        bool canPin,
+        DataPackageView? dataPackage)
     {
         _item = item;
         Title = title;
@@ -40,6 +51,9 @@ public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
         Icon = icon;
         _shortcutIndex = shortcutIndex;
         StartsNewSection = startsNewSection;
+        IsPinned = isPinned;
+        CanPin = canPin;
+        DataPackage = dataPackage;
         ProviderId = TopLevelCommandResolver.GetProviderId(item);
         CommandId = TopLevelCommandResolver.GetCommandId(item);
     }
@@ -49,7 +63,9 @@ public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
         IReadOnlyList<QuickAccessShelfItem> existingItems,
         IListItem item,
         int shortcutIndex,
-        bool startsNewSection)
+        bool startsNewSection,
+        bool isPinned = false,
+        bool canPin = false)
     {
         var title = item.Title;
         object? sourceIcon;
@@ -64,9 +80,16 @@ public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
             sourceIcon = item.Icon;
         }
 
+        var dataPackage =
+            item is IExtendedAttributesProvider attributes &&
+            attributes.GetProperties()?.TryGetValue(WellKnownExtensionAttributes.DataPackage, out var dataPackageValue) == true &&
+            dataPackageValue is DataPackageView dataPackageView
+                ? dataPackageView
+                : null;
+
         foreach (var existingItem in existingItems)
         {
-            if (existingItem.Matches(item, title, sourceIcon, shortcutIndex, startsNewSection))
+            if (existingItem.Matches(item, title, sourceIcon, shortcutIndex, startsNewSection, isPinned, canPin, dataPackage))
             {
                 return existingItem;
             }
@@ -78,7 +101,7 @@ public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
             icon.InitializeProperties();
         }
 
-        return new QuickAccessShelfItem(item, title, sourceIcon, icon, shortcutIndex, startsNewSection);
+        return new QuickAccessShelfItem(item, title, sourceIcon, icon, shortcutIndex, startsNewSection, isPinned, canPin, dataPackage);
     }
 
     public PerformCommandMessage GetPerformCommandMessage()
@@ -100,21 +123,30 @@ public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
         ReferenceEquals(_sourceIcon, other._sourceIcon) &&
         string.Equals(Title, other.Title, StringComparison.Ordinal) &&
         _shortcutIndex == other._shortcutIndex &&
-        StartsNewSection == other.StartsNewSection;
+        StartsNewSection == other.StartsNewSection &&
+        IsPinned == other.IsPinned &&
+        CanPin == other.CanPin &&
+        ReferenceEquals(DataPackage, other.DataPackage);
 
     public override bool Equals(object? obj) => Equals(obj as QuickAccessShelfItem);
 
-    public override int GetHashCode() => HashCode.Combine(_item, _sourceIcon, Title, _shortcutIndex, StartsNewSection);
+    public override int GetHashCode() => HashCode.Combine(_item, _sourceIcon, Title, _shortcutIndex, StartsNewSection, IsPinned, CanPin, DataPackage);
 
     private bool Matches(
         IListItem item,
         string title,
         object? sourceIcon,
         int shortcutIndex,
-        bool startsNewSection) =>
+        bool startsNewSection,
+        bool isPinned,
+        bool canPin,
+        DataPackageView? dataPackage) =>
         ReferenceEquals(_item, item) &&
         ReferenceEquals(_sourceIcon, sourceIcon) &&
         string.Equals(Title, title, StringComparison.Ordinal) &&
         _shortcutIndex == shortcutIndex &&
-        StartsNewSection == startsNewSection;
+        StartsNewSection == startsNewSection &&
+        IsPinned == isPinned &&
+        CanPin == canPin &&
+        ReferenceEquals(DataPackage, dataPackage);
 }
