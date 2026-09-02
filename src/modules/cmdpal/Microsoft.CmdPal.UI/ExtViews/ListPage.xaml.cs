@@ -35,9 +35,12 @@ public sealed partial class ListPage : Page, IPageInteractionTarget, IPageIntera
         this.InitializeComponent();
         this.NavigationCacheMode = NavigationCacheMode.Disabled;
         ListView.FocusSearchRequested += (_, _) => FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+        ListView.DragStateChanged += (_, e) => DragStateChanged?.Invoke(this, e);
     }
 
     public event EventHandler? FocusSearchRequested;
+
+    public event EventHandler<PageDragStateChangedEventArgs>? DragStateChanged;
 
     public void NavigatePrevious() => ListView.NavigatePrevious();
 

@@ -52,8 +52,6 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<NavigationDepthMessage>,
     IRecipient<SearchQueryMessage>,
     IRecipient<ErrorOccurredMessage>,
-    IRecipient<DragStartedMessage>,
-    IRecipient<DragCompletedMessage>,
     IRecipient<ToggleDevRibbonMessage>,
     IRecipient<GetHwndMessage>,
     IRecipient<ExpandCompactModeMessage>,
@@ -140,6 +138,8 @@ public sealed partial class MainWindow : WindowEx,
 
         InitializeComponent();
 
+        ShellContent.DragStateChanged += ShellContent_DragStateChanged;
+
         ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
 
         _autoGoHomeTimer = new DispatcherTimer();
@@ -195,8 +195,6 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<NavigationDepthMessage>(this);
         WeakReferenceMessenger.Default.Register<SearchQueryMessage>(this);
         WeakReferenceMessenger.Default.Register<ErrorOccurredMessage>(this);
-        WeakReferenceMessenger.Default.Register<DragStartedMessage>(this);
-        WeakReferenceMessenger.Default.Register<DragCompletedMessage>(this);
         WeakReferenceMessenger.Default.Register<ToggleDevRibbonMessage>(this);
         WeakReferenceMessenger.Default.Register<GetHwndMessage>(this);
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
@@ -1902,6 +1900,7 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Dispose()
     {
+        ShellContent.DragStateChanged -= ShellContent_DragStateChanged;
         _themeService.ThemeChanged -= ThemeServiceOnThemeChanged;
         App.Current.Services.GetRequiredService<ISettingsService>().SettingsChanged -= SettingsChangedHandler;
 
@@ -1917,18 +1916,16 @@ public sealed partial class MainWindow : WindowEx,
         _devRibbon?.Visibility = _devRibbon.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
     }
 
-    public void Receive(DragStartedMessage message)
+    private void ShellContent_DragStateChanged(object? sender, PageDragStateChangedEventArgs e)
     {
-        _preventHideWhenDeactivated = true;
-    }
-
-    public void Receive(DragCompletedMessage message)
-    {
-        _preventHideWhenDeactivated = false;
-        Task.Delay(200).ContinueWith(_ =>
+        _preventHideWhenDeactivated = e.IsDragging;
+        if (!e.IsDragging)
         {
-            DispatcherQueue.TryEnqueue(StealForeground);
-        });
+            Task.Delay(200).ContinueWith(_ =>
+            {
+                DispatcherQueue.TryEnqueue(StealForeground);
+            });
+        }
     }
 
     private unsafe void StealForeground()

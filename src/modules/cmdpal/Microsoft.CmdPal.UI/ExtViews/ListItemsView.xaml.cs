@@ -67,6 +67,8 @@ public sealed partial class ListItemsView : UserControl,
 
     public event EventHandler? FocusSearchRequested;
 
+    public event EventHandler<PageDragStateChangedEventArgs>? DragStateChanged;
+
     private ListViewBase ItemView => ViewModel?.IsGridView == true ? ItemsGrid : ItemsList;
 
     public ListItemsView()
@@ -1128,11 +1130,11 @@ public sealed partial class ListItemsView : UserControl,
                 }
             }
 
-            WeakReferenceMessenger.Default.Send(new DragStartedMessage());
+            DragStateChanged?.Invoke(this, new(true));
         }
         catch (Exception ex)
         {
-            WeakReferenceMessenger.Default.Send(new DragCompletedMessage());
+            DragStateChanged?.Invoke(this, new(false));
             Logger.LogError("Failed to start dragging an item", ex);
         }
     }
@@ -1172,7 +1174,7 @@ public sealed partial class ListItemsView : UserControl,
 
     private void Items_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
     {
-        WeakReferenceMessenger.Default.Send(new DragCompletedMessage());
+        DragStateChanged?.Invoke(this, new(false));
     }
 
     /// <summary>

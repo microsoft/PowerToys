@@ -4,9 +4,7 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public interface IPageInteractionEventSource
+public sealed class PageDragStateChangedEventArgs(bool isDragging) : EventArgs
 {
-    event EventHandler? FocusSearchRequested;
-
-    event EventHandler<PageDragStateChangedEventArgs>? DragStateChanged;
+    public bool IsDragging { get; } = isDragging;
 }

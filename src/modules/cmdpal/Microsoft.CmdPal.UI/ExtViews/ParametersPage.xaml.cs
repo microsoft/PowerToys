@@ -32,9 +32,12 @@ public sealed partial class ParametersPage : Page, IPageInteractionTarget, IPage
     {
         this.InitializeComponent();
         ActiveList.FocusSearchRequested += ActiveList_FocusSearchRequested;
+        ActiveList.DragStateChanged += ActiveList_DragStateChanged;
     }
 
     public event EventHandler? FocusSearchRequested;
+
+    public event EventHandler<PageDragStateChangedEventArgs>? DragStateChanged;
 
     public void NavigatePrevious() => ActiveList.NavigatePrevious();
 
@@ -83,4 +86,7 @@ public sealed partial class ParametersPage : Page, IPageInteractionTarget, IPage
 
     private void ActiveList_FocusSearchRequested(object? sender, EventArgs e) =>
         FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+
+    private void ActiveList_DragStateChanged(object? sender, PageDragStateChangedEventArgs e) =>
+        DragStateChanged?.Invoke(this, e);
 }

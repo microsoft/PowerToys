@@ -92,6 +92,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    public event EventHandler<PageDragStateChangedEventArgs>? DragStateChanged;
+
     private IHostWindow? _hostWindow;
 
     public IHostWindow? HostWindow
@@ -134,6 +136,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _pageInteractions = new(MainCommandBar);
         _pageInteractions.DetailsChanged += PageInteractions_DetailsChanged;
         _pageInteractions.FocusSearchRequested += PageInteractions_FocusSearchRequested;
+        _pageInteractions.DragStateChanged += PageInteractions_DragStateChanged;
         SearchBox.NavigationRequested += SearchBox_NavigationRequested;
         MainCommandBar.FocusSearchRequested += MainCommandBar_FocusSearchRequested;
         FiltersDropDown.FocusSearchRequested += FiltersDropDown_FocusSearchRequested;
@@ -750,6 +753,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void FiltersDropDown_FocusSearchRequested(object? sender, EventArgs e) => RequestTopBarFocusRestore();
 
+    private void PageInteractions_DragStateChanged(object? sender, PageDragStateChangedEventArgs e) =>
+        DragStateChanged?.Invoke(this, e);
+
     private void BackButton_Clicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
 
     private void RootFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
@@ -1204,6 +1210,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         FiltersDropDown.FocusSearchRequested -= FiltersDropDown_FocusSearchRequested;
         _pageInteractions.DetailsChanged -= PageInteractions_DetailsChanged;
         _pageInteractions.FocusSearchRequested -= PageInteractions_FocusSearchRequested;
+        _pageInteractions.DragStateChanged -= PageInteractions_DragStateChanged;
         _pageInteractions.Dispose();
 
         if (_hostWindow is not null)

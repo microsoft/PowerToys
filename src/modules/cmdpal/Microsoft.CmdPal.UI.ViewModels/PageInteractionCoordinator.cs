@@ -25,6 +25,8 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
 
     public event EventHandler? FocusSearchRequested;
 
+    public event EventHandler<PageDragStateChangedEventArgs>? DragStateChanged;
+
     public void AttachPage(PageViewModel? page)
     {
         ObjectDisposedException.ThrowIf(_isDisposed, this);
@@ -65,6 +67,7 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         if (_eventSource is not null)
         {
             _eventSource.FocusSearchRequested += Target_FocusSearchRequested;
+            _eventSource.DragStateChanged += Target_DragStateChanged;
         }
     }
 
@@ -128,6 +131,14 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         }
     }
 
+    private void Target_DragStateChanged(object? sender, PageDragStateChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, _eventSource))
+        {
+            DragStateChanged?.Invoke(this, e);
+        }
+    }
+
     private static ICommandBarContext? GetInitialCommandContext(PageViewModel page) =>
         page switch
         {
@@ -159,6 +170,7 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         if (_eventSource is not null)
         {
             _eventSource.FocusSearchRequested -= Target_FocusSearchRequested;
+            _eventSource.DragStateChanged -= Target_DragStateChanged;
         }
 
         _eventSource = null;
