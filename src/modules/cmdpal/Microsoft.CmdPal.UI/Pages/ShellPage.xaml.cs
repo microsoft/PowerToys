@@ -8,6 +8,8 @@ using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Messages;
+using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
@@ -129,7 +131,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         this.ExpandedMode = !_compactMode;
 
         this.InitializeComponent();
-
         _pageInteractions = new(MainCommandBar);
         _pageInteractions.DetailsChanged += PageInteractions_DetailsChanged;
         _pageInteractions.FocusSearchRequested += PageInteractions_FocusSearchRequested;
@@ -152,6 +153,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         WeakReferenceMessenger.Default.Register<ShowConfirmationMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowToastMessage>(this);
+
         WeakReferenceMessenger.Default.Register<ShowHideDockMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowPinToDockDialogMessage>(this);
 
@@ -703,6 +705,75 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         RequestTopBarFocusRestore();
     }
 
+    private void SearchBox_BackRequested(object? sender, SearchBarBackRequestedEventArgs e)
+    {
+        switch (e.Kind)
+        {
+            case SearchBarBackRequestKind.GoBack:
+                HandleNavigateBack(e.FromBackspace);
+                break;
+            case SearchBarBackRequestKind.Dismiss:
+                WeakReferenceMessenger.Default.Send(new DismissMessage(ForceGoHome: true));
+                break;
+            case SearchBarBackRequestKind.Hide:
+                WeakReferenceMessenger.Default.Send(new HideWindowMessage());
+                break;
+        }
+    }
+
+    private void SearchBox_NavigationRequested(object? sender, SearchBarNavigationRequestedEventArgs e)
+    {
+        switch (e.Direction)
+        {
+            case SearchBarNavigationDirection.Previous:
+                _pageInteractions.NavigatePrevious();
+                break;
+            case SearchBarNavigationDirection.Next:
+                _pageInteractions.NavigateNext();
+                break;
+            case SearchBarNavigationDirection.Left:
+                _pageInteractions.NavigateLeft();
+                break;
+            case SearchBarNavigationDirection.Right:
+                _pageInteractions.NavigateRight();
+                break;
+            case SearchBarNavigationDirection.PageUp:
+                _pageInteractions.NavigatePageUp();
+                break;
+            case SearchBarNavigationDirection.PageDown:
+                _pageInteractions.NavigatePageDown();
+                break;
+        }
+    }
+
+    private void PageInteractions_FocusSearchRequested(object? sender, EventArgs e) => RequestTopBarFocusRestore();
+
+    private void MainCommandBar_FocusSearchRequested(object? sender, EventArgs e) => RequestTopBarFocusRestore();
+
+    private void FiltersDropDown_FocusSearchRequested(object? sender, EventArgs e) => RequestTopBarFocusRestore();
+
+    private void PageInteractions_DragStateChanged(object? sender, PageDragStateChangedEventArgs e) =>
+        DragStateChanged?.Invoke(this, e);
+
+    private void Page_ContextMenuRequested(object? sender, ListItemsContextMenuRequestedEventArgs e) =>
+        MainCommandBar.OpenContextMenu(e.Context, e.Element, e.Placement, e.Position, e.FilterLocation);
+
+    private void AttachInteractionTarget(IPageInteractionTarget? target)
+    {
+        if (_listInteractionSource is not null)
+        {
+            _listInteractionSource.ContextMenuRequested -= Page_ContextMenuRequested;
+        }
+
+        _listInteractionSource = target as IListInteractionSource;
+        if (_listInteractionSource is not null)
+        {
+            _listInteractionSource.ContextMenuRequested += Page_ContextMenuRequested;
+        }
+
+        _pageInteractions.AttachTarget(target);
+    }
+
     private void HostWindow_IsVisibleToUserChanged(object? sender, EventArgs e)
     {
         if (HostWindow?.IsVisibleToUser == true &&
@@ -731,56 +802,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         _pendingTopBarFocusRestore = true;
     }
-
-    private void SearchBox_NavigationRequested(object? sender, SearchBarNavigationRequestedEventArgs e)
-    {
-        switch (e.Direction)
-        {
-            case SearchBarNavigationDirection.Previous:
-                _pageInteractions.NavigatePrevious();
-                break;
-            case SearchBarNavigationDirection.Next:
-                _pageInteractions.NavigateNext();
-                break;
-            case SearchBarNavigationDirection.Left:
-                _pageInteractions.NavigateLeft();
-                break;
-            case SearchBarNavigationDirection.Right:
-                _pageInteractions.NavigateRight();
-                break;
-            case SearchBarNavigationDirection.PageUp:
-                _pageInteractions.NavigatePageUp();
-                break;
-            case SearchBarNavigationDirection.PageDown:
-                _pageInteractions.NavigatePageDown();
-                break;
-        }
-    }
-
-    private void SearchBox_BackRequested(object? sender, SearchBarBackRequestedEventArgs e)
-    {
-        switch (e.Kind)
-        {
-            case SearchBarBackRequestKind.GoBack:
-                HandleNavigateBack(e.FromBackspace);
-                break;
-            case SearchBarBackRequestKind.Dismiss:
-                WeakReferenceMessenger.Default.Send(new DismissMessage(ForceGoHome: true));
-                break;
-            case SearchBarBackRequestKind.Hide:
-                WeakReferenceMessenger.Default.Send(new HideWindowMessage());
-                break;
-        }
-    }
-
-    private void PageInteractions_FocusSearchRequested(object? sender, EventArgs e) => RequestTopBarFocusRestore();
-
-    private void MainCommandBar_FocusSearchRequested(object? sender, EventArgs e) => RequestTopBarFocusRestore();
-
-    private void FiltersDropDown_FocusSearchRequested(object? sender, EventArgs e) => RequestTopBarFocusRestore();
-
-    private void PageInteractions_DragStateChanged(object? sender, PageDragStateChangedEventArgs e) =>
-        DragStateChanged?.Invoke(this, e);
 
     private void BackButton_Clicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => HandleNavigateBack();
 
@@ -980,25 +1001,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 },
                 token);
         }
-    }
-
-    private void Page_ContextMenuRequested(object? sender, ListItemsContextMenuRequestedEventArgs e) =>
-        MainCommandBar.OpenContextMenu(e.Context, e.Element, e.Placement, e.Position, e.FilterLocation);
-
-    private void AttachInteractionTarget(IPageInteractionTarget? target)
-    {
-        if (_listInteractionSource is not null)
-        {
-            _listInteractionSource.ContextMenuRequested -= Page_ContextMenuRequested;
-        }
-
-        _listInteractionSource = target as IListInteractionSource;
-        if (_listInteractionSource is not null)
-        {
-            _listInteractionSource.ContextMenuRequested += Page_ContextMenuRequested;
-        }
-
-        _pageInteractions.AttachTarget(target);
     }
 
     private void AnnounceNavigationToPage(Page page)
@@ -1253,17 +1255,17 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _isDisposed = true;
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _settingsService.SettingsChanged -= OnSettingsChanged;
-        SearchBox.NavigationRequested -= SearchBox_NavigationRequested;
-        MainCommandBar.FocusSearchRequested -= MainCommandBar_FocusSearchRequested;
-        FiltersDropDown.FocusSearchRequested -= FiltersDropDown_FocusSearchRequested;
-        AttachInteractionTarget(null);
         ViewModel.PageNavigationRequested -= ViewModel_PageNavigationRequested;
         ViewModel.GoHomeRequested -= ViewModel_GoHomeRequested;
         ViewModel.GoBackRequested -= ViewModel_GoBackRequested;
         SearchBox.BackRequested -= SearchBox_BackRequested;
+        SearchBox.NavigationRequested -= SearchBox_NavigationRequested;
+        MainCommandBar.FocusSearchRequested -= MainCommandBar_FocusSearchRequested;
+        FiltersDropDown.FocusSearchRequested -= FiltersDropDown_FocusSearchRequested;
         _pageInteractions.DetailsChanged -= PageInteractions_DetailsChanged;
         _pageInteractions.FocusSearchRequested -= PageInteractions_FocusSearchRequested;
         _pageInteractions.DragStateChanged -= PageInteractions_DragStateChanged;
+        AttachInteractionTarget(null);
         _pageInteractions.Dispose();
 
         if (_hostWindow is not null)
