@@ -1038,6 +1038,24 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
+    private void QuickAccessShelfItem_AccessKeyInvoked(UIElement sender, AccessKeyInvokedEventArgs args)
+    {
+        var modifiers = KeyModifiers.GetCurrent();
+        if (!QuickAccessShelfShortcuts.IsSelectionAccessKey(modifiers.Ctrl, modifiers.Shift, modifiers.Win))
+        {
+            // Leave plain Alt+# unhandled so the Button performs its normal access-key action.
+            return;
+        }
+
+        // WinUI resolves Alt+Shift+# through this same native access key as Alt+#. Handle the
+        // shifted form at the target so it only moves focus and cannot activate the Button.
+        args.Handled = true;
+        if (sender is Button button)
+        {
+            _ = button.Focus(FocusState.Keyboard);
+        }
+    }
+
     private async void QuickAccessShelfItem_ContextRequested(UIElement sender, ContextRequestedEventArgs e)
     {
         if (sender is not Button { Tag: QuickAccessShelfItem item } button)
@@ -1640,6 +1658,24 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             FindQuickAccessShelfButton(e.OriginalSource as DependencyObject) is not Button { Tag: QuickAccessShelfItem item } anchor)
         {
             return false;
+        }
+
+        switch (QuickAccessShelfShortcuts.ResolveSelectionShortcut(
+            e.Key,
+            modifiers.Ctrl,
+            modifiers.Alt,
+            modifiers.Shift,
+            modifiers.Win,
+            QuickAccessShelf.VisibleItemCount))
+        {
+            case QuickAccessShelfShortcuts.SelectionShortcutTarget.Visible:
+                // Let the matching native access key move focus to the requested shelf item.
+                return false;
+            case QuickAccessShelfShortcuts.SelectionShortcutTarget.Unavailable:
+                // Reserve shelf selection chords even when their targets are in overflow so
+                // they cannot invoke a context shortcut on the currently focused shelf item.
+                e.Handled = true;
+                return true;
         }
 
         if (e.Key == VirtualKey.Enter && modifiers.OnlyCtrl)
