@@ -5,7 +5,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -233,12 +232,6 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         return message;
     }
 
-    protected void SendPageUiMessage<TMessage>(TMessage message)
-        where TMessage : class
-    {
-        WeakReferenceMessenger.Default.Send<TMessage>(message);
-    }
-
     protected internal void SetCommandBarContext(ICommandBarContext? context) =>
         CommandBarContextChanged?.Invoke(this, new(context));
 
@@ -253,6 +246,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     protected internal void RequestSearchFocus() =>
         FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+
+    internal virtual bool OwnsCommandSource(PageViewModel source) => ReferenceEquals(this, source);
 
     protected virtual void FetchProperty(string propertyName)
     {

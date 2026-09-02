@@ -577,47 +577,39 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         get => _activeListViewModel;
         private set
         {
-            if (_activeListViewModel != value)
+            if (ReferenceEquals(_activeListViewModel, value))
             {
-                if (_activeListViewModel is not null)
-                {
-                    _activeListViewModel.CommandBarContextChanged -= ActiveList_CommandBarContextChanged;
-                    _activeListViewModel.SearchSuggestionChanged -= ActiveList_SearchSuggestionChanged;
-                }
-
-                _activeListViewModel = value;
-
-                if (_activeListViewModel is not null)
-                {
-                    _activeListViewModel.CommandBarContextChanged += ActiveList_CommandBarContextChanged;
-                    _activeListViewModel.SearchSuggestionChanged += ActiveList_SearchSuggestionChanged;
-                }
-
-                UpdateProperty(nameof(ActiveListViewModel));
-                UpdateProperty(nameof(HasActiveList));
-                SetCommandBarContext(_activeListViewModel is null && ShowCommand ? Command : null);
-                SetSearchSuggestion(_activeListViewModel?.TextToSuggest ?? string.Empty);
+                return;
             }
+
+            if (_activeListViewModel is not null)
+            {
+                _activeListViewModel.CommandBarContextChanged -= ActiveList_CommandBarContextChanged;
+                _activeListViewModel.DetailsChanged -= ActiveList_DetailsChanged;
+                _activeListViewModel.SearchSuggestionChanged -= ActiveList_SearchSuggestionChanged;
+            }
+
+            _activeListViewModel = value;
+
+            if (_activeListViewModel is not null)
+            {
+                _activeListViewModel.CommandBarContextChanged += ActiveList_CommandBarContextChanged;
+                _activeListViewModel.DetailsChanged += ActiveList_DetailsChanged;
+                _activeListViewModel.SearchSuggestionChanged += ActiveList_SearchSuggestionChanged;
+            }
+
+            SetCommandBarContext(_activeListViewModel is null && ShowCommand ? Command : null);
+            SetDetails(null);
+            SetSearchSuggestion(_activeListViewModel?.TextToSuggest ?? string.Empty);
+            UpdateProperty(nameof(ActiveListViewModel));
+            UpdateProperty(nameof(HasActiveList));
         }
     }
 
     public bool HasActiveList => _activeListViewModel != null;
 
-    private void ActiveList_CommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e)
-    {
-        if (ReferenceEquals(sender, _activeListViewModel))
-        {
-            SetCommandBarContext(e.Context);
-        }
-    }
-
-    private void ActiveList_SearchSuggestionChanged(object? sender, PageSearchSuggestionChangedEventArgs e)
-    {
-        if (ReferenceEquals(sender, _activeListViewModel))
-        {
-            SetSearchSuggestion(e.Suggestion);
-        }
-    }
+    internal override bool OwnsCommandSource(PageViewModel source) =>
+        base.OwnsCommandSource(source) || ReferenceEquals(ActiveListViewModel, source);
 
     private CommandParameterRunViewModel? _activeListParam;
 
@@ -626,6 +618,30 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         CoreLogger.LogDebug($"[ParametersPageVM] SetActiveListParameter: {(param != null ? "setting" : "clearing")} (was {(_activeListParam != null ? "set" : "null")})");
         _activeListParam = param;
         ActiveListViewModel = param?.ListViewModel;
+    }
+
+    private void ActiveList_CommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, ActiveListViewModel))
+        {
+            SetCommandBarContext(e.Context);
+        }
+    }
+
+    private void ActiveList_DetailsChanged(object? sender, PageDetailsChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, ActiveListViewModel))
+        {
+            SetDetails(e.Details);
+        }
+    }
+
+    private void ActiveList_SearchSuggestionChanged(object? sender, PageSearchSuggestionChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, ActiveListViewModel))
+        {
+            SetSearchSuggestion(e.Suggestion);
+        }
     }
 
     private readonly Lock _listLock = new();
