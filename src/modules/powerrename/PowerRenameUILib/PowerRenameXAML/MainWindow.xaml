@@ -47,6 +47,7 @@
                     x:Uid="SelectAllCheckBox"
                     MinWidth="0"
                     Margin="10,0,0,0"
+                    AutomationProperties.AutomationId="checkBox_selectAll"
                     Checked="SelectAll"
                     Content=""
                     IsChecked="True"
@@ -64,7 +65,10 @@
                     VerticalAlignment="Center"
                     Orientation="Horizontal">
                     <TextBlock x:Uid="TxtBlock_Original" FontWeight="Medium" />
-                    <TextBlock Margin="4,0,0,0" FontWeight="Medium">
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        AutomationProperties.AutomationId="OriginalCount"
+                        FontWeight="Medium">
                         <Run Text="(" /><Run Text="{x:Bind OriginalCount, Mode=OneWay}" /><Run Text=")" />
                     </TextBlock>
                 </StackPanel>
@@ -77,7 +81,10 @@
                 VerticalAlignment="Center"
                 Orientation="Horizontal">
                 <TextBlock x:Uid="TxtBlock_Renamed" FontWeight="Medium" />
-                <TextBlock Margin="4,0,0,0" FontWeight="Medium">
+                <TextBlock
+                    Margin="4,0,0,0"
+                    AutomationProperties.AutomationId="RenamedCount"
+                    FontWeight="Medium">
                     <Run Text="(" /><Run Text="{x:Bind RenamedCount, Mode=OneWay}" /><Run Text=")" />
                 </TextBlock>
             </StackPanel>
@@ -88,6 +95,7 @@
                 Height="32"
                 Margin="0,0,8,0"
                 HorizontalAlignment="Right"
+                AutomationProperties.AutomationId="FilterButton"
                 Background="Transparent"
                 BorderThickness="0"
                 Content="&#xE71C;"
@@ -97,12 +105,14 @@
                         <controls:RadioMenuFlyoutItem
                             x:Name="button_showAll"
                             x:Uid="ShowAll"
+                            AutomationProperties.AutomationId="button_showAll"
                             Click="ShowAll"
                             GroupName="Filter"
                             IsChecked="True" />
                         <controls:RadioMenuFlyoutItem
                             x:Name="button_showRenamed"
                             x:Uid="ShowOnly"
+                            AutomationProperties.AutomationId="button_showRenamed"
                             Click="ShowRenamed"
                             GroupName="Filter" />
                     </MenuBarItemFlyout>
@@ -201,7 +211,14 @@
                         x:Uid="SearchBox"
                         Height="40"
                         VerticalContentAlignment="Center"
-                        ItemsSource="{x:Bind SearchMRU}" />
+                        AutomationProperties.AutomationId="SearchAutoSuggestBox"
+                        ItemsSource="{x:Bind SearchMRU}">
+                        <AutoSuggestBox.TextBoxStyle>
+                            <Style BasedOn="{StaticResource AutoSuggestBoxTextBoxStyle}" TargetType="TextBox">
+                                <Setter Property="AutomationProperties.AutomationId" Value="textBox_search" />
+                            </Style>
+                        </AutoSuggestBox.TextBoxStyle>
+                    </AutoSuggestBox>
 
                     <Button
                         x:Uid="RegExButton"
@@ -279,15 +296,18 @@
                 <CheckBox
                     x:Name="checkBox_regex"
                     x:Uid="CheckBox_RegEx"
-                    Margin="2,6,0,0" />
+                    Margin="2,6,0,0"
+                    AutomationProperties.AutomationId="checkBox_regex" />
                 <CheckBox
                     x:Name="checkBox_matchAll"
                     x:Uid="CheckBox_MatchAll"
-                    Margin="2,0,0,0" />
+                    Margin="2,0,0,0"
+                    AutomationProperties.AutomationId="checkBox_matchAll" />
                 <CheckBox
                     x:Name="checkBox_case"
                     x:Uid="CheckBox_Case"
-                    Margin="2,0,0,0" />
+                    Margin="2,0,0,0"
+                    AutomationProperties.AutomationId="checkBox_case" />
 
                 <Rectangle
                     Height="1"
@@ -305,7 +325,14 @@
                         Height="40"
                         Padding="12,12,0,0"
                         VerticalContentAlignment="Center"
-                        ItemsSource="{x:Bind ReplaceMRU}" />
+                        AutomationProperties.AutomationId="ReplaceAutoSuggestBox"
+                        ItemsSource="{x:Bind ReplaceMRU}">
+                        <AutoSuggestBox.TextBoxStyle>
+                            <Style BasedOn="{StaticResource AutoSuggestBoxTextBoxStyle}" TargetType="TextBox">
+                                <Setter Property="AutomationProperties.AutomationId" Value="textBox_replace" />
+                            </Style>
+                        </AutoSuggestBox.TextBoxStyle>
+                    </AutoSuggestBox>
 
                     <Button
                         x:Uid="FileCreationButton"
@@ -519,11 +546,12 @@
                         Grid.Column="0"
                         Width="200"
                         HorizontalAlignment="Stretch"
+                        AutomationProperties.AutomationId="comboBox_renameParts"
                         AutomationProperties.LabeledBy="{Binding ElementName=ApplyToLabel}"
                         SelectedIndex="0">
-                        <ComboBoxItem x:Uid="RenameParts_FilenameAndExtension" />
-                        <ComboBoxItem x:Uid="RenameParts_FilenameOnly" />
-                        <ComboBoxItem x:Uid="RenameParts_ExtensionOnly" />
+                        <ComboBoxItem x:Uid="RenameParts_FilenameAndExtension" AutomationProperties.AutomationId="RenamePartsFilenameAndExtension" />
+                        <ComboBoxItem x:Uid="RenameParts_FilenameOnly" AutomationProperties.AutomationId="RenamePartsFilenameOnly" />
+                        <ComboBoxItem x:Uid="RenameParts_ExtensionOnly" AutomationProperties.AutomationId="RenamePartsExtensionOnly" />
                     </ComboBox>
                     <AppBarSeparator Margin="5,0,5,0" />
                     <ToggleButton
@@ -531,6 +559,7 @@
                         x:Uid="ToggleButton_IncludeFiles"
                         Height="32"
                         MinHeight="0"
+                        AutomationProperties.AutomationId="toggleButton_includeFiles"
                         Content="&#xE7C3;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         IsChecked="True" />
@@ -539,6 +568,7 @@
                         x:Uid="ToggleButton_IncludeFolders"
                         Height="32"
                         MinHeight="0"
+                        AutomationProperties.AutomationId="toggleButton_includeFolders"
                         Content="&#xE8B7;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         IsChecked="True" />
@@ -547,6 +577,7 @@
                         x:Uid="ToggleButton_IncludeSubFolders"
                         Height="32"
                         MinHeight="0"
+                        AutomationProperties.AutomationId="toggleButton_includeSubfolders"
                         Content="&#xED41;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         IsChecked="True" />
@@ -565,6 +596,7 @@
                         x:Uid="ToggleButton_Lowercase"
                         Height="32"
                         MinHeight="0"
+                        AutomationProperties.AutomationId="toggleButton_lowerCase"
                         Content="aa"
                         FontWeight="Medium" />
                     <ToggleButton
@@ -572,6 +604,7 @@
                         x:Uid="ToggleButton_Uppercase"
                         Height="32"
                         MinHeight="0"
+                        AutomationProperties.AutomationId="toggleButton_upperCase"
                         Content="AA"
                         FontWeight="Medium" />
                     <ToggleButton
@@ -579,6 +612,7 @@
                         x:Uid="ToggleButton_TitleCase"
                         Height="32"
                         MinHeight="0"
+                        AutomationProperties.AutomationId="toggleButton_titleCase"
                         Content="Aa"
                         FontWeight="Medium" />
                     <ToggleButton
@@ -586,6 +620,7 @@
                         x:Uid="ToggleButton_Capitalize"
                         Height="32"
                         MinHeight="0"
+                        AutomationProperties.AutomationId="toggleButton_capitalize"
                         Content="Aa Aa"
                         FontWeight="Medium" />
                     <AppBarSeparator Margin="5,0,5,0" />
@@ -594,6 +629,7 @@
                         x:Name="toggleButton_enumItems"
                         x:Uid="ToggleButton_EnumItems"
                         Height="32"
+                        AutomationProperties.AutomationId="toggleButton_enumItems"
                         Content="&#xEA40;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}" />
                     <ToggleButton
@@ -743,6 +779,7 @@
             Margin="0,0,12,1"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
+            AutomationProperties.AutomationId="button_rename"
             Click="button_rename_Click"
             Style="{StaticResource AccentSplitButtonStyle}">
             <SplitButton.KeyboardAccelerators>

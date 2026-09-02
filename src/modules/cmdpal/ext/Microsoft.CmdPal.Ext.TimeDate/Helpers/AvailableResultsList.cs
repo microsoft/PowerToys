@@ -34,7 +34,10 @@ internal static class AvailableResultsList
         var dateTimeNowUtc = dateTimeNow.ToUniversalTime();
         var firstWeekRule = firstWeekOfYear ?? TimeAndDateHelper.GetCalendarWeekRule(settings.FirstWeekOfYear);
         var firstDayOfTheWeek = firstDayOfWeek ?? TimeAndDateHelper.GetFirstDayOfWeek(settings.FirstDayOfWeek);
-        var weekOfYear = calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
+
+        // Shared with the Clock dock band; corrects the year boundary via ISOWeek
+        // when the settings amount to ISO 8601 (first four-day week + Monday).
+        var weekOfYear = TimeAndDateHelper.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
 
         results.AddRange(new[]
         {

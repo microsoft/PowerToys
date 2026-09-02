@@ -34,6 +34,7 @@
                 Visibility="{x:Bind Shortcut.Description, Mode=OneWay, Converter={StaticResource StringVisibilityConverter}}" />
         </StackPanel>
         <ItemsControl
+            x:Name="OuterItemsControl"
             Grid.Column="1"
             VerticalAlignment="Center"
             ItemsSource="{x:Bind Shortcut.Shortcut, Mode=OneWay}">
@@ -44,7 +45,7 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="models:ShortcutDescription">
-                    <ItemsControl ItemsSource="{Binding Converter={StaticResource ShortcutDescriptionToKeysConverter}}">
+                    <ItemsControl x:Name="InnerItemsControl" ItemsSource="{Binding Converter={StaticResource ShortcutDescriptionToKeysConverter}}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal" Spacing="4" />

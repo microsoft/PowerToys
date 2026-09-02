@@ -362,7 +362,26 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // };
         }
 
-        var result = await dialog.ShowAsync();
+        // In compact mode the palette may be collapsed to just the search box. The confirmation
+        // dialog renders in the host window's popup layer, which is clipped to the card's HWND
+        // region, so merely expanding our own content isn't enough - the card must fill the whole
+        // window or the dialog is clipped. Ask the host window to maximize the card while the
+        // dialog is up (and expand our own content to match), then restore the normal compact
+        // behavior once it closes.
+        WeakReferenceMessenger.Default.Send(new MaximizeForDialogMessage(true));
+        HandleExpandCompactOnUiThread(true);
+
+        ContentDialogResult result;
+        try
+        {
+            result = await dialog.ShowAsync();
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.Send(new MaximizeForDialogMessage(false));
+            UpdateCompactModeForCurrentPage();
+        }
+
         if (result == ContentDialogResult.Primary)
         {
             var performMessage = new PerformCommandMessage(vm);
@@ -385,11 +404,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 return;
             }
 
-            OpenSettings(message.SettingsPageTag);
+            OpenSettings(message.SettingsPageTag, message.ExtensionGalleryId);
         });
     }
 
-    public void OpenSettings(string pageTag)
+    public void OpenSettings(string pageTag, string? extensionGalleryId = null)
     {
         if (_settingsWindow is null)
         {
@@ -398,7 +417,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         _settingsWindow.Activate();
         _settingsWindow.BringToFront();
-        _settingsWindow.Navigate(pageTag);
+        _settingsWindow.Navigate(pageTag, extensionGalleryId);
     }
 
     public void Receive(ShowDetailsMessage message)
@@ -1043,6 +1062,14 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ExpandCompactModeMessage message)
     {
+        // Down/Tab expands the shell synchronously before broadcasting this message so the
+        // host can resize the card. In that case the requested state is already applied;
+        // re-evaluating from the empty query would immediately collapse it again.
+        if (ExpandedMode == message.Expanded)
+        {
+            return;
+        }
+
         // Re-evaluate from the current authoritative page state rather than applying the
         // message's snapshot directly. The message can race with navigation: following a
         // 1-character alias clears the home search (sending a "collapse") right as we
@@ -1100,6 +1127,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
 
         HandleExpandCompactOnUiThread(true);
+        WeakReferenceMessenger.Default.Send<ExpandCompactModeMessage>(new(true));
         return true;
     }
 

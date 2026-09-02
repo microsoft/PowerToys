@@ -7,6 +7,25 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
+/// <summary>
+/// Per-provider relevance nudge applied to main/root page search results. The value is a
+/// within-tier bonus only: it can reorder items that already share a relevance tier but can
+/// never move an item across a tier boundary. The underlying integer values are the sign of
+/// the bonus (Lower subtracts, Higher adds), and <see cref="Normal"/> is 0 so a missing or
+/// legacy setting deserializes to the neutral default.
+/// </summary>
+public enum ProviderSearchWeight
+{
+    /// <summary>De-prioritize this provider's results within their tier.</summary>
+    Lower = -1,
+
+    /// <summary>Default. No provider nudge.</summary>
+    Normal = 0,
+
+    /// <summary>Prioritize this provider's results within their tier.</summary>
+    Higher = 1,
+}
+
 public record ProviderSettings
 {
     // List of built-in fallbacks that should not have global results enabled by default
@@ -17,6 +36,12 @@ public record ProviderSettings
         ];
 
     public bool IsEnabled { get; init; } = true;
+
+    /// <summary>
+    /// Per-provider within-tier ranking nudge for main-page search. Defaults to
+    /// <see cref="ProviderSearchWeight.Normal"/>; missing/legacy values deserialize to Normal.
+    /// </summary>
+    public ProviderSearchWeight SearchWeight { get; init; } = ProviderSearchWeight.Normal;
 
     private ImmutableDictionary<string, FallbackSettings>? _fallbackCommands
         = ImmutableDictionary<string, FallbackSettings>.Empty;

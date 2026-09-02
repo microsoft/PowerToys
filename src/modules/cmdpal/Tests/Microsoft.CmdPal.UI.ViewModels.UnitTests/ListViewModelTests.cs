@@ -60,7 +60,23 @@ public partial class ListViewModelTests
         private static TaskCompletionSource<bool> NewDeferredFetchObserved() => new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
-    private static ListViewModel CreateViewModel(RecursiveItemsChangedPage page) =>
+    private sealed partial class IncrementalLoadingPage : ListPage
+    {
+        private IListItem[] _items = [new ListItem(new NoOpCommand() { Name = "Item 1" })];
+
+        public override IListItem[] GetItems() => _items;
+
+        public override void LoadMore()
+        {
+            _items = [.. _items, new ListItem(new NoOpCommand() { Name = "Item 2" })];
+            HasMoreItems = false;
+            RaiseItemsChanged(_items.Length);
+        }
+
+        public void TriggerItemsChanged(int totalItems) => RaiseItemsChanged(totalItems);
+    }
+
+    private static ListViewModel CreateViewModel(IListPage page) =>
         new(page, TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty, DefaultContextMenuFactory.Instance);
 
     [TestMethod]
@@ -85,5 +101,65 @@ public partial class ListViewModelTests
 
         viewModel.SafeCleanup();
         viewModel.Dispose();
+    }
+
+    [TestMethod]
+    public async Task LoadMoreItemsChanged_PreservesSelectionImplicitly()
+    {
+        var page = new IncrementalLoadingPage
+        {
+            Id = "list.page",
+            Name = "List Page",
+            Title = "List Page",
+            HasMoreItems = true,
+        };
+
+        var viewModel = CreateViewModel(page);
+        try
+        {
+            var initialUpdate = await ObserveNextItemsUpdateAsync(viewModel, viewModel.InitializeProperties);
+            Assert.IsFalse(initialUpdate.ForceFirstItem);
+            Assert.IsTrue(initialUpdate.EnsureSelectionVisible);
+
+            var regularUpdate = await ObserveNextItemsUpdateAsync(viewModel, () => page.TriggerItemsChanged(1));
+            Assert.IsTrue(regularUpdate.ForceFirstItem);
+            Assert.IsTrue(regularUpdate.EnsureSelectionVisible);
+
+            var explicitIncrementalUpdate = await ObserveNextItemsUpdateAsync(
+                viewModel,
+                () => page.TriggerItemsChanged(ListViewModel.IncrementalRefresh));
+            Assert.IsFalse(explicitIncrementalUpdate.ForceFirstItem);
+            Assert.IsTrue(explicitIncrementalUpdate.EnsureSelectionVisible);
+
+            var loadMoreUpdate = await ObserveNextItemsUpdateAsync(viewModel, viewModel.LoadMoreIfNeeded);
+            Assert.IsFalse(loadMoreUpdate.ForceFirstItem);
+            Assert.IsFalse(loadMoreUpdate.EnsureSelectionVisible);
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+            viewModel.Dispose();
+        }
+    }
+
+    private static async Task<ItemsUpdatedEventArgs> ObserveNextItemsUpdateAsync(ListViewModel viewModel, Action action)
+    {
+        var updateObserved = new TaskCompletionSource<ItemsUpdatedEventArgs>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        void OnItemsUpdated(ListViewModel sender, ItemsUpdatedEventArgs args) => updateObserved.TrySetResult(args);
+
+        viewModel.ItemsUpdated += OnItemsUpdated;
+        try
+        {
+            action();
+
+            var completed = await Task.WhenAny(updateObserved.Task, Task.Delay(TimeSpan.FromSeconds(2)));
+            Assert.AreSame(updateObserved.Task, completed);
+            return await updateObserved.Task;
+        }
+        finally
+        {
+            viewModel.ItemsUpdated -= OnItemsUpdated;
+        }
     }
 }

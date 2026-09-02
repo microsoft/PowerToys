@@ -18,6 +18,7 @@ struct UpdateState
     std::wstring releasePageUrl;
     std::optional<std::time_t> githubUpdateLastCheckedDate;
     std::wstring downloadedInstallerFilename;
+    bool isPrerelease = false;
 
     // To prevent concurrent modification of the file, we enforce this interface, which locks the file while
     // the state_modifier is active.
