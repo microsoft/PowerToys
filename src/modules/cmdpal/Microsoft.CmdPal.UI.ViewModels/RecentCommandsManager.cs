@@ -106,6 +106,18 @@ public record RecentCommandsManager : IRecentCommandsManager
     /// </summary>
     public void PrewarmIndex() => _ = Index;
 
+    /// <summary>
+    /// Enumerates command ids from most recently used to least recently used without copying the
+    /// persisted history. Consumers can stop as soon as they have resolved enough visible items.
+    /// </summary>
+    public IEnumerable<string> EnumerateRecentCommandIds()
+    {
+        foreach (var item in History)
+        {
+            yield return item.CommandId;
+        }
+    }
+
     public int GetCommandHistoryWeight(string commandId)
         => GetCommandHistoryWeight(commandId, DateTimeOffset.UtcNow);
 
@@ -146,6 +158,29 @@ public record RecentCommandsManager : IRecentCommandsManager
     /// </summary>
     public RecentCommandsManager WithHistoryItem(string commandId)
         => WithHistoryItem(commandId, DateTimeOffset.UtcNow);
+
+    /// <summary>
+    /// Returns a new RecentCommandsManager without the given command, or this instance when the
+    /// command is not present. Pure function - does not mutate this instance.
+    /// </summary>
+    public RecentCommandsManager WithoutHistoryItem(string commandId)
+    {
+        var existing = History.FirstOrDefault(item => item.CommandId == commandId);
+        return existing is null
+            ? this
+            : this with { History = History.Remove(existing) };
+    }
+
+    /// <summary>
+    /// Returns an empty recent-command history, or this instance when it is already empty.
+    /// Pure function - does not mutate this instance.
+    /// </summary>
+    public RecentCommandsManager ClearHistory() =>
+        History.Count == 0
+            ? this
+            : this with { History = ImmutableList<HistoryItem>.Empty };
+
+    public bool IsEmpty => History.Count == 0;
 
     /// <summary>
     /// Records a use of <paramref name="commandId"/> at the explicit time <paramref name="now"/>.
@@ -189,6 +224,10 @@ public interface IRecentCommandsManager
     int GetCommandHistoryWeight(string commandId, DateTimeOffset now);
 
     RecentCommandsManager WithHistoryItem(string commandId);
+
+    RecentCommandsManager WithoutHistoryItem(string commandId);
+
+    RecentCommandsManager ClearHistory();
 
     /// <summary>
     /// Builds any lazy internal state on the calling thread. Call it once before scoring items in
