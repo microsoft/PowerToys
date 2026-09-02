@@ -218,7 +218,7 @@ jobs:
       $allModules = [string]::IsNullOrWhiteSpace($modulesRaw)
       $requiresModernContextMenu = '$(TestPlatform)' -ne 'x64Win10'
       $requiresPowerRename = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename' }).Count -gt 0
-      $requiresAuthenticatedSettingsIpc = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename|MouseUtils' }).Count -gt 0
+      $requiresAuthenticatedSettingsIpc = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename|MouseUtils|PowerAccent' }).Count -gt 0
       $requiredPackages = @()
       $requiredAuthenticodeFiles = @()
       $certificateMarkerPath = "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
@@ -233,6 +233,10 @@ jobs:
 
       if ($requiresAuthenticatedSettingsIpc) {
         $requiredAuthenticodeFiles += 'PowerToys.exe', 'PowerToys.Settings.exe'
+      }
+
+      if ($requiredAuthenticodeFiles.Count -gt 0) {
+        & "$(build.sourcesdirectory)\.pipelines\stopPowerToysProcesses.ps1"
       }
 
       if ($requiredPackages.Count -gt 0 -or $requiredAuthenticodeFiles.Count -gt 0) {
