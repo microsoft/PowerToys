@@ -305,12 +305,6 @@ public sealed partial class SearchBar : UserControl,
 
         if (InSuggestion)
         {
-            // Preserve the inline suggestion when paging is left to the TextBox.
-            if (!e.Handled && (e.Key is VirtualKey.PageUp or VirtualKey.PageDown))
-            {
-                return;
-            }
-
             if (
                  e.Key == VirtualKey.Back ||
                  e.Key == VirtualKey.Delete
