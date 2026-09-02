@@ -74,6 +74,16 @@ public partial class SamplesListPage : ListPage
             Title = "SVG Icon Protocols",
             Subtitle = "Plain, themed, semantic, and custom-color SVG icon samples",
         },
+        new ListItem(new SampleShellItemIconPage())
+        {
+            Title = "System32 Shell Icons",
+            Subtitle = "A large real-world list for Shell icon identity and cache testing",
+        },
+        new ListItem(new SampleShellItemIconPage(useLegacyIndexerIcons: true))
+        {
+            Title = "System32 Legacy Indexer Icons",
+            Subtitle = "The same System32 list using pre-protocol ThumbnailHelper streams",
+        },
         new ListItem(new SlowListPage())
         {
             Title = "Slow loading list page",

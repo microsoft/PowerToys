@@ -624,6 +624,7 @@
                             x:Name="ItemsList"
                             Padding="0,2,0,0"
                             CanDragItems="True"
+                            ContainerContentChanging="Items_ContainerContentChanging"
                             ContextCanceled="Items_OnContextCanceled"
                             ContextRequested="Items_OnContextRequested"
                             DoubleTapped="Items_DoubleTapped"

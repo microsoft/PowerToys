@@ -348,6 +348,8 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     protected override void UnsafeCleanup()
     {
+        CleanupInitializationState();
+
         base.UnsafeCleanup();
 
         // Tags don't have event handlers or anything to cleanup
