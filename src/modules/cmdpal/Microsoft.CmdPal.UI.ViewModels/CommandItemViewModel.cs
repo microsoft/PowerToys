@@ -21,6 +21,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     private readonly IContextMenuFactory? _contextMenuFactory;
 
+    private readonly ContextMenuPlacement _contextMenuPlacement;
+
     private readonly Lock _moreCommandsLock = new();
     private readonly List<IContextItemViewModel> _moreCommands = [];
     private volatile CommandContextItemViewModel? _secondaryMoreCommand;
@@ -88,10 +90,6 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     IReadOnlyList<IContextItemViewModel> IContextMenuContext.MoreCommands => _moreCommandsSnapshot;
 
-    protected Lock MoreCommandsLock => _moreCommandsLock;
-
-    protected List<IContextItemViewModel> UnsafeMoreCommands => _moreCommands;
-
     public bool HasMoreCommands => _secondaryMoreCommand is not null;
 
     public string SecondaryCommandName => _secondaryMoreCommand?.Name ?? string.Empty;
@@ -132,11 +130,15 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     public CommandItemViewModel(
         ExtensionObject<ICommandItem> item,
         WeakReference<IPageContext> errorContext,
-        IContextMenuFactory? contextMenuFactory)
+        IContextMenuFactory? contextMenuFactory,
+        ContextMenuPlacement contextMenuPlacement)
         : base(errorContext)
     {
+        ArgumentNullException.ThrowIfNull(contextMenuPlacement);
+
         _commandItemModel = item;
         _contextMenuFactory = contextMenuFactory;
+        _contextMenuPlacement = contextMenuPlacement;
         _commandState = new(new CommandViewModel(null, errorContext), Owned: true);
     }
 
@@ -246,10 +248,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         Initialized |= InitializedState.SelectionInitialized;
-        UpdateProperty(nameof(MoreCommands));
-        UpdateProperty(nameof(AllCommands));
-        UpdateProperty(nameof(SecondaryCommand), nameof(SecondaryCommandName), nameof(HasMoreCommands));
-        UpdateProperty(nameof(CanOpenContextMenu));
+        NotifyMoreCommandsChanged();
         UpdateProperty(nameof(IsSelectedInitialized));
     }
 
@@ -469,7 +468,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
-        var defaultContextItem = new CommandContextItemViewModel(new CommandContextItem(commandModel), PageContext)
+        var defaultContextItem = new CommandContextItemViewModel(new CommandContextItem(commandModel), PageContext, _contextMenuPlacement)
         {
             _itemTitle = Name,
             Subtitle = Subtitle,
@@ -592,7 +591,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
         var more = model.MoreCommands;
         var factory = _contextMenuFactory ?? DefaultContextMenuFactory.Instance;
-        var results = factory.UnsafeBuildAndInitMoreCommands(more, this);
+        var results = factory.UnsafeBuildAndInitMoreCommands(more, this, _contextMenuPlacement);
 
         List<IContextItemViewModel>? freedItems;
         lock (_moreCommandsLock)
@@ -611,17 +610,36 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         Task.Run(RefreshMoreCommandsSynchronous);
     }
 
+    protected void RefreshMoreCommandsForDetails()
+    {
+        // Model_PropChanged owns exception handling for this synchronous path.
+        var factory = _contextMenuFactory ?? DefaultContextMenuFactory.Instance;
+        var results = factory.UpdateMoreCommandsForDetails(_moreCommandsSnapshot, this, _contextMenuPlacement);
+        if (results is null)
+        {
+            return;
+        }
+
+        List<IContextItemViewModel> freedItems;
+        lock (_moreCommandsLock)
+        {
+            ListHelpers.InPlaceUpdateList(_moreCommands, results, out freedItems);
+            RefreshMoreCommandStateUnsafe();
+        }
+
+        freedItems.OfType<CommandContextItemViewModel>()
+                  .ToList()
+                  .ForEach(c => c.SafeCleanup());
+
+        NotifyMoreCommandsChanged();
+    }
+
     private void RefreshMoreCommandsSynchronous()
     {
         try
         {
             BuildAndInitMoreCommands();
-            UpdateProperty(nameof(MoreCommands));
-            UpdateProperty(nameof(AllCommands));
-            UpdateProperty(nameof(SecondaryCommand));
-            UpdateProperty(nameof(SecondaryCommandName));
-            UpdateProperty(nameof(HasMoreCommands));
-            UpdateProperty(nameof(CanOpenContextMenu));
+            NotifyMoreCommandsChanged();
         }
         catch (Exception ex)
         {
@@ -629,6 +647,13 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             CoreLogger.LogError("Error refreshing MoreCommands in CommandItemViewModel", ex);
             ShowException(ex, _commandItemModel?.Unsafe?.Title);
         }
+    }
+
+    private void NotifyMoreCommandsChanged()
+    {
+        UpdateProperty(nameof(MoreCommands), nameof(AllCommands));
+        UpdateProperty(nameof(SecondaryCommand), nameof(SecondaryCommandName), nameof(HasMoreCommands));
+        UpdateProperty(nameof(CanOpenContextMenu));
     }
 
     protected override void UnsafeCleanup()

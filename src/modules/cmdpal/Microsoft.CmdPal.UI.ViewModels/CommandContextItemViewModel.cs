@@ -21,8 +21,11 @@ public partial class CommandContextItemViewModel : CommandItemViewModel, IContex
 
     public bool HasRequestedShortcut => RequestedShortcut is not null && (RequestedShortcut.Value != nullKeyChord);
 
-    public CommandContextItemViewModel(ICommandContextItem contextItem, WeakReference<IPageContext> context)
-        : base(new(contextItem), context, contextMenuFactory: null)
+    public CommandContextItemViewModel(
+        ICommandContextItem contextItem,
+        WeakReference<IPageContext> context,
+        ContextMenuPlacement contextMenuPlacement)
+        : base(new(contextItem), context, contextMenuFactory: null, contextMenuPlacement)
     {
         Model = new(contextItem);
         IsContextMenuItem = true;

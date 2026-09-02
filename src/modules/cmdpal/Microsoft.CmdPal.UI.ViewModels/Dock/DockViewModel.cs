@@ -961,7 +961,7 @@ public sealed partial class DockViewModel : IDisposable
     public CommandItemViewModel GetContextMenuForDock()
     {
         var model = new DockContextMenuItem();
-        var vm = new CommandItemViewModel(new(model), new(_pageContext), contextMenuFactory: null);
+        var vm = new CommandItemViewModel(new(model), new(_pageContext), contextMenuFactory: null, contextMenuPlacement: ContextMenuPlacement.Dock);
         vm.SlowInitializeProperties();
         return vm;
     }

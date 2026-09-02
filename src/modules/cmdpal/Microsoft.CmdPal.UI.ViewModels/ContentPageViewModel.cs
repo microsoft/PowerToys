@@ -237,7 +237,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
             {
                 if (item is ICommandContextItem contextItem)
                 {
-                    return new CommandContextItemViewModel(contextItem, PageContext);
+                    return new CommandContextItemViewModel(contextItem, PageContext, ContextMenuPlacement.CommandPalette);
                 }
 
                 return new SeparatorViewModel();
