@@ -18,7 +18,7 @@ namespace Microsoft.CmdPal.UI;
 /// <see cref="ListItemsView"/> so it can be reused (for example, by
 /// <see cref="ParametersPage"/>).
 /// </summary>
-public sealed partial class ListPage : Page, IPageInteractionTarget, IPageInteractionEventSource
+public sealed partial class ListPage : Page, IPageInteractionTarget, IListInteractionSource
 {
     internal ListViewModel? ViewModel
     {
@@ -34,10 +34,16 @@ public sealed partial class ListPage : Page, IPageInteractionTarget, IPageIntera
     {
         this.InitializeComponent();
         this.NavigationCacheMode = NavigationCacheMode.Disabled;
+        ListView.SelectionChanged += (_, e) => SelectionChanged?.Invoke(this, e);
+        ListView.ContextMenuRequested += (_, e) => ContextMenuRequested?.Invoke(this, e);
         ListView.FocusSearchRequested += (_, _) => FocusSearchRequested?.Invoke(this, EventArgs.Empty);
         ListView.ContextMenuCloseRequested += (_, _) => ContextMenuCloseRequested?.Invoke(this, EventArgs.Empty);
         ListView.DragStateChanged += (_, e) => DragStateChanged?.Invoke(this, e);
     }
+
+    public event EventHandler<ListItemsSelectionChangedEventArgs>? SelectionChanged;
+
+    public event EventHandler<ListItemsContextMenuRequestedEventArgs>? ContextMenuRequested;
 
     public event EventHandler? FocusSearchRequested;
 

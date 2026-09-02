@@ -10,12 +10,12 @@ using Microsoft.CmdPal.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Windows.Foundation;
 using Windows.System;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class CommandBar : UserControl,
-    IRecipient<OpenContextMenuMessage>,
     ICurrentPageAware,
     ICommandBarInteractionTarget
 {
@@ -41,8 +41,6 @@ public sealed partial class CommandBar : UserControl,
         ContextControl.CloseRequested += (_, _) => CloseContextMenu();
         ContextControl.FocusSearchRequested += (_, _) => FocusSearchRequested?.Invoke(this, EventArgs.Empty);
 
-        // RegisterAll isn't AOT compatible
-        WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
     }
 
     public void SetCommandContext(ICommandBarContext? context)
@@ -69,23 +67,29 @@ public sealed partial class CommandBar : UserControl,
     }
 
     public void OpenContextMenu() =>
-        OpenContextMenu(null, null, null, ContextMenuFilterLocation.Bottom);
+        OpenContextMenu(null, null, null, null, ContextMenuFilterLocation.Bottom);
 
-    private void OpenContextMenu(
-        FrameworkElement? element,
-        FlyoutPlacementMode? flyoutPlacementMode,
-        Windows.Foundation.Point? point,
-        ContextMenuFilterLocation contextMenuFilterLocation)
+    public void OpenContextMenu(
+        ICommandBarContext? context,
+        FrameworkElement? element = null,
+        FlyoutPlacementMode? placement = null,
+        Point? position = null,
+        ContextMenuFilterLocation filterLocation = ContextMenuFilterLocation.Bottom)
     {
+        if (context is not null)
+        {
+            SetCommandContext(context);
+        }
+
         if (element is null)
         {
             // This is invoked from the "More" button on the command bar
-            if (!ViewModel.ShouldShowContextMenu)
+            if (!(ContextControl.ViewModel.SelectedItem?.CanOpenContextMenu ?? false))
             {
                 return;
             }
 
-            ContextControl.PrepareForOpen(contextMenuFilterLocation);
+            ContextControl.PrepareForOpen(filterLocation);
 
             _ = DispatcherQueue.TryEnqueue(
                 () =>
@@ -107,7 +111,7 @@ public sealed partial class CommandBar : UserControl,
                 return;
             }
 
-            ContextControl.PrepareForOpen(contextMenuFilterLocation);
+            ContextControl.PrepareForOpen(filterLocation);
 
             _ = DispatcherQueue.TryEnqueue(
             () =>
@@ -117,15 +121,12 @@ public sealed partial class CommandBar : UserControl,
                     new FlyoutShowOptions()
                     {
                         ShowMode = FlyoutShowMode.Standard,
-                        Placement = (FlyoutPlacementMode)flyoutPlacementMode!,
-                        Position = point,
+                        Placement = placement ?? FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                        Position = position,
                     });
             });
         }
     }
-
-    public void Receive(OpenContextMenuMessage message) =>
-        OpenContextMenu(message.Element, message.FlyoutPlacementMode, message.Point, message.ContextMenuFilterLocation);
 
     public void CloseContextMenu()
     {

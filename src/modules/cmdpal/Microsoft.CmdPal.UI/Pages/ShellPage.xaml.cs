@@ -83,6 +83,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private bool _suppressSelectOnNextLoad;
     private bool _pendingTopBarFocusRestore;
     private bool _isDisposed;
+    private IListInteractionSource? _listInteractionSource;
 
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
 
@@ -820,7 +821,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
 
         _pageInteractions.AttachPage(ViewModel.CurrentPage);
-        _pageInteractions.AttachTarget(e.Content as IPageInteractionTarget);
+        AttachInteractionTarget(e.Content as IPageInteractionTarget);
 
         if (e.Content is Page element)
         {
@@ -976,6 +977,25 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 },
                 token);
         }
+    }
+
+    private void Page_ContextMenuRequested(object? sender, ListItemsContextMenuRequestedEventArgs e) =>
+        MainCommandBar.OpenContextMenu(e.Context, e.Element, e.Placement, e.Position, e.FilterLocation);
+
+    private void AttachInteractionTarget(IPageInteractionTarget? target)
+    {
+        if (_listInteractionSource is not null)
+        {
+            _listInteractionSource.ContextMenuRequested -= Page_ContextMenuRequested;
+        }
+
+        _listInteractionSource = target as IListInteractionSource;
+        if (_listInteractionSource is not null)
+        {
+            _listInteractionSource.ContextMenuRequested += Page_ContextMenuRequested;
+        }
+
+        _pageInteractions.AttachTarget(target);
     }
 
     private void AnnounceNavigationToPage(Page page)
