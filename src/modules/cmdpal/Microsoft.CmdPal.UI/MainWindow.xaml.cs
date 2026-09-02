@@ -235,7 +235,7 @@ public sealed partial class MainWindow : WindowEx,
 
         // BEAR LOADING: Focus Search must be suppressed here; otherwise it may steal focus (for example, from the system tray icon)
         // and prevent the user from opening its context menu.
-        WeakReferenceMessenger.Default.Send(new GoHomeMessage(WithAnimation: false, FocusSearch: false));
+        _shellViewModel.GoHome(withAnimation: false, focusSearch: false);
     }
 
     private void ThemeServiceOnThemeChanged(object? sender, ThemeChangedEventArgs e)
@@ -279,7 +279,7 @@ public sealed partial class MainWindow : WindowEx,
     {
         if (e.Key == VirtualKey.GoBack)
         {
-            WeakReferenceMessenger.Default.Send(new GoBackMessage());
+            _shellViewModel.GoBack();
         }
     }
 
@@ -987,7 +987,7 @@ public sealed partial class MainWindow : WindowEx,
     {
         if (message.ForceGoHome)
         {
-            WeakReferenceMessenger.Default.Send(new GoHomeMessage(false, false));
+            _shellViewModel.GoHome(withAnimation: false, focusSearch: false);
         }
 
         // This might come in off the UI thread. Make sure to hop back.

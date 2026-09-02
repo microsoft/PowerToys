@@ -26,10 +26,7 @@ using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
-public sealed partial class SearchBar : UserControl,
-    INotifyPropertyChanged,
-    IRecipient<GoHomeMessage>,
-    ICurrentPageAware
+public sealed partial class SearchBar : UserControl, INotifyPropertyChanged, ICurrentPageAware
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
 
@@ -140,7 +137,6 @@ public sealed partial class SearchBar : UserControl,
     public SearchBar()
     {
         this.InitializeComponent();
-        WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
     }
 
     public void ClearSearch()
@@ -554,7 +550,7 @@ public sealed partial class SearchBar : UserControl,
         return res ?? new();
     }
 
-    public void Receive(GoHomeMessage message)
+    public void HandleGoHome()
     {
         if (!Settings.KeepPreviousQuery)
         {

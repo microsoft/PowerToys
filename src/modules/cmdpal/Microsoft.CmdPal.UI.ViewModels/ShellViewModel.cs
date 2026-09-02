@@ -22,6 +22,10 @@ public partial class ShellViewModel : ObservableObject,
 {
     public event EventHandler<PageNavigationRequestedEventArgs>? PageNavigationRequested;
 
+    public event EventHandler<ShellNavigationRequestedEventArgs>? GoHomeRequested;
+
+    public event EventHandler<ShellNavigationRequestedEventArgs>? GoBackRequested;
+
     private readonly IRootPageService _rootPageService;
     private readonly IAppHostService _appHostService;
     private readonly TaskScheduler _scheduler;
@@ -551,7 +555,7 @@ public partial class ShellViewModel : ObservableObject,
     public void GoHome(bool withAnimation = true, bool focusSearch = true)
     {
         _rootPageService.GoHome();
-        WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(withAnimation, focusSearch));
+        GoHomeRequested?.Invoke(this, new(withAnimation, focusSearch));
     }
 
     /// <summary>
@@ -568,7 +572,7 @@ public partial class ShellViewModel : ObservableObject,
 
     public void GoBack(bool withAnimation = true, bool focusSearch = true)
     {
-        WeakReferenceMessenger.Default.Send<GoBackMessage>(new(withAnimation, focusSearch));
+        GoBackRequested?.Invoke(this, new(withAnimation, focusSearch));
     }
 
     public void Receive(HandleCommandResultMessage message)

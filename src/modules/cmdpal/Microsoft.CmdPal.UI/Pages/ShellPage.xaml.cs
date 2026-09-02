@@ -41,8 +41,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ClearSearchMessage>,
     IRecipient<LaunchUriMessage>,
     IRecipient<SettingsWindowClosedMessage>,
-    IRecipient<GoHomeMessage>,
-    IRecipient<GoBackMessage>,
     IRecipient<ShowConfirmationMessage>,
     IRecipient<ShowToastMessage>,
     IRecipient<ShowHideDockMessage>,
@@ -140,6 +138,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         MainCommandBar.FocusSearchRequested += MainCommandBar_FocusSearchRequested;
         FiltersDropDown.FocusSearchRequested += FiltersDropDown_FocusSearchRequested;
         ViewModel.PageNavigationRequested += ViewModel_PageNavigationRequested;
+        ViewModel.GoHomeRequested += ViewModel_GoHomeRequested;
+        ViewModel.GoBackRequested += ViewModel_GoBackRequested;
 
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
@@ -150,8 +150,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<LaunchUriMessage>(this);
 
-        WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
-        WeakReferenceMessenger.Default.Register<GoBackMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowConfirmationMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowToastMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowHideDockMessage>(this);
@@ -583,7 +581,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         RequestTopBarFocusRestore();
     }
 
-    public void Receive(GoBackMessage message) => _ = DispatcherQueue.TryEnqueue(() => GoBack(message.WithAnimation, message.FocusSearch));
+    private void ViewModel_GoBackRequested(object? sender, ShellNavigationRequestedEventArgs e) =>
+        _ = DispatcherQueue.TryEnqueue(() => GoBack(e.WithAnimation, e.FocusSearch));
 
     private void GoBack(bool withAnimation = true, bool focusSearch = true)
     {
@@ -630,7 +629,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    public void Receive(GoHomeMessage message) => _ = DispatcherQueue.TryEnqueue(() => GoHome(withAnimation: message.WithAnimation, focusSearch: message.FocusSearch));
+    private void ViewModel_GoHomeRequested(object? sender, ShellNavigationRequestedEventArgs e) =>
+        _ = DispatcherQueue.TryEnqueue(() =>
+        {
+            SearchBox.HandleGoHome();
+            GoHome(e.WithAnimation, e.FocusSearch);
+        });
 
     private void GoHome(bool withAnimation = true, bool focusSearch = true)
     {
@@ -1012,7 +1016,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 e.Handled = true;
                 break;
             case VirtualKey.Home when modifiers.OnlyAlt: // Alt+Home
-                WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(WithAnimation: false));
+                ((ShellPage)sender).ViewModel.GoHome(withAnimation: false);
                 e.Handled = true;
                 break;
             case (VirtualKey)188 when modifiers.OnlyCtrl: // Ctrl+,
@@ -1212,6 +1216,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         MainCommandBar.FocusSearchRequested -= MainCommandBar_FocusSearchRequested;
         FiltersDropDown.FocusSearchRequested -= FiltersDropDown_FocusSearchRequested;
         ViewModel.PageNavigationRequested -= ViewModel_PageNavigationRequested;
+        ViewModel.GoHomeRequested -= ViewModel_GoHomeRequested;
+        ViewModel.GoBackRequested -= ViewModel_GoBackRequested;
         _pageInteractions.DetailsChanged -= PageInteractions_DetailsChanged;
         _pageInteractions.FocusSearchRequested -= PageInteractions_FocusSearchRequested;
         _pageInteractions.DragStateChanged -= PageInteractions_DragStateChanged;
