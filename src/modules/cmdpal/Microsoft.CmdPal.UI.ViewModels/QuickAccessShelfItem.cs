@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -103,6 +104,9 @@ public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
 
         return new QuickAccessShelfItem(item, title, sourceIcon, icon, shortcutIndex, startsNewSection, isPinned, canPin, dataPackage);
     }
+
+    public IListItem GetContextMenuItem() =>
+        IsPinned || _item is RecentCommandListItem ? _item : new RecentCommandListItem(_item, CommandId);
 
     public PerformCommandMessage GetPerformCommandMessage()
     {
