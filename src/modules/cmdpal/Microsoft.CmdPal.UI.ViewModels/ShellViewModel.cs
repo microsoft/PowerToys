@@ -597,15 +597,6 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    private void OnUIThread(Action action)
-    {
-        _ = Task.Factory.StartNew(
-            action,
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            _scheduler);
-    }
-
     public void CancelNavigation()
     {
         _navigationCts?.Cancel();
