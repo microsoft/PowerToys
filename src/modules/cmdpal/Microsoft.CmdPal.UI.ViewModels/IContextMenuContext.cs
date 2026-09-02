@@ -11,33 +11,25 @@ namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 public interface IContextMenuContext : INotifyPropertyChanged
 {
-    public IReadOnlyList<IContextItemViewModel> MoreCommands { get; }
+    IReadOnlyList<IContextItemViewModel> MoreCommands { get; }
 
-    public bool HasMoreCommands { get; }
+    bool HasMoreCommands { get; }
 
-    public bool CanOpenContextMenu { get; }
+    bool CanOpenContextMenu { get; }
 
-    public IReadOnlyList<IContextItemViewModel> AllCommands { get; }
+    IReadOnlyList<IContextItemViewModel> AllCommands { get; }
 
-    public Dictionary<KeyChord, CommandContextItemViewModel> Keybindings()
+    Dictionary<KeyChord, CommandContextItemViewModel> Keybindings()
     {
         var result = new Dictionary<KeyChord, CommandContextItemViewModel>();
-
-        var menu = MoreCommands;
-        if (menu is null)
+        foreach (var item in MoreCommands)
         {
-            return result;
-        }
-
-        foreach (var item in menu)
-        {
-            if (item is CommandContextItemViewModel cmd && cmd.HasRequestedShortcut)
+            if (item is CommandContextItemViewModel command && command.HasRequestedShortcut)
             {
-                var key = cmd.RequestedShortcut ?? new KeyChord(0, 0, 0);
-                var added = result.TryAdd(key, cmd);
-                if (!added)
+                var key = command.RequestedShortcut ?? new KeyChord(0, 0, 0);
+                if (!result.TryAdd(key, command))
                 {
-                    CoreLogger.LogWarning($"Ignoring duplicate keyboard shortcut {KeyChordHelpers.FormatForDebug(key)} on command '{cmd.Title ?? cmd.Name ?? "(unknown)"}'");
+                    CoreLogger.LogWarning($"Ignoring duplicate keyboard shortcut {KeyChordHelpers.FormatForDebug(key)} on command '{command.Title ?? command.Name ?? "(unknown)"}'");
                 }
             }
         }
@@ -48,9 +40,9 @@ public interface IContextMenuContext : INotifyPropertyChanged
 
 public interface ICommandBarContext : IContextMenuContext
 {
-    public string SecondaryCommandName { get; }
+    string SecondaryCommandName { get; }
 
-    public CommandItemViewModel? PrimaryCommand { get; }
+    CommandItemViewModel? PrimaryCommand { get; }
 
-    public CommandItemViewModel? SecondaryCommand { get; }
+    CommandItemViewModel? SecondaryCommand { get; }
 }
