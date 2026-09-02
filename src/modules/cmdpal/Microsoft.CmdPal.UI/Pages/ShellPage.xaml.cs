@@ -45,7 +45,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<GoBackMessage>,
     IRecipient<ShowConfirmationMessage>,
     IRecipient<ShowToastMessage>,
-    IRecipient<NavigateToPageMessage>,
     IRecipient<ShowHideDockMessage>,
     IRecipient<ShowPinToDockDialogMessage>,
     IRecipient<ExpandCompactModeMessage>,
@@ -140,6 +139,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         SearchBox.NavigationRequested += SearchBox_NavigationRequested;
         MainCommandBar.FocusSearchRequested += MainCommandBar_FocusSearchRequested;
         FiltersDropDown.FocusSearchRequested += FiltersDropDown_FocusSearchRequested;
+        ViewModel.PageNavigationRequested += ViewModel_PageNavigationRequested;
 
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
@@ -154,8 +154,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<GoBackMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowConfirmationMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowToastMessage>(this);
-        WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
-
         WeakReferenceMessenger.Default.Register<ShowHideDockMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowPinToDockDialogMessage>(this);
 
@@ -218,11 +216,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    public void Receive(NavigateToPageMessage message)
+    private void ViewModel_PageNavigationRequested(object? sender, PageNavigationRequestedEventArgs message)
     {
         // TODO GH #526 This needs more better locking too
         _ = _queue.TryEnqueue(DispatcherQueuePriority.High, () =>
         {
+            if (message.CancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             // Also hide our details pane about here, if we had one
             HideDetails();
 
@@ -1208,6 +1211,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         SearchBox.NavigationRequested -= SearchBox_NavigationRequested;
         MainCommandBar.FocusSearchRequested -= MainCommandBar_FocusSearchRequested;
         FiltersDropDown.FocusSearchRequested -= FiltersDropDown_FocusSearchRequested;
+        ViewModel.PageNavigationRequested -= ViewModel_PageNavigationRequested;
         _pageInteractions.DetailsChanged -= PageInteractions_DetailsChanged;
         _pageInteractions.FocusSearchRequested -= PageInteractions_FocusSearchRequested;
         _pageInteractions.DragStateChanged -= PageInteractions_DragStateChanged;

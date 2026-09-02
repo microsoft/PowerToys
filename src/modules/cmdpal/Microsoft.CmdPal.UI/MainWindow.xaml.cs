@@ -48,7 +48,6 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ShowPaletteAtMessage>,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>,
-    IRecipient<NavigateToPageMessage>,
     IRecipient<NavigationDepthMessage>,
     IRecipient<SearchQueryMessage>,
     IRecipient<ErrorOccurredMessage>,
@@ -139,6 +138,7 @@ public sealed partial class MainWindow : WindowEx,
         InitializeComponent();
 
         ShellContent.DragStateChanged += ShellContent_DragStateChanged;
+        _shellViewModel.PageNavigationRequested += ShellViewModel_PageNavigationRequested;
 
         ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
 
@@ -191,7 +191,6 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowPaletteAtMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
-        WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigationDepthMessage>(this);
         WeakReferenceMessenger.Default.Register<SearchQueryMessage>(this);
         WeakReferenceMessenger.Default.Register<ErrorOccurredMessage>(this);
@@ -1001,7 +1000,7 @@ public sealed partial class MainWindow : WindowEx,
 
     // Session telemetry: Track metrics during the Command Palette session
     // These receivers increment counters that are sent when EndSession is called
-    public void Receive(NavigateToPageMessage message)
+    private void ShellViewModel_PageNavigationRequested(object? sender, PageNavigationRequestedEventArgs e)
     {
         _sessionPagesVisited++;
     }
@@ -1901,6 +1900,7 @@ public sealed partial class MainWindow : WindowEx,
     public void Dispose()
     {
         ShellContent.DragStateChanged -= ShellContent_DragStateChanged;
+        _shellViewModel.PageNavigationRequested -= ShellViewModel_PageNavigationRequested;
         _themeService.ThemeChanged -= ThemeServiceOnThemeChanged;
         App.Current.Services.GetRequiredService<ISettingsService>().SettingsChanged -= SettingsChangedHandler;
 

@@ -20,6 +20,8 @@ public partial class ShellViewModel : ObservableObject,
     IRecipient<HandleCommandResultMessage>,
     IRecipient<WindowHiddenMessage>
 {
+    public event EventHandler<PageNavigationRequestedEventArgs>? PageNavigationRequested;
+
     private readonly IRootPageService _rootPageService;
     private readonly IAppHostService _appHostService;
     private readonly TaskScheduler _scheduler;
@@ -345,8 +347,9 @@ public partial class ShellViewModel : ObservableObject,
                         _scheduler);
 
                 // While we're loading in the background, immediately move to the next page.
-                NavigateToPageMessage msg = new(pageViewModel, message.WithAnimation, navigationToken, message.TransientPage);
-                WeakReferenceMessenger.Default.Send(msg);
+                PageNavigationRequested?.Invoke(
+                    this,
+                    new(pageViewModel, message.WithAnimation, message.TransientPage, navigationToken));
 
                 // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
                 // See RootFrame_Navigated event handler.
