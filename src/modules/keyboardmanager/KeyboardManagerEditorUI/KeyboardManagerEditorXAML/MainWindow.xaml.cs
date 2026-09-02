@@ -11,8 +11,8 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using KeyboardManagerEditorUI.Helpers;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -41,6 +41,8 @@ namespace KeyboardManagerEditorUI
             ExtendsContentIntoTitleBar = true;
             this.SetIcon(@"Assets\KeyboardManagerEditor\Keyboard.ico");
             this.SetTitleBar(titleBar);
+            TitleBarHelper.SetPreferredTheme(this);
+
             Title = "Keyboard Manager";
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
         }
