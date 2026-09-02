@@ -157,7 +157,7 @@ IFACEMETHODIMP PreviewHandler::DoPreview()
     {
         if (m_hwndParent == NULL || (m_rcParent.left == 0 && m_rcParent.top == 0 && m_rcParent.right == 0 && m_rcParent.bottom == 0))
         {
-            // Postponing Start BgcodePreviewHandler.exe, parent and position not yet initialized. Preview will be done after initialisation.
+            // Postponing Starting the preview handler, parent and position not yet initialized. Preview will be done after initialisation.
             return S_OK;
         }
         Logger::info(L"Starting " + m_exeName);
