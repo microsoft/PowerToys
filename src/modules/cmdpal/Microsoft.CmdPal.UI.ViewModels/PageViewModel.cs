@@ -19,6 +19,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public event EventHandler<PageDetailsChangedEventArgs>? DetailsChanged;
 
+    public event EventHandler<PageSearchSuggestionChangedEventArgs>? SearchSuggestionChanged;
+
     public TaskScheduler Scheduler { get; private set; }
 
     private readonly ExtensionObject<IPage> _pageModel;
@@ -238,6 +240,9 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     protected internal void SetDetails(DetailsViewModel? details) =>
         DetailsChanged?.Invoke(this, new(details));
+
+    protected internal void SetSearchSuggestion(string suggestion) =>
+        SearchSuggestionChanged?.Invoke(this, new(suggestion));
 
     protected virtual void FetchProperty(string propertyName)
     {

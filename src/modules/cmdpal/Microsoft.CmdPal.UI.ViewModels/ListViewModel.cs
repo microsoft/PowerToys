@@ -893,7 +893,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 DoOnUiThread(() =>
                 {
                     TextToSuggest = suggestion;
-                    SendPageUiMessage(new UpdateSuggestionMessage(suggestion));
+                    SetSearchSuggestion(suggestion);
                 });
             },
             ct);
@@ -929,6 +929,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 break;
             case nameof(item.TextToSuggest):
                 TextToSuggest = item.TextToSuggest;
+                SetSearchSuggestion(TextToSuggest);
                 break;
         }
     }
@@ -939,7 +940,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         SetCommandBarContext(null);
         SetDetails(null);
-        SendPageUiMessage(new UpdateSuggestionMessage(string.Empty));
+        SetSearchSuggestion(string.Empty);
         TextToSuggest = string.Empty;
     }
 

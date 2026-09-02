@@ -29,7 +29,6 @@ namespace Microsoft.CmdPal.UI.Controls;
 public sealed partial class SearchBar : UserControl,
     INotifyPropertyChanged,
     IRecipient<GoHomeMessage>,
-    IRecipient<UpdateSuggestionMessage>,
     IRecipient<FocusParamMessage>,
     ICurrentPageAware
 {
@@ -58,6 +57,7 @@ public sealed partial class SearchBar : UserControl,
     private string? _textToSuggest;
 
     private bool _tokenSearchEnabled;
+    private int _pageVersion;
 
     private AppBarSeparator? _menuSeparator;
     private AppBarButton? _settingsMenuItem;
@@ -86,10 +86,15 @@ public sealed partial class SearchBar : UserControl,
         //// TODO: If the Debounce timer hasn't fired, we may want to store the current Filter in the OldValue/prior VM, but we don't want that to go actually do work...
         var @this = (SearchBar)d;
 
-        if (@this is not null
-            && e.OldValue is PageViewModel old)
+        if (@this is not null)
         {
-            old.PropertyChanged -= @this.Page_PropertyChanged;
+            @this._pageVersion++;
+            @this._tokenSearchEnabled = false;
+            if (e.OldValue is PageViewModel old)
+            {
+                old.PropertyChanged -= @this.Page_PropertyChanged;
+                old.SearchSuggestionChanged -= @this.Page_SearchSuggestionChanged;
+            }
         }
 
         if (@this is not null
@@ -101,11 +106,14 @@ public sealed partial class SearchBar : UserControl,
             @this.FilterBox.Select(@this.FilterBox.Text.Length, 0);
 
             page.PropertyChanged += @this.Page_PropertyChanged;
+            page.SearchSuggestionChanged += @this.Page_SearchSuggestionChanged;
 
             if (page is ListViewModel listViewModel)
             {
                 @this._tokenSearchEnabled = listViewModel.IsTokenSearch;
             }
+
+            @this.ApplySuggestion(page, page.TextToSuggest, @this._pageVersion);
         }
 
         @this?.PropertyChanged?.Invoke(@this, new(nameof(PageType)));
@@ -130,7 +138,6 @@ public sealed partial class SearchBar : UserControl,
     {
         this.InitializeComponent();
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
-        WeakReferenceMessenger.Default.Register<UpdateSuggestionMessage>(this);
         WeakReferenceMessenger.Default.Register<FocusParamMessage>(this);
     }
 
@@ -570,18 +577,34 @@ public sealed partial class SearchBar : UserControl,
         });
     }
 
-    public void Receive(UpdateSuggestionMessage message)
+    private void Page_SearchSuggestionChanged(object? sender, PageSearchSuggestionChangedEventArgs e)
     {
-        if (!IsTextToSuggestEnabled)
+        if (sender is PageViewModel page && ReferenceEquals(page, CurrentPageViewModel))
         {
-            _textToSuggest = message.TextToSuggest;
+            ApplySuggestion(page, e.Suggestion, _pageVersion);
+        }
+    }
+
+    private void ApplySuggestion(PageViewModel source, string suggestion, int pageVersion)
+    {
+        if (pageVersion != _pageVersion || !ReferenceEquals(source, CurrentPageViewModel))
+        {
             return;
         }
 
-        var suggestion = message.TextToSuggest;
+        if (!IsTextToSuggestEnabled)
+        {
+            _textToSuggest = suggestion;
+            return;
+        }
 
         _queue.TryEnqueue(new(() =>
         {
+            if (pageVersion != _pageVersion || !ReferenceEquals(source, CurrentPageViewModel))
+            {
+                return;
+            }
+
             var clearSuggestion = string.IsNullOrEmpty(suggestion);
 
             if (clearSuggestion && _inSuggestion)

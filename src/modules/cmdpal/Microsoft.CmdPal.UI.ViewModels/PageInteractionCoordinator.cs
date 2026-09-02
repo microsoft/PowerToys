@@ -18,6 +18,8 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
 
     public event EventHandler<PageDetailsChangedEventArgs>? DetailsChanged;
 
+    public event EventHandler<PageSearchSuggestionChangedEventArgs>? SearchSuggestionChanged;
+
     public void AttachPage(PageViewModel? page)
     {
         ObjectDisposedException.ThrowIf(_isDisposed, this);
@@ -36,8 +38,10 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
 
         _page.CommandBarContextChanged += Page_CommandBarContextChanged;
         _page.DetailsChanged += Page_DetailsChanged;
+        _page.SearchSuggestionChanged += Page_SearchSuggestionChanged;
         commandBar.SetCommandContext(GetInitialCommandContext(_page));
         DetailsChanged?.Invoke(this, new(GetInitialDetails(_page)));
+        SearchSuggestionChanged?.Invoke(this, new(_page.TextToSuggest));
     }
 
     public void AttachTarget(IPageInteractionTarget? target)
@@ -74,6 +78,14 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         }
     }
 
+    private void Page_SearchSuggestionChanged(object? sender, PageSearchSuggestionChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, _page))
+        {
+            SearchSuggestionChanged?.Invoke(this, e);
+        }
+    }
+
     private static ICommandBarContext? GetInitialCommandContext(PageViewModel page) =>
         page switch
         {
@@ -94,6 +106,7 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
 
         _page.CommandBarContextChanged -= Page_CommandBarContextChanged;
         _page.DetailsChanged -= Page_DetailsChanged;
+        _page.SearchSuggestionChanged -= Page_SearchSuggestionChanged;
         _page = null;
     }
 

@@ -582,6 +582,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 if (_activeListViewModel is not null)
                 {
                     _activeListViewModel.CommandBarContextChanged -= ActiveList_CommandBarContextChanged;
+                    _activeListViewModel.SearchSuggestionChanged -= ActiveList_SearchSuggestionChanged;
                 }
 
                 _activeListViewModel = value;
@@ -589,11 +590,13 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 if (_activeListViewModel is not null)
                 {
                     _activeListViewModel.CommandBarContextChanged += ActiveList_CommandBarContextChanged;
+                    _activeListViewModel.SearchSuggestionChanged += ActiveList_SearchSuggestionChanged;
                 }
 
                 UpdateProperty(nameof(ActiveListViewModel));
                 UpdateProperty(nameof(HasActiveList));
                 SetCommandBarContext(_activeListViewModel is null && ShowCommand ? Command : null);
+                SetSearchSuggestion(_activeListViewModel?.TextToSuggest ?? string.Empty);
             }
         }
     }
@@ -605,6 +608,14 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         if (ReferenceEquals(sender, _activeListViewModel))
         {
             SetCommandBarContext(e.Context);
+        }
+    }
+
+    private void ActiveList_SearchSuggestionChanged(object? sender, PageSearchSuggestionChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, _activeListViewModel))
+        {
+            SetSearchSuggestion(e.Suggestion);
         }
     }
 
