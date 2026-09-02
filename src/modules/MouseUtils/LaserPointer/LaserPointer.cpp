@@ -25,6 +25,12 @@ namespace
     constexpr ULONG_PTR TOUCH_FLAG = 0x80;
 
     constexpr UINT_PTR RENDER_TIMER_ID = 201;
+
+    // Resolves the presenter target a moment after a toggle that came from another
+    // window, once that window has dismissed itself.
+    constexpr UINT_PTR PRESENTER_PICK_TIMER_ID = 202;
+    constexpr UINT PRESENTER_PICK_INTERVAL_MS = 50;
+    constexpr uint64_t PRESENTER_PICK_TIMEOUT_MS = 1500;
     // WM_TIMER is coalesced to the system tick (~15.6 ms), which lands close enough to
     // 60 Hz. The timer - not vsync - is what paces us: the low level mouse hook is
     // dispatched on this same thread, so Present must never block on the display.
@@ -122,7 +128,9 @@ struct LaserPointerOverlay
     void Terminate();
     void SwitchActivationMode();
     void SwitchPenActivationMode();
-    void SwitchPresenterMode();
+    // fromOtherWindow: the toggle came from a window that is in front and about to
+    // close, so the target has to be resolved after it goes rather than from the cursor.
+    void SwitchPresenterMode(bool fromOtherWindow = false);
     void ApplySettings(LaserPointerSettings settings);
     void QueueSettings(LaserPointerSettings settings);
 
@@ -139,9 +147,13 @@ private:
     void HandleRawInput(HRAWINPUT handle) noexcept;
     bool ReadPenReport(RAWINPUT* input, POINT& screenPoint, bool& tipDown) noexcept;
 
+    // deferTargetPick: resolve the target from the foreground window once it settles,
+    // rather than from the cursor, for toggles that arrive from another window.
+    void TogglePresenter(bool deferTargetPick = false);
+    void OnPresenterPickTick();
+    void StartPresenterOn(HWND target);
 
     void ArmMouse();
-    void TogglePresenter();
     void DisarmMouse();
     void ArmPen();
     void DisarmPen();
@@ -276,6 +288,7 @@ private:
     bool m_overlayRegionIsFrame = false;
     // What the frame region was last built from, so it can follow a window that moves.
     RECT m_overlayRegionRect{};
+    uint64_t m_presenterPickDeadlineMs = 0;
     bool m_overlayBelowTopmost = false;
     uint64_t m_lastZOrderMs = 0;
     HWND m_overlayZOrderAfter = nullptr;
@@ -1017,7 +1030,7 @@ static HWND PickPresenterTarget() noexcept
 // Toggles the mirror. It is deliberately independent of the laser: a presenter turns it
 // on once, shares it in Teams, and leaves it up for the whole session while the laser
 // comes and goes.
-void LaserPointerOverlay::TogglePresenter()
+void LaserPointerOverlay::TogglePresenter(bool deferTargetPick)
 {
     if (m_presenter.Active())
     {
@@ -1030,7 +1043,43 @@ void LaserPointerOverlay::TogglePresenter()
         return;
     }
 
-    const HWND target = PickPresenterTarget();
+    if (deferTargetPick)
+    {
+        // Quick Access is a window in its own right and it is in front when its button is
+        // pressed, so the cursor is over the flyout rather than over anything worth
+        // mirroring. The flyout dismisses itself straight after signalling, and what
+        // returns to the foreground is the window the user was on before opening it -
+        // which is the target. Waiting for that is done on a timer rather than by
+        // sleeping, because this runs on the overlay's own message thread.
+        m_presenterPickDeadlineMs = GetTickCount64() + PRESENTER_PICK_TIMEOUT_MS;
+        SetTimer(m_hwnd, PRESENTER_PICK_TIMER_ID, PRESENTER_PICK_INTERVAL_MS, nullptr);
+        return;
+    }
+
+    StartPresenterOn(PickPresenterTarget());
+}
+
+// Retries until the window that opened the flyout is back in front, then gives up rather
+// than mirroring whatever happens to be there after a long wait.
+void LaserPointerOverlay::OnPresenterPickTick()
+{
+    const HWND foreground = GetForegroundWindow();
+    if (PresenterWindow::IsPresentableWindow(foreground))
+    {
+        KillTimer(m_hwnd, PRESENTER_PICK_TIMER_ID);
+        StartPresenterOn(foreground);
+        return;
+    }
+
+    if (GetTickCount64() >= m_presenterPickDeadlineMs)
+    {
+        KillTimer(m_hwnd, PRESENTER_PICK_TIMER_ID);
+        Logger::info("Laser Pointer presenter not started: no presentable window came to the foreground.");
+    }
+}
+
+void LaserPointerOverlay::StartPresenterOn(HWND target)
+{
     if (target == nullptr)
     {
         // The taskbar, the desktop and our own windows are not worth mirroring; the
@@ -1176,7 +1225,7 @@ void LaserPointerOverlay::SwitchActivationMode()
     }
 }
 
-void LaserPointerOverlay::SwitchPresenterMode()
+void LaserPointerOverlay::SwitchPresenterMode(bool fromOtherWindow)
 {
     AcquireSRWLockShared(&m_hwndLock);
     const HWND window = m_hwnd;
@@ -1184,7 +1233,7 @@ void LaserPointerOverlay::SwitchPresenterMode()
 
     if (window != nullptr)
     {
-        PostMessage(window, WM_SWITCH_PRESENTER_MODE, 0, 0);
+        PostMessage(window, WM_SWITCH_PRESENTER_MODE, fromOtherWindow ? 1u : 0u, 0);
     }
 }
 
@@ -1924,7 +1973,7 @@ LRESULT CALLBACK LaserPointerOverlay::WndProc(HWND hWnd, UINT message, WPARAM wP
         return 0;
 
     case WM_SWITCH_PRESENTER_MODE:
-        instance->TogglePresenter();
+        instance->TogglePresenter(wParam != 0);
         return 0;
 
     case WM_SWITCH_PEN_ACTIVATION_MODE:
@@ -1981,6 +2030,10 @@ LRESULT CALLBACK LaserPointerOverlay::WndProc(HWND hWnd, UINT message, WPARAM wP
         if (wParam == RENDER_TIMER_ID)
         {
             instance->OnRenderTick();
+        }
+        else if (wParam == PRESENTER_PICK_TIMER_ID)
+        {
+            instance->OnPresenterPickTick();
         }
         return 0;
 
@@ -2094,6 +2147,15 @@ void LaserPointerSwitchPresenter()
     {
         Logger::info("Switching Laser Pointer presenter window.");
         LaserPointerOverlay::instance->SwitchPresenterMode();
+    }
+}
+
+void LaserPointerSwitchPresenterExternal()
+{
+    if (LaserPointerOverlay::instance != nullptr)
+    {
+        Logger::info("Switching Laser Pointer presenter window (external trigger).");
+        LaserPointerOverlay::instance->SwitchPresenterMode(true);
     }
 }
 

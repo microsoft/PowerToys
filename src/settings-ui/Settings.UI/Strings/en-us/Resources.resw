@@ -6644,6 +6644,10 @@ Text uses the current drawing color.</value>
     <value>Laser Pointer</value>
     <comment>Refers to the utility name</comment>
   </data>
+  <data name="QuickAccess_LaserPointer_SharableWindow.Title" xml:space="preserve">
+    <value>Laser pointer: Sharable Window</value>
+    <comment>Quick Access entry. Toggles the off-screen window that screen-sharing apps can pick up. "Laser pointer" is the name of the utility.</comment>
+  </data>
   <data name="MouseUtils_LaserPointer.Description" xml:space="preserve">
     <value>Draw a fading laser trail that follows your pointer, anywhere on screen.</value>
     <comment>"Laser Pointer" is the name of the utility.</comment>

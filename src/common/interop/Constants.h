@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Constants.g.h"
 namespace winrt::PowerToys::Interop::implementation
 {
@@ -31,6 +31,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring MouseCrosshairsTriggerEvent();
         static hstring CursorWrapTriggerEvent();
         static hstring LaserPointerTriggerEvent();
+        static hstring LaserPointerPresenterEvent();
         static hstring LightSwitchToggleEvent();
         static hstring ZoomItZoomEvent();
         static hstring ZoomItDrawEvent();

@@ -82,6 +82,9 @@ private:
     // Event-driven trigger support
     EventWaiter m_triggerEventWaiter;
 
+    // Quick Access toggles the presenter window through an event of its own.
+    EventWaiter m_presenterEventWaiter;
+
 public:
     LaserPointer()
     {
@@ -149,6 +152,10 @@ public:
         m_triggerEventWaiter.start(CommonSharedConstants::LASER_POINTER_TRIGGER_EVENT, [this](DWORD) {
             LaserPointerSwitch();
         });
+
+        m_presenterEventWaiter.start(CommonSharedConstants::LASER_POINTER_PRESENTER_EVENT, [this](DWORD) {
+            LaserPointerSwitchPresenterExternal();
+        });
     }
 
     virtual void disable()
@@ -158,6 +165,7 @@ public:
         LaserPointerDisable();
 
         m_triggerEventWaiter.stop();
+        m_presenterEventWaiter.stop();
     }
 
     virtual bool is_enabled() override

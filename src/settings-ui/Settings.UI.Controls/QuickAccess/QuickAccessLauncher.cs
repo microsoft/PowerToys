@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -108,6 +108,16 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     return true;
                 case ModuleType.Workspaces:
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.WorkspacesLaunchEditorEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    return true;
+                case ModuleType.LaserPointer:
+                    // Toggles the shareable presenter window rather than the laser: the
+                    // laser is a hold-and-point tool driven from its shortcut, while the
+                    // presenter is the thing worth reaching for without one.
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.LaserPointerPresenterEvent()))
                     {
                         eventHandle.Set();
                     }

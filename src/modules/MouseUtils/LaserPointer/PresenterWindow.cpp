@@ -55,6 +55,59 @@ namespace
         return bounds;
     }
 
+    // Directory holding this module, which is where the rest of PowerToys lives too.
+    const std::wstring& OwnDirectory()
+    {
+        static const std::wstring directory = [] {
+            wchar_t path[MAX_PATH]{};
+            HMODULE self = nullptr;
+            GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                               reinterpret_cast<LPCWSTR>(&IsCloaked),
+                               &self);
+            const DWORD length = GetModuleFileNameW(self, path, ARRAYSIZE(path));
+            std::wstring full(path, length);
+            const size_t slash = full.find_last_of(L'\\');
+            return slash == std::wstring::npos ? std::wstring{} : full.substr(0, slash);
+        }();
+
+        return directory;
+    }
+
+    bool IsPowerToysProcess(DWORD processId)
+    {
+        const std::wstring& own = OwnDirectory();
+        if (own.empty())
+        {
+            return false;
+        }
+
+        const HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processId);
+        if (process == nullptr)
+        {
+            // A process we cannot open is not one of ours: everything PowerToys runs is
+            // running as this user.
+            return false;
+        }
+
+        wchar_t path[MAX_PATH]{};
+        DWORD size = ARRAYSIZE(path);
+        const bool queried = QueryFullProcessImageNameW(process, 0, path, &size) != FALSE;
+        CloseHandle(process);
+        if (!queried)
+        {
+            return false;
+        }
+
+        std::wstring image(path, size);
+        const size_t slash = image.find_last_of(L'\\');
+        if (slash == std::wstring::npos)
+        {
+            return false;
+        }
+
+        return _wcsicmp(image.substr(0, slash).c_str(), own.c_str()) == 0;
+    }
+
     std::wstring WindowTitle(HWND window)
     {
         const int length = GetWindowTextLengthW(window);
@@ -117,10 +170,19 @@ bool PresenterWindow::IsPresentableWindow(HWND window) noexcept
         return false;
     }
 
-    // Never mirror ourselves.
+    // Never mirror any part of PowerToys. Comparing process ids only covers windows in
+    // this process, which misses the Quick Access flyout and Settings - both separate
+    // executables, and the flyout in particular is in front at the exact moment its
+    // button toggles the presenter. Everything PowerToys ships lives in one directory,
+    // so that is what is compared.
     DWORD windowProcess = 0;
     GetWindowThreadProcessId(window, &windowProcess);
-    return windowProcess != GetCurrentProcessId();
+    if (windowProcess == GetCurrentProcessId())
+    {
+        return false;
+    }
+
+    return !IsPowerToysProcess(windowProcess);
 }
 
 LRESULT CALLBACK PresenterWindow::WndProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) noexcept

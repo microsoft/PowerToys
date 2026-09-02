@@ -70,4 +70,9 @@ void LaserPointerSwitchPen();
 // Independent of the laser: mirrors the window in front into an off-screen window that
 // screen sharing can pick up, and keeps mirroring it until switched off again.
 void LaserPointerSwitchPresenter();
+
+// The same toggle, invoked from another window - the Quick Access flyout. That window is
+// in front and dismisses itself immediately afterwards, so the target cannot come from
+// the cursor the way the shortcut's does.
+void LaserPointerSwitchPresenterExternal();
 void LaserPointerApplySettings(LaserPointerSettings settings);

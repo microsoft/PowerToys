@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Constants.h"
 #include "Constants.g.cpp"
 #include "shared_constants.h"
@@ -106,6 +106,10 @@ namespace winrt::PowerToys::Interop::implementation
     hstring Constants::LaserPointerTriggerEvent()
     {
         return CommonSharedConstants::LASER_POINTER_TRIGGER_EVENT;
+    }
+    hstring Constants::LaserPointerPresenterEvent()
+    {
+        return CommonSharedConstants::LASER_POINTER_PRESENTER_EVENT;
     }
     hstring Constants::LightSwitchToggleEvent()
     {

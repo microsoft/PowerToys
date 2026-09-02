@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <cstdint>
 
@@ -96,6 +96,10 @@ namespace CommonSharedConstants
     const wchar_t MOUSE_CROSSHAIRS_TRIGGER_EVENT[] = L"Local\\MouseCrosshairsTriggerEvent-0d4c7f92-0a5c-4f5c-b64b-8a2a2f7e0b21";
     const wchar_t CURSOR_WRAP_TRIGGER_EVENT[] = L"Local\\CursorWrapTriggerEvent-1f8452b5-4e6e-45b3-8b09-13f14a5900c9";
     const wchar_t LASER_POINTER_TRIGGER_EVENT[] = L"Local\\LaserPointerTriggerEvent-c5cb38aa-2fbd-4957-a25b-1eb6b6c7c939";
+
+    // Toggles the shareable presenter window. Separate from the trigger event above
+    // because the presenter is independent of the laser itself.
+    const wchar_t LASER_POINTER_PRESENTER_EVENT[] = L"Local\\LaserPointerPresenterEvent-8f2b41d6-59ae-4c07-b3d2-0a7e6c1f4b58";
 
     // Path to the event used by RegistryPreview
     const wchar_t REGISTRY_PREVIEW_TRIGGER_EVENT[] = L"Local\\RegistryPreviewEvent-4C559468-F75A-4E7F-BC4F-9C9688316687";

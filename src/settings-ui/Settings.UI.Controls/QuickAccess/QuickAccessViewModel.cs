@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -75,6 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             AddFlyoutMenuItem(ModuleType.FancyZones);
             AddFlyoutMenuItem(ModuleType.Hosts);
             AddFlyoutMenuItem(ModuleType.KeyboardManager);
+            AddFlyoutMenuItem(ModuleType.LaserPointer);
             AddFlyoutMenuItem(ModuleType.LightSwitch);
             AddFlyoutMenuItem(ModuleType.MouseWithoutBorders);
             AddFlyoutMenuItem(ModuleType.PowerDisplay);
@@ -95,7 +96,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             Items.Add(new QuickAccessItem
             {
-                Title = _resourceLoader.GetString(Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType)),
+                Title = GetItemTitle(moduleType),
                 Tag = moduleType,
                 Visible = GetItemVisibility(moduleType),
                 Description = GetModuleToolTip(moduleType),
@@ -155,6 +156,20 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             return visible;
         }
 
+        // Items are normally just the module's name, because activating one launches that
+        // module. Laser Pointer is the exception: its entry toggles the sharable window
+        // rather than the laser, so it says what it does instead of what it belongs to.
+        private string GetItemTitle(ModuleType moduleType)
+        {
+            string resourceName = moduleType switch
+            {
+                ModuleType.LaserPointer => "QuickAccess_LaserPointer_SharableWindow/Title",
+                _ => Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType),
+            };
+
+            return _resourceLoader.GetString(resourceName);
+        }
+
         private string GetModuleToolTip(ModuleType moduleType)
         {
             return moduleType switch
@@ -163,6 +178,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 ModuleType.FancyZones => SettingsRepository<FancyZonesSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.ToString(),
                 ModuleType.PowerDisplay => SettingsRepository<PowerDisplaySettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
                 ModuleType.KeyboardManager => SettingsRepository<KeyboardManagerSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.DefaultEditorShortcut.ToString(),
+                ModuleType.LaserPointer => SettingsRepository<LaserPointerSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.PresenterActivationShortcut.ToString(),
                 ModuleType.LightSwitch => SettingsRepository<LightSwitchSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ToggleThemeHotkey.Value.ToString(),
                 ModuleType.PowerLauncher => SettingsRepository<PowerLauncherSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
                 ModuleType.PowerOCR => SettingsRepository<PowerOcrSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
