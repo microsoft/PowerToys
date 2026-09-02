@@ -483,11 +483,17 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 return;
             }
 
-            OpenSettings(message.SettingsPageTag, message.ExtensionGalleryId);
+            OpenSettings(
+                message.SettingsPageTag,
+                message.ExtensionGalleryId,
+                message.SettingsPageElementTag);
         });
     }
 
-    public void OpenSettings(string pageTag, string? extensionGalleryId = null)
+    public void OpenSettings(
+        string pageTag,
+        string? extensionGalleryId = null,
+        string? settingsPageElementTag = null)
     {
         if (_settingsWindow is null)
         {
@@ -496,7 +502,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         _settingsWindow.Activate();
         _settingsWindow.BringToFront();
-        _settingsWindow.Navigate(pageTag, extensionGalleryId);
+        _settingsWindow.Navigate(pageTag, extensionGalleryId, settingsPageElementTag);
     }
 
     public void Receive(ShowDetailsMessage message)
@@ -1038,6 +1044,18 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             InvokeQuickAccessShelfItem(item);
         }
+    }
+
+    private void QuickAccessShelfSettings_Click(object sender, RoutedEventArgs e)
+    {
+        OpenSettings(
+            "Appearance",
+            settingsPageElementTag: AppearancePage.QuickAccessShelfSettingsElementTag);
+    }
+
+    private void QuickAccessShelfHide_Click(object sender, RoutedEventArgs e)
+    {
+        _settingsService.UpdateSettings(settings => settings with { ShowQuickAccessShelf = false });
     }
 
     private void QuickAccessShelfItem_GotFocus(object sender, RoutedEventArgs e)
