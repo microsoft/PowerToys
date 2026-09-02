@@ -29,30 +29,6 @@ public sealed partial class ContentPage : Page, IPageInteractionTarget
         this.InitializeComponent();
     }
 
-    public void NavigatePrevious()
-    {
-    }
-
-    public void NavigateNext()
-    {
-    }
-
-    public void NavigateLeft()
-    {
-    }
-
-    public void NavigateRight()
-    {
-    }
-
-    public void NavigatePageUp()
-    {
-    }
-
-    public void NavigatePageDown()
-    {
-    }
-
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         if (e.Parameter is not AsyncNavigationRequest navigationRequest)
@@ -82,6 +58,30 @@ public sealed partial class ContentPage : Page, IPageInteractionTarget
         }
 
         ViewModel = null;
+    }
+
+    public void NavigatePrevious()
+    {
+    }
+
+    public void NavigateNext()
+    {
+    }
+
+    public void NavigateLeft()
+    {
+    }
+
+    public void NavigateRight()
+    {
+    }
+
+    public void NavigatePageUp()
+    {
+    }
+
+    public void NavigatePageDown()
+    {
     }
 
     public void ActivatePrimary() => ViewModel?.InvokePrimaryCommandCommand?.Execute(ViewModel);
