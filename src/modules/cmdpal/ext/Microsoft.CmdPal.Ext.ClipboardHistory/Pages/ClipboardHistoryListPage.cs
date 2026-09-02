@@ -10,24 +10,25 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.Win32;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Pages;
 
-internal sealed partial class ClipboardHistoryListPage : ListPage
+internal sealed partial class ClipboardHistoryListPage : ListPage, IDisposable
 {
     private readonly SettingsManager _settingsManager;
     private readonly string _defaultIconPath;
     private volatile ClipboardItem[] clipboardHistory = [];
-    private int hasLoadedOnce;
-    private int loadInFlight;
-    private int reloadRequested;
+    private InterlockedBoolean hasLoadedOnce;
+    private InterlockedBoolean loadInFlight;
+    private InterlockedBoolean reloadRequested;
+    private InterlockedBoolean disposed;
 
     public ClipboardHistoryListPage(SettingsManager settingsManager)
     {
@@ -45,22 +46,13 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
 
     private void TrackClipboardHistoryChanged_EventHandler(object? sender, ClipboardHistoryChangedEventArgs? e)
     {
-        Interlocked.Exchange(ref reloadRequested, 1);
-        LoadClipboardHistoryInSTA();
-    }
+        if (disposed.Value)
+        {
+            return;
+        }
 
-    private bool IsClipboardHistoryEnabled()
-    {
-        var registryKey = @"HKEY_CURRENT_USER\Software\Microsoft\Clipboard\";
-        try
-        {
-            var enableClipboardHistory = (int)(Registry.GetValue(registryKey, "EnableClipboardHistory", 0) ?? 0);
-            return enableClipboardHistory != 0;
-        }
-        catch (Exception)
-        {
-            return false;
-        }
+        reloadRequested.Value = true;
+        LoadClipboardHistoryInSTA();
     }
 
     private async Task LoadClipboardHistoryAsync()
@@ -68,6 +60,7 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
         var loadSucceeded = false;
         try
         {
+            CleanupCachedImages(clipboardHistory.Where(static item => item.ImagePath is not null).Select(static item => item.ImagePath!));
             List<ClipboardItem> items = [];
 
             if (!Clipboard.IsHistoryEnabled())
@@ -122,10 +115,10 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
         finally
         {
             CleanupCachedImages(clipboardHistory.Where(static item => item.ImagePath is not null).Select(static item => item.ImagePath!));
-            Interlocked.Exchange(ref loadInFlight, 0);
+            loadInFlight.Value = false;
             if (!loadSucceeded)
             {
-                Interlocked.Exchange(ref hasLoadedOnce, 0);
+                hasLoadedOnce.Value = false;
             }
 
             try
@@ -137,7 +130,7 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
                 TryLogMessage($"Failed to clear clipboard history loading state: {ex}");
             }
 
-            if (loadSucceeded)
+            if (loadSucceeded && !disposed.Value)
             {
                 try
                 {
@@ -147,11 +140,11 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
                 {
                     TryLogMessage($"Failed to notify clipboard history update: {ex}");
                 }
+            }
 
-                if (Interlocked.Exchange(ref reloadRequested, 0) != 0)
-                {
-                    LoadClipboardHistoryInSTA();
-                }
+            if (!disposed.Value && reloadRequested.Clear())
+            {
+                LoadClipboardHistoryInSTA();
             }
         }
     }
@@ -236,12 +229,12 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
 
     private void LoadClipboardHistoryInSTA()
     {
-        if (Interlocked.Exchange(ref loadInFlight, 1) != 0)
+        if (!loadInFlight.Set())
         {
             return;
         }
 
-        Interlocked.Exchange(ref reloadRequested, 0);
+        reloadRequested.Clear();
         StartClipboardHistoryLoad();
     }
 
@@ -253,19 +246,29 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
         // The synchronous prefix must run in STA or the clipboard API hangs.
         // Continuations use the thread pool because this raw thread has no
         // synchronization context.
-        var thread = new Thread(() =>
+        try
         {
-            try
+            var thread = new Thread(() =>
             {
-                LoadClipboardHistoryAsync().GetAwaiter().GetResult();
-            }
-            catch (Exception ex)
-            {
-                TryLogMessage($"Clipboard history load thread failed: {ex}");
-            }
-        });
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
+                try
+                {
+                    LoadClipboardHistoryAsync().GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    TryLogMessage($"Clipboard history load thread failed: {ex}");
+                }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+        }
+        catch (Exception ex)
+        {
+            loadInFlight.Value = false;
+            hasLoadedOnce.Value = false;
+            IsLoading = false;
+            TryLogMessage($"Failed to start clipboard history load thread: {ex}");
+        }
     }
 
     private ListItem[] GetClipboardHistoryListItems()
@@ -281,14 +284,23 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
 
     public override IListItem[] GetItems()
     {
-        // This registry read is only a cheap pre-filter. Clipboard.IsHistoryEnabled()
-        // remains the authoritative check inside the load.
-        if (Volatile.Read(ref hasLoadedOnce) == 0 && IsClipboardHistoryEnabled() &&
-            Interlocked.CompareExchange(ref hasLoadedOnce, 1, 0) == 0)
+        if (!disposed.Value && hasLoadedOnce.Set())
         {
             LoadClipboardHistoryInSTA();
         }
 
         return GetClipboardHistoryListItems();
+    }
+
+    public void Dispose()
+    {
+        if (!disposed.Set())
+        {
+            return;
+        }
+
+        Clipboard.HistoryChanged -= TrackClipboardHistoryChanged_EventHandler;
+        CleanupCachedImages([]);
+        GC.SuppressFinalize(this);
     }
 }
