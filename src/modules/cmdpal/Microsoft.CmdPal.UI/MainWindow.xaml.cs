@@ -74,6 +74,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly IThemeService _themeService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
     private readonly List<long> _breakthroughTimestamps = [];
+    private readonly ShellViewModel _shellViewModel;
 
     private bool _ignoreHotKeyWhenFullScreen = true;
     private bool _ignoreHotKeyWhenBusy;
@@ -137,10 +138,10 @@ public sealed partial class MainWindow : WindowEx,
 
         InitializeComponent();
 
-        ShellContent.DragStateChanged += ShellContent_DragStateChanged;
-        _shellViewModel.PageNavigationRequested += ShellViewModel_PageNavigationRequested;
-
         ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
+        _shellViewModel = App.Current.Services.GetRequiredService<ShellViewModel>();
+        _shellViewModel.PageNavigationRequested += ShellViewModel_PageNavigationRequested;
+        ShellContent.DragStateChanged += ShellContent_DragStateChanged;
 
         _autoGoHomeTimer = new DispatcherTimer();
         _autoGoHomeTimer.Tick += OnAutoGoHomeTimerOnTick;
@@ -275,7 +276,7 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
+    private void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
     {
         if (e.Key == VirtualKey.GoBack)
         {
@@ -1899,8 +1900,8 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Dispose()
     {
-        ShellContent.DragStateChanged -= ShellContent_DragStateChanged;
         _shellViewModel.PageNavigationRequested -= ShellViewModel_PageNavigationRequested;
+        ShellContent.DragStateChanged -= ShellContent_DragStateChanged;
         _themeService.ThemeChanged -= ThemeServiceOnThemeChanged;
         App.Current.Services.GetRequiredService<ISettingsService>().SettingsChanged -= SettingsChangedHandler;
 
@@ -1919,13 +1920,15 @@ public sealed partial class MainWindow : WindowEx,
     private void ShellContent_DragStateChanged(object? sender, PageDragStateChangedEventArgs e)
     {
         _preventHideWhenDeactivated = e.IsDragging;
-        if (!e.IsDragging)
+        if (e.IsDragging)
         {
-            Task.Delay(200).ContinueWith(_ =>
-            {
-                DispatcherQueue.TryEnqueue(StealForeground);
-            });
+            return;
         }
+
+        Task.Delay(200).ContinueWith(_ =>
+        {
+            DispatcherQueue.TryEnqueue(StealForeground);
+        });
     }
 
     private unsafe void StealForeground()
