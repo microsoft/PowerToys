@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.UITest.Next;
@@ -42,17 +43,18 @@ public static class DisplayHelper
     {
         try
         {
+            var primary = Screen.PrimaryScreen;
+            if (primary is not null && primary.Bounds.Width == width && primary.Bounds.Height == height)
+            {
+                return;
+            }
+
             var devMode = default(DEVMODE);
             devMode.DmDeviceName = new string('\0', 32);
             devMode.DmFormName = new string('\0', 32);
             devMode.DmSize = (short)Marshal.SizeOf<DEVMODE>();
 
             if (EnumDisplaySettings(null, ENUM_CURRENT_SETTINGS, ref devMode) == 0)
-            {
-                return;
-            }
-
-            if (devMode.DmPelsWidth == width && devMode.DmPelsHeight == height)
             {
                 return;
             }
