@@ -39,8 +39,8 @@ public static class MonitorInfo
         public int WorkHeight => WorkBottom - WorkTop;
     }
 
-    private const uint MONITORINFOF_PRIMARY = 0x1;
-    private const uint MONITOR_DEFAULTTONEAREST = 0x2;
+    private const uint MonitorInfoPrimary = 0x1;
+    private const uint MonitorDefaultToNearest = 0x2;
 
     private delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdc, ref RECT lprcMonitor, IntPtr dwData);
 
@@ -116,7 +116,7 @@ public static class MonitorInfo
             throw new InvalidOperationException($"Cannot query a monitor for invalid or destroyed HWND {FormatHandle(hWnd)}.");
         }
 
-        var hMonitor = monitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
+        var hMonitor = monitorFromWindow(hWnd, MonitorDefaultToNearest);
         if (hMonitor == IntPtr.Zero)
         {
             throw new InvalidOperationException($"MonitorFromWindow failed for HWND {FormatHandle(hWnd)}.");
@@ -154,7 +154,7 @@ public static class MonitorInfo
             mi.RcWork.Top,
             mi.RcWork.Right,
             mi.RcWork.Bottom,
-            (mi.DwFlags & MONITORINFOF_PRIMARY) != 0);
+            (mi.DwFlags & MonitorInfoPrimary) != 0);
 
     private static string FormatHandle(IntPtr handle) => $"0x{handle.ToInt64():X}";
 
