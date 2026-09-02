@@ -31,17 +31,20 @@
                         SourceKey="{x:Bind Icon, Mode=OneWay}"
                         SourceRequested="{x:Bind help:IconProvider.SourceRequested20}"
                         Visibility="{x:Bind HasIcon, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                    <TextBlock VerticalAlignment="Center" Text="{x:Bind Title, Mode=OneWay}" />
+                    <TextBlock
+                        Margin="0,-1,0,0"
+                        VerticalAlignment="Center"
+                        Text="{x:Bind Title, Mode=OneWay}" />
                     <Border
                         Padding="8,4"
                         VerticalAlignment="Center"
-                        Background="{ThemeResource SystemControlBackgroundBaseLowBrush}"
+                        Background="{ThemeResource ControlAltFillColorQuarternaryBrush}"
                         CornerRadius="16"
                         Visibility="{x:Bind HasBadge, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock
                             VerticalAlignment="Center"
                             AutomationProperties.Name="{x:Bind Badge, Mode=OneWay}"
-                            FontSize="11"
+                            FontSize="10"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Text="{x:Bind Badge, Mode=OneWay}" />
                     </Border>
@@ -111,8 +114,10 @@
                                         Foreground="{TemplateBinding Foreground}" />
                                     <Border
                                         x:Name="SelectionIndicator"
-                                        Height="2"
-                                        Margin="4,0"
+                                        Width="16"
+                                        Height="3"
+                                        Margin="4,2"
+                                        HorizontalAlignment="Center"
                                         VerticalAlignment="Bottom"
                                         Background="{ThemeResource AccentFillColorDefaultBrush}"
                                         CornerRadius="1"
