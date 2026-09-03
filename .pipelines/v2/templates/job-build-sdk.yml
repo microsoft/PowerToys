@@ -50,6 +50,34 @@ jobs:
 
   - ${{ parameters.beforeBuildSteps }}
 
+  - task: NodeTool@0
+    displayName: Use Node.js 22
+    inputs:
+      versionSpec: '22.x'
+
+  - task: Cache@2
+    displayName: Cache CmdPal npm packages
+    inputs:
+      key: '"cmdpal-npm" | "$(Agent.OS)" | src/modules/cmdpal/ts-sdk/package-lock.json | src/modules/cmdpal/ext/SampleJSExtension/package-lock.json'
+      restoreKeys: |
+        "cmdpal-npm" | "$(Agent.OS)"
+        "cmdpal-npm"
+      path: $(Pipeline.Workspace)\.npm
+
+  - pwsh: |-
+      npm ci --cache "$(Pipeline.Workspace)\.npm" --prefer-offline &&
+      npm run build
+    workingDirectory: $(Build.SourcesDirectory)\src\modules\cmdpal\ts-sdk
+    displayName: Build CmdPal TypeScript SDK dependency
+
+  - pwsh: |-
+      npm ci --cache "$(Pipeline.Workspace)\.npm" --prefer-offline &&
+      npm run typecheck &&
+      npm run build &&
+      npm test
+    workingDirectory: $(Build.SourcesDirectory)\src\modules\cmdpal\ext\SampleJSExtension
+    displayName: Validate CmdPal sample JavaScript extension
+
   - pwsh: |-
       & "$(build.sourcesdirectory)\src\modules\cmdpal\extensionsdk\nuget\BuildSDKHelper.ps1" -Configuration "Release" -BuildStep "build" -IsAzurePipelineBuild
     displayName: Build SDK
