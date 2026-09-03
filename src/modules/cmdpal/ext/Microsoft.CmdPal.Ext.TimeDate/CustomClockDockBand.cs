@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CmdPal.Ext.TimeDate.Pages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -22,6 +23,7 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
     private readonly CopyTextCommand _copyTitleCommand;
     private readonly CopyTextCommand _copySubtitleCommand;
     private readonly CopyCurrentClockFormatCommand? _copyCustomFormatCommand;
+    private readonly Lock _lifecycleLock = new();
     private bool _disposed;
 
     internal Guid ClockId => _clockDefinition.Id;
@@ -68,13 +70,17 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
     // over the previous generation, so a render can arrive after disposal.
     internal void StartUpdating()
     {
-        if (_disposed)
+        lock (_lifecycleLock)
         {
-            return;
+            if (_disposed)
+            {
+                return;
+            }
+
+            _clockUpdateService.Subscribe(this, ClockUpdateService_Tick, _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates);
         }
 
         UpdateText();
-        _clockUpdateService.Subscribe(this, ClockUpdateService_Tick, _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates);
     }
 
     internal void StopUpdating() => _clockUpdateService.Unsubscribe(this);
@@ -111,7 +117,10 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
 
     public void Dispose()
     {
-        _disposed = true;
-        _clockUpdateService.Unsubscribe(this);
+        lock (_lifecycleLock)
+        {
+            _disposed = true;
+            _clockUpdateService.Unsubscribe(this);
+        }
     }
 }

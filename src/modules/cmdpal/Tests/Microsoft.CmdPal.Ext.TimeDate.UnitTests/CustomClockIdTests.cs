@@ -367,6 +367,43 @@ public class CustomClockIdTests
     }
 
     [TestMethod]
+    public void CustomClockDockBand_DisposeDuringStartDoesNotLeaveSubscription()
+    {
+        var statePath = Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json");
+        var utcNow = new DateTime(2025, 7, 1, 12, 5, 32, DateTimeKind.Utc);
+        var clockReads = 0;
+        var disposeOnRead = false;
+        using var updateService = new ClockUpdateService(enableTimer: false);
+        CustomClockDockBand? band = null;
+
+        // This single-threaded reentrancy covers Subscribe/UpdateText ordering;
+        // _lifecycleLock is still required when StartUpdating and Dispose run on different threads
+        band = new CustomClockDockBand(
+            new CustomClock { TitleFormat = "T" },
+            new CustomClockManager(statePath),
+            new Settings(),
+            updateService,
+            () =>
+            {
+                clockReads++;
+                if (disposeOnRead)
+                {
+                    disposeOnRead = false;
+                    band!.Dispose();
+                }
+
+                return utcNow;
+            });
+        disposeOnRead = true;
+
+        band.StartUpdating();
+        var readsAfterStart = clockReads;
+        updateService.DispatchTick(utcNow.AddSeconds(1));
+
+        Assert.AreEqual(readsAfterStart, clockReads);
+    }
+
+    [TestMethod]
     public void CustomClockManager_LoadSkipsInvalidTimeZoneWithoutDiscardingValidClocks()
     {
         var statePath = Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json");

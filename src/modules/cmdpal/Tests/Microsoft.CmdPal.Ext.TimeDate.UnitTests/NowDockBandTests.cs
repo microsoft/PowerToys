@@ -138,6 +138,36 @@ public class NowDockBandTests
         Assert.AreEqual(readsBeforeTick + 1, clockReads);
     }
 
+    [TestMethod]
+    public void DisposeDuringStartDoesNotLeaveSubscription()
+    {
+        var clockReads = 0;
+        var disposeOnRead = false;
+
+        // This single-threaded reentrancy covers Subscribe/UpdateText ordering;
+        // _lifecycleLock is still required when StartUpdating and Dispose run on different threads
+        _band = CreateBand(
+            titleFormat: "T",
+            clock: () =>
+            {
+                clockReads++;
+                if (disposeOnRead)
+                {
+                    disposeOnRead = false;
+                    _band!.Dispose();
+                }
+
+                return FixedTime;
+            });
+        disposeOnRead = true;
+
+        _band.StartUpdating();
+        var readsAfterStart = clockReads;
+        _clockUpdateService.DispatchTick(FixedTime.AddSeconds(1));
+
+        Assert.AreEqual(readsAfterStart, clockReads);
+    }
+
     [DataTestMethod]
     [DataRow("de-DE")]
     [DataRow("fr-FR")]

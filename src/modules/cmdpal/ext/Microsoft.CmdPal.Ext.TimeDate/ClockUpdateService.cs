@@ -34,7 +34,11 @@ internal sealed partial class ClockUpdateService : IDisposable
     {
         lock (_lock)
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_disposed)
+            {
+                return;
+            }
+
             if (_clients.Count == 0)
             {
                 _lastDispatchedMinute = GetMinute(_clock());

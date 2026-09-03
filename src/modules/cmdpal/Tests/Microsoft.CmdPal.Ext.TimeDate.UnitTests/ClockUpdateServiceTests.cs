@@ -68,6 +68,15 @@ public class ClockUpdateServiceTests
     }
 
     [TestMethod]
+    public void Subscribe_AfterDisposeDoesNotThrow()
+    {
+        using var service = new ClockUpdateService(() => InitialTime, enableTimer: false);
+        service.Dispose();
+
+        service.Subscribe(new object(), static (_, _) => { }, requiresSecondUpdates: true);
+    }
+
+    [TestMethod]
     public void DispatchTick_TimeJumpInvokesMinuteClientOnce()
     {
         using var service = new ClockUpdateService(() => InitialTime, enableTimer: false);

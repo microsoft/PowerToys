@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CmdPal.Ext.TimeDate.Pages;
 using Microsoft.CommandPalette.Extensions;
@@ -21,6 +22,7 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
     private readonly ICommand _allClocksPage;
     private readonly CopyTextCommand _copyTitleCommand;
     private readonly CopyTextCommand _copySubtitleCommand;
+    private readonly Lock _lifecycleLock = new();
     private IDockClockSettings _settings;
     private CompiledClockFormat _titleFormat;
     private CompiledClockFormat _subtitleFormat;
@@ -53,17 +55,20 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
     }
 
     // Ticking is gated on CmdPal actually rendering the band; see OnLoadDockBandItem.
-    // A render can arrive after the provider tore the band down, and subscribing to
-    // a disposed clock service would throw back across the extension boundary.
+    // A render can arrive after the provider tore the band down, so start and disposal must agree on whether this band may subscribe.
     internal void StartUpdating()
     {
-        if (_disposed)
+        lock (_lifecycleLock)
         {
-            return;
+            if (_disposed)
+            {
+                return;
+            }
+
+            _clockUpdateService.Subscribe(this, ClockUpdateService_Tick, RequiresSecondUpdates);
         }
 
         UpdateText();
-        _clockUpdateService.Subscribe(this, ClockUpdateService_Tick, RequiresSecondUpdates);
     }
 
     internal void StopUpdating() => _clockUpdateService.Unsubscribe(this);
@@ -150,7 +155,10 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
 
     public void Dispose()
     {
-        _disposed = true;
-        _clockUpdateService.Unsubscribe(this);
+        lock (_lifecycleLock)
+        {
+            _disposed = true;
+            _clockUpdateService.Unsubscribe(this);
+        }
     }
 }
