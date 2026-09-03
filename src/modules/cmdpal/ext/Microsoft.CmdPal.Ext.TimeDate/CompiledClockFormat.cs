@@ -130,7 +130,7 @@ internal sealed class CompiledClockFormat
 
         if ((_tokens & CustomFormatToken.WindowsFileTime) != 0)
         {
-            windowsFileTime = date.ToFileTime().ToString(culture);
+            windowsFileTime = time.ToFileTime().ToString(culture);
         }
 
         if ((_tokens & (CustomFormatToken.UnixTime | CustomFormatToken.UnixTimeMilliseconds)) != 0)

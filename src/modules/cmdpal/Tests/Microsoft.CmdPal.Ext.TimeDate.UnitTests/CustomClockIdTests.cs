@@ -233,6 +233,21 @@ public class CustomClockIdTests
         Assert.AreEqual(time.UtcDateTime.ToString(format, CultureInfo.CurrentCulture), rendered);
     }
 
+    [DataTestMethod]
+    [DataRow(-8)]
+    [DataRow(0)]
+    [DataRow(9)]
+    public void CustomClockDisplay_WindowsFileTimeUsesInstantAcrossTimeZones(int offsetHours)
+    {
+        const long fileTime = 134329256613039858;
+        var time = new DateTimeOffset(DateTime.FromFileTimeUtc(fileTime)).ToOffset(TimeSpan.FromHours(offsetHours));
+        var expected = fileTime.ToString(CultureInfo.CurrentCulture);
+        var settings = new Settings();
+
+        Assert.AreEqual(expected, CustomClockDisplay.Format(time, "WFT", settings));
+        Assert.AreEqual(expected, CustomClockDisplay.Format(time, "UTC:WFT", settings));
+    }
+
     [TestMethod]
     public void CustomClockDisplay_EmbeddedCustomTokensAreRendered()
     {
