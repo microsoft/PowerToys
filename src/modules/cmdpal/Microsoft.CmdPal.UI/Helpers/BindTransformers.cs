@@ -25,6 +25,11 @@ internal static class BindTransformers
     public static Visibility EmptyOrWhitespaceToVisible(string? input)
         => string.IsNullOrWhiteSpace(input) ? Visibility.Visible : Visibility.Collapsed;
 
+    // A space measures as a text line without hard-coding a height that would
+    // stop following text scaling. All tiles reserve the page's enabled slots.
+    public static string ReserveTextLine(string? input)
+        => string.IsNullOrWhiteSpace(input) ? " " : input;
+
     public static Visibility VisibleWhenAny(bool value1, bool value2)
         => (value1 || value2) ? Visibility.Visible : Visibility.Collapsed;
 
