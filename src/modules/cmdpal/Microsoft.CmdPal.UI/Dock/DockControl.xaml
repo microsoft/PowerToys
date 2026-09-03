@@ -37,6 +37,7 @@
                         <DataTemplate x:DataType="dockVm:DockItemViewModel">
                             <local:DockItemControl
                                 Title="{x:Bind Title, Mode=OneWay}"
+                                KeyDown="BandItem_KeyDown"
                                 RightTapped="BandItem_RightTapped"
                                 Subtitle="{x:Bind Subtitle, Mode=OneWay}"
                                 Tag="{x:Bind}"
