@@ -426,6 +426,17 @@ public class AvailableResultsListTests
     }
 
     [TestMethod]
+    public void CustomClockDetailResult_PreservesExplicitOffset()
+    {
+        var time = new DateTimeOffset(2025, 7, 1, 14, 5, 6, TimeSpan.FromHours(-7));
+        var settings = new Settings(customFormats: ["TestFormat1=HH:mm zzz"]);
+
+        var result = TimeDateCalculator.ExecuteSearch(settings, string.Empty, time).Single(x => x.Subtitle == "TestFormat1");
+
+        Assert.AreEqual("14:05 -07:00", result.Title);
+    }
+
+    [TestMethod]
     public void ValidateEraResult()
     {
         // Setup

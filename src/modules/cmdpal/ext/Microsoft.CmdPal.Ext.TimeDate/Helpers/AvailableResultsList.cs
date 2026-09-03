@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
 using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
@@ -82,12 +81,12 @@ internal static class AvailableResultsList
             var eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dateTimeNow));
 
             // Custom formats
+            var formatTime = currentTime ?? new DateTimeOffset(dateTimeNow);
             foreach (var f in settings.CustomFormats)
             {
                 var formatParts = f.Split("=", 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 var formatSyntax = formatParts.Length == 2 ? formatParts[1] : string.Empty;
                 var searchTags = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagCustom");
-                var dtObject = dateTimeNow;
 
                 // If Length = 0 then empty string.
                 if (formatParts.Length >= 1)
@@ -100,32 +99,12 @@ internal static class AvailableResultsList
                             throw new FormatException("Format syntax part after equal sign is missing.");
                         }
 
-                        var containsCustomSyntax = TimeAndDateHelper.StringContainsCustomFormatSyntax(formatSyntax);
                         if (formatSyntax.StartsWith("UTC:", StringComparison.InvariantCulture))
                         {
                             searchTags = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagCustomUtc");
-                            dtObject = dateTimeNowUtc;
                         }
 
-                        // Get formatted date
-                        var value = TimeAndDateHelper.ConvertToCustomFormat(dtObject, unixTimestamp, unixTimestampMilliseconds, weekOfYear, eraShort, Regex.Replace(formatSyntax, "^UTC:", string.Empty), firstWeekRule, firstDayOfTheWeek);
-                        try
-                        {
-                            value = dtObject.ToString(value, CultureInfo.CurrentCulture);
-                        }
-                        catch (Exception ex)
-                        {
-                            if (!containsCustomSyntax)
-                            {
-                                Logger.LogError($"Unable to format date time with format: {value}. Error: {ex.Message}");
-                                throw;
-                            }
-                            else
-                            {
-                                // Do not fail as we have custom format syntax. Instead fix backslashes.
-                                value = Regex.Replace(value, @"(?<!\\)\\", string.Empty).Replace("\\\\", "\\");
-                            }
-                        }
+                        var value = CustomClockDisplay.Format(formatTime, formatSyntax, settings);
 
                         // Add result
                         results.Add(new AvailableResult()
