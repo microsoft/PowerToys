@@ -93,7 +93,10 @@ namespace Hosts.UITests
             VisualAssert.AreEqual(TestContext, Session.Find(By.AccessibilityId("Entries")), "EmptyView");
 
             // Click 'Add an entry' from empty-view for adding a Host override rule.
-            Find<Element>("Add an entry").Click();
+            FindExact<Element>("Add an entry").Invoke(msPostAction: 0);
+            Assert.IsTrue(
+                Session.WaitFor(() => CountExact<Button>("Add") == 1, 10_000),
+                "The Add entry dialog did not open after invoking the empty-view link.");
 
             AddEntry("192.168.0.1", "localhost", false, false);
 
