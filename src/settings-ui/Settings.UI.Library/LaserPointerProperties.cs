@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class LaserPointerProperties
     {
         // 40% transparent: alpha 0x99 is 60% opaque.
-        public const string DefaultLaserColor = "#99FF2D2D";
+        public const string DefaultLaserColor = "#CCFF2D2D";
 
         // -1 = None, 0 = Left, 1 = Right, 2 = Middle, 3 = X1 (back), 4 = X2 (forward).
         public const int ActivationButtonNone = -1;

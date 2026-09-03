@@ -54,7 +54,7 @@ struct LaserPointerSettings
     // true: the trail follows the pen as soon as it is in range.
     bool penRenderWhenClose = LASER_POINTER_DEFAULT_PEN_RENDER_WHEN_CLOSE;
 
-    winrt::Windows::UI::Color laserColor = winrt::Windows::UI::ColorHelper::FromArgb(153, 255, 45, 45);
+    winrt::Windows::UI::Color laserColor = winrt::Windows::UI::ColorHelper::FromArgb(204, 255, 45, 45);
     int size = LASER_POINTER_DEFAULT_SIZE;
     int decayTimeMs = LASER_POINTER_DEFAULT_DECAY_TIME_MS;
     int decayLength = LASER_POINTER_DEFAULT_DECAY_LENGTH;
