@@ -158,7 +158,7 @@ $dotNet10CetReady = $windowsBuild -ge 22000 -or
     VcRedistInstaller = if ($null -ne $vcRedist) { $vcRedist.Name } else { $null }
     ScreenRecordingSupported = (Test-Path "$env:WINDIR\System32\VCRUNTIME140.dll")
     PowerShellVersion = if (Test-Path $powerShellExecutable) {
-        (& $powerShellExecutable -NoLogo -NoProfile -Command '$PSVersionTable.PSVersion.ToString()').Trim()
+        [Diagnostics.FileVersionInfo]::GetVersionInfo($powerShellExecutable).FileVersion
     } else { $null }
     WindowsBuild = $fullWindowsBuild
     DotNet10CetReady = $dotNet10CetReady
