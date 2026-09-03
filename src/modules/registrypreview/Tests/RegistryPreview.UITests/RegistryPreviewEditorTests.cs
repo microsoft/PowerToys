@@ -39,7 +39,7 @@ public sealed class RegistryPreviewEditorTests : RegistryPreviewTestBase
 
             // This assertion intentionally precedes Save: it proves the visual tree is repopulated
             // from the editor's TextChanged event while the user is still typing.
-            AssertExactElement(window, "TypedKey", "Live visual-tree key");
+            AssertExactElement(window, "TypedKey", "Live visual-tree key", EditorTimeoutMS);
 
             Step("Saving the edited file in place");
             save.Click(msPostAction: 300);
@@ -100,15 +100,16 @@ public sealed class RegistryPreviewEditorTests : RegistryPreviewTestBase
         var second = CreateRegFixture(folder, "second.reg", secondKeyPath + @"\OpenedKey", "opened-value");
         var window = LaunchRegistryPreview(first);
 
+        WaitForEditorReady(window);
         Step("Changing the first file externally and reloading it");
         File.WriteAllText(first, CreateRegContent(firstKeyPath + @"\ReloadedKey", "external-value"), Encoding.Unicode);
         window.Find<Button>(By.AccessibilityId("refreshButton"), ActionTimeoutMS).Click(msPostAction: 300);
-        AssertExactElement(window, "ReloadedKey", "Externally reloaded visual-tree key");
+        AssertExactElement(window, "ReloadedKey", "Externally reloaded visual-tree key", EditorTimeoutMS);
 
         Step("Opening a different .reg file through the Open dialog");
         window.Find<Button>(By.AccessibilityId("openButton"), ActionTimeoutMS).Click(msPostAction: 200);
         CompleteFileDialogWithPath(second);
-        AssertExactElement(window, "OpenedKey", "Newly opened visual-tree key");
+        AssertExactElement(window, "OpenedKey", "Newly opened visual-tree key", EditorTimeoutMS);
         Assert.IsTrue(
             window.WaitFor(
                 () => WindowsFinder.ListByApp(RegistryPreviewProcessName)

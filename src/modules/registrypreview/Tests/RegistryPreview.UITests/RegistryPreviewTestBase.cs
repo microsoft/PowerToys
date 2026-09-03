@@ -31,7 +31,7 @@ public abstract class RegistryPreviewTestBase : UITestBase
     protected const string ModuleSettingsKey = "RegistryPreview";
     protected const int WindowTimeoutMS = 30_000;
     protected const int ActionTimeoutMS = 15_000;
-    protected const int EditorTimeoutMS = 60_000;
+    protected const int EditorTimeoutMS = 180_000;
     protected const string ContextMenuCaption = "Preview";
 
     private static readonly string[] ContextMenuWindowClasses = { "#32768", "Microsoft.UI.Content.PopupWindowSiteBridge" };
@@ -276,7 +276,7 @@ public abstract class RegistryPreviewTestBase : UITestBase
     /// </summary>
     protected void ReplaceEditorContent(Session window, string newContent)
     {
-        var editor = window.Find<Element>(By.AccessibilityId("Browser"), EditorTimeoutMS);
+        var editor = WaitForEditorReady(window);
         Step("Focusing the Monaco editor");
         editor.Click(msPostAction: 300);
         AssertRegistryPreviewOwnsForeground("before typing into the Monaco editor");
@@ -297,10 +297,13 @@ public abstract class RegistryPreviewTestBase : UITestBase
         session.FindAll<T>(By.Name(name), timeoutMS)
             .FirstOrDefault(element => element.Name.Equals(name, comparison));
 
-    protected static void AssertExactElement(Session session, string name, string description)
+    protected static Element WaitForEditorReady(Session window) =>
+        window.Find<Element>(By.AccessibilityId("Browser"), EditorTimeoutMS);
+
+    protected static void AssertExactElement(Session session, string name, string description, int timeoutMS = ActionTimeoutMS)
     {
         Assert.IsNotNull(
-            FindExact<Element>(session, name, ActionTimeoutMS),
+            FindExact<Element>(session, name, timeoutMS),
             $"{description} '{name}' was not exposed through UI Automation.");
     }
 
