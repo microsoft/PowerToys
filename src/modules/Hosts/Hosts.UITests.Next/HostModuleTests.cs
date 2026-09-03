@@ -526,12 +526,12 @@ namespace Hosts.UITests
 
         private void CloseWarningDialog()
         {
-            // Find 'Accept' button which comes up in the 'Warning' dialog.
-            if (Session.FindAll<Element>(By.Name("Warning"), 1000).Count > 0 &&
-                Session.FindAll<Button>(By.Name("Accept"), 1000).Count > 0)
+            if (CountExact<Button>("Accept") == 1)
             {
-                // Hide Warning dialog if any.
-                Session.Find<Button>(By.Name("Accept"), 1000).Click();
+                FindExact<Button>("Accept").Invoke(msPostAction: 0);
+                Assert.IsTrue(
+                    Session.WaitFor(() => CountExact<Button>("Accept") == 0, 10_000),
+                    "The startup warning did not close after invoking Accept.");
             }
         }
 

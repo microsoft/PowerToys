@@ -100,10 +100,10 @@ namespace Hosts.UITests
             var settingsSession = Session.FromProcess("PowerToys.Settings", PowerToysModule.PowerToysSettings);
 
             // Validating Warning-Dialog will be shown if 'Show a warning at startup' toggle is on.
-            Assert.IsTrue(hostsSession.FindAll<Element>(By.Name("Warning")).Count > 0, "Should show warning dialog");
+            Assert.AreEqual(1, CountExact<Button>(hostsSession, "Accept"), "Should show warning dialog");
 
             // Quit Hosts File Editor.
-            hostsSession.Find<Button>(By.Name("Quit")).Click();
+            FindExact<Button>(hostsSession, "Quit").Invoke(msPostAction: 0);
 
             // Validating click 'Quit' button in Warning-Dialog, the Hosts File Editor window would be closed.
             Assert.IsTrue(
@@ -115,10 +115,13 @@ namespace Hosts.UITests
             hostsSession = Session.Attach(PowerToysModule.Hosts, WindowSize.Small_Vertical);
 
             // Should show warning dialog.
-            Assert.IsTrue(hostsSession.FindAll<Element>(By.Name("Warning")).Count > 0, "Should show warning dialog");
+            Assert.AreEqual(1, CountExact<Button>(hostsSession, "Accept"), "Should show warning dialog");
 
             // Accept the warning this time.
-            hostsSession.Find<Button>(By.Name("Accept")).Click();
+            FindExact<Button>(hostsSession, "Accept").Invoke(msPostAction: 0);
+            Assert.IsTrue(
+                hostsSession.WaitFor(() => CountExact<Button>(hostsSession, "Accept") == 0, 10_000),
+                "The startup warning did not close after invoking Accept.");
 
             // Validating click 'Accept' button in Warning-Dialog, the Hosts File Editor window would NOT be closed.
             Assert.IsFalse(IsHostsFileEditorClosed(), "Hosts File Editor should NOT be closed after click Accept button in Warning Dialog");
@@ -129,7 +132,7 @@ namespace Hosts.UITests
             hostsSession = LaunchFromSetting(showWarning: false);
 
             // Should NOT show warning dialog.
-            Assert.AreEqual(0, hostsSession.FindAll<Element>(By.Name("Warning")).Count, "Should NOT show warning dialog");
+            Assert.AreEqual(0, CountExact<Button>(hostsSession, "Accept"), "Should NOT show warning dialog");
 
             // Host Editor Window should not be closed.
             Assert.IsFalse(IsHostsFileEditorClosed(), "Hosts File Editor should NOT be closed");
@@ -364,10 +367,12 @@ namespace Hosts.UITests
 
         private static void CloseWarningDialogOn(Session hostsSession)
         {
-            if (hostsSession.FindAll<Element>(By.Name("Warning"), 1000).Count > 0 &&
-                hostsSession.FindAll<Button>(By.Name("Accept"), 1000).Count > 0)
+            if (CountExact<Button>(hostsSession, "Accept") == 1)
             {
-                hostsSession.Find<Button>(By.Name("Accept"), 1000).Click();
+                FindExact<Button>(hostsSession, "Accept").Invoke(msPostAction: 0);
+                Assert.IsTrue(
+                    hostsSession.WaitFor(() => CountExact<Button>(hostsSession, "Accept") == 0, 10_000),
+                    "The startup warning did not close after invoking Accept.");
             }
         }
 
