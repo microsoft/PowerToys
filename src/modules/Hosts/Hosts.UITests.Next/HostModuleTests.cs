@@ -89,6 +89,7 @@ namespace Hosts.UITests
             // .Next has no HyperlinkButton wrapper, and a WinUI HyperlinkButton reports UIA
             // ControlType=Hyperlink (not Button), so match it with the untyped Element instead.
             Assert.IsTrue(Session.HasOne<Element>(By.Name("Add an entry")), "'Add an entry' button should be visible in the empty view");
+            FindExact<Button>("New entry").Focus();
             VisualAssert.AreEqual(TestContext, Session.Find(By.AccessibilityId("Entries")), "EmptyView");
 
             // Click 'Add an entry' from empty-view for adding a Host override rule.
@@ -99,6 +100,7 @@ namespace Hosts.UITests
             // Should have one row now and not more empty view.
             Assert.IsTrue(Session.Has<Button>(By.Name("Delete")), "Should have one row now");
             Assert.IsFalse(Session.Has<Element>(By.Name("Add an entry")), "'Add an entry' button should be invisible if not empty view");
+            FindExact<Button>("New entry").Focus();
             VisualAssert.AreEqual(TestContext, Session.Find(By.AccessibilityId("Entries")), "NonEmptyView");
         }
 
@@ -122,6 +124,7 @@ namespace Hosts.UITests
             AddEntry("192.168.0.1", "localhost", true);
 
             Assert.IsTrue(Session.Has<Button>(By.Name("Delete")), "Should have one row now");
+            FindExact<Button>("New entry").Focus();
             VisualAssert.AreEqual(TestContext, Session.Find(By.AccessibilityId("Entries")));
         }
 
@@ -547,9 +550,12 @@ namespace Hosts.UITests
 
                 var deleteButton = Session.FindAll<Button>(By.Name("Delete"), 1_000)
                     .First(button => string.Equals(button.Name, "Delete", StringComparison.Ordinal));
-                deleteButton.Click();
+                deleteButton.Focus();
+                Session.FindAll<Button>(By.Name("Delete"), 1_000)
+                    .First(button => string.Equals(button.Name, "Delete", StringComparison.Ordinal))
+                    .Invoke(msPostAction: 0);
 
-                FindExact<Button>("Yes").Click();
+                FindExact<Button>("Yes").Invoke(msPostAction: 0);
                 Assert.IsTrue(
                     Session.WaitFor(() => CountExact<Button>("Delete") < countBefore, 5_000),
                     "The entry count did not decrease after confirming deletion.");

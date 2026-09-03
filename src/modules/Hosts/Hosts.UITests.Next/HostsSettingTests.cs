@@ -388,9 +388,12 @@ namespace Hosts.UITests
 
                 var deleteButton = hostsSession.FindAll<Button>(By.Name("Delete"), 1_000)
                     .First(button => string.Equals(button.Name, "Delete", StringComparison.Ordinal));
-                deleteButton.Click();
+                deleteButton.Focus();
+                hostsSession.FindAll<Button>(By.Name("Delete"), 1_000)
+                    .First(button => string.Equals(button.Name, "Delete", StringComparison.Ordinal))
+                    .Invoke(msPostAction: 0);
 
-                FindExact<Button>(hostsSession, "Yes", 5_000).Click();
+                FindExact<Button>(hostsSession, "Yes", 5_000).Invoke(msPostAction: 0);
                 Assert.IsTrue(
                     hostsSession.WaitFor(() => CountExact<Button>(hostsSession, "Delete") < countBefore, 5_000),
                     "The entry count did not decrease after confirming deletion.");
