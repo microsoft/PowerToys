@@ -307,7 +307,7 @@ internal sealed class CompiledClockFormat
 
             if (format.Length == 1)
             {
-                return format[0] is 'O' or 'o' or 'R' or 's' or 'U' or 'u';
+                return format[0] is 'O' or 'o' or 'R' or 'r' or 's' or 'U' or 'u';
             }
 
             return ContainsSecondToken(format);

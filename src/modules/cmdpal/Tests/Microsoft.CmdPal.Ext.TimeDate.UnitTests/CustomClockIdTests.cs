@@ -297,6 +297,7 @@ public class CustomClockIdTests
     [DataRow("T")]
     [DataRow("s")]
     [DataRow("R")]
+    [DataRow("r")]
     [DataRow("UXT")]
     [DataRow("UMS")]
     [DataRow("WFT")]
