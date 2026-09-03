@@ -7,7 +7,7 @@ using System.Globalization;
 
 namespace KeyboardManagerEditorUI.Helpers
 {
-    public sealed class TextExpansionMapping
+    public sealed class TextExpansionMapping : IToggleableShortcut
     {
         public string Id { get; set; } = string.Empty;
 
@@ -20,6 +20,30 @@ namespace KeyboardManagerEditorUI.Helpers
         public string ReplacementText { get; set; } = string.Empty;
 
         public bool IsEnabled { get; set; } = true;
+
+        public List<string> Shortcut
+        {
+            get => ActivationKeyNames;
+            set => ActivationKeyNames = value;
+        }
+
+        public bool IsActive
+        {
+            get => IsEnabled;
+            set => IsEnabled = value;
+        }
+
+        public string AppName { get; set; } = string.Empty;
+
+        public bool IsAllApps { get; set; } = true;
+
+        public IReadOnlyList<int> TriggerKeyCodes
+        {
+            get => ActivationKeys;
+            set => ActivationKeys = value is List<int> keys ? keys : new List<int>(value);
+        }
+
+        public string SearchableText { get; set; } = string.Empty;
 
         public string EnabledAutomationName => FormatAutomationName("TextExpansionEnabledToggle_AutomationName");
 

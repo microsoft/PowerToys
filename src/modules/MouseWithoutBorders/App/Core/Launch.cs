@@ -41,13 +41,12 @@ internal static class Launch
             // on subsequent calls. The reason appears to be an unknown issue with reverting the impersonation,
             // meaning that subsequent impersonation attempts run as the logged-on user and fail.
             // This is a workaround.
-            using var asyncFlowControl = System.Threading.ExecutionContext.SuppressFlow();
-
-            uint dwSessionId;
             IntPtr hUserToken = IntPtr.Zero, hUserTokenDup = IntPtr.Zero;
             try
             {
-                dwSessionId = (uint)Process.GetCurrentProcess().SessionId;
+                using var asyncFlowControl = System.Threading.ExecutionContext.SuppressFlow();
+
+                uint dwSessionId = (uint)Process.GetCurrentProcess().SessionId;
                 uint rv = NativeMethods.WTSQueryUserToken(dwSessionId, ref hUserToken);
                 var lastError = rv == 0 ? Marshal.GetLastWin32Error() : 0;
 
@@ -62,32 +61,77 @@ internal static class Launch
                 if (!NativeMethods.DuplicateToken(hUserToken, (int)NativeMethods.SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation, ref hUserTokenDup))
                 {
                     Logger.TelemetryLogTrace($"{nameof(NativeMethods.DuplicateToken)} Failed! {Logger.GetStackTrace(new StackTrace())}", SeverityLevel.Warning);
-                    _ = NativeMethods.CloseHandle(hUserToken);
-                    _ = NativeMethods.CloseHandle(hUserTokenDup);
                     return false;
                 }
 
-                if (NativeMethods.ImpersonateLoggedOnUser(hUserTokenDup))
-                {
-                    targetFunc();
-                    _ = NativeMethods.RevertToSelf();
-                    _ = NativeMethods.CloseHandle(hUserToken);
-                    _ = NativeMethods.CloseHandle(hUserTokenDup);
-                    return true;
-                }
-                else
+                if (!NativeMethods.ImpersonateLoggedOnUser(hUserTokenDup))
                 {
                     Logger.Log("ImpersonateLoggedOnUser Failed!");
-                    _ = NativeMethods.CloseHandle(hUserToken);
-                    _ = NativeMethods.CloseHandle(hUserTokenDup);
                     return false;
                 }
+
+                ExecuteImpersonatedAction(
+                    targetFunc,
+                    NativeMethods.RevertToSelf,
+                    Marshal.GetLastWin32Error,
+                    Environment.FailFast);
+                return true;
             }
             catch (Exception e)
             {
                 Logger.Log(e);
                 return false;
             }
+            finally
+            {
+                if (hUserToken != IntPtr.Zero)
+                {
+                    _ = NativeMethods.CloseHandle(hUserToken);
+                }
+
+                if (hUserTokenDup != IntPtr.Zero)
+                {
+                    _ = NativeMethods.CloseHandle(hUserTokenDup);
+                }
+            }
+        }
+    }
+
+    internal static void ExecuteImpersonatedAction(Action targetFunc, Func<bool> revertToSelf, Func<int> getLastWin32Error, Action<string, Exception> failFast)
+    {
+        var impersonating = true;
+        try
+        {
+            ExecuteImpersonatedAction(targetFunc, () =>
+            {
+                if (!revertToSelf())
+                {
+                    throw new Win32Exception(getLastWin32Error(), $"{nameof(NativeMethods.RevertToSelf)} failed.");
+                }
+
+                impersonating = false;
+            });
+        }
+        finally
+        {
+            if (impersonating && !revertToSelf())
+            {
+                failFast(
+                    $"{nameof(NativeMethods.RevertToSelf)} failed; terminating to avoid continuing under the impersonated token.",
+                    new Win32Exception(getLastWin32Error()));
+            }
+        }
+    }
+
+    internal static void ExecuteImpersonatedAction(Action targetFunc, Action revertToSelf)
+    {
+        try
+        {
+            targetFunc();
+        }
+        finally
+        {
+            revertToSelf();
         }
     }
 

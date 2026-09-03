@@ -34,6 +34,10 @@ namespace KeyboardManagerEditorUI.Helpers
         // True when this single-key remap only fires on a solo tap; drives the "Alone" badge in the list.
         public bool IsAlone => Condition == Interop.SingleKeyRemapCondition.Alone;
 
+        public IReadOnlyList<int> TriggerKeyCodes { get; set; } = Array.Empty<int>();
+
+        public string SearchableText { get; set; } = string.Empty;
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public bool IsEnabled

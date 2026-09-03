@@ -61,6 +61,7 @@ public static class WindowHelper
     private const int SW_MAXIMIZE = 3;
     private const int SW_RESTORE = 9;
     private const int SW_MINIMIZE = 6;
+    private const int DwmCloakedAttribute = 14;
     private const int DwmExtendedFrameBoundsAttribute = 9;
 
     [DllImport("user32.dll", SetLastError = true)]
@@ -97,8 +98,11 @@ public static class WindowHelper
     [DllImport("gdi32.dll")]
     private static extern uint GetPixel(IntPtr hdc, int x, int y);
 
-    [DllImport("dwmapi.dll")]
-    private static extern int DwmGetWindowAttribute(IntPtr hWnd, int dwAttribute, out RECT pvAttribute, int cbAttribute);
+    [DllImport("dwmapi.dll", EntryPoint = "DwmGetWindowAttribute")]
+    private static extern int DwmGetWindowIntAttribute(IntPtr hWnd, int dwAttribute, out int pvAttribute, int cbAttribute);
+
+    [DllImport("dwmapi.dll", EntryPoint = "DwmGetWindowAttribute")]
+    private static extern int DwmGetWindowRectAttribute(IntPtr hWnd, int dwAttribute, out RECT pvAttribute, int cbAttribute);
 
     [DllImport("dwmapi.dll")]
     private static extern int DwmFlush();
@@ -172,6 +176,65 @@ public static class WindowHelper
         return (0, 0, 0, 0);
     }
 
+    /// <summary>
+    /// Whether DWM currently cloaks a window. Cloaking is independent of Win32 visibility and is
+    /// commonly used to keep a WinUI window rendered while hiding its composed output.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// The DWM query failed, including when <paramref name="hWnd"/> was destroyed during the query.
+    /// Callers polling a replaceable window should treat this exception as transient and reacquire
+    /// the current HWND before retrying.
+    /// </exception>
+    public static bool IsWindowCloaked(IntPtr hWnd) =>
+        IsWindowCloaked(hWnd, QueryCloakedState);
+
+    internal static bool IsWindowCloaked(
+        IntPtr hWnd,
+        Func<IntPtr, (int HResult, int CloakedState)> query)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+
+        var (hResult, cloakedState) = query(hWnd);
+        ThrowIfDwmQueryFailed(hWnd, "DWMWA_CLOAKED", hResult);
+        return cloakedState != 0;
+    }
+
+    /// <summary>
+    /// DWM extended-frame bounds (Left, Top, Right, Bottom) in physical screen pixels. Unlike
+    /// <see cref="GetWindowBounds"/>, these bounds exclude invisible resize borders and are not
+    /// DPI-virtualized.
+    /// </summary>
+    /// <remarks>
+    /// Compare these bounds with monitor geometry only from a per-monitor-DPI-aware test host.
+    /// Every UITestAutomation.Next test executable should embed the framework's PerMonitorV2
+    /// application manifest.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// The DWM query failed or returned an empty frame, including when <paramref name="hWnd"/> was
+    /// destroyed during the query. Callers polling a replaceable window should treat this exception
+    /// as transient and reacquire the current HWND before retrying.
+    /// </exception>
+    public static (int Left, int Top, int Right, int Bottom) GetVisibleBounds(IntPtr hWnd) =>
+        GetVisibleBounds(hWnd, QueryVisibleBounds);
+
+    internal static (int Left, int Top, int Right, int Bottom) GetVisibleBounds(
+        IntPtr hWnd,
+        Func<IntPtr, (int HResult, (int Left, int Top, int Right, int Bottom) Bounds)> query)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+
+        var (hResult, bounds) = query(hWnd);
+        ThrowIfDwmQueryFailed(hWnd, "DWMWA_EXTENDED_FRAME_BOUNDS", hResult);
+        if (bounds.Right <= bounds.Left || bounds.Bottom <= bounds.Top)
+        {
+            throw new InvalidOperationException(
+                $"DwmGetWindowAttribute(DWMWA_EXTENDED_FRAME_BOUNDS) returned invalid bounds " +
+                $"({bounds.Left},{bounds.Top})-({bounds.Right},{bounds.Bottom}) for HWND {FormatHandle(hWnd)}.");
+        }
+
+        return bounds;
+    }
+
     /// <summary>Read a named Win32 property stamped on a window, or zero when it is absent.</summary>
     public static long GetWindowPropertyValue(IntPtr hWnd, string propertyName)
     {
@@ -185,15 +248,7 @@ public static class WindowHelper
     /// </summary>
     public static void CaptureVisibleWindow(IntPtr hWnd, string outputPath)
     {
-        var result = DwmGetWindowAttribute(
-            hWnd,
-            DwmExtendedFrameBoundsAttribute,
-            out var bounds,
-            Marshal.SizeOf<RECT>());
-        if (result != 0 || bounds.Right <= bounds.Left || bounds.Bottom <= bounds.Top)
-        {
-            throw new InvalidOperationException($"Unable to read visible frame bounds for HWND {hWnd} (HRESULT 0x{result:X8}).");
-        }
+        var bounds = GetVisibleBounds(hWnd);
 
         var wasTopmost = (GetWindowLongPtr(hWnd, GWL_EXSTYLE).ToInt64() & WS_EX_TOPMOST) != 0;
         var noMoveOrResize = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE;
@@ -225,6 +280,38 @@ public static class WindowHelper
             }
         }
     }
+
+    private static (int HResult, int CloakedState) QueryCloakedState(IntPtr hWnd)
+    {
+        var hResult = DwmGetWindowIntAttribute(
+            hWnd,
+            DwmCloakedAttribute,
+            out var cloakedState,
+            sizeof(int));
+        return (hResult, cloakedState);
+    }
+
+    private static (int HResult, (int Left, int Top, int Right, int Bottom) Bounds) QueryVisibleBounds(IntPtr hWnd)
+    {
+        var hResult = DwmGetWindowRectAttribute(
+            hWnd,
+            DwmExtendedFrameBoundsAttribute,
+            out var bounds,
+            Marshal.SizeOf<RECT>());
+        return (hResult, (bounds.Left, bounds.Top, bounds.Right, bounds.Bottom));
+    }
+
+    private static void ThrowIfDwmQueryFailed(IntPtr hWnd, string attributeName, int hResult)
+    {
+        if (hResult != 0)
+        {
+            throw new InvalidOperationException(
+                $"DwmGetWindowAttribute({attributeName}) failed for HWND {FormatHandle(hWnd)} " +
+                $"with HRESULT 0x{hResult:X8}.");
+        }
+    }
+
+    private static string FormatHandle(IntPtr hWnd) => $"0x{hWnd.ToInt64():X}";
 
     /// <summary>Center point of the window in screen pixels.</summary>
     public static (int CenterX, int CenterY) GetWindowCenter(IntPtr hWnd)

@@ -71,7 +71,8 @@ public static class SettingsConfigHelper
         return PreserveFile(Path.Combine(PowerToysSettingsRoot, moduleName, "settings.json"));
     }
 
-    internal static IDisposable PreserveFile(string path)
+    /// <summary>Snapshot an arbitrary file and restore its exact bytes or prior absence on disposal.</summary>
+    public static IDisposable PreserveFile(string path)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         return new FileSnapshot(path);
