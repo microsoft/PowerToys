@@ -25,6 +25,9 @@
     <PackageReference Include="AdaptiveCards.Templating" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="Microsoft.Bot.AdaptiveExpressions.Core" />
+    <!-- StreamJsonRpc uses MessagePack, so keep it on the centrally pinned patched version. -->
+    <PackageReference Include="MessagePack" />
+    <PackageReference Include="StreamJsonRpc" />
     <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true">
       <ExcludeAssets>compile</ExcludeAssets>
     </PackageReference>
