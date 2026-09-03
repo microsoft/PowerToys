@@ -218,7 +218,7 @@ jobs:
       $allModules = [string]::IsNullOrWhiteSpace($modulesRaw)
       $requiresModernContextMenu = '$(TestPlatform)' -ne 'x64Win10'
       $requiresPowerRename = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename' }).Count -gt 0
-      $requiresAuthenticatedSettingsIpc = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename|MouseUtils|PowerAccent' }).Count -gt 0
+      $requiresAuthenticatedSettingsIpc = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename|MouseUtils|PowerAccent|ColorPicker' }).Count -gt 0
       $requiredPackages = @()
       $requiredAuthenticodeFiles = @()
       $certificateMarkerPath = "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
