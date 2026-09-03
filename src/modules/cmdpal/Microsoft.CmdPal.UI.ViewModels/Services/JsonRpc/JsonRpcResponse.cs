@@ -14,12 +14,6 @@ namespace Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
 public sealed class JsonRpcResponse
 {
     /// <summary>
-    /// Gets or sets the JSON-RPC protocol version. Always "2.0".
-    /// </summary>
-    [JsonPropertyName("jsonrpc")]
-    public string JsonRpc { get; set; } = "2.0";
-
-    /// <summary>
     /// Gets or sets the correlation identifier copied from the originating request.
     /// </summary>
     [JsonPropertyName("id")]

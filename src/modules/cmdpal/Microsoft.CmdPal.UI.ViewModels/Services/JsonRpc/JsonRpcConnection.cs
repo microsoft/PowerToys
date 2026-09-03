@@ -307,21 +307,20 @@ public sealed class JsonRpcConnection : IDisposable
 
     private void RegisterMethod(string method)
     {
-        _registeredMethods.GetOrAdd(
-            method,
-            static (name, connection) =>
+        _registeredMethods.GetOrAdd(method, AddRpcMethodTarget, this);
+    }
+
+    private static RpcMethodTarget AddRpcMethodTarget(string name, JsonRpcConnection connection)
+    {
+        var target = new RpcMethodTarget(connection, name);
+        connection._rpc.AddLocalRpcMethod(
+            typeof(RpcMethodTarget).GetMethod(nameof(RpcMethodTarget.InvokeAsync))!,
+            target,
+            new JsonRpcMethodAttribute(name)
             {
-                var target = new RpcMethodTarget(connection, name);
-                connection._rpc.AddLocalRpcMethod(
-                    typeof(RpcMethodTarget).GetMethod(nameof(RpcMethodTarget.InvokeAsync))!,
-                    target,
-                    new JsonRpcMethodAttribute(name)
-                    {
-                        UseSingleObjectParameterDeserialization = true,
-                    });
-                return target;
-            },
-            this);
+                UseSingleObjectParameterDeserialization = true,
+            });
+        return target;
     }
 
     private async Task<JsonNode?> DispatchMethodAsync(string method, JsonElement parameters, CancellationToken cancellationToken)
