@@ -781,7 +781,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Configure the calendar rule for the first week of the year..
+        ///   Looks up a localized string similar to Configure the calendar rule for the first week of the year. For ISO 8601 compliant week numbers, choose &apos;First four day week&apos; here and &apos;Monday&apos; as first day of the week, or leave both on &apos;System default&apos; [rest of string was truncated]&quot;;.
         /// </summary>
         public static string Microsoft_plugin_timedate_SettingFirstWeekRule_Description {
             get {
@@ -816,6 +816,88 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Custom date format for the Clock dock band.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingClockBandCustomFormat {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandCustomFormat", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Only used when &apos;Custom format&apos; is selected above. Date format syntax plus WOY for the week of the year, e.g. &apos;ddd dd.MM \KW WOY&apos; shows &apos;Mon 06.07 KW 28&apos;. WOY follows the week settings above. IWOY (week, two digits), IWYR / IWYY (week-based year, four or two digits) and IDOW (day, 1-7) always use [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingClockBandCustomFormat_Description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandCustomFormat_Description", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Date shown in the Clock dock band.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingClockBandDateMode {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandDateMode", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Date and week number (e.g. &apos;06.07.2026 · W28&apos;).
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingClockBandDateMode_WeekNumber {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandDateMode_WeekNumber", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to ISO 8601 week date (e.g. &apos;2026-W28-1&apos;).
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingClockBandDateMode_IsoWeekDate {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandDateMode_IsoWeekDate", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Custom format (defined in the field below).
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingClockBandDateMode_CustomFormat {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandDateMode_CustomFormat", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to System date.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingClockBandDateMode_SystemDate {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandDateMode_SystemDate", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Open notification center when clicking the Clock dock band.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingClockBandOpensNotificationCenter {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandOpensNotificationCenter", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to When turned off, clicking the Clock band does nothing..
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingClockBandOpensNotificationCenter_Description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandOpensNotificationCenter_Description", resourceCulture);
+            }
+        }
+
+
         /// <summary>
         ///   Looks up a localized string similar to Show time with seconds.
         /// </summary>
@@ -993,6 +1075,33 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string timedate_notification_center_band_title {
             get {
                 return ResourceManager.GetString("timedate_notification_center_band_title", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Copy week number.
+        /// </summary>
+        public static string timedate_copy_week_number_command_name {
+            get {
+                return ResourceManager.GetString("timedate_copy_week_number_command_name", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} · {1}.
+        /// </summary>
+        public static string timedate_dock_date_week_format {
+            get {
+                return ResourceManager.GetString("timedate_dock_date_week_format", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to W{0}.
+        /// </summary>
+        public static string timedate_dock_week_number_format {
+            get {
+                return ResourceManager.GetString("timedate_dock_week_number_format", resourceCulture);
             }
         }
     }

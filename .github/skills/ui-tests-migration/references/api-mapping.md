@@ -142,6 +142,8 @@ is the `Microsoft.PowerToys.UITest.Next` equivalent. "—" means no direct membe
 | Wait for consecutive stable observations | `WaitHelper.WaitForStable(observe, isMatch, timeoutMS, requiredConsecutiveMatches, …)` |
 | Wait for exact HWND foreground | `WindowControl.WaitForForeground(hwnd, timeoutMS, stableSamples)` |
 | Diagnose current foreground owner | `WindowControl.GetForegroundWindowInfo()` |
+| Read DWM cloak state / physical visible frame bounds | `WindowHelper.IsWindowCloaked(hwnd)` / `WindowHelper.GetVisibleBounds(hwnd)` |
+| Resolve an HWND's monitor and work area | `MonitorInfo.GetFromWindow(hwnd)` (`WorkLeft`, `WorkTop`, `WorkRight`, `WorkBottom`) |
 | Stop an exact process tree and await exit | `WindowControl.TryKillProcessTreeByNameAndWait(name, timeoutMS)` |
 | Set/read exact Explorer Shell selection | `ExplorerShell.SetSelectionAndWaitForStable(...)` / `TryGetSelection(hwnd)` |
 | Set/read Explorer view mode + icon size | `ExplorerShell.SetViewModeAndIconSizeAndWait(hwnd, ViewMode.Icons, iconSize)` | Uses Shell automation, not a timing-sensitive keyboard shortcut. |
