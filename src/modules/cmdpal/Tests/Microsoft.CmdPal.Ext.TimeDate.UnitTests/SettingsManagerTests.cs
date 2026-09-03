@@ -138,4 +138,28 @@ public class SettingsManagerTests
             File.Delete(filePath);
         }
     }
+
+    [TestMethod]
+    public void EditDefaultDockClockPage_ReopeningUsesLatestSettings()
+    {
+        var filePath = Path.Combine(Path.GetTempPath(), $"time-date-settings-{Guid.NewGuid()}.json");
+
+        try
+        {
+            var settings = new SettingsManager(filePath);
+            var page = new EditDefaultDockClockPage(settings);
+            _ = page.GetContent();
+            settings.SetDockClockFormats("T", "REL", "s");
+
+            var reopenedForm = (EditDefaultDockClockForm)page.GetContent()[0];
+            var inputs = JsonNode.Parse(reopenedForm.TemplateJson)!["body"]!.AsArray();
+            Assert.AreEqual("T", inputs[0]!["value"]!.GetValue<string>());
+            Assert.AreEqual("REL", inputs[1]!["value"]!.GetValue<string>());
+            Assert.AreEqual("s", inputs[2]!["value"]!.GetValue<string>());
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
 }

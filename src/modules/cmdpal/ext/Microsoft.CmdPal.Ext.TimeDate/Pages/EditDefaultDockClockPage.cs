@@ -17,17 +17,17 @@ namespace Microsoft.CmdPal.Ext.TimeDate.Pages;
 
 internal sealed partial class EditDefaultDockClockPage : ContentPage
 {
-    private readonly EditDefaultDockClockForm _form;
+    private readonly IDockClockSettings _settings;
 
     internal EditDefaultDockClockPage(IDockClockSettings dockClockSettings)
     {
         Icon = Icons.EditIcon;
         Title = Resources.timedate_custom_clock_customize_dock;
         Name = Title;
-        _form = new EditDefaultDockClockForm(dockClockSettings);
+        _settings = dockClockSettings;
     }
 
-    public override IContent[] GetContent() => [_form];
+    public override IContent[] GetContent() => [new EditDefaultDockClockForm(_settings)];
 }
 
 internal sealed partial class EditDefaultDockClockForm : FormContent
