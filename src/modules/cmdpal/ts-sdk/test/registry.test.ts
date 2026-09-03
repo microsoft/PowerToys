@@ -77,7 +77,7 @@ describe('bounded command registry eviction', () => {
       method: 'command/invoke',
       params: { commandId: 'cmd-a' },
     });
-    expect(responseFor(sent, 2)?.result).toEqual({ Kind: 4 });
+    expect(responseFor(sent, 2)?.result).toEqual({ kind: 4 });
 
     // Refresh replaces the item set; cmd-a is no longer present.
     await runtime.handleRequest({
@@ -94,7 +94,7 @@ describe('bounded command registry eviction', () => {
       method: 'command/invoke',
       params: { commandId: 'cmd-b' },
     });
-    expect(responseFor(sent, 4)?.result).toEqual({ Kind: 4 });
+    expect(responseFor(sent, 4)?.result).toEqual({ kind: 4 });
 
     // ...but the retired cmd-a is rejected with a protocol error.
     await runtime.handleRequest({
@@ -142,11 +142,11 @@ describe('bounded command registry eviction', () => {
 
     // Walk several generations; each refresh must retire the prior id.
     await getTopLevel();
-    expect((await invoke('cmd-1'))?.result).toEqual({ Kind: 4 });
+    expect((await invoke('cmd-1'))?.result).toEqual({ kind: 4 });
 
     await getTopLevel();
     // The current generation resolves; the retired one is rejected.
-    expect((await invoke('cmd-2'))?.result).toEqual({ Kind: 4 });
+    expect((await invoke('cmd-2'))?.result).toEqual({ kind: 4 });
     expect((await invoke('cmd-1'))?.error?.code).toBe(JsonRpcErrorCode.MethodNotFound);
   });
 
@@ -189,11 +189,47 @@ describe('bounded command registry eviction', () => {
     };
 
     await getFallbacks();
-    expect((await invoke('fb-1'))?.result).toEqual({ Kind: 4 });
+    expect((await invoke('fb-1'))?.result).toEqual({ kind: 4 });
 
     await getFallbacks();
-    expect((await invoke('fb-2'))?.result).toEqual({ Kind: 4 });
+    expect((await invoke('fb-2'))?.result).toEqual({ kind: 4 });
     expect((await invoke('fb-1'))?.error?.code).toBe(JsonRpcErrorCode.MethodNotFound);
+  });
+
+  it('retires fallback commands when a refresh returns null', async () => {
+    let includeFallback = true;
+    const provider: ICommandProvider = {
+      id: 'ext',
+      displayName: 'Ext',
+      topLevelCommands() {
+        return [];
+      },
+      fallbackCommands() {
+        return includeFallback ? [{ command: item('fb').command, title: 'Fallback' }] : null;
+      },
+    };
+    const { runtime, sent } = createHarness();
+    runtime.setProvider(provider);
+
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 1,
+      method: 'provider/getFallbackCommands',
+    });
+    includeFallback = false;
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 2,
+      method: 'provider/getFallbackCommands',
+    });
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 3,
+      method: 'command/invoke',
+      params: { commandId: 'fb' },
+    });
+
+    expect(responseFor(sent, 3)?.error?.code).toBe(JsonRpcErrorCode.MethodNotFound);
   });
 });
 
@@ -250,7 +286,7 @@ describe('recursive scope retirement', () => {
     await request('provider/getTopLevelCommands');
     await request('listPage/getItems', { pageId: 'parent' });
     await request('listPage/getItems', { pageId: 'child' });
-    expect((await invoke('grandchild-cmd'))?.result).toEqual({ Kind: 4 });
+    expect((await invoke('grandchild-cmd'))?.result).toEqual({ kind: 4 });
 
     // Refreshing top-level retires the parent page, which must recursively
     // retire the child page scope and the grandchild command nested inside it.
@@ -313,7 +349,7 @@ describe('recursive scope retirement', () => {
     // is then invocable on its own.
     await getTopLevel();
     await invoke('opener');
-    expect((await invoke('nested-primary'))?.result).toEqual({ Kind: 4 });
+    expect((await invoke('nested-primary'))?.result).toEqual({ kind: 4 });
 
     // Retiring the opener across a refresh must retire the nested command too.
     await getTopLevel();

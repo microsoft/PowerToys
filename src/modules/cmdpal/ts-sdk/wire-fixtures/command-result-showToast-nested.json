@@ -1,9 +1,9 @@
 {
-  "Args": {
-    "Message": "Saved",
-    "Result": {
-      "Kind": 1
+  "args": {
+    "message": "Saved",
+    "result": {
+      "kind": 1
     }
   },
-  "Kind": 6
+  "kind": 6
 }

@@ -9,10 +9,10 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
+using Microsoft.CmdPal.JsonRpc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
+namespace Microsoft.CmdPal.JsonRpc.UnitTests;
 
 public partial class JsonRpcConnectionTests
 {

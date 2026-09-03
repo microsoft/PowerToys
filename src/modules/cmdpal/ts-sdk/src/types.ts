@@ -424,6 +424,12 @@ export interface IListPage extends IPage {
    * Called by the host as the user scrolls.
    */
   loadMore?(): void | Promise<void>;
+  /**
+   * Applies a filter selected by the host.
+   *
+   * @param filterId Identifier from {@link IListPage.filters}.
+   */
+  setFilter?(filterId: string): void | Promise<void>;
 }
 
 /** A list page that receives search input in real time. */
@@ -638,9 +644,9 @@ export interface ICommandProvider {
   /**
    * Produces fallback commands that receive the search query as the user types.
    *
-   * @returns The fallback command items, synchronously or as a promise.
+   * @returns The fallback command items, or `null` when none are available.
    */
-  fallbackCommands?(): IFallbackCommandItem[] | Promise<IFallbackCommandItem[]>;
+  fallbackCommands?(): IFallbackCommandItem[] | null | Promise<IFallbackCommandItem[] | null>;
   /**
    * Resolves a command by id, for commands not returned up front.
    *

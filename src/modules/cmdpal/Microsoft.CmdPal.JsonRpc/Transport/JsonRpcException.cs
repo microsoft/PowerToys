@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
+namespace Microsoft.CmdPal.JsonRpc;
 
 /// <summary>
 /// Thrown when a JSON-RPC request completes with an error response.

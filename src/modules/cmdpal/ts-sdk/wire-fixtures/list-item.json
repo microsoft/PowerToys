@@ -1,6 +1,5 @@
 {
   "command": {
-    "displayName": "Rich",
     "id": "cmd-rich",
     "name": "Rich"
   },
@@ -66,7 +65,6 @@
         "data": {
           "commands": [
             {
-              "displayName": "Act",
               "id": "act-1",
               "name": "Act"
             }
@@ -84,7 +82,6 @@
     ],
     "title": "Details title"
   },
-  "displayName": "Rich item",
   "icon": {
     "dark": {
       "icon": ""
@@ -97,7 +94,6 @@
   "moreCommands": [
     {
       "command": {
-        "displayName": "More",
         "id": "more-1",
         "name": "More"
       },

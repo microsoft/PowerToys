@@ -1,10 +1,8 @@
 {
   "command": {
-    "displayName": "Tile",
     "id": "tile-1",
     "name": "Tile"
   },
-  "displayName": "Tile One",
   "icon": {
     "dark": {
       "icon": ""

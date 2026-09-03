@@ -1,11 +1,11 @@
 {
-  "Kind": 1,
-  "Nested": {
+  "kind": 1,
+  "nested": {
     "a": 1,
     "b": [
       1,
       2
     ]
   },
-  "UnknownField": "ignored"
+  "unknownField": "ignored"
 }

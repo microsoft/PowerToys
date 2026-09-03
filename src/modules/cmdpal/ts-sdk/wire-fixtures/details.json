@@ -60,7 +60,6 @@
       "data": {
         "commands": [
           {
-            "displayName": "Act",
             "id": "act-1",
             "name": "Act"
           }

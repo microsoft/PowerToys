@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
+namespace Microsoft.CmdPal.JsonRpc;
 
 /// <summary>
 /// Carries the exception that caused a JSON-RPC transport error.

@@ -29,10 +29,11 @@ export interface ListItemOptions {
 
 /** A concrete, ready-to-use {@link IListItem} built from a plain options bag. */
 export class ListItemBase extends ObservableBase implements IListItem {
+  private readonly stableNotificationId: string;
   /** The command run when the item is activated. */
   command: ICommand;
   protected get notificationId(): string {
-    return this.command.id;
+    return this.stableNotificationId;
   }
   /** Primary text shown for the item. */
   title: string;
@@ -58,6 +59,7 @@ export class ListItemBase extends ObservableBase implements IListItem {
    */
   constructor(options: ListItemOptions) {
     super();
+    this.stableNotificationId = options.command.id;
     this.command = options.command;
     this.title = options.title;
     this.subtitle = options.subtitle;

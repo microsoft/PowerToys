@@ -14,12 +14,12 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using StreamJsonRpc;
 
-namespace Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
+namespace Microsoft.CmdPal.JsonRpc;
 
 /// <summary>
 /// Adapts StreamJsonRpc to the raw JSON contract used by JavaScript extensions.
 /// </summary>
-public sealed class JsonRpcConnection : IDisposable
+public sealed partial class JsonRpcConnection : IDisposable
 {
     private const int NotificationQueueCapacity = 1024;
 
@@ -249,6 +249,20 @@ public sealed class JsonRpcConnection : IDisposable
 
         _notificationHandlers[method] = handler;
         RegisterMethod(method);
+    }
+
+    /// <summary>
+    /// Removes the notification handler registered for a method, if any.
+    /// </summary>
+    /// <param name="method">The notification method name.</param>
+    public void UnregisterNotificationHandler(string method)
+    {
+        if (string.IsNullOrEmpty(method))
+        {
+            return;
+        }
+
+        _notificationHandlers.TryRemove(method, out _);
     }
 
     /// <summary>
@@ -516,7 +530,7 @@ public sealed class JsonRpcConnection : IDisposable
         }
     }
 
-    private sealed class CmdPalJsonRpc : StreamJsonRpc.JsonRpc
+    private sealed partial class CmdPalJsonRpc : StreamJsonRpc.JsonRpc
     {
         private readonly AsyncLocal<bool?> _isResponseExpected = new();
 

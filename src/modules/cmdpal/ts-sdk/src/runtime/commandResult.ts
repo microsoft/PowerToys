@@ -3,14 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 /**
- * Serialization of {@link CommandResult} values to the numeric `Kind` / `Args`
+ * Serialization of {@link CommandResult} values to the numeric `kind` / `args`
  * wire shape described in `03-jsonrpc-protocol.md`.
  *
  * The serializer is strict: it validates that each result carries exactly the
  * arguments its kind requires and throws a descriptive error for malformed
  * shapes produced by untyped JavaScript callers, rather than silently dropping
- * fields. The emitted bytes are identical to the previous serializer for every
- * valid input.
+ * fields.
  */
 
 import type {
@@ -42,8 +41,8 @@ export function kindToNumber(kind: CommandResultKind): number {
 
 /** Serialized wire form of a {@link CommandResult}. */
 export interface WireCommandResult {
-  Kind: number;
-  Args?: unknown;
+  kind: number;
+  args?: unknown;
 }
 
 /** Serializes a command reference, used for nested result arguments. */
@@ -98,7 +97,7 @@ const NavigationModeValues = new Set<NavigationMode>(['push', 'goBack', 'goHome'
 
 function serializeGoToPage(args: Record<string, unknown>): Record<string, unknown> {
   const typed = args as Partial<GoToPageArgs>;
-  const wire: Record<string, unknown> = { PageId: requireString('goToPage', args, 'pageId') };
+  const wire: Record<string, unknown> = { pageId: requireString('goToPage', args, 'pageId') };
   if (typed.navigationMode !== undefined) {
     const mode = requireString('goToPage', args, 'navigationMode');
     if (!NavigationModeValues.has(mode as NavigationMode)) {
@@ -108,7 +107,7 @@ function serializeGoToPage(args: Record<string, unknown>): Record<string, unknow
           `Expected one of: ${allowed}.`,
       );
     }
-    wire.NavigationMode = mode;
+    wire.navigationMode = mode;
   }
   return wire;
 }
@@ -118,9 +117,9 @@ function serializeToast(
   serializeCommand: CommandSerializer,
 ): Record<string, unknown> {
   const typed = args as Partial<ToastArgs>;
-  const wire: Record<string, unknown> = { Message: requireString('showToast', args, 'message') };
+  const wire: Record<string, unknown> = { message: requireString('showToast', args, 'message') };
   if (typed.icon !== undefined) {
-    wire.Icon = typed.icon;
+    wire.icon = typed.icon;
   }
   if (typed.result !== undefined) {
     if (!isRecord(typed.result) || typeof (typed.result as CommandResult).kind !== 'string') {
@@ -128,7 +127,7 @@ function serializeToast(
         'Command result "showToast" requires a valid "result" continuation.',
       );
     }
-    wire.Result = serializeCommandResult(typed.result, serializeCommand);
+    wire.result = serializeCommandResult(typed.result, serializeCommand);
   }
   if (typed.command !== undefined) {
     if (!isCommand(typed.command)) {
@@ -136,7 +135,7 @@ function serializeToast(
         'Command result "showToast" requires a valid "command" argument.',
       );
     }
-    wire.Command = serializeCommand(typed.command);
+    wire.command = serializeCommand(typed.command);
   }
   return wire;
 }
@@ -147,8 +146,8 @@ function serializeConfirm(
 ): Record<string, unknown> {
   const typed = args as Partial<ConfirmationArgs>;
   const wire: Record<string, unknown> = {
-    Title: requireString('confirm', args, 'title'),
-    Description: requireString('confirm', args, 'description'),
+    title: requireString('confirm', args, 'title'),
+    description: requireString('confirm', args, 'description'),
   };
   if (typed.isPrimaryCommandCritical !== undefined) {
     if (typeof typed.isPrimaryCommandCritical !== 'boolean') {
@@ -156,7 +155,7 @@ function serializeConfirm(
         'Command result "confirm" requires a boolean "isPrimaryCommandCritical" argument.',
       );
     }
-    wire.IsPrimaryCommandCritical = typed.isPrimaryCommandCritical;
+    wire.isPrimaryCommandCritical = typed.isPrimaryCommandCritical;
   }
   if (typed.primaryCommand !== undefined) {
     if (!isCommand(typed.primaryCommand)) {
@@ -164,7 +163,7 @@ function serializeConfirm(
         'Command result "confirm" requires a valid "primaryCommand" argument.',
       );
     }
-    wire.PrimaryCommand = serializeCommand(typed.primaryCommand);
+    wire.primaryCommand = serializeCommand(typed.primaryCommand);
   }
   return wire;
 }
@@ -176,7 +175,7 @@ const defaultCommandSerializer: CommandSerializer = (command) => ({
 });
 
 /**
- * Serializes a {@link CommandResult} to its `{ Kind, Args }` wire form. When a
+ * Serializes a {@link CommandResult} to its `{ kind, args }` wire form. When a
  * result carries a nested command (a confirm dialog's primary command), the
  * optional {@link CommandSerializer} is used to serialize it; a minimal
  * serializer is used when none is supplied.
@@ -190,7 +189,7 @@ export function serializeCommandResult(
   serializeCommand: CommandSerializer = defaultCommandSerializer,
 ): WireCommandResult {
   if (!result) {
-    return { Kind: CommandResultKindValue.dismiss };
+    return { kind: CommandResultKindValue.dismiss };
   }
 
   const kind = (result as CommandResult).kind;
@@ -205,18 +204,18 @@ export function serializeCommandResult(
     case 'hide':
     case 'keepOpen':
       rejectForeignArgs(kind, result);
-      return { Kind: kindToNumber(kind) };
+      return { kind: kindToNumber(kind) };
     case 'goToPage':
-      return { Kind: kindToNumber(kind), Args: serializeGoToPage(requireArgs(kind, result)) };
+      return { kind: kindToNumber(kind), args: serializeGoToPage(requireArgs(kind, result)) };
     case 'showToast':
       return {
-        Kind: kindToNumber(kind),
-        Args: serializeToast(requireArgs(kind, result), serializeCommand),
+        kind: kindToNumber(kind),
+        args: serializeToast(requireArgs(kind, result), serializeCommand),
       };
     case 'confirm':
       return {
-        Kind: kindToNumber(kind),
-        Args: serializeConfirm(requireArgs(kind, result), serializeCommand),
+        kind: kindToNumber(kind),
+        args: serializeConfirm(requireArgs(kind, result), serializeCommand),
       };
     default:
       throw new InvalidCommandResultError(`Unknown command result kind: ${String(kind)}`);

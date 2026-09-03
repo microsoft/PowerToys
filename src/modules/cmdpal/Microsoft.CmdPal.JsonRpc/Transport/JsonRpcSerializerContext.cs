@@ -7,7 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
+namespace Microsoft.CmdPal.JsonRpc;
 
 /// <summary>
 /// Source-generated JSON serialization context for the JSON-RPC message types.

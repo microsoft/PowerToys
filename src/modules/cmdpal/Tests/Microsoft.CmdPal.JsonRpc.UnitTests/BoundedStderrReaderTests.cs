@@ -8,10 +8,10 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
+using Microsoft.CmdPal.JsonRpc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
+namespace Microsoft.CmdPal.JsonRpc.UnitTests;
 
 [TestClass]
 public class BoundedStderrReaderTests

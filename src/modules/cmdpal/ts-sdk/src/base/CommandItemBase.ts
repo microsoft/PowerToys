@@ -21,10 +21,11 @@ export interface CommandItemOptions {
 
 /** A concrete, ready-to-use {@link ICommandItem} built from a plain options bag. */
 export class CommandItemBase extends ObservableBase implements ICommandItem {
+  private readonly stableNotificationId: string;
   /** The command run when the item is activated. */
   command: ICommand;
   protected get notificationId(): string {
-    return this.command.id;
+    return this.stableNotificationId;
   }
   /** Primary text shown for the item. */
   title: string;
@@ -42,6 +43,7 @@ export class CommandItemBase extends ObservableBase implements ICommandItem {
    */
   constructor(options: CommandItemOptions) {
     super();
+    this.stableNotificationId = options.command.id;
     this.command = options.command;
     this.title = options.title;
     this.subtitle = options.subtitle;

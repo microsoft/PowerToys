@@ -31,18 +31,18 @@ describe('CommandResult kind mapping', () => {
   });
 
   it('defaults a missing result to Dismiss (0)', () => {
-    expect(serializeCommandResult(undefined)).toEqual({ Kind: 0 });
-    expect(serializeCommandResult(null)).toEqual({ Kind: 0 });
+    expect(serializeCommandResult(undefined)).toEqual({ kind: 0 });
+    expect(serializeCommandResult(null)).toEqual({ kind: 0 });
   });
 
-  it('omits Args for argument-less kinds', () => {
-    expect(serializeCommandResult({ kind: 'keepOpen' })).toEqual({ Kind: 4 });
-    expect(serializeCommandResult({ kind: 'goBack' })).toEqual({ Kind: 2 });
+  it('omits args for argument-less kinds', () => {
+    expect(serializeCommandResult({ kind: 'keepOpen' })).toEqual({ kind: 4 });
+    expect(serializeCommandResult({ kind: 'goBack' })).toEqual({ kind: 2 });
   });
 
-  it('serializes a toast message under the PascalCase wire key', () => {
+  it('serializes a toast message under the canonical wire key', () => {
     const result: CommandResult = { kind: 'showToast', args: { message: 'Done!' } };
-    expect(serializeCommandResult(result)).toEqual({ Kind: 6, Args: { Message: 'Done!' } });
+    expect(serializeCommandResult(result)).toEqual({ kind: 6, args: { message: 'Done!' } });
   });
 
   it('serializes goToPage arguments', () => {
@@ -51,8 +51,8 @@ describe('CommandResult kind mapping', () => {
       args: { pageId: 'settings', navigationMode: 'push' },
     };
     expect(serializeCommandResult(result)).toEqual({
-      Kind: 5,
-      Args: { PageId: 'settings', NavigationMode: 'push' },
+      kind: 5,
+      args: { pageId: 'settings', navigationMode: 'push' },
     });
   });
 
@@ -63,8 +63,8 @@ describe('CommandResult kind mapping', () => {
         args: { pageId: 'p', navigationMode: mode },
       };
       expect(serializeCommandResult(result)).toEqual({
-        Kind: 5,
-        Args: { PageId: 'p', NavigationMode: mode },
+        kind: 5,
+        args: { pageId: 'p', navigationMode: mode },
       });
     }
   });
@@ -75,8 +75,8 @@ describe('CommandResult kind mapping', () => {
       args: { message: 'Saved', result: { kind: 'goHome' } },
     };
     expect(serializeCommandResult(result)).toEqual({
-      Kind: 6,
-      Args: { Message: 'Saved', Result: { Kind: 1 } },
+      kind: 6,
+      args: { message: 'Saved', result: { kind: 1 } },
     });
   });
 
@@ -95,11 +95,11 @@ describe('CommandResult kind mapping', () => {
       icon: command.icon,
     }));
     expect(wire).toEqual({
-      Kind: 6,
-      Args: {
-        Message: 'Saved',
-        Icon: { light: { icon: '\uE700' } },
-        Command: { id: 'undo', name: 'Undo', icon: { light: { icon: '\uE74D' } } },
+      kind: 6,
+      args: {
+        message: 'Saved',
+        icon: { light: { icon: '\uE700' } },
+        command: { id: 'undo', name: 'Undo', icon: { light: { icon: '\uE74D' } } },
       },
     });
   });
@@ -116,12 +116,12 @@ describe('CommandResult kind mapping', () => {
     };
     const wire = serializeCommandResult(result, (command) => ({ id: command.id }));
     expect(wire).toEqual({
-      Kind: 7,
-      Args: {
-        Title: 'Delete?',
-        Description: 'This cannot be undone.',
-        IsPrimaryCommandCritical: true,
-        PrimaryCommand: { id: 'del' },
+      kind: 7,
+      args: {
+        title: 'Delete?',
+        description: 'This cannot be undone.',
+        isPrimaryCommandCritical: true,
+        primaryCommand: { id: 'del' },
       },
     });
   });

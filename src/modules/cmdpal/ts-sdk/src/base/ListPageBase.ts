@@ -75,4 +75,10 @@ export abstract class ListPageBase extends ObservableBase implements IListPage {
   loadMore(): void | Promise<void> {
     // Override when the page supports infinite scroll.
   }
+
+  setFilter(filterId: string): void | Promise<void> {
+    if (this.filters) {
+      this.filters.currentFilterId = filterId;
+    }
+  }
 }
