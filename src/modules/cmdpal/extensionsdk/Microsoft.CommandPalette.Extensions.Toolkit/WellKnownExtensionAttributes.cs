@@ -11,12 +11,18 @@ public static class WellKnownExtensionAttributes
     public const string FontFamily = "FontFamily";
 
     /// <summary>
+    /// The logical property name used with <c>PropChanged</c> when either Dock label-width hint changes.
+    /// </summary>
+    public const string DockLabelWidthPropertyName = "DockLabelWidth";
+
+    /// <summary>
     /// Optional minimum width of a Dock item's shared title/subtitle area, excluding its icon and padding.
     /// The value is a non-negative, finite <see cref="double"/> in DIPs, or an invariant string such as
     /// <c>"10ch"</c> measured in widths of the zero glyph in the Dock title's font and text scale.
     /// The <c>sqh</c> (squirrel hair width) unit is defined as <c>0.01ch</c>: <c>"1000sqh"</c> equals <c>"10ch"</c>.
     /// Use <see cref="DockLabelWidthExtensions"/> to set both bounds and notify automatically.
-    /// For direct property-bag edits, raise <c>PropChanged</c> with the name <c>"Properties"</c>.
+    /// For direct property-bag edits, raise <c>PropChanged</c> with the name <see cref="DockLabelWidthPropertyName"/>
+    /// or use <c>"Properties"</c> to invalidate the entire bag.
     /// The host can reduce the reservation to fit a vertical Dock. Hidden labels reserve no space.
     /// </summary>
     public const string DockMinLabelWidth = "Microsoft.CommandPalette.Dock.MinLabelWidth";

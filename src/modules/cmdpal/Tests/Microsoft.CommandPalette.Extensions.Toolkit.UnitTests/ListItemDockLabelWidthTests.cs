@@ -26,7 +26,7 @@ public partial class ListItemDockLabelWidthTests
         Assert.AreSame(item, result);
         Assert.AreSame(properties, ((IExtendedAttributesProvider)item).GetProperties());
         Assert.AreEqual(1, notifications.Count);
-        Assert.AreEqual(("Properties", (object?)80d, (object?)80d), notifications[0]);
+        Assert.AreEqual((WellKnownExtensionAttributes.DockLabelWidthPropertyName, (object?)80d, (object?)80d), notifications[0]);
         Assert.AreEqual("Keep me", properties["Unrelated"]);
     }
 
@@ -43,7 +43,7 @@ public partial class ListItemDockLabelWidthTests
         Assert.AreSame(item, item.SetDockLabelWidth(width));
 
         Assert.AreEqual(1, notifications.Count);
-        Assert.AreEqual(("Properties", (object?)width, (object?)width), notifications[0]);
+        Assert.AreEqual((WellKnownExtensionAttributes.DockLabelWidthPropertyName, (object?)width, (object?)width), notifications[0]);
     }
 
     [TestMethod]
@@ -81,7 +81,7 @@ public partial class ListItemDockLabelWidthTests
         item.SetDockLabelWidth(80);
 
         Assert.AreEqual(1, notifications.Count);
-        Assert.AreEqual(("Properties", (object?)80d, (object?)80d), notifications[0]);
+        Assert.AreEqual((WellKnownExtensionAttributes.DockLabelWidthPropertyName, (object?)80d, (object?)80d), notifications[0]);
     }
 
     [TestMethod]
@@ -112,7 +112,7 @@ public partial class ListItemDockLabelWidthTests
         Assert.AreEqual(hasMinimum || hasMaximum ? 1 : 0, notifications.Count);
         if (notifications.Count > 0)
         {
-            Assert.AreEqual(("Properties", (object?)null, (object?)null), notifications[0]);
+            Assert.AreEqual((WellKnownExtensionAttributes.DockLabelWidthPropertyName, (object?)null, (object?)null), notifications[0]);
         }
 
         Assert.AreEqual(1, properties.Count);
@@ -142,14 +142,14 @@ public partial class ListItemDockLabelWidthTests
 
         Assert.AreSame(item, configured);
         Assert.AreEqual(1, notifications.Count);
-        Assert.AreEqual(("Properties", (object?)"12ch", (object?)"12ch"), notifications[0]);
+        Assert.AreEqual((WellKnownExtensionAttributes.DockLabelWidthPropertyName, (object?)"12ch", (object?)"12ch"), notifications[0]);
         Assert.AreEqual(0, item.GetProperties().Count);
 
         CustomPropertiesItem cleared = item.ClearDockLabelWidth();
 
         Assert.AreSame(item, cleared);
         Assert.AreEqual(2, notifications.Count);
-        Assert.AreEqual(("Properties", (object?)null, (object?)null), notifications[1]);
+        Assert.AreEqual((WellKnownExtensionAttributes.DockLabelWidthPropertyName, (object?)null, (object?)null), notifications[1]);
     }
 
     [TestMethod]

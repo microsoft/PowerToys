@@ -2484,7 +2484,7 @@ var item = new ListItem(command) { Title = "1%" }
 
 Use `SetDockLabelWidth(80)` for DIPs or `ClearDockLabelWidth()` to restore
 defaults. These extension methods preserve the concrete item type and notify
-once when the hints change. They support `CommandItem` subclasses implementing
+once with `PropChanged("DockLabelWidth")` when the hints change. They support `CommandItem` subclasses implementing
 `IExtendedAttributesProvider` with a persistent, writable property bag, such as
 `ListItem`.
 
@@ -2501,9 +2501,12 @@ ellipsized, with full text in the tooltip. Hidden labels reserve no space,
 and a vertical Dock may shrink below the minimum.
 
 Set attributes on the rendered item: the root for a single-item band, or each
-child for an `IListPage` band. After direct edits to `GetProperties()`, raise
-`PropChanged` for `"Properties"`; the helpers do this automatically. Ordinary
-`Title`/`Subtitle` updates need no extra notification.
+child for an `IListPage` band. Custom providers can raise `PropChanged` for
+`"DockLabelWidth"` after changing these hints, or `"Properties"` to invalidate
+the entire bag. The helpers notify automatically. Ordinary `Title`/`Subtitle`
+updates need no extra notification.
+Hosts that do not recognize these additive keys or notification keep their
+existing Dock sizing.
 
 Defaults are a 100-DIP cap and a 24-DIP floor for visible titles (zero for
 subtitle-only items). Missing or invalid bounds use defaults, adjusted to fit

@@ -510,10 +510,25 @@ public partial class DockItemViewModel : CommandItemViewModel
 
     public DockLabelWidthConstraints LabelWidthConstraints { get; private set; } = DockLabelWidthConstraints.Default;
 
+    protected override void FetchProperty(string propertyName)
+    {
+        if (propertyName == WellKnownExtensionAttributes.DockLabelWidthPropertyName && Model.Unsafe is not null)
+        {
+            UpdateLabelWidthConstraints(GetExtendedAttributes());
+        }
+
+        base.FetchProperty(propertyName);
+    }
+
     protected override void UpdateExtendedAttributes(IDictionary<string, object?>? properties)
     {
         base.UpdateExtendedAttributes(properties);
 
+        UpdateLabelWidthConstraints(properties);
+    }
+
+    private void UpdateLabelWidthConstraints(IDictionary<string, object?>? properties)
+    {
         var constraints = DockLabelWidthConstraints.FromProperties(properties);
         if (constraints != LabelWidthConstraints)
         {

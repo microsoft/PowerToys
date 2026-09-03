@@ -12,60 +12,60 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 /// </remarks>
 public static class DockLabelWidthExtensions
 {
-    /// <summary>
-    /// Sets equal minimum and maximum Dock label width hints in DIPs.
-    /// Updates both hints before raising a single <c>PropChanged</c> notification for <c>"Properties"</c>.
-    /// Reapplying the same hints does not raise a notification. The host ignores invalid widths.
-    /// </summary>
-    /// <typeparam name="TItem">The item's concrete type.</typeparam>
     /// <param name="item">The item whose Dock label width to set.</param>
-    /// <param name="width">The label width in DIPs, stored as a <see cref="double"/>.</param>
-    /// <returns>The same item, for fluent construction.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">The item does not return writable extended attributes.</exception>
-    public static TItem SetDockLabelWidth<TItem>(this TItem item, double width)
-        where TItem : CommandItem, IExtendedAttributesProvider => SetDockLabelWidthCore(item, width);
-
-    /// <summary>
-    /// Sets equal minimum and maximum Dock label width hints using a unit string.
-    /// Updates both hints before raising a single <c>PropChanged</c> notification for <c>"Properties"</c>.
-    /// Reapplying the same hints does not raise a notification. The host ignores invalid widths.
-    /// </summary>
     /// <typeparam name="TItem">The item's concrete type.</typeparam>
-    /// <param name="item">The item whose Dock label width to set.</param>
-    /// <param name="width">An invariant length such as <c>"12ch"</c> or <c>"1200sqh"</c>.</param>
-    /// <returns>The same item, for fluent construction.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="item"/> or <paramref name="width"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">The item does not return writable extended attributes.</exception>
-    public static TItem SetDockLabelWidth<TItem>(this TItem item, string width)
+    extension<TItem>(TItem item)
         where TItem : CommandItem, IExtendedAttributesProvider
     {
-        ArgumentNullException.ThrowIfNull(width);
-        return SetDockLabelWidthCore(item, width);
-    }
+        /// <summary>
+        /// Sets equal minimum and maximum Dock label width hints in DIPs.
+        /// Updates both hints before raising a single <c>PropChanged</c> notification for
+        /// <see cref="WellKnownExtensionAttributes.DockLabelWidthPropertyName"/>.
+        /// Reapplying the same hints does not raise a notification. The host ignores invalid widths.
+        /// </summary>
+        /// <param name="width">The label width in DIPs, stored as a <see cref="double"/>.</param>
+        /// <returns>The same item, for fluent construction.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The item does not return writable extended attributes.</exception>
+        public TItem SetDockLabelWidth(double width) => SetDockLabelWidthCore(item, width);
 
-    /// <summary>
-    /// Removes both Dock label width hints, restoring the host's default sizing.
-    /// Raises one <c>PropChanged</c> notification for <c>"Properties"</c> if either hint was present.
-    /// Other extended attributes are preserved.
-    /// </summary>
-    /// <typeparam name="TItem">The item's concrete type.</typeparam>
-    /// <param name="item">The item whose Dock label width hints to remove.</param>
-    /// <returns>The same item, for fluent construction.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">The item does not return writable extended attributes.</exception>
-    public static TItem ClearDockLabelWidth<TItem>(this TItem item)
-        where TItem : CommandItem, IExtendedAttributesProvider
-    {
-        var properties = GetWritableProperties(item);
-        var removedMinimum = properties.Remove(WellKnownExtensionAttributes.DockMinLabelWidth);
-        var removedMaximum = properties.Remove(WellKnownExtensionAttributes.DockMaxLabelWidth);
-        if (removedMinimum || removedMaximum)
+        /// <summary>
+        /// Sets equal minimum and maximum Dock label width hints using a unit string.
+        /// Updates both hints before raising a single <c>PropChanged</c> notification for
+        /// <see cref="WellKnownExtensionAttributes.DockLabelWidthPropertyName"/>.
+        /// Reapplying the same hints does not raise a notification. The host ignores invalid widths.
+        /// </summary>
+        /// <param name="width">An invariant length such as <c>"12ch"</c> or <c>"1200sqh"</c>.</param>
+        /// <returns>The same item, for fluent construction.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="item"/> or <paramref name="width"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The item does not return writable extended attributes.</exception>
+        public TItem SetDockLabelWidth(string width)
         {
-            item.NotifyExtendedAttributesChanged();
+            ArgumentNullException.ThrowIfNull(width);
+            return SetDockLabelWidthCore(item, width);
         }
 
-        return item;
+        /// <summary>
+        /// Removes both Dock label width hints, restoring the host's default sizing.
+        /// Raises one <c>PropChanged</c> notification for
+        /// <see cref="WellKnownExtensionAttributes.DockLabelWidthPropertyName"/> if either hint was present.
+        /// Other extended attributes are preserved.
+        /// </summary>
+        /// <returns>The same item, for fluent construction.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The item does not return writable extended attributes.</exception>
+        public TItem ClearDockLabelWidth()
+        {
+            var properties = GetWritableProperties(item);
+            var removedMinimum = properties.Remove(WellKnownExtensionAttributes.DockMinLabelWidth);
+            var removedMaximum = properties.Remove(WellKnownExtensionAttributes.DockMaxLabelWidth);
+            if (removedMinimum || removedMaximum)
+            {
+                item.NotifyDockLabelWidthChanged();
+            }
+
+            return item;
+        }
     }
 
     private static TItem SetDockLabelWidthCore<TItem>(TItem item, object width)
@@ -82,7 +82,7 @@ public static class DockLabelWidthExtensions
 
         properties[WellKnownExtensionAttributes.DockMinLabelWidth] = width;
         properties[WellKnownExtensionAttributes.DockMaxLabelWidth] = width;
-        item.NotifyExtendedAttributesChanged();
+        item.NotifyDockLabelWidthChanged();
         return item;
     }
 

@@ -211,8 +211,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         if (model is IExtendedAttributesProvider extendedAttributesProvider)
         {
             ExtendedAttributesProvider = new ExtensionObject<IExtendedAttributesProvider>(extendedAttributesProvider);
-            var properties = extendedAttributesProvider.GetProperties();
-            UpdateExtendedAttributes(properties);
+            UpdateExtendedAttributes(GetExtendedAttributes());
         }
 
         Initialized |= InitializedState.Initialized;
@@ -402,10 +401,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
                 break;
             case nameof(DataPackage):
-                UpdateDataPackage(ExtendedAttributesProvider?.Unsafe?.GetProperties());
+                UpdateDataPackage(GetExtendedAttributes());
                 break;
             case "Properties":
-                UpdateExtendedAttributes((model as IExtendedAttributesProvider)?.GetProperties());
+                UpdateExtendedAttributes(GetExtendedAttributes());
                 break;
         }
 
@@ -725,6 +724,11 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         freedItems.OfType<CommandContextItemViewModel>()
                   .ToList()
                   .ForEach(c => c.SafeCleanup());
+    }
+
+    internal IDictionary<string, object?>? GetExtendedAttributes()
+    {
+        return ExtendedAttributesProvider?.Unsafe?.GetProperties();
     }
 
     /// <summary>
