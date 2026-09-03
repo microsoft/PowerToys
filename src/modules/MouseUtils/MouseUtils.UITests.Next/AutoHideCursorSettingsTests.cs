@@ -149,7 +149,8 @@ public class AutoHideCursorSettingsTests : UITestBase
 
         if (!Session.Has(By.AccessibilityId(HideOnTypingToggleId), 500))
         {
-            Session.Find<Element>(By.AccessibilityId(SettingsExpanderId), 5_000).Invoke(msPostAction: 500);
+            Session.EnsureForeground();
+            Session.Find<Element>(By.AccessibilityId(SettingsExpanderId), 5_000).MouseClick(msPostAction: 500);
         }
 
         Assert.IsTrue(Session.Has(By.AccessibilityId(HideOnTypingToggleId), 5_000), "Hide-on-typing toggle was not available.");
