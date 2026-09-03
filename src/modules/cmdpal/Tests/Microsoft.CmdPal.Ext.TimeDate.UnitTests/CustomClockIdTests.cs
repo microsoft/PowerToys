@@ -234,6 +234,21 @@ public class CustomClockIdTests
     }
 
     [DataTestMethod]
+    [DataRow(-7, "14:05 -07:00")]
+    [DataRow(9, "06:05 +09:00")]
+    public void CustomClockDisplay_PreservesSelectedOffset(int offsetHours, string expected)
+    {
+        const long fileTime = 133958775060000000;
+        var time = new DateTimeOffset(2025, 7, 1, 21, 5, 6, TimeSpan.Zero).ToOffset(TimeSpan.FromHours(offsetHours));
+        var settings = new Settings();
+
+        Assert.AreEqual(expected, CustomClockDisplay.Format(time, "HH:mm zzz", settings));
+        Assert.AreEqual($"{expected} {fileTime}", CustomClockDisplay.Format(time, "HH:mm zzz WFT", settings));
+        Assert.AreEqual("21:05 +00:00", CustomClockDisplay.Format(time, "UTC:HH:mm zzz", settings));
+        Assert.AreEqual(time.UtcDateTime.ToString("F", CultureInfo.CurrentCulture), CustomClockDisplay.Format(time, "U", settings));
+    }
+
+    [DataTestMethod]
     [DataRow(-8)]
     [DataRow(0)]
     [DataRow(9)]

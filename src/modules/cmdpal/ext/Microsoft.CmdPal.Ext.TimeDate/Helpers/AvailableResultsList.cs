@@ -326,7 +326,7 @@ internal static class AvailableResultsList
             {
                 results.Add(new AvailableResult()
                 {
-                    Value = dateTimeNow.ToFileTime().ToString(CultureInfo.CurrentCulture),
+                    Value = (currentTime?.ToFileTime() ?? dateTimeNow.ToFileTime()).ToString(CultureInfo.CurrentCulture),
                     Label = Resources.Microsoft_plugin_timedate_WindowsFileTime,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                     IconType = ResultIconType.DateTime,
@@ -369,7 +369,7 @@ internal static class AvailableResultsList
                 },
                 new AvailableResult()
                 {
-                    Value = dateTimeNow.ToString("yyyy-MM-ddTHH:mm:ssK", CultureInfo.InvariantCulture),
+                    Value = currentTime?.ToString("yyyy-MM-ddTHH:mm:ssK", CultureInfo.InvariantCulture) ?? dateTimeNow.ToString("yyyy-MM-ddTHH:mm:ssK", CultureInfo.InvariantCulture),
                     Label = Resources.Microsoft_plugin_timedate_Iso8601Zone,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                     IconType = ResultIconType.DateTime,
@@ -383,7 +383,7 @@ internal static class AvailableResultsList
                 },
                 new AvailableResult()
                 {
-                    Value = dateTimeNow.ToString("R"),
+                    Value = currentTime?.ToString("R", CultureInfo.InvariantCulture) ?? dateTimeNow.ToString("R"),
                     Label = Resources.Microsoft_plugin_timedate_Rfc1123,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                     IconType = ResultIconType.DateTime,

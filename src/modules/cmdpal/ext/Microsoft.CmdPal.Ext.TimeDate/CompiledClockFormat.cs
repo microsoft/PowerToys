@@ -52,10 +52,11 @@ internal sealed class CompiledClockFormat
         }
 
         var date = IsUtc ? time.UtcDateTime : time.DateTime;
+        var displayTime = IsUtc ? time.ToUniversalTime() : time;
         var culture = CultureInfo.CurrentCulture;
         if (_tokens == CustomFormatToken.None)
         {
-            return date.ToString(_format, culture);
+            return FormatDateTime(displayTime, _format, culture);
         }
 
         var firstDay = (_tokens & (CustomFormatToken.DayOfWeek | CustomFormatToken.WeekOfMonth | CustomFormatToken.WeekOfYear)) != 0
@@ -206,8 +207,11 @@ internal sealed class CompiledClockFormat
         }
 
         var convertedFormat = converted.ToString();
-        return convertedFormat.Length == 1 ? convertedFormat : date.ToString(convertedFormat, culture);
+        return convertedFormat.Length == 1 ? convertedFormat : FormatDateTime(displayTime, convertedFormat, culture);
     }
+
+    private static string FormatDateTime(DateTimeOffset time, string format, CultureInfo culture) =>
+        format == "U" ? time.UtcDateTime.ToString("F", culture) : time.ToString(format, culture);
 
     private static (FormatSegment[] Segments, CustomFormatToken Tokens) ParseSegments(string format)
     {
