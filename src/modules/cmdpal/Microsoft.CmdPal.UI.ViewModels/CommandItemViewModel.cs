@@ -212,7 +212,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         {
             ExtendedAttributesProvider = new ExtensionObject<IExtendedAttributesProvider>(extendedAttributesProvider);
             var properties = extendedAttributesProvider.GetProperties();
-            UpdateDataPackage(properties);
+            UpdateExtendedAttributes(properties);
         }
 
         Initialized |= InitializedState.Initialized;
@@ -404,6 +404,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             case nameof(DataPackage):
                 UpdateDataPackage(ExtendedAttributesProvider?.Unsafe?.GetProperties());
                 break;
+            case "Properties":
+                UpdateExtendedAttributes((model as IExtendedAttributesProvider)?.GetProperties());
+                break;
         }
 
         UpdateProperty(propertyName);
@@ -512,6 +515,11 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         _icon = new(iconInfo);
         _icon.InitializeProperties();
         UpdateProperty(nameof(Icon));
+    }
+
+    protected virtual void UpdateExtendedAttributes(IDictionary<string, object?>? properties)
+    {
+        UpdateDataPackage(properties);
     }
 
     private void UpdateDataPackage(IDictionary<string, object?>? properties)

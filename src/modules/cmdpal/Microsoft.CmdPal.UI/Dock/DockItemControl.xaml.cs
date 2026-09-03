@@ -106,6 +106,7 @@ public sealed partial class DockItemControl : Control
         VisualStateManager.GoToState(this, IsCompact ? "Compact" : "DefaultLayout", true);
         UpdateSubtitleVisibilityState();
         UpdateInnerMargin();
+        UpdateLabelWidth();
     }
 
     private const string IconPresenterName = "IconPresenter";
@@ -161,6 +162,7 @@ public sealed partial class DockItemControl : Control
         UpdateSubtitleVisibilityState();
         UpdateContentSpacingState();
         UpdateChromeSize();
+        UpdateLabelWidth();
     }
 
     private void UpdateTextVisibilityState()
@@ -339,6 +341,8 @@ public sealed partial class DockItemControl : Control
             _backPlate.SizeChanged += BackPlate_SizeChanged;
         }
 
+        InitializeLabelWidth();
+
         // Set initial visibility
         UpdateAllVisibility();
     }
@@ -367,6 +371,7 @@ public sealed partial class DockItemControl : Control
                 OnParentDockSizeChanged);
         }
 
+        InvalidateLabelFont();
         UpdateToolTip();
     }
 
@@ -401,6 +406,7 @@ public sealed partial class DockItemControl : Control
 
         ToolTipService.SetToolTip(this, null);
         _toolTip = null;
+        StopWatchingLabelFont();
     }
 
     private void OnParentDockSideChanged(DependencyObject sender, DependencyProperty dp)
@@ -410,6 +416,7 @@ public sealed partial class DockItemControl : Control
             UpdateInnerMargin();
             UpdateAlignment();
             UpdateChromeSize();
+            UpdateLabelWidth();
         }
     }
 

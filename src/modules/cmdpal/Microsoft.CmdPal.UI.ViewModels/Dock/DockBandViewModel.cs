@@ -508,6 +508,20 @@ public partial class DockItemViewModel : CommandItemViewModel
     private bool _showTitle = true;
     private bool _showSubtitle = true;
 
+    public DockLabelWidthConstraints LabelWidthConstraints { get; private set; } = DockLabelWidthConstraints.Default;
+
+    protected override void UpdateExtendedAttributes(IDictionary<string, object?>? properties)
+    {
+        base.UpdateExtendedAttributes(properties);
+
+        var constraints = DockLabelWidthConstraints.FromProperties(properties);
+        if (constraints != LabelWidthConstraints)
+        {
+            LabelWidthConstraints = constraints;
+            UpdateProperty(nameof(LabelWidthConstraints));
+        }
+    }
+
     public bool ShowTitle
     {
         get => _showTitle;
