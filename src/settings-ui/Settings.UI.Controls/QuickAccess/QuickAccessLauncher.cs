@@ -18,7 +18,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             _isElevated = isElevated;
         }
 
-        public virtual bool Launch(ModuleType moduleType)
+        public bool Launch(ModuleType moduleType) => Launch(moduleType, null);
+
+        public virtual bool Launch(ModuleType moduleType, string? action)
         {
             switch (moduleType)
             {
@@ -114,12 +116,17 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
                     return true;
                 case ModuleType.LaserPointer:
-                    // Toggles the shareable presenter window rather than the laser: the
-                    // laser is a hold-and-point tool driven from its shortcut, while the
-                    // presenter is the thing worth reaching for without one.
-                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.LaserPointerPresenterEvent()))
+                    // Two one-way entries rather than a toggle, matching the shortcuts:
+                    // one shares (starting, or moving an existing share), one stops.
                     {
-                        eventHandle.Set();
+                        string eventName = action == LaserPointerActions.StopSharing
+                            ? Constants.LaserPointerPresenterStopEvent()
+                            : Constants.LaserPointerPresenterEvent();
+
+                        using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
+                        {
+                            eventHandle.Set();
+                        }
                     }
 
                     return true;

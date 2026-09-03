@@ -6644,9 +6644,13 @@ Text uses the current drawing color.</value>
     <value>Laser Pointer</value>
     <comment>Refers to the utility name</comment>
   </data>
-  <data name="QuickAccess_LaserPointer_SharableWindow.Title" xml:space="preserve">
-    <value>Laser pointer: Sharable Window</value>
-    <comment>Quick Access entry. Toggles the off-screen window that screen-sharing apps can pick up. "Laser pointer" is the name of the utility.</comment>
+  <data name="QuickAccess_LaserPointer_ShareWindow.Title" xml:space="preserve">
+    <value>Laser pointer: Share Window</value>
+    <comment>Quick Access entry. Starts sharing, or moves an existing share to another window. "Laser pointer" is the name of the utility.</comment>
+  </data>
+  <data name="QuickAccess_LaserPointer_StopSharing.Title" xml:space="preserve">
+    <value>Laser pointer: Stop Sharing</value>
+    <comment>Quick Access entry, shown only while something is being shared. "Laser pointer" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_LaserPointer.Description" xml:space="preserve">
     <value>Draw a fading laser trail that follows your pointer, anywhere on screen.</value>
@@ -6724,11 +6728,17 @@ Text uses the current drawing color.</value>
     <value>Color, thickness and fade of the laser trail</value>
   </data>
   <data name="MouseUtils_LaserPointer_PresenterActivationShortcut.Header" xml:space="preserve">
-    <value>Shareable window</value>
+    <value>Share window</value>
   </data>
   <data name="MouseUtils_LaserPointer_PresenterActivationShortcut.Description" xml:space="preserve">
-    <value>Shortcut that mirrors the window in front into a window named "Present: ...", with the laser trail drawn into it. Share that window instead, so people see the laser pointer even when you share a single window rather than the whole screen. It stays up until you press the shortcut again, independently of the laser pointer itself.</value>
+    <value>Shortcut that mirrors the window under the pointer into a window named "Present: ...", with the laser trail drawn into it. Share that window instead, so people see the laser pointer even when you share a single window rather than the whole screen. Press it again over a different window to move the share there, without the person watching having to pick it again.</value>
     <comment>"Present: ..." is a window title prefix and should keep its formatting.</comment>
+  </data>
+  <data name="MouseUtils_LaserPointer_PresenterStopShortcut.Header" xml:space="preserve">
+    <value>Stop sharing</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_PresenterStopShortcut.Description" xml:space="preserve">
+    <value>Shortcut that closes the shareable window and ends sharing. It does nothing while nothing is being shared, so it is safe to press at any time.</value>
   </data>
   <data name="MouseUtils_LaserPointer_Size.Header" xml:space="preserve">
     <value>Thickness</value>

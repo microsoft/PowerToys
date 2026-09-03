@@ -9,5 +9,8 @@
 #define INTERNAL_NAME "PowerToys.LaserPointer"
 #define ORIGINAL_FILENAME "PowerToys.LaserPointer.dll"
 
+#define IDC_LASER_PEN 101
+#define IDI_SHARABLE_WINDOW 102
+
 // Non-localizable
 //////////////////////////////

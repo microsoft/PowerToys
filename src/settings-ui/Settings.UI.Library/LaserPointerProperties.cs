@@ -25,8 +25,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [CmdConfigureIgnore]
         public HotkeySettings DefaultPenActivationShortcut => new HotkeySettings();
 
+        // Ctrl+Shift+Win+S shares - it starts sharing, or moves the share to the next
+        // window without ever dropping the shared surface. Ctrl+Shift+Win+X stops. Two
+        // one-way shortcuts rather than a toggle, so neither can do the opposite of what
+        // was meant. Arguments are (win, ctrl, alt, shift, code).
         [CmdConfigureIgnore]
-        public HotkeySettings DefaultPresenterActivationShortcut => new HotkeySettings();
+        public HotkeySettings DefaultPresenterActivationShortcut => new HotkeySettings(true, true, false, true, 0x53);
+
+        [CmdConfigureIgnore]
+        public HotkeySettings DefaultPresenterStopShortcut => new HotkeySettings(true, true, false, true, 0x58);
 
         [JsonPropertyName("activation_shortcut")]
         public HotkeySettings ActivationShortcut { get; set; }
@@ -34,10 +41,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("pen_activation_shortcut")]
         public HotkeySettings PenActivationShortcut { get; set; }
 
-        // Toggles the shareable mirror window. Independent of the laser itself, so it can
-        // stay up for a whole presentation.
+        // Starts sharing, or moves an existing share to whatever window the pointer is
+        // over. Independent of the laser itself, so a share can stand for a whole
+        // presentation. The json key is unchanged so existing bindings survive.
         [JsonPropertyName("presenter_activation_shortcut")]
         public HotkeySettings PresenterActivationShortcut { get; set; }
+
+        [JsonPropertyName("presenter_stop_shortcut")]
+        public HotkeySettings PresenterStopShortcut { get; set; }
 
         [JsonPropertyName("activation_button")]
         public IntProperty ActivationButton { get; set; }
@@ -81,6 +92,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ActivationShortcut = DefaultActivationShortcut;
             PenActivationShortcut = DefaultPenActivationShortcut;
             PresenterActivationShortcut = DefaultPresenterActivationShortcut;
+            PresenterStopShortcut = DefaultPresenterStopShortcut;
             ActivationButton = new IntProperty(ActivationButtonMiddle);
             AlwaysOnButton = new IntProperty(ActivationButtonNone);
             SuppressActivationButton = new BoolProperty(true);

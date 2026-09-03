@@ -16,6 +16,7 @@ namespace
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
     const wchar_t JSON_KEY_PEN_ACTIVATION_SHORTCUT[] = L"pen_activation_shortcut";
     const wchar_t JSON_KEY_PRESENTER_ACTIVATION_SHORTCUT[] = L"presenter_activation_shortcut";
+    const wchar_t JSON_KEY_PRESENTER_STOP_SHORTCUT[] = L"presenter_stop_shortcut";
     const wchar_t JSON_KEY_ACTIVATION_BUTTON[] = L"activation_button";
     const wchar_t JSON_KEY_ALWAYS_ON_BUTTON[] = L"always_on_button";
     const wchar_t JSON_KEY_SUPPRESS_ACTIVATION_BUTTON[] = L"suppress_activation_button";
@@ -70,8 +71,12 @@ private:
     {
         HotkeyMouse = 0,
         HotkeyPen = 1,
-        HotkeyPresenter = 2,
-        HotkeyCount = 3,
+        // S shares: it starts sharing, or moves the share to the next window. X stops.
+        // Two one-way shortcuts rather than a toggle, so neither ever does the opposite
+        // of what was intended.
+        HotkeyPresenterShare = 2,
+        HotkeyPresenterStop = 3,
+        HotkeyCount = 4,
     };
 
     Hotkey m_hotkeys[HotkeyCount]{};
@@ -82,8 +87,9 @@ private:
     // Event-driven trigger support
     EventWaiter m_triggerEventWaiter;
 
-    // Quick Access toggles the presenter window through an event of its own.
+    // Quick Access drives sharing through events of its own, one per button.
     EventWaiter m_presenterEventWaiter;
+    EventWaiter m_presenterStopEventWaiter;
 
 public:
     LaserPointer()
@@ -154,7 +160,11 @@ public:
         });
 
         m_presenterEventWaiter.start(CommonSharedConstants::LASER_POINTER_PRESENTER_EVENT, [this](DWORD) {
-            LaserPointerSwitchPresenterExternal();
+            LaserPointerShareWindowExternal();
+        });
+
+        m_presenterStopEventWaiter.start(CommonSharedConstants::LASER_POINTER_PRESENTER_STOP_EVENT, [this](DWORD) {
+            LaserPointerStopSharing();
         });
     }
 
@@ -166,6 +176,7 @@ public:
 
         m_triggerEventWaiter.stop();
         m_presenterEventWaiter.stop();
+        m_presenterStopEventWaiter.stop();
     }
 
     virtual bool is_enabled() override
@@ -208,8 +219,11 @@ public:
         case HotkeyPen:
             LaserPointerSwitchPen();
             break;
-        case HotkeyPresenter:
-            LaserPointerSwitchPresenter();
+        case HotkeyPresenterShare:
+            LaserPointerShareWindow();
+            break;
+        case HotkeyPresenterStop:
+            LaserPointerStopSharing();
             break;
         default:
             LaserPointerSwitch();
@@ -268,7 +282,8 @@ public:
         {
             parse_hotkey(settingsObject, JSON_KEY_ACTIVATION_SHORTCUT, HotkeyMouse, L"activation");
             parse_hotkey(settingsObject, JSON_KEY_PEN_ACTIVATION_SHORTCUT, HotkeyPen, L"pen activation");
-            parse_hotkey(settingsObject, JSON_KEY_PRESENTER_ACTIVATION_SHORTCUT, HotkeyPresenter, L"presenter activation");
+            parse_hotkey(settingsObject, JSON_KEY_PRESENTER_ACTIVATION_SHORTCUT, HotkeyPresenterShare, L"share window");
+            parse_hotkey(settingsObject, JSON_KEY_PRESENTER_STOP_SHORTCUT, HotkeyPresenterStop, L"stop sharing");
             try
             {
                 // Parse activation button
@@ -454,10 +469,21 @@ public:
         }
         m_hotkeys[HotkeyMouse].id = static_cast<int>(HotkeyMouse);
 
-        // Neither the pen nor the presenter shortcut has a default. Leaving one unset is
-        // how that half of the module stays switched off.
+        // The pen shortcut has no default: leaving it unset is how that half of the
+        // module stays switched off.
         m_hotkeys[HotkeyPen].id = static_cast<int>(HotkeyPen);
-        m_hotkeys[HotkeyPresenter].id = static_cast<int>(HotkeyPresenter);
+
+        if (!m_hotkeys[HotkeyPresenterShare].key)
+        {
+            m_hotkeys[HotkeyPresenterShare] = Hotkey{ .win = true, .ctrl = true, .shift = true, .key = 0x53 }; // Ctrl+Shift+Win+S
+        }
+        m_hotkeys[HotkeyPresenterShare].id = static_cast<int>(HotkeyPresenterShare);
+
+        if (!m_hotkeys[HotkeyPresenterStop].key)
+        {
+            m_hotkeys[HotkeyPresenterStop] = Hotkey{ .win = true, .ctrl = true, .shift = true, .key = 0x58 }; // Ctrl+Shift+Win+X
+        }
+        m_hotkeys[HotkeyPresenterStop].id = static_cast<int>(HotkeyPresenterStop);
 
         m_laserPointerSettings = laserPointerSettings;
 

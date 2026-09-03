@@ -32,6 +32,8 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring CursorWrapTriggerEvent();
         static hstring LaserPointerTriggerEvent();
         static hstring LaserPointerPresenterEvent();
+        static hstring LaserPointerPresenterStopEvent();
+        static hstring LaserPointerPresenterActiveEvent();
         static hstring LightSwitchToggleEvent();
         static hstring ZoomItZoomEvent();
         static hstring ZoomItDrawEvent();

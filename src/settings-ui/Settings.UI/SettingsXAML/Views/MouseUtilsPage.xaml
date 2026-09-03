@@ -446,6 +446,14 @@
                         <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.LaserPointerPresenterActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
+                        Name="MouseUtilsLaserPointerPresenterStop"
+                        x:Uid="MouseUtils_LaserPointer_PresenterStopShortcut"
+                        AutomationProperties.AutomationId="MouseUtils_LaserPointerPresenterStopShortcutId"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8AB;}"
+                        IsEnabled="{x:Bind ViewModel.IsLaserPointerEnabled, Mode=OneWay}">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.LaserPointerPresenterStopShortcut, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
                         Name="MouseUtilsLaserPointerSize"
                         x:Uid="MouseUtils_LaserPointer_Size"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE1C2;}"

@@ -111,6 +111,14 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::LASER_POINTER_PRESENTER_EVENT;
     }
+    hstring Constants::LaserPointerPresenterStopEvent()
+    {
+        return CommonSharedConstants::LASER_POINTER_PRESENTER_STOP_EVENT;
+    }
+    hstring Constants::LaserPointerPresenterActiveEvent()
+    {
+        return CommonSharedConstants::LASER_POINTER_PRESENTER_ACTIVE_EVENT;
+    }
     hstring Constants::LightSwitchToggleEvent()
     {
         return CommonSharedConstants::LIGHTSWITCH_TOGGLE_EVENT;

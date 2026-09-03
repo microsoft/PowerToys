@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "PresenterWindow.h"
+#include "resource.h"
 
 #include <dwmapi.h>
 
@@ -189,8 +190,16 @@ LRESULT CALLBACK PresenterWindow::WndProc(HWND window, UINT message, WPARAM wPar
 {
     if (message == WM_CLOSE)
     {
-        // The window is owned by the module, not the user; closing it from the shell
-        // must not leave the capture session running against a dead HWND.
+        // The window is listed in the taskbar, so the shell offers to close it - from the
+        // jump list, or with Alt+F4. Swallowing that made the option look broken. It is
+        // not destroyed here though: the module owns the capture session and the overlay
+        // state that go with it, so the request is handed back and it stops sharing in
+        // order, exactly as the shortcut does.
+        auto* self = reinterpret_cast<PresenterWindow*>(GetWindowLongPtrW(window, GWLP_USERDATA));
+        if (self != nullptr && self->m_closeNotifyWindow != nullptr)
+        {
+            PostMessageW(self->m_closeNotifyWindow, self->m_closeNotifyMessage, 0, 0);
+        }
         return 0;
     }
 
@@ -204,6 +213,7 @@ bool PresenterWindow::CreateHostWindow(HINSTANCE instance)
     {
         wc.lpfnWndProc = WndProc;
         wc.hInstance = instance;
+        wc.hIcon = static_cast<HICON>(LoadImageW(instance, MAKEINTRESOURCEW(IDI_SHARABLE_WINDOW), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_SHARED));
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
         wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
         wc.lpszClassName = m_className;
@@ -257,6 +267,10 @@ bool PresenterWindow::CreateHostWindow(HINSTANCE instance)
         return false;
     }
 
+    // The window procedure is static, so this is how a message arriving for the window
+    // finds the object that owns it.
+    SetWindowLongPtrW(m_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+
     // Force the outer size, then check the client area is what the swap chain expects.
     SetWindowPos(m_hwnd, nullptr, 0, 0, outerWidth, outerHeight, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
 
@@ -276,6 +290,17 @@ bool PresenterWindow::CreateHostWindow(HINSTANCE instance)
     }
 
     RefreshTitle();
+    const int smallCx = GetSystemMetrics(SM_CXSMICON);
+    const int bigCx = GetSystemMetrics(SM_CXICON);
+    if (const HICON smallIcon = static_cast<HICON>(LoadImageW(instance, MAKEINTRESOURCEW(IDI_SHARABLE_WINDOW), IMAGE_ICON, smallCx, smallCx, LR_SHARED)))
+    {
+        SendMessageW(m_hwnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(smallIcon));
+    }
+    if (const HICON bigIcon = static_cast<HICON>(LoadImageW(instance, MAKEINTRESOURCEW(IDI_SHARABLE_WINDOW), IMAGE_ICON, bigCx, bigCx, LR_SHARED)))
+    {
+        SendMessageW(m_hwnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(bigIcon));
+    }
+
     ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
     return true;
 }
@@ -454,7 +479,8 @@ bool PresenterWindow::Start(HINSTANCE instance, HWND target, ID3D11Device* d3dDe
     return true;
 }
 
-void PresenterWindow::Stop()
+// Just the capture half, so retargeting can replace it without disturbing the window.
+void PresenterWindow::StopCapture()
 {
     if (m_session != nullptr)
     {
@@ -489,6 +515,60 @@ void PresenterWindow::Stop()
     m_lastNudgeMs = 0;
     m_captureStartedMs = 0;
     m_seedAttempted = false;
+}
+
+bool PresenterWindow::Retarget(HWND target)
+{
+    if (m_hwnd == nullptr || !IsPresentableWindow(target))
+    {
+        return false;
+    }
+
+    if (target == m_target)
+    {
+        return true;
+    }
+
+    const RECT bounds = VisibleBounds(target);
+    if (bounds.right <= bounds.left || bounds.bottom <= bounds.top)
+    {
+        return false;
+    }
+
+    StopCapture();
+
+    m_target = target;
+    m_targetTitle = WindowTitle(target);
+    m_targetRect = bounds;
+
+    const UINT width = static_cast<UINT>(bounds.right - bounds.left);
+    const UINT height = static_cast<UINT>(bounds.bottom - bounds.top);
+    if (!ResizeSwapChain(width, height))
+    {
+        return false;
+    }
+
+    // The host window has no caption, so its outer size is its client size.
+    SetWindowPos(m_hwnd, nullptr, 0, 0, static_cast<int>(width), static_cast<int>(height), SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+    SetWindowTextW(m_hwnd, (L"Present: " + m_targetTitle).c_str());
+
+    if (!StartCapture())
+    {
+        return false;
+    }
+
+    m_captureStartedMs = GetTickCount64();
+
+    Logger::info("Laser Pointer presenter retargeted to '{}' ({}x{}).",
+                 winrt::to_string(m_targetTitle),
+                 width,
+                 height);
+    return true;
+}
+
+void PresenterWindow::Stop()
+{
+    StopCapture();
 
     if (m_d2dContext)
     {
@@ -628,7 +708,40 @@ bool PresenterWindow::SeedFromPrintWindow()
     return seeded;
 }
 
+// Resizing while a capture is live also has to move the frame pool over; resizing while
+// it is torn down must not go near it. Retarget does the latter, and calling Recreate on
+// a closed pool is an access violation rather than something catch(...) would see.
 bool PresenterWindow::ResizeSurfaces(UINT width, UINT height)
+{
+    if (width == m_width && height == m_height)
+    {
+        return true;
+    }
+
+    if (!ResizeSwapChain(width, height))
+    {
+        return false;
+    }
+
+    try
+    {
+        if (m_framePool != nullptr)
+        {
+            m_framePool.Recreate(m_captureDevice,
+                                 directx::DirectXPixelFormat::B8G8R8A8UIntNormalized,
+                                 CAPTURE_BUFFERS,
+                                 { static_cast<int32_t>(m_width), static_cast<int32_t>(m_height) });
+        }
+    }
+    catch (...)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool PresenterWindow::ResizeSwapChain(UINT width, UINT height)
 {
     if (width == m_width && height == m_height)
     {
@@ -666,18 +779,6 @@ bool PresenterWindow::ResizeSurfaces(UINT width, UINT height)
     m_d2dContext->SetTarget(target.get());
     SetWindowPos(m_hwnd, nullptr, 0, 0, static_cast<int>(m_width), static_cast<int>(m_height),
                  SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
-
-    try
-    {
-        m_framePool.Recreate(m_captureDevice,
-                             directx::DirectXPixelFormat::B8G8R8A8UIntNormalized,
-                             CAPTURE_BUFFERS,
-                             { static_cast<int32_t>(m_width), static_cast<int32_t>(m_height) });
-    }
-    catch (...)
-    {
-        return false;
-    }
 
     return true;
 }

@@ -6,6 +6,13 @@
 #include "winres.h"
 #undef APSTUDIO_READONLY_SYMBOLS
 
+// Shown while the mouse is drawing, so the pointer says what it is doing.
+IDC_LASER_PEN CURSOR "laser_pen.cur"
+
+// The mirror window wears this, so it is recognisable in a sharing picker. Same artwork
+// as the Quick Access entry that toggles it.
+IDI_SHARABLE_WINDOW ICON "sharable_window.ico"
+
 1 VERSIONINFO
 FILEVERSION FILE_VERSION
 PRODUCTVERSION PRODUCT_VERSION

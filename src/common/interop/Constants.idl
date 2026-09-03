@@ -27,6 +27,8 @@
             static String MouseCrosshairsTriggerEvent();
             static String CursorWrapTriggerEvent();
             static String LaserPointerPresenterEvent();
+            static String LaserPointerPresenterStopEvent();
+            static String LaserPointerPresenterActiveEvent();
             static String LightSwitchToggleEvent();
             static String ZoomItZoomEvent();
             static String ZoomItDrawEvent();

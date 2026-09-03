@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -24,6 +24,10 @@ public sealed class LauncherViewModel : Observable
     private readonly QuickAccessViewModel _quickAccessViewModel;
 
     public ObservableCollection<QuickAccessItem> FlyoutMenuItems => _quickAccessViewModel.Items;
+
+    // The flyout process outlives any one showing of it, so items that describe live
+    // state have to be re-read each time it comes up rather than only when built.
+    public void RefreshDynamicItems() => _quickAccessViewModel.RefreshDynamicItems();
 
     public bool IsUpdateAvailable { get; private set; }
 

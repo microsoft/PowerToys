@@ -30,7 +30,23 @@ public:
     // to fall back to a plain screen overlay.
     static bool IsPresentableWindow(HWND window) noexcept;
 
+    // Where to send word that the shell asked for this window to close. The module owns
+    // the capture session and the overlay state that go with it, so it has to do the
+    // tearing down rather than the window quietly destroying itself.
+    void SetCloseNotification(HWND window, UINT message) noexcept
+    {
+        m_closeNotifyWindow = window;
+        m_closeNotifyMessage = message;
+    }
+
     bool Start(HINSTANCE instance, HWND target, ID3D11Device* d3dDevice, ID2D1Device1* d2dDevice);
+
+    // Points an already running mirror at a different window. The host window is kept
+    // and only resized, so anything already sharing it carries on across the switch -
+    // stopping and starting again would pull the shared surface out from under the
+    // viewer and force them to pick it a second time.
+    bool Retarget(HWND target);
+
     void Stop();
 
     bool Active() const noexcept { return m_hwnd != nullptr; }
@@ -49,7 +65,12 @@ private:
     bool CreateHostWindow(HINSTANCE instance);
     bool CreateGraphics(ID3D11Device* d3dDevice, ID2D1Device1* d2dDevice);
     bool StartCapture();
+    void StopCapture();
     bool ResizeSurfaces(UINT width, UINT height);
+
+    // The swap chain and D2D target only. Split out because retargeting resizes while
+    // the capture is torn down, and the frame pool must not be touched then.
+    bool ResizeSwapChain(UINT width, UINT height);
     bool EnsureFrameCopy(UINT width, UINT height);
     bool SeedFromPrintWindow();
     void RefreshTitle();
@@ -59,6 +80,8 @@ private:
 
     HWND m_hwnd = nullptr;
     HWND m_target = nullptr;
+    HWND m_closeNotifyWindow = nullptr;
+    UINT m_closeNotifyMessage = 0;
     RECT m_targetRect{};
     UINT m_width = 0;
     UINT m_height = 0;

@@ -10,6 +10,9 @@
 #include "trace.h"
 #include "PresenterWindow.h"
 
+#include <common/interop/shared_constants.h>
+#include "resource.h"
+
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -25,6 +28,30 @@ namespace
     constexpr ULONG_PTR TOUCH_FLAG = 0x80;
 
     constexpr UINT_PTR RENDER_TIMER_ID = 201;
+
+    // Arming and disarming are otherwise invisible, so each plays a short ring at the
+    // pointer: it converges to a dot on the way in and expands and dissolves on the way
+    // out. It doubles as a "where did my pointer go" cue, which is why the ring starts
+    // wide enough to catch the eye.
+    constexpr uint64_t HONE_DURATION_MS = 400;
+
+    // Virtual pixels: every one of these is multiplied by the DPI scale of the monitor
+    // the pointer is on, so the ring is the same apparent size everywhere.
+    constexpr float HONE_RADIUS_PX = 80.0f;
+    constexpr float HONE_DOT_RADIUS_PX = 3.0f;
+
+    // The ring is heavier than the trail it announces - it has to read at a glance, and
+    // it is on screen for well under half a second.
+    constexpr float HONE_STROKE_SCALE = 1.75f;
+    constexpr float HONE_MIN_STROKE_PX = 4.0f;
+
+    // OCR_* live behind OEMRESOURCE, which the shared pch does not define, so the ids are
+    // spelled out. These are the shapes a pointer is most likely to be sitting on while a
+    // stroke is drawn; the rest are left alone.
+    constexpr DWORD SYSTEM_CURSOR_ARROW = 32512;
+    constexpr DWORD SYSTEM_CURSOR_IBEAM = 32513;
+    constexpr DWORD SYSTEM_CURSOR_CROSS = 32515;
+    constexpr DWORD SYSTEM_CURSOR_HAND = 32649;
 
     // Resolves the presenter target a moment after a toggle that came from another
     // window, once that window has dismissed itself.
@@ -51,6 +78,10 @@ namespace
     // How long the name of the mirrored window stays on screen. The border itself has
     // no timeout: like the one Teams draws, it stays for as long as sharing is live.
     constexpr uint64_t PRESENTER_NOTICE_MS = 2500;
+
+    // Height of the strip the notice is allowed to paint into while it is up. Everything
+    // outside it stays click-through.
+    constexpr float PRESENTER_NOTICE_BAND_PX = 64.0f;
 
     // Teams marks a shared window with a red outline; this matches it so the two do not
     // look like different things happening.
@@ -130,7 +161,9 @@ struct LaserPointerOverlay
     void SwitchPenActivationMode();
     // fromOtherWindow: the toggle came from a window that is in front and about to
     // close, so the target has to be resolved after it goes rather than from the cursor.
-    void SwitchPresenterMode(bool fromOtherWindow = false);
+    void ShareWindowDeferred();
+    void ShareWindow();
+    void StopSharing();
     void ApplySettings(LaserPointerSettings settings);
     void QueueSettings(LaserPointerSettings settings);
 
@@ -149,9 +182,30 @@ private:
 
     // deferTargetPick: resolve the target from the foreground window once it settles,
     // rather than from the cursor, for toggles that arrive from another window.
-    void TogglePresenter(bool deferTargetPick = false);
+    void SharePresenter(bool deferTargetPick = false);
+    void ApplyShareTarget(HWND target);
     void OnPresenterPickTick();
     void StartPresenterOn(HWND target);
+    void RetargetPresenter();
+    void StopPresenter();
+
+    // Blanks the swap chain so nothing stale is left in it.
+    void ClearOverlaySurface();
+
+    // expanding: false for the converging ring shown when arming, true for the one that
+    // grows and dissolves when disarming.
+    void StartHone(bool expanding);
+
+    // Swaps the system cursor for a pen while the mouse is armed, and puts it back.
+    void ApplyDrawingCursor();
+    void RestoreSystemCursor();
+    void UpdateDrawingCursor();
+    bool HoneActive(uint64_t nowMs) const noexcept;
+    void DrawHone(uint64_t nowMs);
+
+    // Mirrors the presenter's on/off state into a named event so Quick Access, which is a
+    // separate process, can label its entry correctly.
+    void PublishPresenterState();
 
     void ArmMouse();
     void DisarmMouse();
@@ -179,7 +233,7 @@ private:
 
     // The overlay spans the whole desktop. While it is only showing the sharing border
     // it is cut down to that border, so everything else stays clickable.
-    void UpdateOverlayRegion(bool trailVisible);
+    void UpdateOverlayRegion(bool trailVisible, bool noticeVisible);
 
     // True while the digitizer is actively reporting and the pen is armed.
     bool PenPresent(uint64_t nowMs) const noexcept;
@@ -206,7 +260,9 @@ private:
     static constexpr DWORD WM_WAKE_RENDER_LOOP = WM_APP + 2;
     static constexpr DWORD WM_TERMINATE_OVERLAY = WM_APP + 3;
     static constexpr DWORD WM_SWITCH_PEN_ACTIVATION_MODE = WM_APP + 4;
-    static constexpr DWORD WM_SWITCH_PRESENTER_MODE = WM_APP + 5;
+
+    static constexpr DWORD WM_SHARE_WINDOW = WM_APP + 6;
+    static constexpr DWORD WM_STOP_SHARING = WM_APP + 7;
 
     HINSTANCE m_hinstance = nullptr;
     HWND m_hwndOwner = nullptr;
@@ -286,15 +342,29 @@ private:
     RECT m_presenterNoticeRect{};
     std::wstring m_presenterNoticeText;
     bool m_overlayRegionIsFrame = false;
+    bool m_overlayRegionHasNotice = false;
     // What the frame region was last built from, so it can follow a window that moves.
     RECT m_overlayRegionRect{};
     uint64_t m_presenterPickDeadlineMs = 0;
+    HCURSOR m_drawingCursor = nullptr;
+    bool m_systemCursorReplaced = false;
+    uint64_t m_honeStartMs = 0;
+    POINT m_honeCenter{};
+    bool m_honeExpanding = false;
+    HANDLE m_presenterStateEvent = nullptr;
+    bool m_presenterStatePublished = false;
     bool m_overlayBelowTopmost = false;
     uint64_t m_lastZOrderMs = 0;
     HWND m_overlayZOrderAfter = nullptr;
 
     winrt::com_ptr<IDWriteFactory> m_dwriteFactory;
     winrt::com_ptr<IDWriteTextFormat> m_noticeFormat;
+
+    // The laid-out label, kept so the notice does not build one on every frame it is up.
+    // Rebuilt only when the text or the space available for it changes.
+    winrt::com_ptr<IDWriteTextLayout> m_noticeLayout;
+    std::wstring m_noticeLayoutText;
+    float m_noticeLayoutWidth = 0.0f;
 
     // Raw input state.
     bool m_rawInputRegistered = false;
@@ -570,6 +640,149 @@ void LaserPointerOverlay::RenderStroke(ID2D1DeviceContext* context, const LaserP
     FillOutline(context, stroke, nowMs, 1.0f, D2D1::ColorF(r, g, b, a));
 }
 
+bool LaserPointerOverlay::HoneActive(uint64_t nowMs) const noexcept
+{
+    return m_honeStartMs != 0 && (nowMs - m_honeStartMs) < HONE_DURATION_MS;
+}
+
+// There is no per-window way to do this: the overlay is click-through, so the cursor
+// belongs to whatever is underneath and only the system-wide shape can be changed. That
+// makes restoring it non-optional, which is why every path that stops drawing goes
+// through RestoreSystemCursor, module teardown included.
+void LaserPointerOverlay::ApplyDrawingCursor()
+{
+    if (m_systemCursorReplaced)
+    {
+        return;
+    }
+
+    if (m_drawingCursor == nullptr)
+    {
+        m_drawingCursor = static_cast<HCURSOR>(LoadImageW(m_hinstance, MAKEINTRESOURCEW(IDC_LASER_PEN), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED));
+        if (m_drawingCursor == nullptr)
+        {
+            Logger::warn("Laser Pointer could not load the drawing cursor: {}", GetLastError());
+            return;
+        }
+    }
+
+    constexpr DWORD replaced[] = { SYSTEM_CURSOR_ARROW, SYSTEM_CURSOR_IBEAM, SYSTEM_CURSOR_CROSS, SYSTEM_CURSOR_HAND };
+    for (const DWORD id : replaced)
+    {
+        // SetSystemCursor destroys the handle it is given, so each one gets its own copy.
+        if (const HCURSOR copy = CopyCursor(m_drawingCursor))
+        {
+            SetSystemCursor(copy, id);
+        }
+    }
+
+    m_systemCursorReplaced = true;
+}
+
+// The pen shape says the mouse is a laser, which is true from the moment the shortcut
+// arms it - not only while a stroke is being drawn. The always-on button has no armed
+// state of its own, so for that one the stroke is the only thing to go on.
+void LaserPointerOverlay::UpdateDrawingCursor()
+{
+    if (m_mouseArmed || m_alwaysOnButtonHeld)
+    {
+        ApplyDrawingCursor();
+    }
+    else
+    {
+        RestoreSystemCursor();
+    }
+}
+
+void LaserPointerOverlay::RestoreSystemCursor()
+{
+    if (!m_systemCursorReplaced)
+    {
+        return;
+    }
+
+    // Reloads every system cursor from the user's own settings, so this restores whatever
+    // scheme they actually have rather than what happened to be there when we started.
+    SystemParametersInfoW(SPI_SETCURSORS, 0, nullptr, SPIF_SENDCHANGE);
+    m_systemCursorReplaced = false;
+}
+
+void LaserPointerOverlay::StartHone(bool expanding)
+{
+    POINT cursor{};
+    if (!GetCursorPos(&cursor))
+    {
+        return;
+    }
+
+    m_honeCenter = cursor;
+    m_honeExpanding = expanding;
+    m_honeStartMs = GetTickCount64();
+
+    // Arming draws nothing by itself, so the overlay is normally down at this point and
+    // has to be brought up for the animation alone.
+    if (!EnsureOverlayGeometry())
+    {
+        m_honeStartMs = 0;
+        return;
+    }
+
+    ShowOverlay();
+    StartRenderLoop();
+}
+
+void LaserPointerOverlay::DrawHone(uint64_t nowMs)
+{
+    if (!HoneActive(nowMs) || !m_brush)
+    {
+        return;
+    }
+
+    const float t = static_cast<float>(nowMs - m_honeStartMs) / static_cast<float>(HONE_DURATION_MS);
+
+    // Ease out, so the ring moves fastest at the start and settles at the end.
+    const float eased = 1.0f - (1.0f - t) * (1.0f - t);
+
+    const float scale = DpiScaleForPoint(m_honeCenter);
+    const float wide = HONE_RADIUS_PX * scale;
+    const float dot = HONE_DOT_RADIUS_PX * scale;
+
+    float radius;
+    float fade;
+    if (m_honeExpanding)
+    {
+        // Disarming: out from the dot, dissolving the whole way.
+        radius = dot + (wide - dot) * eased;
+        fade = 1.0f - eased;
+    }
+    else
+    {
+        // Arming: in to the dot, holding its colour until it is nearly there so the eye
+        // can follow it, then gone.
+        radius = wide - (wide - dot) * eased;
+        fade = t < 0.75f ? 1.0f : (1.0f - t) / 0.25f;
+    }
+
+    const auto& c = m_settings.laserColor;
+    const float r = c.R / 255.0f;
+    const float g = c.G / 255.0f;
+    const float b = c.B / 255.0f;
+    const float a = (c.A / 255.0f) * fade;
+
+    const auto centre = D2D1::Point2F(static_cast<float>(m_honeCenter.x), static_cast<float>(m_honeCenter.y));
+    const auto ring = D2D1::Ellipse(centre, radius, radius);
+    const float stroke = (std::max)(HONE_MIN_STROKE_PX, static_cast<float>(m_settings.size) * HONE_STROKE_SCALE) * scale;
+
+    if (m_settings.glowEnabled)
+    {
+        m_brush->SetColor(D2D1::ColorF(r, g, b, a * GLOW_ALPHA_SCALE));
+        m_d2dContext->DrawEllipse(ring, m_brush.get(), stroke * GLOW_WIDTH_SCALE);
+    }
+
+    m_brush->SetColor(D2D1::ColorF(r, g, b, a));
+    m_d2dContext->DrawEllipse(ring, m_brush.get(), stroke);
+}
+
 void LaserPointerOverlay::DrawTrails(ID2D1DeviceContext* context, uint64_t nowMs)
 {
     for (const auto& past : m_pastStrokes)
@@ -588,6 +801,44 @@ bool LaserPointerOverlay::NearLastPenPoint(POINT screenPoint) const noexcept
 {
     return std::abs(screenPoint.x - m_lastPenPoint.x) <= PEN_CAPTURE_RADIUS_PX &&
            std::abs(screenPoint.y - m_lastPenPoint.y) <= PEN_CAPTURE_RADIUS_PX;
+}
+
+// Quick Access needs to know whether the presenter is up so its entry can read "turn
+// on" or "turn off", but it runs in its own process. A manual-reset event named in the
+// Local namespace is the cheapest channel that survives either side restarting: the
+// module owns it and just sets or clears it, and a reader that cannot open it at all is
+// looking at a module that is not running, which reads as off either way.
+void LaserPointerOverlay::PublishPresenterState()
+{
+    const bool active = m_presenter.Active();
+
+    if (m_presenterStateEvent == nullptr)
+    {
+        m_presenterStateEvent = CreateEventW(nullptr, TRUE, FALSE, CommonSharedConstants::LASER_POINTER_PRESENTER_ACTIVE_EVENT);
+        if (m_presenterStateEvent == nullptr)
+        {
+            Logger::warn("Laser Pointer could not publish presenter state: {}", GetLastError());
+            return;
+        }
+
+        m_presenterStatePublished = false;
+    }
+
+    if (active == m_presenterStatePublished)
+    {
+        return;
+    }
+
+    if (active)
+    {
+        SetEvent(m_presenterStateEvent);
+    }
+    else
+    {
+        ResetEvent(m_presenterStateEvent);
+    }
+
+    m_presenterStatePublished = active;
 }
 
 bool LaserPointerOverlay::PenPresent(uint64_t nowMs) const noexcept
@@ -688,7 +939,7 @@ void LaserPointerOverlay::UpdateOverlayZOrder(bool trailVisible, uint64_t nowMs)
 // went unnoticed, but keeping it up for a whole sharing session swallows every click.
 // Restricting the window to the border itself means there is physically nothing over the
 // rest of the screen to intercept anything.
-void LaserPointerOverlay::UpdateOverlayRegion(bool trailVisible)
+void LaserPointerOverlay::UpdateOverlayRegion(bool trailVisible, bool noticeVisible)
 {
     const bool wantFrame = m_presenter.Active() && !trailVisible;
 
@@ -706,9 +957,10 @@ void LaserPointerOverlay::UpdateOverlayRegion(bool trailVisible)
     // Window-relative, since the overlay is positioned across the virtual desktop.
     const RECT target = m_presenter.TargetRect();
 
-    // Rebuilt whenever the shared window moves or resizes: the border already follows it
-    // every frame, and a stale region would leave the clickable hole behind.
-    if (m_overlayRegionIsFrame &&
+    // Rebuilt whenever the shared window moves or resizes, or the notice comes and goes:
+    // the border already follows it every frame, and a stale region would leave the
+    // clickable hole behind.
+    if (m_overlayRegionIsFrame && noticeVisible == m_overlayRegionHasNotice &&
         target.left == m_overlayRegionRect.left && target.top == m_overlayRegionRect.top &&
         target.right == m_overlayRegionRect.right && target.bottom == m_overlayRegionRect.bottom)
     {
@@ -726,11 +978,23 @@ void LaserPointerOverlay::UpdateOverlayRegion(bool trailVisible)
     CombineRgn(frame, frame, hole, RGN_DIFF);
     DeleteObject(hole);
 
+    // The notice is painted inside the window, so the region has to open up over it or it
+    // would be clipped away. Only that band, though: treating the notice as trail content
+    // put the whole surface back and swallowed every click for as long as it was up.
+    if (noticeVisible)
+    {
+        const int bandHeight = static_cast<int>(PRESENTER_NOTICE_BAND_PX * DpiScaleForPoint(POINT{ target.left, target.top }));
+        const HRGN band = CreateRectRgn(left, top, right, (std::min)(bottom, top + bandHeight));
+        CombineRgn(frame, frame, band, RGN_OR);
+        DeleteObject(band);
+    }
+
     // SetWindowRgn takes ownership of the region on success. Redraw is left to the
     // render loop: asking the window manager to repaint on every region change made the
     // border blink.
     SetWindowRgn(m_hwnd, frame, FALSE);
     m_overlayRegionIsFrame = true;
+    m_overlayRegionHasNotice = noticeVisible;
     m_overlayRegionRect = target;
 }
 
@@ -768,17 +1032,50 @@ void LaserPointerOverlay::DrawPresenterNotice(uint64_t nowMs)
     const float fade = (std::min)(1.0f, static_cast<float>(remaining) / (PRESENTER_NOTICE_MS / 3.0f));
 
     const std::wstring label = L"Capturing: " + m_presenterNoticeText;
-    const auto labelRect = D2D1::RectF(rect.left + 12.0f, rect.top + 10.0f, rect.right - 12.0f, rect.top + 44.0f);
+
+    // The width the text is allowed, not the width it takes: a long title wraps inside
+    // the window rather than running under the border.
+    const float available = (std::max)(48.0f, (rect.right - rect.left) - 24.0f);
+
+    if (!m_noticeLayout || m_noticeLayoutText != label || m_noticeLayoutWidth != available)
+    {
+        m_noticeLayout = nullptr;
+        if (FAILED(m_dwriteFactory->CreateTextLayout(label.c_str(),
+                                                     static_cast<UINT32>(label.length()),
+                                                     m_noticeFormat.get(),
+                                                     available,
+                                                     200.0f,
+                                                     m_noticeLayout.put())))
+        {
+            return;
+        }
+
+        m_noticeLayoutText = label;
+        m_noticeLayoutWidth = available;
+    }
+
+    // Measured rather than assumed. The highlight used to be drawn from the left inset to
+    // the window's right inset, so it was a full-width bar however short the title was,
+    // and on the right it ran all the way into the border.
+    DWRITE_TEXT_METRICS metrics{};
+    if (FAILED(m_noticeLayout->GetMetrics(&metrics)))
+    {
+        return;
+    }
+
+    constexpr float LABEL_PAD_X = 8.0f;
+    constexpr float LABEL_PAD_Y = 4.0f;
+    const float left = rect.left + 12.0f;
+    const float top = rect.top + 10.0f;
+    const float width = (std::min)(available, metrics.widthIncludingTrailingWhitespace);
 
     m_brush->SetColor(D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.55f * fade));
-    m_d2dContext->FillRectangle(D2D1::RectF(labelRect.left - 8.0f, labelRect.top - 4.0f, labelRect.right, labelRect.bottom + 4.0f), m_brush.get());
+    m_d2dContext->FillRectangle(
+        D2D1::RectF(left - LABEL_PAD_X, top - LABEL_PAD_Y, left + width + LABEL_PAD_X, top + metrics.height + LABEL_PAD_Y),
+        m_brush.get());
 
     m_brush->SetColor(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.95f * fade));
-    m_d2dContext->DrawTextW(label.c_str(),
-                            static_cast<UINT32>(label.length()),
-                            m_noticeFormat.get(),
-                            labelRect,
-                            m_brush.get());
+    m_d2dContext->DrawTextLayout(D2D1::Point2F(left, top), m_noticeLayout.get(), m_brush.get());
 }
 
 void LaserPointerOverlay::Render(uint64_t nowMs)
@@ -797,6 +1094,7 @@ void LaserPointerOverlay::Render(uint64_t nowMs)
         -static_cast<float>(m_overlayBounds.top)));
 
     DrawTrails(m_d2dContext.get(), nowMs);
+    DrawHone(nowMs);
     DrawPresenterNotice(nowMs);
 
     m_d2dContext->SetTransform(D2D1::Matrix3x2F::Identity());
@@ -841,12 +1139,43 @@ void LaserPointerOverlay::ShowOverlay()
     m_overlayVisible = true;
 }
 
+// The swap chain keeps whatever was drawn into it last. Hiding the window does not
+// discard that, so the next ShowOverlay would put the old frame back on screen for the
+// moment before a new one is presented - which showed up as the presenter's border
+// flashing around the previously shared window the first time the laser was used after
+// the sharable window had been switched off. Blanking on the way out costs one present
+// and leaves nothing to flash.
+void LaserPointerOverlay::ClearOverlaySurface()
+{
+    if (!m_d2dContext || !m_swapChain)
+    {
+        return;
+    }
+
+    m_d2dContext->BeginDraw();
+    m_d2dContext->Clear(D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.0f));
+
+    const HRESULT endDrawResult = m_d2dContext->EndDraw();
+    if (endDrawResult == D2DERR_RECREATE_TARGET || endDrawResult == DXGI_ERROR_DEVICE_REMOVED || endDrawResult == DXGI_ERROR_DEVICE_RESET)
+    {
+        ReleaseGraphics();
+        return;
+    }
+
+    if (m_swapChain->Present(0, 0) == DXGI_ERROR_DEVICE_REMOVED)
+    {
+        ReleaseGraphics();
+    }
+}
+
 void LaserPointerOverlay::HideOverlay()
 {
     if (!m_overlayVisible)
     {
         return;
     }
+
+    ClearOverlaySurface();
 
     if (m_overlayRegionIsFrame)
     {
@@ -912,6 +1241,10 @@ void LaserPointerOverlay::BeginDrawing()
     m_pendingPoints.clear();
     m_samplesPerTick = REFERENCE_SAMPLES_PER_TICK;
 
+    // A pen-driven stroke is deliberately excluded: a pen shows where it is by touching
+    // the screen, and the system cursor is not what its user is looking at.
+    UpdateDrawingCursor();
+
     // The hook has already recorded the position that started this stroke, so the cursor
     // is only a fallback for the case where nothing has been seen yet. Seeding from it
     // unconditionally put one stray point wherever the mouse happened to sit: a hovering
@@ -935,6 +1268,10 @@ void LaserPointerOverlay::EndDrawing()
     }
 
     m_drawing = false;
+
+    // Keeps the pen while the mouse is still armed; only lets it go when it is not.
+    UpdateDrawingCursor();
+
     // Let what has already been drawn decay away instead of snapping off.
     m_stroke.Finish();
 }
@@ -998,7 +1335,10 @@ void LaserPointerOverlay::ArmMouse()
     }
 
     // Arming only starts listening. Nothing is drawn until the configured button is
-    // actually held down.
+    // actually held down - so without these there is no sign the shortcut did anything.
+    StartHone(false);
+    UpdateDrawingCursor();
+
     Logger::info("Laser Pointer mouse armed, waiting for button {}.", static_cast<int>(m_settings.activationButton));
 }
 
@@ -1030,19 +1370,8 @@ static HWND PickPresenterTarget() noexcept
 // Toggles the mirror. It is deliberately independent of the laser: a presenter turns it
 // on once, shares it in Teams, and leaves it up for the whole session while the laser
 // comes and goes.
-void LaserPointerOverlay::TogglePresenter(bool deferTargetPick)
+void LaserPointerOverlay::SharePresenter(bool deferTargetPick)
 {
-    if (m_presenter.Active())
-    {
-        m_presenter.Stop();
-        if (!m_drawing)
-        {
-            StopRenderLoop();
-            HideOverlay();
-        }
-        return;
-    }
-
     if (deferTargetPick)
     {
         // Quick Access is a window in its own right and it is in front when its button is
@@ -1056,7 +1385,68 @@ void LaserPointerOverlay::TogglePresenter(bool deferTargetPick)
         return;
     }
 
-    StartPresenterOn(PickPresenterTarget());
+    ApplyShareTarget(PickPresenterTarget());
+}
+
+void LaserPointerOverlay::StopPresenter()
+{
+    if (!m_presenter.Active())
+    {
+        // Deliberately inert rather than an error: the shortcut is registered for the
+        // whole session, and pressing it with nothing shared should be a no-op.
+        return;
+    }
+
+    m_presenter.Stop();
+    PublishPresenterState();
+
+    if (!m_drawing)
+    {
+        StopRenderLoop();
+        HideOverlay();
+    }
+}
+
+void LaserPointerOverlay::RetargetPresenter()
+{
+    ApplyShareTarget(PickPresenterTarget());
+}
+
+// Sharing is one action whichever state it starts from: with nothing shared it starts,
+// and with something shared it moves. Both the shortcut and the flyout land here, the
+// only difference being how the target was arrived at.
+void LaserPointerOverlay::ApplyShareTarget(HWND target)
+{
+    if (target == nullptr)
+    {
+        Logger::info("Laser Pointer not sharing: nothing presentable to share.");
+        return;
+    }
+
+    if (!m_presenter.Active())
+    {
+        StartPresenterOn(target);
+        return;
+    }
+
+    if (target == m_presenter.Target())
+    {
+        return;
+    }
+
+    if (!m_presenter.Retarget(target))
+    {
+        Logger::warn("Laser Pointer presenter could not change target.");
+        return;
+    }
+
+    // Same announcement as a fresh start: the outline and label are how the presenter
+    // knows which window is now going out.
+    m_presenterNoticeText = m_presenter.TargetTitle();
+    m_presenterNoticeUntilMs = GetTickCount64() + PRESENTER_NOTICE_MS;
+
+    ShowOverlay();
+    StartRenderLoop();
 }
 
 // Retries until the window that opened the flyout is back in front, then gives up rather
@@ -1067,14 +1457,14 @@ void LaserPointerOverlay::OnPresenterPickTick()
     if (PresenterWindow::IsPresentableWindow(foreground))
     {
         KillTimer(m_hwnd, PRESENTER_PICK_TIMER_ID);
-        StartPresenterOn(foreground);
+        ApplyShareTarget(foreground);
         return;
     }
 
     if (GetTickCount64() >= m_presenterPickDeadlineMs)
     {
         KillTimer(m_hwnd, PRESENTER_PICK_TIMER_ID);
-        Logger::info("Laser Pointer presenter not started: no presentable window came to the foreground.");
+        Logger::info("Laser Pointer not sharing: no presentable window came to the foreground.");
     }
 }
 
@@ -1088,11 +1478,18 @@ void LaserPointerOverlay::StartPresenterOn(HWND target)
         return;
     }
 
+    // Closing the window from the taskbar means "stop sharing", and that has to come
+    // back through here so the capture, the overlay and the published state all wind
+    // down together.
+    m_presenter.SetCloseNotification(m_hwnd, WM_STOP_SHARING);
+
     if (!m_presenter.Start(m_hinstance, target, m_d3dDevice.get(), m_d2dDevice.get()))
     {
         Logger::warn("Laser Pointer presenter could not start.");
         return;
     }
+
+    PublishPresenterState();
 
     // The mirror lives off screen, so without this the user has no way of telling which
     // window was picked until they open the sharing picker. Outline it and name it.
@@ -1117,6 +1514,10 @@ void LaserPointerOverlay::DisarmMouse()
     m_mouseArmed = false;
     m_activationButtonHeld = false;
 
+    // Done here rather than left to ReleaseIfIdle, which bows out early when the pen is
+    // still armed and would leave the pen cursor behind.
+    UpdateDrawingCursor();
+    StartHone(true);
     UpdateHook();
     ReleaseIfIdle();
 }
@@ -1152,7 +1553,7 @@ void LaserPointerOverlay::DisarmPen()
     UnregisterPenRawInput();
     UpdateHook();
     ReleaseIfIdle();
-    if (!m_mouseArmed && !m_drawing && !m_presenter.Active())
+    if (!m_mouseArmed && !m_drawing && !m_presenter.Active() && !HoneActive(GetTickCount64()))
     {
         HideOverlay();
     }
@@ -1169,12 +1570,14 @@ void LaserPointerOverlay::ReleaseIfIdle()
     }
 
     m_drawing = false;
+    RestoreSystemCursor();
     m_pendingPoints.clear();
     m_stroke.Clear();
     m_pastStrokes.clear();
 
     // The presenter border outlives the laser, so the surface has to stay up for it.
-    if (m_presenter.Active())
+    // So does the disarm ring, which is started right after this runs.
+    if (m_presenter.Active() || HoneActive(GetTickCount64()))
     {
         return;
     }
@@ -1200,6 +1603,8 @@ void LaserPointerOverlay::Disarm()
     m_pastStrokes.clear();
 
     m_presenter.Stop();
+    PublishPresenterState();
+    RestoreSystemCursor();
     UnregisterPenRawInput();
 
     if (m_mouseHook != nullptr)
@@ -1225,7 +1630,7 @@ void LaserPointerOverlay::SwitchActivationMode()
     }
 }
 
-void LaserPointerOverlay::SwitchPresenterMode(bool fromOtherWindow)
+void LaserPointerOverlay::ShareWindow()
 {
     AcquireSRWLockShared(&m_hwndLock);
     const HWND window = m_hwnd;
@@ -1233,7 +1638,31 @@ void LaserPointerOverlay::SwitchPresenterMode(bool fromOtherWindow)
 
     if (window != nullptr)
     {
-        PostMessage(window, WM_SWITCH_PRESENTER_MODE, fromOtherWindow ? 1u : 0u, 0);
+        PostMessage(window, WM_SHARE_WINDOW, 0, 0);
+    }
+}
+
+void LaserPointerOverlay::StopSharing()
+{
+    AcquireSRWLockShared(&m_hwndLock);
+    const HWND window = m_hwnd;
+    ReleaseSRWLockShared(&m_hwndLock);
+
+    if (window != nullptr)
+    {
+        PostMessage(window, WM_STOP_SHARING, 0, 0);
+    }
+}
+
+void LaserPointerOverlay::ShareWindowDeferred()
+{
+    AcquireSRWLockShared(&m_hwndLock);
+    const HWND window = m_hwnd;
+    ReleaseSRWLockShared(&m_hwndLock);
+
+    if (window != nullptr)
+    {
+        PostMessage(window, WM_SHARE_WINDOW, 1u, 0);
     }
 }
 
@@ -1768,6 +2197,7 @@ void LaserPointerOverlay::OnRenderTick()
         {
             Logger::info("Laser Pointer presenter ended (target window gone or device lost).");
             m_presenter.Stop();
+            PublishPresenterState();
         }
     }
 
@@ -1781,7 +2211,13 @@ void LaserPointerOverlay::OnRenderTick()
     const bool penPresent = PenPresent(now);
     UpdatePenCapture(now);
 
-    bool hasContent = m_stroke.Prune(now) || noticeActive || presenterActive || penPresent;
+    const bool honeActive = HoneActive(now);
+    if (!honeActive)
+    {
+        m_honeStartMs = 0;
+    }
+
+    bool hasContent = m_stroke.Prune(now) || noticeActive || presenterActive || penPresent || honeActive;
 
     for (auto it = m_pastStrokes.begin(); it != m_pastStrokes.end();)
     {
@@ -1813,8 +2249,11 @@ void LaserPointerOverlay::OnRenderTick()
     // border on its own does not need the full surface.
     // Capturing the pen needs the whole surface hit-testable and in front of the app, so
     // it rules out the border-only frame region and the drop out of the topmost band.
-    const bool trailVisible = !m_stroke.Empty() || !m_pastStrokes.empty() || noticeActive || m_penCapturing;
-    UpdateOverlayRegion(trailVisible);
+    // Deliberately excludes the notice. A trail can be drawn anywhere and needs the whole
+    // surface in front of everything; the notice sits inside the shared window and only
+    // needs a strip, which is what keeps the rest of the screen clickable while it shows.
+    const bool trailVisible = !m_stroke.Empty() || !m_pastStrokes.empty() || m_penCapturing || honeActive;
+    UpdateOverlayRegion(trailVisible, noticeActive);
     UpdateOverlayZOrder(trailVisible, now);
 
     if (!m_overlayVisible)
@@ -1927,6 +2366,11 @@ LRESULT CALLBACK LaserPointerOverlay::WndProc(HWND hWnd, UINT message, WPARAM wP
             return -1;
         }
         instance->ProcessPendingSettings();
+
+        // Publish "off" straight away, so a reader sees a definite state rather than an
+        // absent one before the presenter has ever been switched on.
+        instance->PublishPresenterState();
+
         // An always-on button read from settings at startup needs its hook now; nothing
         // else will arm to install it.
         instance->UpdateHook();
@@ -1972,8 +2416,12 @@ LRESULT CALLBACK LaserPointerOverlay::WndProc(HWND hWnd, UINT message, WPARAM wP
         }
         return 0;
 
-    case WM_SWITCH_PRESENTER_MODE:
-        instance->TogglePresenter(wParam != 0);
+    case WM_SHARE_WINDOW:
+        instance->SharePresenter(wParam != 0);
+        return 0;
+
+    case WM_STOP_SHARING:
+        instance->StopPresenter();
         return 0;
 
     case WM_SWITCH_PEN_ACTIVATION_MODE:
@@ -2044,6 +2492,11 @@ LRESULT CALLBACK LaserPointerOverlay::WndProc(HWND hWnd, UINT message, WPARAM wP
 
     case WM_DESTROY:
         instance->Disarm();
+        if (instance->m_presenterStateEvent != nullptr)
+        {
+            CloseHandle(instance->m_presenterStateEvent);
+            instance->m_presenterStateEvent = nullptr;
+        }
         instance->ReleaseGraphics();
         PostQuitMessage(0);
         return 0;
@@ -2141,21 +2594,30 @@ void LaserPointerSwitchPen()
     }
 }
 
-void LaserPointerSwitchPresenter()
+void LaserPointerShareWindow()
 {
     if (LaserPointerOverlay::instance != nullptr)
     {
-        Logger::info("Switching Laser Pointer presenter window.");
-        LaserPointerOverlay::instance->SwitchPresenterMode();
+        Logger::info("Sharing a Laser Pointer window.");
+        LaserPointerOverlay::instance->ShareWindow();
     }
 }
 
-void LaserPointerSwitchPresenterExternal()
+void LaserPointerStopSharing()
 {
     if (LaserPointerOverlay::instance != nullptr)
     {
-        Logger::info("Switching Laser Pointer presenter window (external trigger).");
-        LaserPointerOverlay::instance->SwitchPresenterMode(true);
+        Logger::info("Stopping Laser Pointer sharing.");
+        LaserPointerOverlay::instance->StopSharing();
+    }
+}
+
+void LaserPointerShareWindowExternal()
+{
+    if (LaserPointerOverlay::instance != nullptr)
+    {
+        Logger::info("Sharing a Laser Pointer window (external trigger).");
+        LaserPointerOverlay::instance->ShareWindowDeferred();
     }
 }
 

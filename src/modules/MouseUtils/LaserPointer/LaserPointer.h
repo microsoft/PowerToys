@@ -69,10 +69,16 @@ void LaserPointerSwitch();
 void LaserPointerSwitchPen();
 // Independent of the laser: mirrors the window in front into an off-screen window that
 // screen sharing can pick up, and keeps mirroring it until switched off again.
-void LaserPointerSwitchPresenter();
+// Sharing invoked from another window - the Quick Access flyout. That window is in front
+// and dismisses itself immediately afterwards, so the target cannot come from the cursor
+// the way the shortcut's does.
+void LaserPointerShareWindowExternal();
 
-// The same toggle, invoked from another window - the Quick Access flyout. That window is
-// in front and dismisses itself immediately afterwards, so the target cannot come from
-// the cursor the way the shortcut's does.
-void LaserPointerSwitchPresenterExternal();
+// Starts sharing, or moves an existing share to the window under the pointer. The mirror
+// window itself survives a move, so an app already sharing it keeps sharing.
+void LaserPointerShareWindow();
+
+// Stops sharing. Does nothing when nothing is being shared, so the shortcut is harmless
+// to press at any time.
+void LaserPointerStopSharing();
 void LaserPointerApplySettings(LaserPointerSettings settings);
