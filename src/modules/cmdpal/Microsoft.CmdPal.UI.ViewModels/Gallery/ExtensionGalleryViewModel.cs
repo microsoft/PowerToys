@@ -392,8 +392,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
             {
                 if (!string.IsNullOrEmpty(entry.PackageFamilyName))
                 {
-                    entry.IsInstalled = installedPfns.Contains(entry.PackageFamilyName);
-                    entry.IsInstalledStateKnown = true;
+                    entry.ApplyDetectedInstallationState(installedPfns.Contains(entry.PackageFamilyName));
                 }
             }
 

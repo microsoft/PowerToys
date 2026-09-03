@@ -4,6 +4,8 @@
 
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CmdPal.JsonRpc;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -184,5 +186,18 @@ public class JSExtensionWrapperTests
                 Icon = icon,
             },
             extensionDirectory);
+    }
+
+    [TestMethod]
+    public async Task StartExtensionAsync_StopsBeforeLaunch_WhenCanceled()
+    {
+        var wrapper = CreateWrapper();
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        await Assert.ThrowsExactlyAsync<OperationCanceledException>(
+            () => wrapper.StartExtensionAsync(cancellation.Token));
+
+        Assert.IsFalse(wrapper.IsRunning());
     }
 }

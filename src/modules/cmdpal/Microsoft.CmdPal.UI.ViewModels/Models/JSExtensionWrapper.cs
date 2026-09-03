@@ -213,7 +213,9 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
         }
     }
 
-    public Task StartExtensionAsync()
+    public Task StartExtensionAsync() => StartExtensionAsync(CancellationToken.None);
+
+    internal Task StartExtensionAsync(CancellationToken cancellationToken)
     {
         lock (_lock)
         {
@@ -229,16 +231,16 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
             // instead of spawning a second Node process. The start body runs on the thread
             // pool so no process is spawned while this lock is held; the task is cleared
             // when it completes so a later restart can start again.
-            _startInProgress ??= Task.Run(RunStartAsync);
+            _startInProgress ??= Task.Run(() => RunStartAsync(cancellationToken), CancellationToken.None);
             return _startInProgress;
         }
     }
 
-    private async Task RunStartAsync()
+    private async Task RunStartAsync(CancellationToken cancellationToken)
     {
         try
         {
-            await StartCoreAsync().ConfigureAwait(false);
+            await StartCoreAsync(cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -249,8 +251,10 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
         }
     }
 
-    private async Task StartCoreAsync()
+    private async Task StartCoreAsync(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         lock (_lock)
         {
             // The wrapper may have been disposed, or another start may have completed,
@@ -361,7 +365,7 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
             var initResponse = await connection.SendRequestAsync(
                 "initialize",
                 new JsonObject { ["extensionId"] = _manifest.Name },
-                CancellationToken.None).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(false);
 
             if (initResponse.Error is not null)
             {
@@ -393,7 +397,11 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to start JS extension {_manifest.Name}: {ex.Message}");
+            var canceled = ex is OperationCanceledException && cancellationToken.IsCancellationRequested;
+            if (!canceled)
+            {
+                Logger.LogError($"Failed to start JS extension {_manifest.Name}: {ex.Message}");
+            }
 
             try
             {
@@ -408,6 +416,10 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
             }
 
             SignalDispose();
+            if (canceled)
+            {
+                throw;
+            }
         }
     }
 
@@ -443,6 +455,22 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
 
     public void SignalDispose()
     {
+        var (process, connection, proxy) = DetachForDispose();
+        TearDown(process, connection, proxy);
+    }
+
+    public Task SignalDisposeAsync()
+    {
+        var (process, connection, proxy) = DetachForDispose();
+        return process is null && connection is null && proxy is null
+            ? Task.CompletedTask
+            : Task.Run(() => TearDown(process, connection, proxy));
+    }
+
+    public void Dispose() => SignalDispose();
+
+    private (Process? Process, JsonRpcConnection? Connection, JSCommandProviderProxy? Proxy) DetachForDispose()
+    {
         Process? process;
         JsonRpcConnection? connection;
         JSCommandProviderProxy? proxy;
@@ -459,10 +487,8 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
             _commandProviderProxy = null;
         }
 
-        TearDown(process, connection, proxy);
+        return (process, connection, proxy);
     }
-
-    public void Dispose() => SignalDispose();
 
     public IExtension? GetExtensionObject()
     {

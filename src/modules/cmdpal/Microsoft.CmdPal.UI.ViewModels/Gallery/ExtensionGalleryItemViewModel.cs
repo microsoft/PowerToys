@@ -4,12 +4,14 @@
 
 using System.Collections.ObjectModel;
 using System.Text;
+using System.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.CmdPal.Common.ExtensionGallery.Models;
 using Microsoft.CmdPal.Common.WinGet.Models;
 using Microsoft.CmdPal.Common.WinGet.Services;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Media;
@@ -34,11 +36,24 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
             new EventId(2, nameof(LogIconLoadFailed)),
             "Failed to load icon from '{IconUri}'.");
 
+    private static readonly Action<ILogger, Exception?> LogJsonRpcInstallFailedMessage =
+        LoggerMessage.Define(
+            LogLevel.Error,
+            new EventId(3, nameof(LogJsonRpcInstallFailed)),
+            "JavaScript extension install failed.");
+
+    private static readonly Action<ILogger, Exception?> LogJsonRpcUninstallFailedMessage =
+        LoggerMessage.Define(
+            LogLevel.Error,
+            new EventId(4, nameof(LogJsonRpcUninstallFailed)),
+            "JavaScript extension uninstall failed.");
+
     private const string SourceTypeWinGet = "winget";
     private const string SourceTypeStore = "msstore";
     private const string SourceTypeUrl = "url";
     private const string SourceTypeGitHub = "github";
     private const string SourceTypeWebsite = "website";
+    private const string SourceTypeJsonRpc = "jsonrpc";
     private const string SourceTypeUnknown = "unknown";
 
     private readonly GalleryExtensionEntry _entry;
@@ -46,6 +61,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
     private readonly IWinGetPackageManagerService? _winGetPackageManagerService;
     private readonly IWinGetOperationTrackerService? _winGetOperationTrackerService;
     private readonly IWinGetPackageStatusService? _winGetPackageStatusService;
+    private readonly IJsExtensionInstaller? _jsExtensionInstaller;
     private readonly IReadOnlyDictionary<string, GalleryInstallSource> _installSourcesByType;
     private readonly IReadOnlyDictionary<string, GallerySourceViewModel> _sourcesByKind;
 
@@ -53,19 +69,27 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
     private readonly Uri? _homepageHttpUri;
     private readonly Uri? _authorPageHttpUri;
     private readonly Uri? _installLinkHttpUri;
+    private bool _isDetectedInstalled;
+    private bool _isWinGetInstalled;
+    private bool _isWinGetInstalledStateKnown;
+
+    // Backs Cancel while a jsonrpc install or uninstall is running.
+    private CancellationTokenSource? _jsonRpcActionCts;
 
     public ExtensionGalleryItemViewModel(
         GalleryExtensionEntry entry,
         ILogger<ExtensionGalleryItemViewModel> logger,
         IWinGetPackageManagerService? winGetPackageManagerService = null,
         IWinGetPackageStatusService? winGetPackageStatusService = null,
-        IWinGetOperationTrackerService? winGetOperationTrackerService = null)
+        IWinGetOperationTrackerService? winGetOperationTrackerService = null,
+        IJsExtensionInstaller? jsExtensionInstaller = null)
     {
         _entry = entry;
         _logger = logger;
         _winGetPackageManagerService = winGetPackageManagerService;
         _winGetPackageStatusService = winGetPackageStatusService;
         _winGetOperationTrackerService = winGetOperationTrackerService;
+        _jsExtensionInstaller = jsExtensionInstaller;
         _installSourcesByType = BuildInstallSourceLookup(entry.InstallSources);
         (Sources, _sourcesByKind) = BuildSourceInfos(_installSourcesByType, entry.Homepage);
         _homepageHttpUri = TryCreateWebUri(entry.Homepage);
@@ -75,6 +99,14 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
         var resolvedIconUri = ResolveIconUri();
         IconUri = resolvedIconUri ?? PlaceholderIconUri;
+
+        // Seed jsonrpc install state from the host, not the catalog. That keeps Uninstall visible for
+        // packages that are installed and blocks reinstall into an active directory.
+        if (_jsExtensionInstaller is not null && HasJsonRpcSource)
+        {
+            IsJsonRpcInstalled = _jsExtensionInstaller.IsInstalled(Id);
+            IsInstalledStateKnown = true;
+        }
     }
 
     public string Id => _entry.Id;
@@ -146,6 +178,8 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public bool HasWebsiteSource => HasSource(SourceTypeWebsite);
 
+    public bool HasJsonRpcSource => HasSource(SourceTypeJsonRpc) && !string.IsNullOrWhiteSpace(JsonRpcPackageId);
+
     public bool HasUnknownSource => HasSource(SourceTypeUnknown);
 
     public bool HasAnySourceDetails => Sources.Count > 0;
@@ -173,7 +207,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public bool ShowUnknownSourceIndicator => HasUnknownSource || !HasKnownSourceIndicator;
 
-    public bool HasActionableSourceDetails => HasStoreSource || HasWinGetSource || HasHomepage || HasUrlSource;
+    public bool HasActionableSourceDetails => HasStoreSource || HasWinGetSource || HasJsonRpcSource || HasHomepage || HasUrlSource;
 
     public bool ShowNoSourceDetails => !HasActionableSourceDetails;
 
@@ -188,6 +222,18 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
     public string? WinGetId => GetSource(SourceTypeWinGet)?.Id;
 
     public string? StoreId => GetSource(SourceTypeStore)?.Id;
+
+    public string? JsonRpcPackageId =>
+        _installSourcesByType.TryGetValue(SourceTypeJsonRpc, out var source) ? source.Npm?.Package : null;
+
+    public string? JsonRpcRegistry =>
+        _installSourcesByType.TryGetValue(SourceTypeJsonRpc, out var source) ? source.Npm?.Registry : null;
+
+    public string? JsonRpcVersion =>
+        _installSourcesByType.TryGetValue(SourceTypeJsonRpc, out var source) ? source.Npm?.Version : null;
+
+    public string? JsonRpcIntegrity =>
+        _installSourcesByType.TryGetValue(SourceTypeJsonRpc, out var source) ? source.Npm?.Integrity : null;
 
     public string? InstallUrl => _installLinkHttpUri?.AbsoluteUri;
 
@@ -227,7 +273,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public bool ShowWinGetUnavailableMessage => !string.IsNullOrWhiteSpace(WinGetUnavailableMessage);
 
-    public bool ShowInstallViaWinGetButton => HasWinGetSource && (!IsInstalled || IsUpdateAvailable);
+    public bool ShowInstallViaWinGetButton => HasWinGetSource && (!_isWinGetInstalled || IsUpdateAvailable);
 
     public bool CanInstallViaWinGet => ShowInstallViaWinGetButton && IsWinGetAvailable && !IsWinGetActionInProgress;
 
@@ -290,9 +336,9 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
             ? string.Empty
             : IsUpdateAvailable
                 ? Resources.gallery_item_winget_status_update_available
-                : IsInstalled
+                : _isWinGetInstalled
                     ? Resources.gallery_item_winget_status_installed
-                    : IsInstalledStateKnown
+                    : _isWinGetInstalledStateKnown
                         ? Resources.gallery_item_winget_status_not_installed
                         : Resources.gallery_item_winget_status_unavailable;
 
@@ -300,12 +346,47 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public bool HasWinGetActionMessage => !string.IsNullOrWhiteSpace(WinGetActionMessage);
 
+    [ObservableProperty]
+    public partial bool IsJsonRpcActionInProgress { get; set; }
+
+    [ObservableProperty]
+    public partial string? JsonRpcActionMessage { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsJsonRpcInstalled { get; set; }
+
+    public bool ShowInstallViaNpmButton => HasJsonRpcSource && !IsJsonRpcInstalled;
+
+    public bool CanInstallViaNpm => ShowInstallViaNpmButton && _jsExtensionInstaller is not null && !IsJsonRpcActionInProgress;
+
+    public bool ShowUninstallJsonRpcButton => HasJsonRpcSource && IsJsonRpcInstalled;
+
+    public bool CanUninstallJsonRpc => ShowUninstallJsonRpcButton && _jsExtensionInstaller is not null && !IsJsonRpcActionInProgress;
+
+    public bool CanCancelJsonRpcAction =>
+        IsJsonRpcActionInProgress && _jsonRpcActionCts is { IsCancellationRequested: false };
+
+    public bool ShowCancelJsonRpcActionButton => IsJsonRpcActionInProgress && CanCancelJsonRpcAction;
+
+    public bool ShowJsonRpcActionControls => HasJsonRpcSource && (ShowInstallViaNpmButton || ShowUninstallJsonRpcButton || IsJsonRpcActionInProgress);
+
+    public bool HasJsonRpcActionMessage => !string.IsNullOrWhiteSpace(JsonRpcActionMessage);
+
+    public string InstallViaNpmText => Resources.gallery_item_install_action;
+
+    public string UninstallJsonRpcText => Resources.gallery_item_jsonrpc_uninstall_action;
+
+    public string CancelJsonRpcActionText => Resources.gallery_item_jsonrpc_cancel_action;
+
     public void ApplyWinGetPackageInfo(WinGetPackageInfo packageInfo)
     {
-        IsInstalled = IsInstalled || packageInfo.Status.IsInstalled;
+        _isWinGetInstalled = packageInfo.Status.IsInstalled;
+        _isWinGetInstalledStateKnown = packageInfo.Status.IsInstalledStateKnown;
+        UpdateAggregateInstalledState();
         IsInstalledStateKnown = IsInstalledStateKnown || packageInfo.Status.IsInstalledStateKnown;
         IsUpdateAvailable = packageInfo.Status.IsUpdateAvailable;
         IsUpdateStateKnown = packageInfo.Status.IsUpdateStateKnown;
+        NotifyWinGetInstallStateChanged();
 
         if (packageInfo.Details is null)
         {
@@ -313,6 +394,13 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
         }
 
         ApplySourceDetails(SourceTypeWinGet, CreateSourceDetails(packageInfo.Details));
+    }
+
+    public void ApplyDetectedInstallationState(bool isInstalled)
+    {
+        _isDetectedInstalled = isInstalled;
+        UpdateAggregateInstalledState();
+        IsInstalledStateKnown = true;
     }
 
     [RelayCommand(CanExecute = nameof(HasHomepage))]
@@ -366,6 +454,122 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
         }
 
         ClipboardHelper.SetText(WinGetInstallCommand);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanInstallViaNpm))]
+    private async Task InstallViaNpmAsync()
+    {
+        if (_jsExtensionInstaller is null || string.IsNullOrWhiteSpace(JsonRpcPackageId))
+        {
+            return;
+        }
+
+        IsJsonRpcActionInProgress = true;
+        JsonRpcActionMessage = Resources.gallery_item_jsonrpc_action_installing;
+
+        using var cts = new CancellationTokenSource();
+        _jsonRpcActionCts = cts;
+        NotifyJsonRpcActionStateChanged();
+
+        try
+        {
+            var result = await _jsExtensionInstaller.InstallAsync(Id, JsonRpcPackageId, JsonRpcVersion, JsonRpcIntegrity, JsonRpcRegistry, cts.Token).ConfigureAwait(true);
+            if (result.Succeeded)
+            {
+                IsJsonRpcInstalled = true;
+                IsInstalledStateKnown = true;
+                JsonRpcActionMessage = Resources.gallery_item_jsonrpc_action_installed;
+            }
+            else
+            {
+                IsJsonRpcInstalled = _jsExtensionInstaller.IsInstalled(Id);
+                IsInstalledStateKnown = true;
+                JsonRpcActionMessage = result.ErrorMessage ?? Resources.gallery_item_jsonrpc_action_install_failed;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            JsonRpcActionMessage = Resources.npm_installer_canceled;
+        }
+        catch (Exception ex)
+        {
+            LogJsonRpcInstallFailed(_logger, ex);
+            JsonRpcActionMessage = Resources.gallery_item_jsonrpc_action_install_failed;
+        }
+        finally
+        {
+            _jsonRpcActionCts = null;
+            IsJsonRpcActionInProgress = false;
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanUninstallJsonRpc))]
+    private async Task UninstallJsonRpcAsync()
+    {
+        if (_jsExtensionInstaller is null)
+        {
+            return;
+        }
+
+        IsJsonRpcActionInProgress = true;
+        JsonRpcActionMessage = Resources.gallery_item_jsonrpc_action_uninstalling;
+
+        using var cts = new CancellationTokenSource();
+        _jsonRpcActionCts = cts;
+        NotifyJsonRpcActionStateChanged();
+
+        try
+        {
+            var result = await _jsExtensionInstaller.UninstallAsync(Id, cts.Token).ConfigureAwait(true);
+            if (result.Succeeded)
+            {
+                IsJsonRpcInstalled = false;
+                IsInstalledStateKnown = true;
+                JsonRpcActionMessage = Resources.gallery_item_jsonrpc_action_uninstalled;
+            }
+            else
+            {
+                IsJsonRpcInstalled = _jsExtensionInstaller.IsInstalled(Id);
+                IsInstalledStateKnown = true;
+                JsonRpcActionMessage = result.ErrorMessage ?? Resources.gallery_item_jsonrpc_action_uninstall_failed;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            JsonRpcActionMessage = Resources.npm_installer_canceled;
+        }
+        catch (Exception ex)
+        {
+            LogJsonRpcUninstallFailed(_logger, ex);
+            JsonRpcActionMessage = Resources.gallery_item_jsonrpc_action_uninstall_failed;
+        }
+        finally
+        {
+            _jsonRpcActionCts = null;
+            IsJsonRpcActionInProgress = false;
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanCancelJsonRpcAction))]
+    private void CancelJsonRpcAction()
+    {
+        var cts = _jsonRpcActionCts;
+        if (cts is null || cts.IsCancellationRequested)
+        {
+            return;
+        }
+
+        try
+        {
+            cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // The operation finished and disposed the source after the guard but before Cancel.
+        }
+
+        JsonRpcActionMessage = Resources.gallery_item_jsonrpc_action_canceling;
+        NotifyJsonRpcActionStateChanged();
     }
 
     [RelayCommand(CanExecute = nameof(CanInstallViaWinGet))]
@@ -633,8 +837,9 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
         {
             SourceTypeStore => 0,
             SourceTypeWinGet => 1,
-            SourceTypeGitHub => 2,
-            SourceTypeWebsite => 3,
+            SourceTypeJsonRpc => 2,
+            SourceTypeGitHub => 3,
+            SourceTypeWebsite => 4,
             SourceTypeUnknown => 99,
             _ => 98,
         };
@@ -699,6 +904,12 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
                 uri: null,
                 isKnown: true),
             SourceTypeUrl => CreateSourceFromUrl(installSource.Uri),
+            SourceTypeJsonRpc => CreateSourceViewModel(
+                SourceTypeJsonRpc,
+                Resources.gallery_item_source_name_jsonrpc,
+                installSource.Npm?.Package,
+                uri: installSource.Npm?.Registry,
+                isKnown: true),
             _ => CreateSourceViewModel(
                 SourceTypeUnknown,
                 FormatResource(Resources.gallery_item_source_name_unknown, normalizedType),
@@ -891,18 +1102,24 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
             }
         }
 
-        IsInstalled = completedOperationKind != WinGetPackageOperationKind.Uninstall;
+        _isWinGetInstalled = completedOperationKind != WinGetPackageOperationKind.Uninstall;
+        _isWinGetInstalledStateKnown = true;
+        UpdateAggregateInstalledState();
         IsInstalledStateKnown = true;
         IsUpdateAvailable = false;
         IsUpdateStateKnown = true;
+        NotifyWinGetInstallStateChanged();
     }
 
     private void ApplyOptimisticTrackedCompletion(WinGetPackageOperationKind completedOperationKind)
     {
-        IsInstalled = completedOperationKind != WinGetPackageOperationKind.Uninstall;
+        _isWinGetInstalled = completedOperationKind != WinGetPackageOperationKind.Uninstall;
+        _isWinGetInstalledStateKnown = true;
+        UpdateAggregateInstalledState();
         IsInstalledStateKnown = true;
         IsUpdateAvailable = false;
         IsUpdateStateKnown = true;
+        NotifyWinGetInstallStateChanged();
     }
 
     private ImageSource CreateImageSource(Uri iconUri)
@@ -928,6 +1145,16 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
         LogIconLoadFailedMessage(logger, iconUri, exception);
     }
 
+    private static void LogJsonRpcInstallFailed(ILogger logger, Exception exception)
+    {
+        LogJsonRpcInstallFailedMessage(logger, exception);
+    }
+
+    private static void LogJsonRpcUninstallFailed(ILogger logger, Exception exception)
+    {
+        LogJsonRpcUninstallFailedMessage(logger, exception);
+    }
+
     partial void OnIsInstalledChanged(bool value)
     {
         OnPropertyChanged(nameof(ShowInstalledBadge));
@@ -940,6 +1167,52 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
         OnPropertyChanged(nameof(InstallViaWinGetText));
         OnPropertyChanged(nameof(ShowWinGetActionControls));
         InstallViaWinGetCommand.NotifyCanExecuteChanged();
+        NotifyJsonRpcActionStateChanged();
+    }
+
+    private void NotifyJsonRpcActionStateChanged()
+    {
+        OnPropertyChanged(nameof(ShowInstallViaNpmButton));
+        OnPropertyChanged(nameof(CanInstallViaNpm));
+        OnPropertyChanged(nameof(ShowUninstallJsonRpcButton));
+        OnPropertyChanged(nameof(CanUninstallJsonRpc));
+        OnPropertyChanged(nameof(CanCancelJsonRpcAction));
+        OnPropertyChanged(nameof(ShowCancelJsonRpcActionButton));
+        OnPropertyChanged(nameof(ShowJsonRpcActionControls));
+        InstallViaNpmCommand.NotifyCanExecuteChanged();
+        UninstallJsonRpcCommand.NotifyCanExecuteChanged();
+        CancelJsonRpcActionCommand.NotifyCanExecuteChanged();
+    }
+
+    private void NotifyWinGetInstallStateChanged()
+    {
+        OnPropertyChanged(nameof(ShowInstallViaWinGetButton));
+        OnPropertyChanged(nameof(CanInstallViaWinGet));
+        OnPropertyChanged(nameof(WinGetStatusText));
+        OnPropertyChanged(nameof(ShowWinGetStatusDetails));
+        OnPropertyChanged(nameof(ShowWinGetActionControls));
+        InstallViaWinGetCommand.NotifyCanExecuteChanged();
+    }
+
+    private void UpdateAggregateInstalledState()
+    {
+        IsInstalled = _isDetectedInstalled || _isWinGetInstalled || IsJsonRpcInstalled;
+    }
+
+    partial void OnIsJsonRpcActionInProgressChanged(bool value)
+    {
+        NotifyJsonRpcActionStateChanged();
+    }
+
+    partial void OnIsJsonRpcInstalledChanged(bool value)
+    {
+        UpdateAggregateInstalledState();
+        NotifyJsonRpcActionStateChanged();
+    }
+
+    partial void OnJsonRpcActionMessageChanged(string? value)
+    {
+        OnPropertyChanged(nameof(HasJsonRpcActionMessage));
     }
 
     partial void OnIsInstalledStateKnownChanged(bool value)

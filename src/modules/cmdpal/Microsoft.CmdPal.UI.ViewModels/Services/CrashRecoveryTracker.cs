@@ -209,8 +209,8 @@ internal sealed partial class CrashRecoveryTracker : IDisposable
     }
 
     /// <summary>
-    /// Reopens a directory after its uninstall finishes. The caller must first drain recovery,
-    /// then keep the directory blocked until the extension and its watcher are gone.
+    /// Reopens a directory after its uninstall finishes or is abandoned. The caller must first
+    /// drain recovery, then keep the directory blocked until removal completes or is canceled.
     /// </summary>
     public void CompleteDirectoryRemoval(string directory)
     {

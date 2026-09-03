@@ -6,10 +6,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.ExtensionGallery.Models;
 using Microsoft.CmdPal.Common.WinGet.Models;
 using Microsoft.CmdPal.Common.WinGet.Services;
 using Microsoft.CmdPal.UI.ViewModels.Gallery;
+using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -674,6 +678,428 @@ public class ExtensionGalleryItemViewModelTests
         Assert.IsTrue(viewModel.OpenInstalledAppsCommand.CanExecute(null));
     }
 
+    [TestMethod]
+    public void JsonRpcSource_IsRecognized_WithPackageAndRegistry()
+    {
+        var entry = new GalleryExtensionEntry
+        {
+            Id = "sample-js-extension",
+            Title = "Sample JS",
+            Description = "Sample jsonrpc extension",
+            Author = new GalleryAuthor { Name = "Sample Author" },
+            InstallSources =
+            [
+                new GalleryInstallSource
+                {
+                    Type = "jsonrpc",
+                    Npm = new GalleryNpmPackage
+                    {
+                        Package = "@contoso/sample",
+                        Version = "1.2.3",
+                        Integrity = "sha512-abc123==",
+                        Registry = "https://registry.example.com",
+                    },
+                },
+            ],
+        };
+
+        var viewModel = CreateViewModel(entry);
+
+        Assert.IsTrue(viewModel.HasJsonRpcSource);
+        Assert.AreEqual("@contoso/sample", viewModel.JsonRpcPackageId);
+        Assert.AreEqual("1.2.3", viewModel.JsonRpcVersion);
+        Assert.AreEqual("sha512-abc123==", viewModel.JsonRpcIntegrity);
+        Assert.AreEqual("https://registry.example.com", viewModel.JsonRpcRegistry);
+        Assert.IsTrue(viewModel.Sources.Any(s => s.Kind == "jsonrpc"));
+    }
+
+    [TestMethod]
+    public void JsonRpcSource_IsNotRecognized_WhenPackageMissing()
+    {
+        var entry = new GalleryExtensionEntry
+        {
+            Id = "sample-js-extension",
+            Title = "Sample JS",
+            Description = "Sample jsonrpc extension",
+            Author = new GalleryAuthor { Name = "Sample Author" },
+            InstallSources =
+            [
+                new GalleryInstallSource
+                {
+                    Type = "jsonrpc",
+                    Npm = new GalleryNpmPackage { Package = string.Empty },
+                },
+            ],
+        };
+
+        var viewModel = CreateViewModel(entry);
+
+        Assert.IsFalse(viewModel.HasJsonRpcSource);
+    }
+
+    [TestMethod]
+    public void InstallViaNpm_ShowsButton_WhenNotInstalled()
+    {
+        var viewModel = CreateJsonRpcViewModel(out _);
+
+        Assert.IsTrue(viewModel.ShowInstallViaNpmButton);
+        Assert.IsTrue(viewModel.CanInstallViaNpm);
+        Assert.IsFalse(viewModel.ShowUninstallJsonRpcButton);
+    }
+
+    [TestMethod]
+    public void CanInstallViaNpm_IsFalse_WhenNoInstaller()
+    {
+        var entry = CreateJsonRpcEntry();
+        var viewModel = CreateViewModel(entry);
+
+        Assert.IsTrue(viewModel.ShowInstallViaNpmButton);
+        Assert.IsFalse(viewModel.CanInstallViaNpm);
+    }
+
+    [TestMethod]
+    public async Task InstallViaNpmCommand_InstallsPackage_AndMarksInstalled()
+    {
+        var viewModel = CreateJsonRpcViewModel(out var installer);
+        installer
+            .Setup(x => x.InstallAsync("sample-js-extension", "@contoso/sample", "1.2.3", "sha512-abc123==", "https://registry.example.com", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(JsExtensionInstallResult.Ok());
+
+        await viewModel.InstallViaNpmCommand.ExecuteAsync(null);
+
+        installer.Verify(
+            x => x.InstallAsync("sample-js-extension", "@contoso/sample", "1.2.3", "sha512-abc123==", "https://registry.example.com", It.IsAny<CancellationToken>()),
+            Times.Once);
+        Assert.IsTrue(viewModel.IsInstalled);
+        Assert.IsTrue(viewModel.ShowUninstallJsonRpcButton);
+        Assert.IsFalse(viewModel.ShowInstallViaNpmButton);
+    }
+
+    [TestMethod]
+    public async Task InstallViaNpmCommand_SurfacesError_OnFailure()
+    {
+        var viewModel = CreateJsonRpcViewModel(out var installer);
+        installer
+            .Setup(x => x.InstallAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(JsExtensionInstallResult.Fail("npm was not found"));
+
+        await viewModel.InstallViaNpmCommand.ExecuteAsync(null);
+
+        Assert.IsFalse(viewModel.IsInstalled);
+        Assert.IsTrue(viewModel.HasJsonRpcActionMessage);
+        Assert.AreEqual("npm was not found", viewModel.JsonRpcActionMessage);
+    }
+
+    [TestMethod]
+    public async Task InstallViaNpmCommand_RefreshesInstalledState_OnFailure()
+    {
+        var installer = new Mock<IJsExtensionInstaller>();
+        installer
+            .SetupSequence(x => x.IsInstalled("sample-js-extension"))
+            .Returns(false)
+            .Returns(true);
+        installer
+            .Setup(x => x.InstallAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(JsExtensionInstallResult.Fail("rollback failed"));
+        var viewModel = CreateViewModel(CreateJsonRpcEntry(), jsExtensionInstaller: installer.Object);
+
+        await viewModel.InstallViaNpmCommand.ExecuteAsync(null);
+
+        Assert.IsTrue(viewModel.IsJsonRpcInstalled);
+        Assert.IsTrue(viewModel.ShowUninstallJsonRpcButton);
+    }
+
+    [TestMethod]
+    public async Task InstallViaNpmCommand_UnexpectedFailure_ShowsErrorAndReenablesButton()
+    {
+        var installer = new Mock<IJsExtensionInstaller>();
+        installer.Setup(x => x.IsInstalled("sample-js-extension")).Returns(false);
+        installer
+            .Setup(x => x.InstallAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("unexpected"));
+        var logger = new Mock<ILogger<ExtensionGalleryItemViewModel>>();
+        logger.Setup(x => x.IsEnabled(LogLevel.Error)).Returns(true);
+        var viewModel = CreateViewModel(CreateJsonRpcEntry(), jsExtensionInstaller: installer.Object, logger: logger.Object);
+
+        await viewModel.InstallViaNpmCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(
+            Microsoft.CmdPal.UI.ViewModels.Properties.Resources.gallery_item_jsonrpc_action_install_failed,
+            viewModel.JsonRpcActionMessage);
+        Assert.IsFalse(viewModel.IsJsonRpcActionInProgress);
+        Assert.IsTrue(viewModel.CanInstallViaNpm);
+        installer.Verify(x => x.IsInstalled("sample-js-extension"), Times.Once);
+        VerifyErrorLogged(logger);
+    }
+
+    [TestMethod]
+    public async Task InstallViaNpmCommand_Cancellation_ShowsLocalizedStatusAndReenablesButton()
+    {
+        var viewModel = CreateJsonRpcViewModel(out var installer);
+        installer
+            .Setup(x => x.InstallAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        await viewModel.InstallViaNpmCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(
+            Microsoft.CmdPal.UI.ViewModels.Properties.Resources.npm_installer_canceled,
+            viewModel.JsonRpcActionMessage);
+        Assert.IsFalse(viewModel.IsJsonRpcActionInProgress);
+        Assert.IsTrue(viewModel.CanInstallViaNpm);
+    }
+
+    [TestMethod]
+    public async Task CancelJsonRpcActionCommand_NotifiesActionStateImmediately()
+    {
+        var operationStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var installer = new Mock<IJsExtensionInstaller>();
+        installer.Setup(x => x.IsInstalled("sample-js-extension")).Returns(false);
+        installer
+            .Setup(x => x.InstallAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Returns(async (string _, string _, string? _, string? _, string? _, CancellationToken token) =>
+            {
+                operationStarted.SetResult();
+                try
+                {
+                    await Task.Delay(Timeout.InfiniteTimeSpan, token);
+                    return JsExtensionInstallResult.Ok();
+                }
+                catch (OperationCanceledException)
+                {
+                    return JsExtensionInstallResult.Fail("canceled");
+                }
+            });
+        var viewModel = CreateViewModel(CreateJsonRpcEntry(), jsExtensionInstaller: installer.Object);
+
+        var installTask = viewModel.InstallViaNpmCommand.ExecuteAsync(null);
+        await operationStarted.Task;
+        Assert.IsTrue(viewModel.ShowCancelJsonRpcActionButton);
+
+        viewModel.CancelJsonRpcActionCommand.Execute(null);
+
+        Assert.IsFalse(viewModel.ShowCancelJsonRpcActionButton);
+        Assert.IsFalse(viewModel.CancelJsonRpcActionCommand.CanExecute(null));
+        await installTask;
+    }
+
+    [TestMethod]
+    public async Task UninstallJsonRpcCommand_Uninstalls_AndMarksNotInstalled()
+    {
+        var viewModel = CreateJsonRpcViewModel(out var installer, isInstalled: true);
+        installer
+            .Setup(x => x.UninstallAsync("sample-js-extension", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(JsExtensionInstallResult.Ok());
+
+        Assert.IsTrue(viewModel.ShowUninstallJsonRpcButton);
+
+        await viewModel.UninstallJsonRpcCommand.ExecuteAsync(null);
+
+        installer.Verify(x => x.UninstallAsync("sample-js-extension", It.IsAny<CancellationToken>()), Times.Once);
+        Assert.IsFalse(viewModel.IsInstalled);
+        Assert.IsTrue(viewModel.ShowInstallViaNpmButton);
+    }
+
+    [TestMethod]
+    public async Task UninstallJsonRpcCommand_UnexpectedFailure_ShowsErrorAndReenablesButton()
+    {
+        var installer = new Mock<IJsExtensionInstaller>();
+        installer.Setup(x => x.IsInstalled("sample-js-extension")).Returns(true);
+        installer
+            .Setup(x => x.UninstallAsync("sample-js-extension", It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("unexpected"));
+        var logger = new Mock<ILogger<ExtensionGalleryItemViewModel>>();
+        logger.Setup(x => x.IsEnabled(LogLevel.Error)).Returns(true);
+        var viewModel = CreateViewModel(CreateJsonRpcEntry(), jsExtensionInstaller: installer.Object, logger: logger.Object);
+
+        await viewModel.UninstallJsonRpcCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(
+            Microsoft.CmdPal.UI.ViewModels.Properties.Resources.gallery_item_jsonrpc_action_uninstall_failed,
+            viewModel.JsonRpcActionMessage);
+        Assert.IsFalse(viewModel.IsJsonRpcActionInProgress);
+        Assert.IsTrue(viewModel.CanUninstallJsonRpc);
+        installer.Verify(x => x.IsInstalled("sample-js-extension"), Times.Once);
+        VerifyErrorLogged(logger);
+    }
+
+    [TestMethod]
+    public async Task UninstallJsonRpcCommand_Cancellation_ShowsLocalizedStatusAndReenablesButton()
+    {
+        var viewModel = CreateJsonRpcViewModel(out var installer, isInstalled: true);
+        installer
+            .Setup(x => x.UninstallAsync("sample-js-extension", It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        await viewModel.UninstallJsonRpcCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(
+            Microsoft.CmdPal.UI.ViewModels.Properties.Resources.npm_installer_canceled,
+            viewModel.JsonRpcActionMessage);
+        Assert.IsFalse(viewModel.IsJsonRpcActionInProgress);
+        Assert.IsTrue(viewModel.CanUninstallJsonRpc);
+    }
+
+    [TestMethod]
+    public void WinGetInstall_DoesNotHideJsonRpcInstall()
+    {
+        var installer = new Mock<IJsExtensionInstaller>();
+        var entry = CreateJsonRpcEntry();
+        entry.InstallSources.Add(new GalleryInstallSource { Type = "winget", Id = "Contoso.Sample" });
+        var viewModel = CreateViewModel(entry, jsExtensionInstaller: installer.Object);
+
+        viewModel.ApplyWinGetPackageInfo(
+            new WinGetPackageInfo(
+                new WinGetPackageStatus(
+                    IsInstalled: true,
+                    IsInstalledStateKnown: true,
+                    IsUpdateAvailable: false,
+                    IsUpdateStateKnown: true),
+                Details: null));
+
+        Assert.IsTrue(viewModel.IsInstalled);
+        Assert.IsTrue(viewModel.ShowInstallViaNpmButton);
+        Assert.IsFalse(viewModel.ShowUninstallJsonRpcButton);
+    }
+
+    [TestMethod]
+    public void JsonRpcInstall_DoesNotHideWinGetInstall()
+    {
+        var installer = new Mock<IJsExtensionInstaller>();
+        installer.Setup(x => x.IsInstalled("sample-js-extension")).Returns(true);
+        var entry = CreateJsonRpcEntry();
+        entry.InstallSources.Add(new GalleryInstallSource { Type = "winget", Id = "Contoso.Sample" });
+        var viewModel = CreateViewModel(entry, jsExtensionInstaller: installer.Object);
+        List<string> propertyNames = [];
+        viewModel.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName is not null)
+            {
+                propertyNames.Add(args.PropertyName);
+            }
+        };
+
+        viewModel.ApplyWinGetPackageInfo(
+            new WinGetPackageInfo(
+                new WinGetPackageStatus(
+                    IsInstalled: false,
+                    IsInstalledStateKnown: true,
+                    IsUpdateAvailable: false,
+                    IsUpdateStateKnown: true),
+                Details: null));
+
+        Assert.IsTrue(viewModel.IsInstalled);
+        Assert.IsTrue(viewModel.ShowInstallViaWinGetButton);
+        Assert.IsTrue(viewModel.ShowWinGetStatusDetails);
+        CollectionAssert.Contains(propertyNames, nameof(viewModel.ShowInstallViaWinGetButton));
+        CollectionAssert.Contains(propertyNames, nameof(viewModel.WinGetStatusText));
+    }
+
+    [TestMethod]
+    public void TrackedWinGetUninstall_PreservesJsonRpcInstalledState()
+    {
+        var installer = new Mock<IJsExtensionInstaller>();
+        installer.Setup(x => x.IsInstalled("sample-js-extension")).Returns(true);
+        var entry = CreateJsonRpcEntry();
+        entry.InstallSources.Add(new GalleryInstallSource { Type = "winget", Id = "Contoso.Sample" });
+        var viewModel = CreateViewModel(entry, jsExtensionInstaller: installer.Object);
+
+        viewModel.ApplyTrackedOperation(CreateCompletedWinGetOperation(WinGetPackageOperationKind.Uninstall));
+
+        Assert.IsTrue(viewModel.IsInstalled);
+        Assert.IsTrue(viewModel.IsJsonRpcInstalled);
+    }
+
+    [TestMethod]
+    public async Task RefreshWinGetInstall_PreservesWinGetStateAfterJsonRpcRemoval()
+    {
+        var installer = new Mock<IJsExtensionInstaller>();
+        installer.Setup(x => x.IsInstalled("sample-js-extension")).Returns(true);
+        var entry = CreateJsonRpcEntry();
+        entry.InstallSources.Add(new GalleryInstallSource { Type = "winget", Id = "Contoso.Sample" });
+        var viewModel = CreateViewModel(entry, jsExtensionInstaller: installer.Object);
+
+        await viewModel.RefreshWinGetPackageInfoAsync(WinGetPackageOperationKind.Install);
+        viewModel.IsJsonRpcInstalled = false;
+
+        Assert.IsTrue(viewModel.IsInstalled);
+    }
+
+    [TestMethod]
+    public void DetectedInstall_PersistsAcrossOtherSourceUpdates()
+    {
+        var installer = new Mock<IJsExtensionInstaller>();
+        installer.Setup(x => x.IsInstalled("sample-js-extension")).Returns(true);
+        var entry = CreateJsonRpcEntry();
+        entry.InstallSources.Add(new GalleryInstallSource { Type = "winget", Id = "Contoso.Sample" });
+        var viewModel = CreateViewModel(entry, jsExtensionInstaller: installer.Object);
+
+        viewModel.ApplyDetectedInstallationState(true);
+        viewModel.ApplyWinGetPackageInfo(
+            new WinGetPackageInfo(
+                new WinGetPackageStatus(
+                    IsInstalled: false,
+                    IsInstalledStateKnown: true,
+                    IsUpdateAvailable: false,
+                    IsUpdateStateKnown: true),
+                Details: null));
+        viewModel.IsJsonRpcInstalled = false;
+
+        Assert.IsTrue(viewModel.IsInstalled);
+    }
+
+    private static WinGetPackageOperation CreateCompletedWinGetOperation(WinGetPackageOperationKind kind)
+    {
+        var now = DateTimeOffset.UtcNow;
+        return new WinGetPackageOperation(
+            OperationId: Guid.NewGuid(),
+            PackageId: "Contoso.Sample",
+            PackageName: "Contoso Sample",
+            Kind: kind,
+            State: WinGetPackageOperationState.Succeeded,
+            CanCancel: false,
+            IsIndeterminate: false,
+            ProgressPercent: 100,
+            BytesDownloaded: 0,
+            BytesRequired: 0,
+            ErrorMessage: null,
+            StartedAt: now,
+            UpdatedAt: now,
+            CompletedAt: now);
+    }
+
+    private static GalleryExtensionEntry CreateJsonRpcEntry()
+    {
+        return new GalleryExtensionEntry
+        {
+            Id = "sample-js-extension",
+            Title = "Sample JS",
+            Description = "Sample jsonrpc extension",
+            Author = new GalleryAuthor { Name = "Sample Author" },
+            InstallSources =
+            [
+                new GalleryInstallSource
+                {
+                    Type = "jsonrpc",
+                    Npm = new GalleryNpmPackage
+                    {
+                        Package = "@contoso/sample",
+                        Version = "1.2.3",
+                        Integrity = "sha512-abc123==",
+                        Registry = "https://registry.example.com",
+                    },
+                },
+            ],
+        };
+    }
+
+    private static ExtensionGalleryItemViewModel CreateJsonRpcViewModel(out Mock<IJsExtensionInstaller> installer, bool isInstalled = false)
+    {
+        installer = new Mock<IJsExtensionInstaller>();
+        installer.Setup(x => x.IsInstalled("sample-js-extension")).Returns(isInstalled);
+        return CreateViewModel(CreateJsonRpcEntry(), jsExtensionInstaller: installer.Object);
+    }
+
     private static GalleryExtensionEntry CreateEntry(string? iconUrl)
     {
         return new GalleryExtensionEntry
@@ -691,14 +1117,29 @@ public class ExtensionGalleryItemViewModelTests
         GalleryExtensionEntry entry,
         IWinGetPackageManagerService? winGetPackageManagerService = null,
         IWinGetPackageStatusService? winGetPackageStatusService = null,
-        IWinGetOperationTrackerService? winGetOperationTrackerService = null)
+        IWinGetOperationTrackerService? winGetOperationTrackerService = null,
+        IJsExtensionInstaller? jsExtensionInstaller = null,
+        ILogger<ExtensionGalleryItemViewModel>? logger = null)
     {
         return new ExtensionGalleryItemViewModel(
             entry,
-            NullLogger<ExtensionGalleryItemViewModel>.Instance,
+            logger ?? NullLogger<ExtensionGalleryItemViewModel>.Instance,
             winGetPackageManagerService,
             winGetPackageStatusService,
-            winGetOperationTrackerService);
+            winGetOperationTrackerService,
+            jsExtensionInstaller);
+    }
+
+    private static void VerifyErrorLogged(Mock<ILogger<ExtensionGalleryItemViewModel>> logger)
+    {
+        logger.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception?>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     private static WinGetPackageDetails CreatePackageDetails()
