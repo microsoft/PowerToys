@@ -156,7 +156,14 @@ public class SettingsManager : JsonSettingsManager, IDockClockSettings
 
     protected override void LoadAdditionalSettings(JsonObject settings)
     {
-        _dockClockTitleFormat = LoadDockClockFormat(settings, nameof(DockClockTitleFormat), "t");
+        var useLegacySeconds =
+            !settings.ContainsKey(Namespaced(nameof(DockClockTitleFormat))) &&
+            settings[Namespaced("DockClockWithSecond")] is JsonValue legacySeconds &&
+            legacySeconds.TryGetValue<string>(out var value) &&
+            bool.TryParse(value, out var showSeconds) &&
+            showSeconds;
+
+        _dockClockTitleFormat = LoadDockClockFormat(settings, nameof(DockClockTitleFormat), useLegacySeconds ? "T" : "t");
         _dockClockSubtitleFormat = LoadDockClockFormat(settings, nameof(DockClockSubtitleFormat), "d");
         _dockClockCopyFormat = LoadDockClockFormat(settings, nameof(DockClockCopyFormat), string.Empty);
     }

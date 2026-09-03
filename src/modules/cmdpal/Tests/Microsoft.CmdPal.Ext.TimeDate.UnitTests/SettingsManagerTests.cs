@@ -93,6 +93,30 @@ public class SettingsManagerTests
         }
     }
 
+    [DataTestMethod]
+    [DataRow("\"true\"", "T")]
+    [DataRow("\"false\"", "t")]
+    [DataRow("true", "t")]
+    public void LoadSettings_HandlesLegacyDockClockSecondsWithoutModifyingFile(string serializedValue, string expectedTitleFormat)
+    {
+        var filePath = Path.Combine(Path.GetTempPath(), $"time-date-settings-{Guid.NewGuid()}.json");
+        var legacySettings = $$"""{"timeDate.DockClockWithSecond":{{serializedValue}}}""";
+        File.WriteAllText(filePath, legacySettings);
+
+        try
+        {
+            var settings = new SettingsManager(filePath);
+
+            Assert.AreEqual(expectedTitleFormat, settings.DockClockTitleFormat);
+            Assert.AreEqual("d", settings.DockClockSubtitleFormat);
+            Assert.AreEqual(legacySettings, File.ReadAllText(filePath));
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
     [TestMethod]
     public void EditDefaultDockClockForm_InvalidSubmissionKeepsFormOpenAndSettingsUnchanged()
     {
