@@ -51,7 +51,11 @@ internal static class CustomClockDisplay
     internal static string GetLocalOffsetDifference(DateTimeOffset clockTime)
     {
         var localTime = TimeZoneInfo.ConvertTime(clockTime, TimeZoneInfo.Local);
-        var difference = clockTime.Offset - localTime.Offset;
+        return FormatOffsetDifference(clockTime.Offset - localTime.Offset);
+    }
+
+    internal static string FormatOffsetDifference(TimeSpan difference)
+    {
         if (difference == TimeSpan.Zero)
         {
             return string.Empty;
@@ -59,7 +63,7 @@ internal static class CustomClockDisplay
 
         var absoluteDifference = difference.Duration();
         var minutes = absoluteDifference.Minutes == 0 ? string.Empty : $" {absoluteDifference.Minutes}m";
-        return $"{(difference < TimeSpan.Zero ? "−" : "+")}{absoluteDifference.Hours}h{minutes}";
+        return $"{(difference < TimeSpan.Zero ? "−" : "+")}{(int)absoluteDifference.TotalHours}h{minutes}";
     }
 
     internal static string Format(DateTimeOffset time, string format, ISettingsInterface settings)

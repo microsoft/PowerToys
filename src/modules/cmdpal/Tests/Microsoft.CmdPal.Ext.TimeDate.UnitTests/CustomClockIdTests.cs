@@ -249,6 +249,14 @@ public class CustomClockIdTests
     }
 
     [DataTestMethod]
+    [DataRow(25, "+25h")]
+    [DataRow(-26, "−26h")]
+    public void CustomClockDisplay_OffsetDifferenceDoesNotWrapAt24Hours(int hours, string expected)
+    {
+        Assert.AreEqual(expected, CustomClockDisplay.FormatOffsetDifference(TimeSpan.FromHours(hours)));
+    }
+
+    [DataTestMethod]
     [DataRow(-8)]
     [DataRow(0)]
     [DataRow(9)]
