@@ -27,13 +27,13 @@ public class DetailsMarkdownHelperTests
     }
 
     [TestMethod]
-    public void BuildImageBody_ReturnsMarkdownImage_WithFitHint()
+    public void BuildImageBody_ReturnsMarkdownImage_WithFitAndFixedHeightHints()
     {
         var path = @"C:\Temp\clipboard.png";
 
         var body = DetailsMarkdownHelper.BuildImageBody(path, "Image");
 
-        Assert.AreEqual("![Image](file:///C:/Temp/clipboard.png?--x-cmdpal-fit=fit)", body);
+        Assert.AreEqual("![Image](file:///C:/Temp/clipboard.png?--x-cmdpal-fit=fit&--x-cmdpal-height=200)", body);
     }
 
     [TestMethod]

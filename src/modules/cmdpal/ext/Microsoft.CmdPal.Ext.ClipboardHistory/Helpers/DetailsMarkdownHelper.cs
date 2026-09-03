@@ -8,6 +8,8 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 
 internal static class DetailsMarkdownHelper
 {
+    private const int ImagePreviewHeight = 200;
+
     public static string BuildTextBody(string? text)
     {
         if (string.IsNullOrEmpty(text))
@@ -27,5 +29,5 @@ internal static class DetailsMarkdownHelper
     public static string BuildImageBody(string? imagePath, string altText)
         => string.IsNullOrEmpty(imagePath)
             ? string.Empty
-            : $"![{altText}]({new Uri(imagePath).AbsoluteUri}?--x-cmdpal-fit=fit)";
+            : $"![{altText}]({new Uri(imagePath).AbsoluteUri}?--x-cmdpal-fit=fit&--x-cmdpal-height={ImagePreviewHeight})";
 }
