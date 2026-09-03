@@ -95,6 +95,11 @@ internal sealed partial class ClipboardHistoryListPage : ListPage, IDisposable
 
                     if (imageReceived is not null)
                     {
+                        if (disposed.Value)
+                        {
+                            return;
+                        }
+
                         item.ImageData = imageReceived;
                         item.ImagePath = GetImagePath(item.Item.Id);
                         await CacheImageAsync(imageReceived, item.ImagePath).ConfigureAwait(false);
@@ -114,8 +119,12 @@ internal sealed partial class ClipboardHistoryListPage : ListPage, IDisposable
         }
         finally
         {
-            CleanupCachedImages(clipboardHistory.Where(static item => item.ImagePath is not null).Select(static item => item.ImagePath!));
             loadInFlight.Value = false;
+
+            // Dispose can race this worker, so cleanup happens after the in-flight flag is cleared.
+            CleanupCachedImages(disposed.Value
+                ? []
+                : clipboardHistory.Where(static item => item.ImagePath is not null).Select(static item => item.ImagePath!));
             if (!loadSucceeded)
             {
                 hasLoadedOnce.Value = false;
@@ -240,14 +249,14 @@ internal sealed partial class ClipboardHistoryListPage : ListPage, IDisposable
 
     private void StartClipboardHistoryLoad()
     {
-        IsLoading = true;
-
-        // https://github.com/microsoft/windows-rs/issues/317
-        // The synchronous prefix must run in STA or the clipboard API hangs.
-        // Continuations use the thread pool because this raw thread has no
-        // synchronization context.
         try
         {
+            SetLoadingState(true);
+
+            // https://github.com/microsoft/windows-rs/issues/317
+            // The synchronous prefix must run in STA or the clipboard API hangs.
+            // Continuations use the thread pool because this raw thread has no
+            // synchronization context.
             var thread = new Thread(() =>
             {
                 try
@@ -266,8 +275,20 @@ internal sealed partial class ClipboardHistoryListPage : ListPage, IDisposable
         {
             loadInFlight.Value = false;
             hasLoadedOnce.Value = false;
-            IsLoading = false;
+            SetLoadingState(false);
             TryLogMessage($"Failed to start clipboard history load thread: {ex}");
+        }
+    }
+
+    private void SetLoadingState(bool value)
+    {
+        try
+        {
+            IsLoading = value;
+        }
+        catch (Exception ex)
+        {
+            TryLogMessage($"Failed to set clipboard history loading state: {ex}");
         }
     }
 
@@ -300,7 +321,11 @@ internal sealed partial class ClipboardHistoryListPage : ListPage, IDisposable
         }
 
         Clipboard.HistoryChanged -= TrackClipboardHistoryChanged_EventHandler;
-        CleanupCachedImages([]);
+        if (!loadInFlight.Value)
+        {
+            CleanupCachedImages([]);
+        }
+
         GC.SuppressFinalize(this);
     }
 }
