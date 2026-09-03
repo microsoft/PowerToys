@@ -23,26 +23,37 @@ namespace Microsoft.CmdPal.JsonRpc.Models;
 public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposable
 {
     private readonly JsonRpcConnection _connection;
-    private readonly JsonElement _providerMetadata;
-    private readonly string _id;
-    private readonly string _displayName;
-    private readonly IIconInfo _icon;
+    private readonly string _fallbackId;
+    private readonly string _fallbackDisplayName;
+    private readonly string? _fallbackIcon;
+
+    // Guards the provider metadata, which is set once from the initialize handshake
+    // after the proxy is constructed (the proxy is created before the handshake so its
+    // notification handlers are registered in time to receive startup notifications).
+    private readonly Lock _metadataLock = new();
 
     // Host status messages use the statusId minted by the client. That lets an
     // update refresh the same message and lets hide target the right one.
     private readonly Dictionary<string, StatusMessage> _shownStatusMessages = new();
 
-    // Guards _shownStatusMessages. Host status notifications and Dispose can run
-    // on different threads, so reads, writes, and enumeration share one gate.
-    private readonly object _statusLock = new();
+    // Guards the host reference, the shown-status bookkeeping, and the buffer of host
+    // actions emitted before the host is attached. Notifications an extension raises
+    // while it activates (during the initialize handshake) arrive before the host is
+    // set; they are buffered here and flushed in order once the host attaches so those
+    // startup logs, statuses, and clipboard requests are not lost.
+    private readonly Lock _hostLock = new();
+    private readonly List<Action<IExtensionHost>> _pendingHostActions = [];
     private readonly object _settingsLock = new();
 
-    // Host notifications can arrive after this proxy subscribes but before
-    // InitializeWithHost attaches the host. Buffer them in arrival order so
-    // startup status and log messages are not dropped. A null buffer means the
-    // host is attached and notifications can run inline.
-    private readonly object _preInitLock = new();
-    private List<BufferedHostNotification>? _preInitNotifications = new();
+    private JsonElement _providerMetadata;
+
+    // Provider identity carried from the initialize handshake metadata. Each field
+    // falls back to the configured values when the handshake omits it. Guarded by _metadataLock
+    // because SetProviderMetadata can refresh them after the proxy is already in use.
+    private string _id = "unknown";
+    private string _displayName = string.Empty;
+    private IIconInfo _icon = new IconInfo(string.Empty);
+
     private IExtensionHost? _host;
     private ICommandSettings? _settingsCache;
     private bool _settingsLoading;
@@ -59,28 +70,76 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
         _connection = connection ?? throw new ArgumentNullException(nameof(connection));
         ArgumentException.ThrowIfNullOrEmpty(fallbackId);
         ArgumentNullException.ThrowIfNull(fallbackDisplayName);
+        _fallbackId = fallbackId;
+        _fallbackDisplayName = fallbackDisplayName;
+        _fallbackIcon = fallbackIcon;
         _providerMetadata = providerMetadata;
 
-        // Prefer the identity and icon from the initialize handshake when they are
-        // present. If the extension omits a field, use the package manifest value.
-        _id = ReadHandshakeString(providerMetadata, "id") ?? fallbackId;
-        _displayName = ReadHandshakeString(providerMetadata, "displayName") ?? fallbackDisplayName;
-        _icon = ReadHandshakeIcon(providerMetadata) ?? new IconInfo(fallbackIcon ?? string.Empty);
+        // Apply the identity captured at construction. The proxy is created before the
+        // initialize handshake completes, so this seeds id, display name, and icon from
+        // whatever metadata is available now (or the configured fallback); SetProviderMetadata later
+        // refreshes them with the real handshake values.
+        lock (_metadataLock)
+        {
+            ApplyProviderIdentityLocked(providerMetadata);
+        }
 
         RegisterNotificationHandlers();
+
+        // Clean up any active host statuses when the extension disconnects or its process
+        // exits, not only when it explicitly hides them. The wrapper also disposes this
+        // proxy during teardown; both paths are idempotent.
+        _connection.Disconnected += OnConnectionDisconnected;
     }
 
     public event TypedEventHandler<object, IItemsChangedEventArgs>? ItemsChanged;
 
-    public string Id => _id;
+    public string Id
+    {
+        get
+        {
+            lock (_metadataLock)
+            {
+                return _id;
+            }
+        }
+    }
 
-    public string DisplayName => _displayName;
+    public string DisplayName
+    {
+        get
+        {
+            lock (_metadataLock)
+            {
+                return _displayName;
+            }
+        }
+    }
 
-    public IIconInfo Icon => _icon;
+    public IIconInfo Icon
+    {
+        get
+        {
+            lock (_metadataLock)
+            {
+                return _icon;
+            }
+        }
+    }
 
-    // True means the provider's top-level command set is fixed. If the extension
-    // leaves it out of the handshake, the wire default is true.
-    public bool Frozen => ReadFrozen(_providerMetadata);
+    // Whether the provider's top-level command set is fixed. The value is carried
+    // from the initialize handshake metadata; the wire default is true when the
+    // extension does not specify it.
+    public bool Frozen
+    {
+        get
+        {
+            lock (_metadataLock)
+            {
+                return ReadFrozen(_providerMetadata);
+            }
+        }
+    }
 
     public ICommandSettings? Settings
     {
@@ -240,67 +299,131 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
     {
         ArgumentNullException.ThrowIfNull(host);
 
-        List<BufferedHostNotification> buffered;
-        lock (_preInitLock)
+        lock (_hostLock)
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             _host = host;
 
-            // Swap the buffer to null under the same lock used by notification handlers.
-            // _host is written first so any handler that now runs inline sees the host,
-            // not a stale null.
-            buffered = _preInitNotifications ?? new List<BufferedHostNotification>();
-            _preInitNotifications = null;
+            // Deliver, in arrival order, the host actions that the extension emitted while
+            // it was activating (before the host was attached), such as startup logs,
+            // statuses, and clipboard requests. Replaying under the lock keeps this delivery
+            // ordered against a concurrent dispose or disconnect so a buffered show cannot
+            // land after teardown has already hidden everything.
+            foreach (var action in _pendingHostActions)
+            {
+                try
+                {
+                    action(host);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning($"Error flushing buffered host action for {DisplayName}: {ex.Message}");
+                }
+            }
+
+            _pendingHostActions.Clear();
         }
 
         Logger.LogDebug($"JSCommandProviderProxy initialized with host for {DisplayName}");
+    }
 
-        // Replay startup notifications in arrival order now that the host can receive them.
-        foreach (var notification in buffered)
+    /// <summary>
+    /// Sets the provider metadata captured from the initialize handshake so that the
+    /// author-specified <see cref="Frozen"/> value and the handshake identity (id,
+    /// display name, and icon) flow through instead of the wire defaults. Called by the
+    /// extension wrapper after the handshake completes.
+    /// </summary>
+    /// <param name="providerMetadata">The provider metadata returned during initialize.</param>
+    public void SetProviderMetadata(JsonElement providerMetadata)
+    {
+        lock (_metadataLock)
         {
-            DispatchBufferedHostNotification(notification.Method, notification.Parameters);
+            _providerMetadata = providerMetadata;
+            ApplyProviderIdentityLocked(providerMetadata);
         }
     }
 
-    public void Dispose()
+    /// <summary>
+    /// Runs a host action now when the host is attached, or buffers it in arrival order to
+    /// be replayed once <see cref="InitializeWithHost"/> attaches the host. This keeps
+    /// notifications emitted during activation (before the host is set) from being dropped.
+    /// </summary>
+    private void RunWithHost(Action<IExtensionHost> action)
+    {
+        lock (_hostLock)
+        {
+            RunWithHostLocked(action);
+        }
+    }
+
+    /// <summary>
+    /// Variant of <see cref="RunWithHost"/> that requires <see cref="_hostLock"/> to already
+    /// be held by the caller. Status show and hide handlers call this from inside the same
+    /// lock acquisition that mutates <see cref="_shownStatusMessages"/> so the dictionary
+    /// update and the host dispatch are a single atomic, ordered step. Splitting them across
+    /// two lock acquisitions would let a hide dispatch overtake its pending show.
+    /// </summary>
+    private void RunWithHostLocked(Action<IExtensionHost> action)
     {
         if (_isDisposed)
         {
             return;
         }
 
-        _isDisposed = true;
+        var host = _host;
+        if (host is null)
+        {
+            _pendingHostActions.Add(action);
+            return;
+        }
 
-        // Detach this proxy's handlers so late connection notifications stop here.
-        // The extension service owns process teardown and protocol dispose, so this
-        // proxy only releases its subscriptions and host references.
+        // Invoke the host action while holding the lock so status show and hide calls
+        // run in the same order as their lock acquisition. Host status methods are
+        // fire-and-forget (they return an async operation immediately), so the lock is
+        // held only briefly. This keeps a hide from being reordered ahead of a late
+        // show, and, because Dispose sets _isDisposed under this same lock, keeps a show
+        // from resurrecting status after teardown has hidden everything.
+        action(host);
+    }
+
+    public void Dispose()
+    {
+        lock (_hostLock)
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            _isDisposed = true;
+
+            var host = _host;
+            _host = null;
+            _pendingHostActions.Clear();
+            var activeStatuses = new List<StatusMessage>(_shownStatusMessages.Values);
+            _shownStatusMessages.Clear();
+
+            // Hide any status still visible while holding the lock so the hide is ordered
+            // after every show already dispatched and cannot be overtaken by a late show.
+            // Once _isDisposed is set here, RunWithHost is a no-op, so no show can resurrect
+            // status after teardown has hidden it.
+            HideStatuses(host, activeStatuses);
+        }
+
+        _connection.Disconnected -= OnConnectionDisconnected;
+
+        // Detach every notification handler this proxy registered so late
+        // notifications from the connection are no longer routed here. Process
+        // teardown and the protocol dispose request are owned by the extension
+        // service, so this proxy only releases its own subscriptions and host
+        // references. See the W4 coordination note in the remediation report.
         foreach (var method in RegisteredNotificationMethods)
         {
             _connection.UnregisterNotificationHandler(method);
-        }
-
-        // Hide any status messages still on screen. Snapshot and clear under the lock
-        // so a status notification racing Dispose cannot change the map during enumeration.
-        var host = _host;
-        List<StatusMessage> pendingStatuses;
-        lock (_statusLock)
-        {
-            pendingStatuses = new List<StatusMessage>(_shownStatusMessages.Values);
-            _shownStatusMessages.Clear();
-        }
-
-        if (host != null)
-        {
-            foreach (var status in pendingStatuses)
-            {
-                try
-                {
-                    _ = host.HideStatus(status);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogWarning($"Error hiding status during dispose for {DisplayName}: {ex.Message}");
-                }
-            }
         }
 
         lock (_settingsLock)
@@ -308,8 +431,55 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
             (_settingsCache as IDisposable)?.Dispose();
             Monitor.PulseAll(_settingsLock);
         }
+    }
 
-        _host = null;
+    private void OnConnectionDisconnected(object? sender, EventArgs e)
+    {
+        // The extension disconnected or its process exited. Clear any active statuses so
+        // they do not linger in the host UI even though no explicit hide arrived. The
+        // notification handlers stay registered; the connection is gone so they cannot
+        // fire again, and Dispose still unregisters them during full teardown.
+        lock (_hostLock)
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            _pendingHostActions.Clear();
+            if (_shownStatusMessages.Count == 0)
+            {
+                return;
+            }
+
+            var host = _host;
+            var activeStatuses = new List<StatusMessage>(_shownStatusMessages.Values);
+            _shownStatusMessages.Clear();
+
+            // Hide under the lock so this teardown hide is ordered against any concurrent
+            // show or dispose and cannot strand or resurrect status.
+            HideStatuses(host, activeStatuses);
+        }
+    }
+
+    private void HideStatuses(IExtensionHost? host, List<StatusMessage> statuses)
+    {
+        if (host is null)
+        {
+            return;
+        }
+
+        foreach (var status in statuses)
+        {
+            try
+            {
+                _ = host.HideStatus(status);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Error hiding status for {DisplayName}: {ex.Message}");
+            }
+        }
     }
 
     private static readonly string[] RegisteredNotificationMethods =
@@ -357,40 +527,6 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
         {
             Logger.LogDebug($"Failed to get settings for {DisplayName}: {ex.Message}");
             return null;
-        }
-    }
-
-    // Buffers a host notification until InitializeWithHost attaches the host.
-    // The params element is cloned because the connection may recycle the source document.
-    private bool TryBufferUntilHostAttached(string method, JsonElement paramsElement)
-    {
-        lock (_preInitLock)
-        {
-            if (_preInitNotifications == null)
-            {
-                return false;
-            }
-
-            _preInitNotifications.Add(new BufferedHostNotification(method, paramsElement.Clone()));
-            return true;
-        }
-    }
-
-    // Runs the buffered notification now that the host is attached. The open gate
-    // keeps this pass from buffering the same notification again.
-    private void DispatchBufferedHostNotification(string method, JsonElement paramsElement)
-    {
-        switch (method)
-        {
-            case "host/showStatus":
-                HandleShowStatusNotification(paramsElement);
-                break;
-            case "host/hideStatus":
-                HandleHideStatusNotification(paramsElement);
-                break;
-            case "host/logMessage":
-                HandleLogMessageNotification(paramsElement);
-                break;
         }
     }
 
@@ -443,11 +579,6 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
             return;
         }
 
-        if (TryBufferUntilHostAttached("host/logMessage", paramsElement))
-        {
-            return;
-        }
-
         try
         {
             var message = JSModelMapper.GetString(paramsElement, "message");
@@ -476,11 +607,8 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
                     break;
             }
 
-            if (_host != null)
-            {
-                var logMessage = new LogMessage { Message = message, State = (MessageState)state };
-                _ = _host.LogMessage(logMessage);
-            }
+            var logMessage = new LogMessage { Message = message, State = (MessageState)state };
+            RunWithHost(host => _ = host.LogMessage(logMessage));
         }
         catch (Exception ex)
         {
@@ -495,11 +623,6 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
             return;
         }
 
-        if (TryBufferUntilHostAttached("host/showStatus", paramsElement))
-        {
-            return;
-        }
-
         try
         {
             var (message, state) = ReadStatusMessage(paramsElement);
@@ -510,16 +633,12 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
 
             var statusId = ReadStatusId(paramsElement);
             var progress = ReadProgress(paramsElement);
+            var context = ReadStatusContext(paramsElement);
 
-            lock (_statusLock)
+            StatusMessage statusMessage;
+            lock (_hostLock)
             {
                 if (_isDisposed)
-                {
-                    return;
-                }
-
-                var host = _host;
-                if (host == null)
                 {
                     return;
                 }
@@ -527,15 +646,16 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
                 if (!string.IsNullOrEmpty(statusId) &&
                     _shownStatusMessages.TryGetValue(statusId, out var existing))
                 {
-                    // Same statusId again. Update the existing message instead of
-                    // stacking another one.
+                    // Same status shown again: refresh it in place so the host keeps a
+                    // single message rather than stacking duplicates. The buffered or
+                    // already-delivered ShowStatus references this same object.
                     existing.Message = message;
                     existing.State = (MessageState)state;
                     existing.Progress = progress;
                     return;
                 }
 
-                var statusMessage = new StatusMessage
+                statusMessage = new StatusMessage
                 {
                     Message = message,
                     State = (MessageState)state,
@@ -547,12 +667,9 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
                     _shownStatusMessages[statusId] = statusMessage;
                 }
 
-                // Keep the map update and ShowStatus under one lock. Dispose uses
-                // this same lock to hide tracked statuses, so it either runs before
-                // this show starts or after the shown status is tracked. Releasing
-                // the lock between those steps would let Dispose hide a status that
-                // was not shown yet.
-                _ = host.ShowStatus(statusMessage, ReadStatusContext(paramsElement));
+                // Dispatch inside the same lock acquisition that recorded the status so the
+                // show cannot be reordered behind a hide that arrives immediately after.
+                RunWithHostLocked(host => _ = host.ShowStatus(statusMessage, context));
             }
         }
         catch (Exception ex)
@@ -568,33 +685,32 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
             return;
         }
 
-        if (TryBufferUntilHostAttached("host/hideStatus", paramsElement))
-        {
-            return;
-        }
-
         try
         {
-            var host = _host;
-            if (host == null)
+            var statusId = ReadStatusId(paramsElement);
+            if (string.IsNullOrEmpty(statusId))
             {
                 return;
             }
 
-            var statusId = ReadStatusId(paramsElement);
-            StatusMessage statusMessage;
-            lock (_statusLock)
+            lock (_hostLock)
             {
-                if (string.IsNullOrEmpty(statusId) ||
-                    !_shownStatusMessages.TryGetValue(statusId, out statusMessage!))
+                if (_isDisposed)
+                {
+                    return;
+                }
+
+                if (!_shownStatusMessages.TryGetValue(statusId, out var existing))
                 {
                     return;
                 }
 
                 _shownStatusMessages.Remove(statusId);
-            }
 
-            _ = host.HideStatus(statusMessage);
+                // Dispatch inside the same lock acquisition that removed the status so the
+                // hide observes the same ordering as the show that preceded it.
+                RunWithHostLocked(host => _ = host.HideStatus(existing));
+            }
         }
         catch (Exception ex)
         {
@@ -647,8 +763,8 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
         return string.Empty;
     }
 
-    // Turns the wire progress payload into the toolkit shape. Null means no
-    // progress was reported.
+    // Maps a status progress payload (indeterminate spinner or a percentage) onto
+    // a toolkit progress state. Returns null when no progress is reported.
     private static IProgressState? ReadProgress(JsonElement paramsElement)
     {
         if (paramsElement.ValueKind != JsonValueKind.Object ||
@@ -658,24 +774,36 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
             return null;
         }
 
-        var progress = new ProgressState();
+        var isIndeterminate =
+            JSModelMapper.TryGetProperty(progressProp, "isIndeterminate", out var indeterminateProp) &&
+            indeterminateProp.ValueKind == JsonValueKind.True;
 
-        if (JSModelMapper.TryGetProperty(progressProp, "isIndeterminate", out var indeterminateProp))
-        {
-            progress.IsIndeterminate = indeterminateProp.ValueKind == JsonValueKind.True;
-        }
+        var progress = new ProgressState { IsIndeterminate = isIndeterminate };
 
         if (JSModelMapper.TryGetProperty(progressProp, "progressPercent", out var percentProp) &&
             percentProp.ValueKind == JsonValueKind.Number &&
-            percentProp.TryGetUInt32(out var percent))
+            percentProp.TryGetDouble(out var percent) &&
+            percent >= 0)
         {
-            progress.ProgressPercent = percent;
+            progress.ProgressPercent = percent >= uint.MaxValue ? uint.MaxValue : (uint)percent;
         }
 
         return progress;
     }
 
-    // Blank or missing handshake fields use the configured fallback value.
+    // Caller must hold _metadataLock. Applies the provider identity (id, display name,
+    // and icon) from the initialize handshake metadata, falling back to configured values for
+    // any field the handshake omits. Called from the constructor with the metadata passed
+    // at construction and again from SetProviderMetadata when the real handshake completes.
+    private void ApplyProviderIdentityLocked(JsonElement metadata)
+    {
+        _id = ReadHandshakeString(metadata, "id") ?? _fallbackId;
+        _displayName = ReadHandshakeString(metadata, "displayName") ?? _fallbackDisplayName;
+        _icon = ReadHandshakeIcon(metadata) ?? new IconInfo(_fallbackIcon ?? string.Empty);
+    }
+
+    // Reads a string field declared in the initialize handshake metadata. Returns null when absent or empty so the caller
+    // falls back to the manifest value rather than overwriting it with an empty string.
     private static string? ReadHandshakeString(JsonElement metadata, string name)
     {
         if (metadata.ValueKind == JsonValueKind.Object &&
@@ -689,7 +817,9 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
         return null;
     }
 
-    // Missing handshake icons fall back to the manifest icon, not an empty glyph.
+    // Reads the icon declared in the initialize handshake metadata. Returns null
+    // when the handshake omits an icon so the caller falls back to the manifest
+    // icon rather than replacing it with an empty glyph.
     private static IIconInfo? ReadHandshakeIcon(JsonElement metadata)
     {
         if (metadata.ValueKind == JsonValueKind.Object &&
@@ -717,7 +847,7 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
             }
         }
 
-        // The wire default is frozen when the extension leaves the flag out.
+        // The wire default when the extension omits the flag is frozen.
         return true;
     }
 
@@ -794,14 +924,9 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider4, IDisposa
         var items = new List<IFallbackCommandItem>();
         foreach (var element in result.Value.EnumerateArray())
         {
-            var adapter = new JSFallbackCommandItemAdapter(element, _connection);
-            items.Add(adapter);
+            items.Add(new JSFallbackCommandItemAdapter(element, _connection));
         }
 
         return items.ToArray();
     }
-
-    // An arrival-ordered snapshot of a host notification that reached this proxy
-    // before the host was attached, held until InitializeWithHost replays it.
-    private readonly record struct BufferedHostNotification(string Method, JsonElement Parameters);
 }

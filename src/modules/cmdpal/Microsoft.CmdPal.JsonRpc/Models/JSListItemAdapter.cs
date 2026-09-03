@@ -22,6 +22,18 @@ internal sealed partial class JSListItemAdapter : JSObservableProxyBase, IListIt
     private readonly JSLazyCache<ICommand?> _command;
     private readonly JSLazyCache<IContextItem[]> _moreCommands;
     private readonly JSLazyCache<IDetails?> _details;
+    private static readonly string[] RefreshableProperties =
+    [
+        "command",
+        "moreCommands",
+        "icon",
+        "title",
+        "subtitle",
+        "tags",
+        "details",
+        "section",
+        "textToSuggest",
+    ];
 
     public JSListItemAdapter(JsonElement data, JsonRpcConnection connection)
         : base(GetNotificationId(data), connection, data)
@@ -81,6 +93,31 @@ internal sealed partial class JSListItemAdapter : JSObservableProxyBase, IListIt
                 _details.Reset();
             }
         }
+    }
+
+    internal static string ComputeKey(JsonElement data)
+    {
+        var id = JSModelMapper.GetString(data, "id");
+        if (!string.IsNullOrEmpty(id))
+        {
+            return "id:" + id;
+        }
+
+        if (JSModelMapper.TryGetCommandData(data, out var commandData))
+        {
+            var commandId = JSModelMapper.GetString(commandData, "id");
+            if (!string.IsNullOrEmpty(commandId))
+            {
+                return "cmd:" + commandId;
+            }
+        }
+
+        return "title:" + (JSModelMapper.GetString(data, "title") ?? string.Empty);
+    }
+
+    internal void UpdateData(JsonElement data)
+    {
+        ReplaceData(data, RefreshableProperties, GetNotificationId(data));
     }
 
     public override void Dispose()

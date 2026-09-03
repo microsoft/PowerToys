@@ -35,7 +35,7 @@ public sealed record JSExtensionManifest
     public string? Description { get; init; }
 
     /// <summary>
-    /// Gets the icon glyph or relative path (cmdpal.icon).
+    /// Gets the icon glyph, URL, or relative image path (cmdpal.icon).
     /// </summary>
     public string? Icon { get; init; }
 
@@ -53,6 +53,15 @@ public sealed record JSExtensionManifest
     /// Gets the resolved absolute path to the entry point file.
     /// </summary>
     public string? EntryPointPath { get; init; }
+
+    /// <summary>
+    /// Gets the resolved absolute directory the host should watch for hot-reload source
+    /// changes (from cmdpal.watchPath), or null when the manifest does not declare one. A
+    /// null value means the caller falls back to the directory containing
+    /// <see cref="EntryPointPath"/> rather than the whole extension directory, so hot-reload
+    /// scope is driven by what the extension declared instead of a host guess.
+    /// </summary>
+    public string? WatchDirectory { get; init; }
 
     /// <summary>
     /// Gets a value indicating whether the Node.js process should start with the inspector attached.
@@ -191,9 +200,25 @@ public sealed record JSExtensionManifest
         // Rule 5: a symbolic link or junction must not redirect the entry point outside the extension
         // directory, even when the text path stays inside it. Check the real filesystem after the file
         // is known to exist.
-        if (!IsEntryPointContainmentTrusted(extensionDirectory, resolvedEntryPoint, out var containmentError))
+        if (!IsManifestResourcePathTrusted(extensionDirectory, resolvedEntryPoint))
         {
-            return JSExtensionManifestParseResult.Failure(containmentError!);
+            return JSExtensionManifestParseResult.Failure(
+                $"The entry point '{entryPoint}' traverses a symbolic link or junction, or could not be validated.");
+        }
+
+        // Rule 6: an optional cmdpal.watchPath narrows (or relocates) the host's hot-reload
+        // scope. It is validated the same way as the entry point: it must be a relative path
+        // that resolves to an existing directory inside the extension directory, and it must
+        // not reach outside that directory through a symbolic link or junction. Absent, the
+        // caller falls back to the entry point's own directory.
+        string? watchDirectory = null;
+        if (!string.IsNullOrWhiteSpace(package.CmdPal.WatchPath))
+        {
+            watchDirectory = ResolveWatchDirectory(extensionDirectory, package.CmdPal.WatchPath, out var watchPathError);
+            if (watchDirectory is null)
+            {
+                return JSExtensionManifestParseResult.Failure(watchPathError!);
+            }
         }
 
         var manifest = new JSExtensionManifest
@@ -206,6 +231,7 @@ public sealed record JSExtensionManifest
             Publisher = ResolvePublisher(package),
             Main = entryPoint,
             EntryPointPath = resolvedEntryPoint,
+            WatchDirectory = watchDirectory,
             Debug = package.CmdPal.Debug,
             DebugPort = package.CmdPal.DebugPort,
             Engines = package.Engines,
@@ -227,6 +253,73 @@ public sealed record JSExtensionManifest
         }
 
         return ExtractAuthorName(package.Author);
+    }
+
+    /// <summary>
+    /// Resolves the declared icon for host consumption. Relative image paths must resolve to an
+    /// existing file inside the extension directory without crossing a reparse point.
+    /// </summary>
+    internal string ResolveIcon(string extensionDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(Icon))
+        {
+            return string.Empty;
+        }
+
+        var icon = Icon.Trim();
+        if (Path.IsPathRooted(icon))
+        {
+            return string.Empty;
+        }
+
+        if (Uri.TryCreate(icon, UriKind.Absolute, out var uri))
+        {
+            return uri.IsFile ? string.Empty : icon;
+        }
+
+        if (!LooksLikeRelativeFilePath(icon))
+        {
+            return icon;
+        }
+
+        if (string.IsNullOrEmpty(extensionDirectory))
+        {
+            return string.Empty;
+        }
+
+        string baseDirectory;
+        string resolvedIcon;
+        try
+        {
+            baseDirectory = Path.GetFullPath(extensionDirectory);
+            resolvedIcon = Path.GetFullPath(Path.Combine(baseDirectory, icon));
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            return string.Empty;
+        }
+
+        var prefix = baseDirectory.EndsWith(Path.DirectorySeparatorChar)
+            ? baseDirectory
+            : baseDirectory + Path.DirectorySeparatorChar;
+        if (!resolvedIcon.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ||
+            !File.Exists(resolvedIcon) ||
+            !IsManifestResourcePathTrusted(baseDirectory, resolvedIcon))
+        {
+            return string.Empty;
+        }
+
+        return resolvedIcon;
+    }
+
+    private static bool LooksLikeRelativeFilePath(string icon)
+    {
+        if (icon.Contains('/') || icon.Contains('\\'))
+        {
+            return true;
+        }
+
+        return icon.Length > 1 && Path.HasExtension(icon);
     }
 
     /// <summary>
@@ -315,6 +408,61 @@ public sealed record JSExtensionManifest
         return resolved;
     }
 
+    /// <summary>
+    /// Resolves and validates cmdpal.watchPath the same way <see cref="ResolveEntryPoint"/>
+    /// resolves the entry point: it must be a relative path within the extension directory
+    /// that does not traverse (via "..") or cross a reparse point. Unlike the entry point it
+    /// must resolve to a directory, not a file, since it names the host's hot-reload watch root.
+    /// </summary>
+    private static string? ResolveWatchDirectory(string extensionDirectory, string watchPath, out string? error)
+    {
+        error = null;
+
+        if (Path.IsPathRooted(watchPath))
+        {
+            error = $"The 'cmdpal.watchPath' value '{watchPath}' must be a relative path within the extension directory.";
+            return null;
+        }
+
+        string baseDirectory;
+        string resolved;
+        try
+        {
+            baseDirectory = Path.GetFullPath(extensionDirectory);
+            resolved = Path.GetFullPath(Path.Combine(baseDirectory, watchPath));
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            error = $"The 'cmdpal.watchPath' value '{watchPath}' is not a valid path.";
+            return null;
+        }
+
+        var prefix = baseDirectory.EndsWith(Path.DirectorySeparatorChar)
+            ? baseDirectory
+            : baseDirectory + Path.DirectorySeparatorChar;
+
+        if (!resolved.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(Path.TrimEndingDirectorySeparator(resolved), Path.TrimEndingDirectorySeparator(baseDirectory), StringComparison.OrdinalIgnoreCase))
+        {
+            error = $"The 'cmdpal.watchPath' value '{watchPath}' must not escape the extension directory.";
+            return null;
+        }
+
+        if (!Directory.Exists(resolved))
+        {
+            error = $"The 'cmdpal.watchPath' value '{watchPath}' does not resolve to an existing directory.";
+            return null;
+        }
+
+        if (!IsManifestResourcePathTrusted(extensionDirectory, resolved))
+        {
+            error = $"The 'cmdpal.watchPath' value '{watchPath}' traverses a symbolic link or junction, which is not allowed.";
+            return null;
+        }
+
+        return resolved;
+    }
+
     private static bool IsSupportedEntryPointExtension(string path)
     {
         var extension = Path.GetExtension(path.AsSpan());
@@ -324,36 +472,27 @@ public sealed record JSExtensionManifest
     }
 
     /// <summary>
-    /// Confirms that the resolved entry point stays inside the extension directory on the real
-    /// filesystem. The text check in <see cref="ResolveEntryPoint"/> only blocks ".." traversal. A
-    /// symbolic link or junction could still redirect an in-package path outside the package, so any
-    /// reparse point between the extension directory and the entry point is rejected.
+    /// Checks each resolved path segment below the extension directory for reparse points.
+    /// Callers must first confirm that the source value is relative and lexically contained.
     /// </summary>
-    private static bool IsEntryPointContainmentTrusted(string extensionDirectory, string resolvedEntryPoint, out string? error)
+    private static bool IsManifestResourcePathTrusted(string extensionDirectory, string resolvedPath)
     {
-        error = null;
-
         try
         {
             var baseDirectory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(extensionDirectory));
-            var current = Path.GetFullPath(resolvedEntryPoint);
+            var current = Path.GetFullPath(resolvedPath);
 
-            // Walk from the entry point up toward the extension directory. The extension directory
-            // itself and everything above it are outside this check.
             while (!string.Equals(Path.TrimEndingDirectorySeparator(current), baseDirectory, StringComparison.OrdinalIgnoreCase))
             {
-                if (IsReparsePoint(current))
+                if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint)
                 {
-                    error = $"The entry point '{resolvedEntryPoint}' traverses a symbolic link or junction, which is not allowed.";
                     return false;
                 }
 
                 var parent = Path.GetDirectoryName(current);
                 if (string.IsNullOrEmpty(parent) || string.Equals(parent, current, StringComparison.OrdinalIgnoreCase))
                 {
-                    // Reached a filesystem root without meeting the extension directory. The text
-                    // containment check already ran, so this only happens for pathological inputs.
-                    break;
+                    return false;
                 }
 
                 current = parent;
@@ -363,27 +502,7 @@ public sealed record JSExtensionManifest
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException or PathTooLongException or System.Security.SecurityException)
         {
-            error = $"The entry point '{resolvedEntryPoint}' could not be validated: {ex.Message}";
             return false;
-        }
-    }
-
-    private static bool IsReparsePoint(string path)
-    {
-        try
-        {
-            return (File.GetAttributes(path) & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint;
-        }
-        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
-        {
-            // A missing segment cannot be a trusted but unverified link. The caller already confirmed
-            // the entry point exists, so treat a vanished segment as not a reparse point.
-            return false;
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or System.Security.SecurityException)
-        {
-            // If the segment's attributes cannot be read, err on the side of caution and reject it.
-            return true;
         }
     }
 }

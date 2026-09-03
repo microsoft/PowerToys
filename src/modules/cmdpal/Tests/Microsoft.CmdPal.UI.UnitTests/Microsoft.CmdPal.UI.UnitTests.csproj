@@ -29,5 +29,6 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconSourceProvider.cs" Link="Helpers\Icons\IconSourceProvider.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconLoaderService.cs" Link="Helpers\Icons\IIconLoaderService.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconSourceProvider.cs" Link="Helpers\Icons\IIconSourceProvider.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Services\ProcessShutdownCoordinator.cs" Link="Services\ProcessShutdownCoordinator.cs" />
   </ItemGroup>
 </Project>

@@ -49,7 +49,7 @@ internal static class JSPropertyChangeRegistry
 
         foreach (var target in registry.Targets.GetLiveTargets(commandId))
         {
-            target.ApplyPropertyChanges(properties);
+            target.ApplyPropertyChanges(commandId, properties);
         }
     }
 

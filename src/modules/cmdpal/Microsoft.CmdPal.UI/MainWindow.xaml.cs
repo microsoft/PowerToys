@@ -1166,12 +1166,6 @@ public sealed partial class MainWindow : WindowEx,
             }
         }
 
-        var extensionServices = serviceProvider.GetServices<IExtensionService>();
-        foreach (var extensionService in extensionServices)
-        {
-            extensionService.SignalStopAsync();
-        }
-
         App.Current.Services.GetService<TrayIconService>()!.Destroy();
 
         // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
@@ -1181,7 +1175,7 @@ public sealed partial class MainWindow : WindowEx,
         DisposeAcrylic();
 
         _keyboardListener.Stop();
-        Environment.Exit(0);
+        App.Current.RequestProcessExit();
     }
 
     private void DisposeAcrylic()

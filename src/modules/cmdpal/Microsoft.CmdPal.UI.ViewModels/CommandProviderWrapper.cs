@@ -54,7 +54,37 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
     public TopLevelItemPageContext TopLevelPageContext { get; }
 
-    public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
+    /// <summary>
+    /// Creates a wrapper for an in-proc built-in command provider registered directly in the
+    /// DI container (no extension host process involved).
+    /// </summary>
+    /// <param name="provider">The in-proc command provider instance.</param>
+    /// <param name="mainThread">The UI thread scheduler.</param>
+    public static CommandProviderWrapper CreateForBuiltIn(ICommandProvider provider, TaskScheduler mainThread)
+        => new(provider, mainThread);
+
+    /// <summary>
+    /// Creates a wrapper for a WinRT/COM extension whose <see cref="ICommandProvider"/> is
+    /// obtained through <see cref="IExtensionWrapper.GetExtensionObject"/>. The extension must
+    /// already be started (via <see cref="IExtensionWrapper.StartExtensionAsync"/>).
+    /// </summary>
+    /// <param name="extension">The started WinRT extension wrapper.</param>
+    /// <param name="mainThread">The UI thread scheduler.</param>
+    /// <param name="commandProviderCache">Cache used to recall display info if initialization fails.</param>
+    public static CommandProviderWrapper CreateForWinRtExtension(IExtensionWrapper extension, TaskScheduler mainThread, ICommandProviderCache commandProviderCache)
+        => new(extension, mainThread, commandProviderCache);
+
+    /// <summary>
+    /// Creates a wrapper for a JavaScript extension where the <see cref="ICommandProvider"/>
+    /// is obtained directly over JSON-RPC (not through <see cref="IExtensionWrapper.GetExtensionObject"/>).
+    /// </summary>
+    /// <param name="extension">The JS extension wrapper managing the Node.js process.</param>
+    /// <param name="provider">The command provider proxy backed by the JSON-RPC connection.</param>
+    /// <param name="mainThread">The UI thread scheduler.</param>
+    public static CommandProviderWrapper CreateForJsonRpcExtension(IExtensionWrapper extension, ICommandProvider provider, TaskScheduler mainThread)
+        => new(extension, provider, mainThread);
+
+    private CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
     {
         // This ctor is only used for in-proc builtin commands. So the Unsafe!
         // calls are pretty dang safe actually.
@@ -81,7 +111,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         Logger.LogDebug($"Initialized command provider {ProviderId}");
     }
 
-    public CommandProviderWrapper(IExtensionWrapper extension, TaskScheduler mainThread, ICommandProviderCache commandProviderCache)
+    private CommandProviderWrapper(IExtensionWrapper extension, TaskScheduler mainThread, ICommandProviderCache commandProviderCache)
     {
         _taskScheduler = mainThread;
         _commandProviderCache = commandProviderCache;
@@ -123,6 +153,44 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         }
 
         isValid = true;
+    }
+
+    private CommandProviderWrapper(IExtensionWrapper extension, ICommandProvider provider, TaskScheduler mainThread)
+    {
+        _taskScheduler = mainThread;
+        TopLevelPageContext = new(this, _taskScheduler);
+
+        Extension = extension;
+        ExtensionHost = new CommandPaletteHost(extension);
+        _commandProvider = new(provider);
+
+        try
+        {
+            var model = _commandProvider.Unsafe!;
+
+            // Hook the extension back into us
+            model.InitializeWithHost(ExtensionHost);
+            model.ItemsChanged += CommandProvider_ItemsChanged;
+
+            Id = provider.Id;
+            DisplayName = provider.DisplayName;
+            Icon = new(provider.Icon);
+            Icon.InitializeProperties();
+
+            // Note: explicitly not InitializeProperties()ing the settings here. If
+            // we do that, then we'd regress GH #38321
+            Settings = new(provider.Settings, this, _taskScheduler);
+
+            isValid = true;
+
+            Logger.LogDebug($"Initialized JS extension command provider {Extension.PackageFamilyName}:{Extension.ExtensionUniqueId}");
+        }
+        catch (Exception e)
+        {
+            Logger.LogError("Failed to initialize CommandProvider for JS extension.");
+            Logger.LogError($"Extension was {Extension!.PackageFamilyName}");
+            Logger.LogError(e.ToString());
+        }
     }
 
     private ProviderSettings GetProviderSettings(SettingsModel settings)
