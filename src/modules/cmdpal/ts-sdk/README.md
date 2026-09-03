@@ -4,8 +4,6 @@ TypeScript SDK for building [PowerToys Command Palette](https://learn.microsoft.
 
 Extensions built with this SDK run as isolated Node.js processes and talk to the Command Palette host over JSON-RPC 2.0 via stdio, using LSP-style `Content-Length` message framing.
 
-> This package is part of a stacked, multi-phase effort tracked in [microsoft/PowerToys#48707](https://github.com/microsoft/PowerToys/issues/48707). Phase 1 delivers the extension-author-facing SDK only. The C# host side lands in later phases.
-
 ## Requirements
 
 - Node.js >= 22
@@ -152,8 +150,6 @@ npm run lint       # eslint
 npm run format     # prettier --write
 npm run check      # typecheck + lint + format:check + test
 ```
-
-Only source is committed. The `dist/` output is produced by `npm run build` and is git-ignored.
 
 ## License
 
