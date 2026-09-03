@@ -16,6 +16,16 @@ public static class WellKnownExtensionAttributes
     public const string DockLabelWidthPropertyName = "DockLabelWidth";
 
     /// <summary>
+    /// The logical property name used with <c>PropChanged</c> when the Dock tabular-digits hint changes.
+    /// </summary>
+    public const string DockLabelTabularDigitsPropertyName = "DockLabelTabularDigits";
+
+    /// <summary>
+    /// The logical property name used with <c>PropChanged</c> when the Dock trailing-alignment hint changes.
+    /// </summary>
+    public const string DockLabelTrailingAlignmentPropertyName = "DockLabelTrailingAlignment";
+
+    /// <summary>
     /// Optional minimum width of a Dock item's shared title/subtitle area, excluding its icon and padding.
     /// The value is a non-negative, finite <see cref="double"/> in DIPs, or an invariant string such as
     /// <c>"10ch"</c> measured in widths of the zero glyph in the Dock title's font and text scale.
@@ -34,4 +44,22 @@ public static class WellKnownExtensionAttributes
     /// supplied maximum causes both bounds to be ignored.
     /// </summary>
     public const string DockMaxLabelWidth = "Microsoft.CommandPalette.Dock.MaxLabelWidth";
+
+    /// <summary>
+    /// Optional <see cref="bool"/> hint that displays a Dock item's title and subtitle with tabular digits.
+    /// The extension remains responsible for formatting consistent decimal precision.
+    /// Use <see cref="DockLabelPresentationExtensions"/> to set or clear the hint and notify automatically.
+    /// For direct property-bag edits, raise <c>PropChanged</c> with the name
+    /// <see cref="DockLabelTabularDigitsPropertyName"/> or use <c>"Properties"</c> to invalidate the entire bag.
+    /// </summary>
+    public const string DockLabelTabularDigits = "Microsoft.CommandPalette.Dock.TabularDigits";
+
+    /// <summary>
+    /// Optional <see cref="bool"/> hint that aligns a Dock item's title and subtitle to the trailing edge
+    /// of their label area. This hint is independent of <see cref="DockLabelTabularDigits"/>.
+    /// Use <see cref="DockLabelPresentationExtensions"/> to set or clear the hint and notify automatically.
+    /// For direct property-bag edits, raise <c>PropChanged</c> with the name
+    /// <see cref="DockLabelTrailingAlignmentPropertyName"/> or use <c>"Properties"</c> to invalidate the entire bag.
+    /// </summary>
+    public const string DockLabelTrailingAlignment = "Microsoft.CommandPalette.Dock.TrailingAlignment";
 }

@@ -20,6 +20,7 @@ public sealed partial class DockItemControl : Control
     public DockItemControl()
     {
         DefaultStyleKey = typeof(DockItemControl);
+        RegisterPropertyChangedCallback(FlowDirectionProperty, OnFlowDirectionChanged);
     }
 
     public static readonly DependencyProperty ToolTipProperty =
@@ -92,6 +93,42 @@ public sealed partial class DockItemControl : Control
         get => (bool)GetValue(IsCompactProperty);
         set => SetValue(IsCompactProperty, value);
     }
+
+    public static readonly DependencyProperty UseTabularDigitsProperty =
+        DependencyProperty.Register(nameof(UseTabularDigits), typeof(bool), typeof(DockItemControl), new PropertyMetadata(false, OnUseTabularDigitsPropertyChanged));
+
+    public bool UseTabularDigits
+    {
+        get => (bool)GetValue(UseTabularDigitsProperty);
+        set => SetValue(UseTabularDigitsProperty, value);
+    }
+
+    private static void OnUseTabularDigitsPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockItemControl control)
+        {
+            control.UpdateTabularDigitsState();
+        }
+    }
+
+    public static readonly DependencyProperty UseTrailingLabelAlignmentProperty =
+        DependencyProperty.Register(nameof(UseTrailingLabelAlignment), typeof(bool), typeof(DockItemControl), new PropertyMetadata(false, OnUseTrailingLabelAlignmentPropertyChanged));
+
+    public bool UseTrailingLabelAlignment
+    {
+        get => (bool)GetValue(UseTrailingLabelAlignmentProperty);
+        set => SetValue(UseTrailingLabelAlignmentProperty, value);
+    }
+
+    private static void OnUseTrailingLabelAlignmentPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockItemControl control)
+        {
+            control.UpdateTextAlignmentState();
+        }
+    }
+
+    private void OnFlowDirectionChanged(DependencyObject sender, DependencyProperty dp) => UpdateTextAlignmentState();
 
     private static void OnIsCompactPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -269,9 +306,21 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateTextAlignmentState()
     {
+        if (UseTrailingLabelAlignment)
+        {
+            var trailingState = FlowDirection == FlowDirection.RightToLeft ? "TextLeftAligned" : "TextRightAligned";
+            VisualStateManager.GoToState(this, trailingState, true);
+            return;
+        }
+
         var verticalDock = _parentDock?.DockSide is DockSide.Left or DockSide.Right;
         var shouldCenterText = verticalDock && !ShouldShowIcon();
         VisualStateManager.GoToState(this, shouldCenterText ? "TextCentered" : "TextLeftAligned", true);
+    }
+
+    private void UpdateTabularDigitsState()
+    {
+        VisualStateManager.GoToState(this, UseTabularDigits ? "TabularDigits" : "DefaultNumeralAlignment", true);
     }
 
     private void UpdateAllVisibility()
@@ -280,6 +329,7 @@ public sealed partial class DockItemControl : Control
         UpdateIconVisibility();
         UpdateToolTip();
         UpdateAlignment();
+        UpdateTabularDigitsState();
         UpdateCompactState();
     }
 

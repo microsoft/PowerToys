@@ -258,6 +258,21 @@
                                             <Setter Target="SubtitleText.TextAlignment" Value="Center" />
                                         </VisualState.Setters>
                                     </VisualState>
+                                    <VisualState x:Name="TextRightAligned">
+                                        <VisualState.Setters>
+                                            <Setter Target="TitleText.TextAlignment" Value="Right" />
+                                            <Setter Target="SubtitleText.TextAlignment" Value="Right" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="NumeralAlignmentStates">
+                                    <VisualState x:Name="DefaultNumeralAlignment" />
+                                    <VisualState x:Name="TabularDigits">
+                                        <VisualState.Setters>
+                                            <Setter Target="TitleText.(Typography.NumeralAlignment)" Value="Tabular" />
+                                            <Setter Target="SubtitleText.(Typography.NumeralAlignment)" Value="Tabular" />
+                                        </VisualState.Setters>
+                                    </VisualState>
                                 </VisualStateGroup>
                                 <VisualStateGroup x:Name="CompactStates">
                                     <VisualState x:Name="DefaultLayout" />

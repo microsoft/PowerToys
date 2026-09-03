@@ -510,11 +510,25 @@ public partial class DockItemViewModel : CommandItemViewModel
 
     public DockLabelWidthConstraints LabelWidthConstraints { get; private set; } = DockLabelWidthConstraints.Default;
 
+    public bool UseTabularDigits { get; private set; }
+
+    public bool UseTrailingLabelAlignment { get; private set; }
+
     protected override void FetchProperty(string propertyName)
     {
         if (propertyName == WellKnownExtensionAttributes.DockLabelWidthPropertyName && Model.Unsafe is not null)
         {
             UpdateLabelWidthConstraints(GetExtendedAttributes());
+        }
+
+        if (propertyName == WellKnownExtensionAttributes.DockLabelTabularDigitsPropertyName && Model.Unsafe is not null)
+        {
+            UpdateTabularDigits(GetExtendedAttributes());
+        }
+
+        if (propertyName == WellKnownExtensionAttributes.DockLabelTrailingAlignmentPropertyName && Model.Unsafe is not null)
+        {
+            UpdateTrailingLabelAlignment(GetExtendedAttributes());
         }
 
         base.FetchProperty(propertyName);
@@ -525,6 +539,8 @@ public partial class DockItemViewModel : CommandItemViewModel
         base.UpdateExtendedAttributes(properties);
 
         UpdateLabelWidthConstraints(properties);
+        UpdateTabularDigits(properties);
+        UpdateTrailingLabelAlignment(properties);
     }
 
     private void UpdateLabelWidthConstraints(IDictionary<string, object?>? properties)
@@ -534,6 +550,28 @@ public partial class DockItemViewModel : CommandItemViewModel
         {
             LabelWidthConstraints = constraints;
             UpdateProperty(nameof(LabelWidthConstraints));
+        }
+    }
+
+    private void UpdateTabularDigits(IDictionary<string, object?>? properties)
+    {
+        var enabled = properties?.TryGetValue(WellKnownExtensionAttributes.DockLabelTabularDigits, out var value) == true &&
+                      value is true;
+        if (enabled != UseTabularDigits)
+        {
+            UseTabularDigits = enabled;
+            UpdateProperty(nameof(UseTabularDigits));
+        }
+    }
+
+    private void UpdateTrailingLabelAlignment(IDictionary<string, object?>? properties)
+    {
+        var enabled = properties?.TryGetValue(WellKnownExtensionAttributes.DockLabelTrailingAlignment, out var value) == true &&
+                      value is true;
+        if (enabled != UseTrailingLabelAlignment)
+        {
+            UseTrailingLabelAlignment = enabled;
+            UpdateProperty(nameof(UseTrailingLabelAlignment));
         }
     }
 

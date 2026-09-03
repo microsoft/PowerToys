@@ -90,7 +90,7 @@ functionality.
     - [Plain text content](#plain-text-content)
   - [Addenda VI: Adaptive Card Actions](#addenda-vi-adaptive-card-actions)
   - [Addenda VII: Rich content details](#addenda-vii-rich-content-details)
-  - [Addenda IX: Dock label width hints](#addenda-ix-dock-label-width-hints)
+  - [Addenda IX: Dock label layout hints](#addenda-ix-dock-label-layout-hints)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
@@ -2464,7 +2464,7 @@ raise a `INotifyPropChanged` event on the `IDetails2` object for the property
 name "Content". The host will accept that as a notification that the content has
 changed. 
 
-## Addenda IX: Dock label width hints
+## Addenda IX: Dock label layout hints
 
 To keep changing performance values from moving neighbouring Dock items, use
 `IExtendedAttributesProvider` to reserve label space. `ListItem` already
@@ -2478,8 +2478,15 @@ properties[WellKnownExtensionAttributes.DockMaxLabelWidth] = "12ch";
 ```
 
 ```csharp
-var item = new ListItem(command) { Title = "1%" }
+var fixedWidth = new ListItem(command) { Title = changingText }
     .SetDockLabelWidth("12ch");
+
+var tabular = new ListItem(command) { Title = $"{cpuPercent:F2}%" }
+    .SetDockLabelTabularDigits();
+
+var trailing = new ListItem(command) { Title = $"{cpuPercent:F2}%" }
+    .SetDockLabelWidth("12ch")
+    .SetDockLabelTrailingAlignment();
 ```
 
 Use `SetDockLabelWidth(80)` for DIPs or `ClearDockLabelWidth()` to restore
@@ -2487,6 +2494,14 @@ defaults. These extension methods preserve the concrete item type and notify
 once with `PropChanged("DockLabelWidth")` when the hints change. They support `CommandItem` subclasses implementing
 `IExtendedAttributesProvider` with a persistent, writable property bag, such as
 `ListItem`.
+
+`SetDockLabelTabularDigits()` gives digits equal width;
+`SetDockLabelTrailingAlignment()` anchors the text to the trailing edge. The
+hints are independent. Format the value in the extension (`F2` above) to keep
+decimal precision consistent. Their Boolean keys are
+`Microsoft.CommandPalette.Dock.TabularDigits` and
+`Microsoft.CommandPalette.Dock.TrailingAlignment`; direct edits notify
+`"DockLabelTabularDigits"`, `"DockLabelTrailingAlignment"`, or `"Properties"`.
 
 The keys are `Microsoft.CommandPalette.Dock.MinLabelWidth` and
 `Microsoft.CommandPalette.Dock.MaxLabelWidth`. Values accept a finite,

@@ -156,6 +156,50 @@ public partial class DockItemViewModelTests
     }
 
     [TestMethod]
+    public void PresentationHints_TargetedAndFullBagNotificationsRefreshIndependently()
+    {
+        var scheduler = new QueuedTaskScheduler();
+        var context = new TestPageContext(scheduler);
+        var item = new WidthTestItem { Title = "1.00%" };
+        var viewModel = new DockItemViewModel(new(item), new(context), true, true, DefaultContextMenuFactory.Instance);
+        try
+        {
+            viewModel.InitializeProperties();
+            Assert.IsFalse(viewModel.UseTabularDigits);
+            Assert.IsFalse(viewModel.UseTrailingLabelAlignment);
+
+            var tabularDigitsNotified = false;
+            var trailingAlignmentNotified = false;
+            viewModel.PropertyChanged += (_, args) =>
+            {
+                tabularDigitsNotified |= args.PropertyName == nameof(viewModel.UseTabularDigits);
+                trailingAlignmentNotified |= args.PropertyName == nameof(viewModel.UseTrailingLabelAlignment);
+            };
+
+            item.SetDockLabelTabularDigits();
+
+            scheduler.ExecuteUntil(() => tabularDigitsNotified);
+            Assert.IsTrue(viewModel.UseTabularDigits);
+            Assert.IsFalse(viewModel.UseTrailingLabelAlignment);
+            Assert.IsFalse(trailingAlignmentNotified);
+
+            tabularDigitsNotified = false;
+            item.GetProperties().Remove(WellKnownExtensionAttributes.DockLabelTabularDigits);
+            item.GetProperties()[WellKnownExtensionAttributes.DockLabelTrailingAlignment] = true;
+            item.NotifyPropertiesChanged();
+
+            scheduler.ExecuteUntil(() => tabularDigitsNotified && trailingAlignmentNotified);
+            Assert.IsFalse(viewModel.UseTabularDigits);
+            Assert.IsTrue(viewModel.UseTrailingLabelAlignment);
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+            scheduler.ExecuteAllAvailable();
+        }
+    }
+
+    [TestMethod]
     public void WidthHints_ListBandUsesTheChildItemAndRefreshesItInPlace()
     {
         var fixture = CreateBandFixture();

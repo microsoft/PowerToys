@@ -10,18 +10,23 @@ namespace SamplePagesExtension;
 
 /// <summary>
 /// A sample dock band with multiple buttons.
-/// Includes a simulated performance value that changes every second within a fixed label width.
+/// Includes separate live examples for label width, tabular digits, and trailing alignment.
 /// </summary>
 internal sealed partial class SampleButtonsDockBand : WrappedDockItem, IDisposable
 {
-    private static readonly string[] SampleValues = [
+    private static readonly string[] SizeConstraintValues = [
         "1%",
         "12.3%",
         "99.99%",
         "CPU 100% | 32 cores at 4.80 GHz | 256 active threads",
     ];
 
-    private readonly ListItem _performanceItem;
+    private static readonly double[] TabularValues = [11.11, 88.88, 44.44, 77.77];
+    private static readonly double[] AlignmentValues = [1, 12, 100, 999];
+
+    private readonly ListItem _sizeConstraintItem;
+    private readonly ListItem _tabularDigitsItem;
+    private readonly ListItem _trailingAlignmentItem;
     private readonly Timer _timer;
     private readonly Lock _updateLock = new();
     private int _sampleIndex;
@@ -30,15 +35,33 @@ internal sealed partial class SampleButtonsDockBand : WrappedDockItem, IDisposab
     public SampleButtonsDockBand()
         : base([], "com.microsoft.cmdpal.samples.buttons_band", "Sample Buttons Band")
     {
-        _performanceItem = new ListItem(new ShowToastCommand("Simulated CPU values change every second. This button keeps a fixed width."))
+        _sizeConstraintItem = new ListItem(new ShowToastCommand("This changing label keeps a fixed 12ch width."))
         {
-            Title = SampleValues[0],
-            Subtitle = "CPU sample",
-        }.SetDockLabelWidth("12ch");
+            Title = SizeConstraintValues[0],
+            Subtitle = "Fixed width",
+        }
+        .SetDockLabelWidth("12ch");
+
+        _tabularDigitsItem = new ListItem(new ShowToastCommand("Equal-length values use tabular digits without changing alignment."))
+        {
+            Title = FormatPercentage(TabularValues[0]),
+            Subtitle = "Tabular digits",
+        }
+        .SetDockLabelTabularDigits();
+
+        _trailingAlignmentItem = new ListItem(new ShowToastCommand("Changing values align to the trailing edge of a fixed slot."))
+        {
+            Title = FormatPercentage(AlignmentValues[0]),
+            Subtitle = "Trailing aligned",
+        }
+        .SetDockLabelWidth("12ch")
+        .SetDockLabelTrailingAlignment();
 
         ListItem[] buttons = [
             new(new ShowToastCommand("Button 1")) { Title = "1" },
-            _performanceItem,
+            _sizeConstraintItem,
+            _tabularDigitsItem,
+            _trailingAlignmentItem,
             new(new ShowToastCommand("Button B")) { Icon = new IconInfo("\uF094") }, // B button
             new(new ShowToastCommand("Button 3")) { Title = "Items have Icons &", Icon = new IconInfo("\uED1E"), Subtitle = "titles & subtitles" }, // Subtitles
         ];
@@ -57,12 +80,16 @@ internal sealed partial class SampleButtonsDockBand : WrappedDockItem, IDisposab
                 return;
             }
 
-            _sampleIndex = (_sampleIndex + 1) % SampleValues.Length;
+            _sampleIndex = (_sampleIndex + 1) % SizeConstraintValues.Length;
 
-            // ListItem raises PropChanged; keep the item and band list intact on each tick.
-            _performanceItem.Title = SampleValues[_sampleIndex];
+            // ListItem raises PropChanged; keep the items and band list intact on each tick.
+            _sizeConstraintItem.Title = SizeConstraintValues[_sampleIndex];
+            _tabularDigitsItem.Title = FormatPercentage(TabularValues[_sampleIndex]);
+            _trailingAlignmentItem.Title = FormatPercentage(AlignmentValues[_sampleIndex]);
         }
     }
+
+    private static string FormatPercentage(double value) => $"{value:F2}%";
 
     public void Dispose()
     {

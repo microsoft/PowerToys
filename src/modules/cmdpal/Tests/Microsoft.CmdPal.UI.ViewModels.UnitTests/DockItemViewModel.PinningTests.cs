@@ -104,6 +104,36 @@ public partial class DockItemViewModelTests
     }
 
     [TestMethod]
+    public void PresentationHints_PinnedTopLevelItemInitializeAndRefreshIndependently()
+    {
+        var item = new ListItem { Title = "1.00%" }.SetDockLabelTabularDigits();
+        var fixture = CreatePinnedBandFixture(item);
+        try
+        {
+            var dockItem = fixture.Band.Items[0];
+            Assert.IsTrue(dockItem.UseTabularDigits);
+            Assert.IsFalse(dockItem.UseTrailingLabelAlignment);
+            fixture.Scheduler.ExecuteAllAvailable();
+
+            var trailingAlignmentNotified = false;
+            dockItem.PropertyChanged += (_, args) => trailingAlignmentNotified |= args.PropertyName == nameof(dockItem.UseTrailingLabelAlignment);
+
+            item.SetDockLabelTrailingAlignment();
+
+            fixture.Scheduler.ExecuteUntil(() => trailingAlignmentNotified);
+            Assert.IsTrue(dockItem.UseTabularDigits);
+            Assert.IsTrue(dockItem.UseTrailingLabelAlignment);
+            Assert.AreSame(dockItem, fixture.Band.Items[0]);
+            Assert.AreEqual(true, fixture.TopLevel.GetProperties()[WellKnownExtensionAttributes.DockLabelTabularDigits]);
+            Assert.AreEqual(true, fixture.TopLevel.GetProperties()[WellKnownExtensionAttributes.DockLabelTrailingAlignment]);
+        }
+        finally
+        {
+            CleanupPinnedBandFixture(fixture);
+        }
+    }
+
+    [TestMethod]
     public void ExtendedAttributes_PinnedTopLevelItemForwardsTheProvidersBagAndNotifications()
     {
         const string attributeName = "Test.CustomAttribute";
