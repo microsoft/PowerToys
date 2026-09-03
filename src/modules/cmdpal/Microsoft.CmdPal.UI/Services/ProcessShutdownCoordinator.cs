@@ -7,24 +7,24 @@ namespace Microsoft.CmdPal.UI.Services;
 internal sealed class ProcessShutdownCoordinator
 {
     private readonly TimeSpan _timeout;
-    private readonly Action<Action> _startWorker;
+    private readonly Action<Action> _startShutdownThread;
     private readonly Action<Exception> _onError;
     private int _shutdownStarted;
     private int _exitStarted;
 
     internal ProcessShutdownCoordinator(TimeSpan timeout, Action<Exception> onError)
-        : this(timeout, StartForegroundWorker, onError)
+        : this(timeout, StartForegroundShutdownThread, onError)
     {
     }
 
     internal ProcessShutdownCoordinator(
         TimeSpan timeout,
-        Action<Action> startWorker,
+        Action<Action> startShutdownThread,
         Action<Exception> onError)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(timeout, TimeSpan.Zero);
         _timeout = timeout;
-        _startWorker = startWorker;
+        _startShutdownThread = startShutdownThread;
         _onError = onError;
     }
 
@@ -49,7 +49,7 @@ internal sealed class ProcessShutdownCoordinator
 
         try
         {
-            _startWorker(() => StopAndExit(getShutdownOperations, exitProcess));
+            _startShutdownThread(() => StopAndExit(getShutdownOperations, exitProcess));
         }
         catch (Exception ex)
         {
@@ -60,7 +60,7 @@ internal sealed class ProcessShutdownCoordinator
         return true;
     }
 
-    private static void StartForegroundWorker(Action action)
+    private static void StartForegroundShutdownThread(Action action)
     {
         var shutdownThread = new Thread(() => action())
         {
