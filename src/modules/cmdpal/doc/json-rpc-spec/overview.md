@@ -69,8 +69,6 @@ Each JS extension runs in its own Node.js process. The host spawns the process, 
 
 ---
 
----
-
 ## Known Gaps and Deferred Work
 
 The following capabilities are intentionally not part of the current JS/TS extension surface. They are documented here so contributors know the boundary and the likely shape of a future solution. Each is deferred rather than rejected.
@@ -80,6 +78,20 @@ The following capabilities are intentionally not part of the current JS/TS exten
 There is no per-page unload notification. A JS page learns it has become active implicitly, because the first `getItems` fetch after navigation acts as a de facto load signal, but there is no equivalent signal when the user navigates away and a page is popped from the stack. The WinRT `IPage` interface has no `OnLoad` or `OnUnload` member, so there is no C# ABI parity to mirror.
 
 A future solution would be additive and JS-only: a host to extension JSON-RPC notification (for example `page/unloaded` carrying the page id, and optionally a symmetric `page/loaded`), emitted from the host where a page is torn down. `PageViewModel.UnsafeCleanup` is the natural single choke point, since back-navigation and other disposal paths all pass through it. The TS SDK would expose an optional `onUnload` (and optionally `onLoad`) hook on the page base classes, following the existing `loadMore` lifecycle pattern. Because it is additive with no reply expected, older extensions that do not register the hook are unaffected. The item is deferred because it introduces JS-only surface with no C# ABI equivalent, and that asymmetry needs a broader decision.
+
+### Prefixed token selection
+
+`textToSuggest` supports whole-query completion, but it does not provide the
+native sample's token behavior. The native path opts into `TokenSearch`, tracks
+the caret, wraps selected tokens with zero-width spaces, and lets the search box
+delete a token as one unit. None of that state crosses the JSON-RPC boundary
+today, so the JS sample does not pretend that right-arrow completion is the same
+feature.
+
+A future design can stay additive. A list page could opt into token search, and
+`listPage/setSearchText` could include an optional caret position. The host and
+SDK would still need an agreed token shape before exposing selection because
+zero-width-space markers are an implementation detail, not a wire contract.
 
 ### Drag and drop (DataPackage)
 

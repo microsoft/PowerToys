@@ -5,14 +5,12 @@
 import {
   CopyTextCommand,
   iconFromBase64,
-  iconFromFile,
   iconFromUrl,
   ListItemBase,
   ListPageBase,
 } from '@microsoft/cmdpal-sdk';
 import type { Details, IconInfo, IListItem, Tag } from '@microsoft/cmdpal-sdk';
-import { fileURLToPath } from 'node:url';
-import { glyphIcon, samplePngBase64 } from '../util.js';
+import { getHeroImage, glyphIcon, samplePngBase64 } from '../util.js';
 
 type IconLoader = () => Promise<IconInfo>;
 
@@ -157,10 +155,7 @@ export class SampleIconPage extends ListPageBase {
   }
 
   private startIconLoads(): void {
-    this.packagedFileIconLoad ??= this.loadIcon(
-      () => iconFromFile(fileURLToPath(new URL('../assets/hero.png', import.meta.url))),
-      this.packagedFileItem,
-    );
+    this.packagedFileIconLoad ??= this.loadIcon(getHeroImage, this.packagedFileItem);
     this.urlIconLoad ??= this.loadIcon(() => iconFromUrl(firstPartyIconUrl), this.urlItem);
   }
 

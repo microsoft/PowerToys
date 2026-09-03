@@ -287,7 +287,10 @@ interface Details {
   title?: string;
   body?: string;              // Markdown-formatted body text
   metadata?: DetailsElement[];
+  size?: DetailsSize;         // Defaults to 'small'
 }
+
+type DetailsSize = 'small' | 'medium' | 'large';
 
 interface DetailsElement {
   key: string;                // Label shown to the left
@@ -600,6 +603,10 @@ const icon = await iconFromUrl('https://raw.githubusercontent.com/microsoft/Powe
 // Read local file (async, reads and encodes as base64)
 const icon = await iconFromFile('./assets/icon.png');
 ```
+
+Base64 data is serialized into every item that uses it, and the protocol does
+not deduplicate repeated images. Use a relative path for the manifest icon, and
+keep inline payloads small when the same image appears across many items.
 
 ---
 

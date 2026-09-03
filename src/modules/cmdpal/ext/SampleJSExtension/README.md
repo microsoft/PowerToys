@@ -27,7 +27,6 @@ tags, and command behavior match the C# sample as closely as the JS SDK allows:
 - OnLoad demo.
 - Icon page covering glyph, packaged file, first-party URL, and inline base64 sources.
 - Slow loading list page.
-- Prefix suggestions (`@` people, `/` commands).
 - Content pages: mixed markdown plus form, plain text, image, and nested tree.
 - Nested comments built from tree plus form content.
 - Markdown pages: single block, many blocks, with details, and with images.
@@ -44,10 +43,12 @@ inventing protocol methods:
 - Parameter pages (`SimpleParameterTest`, `ButtonParameterTest`,
   `MixedParamTestPage`) and the create-note list-parameter page. No parameter
   run protocol.
+- Prefixed token selection. `textToSuggest` can complete the whole query, but
+  token search state and caret position do not cross the JSON-RPC boundary.
 - Drag and drop via `DataPackage`. `IListItem` has no `DataPackage`, so the
   clipboard demo copies to the clipboard instead.
-- Details size (Small/Medium/Large). The JS `Details` type has no size, so the
-  variants collapse to the default.
+- Toast icon and toast action button (`IToastArgs2`). `ToastArgs` carries a
+  message and an optional follow-up result only.
 - Live-updating details through targeted property change. Approximated with a
   dynamic page that refreshes items on a timer.
 - Win32 foreground-window and other in-process host tricks.

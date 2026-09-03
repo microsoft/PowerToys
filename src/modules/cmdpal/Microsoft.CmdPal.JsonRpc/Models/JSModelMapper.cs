@@ -23,6 +23,8 @@ namespace Microsoft.CmdPal.JsonRpc.Models;
 /// </summary>
 internal static class JSModelMapper
 {
+    internal const int JsonDiagnosticPreviewMaxLength = 128;
+
     internal static string? GetString(JsonElement element, string name)
     {
         if (element.ValueKind == JsonValueKind.Object &&
@@ -254,7 +256,72 @@ internal static class JSModelMapper
             Body = GetString(detailsProp, "body") ?? string.Empty,
             HeroImage = GetIcon(detailsProp, "heroImage"),
             Metadata = ParseMetadata(detailsProp, connection),
+            Size = ParseContentSize(detailsProp, "size"),
         };
+    }
+
+    /// <summary>
+    /// Reads an optional content size. Named values are matched without regard
+    /// to case, while numeric values remain accepted as compatibility leniency.
+    /// Missing or unknown values fall back to <see cref="ContentSize.Small"/>.
+    /// </summary>
+    internal static ContentSize ParseContentSize(JsonElement parent, string name)
+    {
+        if (!TryGetProperty(parent, name, out var sizeProp))
+        {
+            return ContentSize.Small;
+        }
+
+        if (sizeProp.ValueKind == JsonValueKind.Number && sizeProp.TryGetInt32(out var numeric))
+        {
+            var parsed = numeric switch
+            {
+                (int)ContentSize.Small => ContentSize.Small,
+                (int)ContentSize.Medium => ContentSize.Medium,
+                (int)ContentSize.Large => ContentSize.Large,
+                _ => (ContentSize?)null,
+            };
+
+            if (parsed.HasValue)
+            {
+                return parsed.Value;
+            }
+        }
+        else if (sizeProp.ValueKind == JsonValueKind.String)
+        {
+            var value = sizeProp.GetString();
+            if (string.Equals(value, "small", StringComparison.OrdinalIgnoreCase))
+            {
+                return ContentSize.Small;
+            }
+
+            if (string.Equals(value, "medium", StringComparison.OrdinalIgnoreCase))
+            {
+                return ContentSize.Medium;
+            }
+
+            if (string.Equals(value, "large", StringComparison.OrdinalIgnoreCase))
+            {
+                return ContentSize.Large;
+            }
+        }
+
+        Logger.LogDebug(
+            $"Unknown JSON-RPC content size for '{name}'. Kind: {sizeProp.ValueKind}; value: {GetBoundedJsonPreview(sizeProp)}. Using small.");
+        return ContentSize.Small;
+    }
+
+    internal static string GetBoundedJsonPreview(JsonElement element)
+    {
+        if (element.ValueKind == JsonValueKind.Undefined)
+        {
+            return "<undefined>";
+        }
+
+        var rawText = element.GetRawText();
+        return rawText.Length <= JsonDiagnosticPreviewMaxLength
+            ? rawText
+            : string.Concat(rawText.AsSpan(0, JsonDiagnosticPreviewMaxLength), "...");
     }
 
     internal static IContextItem[] ParseContextItems(JsonElement parent, string name, JsonRpcConnection connection)
@@ -421,13 +488,22 @@ internal static class JSModelMapper
         var showTitle = GetBool(gridProp, "showTitle", true);
         var showSubtitle = GetBool(gridProp, "showSubtitle", true);
 
-        return layout switch
+        if (string.Equals(layout, "small", StringComparison.OrdinalIgnoreCase))
         {
-            "small" => new SmallGridLayout(),
-            "medium" => new MediumGridLayout { ShowTitle = showTitle },
-            "gallery" => new GalleryGridLayout { ShowTitle = showTitle, ShowSubtitle = showSubtitle },
-            _ => null,
-        };
+            return new SmallGridLayout();
+        }
+
+        if (string.Equals(layout, "medium", StringComparison.OrdinalIgnoreCase))
+        {
+            return new MediumGridLayout { ShowTitle = showTitle };
+        }
+
+        if (string.Equals(layout, "gallery", StringComparison.OrdinalIgnoreCase))
+        {
+            return new GalleryGridLayout { ShowTitle = showTitle, ShowSubtitle = showSubtitle };
+        }
+
+        return null;
     }
 
     internal static IFilterItem[] ParseFilterItems(JsonElement parent)

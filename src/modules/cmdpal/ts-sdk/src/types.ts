@@ -31,6 +31,9 @@ export type ContentType = 'markdown' | 'form' | 'tree' | 'plainText' | 'image';
 /** Layout used by a list page rendered as a grid. */
 export type GridLayoutType = 'small' | 'medium' | 'gallery';
 
+/** Size of the details pane shown alongside a list item or content page. */
+export type DetailsSize = 'small' | 'medium' | 'large';
+
 /** Font family used by plain text content. */
 export type FontFamily = 'userInterface' | 'monospace';
 
@@ -345,6 +348,10 @@ export interface Details {
   body?: string;
   /** Labeled metadata rows shown below the body. */
   metadata?: DetailsElement[];
+  /**
+   * Size of the details pane. Omitted values default to 'small'.
+   */
+  size?: DetailsSize;
 }
 
 // === Filters ===

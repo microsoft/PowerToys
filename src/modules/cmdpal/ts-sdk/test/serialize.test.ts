@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 import { describe, expect, it } from 'vitest';
-import type { ContextItem, IFallbackCommandItem, IListItem } from '../src/types.js';
+import type { ContextItem, Details, IFallbackCommandItem, IListItem } from '../src/types.js';
 import { WireSerializer } from '../src/runtime/serialize.js';
 
 describe('WireSerializer.contextItems', () => {
@@ -68,6 +68,24 @@ describe('WireSerializer.contextItems', () => {
 
     expect(registered).toContain('outer');
     expect(registered).toContain('inner');
+  });
+});
+
+describe('WireSerializer.details', () => {
+  it.each(['small', 'medium', 'large'] as const)('serializes the %s size', (size) => {
+    const details: Details = { title: 'A', size };
+
+    const wire = new WireSerializer().details(details);
+
+    expect(wire.size).toBe(size);
+  });
+
+  it('omits size when it is not set', () => {
+    const details: Details = { title: 'C' };
+
+    const wire = new WireSerializer().details(details);
+
+    expect(wire).not.toHaveProperty('size');
   });
 });
 

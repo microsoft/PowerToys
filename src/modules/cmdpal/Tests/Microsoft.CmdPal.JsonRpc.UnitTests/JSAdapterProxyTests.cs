@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -221,6 +222,122 @@ public class JSAdapterProxyTests
         // Separator items have no command.
         Assert.IsNull(items[1].Command);
         Assert.AreEqual("Item B", items[2].Title);
+    }
+
+    [TestMethod]
+    public void ListPage_MapsDetailsSizeNamesIgnoringCaseAndNumericLeniency()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult("provider/getCommand", """{ "id": "list1", "pageType": "listPage", "name": "My List" }""");
+        var itemsJson =
+            """
+            {
+              "items": [
+                { "title": "Large by name", "details": { "title": "A", "size": "large" } },
+                { "title": "Medium mixed case", "details": { "title": "B", "size": "MeDiUm" } },
+                { "title": "Small upper case", "details": { "title": "C", "size": "SMALL" } },
+                { "title": "Small by number", "details": { "title": "D", "size": 0 } },
+                { "title": "Medium by number", "details": { "title": "E", "size": 1 } },
+                { "title": "Large by number", "details": { "title": "F", "size": 2 } },
+                { "title": "Default size", "details": { "title": "G" } },
+                { "title": "Unknown name", "details": { "title": "H", "size": "extra-large" } },
+                { "title": "Unknown number", "details": { "title": "I", "size": 99 } }
+              ]
+            }
+            """;
+        fake.OnResult("listPage/getItems", itemsJson);
+
+        var provider = CreateProvider(fake);
+        var page = (IListPage)provider.GetCommand("list1")!;
+        var items = page.GetItems();
+
+        Assert.AreEqual((int)ContentSize.Large, GetDetailsSize(items[0].Details));
+        Assert.AreEqual((int)ContentSize.Medium, GetDetailsSize(items[1].Details));
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[2].Details));
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[3].Details));
+        Assert.AreEqual((int)ContentSize.Medium, GetDetailsSize(items[4].Details));
+        Assert.AreEqual((int)ContentSize.Large, GetDetailsSize(items[5].Details));
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[6].Details));
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[7].Details));
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[8].Details));
+    }
+
+    [TestMethod]
+    public void ParseContentSize_BoundsMalformedValueDiagnosticPreview()
+    {
+        var oversizedValue = new string('x', JSModelMapper.JsonDiagnosticPreviewMaxLength * 4);
+        using var document = JsonDocument.Parse(JsonSerializer.Serialize(new { size = oversizedValue }));
+        var sizeElement = document.RootElement.GetProperty("size");
+
+        var preview = JSModelMapper.GetBoundedJsonPreview(sizeElement);
+        var size = JSModelMapper.ParseContentSize(document.RootElement, "size");
+
+        Assert.AreEqual(JSModelMapper.JsonDiagnosticPreviewMaxLength + 3, preview.Length);
+        Assert.IsTrue(preview.EndsWith("...", StringComparison.Ordinal));
+        Assert.AreEqual(ContentSize.Small, size);
+        Assert.AreEqual("<undefined>", JSModelMapper.GetBoundedJsonPreview(default));
+    }
+
+    [TestMethod]
+    public void ListPage_DetailsCommandInvokeSendsCommandInvokeWithId()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult("provider/getCommand", """{ "id": "list1", "pageType": "listPage", "name": "My List" }""");
+        var itemsJson =
+            """
+            {
+              "items": [
+                {
+                  "title": "Item with detail buttons",
+                  "details": {
+                    "title": "Detail",
+                    "metadata": [
+                      {
+                        "key": "actions",
+                        "data": {
+                          "type": "commands",
+                          "commands": [
+                            { "id": "details-cmd-1", "name": "Do It" }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+            """;
+        fake.OnResult("listPage/getItems", itemsJson);
+
+        string? invokedCommandId = null;
+        fake.OnRequest("command/invoke", element =>
+        {
+            invokedCommandId = element.GetProperty("commandId").GetString();
+            return new JsonObject { ["kind"] = 4 };
+        });
+
+        var provider = CreateProvider(fake);
+        var page = (IListPage)provider.GetCommand("list1")!;
+        var items = page.GetItems();
+
+        var details = items[0].Details;
+        Assert.IsNotNull(details, "The list item should carry details.");
+
+        var commandsElement = Array.Find(
+            details!.Metadata,
+            e => e.Data is IDetailsCommands);
+        Assert.IsNotNull(commandsElement, "The details metadata should include a commands element.");
+
+        var detailsCommands = (IDetailsCommands)commandsElement!.Data!;
+        Assert.AreEqual(1, detailsCommands.Commands.Length);
+
+        var invokable = (IInvokableCommand)detailsCommands.Commands[0];
+        Assert.AreEqual("details-cmd-1", invokable.Id);
+
+        var result = invokable.Invoke(null);
+
+        Assert.AreEqual("details-cmd-1", invokedCommandId, "Invoking a details command should send command/invoke with the command id.");
+        Assert.AreEqual(CommandResultKind.KeepOpen, result.Kind);
     }
 
     [TestMethod]
@@ -445,7 +562,7 @@ public class JSAdapterProxyTests
               "id": "list-fg",
               "pageType": "listPage",
               "name": "Filtered",
-              "gridProperties": { "type": "medium", "showTitle": true },
+              "gridProperties": { "type": "MeDiUm", "showTitle": true },
               "filters": {
                 "currentFilterId": "all",
                 "filters": [
@@ -536,6 +653,17 @@ public class JSAdapterProxyTests
         fake.OnResult("command/invoke", resultJson);
         var result = invokable.Invoke(null);
         Assert.AreEqual(expected, result.Kind);
+    }
+
+    private static int GetDetailsSize(IDetails? details)
+    {
+        Assert.IsNotNull(details);
+        var provider = details as IExtendedAttributesProvider;
+        Assert.IsNotNull(provider, "Details should expose extended attributes for its size.");
+        var properties = provider!.GetProperties();
+        Assert.IsNotNull(properties);
+        Assert.IsTrue(properties!.TryGetValue("Size", out var size));
+        return (int)size!;
     }
 
     private static JSCommandProviderProxy CreateProvider(JSFakeExtension fake) =>

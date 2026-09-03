@@ -2,10 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-import { ContentPageBase, iconFromFile } from '@microsoft/cmdpal-sdk';
+import { ContentPageBase, iconFromBase64 } from '@microsoft/cmdpal-sdk';
 import type { CommandResult, Content, FormContent } from '@microsoft/cmdpal-sdk';
-import { fileURLToPath } from 'node:url';
-import { glyphIcon } from '../util.js';
+import { glyphIcon, samplePngBase64 } from '../util.js';
+
+const localImage = iconFromBase64(samplePngBase64);
 
 const loremIpsum =
   "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.";
@@ -106,8 +107,8 @@ export class SamplePlainTextContentPage extends ContentPageBase {
 /**
  * A page showing images. Mirrors the C# `SampleImageContentPage`.
  *
- * The C# page loads packaged JPG and SVG assets. This sample uses its bundled
- * hero PNG and sends the encoded image bytes rather than a machine-specific path.
+ * The C# page loads packaged JPG and SVG assets. This sample uses a tiny inline
+ * PNG so repeated content blocks do not each serialize the full bundled image.
  */
 export class SampleImageContentPage extends ContentPageBase {
   readonly id = 'sample-image-content-page';
@@ -116,13 +117,10 @@ export class SampleImageContentPage extends ContentPageBase {
 
   override icon = glyphIcon('\uE722');
 
-  override async getContent(): Promise<Content[]> {
-    const image = await iconFromFile(
-      fileURLToPath(new URL('../assets/hero.png', import.meta.url)),
-    );
+  override getContent(): Content[] {
     return [
-      { type: 'image', image },
-      { type: 'image', image, maxWidth: 200, maxHeight: 200 },
+      { type: 'image', image: localImage },
+      { type: 'image', image: localImage, maxWidth: 200, maxHeight: 200 },
     ];
   }
 }
