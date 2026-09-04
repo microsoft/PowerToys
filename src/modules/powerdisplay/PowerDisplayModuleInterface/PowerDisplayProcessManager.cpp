@@ -93,6 +93,11 @@ void PowerDisplayProcessManager::terminate_process()
 {
     if (m_hProcess != 0)
     {
+        if (m_write_pipe.get())
+        {
+            m_write_pipe->end();
+        }
+
         TerminateProcess(m_hProcess, 1);
         CloseHandle(m_hProcess);
         m_hProcess = 0;
@@ -127,87 +132,31 @@ HRESULT PowerDisplayProcessManager::start_process(const std::wstring& pipe_name)
 
 HRESULT PowerDisplayProcessManager::start_named_pipe_server(const std::wstring& pipe_name)
 {
-    m_write_pipe = nullptr;
-
-    const constexpr DWORD BUFSIZE = 4096 * 4;
-
     const auto full_pipe_name = std::format(L"\\\\.\\pipe\\{}", pipe_name);
 
-    const auto hPipe = CreateNamedPipe(
-        full_pipe_name.c_str(),     // pipe name
-        PIPE_ACCESS_OUTBOUND |      // write access
-            FILE_FLAG_OVERLAPPED,   // overlapped mode
-        PIPE_TYPE_MESSAGE |         // message type pipe
-            PIPE_READMODE_MESSAGE | // message-read mode
-            PIPE_WAIT,              // blocking mode
-        1,                          // max. instances
-        BUFSIZE,                    // output buffer size
-        0,                          // input buffer size
-        0,                          // client time-out
-        NULL);                      // default security attribute
-
-    if (hPipe == NULL || hPipe == INVALID_HANDLE_VALUE)
+    if (m_write_pipe.get())
     {
-        Logger::error(L"Error creating handle for named pipe");
-        return E_FAIL;
+        m_write_pipe->end();
     }
 
-    // Create overlapped event to wait for client to connect to pipe.
-    OVERLAPPED overlapped = { 0 };
-    overlapped.hEvent = CreateEvent(nullptr, true, false, nullptr);
-    if (!overlapped.hEvent)
-    {
-        Logger::error(L"Error creating overlapped event for named pipe");
-        CloseHandle(hPipe);
-        return E_FAIL;
-    }
+    m_write_pipe.reset(new TwoWayPipeMessageIPC(L"", full_pipe_name, [](const std::wstring&) {}));
 
     const auto clean_up_and_fail = [&]() {
-        CloseHandle(overlapped.hEvent);
-        CloseHandle(hPipe);
+        m_write_pipe->end();
         return E_FAIL;
     };
 
-    if (!ConnectNamedPipe(hPipe, &overlapped))
+    try
     {
-        const auto lastError = GetLastError();
-
-        if (lastError != ERROR_IO_PENDING && lastError != ERROR_PIPE_CONNECTED)
-        {
-            Logger::error(L"Error connecting to named pipe");
-            return clean_up_and_fail();
-        }
+        m_write_pipe->start(nullptr);
+    }
+    catch (...)
+    {
+        Logger::error(L"Named pipe initialization failed; terminating PowerDisplay process");
+        return clean_up_and_fail();
     }
 
-    // Wait for client.
-    const constexpr DWORD client_timeout_millis = 5000;
-    switch (WaitForSingleObject(overlapped.hEvent, client_timeout_millis))
-    {
-        case WAIT_OBJECT_0:
-        {
-            DWORD bytes_transferred = 0;
-            if (GetOverlappedResult(hPipe, &overlapped, &bytes_transferred, FALSE))
-            {
-                CloseHandle(overlapped.hEvent);
-                m_write_pipe = std::make_unique<CAtlFile>(hPipe);
-
-                Logger::trace(L"PowerDisplay successfully connected to named pipe");
-
-                return S_OK;
-            }
-            else
-            {
-                Logger::error(L"Error waiting for PowerDisplay to connect to named pipe");
-                return clean_up_and_fail();
-            }
-        }
-
-        case WAIT_TIMEOUT:
-        case WAIT_FAILED:
-        default:
-            Logger::error(L"Error waiting for PowerDisplay to connect to named pipe");
-            return clean_up_and_fail();
-    }
+    return S_OK;
 }
 
 void PowerDisplayProcessManager::refresh()
@@ -261,11 +210,9 @@ void PowerDisplayProcessManager::refresh()
 
 void PowerDisplayProcessManager::send_named_pipe_message(const std::wstring& message_type, const std::wstring& message_arg)
 {
-    if (m_write_pipe)
+    if (m_write_pipe.get())
     {
-        const auto message = message_arg.empty() ? std::format(L"{}\r\n", message_type) : std::format(L"{} {}\r\n", message_type, message_arg);
-
-        const CString file_name(message.c_str());
-        m_write_pipe->Write(file_name, file_name.GetLength() * sizeof(TCHAR));
+        const auto message = message_arg.empty() ? message_type : std::format(L"{} {}", message_type, message_arg);
+        m_write_pipe->send(message);
     }
 }

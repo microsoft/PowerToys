@@ -35,10 +35,13 @@
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AdvancedPasteConstants.h" />
+    <ClCompile Include="..\..\..\common\interop\pipe_caller_auth.cpp" />
+    <ClCompile Include="..\..\..\common\interop\two_way_pipe_message_ipc.cpp" />
     <ClInclude Include="AdvancedPasteProcessManager.h" />
     <ClInclude Include="pch.h" />
     <None Include="packages.config" />
