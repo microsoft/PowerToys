@@ -11604,7 +11604,6 @@ LRESULT APIENTRY MainWndProc(
                 break;
             }
             auto copyRc = selectRectangle.SelectedRect();
-            selectRectangle.Stop();
             if( lParam != SHALLOW_ZOOM )
             {
                 SetCursorPos( local_savedCursorPos.x, local_savedCursorPos.y );
@@ -11622,11 +11621,15 @@ LRESULT APIENTRY MainWndProc(
                 dictation.Cancel();
                 dictation.ClearCallbacks();
                 badge.Hide();
+                selectRectangle.Stop();
                 break;
             }
 
             // Capture before finalizing the transcription so that the image
-            // matches the screen at the moment the button was released.
+            // matches the screen at the moment the button was released. Hide
+            // the border only for the synchronous copy, then leave it visible
+            // while Whisper runs so the completed snip remains clear.
+            selectRectangle.Hide();
             HBITMAP hSaveBitmap = CreateCompatibleBitmap( hdcScreen, copyWidth, copyHeight );
             HDC hSaveDc = CreateCompatibleDC( hdcScreen );
             HGDIOBJ hPrevBitmap = SelectObject( hSaveDc, hSaveBitmap );
@@ -11640,6 +11643,7 @@ LRESULT APIENTRY MainWndProc(
                         copyWidth, copyHeight,
                         SRCCOPY | CAPTUREBLT );
             SelectObject( hSaveDc, hPrevBitmap );
+            selectRectangle.Show();
 
             std::wstring transcript;
             bool dictationCancelled = false;
@@ -11652,6 +11656,7 @@ LRESULT APIENTRY MainWndProc(
             {
                 dictation.Cancel();
             }
+            selectRectangle.Stop();
             dictation.ClearCallbacks();
             badge.Hide();
 
