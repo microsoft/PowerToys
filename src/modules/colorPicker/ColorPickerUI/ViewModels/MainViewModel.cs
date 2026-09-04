@@ -209,7 +209,7 @@ namespace ColorPicker.ViewModels
             switch (action)
             {
                 case ColorPickerClickAction.PickColorThenEditor:
-                    CopyToClipboard(ColorText);
+                    ClipboardHelper.CopyToClipboard(ColorText);
                     UpdateColorHistory(GetColorString());
 
                     _appStateHandler.OpenColorEditor();
@@ -217,7 +217,7 @@ namespace ColorPicker.ViewModels
                     break;
 
                 case ColorPickerClickAction.PickColorAndClose:
-                    CopyToClipboard(ColorText);
+                    ClipboardHelper.CopyToClipboard(ColorText);
                     UpdateColorHistory(GetColorString());
 
                     _appStateHandler.EndUserSession();
@@ -227,19 +227,6 @@ namespace ColorPicker.ViewModels
                 case ColorPickerClickAction.Close:
                     _appStateHandler.EndUserSession();
                     break;
-            }
-        }
-
-        private static void CopyToClipboard(string colorText)
-        {
-            if (string.IsNullOrEmpty(colorText))
-            {
-                return;
-            }
-
-            if (!ManagedCommon.ClipboardHelper.TrySetText(colorText, flush: true))
-            {
-                Logger.LogError("Failed to set text into clipboard");
             }
         }
 

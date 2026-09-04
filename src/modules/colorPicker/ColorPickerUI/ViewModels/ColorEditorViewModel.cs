@@ -183,12 +183,7 @@ namespace ColorPicker.ViewModels
         {
             ArgumentNullException.ThrowIfNull(colorFormat);
 
-            if (!string.IsNullOrEmpty(colorFormat.ColorText) &&
-                !ManagedCommon.ClipboardHelper.TrySetText(colorFormat.ColorText, flush: true))
-            {
-                Logger.LogError("Failed to set text into clipboard");
-            }
-
+            ClipboardHelper.CopyToClipboard(colorFormat.ColorText);
             SessionEventHelper.Event.EditorColorCopiedToClipboard = true;
         }
 
