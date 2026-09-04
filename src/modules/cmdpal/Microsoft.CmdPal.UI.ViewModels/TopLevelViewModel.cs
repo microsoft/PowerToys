@@ -460,10 +460,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     public IDictionary<string, object?> GetProperties()
     {
-        return new Dictionary<string, object?>
-        {
-            [WellKnownExtensionAttributes.DataPackage] = _commandItemViewModel?.DataPackage,
-        };
+        return _commandItemViewModel.GetExtendedAttributes()
+               ?? new Dictionary<string, object?>();
     }
 
     public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher)

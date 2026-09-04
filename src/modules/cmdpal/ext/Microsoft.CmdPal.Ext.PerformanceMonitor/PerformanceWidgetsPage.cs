@@ -222,32 +222,50 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             if (_cpuItem is not null)
             {
                 _cpuItem.Subtitle = Resources.GetResource("CPU_Usage_Subtitle");
+                PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+                    _cpuItem,
+                    PerformanceMonitorDockItemPresentation.CpuLabelWidth);
             }
 
             if (_memoryItem is not null)
             {
                 _memoryItem.Subtitle = Resources.GetResource("Memory_Usage_Subtitle");
+                PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+                    _memoryItem,
+                    PerformanceMonitorDockItemPresentation.MemoryLabelWidth);
             }
 
             if (_networkItem is not null)
             {
                 _networkItem.Subtitle = Resources.GetResource("Network_Usage_Subtitle");
+                PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+                    _networkItem,
+                    PerformanceMonitorDockItemPresentation.NetworkUsageLabelWidth);
             }
 
             if (_diskItem is not null)
             {
                 _diskItem.Subtitle = Resources.GetResource("Disk_Active_Time_Subtitle");
                 _diskItem.Icon = Icons.HardDriveIcon;
+                PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+                    _diskItem,
+                    PerformanceMonitorDockItemPresentation.DiskActiveTimeLabelWidth);
             }
 
             if (_gpuItem is not null)
             {
                 _gpuItem.Subtitle = Resources.GetResource("GPU_Usage_Subtitle");
+                PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+                    _gpuItem,
+                    PerformanceMonitorDockItemPresentation.GpuLabelWidth);
             }
 
             if (_batteryItem is not null)
             {
                 _batteryItem.Subtitle = Resources.GetResource("Battery_Usage_Subtitle");
+                PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+                    _batteryItem,
+                    PerformanceMonitorDockItemPresentation.BatteryLabelWidth);
             }
         }
     }
@@ -316,20 +334,24 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     private IListItem[] CreateNetworkBandItems()
     {
-        _networkUpItem ??= new ListItem(_networkPage!)
-        {
-            Subtitle = Resources.GetResource("Network_Send_Subtitle"),
-            Icon = Icons.NetworkUpIcon,
-            MoreCommands = _networkPage!.Commands,
-        };
+        _networkUpItem ??= PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+            new ListItem(_networkPage!)
+            {
+                Subtitle = Resources.GetResource("Network_Send_Subtitle"),
+                Icon = Icons.NetworkUpIcon,
+                MoreCommands = _networkPage!.Commands,
+            },
+            PerformanceMonitorDockItemPresentation.TransferRateLabelWidth);
         _networkUpItem.Title = _networkPage!.GetUpSpeed();
 
-        _networkDownItem ??= new ListItem(_networkPage!)
-        {
-            Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
-            Icon = Icons.NetworkDownIcon,
-            MoreCommands = _networkPage!.Commands,
-        };
+        _networkDownItem ??= PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+            new ListItem(_networkPage!)
+            {
+                Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
+                Icon = Icons.NetworkDownIcon,
+                MoreCommands = _networkPage!.Commands,
+            },
+            PerformanceMonitorDockItemPresentation.TransferRateLabelWidth);
         _networkDownItem.Title = _networkPage!.GetDownSpeed();
 
         return [_networkUpItem, _networkDownItem];
@@ -337,20 +359,24 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     private IListItem[] CreateDiskBandItems()
     {
-        _diskReadItem ??= new ListItem(_diskPage!)
-        {
-            Subtitle = Resources.GetResource("Disk_Read_Subtitle"),
-            Icon = Icons.FileReadIcon,
-            MoreCommands = _diskPage!.Commands,
-        };
+        _diskReadItem ??= PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+            new ListItem(_diskPage!)
+            {
+                Subtitle = Resources.GetResource("Disk_Read_Subtitle"),
+                Icon = Icons.FileReadIcon,
+                MoreCommands = _diskPage!.Commands,
+            },
+            PerformanceMonitorDockItemPresentation.TransferRateLabelWidth);
         _diskReadItem.Title = _diskReadSpeed;
 
-        _diskWriteItem ??= new ListItem(_diskPage!)
-        {
-            Subtitle = Resources.GetResource("Disk_Write_Subtitle"),
-            Icon = Icons.FileWriteIcon,
-            MoreCommands = _diskPage!.Commands,
-        };
+        _diskWriteItem ??= PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+            new ListItem(_diskPage!)
+            {
+                Subtitle = Resources.GetResource("Disk_Write_Subtitle"),
+                Icon = Icons.FileWriteIcon,
+                MoreCommands = _diskPage!.Commands,
+            },
+            PerformanceMonitorDockItemPresentation.TransferRateLabelWidth);
         _diskWriteItem.Title = _diskWriteSpeed;
 
         return [_diskReadItem, _diskWriteItem, _diskItem!];
