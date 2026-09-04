@@ -2,11 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
+using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
 // This class should be moved to WinGet in the future
@@ -19,10 +21,13 @@ namespace ShortcutGuide.IndexYmlGenerator
             CreateIndexYmlFile();
         }
 
-        // Todo: Exception handling
         public static void CreateIndexYmlFile()
         {
-            string path = ManifestInterpreter.PathOfManifestFiles;
+            CreateIndexYmlFile(ManifestInterpreter.PathOfManifestFiles);
+        }
+
+        public static void CreateIndexYmlFile(string path)
+        {
             if (File.Exists(Path.Combine(path, "index.yml")))
             {
                 File.Delete(Path.Combine(path, "index.yml"));
@@ -33,21 +38,33 @@ namespace ShortcutGuide.IndexYmlGenerator
 
             foreach (string file in Directory.EnumerateFiles(path, "*.yml"))
             {
-                string content = File.ReadAllText(file);
-                Deserializer deserializer = new();
-                ShortcutFile shortcutFile = deserializer.Deserialize<ShortcutFile>(content);
-                if (processes.TryGetValue((shortcutFile.WindowFilter, shortcutFile.BackgroundProcess), out List<string>? apps))
+                try
                 {
-                    if (apps.Contains(shortcutFile.PackageName))
+                    string content = File.ReadAllText(file);
+                    Deserializer deserializer = new();
+                    ShortcutFile shortcutFile = deserializer.Deserialize<ShortcutFile>(content);
+                    if (processes.TryGetValue((shortcutFile.WindowFilter, shortcutFile.BackgroundProcess), out List<string>? apps))
                     {
+                        if (apps.Contains(shortcutFile.PackageName))
+                        {
+                            continue;
+                        }
+
+                        apps.Add(shortcutFile.PackageName);
                         continue;
                     }
 
-                    apps.Add(shortcutFile.PackageName);
-                    continue;
+                    processes[(shortcutFile.WindowFilter, shortcutFile.BackgroundProcess)] = [shortcutFile.PackageName];
                 }
-
-                processes[(shortcutFile.WindowFilter, shortcutFile.BackgroundProcess)] = [shortcutFile.PackageName];
+                catch (IOException)
+                {
+                }
+                catch (UnauthorizedAccessException)
+                {
+                }
+                catch (YamlException)
+                {
+                }
             }
 
             indexFile.Index = processes.Select(item => new IndexFile.IndexItem
