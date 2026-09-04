@@ -609,7 +609,7 @@ namespace MouseUtils.UITests
 
         private void LaunchFromSetting(bool reload = false, bool launchAsAdmin = false)
         {
-            Session = RestartScopeExe("FindMyMouse,MouseHighlighter,MouseJump,MousePointerCrosshairs,CursorWrap");
+            Session = RestartScopeExe("FindMyMouse,MouseHighlighter,MouseJump,MousePointerCrosshairs,CursorWrap,MouseButtonLock");
 
             // this.Session.Attach(PowerToysModule.PowerToysSettings);
             this.Session.SetMainWindowSize(WindowSize.Large);
