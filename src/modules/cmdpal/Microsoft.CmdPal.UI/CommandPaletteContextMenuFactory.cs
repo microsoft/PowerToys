@@ -23,12 +23,18 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 {
     private readonly ISettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
+    private readonly ICmdPalProtocolActivation _protocolActivation;
     private readonly IMonitorService? _monitorService;
 
-    public CommandPaletteContextMenuFactory(ISettingsService settingsService, TopLevelCommandManager topLevelCommandManager, IMonitorService? monitorService = null)
+    public CommandPaletteContextMenuFactory(
+        ISettingsService settingsService,
+        TopLevelCommandManager topLevelCommandManager,
+        ICmdPalProtocolActivation protocolActivation,
+        IMonitorService? monitorService = null)
     {
         _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
+        _protocolActivation = protocolActivation;
         _monitorService = monitorService;
     }
 
@@ -159,6 +165,11 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         // Add pin/unpin commands for pinning items to the top-level or to
         // the dock.
         var providerId = providerContext.ProviderId;
+        if (_settingsService.Settings.EnableExternalCommandLinks)
+        {
+            TryAddCommandLink(topLevelItem, itemId, providerId, moreCommands);
+        }
+
         if (_topLevelCommandManager.LookupProvider(providerId) is CommandProviderWrapper)
         {
             TryAddMovePinnedCommands(itemId, providerId, commandItem, moreCommands);
@@ -175,6 +186,40 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             // var moreResults = DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(moreCommands.ToArray(), commandItem);
             contextItems.AddRange(moreCommands);
         }
+    }
+
+    private void TryAddCommandLink(
+        TopLevelViewModel topLevelItem,
+        string itemId,
+        string providerId,
+        List<IContextItem> moreCommands)
+    {
+        if (topLevelItem.IsFallback ||
+            topLevelItem.IsDockBand ||
+            string.IsNullOrWhiteSpace(itemId) ||
+            string.IsNullOrWhiteSpace(providerId))
+        {
+            return;
+        }
+
+        Uri uri;
+        try
+        {
+            uri = _protocolActivation.CreateUri(new CmdPalProtocolRoute.ExecuteCommand(providerId, itemId));
+        }
+        catch (ArgumentException)
+        {
+            return;
+        }
+
+        var copyCommand = new CopyTextCommand(uri.AbsoluteUri)
+        {
+            Name = RS_.GetString("CommandLink_CopyCommand_Name"),
+            Icon = new IconInfo("\uE71B"),
+            Result = CommandResult.ShowToast(RS_.GetString("CommandLink_Toast_Copied")),
+        };
+
+        moreCommands.Add(new CommandContextItem(copyCommand));
     }
 
     private void TryAddPinToHomeCommand(

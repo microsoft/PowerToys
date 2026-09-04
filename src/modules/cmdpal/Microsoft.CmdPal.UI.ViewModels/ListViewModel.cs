@@ -99,6 +99,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private bool _isDynamic;
 
+    private bool _initializationStarted;
+
+    private ListPageLaunchOptions? _launchOptions;
+
     private Task? _initializeItemsTask;
 
     // For cancelling the task to load the properties from the items in the list
@@ -135,6 +139,23 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
         EmptyContent = new(new(null), PageContext, contextMenuFactory: null);
+    }
+
+    internal void SetLaunchOptions(ListPageLaunchOptions launchOptions)
+    {
+        ArgumentNullException.ThrowIfNull(launchOptions);
+
+        if (_initializationStarted || _launchOptions is not null)
+        {
+            throw new InvalidOperationException("List page launch options must be set before initialization.");
+        }
+
+        if (launchOptions.IsEmpty)
+        {
+            throw new ArgumentException("List page launch options must contain a query or filter.", nameof(launchOptions));
+        }
+
+        _launchOptions = launchOptions;
     }
 
     private void FiltersPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -941,6 +962,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public override void InitializeProperties()
     {
+        _initializationStarted = true;
         base.InitializeProperties();
 
         var model = _model.Unsafe;
@@ -965,7 +987,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _modelPlaceholderText = model.PlaceholderText;
         UpdateProperty(nameof(PlaceholderText));
 
-        InitialSearchText = SearchText = model.SearchText;
+        if (!TryApplyLaunchOptions(model, out var initialSearchText))
+        {
+            return;
+        }
+
+        InitialSearchText = SearchText = initialSearchText;
         UpdateProperty(nameof(SearchText));
         UpdateProperty(nameof(InitialSearchText));
 
@@ -986,6 +1013,45 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         FetchItems(keepSelection: true, ensureSelectionVisible: true);
         model.ItemsChanged += Model_ItemsChanged;
+    }
+
+    private bool TryApplyLaunchOptions(IListPage model, out string initialSearchText)
+    {
+        initialSearchText = model.SearchText;
+        if (_launchOptions is not { } launchOptions)
+        {
+            return true;
+        }
+
+        if (launchOptions.FilterId is { } filterId)
+        {
+            var filters = model.Filters;
+            var filterExists = filters?.GetFilters()?
+                .OfType<IFilter>()
+                .Any(candidate => string.Equals(candidate.Id, filterId, StringComparison.Ordinal)) == true;
+            if (!filterExists)
+            {
+                _launchOptions = null;
+                ShowErrorMessage(Properties.Resources.list_page_requested_filter_unavailable);
+                return false;
+            }
+
+            filters!.CurrentFilterId = filterId;
+        }
+
+        if (launchOptions.Query is { } query)
+        {
+            if (model is IDynamicListPage dynamicListPage)
+            {
+                dynamicListPage.SearchText = query;
+            }
+
+            initialSearchText = query;
+            SetInitialSearchTextBox(query);
+        }
+
+        _launchOptions = null;
+        return true;
     }
 
     private static IGridPropertiesViewModel? LoadGridPropertiesViewModel(IGridProperties? gridProperties)

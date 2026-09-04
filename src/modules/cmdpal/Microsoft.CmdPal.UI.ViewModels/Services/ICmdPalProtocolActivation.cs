@@ -31,4 +31,13 @@ public interface ICmdPalProtocolActivation
     /// <c>x-cmdpal:</c> URI; otherwise, <see langword="false"/>.
     /// </returns>
     bool TryParse(Uri? uri, [NotNullWhen(true)] out CmdPalProtocolRoute? route);
+
+    /// <summary>
+    /// Creates the canonical protocol URI for a typed application route.
+    /// </summary>
+    /// <param name="route">The route to encode.</param>
+    /// <returns>The canonical <c>x-cmdpal:</c> URI representing <paramref name="route"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="route"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="route"/> cannot be represented safely.</exception>
+    Uri CreateUri(CmdPalProtocolRoute route);
 }

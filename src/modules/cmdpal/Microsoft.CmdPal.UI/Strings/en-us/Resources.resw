@@ -567,14 +567,140 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="NavigationPaneOpened" xml:space="preserve">
     <value>Navigation page opened</value>
   </data>
-  <data name="Settings_GeneralPage_AllowExternalReload_SettingsCard.Header" xml:space="preserve">
-    <value>Enable external reload</value>
+  <data name="Settings_GeneralPage_ExternalCommandLinks_SettingsExpander.Header" xml:space="preserve">
+    <value>Enable external command links</value>
   </data>
-  <data name="Settings_GeneralPage_AllowExternalReload_SettingsCard.Description" xml:space="preserve">
-    <value>Allow reloads through the x-cmdpal://reload protocol</value>
+  <data name="Settings_GeneralPage_ExternalCommandLinks_SettingsExpander.Description" xml:space="preserve">
+    <value>Allow x-cmdpal links to request commands and extension reloads. New requests require your confirmation.</value>
   </data>
-  <data name="Settings_GeneralPage_ForDevelopersSettingsHeader.Text" xml:space="preserve">
-    <value>For developers</value>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_SettingsCard.Header" xml:space="preserve">
+    <value>Always allowed command links</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_SettingsCard.Description" xml:space="preserve">
+    <value>Review or revoke requests you previously allowed without confirmation.</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_Warning.Text" xml:space="preserve">
+    <value>Command Palette cannot identify which app or website opened a link. Always allowed requests remain global until you revoke them.</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_Empty.Text" xml:space="preserve">
+    <value>No command links are always allowed.</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_DetailsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Show command link details</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_DetailsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Show command link details</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_DetailsFlyout_Title.Text" xml:space="preserve">
+    <value>Command link details</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_ProviderIdLabel.Text" xml:space="preserve">
+    <value>Provider ID</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_CommandIdLabel.Text" xml:space="preserve">
+    <value>Command ID</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_RevokeButton.Content" xml:space="preserve">
+    <value>Revoke</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_RevokeButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Revoke permission</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_ClearButton.Content" xml:space="preserve">
+    <value>Remove all</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_ClearButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Remove all remembered command link permissions</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_ClearConfirmation_Title" xml:space="preserve">
+    <value>Remove all command link permissions?</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_ClearConfirmation_Description" xml:space="preserve">
+    <value>Command Palette will ask for confirmation the next time each external command link is opened.</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_ClearConfirmation_RemoveButton" xml:space="preserve">
+    <value>Remove all</value>
+  </data>
+  <data name="CommandLink_CopyCommand_Name" xml:space="preserve">
+    <value>Copy command link</value>
+  </data>
+  <data name="CommandLink_Toast_Copied" xml:space="preserve">
+    <value>Command link copied to clipboard</value>
+  </data>
+  <data name="ExternalCommandLink_Consent_Title" xml:space="preserve">
+    <value>Allow this command link?</value>
+  </data>
+  <data name="ExternalCommandLink_Loading_Title" xml:space="preserve">
+    <value>Opening command link</value>
+  </data>
+  <data name="ExternalCommandLink_Loading_Description" xml:space="preserve">
+    <value>Loading command information...</value>
+  </data>
+  <data name="ExternalCommandLink_CommandConsent_Description" xml:space="preserve">
+    <value>An external link is requesting this command.</value>
+  </data>
+  <data name="ExternalCommandLink_PageConsent_Description" xml:space="preserve">
+    <value>An external link is requesting this page.</value>
+  </data>
+  <data name="ExternalCommandLink_PageState_Label" xml:space="preserve">
+    <value>Page state:</value>
+  </data>
+  <data name="ExternalCommandLink_PageFilter_Description" xml:space="preserve">
+    <value>Filter: {0}</value>
+  </data>
+  <data name="ExternalCommandLink_PageQuery_Description" xml:space="preserve">
+    <value>Search: {0}</value>
+  </data>
+  <data name="ExternalCommandLink_FilterOneTime_Description" xml:space="preserve">
+    <value>Permission for links that select a filter is granted for this request only and cannot be remembered.</value>
+  </data>
+  <data name="ExternalCommandLink_ReloadConsent_Description" xml:space="preserve">
+    <value>An external link is requesting that Command Palette reload all extensions.</value>
+  </data>
+  <data name="ExternalCommandLink_OriginWarning_Description" xml:space="preserve">
+    <value>Command Palette cannot identify which app or website opened the link. Continue only if you expected this request.</value>
+  </data>
+  <data name="ExternalCommandLink_Link_Description" xml:space="preserve">
+    <value>Link: {0}</value>
+  </data>
+  <data name="ExternalCommandLink_ShowMore_Button" xml:space="preserve">
+    <value>Show more...</value>
+  </data>
+  <data name="ExternalCommandLink_ShowLess_Button" xml:space="preserve">
+    <value>Show less</value>
+  </data>
+  <data name="ExternalCommandLink_RunOnce_Button" xml:space="preserve">
+    <value>Run once</value>
+  </data>
+  <data name="ExternalCommandLink_OpenOnce_Button" xml:space="preserve">
+    <value>Open once</value>
+  </data>
+  <data name="ExternalCommandLink_ReloadOnce_Button" xml:space="preserve">
+    <value>Reload once</value>
+  </data>
+  <data name="ExternalCommandLink_AlwaysAllow_Button" xml:space="preserve">
+    <value>Always allow</value>
+  </data>
+  <data name="ExternalCommandLink_Cancel_Button" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ExternalCommandLink_Close_Button" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="ExternalCommandLink_Unavailable_Title" xml:space="preserve">
+    <value>Command unavailable</value>
+  </data>
+  <data name="ExternalCommandLink_Unavailable_Description" xml:space="preserve">
+    <value>The linked command is not installed, enabled, or available at the top level.</value>
+  </data>
+  <data name="ExternalCommandLink_Reload_Name" xml:space="preserve">
+    <value>Reload extensions</value>
+  </data>
+  <data name="ExternalCommandLink_CommandPalette_Name" xml:space="preserve">
+    <value>Command Palette</value>
+  </data>
+  <data name="ExternalLinksSettingsHeader.Text" xml:space="preserve">
+    <value>External links</value>
   </data>
   <data name="UntitledPageTitle" xml:space="preserve">
     <value>an untitled</value>

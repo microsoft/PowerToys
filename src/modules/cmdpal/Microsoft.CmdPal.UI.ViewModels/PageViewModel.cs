@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.CmdPal.Common.Helpers;
@@ -13,6 +14,10 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 {
+    private static readonly PropertyChangingEventArgs SearchTextBoxChangingEventArgs = new(nameof(SearchTextBox));
+    private static readonly PropertyChangedEventArgs SearchTextBoxChangedEventArgs = new(nameof(SearchTextBox));
+    private static readonly PropertyChangedEventArgs ShowSuggestionChangedEventArgs = new(nameof(ShowSuggestion));
+
     public TaskScheduler Scheduler { get; private set; }
 
     private readonly ExtensionObject<IPage> _pageModel;
@@ -46,10 +51,26 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     [ObservableProperty]
     public partial bool HasBackButton { get; set; } = true;
 
-    // This is set from the SearchBar
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowSuggestion))]
-    public partial string SearchTextBox { get; set; } = string.Empty;
+    private string _searchTextBox = string.Empty;
+
+    // This is set from the SearchBar.
+    public string SearchTextBox
+    {
+        get => _searchTextBox;
+        set
+        {
+            if (StringComparer.Ordinal.Equals(_searchTextBox, value))
+            {
+                return;
+            }
+
+            OnPropertyChanging(SearchTextBoxChangingEventArgs);
+            _searchTextBox = value;
+            OnSearchTextBoxUpdated(value);
+            OnPropertyChanged(SearchTextBoxChangedEventArgs);
+            OnPropertyChanged(ShowSuggestionChangedEventArgs);
+        }
+    }
 
     [ObservableProperty]
     public virtual partial string PlaceholderText { get; private set; } = "Type here to search...";
@@ -197,7 +218,17 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         }
     }
 
-    partial void OnSearchTextBoxChanged(string oldValue, string newValue) => OnSearchTextBoxUpdated(newValue);
+    /// <summary>Sets initial search text through the UI-thread notification path.</summary>
+    protected void SetInitialSearchTextBox(string value)
+    {
+        if (StringComparer.Ordinal.Equals(_searchTextBox, value))
+        {
+            return;
+        }
+
+        _searchTextBox = value;
+        UpdateProperty(nameof(SearchTextBox), nameof(ShowSuggestion));
+    }
 
     protected virtual void OnSearchTextBoxUpdated(string searchTextBox)
     {
@@ -255,12 +286,13 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         // Set the extensionHint to the Page Title (if we have one, and one not provided).
         // extensionHint ??= _pageModel?.Unsafe?.Title;
         extensionHint ??= ExtensionHost.GetExtensionDisplayName() ?? Title;
+        ShowErrorMessage(DiagnosticsHelper.BuildExceptionMessage(ex, extensionHint));
+    }
+
+    protected void ShowErrorMessage(string message)
+    {
         Task.Factory.StartNew(
-            () =>
-            {
-                var message = DiagnosticsHelper.BuildExceptionMessage(ex, extensionHint);
-                ErrorMessage += message;
-            },
+            () => ErrorMessage += message,
             CancellationToken.None,
             TaskCreationOptions.None,
             Scheduler);

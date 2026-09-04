@@ -1451,28 +1451,32 @@ public sealed partial class MainWindow : WindowEx,
                 if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs &&
                     _protocolActivation.TryParse(protocolArgs.Uri, out var route))
                 {
-                    switch (route)
+                    switch (CmdPalProtocolPolicy.Evaluate(route))
                     {
-                        case CmdPalProtocolRoute.Background:
-                            // we're running, we don't want to activate our window. bail
+                        case CmdPalProtocolAction.RunInBackground:
+                            // We're running, but this route intentionally does not activate a window.
                             return;
 
-                        case CmdPalProtocolRoute.OpenSettings openSettings:
+                        case CmdPalProtocolAction.OpenSettings openSettings:
                             WeakReferenceMessenger.Default.Send(openSettings.Message);
                             return;
 
-                        case CmdPalProtocolRoute.Reload:
+                        case CmdPalProtocolAction.RequestConsent requestConsent:
                             var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
-                            if (settings?.AllowExternalReload == true)
+                            if (settings.EnableExternalCommandLinks)
                             {
-                                Logger.LogInfo("External Reload triggered");
-                                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
+                                WeakReferenceMessenger.Default.Send(new ExternalCommandLinkRequestedMessage(requestConsent.Route));
                             }
                             else
                             {
-                                Logger.LogInfo("External Reload is disabled");
+                                Logger.LogInfo("External command links are disabled");
                             }
 
+                            return;
+
+                        case CmdPalProtocolAction.Reject:
+                        default:
+                            Logger.LogWarning("Ignoring an unsupported CmdPal protocol route.");
                             return;
                     }
                 }

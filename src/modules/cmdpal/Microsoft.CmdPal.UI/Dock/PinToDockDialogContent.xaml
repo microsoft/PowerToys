@@ -5,7 +5,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
@@ -91,50 +90,7 @@
                 HorizontalAlignment="Stretch"
                 Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
 
-            <!--  Preview  -->
-            <StackPanel Spacing="8">
-                <Border
-                    Padding="12,8"
-                    HorizontalAlignment="Left"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{ThemeResource ControlCornerRadius}">
-                    <Grid ColumnSpacing="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <!--  Icon  -->
-                        <cpcontrols:IconBox
-                            x:Name="PreviewIcon"
-                            Width="16"
-                            Height="16"
-                            VerticalAlignment="Center"
-                            SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
-
-                        <!--  Text  -->
-                        <StackPanel
-                            x:Name="PreviewTextPanel"
-                            Grid.Column="1"
-                            Margin="8,0,0,0"
-                            VerticalAlignment="Center">
-                            <TextBlock
-                                x:Name="PreviewTitleText"
-                                FontSize="12"
-                                TextTrimming="CharacterEllipsis"
-                                TextWrapping="NoWrap" />
-                            <TextBlock
-                                x:Name="PreviewSubtitleText"
-                                FontSize="10"
-                                Foreground="{ThemeResource TextFillColorTertiary}"
-                                TextTrimming="CharacterEllipsis"
-                                TextWrapping="NoWrap" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
-            </StackPanel>
+            <cpcontrols:CommandPreviewBox x:Name="Preview" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>

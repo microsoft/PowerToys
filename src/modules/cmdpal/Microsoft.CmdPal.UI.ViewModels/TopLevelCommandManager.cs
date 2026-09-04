@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -722,6 +723,121 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
 
         return null;
+    }
+
+    public TopLevelViewModel? LookupCommand(string providerId, string commandId)
+    {
+        lock (TopLevelCommands)
+        {
+            foreach (var command in TopLevelCommands)
+            {
+                if (!command.IsFallback &&
+                    string.Equals(command.CommandProviderId, providerId, StringComparison.Ordinal) &&
+                    string.Equals(command.Id, commandId, StringComparison.Ordinal))
+                {
+                    return command;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public async Task<CommandResolution?> ResolveCommandAsync(
+        string providerId,
+        string commandId,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var provider = LookupProvider(providerId);
+        if (provider is null)
+        {
+            return null;
+        }
+
+        var command = LookupCommand(providerId, commandId) ?? LookupDockBand(providerId, commandId);
+        if (command is not null && ReferenceEquals(command.ProviderContext, provider))
+        {
+            return new(command, provider, ownsCommand: false);
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        var resolutionTask = Task.Run(() => provider.ResolveCommandItem(commandId, _serviceProvider));
+        try
+        {
+            command = await resolutionTask.WaitAsync(cancellationToken).ConfigureAwait(false);
+            return command is null ? null : new(command, provider, ownsCommand: true);
+        }
+        catch (OperationCanceledException)
+        {
+            // Release a result that arrives after the caller stops waiting.
+            _ = resolutionTask.ContinueWith(
+                static task =>
+                {
+                    if (task.Status == TaskStatus.RanToCompletion)
+                    {
+                        task.Result?.Cleanup();
+                    }
+                    else if (task.IsFaulted)
+                    {
+                        _ = task.Exception;
+                    }
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.None,
+                TaskScheduler.Default);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to resolve command {commandId} from provider {providerId}.", ex);
+            return null;
+        }
+    }
+
+    private TopLevelViewModel? LookupDockBand(string providerId, string commandId)
+    {
+        lock (_dockBandsLock)
+        {
+            return DockBands.FirstOrDefault(command =>
+                string.Equals(command.CommandProviderId, providerId, StringComparison.Ordinal) &&
+                string.Equals(command.Id, commandId, StringComparison.Ordinal));
+        }
+    }
+
+    /// <summary>Waits for the command load active at call time, excluding late provider continuations.</summary>
+    public async Task WaitForCurrentLoadAsync(CancellationToken cancellationToken = default)
+    {
+        if (!IsLoading)
+        {
+            return;
+        }
+
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        PropertyChangedEventHandler? handler = null;
+        handler = (_, args) =>
+        {
+            if (args.PropertyName == nameof(IsLoading) && !IsLoading)
+            {
+                completion.TrySetResult();
+            }
+        };
+
+        PropertyChanged += handler;
+        try
+        {
+            // IsLoading may have changed between the first check and subscribing.
+            if (!IsLoading)
+            {
+                return;
+            }
+
+            await completion.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            PropertyChanged -= handler;
+        }
     }
 
     public TopLevelViewModel? LookupDockBand(string id)

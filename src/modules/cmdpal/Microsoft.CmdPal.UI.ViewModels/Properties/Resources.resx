@@ -605,4 +605,7 @@
   <data name="winget_operations_recent_activity" xml:space="preserve">
     <value>Recent WinGet activity</value>
   </data>
+  <data name="list_page_requested_filter_unavailable" xml:space="preserve">
+    <value>The requested filter is no longer available.</value>
+  </data>
 </root>
