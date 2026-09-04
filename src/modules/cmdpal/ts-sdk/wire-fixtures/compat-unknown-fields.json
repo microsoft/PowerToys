@@ -1,0 +1,11 @@
+{
+  "Kind": 1,
+  "Nested": {
+    "a": 1,
+    "b": [
+      1,
+      2
+    ]
+  },
+  "UnknownField": "ignored"
+}

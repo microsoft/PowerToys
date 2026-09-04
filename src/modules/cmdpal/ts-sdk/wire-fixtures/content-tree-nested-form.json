@@ -1,0 +1,15 @@
+{
+  "children": [
+    {
+      "dataJson": "{}",
+      "formId": "child-form",
+      "templateJson": "{\"type\":\"AdaptiveCard\"}",
+      "type": "form"
+    }
+  ],
+  "rootContent": {
+    "body": "root",
+    "type": "markdown"
+  },
+  "type": "tree"
+}
