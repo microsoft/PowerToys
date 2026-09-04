@@ -721,6 +721,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     AIServiceType.AzureAIInference => GPOWrapper.GetAllowedAdvancedPasteAzureAIInferenceValue(),
                     AIServiceType.Mistral => GPOWrapper.GetAllowedAdvancedPasteMistralValue(),
                     AIServiceType.Google => GPOWrapper.GetAllowedAdvancedPasteGoogleValue(),
+                    AIServiceType.Anthropic => GPOWrapper.GetAllowedAdvancedPasteAnthropicValue(),
                     _ => GpoRuleConfigured.Unavailable,
                 };
 

@@ -244,6 +244,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteFoundryLocalValue());
     }
+    GpoRuleConfigured GPOWrapper::GetAllowedAdvancedPasteAnthropicValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteAnthropicValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredNewPlusEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewPlusEnabledValue());

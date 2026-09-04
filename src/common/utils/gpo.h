@@ -95,6 +95,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_ALLOW_ADVANCED_PASTE_GOOGLE = L"AllowAdvancedPasteGoogle";
     const std::wstring POLICY_ALLOW_ADVANCED_PASTE_OLLAMA = L"AllowAdvancedPasteOllama";
     const std::wstring POLICY_ALLOW_ADVANCED_PASTE_FOUNDRY_LOCAL = L"AllowAdvancedPasteFoundryLocal";
+    const std::wstring POLICY_ALLOW_ADVANCED_PASTE_ANTHROPIC = L"AllowAdvancedPasteAnthropic";
     const std::wstring POLICY_MWB_CLIPBOARD_SHARING_ENABLED = L"MwbClipboardSharingEnabled";
     const std::wstring POLICY_MWB_FILE_TRANSFER_ENABLED = L"MwbFileTransferEnabled";
     const std::wstring POLICY_MWB_USE_ORIGINAL_USER_INTERFACE = L"MwbUseOriginalUserInterface";
@@ -648,6 +649,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getAllowedAdvancedPasteFoundryLocalValue()
     {
         return getConfiguredValue(POLICY_ALLOW_ADVANCED_PASTE_FOUNDRY_LOCAL);
+    }
+
+    inline gpo_rule_configured_t getAllowedAdvancedPasteAnthropicValue()
+    {
+        return getConfiguredValue(POLICY_ALLOW_ADVANCED_PASTE_ANTHROPIC);
     }
 
     inline gpo_rule_configured_t getConfiguredMwbClipboardSharingEnabledValue()

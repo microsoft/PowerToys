@@ -75,6 +75,16 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+    <policy name="AllowAdvancedPasteAnthropic" class="Both" displayName="$(string.AllowAdvancedPasteAnthropic)" explainText="$(string.AllowAdvancedPasteAnthropicDescription)" key="Software\Policies\PowerToys" valueName="AllowAdvancedPasteAnthropic">
+      <parentCategory ref="AdvancedPaste" />
+      <supportedOn ref="SUPPORTED_WIN10" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
 
     <policy name="ConfigureEnabledUtilityAdvancedPaste" class="Both" displayName="$(string.ConfigureEnabledUtilityAdvancedPaste)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityAdvancedPaste">
       <parentCategory ref="PowerToys" />
