@@ -945,56 +945,77 @@ public sealed partial class MainWindow : WindowEx,
         return DisplayArea.Primary;
     }
 
+    private void RunOnUiThread(Action action)
+    {
+        if (DispatcherQueue.HasThreadAccess)
+        {
+            action();
+        }
+        else
+        {
+            DispatcherQueue.TryEnqueue(() => action());
+        }
+    }
+
     public void Receive(ShowWindowMessage message)
     {
-        _isLoadedFromDock = false;
+        RunOnUiThread(() =>
+        {
+            _isLoadedFromDock = false;
 
-        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
-        // Start session tracking
-        _sessionStopwatch = Stopwatch.StartNew();
-        _sessionCommandsExecuted = 0;
-        _sessionPagesVisited = 0;
+            // Start session tracking
+            _sessionStopwatch = Stopwatch.StartNew();
+            _sessionCommandsExecuted = 0;
+            _sessionPagesVisited = 0;
 
-        ShowHwnd(message.Hwnd, settings.SummonOn);
+            ShowHwnd(message.Hwnd, settings.SummonOn);
+        });
     }
 
     internal void Receive(ShowPaletteAtMessage message)
     {
-        _isLoadedFromDock = true;
+        RunOnUiThread(() =>
+        {
+            _isLoadedFromDock = true;
 
-        // Reset the size in case users have resized a dock window.
-        // Ideally in the future, we'll have defined sizes that opening
-        // a dock window will adhere to, but alas, that's the future.
-        RestoreWindowPositionFromMemory();
+            // Reset the size in case users have resized a dock window.
+            // Ideally in the future, we'll have defined sizes that opening
+            // a dock window will adhere to, but alas, that's the future.
+            RestoreWindowPositionFromMemory();
 
-        ShowHwnd(HWND.Null, message.PosPixels, message.Anchor);
+            ShowHwnd(HWND.Null, message.PosPixels, message.Anchor);
+        });
     }
 
     public void Receive(HideWindowMessage message)
     {
         // This might come in off the UI thread. Make sure to hop back.
-        DispatcherQueue.TryEnqueue(() =>
+        RunOnUiThread(() =>
         {
             EndSession("Hide");
             HideWindow();
         });
     }
 
-    public void Receive(QuitMessage message) =>
-
-        // This might come in on a background thread
+    public void Receive(QuitMessage message)
+    {
+        // Always defer, even on the UI thread. This can be sent from the window procedure and
+        // is broadcast to multiple windows. MainWindow_Closed exits the process, so closing
+        // inline could terminate while the window procedure or message broadcast is still active.
         DispatcherQueue.TryEnqueue(() => Close());
+    }
 
     public void Receive(DismissMessage message)
     {
         if (message.ForceGoHome)
         {
-            WeakReferenceMessenger.Default.Send(new GoHomeMessage(false, false));
+            RunOnUiThread(() => WeakReferenceMessenger.Default.Send(new GoHomeMessage(false, false)));
         }
 
         // This might come in off the UI thread. Make sure to hop back.
-        DispatcherQueue.TryEnqueue(() =>
+        RunOnUiThread(() =>
         {
             EndSession("Dismiss");
             HideWindow();
@@ -1005,25 +1026,28 @@ public sealed partial class MainWindow : WindowEx,
     // These receivers increment counters that are sent when EndSession is called
     public void Receive(NavigateToPageMessage message)
     {
-        _sessionPagesVisited++;
+        RunOnUiThread(() => _sessionPagesVisited++);
     }
 
     public void Receive(NavigationDepthMessage message)
     {
-        if (message.Depth > _sessionMaxNavigationDepth)
+        RunOnUiThread(() =>
         {
-            _sessionMaxNavigationDepth = message.Depth;
-        }
+            if (message.Depth > _sessionMaxNavigationDepth)
+            {
+                _sessionMaxNavigationDepth = message.Depth;
+            }
+        });
     }
 
     public void Receive(SearchQueryMessage message)
     {
-        _sessionSearchQueriesCount++;
+        RunOnUiThread(() => _sessionSearchQueriesCount++);
     }
 
     public void Receive(ErrorOccurredMessage message)
     {
-        _sessionErrorCount++;
+        RunOnUiThread(() => _sessionErrorCount++);
     }
 
     /// <summary>
@@ -1054,7 +1078,7 @@ public sealed partial class MainWindow : WindowEx,
     /// </summary>
     internal void IncrementCommandsExecuted()
     {
-        _sessionCommandsExecuted++;
+        RunOnUiThread(() => _sessionCommandsExecuted++);
     }
 
     private void HideWindow()
@@ -1914,20 +1938,23 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Receive(ToggleDevRibbonMessage message)
     {
-        _devRibbon?.Visibility = _devRibbon.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+        RunOnUiThread(() =>
+        {
+            _devRibbon?.Visibility = _devRibbon.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+        });
     }
 
     public void Receive(DragStartedMessage message)
     {
-        _preventHideWhenDeactivated = true;
+        RunOnUiThread(() => _preventHideWhenDeactivated = true);
     }
 
     public void Receive(DragCompletedMessage message)
     {
-        _preventHideWhenDeactivated = false;
-        Task.Delay(200).ContinueWith(_ =>
+        RunOnUiThread(() =>
         {
-            DispatcherQueue.TryEnqueue(StealForeground);
+            _preventHideWhenDeactivated = false;
+            Task.Delay(200).ContinueWith(_ => RunOnUiThread(StealForeground));
         });
     }
 
@@ -1959,16 +1986,21 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Receive(GetHwndMessage message)
     {
-        message.Hwnd = this.GetWindowHandle();
+        message.Hwnd = (nint)_hwnd;
     }
 
     public void Receive(ExpandCompactModeMessage message)
     {
+        // Always defer so this runs after the current message delivery, alongside ShellPage's
+        // queued compact-state reconciliation. Running inline could apply host constraints before
+        // ShellPage resolves the authoritative navigation and search state.
         this.DispatcherQueue.TryEnqueue(() => HandleExpandCompactOnUiThread(message.Expanded));
     }
 
     public void Receive(MaximizeForDialogMessage message)
     {
+        // Keep this deferred to preserve the dialog and layout ordering established by ShellPage.
+        // Running inline would apply host constraints in the middle of dialog setup or teardown.
         this.DispatcherQueue.TryEnqueue(() =>
         {
             _dialogFullExpandActive = message.Maximize;
