@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
+using System.Reflection;
 using CoenM.ImageHash;
 using CoenM.ImageHash.HashAlgorithms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -31,17 +32,7 @@ public static class VisualAssert
         }
 
         var callerMethod = new StackTrace().GetFrame(1)?.GetMethod();
-        var callerName = callerMethod?.Name;
-        var callerClassName = callerMethod?.DeclaringType?.Name;
-
-        if (string.IsNullOrEmpty(callerName) || string.IsNullOrEmpty(callerClassName))
-        {
-            Assert.Fail("Unable to determine the caller method and class name.");
-        }
-
-        var scenario = string.IsNullOrWhiteSpace(scenarioSubname)
-            ? string.Join("_", callerClassName, callerName, EnvironmentConfig.Platform)
-            : string.Join("_", callerClassName, callerName, scenarioSubname.Trim(), EnvironmentConfig.Platform);
+        var scenario = ResolveScenario(callerMethod, scenarioSubname);
 
         AssertAgainstBaseline(
             testContext,
@@ -55,7 +46,11 @@ public static class VisualAssert
     /// This preserves the legacy harness's element-cropped visual assertion behavior.
     /// </summary>
     [RequiresUnreferencedCode("This method uses reflection which may not be compatible with trimming.")]
-    public static void AreEqual(TestContext? testContext, Element element, string scenarioSubname = "")
+    public static void AreEqual(
+        TestContext? testContext,
+        Element element,
+        string scenarioSubname = "",
+        bool captureScreen = true)
     {
         if (!EnvironmentConfig.IsInPipeline)
         {
@@ -67,6 +62,28 @@ public static class VisualAssert
         Assert.IsNotNull(element.Owner, "Element is not bound to a Session.");
 
         var callerMethod = new StackTrace().GetFrame(1)?.GetMethod();
+        var scenario = ResolveScenario(callerMethod, scenarioSubname);
+        Action<string> capture = path =>
+        {
+            var owner = element.Owner!;
+            owner.EnsureForeground();
+            if (owner.Scope == Session.TargetScope.Window)
+            {
+                var foregroundFailure = $"HWND {owner.WindowHandle} did not become foreground before element screenshot capture. " +
+                                        $"Current foreground: {WindowControl.GetForegroundWindowInfo()}";
+                Assert.IsTrue(
+                    WindowControl.WaitForForeground(new IntPtr(owner.WindowHandle), timeoutMS: 5_000),
+                    foregroundFailure);
+            }
+
+            owner.Screenshot(path, element, captureScreen);
+        };
+
+        AssertAgainstBaseline(testContext, callerMethod!.DeclaringType!.Assembly, scenario, capture);
+    }
+
+    private static string ResolveScenario(MethodBase? callerMethod, string scenarioSubname)
+    {
         var callerName = callerMethod?.Name;
         var callerClassName = callerMethod?.DeclaringType?.Name;
         if (string.IsNullOrEmpty(callerName) || string.IsNullOrEmpty(callerClassName))
@@ -74,19 +91,9 @@ public static class VisualAssert
             Assert.Fail("Unable to determine the caller method and class name.");
         }
 
-        var scenario = string.IsNullOrWhiteSpace(scenarioSubname)
+        return string.IsNullOrWhiteSpace(scenarioSubname)
             ? string.Join("_", callerClassName, callerName, EnvironmentConfig.Platform)
             : string.Join("_", callerClassName, callerName, scenarioSubname.Trim(), EnvironmentConfig.Platform);
-
-        AssertAgainstBaseline(
-            testContext,
-            callerMethod!.DeclaringType!.Assembly,
-            scenario,
-            path =>
-            {
-                element.Owner!.EnsureForeground();
-                element.Owner.Screenshot(path, element, captureScreen: true);
-            });
     }
 
     private static void AssertAgainstBaseline(

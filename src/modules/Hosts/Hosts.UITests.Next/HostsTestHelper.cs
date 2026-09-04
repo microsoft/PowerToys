@@ -3,13 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Hosts.UITests
 {
     internal static class HostsTestHelper
     {
+        public const string SaveErrorMessage = "The hosts file cannot be saved because the program isn't running as administrator.";
+
         private const string DefaultSettings = """
             {
               "properties": {
@@ -55,6 +59,18 @@ namespace Hosts.UITests
                 snapshot.Dispose();
                 throw;
             }
+        }
+
+        public static ToggleSwitch FindEntryDialogActiveToggle(Session session)
+        {
+            var matches = session.FindAll<ToggleSwitch>(By.Name("Active"))
+                .Where(toggle => string.Equals(toggle.Name, "Active", StringComparison.Ordinal))
+                .ToList();
+            Assert.IsTrue(matches.Count > 0, "The Add entry dialog Active toggle was not found.");
+
+            // Existing rows also expose an Active toggle. The dialog control is the bottom-most
+            // exact-name match because it follows the Address, Hosts, and Comment fields.
+            return matches.MaxBy(toggle => toggle.Y)!;
         }
     }
 }

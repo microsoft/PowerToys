@@ -4,11 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -17,16 +15,16 @@ namespace Hosts.UITests
     [TestClass]
     public class HostModuleTests : UITestBase
     {
-        private const string SaveErrorMessage = "The hosts file cannot be saved because the program isn't running as administrator.";
-
         // %WinDir%\System32\drivers\etc\hosts - same path HostsService computes.
         private static readonly string HostsFilePath = Path.Combine(
-            System.Environment.GetFolderPath(System.Environment.SpecialFolder.Windows),
+            Environment.GetFolderPath(Environment.SpecialFolder.Windows),
             "System32",
             "drivers",
             "etc",
             "hosts");
 
+        // ClassCleanup restores the real hosts file after the module has stopped. A forced test-host
+        // termination can bypass managed cleanup, so pipeline/VM isolation remains the final safeguard.
         private static IDisposable? hostsFileSnapshot;
         private static IDisposable? moduleSettingsSnapshot;
 
@@ -78,7 +76,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Basic.EmptyViewShouldWork")]
+        [TestMethod("Hosts.Next.Basic.EmptyViewShouldWork")]
         [TestCategory("Hosts File Editor #4")]
         public void TestEmptyView()
         {
@@ -89,21 +87,21 @@ namespace Hosts.UITests
             // .Next has no HyperlinkButton wrapper, and a WinUI HyperlinkButton reports UIA
             // ControlType=Hyperlink (not Button), so match it with the untyped Element instead.
             Assert.IsTrue(Session.HasOne<Element>(By.Name("Add an entry")), "'Add an entry' button should be visible in the empty view");
-            FindExact<Button>("New entry").Focus();
+            Session.FindExact<Button>("New entry").Focus();
             VisualAssert.AreEqual(TestContext, Session.Find(By.AccessibilityId("Entries")), "EmptyView");
 
             // Click 'Add an entry' from empty-view for adding a Host override rule.
-            FindExact<Element>("Add an entry").Invoke(msPostAction: 0);
+            Session.FindExact<Element>("Add an entry").Invoke(msPostAction: 0);
             Assert.IsTrue(
-                Session.WaitFor(() => CountExact<Button>("Add") == 1, 10_000),
+                Session.WaitForExactCount<Button>("Add", 1, 10_000),
                 "The Add entry dialog did not open after invoking the empty-view link.");
 
-            AddEntry("192.168.0.1", "localhost", false, false);
+            AddEntry("192.168.0.1", "localhost.powertoys.uitest", false, false);
 
             // Should have one row now and not more empty view.
             Assert.IsTrue(Session.Has<Button>(By.Name("Delete")), "Should have one row now");
             Assert.IsFalse(Session.Has<Element>(By.Name("Add an entry")), "'Add an entry' button should be invisible if not empty view");
-            FindExact<Button>("New entry").Focus();
+            Session.FindExact<Button>("New entry").Focus();
             VisualAssert.AreEqual(TestContext, Session.Find(By.AccessibilityId("Entries")), "NonEmptyView");
         }
 
@@ -115,7 +113,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Basic.AddEntryButtonShouldWork")]
+        [TestMethod("Hosts.Next.Basic.AddEntryButtonShouldWork")]
         [TestCategory("Hosts File Editor #4")]
         public void TestAddingEntry()
         {
@@ -124,10 +122,10 @@ namespace Hosts.UITests
 
             Assert.IsFalse(Session.Has<Button>(By.Name("Delete")), "Should have no row after removing all");
 
-            AddEntry("192.168.0.1", "localhost", true);
+            AddEntry("192.168.0.1", "localhost.powertoys.uitest", true);
 
             Assert.IsTrue(Session.Has<Button>(By.Name("Delete")), "Should have one row now");
-            FindExact<Button>("New entry").Focus();
+            Session.FindExact<Button>("New entry").Focus();
             VisualAssert.AreEqual(TestContext, Session.Find(By.AccessibilityId("Entries")));
         }
 
@@ -142,7 +140,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Basic.CanNotAddMoreThenNighHosts")]
+        [TestMethod("Hosts.Next.Basic.CanNotAddMoreThenNighHosts")]
         [TestCategory("Hosts File Editor #5")]
         public void TestTooManyHosts()
         {
@@ -155,30 +153,30 @@ namespace Hosts.UITests
             string inValidHosts = validHosts + " more_host";
             string splitHosts = validHosts + " host_10";
 
-            Find<Button>("New entry").Click();
+            Session.FindExact<Button>("New entry").Click();
 
-            Assert.IsFalse(FindExact<Button>("Add").IsEnabled, "Add button should be Disabled by default");
+            Assert.IsFalse(Session.FindExact<Button>("Add").IsEnabled, "Add button should be Disabled by default");
 
-            Find<TextBox>("Address").SetText("127.0.0.1");
+            Session.FindExact<TextBox>("Address").SetText("127.0.0.1");
 
-            Find<TextBox>("Hosts").SetText(validHosts);
+            Session.FindExact<TextBox>("Hosts").SetText(validHosts);
             Assert.IsTrue(
-                Session.WaitFor(() => FindExact<Button>("Add", 500).IsEnabled, 5_000),
+                Session.WaitFor(() => Session.FindExact<Button>("Add", 500).IsEnabled, 5_000, pollIntervalMS: 250),
                 "Add button should be Enabled with validHosts");
 
-            Find<TextBox>("Hosts").SetText(inValidHosts);
+            Session.FindExact<TextBox>("Hosts").SetText(inValidHosts);
             Assert.IsTrue(
-                Session.WaitFor(() => !FindExact<Button>("Add", 500).IsEnabled, 5_000),
+                Session.WaitFor(() => !Session.FindExact<Button>("Add", 500).IsEnabled, 5_000, pollIntervalMS: 250),
                 "Add button should be Disabled with inValidHosts");
 
-            Find<Button>("Cancel").Click();
+            Session.FindExact<Button>("Cancel").Click();
 
             // An elevated run also covers loading a manually authored overlong hosts line:
             // the editor must split it into a 9-host row plus a 1-host row and explain why.
             if (Session.IsElevated == true)
             {
                 byte[]? originalHostsFile = File.Exists(HostsFilePath) ? File.ReadAllBytes(HostsFilePath) : null;
-                int initialEntryCount = CountExact<Button>("Delete");
+                int initialEntryCount = Session.CountExact<Button>("Delete");
                 try
                 {
                     File.AppendAllText(
@@ -186,12 +184,12 @@ namespace Hosts.UITests
                         $"{Environment.NewLine}127.0.0.1 {splitHosts}{Environment.NewLine}");
 
                     Assert.IsTrue(
-                        Session.WaitFor(() => CountExact<Button>("Reload") == 1, 5_000),
+                        Session.WaitForExactCount<Button>("Reload", 1),
                         "The editor did not detect the externally modified hosts file.");
-                    FindExact<Button>("Reload").Click();
+                    Session.FindExact<Button>("Reload").Click();
 
                     Assert.IsTrue(
-                        Session.WaitFor(() => CountExact<Button>("Delete") == initialEntryCount + 2, 5_000),
+                        Session.WaitForExactCount<Button>("Delete", initialEntryCount + 2),
                         "The overlong hosts line was not split into exactly two entries.");
                     Assert.IsTrue(Session.Has(By.Name(validHosts), 5_000), "The first split entry should contain hosts 1 through 9.");
                     Assert.IsTrue(Session.Has(By.Name("host_10"), 5_000), "The second split entry should contain host 10.");
@@ -221,13 +219,13 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Basic.ErrorMessageShowupIfNotRunAsAdmin")]
+        [TestMethod("Hosts.Next.Basic.ErrorMessageShowupIfNotRunAsAdmin")]
         [TestCategory("Hosts File Editor #8")]
         public void TestErrorMessageWithNonAdminPermission()
         {
             CloseWarningDialog();
             RemoveAllEntries();
-            AddEntry("192.168.0.1", "localhost", true);
+            AddEntry("192.168.0.1", "save-error.powertoys.uitest", true);
             AssertSaveFeedbackMatchesElevation();
         }
 
@@ -245,7 +243,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Basic.FiltersControlShouldWork")]
+        [TestMethod("Hosts.Next.Basic.FiltersControlShouldWork")]
         [TestCategory("Hosts File Editor #6")]
         public void TestFilterControl()
         {
@@ -254,13 +252,13 @@ namespace Hosts.UITests
 
             for (int i = 0; i < 10; i++)
             {
-                AddEntry("192.168.0." + i, "localhost_" + i, true);
+                AddEntry("192.168.0." + i, "host_" + i + ".powertoys.uitest", true);
             }
 
             // Open filter panel.
-            FindExact<Button>("Filters").Click();
+            Session.FindExact<Button>("Filters").Click();
             Assert.IsTrue(
-                Session.WaitFor(() => CountExact<Button>("Clear filters") == 1, 5_000),
+                Session.WaitForExactCount<Button>("Clear filters", 1),
                 "Filter panel should be opened after clicking the Filters button.");
 
             var addressFilterCases = new KeyValuePair<string, int>[]
@@ -286,28 +284,28 @@ namespace Hosts.UITests
 
             foreach (var (addressFilter, expectedCount) in addressFilterCases)
             {
-                Find<TextBox>("Address").SetText(addressFilter);
+                Session.FindExact<TextBox>("Address").SetText(addressFilter);
 
                 // All 'Delete' buttons in the window live inside the Entries list, so an unscoped
                 // count is equivalent to a scoped one (.Next Element has no scoped FindAll).
                 Assert.IsTrue(
-                    Session.WaitFor(() => CountExact<Button>("Delete") == expectedCount, 5_000),
+                    Session.WaitForExactCount<Button>("Delete", expectedCount),
                     $"Address filter '{addressFilter}' did not reach {expectedCount} matching rows.");
             }
 
             var hostFilterCases = new KeyValuePair<string, int>[]
             {
                 // contains text, expected matched more rows
-                new("host_", 10),
+                new("powertoys", 10),
 
                 // ends with text, expected matched 1 row
-                new("host_4", 1),
+                new("4.powertoys.uitest", 1),
 
                 // starts with text, expected matched more rows
-                new("localhost", 10),
+                new("host_", 10),
 
                 // full text, expected matched 1 row
-                new("localhost_5", 1),
+                new("host_5.powertoys.uitest", 1),
 
                 // empty filter, should display all rows
                 new(string.Empty, 10),
@@ -315,16 +313,16 @@ namespace Hosts.UITests
 
             foreach (var (hostFilterCase, expectedCount) in hostFilterCases)
             {
-                Find<TextBox>("Hosts").SetText(hostFilterCase);
+                Session.FindExact<TextBox>("Hosts").SetText(hostFilterCase);
                 Assert.IsTrue(
-                    Session.WaitFor(() => CountExact<Button>("Delete") == expectedCount, 5_000),
+                    Session.WaitForExactCount<Button>("Delete", expectedCount),
                     $"Hosts filter '{hostFilterCase}' did not reach {expectedCount} matching rows.");
             }
 
             // Close filter panel.
-            FindExact<Button>("Filters").Click();
+            Session.FindExact<Button>("Filters").Click();
             Assert.IsTrue(
-                Session.WaitFor(() => CountExact<Button>("Clear filters") == 0, 5_000),
+                Session.WaitForExactCount<Button>("Clear filters", 0),
                 "Filter panel should be closed after clicking the Filters button.");
         }
 
@@ -340,9 +338,9 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// Writing the hosts file requires the module to run elevated, so the file assertions only run
-        /// when the current session is elevated (mirrors <see cref="TestNoErrorMessageWithNonAdminPermission"/>).
+        /// when the current session is elevated (mirrors <see cref="HostsSettingTests.TestOpenAsAdministrator"/>).
         /// </summary>
-        [TestMethod("Hosts.Basic.EntryTogglesAreAppliedToHostsFile")]
+        [TestMethod("Hosts.Next.Basic.EntryTogglesAreAppliedToHostsFile")]
         [TestCategory("Hosts File Editor #2")]
         [TestCategory("Hosts File Editor #3")]
         public void TestEntryTogglesAreAppliedToHostsFile()
@@ -354,7 +352,7 @@ namespace Hosts.UITests
             const string host = "powertoys.uitest.next";
 
             AddEntry(address, host, true);
-            var activeToggle = Find<ToggleSwitch>("Active");
+            var activeToggle = Session.FindExact<ToggleSwitch>("Active");
             Assert.IsTrue(activeToggle.IsOn, "A newly added active entry should be shown as active.");
 
             if (Session.IsElevated == true)
@@ -369,6 +367,7 @@ namespace Hosts.UITests
             }
 
             // Disable the entry via the row's own 'Active' toggle (no need to re-open the edit dialog).
+            activeToggle = Session.FindExact<ToggleSwitch>("Active");
             activeToggle.Toggle(false);
             Assert.IsTrue(
                 activeToggle.WaitForProperty("ToggleState", "Off", 5_000),
@@ -382,6 +381,7 @@ namespace Hosts.UITests
             }
 
             // Re-enable the entry and verify the file is updated again.
+            activeToggle = Session.FindExact<ToggleSwitch>("Active");
             activeToggle.Toggle(true);
             Assert.IsTrue(
                 activeToggle.WaitForProperty("ToggleState", "On", 5_000),
@@ -399,24 +399,22 @@ namespace Hosts.UITests
         /// Covers Release-checklist item #7 - Click the "Open hosts file" button and verify it opens in
         /// the default editor (Notepad).
         /// </summary>
-        [TestMethod("Hosts.Basic.OpenHostsFileButtonShouldOpenNotepad")]
+        [TestMethod("Hosts.Next.Basic.OpenHostsFileButtonShouldOpenNotepad")]
         [TestCategory("Hosts File Editor #7")]
         public void TestOpenHostsFileButtonOpensNotepad()
         {
             CloseWarningDialog();
-            var existingProcessIds = Process.GetProcessesByName("notepad")
-                .Select(process => process.Id)
-                .ToHashSet();
+            Assert.IsTrue(
+                WindowControl.TryKillProcessTreeByNameAndWait("notepad", 10_000),
+                "A stale Notepad process could not be stopped before validating the hosts document launch.");
 
             try
             {
-                Find<Button>("Open hosts file").Click();
+                Session.FindExact<Button>("Open hosts file").Click();
 
                 var notepad = WindowsFinder.WaitForWindowByApp(
                     "notepad",
-                    candidate =>
-                        !existingProcessIds.Contains(candidate.ProcessId) &&
-                        candidate.Title.Contains("hosts", StringComparison.OrdinalIgnoreCase),
+                    candidate => candidate.Title.Contains("hosts", StringComparison.OrdinalIgnoreCase),
                     timeoutMS: 30_000);
                 Assert.IsNotNull(
                     notepad,
@@ -437,7 +435,7 @@ namespace Hosts.UITests
 
             foreach (var line in File.ReadAllLines(HostsFilePath))
             {
-                if (line.Contains(needle))
+                if (line.Contains(needle, StringComparison.Ordinal))
                 {
                     return line;
                 }
@@ -467,8 +465,8 @@ namespace Hosts.UITests
         {
             bool shouldShowError = Session.IsElevated != true;
             bool errorShown = shouldShowError
-                ? Session.WaitFor(() => CountExact<TextBlock>(SaveErrorMessage) == 1, 5_000)
-                : CountExact<TextBlock>(SaveErrorMessage) > 0;
+                ? Session.WaitForExactCount<TextBlock>(HostsTestHelper.SaveErrorMessage, 1)
+                : Session.CountExact<TextBlock>(HostsTestHelper.SaveErrorMessage) > 0;
             string failureMessage = shouldShowError
                 ? "A non-elevated Hosts process should show the save error."
                 : "An elevated Hosts process should save without showing the non-admin error.";
@@ -481,62 +479,37 @@ namespace Hosts.UITests
             if (clickAddEntryButton)
             {
                 // Click 'New entry' for adding a Host override rule.
-                Find<Button>("New entry").Click();
+                Session.FindExact<Button>("New entry").Click();
             }
 
-            // Adding a new host override localhost -> 192.168.0.1
-            var addButton = FindExact<Button>("Add");
+            // Add a new host override.
+            var addButton = Session.FindExact<Button>("Add");
             Assert.IsFalse(addButton.IsEnabled, "Add button should be Disabled by default");
 
-            Assert.AreEqual(ip, Find<TextBox>("Address").SetText(ip).Value);
-            Assert.AreEqual(host, Find<TextBox>("Hosts").SetText(host).Value);
+            Assert.AreEqual(ip, Session.FindExact<TextBox>("Address").SetText(ip).Value);
+            Assert.AreEqual(host, Session.FindExact<TextBox>("Hosts").SetText(host).Value);
 
-            Find<ToggleSwitch>("Active").Toggle(active);
+            HostsTestHelper.FindEntryDialogActiveToggle(Session).Toggle(active);
 
             Assert.IsTrue(
-                Session.WaitFor(() => FindExact<Button>("Add", 500).IsEnabled, 5_000),
+                Session.WaitFor(() => Session.FindExact<Button>("Add", 500).IsEnabled, 5_000, pollIntervalMS: 250),
                 "Add button should be Enabled after providing valid inputs");
 
             // Add the entry.
-            FindExact<Button>("Add").Click();
+            Session.FindExact<Button>("Add").Click();
 
             Assert.IsTrue(
-                Session.WaitFor(() => CountExact<Button>("Delete") > 0, 5_000),
+                Session.WaitFor(() => Session.CountExact<Button>("Delete") > 0, 5_000, pollIntervalMS: 250),
                 "The new entry did not appear after clicking Add");
         }
 
-        private T FindExact<T>(string name, int timeoutMS = 5_000)
-            where T : Element, new()
-        {
-            T? result = null;
-            bool found = Session.WaitFor(
-                () =>
-                {
-                    var matches = Session.FindAll<T>(By.Name(name), 0)
-                        .Where(element => string.Equals(element.Name, name, System.StringComparison.Ordinal))
-                        .ToList();
-                    Assert.IsTrue(matches.Count <= 1, $"Expected at most one exact {typeof(T).Name} named '{name}', found {matches.Count}.");
-                    result = matches.SingleOrDefault();
-                    return result is not null;
-                },
-                timeoutMS);
-
-            Assert.IsTrue(found, $"Exact {typeof(T).Name} named '{name}' was not found within {timeoutMS} ms.");
-            return result!;
-        }
-
-        private int CountExact<T>(string name)
-            where T : Element, new() =>
-            Session.FindAll<T>(By.Name(name), 0)
-                .Count(element => string.Equals(element.Name, name, System.StringComparison.Ordinal));
-
         private void CloseWarningDialog()
         {
-            if (CountExact<Button>("Accept") == 1)
+            if (Session.WaitForExactCount<Button>("Accept", 1, 1_000))
             {
-                FindExact<Button>("Accept").Invoke(msPostAction: 0);
+                Session.FindExact<Button>("Accept").Invoke(msPostAction: 0);
                 Assert.IsTrue(
-                    Session.WaitFor(() => CountExact<Button>("Accept") == 0, 10_000),
+                    Session.WaitForExactCount<Button>("Accept", 0, 10_000),
                     "The startup warning did not close after invoking Accept.");
             }
         }
@@ -545,7 +518,7 @@ namespace Hosts.UITests
         {
             while (true)
             {
-                int countBefore = CountExact<Button>("Delete");
+                int countBefore = Session.CountExact<Button>("Delete");
                 if (countBefore == 0)
                 {
                     return;
@@ -554,13 +527,16 @@ namespace Hosts.UITests
                 var deleteButton = Session.FindAll<Button>(By.Name("Delete"), 1_000)
                     .First(button => string.Equals(button.Name, "Delete", StringComparison.Ordinal));
                 deleteButton.Focus();
+
+                // Focusing selects the row and rebuilds its automation subtree, so invoke a freshly
+                // resolved button rather than the now-stale element used for Focus().
                 Session.FindAll<Button>(By.Name("Delete"), 1_000)
                     .First(button => string.Equals(button.Name, "Delete", StringComparison.Ordinal))
                     .Invoke(msPostAction: 0);
 
-                FindExact<Button>("Yes").Invoke(msPostAction: 0);
+                Session.FindExact<Button>("Yes").Invoke(msPostAction: 0);
                 Assert.IsTrue(
-                    Session.WaitFor(() => CountExact<Button>("Delete") < countBefore, 5_000),
+                    Session.WaitFor(() => Session.CountExact<Button>("Delete") < countBefore, 5_000, pollIntervalMS: 250),
                     "The entry count did not decrease after confirming deletion.");
             }
         }
