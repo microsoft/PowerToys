@@ -552,7 +552,10 @@ bool DictationSession::Start()
 // period so that releasing the mouse never leaves the user waiting.
 //
 //----------------------------------------------------------------------------
-std::wstring DictationSession::Stop( DWORD graceMilliseconds, bool* cancelled )
+std::wstring DictationSession::Stop(
+    DWORD graceMilliseconds,
+    bool* cancelled,
+    const std::function<void()>& waitCallback )
 {
     bool cancelPendingStart = false;
     bool waitForWhisper = false;
@@ -578,6 +581,10 @@ std::wstring DictationSession::Stop( DWORD graceMilliseconds, bool* cancelled )
                    m_status != Status::Idle &&
                    std::chrono::steady_clock::now() < startDeadline )
             {
+                if( waitCallback )
+                {
+                    waitCallback();
+                }
                 if( GetAsyncKeyState( VK_ESCAPE ) & 0x8000 )
                 {
                     cancelledByUser = true;
@@ -630,6 +637,10 @@ std::wstring DictationSession::Stop( DWORD graceMilliseconds, bool* cancelled )
         std::chrono::steady_clock::now() + std::chrono::milliseconds( waitMilliseconds );
     while( m_status == Status::Finalizing && std::chrono::steady_clock::now() < deadline )
     {
+        if( waitCallback )
+        {
+            waitCallback();
+        }
         if( GetAsyncKeyState( VK_ESCAPE ) & 0x8000 )
         {
             cancelledByUser = true;

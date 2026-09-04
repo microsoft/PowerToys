@@ -69,7 +69,10 @@ public:
     // Stops transcribing and waits up to graceMilliseconds for the final phrase
     // to arrive, then returns the accumulated text.
     //
-    std::wstring Stop( DWORD graceMilliseconds, bool* cancelled = nullptr );
+    std::wstring Stop(
+        DWORD graceMilliseconds,
+        bool* cancelled = nullptr,
+        const std::function<void()>& waitCallback = {} );
 
     //
     // Abandons the session and discards anything transcribed so far.

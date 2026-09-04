@@ -329,6 +329,21 @@ void SelectRectangle::ShowSelected()
     SetWindowLong( m_window.get(), GWL_EXSTYLE, GetWindowLong( m_window.get(), GWL_EXSTYLE ) | WS_EX_TRANSPARENT );
     EnableWindow( m_window.get(), FALSE );
 
+    if( m_retainDimmedExterior )
+    {
+        RECT clientRect{};
+        GetClientRect( m_window.get(), &clientRect );
+        RECT innerRect = m_selectedRect;
+        InflateRect( &innerRect, -ScaleForDpi( 2, m_dpi ), -ScaleForDpi( 2, m_dpi ) );
+
+        wil::unique_hrgn region{ CreateRectRgnIndirect( &clientRect ) };
+        wil::unique_hrgn insideRegion{ CreateRectRgnIndirect( &innerRect ) };
+        CombineRgn( region.get(), region.get(), insideRegion.get(), RGN_XOR );
+        SetWindowRgn( m_window.get(), region.release(), true );
+        RedrawWindow( m_window.get(), nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW | RDW_FRAME );
+        return;
+    }
+
     POINT point{ m_selectedRect.left, m_selectedRect.top };
     auto rect = m_selectedRect;
     OffsetRect( &rect, -rect.left, -rect.top );
@@ -610,6 +625,28 @@ LRESULT SelectRectangle::WindowProc( HWND window, UINT message, WPARAM wordParam
                             rect.left, rect.top, rect.right, rect.bottom, window );
                 OutputDebugStringW( dbg );
             }
+            if( m_retainDimmedExterior )
+            {
+                FillRect( deviceContext, &rect, static_cast<HBRUSH>(GetStockObject( BLACK_BRUSH )) );
+
+                wil::unique_hbrush border{ CreateSolidBrush( m_borderColor ) };
+                RECT borderRect = m_selectedRect;
+                const int width = ScaleForDpi( 2, m_dpi );
+                for( int index = 0; index < width; ++index )
+                {
+                    FrameRect( deviceContext, &borderRect, border.get() );
+                    InflateRect( &borderRect, -1, -1 );
+                }
+
+                EndPaint( window, &paint );
+                return 0;
+            }
+
+            SelectRectangleDebugLog( L"[SelectRectangle] WM_PAINT selected border rect=(%ld,%ld)-(%ld,%ld)\n",
+                                     rect.left,
+                                     rect.top,
+                                     rect.right,
+                                     rect.bottom );
 
             // Draw a border matching the Windows graphics capture API border.
             // Default: 1px outer color + 1px inner black.

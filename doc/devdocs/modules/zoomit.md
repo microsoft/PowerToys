@@ -222,10 +222,11 @@ ZoomIt embeds `ggml-small.en-q5_1.bin` (190,098,681 bytes), whose SHA-256 is
 Audio is captured during the drag, converted to mono floating-point PCM, resampled to
 Whisper's 16 kHz input rate, and transcribed when the mouse is released. Finalization is
 allowed up to ten seconds for Whisper because inference, unlike SAPI event draining, is
-CPU-bound. The completed selection border and badge remain visible, the pointer returns to
-the normal arrow, and the badge changes to `Transcribing... Press Esc to cancel.` The border
-is hidden only for the synchronous image copy so it is not included in the screenshot.
-Escape cancels inference and abandons the snip without changing the clipboard.
+CPU-bound. The completed selection border, dimmed exterior, and badge remain visible, the
+pointer returns to the normal arrow, and the badge shows an animated `Transcribing... Press
+Esc to cancel.` status. The selection overlay is hidden only for the synchronous image copy
+so it is not included in the screenshot. Escape cancels inference and abandons the snip
+without changing the clipboard.
 
 Audio capture for recording is independent from dictation. The microphone chooser applies
 to both features, but disabling "Include microphone in recording" does not disable

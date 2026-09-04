@@ -11498,6 +11498,7 @@ LRESULT APIENTRY MainWndProc(
             DictationBadge badge;
             DictationSession& dictation = GetDictationSession();
             SelectRectangle selectRectangle;
+            selectRectangle.RetainDimmedExteriorAfterSelection( true );
 
             //
             // Listening either begins with the drag (dedicated dictation hotkey
@@ -11644,13 +11645,35 @@ LRESULT APIENTRY MainWndProc(
                         SRCCOPY | CAPTUREBLT );
             SelectObject( hSaveDc, hPrevBitmap );
             selectRectangle.Show();
+            badge.Reposition( badgeAnchor );
 
             std::wstring transcript;
             bool dictationCancelled = false;
             if( listeningStarted )
             {
-                badge.SetStatus( L"Transcribing... Press Esc to cancel." );
-                transcript = dictation.Stop( g_SnipDictateGrace, &dictationCancelled );
+                unsigned int animationFrame = 0;
+                ULONGLONG nextAnimation = 0;
+                auto updateTranscribingStatus = [&] {
+                    const ULONGLONG now = GetTickCount64();
+                    if( now < nextAnimation )
+                    {
+                        return;
+                    }
+
+                    static constexpr const wchar_t* Frames[] = {
+                        L"Transcribing   Press Esc to cancel.",
+                        L"Transcribing.  Press Esc to cancel.",
+                        L"Transcribing.. Press Esc to cancel.",
+                        L"Transcribing... Press Esc to cancel.",
+                    };
+                    badge.SetStatus( Frames[animationFrame++ % ARRAYSIZE( Frames )] );
+                    nextAnimation = now + 250;
+                };
+                updateTranscribingStatus();
+                transcript = dictation.Stop(
+                    g_SnipDictateGrace,
+                    &dictationCancelled,
+                    updateTranscribingStatus );
             }
             else
             {

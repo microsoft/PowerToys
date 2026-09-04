@@ -9,6 +9,7 @@
 #pragma once
 
 #include "pch.h"
+#include <functional>
 
 class SelectRectangle
 {
@@ -23,6 +24,7 @@ public:
     double AspectRatio() const { return m_aspectRatio; }
     // Sets the border color Start resets to (default: capture-API yellow).
     void BorderColor( COLORREF color ) { m_configuredBorderColor = color; m_borderColor = color; }
+    void RetainDimmedExteriorAfterSelection( bool retain ) { m_retainDimmedExterior = retain; }
     RECT SelectedRect() const { return m_selectedRect; }
     bool IsActive() const { return m_window != nullptr; }
 
@@ -68,8 +70,22 @@ private:
     bool m_selected{ false };
     bool m_setClip{ false };
     bool m_stopping{ false };
+    bool m_dragStarted{ false };
+    bool m_retainDimmedExterior{ false };
     POINT m_startPoint{};
     wil::unique_hwnd m_window;
+
+    std::function<void()> m_onDragStarted;
+    std::function<void()> m_onDragCompleted;
+    std::function<void()> m_onCancelled;
+    std::function<void()> m_onDictateRequested;
+    std::function<void( const RECT& )> m_onSelectionChanged;
+
+    void NotifyDragStarted();
+    void NotifyDragCompleted();
+    void NotifyCancelled();
+    void NotifyDictateRequested();
+    void NotifySelectionChanged();
 
     void ShowSelected();
     LRESULT WindowProc( HWND window, UINT message, WPARAM wordParam, LPARAM longParam );
