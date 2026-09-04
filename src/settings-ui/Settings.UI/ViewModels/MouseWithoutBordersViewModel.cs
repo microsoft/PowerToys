@@ -87,6 +87,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     Settings.Properties.ShowOriginalUI = value;
                     NotifyPropertyChanged(nameof(ShowOriginalUI));
+                    OnPropertyChanged(nameof(ShowThemeAdaptiveTrayIcon));
+                }
+            }
+        }
+
+        public bool ShowThemeAdaptiveTrayIcon
+        {
+            get => Settings.Properties.ShowThemeAdaptiveTrayIcon;
+            set
+            {
+                if (Settings.Properties.ShowThemeAdaptiveTrayIcon != value)
+                {
+                    Settings.Properties.ShowThemeAdaptiveTrayIcon = value;
+                    NotifyPropertyChanged(nameof(ShowThemeAdaptiveTrayIcon));
                 }
             }
         }
