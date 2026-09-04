@@ -187,6 +187,21 @@ namespace PowerLauncher
                         _settings.TitleFontSize = overloadSettings.Properties.TitleFontSize;
                     }
 
+                    if (_settings.EnableAudibleFeedback != overloadSettings.Properties.EnableAudibleFeedback)
+                    {
+                        _settings.EnableAudibleFeedback = overloadSettings.Properties.EnableAudibleFeedback;
+                    }
+
+                    if (_settings.EnableOpeningSound != overloadSettings.Properties.EnableOpeningSound)
+                    {
+                        _settings.EnableOpeningSound = overloadSettings.Properties.EnableOpeningSound;
+                    }
+
+                    if (_settings.EnableClosingSound != overloadSettings.Properties.EnableClosingSound)
+                    {
+                        _settings.EnableClosingSound = overloadSettings.Properties.EnableClosingSound;
+                    }
+
                     retry = false;
                 }
 

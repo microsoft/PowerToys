@@ -770,6 +770,14 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+### Audible feedback sounds
+
+We use two sound recordings by carloschoconta for the optional PowerToys Run opening/closing audible feedback.
+
+**Source**: "speed up.wav" <https://freesound.org/people/carloschoconta/sounds/492115/> and "speed down.wav" <https://freesound.org/people/carloschoconta/sounds/492114/>
+
+These sounds are licensed under the Creative Commons Attribution 3.0 Unported (CC BY 3.0) license: <https://creativecommons.org/licenses/by/3.0/>. Attribution: "speed up.wav" and "speed down.wav" by carloschoconta (freesound.org), licensed under CC BY 3.0.
+
 ### Beta Tadele's Window Walker license
 
 **Source**: <https://github.com/betsegaw/windowwalker>
