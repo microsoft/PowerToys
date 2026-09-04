@@ -212,7 +212,16 @@ namespace PowerToys.DSC.Properties {
                 return ResourceManager.GetString("PowerToysDSC", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Keyboard Manager profile: {0}.
+        /// </summary>
+        internal static string ProfileWarning {
+            get {
+                return ResourceManager.GetString("ProfileWarning", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to The resource name.
         /// </summary>

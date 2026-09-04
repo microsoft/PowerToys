@@ -110,6 +110,10 @@ public static class KbmProfileConverter
             {
                 errors.Add($"{context}.from: 'Disable' cannot be part of a shortcut");
             }
+            else if (GetIllegalShortcutName(from) is { } illegalFrom)
+            {
+                errors.Add($"{context}.from: '{illegalFrom}' is reserved by Windows and cannot be remapped");
+            }
             else
             {
                 var app = NormalizeTargetApp(entry.TargetApp) ?? string.Empty;
@@ -194,6 +198,7 @@ public static class KbmProfileConverter
             var app = NormalizeTargetApp(entry.TargetApp);
             var stored = app != null ? new AppSpecificKeysDataModel { TargetApp = app } : new KeysDataModel();
             stored.OriginalKeys = from.ToVkString();
+            stored.SecondKeyOfChord = from.SecondKeyOfChord;
             stored.ExactMatch = entry.ExactMatch ?? false;
 
             var isText = false;
@@ -448,7 +453,54 @@ public static class KbmProfileConverter
             return false;
         }
 
+        if (GetIllegalShortcutName(result) is { } illegal)
+        {
+            error = $"'{illegal}' is reserved by Windows and cannot be used as a remap target";
+            return false;
+        }
+
         return true;
+    }
+
+    /// <summary>
+    /// Detects the shortcuts the Keyboard Manager editor refuses
+    /// (EditorHelpers::IsShortcutIllegal): Win+L and Ctrl+Alt+Delete are
+    /// handled by Windows before any application, so remapping them can never
+    /// take effect. The chord second key, if any, is ignored because the
+    /// primary shortcut is intercepted before the chord completes.
+    /// </summary>
+    /// <param name="keys">The parsed shortcut.</param>
+    /// <returns>The friendly name of the illegal shortcut, or null when the shortcut is legal.</returns>
+    private static string? GetIllegalShortcutName(KbmShortcutParser.ParsedKeys keys)
+    {
+        var modifiers = new HashSet<KbmKeyNames.ModifierClass>();
+        uint actionKey = 0;
+        foreach (var key in keys.Keys)
+        {
+            var modifierClass = KbmKeyNames.GetModifierClass(key);
+            if (modifierClass != KbmKeyNames.ModifierClass.None)
+            {
+                modifiers.Add(modifierClass);
+            }
+            else if (actionKey == 0)
+            {
+                actionKey = key;
+            }
+        }
+
+        // Win+L (any Win key, no other modifiers)
+        if (actionKey == 0x4C && modifiers.SetEquals([KbmKeyNames.ModifierClass.Win]))
+        {
+            return "Win+L";
+        }
+
+        // Ctrl+Alt+Del (any Ctrl and Alt keys, no Win or Shift)
+        if (actionKey == 0x2E && modifiers.SetEquals([KbmKeyNames.ModifierClass.Ctrl, KbmKeyNames.ModifierClass.Alt]))
+        {
+            return "Ctrl+Alt+Delete";
+        }
+
+        return null;
     }
 
     private static KbmShortcutParser.ParsedKeys ParseTargetOrThrow(string input)

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Security.Principal;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -29,6 +30,10 @@ public sealed class ProfileFunctionData : BaseFunctionData
 
     private static readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
     private readonly Func<bool> _isProcessElevated;
+
+    // Structural problems with the input JSON (missing or null required
+    // members) detected before the model is materialized.
+    private readonly IList<string> _inputErrors;
 
     // The stored profile is serialized without null properties to match the
     // shape written by the C++ editor; the engine's JSON reader throws on
@@ -61,7 +66,24 @@ public sealed class ProfileFunctionData : BaseFunctionData
             return new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
         });
         Output = new();
-        Input = string.IsNullOrEmpty(input) ? new() : JsonSerializer.Deserialize<ProfileResourceObject>(input) ?? new();
+        Input = new();
+        _inputErrors = [];
+
+        if (string.IsNullOrEmpty(input))
+        {
+            return;
+        }
+
+        // Deserialization does not enforce [Required] or non-nullable
+        // annotations: "{}" would leave the empty default profile (and erase
+        // every remapping on Set) and null members would dereference later.
+        // Check the shape of the JSON before materializing the model.
+        var node = JsonNode.Parse(input);
+        _inputErrors = ValidateInputStructure(node);
+        if (_inputErrors.Count == 0)
+        {
+            Input = node.Deserialize<ProfileResourceObject>() ?? new();
+        }
     }
 
     /// <summary>
@@ -70,7 +92,7 @@ public sealed class ProfileFunctionData : BaseFunctionData
     /// <returns>The list of validation errors; empty when the input is valid.</returns>
     public IList<string> ValidateInput()
     {
-        return KbmProfileConverter.Validate(Input.Profile);
+        return _inputErrors.Count > 0 ? _inputErrors : KbmProfileConverter.Validate(Input.Profile);
     }
 
     /// <summary>
@@ -160,17 +182,80 @@ public sealed class ProfileFunctionData : BaseFunctionData
     }
 
     /// <summary>
+    /// Checks that the input JSON has the required shape: a "profile" object
+    /// whose optional "keys" and "shortcuts" members are arrays of objects.
+    /// Type mismatches inside the entries are left to the deserializer.
+    /// </summary>
+    /// <param name="node">The parsed input JSON.</param>
+    /// <returns>The list of structural errors; empty when the shape is valid.</returns>
+    private static IList<string> ValidateInputStructure(JsonNode? node)
+    {
+        var errors = new List<string>();
+        if (node is not JsonObject root)
+        {
+            errors.Add("input must be a JSON object");
+            return errors;
+        }
+
+        if (!root.TryGetPropertyValue(ProfileResourceObject.ProfileJsonPropertyName, out var profileNode) || profileNode == null)
+        {
+            errors.Add($"'{ProfileResourceObject.ProfileJsonPropertyName}' is required");
+            return errors;
+        }
+
+        if (profileNode is not JsonObject profile)
+        {
+            errors.Add($"'{ProfileResourceObject.ProfileJsonPropertyName}' must be an object");
+            return errors;
+        }
+
+        foreach (var listName in new[] { "keys", "shortcuts" })
+        {
+            if (!profile.TryGetPropertyValue(listName, out var listNode))
+            {
+                continue;
+            }
+
+            var context = $"{ProfileResourceObject.ProfileJsonPropertyName}.{listName}";
+            if (listNode is not JsonArray list)
+            {
+                errors.Add($"'{context}' must be an array");
+                continue;
+            }
+
+            for (var i = 0; i < list.Count; i++)
+            {
+                if (list[i] is not JsonObject)
+                {
+                    errors.Add($"'{context}[{i.ToString(CultureInfo.InvariantCulture)}]' must be an object");
+                }
+            }
+        }
+
+        return errors;
+    }
+
+    /// <summary>
     /// Signals the named event the Keyboard Manager engine listens on so a
     /// running instance reloads the profile immediately. Mirrors the signal
-    /// in MappingConfiguration::SaveSettingsToFile.
+    /// in MappingConfiguration::SaveSettingsToFile. The event is only opened,
+    /// never created: when no engine is running there is nothing to signal,
+    /// and creating it here would make the signal look successful.
     /// </summary>
-    /// <returns>True if the event was signaled; otherwise false.</returns>
+    /// <returns>True if a running engine was signaled; otherwise false.</returns>
     private static bool SignalSettingsChangedEvent()
     {
         try
         {
-            using var settingsEvent = new EventWaitHandle(false, EventResetMode.AutoReset, SettingsEventName);
-            return settingsEvent.Set();
+            if (!EventWaitHandle.TryOpenExisting(SettingsEventName, out var settingsEvent))
+            {
+                return false;
+            }
+
+            using (settingsEvent)
+            {
+                return settingsEvent.Set();
+            }
         }
         catch (Exception)
         {

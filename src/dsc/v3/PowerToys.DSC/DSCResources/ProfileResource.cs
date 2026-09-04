@@ -25,6 +25,7 @@ public sealed class ProfileResource : BaseResource
 {
     private static readonly CompositeFormat FailedToWriteManifests = CompositeFormat.Parse(Resources.FailedToWriteManifests);
     private static readonly CompositeFormat InvalidProfileError = CompositeFormat.Parse(Resources.InvalidProfileError);
+    private static readonly CompositeFormat ProfileWarning = CompositeFormat.Parse(Resources.ProfileWarning);
 
     public const string ResourceName = "profile";
 
@@ -38,6 +39,7 @@ public sealed class ProfileResource : BaseResource
     {
         var data = new ProfileFunctionData();
         data.GetState();
+        WriteWarnings(data);
         WriteJsonOutputLine(data.Output.ToJson());
         return true;
     }
@@ -58,6 +60,7 @@ public sealed class ProfileResource : BaseResource
         }
 
         data.GetState();
+        WriteWarnings(data);
 
         // Capture the diff before updating the output
         var diff = data.GetDiffJson();
@@ -89,6 +92,7 @@ public sealed class ProfileResource : BaseResource
         }
 
         data.GetState();
+        WriteWarnings(data);
         data.Output.InDesiredState = data.TestState();
 
         WriteJsonOutputLine(data.Output.ToJson());
@@ -178,6 +182,20 @@ public sealed class ProfileResource : BaseResource
         }
 
         return data;
+    }
+
+    /// <summary>
+    /// Surfaces the warnings collected while reading the current profile
+    /// (entries that could not be parsed and were skipped) through the DSC
+    /// warning channel, so an export that omits remappings is never silent.
+    /// </summary>
+    /// <param name="data">The function data whose state was read.</param>
+    private void WriteWarnings(ProfileFunctionData data)
+    {
+        foreach (var warning in data.Warnings)
+        {
+            WriteMessageOutputLine(DscMessageLevel.Warning, string.Format(CultureInfo.InvariantCulture, ProfileWarning, warning));
+        }
     }
 
     /// <summary>

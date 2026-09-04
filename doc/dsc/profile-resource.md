@@ -47,7 +47,8 @@ Keyboard Manager utility is enabled (see the [KeyboardManager module][02]).
 
 ## Profile schema
 
-The `profile` object has two entry lists:
+The `profile` object is required and has two entry lists. An empty profile
+(`profile: {}`) removes every remapping:
 
 ### `keys[]` — single-key remappings
 
@@ -73,7 +74,9 @@ Exactly one of `to` or `toText` must be set.
 
 Exactly one of `to`, `toText`, `runProgram`, or `openUri` must be set. A
 shortcut `from` requires at least one modifier plus one action key, and may
-add a chord second key after a comma (`"Win+O, K"`).
+add a chord second key after a comma (`"Win+O, K"`). `Win+L` and
+`Ctrl+Alt+Delete` are handled by Windows before any application and are
+rejected, as in the Keyboard Manager editor.
 
 ### `runProgram` object
 
@@ -191,7 +194,7 @@ resources:
         keys:
           - { from: CapsLock, to: LCtrl }
         shortcuts:
-          - { from: "Ctrl+Shift+V", toText: "Best regards,`nContoso IT" }
+          - { from: "Ctrl+Shift+V", toText: "Best regards,\nContoso IT" }
 ```
 
 ### Example 3 - Capture existing remappings

@@ -266,6 +266,9 @@ public sealed class KbmProfileConverterTests
                 new() { From = "Ctrl+Alt+T", RunProgram = new() { FilePath = string.Empty } },
                 new() { From = "Ctrl+Alt+U", RunProgram = new() { FilePath = "cmd.exe", Elevation = "root" } },
                 new() { From = "Ctrl+Alt+V", OpenUri = string.Empty },
+                new() { From = "LWin+L", To = "Esc" },
+                new() { From = "Ctrl+LAlt+Del, K", To = "Esc" },
+                new() { From = "Ctrl+Alt+W", To = "Win+L" },
             ],
         };
 
@@ -282,6 +285,53 @@ public sealed class KbmProfileConverterTests
         AssertHasError(errors, "shortcuts[3].runProgram.filePath must not be empty");
         AssertHasError(errors, "shortcuts[4].runProgram.elevation: invalid value 'root'");
         AssertHasError(errors, "shortcuts[5].openUri must not be empty");
+        AssertHasError(errors, "shortcuts[6].from: 'Win+L' is reserved by Windows");
+        AssertHasError(errors, "shortcuts[7].from: 'Ctrl+Alt+Delete' is reserved by Windows");
+        AssertHasError(errors, "shortcuts[8].to: 'Win+L' is reserved by Windows");
+    }
+
+    [TestMethod]
+    public void Validate_ShortcutsResemblingIllegalOnes_NoErrors()
+    {
+        // Adding any other modifier makes Win+L and Ctrl+Alt+Del legal, as in
+        // the editor; the numpad Delete is a different virtual-key code.
+        var model = new KbmProfileModel
+        {
+            Shortcuts =
+            [
+                new() { From = "Win+Shift+L", To = "Esc" },
+                new() { From = "Ctrl+Alt+Shift+Del", To = "Esc" },
+                new() { From = "Ctrl+Alt+NumPadDelete", To = "Esc" },
+                new() { From = "Win+K", To = "Esc" },
+            ],
+        };
+
+        var errors = KbmProfileConverter.Validate(model);
+
+        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+    }
+
+    [TestMethod]
+    public void FromProfile_SkipsMalformedEntriesWithWarnings()
+    {
+        // Arrange: an unparsable key entry and a run-program entry without a path
+        var profile = JsonSerializer.Deserialize<KeyboardManagerProfile>(/*lang=json,strict*/ """
+            {
+                "remapKeys": { "inProcess": [ { "originalKeys": "abc", "newRemapKeys": "27" }, { "originalKeys": "20", "newRemapKeys": "27" } ] },
+                "remapShortcuts": { "global": [ { "originalKeys": "17;18;66", "operationType": 1, "runProgramFilePath": "" } ], "appSpecific": [] }
+            }
+            """);
+        var warnings = new System.Collections.Generic.List<string>();
+
+        // Act
+        var model = KbmProfileConverter.FromProfile(profile, warnings);
+
+        // Assert
+        Assert.AreEqual(1, model.Keys.Count);
+        Assert.AreEqual(0, model.Shortcuts.Count);
+        Assert.AreEqual(2, warnings.Count, string.Join(" | ", warnings));
+        StringAssert.Contains(warnings[0], "'abc'");
+        StringAssert.Contains(warnings[1], "without a program path");
     }
 
     private static void AssertHasError(System.Collections.Generic.IList<string> errors, string expectedFragment)

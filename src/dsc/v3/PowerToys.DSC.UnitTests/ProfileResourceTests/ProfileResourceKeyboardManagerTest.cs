@@ -192,6 +192,50 @@ public sealed class ProfileResourceKeyboardManagerTest : BaseDscTest
         Assert.AreEqual(0, GetProfile(DefaultProfileFileName).RemapKeys.InProcessRemapKeys.Count);
     }
 
+    [DataTestMethod]
+    [DataRow(/*lang=json,strict*/ """{}""", "'profile' is required")]
+    [DataRow(/*lang=json,strict*/ """{"profile":null}""", "'profile' is required")]
+    [DataRow(/*lang=json,strict*/ """{"profile":[]}""", "'profile' must be an object")]
+    [DataRow(/*lang=json,strict*/ """{"profile":{"keys":null}}""", "'profile.keys' must be an array")]
+    [DataRow(/*lang=json,strict*/ """{"profile":{"shortcuts":[null]}}""", "'profile.shortcuts[0]' must be an object")]
+    public void Set_MalformedInput_FailsAndLeavesFileUntouched(string input, string expectedError)
+    {
+        // Arrange: a stored remapping that a bad input must not erase
+        SaveProfile(KbmProfileConverter.ToProfile(CreateSampleProfileModel()), DefaultProfileFileName);
+
+        // Act
+        var result = ExecuteDscCommand<SetCommand>("--resource", ProfileResource.ResourceName, "--module", Module, "--input", input);
+        var messages = result.Messages();
+
+        // Assert
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual(1, messages.Count);
+        Assert.AreEqual(DscMessageLevel.Error, messages[0].Level);
+        StringAssert.Contains(messages[0].Message, expectedError);
+        Assert.AreEqual(1, GetProfile(DefaultProfileFileName).RemapKeys.InProcessRemapKeys.Count);
+    }
+
+    [TestMethod]
+    public void Export_MalformedStoredEntry_EmitsWarning()
+    {
+        // Arrange: a stored profile with one good and one unparsable key entry
+        var stored = KbmProfileConverter.ToProfile(CreateSampleProfileModel());
+        stored.RemapKeys.InProcessRemapKeys.Add(new KeysDataModel { OriginalKeys = "abc", NewRemapKeys = "27" });
+        SaveProfile(stored, DefaultProfileFileName);
+
+        // Act
+        var result = ExecuteDscCommand<ExportCommand>("--resource", ProfileResource.ResourceName, "--module", Module);
+        var state = result.OutputState<ProfileResourceObject>();
+        var messages = result.Messages();
+
+        // Assert: the good entries are exported and the skipped one is reported
+        Assert.IsTrue(result.Success);
+        AssertProfilesAreEqual(KbmProfileConverter.Canonicalize(CreateSampleProfileModel()), state.Profile);
+        Assert.AreEqual(1, messages.Count);
+        Assert.AreEqual(DscMessageLevel.Warning, messages[0].Level);
+        StringAssert.Contains(messages[0].Message, "Skipping unparsable key remap entry 'abc'");
+    }
+
     [TestMethod]
     public void Set_RespectsActiveConfiguration()
     {

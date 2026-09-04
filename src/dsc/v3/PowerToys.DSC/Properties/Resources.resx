@@ -188,4 +188,8 @@
     <value>Could not signal a running Keyboard Manager instance; the new remappings will be applied the next time PowerToys starts</value>
     <comment>{Locked="Keyboard Manager","PowerToys"}</comment>
   </data>
+  <data name="ProfileWarning" xml:space="preserve">
+    <value>Keyboard Manager profile: {0}</value>
+    <comment>{Locked="Keyboard Manager","{0}"}</comment>
+  </data>
 </root>
