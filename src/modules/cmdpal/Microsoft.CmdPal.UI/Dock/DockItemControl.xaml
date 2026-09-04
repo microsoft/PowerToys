@@ -50,6 +50,7 @@
 
     <CornerRadius x:Key="DockItemCornerRadius">4</CornerRadius>
     <Thickness x:Key="DockItemPadding">4,0,4,0</Thickness>
+
     <Style BasedOn="{StaticResource DefaultDockItemControlStyle}" TargetType="local:DockItemControl" />
 
     <Style x:Key="DefaultDockItemControlStyle" TargetType="local:DockItemControl">
@@ -58,7 +59,7 @@
             <Setter Property="Background" Value="{ThemeResource DockItemBackground}" />
             <Setter Property="BorderBrush" Value="{ThemeResource DockItemBorderBrush}" />
             <Setter Property="Padding" Value="{StaticResource DockItemPadding}" />
-            <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
+            <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="{StaticResource DockItemCornerRadius}" />
             <Setter Property="TextVisibility" Value="Visible" />
             <Setter Property="IsTabStop" Value="True" />
@@ -72,19 +73,6 @@
                             x:Name="PART_RootGrid"
                             Padding="{TemplateBinding InnerMargin}"
                             Background="Transparent">
-                            <!--  Hover/pressed chrome lives on its own layer so it can cross-fade instead of popping in  -->
-                            <Border
-                                x:Name="HoverLayer"
-                                Background="{ThemeResource DockItemBackgroundPointerOver}"
-                                BorderBrush="{ThemeResource DockItemBorderBrushPointerOver}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="{TemplateBinding CornerRadius}"
-                                IsHitTestVisible="False"
-                                Opacity="0">
-                                <Border.OpacityTransition>
-                                    <ScalarTransition Duration="0:0:0.15" />
-                                </Border.OpacityTransition>
-                            </Border>
                             <Grid
                                 x:Name="PART_BackPlate"
                                 MinWidth="32"
@@ -94,6 +82,9 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="{TemplateBinding CornerRadius}">
+                                <Grid.BackgroundTransition>
+                                    <BrushTransition Duration="0:0:0.15" />
+                                </Grid.BackgroundTransition>
                                 <Grid
                                     x:Name="ContentGrid"
                                     AutomationProperties.Name="{TemplateBinding Title}"
@@ -155,18 +146,34 @@
                                 <VisualStateGroup x:Name="CommonStates">
                                     <VisualStateGroup.Transitions>
                                         <!--  Ease the icon back to full size when the press ends  -->
-                                        <VisualTransition GeneratedDuration="0:0:0.15" From="Pressed" />
+                                        <VisualTransition From="Pressed">
+                                            <Storyboard>
+                                                <DoubleAnimation
+                                                    Storyboard.TargetName="IconScaleTransform"
+                                                    Storyboard.TargetProperty="ScaleX"
+                                                    To="1"
+                                                    Duration="0:0:0.15">
+                                                    <DoubleAnimation.EasingFunction>
+                                                        <CubicEase EasingMode="EaseOut" />
+                                                    </DoubleAnimation.EasingFunction>
+                                                </DoubleAnimation>
+                                                <DoubleAnimation
+                                                    Storyboard.TargetName="IconScaleTransform"
+                                                    Storyboard.TargetProperty="ScaleY"
+                                                    To="1"
+                                                    Duration="0:0:0.15">
+                                                    <DoubleAnimation.EasingFunction>
+                                                        <CubicEase EasingMode="EaseOut" />
+                                                    </DoubleAnimation.EasingFunction>
+                                                </DoubleAnimation>
+                                            </Storyboard>
+                                        </VisualTransition>
                                     </VisualStateGroup.Transitions>
-                                    <!--  Every state sets HoverLayer explicitly; relying on the VSM to revert the setter leaves the chrome stuck on  -->
-                                    <VisualState x:Name="Normal">
-                                        <VisualState.Setters>
-                                            <Setter Target="HoverLayer.Opacity" Value="0" />
-                                        </VisualState.Setters>
-                                    </VisualState>
+                                    <VisualState x:Name="Normal" />
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="HoverLayer.Opacity" Value="1" />
-                                            <Setter Target="HoverLayer.BorderBrush" Value="{ThemeResource DockItemBorderBrushPointerOver}" />
+                                            <Setter Target="PART_BackPlate.Background" Value="{ThemeResource DockItemBackgroundPointerOver}" />
+                                            <Setter Target="PART_BackPlate.BorderBrush" Value="{ThemeResource DockItemBorderBrushPointerOver}" />
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Pressed">
@@ -192,15 +199,14 @@
                                             </DoubleAnimation>
                                         </Storyboard>
                                         <VisualState.Setters>
-                                            <Setter Target="HoverLayer.Opacity" Value="1" />
-                                            <Setter Target="HoverLayer.BorderBrush" Value="{ThemeResource DockItemBorderBrushPressed}" />
+                                            <Setter Target="PART_BackPlate.Background" Value="{ThemeResource DockItemBackgroundPressed}" />
+                                            <Setter Target="PART_BackPlate.BorderBrush" Value="{ThemeResource DockItemBorderBrushPressed}" />
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Disabled">
                                         <VisualState.Setters>
-                                            <Setter Target="HoverLayer.Opacity" Value="0" />
                                             <Setter Target="PART_BackPlate.Background" Value="{ThemeResource DockItemBackground}" />
-                                            <Setter Target="PART_BackPlate.BorderBrush" Value="{ThemeResource DockItemBackground}" />
+                                            <Setter Target="PART_BackPlate.BorderBrush" Value="{ThemeResource DockItemBorderBrush}" />
                                             <Setter Target="IconPresenter.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
                                             <Setter Target="TitleText.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
                                             <Setter Target="SubtitleText.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
