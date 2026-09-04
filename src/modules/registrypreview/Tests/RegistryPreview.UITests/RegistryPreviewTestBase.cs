@@ -205,6 +205,8 @@ public abstract class RegistryPreviewTestBase : UITestBase
     {
         for (var attempt = 1; attempt <= 2; attempt++)
         {
+            CloseRegistryPreviewWindows();
+            ResetMonacoUserData();
             var session = LaunchRegistryPreview(filePath);
             if (WaitForEditorReadyStable(session))
             {
@@ -224,6 +226,39 @@ public abstract class RegistryPreviewTestBase : UITestBase
         Assert.Fail(
             $"Monaco did not become ready for '{Path.GetFileName(filePath)}' after a fresh Registry Preview process retry.");
         return null!;
+    }
+
+    private void ResetMonacoUserData()
+    {
+        var path = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            "AppData",
+            "LocalLow",
+            "Microsoft",
+            "PowerToys",
+            "RegistryPreview-Temp");
+        for (var attempt = 1; attempt <= 10; attempt++)
+        {
+            try
+            {
+                if (Directory.Exists(path))
+                {
+                    Directory.Delete(path, recursive: true);
+                }
+
+                return;
+            }
+            catch (IOException) when (attempt < 10)
+            {
+                Thread.Sleep(500);
+            }
+            catch (UnauthorizedAccessException) when (attempt < 10)
+            {
+                Thread.Sleep(500);
+            }
+        }
+
+        Assert.Fail($"Could not reset Registry Preview's temporary WebView profile at '{path}'.");
     }
 
     private void CaptureMonacoStall(int attempt)
