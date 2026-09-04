@@ -4,6 +4,8 @@
 #include "trace.h"
 #include "Generated Files/resource.h"
 
+#include <common/utils/context_menu_lifecycle.h>
+
 using namespace Microsoft::WRL;
 
 // Sub context menu containing the actual list of templates
@@ -63,6 +65,12 @@ IFACEMETHODIMP shell_context_sub_menu_item::GetState(_In_opt_ IShellItemArray* s
 
 IFACEMETHODIMP shell_context_sub_menu_item::Invoke(_In_opt_ IShellItemArray*, _In_opt_ IBindCtx*) noexcept
 {
+    context_menu_lifecycle::activity_guard activity;
+    if (!activity)
+    {
+        return HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IN_PROGRESS);
+    }
+
     return newplus::utilities::copy_template(template_entry, site_of_folder, mouse_position_at_time_of_invoke);
 }
 
@@ -121,5 +129,11 @@ IFACEMETHODIMP template_folder_context_menu_item::GetIcon(_In_opt_ IShellItemArr
 
 IFACEMETHODIMP template_folder_context_menu_item::Invoke(_In_opt_ IShellItemArray* selection, _In_opt_ IBindCtx*) noexcept
 {
+    context_menu_lifecycle::activity_guard activity;
+    if (!activity)
+    {
+        return HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IN_PROGRESS);
+    }
+
     return newplus::utilities::open_template_folder(shell_template_folder);
 }
