@@ -28,6 +28,11 @@ public sealed class ProfileResourceKeyboardManagerTest : BaseDscTest
 
     private static readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
 
+    private static readonly JsonSerializerOptions _profileSerializerOptions = new()
+    {
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+    };
+
     private readonly Dictionary<string, string> _originalFiles = [];
 
     private static string Module => nameof(ModuleType.KeyboardManager);
@@ -300,8 +305,7 @@ public sealed class ProfileResourceKeyboardManagerTest : BaseDscTest
 
     private static void SaveProfile(KeyboardManagerProfile profile, string fileName)
     {
-        var options = new JsonSerializerOptions { DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull };
-        _settingsUtils.SaveSettings(JsonSerializer.Serialize(profile, options), KeyboardManagerSettings.ModuleName, fileName);
+        _settingsUtils.SaveSettings(JsonSerializer.Serialize(profile, _profileSerializerOptions), KeyboardManagerSettings.ModuleName, fileName);
     }
 
     private static void AssertProfilesAreEqual(KbmProfileModel expected, KbmProfileModel actual)

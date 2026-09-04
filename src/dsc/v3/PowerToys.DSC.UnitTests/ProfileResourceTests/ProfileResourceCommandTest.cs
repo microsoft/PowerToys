@@ -82,6 +82,7 @@ public sealed class ProfileResourceCommandTest : BaseDscTest
         Assert.AreEqual(DscMessageLevel.Error, messages[0].Level);
         Assert.AreEqual(GetResourceString("InputEmptyOrNullError"), messages[0].Message);
     }
+
     [TestMethod]
     public void SetState_ElevatedProcess_Throws()
     {
