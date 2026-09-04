@@ -157,6 +157,8 @@ $dotNet10CetReady = $windowsBuild -ge 22000 -or
     WebView2Installer = if ($null -ne $webView2Installer) { $webView2Installer.Name } else { $null }
     VcRedistInstaller = if ($null -ne $vcRedist) { $vcRedist.Name } else { $null }
     ScreenRecordingSupported = (Test-Path "$env:WINDIR\System32\VCRUNTIME140.dll")
+    # Record the executable's file-version resource without launching .NET before Win10 reaches its
+    # CET servicing floor. This is intentionally not the semantic $PSVersionTable value.
     PowerShellVersion = if (Test-Path $powerShellExecutable) {
         [Diagnostics.FileVersionInfo]::GetVersionInfo($powerShellExecutable).FileVersion
     } else { $null }

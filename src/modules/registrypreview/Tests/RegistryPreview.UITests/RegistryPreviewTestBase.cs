@@ -719,6 +719,7 @@ public abstract class RegistryPreviewTestBase : UITestBase
             }
             catch (Exception)
             {
+                // The transient modern menu can disappear before Invoke; reopen it on the next attempt.
                 continue;
             }
 
@@ -819,6 +820,10 @@ public abstract class RegistryPreviewTestBase : UITestBase
         var yes = FindExact<Button>(regedit, "Yes", ActionTimeoutMS);
         Assert.IsNotNull(yes, "Registry Editor did not expose the import confirmation's Yes button.");
         yes!.Click(msPostAction: 500);
+
+        var success = regedit.FindAll<Element>(By.Name("successfully"), ActionTimeoutMS)
+            .FirstOrDefault(element => element.Name.Contains("successfully", StringComparison.OrdinalIgnoreCase));
+        Assert.IsNotNull(success, "Registry Editor did not report that the registry import completed successfully.");
 
         var ok = FindExact<Button>(regedit, "OK", ActionTimeoutMS);
         Assert.IsNotNull(ok, "Registry Editor did not report the import result.");
