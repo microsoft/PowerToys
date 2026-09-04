@@ -528,6 +528,21 @@
                     </Button>
                 </Grid>
 
+                <Grid Margin="0,8,0,0" ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button
+                        x:Uid="NumericMappingButton"
+                        HorizontalAlignment="Stretch"
+                        Click="SelectNumericMapping" />
+                    <Button
+                        x:Uid="ClearNumericMappingButton"
+                        Grid.Column="1"
+                        Click="ClearNumericMappingClick" />
+                </Grid>
+
                 <TextBlock
                     x:Name="ApplyToLabel"
                     x:Uid="TextBox_ApplyTo"
