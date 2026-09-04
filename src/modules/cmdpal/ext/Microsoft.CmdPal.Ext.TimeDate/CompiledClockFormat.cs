@@ -66,6 +66,9 @@ internal sealed class CompiledClockFormat
             ? culture.Calendar
             : null;
 
+        // Values substituted for tokens are spliced back into the format string, so a token
+        // whose value is text must be escaped with ToDateTimeFormatLiteral or it gets re-parsed
+        // as format specifiers. Numeric tokens need no escaping: digits are not specifiers.
         string? dayOfWeek = null;
         string? daysInMonth = null;
         string? weekOfMonth = null;
@@ -126,7 +129,7 @@ internal sealed class CompiledClockFormat
 
         if ((_tokens & CustomFormatToken.EraAbbreviation) != 0)
         {
-            eraAbbreviation = culture.DateTimeFormat.GetAbbreviatedEraName(calendar!.GetEra(date));
+            eraAbbreviation = ToDateTimeFormatLiteral(culture.DateTimeFormat.GetAbbreviatedEraName(calendar!.GetEra(date)));
         }
 
         if ((_tokens & CustomFormatToken.WindowsFileTime) != 0)
@@ -172,7 +175,7 @@ internal sealed class CompiledClockFormat
                 1 => Resources.timedate_relative_tomorrow,
                 _ => string.Empty,
             };
-            relativeDay = $"'{relativeText.Replace("'", "''", StringComparison.Ordinal)}'";
+            relativeDay = ToDateTimeFormatLiteral(relativeText);
         }
 
         var converted = new StringBuilder(_format.Length + 32);
@@ -212,6 +215,14 @@ internal sealed class CompiledClockFormat
 
     private static string FormatDateTime(DateTimeOffset time, string format, CultureInfo culture) =>
         format == "U" ? time.UtcDateTime.ToString("F", culture) : time.ToString(format, culture);
+
+    internal static string ToDateTimeFormatLiteral(string text)
+    {
+        var escapedText = text
+            .Replace(@"\", @"\\", StringComparison.Ordinal)
+            .Replace("'", @"\'", StringComparison.Ordinal);
+        return $"'{escapedText}'";
+    }
 
     private static (FormatSegment[] Segments, CustomFormatToken Tokens) ParseSegments(string format)
     {

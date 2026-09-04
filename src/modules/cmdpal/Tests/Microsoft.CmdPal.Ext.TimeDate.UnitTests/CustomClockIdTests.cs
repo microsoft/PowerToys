@@ -204,6 +204,41 @@ public class CustomClockIdTests
     }
 
     [TestMethod]
+    public void CompiledClockFormat_DateTimeLiteralPreservesApostropheAndBackslash()
+    {
+        const string text = @"Today's path\";
+
+        var format = CompiledClockFormat.ToDateTimeFormatLiteral(text);
+
+        Assert.AreEqual(text, DateTimeOffset.UnixEpoch.ToString(format, CultureInfo.InvariantCulture));
+    }
+
+    [DataTestMethod]
+    [DataRow("en-US")]
+    [DataRow("de-DE")]
+    [DataRow("it-IT")]
+    [DataRow("fi-FI")]
+    public void CustomClockDisplay_EraAbbreviationIsRenderedAsLiteral(string cultureName)
+    {
+        var originalCulture = CultureInfo.CurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
+            var culture = CultureInfo.CurrentCulture;
+            var time = new DateTimeOffset(2026, 9, 4, 14, 5, 6, TimeSpan.FromHours(2));
+            var expected = culture.DateTimeFormat.GetAbbreviatedEraName(culture.Calendar.GetEra(time.DateTime));
+
+            Assert.AreEqual(expected, CustomClockDisplay.Format(time, "EAB", new Settings()));
+            Assert.AreEqual($"{time.ToString("yyyy", culture)} {expected}", CustomClockDisplay.Format(time, "yyyy EAB", new Settings()));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+        }
+    }
+
+    [TestMethod]
     public void CustomClockDisplay_EscapedRelativeDayTokenIsRenderedLiterally()
     {
         var rendered = CustomClockDisplay.Format(DateTimeOffset.Now, @"\REL", new Settings());
