@@ -32,8 +32,13 @@
 		<XamlRootDir Condition="'$(XamlRootDir)' == ''">$(MSBuildProjectDirectory)\..\Settings.UI\SettingsXAML</XamlRootDir>
 		<XamlRootDir Condition="'$(XamlViewsDir)' != ''">$([System.IO.Path]::GetDirectoryName('$(XamlViewsDir)'))</XamlRootDir>
 		<GeneratedJsonFile Condition="'$(GeneratedJsonFile)' == ''">$(MSBuildProjectDirectory)\..\Settings.UI\Assets\Settings\search.index.json</GeneratedJsonFile>
+		<!-- Generate Settings search index in Release and Custom builds. Debug builds skip index generation for faster builds. 
+		     To enable index generation in Debug, uncomment the line below: -->
+		<!-- <GenerateSettingsSearchIndex>true</GenerateSettingsSearchIndex> -->
+		<GenerateSettingsSearchIndex Condition="'$(GenerateSettingsSearchIndex)' == '' and '$(Configuration)' != 'Debug'">true</GenerateSettingsSearchIndex>
+		<GenerateSettingsSearchIndex Condition="'$(GenerateSettingsSearchIndex)' == ''">false</GenerateSettingsSearchIndex>
 	</PropertyGroup>
-	<Target Name="GenerateSearchIndexSelf" AfterTargets="Build">
+	<Target Name="GenerateSearchIndexSelf" AfterTargets="Build" Condition="'$(GenerateSettingsSearchIndex)' == 'true'">
 		<RemoveDir Directories="$(MSBuildProjectDirectory)\obj\ARM64;$(MSBuildProjectDirectory)\obj\x64;$(MSBuildProjectDirectory)\bin" />
 		<MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(GeneratedJsonFile)'))" />
 		<Message Importance="high" Text="[XamlIndexBuilder] Generating search index. Root='$(XamlRootDir)'; Out='$(GeneratedJsonFile)'; Tool='$(TargetPath)'; DotNet='$(DotNetExe)'." />
