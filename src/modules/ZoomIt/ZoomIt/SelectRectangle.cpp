@@ -80,6 +80,7 @@ bool SelectRectangle::Start( HWND ownerWindow, bool fullMonitor, COLORREF border
     }
 
     m_cancel = false;
+    m_dragStarted = false;
     auto rect = GetMonitorRectFromCursor();
     SelectRectangleDebugLog( L"[SelectRectangle] Monitor rect=(%ld,%ld)-(%ld,%ld)\n",
                              rect.left,
@@ -136,6 +137,7 @@ bool SelectRectangle::Start( HWND ownerWindow, bool fullMonitor, COLORREF border
         if( m_cancel )
         {
             SelectRectangleDebugLog( L"[SelectRectangle] Start cancelled via Stop()\n" );
+            NotifyCancelled();
             return false;
         }
         if( m_selected )
@@ -181,6 +183,8 @@ void SelectRectangle::Stop()
         m_setClip = false;
     }
 
+    NotifyCancelled();
+
     HWND window = m_window.release();
     if( window != nullptr && IsWindow( window ) )
     {
@@ -191,6 +195,113 @@ void SelectRectangle::Stop()
     m_selectedRect = {};
     m_cancel = true;
     m_stopping = false;
+}
+
+//----------------------------------------------------------------------------
+//
+// SelectRectangle::NotifyDragStarted
+//
+//----------------------------------------------------------------------------
+void SelectRectangle::NotifyDragStarted()
+{
+    if( m_dragStarted )
+    {
+        return;
+    }
+
+    m_dragStarted = true;
+    if( m_onDragStarted )
+    {
+        m_onDragStarted();
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// SelectRectangle::NotifySelectionChanged
+//
+// Reports the live selection in screen coordinates. The selection is tracked
+// in client coordinates, so it has to be translated by the window origin the
+// same way ShowSelected does.
+//
+//----------------------------------------------------------------------------
+void SelectRectangle::NotifySelectionChanged()
+{
+    if( !m_onSelectionChanged || !m_window )
+    {
+        return;
+    }
+
+    RECT windowRect;
+    if( !GetWindowRect( m_window.get(), &windowRect ) )
+    {
+        return;
+    }
+
+    RECT screenRect = m_selectedRect;
+    OffsetRect( &screenRect, windowRect.left, windowRect.top );
+    m_onSelectionChanged( screenRect );
+}
+
+//----------------------------------------------------------------------------
+//
+// SelectRectangle::NotifyDragCompleted
+//
+//----------------------------------------------------------------------------
+void SelectRectangle::NotifyDragCompleted()
+{
+    if( !m_dragStarted )
+    {
+        return;
+    }
+
+    m_dragStarted = false;
+    if( m_onDragCompleted )
+    {
+        m_onDragCompleted();
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// SelectRectangle::NotifyCancelled
+//
+// Raised when the selection is abandoned after the drag began, so that
+// listeners can discard anything they started collecting.
+//
+//----------------------------------------------------------------------------
+void SelectRectangle::NotifyCancelled()
+{
+    if( !m_dragStarted )
+    {
+        return;
+    }
+
+    m_dragStarted = false;
+    if( m_onCancelled )
+    {
+        m_onCancelled();
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// SelectRectangle::NotifyDictateRequested
+//
+// Raised when the dictation key is tapped mid-drag.
+//
+//----------------------------------------------------------------------------
+void SelectRectangle::NotifyDictateRequested()
+{
+    if( !m_dragStarted )
+    {
+        return;
+    }
+
+    if( m_onDictateRequested )
+    {
+        m_onDictateRequested();
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -356,6 +467,7 @@ LRESULT SelectRectangle::WindowProc( HWND window, UINT message, WPARAM wordParam
             ClipCursor( &m_oldClipRect );
             m_setClip = false;
         }
+        NotifyCancelled();
         m_selected = false;
         m_selectedRect = {};
         m_cancel = true;
@@ -368,6 +480,7 @@ LRESULT SelectRectangle::WindowProc( HWND window, UINT message, WPARAM wordParam
 
         m_startPoint = { GET_X_LPARAM( longParam ), GET_Y_LPARAM( longParam ) };
         SelectRectangleDebugLog( L"[SelectRectangle] WM_LBUTTONDOWN startPoint=(%ld,%ld)\n", m_startPoint.x, m_startPoint.y );
+        NotifyDragStarted();
         [[fallthrough]];
     }
     case WM_MOUSEMOVE:
@@ -412,6 +525,7 @@ LRESULT SelectRectangle::WindowProc( HWND window, UINT message, WPARAM wordParam
                 m_selectedRect = ForceRectInBounds( m_selectedRect, rect );
             }
 
+            NotifySelectionChanged();
             SelectRectangleDebugLog( L"[SelectRectangle] Drag rect=(%ld,%ld)-(%ld,%ld)\n",
                                      m_selectedRect.left,
                                      m_selectedRect.top,
@@ -431,6 +545,15 @@ LRESULT SelectRectangle::WindowProc( HWND window, UINT message, WPARAM wordParam
         {
             SelectRectangleDebugLog( L"[SelectRectangle] WM_KEYDOWN Escape pressed\n" );
             Stop();
+        }
+        else if( wordParam == VK_SPACE && ( longParam & 0x40000000 ) == 0 )
+        {
+            //
+            // Ignore auto-repeat so that holding the key does not restart
+            // dictation repeatedly.
+            //
+            SelectRectangleDebugLog( L"[SelectRectangle] WM_KEYDOWN Space pressed\n" );
+            NotifyDictateRequested();
         }
         return 0;
 
@@ -461,6 +584,7 @@ LRESULT SelectRectangle::WindowProc( HWND window, UINT message, WPARAM wordParam
         }
         ReleaseCapture();
 
+        NotifyDragCompleted();
         ShowSelected();
         return 0;
     }

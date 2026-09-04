@@ -142,12 +142,14 @@
 #define IDC_SNIP_PANORAMA_SAVE_HOTKEY   1135
 #define IDC_MIRROR_HOTKEY               1138
 #define IDC_MIRROR_TRACK_WINDOW         1137
+#define IDC_SNIP_DICTATE_ENABLED        1139
 #define IDC_SAVE                        40002
 #define IDC_COPY                        40004
 #define IDC_RECORD                      40006
 #define IDC_RECORD_HOTKEY               40007
 #define IDC_COPY_CROP                   40008
 #define IDC_COPY_OCR                    40014
+#define IDC_COPY_CROP_DICTATE           40015
 #define IDC_SAVE_CROP                   40009
 #define IDC_DEMOTYPE_HOTKEY             40011
 
@@ -156,8 +158,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        120
-#define _APS_NEXT_COMMAND_VALUE         40012
-#define _APS_NEXT_CONTROL_VALUE         1139
+#define _APS_NEXT_COMMAND_VALUE         40016
+#define _APS_NEXT_CONTROL_VALUE         1140
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

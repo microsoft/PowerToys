@@ -268,6 +268,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="ClipboardPayload.cpp" />
+    <ClCompile Include="PasteChaperone.cpp" />
+    <ClCompile Include="DictationBadge.cpp" />
+    <ClCompile Include="DictationSession.cpp" />
     <ClCompile Include="rnnoise\celt_lpc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -477,6 +481,10 @@
   <ItemGroup>
     <ClInclude Include="..\ZoomItBreak\BreakTimer.h" />
     <ClInclude Include="AudioSampleGenerator.h" />
+    <ClInclude Include="ClipboardPayload.h" />
+    <ClInclude Include="PasteChaperone.h" />
+    <ClInclude Include="DictationBadge.h" />
+    <ClInclude Include="DictationSession.h" />
     <ClInclude Include="LoopbackCapture.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\common\sysinternals\Eula\Eula.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\ZoomItModuleInterface\Trace.h" />

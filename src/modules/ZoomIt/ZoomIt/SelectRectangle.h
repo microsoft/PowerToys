@@ -26,6 +26,13 @@ public:
     RECT SelectedRect() const { return m_selectedRect; }
     bool IsActive() const { return m_window != nullptr; }
 
+    // Optional notifications raised from the modal Start message loop.
+    void OnDragStarted( std::function<void()> callback ) { m_onDragStarted = std::move( callback ); }
+    void OnDragCompleted( std::function<void()> callback ) { m_onDragCompleted = std::move( callback ); }
+    void OnCancelled( std::function<void()> callback ) { m_onCancelled = std::move( callback ); }
+    void OnSelectionChanged( std::function<void( const RECT& )> callback ) { m_onSelectionChanged = std::move( callback ); }
+    void OnDictateRequested( std::function<void()> callback ) { m_onDictateRequested = std::move( callback ); }
+
     // borderColor sets the initial selection border color (defaults to yellow to
     // match the capture API). Panorama capture passes blue.
     bool Start( HWND ownerWindow = nullptr, bool fullMonitor = false, COLORREF borderColor = RGB( 255, 222, 0 ) );

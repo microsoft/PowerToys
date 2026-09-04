@@ -123,6 +123,18 @@
     <ClCompile Include="NoiseSuppressor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ClipboardPayload.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PasteChaperone.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DictationBadge.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DictationSession.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Registry.h">
@@ -147,6 +159,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AudioSampleGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ClipboardPayload.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PasteChaperone.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DictationBadge.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DictationSession.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LoopbackCapture.h">

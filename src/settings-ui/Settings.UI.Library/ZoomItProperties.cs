@@ -63,6 +63,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public KeyboardKeysProperty SnipOcrToggleKey { get; set; }
 
+        public KeyboardKeysProperty SnipDictateToggleKey { get; set; }
+
         public KeyboardKeysProperty SnipPanoramaToggleKey { get; set; }
 
         public KeyboardKeysProperty SnipPanoramaSaveToggleKey { get; set; }
@@ -123,6 +125,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public BoolProperty MicMonoMix { get; set; }
 
         public StringProperty MicrophoneDeviceId { get; set; }
+
+        public BoolProperty SnipDictateEnabled { get; set; }
+
+        public BoolProperty SnipDictateOnSnip { get; set; }
+
+        public IntProperty SnipDictateGrace { get; set; }
+
+        public StringProperty SnipDictatePrefix { get; set; }
 
         public BoolProperty WebcamOverlay { get; set; }
 
