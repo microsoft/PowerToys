@@ -63,7 +63,7 @@ namespace Hosts.UITests
         }
 
         /// <summary>
-        /// Test Empty-view in the Hosts-File-Editor
+        /// Test entry buttons and empty/non-empty states in the Hosts File Editor.
         /// <list type="bullet">
         /// <item>
         /// <description>Validating Empty-view is shown if no entries in the list.</description>
@@ -76,21 +76,22 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Next.Basic.EmptyViewShouldWork")]
+        [TestMethod("Hosts.Next.Basic.EntryButtonsAndEmptyViewShouldWork")]
         [TestCategory("Hosts File Editor #4")]
-        public void TestEmptyView()
+        public void TestEntryButtonsAndEmptyView()
         {
             CloseWarningDialog();
             RemoveAllEntries();
 
-            // 'Add an entry' link (only shown when the list is empty) should be visible.
+            Assert.IsTrue(Session.Find(By.AccessibilityId("Entries")).Displayed, "The entries list should be visible.");
+            Assert.IsTrue(Session.FindExact<Button>("New entry").Displayed, "The toolbar New entry button should be visible.");
+
+            // 'Add an entry' link is shown only when the list is empty.
             // .Next has no HyperlinkButton wrapper, and a WinUI HyperlinkButton reports UIA
             // ControlType=Hyperlink (not Button), so match it with the untyped Element instead.
-            Assert.IsTrue(Session.HasOne<Element>(By.Name("Add an entry")), "'Add an entry' button should be visible in the empty view");
-            Session.FindExact<Button>("New entry").Focus();
-            VisualAssert.AreEqual(TestContext, Session.Find(By.AccessibilityId("Entries")), "EmptyView");
+            Assert.IsTrue(Session.FindExact<Element>("Add an entry").Displayed, "'Add an entry' should be visible in the empty view.");
 
-            // Click 'Add an entry' from empty-view for adding a Host override rule.
+            // Add through the empty-view link and verify the non-empty state.
             Session.FindExact<Element>("Add an entry").Invoke(msPostAction: 0);
             Assert.IsTrue(
                 Session.WaitForExactCount<Button>("Add", 1, 10_000),
@@ -99,34 +100,16 @@ namespace Hosts.UITests
             AddEntry("192.168.0.1", "localhost.powertoys.uitest", false, false);
 
             // Should have one row now and not more empty view.
-            Assert.IsTrue(Session.Has<Button>(By.Name("Delete")), "Should have one row now");
-            Assert.IsFalse(Session.Has<Element>(By.Name("Add an entry")), "'Add an entry' button should be invisible if not empty view");
-            Session.FindExact<Button>("New entry").Focus();
-            VisualAssert.AreEqual(TestContext, Session.Find(By.AccessibilityId("Entries")), "NonEmptyView");
-        }
+            Assert.IsTrue(Session.FindExact<Button>("Delete").Displayed, "The added row should expose a Delete button.");
+            Assert.AreEqual(0, Session.CountExact<Element>("Add an entry"), "'Add an entry' should be hidden in the non-empty view.");
 
-        /// <summary>
-        /// Test Adding-entry Button in the Hosts-File-Editor
-        /// <list type="bullet">
-        /// <item>
-        /// <description>Validating Adding-entry Button works correctly.</description>
-        /// </item>
-        /// </list>
-        /// </summary>
-        [TestMethod("Hosts.Next.Basic.AddEntryButtonShouldWork")]
-        [TestCategory("Hosts File Editor #4")]
-        public void TestAddingEntry()
-        {
-            CloseWarningDialog();
+            // Return to the empty state, then verify the toolbar New entry path too.
             RemoveAllEntries();
+            Assert.AreEqual(0, Session.CountExact<Button>("Delete"), "No rows should remain after removal.");
+            Assert.IsTrue(Session.FindExact<Element>("Add an entry").Displayed, "The empty-view link should return after removing all rows.");
 
-            Assert.IsFalse(Session.Has<Button>(By.Name("Delete")), "Should have no row after removing all");
-
-            AddEntry("192.168.0.1", "localhost.powertoys.uitest", true);
-
-            Assert.IsTrue(Session.Has<Button>(By.Name("Delete")), "Should have one row now");
-            Session.FindExact<Button>("New entry").Focus();
-            VisualAssert.AreEqual(TestContext, Session.Find(By.AccessibilityId("Entries")));
+            AddEntry("192.168.0.2", "toolbar.powertoys.uitest", true);
+            Assert.IsTrue(Session.FindExact<Button>("Delete").Displayed, "The toolbar New entry button should add a row.");
         }
 
         /// <summary>

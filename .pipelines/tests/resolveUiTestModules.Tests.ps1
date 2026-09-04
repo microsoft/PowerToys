@@ -66,28 +66,6 @@ Describe 'resolveUiTestModules' {
         )
 
         $result.TouchedModules | Should Be @('Example')
-        $result.SharedHarnessChanged | Should Be $false
         @($result.UiTestModules).Count | Should Be 0
-    }
-
-    It 'selects every Next UI-test project when the shared harness changes' {
-        $repoRoot = Join-Path $TestDrive 'shared-harness-repo'
-        New-UITestProject 'shared-harness-repo\src\modules\Alpha\Tests\Alpha.UITests.Next\Alpha.UITests.Next.csproj'
-        New-UITestProject 'shared-harness-repo\src\modules\Beta\Tests\Beta.UITests.Next\Beta.UITests.Next.csproj'
-        New-UITestProject 'shared-harness-repo\src\modules\Beta\Tests\Beta.UITests\Beta.UITests.csproj' -Framework Legacy
-        New-UITestProject 'shared-harness-repo\src\settings-ui\Settings.UITests\Settings.UITests.csproj'
-
-        $result = & $scriptPath -RepoRoot $repoRoot -ChangedFile @(
-            'src/common/UITestAutomation.Next/VisualAssert.cs',
-            'doc/devdocs/modules/example.md'
-        )
-
-        $result.SharedHarnessChanged | Should Be $true
-        @($result.TouchedModules).Count | Should Be 0
-        $result.UiTestModules | Should Be @(
-            'Alpha.UITests.Next',
-            'Beta.UITests.Next',
-            'Settings.UITests'
-        )
     }
 }

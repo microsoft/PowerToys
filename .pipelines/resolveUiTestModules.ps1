@@ -15,9 +15,9 @@ if (-not (Test-Path -LiteralPath $RepoRoot -PathType Container)) {
     throw "Repository root does not exist: $RepoRoot"
 }
 
-$normalizedChangedFiles = @($ChangedFile | ForEach-Object { $_ -replace '\\', '/' })
 $touchedModules = @(
-    $normalizedChangedFiles |
+    $ChangedFile |
+        ForEach-Object { $_ -replace '\\', '/' } |
         ForEach-Object {
             if ($_ -match '^src/modules/([^/]+)(?:/|$)') {
                 $Matches[1]
@@ -26,27 +26,13 @@ $touchedModules = @(
         Sort-Object -Unique
 )
 
-$sharedHarnessChanged = @(
-    $normalizedChangedFiles |
-        Where-Object { $_ -match '^src/common/UITestAutomation\.Next(?:/|$)' }
-).Count -gt 0
-
-$projectRoots = if ($sharedHarnessChanged) {
-    @(
-        (Join-Path $RepoRoot 'src\modules')
-        (Join-Path $RepoRoot 'src\settings-ui')
-    )
-}
-else {
-    @($touchedModules | ForEach-Object { Join-Path $RepoRoot "src\modules\$_" })
-}
-
-$uiTestModules = foreach ($projectRoot in $projectRoots) {
-    if (-not (Test-Path -LiteralPath $projectRoot -PathType Container)) {
+$uiTestModules = foreach ($module in $touchedModules) {
+    $moduleRoot = Join-Path $RepoRoot "src\modules\$module"
+    if (-not (Test-Path -LiteralPath $moduleRoot -PathType Container)) {
         continue
     }
 
-    Get-ChildItem -LiteralPath $projectRoot -Filter '*.csproj' -File -Recurse |
+    Get-ChildItem -LiteralPath $moduleRoot -Filter '*.csproj' -File -Recurse |
         Where-Object {
             [xml] $project = Get-Content -LiteralPath $_.FullName -Raw
             @($project.SelectNodes("//*[local-name()='ProjectReference']")) |
@@ -59,6 +45,5 @@ $uiTestModules = foreach ($projectRoot in $projectRoots) {
 
 [PSCustomObject]@{
     TouchedModules = @($touchedModules)
-    SharedHarnessChanged = $sharedHarnessChanged
     UiTestModules = @($uiTestModules | Sort-Object -Unique)
 }

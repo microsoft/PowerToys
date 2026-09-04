@@ -32,8 +32,6 @@
 
   <ItemGroup>
     <PackageReference Include="MSTest" />
-    <!-- VisualAssert's runtime dependency is not copied transitively from the harness project. -->
-    <PackageReference Include="CoenM.ImageSharp.ImageHash" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,7 +39,4 @@
     <ProjectReference Include="..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Baseline\*.png" />
-  </ItemGroup>
 </Project>

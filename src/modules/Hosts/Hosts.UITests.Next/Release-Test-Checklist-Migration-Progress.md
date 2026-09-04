@@ -22,6 +22,6 @@ For existing manual test-cases, we will convert them to UI-Tests and run them in
 ### Additional UI-Tests cases
 - [x] Add manually an entry with more than 9 hosts and Add button should be disabled. (**HostModuleTests.TestTooManyHosts**)
 - [x] Add manually an entry with less or equal 9 hosts and Add button should be enabled. (**HostModuleTests.TestTooManyHosts**)
-- [x] Should show empty view if no entries. (**HostModuleTests.TestEmptyView**)
-- [x] Add a new entry with valid input. (**HostModuleTests.TestAddingEntry**)
+- [x] Should show empty view if no entries. (**HostModuleTests.TestEntryButtonsAndEmptyView**)
+- [x] Add a new entry from both the empty-view link and toolbar button. (**HostModuleTests.TestEntryButtonsAndEmptyView**)
 - [x] Show save host file error if not run as Administrator. (**HostModuleTests.TestErrorMessageWithNonAdminPermission**)

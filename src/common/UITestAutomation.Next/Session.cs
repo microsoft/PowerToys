@@ -202,63 +202,6 @@ public sealed class Session
         where T : Element, new() => FindAll<T>(by, timeoutMS).Count == 1;
 
     /// <summary>
-    /// Find exactly one element whose UIA Name equals <paramref name="name"/> using ordinal
-    /// comparison. Unlike <see cref="Find{T}(string, int)"/>, this excludes the substring and
-    /// AutomationId matches returned by <see cref="By.Name"/>.
-    /// </summary>
-    public T FindExact<T>(string name, int timeoutMS = 5_000)
-        where T : Element, new()
-    {
-        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
-        while (true)
-        {
-            List<T> matches;
-            try
-            {
-                matches = FindAll<T>(By.Name(name), 0)
-                    .Where(element => string.Equals(element.Name, name, StringComparison.Ordinal))
-                    .ToList();
-            }
-            catch (AssertFailedException ex) when (
-                DateTime.UtcNow < deadline &&
-                ex.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase))
-            {
-                Thread.Sleep(250);
-                continue;
-            }
-
-            Assert.IsTrue(
-                matches.Count <= 1,
-                $"Expected at most one exact {typeof(T).Name} named '{name}', found {matches.Count}.");
-            if (matches.Count == 1)
-            {
-                return matches[0];
-            }
-
-            if (DateTime.UtcNow >= deadline)
-            {
-                Assert.Fail($"Exact {typeof(T).Name} named '{name}' was not found within {timeoutMS} ms.");
-            }
-
-            Thread.Sleep(250);
-        }
-    }
-
-    /// <summary>Count elements whose UIA Name exactly equals <paramref name="name"/>.</summary>
-    public int CountExact<T>(string name, int timeoutMS = 0)
-        where T : Element, new() =>
-        FindAll<T>(By.Name(name), timeoutMS)
-            .Count(element => string.Equals(element.Name, name, StringComparison.Ordinal));
-
-    /// <summary>
-    /// Wait for the exact-name match count to reach <paramref name="expectedCount"/> without
-    /// launching CLI searches more frequently than every 250 ms.
-    /// </summary>
-    public bool WaitForExactCount<T>(string name, int expectedCount, int timeoutMS = 5_000)
-        where T : Element, new() =>
-        WaitFor(() => CountExact<T>(name) == expectedCount, timeoutMS, pollIntervalMS: 250);
-
-    /// <summary>
     /// All elements matching <paramref name="by"/> on this session's window, optionally polling
     /// for up to <paramref name="timeoutMS"/> if none are present initially.
     /// </summary>

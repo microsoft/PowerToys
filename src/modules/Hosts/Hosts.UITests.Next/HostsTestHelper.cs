@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Nodes;
+using System.Threading;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -72,5 +74,52 @@ namespace Hosts.UITests
             // exact-name match because it follows the Address, Hosts, and Comment fields.
             return matches.MaxBy(toggle => toggle.Y)!;
         }
+
+        public static T FindExact<T>(this Session session, string name, int timeoutMS = 5_000)
+            where T : Element, new()
+        {
+            var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
+            while (true)
+            {
+                List<T> matches;
+                try
+                {
+                    matches = session.FindAll<T>(By.Name(name), 0)
+                        .Where(element => string.Equals(element.Name, name, StringComparison.Ordinal))
+                        .ToList();
+                }
+                catch (AssertFailedException ex) when (
+                    DateTime.UtcNow < deadline &&
+                    ex.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase))
+                {
+                    Thread.Sleep(250);
+                    continue;
+                }
+
+                Assert.IsTrue(
+                    matches.Count <= 1,
+                    $"Expected at most one exact {typeof(T).Name} named '{name}', found {matches.Count}.");
+                if (matches.Count == 1)
+                {
+                    return matches[0];
+                }
+
+                if (DateTime.UtcNow >= deadline)
+                {
+                    Assert.Fail($"Exact {typeof(T).Name} named '{name}' was not found within {timeoutMS} ms.");
+                }
+
+                Thread.Sleep(250);
+            }
+        }
+
+        public static int CountExact<T>(this Session session, string name, int timeoutMS = 0)
+            where T : Element, new() =>
+            session.FindAll<T>(By.Name(name), timeoutMS)
+                .Count(element => string.Equals(element.Name, name, StringComparison.Ordinal));
+
+        public static bool WaitForExactCount<T>(this Session session, string name, int expectedCount, int timeoutMS = 5_000)
+            where T : Element, new() =>
+            session.WaitFor(() => session.CountExact<T>(name) == expectedCount, timeoutMS, pollIntervalMS: 250);
     }
 }
