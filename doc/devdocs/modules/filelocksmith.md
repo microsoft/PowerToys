@@ -46,8 +46,10 @@ The module adds "Unlock with File Locksmith" to the context menu in File Explore
 3. The shell extension writes the selected file path to a temporary file (file-based IPC)
 4. The shell extension launches `PowerToys.FileLocksmithUI.exe`
 5. The UI reads the file path from the temporary file
-6. The UI uses `FileLocksmithLibInterop` to scan for processes with handles to the file
-7. Results are displayed in the UI, showing process information and allowing user action
+6. The UI starts `FileLocksmithCLI.exe` in a hidden worker mode and sends the selected paths over redirected standard input
+7. The worker uses `FileLocksmithLib` to scan for processes with handles to the file and returns JSON over redirected standard output
+8. The UI assigns the worker to a kill-on-close job, terminates its process tree if the scan exceeds 30 seconds or is canceled, and reports the failure instead of displaying an empty result
+9. Results are displayed in the UI, showing process information and allowing user action
 
 ### Core Functionality
 
@@ -57,6 +59,7 @@ The core functionality to find processes locking files is implemented in [FileLo
 - Examines all running processes to find handles to the specified files
 - Maps process IDs to the files they're locking
 - Retrieves process information such as name, user context, and file paths
+- Runs outside the UI process because `NtQueryObject` and `GetFileType` can block indefinitely for individual handles
 
 ### User Interface
 
