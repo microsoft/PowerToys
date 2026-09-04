@@ -346,6 +346,16 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerThreeMfThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerThreeMfThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerThreeMfThumbnails">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_101_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
     <policy name="ConfigureEnabledUtilityHostsFileEditor" class="Both" displayName="$(string.ConfigureEnabledUtilityHostsFileEditor)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityHostsFileEditor">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
