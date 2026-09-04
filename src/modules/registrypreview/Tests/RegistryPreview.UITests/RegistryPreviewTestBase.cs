@@ -201,6 +201,42 @@ public abstract class RegistryPreviewTestBase : UITestBase
         return session;
     }
 
+    protected Session LaunchRegistryPreviewWithEditor(string filePath)
+    {
+        for (var attempt = 1; attempt <= 2; attempt++)
+        {
+            var session = LaunchRegistryPreview(filePath);
+            if (WaitForEditorReadyStable(session))
+            {
+                return session;
+            }
+
+            if (attempt < 2)
+            {
+                CaptureMonacoStall(attempt);
+                Step($"Monaco did not become ready after {EditorTimeoutMS}ms; restarting the Registry Preview process tree once.");
+                Assert.IsTrue(
+                    WindowControl.TryKillProcessTreeByNameAndWait(RegistryPreviewProcessName, timeoutMS: 10_000),
+                    "Could not stop the stalled Registry Preview process tree before retrying.");
+            }
+        }
+
+        Assert.Fail(
+            $"Monaco did not become ready for '{Path.GetFileName(filePath)}' after a fresh Registry Preview process retry.");
+        return null!;
+    }
+
+    private void CaptureMonacoStall(int attempt)
+    {
+        var path = Path.Combine(
+            TestContext.TestResultsDirectory ?? Path.GetTempPath(),
+            $"monaco-stall-attempt-{attempt}-{Guid.NewGuid():N}.png");
+        if (ScreenCapture.TryCaptureDesktop(path))
+        {
+            TestContext.AddResultFile(path);
+        }
+    }
+
     /// <summary>
     /// Best-effort raise of the Registry Preview window. Interactions that need real input (typing
     /// into the Monaco editor, keyboard shortcuts for the common file dialogs) verify their own
@@ -299,6 +335,20 @@ public abstract class RegistryPreviewTestBase : UITestBase
 
     protected static Element WaitForEditorReady(Session window) =>
         window.Find<Element>(By.AccessibilityId("Browser"), EditorTimeoutMS);
+
+    private static bool WaitForEditorReadyStable(Session window)
+    {
+        var selector = By.AccessibilityId("Browser");
+        if (!window.WaitForElement(selector, EditorTimeoutMS))
+        {
+            return false;
+        }
+
+        // IsLoading starts false during initial layout, so require the peer to remain visible after
+        // Browser_Loaded has had time to switch into (or finish) the real WebView initialization.
+        Thread.Sleep(1_000);
+        return window.Has(selector, timeoutMS: 2_000);
+    }
 
     protected static void AssertExactElement(Session session, string name, string description, int timeoutMS = ActionTimeoutMS)
     {

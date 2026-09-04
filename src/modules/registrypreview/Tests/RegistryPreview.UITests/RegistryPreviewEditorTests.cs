@@ -25,7 +25,7 @@ public sealed class RegistryPreviewEditorTests : RegistryPreviewTestBase
         var savedAs = Path.Combine(folder, "saved-as.reg");
         var typedKeyPath = keyPath + @"\TypedKey";
         var replacement = CreateRegContent(typedKeyPath, "typed-value");
-        var window = LaunchRegistryPreview(fixture);
+        var window = LaunchRegistryPreviewWithEditor(fixture);
 
         try
         {
@@ -98,9 +98,8 @@ public sealed class RegistryPreviewEditorTests : RegistryPreviewTestBase
         var secondKeyPath = CreateIsolatedRegistryKeyPath();
         var first = CreateRegFixture(folder, "first.reg", firstKeyPath);
         var second = CreateRegFixture(folder, "second.reg", secondKeyPath + @"\OpenedKey", "opened-value");
-        var window = LaunchRegistryPreview(first);
+        var window = LaunchRegistryPreviewWithEditor(first);
 
-        WaitForEditorReady(window);
         Step("Changing the first file externally and reloading it");
         File.WriteAllText(first, CreateRegContent(firstKeyPath + @"\ReloadedKey", "external-value"), Encoding.Unicode);
         window.Find<Button>(By.AccessibilityId("refreshButton"), ActionTimeoutMS).Click(msPostAction: 300);
