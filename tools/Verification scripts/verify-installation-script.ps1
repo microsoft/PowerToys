@@ -337,8 +337,6 @@ function Test-CoreFiles {
         'PowerToys.AltWindowCycle.dll',
         'PowerToys.CmdNotFoundModuleInterface.dll',
         'PowerToys.ColorPicker.dll',
-        'PowerToys.ColorPickerUI.dll',
-        'PowerToys.ColorPickerUI.exe',
         'PowerToys.CropAndLockModuleInterface.dll',
         'PowerToys.CropAndLock.exe',
         'PowerToys.PowerOCRModuleInterface.dll',
@@ -468,6 +466,11 @@ function Test-CoreFiles {
         'PowerToys.Settings.exe',
         'PowerToys.AdvancedPaste.exe',
         'PowerToys.AdvancedPaste.dll',
+
+        # ColorPicker UI - moved from the install root to WinUI3Apps
+        'PowerToys.ColorPickerUI.dll',
+        'PowerToys.ColorPickerUI.exe',
+
         'PowerToys.HostsModuleInterface.dll',
         'PowerToys.HostsUILib.dll',
         'PowerToys.Hosts.dll',
