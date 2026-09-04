@@ -524,6 +524,7 @@ namespace Awake
         private static void InitializeSettings()
         {
             AwakeSettings settings = Manager.ModuleSettings?.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? new AwakeSettings();
+            TrayHelper.ConfigureThemeAdaptiveTrayIcon(settings.Properties.ShowThemeAdaptiveTrayIcon);
             TrayHelper.SetTray(settings, _startedFromPowerToys);
         }
 
@@ -548,6 +549,7 @@ namespace Awake
                     ?? throw new InvalidOperationException("Settings are null.");
 
                 Logger.LogInfo($"Identified custom time shortcuts for the tray: {settings.Properties.CustomTrayTimes.Count}");
+                TrayHelper.ConfigureThemeAdaptiveTrayIcon(settings.Properties.ShowThemeAdaptiveTrayIcon);
 
                 switch (settings.Properties.Mode)
                 {
