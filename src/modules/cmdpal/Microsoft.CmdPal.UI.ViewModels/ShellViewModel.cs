@@ -399,20 +399,30 @@ public partial class ShellViewModel : ObservableObject,
 
         try
         {
-            // Call out to extension process.
-            // * May fail!
-            // * May never return!
-            var result = invokable.Invoke(message.Context);
+            ICommandResult? result;
+            try
+            {
+                // Call out to extension process.
+                // * May fail!
+                // * May never return!
+                result = invokable.Invoke(message.Context);
+                success = true;
+            }
+            finally
+            {
+                // Count the invocation before handling a result that can end the session!
+                stopwatch.Stop();
+                WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
+                    new(extensionId, commandId, commandName, success, (ulong)stopwatch.ElapsedMilliseconds));
+            }
 
             // But if it did succeed, we need to handle the result.
             UnsafeHandleCommandResult(result, message.OnBeforeShowConfirmation);
 
-            success = true;
             _handleInvokeTask = null;
         }
         catch (Exception ex)
         {
-            success = false;
             _handleInvokeTask = null;
 
             // Telemetry: Track errors for session metrics
@@ -421,13 +431,6 @@ public partial class ShellViewModel : ObservableObject,
             // TODO: It would be better to do this as a page exception, rather
             // than a silent log message.
             host?.Log(ex.Message);
-        }
-        finally
-        {
-            // Telemetry: Send extension invocation metrics (always sent, even on failure)
-            stopwatch.Stop();
-            WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
-                new(extensionId, commandId, commandName, success, (ulong)stopwatch.ElapsedMilliseconds));
         }
     }
 
