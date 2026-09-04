@@ -23,7 +23,14 @@ namespace Microsoft.PowerToys.Settings.UI
 {
     public sealed partial class MainWindow : WindowEx
     {
-        public MainWindow(bool createHidden = false)
+        private const bool WaitForInitialContentBeforeActivation = true;
+
+        private DispatcherQueueTimer _activationFallbackTimer;
+        private bool _bringToForegroundOnActivation;
+        private bool _activationPending;
+        private bool _closed;
+
+        public MainWindow()
         {
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
@@ -40,13 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
             var hWnd = WindowNative.GetWindowHandle(this);
             var placement = WindowHelper.DeserializePlacementOrDefault(hWnd);
-            if (createHidden)
-            {
-                placement.ShowCmd = NativeMethods.SW_HIDE;
-
-                // Restore the last known placement on the first activation
-                this.Activated += Window_Activated;
-            }
+            placement.ShowCmd = NativeMethods.SW_HIDE;
 
             NativeMethods.SetWindowPlacement(hWnd, ref placement);
 
@@ -148,6 +149,32 @@ namespace Microsoft.PowerToys.Settings.UI
             ShellPage.Navigate(type);
         }
 
+        public void ActivateWhenReady(bool bringToForeground = false)
+        {
+            _bringToForegroundOnActivation |= bringToForeground;
+
+            var hWnd = WindowNative.GetWindowHandle(this);
+            if (!WaitForInitialContentBeforeActivation || NativeMethods.IsWindowVisible(hWnd) || shellPage.IsInitialContentLoaded)
+            {
+                ActivatePreparedWindow();
+                return;
+            }
+
+            shellPage.InitialContentLoaded -= ShellPage_InitialContentLoaded;
+            shellPage.InitialContentLoaded += ShellPage_InitialContentLoaded;
+            _activationPending = true;
+
+            _activationFallbackTimer ??= DispatcherQueue.CreateTimer();
+            if (!_activationFallbackTimer.IsRunning)
+            {
+                _activationFallbackTimer.Interval = TimeSpan.FromSeconds(2);
+                _activationFallbackTimer.IsRepeating = false;
+                _activationFallbackTimer.Tick -= ActivationFallbackTimer_Tick;
+                _activationFallbackTimer.Tick += ActivationFallbackTimer_Tick;
+                _activationFallbackTimer.Start();
+            }
+        }
+
         public void BeginWindowSession()
         {
             shellPage.BeginWindowSession();
@@ -156,7 +183,7 @@ namespace Microsoft.PowerToys.Settings.UI
         public void CloseHiddenWindow()
         {
             var hWnd = WindowNative.GetWindowHandle(this);
-            if (!NativeMethods.IsWindowVisible(hWnd))
+            if (!NativeMethods.IsWindowVisible(hWnd) && !_activationPending)
             {
                 Close();
             }
@@ -169,33 +196,74 @@ namespace Microsoft.PowerToys.Settings.UI
 
             if (!App.IsSecondaryWindowOpen())
             {
+                _closed = true;
+                _activationPending = false;
                 shellPage.Dispose();
                 App.ClearSettingsWindow();
+
+                shellPage.InitialContentLoaded -= ShellPage_InitialContentLoaded;
+                _activationFallbackTimer?.Stop();
+                App.ThemeService.ThemeChanged -= OnThemeChanged;
             }
             else
             {
                 args.Handled = true;
                 NativeMethods.ShowWindow(hWnd, NativeMethods.SW_HIDE);
             }
+        }
 
-            App.ThemeService.ThemeChanged -= OnThemeChanged;
+        private void ShellPage_InitialContentLoaded(object sender, EventArgs e)
+        {
+            if (_closed)
+            {
+                return;
+            }
+
+            DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, ActivatePreparedWindow);
+        }
+
+        private void ActivationFallbackTimer_Tick(DispatcherQueueTimer sender, object args)
+        {
+            if (_closed)
+            {
+                return;
+            }
+
+            ActivatePreparedWindow();
+        }
+
+        private void ActivatePreparedWindow()
+        {
+            if (_closed)
+            {
+                return;
+            }
+
+            shellPage.InitialContentLoaded -= ShellPage_InitialContentLoaded;
+            _activationFallbackTimer?.Stop();
+            _activationPending = false;
+
+            var hWnd = WindowNative.GetWindowHandle(this);
+            if (!NativeMethods.IsWindowVisible(hWnd))
+            {
+                var placement = WindowHelper.DeserializePlacementOrDefault(hWnd);
+                NativeMethods.SetWindowPlacement(hWnd, ref placement);
+            }
+
+            Activate();
+            if (_bringToForegroundOnActivation)
+            {
+                _bringToForegroundOnActivation = false;
+
+                // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
+                WindowHelpers.BringToForeground(hWnd);
+            }
         }
 
         private void Window_Activated_SetIcon(object sender, WindowActivatedEventArgs args)
         {
             // Set window icon
             this.SetIcon("Assets\\Settings\\icon.ico");
-        }
-
-        private void Window_Activated(object sender, WindowActivatedEventArgs args)
-        {
-            if (args.WindowActivationState != WindowActivationState.Deactivated)
-            {
-                this.Activated -= Window_Activated;
-                var hWnd = WindowNative.GetWindowHandle(this);
-                var placement = WindowHelper.DeserializePlacementOrDefault(hWnd);
-                NativeMethods.SetWindowPlacement(hWnd, ref placement);
-            }
         }
 
         private void OnThemeChanged(object sender, ElementTheme theme)

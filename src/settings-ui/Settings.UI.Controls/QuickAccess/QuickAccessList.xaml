@@ -42,7 +42,7 @@
                         </Image>
                     </local:FlyoutMenuButton.Icon>
                     <ToolTipService.ToolTip>
-                        <ToolTip Content="{x:Bind Description}" Visibility="{x:Bind Description, Converter={StaticResource StringVisibilityConverter}}" />
+                        <ToolTip Content="{x:Bind Description, Mode=OneWay}" Visibility="{x:Bind Description, Mode=OneWay, Converter={StaticResource StringVisibilityConverter}}" />
                     </ToolTipService.ToolTip>
                 </local:FlyoutMenuButton>
             </DataTemplate>
