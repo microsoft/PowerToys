@@ -593,6 +593,7 @@
     <Project Path="src/modules/MouseUtils/MousePointerCrosshairs/MousePointerCrosshairs.vcxproj" Id="eae14c0e-7a6b-45da-9080-a7d8c077ba6e" />
   </Folder>
   <Folder Name="/modules/MouseUtils/Tests/">
+    <Project Path="src/modules/MouseUtils/CursorWrap/UnitTests/CursorWrapUnitTests.vcxproj" Id="b3f0b9e1-6c4a-4e2a-9f1b-2d7a5c8e4a10" />
     <Project Path="src/modules/MouseUtils/MouseJump.Common.UnitTests/MouseJump.Common.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />

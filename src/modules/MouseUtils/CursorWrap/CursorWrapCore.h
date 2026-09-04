@@ -37,7 +37,9 @@ public:
     // Handle mouse move with wrap mode filtering
     // wrapMode: 0=Both, 1=VerticalOnly, 2=HorizontalOnly
     // disableOnSingleMonitor: if true, cursor wrapping is disabled when only one monitor is connected
-    POINT HandleMouseMove(const POINT& currentPos, bool disableWrapDuringDrag, int wrapMode, bool disableOnSingleMonitor);
+    // suppressTopEdgeWrapAtGlobalTop: if true, the top-edge wrap is suppressed on the monitor(s)
+    //   at the very top of the vertical stack (used to keep the RDP connection bar reachable)
+    POINT HandleMouseMove(const POINT& currentPos, bool disableWrapDuringDrag, int wrapMode, bool disableOnSingleMonitor, bool suppressTopEdgeWrapAtGlobalTop);
 
     const std::vector<MonitorInfo>& GetMonitors() const { return m_monitors; }
     size_t GetMonitorCount() const { return m_monitors.size(); }

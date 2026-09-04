@@ -196,7 +196,7 @@ bool CursorWrapCore::IsWithinWrapThreshold(const POINT& currentPos) const
     return distanceSquared <= (WRAP_DISTANCE_THRESHOLD * WRAP_DISTANCE_THRESHOLD);
 }
 
-POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapDuringDrag, int wrapMode, bool disableOnSingleMonitor)
+POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapDuringDrag, int wrapMode, bool disableOnSingleMonitor, bool suppressTopEdgeWrapAtGlobalTop)
 {
     // Check if wrapping should be disabled on single monitor
     if (disableOnSingleMonitor && m_monitors.size() <= 1)
@@ -289,7 +289,7 @@ POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapD
 
     // Check if cursor is on an outer edge (filtered by wrap mode and direction)
     EdgeType edgeType;
-    if (!m_topology.IsOnOuterEdge(currentMonitor, currentPos, edgeType, mode, &direction))
+    if (!m_topology.IsOnOuterEdge(currentMonitor, currentPos, edgeType, mode, &direction, suppressTopEdgeWrapAtGlobalTop))
     {
 #ifdef _DEBUG
         static bool lastWasNotOuter = false;

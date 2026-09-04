@@ -97,6 +97,7 @@
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="trace.cpp" />
+    <ClCompile Include="UnitTests\MonitorTopologyTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CursorWrap.rc" />
@@ -112,6 +113,8 @@
   <ItemGroup>
     <None Include="CursorWrapTests\WrapSimulator\test_new_algorithm.py" />
     <None Include="packages.config" />
+    <None Include="UnitTests\CursorWrapUnitTests.vcxproj" />
+    <None Include="UnitTests\CursorWrapUnitTests.vcxproj.filters" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
