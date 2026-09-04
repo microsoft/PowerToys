@@ -90,8 +90,16 @@ Function Generate-FileComponents() {
         [Parameter(Mandatory = $True, Position = 1)]
         [string]$fileListName,
         [Parameter(Mandatory = $True, Position = 2)]
-        [string]$wxsFilePath
+        [string]$wxsFilePath,
+        [Parameter(Mandatory = $False)]
+        [string[]]$duplicateFiles = @(),
+        [Parameter(Mandatory = $False)]
+        [string]$duplicateDestinationDirectory
     )
+
+    if ($duplicateFiles.Count -gt 0 -and [string]::IsNullOrEmpty($duplicateDestinationDirectory)) {
+        throw "duplicateDestinationDirectory is required when duplicateFiles is not empty"
+    }
 
     $wxsFile = Get-Content $wxsFilePath;
 
@@ -121,14 +129,30 @@ Function Generate-FileComponents() {
               </RegistryKey>`r`n
 "@
 
+    $duplicateIds = @{}
     foreach ($file in $fileList) {
         $fileTmp = $file -replace "-", "_"
         $fileTmp = $fileTmp -replace "[^A-Za-z0-9_.]", "_"
         if ($fileTmp -match "^[^A-Za-z_]") { $fileTmp = "_$fileTmp" }
-        $componentDefs +=
+        if ($duplicateFiles -contains $file) {
+            $duplicateId = "WinUI3AppsDuplicate_$($fileTmp)"
+            if ($duplicateIds.ContainsKey($duplicateId)) {
+                throw "Duplicate CopyFile Id generated for $file and $($duplicateIds[$duplicateId])"
+            }
+            $duplicateIds[$duplicateId] = $file
+
+            $componentDefs +=
+    @"
+              <File Id="$($fileListName)_File_$($fileTmp)" Source="`$(var.$($fileListName)Path)\$($file)">
+                <CopyFile Id="$duplicateId" DestinationDirectory="$duplicateDestinationDirectory" />
+              </File>`r`n
+"@
+        } else {
+            $componentDefs +=
     @"
               <File Id="$($fileListName)_File_$($fileTmp)" Source="`$(var.$($fileListName)Path)\$($file)" />`r`n
 "@
+        }
     }
 
     $componentDefs +=
@@ -179,29 +203,28 @@ $baseAppWxs = $baseAppWxs -replace ';;+', ';'
 $baseAppWxs = $baseAppWxs -replace '=;', '='
 $baseAppWxs = $baseAppWxs -replace ';"', '"'
 Set-Content -Path $baseAppWxsPath -Value $baseAppWxs
-Generate-FileComponents -fileListName "BaseApplicationsFiles" -wxsFilePath $PSScriptRoot\BaseApplications.wxs
 
 #WinUI3Applications
 Generate-FileList -fileDepsJson "" -fileListName WinUI3ApplicationsFiles -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps"
 
 # Deduplicate: Remove files from WinUI3Apps that are identical to root (same name + same hash).
-# These will be re-created as plain file copies at install time by CreateWinAppSDKHardlinksCA.
-# (The CA's name is historical: it now uses fs::copy_file rather than CreateHardLinkW to avoid
-# DACL contamination across the shared inode -- see CustomAction.cpp for details.)
+# The root File rows get nested CopyFile entries, which populate the MSI DuplicateFile table.
+# Windows Installer then owns install, repair, rollback, and removal of the destination copies.
+# CopyFile creates separate files rather than hard links, preserving the DACL isolation between
+# the install root and WinUI3Apps that sparse-package registration requires.
 $rootPath = "$PSScriptRoot..\..\..\$platform\Release"
 $winui3Path = "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps"
 $winui3WxsPath = "$PSScriptRoot\WinUI3Applications.wxs"
 $winui3Wxs = Get-Content $winui3WxsPath -Raw
-$manifestPath = Join-Path $winui3Path "hardlinks.txt"
+$duplicateFiles = @()
 
 if ($winui3Wxs -match "\<\?define WinUI3ApplicationsFiles=([^?]*)\?\>") {
     $winui3FileList = $matches[1] -split ';' | Where-Object { $_ -ne '' }
-    $hardlinkFiles = @()
 
     # Read the BaseApplications WXS file list so we only deduplicate files that the MSI
     # is actually deploying to the install root. If a file was stripped from BaseApplications
-    # by an earlier step (e.g., the ImageResizer leaked-apphost workaround above), the
-    # install-time CA's source would be missing and both copies would disappear.
+    # by an earlier step (e.g., the ImageResizer leaked-apphost workaround above), there is
+    # no source File row for a DuplicateFile entry.
     $baseAppsWxs = Get-Content $baseAppWxsPath -Raw
     $baseAppsFileList = @()
     if ($baseAppsWxs -match "\<\?define BaseApplicationsFiles=([^?]*)\?\>") {
@@ -218,14 +241,14 @@ if ($winui3Wxs -match "\<\?define WinUI3ApplicationsFiles=([^?]*)\?\>") {
             $rootHash = (Get-FileHash $rootFile -Algorithm SHA256).Hash
             $winui3Hash = (Get-FileHash $winui3File -Algorithm SHA256).Hash
             if ($rootHash -eq $winui3Hash) {
-                $hardlinkFiles += $file
+                $duplicateFiles += $file
             }
         }
     }
 
-    if ($hardlinkFiles.Count -gt 0) {
+    if ($duplicateFiles.Count -gt 0) {
         # Remove deduplicated files from WinUI3Apps file list
-        $remainingFiles = $winui3FileList | Where-Object { $_ -notin $hardlinkFiles }
+        $remainingFiles = $winui3FileList | Where-Object { $_ -notin $duplicateFiles }
         if ($remainingFiles.Count -eq 0) {
             # All files are duplicates — keep at least a dummy entry won't be emitted
             # Generate-FileComponents handles empty defines by producing no <File> entries
@@ -234,16 +257,11 @@ if ($winui3Wxs -match "\<\?define WinUI3ApplicationsFiles=([^?]*)\?\>") {
             $winui3Wxs = $winui3Wxs -replace "\<\?define WinUI3ApplicationsFiles=[^?]*\?\>", "<?define WinUI3ApplicationsFiles=$($remainingFiles -join ';')?>"
         }
         Set-Content -Path $winui3WxsPath -Value $winui3Wxs
-        Write-Host "Deduplicated $($hardlinkFiles.Count) files from WinUI3Apps (will be copied at install time)"
+        Write-Host "Deduplicated $($duplicateFiles.Count) files from WinUI3Apps using MSI DuplicateFile entries"
     }
-
-    # Always write hardlinks.txt (may be empty — CA handles that gracefully)
-    # Write as UTF-8 without BOM so the install-time CA can read it via std::ifstream
-    # + MultiByteToWideChar(CP_UTF8) without dealing with PS-version-dependent default
-    # encodings or a leading BOM.
-    [System.IO.File]::WriteAllLines($manifestPath, [string[]]$hardlinkFiles, (New-Object System.Text.UTF8Encoding($false)))
 }
 
+Generate-FileComponents -fileListName "BaseApplicationsFiles" -wxsFilePath $PSScriptRoot\BaseApplications.wxs -duplicateFiles $duplicateFiles -duplicateDestinationDirectory "WinUI3AppsInstallFolder"
 Generate-FileComponents -fileListName "WinUI3ApplicationsFiles" -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs
 
 #AdvancedPaste

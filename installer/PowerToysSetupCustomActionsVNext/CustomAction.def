@@ -36,5 +36,3 @@ EXPORTS
 	SetBundleInstallLocationCA
 	InstallPackageIdentityMSIXCA
 	UninstallPackageIdentityMSIXCA
-	CreateWinAppSDKHardlinksCA
-	DeleteWinAppSDKHardlinksCA
