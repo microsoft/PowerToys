@@ -23,6 +23,15 @@ struct KeyboardTextMapping
     wchar_t* targetText;
 };
 
+struct TextExpansionMapping
+{
+    wchar_t* id;
+    wchar_t* sourceText;
+    wchar_t* activationKeys;
+    wchar_t* replacementText;
+    bool enabled;
+};
+
 struct ShortcutMapping
 {
     wchar_t* originalKeys;
@@ -45,6 +54,7 @@ extern "C"
     __declspec(dllexport) void* CreateMappingConfiguration();
     __declspec(dllexport) void DestroyMappingConfiguration(void* config);
     __declspec(dllexport) bool LoadMappingSettings(void* config);
+    __declspec(dllexport) int LoadMappingSettingsWithResult(void* config);
     __declspec(dllexport) bool MappingSettingsFileExists(void* config);
     __declspec(dllexport) bool MappingConfigurationNameWasResolved(void* config);
     __declspec(dllexport) wchar_t* GetMappingConfigurationName(void* config);
@@ -60,6 +70,9 @@ extern "C"
     __declspec(dllexport) int GetSingleKeyToTextRemapCount(void* config);
     __declspec(dllexport) bool GetSingleKeyToTextRemap(void* config, int index, KeyboardTextMapping* mapping);
 
+    __declspec(dllexport) int GetTextExpansionCount(void* config);
+    __declspec(dllexport) bool GetTextExpansion(void* config, int index, TextExpansionMapping* mapping);
+
     __declspec(dllexport) int GetShortcutRemapCountByType(void* config, int operationType);
     __declspec(dllexport) bool GetShortcutRemapByType(void* config, int operationType, int index, ShortcutMapping* mapping);
    
@@ -68,6 +81,18 @@ extern "C"
 
     __declspec(dllexport) bool AddSingleKeyRemap(void* config, int originalKey, int targetKey);
     __declspec(dllexport) bool AddSingleKeyToTextRemap(void* config, int originalKey, const wchar_t* text);
+    __declspec(dllexport) bool AddTextExpansion(void* config,
+                                                const wchar_t* id,
+                                                const wchar_t* sourceText,
+                                                const wchar_t* activationKeys,
+                                                const wchar_t* replacementText,
+                                                bool enabled);
+    __declspec(dllexport) bool UpdateTextExpansion(void* config,
+                                                   const wchar_t* id,
+                                                   const wchar_t* sourceText,
+                                                   const wchar_t* activationKeys,
+                                                   const wchar_t* replacementText,
+                                                   bool enabled);
     __declspec(dllexport) bool AddSingleKeyToShortcutRemap(void* config,
                                                            int originalKey,
                                                            const wchar_t* targetKeys);
@@ -98,6 +123,8 @@ extern "C"
     __declspec(dllexport) bool DeleteSingleKeyRemap(void* config, int originalKey);
     __declspec(dllexport) bool DeleteSingleKeyAloneRemap(void* config, int originalKey);
     __declspec(dllexport) bool DeleteSingleKeyToTextRemap(void* config, int originalKey);
+    __declspec(dllexport) bool DeleteTextExpansion(void* config, const wchar_t* id);
+    __declspec(dllexport) bool SetTextExpansionEnabled(void* config, const wchar_t* id, bool enabled);
     __declspec(dllexport) bool DeleteShortcutRemap(void* config, const wchar_t* originalKeys, const wchar_t* targetApp);
 }
 extern "C" __declspec(dllexport) int GetKeyboardKeysList(bool isShortcut, KeyNamePair* keyList, int maxCount);

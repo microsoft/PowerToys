@@ -68,12 +68,12 @@ public abstract class KeyboardManagerTestBase : UITestBase
         {
             Step("Expanding the Input / Output navigation group");
             settings.Find<NavigationViewItem>(By.AccessibilityId("InputOutputNavItem"), timeoutMS: 10_000)
-                .Click(msPostAction: 500);
+                .Invoke(msPostAction: 500);
         }
 
         Step("Opening Keyboard Manager settings");
         settings.Find<NavigationViewItem>(By.AccessibilityId("KeyboardManagerNavItem"), timeoutMS: 10_000)
-            .Click(msPostAction: 500);
+            .Invoke(msPostAction: 500);
         Assert.IsTrue(
             settings.WaitFor(
                 () => settings.Has(By.AccessibilityId("KeyboardManagerLaunchEditorButton"), timeoutMS: 500) ||
@@ -87,7 +87,7 @@ public abstract class KeyboardManagerTestBase : UITestBase
         return settings;
     }
 
-    protected Session OpenEditor()
+    protected Session OpenEditor(bool requireForeground = true)
     {
         Assert.IsTrue(CloseEditor(), "A stale Keyboard Manager editor process remained before launch.");
         var settings = NavigateToKeyboardManagerSettings();
@@ -97,7 +97,7 @@ public abstract class KeyboardManagerTestBase : UITestBase
             ? settings.Find<Button>(By.AccessibilityId("KeyboardManagerLaunchEditorButton"), timeoutMS: 5_000)
             : FindExact<Button>(settings, "Open editor", timeoutMS: 5_000);
         Assert.IsNotNull(launchButton, "The unified editor launch button could not be addressed.");
-        launchButton!.Click(msPostAction: 300);
+        launchButton!.Invoke(msPostAction: 300);
 
         var editor = WindowsFinder.WaitForWindowByApp(
             KeyboardManagerTestConstants.EditorProcessName,
@@ -108,10 +108,14 @@ public abstract class KeyboardManagerTestBase : UITestBase
             editor!.WaitForElement(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 15_000),
             "The Keyboard Manager editor did not expose its Add new remapping button.");
 
-        editor.EnsureForeground();
-        Assert.IsTrue(
-            WindowControl.WaitForForeground(new IntPtr(editor.WindowHandle), timeoutMS: 10_000, requiredConsecutiveMatches: 2),
-            $"The Keyboard Manager editor did not own foreground input. Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        if (requireForeground)
+        {
+            editor.EnsureForeground();
+            Assert.IsTrue(
+                WindowControl.WaitForForeground(new IntPtr(editor.WindowHandle), timeoutMS: 10_000, requiredConsecutiveMatches: 2),
+                $"The Keyboard Manager editor did not own foreground input. Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        }
+
         return editor;
     }
 

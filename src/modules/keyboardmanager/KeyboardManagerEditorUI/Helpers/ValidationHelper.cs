@@ -25,6 +25,8 @@ namespace KeyboardManagerEditorUI.Helpers
             { ValidationErrorType.ConflictingModifier, (ResourceHelper.GetString("Validation_ConflictingModifier_Title"), ResourceHelper.GetString("Validation_ConflictingModifier_Message")) },
             { ValidationErrorType.SelfMapping, (ResourceHelper.GetString("Validation_SelfMapping_Title"), ResourceHelper.GetString("Validation_SelfMapping_Message")) },
             { ValidationErrorType.EmptyTargetText, (ResourceHelper.GetString("Validation_EmptyTargetText_Title"), ResourceHelper.GetString("Validation_EmptyTargetText_Message")) },
+            { ValidationErrorType.InvalidTextExpansionSourceText, (ResourceHelper.GetString("Validation_InvalidTextExpansionSourceText_Title"), ResourceHelper.GetString("Validation_InvalidTextExpansionSourceText_Message")) },
+            { ValidationErrorType.InvalidTextExpansionReplacementText, (ResourceHelper.GetString("Validation_InvalidTextExpansionReplacementText_Title"), ResourceHelper.GetString("Validation_InvalidTextExpansionReplacementText_Message")) },
             { ValidationErrorType.EmptyUrl, (ResourceHelper.GetString("Validation_EmptyUrl_Title"), ResourceHelper.GetString("Validation_EmptyUrl_Message")) },
             { ValidationErrorType.EmptyProgramPath, (ResourceHelper.GetString("Validation_EmptyProgramPath_Title"), ResourceHelper.GetString("Validation_EmptyProgramPath_Message")) },
             { ValidationErrorType.OneKeyMapping, (ResourceHelper.GetString("Validation_OneKeyMapping_Title"), ResourceHelper.GetString("Validation_OneKeyMapping_Message")) },

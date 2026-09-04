@@ -65,6 +65,7 @@ namespace KeyboardManagerEditorUI.Controls
         public enum TriggerType
         {
             KeyOrShortcut,
+            TextExpansion,
             Mouse,
         }
 
@@ -75,6 +76,7 @@ namespace KeyboardManagerEditorUI.Controls
         {
             KeyOrShortcut,
             Text,
+            TextExpansion,
             OpenUrl,
             OpenApp,
             MouseClick,
@@ -105,6 +107,11 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 if (TriggerTypeComboBox?.SelectedItem is ComboBoxItem item)
                 {
+                    if (item == TextExpansionTriggerTypeItem)
+                    {
+                        return TriggerType.TextExpansion;
+                    }
+
                     return item.Tag?.ToString() switch
                     {
                         "Mouse" => TriggerType.Mouse,
@@ -128,6 +135,7 @@ namespace KeyboardManagerEditorUI.Controls
                     return item.Tag?.ToString() switch
                     {
                         "Text" => ActionType.Text,
+                        "TextExpansion" => ActionType.TextExpansion,
                         "OpenUrl" => ActionType.OpenUrl,
                         "OpenApp" => ActionType.OpenApp,
                         "MouseClick" => ActionType.MouseClick,
@@ -197,19 +205,24 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void TriggerTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (TriggerTypeComboBox?.SelectedItem is ComboBoxItem item)
+            if (_internalUpdate)
             {
-                string? tag = item.Tag?.ToString();
+                return;
+            }
 
-                // Cleanup keyboard hook when switching to mouse
-                if (tag == "Mouse")
+            if (TriggerTypeComboBox?.SelectedItem is ComboBoxItem)
+            {
+                if (this.IsLoaded)
                 {
                     CleanupKeyboardHook();
                     UncheckAllToggleButtons();
                 }
             }
 
+            UpdateTextExpansionMode();
             UpdateConditionVisibility();
+            HideValidationMessage();
+            RaiseValidationStateChanged();
         }
 
         private void TriggerKeyToggleBtn_Checked(object sender, RoutedEventArgs e)
@@ -247,6 +260,11 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void ActionTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (_internalUpdate)
+            {
+                return;
+            }
+
             if (ActionTypeComboBox?.SelectedItem is ComboBoxItem item)
             {
                 string? tag = item.Tag?.ToString();
@@ -551,6 +569,15 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void UpdateAppSpecificCheckBoxState()
         {
+            if (CurrentTriggerType == TriggerType.TextExpansion)
+            {
+                AppSpecificCheckBox.IsChecked = false;
+                AppSpecificCheckBox.IsEnabled = false;
+                AppSpecificCheckBox.Visibility = Visibility.Collapsed;
+                AppNameTextBox.Visibility = Visibility.Collapsed;
+                return;
+            }
+
             // Only enable app-specific remapping for shortcuts (multiple keys).
             bool isShortcut = _triggerKeys.Count > 1;
             bool alreadyChecked = AppSpecificCheckBox.IsChecked == true;
@@ -591,6 +618,11 @@ namespace KeyboardManagerEditorUI.Controls
         private void TextContentBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             _textContentDirty = true;
+            RaiseValidationStateChanged();
+        }
+
+        private void TextExpansionTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
             RaiseValidationStateChanged();
         }
 
@@ -769,6 +801,10 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public string GetTextContent() => TextContentBox?.Text ?? string.Empty;
 
+        public string GetTextExpansionSourceText() => TextExpansionSourceTextBox?.Text ?? string.Empty;
+
+        public string GetTextExpansionReplacementText() => TextExpansionReplacementTextBox?.Text ?? string.Empty;
+
         /// <summary>
         /// Gets the URL (for OpenUrl action type).
         /// </summary>
@@ -813,8 +849,17 @@ namespace KeyboardManagerEditorUI.Controls
         /// <summary>
         /// Gets the single-key remap condition (Always/Alone). Only meaningful for single-key remaps.
         /// </summary>
-        public KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition GetCondition() =>
-            (KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition)(ConditionComboBox?.SelectedIndex ?? 0);
+        public KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition GetCondition()
+        {
+            if (ConditionComboBox?.Visibility != Visibility.Visible)
+            {
+                return KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition.Always;
+            }
+
+            return ConditionComboBox.SelectedIndex == (int)KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition.Alone
+                ? KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition.Alone
+                : KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition.Always;
+        }
 
         /// <summary>
         /// Gets the window visibility (for OpenApp action type).
@@ -845,6 +890,9 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 ActionType.KeyOrShortcut => _actionKeys.Count > 0,
                 ActionType.Text => !string.IsNullOrEmpty(TextContentBox?.Text),
+                ActionType.TextExpansion =>
+                    !string.IsNullOrEmpty(TextExpansionSourceTextBox?.Text) &&
+                    !string.IsNullOrEmpty(TextExpansionReplacementTextBox?.Text),
                 ActionType.OpenUrl => !string.IsNullOrWhiteSpace(UrlPathInput?.Text),
                 ActionType.OpenApp => !string.IsNullOrWhiteSpace(ProgramPathInput?.Text),
                 ActionType.Disable => true,
@@ -893,6 +941,12 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public void SetActionType(ActionType actionType)
         {
+            if (actionType == ActionType.TextExpansion)
+            {
+                SetTriggerType(TriggerType.TextExpansion);
+                return;
+            }
+
             if (ActionTypeComboBox == null)
             {
                 return;
@@ -926,6 +980,42 @@ namespace KeyboardManagerEditorUI.Controls
             if (TextContentBox != null)
             {
                 TextContentBox.Text = text;
+            }
+        }
+
+        public void SetTriggerType(TriggerType triggerType)
+        {
+            if (TriggerTypeComboBox == null)
+            {
+                return;
+            }
+
+            TriggerTypeComboBox.SelectedItem = triggerType == TriggerType.TextExpansion
+                ? TextExpansionTriggerTypeItem
+                : TriggerTypeComboBox.Items.OfType<ComboBoxItem>().FirstOrDefault(item => item.Tag?.ToString() == "KeyOrShortcut");
+        }
+
+        public void SetTriggerTypeSelectionEnabled(bool enabled)
+        {
+            if (TriggerTypeComboBox != null)
+            {
+                TriggerTypeComboBox.IsEnabled = enabled;
+            }
+        }
+
+        public void SetTextExpansionSourceText(string text)
+        {
+            if (TextExpansionSourceTextBox != null)
+            {
+                TextExpansionSourceTextBox.Text = text;
+            }
+        }
+
+        public void SetTextExpansionReplacementText(string text)
+        {
+            if (TextExpansionReplacementTextBox != null)
+            {
+                TextExpansionReplacementTextBox.Text = text;
             }
         }
 
@@ -1071,6 +1161,72 @@ namespace KeyboardManagerEditorUI.Controls
             KeyboardHookHelper.Instance.CleanupHook();
         }
 
+        private void UpdateTextExpansionMode()
+        {
+            bool isTextExpansion = CurrentTriggerType == TriggerType.TextExpansion;
+            AllowChords = !isTextExpansion && (AllowChordsCheckBox?.IsChecked ?? true);
+
+            if (TextExpansionSourcePanel != null)
+            {
+                TextExpansionSourcePanel.Visibility = isTextExpansion ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (AllowChordsCheckBox != null)
+            {
+                AllowChordsCheckBox.Visibility = isTextExpansion ? Visibility.Collapsed : Visibility.Visible;
+            }
+
+            if (AppSpecificCheckBox != null)
+            {
+                AppSpecificCheckBox.Visibility = isTextExpansion ? Visibility.Collapsed : Visibility.Visible;
+                if (isTextExpansion)
+                {
+                    AppSpecificCheckBox.IsChecked = false;
+                    AppSpecificCheckBox.IsEnabled = false;
+                }
+            }
+
+            if (!isTextExpansion && AppSpecificCheckBox != null && AppNameTextBox != null)
+            {
+                UpdateAppSpecificCheckBoxState();
+            }
+
+            if (AppNameTextBox != null)
+            {
+                AppNameTextBox.Visibility = isTextExpansion || AppSpecificCheckBox?.IsChecked != true
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
+            }
+
+            if (ActionTypeComboBox != null && TextExpansionActionTypeItem != null)
+            {
+                try
+                {
+                    _internalUpdate = true;
+                    if (isTextExpansion)
+                    {
+                        TextExpansionActionTypeItem.Visibility = Visibility.Visible;
+                        ActionTypeComboBox.SelectedItem = TextExpansionActionTypeItem;
+                        ActionTypeComboBox.IsEnabled = false;
+                    }
+                    else
+                    {
+                        if (ReferenceEquals(ActionTypeComboBox.SelectedItem, TextExpansionActionTypeItem))
+                        {
+                            ActionTypeComboBox.SelectedIndex = 0;
+                        }
+
+                        TextExpansionActionTypeItem.Visibility = Visibility.Collapsed;
+                        ActionTypeComboBox.IsEnabled = true;
+                    }
+                }
+                finally
+                {
+                    _internalUpdate = false;
+                }
+            }
+        }
+
         private void UpdatePlaceholderVisibility()
         {
             if (TriggerKeyPlaceholder != null)
@@ -1183,11 +1339,13 @@ namespace KeyboardManagerEditorUI.Controls
             if (TriggerTypeComboBox != null)
             {
                 TriggerTypeComboBox.SelectedIndex = 0;
+                TriggerTypeComboBox.IsEnabled = true;
             }
 
             if (ActionTypeComboBox != null)
             {
                 ActionTypeComboBox.SelectedIndex = 0;
+                ActionTypeComboBox.IsEnabled = true;
             }
 
             if (MouseTriggerComboBox != null)
@@ -1199,6 +1357,16 @@ namespace KeyboardManagerEditorUI.Controls
             if (TextContentBox != null)
             {
                 TextContentBox.Text = string.Empty;
+            }
+
+            if (TextExpansionSourceTextBox != null)
+            {
+                TextExpansionSourceTextBox.Text = string.Empty;
+            }
+
+            if (TextExpansionReplacementTextBox != null)
+            {
+                TextExpansionReplacementTextBox.Text = string.Empty;
             }
 
             if (UrlPathInput != null)
@@ -1232,6 +1400,7 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 AppSpecificCheckBox.IsChecked = false;
                 AppSpecificCheckBox.IsEnabled = false;
+                AppSpecificCheckBox.Visibility = Visibility.Visible;
             }
 
             // Reset app combo boxes
@@ -1254,6 +1423,8 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 VisibilityComboBox.SelectedIndex = 0;
             }
+
+            UpdateTextExpansionMode();
 
             HideValidationMessage();
         }
@@ -1354,7 +1525,7 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void AllowChordsCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            AllowChords = AllowChordsCheckBox.IsChecked == true;
+            AllowChords = CurrentTriggerType != TriggerType.TextExpansion && AllowChordsCheckBox.IsChecked == true;
         }
     }
 }

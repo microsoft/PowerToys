@@ -124,13 +124,16 @@
     <value>Nothing mapped yet</value>
   </data>
   <data name="EmptyStateDescription.Text" xml:space="preserve">
-    <value>Create a key or shortcut remapping to customize how your keyboard works.</value>
+    <value>Create a remapping or text expansion to customize how your keyboard works.</value>
   </data>
   <data name="RemappingsHeader.Text" xml:space="preserve">
     <value>Keys and shortcuts</value>
   </data>
   <data name="TextMappingsHeader.Text" xml:space="preserve">
     <value>Text</value>
+  </data>
+  <data name="TextExpansionsHeader.Text" xml:space="preserve">
+    <value>Text expansions</value>
   </data>
   <data name="ProgramsHeader.Text" xml:space="preserve">
     <value>Programs</value>
@@ -174,6 +177,9 @@
   <data name="RemappingDialog_TitleEdit" xml:space="preserve">
     <value>Edit remapping</value>
   </data>
+  <data name="RemappingDialog_TitleEditTextExpansion" xml:space="preserve">
+    <value>Edit text expansion</value>
+  </data>
   <data name="RemappingDialog.PrimaryButtonText" xml:space="preserve">
     <value>Save</value>
   </data>
@@ -203,6 +209,12 @@
   </data>
   <data name="TriggerType_KeyOrShortcut_Text.Text" xml:space="preserve">
     <value>Key or shortcut</value>
+  </data>
+  <data name="TriggerType_TextExpansion.AutomationProperties.Name" xml:space="preserve">
+    <value>Text expand</value>
+  </data>
+  <data name="TriggerType_TextExpansion_Text.Text" xml:space="preserve">
+    <value>Text expand</value>
   </data>
   <data name="TriggerType_Mouse.AutomationProperties.Name" xml:space="preserve">
     <value>Mouse button</value>
@@ -258,6 +270,12 @@
   <data name="ActionType_Text_Text.Text" xml:space="preserve">
     <value>Insert text</value>
   </data>
+  <data name="ActionType_ReplaceWith.AutomationProperties.Name" xml:space="preserve">
+    <value>Replace with</value>
+  </data>
+  <data name="ActionType_ReplaceWith_Text.Text" xml:space="preserve">
+    <value>Replace with</value>
+  </data>
   <data name="ActionType_OpenUrl.AutomationProperties.Name" xml:space="preserve">
     <value>Open URL</value>
   </data>
@@ -293,6 +311,30 @@
   </data>
   <data name="TextContentBox.PlaceholderText" xml:space="preserve">
     <value>Enter the text to type when triggered</value>
+  </data>
+  <data name="TextExpansionAbbreviationLabel.Text" xml:space="preserve">
+    <value>Abbreviation</value>
+  </data>
+  <data name="TextExpansionActivationLabel.Text" xml:space="preserve">
+    <value>Trigger key or shortcut</value>
+  </data>
+  <data name="TextExpansionSourceTextBox.PlaceholderText" xml:space="preserve">
+    <value>Enter the text before the cursor</value>
+  </data>
+  <data name="TextExpansionSourceTextBox.AutomationProperties.Name" xml:space="preserve">
+    <value>Abbreviation</value>
+  </data>
+  <data name="TextExpansionReplacementTextBox.Header" xml:space="preserve">
+    <value>Expanded text</value>
+  </data>
+  <data name="TextExpansionReplacementTextBox.PlaceholderText" xml:space="preserve">
+    <value>Enter the replacement text</value>
+  </data>
+  <data name="TextExpansionWithText.Text" xml:space="preserve">
+    <value>with</value>
+  </data>
+  <data name="TextExpansionExpandsToText.Text" xml:space="preserve">
+    <value>expands to</value>
   </data>
   <data name="UrlPathInput.Header" xml:space="preserve">
     <value>URL to open</value>
@@ -448,6 +490,18 @@
   <data name="Validation_EmptyTargetText_Message" xml:space="preserve">
     <value>Please enter the text to be inserted when the shortcut is pressed.</value>
   </data>
+  <data name="Validation_InvalidTextExpansionSourceText_Title" xml:space="preserve">
+    <value>Invalid abbreviation</value>
+  </data>
+  <data name="Validation_InvalidTextExpansionSourceText_Message" xml:space="preserve">
+    <value>Enter an abbreviation of up to 256 characters using valid Unicode text.</value>
+  </data>
+  <data name="Validation_InvalidTextExpansionReplacementText_Title" xml:space="preserve">
+    <value>Invalid expanded text</value>
+  </data>
+  <data name="Validation_InvalidTextExpansionReplacementText_Message" xml:space="preserve">
+    <value>Enter expanded text of up to 256 characters using valid Unicode text.</value>
+  </data>
   <data name="Validation_EmptyUrl_Title" xml:space="preserve">
     <value>Missing URL</value>
   </data>
@@ -513,6 +567,14 @@
   </data>
   <data name="ServiceDownBanner.Message" xml:space="preserve">
     <value>Remappings will not function and you will be unable to edit any entries until the service is restored.</value>
+  </data>
+  <data name="TextExpansionEnabledToggle_AutomationName" xml:space="preserve">
+    <value>Enable or disable text expansion {0} with {1} to {2}</value>
+    <comment>{0} is the source text, {1} is the activation key or shortcut, and {2} is the replacement text.</comment>
+  </data>
+  <data name="TextExpansionMenuButton_AutomationName" xml:space="preserve">
+    <value>More options for text expansion {0} with {1} to {2}</value>
+    <comment>{0} is the source text, {1} is the activation key or shortcut, and {2} is the replacement text.</comment>
   </data>
   <data name="CheckServiceBtn.Content" xml:space="preserve">
     <value>Check service status</value>
