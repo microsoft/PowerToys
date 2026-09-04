@@ -1,17 +1,17 @@
 #include <windows.h>
 #include "resource.h"
-#include "../../../common/version/version.h"
+#include "../../../../common/version/version.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 #include "winres.h"
 #undef APSTUDIO_READONLY_SYMBOLS
 
 // Shown while the mouse is drawing, so the pointer says what it is doing.
-IDC_LASER_PEN CURSOR "laser_pen.cur"
+IDC_LASER_PEN CURSOR "../laser_pen.cur"
 
 // The mirror window wears this, so it is recognisable in a sharing picker. Same artwork
 // as the Quick Access entry that toggles it.
-IDI_SHARABLE_WINDOW ICON "sharable_window.ico"
+IDI_SHARABLE_WINDOW ICON "../sharable_window.ico"
 
 1 VERSIONINFO
 FILEVERSION FILE_VERSION

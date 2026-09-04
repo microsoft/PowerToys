@@ -25,15 +25,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [CmdConfigureIgnore]
         public HotkeySettings DefaultPenActivationShortcut => new HotkeySettings();
 
-        // Ctrl+Shift+Win+S shares - it starts sharing, or moves the share to the next
-        // window without ever dropping the shared surface. Ctrl+Shift+Win+X stops. Two
+        // Ctrl+Shift+Win+W shares - it starts sharing, or moves the share to the next
+        // window without ever dropping the shared surface. Ctrl+Shift+Win+Q quits. Two
         // one-way shortcuts rather than a toggle, so neither can do the opposite of what
         // was meant. Arguments are (win, ctrl, alt, shift, code).
         [CmdConfigureIgnore]
-        public HotkeySettings DefaultPresenterActivationShortcut => new HotkeySettings(true, true, false, true, 0x53);
+        public HotkeySettings DefaultPresenterActivationShortcut => new HotkeySettings(true, true, false, true, 0x57);
 
         [CmdConfigureIgnore]
-        public HotkeySettings DefaultPresenterStopShortcut => new HotkeySettings(true, true, false, true, 0x58);
+        public HotkeySettings DefaultPresenterStopShortcut => new HotkeySettings(true, true, false, true, 0x51);
 
         [JsonPropertyName("activation_shortcut")]
         public HotkeySettings ActivationShortcut { get; set; }

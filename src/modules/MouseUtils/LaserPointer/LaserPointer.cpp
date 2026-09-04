@@ -5,13 +5,16 @@
 // render loop.
 
 #include "pch.h"
+
+#include <dwmapi.h>
 #include "LaserPointer.h"
 #include "LaserStroke.h"
 #include "trace.h"
 #include "PresenterWindow.h"
 
 #include <common/interop/shared_constants.h>
-#include "resource.h"
+#include "Generated Files/resource.h"
+#include <common/utils/resources.h>
 
 #include <algorithm>
 #include <cmath>
@@ -57,7 +60,7 @@ namespace
     // window, once that window has dismissed itself.
     constexpr UINT_PTR PRESENTER_PICK_TIMER_ID = 202;
     constexpr UINT PRESENTER_PICK_INTERVAL_MS = 50;
-    constexpr uint64_t PRESENTER_PICK_TIMEOUT_MS = 1500;
+    constexpr uint64_t PRESENTER_PICK_TIMEOUT_MS = 750;
     // WM_TIMER is coalesced to the system tick (~15.6 ms), which lands close enough to
     // 60 Hz. The timer - not vsync - is what paces us: the low level mouse hook is
     // dispatched on this same thread, so Present must never block on the display.
@@ -170,6 +173,7 @@ struct LaserPointerOverlay
 private:
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) noexcept;
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
+    static void CALLBACK ForegroundEventProc(HWINEVENTHOOK hook, DWORD event, HWND hWnd, LONG idObject, LONG idChild, DWORD thread, DWORD time) noexcept;
 
     LRESULT HandleMouseInput(WPARAM message, const MSLLHOOKSTRUCT* data) noexcept;
 
@@ -230,6 +234,7 @@ private:
     void FillOutline(ID2D1DeviceContext* context, const LaserPointerCore::LaserStroke& stroke, uint64_t nowMs, float widthScale, const D2D1_COLOR_F& color);
     void DrawTrails(ID2D1DeviceContext* context, uint64_t nowMs);
     void DrawPresenterNotice(uint64_t nowMs);
+    bool TargetMostlyCovered(uint64_t nowMs) noexcept;
 
     // The overlay spans the whole desktop. While it is only showing the sharing border
     // it is cut down to that border, so everything else stays clickable.
@@ -346,6 +351,11 @@ private:
     // What the frame region was last built from, so it can follow a window that moves.
     RECT m_overlayRegionRect{};
     uint64_t m_presenterPickDeadlineMs = 0;
+    // The last application window seen in the foreground. Quick Access and the shell are
+    // never recorded here, so it keeps pointing at what the user was working in before
+    // reaching for the flyout.
+    HWND m_lastPresentableForeground = nullptr;
+    HWINEVENTHOOK m_foregroundHook = nullptr;
     HCURSOR m_drawingCursor = nullptr;
     bool m_systemCursorReplaced = false;
     uint64_t m_honeStartMs = 0;
@@ -356,6 +366,8 @@ private:
     bool m_overlayBelowTopmost = false;
     uint64_t m_lastZOrderMs = 0;
     HWND m_overlayZOrderAfter = nullptr;
+    bool m_targetCovered = false;
+    uint64_t m_lastOcclusionMs = 0;
 
     winrt::com_ptr<IDWriteFactory> m_dwriteFactory;
     winrt::com_ptr<IDWriteTextFormat> m_noticeFormat;
@@ -517,7 +529,11 @@ bool LaserPointerOverlay::EnsureOverlayGeometry()
 
     try
     {
-        SetWindowPos(m_hwnd, HWND_TOPMOST, bounds.left, bounds.top, static_cast<int>(width), static_cast<int>(height), SWP_NOACTIVATE | SWP_NOREDRAW);
+        // Resizing must not disturb the z-order while the overlay is deliberately
+        // parked on top of the shared window: raising it there is what made the border
+        // appear in front of whatever the user had switched to.
+        const UINT zOrderFlags = m_overlayBelowTopmost ? SWP_NOZORDER : 0u;
+        SetWindowPos(m_hwnd, HWND_TOPMOST, bounds.left, bounds.top, static_cast<int>(width), static_cast<int>(height), SWP_NOACTIVATE | SWP_NOREDRAW | zOrderFlags);
 
         if (m_swapChain)
         {
@@ -888,7 +904,6 @@ void LaserPointerOverlay::UpdateOverlayZOrder(bool trailVisible, uint64_t nowMs)
         {
             SetWindowPos(m_hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
             m_overlayBelowTopmost = false;
-    m_overlayZOrderAfter = nullptr;
             m_overlayZOrderAfter = nullptr;
         }
         return;
@@ -913,16 +928,22 @@ void LaserPointerOverlay::UpdateOverlayZOrder(bool trailVisible, uint64_t nowMs)
         above = GetWindow(above, GW_HWNDPREV);
     }
 
+    // The window manager, not the cache, is the authority on whether this is still in
+    // the topmost band: anything that shows or resizes the overlay can raise it again,
+    // and believing the cache in that state leaves the border hovering over other
+    // windows until something else happens to move it.
+    const bool actuallyTopmost = (GetWindowLongPtr(m_hwnd, GWL_EXSTYLE) & WS_EX_TOPMOST) != 0;
+
     // Nothing to do when the overlay is already in the right slot. Re-issuing the same
     // SetWindowPos on a timer makes the border blink for no reason.
-    if (m_overlayBelowTopmost && above == m_overlayZOrderAfter)
+    if (m_overlayBelowTopmost && !actuallyTopmost && above == m_overlayZOrderAfter)
     {
         return;
     }
 
     // Topmost has to be dropped first, or inserting after an ordinary window still
     // leaves this in the topmost band.
-    if (!m_overlayBelowTopmost)
+    if (!m_overlayBelowTopmost || actuallyTopmost)
     {
         SetWindowPos(m_hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
         m_overlayBelowTopmost = true;
@@ -1004,9 +1025,81 @@ void LaserPointerOverlay::UpdateOverlayRegion(bool trailVisible, bool noticeVisi
 //
 // The border is drawn on the overlay, not into the mirror, so it stays local to this
 // machine and never appears in what remote viewers see.
+// Whether something is sitting over the window being shared. Sampled a few times a
+// second rather than every frame: it walks the windows above the target, and the answer
+// cannot change faster than the user can switch windows.
+bool LaserPointerOverlay::TargetMostlyCovered(uint64_t nowMs) noexcept
+{
+    constexpr uint64_t OCCLUSION_REFRESH_MS = 200;
+    if (m_lastOcclusionMs != 0 && (nowMs - m_lastOcclusionMs) < OCCLUSION_REFRESH_MS)
+    {
+        return m_targetCovered;
+    }
+
+    m_lastOcclusionMs = nowMs;
+    m_targetCovered = false;
+
+    const HWND target = m_presenter.Target();
+    RECT targetRect{};
+    if (target == nullptr || !GetWindowRect(target, &targetRect))
+    {
+        return false;
+    }
+
+    const long long targetArea = (static_cast<long long>(targetRect.right) - targetRect.left) *
+                                 (static_cast<long long>(targetRect.bottom) - targetRect.top);
+    if (targetArea <= 0)
+    {
+        return false;
+    }
+
+    long long covered = 0;
+    for (HWND above = GetWindow(target, GW_HWNDPREV); above != nullptr; above = GetWindow(above, GW_HWNDPREV))
+    {
+        if (above == m_hwnd || above == m_hwndOwner || !IsWindowVisible(above) || IsIconic(above))
+        {
+            continue;
+        }
+
+        // A cloaked window occupies a z-order slot without being on screen - a background
+        // virtual desktop, or a suspended app. Counting one as an occluder would hide the
+        // border for a window nothing is actually covering.
+        BOOL cloaked = FALSE;
+        if (SUCCEEDED(DwmGetWindowAttribute(above, DWMWA_CLOAKED, &cloaked, sizeof(cloaked))) && cloaked)
+        {
+            continue;
+        }
+
+        RECT other{};
+        RECT overlap{};
+        if (!GetWindowRect(above, &other) || !IntersectRect(&overlap, &other, &targetRect))
+        {
+            continue;
+        }
+
+        const long long area = (static_cast<long long>(overlap.right) - overlap.left) *
+                               (static_cast<long long>(overlap.bottom) - overlap.top);
+        covered = (std::max)(covered, area);
+    }
+
+    // A sliver of overlap is not worth dropping the indicator for; a window over most of
+    // the shared one is.
+    m_targetCovered = (covered * 5) >= targetArea;
+    return m_targetCovered;
+}
+
 void LaserPointerOverlay::DrawPresenterNotice(uint64_t nowMs)
 {
     if (!m_presenter.Active() || !m_brush)
+    {
+        return;
+    }
+
+    // The border marks the window being shared, so it has no business being drawn over a
+    // different one. That only happens while a trail is up: the overlay is then above
+    // every window rather than sitting in the shared window's own slot, where the window
+    // manager clips the border correctly on its own.
+    if (!m_overlayBelowTopmost && TargetMostlyCovered(nowMs))
     {
         return;
     }
@@ -1031,7 +1124,7 @@ void LaserPointerOverlay::DrawPresenterNotice(uint64_t nowMs)
     const uint64_t remaining = m_presenterNoticeUntilMs - nowMs;
     const float fade = (std::min)(1.0f, static_cast<float>(remaining) / (PRESENTER_NOTICE_MS / 3.0f));
 
-    const std::wstring label = L"Capturing: " + m_presenterNoticeText;
+    const std::wstring label = GET_RESOURCE_STRING(IDS_PRESENTER_CAPTURING_LABEL) + m_presenterNoticeText;
 
     // The width the text is allowed, not the width it takes: a long title wraps inside
     // the window rather than running under the border.
@@ -1449,8 +1542,29 @@ void LaserPointerOverlay::ApplyShareTarget(HWND target)
     StartRenderLoop();
 }
 
-// Retries until the window that opened the flyout is back in front, then gives up rather
-// than mirroring whatever happens to be there after a long wait.
+// Records what the user was working in. The shell, Quick Access and the presenter itself
+// all fail IsPresentableWindow, so opening the flyout - by touch or otherwise - cannot
+// overwrite the answer with itself.
+void CALLBACK LaserPointerOverlay::ForegroundEventProc(HWINEVENTHOOK, DWORD, HWND hWnd, LONG idObject, LONG idChild, DWORD, DWORD) noexcept
+{
+    if (idObject != OBJID_WINDOW || idChild != CHILDID_SELF || instance == nullptr)
+    {
+        return;
+    }
+
+    if (PresenterWindow::IsPresentableWindow(hWnd))
+    {
+        instance->m_lastPresentableForeground = hWnd;
+    }
+}
+
+// Waits briefly for the window that opened the flyout to come back to the front, then
+// shares it from memory instead.
+//
+// Waiting alone is not enough. Dismissing the flyout with a touch leaves the taskbar in
+// the foreground rather than the application behind it, so the poll below never finds
+// anything presentable and the share used to be abandoned - the mouse path worked only
+// because clicking the flyout away restores focus to the window underneath.
 void LaserPointerOverlay::OnPresenterPickTick()
 {
     const HWND foreground = GetForegroundWindow();
@@ -1461,11 +1575,23 @@ void LaserPointerOverlay::OnPresenterPickTick()
         return;
     }
 
-    if (GetTickCount64() >= m_presenterPickDeadlineMs)
+    if (GetTickCount64() < m_presenterPickDeadlineMs)
     {
-        KillTimer(m_hwnd, PRESENTER_PICK_TIMER_ID);
-        Logger::info("Laser Pointer not sharing: no presentable window came to the foreground.");
+        return;
     }
+
+    KillTimer(m_hwnd, PRESENTER_PICK_TIMER_ID);
+
+    // Re-tested rather than trusted: the window may have been closed or minimised in the
+    // time between it losing the foreground and the flyout signalling.
+    if (PresenterWindow::IsPresentableWindow(m_lastPresentableForeground))
+    {
+        Logger::info("Laser Pointer sharing the window that was in front before the flyout opened.");
+        ApplyShareTarget(m_lastPresentableForeground);
+        return;
+    }
+
+    Logger::info("Laser Pointer not sharing: no presentable window came to the foreground.");
 }
 
 void LaserPointerOverlay::StartPresenterOn(HWND target)
@@ -1612,6 +1738,12 @@ void LaserPointerOverlay::Disarm()
         UnhookWindowsHookEx(m_mouseHook);
         m_mouseHook = nullptr;
         Logger::info("Laser Pointer hook removed (module shutting down).");
+    }
+
+    if (m_foregroundHook != nullptr)
+    {
+        UnhookWinEvent(m_foregroundHook);
+        m_foregroundHook = nullptr;
     }
 
     StopRenderLoop();
@@ -2374,6 +2506,14 @@ LRESULT CALLBACK LaserPointerOverlay::WndProc(HWND hWnd, UINT message, WPARAM wP
         // An always-on button read from settings at startup needs its hook now; nothing
         // else will arm to install it.
         instance->UpdateHook();
+
+        // Seeded rather than left empty: no foreground event fires for a window that is
+        // already in front, and PowerToys restarting under a running app is ordinary.
+        if (PresenterWindow::IsPresentableWindow(GetForegroundWindow()))
+        {
+            instance->m_lastPresentableForeground = GetForegroundWindow();
+        }
+        instance->m_foregroundHook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, nullptr, ForegroundEventProc, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
         return 0;
 
     case WM_INPUT:

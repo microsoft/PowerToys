@@ -475,13 +475,13 @@ public:
 
         if (!m_hotkeys[HotkeyPresenterShare].key)
         {
-            m_hotkeys[HotkeyPresenterShare] = Hotkey{ .win = true, .ctrl = true, .shift = true, .key = 0x53 }; // Ctrl+Shift+Win+S
+            m_hotkeys[HotkeyPresenterShare] = Hotkey{ .win = true, .ctrl = true, .shift = true, .key = 0x57 }; // Ctrl+Shift+Win+W
         }
         m_hotkeys[HotkeyPresenterShare].id = static_cast<int>(HotkeyPresenterShare);
 
         if (!m_hotkeys[HotkeyPresenterStop].key)
         {
-            m_hotkeys[HotkeyPresenterStop] = Hotkey{ .win = true, .ctrl = true, .shift = true, .key = 0x58 }; // Ctrl+Shift+Win+X
+            m_hotkeys[HotkeyPresenterStop] = Hotkey{ .win = true, .ctrl = true, .shift = true, .key = 0x51 }; // Ctrl+Shift+Win+Q
         }
         m_hotkeys[HotkeyPresenterStop].id = static_cast<int>(HotkeyPresenterStop);
 

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "PresenterWindow.h"
-#include "resource.h"
+#include "Generated Files/resource.h"
+#include <common/utils/resources.h>
 
 #include <dwmapi.h>
 
@@ -56,7 +57,10 @@ namespace
         return bounds;
     }
 
-    // Directory holding this module, which is where the rest of PowerToys lives too.
+    // Root of the PowerToys install. The module sits in that root, but plenty of
+    // PowerToys runs from subfolders - the Quick Access flyout and Settings live in
+    // WinUI3Apps - so the root has to be walked back to, and candidates matched against
+    // it by prefix rather than exact equality.
     const std::wstring& OwnDirectory()
     {
         static const std::wstring directory = [] {
@@ -68,7 +72,22 @@ namespace
             const DWORD length = GetModuleFileNameW(self, path, ARRAYSIZE(path));
             std::wstring full(path, length);
             const size_t slash = full.find_last_of(L'\\');
-            return slash == std::wstring::npos ? std::wstring{} : full.substr(0, slash);
+            if (slash == std::wstring::npos)
+            {
+                return std::wstring{};
+            }
+
+            std::wstring dir = full.substr(0, slash);
+
+            // Should this ever be built into a subfolder, step back up to the install
+            // root so siblings in other subfolders are still recognised.
+            const std::wstring winui = L"\\WinUI3Apps";
+            if (dir.size() > winui.size() && _wcsicmp(dir.c_str() + dir.size() - winui.size(), winui.c_str()) == 0)
+            {
+                dir.resize(dir.size() - winui.size());
+            }
+
+            return dir;
         }();
 
         return directory;
@@ -99,14 +118,17 @@ namespace
             return false;
         }
 
+        // Prefix, not equality: PowerToys binaries live in the install root and in
+        // subfolders beneath it. Comparing only the immediate directory let the Quick
+        // Access flyout through, and sharing then landed on the flyout itself.
         std::wstring image(path, size);
-        const size_t slash = image.find_last_of(L'\\');
-        if (slash == std::wstring::npos)
+        if (image.size() <= own.size())
         {
             return false;
         }
 
-        return _wcsicmp(image.substr(0, slash).c_str(), own.c_str()) == 0;
+        return _wcsnicmp(image.c_str(), own.c_str(), own.size()) == 0 &&
+               (image[own.size()] == L'\\' || own.back() == L'\\');
     }
 
     std::wstring WindowTitle(HWND window)
@@ -164,9 +186,31 @@ bool PresenterWindow::IsPresentableWindow(HWND window) noexcept
     // The shell surfaces are not applications: pressing the shortcut over the taskbar or
     // the desktop should just draw on screen as usual.
     const std::wstring className = WindowClass(window);
-    if (className == L"Shell_TrayWnd" || className == L"Progman" || className == L"WorkerW" ||
-        className == L"Windows.UI.Core.CoreWindow" || className == L"PowerToysLaserPointer" ||
-        className == m_className)
+    // The tray and its flyouts are reachable by touch in a way the taskbar proper is
+    // not, and a share started from there would otherwise mirror the tray overflow.
+    static const wchar_t* const shellClasses[] = {
+        L"Shell_TrayWnd",
+        L"Shell_SecondaryTrayWnd",
+        L"Progman",
+        L"WorkerW",
+        L"NotifyIconOverflowWindow",             // tray overflow, Windows 10
+        L"TopLevelWindowForOverflowXamlIsland",  // tray overflow, Windows 11
+        L"Xaml_WindowedPopupClass",              // shell and app flyouts
+        L"XamlExplorerHostIslandWindow",         // task view and other shell islands
+        L"ControlCenterWindow",                  // quick settings
+        L"Windows.UI.Core.CoreWindow",
+        L"PowerToysLaserPointer",
+    };
+
+    for (const wchar_t* shell : shellClasses)
+    {
+        if (className == shell)
+        {
+            return false;
+        }
+    }
+
+    if (className == m_className)
     {
         return false;
     }
@@ -314,7 +358,8 @@ void PresenterWindow::RefreshTitle()
 
     // The title is what identifies this in the sharing picker, so it names the window it
     // is mirroring rather than the module.
-    std::wstring title = L"Present: " + (m_targetTitle.empty() ? std::wstring(L"window") : m_targetTitle);
+    std::wstring title = GET_RESOURCE_STRING(IDS_PRESENTER_WINDOW_TITLE_PREFIX) +
+                         (m_targetTitle.empty() ? GET_RESOURCE_STRING(IDS_PRESENTER_WINDOW_UNTITLED) : m_targetTitle);
     SetWindowTextW(m_hwnd, title.c_str());
 }
 
@@ -550,7 +595,7 @@ bool PresenterWindow::Retarget(HWND target)
 
     // The host window has no caption, so its outer size is its client size.
     SetWindowPos(m_hwnd, nullptr, 0, 0, static_cast<int>(width), static_cast<int>(height), SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
-    SetWindowTextW(m_hwnd, (L"Present: " + m_targetTitle).c_str());
+    SetWindowTextW(m_hwnd, (GET_RESOURCE_STRING(IDS_PRESENTER_WINDOW_TITLE_PREFIX) + m_targetTitle).c_str());
 
     if (!StartCapture())
     {

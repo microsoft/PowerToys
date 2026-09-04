@@ -9,8 +9,10 @@
 #define INTERNAL_NAME "PowerToys.LaserPointer"
 #define ORIGINAL_FILENAME "PowerToys.LaserPointer.dll"
 
-#define IDC_LASER_PEN 101
-#define IDI_SHARABLE_WINDOW 102
+// Non-localized ids live in the 2000 range: the resx converter numbers the string
+// table from 101 upwards, so anything hand-assigned below that would collide.
+#define IDC_LASER_PEN 2001
+#define IDI_SHARABLE_WINDOW 2002
 
 // Non-localizable
 //////////////////////////////

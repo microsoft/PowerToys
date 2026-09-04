@@ -1,6 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
+    <Exec LogStandardErrorAsError="false" Command="powershell -NonInteractive -executionpolicy Unrestricted -NoProfile $(RepoRoot)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h LaserPointer.base.rc LaserPointer.rc" />
+  </Target>
   <Import Project="$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -104,9 +107,10 @@
     <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="LaserPointer.rc" />
+    <ResourceCompile Include="Generated Files\LaserPointer.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources.resx" />
     <Image Include="laser_pen.cur" />
     <Image Include="sharable_window.ico" />
   </ItemGroup>
