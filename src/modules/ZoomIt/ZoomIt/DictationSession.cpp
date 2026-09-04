@@ -7,36 +7,22 @@
 //
 // Two engines are used, in preference order:
 //
-//   * Windows.Media.SpeechRecognition, the inbox projection. It is the most
-//     accurate option, but it refuses to start with
-//     SPERR_PRIVACY_POLICY_NOT_ACCEPTED until the user has turned on "Online
-//     speech recognition" in Privacy settings, which many machines never have.
+//   * whisper.cpp with an embedded quantized small.en model. It runs entirely
+//     in process, needs no package identity or network service, and records
+//     directly from the microphone selected on ZoomIt's Record page.
 //
 //   * SAPI (ISpInprocRecognizer) with a dictation grammar. Fully on device,
-//     needs no privacy consent, no package identity and no extra dependencies,
-//     so it works out of the box in both the PowerToys build and the standalone
-//     Sysinternals build. This is what makes the feature usable with no setup.
+//     needs no privacy consent or package identity, and remains the fallback if
+//     the embedded model or Whisper audio capture cannot be initialized.
 //
-// The session silently falls back from the first to the second, so dictation
-// works immediately and simply gets better if the user enables online speech.
-//
-// Microsoft.Windows.AI.Speech, the on device Windows AI recognizer, can replace
-// the first engine by defining ZOOMIT_WINAI_SPEECH. It is lower latency but
-// requires the Windows App SDK, MSIX package identity and the systemAIModels
-// capability, which the standalone build cannot satisfy.
-//
-// Build notes for ZOOMIT_WINAI_SPEECH:
-//   ZoomIt.vcxproj must move from packages.config to PackageReference (see
-//   src/modules/MouseUtils/FindMyMouse/FindMyMouse.vcxproj for the native
-//   pattern used elsewhere in this repository) and reference
-//   Microsoft.WindowsAppSDK, Microsoft.WindowsAppSDK.Foundation and
-//   Microsoft.WindowsAppSDK.AI. PowerToys.ZoomIt.exe must also be added as an
-//   Application entry in src/PackageIdentity/AppxManifest.xml, which already
-//   declares the systemAIModels capability.
+// The older Windows speech implementation remains below for reference but is
+// no longer selected: its accurate recognizer needs package identity, which a
+// single-file standalone ZoomIt cannot provide.
 //
 //==============================================================================
 #include "pch.h"
 #include "DictationSession.h"
+#include "WhisperRecognizer.h"
 
 #include <appmodel.h>
 #include <deque>
@@ -98,6 +84,8 @@ namespace
 //
 struct DictationSession::Recognizer
 {
+    std::unique_ptr<WhisperRecognizer> whisper;
+
 #ifdef ZOOMIT_WINAI_SPEECH
     winrt::Microsoft::Windows::AI::Speech::SpeechRecognitionModel model{ nullptr };
     winrt::Microsoft::Windows::AI::Speech::StreamingRecognition recognition{ nullptr };
@@ -136,19 +124,7 @@ DictationSession::~DictationSession()
 //----------------------------------------------------------------------------
 bool DictationSession::IsSupported()
 {
-#ifdef ZOOMIT_WINAI_SPEECH
-    try
-    {
-        return winrt::Microsoft::Windows::AI::Speech::SpeechRecognitionModel::GetReadyState() ==
-               winrt::Microsoft::Windows::AI::AIFeatureReadyState::Ready;
-    }
-    catch( ... )
-    {
-        return false;
-    }
-#else
     return true;
-#endif
 }
 
 //----------------------------------------------------------------------------
@@ -535,7 +511,9 @@ bool DictationSession::Start()
 {
     {
         std::lock_guard<std::mutex> guard( m_lock );
-        if( m_status == Status::Unavailable || m_status == Status::Listening )
+        if( m_status == Status::Unavailable ||
+            m_status == Status::Listening ||
+            m_status == Status::Finalizing )
         {
             return false;
         }
@@ -543,6 +521,7 @@ bool DictationSession::Start()
         m_hypothesis.clear();
         m_failure = Failure::None;
         m_startRequested = true;
+        m_cancelRequested = false;
 
         // Reflect that work is queued, so a Stop that arrives before the engine
         // is listening waits for it instead of returning nothing.
@@ -573,9 +552,15 @@ bool DictationSession::Start()
 // period so that releasing the mouse never leaves the user waiting.
 //
 //----------------------------------------------------------------------------
-std::wstring DictationSession::Stop( DWORD graceMilliseconds )
+std::wstring DictationSession::Stop( DWORD graceMilliseconds, bool* cancelled )
 {
     bool cancelPendingStart = false;
+    bool waitForWhisper = false;
+    bool cancelledByUser = false;
+    if( cancelled )
+    {
+        *cancelled = false;
+    }
     {
         std::unique_lock<std::mutex> lock( m_lock );
 
@@ -586,10 +571,21 @@ std::wstring DictationSession::Stop( DWORD graceMilliseconds )
         //
         if( m_status == Status::Preparing || m_status == Status::Ready )
         {
-            m_stateSignal.wait_for( lock, std::chrono::seconds( 5 ), [this] {
-                return m_status == Status::Listening || m_status == Status::Unavailable ||
-                       m_status == Status::Idle;
-            } );
+            const auto startDeadline =
+                std::chrono::steady_clock::now() + std::chrono::seconds( 5 );
+            while( m_status != Status::Listening &&
+                   m_status != Status::Unavailable &&
+                   m_status != Status::Idle &&
+                   std::chrono::steady_clock::now() < startDeadline )
+            {
+                if( GetAsyncKeyState( VK_ESCAPE ) & 0x8000 )
+                {
+                    cancelledByUser = true;
+                    m_cancelRequested = true;
+                    break;
+                }
+                m_stateSignal.wait_for( lock, std::chrono::milliseconds( 50 ) );
+            }
         }
 
         if( m_status != Status::Listening )
@@ -609,12 +605,17 @@ std::wstring DictationSession::Stop( DWORD graceMilliseconds )
         {
             m_startRequested = false;
             m_status = Status::Finalizing;
+            waitForWhisper = m_backend == Backend::Whisper;
         }
     }
 
     if( cancelPendingStart )
     {
         PostCommand( Command::Cancel );
+        if( cancelled )
+        {
+            *cancelled = cancelledByUser;
+        }
         return Text();
     }
 
@@ -622,14 +623,50 @@ std::wstring DictationSession::Stop( DWORD graceMilliseconds )
     PostCommand( Command::Stop );
 
     std::unique_lock<std::mutex> lock( m_lock );
-    m_stateSignal.wait_for( lock, std::chrono::milliseconds( graceMilliseconds ),
-                            [this] { return m_status != Status::Finalizing; } );
-
-    if( m_status == Status::Finalizing )
+    const DWORD waitMilliseconds =
+        waitForWhisper ? std::max<DWORD>( graceMilliseconds, 10000 ) : graceMilliseconds;
+    bool finalized = false;
+    const auto deadline =
+        std::chrono::steady_clock::now() + std::chrono::milliseconds( waitMilliseconds );
+    while( m_status == Status::Finalizing && std::chrono::steady_clock::now() < deadline )
     {
-        OutputDebug( L"[Dictation] Finalize timed out after %lu ms\n", graceMilliseconds );
+        if( GetAsyncKeyState( VK_ESCAPE ) & 0x8000 )
+        {
+            cancelledByUser = true;
+            m_cancelRequested = true;
+            break;
+        }
+        m_stateSignal.wait_for( lock, std::chrono::milliseconds( 50 ) );
+    }
+    finalized = m_status != Status::Finalizing;
+
+    if( !finalized )
+    {
+        if( cancelledByUser )
+        {
+            OutputDebug( L"[Dictation] Finalize cancelled by user\n" );
+        }
+        else
+        {
+            OutputDebug( L"[Dictation] Finalize timed out after %lu ms\n", waitMilliseconds );
+        }
+        if( waitForWhisper )
+        {
+            m_cancelRequested = true;
+            m_stateSignal.wait( lock, [this] { return m_status != Status::Finalizing; } );
+        }
+        else if( cancelledByUser )
+        {
+            // SAPI cannot abort an in-progress final drain. Wait for it to
+            // quiesce before the caller destroys the badge callbacks.
+            m_stateSignal.wait( lock, [this] { return m_status != Status::Finalizing; } );
+        }
     }
 
+    if( cancelled )
+    {
+        *cancelled = cancelledByUser;
+    }
     return TrimCopy( m_text );
 }
 
@@ -645,6 +682,7 @@ void DictationSession::Cancel()
         m_text.clear();
         m_hypothesis.clear();
         m_startRequested = false;
+        m_cancelRequested = true;
         m_pending.erase(
             std::remove( m_pending.begin(), m_pending.end(), Command::Start ),
             m_pending.end() );
@@ -668,6 +706,7 @@ void DictationSession::Shutdown()
         running = m_workerRunning;
         m_workerRunning = false;
         m_startRequested = false;
+        m_cancelRequested = true;
     }
 
     ClearCallbacks();
@@ -694,79 +733,29 @@ void DictationSession::Shutdown()
 //----------------------------------------------------------------------------
 void DictationSession::DoPrepare()
 {
-    const bool consent = IsSpeechPrivacyAccepted();
-    const bool packageIdentity = HasPackageIdentity();
-
-    //
-    // The modern engine always records from the Windows default microphone.
-    // If the user has chosen a different one on the Record page, using it
-    // would transcribe the wrong device and produce nothing at all, so the
-    // explicit microphone choice wins over the accuracy of the engine.
-    //
-    const bool micMatchesDefault = SelectedMicrophoneIsSystemDefault();
-
-    //
-    // The chosen engine is sticky for the life of the process, so a user who
-    // fixes whichever condition blocked the accurate engine would keep getting
-    // the worse one until ZoomIt was restarted, with the options page
-    // cheerfully reporting that the good engine is available. Re-evaluate when
-    // either blocker has cleared since we settled.
-    //
-    if( m_backend == Backend::Sapi &&
-        packageIdentity &&
-        ( ( consent && !m_preparedWithConsent ) ||
-          ( micMatchesDefault && !m_preparedWithDefaultMic ) ) &&
-        !( m_recognizer && m_recognizer->listening ) )
-    {
-        OutputDebug( L"[Dictation] Conditions changed, retrying the modern engine\n" );
-        ReleaseSapi();
-        m_backend = Backend::None;
-        SetDegradedReason( Failure::None );
-    }
-
     if( m_backend != Backend::None )
     {
         SetStatus( Status::Ready );
         return;
     }
 
-    m_preparedWithConsent = consent;
-    m_preparedWithDefaultMic = micMatchesDefault;
-
-    // Preferred engine first. It is the more accurate of the two, but on a
-    // machine where online speech recognition was never accepted it cannot
-    // start at all, so failure here is expected rather than exceptional.
-    if( packageIdentity && micMatchesDefault && PrepareModern() )
+    if( !m_whisperFailed && PrepareWhisper() )
     {
-        m_backend = Backend::Modern;
+        m_backend = Backend::Whisper;
         SetFailure( Failure::None );
         SetDegradedReason( Failure::None );
         SetStatus( Status::Ready );
         return;
     }
 
-    if( !micMatchesDefault )
-    {
-        OutputDebug( L"[Dictation] Selected microphone is not the Windows default, using SAPI\n" );
-    }
-
-    ReleaseModern();
-
-    //
-    // Remember why the better engine was rejected. PrepareSapi clears the
-    // failure on success, and without this the user would be left with the
-    // weaker engine and no clue that a setting is holding the good one back.
-    //
-    const Failure modernFailure =
-        !packageIdentity ? Failure::None :
-        !micMatchesDefault ? Failure::MicrophoneNotDefault : GetFailure();
+    ReleaseWhisper();
 
     if( PrepareSapi() )
     {
-        OutputDebug( L"[Dictation] Using the SAPI fallback engine\n" );
+        OutputDebug( L"[Dictation] Embedded Whisper unavailable, using SAPI\n" );
         m_backend = Backend::Sapi;
         SetFailure( Failure::None );
-        SetDegradedReason( modernFailure );
+        SetDegradedReason( Failure::NotSupported );
         SetStatus( Status::Ready );
         return;
     }
@@ -785,7 +774,11 @@ void DictationSession::DoStart()
     };
 
     const auto discardStartedRecognition = [this] {
-        if( m_backend == Backend::Modern )
+        if( m_backend == Backend::Whisper )
+        {
+            StopWhisper( true );
+        }
+        else if( m_backend == Backend::Modern )
         {
             StopModern( true );
         }
@@ -807,7 +800,10 @@ void DictationSession::DoStart()
         return;
     }
 
-    const bool started = ( m_backend == Backend::Modern ) ? StartModern() : StartSapi();
+    const bool started =
+        m_backend == Backend::Whisper ? StartWhisper() :
+        m_backend == Backend::Modern ? StartModern() :
+        StartSapi();
     if( started )
     {
         m_recognizer->listening = true;
@@ -831,15 +827,15 @@ void DictationSession::DoStart()
     // the privacy policy is only consulted once audio is requested. Fall back
     // rather than telling the user that dictation is impossible.
     //
-    if( m_backend == Backend::Modern )
+    if( m_backend == Backend::Whisper )
     {
-        OutputDebug( L"[Dictation] Modern engine could not start, falling back to SAPI\n" );
+        OutputDebug( L"[Dictation] Whisper capture could not start, falling back to SAPI\n" );
 
         // Captured before the fallback clears it; this is the reason the user
         // needs to see to understand why recognition is about to be worse.
         const Failure modernFailure = GetFailure();
 
-        ReleaseModern();
+        ReleaseWhisper();
         m_backend = Backend::None;
 
         if( !startStillRequested() )
@@ -874,7 +870,11 @@ void DictationSession::DoStop()
 {
     if( m_recognizer && m_recognizer->listening )
     {
-        if( m_backend == Backend::Modern )
+        if( m_backend == Backend::Whisper )
+        {
+            StopWhisper( false );
+        }
+        else if( m_backend == Backend::Modern )
         {
             StopModern( false );
         }
@@ -890,7 +890,7 @@ void DictationSession::DoStop()
         m_hypothesis.clear();
     }
 
-    SetStatus( Status::Ready );
+    SetStatus( m_backend == Backend::None ? Status::Idle : Status::Ready );
 }
 
 //----------------------------------------------------------------------------
@@ -902,7 +902,11 @@ void DictationSession::DoCancel()
 {
     if( m_recognizer && m_recognizer->listening )
     {
-        if( m_backend == Backend::Modern )
+        if( m_backend == Backend::Whisper )
+        {
+            StopWhisper( true );
+        }
+        else if( m_backend == Backend::Modern )
         {
             StopModern( true );
         }
@@ -930,11 +934,111 @@ void DictationSession::DoCancel()
 void DictationSession::DoShutdown()
 {
     DoCancel();
+    ReleaseWhisper();
     ReleaseModern();
     ReleaseSapi();
     m_recognizer.reset();
     m_backend = Backend::None;
     SetStatus( Status::Idle );
+}
+
+//----------------------------------------------------------------------------
+//
+// Embedded Whisper engine
+//
+//----------------------------------------------------------------------------
+bool DictationSession::PrepareWhisper()
+{
+    if( !m_recognizer )
+    {
+        m_recognizer = std::make_unique<Recognizer>();
+    }
+    if( !m_recognizer->whisper )
+    {
+        m_recognizer->whisper = std::make_unique<WhisperRecognizer>();
+    }
+
+    if( m_recognizer->whisper->Prepare() )
+    {
+        return true;
+    }
+
+    const auto failure = m_recognizer->whisper->GetFailure();
+    SetFailure(
+        failure == WhisperRecognizer::Failure::MicrophoneDenied
+            ? Failure::MicrophoneDenied
+            : Failure::NotSupported );
+    return false;
+}
+
+bool DictationSession::StartWhisper()
+{
+    if( m_recognizer &&
+        m_recognizer->whisper &&
+        m_recognizer->whisper->Start() )
+    {
+        return true;
+    }
+
+    const auto failure =
+        m_recognizer && m_recognizer->whisper
+            ? m_recognizer->whisper->GetFailure()
+            : WhisperRecognizer::Failure::NotSupported;
+    SetFailure(
+        failure == WhisperRecognizer::Failure::MicrophoneDenied
+            ? Failure::MicrophoneDenied
+            : Failure::Unknown );
+    return false;
+}
+
+void DictationSession::StopWhisper( bool discard )
+{
+    if( !m_recognizer || !m_recognizer->whisper )
+    {
+        return;
+    }
+
+    const std::wstring text = m_recognizer->whisper->Stop( discard, m_cancelRequested );
+    const auto failure = m_recognizer->whisper->GetFailure();
+    if( failure != WhisperRecognizer::Failure::None )
+    {
+        SetFailure(
+            failure == WhisperRecognizer::Failure::MicrophoneDenied
+                ? Failure::MicrophoneDenied
+                : Failure::Unknown );
+        ReleaseWhisper();
+        m_backend = Backend::None;
+        m_whisperFailed = true;
+    }
+    const std::wstring trimmed = TrimCopy( text );
+    bool changed = false;
+    if( !discard && !trimmed.empty() )
+    {
+        std::lock_guard<std::mutex> guard( m_lock );
+        if( !m_cancelRequested )
+        {
+            if( !m_text.empty() )
+            {
+                m_text += L' ';
+            }
+            m_text += trimmed;
+            m_hypothesis.clear();
+            changed = true;
+        }
+    }
+    if( changed )
+    {
+        RaiseTextChanged();
+    }
+}
+
+void DictationSession::ReleaseWhisper()
+{
+    if( m_recognizer && m_recognizer->whisper )
+    {
+        m_recognizer->whisper->Shutdown();
+        m_recognizer->whisper.reset();
+    }
 }
 
 //----------------------------------------------------------------------------

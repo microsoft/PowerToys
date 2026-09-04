@@ -13,6 +13,9 @@
 //////////////////////////////
 #define IDC_AUDIO                       117
 #define IDD_VIDEO_TRIM                  119
+#define IDR_WHISPER_MODEL_0             120
+#define IDR_WHISPER_MODEL_1             121
+#define IDR_WHISPER_MODEL_2             122
 #define IDC_LINK                        1000
 #define IDC_ALT                         1001
 #define IDC_CTRL                        1002
@@ -157,7 +160,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        120
+#define _APS_NEXT_RESOURCE_VALUE        123
 #define _APS_NEXT_COMMAND_VALUE         40016
 #define _APS_NEXT_CONTROL_VALUE         1140
 #define _APS_NEXT_SYMED_VALUE           101

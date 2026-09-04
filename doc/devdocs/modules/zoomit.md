@@ -202,72 +202,33 @@ bit 30 of `lParam`.
 `DictationSession` tries two engines and silently falls back, which is what lets the
 feature work with no setup at all:
 
-1. `Windows.Media.SpeechRecognition`, the inbox projection. More accurate, but available
-   only when the process has MSIX package identity. Microsoft documents that unpackaged
-   apps cannot use this API; in practice `StartAsync` can succeed and open the microphone
-   while producing no hypotheses or results. When identity is present it also requires
-   "Online speech recognition" in Privacy settings.
+1. `whisper.cpp` with a quantized English `small.en` model. The model is split into three
+   source files below GitHub's per-file limit and linked as `RCDATA`; the runtime loader
+   presents those resources as one contiguous model stream without extracting anything to
+   disk. Recognition is offline and works identically in packaged PowerToys and standalone
+   ZoomIt.
 2. SAPI (`CLSID_SpInprocRecognizer`) with a dictation grammar. Entirely on device, needs no
-   privacy consent, no package identity and no extra dependencies.
+   privacy consent or package identity, and remains available if the embedded model or
+   Whisper capture path cannot initialize.
 
 #### Recognition accuracy
 
-The two engines are not close in quality, and the gap is a generation of technology rather
-than tuning. A typical Windows 11 machine has exactly one of each installed:
+ZoomIt embeds `ggml-small.en-q5_1.bin` (190,098,681 bytes), whose SHA-256 is
+`bfdff4894dcb76bbf647d56263ea2a96645423f1669176f4844a1bf8e478ad30`. The quantized
+`small.en` model is substantially more accurate than the legacy Windows Speech Recognizer
+8.0 used by SAPI while remaining practical for short, CPU-only utterances.
 
-| Category | Token | Engine |
-|----------|-------|--------|
-| `SPCAT_RECOGNIZERS` (`...\Speech\Recognizers`) | `MS-1033-80-DESK` | Speech Recognizer 8.0, the SAPI fallback |
-| `...\Speech_OneCore\Recognizers` | `MS-1033-110-WINMO-DNN` | Embedded DNN v11.1, used by `Windows.Media.SpeechRecognition` |
-
-The DNN engine cannot be reached through SAPI. `ISpRecognizer::SetRecognizer` accepts the
-OneCore token and `CreateRecoContext` and `CreateGrammar` both succeed, but
-`LoadDictation` then fails with `SPERR_NOT_FOUND` (0x8004503a) because that engine ships no
-SAPI dictation topic. It is reachable only through the OneCore speech APIs, which means the
-package identity and privacy consent gates are the only way in. Standalone ZoomIt therefore
-uses SAPI rather than starting an apparently successful recognizer that returns no text.
+`Prewarm` loads the model on the dictation worker while the user begins selecting the snip.
+Audio is captured during the drag, converted to mono floating-point PCM, resampled to
+Whisper's 16 kHz input rate, and transcribed when the mouse is released. Finalization is
+allowed up to ten seconds for Whisper because inference, unlike SAPI event draining, is
+CPU-bound. The selection window is removed immediately, the pointer returns to the normal
+arrow, and the badge remains visible with a `Transcribing... Press Esc to cancel.` status.
+Escape cancels inference and abandons the snip without changing the clipboard.
 
 Audio capture for recording is independent from dictation. The microphone chooser applies
 to both features, but disabling "Include microphone in recording" does not disable
-dictation. SAPI resamples whatever the endpoint provides and picks up the user's trained
-recognition profile automatically.
-
-`DoPrepare` checks package identity before trying the inbox API. This check is essential:
-`CompileConstraintsAsync` and `StartAsync` can both report success in an unpackaged process
-even though the API never raises a recognition event. In that case ZoomIt goes directly to
-SAPI, avoiding a microphone indicator that misleadingly suggests transcription is working.
-
-When package identity is available, `IsSpeechPrivacyAccepted` reads
-`HKCU\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy\HasAccepted`. A
-missing key means the user was never asked, which the engine treats exactly like a refusal.
-
-The chosen engine is otherwise sticky for the life of the process, because `DoPrepare`
-returns early once `m_backend` is set. `DoPrepare` therefore compares the current consent
-state against `m_preparedWithConsent`, and the current microphone verdict against
-`m_preparedWithDefaultMic`, and re-runs the engine selection when either has changed in a
-packaged process.
-`Prewarm` is called at the start of every snip, so the upgrade happens on the next snip
-rather than the next launch.
-
-#### Microphone selection beats engine quality
-
-`SpeechRecognizer` exposes no way to choose a capture device - it offers only
-`CurrentLanguage`, `Constraints`, `Timeouts`, `State`, `UIOptions` and
-`ContinuousRecognitionSession` - so it always records from the Windows default. SAPI, by
-contrast, can be pointed at a specific endpoint through `SPCAT_AUDIOIN`, which is how
-`ResolveAudioInputToken` honours the microphone chosen on the Record page.
-
-When those two disagree, the accurate engine records the wrong device and transcribes
-silence. That is strictly worse than the older engine's lower accuracy, so
-`SelectedMicrophoneIsSystemDefault` gates the modern engine on the selection matching the
-default, and `DoPrepare` reports `Failure::MicrophoneNotDefault` when it does not.
-
-The check compares against the normal default input (`eConsole`).
-`SpeechRecognizer` does not use the separate `eCommunications` default, so a headset being
-the communications device does not prevent a webcam that is the normal default from using
-the enhanced engine. An empty selection, or a default that cannot be read, resolves to
-"matches" so the user is never stranded on the weaker engine over a question ZoomIt could
-not answer.
+dictation.
 
 Two things are easy to get wrong in the SAPI path and produce an engine that runs happily
 while hearing nothing:
@@ -281,20 +242,17 @@ while hearing nothing:
 #### Choosing the microphone
 
 Dictation captures from the microphone selected on the Record page, so there is a single
-microphone setting for the whole application. SAPI identifies capture devices by its own
-token ids rather than by the Windows `DeviceInformation` id that ZoomIt persists in
-`MicrophoneDeviceId`, and there is no documented mapping between the two, so
-`ResolveAudioInputToken` resolves the stored id to a friendly name and matches that against
-the `SPCAT_AUDIOIN` token descriptions. Anything that fails to resolve - the empty "default
-device" setting, a stale id, or a microphone that has been unplugged - falls back to SAPI's
-default token so dictation still works rather than failing outright.
+microphone setting for the whole application. Whisper enumerates Core Audio capture
+endpoints and matches the endpoint id embedded in the Windows `DeviceInformation` id that
+ZoomIt persists in `MicrophoneDeviceId`. An empty, stale, or unplugged selection falls back
+to the normal Windows default capture endpoint.
+
+SAPI identifies capture devices by its own token ids. Its fallback path resolves the stored
+Windows device id to a friendly name and matches that against `SPCAT_AUDIOIN` token
+descriptions.
 
 Descriptions are read directly from the token rather than with `SpGetDescription`, because
 `sphelper.h` pulls in ATL and a number of deprecated APIs.
-
-The inbox `Windows.Media.SpeechRecognition` engine is the exception: it exposes no API for
-selecting a capture device and always uses the system default, so the Record page selection
-does not apply when that engine is the active one.
 
 Components:
 
@@ -302,7 +260,8 @@ Components:
 |------|----------------|
 | `SelectRectangle.{h,cpp}` | Raises `OnDragStarted` / `OnDictateRequested` / `OnSelectionChanged` / `OnDragCompleted` / `OnCancelled` so the caller can react to the drag without owning the modal loop |
 | `DictationSession.{h,cpp}` | Speech to text on a dedicated MTA worker thread. The UI thread is blocked inside the modal selection loop, so recognition cannot run on it |
-| `DictationBadge.{h,cpp}` | Layered, capture excluded overlay showing listening state and the live transcription, centered on the top edge of the selection and following it as it is dragged |
+| `WhisperRecognizer.{h,cpp}` | Loads the embedded model, captures the selected Core Audio endpoint, resamples it to 16 kHz mono, and runs CPU inference |
+| `DictationBadge.{h,cpp}` | Layered, capture excluded overlay showing dictation status, centered on the top edge of the selection and following it as it is dragged |
 | `ClipboardPayload.{h,cpp}` | Publishes `CF_HTML`, `Rich Text Format`, `PNG`, `CF_DIB`, `CF_BITMAP`, `CF_HDROP` and `CF_UNICODETEXT` in one clipboard transaction |
 | `PasteChaperone.{h,cpp}` | Splits one Ctrl+V into an image paste followed by a text paste, for applications that accept only one of the two |
 
@@ -317,15 +276,12 @@ Notes:
   a quick drag silently discards the dictation.
 - Dictation is off by default because it opens the microphone. When `SnipDictateEnabled` is
   clear, `Space` during a drag does nothing and a snip behaves exactly as it always has.
-- The options UI is deliberately just the enable toggle and the one gesture paste toggle.
+- The options UI is deliberately just the enable toggle.
   `SnipDictateToggleKey` (a snip that starts already listening), `SnipDictateOnSnip`,
   `SnipDictatePrefix`, `SnipDictateGrace` and `SnipDictateClipboardFormats` remain registry
   only settings.
-- The default backend is the inbox `Windows.Media.SpeechRecognition` projection. It needs no
-  package identity, so it works in both the PowerToys build and the standalone Sysinternals
-  build. A `Microsoft.Windows.AI.Speech` backend is present but compiled out behind
-  `ZOOMIT_WINAI_SPEECH`; it requires MSIX package identity and therefore cannot be used by
-  the standalone build.
+- The default backend is embedded Whisper. It needs no package identity or network access,
+  so it works in both the PowerToys build and the standalone Sysinternals build.
 - With nothing transcribed the clipboard receives image formats only, so a silent dictation
   snip behaves like a plain snip.
 

@@ -69,7 +69,7 @@ public:
     // Stops transcribing and waits up to graceMilliseconds for the final phrase
     // to arrive, then returns the accumulated text.
     //
-    std::wstring Stop( DWORD graceMilliseconds );
+    std::wstring Stop( DWORD graceMilliseconds, bool* cancelled = nullptr );
 
     //
     // Abandons the session and discards anything transcribed so far.
@@ -117,15 +117,12 @@ public:
     static const wchar_t* DescribeFailure( Failure failure );
 
     //
-    // True once the session has settled on the SAPI fallback engine. That
-    // engine is a generation behind the modern one, so callers surface this to
-    // explain why accuracy is poor instead of leaving the user guessing.
+    // True once the session has settled on the SAPI fallback engine.
     //
     bool IsUsingFallbackEngine() const;
 
     //
-    // Why the preferred engine was rejected, retained even after the fallback
-    // starts successfully. Failure::None when the preferred engine is running.
+    // Why Whisper was rejected, retained even after the fallback starts.
     //
     Failure GetDegradedReason() const;
 
@@ -164,14 +161,13 @@ private:
     };
 
     //
-    // Which recognition engine the session settled on. The modern projection is
-    // preferred for accuracy, but it refuses to start until the user accepts
-    // the online speech privacy policy, so SAPI provides an offline fallback
-    // that works with no setup at all.
+    // Which recognition engine the session settled on. Embedded Whisper is
+    // preferred for accuracy and SAPI remains the no-model fallback.
     //
     enum class Backend
     {
         None,
+        Whisper,
         Modern,
         Sapi,
     };
@@ -186,6 +182,12 @@ private:
     void DoStop();
     void DoCancel();
     void DoShutdown();
+
+    // Worker thread only, embedded Whisper backend.
+    bool PrepareWhisper();
+    bool StartWhisper();
+    void StopWhisper( bool discard );
+    void ReleaseWhisper();
 
     // Worker thread only, modern (Windows.Media / Windows AI) backend.
     bool PrepareModern();
@@ -216,6 +218,7 @@ private:
     std::deque<Command> m_pending;
     bool m_workerRunning{ false };
     bool m_startRequested{ false };
+    std::atomic_bool m_cancelRequested{ false };
     unsigned int m_callbacksInFlight{ 0 };
     std::thread m_worker;
 
@@ -223,6 +226,7 @@ private:
     Failure m_failure{ Failure::None };
     Failure m_degradedReason{ Failure::None };
     Backend m_backend{ Backend::None };
+    bool m_whisperFailed{ false };
 
     // Whether the speech privacy policy was accepted when the engine was last
     // chosen, so a later grant can retire the fallback without a restart.
