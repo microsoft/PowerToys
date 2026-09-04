@@ -82,11 +82,14 @@ public sealed partial class OCROverlay : WindowEx
     public void CloseFromManager()
     {
         _closingFromManager = true;
+        OverlayContent.CancelSelection();
         Close();
     }
 
     private void OnAppWindowClosing(AppWindow sender, AppWindowClosingEventArgs args)
     {
+        OverlayContent.CancelSelection();
+
         if (_closingFromManager)
         {
             return;

@@ -8,6 +8,10 @@
  * With Text Extractor enabled and activated:
    - [x] Try to select text and verify it is copied to the clipboard.
    - [ ] Click a single word or character without dragging and verify the recognized token is copied to the clipboard.
+   - [ ] Select a blank region, wait for the error InfoBar, and verify one Escape press closes every overlay.
+   - [ ] Open the language ComboBox or context menu and verify the first Escape closes only the popup and the second closes the overlay.
+   - [ ] Perform a fast drag and verify OCR uses the release point rather than the last rendered selection-border position.
+   - [ ] Cancel or close the overlay while dragging and verify the cursor is no longer confined afterward.
    - [x] Try to select a different OCR language by right-clicking and verify the change is applied.
    - [ ] Toggle Single-line mode via `SingleLineToggleButton`; verify the button reports Selected = true.
    - [ ] Toggle Table mode via `TableToggleButton`; verify the button reports Selected = true.
@@ -24,6 +28,7 @@
    - [ ] Region capture: drag to select a region containing text; verify the correct text is on the clipboard.
    - [ ] Single-line mode: activate Single-line, click a single line of text; verify one line is on the clipboard.
    - [ ] Table mode: activate Table mode, select a tabular region; verify tab-separated values are on the clipboard.
+   - [ ] Chinese/Japanese mode: capture text ending in punctuation (for example, `2026。`) and verify no extra space is inserted before it.
  * Multi-monitor / extended display:
    - [ ] Move the cursor to a monitor positioned to the **left** of the primary display and activate the overlay; verify the overlay covers that monitor and OCR succeeds.
    - [ ] Move the cursor to a monitor positioned **above** the primary display and activate the overlay; verify the overlay covers that monitor and OCR succeeds.

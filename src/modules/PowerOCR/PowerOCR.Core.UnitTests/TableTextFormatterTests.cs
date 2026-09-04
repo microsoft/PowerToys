@@ -115,6 +115,22 @@ public sealed class TableTextFormatterTests
     }
 
     [TestMethod]
+    [DataRow("zh-CN")]
+    [DataRow("ja-JP")]
+    public void Format_CjkPunctuationInSameCell_DoesNotInsertSpace(string languageTag)
+    {
+        OcrLineData[] cells =
+        [
+            new(
+                "2026 。",
+                new OcrRect(0, 0, 50, 20),
+                [new("2026", new(0, 0, 40, 20)), new("。", new(40, 0, 10, 20))]),
+        ];
+
+        Assert.AreEqual("2026。", TableTextFormatter.Format(cells, languageTag));
+    }
+
+    [TestMethod]
     public void Format_EnglishFragmentsInSameCell_InsertsSpace()
     {
         OcrLineData[] cells =

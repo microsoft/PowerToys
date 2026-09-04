@@ -26,6 +26,10 @@
         </Style>
     </UserControl.Resources>
 
+    <UserControl.KeyboardAccelerators>
+        <KeyboardAccelerator Key="Escape" Invoked="EscapeKeyboardAccelerator_Invoked" />
+    </UserControl.KeyboardAccelerators>
+
     <Grid
         x:Name="RootGrid"
         AutomationProperties.AutomationId="TextExtractorWindow"
@@ -202,6 +206,7 @@
             Margin="0,48,0,0"
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
+            AutomationProperties.AutomationId="ErrorInfoBar"
             IsClosable="True"
             IsOpen="{x:Bind ViewModel.HasError, Mode=TwoWay}"
             Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"

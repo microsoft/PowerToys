@@ -54,6 +54,22 @@ public sealed class OcrTextFormatterTests
     }
 
     [TestMethod]
+    [DataRow("zh-CN")]
+    [DataRow("ja-JP")]
+    public void FormatDocument_CjkLanguage_DoesNotInsertSpaceBeforePunctuation(string languageTag)
+    {
+        var document = new OcrDocument(
+        [
+            new OcrLineData(
+                "2026 。",
+                new OcrRect(0, 0, 60, 20),
+                [new("2026", new(0, 0, 40, 20)), new("。", new(40, 0, 20, 20))]),
+        ]);
+
+        Assert.AreEqual("2026。", OcrTextFormatter.FormatDocument(document, languageTag));
+    }
+
+    [TestMethod]
     public void FormatDocument_RightToLeftLanguage_ReversesWordOrderPerLine()
     {
         var document = new OcrDocument(
@@ -86,6 +102,102 @@ public sealed class OcrTextFormatterTests
     }
 
     [TestMethod]
+    public void JoinCjkAwareWords_MultipleCjkCharactersPerWord_DoesNotInsertSpaces()
+    {
+        Assert.AreEqual(
+            "中文测试。",
+            OcrTextFormatter.JoinCjkAwareWords(Words("中文", "测试", "。")));
+    }
+
+    [TestMethod]
+    public void JoinCjkAwareWords_SupplementaryPlaneCjkCharacter_DoesNotInsertSpace()
+    {
+        Assert.AreEqual(
+            "\U00020000\U00020001。",
+            OcrTextFormatter.JoinCjkAwareWords(Words("\U00020000", "\U00020001", "。")));
+    }
+
+    [TestMethod]
+    public void JoinCjkAwareWords_ClosingPunctuation_DoesNotInsertLeadingSpace()
+    {
+        Assert.AreEqual(
+            "2026。",
+            OcrTextFormatter.JoinCjkAwareWords(Words("2026", "。")));
+    }
+
+    [TestMethod]
+    public void JoinCjkAwareWords_QuotedLatinWord_DoesNotInsertSpacesInsideQuotes()
+    {
+        Assert.AreEqual(
+            "「PowerToys」",
+            OcrTextFormatter.JoinCjkAwareWords(Words("「", "PowerToys", "」")));
+    }
+
+    [TestMethod]
+    public void JoinCjkAwareWords_ClosingQuoteBeforeLatinWord_InsertsFollowingSpace()
+    {
+        Assert.AreEqual(
+            "“PowerToys” OCR",
+            OcrTextFormatter.JoinCjkAwareWords(Words("“", "PowerToys", "”", "OCR")));
+    }
+
+    [TestMethod]
+    public void JoinCjkAwareWords_DecomposedLatinWord_PreservesFollowingSpace()
+    {
+        Assert.AreEqual(
+            "Cafe\u0301 工具",
+            OcrTextFormatter.JoinCjkAwareWords(Words("Cafe\u0301", "工具")));
+    }
+
+    [TestMethod]
+    public void JoinCjkAwareWords_EmDashBetweenLatinWords_PreservesSpaces()
+    {
+        Assert.AreEqual(
+            "PowerToys — OCR",
+            OcrTextFormatter.JoinCjkAwareWords(Words("PowerToys", "—", "OCR")));
+    }
+
+    [TestMethod]
+    public void JoinCjkAwareWords_EllipsisBeforeLatinWord_PreservesFollowingSpace()
+    {
+        Assert.AreEqual(
+            "Wait… OCR",
+            OcrTextFormatter.JoinCjkAwareWords(Words("Wait", "…", "OCR")));
+    }
+
+    [TestMethod]
+    public void JoinCjkAwareWords_LatinWordsAndPunctuation_PreservesWordSpacing()
+    {
+        Assert.AreEqual(
+            "PowerToys, OCR",
+            OcrTextFormatter.JoinCjkAwareWords(Words("PowerToys", ",", "OCR")));
+    }
+
+    [TestMethod]
+    public void JoinCjkAwareWords_MixedCjkAndLatin_PreservesSpacesAroundLatinWord()
+    {
+        Assert.AreEqual(
+            "使用 PowerToys 工具",
+            OcrTextFormatter.JoinCjkAwareWords(Words("使用", "PowerToys", "工具")));
+    }
+
+    [TestMethod]
+    public void JoinCjkAwareWords_JapaneseProlongedSoundMark_DoesNotInsertSpaces()
+    {
+        Assert.AreEqual(
+            "コード",
+            OcrTextFormatter.JoinCjkAwareWords(Words("コ", "ー", "ド")));
+    }
+
+    [TestMethod]
+    public void JoinCjkAwareWords_AsciiInfixPunctuation_PreservesSpaces()
+    {
+        Assert.AreEqual(
+            "A & B",
+            OcrTextFormatter.JoinCjkAwareWords(Words("A", "&", "B")));
+    }
+
+    [TestMethod]
     public void CollapseToSingleLine_EmptyText_ReturnsEmpty()
     {
         Assert.AreEqual(string.Empty, OcrTextFormatter.CollapseToSingleLine(string.Empty));
@@ -98,4 +210,9 @@ public sealed class OcrTextFormatterTests
             "one two three",
             OcrTextFormatter.CollapseToSingleLine(" one\r\n  two\nthree "));
     }
+
+    private static IReadOnlyList<OcrWordData> Words(params string[] words)
+        => words
+            .Select((word, index) => new OcrWordData(word, new OcrRect(index * 20, 0, 20, 20)))
+            .ToList();
 }

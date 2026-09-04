@@ -29,6 +29,8 @@ public sealed partial class OverlayPage : UserControl
     private DisplayCapture? _capture;
     private SettingsDeepLink? _settingsDeepLink;
     private InputCursor? _selectionCursor;
+    private IDisposable? _cursorClipLease;
+    private Pointer? _activePointer;
 
     private bool _isSelecting;
     private double _anchorX;
@@ -90,6 +92,7 @@ public sealed partial class OverlayPage : UserControl
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
+        CancelSelection();
         ProtectedCursor = null;
         _selectionCursor?.Dispose();
         _selectionCursor = null;
@@ -168,21 +171,27 @@ public sealed partial class OverlayPage : UserControl
     private void Canvas_PointerPressed(object sender, PointerRoutedEventArgs e)
     {
         var props = e.GetCurrentPoint(RegionClickCanvas).Properties;
-        if (!props.IsLeftButtonPressed)
+        if (_isSelecting || !props.IsLeftButtonPressed)
         {
             return;
         }
 
+        if (!RegionClickCanvas.CapturePointer(e.Pointer))
+        {
+            e.Handled = true;
+            return;
+        }
+
+        _activePointer = e.Pointer;
+
         // Hide toolbar during selection
         Toolbar.Visibility = Visibility.Collapsed;
-
-        // Capture pointer
-        RegionClickCanvas.CapturePointer(e.Pointer);
 
         // Clip cursor to display bounds
         if (_capture is not null)
         {
-            CursorClipper.Clip(_capture.Bounds);
+            ReleaseCursorClip();
+            _cursorClipLease = CursorClipper.TryAcquire(_capture.Bounds);
         }
 
         // Store anchor
@@ -205,21 +214,25 @@ public sealed partial class OverlayPage : UserControl
 
     private void Canvas_PointerMoved(object sender, PointerRoutedEventArgs e)
     {
-        if (!_isSelecting)
+        if (!IsActivePointer(e.Pointer))
         {
             return;
         }
 
-        var position = e.GetCurrentPoint(RegionClickCanvas).Position;
+        ApplyPointerPosition(
+            e.GetCurrentPoint(RegionClickCanvas).Position,
+            e.KeyModifiers.HasFlag(VirtualKeyModifiers.Shift));
+        UpdateMasks();
+        e.Handled = true;
+    }
+
+    private void ApplyPointerPosition(Windows.Foundation.Point position, bool shiftDown)
+    {
         double currentX = position.X;
         double currentY = position.Y;
 
-        bool shiftDown = InputKeyboardSource
-            .GetKeyStateForCurrentThread(VirtualKey.Shift)
-            .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
-
-        double pageWidth = ActualWidth > 0 ? ActualWidth : 1920;
-        double pageHeight = ActualHeight > 0 ? ActualHeight : 1080;
+        double pageWidth = Math.Max(0, RegionClickCanvas.ActualWidth);
+        double pageHeight = Math.Max(0, RegionClickCanvas.ActualHeight);
 
         if (shiftDown)
         {
@@ -259,9 +272,6 @@ public sealed partial class OverlayPage : UserControl
 
         _lastPointerX = currentX;
         _lastPointerY = currentY;
-
-        UpdateMasks();
-        e.Handled = true;
     }
 
     /// <summary>
@@ -272,16 +282,40 @@ public sealed partial class OverlayPage : UserControl
     private void EndSelectionCleanup(Pointer? pointer)
     {
         _isSelecting = false;
+        _activePointer = null;
 
         if (pointer is not null)
         {
             RegionClickCanvas.ReleasePointerCapture(pointer);
         }
 
-        CursorClipper.UnClip();
+        ReleaseCursorClip();
         Toolbar.Visibility = Visibility.Visible;
         ResetSelectionVisuals();
     }
+
+    internal void CancelSelection()
+    {
+        if (_isSelecting)
+        {
+            EndSelectionCleanup(_activePointer);
+        }
+        else
+        {
+            _activePointer = null;
+            ReleaseCursorClip();
+        }
+    }
+
+    private void ReleaseCursorClip()
+    {
+        IDisposable? lease = _cursorClipLease;
+        _cursorClipLease = null;
+        lease?.Dispose();
+    }
+
+    private bool IsActivePointer(Pointer pointer)
+        => _isSelecting && _activePointer?.PointerId == pointer.PointerId;
 
     private void ResetSelectionVisuals()
     {
@@ -295,10 +329,17 @@ public sealed partial class OverlayPage : UserControl
 
     private async void Canvas_PointerReleased(object sender, PointerRoutedEventArgs e)
     {
-        if (!_isSelecting)
+        if (!IsActivePointer(e.Pointer))
         {
             return;
         }
+
+        // PointerMoved is not guaranteed to report the final release coordinates. Apply the
+        // position carried by PointerReleased before committing the selection.
+        ApplyPointerPosition(
+            e.GetCurrentPoint(RegionClickCanvas).Position,
+            e.KeyModifiers.HasFlag(VirtualKeyModifiers.Shift));
+        e.Handled = true;
 
         if (_capture is null || _manager is null || XamlRoot is null)
         {
@@ -317,14 +358,13 @@ public sealed partial class OverlayPage : UserControl
 
         EndSelectionCleanup(e.Pointer);
         await _manager.CaptureAsync(_capture, pixelSelection, isClick);
-        e.Handled = true;
     }
 
     private void Canvas_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
     {
         // Fires when the system revokes pointer capture mid-drag (e.g. task-switch, touch
         // cancellation). Capture is already gone so pass null to skip the redundant release.
-        if (_isSelecting)
+        if (IsActivePointer(e.Pointer))
         {
             EndSelectionCleanup(null);
         }
@@ -332,11 +372,10 @@ public sealed partial class OverlayPage : UserControl
 
     private void Canvas_PointerCanceled(object sender, PointerRoutedEventArgs e)
     {
-        // Fires when the system cancels the pointer interaction (e.g. stylus lifted out of
-        // range, device disconnected). Capture is still ours; release it explicitly.
-        if (_isSelecting)
+        // Cancellation also releases pointer capture, so only clear local gesture state.
+        if (IsActivePointer(e.Pointer))
         {
-            EndSelectionCleanup(e.Pointer);
+            EndSelectionCleanup(null);
         }
     }
 
@@ -451,11 +490,6 @@ public sealed partial class OverlayPage : UserControl
 
                 break;
 
-            case VirtualKey.Escape:
-                _manager?.CloseAll(cancelled: true);
-                e.Handled = true;
-                break;
-
             case VirtualKey.S:
                 ViewModel.IsSingleLine = !ViewModel.IsSingleLine;
                 e.Handled = true;
@@ -504,10 +538,23 @@ public sealed partial class OverlayPage : UserControl
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)
     {
-        _manager?.CloseAll(cancelled: true);
+        CancelOverlay();
     }
 
     private void CancelMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        CancelOverlay();
+    }
+
+    private void EscapeKeyboardAccelerator_Invoked(
+        KeyboardAccelerator sender,
+        KeyboardAcceleratorInvokedEventArgs args)
+    {
+        CancelOverlay();
+        args.Handled = true;
+    }
+
+    private void CancelOverlay()
     {
         _manager?.CloseAll(cancelled: true);
     }

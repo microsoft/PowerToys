@@ -369,10 +369,6 @@ internal sealed class OverlayManager : IOverlayManager
             return;
         }
 
-        // Unconditionally unclip the cursor — covers Escape, settings, successful capture,
-        // native termination, and external window close paths.
-        CursorClipper.UnClip();
-
         session.CancellationSource.Cancel();
 
         // The hidden lifetime host is only safe to create after WinUI has successfully
@@ -386,6 +382,10 @@ internal sealed class OverlayManager : IOverlayManager
         {
             window.CloseFromManager();
         }
+
+        // Window cleanup normally disposes the active cursor-clip lease. Retry here if a
+        // transient Win32 failure prevented restoration; this only touches PowerOCR-owned state.
+        CursorClipper.ReleaseOwnedClip();
 
         session.Windows.Clear();
 
