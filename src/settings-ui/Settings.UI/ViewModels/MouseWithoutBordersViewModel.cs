@@ -4,12 +4,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
+using System.Security.Principal;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +21,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.UI;
@@ -321,8 +324,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 if (recreateStream)
                 {
-                    syncHelperStream = new NamedPipeClientStream(".", "MouseWithoutBorders/SettingsSync", PipeDirection.InOut, PipeOptions.Asynchronous);
-                    await syncHelperStream.ConnectAsync(10000);
+                    var sessionId = Process.GetCurrentProcess().SessionId;
+                    using var currentIdentity = WindowsIdentity.GetCurrent();
+                    var currentUserSid = currentIdentity.User?.Value ?? throw new InvalidOperationException("Settings process has no user SID.");
+                    var mwbPath = MouseWithoutBordersIpc.GetMouseWithoutBordersExecutablePath(AppContext.BaseDirectory);
+                    var serverPolicy = MouseWithoutBordersIpcPolicy.CreateMwbServerPolicy(
+                        mwbPath,
+                        sessionId,
+                        currentUserSid,
+                        allowLocalSystem: true);
+                    var authenticator = new NamedPipePeerAuthenticator(
+                        new WindowsNamedPipePeerIdentityProvider(new MicrosoftMachineRootSignatureVerifier()));
+                    syncHelperStream = await AuthenticatedNamedPipeClient.ConnectAsync(
+                        MouseWithoutBordersIpc.GetSettingsSyncPipeName(sessionId),
+                        serverPolicy,
+                        authenticator,
+                        10000);
                 }
 
                 return new SyncHelper(syncHelperStream);
