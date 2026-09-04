@@ -27,6 +27,9 @@ namespace Microsoft.PowerToys.RegistryPreview.UITests;
 /// </remarks>
 public abstract class RegistryPreviewTestBase : UITestBase
 {
+    private const uint Th32csSnapProcess = 0x00000002;
+    private static readonly IntPtr InvalidHandleValue = new(-1);
+
     protected const string RegistryPreviewProcessName = "PowerToys.RegistryPreview";
     protected const string ModuleSettingsKey = "RegistryPreview";
     protected const int WindowTimeoutMS = 30_000;
@@ -217,9 +220,10 @@ public abstract class RegistryPreviewTestBase : UITestBase
             {
                 CaptureMonacoStall(attempt);
                 Step($"Monaco did not become ready after {EditorTimeoutMS}ms; restarting the Registry Preview process tree once.");
-                Assert.IsTrue(
-                    WindowControl.TryKillProcessTreeByNameAndWait(RegistryPreviewProcessName, timeoutMS: 10_000),
-                    "Could not stop the stalled Registry Preview process tree before retrying.");
+                var descendants = GetDescendantProcesses(session.ProcessId);
+                var rootStopped = WindowControl.TryKillProcessTreeByNameAndWait(RegistryPreviewProcessName, timeoutMS: 10_000);
+                StopCapturedProcesses(descendants);
+                Assert.IsTrue(rootStopped, "Could not stop the stalled Registry Preview process tree before retrying.");
             }
         }
 
@@ -237,7 +241,7 @@ public abstract class RegistryPreviewTestBase : UITestBase
             "Microsoft",
             "PowerToys",
             "RegistryPreview-Temp");
-        for (var attempt = 1; attempt <= 10; attempt++)
+        for (var attempt = 1; attempt <= 60; attempt++)
         {
             try
             {
@@ -248,11 +252,11 @@ public abstract class RegistryPreviewTestBase : UITestBase
 
                 return;
             }
-            catch (IOException) when (attempt < 10)
+            catch (IOException) when (attempt < 60)
             {
                 Thread.Sleep(500);
             }
-            catch (UnauthorizedAccessException) when (attempt < 10)
+            catch (UnauthorizedAccessException) when (attempt < 60)
             {
                 Thread.Sleep(500);
             }
@@ -260,6 +264,132 @@ public abstract class RegistryPreviewTestBase : UITestBase
 
         Assert.Fail($"Could not reset Registry Preview's temporary WebView profile at '{path}'.");
     }
+
+    private IReadOnlyCollection<Process> GetDescendantProcesses(int rootProcessId)
+    {
+        if (rootProcessId <= 0)
+        {
+            Step("Registry Preview PID was unavailable; no descendant processes were captured.");
+            return Array.Empty<Process>();
+        }
+
+        var parents = new Dictionary<int, int>();
+        var snapshot = CreateToolhelp32Snapshot(Th32csSnapProcess, 0);
+        if (snapshot == InvalidHandleValue)
+        {
+            Step($"CreateToolhelp32Snapshot failed with Win32 error {Marshal.GetLastWin32Error()}.");
+            return Array.Empty<Process>();
+        }
+
+        try
+        {
+            var entry = new ProcessEntry32 { Size = (uint)Marshal.SizeOf<ProcessEntry32>() };
+            if (Process32First(snapshot, ref entry))
+            {
+                do
+                {
+                    parents[(int)entry.ProcessId] = (int)entry.ParentProcessId;
+                }
+                while (Process32Next(snapshot, ref entry));
+            }
+        }
+        finally
+        {
+            CloseHandle(snapshot);
+        }
+
+        var descendants = new HashSet<int>();
+        var changed = true;
+        while (changed)
+        {
+            changed = false;
+            foreach (var (processId, parentProcessId) in parents)
+            {
+                if (!descendants.Contains(processId) &&
+                    (parentProcessId == rootProcessId || descendants.Contains(parentProcessId)))
+                {
+                    descendants.Add(processId);
+                    changed = true;
+                }
+            }
+        }
+
+        var processes = new List<Process>();
+        foreach (var processId in descendants)
+        {
+            try
+            {
+                var process = Process.GetProcessById(processId);
+                _ = process.Handle; // Pin the process identity so its PID cannot be reused during cleanup.
+                processes.Add(process);
+            }
+            catch (Exception ex)
+            {
+                Step($"Could not pin captured descendant PID {processId}: {ex.Message}");
+            }
+        }
+
+        Step($"Captured {processes.Count} Registry Preview descendant process(es): {string.Join(", ", processes.Select(process => $"{process.ProcessName}:{process.Id}"))}");
+        return processes;
+    }
+
+    private void StopCapturedProcesses(IEnumerable<Process> processes)
+    {
+        foreach (var process in processes)
+        {
+            try
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                    if (!process.WaitForExit(5_000))
+                    {
+                        Step($"Captured descendant {process.ProcessName}:{process.Id} did not exit within 5 seconds.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Step($"Captured descendant PID {process.Id} could not be stopped: {ex.Message}");
+            }
+            finally
+            {
+                process.Dispose();
+            }
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    private struct ProcessEntry32
+    {
+        public uint Size;
+        public uint Usage;
+        public uint ProcessId;
+        public IntPtr DefaultHeapId;
+        public uint ModuleId;
+        public uint ThreadCount;
+        public uint ParentProcessId;
+        public int BasePriority;
+        public uint Flags;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+        public string ExecutableFile;
+    }
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern IntPtr CreateToolhelp32Snapshot(uint flags, uint processId);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool Process32First(IntPtr snapshot, ref ProcessEntry32 entry);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool Process32Next(IntPtr snapshot, ref ProcessEntry32 entry);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool CloseHandle(IntPtr handle);
 
     private void CaptureMonacoStall(int attempt)
     {
