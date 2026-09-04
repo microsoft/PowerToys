@@ -69,6 +69,7 @@
     <ClCompile Include="Package.Tests.cpp" />
     <ClCompile Include="ProcessApi.Tests.cpp" />
     <ClCompile Include="ProcessWaiter.Tests.cpp" />
+    <ClCompile Include="ThumbnailProvider.Tests.cpp" />
     <ClCompile Include="Registry.Tests.cpp" />
     <ClCompile Include="Resources.Tests.cpp" />
     <ClCompile Include="TestStubs.cpp" />
@@ -82,6 +83,12 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TestHelpers.h" />
+    <ClInclude Include="ThumbnailProviderTestProtocol.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="ThumbnailProviderTestHelper.vcxproj">
+      <Project>{F82A86E7-7C58-48C1-A923-5D735E17D5AB}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="UnitTests-CommonUtils.rc" />

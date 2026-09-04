@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -15,6 +16,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon
     public static class BgcodeHelper
     {
         private const uint MagicNumber = 'G' | 'C' << 8 | 'D' << 16 | 'E' << 24;
+        private const uint MaximumThumbnailDataSize = 64 * 1024 * 1024;
 
         /// <summary>
         /// Gets any thumbnails found in a bgcode file.
@@ -23,6 +25,9 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         /// <returns>The thumbnails found in a bgcode file.</returns>
         public static IEnumerable<BgcodeThumbnail> GetThumbnails(BinaryReader reader)
         {
+            ArgumentNullException.ThrowIfNull(reader);
+
+            EnsureRemaining(reader, 10);
             var magicNumber = reader.ReadUInt32();
 
             if (magicNumber != MagicNumber)
@@ -42,11 +47,18 @@ namespace Microsoft.PowerToys.FilePreviewCommon
 
             while (reader.BaseStream.Position < reader.BaseStream.Length)
             {
+                var blockStart = reader.BaseStream.Position;
+                EnsureRemaining(reader, 8);
                 var blockType = (BgcodeBlockType)reader.ReadUInt16();
                 var compression = (BgcodeCompressionType)reader.ReadUInt16();
                 var uncompressedSize = reader.ReadUInt32();
 
-                var size = compression == BgcodeCompressionType.NoCompression ? uncompressedSize : reader.ReadUInt32();
+                if (compression != BgcodeCompressionType.NoCompression)
+                {
+                    EnsureRemaining(reader, 4);
+                }
+
+                var storedSize = compression == BgcodeCompressionType.NoCompression ? uncompressedSize : reader.ReadUInt32();
 
                 switch (blockType)
                 {
@@ -55,16 +67,17 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                     case BgcodeBlockType.PrintMetadataBlock:
                     case BgcodeBlockType.SlicerMetadataBlock:
                     case BgcodeBlockType.GCodeBlock:
-                        reader.BaseStream.Seek(2 + size, SeekOrigin.Current); // Skip
-
+                        SkipBytes(reader, 2); // Encoding
+                        SkipBytes(reader, storedSize);
                         break;
 
                     case BgcodeBlockType.ThumbnailBlock:
+                        EnsureRemaining(reader, 2);
                         var format = (BgcodeThumbnailFormat)reader.ReadUInt16();
 
-                        reader.BaseStream.Seek(4, SeekOrigin.Current); // Skip width and height
+                        SkipBytes(reader, 4); // Width and height
 
-                        var data = ReadAndDecompressData(reader, compression, (int)size);
+                        var data = ReadAndDecompressData(reader, compression, storedSize, uncompressedSize);
 
                         if (data != null)
                         {
@@ -72,11 +85,19 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                         }
 
                         break;
+
+                    default:
+                        throw new InvalidDataException("Unsupported block type.");
                 }
 
                 if (checksum == BgcodeChecksumType.CRC32)
                 {
-                    reader.BaseStream.Seek(4, SeekOrigin.Current); // Skip checksum
+                    SkipBytes(reader, 4);
+                }
+
+                if (reader.BaseStream.Position <= blockStart)
+                {
+                    throw new InvalidDataException("The BGCODE parser made no forward progress.");
                 }
             }
         }
@@ -100,29 +121,83 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                 .FirstOrDefault();
         }
 
-        private static byte[]? ReadAndDecompressData(BinaryReader reader, BgcodeCompressionType compression, int size)
+        private static byte[]? ReadAndDecompressData(
+            BinaryReader reader,
+            BgcodeCompressionType compression,
+            uint storedSize,
+            uint uncompressedSize)
         {
             // Though the spec doesn't actually mention it, the reference encoder code never applies compression to thumbnails data
             // which makes complete sense as this data is PNG, JPEG or QOI encoded so already compressed as much as possible!
             switch (compression)
             {
                 case BgcodeCompressionType.NoCompression:
-                    return reader.ReadBytes(size);
+                    EnsureThumbnailDataSize(storedSize);
+                    EnsureRemaining(reader, storedSize);
+                    return ReadBytesExactly(reader, (int)storedSize);
 
                 case BgcodeCompressionType.DeflateAlgorithm:
-                    var buffer = new byte[size];
+                    EnsureThumbnailDataSize(storedSize);
+                    EnsureThumbnailDataSize(uncompressedSize);
+                    EnsureRemaining(reader, storedSize);
+                    var compressedData = ReadBytesExactly(reader, (int)storedSize);
+                    var buffer = new byte[(int)uncompressedSize];
 
-                    using (var deflateStream = new DeflateStream(reader.BaseStream, CompressionMode.Decompress, true))
+                    using (var compressedStream = new MemoryStream(compressedData, false))
+                    using (var deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress))
                     {
-                        deflateStream.ReadExactly(buffer, 0, size);
+                        try
+                        {
+                            deflateStream.ReadExactly(buffer);
+                        }
+                        catch (EndOfStreamException ex)
+                        {
+                            throw new InvalidDataException("The BGCODE compressed block is truncated.", ex);
+                        }
                     }
 
                     return buffer;
 
                 default:
-                    reader.BaseStream.Seek(size, SeekOrigin.Current); // Skip unknown or unsupported compression types
+                    SkipBytes(reader, storedSize);
 
                     return null;
+            }
+        }
+
+        private static void EnsureThumbnailDataSize(uint size)
+        {
+            // BGCODE thumbnails are already encoded PNG, JPEG, or QOI images. A 64 MiB encoded-image
+            // ceiling is far above normal slicer previews while bounding every parser-owned byte array.
+            if (size > MaximumThumbnailDataSize)
+            {
+                throw new InvalidDataException("The BGCODE thumbnail block exceeds the 64 MiB limit.");
+            }
+        }
+
+        private static byte[] ReadBytesExactly(BinaryReader reader, int count)
+        {
+            var data = reader.ReadBytes(count);
+            if (data.Length != count)
+            {
+                throw new InvalidDataException("The BGCODE block is truncated.");
+            }
+
+            return data;
+        }
+
+        private static void SkipBytes(BinaryReader reader, uint count)
+        {
+            EnsureRemaining(reader, count);
+            reader.BaseStream.Seek(count, SeekOrigin.Current);
+        }
+
+        private static void EnsureRemaining(BinaryReader reader, uint count)
+        {
+            var remaining = reader.BaseStream.Length - reader.BaseStream.Position;
+            if (remaining < 0 || (ulong)remaining < count)
+            {
+                throw new InvalidDataException("The BGCODE block is truncated.");
             }
         }
     }
