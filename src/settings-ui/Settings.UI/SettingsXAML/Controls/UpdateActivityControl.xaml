@@ -3,11 +3,43 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Controls.UpdateActivityControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     x:Name="Root"
     mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <animations:AnimationSet x:Key="ShowActivityAnimation">
+            <animations:OpacityAnimation
+                EasingMode="EaseOut"
+                EasingType="Cubic"
+                From="0"
+                To="1"
+                Duration="0:0:0.2" />
+            <animations:TranslationAnimation
+                EasingMode="EaseOut"
+                EasingType="Cubic"
+                From="0,16,12"
+                To="0,0,12"
+                Duration="0:0:0.25" />
+        </animations:AnimationSet>
+        <animations:AnimationSet x:Key="HideActivityAnimation">
+            <animations:OpacityAnimation
+                EasingMode="EaseIn"
+                EasingType="Cubic"
+                From="1"
+                To="0"
+                Duration="0:0:0.2" />
+            <animations:TranslationAnimation
+                EasingMode="EaseIn"
+                EasingType="Cubic"
+                From="0,0,12"
+                To="0,12,12"
+                Duration="0:0:0.18" />
+        </animations:AnimationSet>
+    </UserControl.Resources>
 
     <Grid x:Name="ShadowHost" Padding="12">
         <Border
@@ -22,7 +54,7 @@
             BorderThickness="1"
             CornerRadius="8"
             Translation="0,0,12"
-            Visibility="{x:Bind ViewModel.IsActivityVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+            Visibility="Collapsed">
             <Border.Shadow>
                 <ThemeShadow />
             </Border.Shadow>

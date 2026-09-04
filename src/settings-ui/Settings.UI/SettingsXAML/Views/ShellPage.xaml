@@ -473,6 +473,7 @@
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
             Canvas.ZIndex="2"
+            IsActivityVisible="{x:Bind UpdateViewModel.IsActivityVisible, Mode=OneWay}"
             ViewModel="{x:Bind UpdateViewModel, Mode=OneWay}" />
         <ContentDialog
             x:Name="CloseDialog"
