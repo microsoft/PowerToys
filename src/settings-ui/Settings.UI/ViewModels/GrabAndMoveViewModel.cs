@@ -177,6 +177,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string ExcludedAppsForModifier
+        {
+            get => _moduleSettings.Properties.ExcludedAppsForModifier.Value;
+
+            set
+            {
+                if (_moduleSettings.Properties.ExcludedAppsForModifier.Value != value)
+                {
+                    _moduleSettings.Properties.ExcludedAppsForModifier.Value = value;
+                    NotifyModuleSettingsChanged();
+                    OnPropertyChanged(nameof(ExcludedAppsForModifier));
+                }
+            }
+        }
+
         private void NotifyModuleSettingsChanged()
         {
             SndGrabAndMoveSettings outSettings = new(_moduleSettings);
