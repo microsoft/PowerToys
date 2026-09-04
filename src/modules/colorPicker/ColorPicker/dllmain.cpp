@@ -257,6 +257,7 @@ public:
             WaitForSingleObject(m_hProcess, 1500);
 
             TerminateProcess(m_hProcess, 1);
+            ResetEvent(m_hAppTerminateEvent);
         }
 
         m_enabled = false;

@@ -65,6 +65,13 @@ namespace ColorPicker
         public ColorPickerOverlayWindow()
         {
             InitializeComponent();
+
+            // TransparentWindow has no title of its own, so an unset title is exposed through UIA
+            // as the generic "WinUI Desktop" host. Preserve the WPF overlay's accessible window
+            // name while keeping the window frameless and out of Alt-Tab/the taskbar.
+            var windowTitle = ResourceLoaderInstance.GetString("CP_Title/Title");
+            Title = string.IsNullOrEmpty(windowTitle) ? "Color Picker" : windowTitle;
+
             _resizeRequest = new CoalescedAction(
                 callback => DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => callback()),
                 ResizeToContent);

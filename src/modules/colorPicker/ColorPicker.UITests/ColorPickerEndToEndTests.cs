@@ -227,6 +227,28 @@ public class ColorPickerEndToEndTests : UITestBase
                 "PowerToys.ColorPickerUI did not start within 10s after toggling module ON.");
             TestContext.WriteLine("Toggled ON; ColorPickerUI process running.");
 
+            // A crashed UI leaves no waiter for the auto-reset terminate event. OFF must clear the
+            // unconsumed signal before ON launches the replacement process, or that process starts
+            // and immediately exits after consuming the stale signal.
+            Assert.IsTrue(
+                WindowControl.TryKillProcessTreeByNameAndWait("PowerToys.ColorPickerUI", timeoutMS: 10_000),
+                "Could not terminate ColorPickerUI to exercise crash recovery.");
+            Assert.IsTrue(toggle.IsOn, "Killing ColorPickerUI unexpectedly changed the Settings toggle state.");
+
+            SetToggleState(toggle, false);
+            Assert.IsTrue(
+                toggle.WaitForProperty("ToggleState", "Off", timeoutMS: 5_000),
+                "Crash recovery: toggle UI did not flip to Off.");
+
+            SetToggleState(toggle, true);
+            Assert.IsTrue(
+                toggle.WaitForProperty("ToggleState", "On", timeoutMS: 5_000),
+                "Crash recovery: toggle UI did not flip back to On.");
+            Assert.IsTrue(
+                WaitForSingleProcessStable("PowerToys.ColorPickerUI", stableForMS: 2_000, timeoutMS: 10_000),
+                "Crash recovery: the ColorPickerUI process launched by toggle ON did not remain alive.");
+            TestContext.WriteLine("Crash recovery OFF/ON launched one stable ColorPickerUI process.");
+
             // -- 5. Read the activation shortcut from the UI --------------------------------
             // ShortcutControl renders the current shortcut on an inner Button (x:Name="EditButton")
             // whose AutomationProperties.HelpText is set to HotkeySettings.ToString() (e.g.
@@ -309,7 +331,17 @@ public class ColorPickerEndToEndTests : UITestBase
                     (dump.Length > 0 ? dump : "    (none)"));
             }
 
-            TestContext.WriteLine($"Picker overlay appeared: hwnd={overlay!.WindowHandle}");
+            TestContext.WriteLine($"Picker overlay appeared: hwnd={overlay!.WindowHandle} title='{overlay.WindowTitle}'");
+
+            Assert.IsFalse(
+                string.IsNullOrWhiteSpace(overlay.WindowTitle),
+                "Picker overlay must expose a non-empty native/UIA window name.");
+            Assert.IsFalse(
+                string.Equals(overlay.WindowTitle, "WinUI Desktop", StringComparison.OrdinalIgnoreCase),
+                "Picker overlay exposed the generic WinUI host name instead of the Color Picker name.");
+            Assert.IsTrue(
+                HasTopLevelAutomationName(overlay, overlay.WindowTitle),
+                $"Picker overlay UIA root must expose the window name '{overlay.WindowTitle}'.");
 
             // -- 9. Read the displayed HEX from the overlay's accessible TextBlock ----------
             string overlayHex = ReadOverlayColor(overlay);
@@ -330,6 +362,13 @@ public class ColorPickerEndToEndTests : UITestBase
                 w => w.Width > 300 && w.Height > 300,
                 timeoutMS: 2_500);
             Assert.IsNotNull(zoomWindow, "The zoom magnifier window did not appear after scrolling.");
+            Assert.AreEqual(
+                "Zoom window",
+                zoomWindow!.WindowTitle,
+                "The zoom magnifier must preserve its stable native/UIA window name.");
+            Assert.IsTrue(
+                HasTopLevelAutomationName(zoomWindow, zoomWindow.WindowTitle),
+                $"Zoom window UIA root must expose the window name '{zoomWindow.WindowTitle}'.");
             long zoomWindowHandle = zoomWindow!.WindowHandle;
             var (zoomLeft, _, zoomRight, _) = WindowHelper.GetWindowBounds(new IntPtr(zoomWindowHandle));
             Assert.IsTrue(zoomRight > zoomLeft, "Could not resolve the zoom window bounds.");
@@ -416,7 +455,10 @@ public class ColorPickerEndToEndTests : UITestBase
             // -- 12. Wait for the editor window ---------------------------------------------
             var editor = WindowsFinder.WaitForWindowByApp(
                 "PowerToys.ColorPickerUI",
-                w => w.Hwnd != zoomWindowHandle && w.Width > 300 && w.Height > 300,
+                w => w.Hwnd != zoomWindowHandle &&
+                     w.Width > 300 &&
+                     w.Height > 300 &&
+                     !string.Equals(w.Title, overlay.WindowTitle, StringComparison.Ordinal),
                 timeoutMS: 10_000);
 
             if (editor is null)
@@ -432,6 +474,14 @@ public class ColorPickerEndToEndTests : UITestBase
             }
 
             TestContext.WriteLine($"Editor window: hwnd={editor!.WindowHandle} title='{editor.WindowTitle}'");
+
+            Assert.IsFalse(
+                string.IsNullOrWhiteSpace(editor.WindowTitle),
+                "Color Picker editor must expose a non-empty native/UIA window name.");
+            Assert.AreNotEqual(
+                overlay.WindowTitle,
+                editor.WindowTitle,
+                "The editor window name must distinguish it from the picker overlay.");
 
             // -- 13. Find the captured color inside the editor's tree ------------------------
             // From ColorEditorView.xaml the format list is populated from `ColorRepresentations`.
@@ -449,6 +499,10 @@ public class ColorPickerEndToEndTests : UITestBase
             }
 
             Assert.IsTrue(values.Count > 0, "Editor reported no readable elements via inspect --json.");
+            Assert.IsTrue(
+                values.Any(v => string.Equals(v.Type, "Window", StringComparison.OrdinalIgnoreCase) &&
+                                string.Equals(v.Name, editor.WindowTitle, StringComparison.Ordinal)),
+                $"Editor UIA root name must match its native window name '{editor.WindowTitle}'.");
 
             // Match the clipboard text through UIA Name, ignoring an optional leading '#'.
             var needle = capturedColor.Trim();
@@ -465,6 +519,33 @@ public class ColorPickerEndToEndTests : UITestBase
 
             TestContext.WriteLine(
                 $"MATCH: captured '{capturedColor}' found in editor element [{match.Type}] Name='{match.Name}' Value='{match.Value}'");
+
+            // -- 14. Incomplete RGB/HEX edits must not remain visible after focus leaves -----
+            editor.Find<Button>(By.AccessibilityId("CurrentColorButton"), timeoutMS: 2_000).Invoke();
+            var redTextBox = editor.Find<TextBox>(By.AccessibilityId("RNumberBox"), timeoutMS: 2_000);
+            var greenTextBox = editor.Find<TextBox>(By.AccessibilityId("GNumberBox"), timeoutMS: 2_000);
+            var hexTextBox = editor.Find<TextBox>(By.AccessibilityId("HexCode"), timeoutMS: 2_000);
+            string originalRed = redTextBox.Value;
+            string originalHex = hexTextBox.Value;
+
+            redTextBox.Focus();
+            redTextBox.SetText(string.Empty);
+            greenTextBox.Focus();
+            Thread.Sleep(300);
+            Assert.AreEqual(
+                originalRed,
+                redTextBox.Value,
+                "An empty RGB field must restore the current channel value after losing focus.");
+
+            hexTextBox.Focus();
+            hexTextBox.SetText("zzzzzz");
+            redTextBox.Focus();
+            Thread.Sleep(300);
+            Assert.AreEqual(
+                originalHex,
+                hexTextBox.Value,
+                "An invalid HEX field must restore the current color after losing focus.");
+            TestContext.WriteLine("Adjust Color restored incomplete RGB and invalid HEX input on focus loss.");
         }
         finally
         {
@@ -486,6 +567,18 @@ public class ColorPickerEndToEndTests : UITestBase
     private static string ReadOverlayColor(Session overlay)
     {
         return overlay.Find(By.AccessibilityId("ColorTextBlock"), timeoutMS: 2_000).Name;
+    }
+
+    private static bool HasTopLevelAutomationName(Session session, string expectedName)
+    {
+        var tree = session.Inspect(depth: 2);
+        var values = new List<(string Type, string Name, string Value)>();
+        WalkElements(tree, values);
+
+        return values.Any(v =>
+            (string.Equals(v.Type, "Window", StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(v.Type, "Pane", StringComparison.OrdinalIgnoreCase)) &&
+            string.Equals(v.Name, expectedName, StringComparison.Ordinal));
     }
 
     private static void SetToggleState(ToggleSwitch toggle, bool value)
@@ -572,6 +665,50 @@ public class ColorPickerEndToEndTests : UITestBase
             }
 
             Thread.Sleep(250);
+        }
+
+        return false;
+    }
+
+    private static bool WaitForSingleProcessStable(string name, int stableForMS, int timeoutMS)
+    {
+        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
+        int? stableProcessId = null;
+        DateTime stableSince = DateTime.MinValue;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            var processes = Process.GetProcessesByName(name);
+            try
+            {
+                if (processes.Length == 1)
+                {
+                    int processId = processes[0].Id;
+                    if (stableProcessId != processId)
+                    {
+                        stableProcessId = processId;
+                        stableSince = DateTime.UtcNow;
+                    }
+                    else if ((DateTime.UtcNow - stableSince).TotalMilliseconds >= stableForMS)
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    stableProcessId = null;
+                    stableSince = DateTime.MinValue;
+                }
+            }
+            finally
+            {
+                foreach (Process process in processes)
+                {
+                    process.Dispose();
+                }
+            }
+
+            Thread.Sleep(100);
         }
 
         return false;

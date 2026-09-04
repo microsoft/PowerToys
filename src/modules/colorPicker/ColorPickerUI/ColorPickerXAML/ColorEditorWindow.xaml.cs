@@ -20,6 +20,7 @@ namespace ColorPicker
     public sealed partial class ColorEditorWindow : WindowEx
     {
         private readonly AppStateHandler _appStateHandler;
+        private readonly string _windowTitle;
 
         public ColorEditorWindow(AppStateHandler appStateHandler)
         {
@@ -30,7 +31,13 @@ namespace ColorPicker
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
 
-            Title = AppTitleBar.Title;
+            // Keep the visible in-app title concise, but preserve the more descriptive native/UIA
+            // window name used by the WPF editor. Assistive technology and window automation need
+            // to distinguish the editor from the picker overlay.
+            var windowTitle = ResourceLoaderInstance.GetString("cp_editor");
+            _windowTitle = string.IsNullOrEmpty(windowTitle) ? "Color Picker editor" : windowTitle;
+            Title = _windowTitle;
+            AppTitleBar.Loaded += AppTitleBar_Loaded;
 
             // The native title bar / taskbar otherwise shows the generic WinUI placeholder icon;
             // point it at the ColorPicker app icon (copied next to the exe by the csproj).
@@ -48,7 +55,21 @@ namespace ColorPicker
 
         private void ColorEditorWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
+            // Microsoft.UI.Xaml.Controls.TitleBar synchronizes its visible title back to the
+            // owning window during layout. Queue the distinct AppWindow/UIA name for the next
+            // dispatcher turn so it runs after that synchronization.
+            DispatcherQueue.TryEnqueue(SetWindowTitle);
             IsActiveWindow = args.WindowActivationState != WindowActivationState.Deactivated;
+        }
+
+        private void AppTitleBar_Loaded(object sender, RoutedEventArgs e)
+        {
+            DispatcherQueue.TryEnqueue(SetWindowTitle);
+        }
+
+        private void SetWindowTitle()
+        {
+            Title = _windowTitle;
         }
 
         // Match the WPF behavior: closing the editor ends the user session (which hides it) rather

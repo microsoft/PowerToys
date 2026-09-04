@@ -186,6 +186,7 @@
                             Grid.Row="3"
                             Grid.Column="1"
                             BeforeTextChanging="NumberBox_BeforeTextChanging"
+                            LostFocus="RGBNumberBox_LostFocus"
                             MaxLength="3"
                             TextChanged="RGBNumberBox_TextChanged" />
                         <TextBox
@@ -195,6 +196,7 @@
                             Grid.Column="2"
                             Margin="4,0,0,0"
                             BeforeTextChanging="NumberBox_BeforeTextChanging"
+                            LostFocus="RGBNumberBox_LostFocus"
                             MaxLength="3"
                             TextChanged="RGBNumberBox_TextChanged" />
                         <TextBox
@@ -204,6 +206,7 @@
                             Grid.Column="3"
                             Margin="4,0,0,0"
                             BeforeTextChanging="NumberBox_BeforeTextChanging"
+                            LostFocus="RGBNumberBox_LostFocus"
                             MaxLength="3"
                             TextChanged="RGBNumberBox_TextChanged" />
                         <TextBlock
@@ -222,6 +225,7 @@
                             Grid.ColumnSpan="3"
                             HorizontalAlignment="Stretch"
                             GotFocus="HexCode_GotFocus"
+                            LostFocus="HexCode_LostFocus"
                             MaxLength="7"
                             TextChanged="HexCode_TextChanged" />
 

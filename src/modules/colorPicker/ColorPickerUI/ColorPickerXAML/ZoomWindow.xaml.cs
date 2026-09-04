@@ -15,6 +15,10 @@ namespace ColorPicker
         public ZoomWindow()
         {
             InitializeComponent();
+
+            // Preserve the WPF window identity. Without an explicit title, TransparentWindow is
+            // exposed to UI Automation as the generic "WinUI Desktop" host.
+            Title = "Zoom window";
         }
     }
 }

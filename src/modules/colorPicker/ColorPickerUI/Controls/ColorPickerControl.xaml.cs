@@ -29,6 +29,7 @@ namespace ColorPicker.Controls
     {
         private static readonly TimeSpan ExpandAnimationDuration = TimeSpan.FromMilliseconds(250);
         private static readonly TimeSpan CollapseAnimationDuration = TimeSpan.FromMilliseconds(150);
+        private static readonly Regex HexColorRegex = new("^#?([0-9A-Fa-f]{3}){1,2}$", RegexOptions.CultureInvariant);
 
         private double _currH = 360;
         private double _currS = 1;
@@ -251,6 +252,11 @@ namespace ColorPicker.Controls
 
         private void OKButton_Click(object sender, RoutedEventArgs e)
         {
+            NormalizeRgbText(RNumberBox);
+            NormalizeRgbText(GNumberBox);
+            NormalizeRgbText(BNumberBox);
+            NormalizeHexText();
+
             SelectedColorChangedCommand.Execute(_currentColor);
             SessionEventHelper.Event.EditorColorAdjusted = true;
             DetailsFlyout.Hide();
@@ -307,9 +313,7 @@ namespace ColorPicker.Controls
             var newValue = (sender as TextBox).Text;
 
             // support hex with 3 and 6 characters and optional with hashtag
-            var reg = new Regex("^#?([0-9A-Fa-f]{3}){1,2}$");
-
-            if (!reg.IsMatch(newValue))
+            if (!IsHexTextValid(newValue))
             {
                 return;
             }
@@ -378,6 +382,29 @@ namespace ColorPicker.Controls
             (sender as TextBox).SelectAll();
         }
 
+        private void HexCode_LostFocus(object sender, RoutedEventArgs e)
+        {
+            NormalizeHexText();
+        }
+
+        private void NormalizeHexText()
+        {
+            if (IsHexTextValid(HexCode.Text))
+            {
+                return;
+            }
+
+            _ignoreHexChanges = true;
+            try
+            {
+                HexCode.Text = ColorToHex(_currentColor, HexCode.Text);
+            }
+            finally
+            {
+                _ignoreHexChanges = false;
+            }
+        }
+
         private void NumberBox_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
             // WinUI has no NumberBox text-change preview. Keep an empty value valid while the user
@@ -400,6 +427,47 @@ namespace ColorPicker.Controls
             }
         }
 
+        private void RGBNumberBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            NormalizeRgbText((TextBox)sender);
+        }
+
+        private void NormalizeRgbText(TextBox numberBox)
+        {
+            if (byte.TryParse(numberBox.Text, NumberStyles.None, CultureInfo.InvariantCulture, out _))
+            {
+                return;
+            }
+
+            byte currentValue;
+            if (numberBox == RNumberBox)
+            {
+                currentValue = _currentColor.R;
+            }
+            else if (numberBox == GNumberBox)
+            {
+                currentValue = _currentColor.G;
+            }
+            else if (numberBox == BNumberBox)
+            {
+                currentValue = _currentColor.B;
+            }
+            else
+            {
+                return;
+            }
+
+            _ignoreRGBChanges = true;
+            try
+            {
+                numberBox.Text = currentValue.ToString(CultureInfo.InvariantCulture);
+            }
+            finally
+            {
+                _ignoreRGBChanges = false;
+            }
+        }
+
         private static byte GetValueFromNumberBox(TextBox numberBox, byte previousValue)
             => GetValidatedRgbValue(numberBox.Text, previousValue);
 
@@ -413,6 +481,9 @@ namespace ColorPicker.Controls
         internal static bool IsRgbTextValid(string text)
             => string.IsNullOrEmpty(text) ||
                byte.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out _);
+
+        internal static bool IsHexTextValid(string text)
+            => !string.IsNullOrEmpty(text) && HexColorRegex.IsMatch(text);
 
         public static double? ParseDouble(string text)
         {

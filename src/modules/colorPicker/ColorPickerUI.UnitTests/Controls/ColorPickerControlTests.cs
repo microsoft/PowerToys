@@ -27,5 +27,21 @@ namespace ColorPicker.UnitTests.Controls
             Assert.AreEqual((byte)expected, result);
             Assert.AreEqual(canBeEntered, ColorPickerControl.IsRgbTextValid(text));
         }
+
+        [DataTestMethod]
+        [DataRow("abc", true)]
+        [DataRow("#abc", true)]
+        [DataRow("aabbcc", true)]
+        [DataRow("#aabbcc", true)]
+        [DataRow("", false)]
+        [DataRow("#", false)]
+        [DataRow("ab", false)]
+        [DataRow("abcd", false)]
+        [DataRow("zzzzzz", false)]
+        [DataRow("#1234567", false)]
+        public void Hex_value_must_be_complete_before_commit(string text, bool isValid)
+        {
+            Assert.AreEqual(isValid, ColorPickerControl.IsHexTextValid(text));
+        }
     }
 }
