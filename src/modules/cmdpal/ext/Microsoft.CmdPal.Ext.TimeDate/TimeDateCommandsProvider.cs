@@ -4,8 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
 using System.Threading;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CmdPal.Ext.TimeDate.Pages;
@@ -16,7 +14,6 @@ namespace Microsoft.CmdPal.Ext.TimeDate;
 
 public sealed partial class TimeDateCommandsProvider : CommandProvider
 {
-    private static readonly CompositeFormat MicrosoftPluginTimedatePluginDescription = System.Text.CompositeFormat.Parse(Resources.Microsoft_plugin_timedate_plugin_description);
     private readonly CommandItem _command;
     private readonly CommandItem _customClocksCommand;
     private readonly SettingsManager _settingsManager;
@@ -99,15 +96,6 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
             [notificationCenterBand],
             "com.microsoft.cmdpal.timedate.notificationCenterBand",
             Resources.timedate_notification_center_band_title);
-    }
-
-    private string GetTranslatedPluginDescription()
-    {
-        // The extra strings for the examples are required for correct translations.
-        var timeExample = Resources.Microsoft_plugin_timedate_plugin_description_example_time + "::" + DateTime.Now.ToString("T", CultureInfo.CurrentCulture);
-        var dayExample = Resources.Microsoft_plugin_timedate_plugin_description_example_day + "::" + DateTime.Now.ToString("d", CultureInfo.CurrentCulture);
-        var calendarWeekExample = Resources.Microsoft_plugin_timedate_plugin_description_example_calendarWeek + "::" + DateTime.Now.ToString("d", CultureInfo.CurrentCulture);
-        return string.Format(CultureInfo.CurrentCulture, MicrosoftPluginTimedatePluginDescription, Resources.Microsoft_plugin_timedate_plugin_description_example_day, dayExample, timeExample, calendarWeekExample);
     }
 
     public override ICommandItem[] TopLevelCommands() => [_command, _customClocksCommand];

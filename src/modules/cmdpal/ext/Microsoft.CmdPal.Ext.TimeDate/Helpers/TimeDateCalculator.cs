@@ -21,7 +21,7 @@ public sealed partial class TimeDateCalculator
     /// Searches for results
     /// </summary>
     /// <param name="query">Search query object</param>
-    /// <returns>List of Wox <see cref="Result"/>s.</returns>
+    /// <returns>List of list items for the query.</returns>
     public static List<ListItem> ExecuteSearch(ISettingsInterface settings, string query, DateTimeOffset? currentTime = null)
     {
         var isEmptySearchInput = string.IsNullOrWhiteSpace(query);
@@ -45,13 +45,13 @@ public sealed partial class TimeDateCalculator
         {
             // Search for specified format with specified time/date value
             var userInput = query.Split(InputDelimiter);
-            if (TimeAndDateHelper.ParseStringAsDateTime(userInput[1], out DateTime timestamp, out lastInputParsingErrorMsg))
+            if (DateTimeInputParser.ParseStringAsDateTime(userInput[1], out DateTime timestamp, out lastInputParsingErrorMsg))
             {
                 availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings, null, null, timestamp));
                 query = userInput[0];
             }
         }
-        else if (TimeAndDateHelper.ParseStringAsDateTime(query, out DateTime timestamp, out lastInputParsingErrorMsg))
+        else if (DateTimeInputParser.ParseStringAsDateTime(query, out DateTime timestamp, out lastInputParsingErrorMsg))
         {
             // Return all formats for specified time/date value
             availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings, null, null, timestamp));

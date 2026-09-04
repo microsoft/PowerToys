@@ -18,8 +18,8 @@ internal static class AvailableResultsList
     /// <param name="timeLongFormat">Required for UnitTest: Show time in long format</param>
     /// <param name="dateLongFormat">Required for UnitTest: Show date in long format</param>
     /// <param name="timestamp">Use custom <see cref="DateTime"/> object to calculate results instead of the system date/time</param>
-    /// <param name="firstWeekOfYear">Required for UnitTest: Use custom first week of the year instead of the plugin setting.</param>
-    /// <param name="firstDayOfWeek">Required for UnitTest: Use custom first day of the week instead the plugin setting.</param>
+    /// <param name="firstWeekOfYear">Required for UnitTest: Use custom first week of the year instead of the configured setting.</param>
+    /// <param name="firstDayOfWeek">Required for UnitTest: Use custom first day of the week instead of the configured setting.</param>
     /// <returns>List of results</returns>
     internal static List<AvailableResult> GetList(bool isKeywordSearch, ISettingsInterface settings, bool? timeLongFormat = null, bool? dateLongFormat = null, DateTime? timestamp = null, CalendarWeekRule? firstWeekOfYear = null, DayOfWeek? firstDayOfWeek = null, DateTimeOffset? currentTime = null)
     {
