@@ -160,7 +160,7 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
             {
                 hStdin = CreateFile(
                     pipe_name.c_str(), // pipe name
-                    GENERIC_READ | GENERIC_WRITE, // read and write
+                    GENERIC_READ, // read-only input pipe
                     0, // no sharing
                     NULL, // default security attributes
                     OPEN_EXISTING, // opens existing pipe
