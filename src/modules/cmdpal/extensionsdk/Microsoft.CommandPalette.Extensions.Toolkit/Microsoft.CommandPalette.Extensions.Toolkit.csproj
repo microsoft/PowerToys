@@ -31,7 +31,6 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <ControlFlowGuard>Guard</ControlFlowGuard>
-      <SpectreMitigation>Spectre</SpectreMitigation>
     </ClCompile>
   </ItemDefinitionGroup>
 
