@@ -239,6 +239,16 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         _showSubtitles = settings.ResolveShowSubtitles(dockSettings.ShowLabels);
     }
 
+    public static ICommandItem[] GetItemsForDisplay(CommandItemViewModel rootItem)
+    {
+        if (rootItem.Command.Model.Unsafe is IListPage list)
+        {
+            return list.GetItems();
+        }
+
+        return rootItem.Model.Unsafe is ICommandItem item ? [item] : [];
+    }
+
     private void InitializeFromList(IListPage list)
     {
         if (_cleanupStarted.Value)

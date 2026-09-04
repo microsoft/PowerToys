@@ -12,24 +12,14 @@ public class Settings : ISettingsInterface
     public Settings(
         int firstWeekOfYear = -1,
         int firstDayOfWeek = -1,
-        bool enableFallbackItems = true,
         bool timeWithSecond = false,
-        bool dockClockWithSecond = false,
         bool dateWithWeekday = false,
-        int clockBandDateMode = 0,
-        string customDateFormatInClockBand = "",
-        bool clockBandOpensNotificationCenter = true,
         List<string>? customFormats = null)
     {
         FirstWeekOfYear = firstWeekOfYear;
         FirstDayOfWeek = firstDayOfWeek;
-        EnableFallbackItems = enableFallbackItems;
         TimeWithSecond = timeWithSecond;
-        DockClockWithSecond = dockClockWithSecond;
         DateWithWeekday = dateWithWeekday;
-        ClockBandDateMode = clockBandDateMode;
-        CustomDateFormatInClockBand = customDateFormatInClockBand;
-        ClockBandOpensNotificationCenter = clockBandOpensNotificationCenter;
         CustomFormats = customFormats ?? new List<string>();
     }
 
@@ -39,19 +29,9 @@ public class Settings : ISettingsInterface
 
     public int FirstDayOfWeek { get; set; }
 
-    public bool EnableFallbackItems { get; set; }
-
     public bool TimeWithSecond { get; set; }
 
-    public bool DockClockWithSecond { get; set; }
-
     public bool DateWithWeekday { get; set; }
-
-    public int ClockBandDateMode { get; set; }
-
-    public string CustomDateFormatInClockBand { get; set; }
-
-    public bool ClockBandOpensNotificationCenter { get; set; }
 
     public List<string> CustomFormats { get; set; }
 }
