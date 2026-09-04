@@ -1,0 +1,5 @@
+*.pfx
+*.cer
+*.msix
+logo.png
+*.ps1

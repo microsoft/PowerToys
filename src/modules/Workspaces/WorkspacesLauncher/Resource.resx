@@ -129,6 +129,9 @@
   <data name="Incorrect_file_error" xml:space="preserve">
     <value>Incorrect {0} file.</value>
   </data>
+  <data name="Service_access_error" xml:space="preserve">
+    <value>PowerToys couldn't open your workspaces because the settings service didn't authorize this app. This can happen right after a PowerToys update — open the Workspaces editor (or restart PowerToys) to finish setup, then try again.</value>
+  </data>
   <data name="Workspaces" xml:space="preserve">
     <value>Workspaces</value>
     <comment>Name of the module</comment>
