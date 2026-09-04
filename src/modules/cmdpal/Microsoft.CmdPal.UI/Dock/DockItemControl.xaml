@@ -9,42 +9,38 @@
             <SolidColorBrush x:Key="DockItemBackground" Color="Transparent" />
             <SolidColorBrush x:Key="DockItemBorderBrush" Color="Transparent" />
             <SolidColorBrush x:Key="DockItemBackgroundPointerOver" Color="#0FFFFFFF" />
-            <SolidColorBrush x:Key="DockItemBackgroundPressed" Color="#0BFFFFFF" />
-            <!--  Same shape as the system's ControlElevationBorderBrush: a lit top edge over a flatter body  -->
+            <SolidColorBrush x:Key="DockItemBackgroundPressed" Color="#0AFFFFFF" />
             <LinearGradientBrush x:Key="DockItemBorderBrushPointerOver" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
                 <LinearGradientBrush.GradientStops>
-                    <GradientStop Offset="0.33" Color="#19FFFFFF" />
+                    <GradientStop Offset="0.33" Color="#1AFFFFFF" />
                     <GradientStop Offset="1.0" Color="#0FFFFFFF" />
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
-            <!--  Pressed drops the elevation and goes flat, the way system buttons do  -->
-            <SolidColorBrush x:Key="DockItemBorderBrushPressed" Color="#12FFFFFF" />
+            <SolidColorBrush x:Key="DockItemBorderBrushPressed" Color="#0AFFFFFF" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="DockItemBackground" Color="Transparent" />
             <SolidColorBrush x:Key="DockItemBorderBrush" Color="Transparent" />
             <SolidColorBrush x:Key="DockItemBackgroundPointerOver" Color="#80FFFFFF" />
-            <SolidColorBrush x:Key="DockItemBackgroundPressed" Color="#4DFFFFFF" />
-            <!--  Light theme flips the ramp so the shaded edge sits at the bottom, matching ControlElevationBorderBrush  -->
+            <SolidColorBrush x:Key="DockItemBackgroundPressed" Color="#4CFFFFFF" />
             <LinearGradientBrush x:Key="DockItemBorderBrushPointerOver" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
                 <LinearGradientBrush.RelativeTransform>
                     <ScaleTransform CenterY="0.5" ScaleY="-1" />
                 </LinearGradientBrush.RelativeTransform>
                 <LinearGradientBrush.GradientStops>
-                    <GradientStop Offset="0.33" Color="#17000000" />
-                    <GradientStop Offset="1.0" Color="#08000000" />
+                    <GradientStop Offset="0.33" Color="#0F000000" />
+                    <GradientStop Offset="1.0" Color="#05000000" />
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
-            <!--  Pressed drops the elevation and goes flat, the way system buttons do  -->
-            <SolidColorBrush x:Key="DockItemBorderBrushPressed" Color="#0F000000" />
+            <SolidColorBrush x:Key="DockItemBorderBrushPressed" Color="#05000000" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <SolidColorBrush x:Key="DockItemBackground" Color="Transparent" />
+            <StaticResource x:Key="DockItemBackground" ResourceKey="SystemControlPageBackgroundAltMediumBrush" />
             <SolidColorBrush x:Key="DockItemBorderBrush" Color="Transparent" />
-            <SolidColorBrush x:Key="DockItemBackgroundPointerOver" Color="{StaticResource SystemColorHighlightTextColor}" />
-            <SolidColorBrush x:Key="DockItemBackgroundPressed" Color="{StaticResource SystemColorHighlightTextColor}" />
-            <SolidColorBrush x:Key="DockItemBorderBrushPointerOver" Color="{StaticResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="DockItemBorderBrushPressed" Color="{StaticResource SystemColorHighlightTextColor}" />
+            <StaticResource x:Key="DockItemBackgroundPointerOver" ResourceKey="SystemControlHighlightAltAccentBrush" />
+            <StaticResource x:Key="DockItemBackgroundPressed" ResourceKey="SystemControlPageBackgroundAltMediumBrush" />
+            <StaticResource x:Key="DockItemBorderBrushPointerOver" ResourceKey="SystemControlHighlightAccentBrush" />
+            <StaticResource x:Key="DockItemBorderBrushPressed" ResourceKey="SystemControlHighlightAccentBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
