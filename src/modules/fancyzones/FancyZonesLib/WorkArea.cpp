@@ -205,6 +205,23 @@ void WorkArea::FlashZones()
     }
 }
 
+void WorkArea::ShowLayoutNameLabel(const std::wstring& name)
+{
+    if (m_zonesOverlay && FancyZonesSettings::settings().layoutNameLabelEnabled)
+    {
+        const auto& settings = FancyZonesSettings::settings();
+        const ZonesOverlay::LayoutNameLabelOptions options{
+            .textColor = FancyZonesUtils::HexToRGB(settings.layoutNameLabelTextColor),
+            .backgroundColor = FancyZonesUtils::HexToRGB(settings.layoutNameLabelBackgroundColor, RGB(38, 38, 38)),
+            .fontSize = settings.layoutNameLabelFontSize,
+            .padding = settings.layoutNameLabelPadding,
+            .durationMillis = settings.layoutNameLabelDuration,
+            .placement = settings.layoutNameLabelPlacement,
+        };
+        m_zonesOverlay->ShowLayoutName(name, options);
+    }
+}
+
 void WorkArea::ShowMonitorRotationPreview(const std::vector<RECT>& windowRects, size_t monitorNumber, std::optional<bool> reverse, bool animateRotation)
 {
     if (!m_zonesOverlay)

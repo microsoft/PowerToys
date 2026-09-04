@@ -67,6 +67,46 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(L"{33A2B101-06E0-437B-A61E-CDBECF502907}", FancyZonesUtils::GuidToString(LayoutHotkeys::instance().GetLayoutId(2).value()).value().c_str());
         }
 
+        TEST_METHOD (LayoutHotkeysGetLayoutIdsInKeyOrder)
+        {
+            // prepare: keys appear in the file out of order
+            json::JsonObject root{};
+            json::JsonArray keysArray{};
+
+            {
+                json::JsonObject keyJson{};
+                keyJson.SetNamedValue(NonLocalizable::LayoutHotkeysIds::LayoutUuidID, json::value(L"{33A2B101-06E0-437B-A61E-CDBECF502907}"));
+                keyJson.SetNamedValue(NonLocalizable::LayoutHotkeysIds::KeyID, json::value(2));
+
+                keysArray.Append(keyJson);
+            }
+            {
+                json::JsonObject keyJson{};
+                keyJson.SetNamedValue(NonLocalizable::LayoutHotkeysIds::LayoutUuidID, json::value(L"{33A2B101-06E0-437B-A61E-CDBECF502906}"));
+                keyJson.SetNamedValue(NonLocalizable::LayoutHotkeysIds::KeyID, json::value(0));
+
+                keysArray.Append(keyJson);
+            }
+            {
+                json::JsonObject keyJson{};
+                keyJson.SetNamedValue(NonLocalizable::LayoutHotkeysIds::LayoutUuidID, json::value(L"{33A2B101-06E0-437B-A61E-CDBECF502908}"));
+                keyJson.SetNamedValue(NonLocalizable::LayoutHotkeysIds::KeyID, json::value(1));
+
+                keysArray.Append(keyJson);
+            }
+
+            root.SetNamedValue(NonLocalizable::LayoutHotkeysIds::LayoutHotkeysArrayID, keysArray);
+            json::to_file(LayoutHotkeys::LayoutHotkeysFileName(), root);
+
+            // test
+            LayoutHotkeys::instance().LoadData();
+            const auto ids = LayoutHotkeys::instance().GetLayoutIds();
+            Assert::AreEqual((size_t)3, ids.size());
+            Assert::AreEqual(L"{33A2B101-06E0-437B-A61E-CDBECF502906}", FancyZonesUtils::GuidToString(ids[0]).value().c_str());
+            Assert::AreEqual(L"{33A2B101-06E0-437B-A61E-CDBECF502908}", FancyZonesUtils::GuidToString(ids[1]).value().c_str());
+            Assert::AreEqual(L"{33A2B101-06E0-437B-A61E-CDBECF502907}", FancyZonesUtils::GuidToString(ids[2]).value().c_str());
+        }
+
         TEST_METHOD (LayoutHotkeysParseEmpty)
         {
             // prepare
