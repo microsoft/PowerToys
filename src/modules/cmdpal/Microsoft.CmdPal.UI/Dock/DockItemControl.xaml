@@ -83,7 +83,7 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="{TemplateBinding CornerRadius}">
                                 <Grid.BackgroundTransition>
-                                    <BrushTransition Duration="0:0:0.15" />
+                                    <BrushTransition Duration="0:0:0.083" />
                                 </Grid.BackgroundTransition>
                                 <Grid
                                     x:Name="ContentGrid"
