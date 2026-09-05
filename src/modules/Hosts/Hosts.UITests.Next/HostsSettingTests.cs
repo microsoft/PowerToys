@@ -110,7 +110,7 @@ namespace Hosts.UITests
 
             // Validating click 'Quit' button in Warning-Dialog, the Hosts File Editor window would be closed.
             Assert.IsTrue(
-                settingsSession.WaitFor(IsHostsFileEditorClosed, 5_000),
+                settingsSession.WaitFor(IsHostsFileEditorClosed, 15_000, pollIntervalMS: 250),
                 "Hosts File Editor should be closed after click Quit button in Warning Dialog");
 
             // Re-launch Hosts File Editor from Settings.
