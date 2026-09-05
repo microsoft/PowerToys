@@ -14,17 +14,6 @@ namespace Microsoft.CmdPal.UI.Helpers;
 /// </summary>
 public static partial class IconProvider
 {
-    /*
-      Memory Usage Considerations (raw estimates):
-      | Icon Size | Per Icon | Count |    Total | Per Icon @ 200% | Total @ 200% | Per Icon @ 300% | Total @ 300% |
-      | --------- | -------: | ----: | -------: | --------------: | -----------: | --------------: | -----------: |
-      | 20×20     |   1.6 KB |  1024 |   1.6 MB |          6.4 KB |       6.4 MB |         14.4 KB |      14.4 MB |
-      | 32×32     |   4.0 KB |   512 |   2.0 MB |           16 KB |       8.0 MB |         36.0 KB |      18.0 MB |
-      | 48×48     |   9.0 KB |   256 |   2.3 MB |           36 KB |       9.0 MB |         81.0 KB |      20.3 MB |
-      | 64×64     |  16.0 KB |    64 |   1.0 MB |           64 KB |       4.0 MB |        144.0 KB |       9.0 MB |
-      | 256×256   | 256.0 KB |    64 |  16.0 MB |            1 MB |      64.0 MB |          2.3 MB |       144 MB |
-    */
-
     private static IIconSourceProvider _provider16 = null!;
     private static IIconSourceProvider _provider20 = null!;
     private static IIconSourceProvider _provider32 = null!;
