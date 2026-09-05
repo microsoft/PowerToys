@@ -38,6 +38,47 @@ public class AdaptiveCacheTests
     }
 
     [TestMethod]
+    [Timeout(5_000)]
+    public void RemovalCallbackReportsReasonValueAndRemainingCount()
+    {
+        var removals = new ConcurrentQueue<(int Key, int Value, AdaptiveCacheRemovalReason Reason, int Count, int Capacity)>();
+        var cache = new AdaptiveCache<int, int>(
+            capacity: 1,
+            decayInterval: TimeSpan.FromHours(1),
+            removalCallback: (key, value, reason, count, capacity) =>
+                removals.Enqueue((key, value, reason, count, capacity)));
+
+        cache.Add(1, 101);
+        cache.Add(2, 202);
+
+        Assert.IsTrue(
+            SpinWait.SpinUntil(
+                () => removals.Any(removal => removal.Reason == AdaptiveCacheRemovalReason.Capacity),
+                TimeSpan.FromSeconds(2)),
+            "Capacity removal was not reported.");
+        Assert.IsTrue(removals.TryPeek(out var capacityRemoval));
+        Assert.AreEqual(AdaptiveCacheRemovalReason.Capacity, capacityRemoval.Reason);
+        Assert.AreEqual(1, capacityRemoval.Count);
+        Assert.AreEqual(1, capacityRemoval.Capacity);
+        Assert.AreEqual(capacityRemoval.Key == 1 ? 101 : 202, capacityRemoval.Value);
+
+        var remainingKey = cache.TryGet(1, out _) ? 1 : 2;
+        var replacedValue = remainingKey == 1 ? 101 : 202;
+        cache.Add(remainingKey, 303);
+        Assert.IsTrue(removals.Any(
+            removal =>
+                removal.Reason == AdaptiveCacheRemovalReason.Replaced &&
+                removal.Key == remainingKey &&
+                removal.Value == replacedValue &&
+                removal.Count == 1));
+        Assert.IsTrue(cache.TryGet(remainingKey, out var replacement));
+        Assert.AreEqual(303, replacement);
+
+        Assert.IsTrue(cache.TryRemove(remainingKey));
+        Assert.IsTrue(removals.Any(removal => removal.Reason == AdaptiveCacheRemovalReason.Explicit));
+    }
+
+    [TestMethod]
     [Timeout(15_000)]
     public async Task ConcurrentCleanupAndFailedLoadsKeepApproximateCountConsistent()
     {

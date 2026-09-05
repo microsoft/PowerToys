@@ -7,6 +7,7 @@ using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Helpers;
 
@@ -21,6 +22,7 @@ internal static class IconLoadDiagnostics
     private static readonly List<IconLoadDiagnosticsReport> Reports = [];
     private static long _nextSessionId;
     private static IconLoadDiagnosticsSession? _activeSession;
+    private static IconLoadDiagnosticsSession? _etwSession;
 
     public static bool IsRecording => Volatile.Read(ref _activeSession) is not null;
 
@@ -40,6 +42,7 @@ internal static class IconLoadDiagnostics
             Interlocked.Increment(ref _nextSessionId),
             dispatcherQueue);
         Interlocked.Exchange(ref _activeSession, session)?.Stop();
+        Interlocked.Exchange(ref _etwSession, null)?.Stop();
         return session.Id;
     }
 
@@ -66,6 +69,7 @@ internal static class IconLoadDiagnostics
     public static void Reset()
     {
         Interlocked.Exchange(ref _activeSession, null)?.Stop();
+        Interlocked.Exchange(ref _etwSession, null)?.Stop();
         lock (ReportsLock)
         {
             Reports.Clear();
@@ -79,7 +83,7 @@ internal static class IconLoadDiagnostics
 
     public static IconRequestMeasurement BeginRequest(IconRequestReason reason, double scale, IconRequestOrigin origin)
     {
-        var session = Volatile.Read(ref _activeSession);
+        var session = GetCurrentSession();
         return session is null
             ? default
             : session.BeginRequest(reason, scale, origin);
@@ -93,8 +97,8 @@ internal static class IconLoadDiagnostics
         double height,
         double scale)
     {
-        var session = request.Session ?? Volatile.Read(ref _activeSession);
-        if (session is null || !ReferenceEquals(session, Volatile.Read(ref _activeSession)))
+        var session = request.Session ?? GetCurrentSession();
+        if (session is null || !IsCurrentSession(session))
         {
             return null;
         }
@@ -102,14 +106,37 @@ internal static class IconLoadDiagnostics
         return session.CreateLoad(ClassifyInput(iconString, hasStream), width, height, scale);
     }
 
+    internal static void RecordCacheLookup(Size iconSize, int capacity, bool hit)
+    {
+        GetCurrentSession()?.RecordCacheLookup(iconSize, capacity, hit);
+    }
+
+    internal static void RecordCacheEntryAdded(Size iconSize, int capacity, int entryCount)
+    {
+        GetCurrentSession()?.RecordCacheEntryAdded(iconSize, capacity, entryCount);
+    }
+
+    internal static void RecordCacheEntryRemoved(
+        Size iconSize,
+        int capacity,
+        int entryCount,
+        AdaptiveCacheRemovalReason reason)
+    {
+        GetCurrentSession()?.RecordCacheEntryRemoved(
+            iconSize,
+            capacity,
+            entryCount,
+            reason);
+    }
+
     public static long BeginElementUpdate()
     {
-        return Volatile.Read(ref _activeSession) is null ? 0 : Stopwatch.GetTimestamp();
+        return GetCurrentSession() is null ? 0 : Stopwatch.GetTimestamp();
     }
 
     public static void RecordElementUpdate(bool reused, IconSource? source, long startedAt)
     {
-        var session = Volatile.Read(ref _activeSession);
+        var session = GetCurrentSession();
         if (session is null)
         {
             return;
@@ -117,6 +144,79 @@ internal static class IconLoadDiagnostics
 
         var elapsedTicks = startedAt == 0 ? -1 : Stopwatch.GetTimestamp() - startedAt;
         session.RecordElementUpdate(reused, ClassifyResult(source), elapsedTicks);
+    }
+
+    internal static void OnEtwDisabled()
+    {
+        Interlocked.Exchange(ref _etwSession, null)?.Stop();
+    }
+
+    private static IconLoadDiagnosticsSession? GetCurrentSession()
+    {
+        var activeSession = Volatile.Read(ref _activeSession);
+        if (activeSession is not null)
+        {
+            return activeSession;
+        }
+
+        if (!IconLoadEventSource.Log.IsEnabled())
+        {
+            // OnEventCommand normally retires the hidden session as soon as the last listener
+            // detaches. Avoid an unconditional interlocked write on every disabled hot-path
+            // probe while still covering a disable racing this read.
+            if (Volatile.Read(ref _etwSession) is not null)
+            {
+                OnEtwDisabled();
+            }
+
+            return null;
+        }
+
+        var etwSession = Volatile.Read(ref _etwSession);
+        if (etwSession is null)
+        {
+            var candidate = new IconLoadDiagnosticsSession(Interlocked.Increment(ref _nextSessionId));
+            etwSession = Interlocked.CompareExchange(ref _etwSession, candidate, null);
+            if (etwSession is null)
+            {
+                etwSession = candidate;
+            }
+            else
+            {
+                candidate.Stop();
+            }
+        }
+
+        // An explicit text session may have started while the hidden ETW session was created.
+        activeSession = Volatile.Read(ref _activeSession);
+        if (activeSession is not null)
+        {
+            if (ReferenceEquals(Interlocked.CompareExchange(ref _etwSession, null, etwSession), etwSession))
+            {
+                etwSession.Stop();
+            }
+
+            return activeSession;
+        }
+
+        return etwSession;
+    }
+
+    private static bool IsCurrentSession(IconLoadDiagnosticsSession session)
+    {
+        var activeSession = Volatile.Read(ref _activeSession);
+        if (activeSession is not null)
+        {
+            return ReferenceEquals(session, activeSession);
+        }
+
+        if (!IconLoadEventSource.Log.IsEnabled())
+        {
+            OnEtwDisabled();
+            return false;
+        }
+
+        return ReferenceEquals(session, Volatile.Read(ref _etwSession));
     }
 
     private static IconLoadInputKind ClassifyInput(string? iconString, bool hasStream)

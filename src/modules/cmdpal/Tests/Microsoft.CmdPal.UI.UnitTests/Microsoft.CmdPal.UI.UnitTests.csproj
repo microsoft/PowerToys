@@ -3,6 +3,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <RootNamespace>Microsoft.CmdPal.UI.UnitTests</RootNamespace>
@@ -25,7 +26,10 @@
   <ItemGroup>
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconRequestSite.cs" Link="Controls\IconRequestSite.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\AdaptiveCache`2.cs" Link="Helpers\AdaptiveCache`2.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\AdaptiveCacheRemovalReason.cs" Link="Helpers\AdaptiveCacheRemovalReason.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\CachedIconSourceProvider.cs" Link="Helpers\Icons\CachedIconSourceProvider.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconDispatcherMaterializationKind.cs" Link="Helpers\Icons\IconDispatcherMaterializationKind.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconDispatcherUiSliceKind.cs" Link="Helpers\Icons\IconDispatcherUiSliceKind.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadDemandStage.cs" Link="Helpers\Icons\IconLoadDemandStage.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadDiagnostics.cs" Link="Helpers\Icons\IconLoadDiagnostics.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadDiagnosticsReport.cs" Link="Helpers\Icons\IconLoadDiagnosticsReport.cs" />
