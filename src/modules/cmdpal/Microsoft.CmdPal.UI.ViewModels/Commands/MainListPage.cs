@@ -235,8 +235,8 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private void Commands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        InvalidateDefaultView();
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
+        InvalidateDefaultView();
         if (_includeApps != _filteredItemsIncludesApps)
         {
             ReapplySearchInBackground();
