@@ -1938,6 +1938,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 e.Handled = true;
                 break;
             case VirtualKey.F when modifiers.OnlyAlt: // Alt+F: toggle filter focus
+                // Alt+F access key in FilterDropDown will actually handle this instead, and I want it set to show the cue,
+                // but I also want to support Alt+F when the access key mode is not active, so I will handle it here as well.
                 shellPage.ToggleFilterFocus();
                 e.Handled = true;
                 break;
