@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.IO.Abstractions;
 using System.Text.Json;
@@ -20,7 +19,6 @@ using Microsoft.PowerToys.Telemetry;
 
 namespace ColorPicker.Settings
 {
-    [Export(typeof(IUserSettings))]
     public class UserSettings : IUserSettings
     {
         private readonly SettingsUtils _settingsUtils;
@@ -42,7 +40,6 @@ namespace ColorPicker.Settings
             WriteIndented = true,
         };
 
-        [ImportingConstructor]
         public UserSettings(Helpers.IThrottledActionInvoker throttledActionInvoker)
         {
             _settingsUtils = SettingsUtils.Default;
@@ -183,16 +180,6 @@ namespace ColorPicker.Settings
                             }
 
                             retry = false;
-                        }
-                        catch (IOException ex)
-                        {
-                            if (retryCount > MaxNumberOfRetry)
-                            {
-                                retry = false;
-                            }
-
-                            Logger.LogError("Failed to read changed settings", ex);
-                            Thread.Sleep(500);
                         }
                         catch (Exception ex)
                         {

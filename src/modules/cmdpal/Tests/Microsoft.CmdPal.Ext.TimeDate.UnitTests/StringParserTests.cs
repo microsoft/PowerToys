@@ -62,7 +62,7 @@ public class StringParserTests
     public void ConvertStringToDateTime(string typedString, bool expectedBool, string stringType, string expectedString)
     {
         // Act
-        var boolResult = TimeAndDateHelper.ParseStringAsDateTime(in typedString, out DateTime result, out _);
+        var boolResult = DateTimeInputParser.ParseStringAsDateTime(in typedString, out DateTime result, out _);
 
         // Assert
         Assert.AreEqual(expectedBool, boolResult);
@@ -87,7 +87,7 @@ public class StringParserTests
         foreach (var (input, expectedSuccess) in testCases)
         {
             // Act
-            var result = TimeAndDateHelper.ParseStringAsDateTime(in input, out DateTime dateTime, out var errorMessage);
+            var result = DateTimeInputParser.ParseStringAsDateTime(in input, out DateTime dateTime, out var errorMessage);
 
             // Assert
             Assert.AreEqual(expectedSuccess, result, $"Failed for input: {input}");
@@ -105,7 +105,7 @@ public class StringParserTests
         var unixTimestamp = "u1640995200"; // 2022-01-01 00:00:00 UTC
 
         // Act
-        var result = TimeAndDateHelper.ParseStringAsDateTime(in unixTimestamp, out DateTime dateTime, out var errorMessage);
+        var result = DateTimeInputParser.ParseStringAsDateTime(in unixTimestamp, out DateTime dateTime, out var errorMessage);
 
         // Assert
         Assert.IsTrue(result, "Unix timestamp parsing should succeed");
@@ -119,7 +119,7 @@ public class StringParserTests
         var fileTime = "ft132857664000000000"; // Some valid file time
 
         // Act
-        var result = TimeAndDateHelper.ParseStringAsDateTime(in fileTime, out DateTime dateTime, out var errorMessage);
+        var result = DateTimeInputParser.ParseStringAsDateTime(in fileTime, out DateTime dateTime, out var errorMessage);
 
         // Assert
         Assert.IsTrue(result, "File time parsing should succeed");

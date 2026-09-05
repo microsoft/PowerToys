@@ -371,7 +371,7 @@ namespace ColorPicker.UnitTests.Helpers
         [DataRow("VEC4", "(1f, 0f, 0f, 1f)")]
         public void GetStringRepresentation_Red(string type, string expected)
         {
-            var result = ColorRepresentationHelper.GetStringRepresentation(Color.FromArgb(255, 255, 0, 0), type, ColorFormatHelper.GetDefaultFormat(type));
+            var result = ColorRepresentationHelper.GetStringRepresentation(Color.FromArgb(255, 255, 0, 0), ColorFormatHelper.GetDefaultFormat(type));
             Assert.AreEqual(expected, result);
         }
 
@@ -386,7 +386,7 @@ namespace ColorPicker.UnitTests.Helpers
         [DataRow("VEC4", "(1f, 1f, 1f, 1f)")]
         public void GetStringRepresentation_White(string type, string expected)
         {
-            var result = ColorRepresentationHelper.GetStringRepresentation(Color.FromArgb(255, 255, 255, 255), type, ColorFormatHelper.GetDefaultFormat(type));
+            var result = ColorRepresentationHelper.GetStringRepresentation(Color.FromArgb(255, 255, 255, 255), ColorFormatHelper.GetDefaultFormat(type));
             Assert.AreEqual(expected, result);
         }
 
@@ -400,7 +400,7 @@ namespace ColorPicker.UnitTests.Helpers
         [DataRow("HEX Int", "0xFF00FF00")]
         public void GetStringRepresentation_Green(string type, string expected)
         {
-            var result = ColorRepresentationHelper.GetStringRepresentation(Color.FromArgb(255, 0, 255, 0), type, ColorFormatHelper.GetDefaultFormat(type));
+            var result = ColorRepresentationHelper.GetStringRepresentation(Color.FromArgb(255, 0, 255, 0), ColorFormatHelper.GetDefaultFormat(type));
             Assert.AreEqual(expected, result);
         }
 
@@ -414,7 +414,7 @@ namespace ColorPicker.UnitTests.Helpers
         [DataRow("HEX Int", "0xFF0000FF")]
         public void GetStringRepresentation_Blue(string type, string expected)
         {
-            var result = ColorRepresentationHelper.GetStringRepresentation(Color.FromArgb(255, 0, 0, 255), type, ColorFormatHelper.GetDefaultFormat(type));
+            var result = ColorRepresentationHelper.GetStringRepresentation(Color.FromArgb(255, 0, 0, 255), ColorFormatHelper.GetDefaultFormat(type));
             Assert.AreEqual(expected, result);
         }
 
@@ -422,14 +422,14 @@ namespace ColorPicker.UnitTests.Helpers
         public void GetStringRepresentation_EmptyFormat_ReturnsHex()
         {
             // When colorFormat is null or empty, should return hex
-            var result = ColorRepresentationHelper.GetStringRepresentation(Color.FromArgb(255, 255, 0, 0), "RGB", string.Empty);
+            var result = ColorRepresentationHelper.GetStringRepresentation(Color.FromArgb(255, 255, 0, 0), string.Empty);
             Assert.AreEqual("ff0000", result);
         }
 
         [TestMethod]
         public void GetStringRepresentation_NullFormat_ReturnsHex()
         {
-            var result = ColorRepresentationHelper.GetStringRepresentation(Color.FromArgb(255, 255, 0, 0), "RGB", null);
+            var result = ColorRepresentationHelper.GetStringRepresentation(Color.FromArgb(255, 255, 0, 0), null);
             Assert.AreEqual("ff0000", result);
         }
 
