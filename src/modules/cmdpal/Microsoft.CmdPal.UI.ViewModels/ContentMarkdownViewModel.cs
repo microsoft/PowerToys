@@ -17,7 +17,9 @@ public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, WeakRe
     // cannot be marked [ObservableProperty]
     public string Body { get; protected set; } = string.Empty;
 
-    public override void InitializeProperties()
+    protected override INotifyPropChanged? ObservableModel => Model.Unsafe;
+
+    protected override void InitializeContent()
     {
         var model = Model.Unsafe;
         if (model is null)
@@ -27,24 +29,9 @@ public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, WeakRe
 
         Body = model.Body;
         UpdateProperty(nameof(Body));
-
-        model.PropChanged += Model_PropChanged;
     }
 
-    private void Model_PropChanged(object sender, IPropChangedEventArgs args)
-    {
-        try
-        {
-            var propName = args.PropertyName;
-            FetchProperty(propName);
-        }
-        catch (Exception ex)
-        {
-            ShowException(ex);
-        }
-    }
-
-    protected void FetchProperty(string propertyName)
+    protected override void FetchProperty(string propertyName)
     {
         var model = Model.Unsafe;
         if (model is null)
@@ -60,15 +47,5 @@ public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, WeakRe
         }
 
         UpdateProperty(propertyName);
-    }
-
-    protected override void UnsafeCleanup()
-    {
-        base.UnsafeCleanup();
-        var model = Model.Unsafe;
-        if (model is not null)
-        {
-            model.PropChanged -= Model_PropChanged;
-        }
     }
 }
