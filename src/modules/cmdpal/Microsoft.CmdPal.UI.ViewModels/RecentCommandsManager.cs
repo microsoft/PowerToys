@@ -180,6 +180,7 @@ public record RecentCommandsManager : IRecentCommandsManager
             ? this
             : this with { History = ImmutableList<HistoryItem>.Empty };
 
+    [JsonIgnore]
     public bool IsEmpty => History.Count == 0;
 
     /// <summary>
