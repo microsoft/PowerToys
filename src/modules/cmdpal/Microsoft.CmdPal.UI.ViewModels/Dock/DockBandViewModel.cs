@@ -112,7 +112,8 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
     /// <summary>
     /// Saves the current label settings to settings.
     /// </summary>
-    internal void SaveShowLabels()
+    /// <returns>The band settings containing any saved label changes.</returns>
+    internal DockBandSettings SaveShowLabels()
     {
         // Only write to settings if the label values actually changed from
         // the snapshot. When multiple non-customized monitors share global
@@ -128,6 +129,7 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
         _showTitlesSnapshot = null;
         _showSubtitlesSnapshot = null;
+        return _bandSettings;
     }
 
     /// <summary>
@@ -235,6 +237,16 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         var dockSettings = settingsService.Settings.DockSettings;
         _showTitles = settings.ResolveShowTitles(dockSettings.ShowLabels);
         _showSubtitles = settings.ResolveShowSubtitles(dockSettings.ShowLabels);
+    }
+
+    public static ICommandItem[] GetItemsForDisplay(CommandItemViewModel rootItem)
+    {
+        if (rootItem.Command.Model.Unsafe is IListPage list)
+        {
+            return list.GetItems();
+        }
+
+        return rootItem.Model.Unsafe is ICommandItem item ? [item] : [];
     }
 
     private void InitializeFromList(IListPage list)

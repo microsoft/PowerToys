@@ -1068,7 +1068,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 IsGridView = model.GridProperties is not null;
                 GridProperties = LoadGridPropertiesViewModel(model.GridProperties);
                 GridProperties?.InitializeProperties();
-                UpdateProperty(nameof(IsGridView));
+                UpdateProperty(nameof(IsGridView), nameof(GridProperties));
                 ApplyLayoutToItems();
                 break;
             case nameof(ShowDetails):
