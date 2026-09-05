@@ -67,7 +67,9 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
         }
     }
 
-    public override void InitializeProperties()
+    protected override INotifyPropChanged? ObservableModel => _formModel.Unsafe;
+
+    protected override void InitializeContent()
     {
         var model = _formModel.Unsafe;
         if (model is null)
@@ -82,8 +84,6 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
         RenderCard();
 
         UpdateProperty(nameof(Card));
-
-        model.PropChanged += Model_PropChanged;
     }
 
     private void RenderCard()
@@ -113,19 +113,7 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
         }
     }
 
-    private void Model_PropChanged(object sender, IPropChangedEventArgs args)
-    {
-        try
-        {
-            FetchProperty(args.PropertyName);
-        }
-        catch (Exception ex)
-        {
-            ShowException(ex);
-        }
-    }
-
-    protected virtual void FetchProperty(string propertyName)
+    protected override void FetchProperty(string propertyName)
     {
         var model = this._formModel.Unsafe;
         if (model is null)

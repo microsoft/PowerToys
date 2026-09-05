@@ -12,8 +12,10 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class DetailsViewModel : ExtensionObjectViewModel
 {
     private readonly ExtensionObject<IDetails> _detailsModel;
+    private readonly ViewModelLifetime _lifetime = new();
     private INotifyPropChanged? _observableDetails;
-    private bool _isSubscribed;
+    private bool _initialized;
+    private List<ContentViewModel> _ownedContent = [];
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -37,11 +39,16 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
         _detailsModel = new(details);
     }
 
+    internal bool Represents(IDetails? model) => ReferenceEquals(_detailsModel.Unsafe, model);
+
+    internal bool IsObservable => _observableDetails is not null;
+
     private void Model_PropChanged(object sender, IPropChangedEventArgs args)
     {
         try
         {
-            FetchProperty(args.PropertyName);
+            var propertyName = args.PropertyName;
+            _lifetime.Run(() => FetchProperty(propertyName));
         }
         catch (Exception ex)
         {
@@ -83,61 +90,94 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
             case nameof(Details.Content):
                 RebuildContent(model);
                 break;
+            case nameof(Details.Size):
+                UpdateSize(model);
+                break;
         }
     }
 
     private void RebuildMetadata(IDetails model)
     {
         var newMetadata = new List<DetailsElementViewModel>();
-        var meta = model.Metadata;
-        if (meta is not null)
+        try
         {
-            foreach (var element in meta)
+            var meta = model.Metadata;
+            if (meta is not null)
             {
-                DetailsElementViewModel? vm = element.Data switch
+                foreach (var element in meta)
                 {
-                    IDetailsSeparator => new DetailsSeparatorViewModel(element, this.PageContext),
-                    IDetailsLink => new DetailsLinkViewModel(element, this.PageContext),
-                    IDetailsCommands => new DetailsCommandsViewModel(element, this.PageContext),
-                    IDetailsTags => new DetailsTagsViewModel(element, this.PageContext),
-                    _ => null,
-                };
-                if (vm is not null)
-                {
-                    vm.InitializeProperties();
-                    newMetadata.Add(vm);
+                    DetailsElementViewModel? vm = element.Data switch
+                    {
+                        IDetailsSeparator => new DetailsSeparatorViewModel(element, this.PageContext),
+                        IDetailsLink => new DetailsLinkViewModel(element, this.PageContext),
+                        IDetailsCommands => new DetailsCommandsViewModel(element, this.PageContext),
+                        IDetailsTags => new DetailsTagsViewModel(element, this.PageContext),
+                        _ => null,
+                    };
+                    if (vm is not null)
+                    {
+                        newMetadata.Add(vm);
+                        vm.InitializeProperties();
+                    }
                 }
             }
         }
+        catch
+        {
+            newMetadata.ForEach(vm => vm.SafeCleanup());
+            throw;
+        }
 
+        var previous = Metadata;
         Metadata = newMetadata;
+        previous.ForEach(vm => vm.SafeCleanup());
     }
 
-    public override void InitializeProperties()
+    public override void InitializeProperties() => _lifetime.Run(InitializeDetails);
+
+    private void InitializeDetails()
     {
+        if (_initialized && _observableDetails is not null)
+        {
+            return;
+        }
+
         var model = _detailsModel.Unsafe;
         if (model is null)
         {
             return;
         }
 
-        // Subscribe to PropChanged if the model supports it (only subscribe once)
-        if (!_isSubscribed && model is INotifyPropChanged observable)
+        try
         {
-            observable.PropChanged += Model_PropChanged;
-            _observableDetails = observable;
-            _isSubscribed = true;
+            if (_observableDetails is null && model is INotifyPropChanged observable)
+            {
+                observable.PropChanged += Model_PropChanged;
+                _observableDetails = observable;
+            }
+
+            Title = model.Title ?? string.Empty;
+            Body = model.Body ?? string.Empty;
+            HeroImage = new(model.HeroImage);
+            HeroImage.InitializeProperties();
+
+            UpdateProperty(nameof(Title), nameof(Body), nameof(HeroImage));
+            UpdateSize(model);
+            RebuildMetadata(model);
+            UpdateProperty(nameof(Metadata));
+            RebuildContent(model);
+            _initialized = true;
         }
+        catch
+        {
+            _lifetime.Close(CleanupDetails);
+            throw;
+        }
+    }
 
-        Title = model.Title ?? string.Empty;
-        Body = model.Body ?? string.Empty;
-        HeroImage = new(model.HeroImage);
-        HeroImage.InitializeProperties();
-
-        UpdateProperty(nameof(Title));
-        UpdateProperty(nameof(Body));
-        UpdateProperty(nameof(HeroImage));
-
+    private void UpdateSize(IDetails model)
+    {
+        Size = ContentSize.Small;
         if (model is IExtendedAttributesProvider provider)
         {
             if (provider.GetProperties()?.TryGetValue("Size", out var rawValue) == true)
@@ -149,48 +189,79 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
             }
         }
 
-        Size ??= ContentSize.Small;
-
         UpdateProperty(nameof(Size));
-
-        RebuildMetadata(model);
-        RebuildContent(model);
     }
 
     private void RebuildContent(IDetails model)
     {
         List<ContentViewModel> content = [];
-        if (model is IDetails2 details2)
+        try
         {
-            foreach (var item in details2.GetContent())
+            if (model is IDetails2 details2)
             {
-                var viewModel = CommandPaletteContentPageViewModel.CreateViewModel(item, PageContext);
-                if (viewModel is not null)
+                foreach (var item in details2.GetContent())
                 {
-                    viewModel.InitializeProperties();
-                    content.Add(viewModel);
+                    var viewModel = CommandPaletteContentPageViewModel.CreateViewModel(item, PageContext);
+                    if (viewModel is not null)
+                    {
+                        content.Add(viewModel);
+                        viewModel.InitializeProperties();
+                    }
                 }
             }
         }
+        catch
+        {
+            content.ForEach(vm => vm.SafeCleanup());
+            throw;
+        }
 
-        // Now, back to a UI thread to update the observable collection
+        var previous = _ownedContent;
+        Volatile.Write(ref _ownedContent, content);
+        previous.ForEach(vm => vm.SafeCleanup());
+
         DoOnUiThread(
             () =>
             {
+                if (_lifetime.IsClosed || !ReferenceEquals(Volatile.Read(ref _ownedContent), content))
+                {
+                    return;
+                }
+
                 ListHelpers.InPlaceUpdateList(Content, content);
                 UpdateProperty(nameof(Content));
             });
     }
 
-    protected override void UnsafeCleanup()
-    {
-        base.UnsafeCleanup();
+    protected override void UnsafeCleanup() => _lifetime.Close(CleanupDetails);
 
-        if (_isSubscribed && _observableDetails is not null)
+    private void CleanupDetails()
+    {
+        var observable = _observableDetails;
+        _observableDetails = null;
+        _initialized = false;
+        try
         {
-            _observableDetails.PropChanged -= Model_PropChanged;
-            _observableDetails = null;
-            _isSubscribed = false;
+            if (observable is not null)
+            {
+                observable.PropChanged -= Model_PropChanged;
+            }
+        }
+        finally
+        {
+            Metadata.ForEach(vm => vm.SafeCleanup());
+            Metadata = [];
+            var previous = _ownedContent;
+            Volatile.Write(ref _ownedContent, []);
+            previous.ForEach(vm => vm.SafeCleanup());
+            var empty = _ownedContent;
+            DoOnUiThread(() =>
+            {
+                if (ReferenceEquals(Volatile.Read(ref _ownedContent), empty))
+                {
+                    Content.Clear();
+                }
+            });
         }
     }
 }

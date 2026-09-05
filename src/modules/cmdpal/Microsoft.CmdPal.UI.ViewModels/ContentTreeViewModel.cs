@@ -13,6 +13,9 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPageContext> context) :
     ContentViewModel(context)
 {
+    private List<ContentViewModel> _ownedChildren = [];
+    private ITreeContent? _subscribedTree;
+
     public ExtensionObject<ITreeContent> Model { get; } = new(_tree);
 
     // Remember - "observable" properties from the model (via PropChanged)
@@ -27,7 +30,9 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
     // collection, even if the collection is just a single item.
     public ObservableCollection<ContentViewModel> Root => RootContent is not null ? [RootContent] : [];
 
-    public override void InitializeProperties()
+    protected override INotifyPropChanged? ObservableModel => Model.Unsafe;
+
+    protected override void InitializeContent()
     {
         var model = Model.Unsafe;
         if (model is null)
@@ -35,18 +40,11 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
             return;
         }
 
-        var root = model.RootContent;
-        if (root is not null)
-        {
-            RootContent = ViewModelFromContent(root, PageContext);
-            RootContent?.InitializeProperties();
-            UpdateProperty(nameof(RootContent));
-            UpdateProperty(nameof(Root));
-        }
-
-        FetchContent();
-        model.PropChanged += Model_PropChanged;
         model.ItemsChanged += Model_ItemsChanged;
+        _subscribedTree = model;
+
+        ReplaceRoot(model.RootContent);
+        FetchContent();
     }
 
     // Theoretically, we should unify this with the one in CommandPalettePageViewModelFactory
@@ -65,15 +63,11 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
         return viewModel;
     }
 
-    // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
-    private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchContent();
-
-    private void Model_PropChanged(object sender, IPropChangedEventArgs args)
+    private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args)
     {
         try
         {
-            var propName = args.PropertyName;
-            FetchProperty(propName);
+            Lifetime.Run(FetchContent);
         }
         catch (Exception ex)
         {
@@ -81,7 +75,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
         }
     }
 
-    protected void FetchProperty(string propertyName)
+    protected override void FetchProperty(string propertyName)
     {
         var model = Model.Unsafe;
         if (model is null)
@@ -92,22 +86,30 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
         switch (propertyName)
         {
             case nameof(RootContent):
-                var root = model.RootContent;
-                if (root is not null)
-                {
-                    RootContent = ViewModelFromContent(root, PageContext);
-                }
-                else
-                {
-                    root = null;
-                }
-
-                UpdateProperty(nameof(Root));
-
+                ReplaceRoot(model.RootContent);
                 break;
         }
 
         UpdateProperty(propertyName);
+    }
+
+    private void ReplaceRoot(IContent? model)
+    {
+        var replacement = model is null ? null : ViewModelFromContent(model, PageContext);
+        try
+        {
+            replacement?.InitializeProperties();
+        }
+        catch
+        {
+            replacement?.SafeCleanup();
+            throw;
+        }
+
+        var previous = RootContent;
+        RootContent = replacement;
+        previous?.SafeCleanup();
+        UpdateProperty(nameof(RootContent), nameof(Root));
     }
 
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
@@ -123,42 +125,61 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
                 var viewModel = ViewModelFromContent(item, PageContext);
                 if (viewModel is not null)
                 {
+                    newContent.Add(viewModel);
                     viewModel.InitializeProperties();
-                    newContent.Add((ContentViewModel)viewModel);
                 }
             }
         }
-        catch (Exception ex)
+        catch
         {
-            ShowException(ex);
+            newContent.ForEach(vm => vm.SafeCleanup());
             throw;
         }
 
-        // Now, back to a UI thread to update the observable collection
+        var previous = _ownedChildren;
+        Volatile.Write(ref _ownedChildren, newContent);
+        previous.ForEach(vm => vm.SafeCleanup());
+
         DoOnUiThread(
         () =>
         {
-            ListHelpers.InPlaceUpdateList(Children, newContent);
-        });
+            if (Lifetime.IsClosed || !ReferenceEquals(Volatile.Read(ref _ownedChildren), newContent))
+            {
+                return;
+            }
 
-        UpdateProperty(nameof(HasChildren));
+            ListHelpers.InPlaceUpdateList(Children, newContent);
+            UpdateProperty(nameof(HasChildren));
+        });
     }
 
-    protected override void UnsafeCleanup()
+    protected override void CleanupContent()
     {
-        base.UnsafeCleanup();
-        RootContent?.SafeCleanup();
-        foreach (var item in Children)
+        var tree = _subscribedTree;
+        _subscribedTree = null;
+        try
         {
-            item.SafeCleanup();
+            if (tree is not null)
+            {
+                tree.ItemsChanged -= Model_ItemsChanged;
+            }
         }
-
-        Children.Clear();
-        var model = Model.Unsafe;
-        if (model is not null)
+        finally
         {
-            model.PropChanged -= Model_PropChanged;
-            model.ItemsChanged -= Model_ItemsChanged;
+            RootContent?.SafeCleanup();
+            RootContent = null;
+            var previous = _ownedChildren;
+            Volatile.Write(ref _ownedChildren, []);
+            previous.ForEach(vm => vm.SafeCleanup());
+            var empty = _ownedChildren;
+            DoOnUiThread(() =>
+            {
+                if (ReferenceEquals(Volatile.Read(ref _ownedChildren), empty))
+                {
+                    Children.Clear();
+                    UpdateProperty(nameof(HasChildren));
+                }
+            });
         }
     }
 }
