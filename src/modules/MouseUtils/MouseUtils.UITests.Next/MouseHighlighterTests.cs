@@ -208,10 +208,9 @@ public class MouseHighlighterTests : UITestBase
         var outside = (X: centerX + 120, Y: centerY);
         var insideBase = GetStablePixel(inside.X, inside.Y);
         var outsideBase = GetStablePixel(outside.X, outside.Y);
-        MouseHelper.MoveBy(160, 80, steps: 20, delayMs: 20);
-        var calibratedTarget = MouseHelper.GetMousePosition();
-        var movedInside = (X: calibratedTarget.X + 30, Y: calibratedTarget.Y);
-        var movedOutside = (X: calibratedTarget.X + 120, Y: calibratedTarget.Y);
+        var movedTarget = (X: centerX + 160, Y: centerY + 80);
+        var movedInside = (X: movedTarget.X + 30, Y: movedTarget.Y);
+        var movedOutside = (X: movedTarget.X + 120, Y: movedTarget.Y);
         var movedInsideBase = GetStablePixel(movedInside.X, movedInside.Y);
         var movedOutsideBase = GetStablePixel(movedOutside.X, movedOutside.Y);
         MouseHelper.MoveTo(centerX, centerY);
@@ -220,11 +219,13 @@ public class MouseHighlighterTests : UITestBase
         AssertPixelNear(inside.X, inside.Y, insideBase, 5, "transparent Spotlight hole inside the configured radius");
         AssertPixelNear(outside.X, outside.Y, Blend(Color.Red, outsideBase, 128), 5, "Spotlight tint outside the configured radius");
 
-        MouseHelper.MoveBy(160, 80, steps: 20, delayMs: 20);
+        // Relative SendInput movement is affected by Windows pointer acceleration, so use a fixed
+        // screen target to isolate whether Spotlight tracks the cursor.
+        MouseHelper.MoveToWithInput(movedTarget.X, movedTarget.Y);
         var moved = MouseHelper.GetMousePosition();
         Assert.IsTrue(
-            Distance(moved.X, moved.Y, calibratedTarget.X, calibratedTarget.Y) <= 10,
-            $"Calibrated relative movement ended at ({calibratedTarget.X},{calibratedTarget.Y}), but overlay movement ended at ({moved.X},{moved.Y}).");
+            Math.Abs(moved.X - movedTarget.X) <= 1 && Math.Abs(moved.Y - movedTarget.Y) <= 1,
+            $"Cursor moved to ({moved.X},{moved.Y}), expected ({movedTarget.X},{movedTarget.Y}) within absolute-input normalization precision.");
         AssertPixelNear(movedInside.X, movedInside.Y, movedInsideBase, 5, "transparent Spotlight hole after cursor movement");
         AssertPixelNear(movedOutside.X, movedOutside.Y, Blend(Color.Red, movedOutsideBase, 128), 5, "Spotlight tint after cursor movement");
     }

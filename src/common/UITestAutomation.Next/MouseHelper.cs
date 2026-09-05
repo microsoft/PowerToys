@@ -42,6 +42,8 @@ public static class MouseHelper
     private const uint INPUT_MOUSE = 0;
 
     private const uint MouseEventMove = 0x01;
+    private const uint MouseEventVirtualDesk = 0x4000;
+    private const uint MouseEventAbsolute = 0x8000;
     private const uint MOUSEEVENTF_LEFTDOWN = 0x02;
     private const uint MOUSEEVENTF_LEFTUP = 0x04;
     private const uint MOUSEEVENTF_RIGHTDOWN = 0x08;
@@ -52,6 +54,10 @@ public static class MouseHelper
 
     private const int ClickDelayMs = 100;
     private const int WheelTick = 120;
+    private const int SmXVirtualScreen = 76;
+    private const int SmYVirtualScreen = 77;
+    private const int SmCxVirtualScreen = 78;
+    private const int SmCyVirtualScreen = 79;
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool SetCursorPos(int x, int y);
@@ -63,6 +69,9 @@ public static class MouseHelper
     [DllImport("user32.dll", SetLastError = true)]
     private static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
 
+    [DllImport("user32.dll")]
+    private static extern int GetSystemMetrics(int nIndex);
+
     /// <summary>Move the OS cursor to absolute screen coordinates.</summary>
     /// <exception cref="Win32Exception"><c>SetCursorPos</c> rejected the requested position.</exception>
     public static void MoveTo(int x, int y)
@@ -71,6 +80,43 @@ public static class MouseHelper
         {
             throw new Win32Exception(Marshal.GetLastWin32Error());
         }
+    }
+
+    /// <summary>
+    /// Move to absolute virtual-screen coordinates through <c>SendInput</c>. Unlike relative input,
+    /// this is not affected by pointer acceleration and still notifies low-level mouse hooks.
+    /// </summary>
+    public static void MoveToWithInput(int x, int y)
+    {
+        var left = GetSystemMetrics(SmXVirtualScreen);
+        var top = GetSystemMetrics(SmYVirtualScreen);
+        var width = GetSystemMetrics(SmCxVirtualScreen);
+        var height = GetSystemMetrics(SmCyVirtualScreen);
+        if (width <= 1 || height <= 1)
+        {
+            throw new InvalidOperationException($"Virtual screen dimensions are invalid: {width}x{height}.");
+        }
+
+        if (x < left || x >= left + width)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(x),
+                $"X coordinate {x} is outside the virtual screen range {left}-{left + width - 1}.");
+        }
+
+        if (y < top || y >= top + height)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(y),
+                $"Y coordinate {y} is outside the virtual screen range {top}-{top + height - 1}.");
+        }
+
+        var normalizedX = (int)Math.Round((x - left) * 65535.0 / (width - 1));
+        var normalizedY = (int)Math.Round((y - top) * 65535.0 / (height - 1));
+        SendMouseInput(
+            MouseEventMove | MouseEventVirtualDesk | MouseEventAbsolute,
+            dx: normalizedX,
+            dy: normalizedY);
     }
 
     /// <summary>

@@ -128,6 +128,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMousePointerCrosshairsEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredAutoHideCursorEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredAutoHideCursorEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredCursorWrapEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredCursorWrapEnabledValue());

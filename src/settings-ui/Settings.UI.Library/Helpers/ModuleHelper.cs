@@ -15,6 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.Workspaces => "Workspaces/ModuleTitle",
                 ModuleType.PowerAccent => "QuickAccent/ModuleTitle",
                 ModuleType.PowerOCR => "TextExtractor/ModuleTitle",
+                ModuleType.AutoHideCursor => "MouseUtils_AutoHideCursor/Header",
                 ModuleType.FindMyMouse => "MouseUtils_FindMyMouse/Header",
                 ModuleType.MouseHighlighter => "MouseUtils_MouseHighlighter/Header",
                 ModuleType.MouseJump => "MouseUtils_MouseJump/Header",
@@ -31,6 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
             {
                 ModuleType.AdvancedPaste => "ms-appx:///Assets/Settings/Icons/AdvancedPaste.png",
                 ModuleType.AltWindowCycle => "ms-appx:///Assets/Settings/Icons/WindowHopper.png",
+                ModuleType.AutoHideCursor => "ms-appx:///Assets/Settings/Icons/MouseUtils.png",
                 ModuleType.Workspaces => "ms-appx:///Assets/Settings/Icons/Workspaces.png",
                 ModuleType.PowerOCR => "ms-appx:///Assets/Settings/Icons/TextExtractor.png",
                 ModuleType.PowerAccent => "ms-appx:///Assets/Settings/Icons/QuickAccent.png",
@@ -48,6 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
             {
                 ModuleType.AdvancedPaste => generalSettingsConfig.Enabled.AdvancedPaste,
                 ModuleType.AlwaysOnTop => generalSettingsConfig.Enabled.AlwaysOnTop,
+                ModuleType.AutoHideCursor => generalSettingsConfig.Enabled.AutoHideCursor,
                 ModuleType.Awake => generalSettingsConfig.Enabled.Awake,
                 ModuleType.CmdPal => generalSettingsConfig.Enabled.CmdPal,
                 ModuleType.ColorPicker => generalSettingsConfig.Enabled.ColorPicker,
@@ -90,6 +93,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
             {
                 case ModuleType.AdvancedPaste: generalSettingsConfig.Enabled.AdvancedPaste = isEnabled; break;
                 case ModuleType.AlwaysOnTop: generalSettingsConfig.Enabled.AlwaysOnTop = isEnabled; break;
+                case ModuleType.AutoHideCursor: generalSettingsConfig.Enabled.AutoHideCursor = isEnabled; break;
                 case ModuleType.Awake: generalSettingsConfig.Enabled.Awake = isEnabled; break;
                 case ModuleType.CmdPal: generalSettingsConfig.Enabled.CmdPal = isEnabled; break;
                 case ModuleType.ColorPicker: generalSettingsConfig.Enabled.ColorPicker = isEnabled; break;
@@ -135,6 +139,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
             {
                 ModuleType.AdvancedPaste => AdvancedPasteSettings.ModuleName,
                 ModuleType.AlwaysOnTop => AlwaysOnTopSettings.ModuleName,
+                ModuleType.AutoHideCursor => AutoHideCursorSettings.ModuleName,
                 ModuleType.Awake => AwakeSettings.ModuleName,
                 ModuleType.CmdPal => "CmdPal", // No dedicated settings class
                 ModuleType.ColorPicker => ColorPickerSettings.ModuleName,
