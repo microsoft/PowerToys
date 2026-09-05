@@ -3,8 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
@@ -12,32 +10,72 @@ using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Win32;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Pages;
 
-internal sealed partial class ClipboardHistoryListPage : ListPage
+internal sealed partial class ClipboardHistoryListPage : ListPage, IDisposable, IAsyncDisposable
 {
-    private readonly SettingsManager _settingsManager;
-    private readonly ObservableCollection<ClipboardItem> clipboardHistory;
-    private readonly string _defaultIconPath;
+    private readonly Lock _gate = new();
+    private readonly IClipboardHistorySettings _settingsManager;
+    private readonly IClipboardHistorySource _source;
+    private readonly ClipboardHistoryCache _cache;
+    private Task? _observedRefresh;
+    private bool _started;
+    private bool _refreshFailed;
+    private bool _disposed;
 
     public ClipboardHistoryListPage(SettingsManager settingsManager)
+        : this(settingsManager, new ClipboardHistorySource(settingsManager), new ClipboardHistoryWorker())
+    {
+    }
+
+    internal ClipboardHistoryListPage(IClipboardHistorySettings settingsManager, IClipboardHistorySource source, IClipboardHistoryWorker worker)
     {
         ArgumentNullException.ThrowIfNull(settingsManager);
 
         _settingsManager = settingsManager;
-        clipboardHistory = [];
-        _defaultIconPath = string.Empty;
+        _source = source;
+        _cache = new ClipboardHistoryCache(source, worker, OnSnapshotChanged);
         Icon = Icons.ClipboardListIcon;
         Name = Properties.Resources.clipboard_history_page_name;
         Id = "com.microsoft.cmdpal.clipboardHistory";
         ShowDetails = true;
 
-        Clipboard.HistoryChanged += TrackClipboardHistoryChanged_EventHandler;
+        _source.HistoryChanged += OnHistoryChanged;
+        _source.HistoryEnabledChanged += OnHistoryEnabledChanged;
+        _settingsManager.Changed += OnSettingsChanged;
     }
 
-    private void TrackClipboardHistoryChanged_EventHandler(object? sender, ClipboardHistoryChangedEventArgs? e) => RaiseItemsChanged(0);
+    private void OnHistoryChanged(object? sender, EventArgs args) => Refresh();
+
+    private void OnHistoryEnabledChanged(object? sender, EventArgs args)
+    {
+        _cache.Clear();
+        Refresh();
+    }
+
+    private void OnSettingsChanged(object? sender, EventArgs args) => OnSnapshotChanged();
+
+    private void OnSnapshotChanged()
+    {
+        lock (_gate)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            foreach (var item in _cache.Items)
+            {
+                if (item is ClipboardListItem clipboardItem)
+                {
+                    clipboardItem.RefreshCommands();
+                }
+            }
+
+            RaiseItemsChanged(_cache.Items.Length);
+        }
+    }
 
     private bool IsClipboardHistoryEnabled()
     {
@@ -67,93 +105,115 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
         }
     }
 
-    private async Task LoadClipboardHistoryAsync()
+    private async void Refresh()
     {
+        Task? refresh = null;
         try
         {
-            List<ClipboardItem> items = [];
-
-            if (!Clipboard.IsHistoryEnabled())
+            lock (_gate)
             {
-                return;
-            }
-
-            var historyItems = await Clipboard.GetHistoryItemsAsync();
-            if (historyItems.Status != ClipboardHistoryItemsResultStatus.Success)
-            {
-                return;
-            }
-
-            foreach (var item in historyItems.Items)
-            {
-                if (item.Content.Contains(StandardDataFormats.Text))
+                if (!_started || _disposed)
                 {
-                    var text = await item.Content.GetTextAsync();
-                    items.Add(new ClipboardItem { Settings = _settingsManager, Content = text, Item = item });
-                }
-                else if (item.Content.Contains(StandardDataFormats.Bitmap))
-                {
-                    items.Add(new ClipboardItem { Settings = _settingsManager, Item = item });
-                }
-            }
-
-            clipboardHistory.Clear();
-
-            foreach (var item in items)
-            {
-                if (item.Item.Content.Contains(StandardDataFormats.Bitmap))
-                {
-                    var imageReceived = await item.Item.Content.GetBitmapAsync();
-
-                    if (imageReceived is not null)
-                    {
-                        item.ImageData = imageReceived;
-                    }
+                    return;
                 }
 
-                clipboardHistory.Add(item);
+                var pending = _cache.RefreshAsync();
+                if (ReferenceEquals(pending, _observedRefresh))
+                {
+                    return;
+                }
+
+                refresh = pending;
+                _observedRefresh = refresh;
+                _refreshFailed = false;
+                IsLoading = true;
             }
+
+            await refresh.ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            // TODO GH #108 We need to figure out some logging
-            // Logger.LogError("Loading clipboard history failed", ex);
+            lock (_gate)
+            {
+                if (!_disposed && (refresh is null || ReferenceEquals(refresh, _observedRefresh)))
+                {
+                    _refreshFailed = true;
+                }
+            }
+
             ExtensionHost.ShowStatus(new StatusMessage() { Message = Properties.Resources.clipboard_failed_to_load, State = MessageState.Error }, StatusContext.Page);
             ExtensionHost.LogMessage(ex.ToString());
         }
-    }
-
-    private void LoadClipboardHistoryInSTA()
-    {
-        // https://github.com/microsoft/windows-rs/issues/317
-        // Clipboard API needs to be called in STA or it
-        // hangs.
-        var thread = new Thread(() =>
+        finally
         {
-            var t = LoadClipboardHistoryAsync();
-            t.ConfigureAwait(false);
-            t.Wait();
-        });
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        thread.Join();
-    }
-
-    private ListItem[] GetClipboardHistoryListItems()
-    {
-        LoadClipboardHistoryInSTA();
-        List<ListItem> listItems = [];
-        for (var i = 0; i < clipboardHistory.Count; i++)
-        {
-            var item = clipboardHistory[i];
-            if (item is not null)
+            lock (_gate)
             {
-                listItems.Add(new ClipboardListItem(item, _settingsManager));
+                if (!_disposed && refresh is not null && ReferenceEquals(refresh, _observedRefresh))
+                {
+                    IsLoading = _cache.IsRefreshing;
+                }
+            }
+        }
+    }
+
+    public override IListItem[] GetItems()
+    {
+        lock (_gate)
+        {
+            if (_disposed)
+            {
+                return [];
+            }
+
+            if (!_started || _refreshFailed)
+            {
+                _started = true;
+                Refresh();
+            }
+
+            return _cache.Items;
+        }
+    }
+
+    public void Dispose() => _ = DisposeWorkerAsync();
+
+    public async ValueTask DisposeAsync()
+    {
+        var disposeSource = false;
+        lock (_gate)
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+                _source.HistoryChanged -= OnHistoryChanged;
+                _source.HistoryEnabledChanged -= OnHistoryEnabledChanged;
+                _settingsManager.Changed -= OnSettingsChanged;
+                disposeSource = true;
             }
         }
 
-        return listItems.ToArray();
+        try
+        {
+            if (disposeSource)
+            {
+                _source.Dispose();
+            }
+        }
+        finally
+        {
+            await _cache.DisposeAsync().ConfigureAwait(false);
+        }
     }
 
-    public override IListItem[] GetItems() => GetClipboardHistoryListItems();
+    private async Task DisposeWorkerAsync()
+    {
+        try
+        {
+            await DisposeAsync();
+        }
+        catch (Exception ex)
+        {
+            ExtensionHost.LogMessage(ex.ToString());
+        }
+    }
 }

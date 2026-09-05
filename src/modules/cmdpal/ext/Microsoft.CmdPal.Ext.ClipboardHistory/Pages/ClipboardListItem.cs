@@ -27,13 +27,14 @@ internal sealed partial class ClipboardListItem : ListItem
         new TextMetadataProvider(),
     ];
 
-    private readonly SettingsManager _settingsManager;
+    private readonly IClipboardHistorySettings _settingsManager;
     private readonly ClipboardItem _item;
 
     private readonly CommandContextItem _deleteContextMenuItem;
     private readonly CommandContextItem? _pasteCommand;
     private readonly CommandContextItem? _copyCommand;
     private readonly Lazy<Details> _lazyDetails;
+    private PrimaryAction? _primaryAction;
 
     public override IDetails? Details
     {
@@ -43,11 +44,10 @@ internal sealed partial class ClipboardListItem : ListItem
         }
     }
 
-    public ClipboardListItem(ClipboardItem item, SettingsManager settingsManager)
+    public ClipboardListItem(ClipboardItem item, IClipboardHistorySettings settingsManager)
     {
         _item = item;
         _settingsManager = settingsManager;
-        _settingsManager.Settings.SettingsChanged += SettingsOnSettingsChanged;
 
         _lazyDetails = new(() => CreateDetails());
 
@@ -95,20 +95,21 @@ internal sealed partial class ClipboardListItem : ListItem
         RefreshCommands();
     }
 
-    private void SettingsOnSettingsChanged(object sender, Settings args)
+    internal void RefreshCommands()
     {
-        RefreshCommands();
-    }
+        var primaryAction = _settingsManager.PrimaryAction;
+        if (_primaryAction == primaryAction)
+        {
+            return;
+        }
 
-    private void RefreshCommands()
-    {
         if (_item is { IsText: false, IsImage: false })
         {
             MoreCommands = [_deleteContextMenuItem];
             Icon = _settingsManager.PrimaryAction == PrimaryAction.Paste ? Icons.Clipboard : Icons.Copy;
         }
 
-        switch (_settingsManager.PrimaryAction)
+        switch (primaryAction)
         {
             case PrimaryAction.Paste:
                 Command = _pasteCommand?.Command;
@@ -149,6 +150,8 @@ internal sealed partial class ClipboardListItem : ListItem
 
                 break;
         }
+
+        _primaryAction = primaryAction;
     }
 
     private IContextItem[] BuildMoreCommands(CommandContextItem? firstCommand)
