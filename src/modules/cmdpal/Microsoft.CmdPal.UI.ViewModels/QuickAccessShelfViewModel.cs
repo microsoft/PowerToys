@@ -188,6 +188,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
             pinnedCommands,
             recentCommandIds,
             availableCommands,
+            AllAppsCommandProvider.Page,
             includeApps: includeRecentCommands && _topLevelCommandManager.IsProviderActive(AllAppsCommandProvider.WellKnownId),
             pinnedCommandLimit: configuration.PinnedCommandLimit,
             recentCommandLimit: configuration.RecentCommandLimit,

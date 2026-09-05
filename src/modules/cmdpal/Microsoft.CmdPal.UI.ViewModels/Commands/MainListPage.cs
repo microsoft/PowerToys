@@ -537,6 +537,7 @@ public sealed partial class MainListPage : DynamicListPage,
             pinnedSettings,
             recentCommandIds,
             allCommands,
+            _allAppsPage,
             includeApps: _includeApps,
             recentCommandLimit: _recentCommandsDisplayLimit,
             recentCommandsFirst: _recentCommandsOnHome == RecentCommandsPlacement.BeforePinned);
