@@ -39,7 +39,6 @@ using Windows.Win32.Graphics.Dwm;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinUIEx;
-using KeyChordHelpers = Microsoft.CommandPalette.Extensions.Toolkit.KeyChordHelpers;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
@@ -229,8 +228,8 @@ public sealed partial class MainWindow : WindowEx,
             Summon(string.Empty);
         });
 
+        _accessKeyMode.AttachInput(controller => new AccessKeyInputHandler(this, controller));
         _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
-        _localKeyboardListener.KeyStateChanged += LocalKeyboardListener_OnKeyStateChanged;
         _localKeyboardListener.Start();
 
         // Force window to be created, and then cloaked. This will offset initial animation when the window is shown.
@@ -288,44 +287,6 @@ public sealed partial class MainWindow : WindowEx,
         if (e.Key == VirtualKey.GoBack)
         {
             WeakReferenceMessenger.Default.Send(new GoBackMessage());
-        }
-    }
-
-    private void LocalKeyboardListener_OnKeyStateChanged(object? sender, LocalKeyboardListenerKeyStateChangedEventArgs e)
-    {
-        if (!e.IsDown)
-        {
-            _accessKeyMode.HandleKeyUp(e.Key);
-            return;
-        }
-
-        var modifiers = KeyModifiers.GetCurrent();
-        var chord = KeyChordHelpers.FromModifiers(
-            ctrl: modifiers.Ctrl,
-            alt: modifiers.Alt,
-            shift: modifiers.Shift,
-            win: modifiers.Win,
-            vkey: e.Key);
-        var exitGeneration = _accessKeyMode.HandleKeyDown(chord);
-
-        if (RootElement.MainContent is ShellPage shellPage &&
-            shellPage.TryHandleAccessKey(chord))
-        {
-            AccessKeyManager.ExitDisplayMode();
-            e.Handled = true;
-        }
-
-        if (exitGeneration is long generation)
-        {
-            QueueAccessKeyModeExit(generation);
-        }
-    }
-
-    private void QueueAccessKeyModeExit(long generation)
-    {
-        if (!DispatcherQueue.TryEnqueue(() => _accessKeyMode.ExitIfCurrent(generation)))
-        {
-            _accessKeyMode.ExitIfCurrent(generation);
         }
     }
 
@@ -1237,6 +1198,7 @@ public sealed partial class MainWindow : WindowEx,
         // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
         // Workaround by turning it off before shutdown.
         App.Current.DebugSettings.FailFastOnErrors = false;
+        _accessKeyMode.Dispose();
         _localKeyboardListener.Dispose();
         (RootElement.MainContent as ShellPage)?.Dispose();
         DisposeAcrylic();
@@ -1979,6 +1941,7 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Dispose()
     {
+        _accessKeyMode.Dispose();
         _themeService.ThemeChanged -= ThemeServiceOnThemeChanged;
         App.Current.Services.GetRequiredService<ISettingsService>().SettingsChanged -= SettingsChangedHandler;
 
