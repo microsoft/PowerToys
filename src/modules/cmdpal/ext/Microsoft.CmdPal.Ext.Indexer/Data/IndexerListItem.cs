@@ -2,14 +2,17 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Microsoft.CmdPal.Common.Commands;
 using Microsoft.CmdPal.Ext.Indexer.Commands;
 using Microsoft.CmdPal.Ext.Indexer.Helpers;
 using Microsoft.CmdPal.Ext.Indexer.Pages;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation.Metadata;
 using FileAttributes = System.IO.FileAttributes;
@@ -20,6 +23,8 @@ internal sealed partial class IndexerListItem : ListItem
 {
     internal static readonly bool IsActionsFeatureEnabled = GetFeatureFlag();
 
+    private Action<IndexerListItem> _requestThumbnail;
+
     private static bool GetFeatureFlag()
     {
         var env = System.Environment.GetEnvironmentVariable("CMDPAL_ENABLE_ACTIONS_LIST");
@@ -28,6 +33,22 @@ internal sealed partial class IndexerListItem : ListItem
     }
 
     internal string FilePath { get; private set; }
+
+    public override IIconInfo Icon
+    {
+        get
+        {
+            Interlocked.Exchange(ref _requestThumbnail, null)?.Invoke(this);
+            return base.Icon;
+        }
+
+        set => base.Icon = value;
+    }
+
+    internal void LoadThumbnailOnDemand(Action<IndexerListItem> requestThumbnail)
+    {
+        _requestThumbnail = requestThumbnail;
+    }
 
     public IndexerListItem(
         IndexerItem indexerItem,

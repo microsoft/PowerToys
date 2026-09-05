@@ -10,7 +10,9 @@ using System.Globalization;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Common;
+using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Indexer;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -26,8 +28,11 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
     private readonly List<IListItem> _indexerListItems = [];
     private readonly Lock _searchLock = new();
+    private readonly Lock _queryLock = new();
+    private readonly Func<IIndexerSearchEngine> _createSearchEngine;
+    private readonly IndexerThumbnailLoader _thumbnails;
 
-    private SearchEngine? _searchEngine;
+    private IIndexerSearchEngine? _searchEngine;
 
     private CancellationTokenSource? _searchCts;
     private string _initialQuery = string.Empty;
@@ -40,17 +45,29 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
     private SearchNoticeInfo? _currentNotice;
 
     private bool _deferredLoad;
+    private bool _disposed;
+
+    internal Task SearchTask { get; private set; } = Task.CompletedTask;
+
+    internal Task ThumbnailTask => _thumbnails.Completion;
 
     public override ICommandItem EmptyContent => _isEmptyQuery ? _noSearchEmptyContent! : _currentNotice is null ? _nothingFoundEmptyContent! : _noticeEmptyContent!;
 
     public IndexerPage()
+        : this(() => new SearchEngine())
     {
         Id = BuiltInCommandIds.FileSearch;
+        PlaceholderText = Resources.Indexer_PlaceholderText;
+    }
+
+    internal IndexerPage(
+        Func<IIndexerSearchEngine> createSearchEngine,
+        Func<string, CancellationToken, Task<IconInfo?>>? loadThumbnail = null)
+    {
+        _createSearchEngine = createSearchEngine;
+        _thumbnails = new(_searchLock, loadThumbnail);
         Icon = Icons.FileExplorerIcon;
         Name = Resources.Indexer_Title;
-        PlaceholderText = Resources.Indexer_PlaceholderText;
-
-        _searchEngine = new();
 
         var filters = new SearchFilters();
         filters.PropChanged += Filters_PropChanged;
@@ -60,20 +77,10 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
     }
 
     public IndexerPage(string query)
+        : this(() => new SearchEngine())
     {
-        Icon = Icons.FileExplorerIcon;
-        Name = Resources.Indexer_Title;
-
-        _searchEngine = new();
-
         _initialQuery = query;
         SearchText = query;
-
-        var filters = new SearchFilters();
-        filters.PropChanged += Filters_PropChanged;
-        Filters = filters;
-
-        CreateEmptyContent();
         IsLoading = true;
         _deferredLoad = true;
     }
@@ -138,15 +145,18 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
     public override IListItem[] GetItems()
     {
-        if (_deferredLoad)
+        lock (_searchLock)
         {
-            PerformSearch(_initialQuery);
-            _deferredLoad = false;
-        }
+            if (_deferredLoad && !_disposed)
+            {
+                _deferredLoad = false;
+                PerformSearch(_initialQuery);
+            }
 
-        return _currentNotice is null
-            ? [.. _indexerListItems]
-            : [_noticeListItem!, .. _indexerListItems];
+            return _currentNotice is null
+                ? [.. _indexerListItems]
+                : [_noticeListItem!, .. _indexerListItems];
+        }
     }
 
     private string FullSearchString(string query)
@@ -165,143 +175,190 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
     public override void LoadMore()
     {
-        var ct = Volatile.Read(ref _searchCts)?.Token;
-
-        IsLoading = true;
-
-        var hasMore = false;
-        SearchEngine? searchEngine;
-        int offset;
-
+        CancellationToken ct;
         lock (_searchLock)
         {
-            searchEngine = _searchEngine;
-            offset = _indexerListItems.Count;
-        }
-
-        SearchNoticeInfo? notice = null;
-        var results = searchEngine?.FetchItems(offset, 20, queryCookie: HardQueryCookie, out hasMore, out notice) ?? [];
-
-        if (ct?.IsCancellationRequested == true)
-        {
-            IsLoading = false;
-            return;
-        }
-
-        lock (_searchLock)
-        {
-            if (ct?.IsCancellationRequested == true)
+            if (_disposed || _searchCts is null || !HasMoreItems)
             {
-                IsLoading = false;
                 return;
             }
 
-            ApplyNotice(notice);
-            _indexerListItems.AddRange(results);
-            HasMoreItems = hasMore;
-            IsLoading = false;
-            RaiseItemsChanged(GetVisibleItemCount());
+            ct = _searchCts.Token;
         }
+
+        LoadMore(ct);
     }
 
-    private void Query(string query)
+    private void LoadMore(CancellationToken ct)
     {
-        lock (_searchLock)
+        try
         {
-            _indexerListItems.Clear();
-            var notice = _searchEngine?.Query(query, queryCookie: HardQueryCookie);
-            ApplyNotice(notice);
+            lock (_queryLock)
+            {
+                IIndexerSearchEngine? searchEngine;
+                int offset;
+                lock (_searchLock)
+                {
+                    if (_disposed || ct.IsCancellationRequested || !HasMoreItems)
+                    {
+                        return;
+                    }
+
+                    searchEngine = _searchEngine;
+                    offset = _indexerListItems.Count;
+                    IsLoading = true;
+                }
+
+                if (searchEngine is null)
+                {
+                    return;
+                }
+
+                var results = searchEngine.FetchItems(offset, 20, HardQueryCookie, out var hasMore, out var notice, ct);
+
+                lock (_searchLock)
+                {
+                    if (_disposed || ct.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    // Icon reads are our demand signal; extensions do not receive viewport visibility.
+                    foreach (var result in results)
+                    {
+                        if (result is IndexerListItem item)
+                        {
+                            var thumbnails = _thumbnails;
+                            item.LoadThumbnailOnDemand(resultItem => thumbnails.Request(resultItem, ct));
+                        }
+                    }
+
+                    ApplyNotice(notice);
+                    _indexerListItems.AddRange(results);
+                    HasMoreItems = hasMore;
+                    IsLoading = false;
+                    RaiseItemsChanged(GetVisibleItemCount());
+                }
+            }
         }
-    }
-
-    private void ReplaceSearchEngine(SearchEngine newSearchEngine)
-    {
-        SearchEngine? oldEngine;
-
-        lock (_searchLock)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-            oldEngine = _searchEngine;
-            _searchEngine = newSearchEngine;
         }
-
-        oldEngine?.Dispose();
+        catch (Exception ex)
+        {
+            ReportSearchFailure(ex, ct);
+        }
     }
 
     private void PerformSearch(string newSearch)
     {
         var actualSearch = FullSearchString(newSearch);
 
-        var newCts = new CancellationTokenSource();
-        var oldCts = Interlocked.Exchange(ref _searchCts, newCts);
-        oldCts?.Cancel();
-        oldCts?.Dispose();
+        lock (_searchLock)
+        {
+            if (_disposed)
+            {
+                return;
+            }
 
-        var ct = newCts.Token;
+            _searchCts?.Cancel();
+            _searchCts?.Dispose();
+            _searchCts = new();
+            var ct = _searchCts.Token;
+            _thumbnails.ClearPending();
+            _indexerListItems.Clear();
+            ApplyNotice(null);
+            _isEmptyQuery = string.IsNullOrWhiteSpace(newSearch);
+            _initialQuery = _isEmptyQuery ? string.Empty : newSearch;
+            HasMoreItems = false;
+            IsLoading = !_isEmptyQuery;
+            RaiseItemsChanged(0);
+            OnPropertyChanged(nameof(EmptyContent));
+            var isEmptyQuery = _isEmptyQuery;
+            SearchTask = Task.Run(() => RunSearch(actualSearch, isEmptyQuery, ct));
+        }
+    }
 
-        _ = Task.Run(
-            () =>
+    private void RunSearch(string query, bool isEmptyQuery, CancellationToken ct)
+    {
+        try
+        {
+            lock (_queryLock)
             {
                 ct.ThrowIfCancellationRequested();
-
-                lock (_searchLock)
+                _searchEngine?.Dispose();
+                _searchEngine = null;
+                if (isEmptyQuery)
                 {
-                    // If the user hasn't provided any base query text, results should be empty
-                    // regardless of the currently selected filter.
-                    _isEmptyQuery = string.IsNullOrWhiteSpace(newSearch);
-                    ApplyNotice(null);
-
-                    if (_isEmptyQuery)
-                    {
-                        _indexerListItems.Clear();
-                        HasMoreItems = false;
-                        IsLoading = false;
-                        RaiseItemsChanged(0);
-                        OnPropertyChanged(nameof(EmptyContent));
-                        _initialQuery = string.Empty;
-                        return;
-                    }
-
-                    // Track the most recent query we initiated, so UpdateSearchText doesn't
-                    // spuriously suppress a search when SearchText gets set programmatically.
-                    _initialQuery = newSearch;
+                    return;
                 }
 
+                var searchEngine = _createSearchEngine();
+                _searchEngine = searchEngine;
                 ct.ThrowIfCancellationRequested();
-                ReplaceSearchEngine(new SearchEngine());
-
-                ct.ThrowIfCancellationRequested();
-                Query(actualSearch);
-
-                ct.ThrowIfCancellationRequested();
-                LoadMore();
-
-                ct.ThrowIfCancellationRequested();
+                var notice = searchEngine.Query(query, HardQueryCookie);
 
                 lock (_searchLock)
                 {
-                    RaiseItemsChanged(GetVisibleItemCount());
+                    ct.ThrowIfCancellationRequested();
+                    ApplyNotice(notice);
+                    HasMoreItems = true;
+                }
+
+                LoadMore(ct);
+                ct.ThrowIfCancellationRequested();
+                lock (_searchLock)
+                {
+                    ct.ThrowIfCancellationRequested();
                     OnPropertyChanged(nameof(EmptyContent));
                 }
-            },
-            ct);
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            ReportSearchFailure(ex, ct);
+        }
+    }
+
+    private void ReportSearchFailure(Exception exception, CancellationToken ct)
+    {
+        Logger.LogError("Failed to search for files.", exception);
+        lock (_searchLock)
+        {
+            if (!ct.IsCancellationRequested)
+            {
+                ApplyNotice(new(Resources.Indexer_SearchFailedMessage!, Resources.Indexer_SearchFailedMessageTip!));
+                HasMoreItems = false;
+                IsLoading = false;
+                RaiseItemsChanged(GetVisibleItemCount());
+                OnPropertyChanged(nameof(EmptyContent));
+            }
+        }
     }
 
     public void Dispose()
     {
-        var cts = Interlocked.Exchange(ref _searchCts, null);
-        cts?.Cancel();
-        cts?.Dispose();
-
-        SearchEngine? searchEngine;
-
         lock (_searchLock)
         {
-            searchEngine = _searchEngine;
-            _searchEngine = null;
+            _disposed = true;
+            _searchCts?.Cancel();
+            _searchCts?.Dispose();
+            _searchCts = null;
+            _thumbnails.Dispose();
             _indexerListItems.Clear();
+            ApplyNotice(null);
+            HasMoreItems = false;
+            IsLoading = false;
         }
 
-        searchEngine?.Dispose();
+        lock (_queryLock)
+        {
+            _searchEngine?.Dispose();
+            _searchEngine = null;
+        }
 
         GC.SuppressFinalize(this);
     }

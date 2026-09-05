@@ -120,7 +120,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
             ct.ThrowIfCancellationRequested();
 
             // We only need to know whether there are 0, 1, or more than one result
-            var results = searchEngine.FetchItems(0, 2, queryCookie: HardQueryCookie, out _, out var notice, noIcons: true);
+            var results = searchEngine.FetchItems(0, 2, queryCookie: HardQueryCookie, out _, out var notice, ct);
             var count = results.Count;
 
             if (count == 0)

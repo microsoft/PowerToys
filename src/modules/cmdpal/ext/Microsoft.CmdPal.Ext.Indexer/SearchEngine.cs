@@ -7,16 +7,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Indexer;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.Ext.Indexer;
 
-public sealed partial class SearchEngine : IDisposable
+public sealed partial class SearchEngine : IIndexerSearchEngine
 {
     private SearchQuery? _searchQuery = new();
 
@@ -47,7 +46,7 @@ public sealed partial class SearchEngine : IDisposable
         return BuildNotice(searchQuery);
     }
 
-    public IList<IListItem> FetchItems(int offset, int limit, uint queryCookie, out bool hasMore, out SearchNoticeInfo? notice, bool noIcons = false)
+    public IList<IListItem> FetchItems(int offset, int limit, uint queryCookie, out bool hasMore, out SearchNoticeInfo? notice, CancellationToken cancellationToken = default)
     {
         hasMore = false;
         notice = null;
@@ -66,36 +65,22 @@ public sealed partial class SearchEngine : IDisposable
 
         var results = new List<IListItem>();
         var index = 0;
+        cancellationToken.ThrowIfCancellationRequested();
         var hasMoreItems = searchQuery.FetchRows(offset, limit);
+        cancellationToken.ThrowIfCancellationRequested();
         notice = BuildNotice(searchQuery);
 
-        while (!searchQuery.SearchResults.IsEmpty && searchQuery.SearchResults.TryDequeue(out var result) && ++index <= limit)
+        while (index++ < limit && searchQuery.SearchResults.TryDequeue(out var result))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var indexerListItem = new IndexerListItem(new IndexerItem
             {
                 FileName = result.ItemDisplayName,
                 FullPath = result.LaunchUri,
-            });
-
-            if (!noIcons)
+            })
             {
-                IconInfo? icon = null;
-                try
-                {
-                    var stream = ThumbnailHelper.GetThumbnail(result.LaunchUri).Result;
-                    if (stream is not null)
-                    {
-                        var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
-                        icon = new IconInfo(data, data);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError("Failed to get the icon.", ex);
-                }
-
-                indexerListItem.Icon = icon;
-            }
+                Icon = Icons.DocumentIcon,
+            };
 
             results.Add(indexerListItem);
         }
