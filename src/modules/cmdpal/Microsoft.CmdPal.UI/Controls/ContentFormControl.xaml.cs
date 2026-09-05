@@ -4,6 +4,8 @@
 
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
+using ManagedCommon;
+using Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
 using Microsoft.CmdPal.UI.Controls.AdaptiveCards;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
@@ -17,72 +19,68 @@ namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class ContentFormControl : UserControl
 {
-    private static readonly AdaptiveCardRenderer _renderer;
-    private static bool _customElementsRegistered;
+    private readonly IncrementalAdaptiveCardUpdater _cardUpdater;
+    private static bool _customElementParsersRegistered;
     private ContentFormViewModel? _viewModel;
 
     // LOAD-BEARING: if you don't hang onto a reference to the RenderedAdaptiveCard
     // then the GC might clean it up sometime, even while the card is in the UI
     // tree. If this gets GC'ed, then it'll revoke our Action handler, and the
     // form will do seemingly nothing.
-    private RenderedAdaptiveCard? _renderedCard;
-    private AdaptiveCard? _adaptiveCard;
+    private RenderedAdaptiveCard? _attachedRenderedCard;
 
     public ContentFormViewModel? ViewModel { get => _viewModel; set => AttachViewModel(value); }
 
-    static ContentFormControl()
-    {
-        // We can't use `CardOverrideStyles` here yet, because we haven't called InitializeComponent once.
-        // But also, the default value isn't `null` here. It's... some other default empty value.
-        // So clear it out so that we know when the first time we get created is
-        _renderer = new AdaptiveCardRenderer()
-        {
-            OverrideStyles = null,
-        };
-    }
-
     internal static void RegisterCustomElements()
     {
-        if (_customElementsRegistered)
+        if (_customElementParsersRegistered)
         {
             return;
         }
 
-        Register<AdaptiveStringListInputElement, AdaptiveStringListInputElementParser, AdaptiveStringListInputElementRenderer>();
-        Register<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementParser, AdaptiveFilePathListInputElementRenderer>();
-        Register<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementParser, AdaptiveKeyValueListInputElementRenderer>();
-        Register<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementParser, AdaptiveFilePathInputElementRenderer>();
+        RegisterParser<AdaptiveStringListInputElement, AdaptiveStringListInputElementParser>();
+        RegisterParser<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementParser>();
+        RegisterParser<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementParser>();
+        RegisterParser<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementParser>();
 
-        _customElementsRegistered = true;
-
-        return;
-
-        static void Register<TElement, TParser, TRenderer>()
-            where TElement : IAdaptiveCardElement, ICustomAdaptiveCardElement
-            where TParser : IAdaptiveElementParser, new()
-            where TRenderer : IAdaptiveElementRenderer, new()
-        {
-            AdaptiveCardParserRegistrations.ElementParsers.Set(TElement.CustomInputType, new TParser());
-            _renderer.ElementRenderers.Set(TElement.CustomInputType, new TRenderer());
-        }
+        _customElementParsersRegistered = true;
     }
 
     public ContentFormControl()
     {
         this.InitializeComponent();
         var lightTheme = ActualTheme == Microsoft.UI.Xaml.ElementTheme.Light;
-        _renderer.HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark;
-
-        // 5% BODGY: if we set this multiple times over the lifetime of the app,
-        // then the second call will explode, because "CardOverrideStyles is already the child of another element".
-        // SO only set this once.
-        if (_renderer.OverrideStyles is null)
+        var renderer = new AdaptiveCardRenderer()
         {
-            _renderer.OverrideStyles = CardOverrideStyles;
-        }
+            HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark,
+            OverrideStyles = CardOverrideStyles,
+        };
+        RegisterRenderer<AdaptiveStringListInputElement, AdaptiveStringListInputElementRenderer>(renderer);
+        RegisterRenderer<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementRenderer>(renderer);
+        RegisterRenderer<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementRenderer>(renderer);
+        RegisterRenderer<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementRenderer>(renderer);
+        _cardUpdater = new IncrementalAdaptiveCardUpdater(
+            renderer,
+            CardHost,
+            AdaptiveCardParserRegistrations.ElementParsers,
+            AdaptiveCardParserRegistrations.ActionParsers);
 
         // TODO in the future, we should handle ActualThemeChanged and replace
         // our rendered card with one for that theme. But today is not that day
+    }
+
+    private static void RegisterParser<TElement, TParser>()
+        where TElement : IAdaptiveCardElement, ICustomAdaptiveCardElement
+        where TParser : IAdaptiveElementParser, new()
+    {
+        AdaptiveCardParserRegistrations.ElementParsers.Set(TElement.CustomInputType, new TParser());
+    }
+
+    private static void RegisterRenderer<TElement, TRenderer>(AdaptiveCardRenderer renderer)
+        where TElement : IAdaptiveCardElement, ICustomAdaptiveCardElement
+        where TRenderer : IAdaptiveElementRenderer, new()
+    {
+        renderer.ElementRenderers.Set(TElement.CustomInputType, new TRenderer());
     }
 
     private void AttachViewModel(ContentFormViewModel? vm)
@@ -91,6 +89,8 @@ public sealed partial class ContentFormControl : UserControl
         {
             _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
         }
+
+        ResetCard();
 
         _viewModel = vm;
 
@@ -101,7 +101,7 @@ public sealed partial class ContentFormControl : UserControl
             var c = _viewModel.Card;
             if (c is not null)
             {
-                DisplayCard(c);
+                RequestDisplayCard(c);
             }
         }
     }
@@ -118,36 +118,67 @@ public sealed partial class ContentFormControl : UserControl
             var c = ViewModel.Card;
             if (c is not null)
             {
-                DisplayCard(c);
+                RequestDisplayCard(c);
             }
         }
     }
 
-    private void DisplayCard(AdaptiveCardParseResult result)
+    private void RequestDisplayCard(AdaptiveCardParseResult result)
     {
-        _renderedCard = _renderer.RenderAdaptiveCard(result.AdaptiveCard);
-        _adaptiveCard = result.AdaptiveCard;
-        ContentGrid.Children.Clear();
-        if (_renderedCard.FrameworkElement is not null)
+        _ = DisplayCardAsync(result.AdaptiveCard);
+    }
+
+    private async Task DisplayCardAsync(AdaptiveCard card)
+    {
+        try
         {
-            _renderedCard.FrameworkElement.KeyDown += OnFormKeyDown;
-            ContentGrid.Children.Add(_renderedCard.FrameworkElement);
+            await _cardUpdater.UpdateAsync(card);
+            AttachRenderedCard(_cardUpdater.RenderedCard);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to update an Adaptive Card", ex);
+        }
+    }
 
-            // Use the Loaded event to ensure we focus after the card is in the visual tree
-            _renderedCard.FrameworkElement.Loaded += OnFrameworkElementLoaded;
-
-            // Use LayoutUpdated to fix accessibility after the full visual tree is materialized.
-            // Loaded fires too early — the Adaptive Card renderer may not have finished building
-            // the control tree by then.
-            _renderedCard.FrameworkElement.LayoutUpdated += OnFrameworkElementLayoutUpdated;
+    private void AttachRenderedCard(RenderedAdaptiveCard? renderedCard)
+    {
+        if (ReferenceEquals(_attachedRenderedCard, renderedCard))
+        {
+            return;
         }
 
-        _renderedCard.Action += Rendered_Action;
+        if (_attachedRenderedCard?.FrameworkElement is FrameworkElement oldRoot)
+        {
+            oldRoot.KeyDown -= OnFormKeyDown;
+            oldRoot.Loaded -= OnFrameworkElementLoaded;
+            oldRoot.LayoutUpdated -= OnFrameworkElementLayoutUpdated;
+        }
+
+        if (_attachedRenderedCard is not null)
+        {
+            _attachedRenderedCard.Action -= Rendered_Action;
+        }
+
+        _attachedRenderedCard = renderedCard;
+        if (renderedCard?.FrameworkElement is FrameworkElement root)
+        {
+            root.KeyDown += OnFormKeyDown;
+            root.Loaded += OnFrameworkElementLoaded;
+            root.LayoutUpdated += OnFrameworkElementLayoutUpdated;
+            renderedCard.Action += Rendered_Action;
+        }
+    }
+
+    private void ResetCard()
+    {
+        AttachRenderedCard(null);
+        _cardUpdater.Reset();
     }
 
     private void OnFrameworkElementLayoutUpdated(object? sender, object e)
     {
-        // Only fix once — unhook from sender (not _renderedCard, which may have been
+        // Only fix once — unhook from sender (not the updater, whose card may have been
         // reassigned by the time this fires).
         if (sender is FrameworkElement element)
         {
@@ -315,8 +346,8 @@ public sealed partial class ContentFormControl : UserControl
         // Snapshot the fields so a subsequent DisplayCard call can't swap the
         // rendered/parsed card out from under us mid-method. This keeps the
         // resolved submit action and the gathered inputs from the same card.
-        var renderedCard = _renderedCard;
-        var adaptiveCard = _adaptiveCard;
+        var renderedCard = _cardUpdater.RenderedCard;
+        var adaptiveCard = _cardUpdater.Card;
 
         if (e.Key != VirtualKey.Enter || renderedCard == null || adaptiveCard == null)
         {
