@@ -55,11 +55,16 @@ public static partial class IconProvider
         {
             args.Value = args.Key switch
             {
-                IconDataViewModel iconData => await service.GetIconSource(iconData, args.Scale, args.Diagnostics),
+                IconDataViewModel iconData => await service.GetIconSource(
+                    iconData,
+                    args.Scale,
+                    args.Diagnostics,
+                    args),
                 IconInfoViewModel iconInfo => await service.GetIconSource(
                     args.Theme == Microsoft.UI.Xaml.ElementTheme.Light ? iconInfo.Light : iconInfo.Dark,
                     args.Scale,
-                    args.Diagnostics),
+                    args.Diagnostics,
+                    args),
                 _ => null,
             };
         }

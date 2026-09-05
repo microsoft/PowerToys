@@ -12,8 +12,10 @@ namespace Microsoft.CmdPal.UI.Controls;
 /// <summary>
 /// See <see cref="IconBox.SourceRequested"/> event.
 /// </summary>
-public class SourceRequestedEventArgs(object? key, ElementTheme requestedTheme, double scale = 1.0) : DeferredEventArgs
+public class SourceRequestedEventArgs(object? key, ElementTheme requestedTheme, double scale = 1.0) : DeferredEventArgs, IIconRequestDemand
 {
+    private IconRequestDemandState _demandState;
+
     public object? Key { get; private set; } = key;
 
     public IconSource? Value { get; set; }
@@ -23,4 +25,8 @@ public class SourceRequestedEventArgs(object? key, ElementTheme requestedTheme, 
     public double Scale => scale;
 
     internal IconRequestMeasurement Diagnostics { get; set; }
+
+    void IIconRequestDemand.Attach(IconLoadDemand loadDemand) => _demandState.Attach(loadDemand);
+
+    void IIconRequestDemand.Release() => _demandState.Release();
 }
