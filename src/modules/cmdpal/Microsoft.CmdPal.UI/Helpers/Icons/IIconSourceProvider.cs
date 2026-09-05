@@ -9,5 +9,5 @@ namespace Microsoft.CmdPal.UI.Helpers;
 
 internal interface IIconSourceProvider
 {
-    Task<IconSource?> GetIconSource(IconDataViewModel icon, double scale);
+    Task<IconSource?> GetIconSource(IconDataViewModel icon, double scale, IconRequestMeasurement diagnostics = default);
 }

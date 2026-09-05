@@ -320,6 +320,8 @@
                                                     Width="20"
                                                     Height="20"
                                                     AutomationProperties.AccessibilityView="Raw"
+                                                    DiagnosticScope="DockBand"
+                                                    RequestSite="Settings"
                                                     SourceKey="{x:Bind Icon, Mode=OneWay}"
                                                     SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
                                             </cpControls:ContentIcon.Content>

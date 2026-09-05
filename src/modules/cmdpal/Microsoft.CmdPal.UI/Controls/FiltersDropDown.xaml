@@ -34,6 +34,8 @@
                         Margin="4,0"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
+                        DiagnosticScope="MenuItem"
+                        RequestSite="Filter"
                         SourceKey="{x:Bind Icon}"
                         SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
                     <TextBlock
@@ -72,6 +74,8 @@
                     Margin="0,0,8,0"
                     VerticalAlignment="Center"
                     AutomationProperties.AccessibilityView="Raw"
+                    DiagnosticScope="Selected"
+                    RequestSite="Filter"
                     SourceRequested="{x:Bind help:IconProvider.SourceRequested20}"
                     Visibility="Collapsed" />
                 <TextBlock x:Name="SelectedFilterText" VerticalAlignment="Center" />

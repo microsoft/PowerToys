@@ -4,9 +4,11 @@
 
 using CommunityToolkit.WinUI.Deferred;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -17,10 +19,27 @@ namespace Microsoft.CmdPal.UI.Controls;
 public partial class IconBox : ContentControl
 {
     private const double DefaultIconFontSize = 16.0;
+    private static long _nextDiagnosticId;
 
     private double _lastScale;
     private ElementTheme _lastTheme;
     private double _lastFontSize;
+    private long _requestVersion;
+    private IconRequestMeasurement _activeRequestDiagnostics;
+    private long _diagnosticId;
+    private IconRequestSite _derivedRequestSite;
+    private bool _hasDerivedRequestSite;
+
+    /// <summary>
+    /// Gets or sets the semantic UI surface used to group this control's diagnostic measurements.
+    /// </summary>
+    public IconRequestSite RequestSite { get; set; }
+
+    /// <summary>
+    /// Gets or sets an optional static developer-authored label that distinguishes placements within a <see cref="RequestSite"/>.
+    /// Do not bind this property to item or user data.
+    /// </summary>
+    public string? DiagnosticScope { get; set; }
 
     /// <summary>
     /// Gets or sets the <see cref="IconSource"/> to display within the <see cref="IconBox"/>. Overwritten, if <see cref="SourceKey"/> is used instead.
@@ -60,7 +79,7 @@ public partial class IconBox : ContentControl
             _sourceRequested += value;
             if (_sourceRequested?.GetInvocationList().Length == 1)
             {
-                Refresh();
+                Refresh(IconRequestReason.HandlerAttached);
             }
 #if DEBUG
             if (_sourceRequested?.GetInvocationList().Length > 1)
@@ -69,7 +88,16 @@ public partial class IconBox : ContentControl
             }
 #endif
         }
-        remove => _sourceRequested -= value;
+
+        remove
+        {
+            _sourceRequested -= value;
+
+            if (_sourceRequested is null)
+            {
+                AdvanceRequestVersion();
+            }
+        }
     }
 
     public IconBox()
@@ -130,11 +158,15 @@ public partial class IconBox : ContentControl
         }
 
         _lastTheme = ActualTheme;
-        Refresh();
+        Refresh(IconRequestReason.ThemeChanged);
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        // Handler attachment can request an icon before this control enters the visual tree.
+        // Recompute any derived diagnostic placement now that its parent chain is available.
+        _hasDerivedRequestSite = false;
+        _derivedRequestSite = IconRequestSite.Unknown;
         _lastTheme = ActualTheme;
         UpdateLastFontSize();
 
@@ -144,7 +176,7 @@ public partial class IconBox : ContentControl
             XamlRoot.Changed += OnXamlRootChanged;
         }
 
-        Refresh();
+        Refresh(IconRequestReason.Loaded);
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -153,6 +185,9 @@ public partial class IconBox : ContentControl
         {
             XamlRoot.Changed -= OnXamlRootChanged;
         }
+
+        _hasDerivedRequestSite = false;
+        _derivedRequestSite = IconRequestSite.Unknown;
     }
 
     private void OnXamlRootChanged(XamlRoot sender, XamlRootChangedEventArgs args)
@@ -166,13 +201,101 @@ public partial class IconBox : ContentControl
 
         if ((changedLastTheme || changedScale) && SourceKey is not null)
         {
-            UpdateSourceKey(this, SourceKey);
+            var reason = IconRequestReason.None;
+            if (changedLastTheme)
+            {
+                reason |= IconRequestReason.ThemeChanged;
+            }
+
+            if (changedScale)
+            {
+                reason |= IconRequestReason.ScaleChanged;
+            }
+
+            UpdateSourceKey(this, SourceKey, reason);
         }
     }
 
-    private void Refresh()
+    private void Refresh(IconRequestReason reason = IconRequestReason.None)
     {
-        UpdateSourceKey(this, SourceKey);
+        UpdateSourceKey(this, SourceKey, reason);
+    }
+
+    private long AdvanceRequestVersion()
+    {
+        _activeRequestDiagnostics.Invalidate();
+        _activeRequestDiagnostics = default;
+        return ++_requestVersion;
+    }
+
+    private void TrackActiveRequest(long requestVersion, IconRequestMeasurement diagnostics)
+    {
+        if (requestVersion == _requestVersion)
+        {
+            _activeRequestDiagnostics = diagnostics;
+        }
+        else
+        {
+            diagnostics.Invalidate();
+        }
+    }
+
+    private void ClearActiveRequest(long requestVersion)
+    {
+        if (requestVersion == _requestVersion)
+        {
+            _activeRequestDiagnostics = default;
+        }
+    }
+
+    private IconRequestOrigin GetDiagnosticOrigin()
+    {
+        var requestSite = RequestSite == IconRequestSite.Unknown ? GetDerivedRequestSite() : RequestSite;
+        var diagnosticId = Volatile.Read(ref _diagnosticId);
+        if (diagnosticId == 0)
+        {
+            var candidate = Interlocked.Increment(ref _nextDiagnosticId);
+            var existing = Interlocked.CompareExchange(ref _diagnosticId, candidate, 0);
+            diagnosticId = existing == 0 ? candidate : existing;
+        }
+
+        return new IconRequestOrigin(diagnosticId, requestSite, DiagnosticScope);
+    }
+
+    private IconRequestSite GetDerivedRequestSite()
+    {
+        if (_hasDerivedRequestSite)
+        {
+            return _derivedRequestSite;
+        }
+
+        for (DependencyObject? current = VisualTreeHelper.GetParent(this); current is not null; current = VisualTreeHelper.GetParent(current))
+        {
+            _derivedRequestSite = current switch
+            {
+                MenuFlyoutItemBase or MenuFlyoutPresenter => IconRequestSite.ContextMenu,
+                ListViewItem or GridViewItem => IconRequestSite.ListItem,
+                _ => IconRequestSite.Unknown,
+            };
+
+            if (_derivedRequestSite != IconRequestSite.Unknown)
+            {
+                break;
+            }
+        }
+
+        // Unknown is only stable once the control is loaded. Before that, a missing parent merely
+        // means the visual tree is not ready yet and should not poison later attribution.
+        _hasDerivedRequestSite = _derivedRequestSite != IconRequestSite.Unknown || IsLoaded;
+        return _derivedRequestSite;
+    }
+
+    private string GetDiagnosticDescription()
+    {
+        var origin = GetDiagnosticOrigin();
+        return string.IsNullOrEmpty(origin.DiagnosticScope)
+            ? $"IconBox #{origin.IconBoxId}, site {origin.RequestSite}"
+            : $"IconBox #{origin.IconBoxId}, site {origin.RequestSite}/{origin.DiagnosticScope}";
     }
 
     private static void OnSourcePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -189,28 +312,34 @@ public partial class IconBox : ContentControl
                 self.Padding = default;
                 break;
             case FontIconSource fontIcon:
+                var fontElementStartedAt = IconLoadDiagnostics.BeginElementUpdate();
                 self.UpdateLastFontSize();
                 fontIcon.FontSize = self._lastFontSize;
                 if (self.Content is IconSourceElement iconSourceElement)
                 {
                     iconSourceElement.IconSource = fontIcon;
+                    IconLoadDiagnostics.RecordElementUpdate(reused: true, fontIcon, fontElementStartedAt);
                 }
                 else
                 {
                     self.Content = fontIcon.CreateIconElement();
+                    IconLoadDiagnostics.RecordElementUpdate(reused: false, fontIcon, fontElementStartedAt);
                 }
 
                 self.UpdatePaddingForFontIcon();
 
                 break;
             case BitmapIconSource bitmapIcon:
+                var bitmapElementStartedAt = IconLoadDiagnostics.BeginElementUpdate();
                 if (self.Content is IconSourceElement iconSourceElement2)
                 {
                     iconSourceElement2.IconSource = bitmapIcon;
+                    IconLoadDiagnostics.RecordElementUpdate(reused: true, bitmapIcon, bitmapElementStartedAt);
                 }
                 else
                 {
                     self.Content = bitmapIcon.CreateIconElement();
+                    IconLoadDiagnostics.RecordElementUpdate(reused: false, bitmapIcon, bitmapElementStartedAt);
                 }
 
                 self.Padding = default;
@@ -218,7 +347,9 @@ public partial class IconBox : ContentControl
                 break;
 
             case IconSource source:
+                var sourceElementStartedAt = IconLoadDiagnostics.BeginElementUpdate();
                 self.Content = source.CreateIconElement();
+                IconLoadDiagnostics.RecordElementUpdate(reused: false, source, sourceElementStartedAt);
                 self.Padding = default;
                 break;
 
@@ -234,22 +365,33 @@ public partial class IconBox : ContentControl
             return;
         }
 
-        UpdateSourceKey(self, e.NewValue);
+        UpdateSourceKey(self, e.NewValue, IconRequestReason.SourceChanged);
     }
 
-    private static void UpdateSourceKey(IconBox iconBox, object? sourceKey)
+    private static void UpdateSourceKey(
+        IconBox iconBox,
+        object? sourceKey,
+        IconRequestReason reason = IconRequestReason.None)
     {
+        var requestVersion = iconBox.AdvanceRequestVersion();
+
         if (sourceKey is null)
         {
             iconBox.Source = null;
             return;
         }
 
-        RequestIconFromSource(iconBox, sourceKey);
+        RequestIconFromSource(iconBox, sourceKey, requestVersion, reason);
     }
 
-    private static async void RequestIconFromSource(IconBox iconBox, object? sourceKey)
+    private static async void RequestIconFromSource(
+        IconBox iconBox,
+        object sourceKey,
+        long requestVersion,
+        IconRequestReason reason)
     {
+        var diagnostics = default(IconRequestMeasurement);
+
         try
         {
             var iconBoxSourceRequestedHandler = iconBox._sourceRequested;
@@ -263,7 +405,14 @@ public partial class IconBox : ContentControl
                 ? iconBox._lastScale
                 : (iconBox.XamlRoot?.RasterizationScale > 0 ? iconBox.XamlRoot.RasterizationScale : 1.0);
 
-            var eventArgs = new SourceRequestedEventArgs(sourceKey, iconBox._lastTheme, scale);
+            diagnostics = IconLoadDiagnostics.IsRecording
+                ? IconLoadDiagnostics.BeginRequest(reason, scale, iconBox.GetDiagnosticOrigin())
+                : default;
+            iconBox.TrackActiveRequest(requestVersion, diagnostics);
+            var eventArgs = new SourceRequestedEventArgs(sourceKey, iconBox._lastTheme, scale)
+            {
+                Diagnostics = diagnostics,
+            };
             await iconBoxSourceRequestedHandler.InvokeAsync(iconBox, eventArgs);
 
             // After the await:
@@ -275,16 +424,26 @@ public partial class IconBox : ContentControl
             if (!ReferenceEquals(sourceKey, iconBox.SourceKey))
             {
                 // If the requested icon has changed, then just bail
+                diagnostics.Complete(IconRequestStatus.Stale, eventArgs.Value);
                 return;
             }
 
             iconBox.Source = eventArgs.Value;
+            diagnostics.Complete(
+                eventArgs.Value is null ? IconRequestStatus.Empty : IconRequestStatus.Applied,
+                eventArgs.Value);
         }
         catch (Exception ex)
         {
+            diagnostics.Complete(IconRequestStatus.Failed);
+
             // Exception from TryEnqueue bypasses the global error handler,
             // and crashes the app.
-            Logger.LogError("Failed to set icon", ex);
+            Logger.LogError($"Failed to set icon ({iconBox.GetDiagnosticDescription()})", ex);
+        }
+        finally
+        {
+            iconBox.ClearActiveRequest(requestVersion);
         }
     }
 }
