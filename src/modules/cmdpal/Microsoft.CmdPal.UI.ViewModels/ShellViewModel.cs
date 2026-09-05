@@ -67,6 +67,10 @@ public partial class ShellViewModel : ObservableObject,
                     IsSearchBoxVisible = true;
                 }
 
+                // The search box and filters follow the active leaf page, which for a
+                // tabbed page is the active tab's child rather than the container.
+                OnPropertyChanged(nameof(SearchHostPage));
+
                 if (oldValue is IDisposable disposable)
                 {
                     try
@@ -88,7 +92,27 @@ public partial class ShellViewModel : ObservableObject,
         {
             IsSearchBoxVisible = CurrentPage.HasSearchBox;
         }
+        else if (e.PropertyName == nameof(TabbedPageViewModel.ActiveChild))
+        {
+            // A tabbed page switched its active tab. Re-target the search box and
+            // filters at the new child so search and filtering operate on the tab
+            // that is now visible.
+            OnPropertyChanged(nameof(SearchHostPage));
+        }
     }
+
+    /// <summary>
+    /// Gets the page that drives the shared search box and filters. For a tabbed
+    /// page this is the active tab's child page (a real list, content or
+    /// parameters page) so the search box renders and filters the active tab; for
+    /// every other page it is simply the current page. The SearchBar only renders
+    /// its text box for a concrete list page, so the container tabbed page must be
+    /// seen through to its child here.
+    /// </summary>
+    public PageViewModel? SearchHostPage =>
+        _currentPage is TabbedPageViewModel { ActiveChild: { } activeChild }
+            ? activeChild
+            : _currentPage;
 
     private IPage? _rootPage;
 
