@@ -14,11 +14,21 @@ namespace Microsoft.CmdPal.UI.ViewModels.Commands;
 /// context commands without changing the item everywhere else it is displayed.
 /// </summary>
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-public sealed partial class RecentCommandListItem : IListItem, IExtendedAttributesProvider
+public sealed partial class RecentCommandListItem : IListItem, IExtendedAttributesProvider, ICommandContextSource
 {
+    public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged
+    {
+        add => Source.PropChanged += value;
+        remove => Source.PropChanged -= value;
+    }
+
     public IListItem Source { get; }
 
     public string CommandId { get; }
+
+    AppExtensionHost? ICommandContextSource.ExtensionHost => (Source as ICommandContextSource)?.ExtensionHost;
+
+    ICommandProviderContext? ICommandContextSource.ProviderContext => (Source as ICommandContextSource)?.ProviderContext;
 
     public ICommand? Command => Source.Command;
 
@@ -65,14 +75,10 @@ public sealed partial class RecentCommandListItem : IListItem, IExtendedAttribut
         return new RecentCommandListItem(source, commandId);
     }
 
-    public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged
+    public IDictionary<string, object?> GetProperties()
     {
-        add => Source.PropChanged += value;
-        remove => Source.PropChanged -= value;
-    }
-
-    public IDictionary<string, object?> GetProperties() =>
-        Source is IExtendedAttributesProvider attributes
+        return Source is IExtendedAttributesProvider attributes
             ? attributes.GetProperties()
             : new Dictionary<string, object?>();
+    }
 }
