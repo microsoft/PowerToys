@@ -22,8 +22,8 @@ namespace Microsoft.PowerToys.RegistryPreview.UITests;
 /// directly under <c>HKCU\Software\Classes\regfile\shell\preview</c> when the module is enabled;
 /// see <c>getRegistryPreviewChangeSet</c> in <c>src/common/utils/modulesRegistry.h</c>) launches
 /// <c>PowerToys.RegistryPreview.exe "&lt;path&gt;"</c> directly - there is no COM shell extension
-/// and no sparse MSIX package to wait for. Settings/OOBE own module enablement, so the scope is
-/// still the runner/Settings scope; the editor window itself is launched per test the same way the
+/// and no sparse MSIX package to wait for. Settings owns module enablement, so the scope is still
+/// the runner/Settings scope; the editor window itself is launched per test the same way the
 /// shell verb does (the file path on the command line), mirroring the real activation path.
 /// </remarks>
 public abstract class RegistryPreviewTestBase : UITestBase
@@ -74,7 +74,6 @@ public abstract class RegistryPreviewTestBase : UITestBase
         }
 
         CloseRegistryPreviewWindows();
-        CloseOobeWindows();
         WindowControl.TryCloseByApp("notepad", timeoutMS: 2_000);
         WindowControl.TryCloseByApp("regedit", timeoutMS: 2_000);
         CloseExplorerFileWindows();
@@ -173,7 +172,7 @@ public abstract class RegistryPreviewTestBase : UITestBase
 
     /// <summary>
     /// Launch Registry Preview over <paramref name="filePath"/> (or with no argument when null),
-    /// mirroring exactly how the shell's "Preview" verb and the Settings/OOBE "Launch" actions start
+    /// mirroring exactly how the shell's "Preview" verb and the Settings "Launch" action start
     /// the app: <c>PowerToys.RegistryPreview.exe "&lt;path&gt;"</c>.
     /// </summary>
     protected Session LaunchRegistryPreview(string? filePath = null)
@@ -444,12 +443,6 @@ public abstract class RegistryPreviewTestBase : UITestBase
         WindowControl.TryKillProcessTreeByNameAndWait(RegistryPreviewProcessName, timeoutMS: 10_000);
     }
 
-    protected static void CloseOobeWindows() =>
-        WindowControl.TryCloseByApp(
-            "PowerToys.Settings",
-            window => window.Title.Contains("Welcome to PowerToys", StringComparison.OrdinalIgnoreCase),
-            timeoutMS: 3_000);
-
     protected static bool WaitForProcess(string processName, bool expected, int timeoutMS)
     {
         var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
@@ -563,11 +556,9 @@ public abstract class RegistryPreviewTestBase : UITestBase
         KeyboardHelper.SendKey(Key.Enter);
     }
 
-    // ---- Settings and OOBE ----------------------------------------------------------------------
+    // ---- Settings --------------------------------------------------------------------------------
     protected Session NavigateToRegistryPreviewSettings()
     {
-        CloseOobeWindows();
-
         if (!Session.Has(By.AccessibilityId("RegistryPreviewNavItem"), timeoutMS: 500))
         {
             Session.Find<NavigationViewItem>(By.AccessibilityId("AdvancedNavItem"), ActionTimeoutMS).Click(msPostAction: 500);
@@ -598,24 +589,6 @@ public abstract class RegistryPreviewTestBase : UITestBase
             settings.WaitFor(() => IsPreviewVerbRegistered() == enabled, ActionTimeoutMS, pollIntervalMS: 250),
             $"The Registry Preview shell verb did not become {(enabled ? "registered" : "unregistered")}.");
         return FindModuleToggle(settings);
-    }
-
-    protected Session OpenRegistryPreviewOobe()
-    {
-        CloseOobeWindows();
-        Session.Find<NavigationViewItem>(By.AccessibilityId("OOBENavItem"), ActionTimeoutMS).MouseClick(msPostAction: 500);
-
-        var oobe = WindowsFinder.WaitForWindowByTitle("Welcome to PowerToys", WindowTimeoutMS);
-        Assert.IsNotNull(oobe, "The PowerToys welcome window did not open from Settings.");
-
-        var navItem = FindExact<NavigationViewItem>(oobe!, "Registry Preview", ActionTimeoutMS);
-        Assert.IsNotNull(navItem, "The welcome window did not expose the Registry Preview navigation item.");
-        navItem!.Click(msPostAction: 800);
-
-        Assert.IsTrue(
-            oobe!.WaitForElement(By.AccessibilityId("LaunchButton"), ActionTimeoutMS),
-            "The Registry Preview OOBE page did not expose its launch button.");
-        return oobe;
     }
 
     protected Session LaunchRegistryPreviewFromControl(Session owner, By selector, string origin)

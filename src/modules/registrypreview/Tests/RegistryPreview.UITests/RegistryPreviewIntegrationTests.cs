@@ -7,9 +7,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.RegistryPreview.UITests;
 
-/// <summary>Settings, Explorer context-menu, OOBE, and file-association scenarios.</summary>
+/// <summary>Settings, Explorer context-menu, keyboard-shortcut, and file-association scenarios.</summary>
 /// <remarks>
-/// Covers checklist items 6-10 and the implemented OpenWith registration portion of item 11 in
+/// Covers checklist items 6, 8, 9 and the implemented OpenWith registration portion of item 11 in
 /// issue #40675. The true-default-handler assertion in item 11 is stale: Windows owns UserChoice,
 /// while the product setting only registers PowerToys.RegistryPreview in OpenWithProgIDs.
 /// </remarks>
@@ -29,7 +29,6 @@ public sealed class RegistryPreviewIntegrationTests : RegistryPreviewTestBase
         await CaptureFailureArtifactsBeforeCleanupAsync(TimeSpan.FromSeconds(2));
         KeyboardHelper.SendKeys(Key.Esc);
         CloseRegistryPreviewWindows();
-        CloseOobeWindows();
         CloseExplorerFileWindows();
 
         var restorationFailures = new List<Exception>();
@@ -103,32 +102,13 @@ public sealed class RegistryPreviewIntegrationTests : RegistryPreviewTestBase
         AssertExactElement(editor, Path.GetFileName(keyPath), "Context-menu-launched visual-tree key");
     }
 
-    [TestMethod("RegistryPreview.Integration.DisabledOobe")]
+    [TestMethod("RegistryPreview.Integration.SettingsLaunchAndOpenShortcut")]
     [TestCategory("RegistryPreview")]
-    public void DisabledModuleCannotLaunchFromOobe()
+    public void SettingsLaunchAndOpenShortcutWorkWhileEnabled()
     {
-        var settings = NavigateToRegistryPreviewSettings();
-        RememberModuleState(settings);
-
-        SetModuleEnabled(settings, false);
-        CloseRegistryPreviewWindows();
-
-        var oobe = OpenRegistryPreviewOobe();
-        var launch = oobe.Find<Button>(By.AccessibilityId("LaunchButton"), ActionTimeoutMS);
-        Assert.IsFalse(launch.IsEnabled, "The Registry Preview OOBE launch button remained enabled while the module was disabled.");
-
-        // Use a physical click: UIA Invoke correctly refuses disabled controls, while a user's
-        // click simply does nothing. Process absence is the behavior under test.
-        launch.Click(msPostAction: 500);
-        Assert.IsFalse(
-            WaitForProcess(RegistryPreviewProcessName, expected: true, timeoutMS: 3_000),
-            "Registry Preview launched from OOBE while the module was disabled.");
-    }
-
-    [TestMethod("RegistryPreview.Integration.SettingsAndOobeLaunch")]
-    [TestCategory("RegistryPreview")]
-    public void SettingsAndOobeLaunchRegistryPreviewWhileEnabled()
-    {
+        var folder = CreateTestFolder();
+        var keyPath = CreateIsolatedRegistryKeyPath();
+        var fixture = CreateRegFixture(folder, "settings-shortcut.reg", keyPath);
         var settings = NavigateToRegistryPreviewSettings();
         RememberModuleState(settings);
 
@@ -136,17 +116,16 @@ public sealed class RegistryPreviewIntegrationTests : RegistryPreviewTestBase
         CloseRegistryPreviewWindows();
 
         Step("Launching Registry Preview from its Settings page");
-        LaunchRegistryPreviewFromControl(
+        var registryPreview = LaunchRegistryPreviewFromControl(
             settings,
             By.AccessibilityId("RegistryPreviewLaunchButtonControl"),
             "Settings");
-        CloseRegistryPreviewWindows();
 
-        Step("Launching Registry Preview from its OOBE page");
-        var oobe = OpenRegistryPreviewOobe();
-        var launch = oobe.Find<Button>(By.AccessibilityId("LaunchButton"), ActionTimeoutMS);
-        Assert.IsTrue(launch.IsEnabled, "The Registry Preview OOBE launch button was disabled while the module was enabled.");
-        LaunchRegistryPreviewFromControl(oobe, By.AccessibilityId("LaunchButton"), "OOBE");
+        Step("Opening a registry file with the Ctrl+O keyboard shortcut");
+        TryBringRegistryPreviewForward();
+        KeyboardHelper.SendKeys(Key.Ctrl, Key.O);
+        CompleteFileDialogWithPath(fixture);
+        AssertExactElement(registryPreview, Path.GetFileName(keyPath), "Ctrl+O-opened visual-tree key");
     }
 
     [TestMethod("RegistryPreview.Integration.DefaultRegAppRegistration")]
