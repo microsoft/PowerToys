@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconRefreshState.cs" Link="Controls\IconRefreshState.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconRequestSite.cs" Link="Controls\IconRequestSite.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\AdaptiveCache`2.cs" Link="Helpers\AdaptiveCache`2.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\AdaptiveCacheRemovalReason.cs" Link="Helpers\AdaptiveCacheRemovalReason.cs" />

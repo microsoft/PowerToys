@@ -4,6 +4,7 @@
 
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
@@ -14,7 +15,7 @@ using Windows.Storage.Streams;
 namespace Microsoft.CmdPal.UI.UnitTests;
 
 [TestClass]
-public class CachedIconSourceProviderTests
+public partial class CachedIconSourceProviderTests
 {
     [TestMethod]
     [Timeout(5_000)]
@@ -59,6 +60,43 @@ public class CachedIconSourceProviderTests
 
         Assert.AreSame(first, cached);
         Assert.AreEqual(1, loader.EnqueueCount);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task DistinctStreamReferencesWithCollidingRuntimeHashesDoNotShareLoad()
+    {
+        var collision = FindRuntimeHashCollision();
+        if (collision is null)
+        {
+            Assert.Inconclusive("No runtime identity-hash collision was found among 500,000 live objects.");
+            return;
+        }
+
+        var (firstStream, secondStream) = collision.Value;
+        Assert.AreNotSame(firstStream, secondStream);
+        Assert.AreEqual(RuntimeHelpers.GetHashCode(firstStream), RuntimeHelpers.GetHashCode(secondStream));
+
+        var loader = new ControllableIconLoader();
+        var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
+        var firstIcon = new IconDataViewModel
+        {
+            Data = new IconDataStreamReference { Unsafe = firstStream },
+        };
+        var secondIcon = new IconDataViewModel
+        {
+            Data = new IconDataStreamReference { Unsafe = secondStream },
+        };
+
+        var first = provider.GetIconSource(firstIcon, 1.0);
+        var second = provider.GetIconSource(secondIcon, 1.0);
+
+        Assert.AreNotSame(first, second);
+        Assert.AreEqual(2, loader.EnqueueCount);
+
+        loader.CompleteNext(null);
+        loader.CompleteNext(null);
+        await Task.WhenAll(first, second);
     }
 
     [TestMethod]
@@ -129,6 +167,32 @@ public class CachedIconSourceProviderTests
         var inFlight = field!.GetValue(provider)!;
         var countProperty = inFlight.GetType().GetProperty("Count");
         return (int)countProperty!.GetValue(inFlight)!;
+    }
+
+    private static (TestStreamReference First, TestStreamReference Second)? FindRuntimeHashCollision()
+    {
+        const int MaximumCandidates = 500_000;
+        var referencesByHash = new Dictionary<int, TestStreamReference>();
+
+        for (var i = 0; i < MaximumCandidates; i++)
+        {
+            var candidate = new TestStreamReference();
+            var hash = RuntimeHelpers.GetHashCode(candidate);
+            if (referencesByHash.TryGetValue(hash, out var existing))
+            {
+                return (existing, candidate);
+            }
+
+            referencesByHash.Add(hash, candidate);
+        }
+
+        return null;
+    }
+
+    private sealed partial class TestStreamReference : IRandomAccessStreamReference
+    {
+        public IAsyncOperation<IRandomAccessStreamWithContentType> OpenReadAsync() =>
+            throw new NotSupportedException("The cache-key test does not open its stream references.");
     }
 
     private sealed class ControllableIconLoader : IIconLoaderService

@@ -24,6 +24,7 @@ public partial class IconBox : ContentControl
     private double _lastScale;
     private ElementTheme _lastTheme;
     private double _lastFontSize;
+    private IconRefreshState _refreshState;
     private long _requestVersion;
     private IconRequestMeasurement _activeRequestDiagnostics;
     private long _diagnosticId;
@@ -76,13 +77,15 @@ public partial class IconBox : ContentControl
     {
         add
         {
+            var hadHandler = _sourceRequested is not null;
             _sourceRequested += value;
-            if (_sourceRequested?.GetInvocationList().Length == 1)
+
+            if (!hadHandler && _sourceRequested is not null)
             {
-                Refresh(IconRequestReason.HandlerAttached);
+                RequestRefresh(IconRequestReason.HandlerAttached);
             }
 #if DEBUG
-            if (_sourceRequested?.GetInvocationList().Length > 1)
+            else if (value is not null)
             {
                 Logger.LogWarning("There shouldn't be more than one handler for IconBox.SourceRequested");
             }
@@ -96,6 +99,7 @@ public partial class IconBox : ContentControl
             if (_sourceRequested is null)
             {
                 AdvanceRequestVersion();
+                MarkRefreshPending(IconRequestReason.None);
             }
         }
     }
@@ -158,7 +162,7 @@ public partial class IconBox : ContentControl
         }
 
         _lastTheme = ActualTheme;
-        Refresh(IconRequestReason.ThemeChanged);
+        RequestRefresh(IconRequestReason.ThemeChanged);
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -167,16 +171,37 @@ public partial class IconBox : ContentControl
         // Recompute any derived diagnostic placement now that its parent chain is available.
         _hasDerivedRequestSite = false;
         _derivedRequestSite = IconRequestSite.Unknown;
-        _lastTheme = ActualTheme;
+        var newTheme = ActualTheme;
+        var newScale = XamlRoot?.RasterizationScale ?? 1.0;
+        var changedTheme = _lastTheme != newTheme;
+        var changedScale = Math.Abs(newScale - _lastScale) > 0.01;
+
+        _lastTheme = newTheme;
+        _lastScale = newScale;
         UpdateLastFontSize();
 
         if (XamlRoot is not null)
         {
-            _lastScale = XamlRoot.RasterizationScale;
             XamlRoot.Changed += OnXamlRootChanged;
         }
 
-        Refresh(IconRequestReason.Loaded);
+        if (SourceKey is not null && (changedTheme || changedScale))
+        {
+            var reason = IconRequestReason.Loaded;
+            if (changedTheme)
+            {
+                reason |= IconRequestReason.ThemeChanged;
+            }
+
+            if (changedScale)
+            {
+                reason |= IconRequestReason.ScaleChanged;
+            }
+
+            MarkRefreshPending(reason);
+        }
+
+        Refresh();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -199,7 +224,7 @@ public partial class IconBox : ContentControl
         _lastScale = newScale;
         _lastTheme = ActualTheme;
 
-        if ((changedLastTheme || changedScale) && SourceKey is not null)
+        if (SourceKey is not null && (changedLastTheme || changedScale))
         {
             var reason = IconRequestReason.None;
             if (changedLastTheme)
@@ -212,13 +237,33 @@ public partial class IconBox : ContentControl
                 reason |= IconRequestReason.ScaleChanged;
             }
 
-            UpdateSourceKey(this, SourceKey, reason);
+            RequestRefresh(reason);
         }
     }
 
-    private void Refresh(IconRequestReason reason = IconRequestReason.None)
+    private void MarkRefreshPending(IconRequestReason reason) =>
+        _refreshState.Request(SourceKey is not null, reason);
+
+    private void RequestRefresh(IconRequestReason reason)
     {
-        UpdateSourceKey(this, SourceKey, reason);
+        MarkRefreshPending(reason);
+        Refresh();
+    }
+
+    private void Refresh()
+    {
+        var sourceKey = SourceKey;
+        var sourceRequested = _sourceRequested;
+        if (!_refreshState.TryConsume(
+                IsLoaded,
+                sourceKey is not null,
+                sourceRequested is not null,
+                out var reason))
+        {
+            return;
+        }
+
+        RequestIconFromSource(this, sourceKey!, sourceRequested!, AdvanceRequestVersion(), reason);
     }
 
     private long AdvanceRequestVersion()
@@ -365,28 +410,22 @@ public partial class IconBox : ContentControl
             return;
         }
 
-        UpdateSourceKey(self, e.NewValue, IconRequestReason.SourceChanged);
-    }
+        self.AdvanceRequestVersion();
 
-    private static void UpdateSourceKey(
-        IconBox iconBox,
-        object? sourceKey,
-        IconRequestReason reason = IconRequestReason.None)
-    {
-        var requestVersion = iconBox.AdvanceRequestVersion();
-
-        if (sourceKey is null)
+        if (e.NewValue is null)
         {
-            iconBox.Source = null;
+            self._refreshState.Clear();
+            self.Source = null;
             return;
         }
 
-        RequestIconFromSource(iconBox, sourceKey, requestVersion, reason);
+        self.RequestRefresh(IconRequestReason.SourceChanged);
     }
 
     private static async void RequestIconFromSource(
         IconBox iconBox,
         object sourceKey,
+        TypedEventHandler<IconBox, SourceRequestedEventArgs> sourceRequested,
         long requestVersion,
         IconRequestReason reason)
     {
@@ -394,13 +433,6 @@ public partial class IconBox : ContentControl
 
         try
         {
-            var iconBoxSourceRequestedHandler = iconBox._sourceRequested;
-
-            if (iconBoxSourceRequestedHandler is null)
-            {
-                return;
-            }
-
             var scale = iconBox._lastScale > 0
                 ? iconBox._lastScale
                 : (iconBox.XamlRoot?.RasterizationScale > 0 ? iconBox.XamlRoot.RasterizationScale : 1.0);
@@ -413,7 +445,7 @@ public partial class IconBox : ContentControl
             {
                 Diagnostics = diagnostics,
             };
-            await iconBoxSourceRequestedHandler.InvokeAsync(iconBox, eventArgs);
+            await sourceRequested.InvokeAsync(iconBox, eventArgs);
 
             // After the await:
             // Is the icon we're looking up now, the one we still
@@ -421,7 +453,7 @@ public partial class IconBox : ContentControl
             // list virtualization situation, it's very possible we
             // may have already been set to a new icon before we
             // even got back from the await.
-            if (!ReferenceEquals(sourceKey, iconBox.SourceKey))
+            if (requestVersion != iconBox._requestVersion || !ReferenceEquals(sourceKey, iconBox.SourceKey))
             {
                 // If the requested icon has changed, then just bail
                 diagnostics.Complete(IconRequestStatus.Stale, eventArgs.Value);
@@ -436,6 +468,13 @@ public partial class IconBox : ContentControl
         catch (Exception ex)
         {
             diagnostics.Complete(IconRequestStatus.Failed);
+
+            if (requestVersion == iconBox._requestVersion)
+            {
+                // Do not dispatch immediately: a deterministic failure would recurse forever.
+                // Keep the request pending for the next external lifecycle or source trigger.
+                iconBox.MarkRefreshPending(IconRequestReason.Retry);
+            }
 
             // Exception from TryEnqueue bypasses the global error handler,
             // and crashes the app.
