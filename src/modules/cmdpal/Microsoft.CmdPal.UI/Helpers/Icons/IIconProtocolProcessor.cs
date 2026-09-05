@@ -13,6 +13,8 @@ internal interface IIconProtocolProcessor
 
     ReadOnlySpan<string> ProtocolPrefixes { get; }
 
+    string GetCacheIdentity(string value);
+
     ElementTheme GetCacheTheme(string value, ElementTheme theme);
 
     IconLoadInputKind ClassifyInput(string value);

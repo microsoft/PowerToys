@@ -396,6 +396,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
             IconPathConverter.PreparedIconKind.SvgUri => IconDispatcherMaterializationKind.SvgUri,
             IconPathConverter.PreparedIconKind.Glyph => IconDispatcherMaterializationKind.Glyph,
             IconPathConverter.PreparedIconKind.Binary => IconDispatcherMaterializationKind.Binary,
+            IconPathConverter.PreparedIconKind.SvgData => IconDispatcherMaterializationKind.SvgData,
             _ => IconDispatcherMaterializationKind.Unknown,
         };
 

@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Graphics.Imaging;
+using Windows.Storage.Streams;
 using DrawingIcon = System.Drawing.Icon;
 using DrawingImageLockMode = System.Drawing.Imaging.ImageLockMode;
 using DrawingPixelFormat = System.Drawing.Imaging.PixelFormat;
@@ -92,8 +93,8 @@ internal static partial class IconPathConverter
     /// Attempts to create an icon source without an asynchronous bitmap transfer.
     /// </summary>
     /// <returns>
-    /// <see langword="false"/> only when a populated binary icon must be transferred
-    /// to a <see cref="SoftwareBitmapSource"/> asynchronously.
+    /// <see langword="false"/> only when generated SVG data or a populated binary icon
+    /// must be transferred to its XAML image source asynchronously.
     /// </returns>
     public static bool TryCreateIconSourceSynchronously(
         PreparedIcon icon,
@@ -122,6 +123,10 @@ internal static partial class IconPathConverter
                     iconSource = new ImageIconSource { ImageSource = svg };
                     return true;
 
+                case PreparedIconKind.SvgData:
+                    iconSource = null!;
+                    return false;
+
                 case PreparedIconKind.Glyph:
                     iconSource = new FontIconSource
                     {
@@ -148,7 +153,7 @@ internal static partial class IconPathConverter
         }
         catch
         {
-            iconSource = icon.Kind == PreparedIconKind.Binary
+            iconSource = icon.Kind is PreparedIconKind.Binary or PreparedIconKind.SvgData
                 ? new ImageIconSource()
                 : CreateEmptyIconSource();
             return true;
@@ -159,10 +164,48 @@ internal static partial class IconPathConverter
     /// Completes icon-source creation after <see cref="TryCreateIconSourceSynchronously"/>
     /// returned <see langword="false"/> for the same prepared icon.
     /// </summary>
-    public static Task<IconSource> CompleteIconSourceCreationAsync(PreparedIcon icon) =>
-        icon.TakeSoftwareBitmap() is { } softwareBitmap
-            ? CreateBinaryIconSourceAsync(softwareBitmap)
-            : Task.FromResult<IconSource>(new ImageIconSource());
+    public static Task<IconSource> CompleteIconSourceCreationAsync(PreparedIcon icon)
+    {
+        if (icon.Kind == PreparedIconKind.Binary)
+        {
+            return icon.TakeSoftwareBitmap() is { } softwareBitmap
+                ? CreateBinaryIconSourceAsync(softwareBitmap)
+                : Task.FromResult<IconSource>(new ImageIconSource());
+        }
+
+        return icon.Kind == PreparedIconKind.SvgData
+            ? CreateSvgIconSourceAsync(icon.SvgData!, icon.TargetSize)
+            : Task.FromResult<IconSource>(CreateEmptyIconSource());
+    }
+
+    private static async Task<IconSource> CreateSvgIconSourceAsync(byte[] svgData, int targetSize)
+    {
+        try
+        {
+            using var stream = new InMemoryRandomAccessStream();
+            using (var writer = new DataWriter(stream))
+            {
+                writer.WriteBytes(svgData);
+                await writer.StoreAsync();
+                writer.DetachStream();
+            }
+
+            stream.Seek(0);
+            var svg = new SvgImageSource();
+            if (targetSize > 0)
+            {
+                svg.RasterizePixelWidth = targetSize;
+                svg.RasterizePixelHeight = targetSize;
+            }
+
+            await svg.SetSourceAsync(stream);
+            return new ImageIconSource { ImageSource = svg };
+        }
+        catch
+        {
+            return new ImageIconSource();
+        }
+    }
 
     private static async Task<IconSource> CreateBinaryIconSourceAsync(SoftwareBitmap softwareBitmap)
     {
@@ -302,6 +345,7 @@ internal static partial class IconPathConverter
             Uri? uri = null,
             string? glyph = null,
             string? fontFamily = null,
+            byte[]? svgData = null,
             SoftwareBitmap? softwareBitmap = null,
             int targetSize = 0)
         {
@@ -309,6 +353,7 @@ internal static partial class IconPathConverter
             Uri = uri;
             Glyph = glyph;
             FontFamily = fontFamily;
+            SvgData = svgData;
             _softwareBitmap = softwareBitmap;
             TargetSize = targetSize;
         }
@@ -321,6 +366,8 @@ internal static partial class IconPathConverter
 
         public string? FontFamily { get; }
 
+        public byte[]? SvgData { get; }
+
         public SoftwareBitmap? SoftwareBitmap => _softwareBitmap;
 
         public int TargetSize { get; }
@@ -332,6 +379,9 @@ internal static partial class IconPathConverter
 
         public static PreparedIcon FromGlyph(string glyph, string fontFamily, int targetSize) =>
             new(PreparedIconKind.Glyph, glyph: glyph, fontFamily: fontFamily, targetSize: targetSize);
+
+        public static PreparedIcon FromSvgData(byte[] svgData, int targetSize) =>
+            new(PreparedIconKind.SvgData, svgData: svgData, targetSize: targetSize);
 
         public static PreparedIcon FromBinary(SoftwareBitmap? bitmap) =>
             new(PreparedIconKind.Binary, softwareBitmap: bitmap);
@@ -352,6 +402,7 @@ internal static partial class IconPathConverter
         Empty,
         BitmapUri,
         SvgUri,
+        SvgData,
         Glyph,
         Binary,
     }
