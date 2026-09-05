@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
@@ -35,6 +36,7 @@ public abstract class RegistryPreviewTestBase : UITestBase
     protected const int WindowTimeoutMS = 30_000;
     protected const int ActionTimeoutMS = 15_000;
     protected const int EditorTimeoutMS = 180_000;
+    protected const int InteractiveRegistryImportTimeoutMS = 90_000;
     protected const string ContextMenuCaption = "Preview";
 
     private static readonly string[] ContextMenuWindowClasses = { "#32768", "Microsoft.UI.Content.PopupWindowSiteBridge" };
@@ -62,7 +64,15 @@ public abstract class RegistryPreviewTestBase : UITestBase
     public async Task CleanupRegistryPreviewTest()
     {
         await CaptureFailureArtifactsBeforeCleanupAsync(TimeSpan.FromSeconds(2));
-        KeyboardHelper.SendKeys(Key.Esc);
+        try
+        {
+            KeyboardHelper.SendKeys(Key.Esc);
+        }
+        catch (Win32Exception ex)
+        {
+            TestContext.WriteLine($"Cleanup could not send Escape, likely because UAC owns the secure desktop: {ex.Message}");
+        }
+
         CloseRegistryPreviewWindows();
         CloseOobeWindows();
         WindowControl.TryCloseByApp("notepad", timeoutMS: 2_000);
@@ -808,27 +818,71 @@ public abstract class RegistryPreviewTestBase : UITestBase
         WindowControl.TryCloseByApp("explorer", IsExplorerFileWindow, timeoutMS: 10_000);
 
     // ---- Registry import and association ---------------------------------------------------------
-    protected void ConfirmRegistryImport()
+    protected static bool CanConfirmRegistryImportInteractively =>
+        !EnvironmentConfig.IsInPipeline &&
+        Environment.UserInteractive &&
+        !ElevationHelper.IsCurrentProcessElevated();
+
+    /// <returns>
+    /// <see langword="true"/> when the Registry Editor dialogs were automated; otherwise,
+    /// <see langword="false"/> when an interactive local run must complete the elevated dialogs.
+    /// </returns>
+    protected bool ConfirmRegistryImport()
     {
         var confirmation = WindowsFinder.WaitForWindowByApp(
             "regedit",
             window => window.Title.Contains("Registry Editor", StringComparison.OrdinalIgnoreCase),
-            timeoutMS: WindowTimeoutMS);
+            timeoutMS: CanConfirmRegistryImportInteractively ? InteractiveRegistryImportTimeoutMS : WindowTimeoutMS);
         Assert.IsNotNull(confirmation, "Registry Editor did not display the import confirmation.");
 
-        var regedit = Session.FromProcess("regedit", timeoutMS: WindowTimeoutMS);
-        var yes = FindExact<Button>(regedit, "Yes", ActionTimeoutMS);
-        Assert.IsNotNull(yes, "Registry Editor did not expose the import confirmation's Yes button.");
-        yes!.Click(msPostAction: 500);
+        if (CanConfirmRegistryImportInteractively && confirmation!.IsElevated is not false)
+        {
+            LogManualRegistryImportInstructions();
+            return false;
+        }
 
-        var success = regedit.FindAll<Element>(By.Name("successfully"), ActionTimeoutMS)
-            .FirstOrDefault(element => element.Name.Contains("successfully", StringComparison.OrdinalIgnoreCase));
-        Assert.IsNotNull(success, "Registry Editor did not report that the registry import completed successfully.");
+        try
+        {
+            var yes = FindExact<Button>(confirmation!, "Yes", ActionTimeoutMS);
+            Assert.IsNotNull(yes, "Registry Editor did not expose the import confirmation's Yes button.");
+            yes!.Click(msPostAction: 500);
 
-        var ok = FindExact<Button>(regedit, "OK", ActionTimeoutMS);
-        Assert.IsNotNull(ok, "Registry Editor did not report the import result.");
-        ok!.Click(msPostAction: 300);
+            var result = WindowsFinder.WaitForWindowByApp(
+                "regedit",
+                window =>
+                    window.Hwnd != confirmation.WindowHandle &&
+                    window.Title.Contains("Registry Editor", StringComparison.OrdinalIgnoreCase),
+                timeoutMS: ActionTimeoutMS);
+            Assert.IsNotNull(result, "Registry Editor did not display the import result.");
+
+            var success = result!.FindAll<Element>(By.Name("successfully"), ActionTimeoutMS)
+                .FirstOrDefault(element => element.Name.Contains("successfully", StringComparison.OrdinalIgnoreCase));
+            Assert.IsNotNull(success, "Registry Editor did not report that the registry import completed successfully.");
+
+            var ok = FindExact<Button>(result, "OK", ActionTimeoutMS);
+            Assert.IsNotNull(ok, "Registry Editor did not report the import result.");
+            ok!.Click(msPostAction: 300);
+            return true;
+        }
+        catch (AssertFailedException ex) when (
+            CanConfirmRegistryImportInteractively &&
+            IsWinappTargetAccessFailure(ex.Message))
+        {
+            LogManualRegistryImportInstructions();
+            return false;
+        }
     }
+
+    private void LogManualRegistryImportInstructions() =>
+        Step(
+            "Registry Editor is elevated beyond the local test host's UI-automation integrity level. " +
+            "Choose Yes in Registry Editor and dismiss the result dialog; the test will wait for the isolated HKCU value.");
+
+    private static bool IsWinappTargetAccessFailure(string message) =>
+        message.Contains("No running app found", StringComparison.OrdinalIgnoreCase) ||
+        message.Contains("AppNotFoundException", StringComparison.OrdinalIgnoreCase) ||
+        message.Contains("Access is denied", StringComparison.OrdinalIgnoreCase) ||
+        message.Contains("access_denied", StringComparison.OrdinalIgnoreCase);
 
     protected static string? QueryRegFileExecutable()
     {

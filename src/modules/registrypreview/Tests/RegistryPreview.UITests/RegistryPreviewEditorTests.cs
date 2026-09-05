@@ -148,8 +148,10 @@ public sealed class RegistryPreviewEditorTests : RegistryPreviewTestBase
     public void WriteToRegistryImportsOnlyTheIsolatedHkcuFixture()
     {
         Assert.IsFalse(
-            IsCurrentUserLocalAdministrator() && !ElevationHelper.IsCurrentProcessElevated(),
-            "This test needs either a standard-user token or an already-elevated token; a filtered administrator token moves Registry Editor consent to the secure desktop.");
+            EnvironmentConfig.IsInPipeline &&
+            IsCurrentUserLocalAdministrator() &&
+            !ElevationHelper.IsCurrentProcessElevated(),
+            "Unattended runs need either a standard-user token or an already-elevated token; a filtered administrator token moves Registry Editor consent to the secure desktop.");
 
         var folder = CreateTestFolder();
         var keyPath = CreateIsolatedRegistryKeyPath();
@@ -164,8 +166,13 @@ public sealed class RegistryPreviewEditorTests : RegistryPreviewTestBase
         }
 
         Step("Writing the isolated HKCU fixture through Registry Preview");
+        if (CanConfirmRegistryImportInteractively)
+        {
+            Step("Approve Registry Editor elevation if prompted. The test can wait for manual confirmation when UIPI blocks automation.");
+        }
+
         window.Find<Button>(By.AccessibilityId("writeButton"), ActionTimeoutMS).Click(msPostAction: 300);
-        ConfirmRegistryImport();
+        var confirmationWasAutomated = ConfirmRegistryImport();
 
         Assert.IsTrue(
             window.WaitFor(
@@ -174,9 +181,10 @@ public sealed class RegistryPreviewEditorTests : RegistryPreviewTestBase
                     using var key = Registry.CurrentUser.OpenSubKey(subKey);
                     return string.Equals(key?.GetValue("SampleString") as string, "written-value", StringComparison.Ordinal);
                 },
-                ActionTimeoutMS,
+                confirmationWasAutomated ? ActionTimeoutMS : InteractiveRegistryImportTimeoutMS,
                 pollIntervalMS: 250),
-            "Registry Editor did not import the string value into the isolated HKCU key.");
+            "Registry Editor did not import the string value into the isolated HKCU key. " +
+            "If UAC requested credentials for a different administrator account, run Visual Studio elevated under the test account so HKCU remains the same user.");
 
         using var imported = Registry.CurrentUser.OpenSubKey(subKey);
         Assert.IsNotNull(imported, "Registry Editor did not create the isolated HKCU key.");
