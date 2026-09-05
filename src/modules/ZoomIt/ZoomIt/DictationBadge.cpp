@@ -16,6 +16,8 @@ namespace
     constexpr int c_gapDips = 8;
     constexpr int c_maximumWidthDips = 520;
     constexpr int c_lineHeightDips = 20;
+    constexpr int c_spinnerSizeDips = 16;
+    constexpr unsigned int c_spinnerFrames = 24;
     constexpr COLORREF c_backgroundColor = RGB( 32, 32, 32 );
     constexpr COLORREF c_textColor = RGB( 240, 240, 240 );
     constexpr COLORREF c_statusColor = RGB( 255, 222, 0 );
@@ -60,6 +62,14 @@ LRESULT CALLBACK DictationBadge::WindowProcThunk( HWND window, UINT message, WPA
 //----------------------------------------------------------------------------
 void DictationBadge::Show( HWND owner, const RECT& anchor )
 {
+    {
+        std::lock_guard<std::mutex> guard( m_textLock );
+        if( m_status.empty() )
+        {
+            m_status = PreparingStatus;
+        }
+    }
+
     if( m_window )
     {
         Reposition( anchor );
@@ -89,7 +99,6 @@ void DictationBadge::Show( HWND owner, const RECT& anchor )
 
     // Keep the badge out of the captured image and out of recordings.
     SetWindowDisplayAffinity( m_window.get(), WDA_EXCLUDEFROMCAPTURE );
-    SetLayeredWindowAttributes( m_window.get(), 0, c_alpha, LWA_ALPHA );
 
     m_dpi = GetDpiForWindowHelper( m_window.get() );
     m_font.reset( CreateFontW( -ScaleForDpi( 13, m_dpi ), 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
@@ -109,7 +118,7 @@ void DictationBadge::SetText( const std::wstring& text )
 {
     {
         std::lock_guard<std::mutex> guard( m_textLock );
-        if( m_text == text )
+        if( m_transcribing || m_text == text )
         {
             return;
         }
@@ -128,11 +137,42 @@ void DictationBadge::SetStatus( const std::wstring& status )
 {
     {
         std::lock_guard<std::mutex> guard( m_textLock );
-        if( m_status == status )
+        if( m_transcribing || m_status == status )
         {
             return;
         }
         m_status = status;
+    }
+
+    Refresh();
+}
+
+void DictationBadge::BeginTranscribing()
+{
+    {
+        std::lock_guard<std::mutex> guard( m_textLock );
+        if( m_transcribing )
+        {
+            return;
+        }
+        m_transcribing = true;
+        m_spinnerFrame = 0;
+        m_status = L"Transcribing - Press Esc to cancel.";
+        m_text.clear();
+    }
+
+    Refresh();
+}
+
+void DictationBadge::AdvanceTranscribingAnimation()
+{
+    {
+        std::lock_guard<std::mutex> guard( m_textLock );
+        if( !m_transcribing )
+        {
+            return;
+        }
+        m_spinnerFrame = ( m_spinnerFrame + 1 ) % c_spinnerFrames;
     }
 
     Refresh();
@@ -179,53 +219,52 @@ SIZE DictationBadge::MeasureContent() const
 
     std::wstring status;
     std::wstring text;
+    bool transcribing;
     {
         std::lock_guard<std::mutex> guard( m_textLock );
         status = m_status;
         text = m_text;
+        transcribing = m_transcribing;
     }
 
-    int lines = status.empty() ? 0 : 1;
+    wil::unique_hdc deviceContext{ CreateCompatibleDC( nullptr ) };
+    THROW_LAST_ERROR_IF_NULL( deviceContext.get() );
+    auto previousFont = wil::SelectObject( deviceContext.get(), m_font.get() );
 
-    // Wrap the transcription at the maximum width, capped at three lines so the
-    // badge never dominates the screen.
+    const int maximumContentWidth = maximumWidth - 2 * padding;
+    RECT statusSize{};
+    DrawTextW( deviceContext.get(), status.c_str(), -1, &statusSize,
+               DT_CALCRECT | DT_SINGLELINE | DT_NOPREFIX );
+    if( transcribing )
+    {
+        statusSize.right += ScaleForDpi( c_spinnerSizeDips + c_gapDips, m_dpi );
+    }
+    else if( status == PreparingStatus || status == ListeningStatus )
+    {
+        // Reserve both labels from the first frame so microphone startup cannot resize the badge.
+        const auto* alternateStatus = status == PreparingStatus ? ListeningStatus : PreparingStatus;
+        RECT alternateSize{};
+        DrawTextW( deviceContext.get(), alternateStatus, -1, &alternateSize,
+                   DT_CALCRECT | DT_SINGLELINE | DT_NOPREFIX );
+        statusSize.right = (std::max)( statusSize.right, alternateSize.right );
+    }
+    RECT textSize{ 0, 0, maximumContentWidth, 0 };
+    DrawTextW( deviceContext.get(), text.c_str(), -1, &textSize,
+               DT_CALCRECT | DT_WORDBREAK | DT_NOPREFIX );
+    const LONG contentWidth = std::clamp<LONG>(
+        (std::max)( statusSize.right, textSize.right ), 1, maximumContentWidth );
+
+    // Measure again at the fitted width so wrapping and height match Paint.
+    int lines = status.empty() ? 0 : 1;
     if( !text.empty() )
     {
-        HDC deviceContext = GetDC( m_window.get() );
-        if( deviceContext != nullptr )
-        {
-            HGDIOBJ previousFont = SelectObject( deviceContext, m_font.get() );
-            RECT measure{ 0, 0, maximumWidth - 2 * padding, 0 };
-            DrawTextW( deviceContext, text.c_str(), -1, &measure, DT_CALCRECT | DT_WORDBREAK | DT_NOPREFIX );
-            SelectObject( deviceContext, previousFont );
-            ReleaseDC( m_window.get(), deviceContext );
-
-            int textLines = ( measure.bottom + lineHeight - 1 ) / lineHeight;
-            if( textLines < 1 )
-            {
-                textLines = 1;
-            }
-            else if( textLines > 3 )
-            {
-                textLines = 3;
-            }
-            lines += textLines;
-        }
-        else
-        {
-            lines += 1;
-        }
+        textSize = { 0, 0, contentWidth, 0 };
+        DrawTextW( deviceContext.get(), text.c_str(), -1, &textSize,
+                   DT_CALCRECT | DT_WORDBREAK | DT_NOPREFIX );
+        lines += std::clamp<int>( ( textSize.bottom + lineHeight - 1 ) / lineHeight, 1, 3 );
     }
 
-    if( lines == 0 )
-    {
-        lines = 1;
-    }
-
-    SIZE size{};
-    size.cx = maximumWidth;
-    size.cy = lines * lineHeight + 2 * padding;
-    return size;
+    return { contentWidth + 2 * padding, (std::max)( lines, 1 ) * lineHeight + 2 * padding };
 }
 
 //----------------------------------------------------------------------------
@@ -248,7 +287,7 @@ void DictationBadge::Reposition( const RECT& anchor )
     }
 
     m_anchor = anchor;
-    const SIZE size = MeasureContent();
+    SIZE size = MeasureContent();
     const int gap = ScaleForDpi( c_gapDips, m_dpi );
 
     MONITORINFO monitorInfo{ sizeof( MONITORINFO ) };
@@ -285,9 +324,30 @@ void DictationBadge::Reposition( const RECT& anchor )
         x = monitorInfo.rcMonitor.left;
     }
 
-    SetWindowPos( m_window.get(), HWND_TOPMOST, x, y, size.cx, size.cy,
-                  SWP_NOACTIVATE | SWP_SHOWWINDOW );
-    RedrawWindow( m_window.get(), nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW );
+    // WS_EX_TRANSPARENT defers WM_PAINT until windows below us have painted.
+    // Publish pixels directly: finalization blocks the UI message loop, so an
+    // invalidated selection must not leave the badge displaying "Listening".
+    wil::unique_hdc memory{ CreateCompatibleDC( nullptr ) };
+    THROW_LAST_ERROR_IF_NULL( memory.get() );
+    BITMAPINFO info{};
+    info.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
+    info.bmiHeader.biWidth = size.cx;
+    info.bmiHeader.biHeight = -size.cy;
+    info.bmiHeader.biPlanes = 1;
+    info.bmiHeader.biBitCount = 32;
+    void* bits = nullptr;
+    wil::unique_hbitmap bitmap{ CreateDIBSection( memory.get(), &info, DIB_RGB_COLORS, &bits, nullptr, 0 ) };
+    THROW_LAST_ERROR_IF_NULL( bitmap.get() );
+    auto previousBitmap = wil::SelectObject( memory.get(), bitmap.get() );
+    Paint( memory.get(), { 0, 0, size.cx, size.cy } );
+
+    POINT destination{ x, y };
+    POINT source{};
+    BLENDFUNCTION blend{ AC_SRC_OVER, 0, c_alpha, 0 };
+    THROW_IF_WIN32_BOOL_FALSE( UpdateLayeredWindow(
+        m_window.get(), nullptr, &destination, &size, memory.get(), &source, 0, &blend, ULW_ALPHA ) );
+    SetWindowPos( m_window.get(), HWND_TOPMOST, 0, 0, 0, 0,
+                  SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW );
 }
 
 //----------------------------------------------------------------------------
@@ -309,6 +369,29 @@ void DictationBadge::Hide()
     std::lock_guard<std::mutex> guard( m_textLock );
     m_text.clear();
     m_status.clear();
+    m_transcribing = false;
+    m_spinnerFrame = 0;
+}
+
+void DictationBadge::PaintSpinner( HDC deviceContext, const RECT& bounds, unsigned int frame ) const
+{
+    const float stroke = static_cast<float>( ScaleForDpi( 2, m_dpi ) );
+    const Gdiplus::RectF ring{
+        bounds.left + stroke / 2,
+        bounds.top + stroke / 2,
+        bounds.right - bounds.left - stroke,
+        bounds.bottom - bounds.top - stroke,
+    };
+    Gdiplus::Graphics graphics( deviceContext );
+    graphics.SetSmoothingMode( Gdiplus::SmoothingModeAntiAlias );
+    Gdiplus::Pen track( Gdiplus::Color( 255, 80, 80, 80 ), stroke );
+    Gdiplus::Pen arc(
+        Gdiplus::Color( 255, GetRValue( c_statusColor ), GetGValue( c_statusColor ), GetBValue( c_statusColor ) ),
+        stroke );
+    arc.SetStartCap( Gdiplus::LineCapRound );
+    arc.SetEndCap( Gdiplus::LineCapRound );
+    graphics.DrawEllipse( &track, ring );
+    graphics.DrawArc( &arc, ring, frame * ( 360.0f / c_spinnerFrames ) - 90.0f, 100.0f );
 }
 
 //----------------------------------------------------------------------------
@@ -330,10 +413,14 @@ void DictationBadge::Paint( HDC deviceContext, const RECT& client )
 
     std::wstring status;
     std::wstring text;
+    bool transcribing;
+    unsigned int spinnerFrame;
     {
         std::lock_guard<std::mutex> guard( m_textLock );
         status = m_status;
         text = m_text;
+        transcribing = m_transcribing;
+        spinnerFrame = m_spinnerFrame;
     }
 
     HGDIOBJ previousFont = SelectObject( deviceContext, m_font.get() );
@@ -346,6 +433,15 @@ void DictationBadge::Paint( HDC deviceContext, const RECT& client )
         SetTextColor( deviceContext, c_statusColor );
         RECT statusRect = line;
         statusRect.bottom = statusRect.top + lineHeight;
+        if( transcribing )
+        {
+            const int diameter = ScaleForDpi( c_spinnerSizeDips, m_dpi );
+            const int top = statusRect.top + ( lineHeight - diameter ) / 2;
+            PaintSpinner( deviceContext,
+                          { statusRect.left, top, statusRect.left + diameter, top + diameter },
+                          spinnerFrame );
+            statusRect.left += diameter + ScaleForDpi( c_gapDips, m_dpi );
+        }
         DrawTextW( deviceContext, status.c_str(), -1, &statusRect,
                    DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_VCENTER );
         line.top += lineHeight;
@@ -384,12 +480,17 @@ LRESULT DictationBadge::WindowProc( HWND window, UINT message, WPARAM wordParam,
 
     case WM_PAINT:
     {
-        PAINTSTRUCT paint;
-        HDC deviceContext = BeginPaint( window, &paint );
-        RECT client;
-        GetClientRect( window, &client );
-        Paint( deviceContext, client );
+        PAINTSTRUCT paint{};
+        BeginPaint( window, &paint );
         EndPaint( window, &paint );
+        return 0;
+    }
+
+    case WM_PRINTCLIENT:
+    {
+        RECT client{};
+        GetClientRect( window, &client );
+        Paint( reinterpret_cast<HDC>( wordParam ), client );
         return 0;
     }
 

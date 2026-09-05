@@ -17,6 +17,9 @@
 class DictationBadge
 {
 public:
+    static constexpr wchar_t PreparingStatus[] = L"Starting dictation...";
+    static constexpr wchar_t ListeningStatus[] = L"Listening. Release to snip.";
+
     ~DictationBadge() { Hide(); }
 
     //
@@ -37,6 +40,13 @@ public:
     void SetStatus( const std::wstring& status );
 
     //
+    // Switches to a fixed transcription layout until Hide. Late recognition
+    // updates cannot resize it or replace the status while the spinner runs.
+    //
+    void BeginTranscribing();
+    void AdvanceTranscribingAnimation();
+
+    //
     // Moves the badge to follow a changing selection.
     //
     void Reposition( const RECT& anchor );
@@ -51,6 +61,7 @@ private:
     LRESULT WindowProc( HWND window, UINT message, WPARAM wordParam, LPARAM longParam );
 
     void Paint( HDC deviceContext, const RECT& client );
+    void PaintSpinner( HDC deviceContext, const RECT& bounds, unsigned int frame ) const;
     SIZE MeasureContent() const;
 
     const wchar_t* m_className = L"ZoomitDictationBadge";
@@ -60,5 +71,7 @@ private:
     RECT m_anchor{};
     std::wstring m_text;
     std::wstring m_status;
+    bool m_transcribing{ false };
+    unsigned int m_spinnerFrame{ 0 };
     mutable std::mutex m_textLock;
 };

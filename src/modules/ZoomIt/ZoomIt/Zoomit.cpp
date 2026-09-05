@@ -11528,13 +11528,13 @@ LRESULT APIENTRY MainWndProc(
                 switch( status )
                 {
                 case DictationSession::Status::Preparing:
-                    badge.SetStatus( L"Starting dictation..." );
+                    badge.SetStatus( DictationBadge::PreparingStatus );
                     break;
                 case DictationSession::Status::Listening:
-                    badge.SetStatus( L"Listening. Release to snip." );
+                    badge.SetStatus( DictationBadge::ListeningStatus );
                     break;
                 case DictationSession::Status::Finalizing:
-                    badge.SetStatus( L"Transcribing..." );
+                    badge.BeginTranscribing();
                     break;
                 case DictationSession::Status::Unavailable:
                     badge.SetStatus( DictationSession::DescribeFailure( failure ) );
@@ -11627,10 +11627,9 @@ LRESULT APIENTRY MainWndProc(
             }
 
             // Capture before finalizing the transcription so that the image
-            // matches the screen at the moment the button was released. Hide
-            // the border only for the synchronous copy, then leave it visible
-            // while Whisper runs so the completed snip remains clear.
-            selectRectangle.Hide();
+            // matches the screen at the moment the button was released. Both
+            // overlays use WDA_EXCLUDEFROMCAPTURE, so leave them visible to
+            // avoid flashing the undimmed desktop during the copy.
             HBITMAP hSaveBitmap = CreateCompatibleBitmap( hdcScreen, copyWidth, copyHeight );
             HDC hSaveDc = CreateCompatibleDC( hdcScreen );
             HGDIOBJ hPrevBitmap = SelectObject( hSaveDc, hSaveBitmap );
@@ -11644,15 +11643,14 @@ LRESULT APIENTRY MainWndProc(
                         copyWidth, copyHeight,
                         SRCCOPY | CAPTUREBLT );
             SelectObject( hSaveDc, hPrevBitmap );
-            selectRectangle.Show();
             badge.Reposition( badgeAnchor );
 
             std::wstring transcript;
             bool dictationCancelled = false;
             if( listeningStarted )
             {
-                unsigned int animationFrame = 0;
-                ULONGLONG nextAnimation = 0;
+                badge.BeginTranscribing();
+                ULONGLONG nextAnimation = GetTickCount64() + 50;
                 auto updateTranscribingStatus = [&] {
                     const ULONGLONG now = GetTickCount64();
                     if( now < nextAnimation )
@@ -11660,16 +11658,9 @@ LRESULT APIENTRY MainWndProc(
                         return;
                     }
 
-                    static constexpr const wchar_t* Frames[] = {
-                        L"Transcribing   Press Esc to cancel.",
-                        L"Transcribing.  Press Esc to cancel.",
-                        L"Transcribing.. Press Esc to cancel.",
-                        L"Transcribing... Press Esc to cancel.",
-                    };
-                    badge.SetStatus( Frames[animationFrame++ % ARRAYSIZE( Frames )] );
-                    nextAnimation = now + 250;
+                    badge.AdvanceTranscribingAnimation();
+                    nextAnimation = now + 50;
                 };
-                updateTranscribingStatus();
                 transcript = dictation.Stop(
                     g_SnipDictateGrace,
                     &dictationCancelled,

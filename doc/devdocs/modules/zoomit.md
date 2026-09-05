@@ -223,10 +223,25 @@ Audio is captured during the drag, converted to mono floating-point PCM, resampl
 Whisper's 16 kHz input rate, and transcribed when the mouse is released. Finalization is
 allowed up to ten seconds for Whisper because inference, unlike SAPI event draining, is
 CPU-bound. The completed selection border, dimmed exterior, and badge remain visible, the
-pointer returns to the normal arrow, and the badge shows an animated `Transcribing... Press
-Esc to cancel.` status. The selection overlay is hidden only for the synchronous image copy
-so it is not included in the screenshot. Escape cancels inference and abandons the snip
-without changing the clipboard.
+pointer returns to the normal arrow, and the badge shows `Transcribing - Press Esc to cancel.`
+alongside a drawn, rotating progress ring. Capture exclusion keeps the selection overlay
+out of the screenshot without hiding it, and its exterior opacity stays unchanged on
+release. Escape cancels inference and abandons the snip without changing the clipboard.
+
+The badge fits its status and transcript text, with a maximum width of 520 DIPs and up to
+three wrapped transcript lines. Its initial width accommodates both the startup and listening
+labels, so opening the microphone does not resize the popup.
+It publishes its rendered pixels with `UpdateLayeredWindow`
+so the status and animation remain visible while finalization blocks the UI message loop,
+even when the selection overlay has pending paint messages.
+During transcription it reserves space for the whole spinner and keeps the text, width,
+and position fixed throughout the animation.
+The native `BadgeWindowTests` regression tests compare client-rendered badge pixels and
+window bounds, covering worker-thread startup updates and spinner rendering without
+pumping the UI queue during finalization.
+The native `SelectionWindowTests` exercise the real overlay and desktop capture to confirm
+that a retained selection keeps its opacity and is excluded from screenshots while still
+visible. These tests require an unlocked interactive Windows desktop.
 
 Audio capture for recording is independent from dictation. The microphone chooser applies
 to both features, but disabling "Include microphone in recording" does not disable

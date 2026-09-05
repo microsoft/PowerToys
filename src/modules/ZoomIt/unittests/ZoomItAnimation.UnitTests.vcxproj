@@ -17,19 +17,29 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>..\ZoomIt;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\ZoomIt;..\..\..\common\sysinternals;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
       <UseFullPaths>true</UseFullPaths>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>gdiplus.lib;dwmapi.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\ZoomIt\ZoomAnimation.cpp" />
     <ClCompile Include="ZoomAnimationTests.cpp" />
+    <ClCompile Include="..\ZoomIt\DictationBadge.cpp" />
+    <ClCompile Include="DictationBadgeTests.cpp" />
+    <ClCompile Include="..\ZoomIt\SelectRectangle.cpp" />
+    <ClCompile Include="SelectRectangleTests.cpp" />
+    <ClCompile Include="..\ZoomIt\Utility.cpp" />
+    <ClCompile Include="UtilityTestStubs.cpp" />
+    <ClCompile Include="..\..\..\common\sysinternals\WindowsVersions.cpp" />
     <ClInclude Include="..\ZoomIt\ZoomAnimation.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="..\..\..\..\packages\robmikh.common.0.0.23-beta\build\native\robmikh.common.targets" />
+  <Import Project="..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" />
 </Project>

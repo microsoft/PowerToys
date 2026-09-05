@@ -319,11 +319,12 @@ void SelectRectangle::ShowSelected()
                              m_selectedRect.bottom,
                              m_dpi );
 
-    // Set the alpha to match the Windows graphics capture API yellow border
-    // and set the window to be transparent and disabled, so it will be skipped
-    // for hit testing and as a candidate for the next foreground window.
-    const BOOL layered = SetLayeredWindowAttributes( m_window.get(), 0, 191, LWA_ALPHA );
-    SelectRectangleDebugLog( L"[SelectRectangle] ShowSelected SetLayeredWindowAttributes(alpha=191) success=%d err=%lu\n",
+    // Preserve the dimmed exterior's opacity, or match the graphics capture
+    // border when only the border remains. Disable hit testing and activation.
+    const BYTE alpha = m_retainDimmedExterior ? Alpha() : 191;
+    const BOOL layered = SetLayeredWindowAttributes( m_window.get(), 0, alpha, LWA_ALPHA );
+    SelectRectangleDebugLog( L"[SelectRectangle] ShowSelected SetLayeredWindowAttributes(alpha=%u) success=%d err=%lu\n",
+                             alpha,
                              layered ? 1 : 0,
                              layered ? 0 : GetLastError() );
     SetWindowLong( m_window.get(), GWL_EXSTYLE, GetWindowLong( m_window.get(), GWL_EXSTYLE ) | WS_EX_TRANSPARENT );
