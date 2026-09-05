@@ -38,6 +38,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ViewModel.LogOpeningModuleEvent();
             AdvancedPasteUIHotkeyControl.Keys = SettingsRepository<AdvancedPasteSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.AdvancedPasteUIShortcut.GetKeysList();
             PasteAsPlainTextHotkeyControl.Keys = SettingsRepository<AdvancedPasteSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.PasteAsPlainTextShortcut.GetKeysList();
+            PasteAsSingleLineHotkeyControl.Keys = SettingsRepository<AdvancedPasteSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.PasteAsSingleLineShortcut.GetKeysList();
+            if (PasteAsSingleLineHotkeyControl.Keys.Count > 0)
+            {
+                PasteAsSingleLineHotkeyControl.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+            }
+
             PasteAsMarkdownHotkeyControl.Keys = SettingsRepository<AdvancedPasteSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.PasteAsMarkdownShortcut.GetKeysList();
 
             // TODO(stefan): Check how to remove additional space if item is set to Collapsed.
