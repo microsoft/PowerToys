@@ -29,7 +29,7 @@ namespace Hosts.UITests
         private static IDisposable? moduleSettingsSnapshot;
 
         public HostModuleTests()
-            : base(PowerToysModule.Hosts, WindowSize.Small_Vertical)
+            : base(PowerToysModule.Hosts)
         {
         }
 

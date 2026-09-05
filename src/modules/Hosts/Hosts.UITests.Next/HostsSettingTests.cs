@@ -32,7 +32,7 @@ namespace Hosts.UITests
         private static IDisposable? moduleSettingsSnapshot;
 
         public HostsSettingTests()
-        : base(PowerToysModule.PowerToysSettings, WindowSize.Medium, enableModules: EnabledModules)
+        : base(PowerToysModule.PowerToysSettings, enableModules: EnabledModules)
         {
         }
 
@@ -115,7 +115,7 @@ namespace Hosts.UITests
 
             // Re-launch Hosts File Editor from Settings.
             settingsSession.FindExact<Button>("Open Hosts File Editor").Click();
-            hostsSession = Session.Attach(PowerToysModule.Hosts, WindowSize.Small_Vertical);
+            hostsSession = AttachHostsEditor();
 
             // Should show warning dialog.
             Assert.IsTrue(
@@ -508,7 +508,15 @@ namespace Hosts.UITests
             // Launch Hosts File Editor.
             settingsSession.FindExact<Button>("Open Hosts File Editor").Click();
 
-            return Session.Attach(PowerToysModule.Hosts);
+            return AttachHostsEditor();
+        }
+
+        private static Session AttachHostsEditor()
+        {
+            var hostsSession = Session.Attach(PowerToysModule.Hosts);
+            WindowHelper.MaximizeWindow(new IntPtr(hostsSession.WindowHandle));
+            Thread.Sleep(200);
+            return hostsSession;
         }
     }
 }
