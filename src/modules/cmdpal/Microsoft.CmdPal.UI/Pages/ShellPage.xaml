@@ -186,6 +186,7 @@
             <cmdpalUI:ContentTemplateSelector
                 x:Key="DetailsContentTemplateSelector"
                 FormTemplate="{StaticResource DetailsFormContentTemplate}"
+                GraphTemplate="{StaticResource DetailsGraphContentTemplate}"
                 ImageTemplate="{StaticResource DetailsImageContentTemplate}"
                 MarkdownTemplate="{StaticResource DetailsMarkdownContentTemplate}"
                 PlainTextTemplate="{StaticResource DetailsPlainTextContentTemplate}" />
@@ -211,6 +212,10 @@
 
             <DataTemplate x:Key="DetailsImageContentTemplate" x:DataType="viewModels:ContentImageViewModel">
                 <extViews:ImageContentViewer DataContext="{x:Bind}" />
+            </DataTemplate>
+
+            <DataTemplate x:Key="DetailsGraphContentTemplate" x:DataType="viewModels:ContentGraphViewModel">
+                <extViews:GraphContentViewer DataContext="{x:Bind}" />
             </DataTemplate>
         </ResourceDictionary>
     </Page.Resources>

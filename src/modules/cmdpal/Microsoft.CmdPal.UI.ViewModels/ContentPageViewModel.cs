@@ -18,6 +18,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 {
     private readonly ExtensionObject<IContentPage> _model;
     private readonly Lock _commandsLock = new();
+    private volatile bool _contentStopped;
     private volatile CommandSnapshot _snapshot = CommandSnapshot.Empty;
 
     [ObservableProperty]
@@ -61,6 +62,11 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchContent()
     {
+        if (_contentStopped)
+        {
+            return;
+        }
+
         List<ContentViewModel> newContent = [];
         try
         {
@@ -89,7 +95,14 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         DoOnUiThread(
         () =>
         {
-            ListHelpers.InPlaceUpdateList(Content, newContent);
+            if (_contentStopped)
+            {
+                newContent.ForEach(item => item.SafeCleanup());
+                return;
+            }
+
+            ListHelpers.InPlaceUpdateList(Content, newContent, out var removedContent);
+            removedContent.ForEach(item => item.SafeCleanup());
         });
     }
 
@@ -314,6 +327,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
     protected override void UnsafeCleanup()
     {
+        _contentStopped = true;
         base.UnsafeCleanup();
 
         Details?.SafeCleanup();

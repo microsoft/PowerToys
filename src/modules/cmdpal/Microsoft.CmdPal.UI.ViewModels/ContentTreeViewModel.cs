@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -14,6 +14,8 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
     ContentViewModel(context)
 {
     public ExtensionObject<ITreeContent> Model { get; } = new(_tree);
+
+    private volatile bool _contentStopped;
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -49,21 +51,8 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
         model.ItemsChanged += Model_ItemsChanged;
     }
 
-    // Theoretically, we should unify this with the one in CommandPalettePageViewModelFactory
-    // and maybe just have a ContentViewModelFactory or something
     public ContentViewModel? ViewModelFromContent(IContent content, WeakReference<IPageContext> context)
-    {
-        ContentViewModel? viewModel = content switch
-        {
-            IFormContent form => new ContentFormViewModel(form, context),
-            IMarkdownContent markdown => new ContentMarkdownViewModel(markdown, context),
-            ITreeContent tree => new ContentTreeViewModel(tree, context),
-            IPlainTextContent plainText => new ContentPlainTextViewModel(plainText, context),
-            IImageContent image => new ContentImageViewModel(image, context),
-            _ => null,
-        };
-        return viewModel;
-    }
+        => CommandPaletteContentPageViewModel.CreateViewModel(content, context);
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
     private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchContent();
@@ -93,16 +82,20 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
         {
             case nameof(RootContent):
                 var root = model.RootContent;
-                if (root is not null)
+                var replacement = root is null ? null : ViewModelFromContent(root, PageContext);
+                replacement?.InitializeProperties();
+                DoOnUiThread(() =>
                 {
-                    RootContent = ViewModelFromContent(root, PageContext);
-                }
-                else
-                {
-                    root = null;
-                }
+                    if (_contentStopped)
+                    {
+                        replacement?.SafeCleanup();
+                        return;
+                    }
 
-                UpdateProperty(nameof(Root));
+                    RootContent?.SafeCleanup();
+                    RootContent = replacement;
+                    UpdateProperty(nameof(RootContent), nameof(Root));
+                });
 
                 break;
         }
@@ -113,6 +106,11 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchContent()
     {
+        if (_contentStopped)
+        {
+            return;
+        }
+
         List<ContentViewModel> newContent = [];
         try
         {
@@ -138,7 +136,14 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
         DoOnUiThread(
         () =>
         {
-            ListHelpers.InPlaceUpdateList(Children, newContent);
+            if (_contentStopped)
+            {
+                newContent.ForEach(item => item.SafeCleanup());
+                return;
+            }
+
+            ListHelpers.InPlaceUpdateList(Children, newContent, out var removedContent);
+            removedContent.ForEach(item => item.SafeCleanup());
         });
 
         UpdateProperty(nameof(HasChildren));
@@ -146,6 +151,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
 
     protected override void UnsafeCleanup()
     {
+        _contentStopped = true;
         base.UnsafeCleanup();
         RootContent?.SafeCleanup();
         foreach (var item in Children)

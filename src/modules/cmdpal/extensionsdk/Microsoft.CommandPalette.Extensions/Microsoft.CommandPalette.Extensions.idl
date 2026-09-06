@@ -490,6 +490,52 @@ namespace Microsoft.CommandPalette.Extensions
         Boolean WrapWords { get; };
     }
 
+    struct GraphSeriesInfo
+    {
+        String Name;
+        OptionalColor Color;
+    };
+
+    struct GraphSample
+    {
+        UInt32 SeriesIndex;
+        Windows.Foundation.DateTime Timestamp;
+        Double Value;
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ILineGraphContent requires IContent
+    {
+        String DisplayName { get; };
+        Double Minimum { get; };
+        Double Maximum { get; };
+        Windows.Foundation.TimeSpan HistoryDuration { get; };
+        String ValueFormat { get; };
+        String ValueSuffix { get; };
+        Double Smoothing { get; };
+        GraphSeriesInfo[] GetSeries();
+        GraphSample[] GetSnapshot();
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IVerticalUsageBarContent requires IContent
+    {
+        String DisplayName { get; };
+        Double Minimum { get; };
+        Double Maximum { get; };
+        OptionalColor IndicatorColor { get; };
+        GraphSeriesInfo[] GetSeries();
+        Double[] GetSnapshot(out Double value, out String valueText);
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IDoughnutGraphContent requires IContent
+    {
+        String DisplayName { get; };
+        GraphSeriesInfo[] GetSeries();
+        Double[] GetSnapshot(out String centerValue, out String centerLabel);
+    };
+
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IFormContent2 requires IFormContent {
         ICommandResult SubmitAction(String actionId, String inputs, String data);

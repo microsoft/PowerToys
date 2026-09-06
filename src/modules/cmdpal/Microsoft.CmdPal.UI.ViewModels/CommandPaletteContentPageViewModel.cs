@@ -24,6 +24,7 @@ public partial class CommandPaletteContentPageViewModel : ContentPageViewModel
             ITreeContent tree => new ContentTreeViewModel(tree, context),
             IPlainTextContent plainText => new ContentPlainTextViewModel(plainText, context),
             IImageContent image => new ContentImageViewModel(image, context),
+            ILineGraphContent or IVerticalUsageBarContent or IDoughnutGraphContent => new ContentGraphViewModel(content, context),
             _ => null,
         };
         return viewModel;
