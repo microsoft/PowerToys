@@ -2,8 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -30,9 +34,25 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     public string Section { get; private set; } = string.Empty;
 
+    private CommandViewModel? _sectionCommand;
+
+    public CommandViewModel? SectionCommand => _sectionCommand;
+
+    public string SectionCommandName => _sectionCommand?.Name ?? string.Empty;
+
+    public bool HasSectionCommand => !string.IsNullOrEmpty(SectionCommandName);
+
+    public string SectionCommandAccessibleName => HasSectionCommand ? $"{Section}, {SectionCommandName}" : Section;
+
+    public bool IsSectionCommandTarget => Type == ListItemType.SectionHeader && HasSectionCommand;
+
     public ListItemType Type { get; private set; }
 
     public bool IsInteractive => Type == ListItemType.Item;
+
+    public bool IsKeyboardNavigable => IsInteractive || IsSectionCommandTarget;
+
+    public bool IsSectionCommandSelected { get; private set; }
 
     public DetailsViewModel? Details { get; private set; }
 
@@ -98,7 +118,7 @@ public partial class ListItemViewModel : CommandItemViewModel
         UpdateTags(li.Tags);
         Section = li.Section ?? string.Empty;
         Type = EvaluateType();
-        UpdateProperty(nameof(Section), nameof(Type), nameof(IsInteractive));
+        UpdateProperty(nameof(Section), nameof(SectionCommandAccessibleName), nameof(Type), nameof(IsInteractive), nameof(IsSectionCommandTarget), nameof(IsKeyboardNavigable));
 
         UpdateAccessibleName();
     }
@@ -133,6 +153,12 @@ public partial class ListItemViewModel : CommandItemViewModel
         UpdateProperty(nameof(TextToSuggest));
     }
 
+    protected override void UpdateExtendedAttributes(IDictionary<string, object?>? properties)
+    {
+        base.UpdateExtendedAttributes(properties);
+        UpdateSectionCommand(properties);
+    }
+
     protected override void FetchProperty(string propertyName)
     {
         base.FetchProperty(propertyName);
@@ -155,11 +181,24 @@ public partial class ListItemViewModel : CommandItemViewModel
             case nameof(model.Section):
                 Section = model.Section ?? string.Empty;
                 Type = EvaluateType();
-                UpdateProperty(nameof(Section), nameof(Type), nameof(IsInteractive));
+                UpdateProperty(nameof(Section), nameof(SectionCommandAccessibleName), nameof(Type), nameof(IsInteractive), nameof(IsSectionCommandTarget), nameof(IsKeyboardNavigable));
+                if (!IsSectionCommandTarget)
+                {
+                    SetSectionCommandSelected(false);
+                }
+
                 break;
             case nameof(model.Command):
                 Type = EvaluateType();
-                UpdateProperty(nameof(Type), nameof(IsInteractive));
+                UpdateProperty(nameof(Type), nameof(IsInteractive), nameof(IsSectionCommandTarget), nameof(IsKeyboardNavigable));
+                if (!IsSectionCommandTarget)
+                {
+                    SetSectionCommandSelected(false);
+                }
+
+                break;
+            case nameof(SectionCommand):
+                UpdateSectionCommand(GetExtendedAttributes());
                 break;
             case nameof(Details):
                 var existingReference = Details;
@@ -191,11 +230,90 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     // TODO: Do we want filters to match descriptions and other properties? Tags, etc... Yes?
     // TODO: Do we want to save off the score here so we can sort by it in our ListViewModel?
-    public override string ToString() => $"{Name} ListItemViewModel";
+    public override string ToString() =>
+        Type == ListItemType.SectionHeader ? SectionCommandAccessibleName : $"{Name} ListItemViewModel";
 
     public override bool Equals(object? obj) => obj is ListItemViewModel vm && vm.Model.Equals(this.Model);
 
     public override int GetHashCode() => Model.GetHashCode();
+
+    public void SetSectionCommandSelected(bool value)
+    {
+        value &= IsSectionCommandTarget;
+        if (IsSectionCommandSelected == value)
+        {
+            return;
+        }
+
+        IsSectionCommandSelected = value;
+        UpdateProperty(nameof(IsSectionCommandSelected));
+    }
+
+    [RelayCommand]
+    private void InvokeSectionCommand()
+    {
+        if (_sectionCommand?.Model.Unsafe is not null)
+        {
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(_sectionCommand.Model, Model));
+        }
+    }
+
+    private void UpdateSectionCommand(IDictionary<string, object?>? properties)
+    {
+        var command =
+            properties?.TryGetValue(WellKnownExtensionAttributes.SectionCommand, out var value) == true
+                ? value as ICommand
+                : null;
+
+        if (ReferenceEquals(_sectionCommand?.Model.Unsafe, command))
+        {
+            return;
+        }
+
+        var replacement = command is null ? null : new CommandViewModel(command, PageContext);
+        replacement?.InitializeProperties();
+        if (replacement is not null)
+        {
+            replacement.PropertyChanged += SectionCommand_PropertyChanged;
+        }
+
+        var previous = _sectionCommand;
+        _sectionCommand = replacement;
+        if (previous is not null)
+        {
+            previous.PropertyChanged -= SectionCommand_PropertyChanged;
+            previous.SafeCleanup();
+        }
+
+        UpdateProperty(
+            nameof(SectionCommand),
+            nameof(SectionCommandName),
+            nameof(HasSectionCommand),
+            nameof(SectionCommandAccessibleName),
+            nameof(IsSectionCommandTarget),
+            nameof(IsKeyboardNavigable));
+        if (!IsSectionCommandTarget)
+        {
+            SetSectionCommandSelected(false);
+        }
+    }
+
+    private void SectionCommand_PropertyChanged(object? sender, PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName == nameof(CommandViewModel.Name))
+        {
+            UpdateProperty(
+                nameof(SectionCommandName),
+                nameof(HasSectionCommand),
+                nameof(SectionCommandAccessibleName),
+                nameof(IsSectionCommandTarget),
+                nameof(IsKeyboardNavigable));
+            if (!IsSectionCommandTarget)
+            {
+                SetSectionCommandSelected(false);
+            }
+        }
+    }
 
     private void AddShowDetailsCommands()
     {
@@ -358,6 +476,12 @@ public partial class ListItemViewModel : CommandItemViewModel
         Tags?.ForEach(t => t.SafeCleanup());
         _overflowTag?.SafeCleanup();
         Details?.SafeCleanup();
+        if (_sectionCommand is not null)
+        {
+            _sectionCommand.PropertyChanged -= SectionCommand_PropertyChanged;
+            _sectionCommand.SafeCleanup();
+            _sectionCommand = null;
+        }
 
         var model = Model.Unsafe;
         if (model is not null)

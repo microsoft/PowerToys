@@ -10,5 +10,10 @@ public static class WellKnownExtensionAttributes
 
     public const string DockCommandId = "Microsoft.CommandPalette.DockCommandId";
 
+    /// <summary>
+    /// An optional command displayed alongside a list section header.
+    /// </summary>
+    public const string SectionCommand = "Microsoft.CommandPalette.SectionCommand";
+
     public const string FontFamily = "FontFamily";
 }
