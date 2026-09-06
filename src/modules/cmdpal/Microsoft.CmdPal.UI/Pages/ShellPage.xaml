@@ -254,6 +254,15 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <TeachingTip
+            x:Name="QuickAccessShelfEmptyTeachingTip"
+            x:Uid="QuickAccessShelf_EmptyTeachingTip"
+            ActionButtonClick="QuickAccessShelfSettings_Click"
+            IsLightDismissEnabled="True"
+            PreferredPlacement="Bottom"
+            ShouldConstrainToRootBounds="False"
+            Target="{x:Bind SearchBox}" />
+
         <Grid
             x:Name="TopBarSurface"
             Grid.Row="0"
@@ -474,13 +483,13 @@
                 <MenuFlyout>
                     <MenuFlyoutItem x:Uid="QuickAccessShelf_ContextMenu_Hide" Click="QuickAccessShelfHide_Click">
                         <MenuFlyoutItem.Icon>
-                            <FontIcon Glyph="&#xED1A;" />
+                            <FontIcon Glyph="{x:Bind viewModels:Glyphs.Hide, Mode=OneTime}" />
                         </MenuFlyoutItem.Icon>
                     </MenuFlyoutItem>
                     <MenuFlyoutSeparator />
                     <MenuFlyoutItem x:Uid="QuickAccessShelf_ContextMenu_Settings" Click="QuickAccessShelfSettings_Click">
                         <MenuFlyoutItem.Icon>
-                            <FontIcon Glyph="&#xE713;" />
+                            <FontIcon Glyph="{x:Bind viewModels:Glyphs.Settings, Mode=OneTime}" />
                         </MenuFlyoutItem.Icon>
                     </MenuFlyoutItem>
                 </MenuFlyout>

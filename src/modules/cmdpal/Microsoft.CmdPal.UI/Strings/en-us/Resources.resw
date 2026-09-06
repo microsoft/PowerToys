@@ -479,6 +479,16 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="QuickAccessShelf_ContextMenu_Hide.Text" xml:space="preserve">
     <value>Hide shelf</value>
   </data>
+  <data name="QuickAccessShelf_EmptyTeachingTip.Title" xml:space="preserve">
+    <value>Your shelf is empty</value>
+    <comment>Teaching tip beside the search box after enabling an empty quick access shelf.</comment>
+  </data>
+  <data name="QuickAccessShelf_EmptyTeachingTip.Subtitle" xml:space="preserve">
+    <value>Pin a command to home or adjust which pinned and recent items appear in Shelf settings. Empty shelves stay hidden.</value>
+  </data>
+  <data name="QuickAccessShelf_EmptyTeachingTip.ActionButtonContent" xml:space="preserve">
+    <value>Shelf settings</value>
+  </data>
   <data name="QuickAccessShelfShortcutTextFormat" xml:space="preserve">
     <value>Alt+{0} to run; Alt+Shift+{0} to select</value>
     <comment>Tooltip shortcut text for running or selecting a quick access item. {0} is a digit from 1 through 9.</comment>
@@ -625,6 +635,14 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="SearchBoxContextMenu_ShowShelf" xml:space="preserve">
     <value>Show shelf</value>
     <comment>Context menu item in the search box that enables the quick access shelf</comment>
+  </data>
+  <data name="SearchBoxContextMenu_ShelfEnabledToast" xml:space="preserve">
+    <value>Shelf enabled. It appears when the palette is collapsed.</value>
+    <comment>Toast after enabling the quick access shelf while the home page shows expanded search results.</comment>
+  </data>
+  <data name="SearchBoxContextMenu_ShelfHiddenToast" xml:space="preserve">
+    <value>Shelf hidden</value>
+    <comment>Toast after disabling the quick access shelf while the home page shows expanded search results.</comment>
   </data>
   <data name="SearchBoxContextMenu_HideShelf" xml:space="preserve">
     <value>Hide shelf</value>

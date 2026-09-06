@@ -14,7 +14,7 @@ using Microsoft.CmdPal.UI.ViewModels.Services;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ProviderSettingsViewModel : ObservableObject
+public partial class ProviderSettingsViewModel : ObservableObject, IDisposable
 {
     private static readonly IconInfoViewModel EmptyIcon = new(null);
     private static readonly CompositeFormat ExtensionSubtextFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext);
@@ -32,6 +32,7 @@ public partial class ProviderSettingsViewModel : ObservableObject
     private ProviderSettings _providerSettings;
 
     private Task? _initializeSettingsTask;
+    private bool _disposed;
 
     public ProviderSettingsViewModel(
         CommandProviderWrapper provider,
@@ -46,6 +47,8 @@ public partial class ProviderSettingsViewModel : ObservableObject
 
         BuildFallbackViewModels();
     }
+
+    public CommandProviderWrapper Provider => _provider;
 
     public string DisplayName => _provider.DisplayName;
 
@@ -111,6 +114,11 @@ public partial class ProviderSettingsViewModel : ObservableObject
         get => _providerSettings.IsEnabled;
         set
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             if (value != _providerSettings.IsEnabled)
             {
                 var newSettings = _providerSettings with { IsEnabled = value };
@@ -126,7 +134,7 @@ public partial class ProviderSettingsViewModel : ObservableObject
                 OnPropertyChanged(nameof(Icon));
             }
 
-            if (value == true)
+            if (value)
             {
                 _provider.CommandsChanged -= Provider_CommandsChanged;
                 _provider.CommandsChanged += Provider_CommandsChanged;
@@ -298,6 +306,11 @@ public partial class ProviderSettingsViewModel : ObservableObject
         _provider.Settings.SafeInitializeProperties();
         _provider.Settings.DoOnUiThread(() =>
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             // Changing these properties will try to update XAML, and that has
             // to be handled on the UI thread, so we need to raise them on the
             // UI thread
@@ -310,7 +323,24 @@ public partial class ProviderSettingsViewModel : ObservableObject
 
     private void Provider_CommandsChanged(CommandProviderWrapper sender, CommandPalette.Extensions.IItemsChangedEventArgs args)
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         OnPropertyChanged(nameof(ExtensionSubtext));
         OnPropertyChanged(nameof(TopLevelCommands));
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        _provider.CommandsChanged -= Provider_CommandsChanged;
+        GC.SuppressFinalize(this);
     }
 }
