@@ -17,6 +17,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class SettingsViewModel : INotifyPropertyChanged,
+    IDisposable,
     IRecipient<DockAutoHideConflictMessage>
 {
     private static readonly List<TimeSpan> AutoGoHomeIntervals =
@@ -36,9 +37,11 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly IMonitorService? _monitorService;
     private readonly ILanguageService _languageService;
+    private readonly TaskScheduler _uiScheduler;
 
     private int _languageIndex;
     private bool _languageRestartFailed;
+    private bool _disposed;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -222,6 +225,11 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         get => _settingsService.Settings.CompactMode;
         set
         {
+            if (value == CompactMode)
+            {
+                return;
+            }
+
             _settingsService.UpdateSettings(s => s with { CompactMode = value });
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactMode)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanConfigureQuickAccessShelf)));
@@ -233,6 +241,11 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         get => _settingsService.Settings.ShowQuickAccessShelf;
         set
         {
+            if (value == ShowQuickAccessShelf)
+            {
+                return;
+            }
+
             _settingsService.UpdateSettings(s => s with { ShowQuickAccessShelf = value });
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanConfigureQuickAccessShelf)));
         }
@@ -271,6 +284,11 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         get => (int)_settingsService.Settings.RecentCommandsOnQuickAccessShelf;
         set
         {
+            if (!Enum.IsDefined((RecentCommandsPlacement)value))
+            {
+                return;
+            }
+
             _settingsService.UpdateSettings(s => s with { RecentCommandsOnQuickAccessShelf = (RecentCommandsPlacement)value });
         }
     }
@@ -280,6 +298,11 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         get => (int)_settingsService.Settings.RecentCommandsOnHome;
         set
         {
+            if (!Enum.IsDefined((RecentCommandsPlacement)value))
+            {
+                return;
+            }
+
             _settingsService.UpdateSettings(s => s with { RecentCommandsOnHome = (RecentCommandsPlacement)value });
         }
     }
@@ -474,6 +497,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         _topLevelCommandManager = topLevelCommandManager;
         _monitorService = monitorService;
         _languageService = languageService;
+        _uiScheduler = scheduler;
 
         InitializeLanguages(languageService);
 
@@ -539,6 +563,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
 
         WeakReferenceMessenger.Default.Register<DockAutoHideConflictMessage>(this);
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
     }
 
     public void Receive(DockAutoHideConflictMessage message)
@@ -571,6 +596,47 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
 
         var currentLang = _settingsService.Settings.Language ?? string.Empty;
         _languageIndex = Math.Max(0, Languages.FindIndex(l => l.Tag.Equals(currentLang, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+        foreach (var provider in CommandProviders)
+        {
+            provider.Dispose();
+        }
+
+        Appearance?.Dispose();
+        DockAppearance?.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    private void SettingsService_SettingsChanged(ISettingsService sender, SettingsModel settings)
+    {
+        // SettingsChanged may run inside a binding setter or on a background thread.
+        // Queue the refresh so bindings read the latest settings on the UI scheduler.
+        _ = Task.Factory.StartNew(
+            () =>
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactMode)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowQuickAccessShelf)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanConfigureQuickAccessShelf)));
+            },
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            _uiScheduler);
     }
 
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()

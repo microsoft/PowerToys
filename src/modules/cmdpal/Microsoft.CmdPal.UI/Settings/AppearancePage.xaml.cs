@@ -21,7 +21,7 @@ namespace Microsoft.CmdPal.UI.Settings;
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class AppearancePage : Page
+public sealed partial class AppearancePage : Page, IDisposable
 {
     internal const string QuickAccessShelfSettingsElementTag = "QuickAccessShelf";
 
@@ -30,6 +30,7 @@ public sealed partial class AppearancePage : Page
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
     private bool _quickAccessShelfNavigationPending;
+    private bool _disposed;
 
     internal SettingsViewModel ViewModel { get; }
 
@@ -45,9 +46,16 @@ public sealed partial class AppearancePage : Page
         Loaded += AppearancePage_Loaded;
     }
 
+    public void Dispose()
+    {
+        _disposed = true;
+        Loaded -= AppearancePage_Loaded;
+        ViewModel.Dispose();
+    }
+
     internal bool TryNavigateToSettingsElement(string elementTag)
     {
-        if (!string.Equals(elementTag, QuickAccessShelfSettingsElementTag, StringComparison.Ordinal))
+        if (_disposed || !string.Equals(elementTag, QuickAccessShelfSettingsElementTag, StringComparison.Ordinal))
         {
             return false;
         }
@@ -64,7 +72,7 @@ public sealed partial class AppearancePage : Page
 
     private void NavigateToPendingSettingsElement()
     {
-        if (!_quickAccessShelfNavigationPending || !IsLoaded)
+        if (_disposed || !_quickAccessShelfNavigationPending || !IsLoaded)
         {
             return;
         }
@@ -77,7 +85,7 @@ public sealed partial class AppearancePage : Page
     private async Task BringQuickAccessShelfSettingsIntoViewAsync()
     {
         await Task.Delay(SettingsExpanderAnimationDurationMs);
-        if (!IsLoaded)
+        if (_disposed || !IsLoaded)
         {
             return;
         }

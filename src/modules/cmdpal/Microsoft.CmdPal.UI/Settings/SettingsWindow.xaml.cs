@@ -45,6 +45,7 @@ public sealed partial class SettingsWindow : WindowEx,
     private readonly LocalKeyboardListener _localKeyboardListener = new();
 
     private readonly NavigationViewItem? _internalNavItem;
+    private IDisposable? _currentPage;
 
     private Storyboard? _breadcrumbStoryboard;
     private IReadOnlyList<ExtensionGalleryScreenshotViewModel> _currentScreenshotSet = [];
@@ -260,7 +261,7 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void Navigate(ProviderSettingsViewModel extension)
     {
-        NavFrame.Navigate(typeof(ExtensionPage), extension);
+        NavFrame.Navigate(typeof(ExtensionPage), extension.Provider);
     }
 
     private void PositionCentered()
@@ -455,6 +456,8 @@ public sealed partial class SettingsWindow : WindowEx,
 
     public void Dispose()
     {
+        _currentPage?.Dispose();
+        _currentPage = null;
         CloseScreenshotViewer();
         WinGetOperationsButtonControl?.Dispose();
         _localKeyboardListener?.Dispose();
@@ -462,6 +465,10 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void NavFrame_OnNavigated(object sender, NavigationEventArgs e)
     {
+        // Settings pages are not cached and can be navigated away from before they load.
+        _currentPage?.Dispose();
+        _currentPage = e.Content as IDisposable;
+
         BreadCrumbs.Clear();
         ShowBreadcrumb();
 
@@ -498,11 +505,11 @@ public sealed partial class SettingsWindow : WindowEx,
             NavView.SelectedItem = DockSettingsPageNavItem;
             BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_DockPage"), PageTags.Dock));
         }
-        else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is ProviderSettingsViewModel vm)
+        else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is CommandProviderWrapper provider)
         {
             NavView.SelectedItem = ExtensionPageNavItem;
             BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_ExtensionsPage"), PageTags.Extensions));
-            BreadCrumbs.Add(new(vm.DisplayName, vm));
+            BreadCrumbs.Add(new(provider.DisplayName, provider));
         }
         else if (e.SourcePageType == typeof(InternalPage) && _internalNavItem is not null)
         {
