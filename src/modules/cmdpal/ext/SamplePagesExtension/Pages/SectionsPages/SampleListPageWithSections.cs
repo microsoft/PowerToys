@@ -4,6 +4,7 @@
 
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using SamplePagesExtension;
 
 namespace SamplePagesExtension.Pages.SectionsPages;
 
@@ -24,14 +25,16 @@ internal sealed partial class SampleListPageWithSections : ListPage
 
     public override IListItem[] GetItems()
     {
-        var sectionList = new Section("This is a section list", [
-                    new ListItem(new NoOpCommand())
-                    {
-                        Title = "Sample Title",
-                        Subtitle = "I don't do anything",
-                        Icon = IconHelpers.FromRelativePath("Assets/Images/RedRectangle.png"),
-                    },
-                ]);
+        IListItem[] sectionList =
+        [
+            new Separator("This is a section list", CreateShowMoreCommand("This is a section list")),
+            new ListItem(new NoOpCommand())
+            {
+                Title = "Sample Title",
+                Subtitle = "I don't do anything",
+                Icon = IconHelpers.FromRelativePath("Assets/Images/RedRectangle.png"),
+            },
+        ];
         var anotherSectionList = new Section("This is another section list", [
                     new ListItem(new NoOpCommand())
                     {
@@ -110,5 +113,20 @@ internal sealed partial class SampleListPageWithSections : ListPage
             },
             ..yesTheresAnother
         ];
+    }
+
+    private ICommand CreateShowMoreCommand(string sectionTitle)
+    {
+        var viewName = GridProperties switch
+        {
+            GalleryGridLayout => "gallery",
+            not null => "grid",
+            _ => "list",
+        };
+
+        return new ToastCommand($"Show more invoked for '{sectionTitle}' in the {viewName} view", MessageState.Success)
+        {
+            Name = "Show more...",
+        };
     }
 }

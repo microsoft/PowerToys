@@ -48,6 +48,38 @@ public class GridItemsViewModelTests
     });
 
     [TestMethod]
+    public Task SectionCommand_IsProjectedOnlyForSectionHeaders() => OnPresentationThread(() =>
+    {
+        var command = new NoOpCommand { Name = "Show more..." };
+        var sectionHeader = new TestItem(new Separator("Group", command));
+        var separator = new TestItem(new Separator(string.Empty, command));
+
+        try
+        {
+            sectionHeader.InitializeProperties();
+            separator.InitializeProperties();
+
+            using var sectionGrid = CreateGrid([sectionHeader, Tile()]);
+            Assert.IsTrue(sectionGrid.Groups[0].HasSectionCommand);
+            Assert.AreEqual("Show more...", sectionGrid.Groups[0].SectionCommandName);
+            Assert.AreEqual("Group, Show more...", sectionGrid.Groups[0].SectionCommandAccessibleName);
+            Assert.IsNotNull(sectionGrid.Groups[0].SectionCommand);
+
+            sectionGrid.Groups[0].SetSectionCommandSelected(true);
+            Assert.IsTrue(sectionGrid.Groups[0].IsSectionCommandSelected);
+
+            using var separatorGrid = CreateGrid([separator, Tile()]);
+            Assert.IsFalse(separatorGrid.Groups[0].HasSectionCommand);
+            Assert.AreEqual(string.Empty, separatorGrid.Groups[0].SectionCommandName);
+        }
+        finally
+        {
+            sectionHeader.SafeCleanup();
+            separator.SafeCleanup();
+        }
+    });
+
+    [TestMethod]
     public Task Updates_ReuseGroupsAndTilesWithoutResetOrHeaderNotifications() => OnPresentationThread(() =>
     {
         var header = Header("Group");
