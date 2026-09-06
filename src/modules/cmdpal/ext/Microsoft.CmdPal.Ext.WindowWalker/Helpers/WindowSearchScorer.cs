@@ -10,8 +10,6 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 /// </summary>
 internal static class WindowSearchScorer
 {
-    private static readonly char[] QuerySeparators = [' ', '\t'];
-
     /// <summary>
     /// Scores <paramref name="query"/> against a window's <paramref name="title"/> and
     /// <paramref name="processName"/>.
@@ -22,7 +20,9 @@ internal static class WindowSearchScorer
     /// match either field, so that queries which name the app and part of its title together
     /// ("word budget") match in any order. Every word must match something for the word-by-word
     /// score to apply; otherwise the whole-query score stands. The result is never lower than
-    /// the whole-query score, so anything that matched before still matches.
+    /// the whole-query score, so anything that matched before still matches. Words are separated
+    /// by any Unicode whitespace, and the query is whitespace-normalized before being scored as
+    /// a whole.
     /// </remarks>
     /// <param name="query">The user's search text.</param>
     /// <param name="title">The window title.</param>
@@ -38,9 +38,16 @@ internal static class WindowSearchScorer
         title ??= string.Empty;
         processName ??= string.Empty;
 
-        var wholeQueryScore = ScoreBothFields(query, title, processName);
+        // Split on every kind of Unicode whitespace rather than just the space bar: a pasted
+        // query can carry a non-breaking space, and folding that into a word would silently
+        // drop the query back to single-word behavior.
+        var words = query.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
 
-        var words = query.Split(QuerySeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        // Score the normalized query, so whitespace that does not appear in the title verbatim
+        // (a non-breaking space, a run of spaces, surrounding padding) cannot by itself defeat
+        // a whole-query match.
+        var wholeQueryScore = ScoreBothFields(string.Join(' ', words), title, processName);
+
         if (words.Length < 2)
         {
             return wholeQueryScore;

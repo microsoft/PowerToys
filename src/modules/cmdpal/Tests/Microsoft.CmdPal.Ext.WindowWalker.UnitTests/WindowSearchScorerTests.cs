@@ -115,19 +115,42 @@ public class WindowSearchScorerTests
             "Multi-word support must never score lower than the previous whole-query behavior.");
     }
 
-    [TestMethod]
-    public void Score_SurroundingAndRepeatedWhitespace_IsIgnored()
+    [DataTestMethod]
+    [DataRow("  word   budget  ", DisplayName = "Surrounding and repeated spaces")]
+    [DataRow("word\tbudget", DisplayName = "Tab")]
+    [DataRow("word\u00A0budget", DisplayName = "Non-breaking space")]
+    [DataRow("word\u2009budget", DisplayName = "Thin space")]
+    [DataRow("word\u3000budget", DisplayName = "Ideographic space")]
+    [DataRow("\u00A0word \u00A0 budget\t", DisplayName = "Mixed and repeated whitespace")]
+    public void Score_AnyWhitespace_SeparatesWords(string query)
     {
+        // Whatever separates the words, the query has to behave like "word budget".
         var expected = WindowSearchScorer.Score("word budget", WordTitle, WordProcess);
 
-        Assert.AreEqual(expected, WindowSearchScorer.Score("  word   budget  ", WordTitle, WordProcess));
-        Assert.AreEqual(expected, WindowSearchScorer.Score("word\tbudget", WordTitle, WordProcess));
+        Assert.IsTrue(expected > 0, "Precondition: the plain-space query matches.");
+        Assert.AreEqual(expected, WindowSearchScorer.Score(query, WordTitle, WordProcess));
+    }
+
+    [DataTestMethod]
+    [DataRow("budget\u00A0review", DisplayName = "Non-breaking space")]
+    [DataRow("  budget   review ", DisplayName = "Surrounding and repeated spaces")]
+    public void Score_WholeQueryMatch_SurvivesWhitespaceNormalization(string query)
+    {
+        // The title contains "budget review" literally, so the whole-query path scores it far
+        // higher than the per-word average. That must not be lost to whitespace which the title
+        // does not contain verbatim.
+        const string title = "Quarterly budget review - Word";
+
+        Assert.AreEqual(
+            WindowSearchScorer.Score("budget review", title, WordProcess),
+            WindowSearchScorer.Score(query, title, WordProcess));
     }
 
     [DataTestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow("   ")]
+    [DataRow("\u00A0\t \u3000")]
     public void Score_EmptyQuery_ReturnsZero(string query)
     {
         Assert.AreEqual(0, WindowSearchScorer.Score(query, WordTitle, WordProcess));
