@@ -26,11 +26,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private static readonly IEqualityComparer<IListItem> VmCacheComparer = new ProxyReferenceEqualityComparer();
 
     private readonly TaskFactory filterTaskFactory = new(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
-    private readonly TaskFactory _staticFilterTaskFactory;
+    private readonly SupersedingAsyncGate _staticFilterGate;
 
     private Dictionary<IListItem, ListItemViewModel> _vmCache = new(VmCacheComparer);
     private Dictionary<ListItemViewModel, StaticFilterItem> _staticFilterItems = new(ReferenceEqualityComparer.Instance);
-    private StaticFilterRequest? _pendingStaticFilter;
     private CancellationTokenSource? _staticFilterCancellationTokenSource;
     private long _staticFilterVersion;
     private long _publishedStaticFilterVersion = -1;
@@ -38,7 +37,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private PendingStaticActivation? _pendingStaticActivation;
     private int _itemsFetchGeneration;
     private int _settledFetchGeneration;
-    private bool _staticFilterWorkerQueued;
     private bool _staticFilterForceFirstPending;
     private bool _staticFilterEnsureSelectionVisible;
     private string _staticFilterQuery = string.Empty;
@@ -157,7 +155,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
-        _staticFilterTaskFactory = new(staticFilterScheduler);
+        _staticFilterGate = new(FilterStaticItemsAsync, staticFilterScheduler);
         EmptyContent = new(new(null), PageContext, contextMenuFactory: null);
     }
 
@@ -712,7 +710,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private void InvalidateStaticFilterUnderLock()
     {
         _staticFilterVersion++;
-        _pendingStaticFilter = null;
         CancelAndDisposeTokenSource(ref _staticFilterCancellationTokenSource);
     }
 
@@ -733,51 +730,47 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
 
         _staticFilterCancellationTokenSource = new();
-        _pendingStaticFilter = new(
-            _staticFilterVersion,
-            _itemsFetchGeneration,
-            _staticFilterQuery,
-            _staticFilterCancellationTokenSource.Token);
-        if (!_staticFilterWorkerQueued)
+        _ = RunStaticFilterAsync(_staticFilterCancellationTokenSource.Token);
+    }
+
+    private async Task RunStaticFilterAsync(CancellationToken cancellationToken)
+    {
+        try
         {
-            _staticFilterWorkerQueued = true;
-            _ = _staticFilterTaskFactory.StartNew(ProcessStaticFilters);
+            await _staticFilterGate.ExecuteAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+        catch (ObjectDisposedException) when (_isDisposed)
+        {
+        }
+        catch (Exception ex)
+        {
+            ShowException(ex);
         }
     }
 
-    private void ProcessStaticFilters()
+    private Task FilterStaticItemsAsync(CancellationToken cancellationToken)
     {
-        while (true)
+        StaticFilterRequest request;
+        StaticFilterItem[] snapshot;
+        lock (_listLock)
         {
-            StaticFilterRequest request;
-            StaticFilterItem[] snapshot;
-            lock (_listLock)
+            cancellationToken.ThrowIfCancellationRequested();
+            if (_isDisposed || _isDynamic || !IsLatestFetchGeneration(_settledFetchGeneration))
             {
-                if (_isDisposed || _isDynamic || _pendingStaticFilter is null)
-                {
-                    _staticFilterWorkerQueued = false;
-                    return;
-                }
-
-                request = _pendingStaticFilter;
-                _pendingStaticFilter = null;
-                snapshot = Items.Select(item => _staticFilterItems[item]).ToArray();
+                return Task.CompletedTask;
             }
 
-            try
-            {
-                var filtered = FilterSnapshot(snapshot, request.Query, request.CancellationToken);
-                request.CancellationToken.ThrowIfCancellationRequested();
-                DoOnUiThread(() => PublishStaticFilter(request, filtered));
-            }
-            catch (OperationCanceledException) when (request.CancellationToken.IsCancellationRequested)
-            {
-            }
-            catch (Exception ex)
-            {
-                ShowException(ex);
-            }
+            request = new(_staticFilterVersion, _itemsFetchGeneration, _staticFilterQuery);
+            snapshot = Items.Select(item => _staticFilterItems[item]).ToArray();
         }
+
+        var filtered = FilterSnapshot(snapshot, request.Query, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        DoOnUiThread(() => PublishStaticFilter(request, filtered));
+        return Task.CompletedTask;
     }
 
     private bool IsCurrentStaticFilter(StaticFilterRequest request) =>
@@ -931,7 +924,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private readonly record struct PendingStaticActivation(StaticActivationKind Kind, ListItemViewModel? Target, bool HasTarget);
 
-    private sealed record StaticFilterRequest(long Version, int FetchGeneration, string Query, CancellationToken CancellationToken);
+    private sealed record StaticFilterRequest(long Version, int FetchGeneration, string Query);
 
     internal readonly record struct StaticFilterItem(ListItemViewModel ViewModel, string Title, string Subtitle, bool IsInErrorState)
     {
@@ -1546,6 +1539,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 _isDisposed = true;
                 _pendingStaticActivation = null;
                 InvalidateStaticFilterUnderLock();
+                _staticFilterGate.Dispose();
                 foreach (var item in _staticFilterItems.Keys)
                 {
                     item.PropertyChangedBackground -= StaticFilterItemPropertyChanged;
