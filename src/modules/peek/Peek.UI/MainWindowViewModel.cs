@@ -41,7 +41,7 @@ namespace Peek.UI
         /// </summary>
         private readonly HashSet<int> _deletedItemIndexes = [];
 
-        private static readonly string _defaultWindowTitle = ResourceLoaderInstance.ResourceLoader.GetString("AppTitle/Title");
+        private static readonly string _defaultWindowTitle = ResourceLoaderInstance.GetString("AppTitle/Title");
 
         /// <summary>
         /// The actual index of the current item in the items array. Does not necessarily
@@ -71,7 +71,7 @@ namespace Peek.UI
         partial void OnCurrentItemChanged(IFileSystemItem? value)
         {
             WindowTitle = value != null
-                ? ReadableStringHelper.FormatResourceString("WindowTitle", value.Name)
+                ? ResourceLoaderInstance.FormatString("WindowTitle", value.Name)
                 : _defaultWindowTitle;
         }
 

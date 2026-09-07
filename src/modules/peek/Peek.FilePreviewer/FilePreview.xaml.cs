@@ -455,32 +455,6 @@ namespace Peek.FilePreviewer
             ImagePreview.InstantSwap();
         }
 
-        /// <summary>
-        /// Rendered bounds of the currently visible image in physical pixels: arranged
-        /// size and offset within the preview host. Diagnostic-only, used to measure the
-        /// letterbox gap left by Stretch="Uniform" against the content region.
-        /// </summary>
-        public Windows.Foundation.Rect GetRenderedImageBoundsPhysical(double scale)
-        {
-            var boundsDip = ImagePreview.GetRenderedImageBoundsDip();
-            double safeScale = scale > 0 ? scale : 1.0;
-            return new Windows.Foundation.Rect(
-                boundsDip.X * safeScale,
-                boundsDip.Y * safeScale,
-                boundsDip.Width * safeScale,
-                boundsDip.Height * safeScale);
-        }
-
-        /// <summary>
-        /// Diagnostic-only: the image host size, the image's arranged render size, and the
-        /// image's natural pixel size, all in DIPs. Lets callers pinpoint whether the pixel
-        /// loss driving the Uniform letterbox is in the host arrange or the image arrange.
-        /// </summary>
-        public (Windows.Foundation.Size Host, Windows.Foundation.Size ImageRender, Windows.Foundation.Size ImageNatural) GetImageLayoutDiagnosticsDip()
-        {
-            return ImagePreview.GetImageLayoutDiagnosticsDip();
-        }
-
         private async Task UpdatePreviewAsync(CancellationToken cancellationToken)
         {
             var currentPreviewer = Previewer;
