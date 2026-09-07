@@ -27,8 +27,10 @@ public sealed class ClipboardHistoryWorkerTests
             threadId = Environment.CurrentManagedThreadId;
             Assert.AreEqual(ApartmentState.STA, Thread.CurrentThread.GetApartmentState());
             Assert.IsNotNull(DispatcherQueue.GetForCurrentThread());
+            Assert.IsNotNull(SynchronizationContext.Current);
             await Task.Yield();
             Assert.AreEqual(threadId, Environment.CurrentManagedThreadId);
+            Assert.IsNotNull(SynchronizationContext.Current);
             using var stream = new InMemoryRandomAccessStream();
             using var writer = new DataWriter(stream);
             writer.WriteString("clipboard");
@@ -77,6 +79,30 @@ public sealed class ClipboardHistoryWorkerTests
         Assert.IsTrue(resumed);
         Assert.IsFalse(queue.TryEnqueue(() => { }));
         await worker.DisposeAsync();
+    }
+
+    [TestMethod]
+    public async Task SynchronizationContext_Copy_PostsToWorkerAndRejectsAfterShutdown()
+    {
+        await using var worker = new ClipboardHistoryWorker();
+        SynchronizationContext context = null;
+        var threadId = 0;
+        await worker.RunAsync(() =>
+        {
+            threadId = Environment.CurrentManagedThreadId;
+            context = SynchronizationContext.Current.CreateCopy();
+            return Task.CompletedTask;
+        }).WaitAsync(Timeout);
+        var posted = new TaskCompletionSource<(int ThreadId, ApartmentState Apartment, SynchronizationContext Context)>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        context.Post(_ => posted.SetResult((Environment.CurrentManagedThreadId, Thread.CurrentThread.GetApartmentState(), SynchronizationContext.Current)), null);
+        var result = await posted.Task.WaitAsync(Timeout);
+
+        Assert.AreEqual(threadId, result.ThreadId);
+        Assert.AreEqual(ApartmentState.STA, result.Apartment);
+        Assert.AreSame(context, result.Context);
+        await worker.DisposeAsync();
+        Assert.ThrowsExactly<InvalidOperationException>(() => context.Post(_ => { }, null));
     }
 
     [TestMethod]

@@ -7,7 +7,8 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.System;
-using WinRT;
+using Windows.Win32;
+using Windows.Win32.System.WinRT;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 
@@ -21,22 +22,15 @@ internal sealed partial class ClipboardHistoryWorker : IClipboardHistoryWorker
 
     private static DispatcherQueueController CreateController()
     {
-        // Clipboard awaits need both an STA apartment and a running message pump.
+        // Use the OS dispatcher so clipboard reads don't depend on WinUI activation.
         var options = new DispatcherQueueOptions
         {
-            Size = Marshal.SizeOf<DispatcherQueueOptions>(),
-            ThreadType = DispatcherQueueThreadType.Dedicated,
-            ApartmentType = DispatcherQueueApartmentType.Sta,
+            dwSize = (uint)Marshal.SizeOf<DispatcherQueueOptions>(),
+            threadType = DISPATCHERQUEUE_THREAD_TYPE.DQTYPE_THREAD_DEDICATED,
+            apartmentType = DISPATCHERQUEUE_THREAD_APARTMENTTYPE.DQTAT_COM_STA,
         };
-        Marshal.ThrowExceptionForHR(CreateDispatcherQueueController(options, out var controller));
-        try
-        {
-            return MarshalInterface<DispatcherQueueController>.FromAbi(controller);
-        }
-        finally
-        {
-            Marshal.Release(controller);
-        }
+        PInvoke.CreateDispatcherQueueController(options, out DispatcherQueueController controller).ThrowOnFailure();
+        return controller;
     }
 
     public Task RunAsync(Func<Task> action)
@@ -117,27 +111,6 @@ internal sealed partial class ClipboardHistoryWorker : IClipboardHistoryWorker
         {
             await _controller.ShutdownQueueAsync().AsTask().ConfigureAwait(false);
         }
-    }
-
-    [DllImport("CoreMessaging.dll")]
-    private static extern int CreateDispatcherQueueController(DispatcherQueueOptions options, out IntPtr controller);
-
-    private enum DispatcherQueueThreadType
-    {
-        Dedicated = 1,
-    }
-
-    private enum DispatcherQueueApartmentType
-    {
-        Sta = 2,
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct DispatcherQueueOptions
-    {
-        public int Size;
-        public DispatcherQueueThreadType ThreadType;
-        public DispatcherQueueApartmentType ApartmentType;
     }
 
     private sealed class QueueSynchronizationContext(DispatcherQueue queue) : SynchronizationContext
