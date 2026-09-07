@@ -40,6 +40,17 @@ public enum PasteFormats
 
     [PasteFormatMetadata(
         IsCoreAction = false,
+        ResourceId = "FixSpellingAndGrammar",
+        IconGlyph = "\uE8E2",
+        RequiresAIService = true,
+        CanPreview = true,
+        SupportedClipboardFormats = ClipboardFormat.Text,
+        IPCKey = AdvancedPasteAdditionalActions.PropertyNames.FixSpellingAndGrammar,
+        KernelFunctionDescription = "Fixes all spelling and grammar errors in the clipboard text and returns the corrected version.")]
+    FixSpellingAndGrammar,
+
+    [PasteFormatMetadata(
+        IsCoreAction = false,
         ResourceId = "ImageToText",
         IconGlyph = "\uE91B",
         RequiresAIService = false,

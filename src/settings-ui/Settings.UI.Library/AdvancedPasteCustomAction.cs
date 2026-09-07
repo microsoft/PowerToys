@@ -16,6 +16,7 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
     private string _name = string.Empty;
     private string _description = string.Empty;
     private string _prompt = string.Empty;
+    private string _providerId = string.Empty;
     private HotkeySettings _shortcut = new();
     private bool _isShown;
     private bool _canMoveUp;
@@ -62,6 +63,13 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
                 UpdateIsValid();
             }
         }
+    }
+
+    [JsonPropertyName("provider-id")]
+    public string ProviderId
+    {
+        get => _providerId;
+        set => Set(ref _providerId, value ?? string.Empty);
     }
 
     [JsonPropertyName("shortcut")]
@@ -138,6 +146,7 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
         Name = other.Name;
         Description = other.Description;
         Prompt = other.Prompt;
+        ProviderId = other.ProviderId;
         Shortcut = other.GetShortcutClone();
         IsShown = other.IsShown;
         CanMoveUp = other.CanMoveUp;

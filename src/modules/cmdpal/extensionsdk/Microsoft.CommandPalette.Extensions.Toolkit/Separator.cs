@@ -31,7 +31,7 @@ public partial class Separator : BaseObservable, IListItem, ISeparatorContextIte
             {
                 Section = value;
                 OnPropertyChanged();
-                OnPropertyChanged(Section);
+                OnPropertyChanged(nameof(Section));
             }
         }
     }

@@ -18,14 +18,16 @@ public class Settings : ISettingsInterface
     private bool showDialogToConfirmCommand;
     private bool showSuccessMessageAfterEmptyingRecycleBin;
     private FirmwareType firmwareType;
+    private bool updatePending;
 
-    public Settings(bool hideDisconnectedNetworkInfo = false, bool hideEmptyRecycleBin = false, bool showDialogToConfirmCommand = false, bool showSuccessMessageAfterEmptyingRecycleBin = false, FirmwareType firmwareType = FirmwareType.Uefi)
+    public Settings(bool hideDisconnectedNetworkInfo = false, bool hideEmptyRecycleBin = false, bool showDialogToConfirmCommand = false, bool showSuccessMessageAfterEmptyingRecycleBin = false, FirmwareType firmwareType = FirmwareType.Uefi, bool updatePending = false)
     {
         this.hideDisconnectedNetworkInfo = hideDisconnectedNetworkInfo;
         this.hideEmptyRecycleBin = hideEmptyRecycleBin;
         this.showDialogToConfirmCommand = showDialogToConfirmCommand;
         this.showSuccessMessageAfterEmptyingRecycleBin = showSuccessMessageAfterEmptyingRecycleBin;
         this.firmwareType = firmwareType;
+        this.updatePending = updatePending;
     }
 
     public bool HideDisconnectedNetworkInfo() => hideDisconnectedNetworkInfo;
@@ -37,4 +39,6 @@ public class Settings : ISettingsInterface
     public bool ShowSuccessMessageAfterEmptyingRecycleBin() => showSuccessMessageAfterEmptyingRecycleBin;
 
     public FirmwareType GetSystemFirmwareType() => firmwareType;
+
+    public bool IsUpdatePending() => updatePending;
 }

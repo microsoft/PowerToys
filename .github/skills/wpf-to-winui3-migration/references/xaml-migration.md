@@ -232,6 +232,37 @@ Key packages (XAML namespace is `using:CommunityToolkit.WinUI.Controls` for the 
 - **`CommunityToolkit.WinUI.Behaviors`** — XAML behaviors for animations and interactions
 - **`CommunityToolkit.WinUI.Extensions`** — Extension methods for WinUI types
 
+### Value Converter Decision Guide
+
+Do not port WPF converters one-for-one. Use the first matching WinUI 3 option:
+
+| Conversion need | Preferred migration |
+|-----------------|---------------------|
+| Control state inside a `ControlTemplate` (`IsSelected`, pointer-over, pressed) | Use the control's `VisualState`s and setters. Keep the element's base value (for example, `Visibility="Collapsed"`) and set the selected states to `Visible`; do not bind the state through a converter. |
+| `bool` → `Visibility` with `{x:Bind}` property binding | Bind the Boolean directly. The XAML compiler maps `true` to `Visible` and `false` to `Collapsed`. This is not a public reusable converter class and does not replace classic `{Binding}` / `TemplatedParent` scenarios. |
+| `bool` → `Visibility` with classic `{Binding}` | Use `CommunityToolkit.WinUI.Converters.BoolToVisibilityConverter`. |
+| Number or collection count → `Visibility` | Use `CommunityToolkit.WinUI.Converters.DoubleToVisibilityConverter` with `GreaterThan` / `LessThan`; it accepts numeric values such as `ObservableCollection.Count`. |
+| Inverse of an existing Toolkit Boolean or numeric conversion | Reuse the same converter with `ConverterParameter=True`. The Toolkit `BoolToObjectConverter` and `DoubleToObjectConverter` families support inversion; do not create a second instance with swapped values. |
+| Framework `CornerRadius` → `Rectangle.RadiusX` / `RadiusY` | Keep the `TopLeftCornerRadiusDoubleValueConverter` and `BottomRightCornerRadiusDoubleValueConverter` static resources supplied by `XamlControlsResources`; do not reimplement them. |
+| App-specific conversion with no platform or Toolkit equivalent | Implement a WinUI `IValueConverter`; its final parameter is `string language`, not WPF's `CultureInfo culture`. |
+
+Add the centrally managed package only when a Toolkit converter is needed:
+
+```xml
+<PackageReference Include="CommunityToolkit.WinUI.Converters" />
+```
+
+Use the `using:CommunityToolkit.WinUI.Converters` XAML namespace. Toolkit visibility converters already default to `Visible` / `Collapsed`, so set `TrueValue` or `FalseValue` only when behavior differs. Reuse one converter for normal and inverse count visibility:
+
+```xml
+<converters:DoubleToVisibilityConverter
+    x:Key="CountToVisibilityConverter"
+    GreaterThan="0" />
+
+<Grid Visibility="{Binding Items.Count, Converter={StaticResource CountToVisibilityConverter}}" />
+<TextBlock Visibility="{Binding Items.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter=True}" />
+```
+
 ### Common Control Replacements
 
 ```xml

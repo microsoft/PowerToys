@@ -46,6 +46,8 @@ public record SettingsModel
 
     public bool AllowExternalReload { get; init; }
 
+    public bool AllowAltF4 { get; init; }
+
     public bool CompactMode { get; set; }
 
     // When compact mode is on and the palette is centered on launch, this is the relative

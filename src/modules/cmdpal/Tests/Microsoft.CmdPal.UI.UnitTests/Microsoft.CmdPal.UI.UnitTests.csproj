@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>Microsoft.CmdPal.UI.UnitTests</RootNamespace>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal\tests\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\AdaptiveCache`2.cs" Link="Helpers\AdaptiveCache`2.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\CachedIconSourceProvider.cs" Link="Helpers\Icons\CachedIconSourceProvider.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadPriority.cs" Link="Helpers\Icons\IconLoadPriority.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconSourceProvider.cs" Link="Helpers\Icons\IconSourceProvider.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconLoaderService.cs" Link="Helpers\Icons\IIconLoaderService.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconSourceProvider.cs" Link="Helpers\Icons\IIconSourceProvider.cs" />
+  </ItemGroup>
+</Project>

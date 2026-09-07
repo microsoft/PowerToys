@@ -33,7 +33,8 @@ namespace util
 CaptureFrameWait::CaptureFrameWait(
     winrt::IDirect3DDevice const& device,
     winrt::GraphicsCaptureItem const& item,
-    winrt::SizeInt32 const& size)
+    winrt::SizeInt32 const& size,
+    bool borderRequired)
 {
     m_device = device;
     m_item = item;
@@ -48,6 +49,11 @@ CaptureFrameWait::CaptureFrameWait(
         1,
         size);
     m_session = m_framePool.CreateCaptureSession(m_item);
+
+    if( !borderRequired )
+    {
+        ShowCaptureBorder( false );
+    }
 
     m_framePool.FrameArrived({ this, &CaptureFrameWait::OnFrameArrived });
     m_session.StartCapture();

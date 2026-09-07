@@ -24,20 +24,22 @@ public sealed class PasteFormat
         IsEnabled = SupportsClipboardFormats(clipboardFormats) && (isAIServiceEnabled || !Metadata.RequiresAIService);
     }
 
-    public static PasteFormat CreateStandardFormat(PasteFormats format, ClipboardFormat clipboardFormats, bool isAIServiceEnabled, Func<string, string> resourceLoader) =>
+    public static PasteFormat CreateStandardFormat(PasteFormats format, ClipboardFormat clipboardFormats, bool isAIServiceEnabled, Func<string, string> resourceLoader, string providerId = null) =>
         new(format, clipboardFormats, isAIServiceEnabled)
         {
             Name = MetadataDict[format].ResourceId == null ? string.Empty : resourceLoader(MetadataDict[format].ResourceId),
             Prompt = string.Empty,
             IsSavedQuery = false,
+            ProviderId = providerId ?? string.Empty,
         };
 
-    public static PasteFormat CreateCustomAIFormat(PasteFormats format, string name, string prompt, bool isSavedQuery, ClipboardFormat clipboardFormats, bool isAIServiceEnabled) =>
+    public static PasteFormat CreateCustomAIFormat(PasteFormats format, string name, string prompt, bool isSavedQuery, ClipboardFormat clipboardFormats, bool isAIServiceEnabled, string providerId = null) =>
         new(format, clipboardFormats, isAIServiceEnabled)
         {
             Name = name,
             Prompt = prompt,
             IsSavedQuery = isSavedQuery,
+            ProviderId = providerId ?? string.Empty,
         };
 
     public PasteFormatMetadataAttribute Metadata => MetadataDict[Format];
@@ -49,6 +51,8 @@ public sealed class PasteFormat
     public PasteFormats Format { get; private init; }
 
     public string Prompt { get; private init; }
+
+    public string ProviderId { get; private init; } = string.Empty;
 
     public bool IsSavedQuery { get; private init; }
 

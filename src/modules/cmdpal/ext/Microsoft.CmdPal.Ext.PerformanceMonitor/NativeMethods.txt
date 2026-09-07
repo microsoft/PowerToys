@@ -4,3 +4,5 @@ CreateDXGIFactory1
 IDXGIFactory1
 IDXGIAdapter1
 DXGI_ADAPTER_DESC1
+GetIfTable2
+FreeMibTable

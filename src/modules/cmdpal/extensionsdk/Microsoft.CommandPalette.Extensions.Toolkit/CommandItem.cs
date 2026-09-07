@@ -55,8 +55,12 @@ public partial class CommandItem : BaseObservable, ICommandItem
 
             var oldTitle = Title;
 
+            // Unsubscribe the outgoing command explicitly. OnDetachAction only
+            // runs once this CommandItem has been collected, so it can't cover
+            // the case where the command is simply replaced.
             if (_commandListener is not null)
             {
+                _command?.PropChanged -= _commandListener.OnEvent;
                 _commandListener.Detach();
                 _commandListener = null;
             }
@@ -65,6 +69,16 @@ public partial class CommandItem : BaseObservable, ICommandItem
 
             if (value is not null)
             {
+                // OnCommandPropertyChanged must be static so the delegate's Target is null.
+                // An instance method group would bind `this` into OnEventAction,
+                // giving the listener a strong ref back to this CommandItem and
+                // defeating the weak reference. That was the actual leak.
+                //
+                // OnDetachAction does capture `value`, but that is not a leak: the
+                // only thing keeping the listener alive is `value`'s own PropChanged
+                // list, so the two form a cycle the GC reclaims together. Without it
+                // the listener could never unsubscribe itself, and every collected
+                // CommandItem would leave a dead handler on a long-lived command.
                 _commandListener = new(this, OnCommandPropertyChanged, listener => value.PropChanged -= listener.OnEvent);
                 value.PropChanged += _commandListener.OnEvent;
             }
@@ -77,10 +91,10 @@ public partial class CommandItem : BaseObservable, ICommandItem
         }
     }
 
-    private void OnCommandPropertyChanged(CommandItem instance, object source, IPropChangedEventArgs args)
+    private static void OnCommandPropertyChanged(CommandItem instance, object source, IPropChangedEventArgs args)
     {
         // command's name affects Title only if Title wasn't explicitly set
-        if (args.PropertyName == nameof(ICommand.Name) && string.IsNullOrEmpty(_title))
+        if (args.PropertyName == nameof(ICommand.Name) && string.IsNullOrEmpty(instance._title))
         {
             instance.OnPropertyChanged(nameof(Title));
         }

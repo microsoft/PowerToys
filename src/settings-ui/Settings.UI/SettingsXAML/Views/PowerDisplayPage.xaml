@@ -84,6 +84,22 @@
                                             ItemsSource="{x:Bind ViewModel.MonitorRefreshDelayOptions}"
                                             SelectedItem="{x:Bind ViewModel.MonitorRefreshDelay, Mode=TwoWay}" />
                                     </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_MouseWheelControlMode">
+                                        <ComboBox
+                                            x:Uid="PowerDisplay_MouseWheelControlModeComboBox"
+                                            MinWidth="{StaticResource PowerDisplayCompactActionControlMinWidth}"
+                                            SelectedIndex="{x:Bind ViewModel.MouseWheelControlModeIndex, Mode=TwoWay}">
+                                            <ComboBoxItem x:Uid="PowerDisplay_MouseWheelControlMode_Off" />
+                                            <ComboBoxItem x:Uid="PowerDisplay_MouseWheelControlMode_PrimaryDisplay" />
+                                            <ComboBoxItem x:Uid="PowerDisplay_MouseWheelControlMode_AllDisplays" />
+                                        </ComboBox>
+                                    </tkcontrols:SettingsCard>
+                                    <!--
+                                        Deliberately not gated on the tray icon wheel mode: this step
+                                        is shared by the flyout sliders and by the command-line
+                                        relative adjust (AdjustCommandExecutor), both of which stay
+                                        available when tray scrolling is off.
+                                    -->
                                     <tkcontrols:SettingsCard x:Uid="PowerDisplay_MouseWheelIncrement">
                                         <ComboBox
                                             MinWidth="{StaticResource PowerDisplayCompactActionControlMinWidth}"

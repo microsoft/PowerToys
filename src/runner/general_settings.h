@@ -24,6 +24,7 @@ struct GeneralSettings
     PowerToysSettings::HotkeyObject quickAccessShortcut;
     bool showNewUpdatesToastNotification;
     bool downloadUpdatesAutomatically;
+    bool includePrereleaseUpdates;
     bool showWhatsNewAfterUpdates;
     bool enableExperimentation;
     DashboardSortOrder dashboardSortOrder;

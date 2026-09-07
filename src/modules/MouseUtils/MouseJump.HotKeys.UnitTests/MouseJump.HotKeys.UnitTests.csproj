@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <!-- Look at Directory.Build.props in root for common stuff as well -->
+    <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+    <PropertyGroup>
+        <ProjectGuid>{C1434F2F-D34A-4E4E-9471-4041066B8EC4}</ProjectGuid>
+        <AssemblyName>PowerToys.MouseJump.HotKeys.UnitTests</AssemblyName>
+        <AssemblyTitle>PowerToys.MouseJump.HotKeys.UnitTests</AssemblyTitle>
+        <AssemblyDescription>PowerToys MouseJump.HotKeys.UnitTests</AssemblyDescription>
+        <OutputType>Library</OutputType>
+        <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\MouseJump.HotKeys.UnitTests\</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\MouseJump.HotKeys\MouseJump.HotKeys.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" />
+    </ItemGroup>
+</Project>

@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
+using System.Text.RegularExpressions;
 
 using Markdig;
 
@@ -27,11 +29,23 @@ namespace Microsoft.PowerToys.FilePreviewCommon
 
         public static string MarkdownHtml(string fileContent, string theme, string filePath, ImagesBlockedCallBack imagesBlockedCallBack)
         {
-            var htmlHeader = theme == "dark" ? HtmlDarkHeader : HtmlLightHeader;
+            return MarkdownHtml(fileContent, theme, filePath, imagesBlockedCallBack, false, null);
+        }
+
+        public static string MarkdownHtml(string fileContent, string theme, string filePath, ImagesBlockedCallBack imagesBlockedCallBack, bool allowLocalImages, string? allowedBasePath)
+        {
+            // Enforce the resource policy in the browser as well as in the rewriting below: regex
+            // cannot cover every resource-bearing construct (objects, frames, styles, malformed
+            // markup), so WebView2 blocks anything the sanitizers do not catch.
+            string imageSourcePolicy = allowLocalImages ? "https://localmdimages" : "'none'";
+            string contentSecurityPolicy = $"<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; img-src {imageSourcePolicy}; object-src 'none'; frame-src 'none';\">";
+            var htmlHeader = (theme == "dark" ? HtmlDarkHeader : HtmlLightHeader).Insert("<!doctype html>".Length, contentSecurityPolicy);
 
             // Extension to modify markdown AST.
             HTMLParsingExtension extension = new HTMLParsingExtension(imagesBlockedCallBack);
             extension.FilePath = Path.GetDirectoryName(filePath) ?? string.Empty;
+            extension.AllowedBasePath = allowedBasePath ?? extension.FilePath;
+            extension.AllowLocalImages = allowLocalImages;
 
             // if you have a string with double space, some people view it as a new line.
             // while this is against spec, even GH supports this. Technically looks like GH just trims whitespace
@@ -45,6 +59,49 @@ namespace Microsoft.PowerToys.FilePreviewCommon
 
             MarkdownPipeline pipeline = pipelineBuilder.Build();
             string parsedMarkdown = Markdown.ToHtml(fileContent, pipeline);
+
+            // srcset supports multiple candidates and descriptors, none of which the src sanitizer
+            // below validates. Remove the attribute rather than let a candidate through unchecked.
+            parsedMarkdown = Regex.Replace(
+                parsedMarkdown,
+                @"(<img\b[^>]*?)\s+srcset\s*=\s*(?:""[^""]*""|'[^']*'|[^\s>]+)",
+                m =>
+                {
+                    imagesBlockedCallBack();
+                    return m.Groups[1].Value;
+                },
+                RegexOptions.IgnoreCase);
+
+            // Sanitize src on raw HTML <img> tags in both setting states. Markdown images were
+            // already handled by the Markdig AST layer (rewritten to the virtual host URL or "#")
+            // and pass through unchanged. When local images are disabled everything else is blocked;
+            // when enabled it is validated the same way as the AST layer. Matches double-quoted,
+            // single-quoted and unquoted values, so every form an author can write is covered.
+            parsedMarkdown = Regex.Replace(
+                parsedMarkdown,
+                @"(<img\b[^>]*?\ssrc\s*=\s*)(?:(""|')(.+?)\2|([^\s""'>]+))",
+                m =>
+                {
+                    bool isQuoted = m.Groups[2].Success;
+                    string quote = isQuoted ? m.Groups[2].Value : "\"";
+                    string src = isQuoted ? m.Groups[3].Value : m.Groups[4].Value;
+
+                    if (src == "#" ||
+                        (allowLocalImages && src.StartsWith("https://localmdimages/", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return m.Value;
+                    }
+
+                    if (allowLocalImages &&
+                        HTMLParsingExtension.TryGetLocalImageVirtualUrl(src, extension.FilePath, extension.AllowedBasePath, out string? virtualUrl))
+                    {
+                        return m.Groups[1].Value + quote + virtualUrl + quote;
+                    }
+
+                    imagesBlockedCallBack();
+                    return m.Groups[1].Value + quote + "#" + quote;
+                },
+                RegexOptions.IgnoreCase);
 
             string markdownHTML = $"{htmlHeader}{parsedMarkdown}{HtmlFooter}";
             return markdownHTML;

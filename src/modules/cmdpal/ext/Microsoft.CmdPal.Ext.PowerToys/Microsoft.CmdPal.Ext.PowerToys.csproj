@@ -12,7 +12,7 @@
 		<EnableMsixTooling>false</EnableMsixTooling>
 		<WindowsPackageType>None</WindowsPackageType>
 		<GenerateAppxPackageOnBuild>false</GenerateAppxPackageOnBuild>
-		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
+		<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 		<Nullable>enable</Nullable>

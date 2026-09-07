@@ -24,9 +24,14 @@ internal sealed class AdaptiveCache<TKey, TValue>
     private readonly ConcurrentStack<CacheEntry> _pool = [];
     private readonly WaitCallback _maintenanceCallback;
 
+    // ConcurrentDictionary.Count acquires every stripe lock. Keep an approximate count so
+    // cache maintenance never makes the XAML UI thread wait for all dictionary locks.
+    private int _entryCount;
     private long _currentTick;
     private long _lastDecayTicks = DateTime.UtcNow.Ticks;
     private InterlockedBoolean _maintenanceSwitch = new(false);
+
+    internal int ApproximateCount => Volatile.Read(ref _entryCount);
 
     public AdaptiveCache(int capacity = 384, TimeSpan? decayInterval = null, double decayFactor = 0.5)
     {
@@ -66,7 +71,11 @@ internal sealed class AdaptiveCache<TKey, TValue>
         var tick = Interlocked.Increment(ref _currentTick);
         newEntry.Initialize(key, value, 1.0, tick);
 
-        if (!_map.TryAdd(key, newEntry))
+        if (_map.TryAdd(key, newEntry))
+        {
+            Interlocked.Increment(ref _entryCount);
+        }
+        else
         {
             newEntry.Clear();
             _pool.Push(newEntry);
@@ -117,7 +126,11 @@ internal sealed class AdaptiveCache<TKey, TValue>
 
         newEntry.Initialize(key, value, 1.0, tick);
 
-        if (!_map.TryAdd(key, newEntry))
+        if (_map.TryAdd(key, newEntry))
+        {
+            Interlocked.Increment(ref _entryCount);
+        }
+        else
         {
             newEntry.Clear();
             _pool.Push(newEntry);
@@ -133,6 +146,7 @@ internal sealed class AdaptiveCache<TKey, TValue>
     {
         if (_map.TryRemove(key, out var evicted))
         {
+            Interlocked.Decrement(ref _entryCount);
             evicted.Clear();
             _pool.Push(evicted);
             return true;
@@ -143,7 +157,9 @@ internal sealed class AdaptiveCache<TKey, TValue>
 
     public void Clear()
     {
-        foreach (var key in _map.Keys)
+        // Enumerate the dictionary rather than _map.Keys: the enumerator is lock-free,
+        // while Keys snapshots under every stripe lock.
+        foreach (var (key, _) in _map)
         {
             TryRemove(key);
         }
@@ -153,7 +169,7 @@ internal sealed class AdaptiveCache<TKey, TValue>
 
     private bool ShouldMaintenanceRun()
     {
-        return _map.Count > _capacity || (DateTime.UtcNow.Ticks - Interlocked.Read(ref _lastDecayTicks)) > _decayInterval.Ticks;
+        return ApproximateCount > _capacity || (DateTime.UtcNow.Ticks - Interlocked.Read(ref _lastDecayTicks)) > _decayInterval.Ticks;
     }
 
     private void TryRunMaintenance()
@@ -184,13 +200,9 @@ internal sealed class AdaptiveCache<TKey, TValue>
 
             var score = CalculateScore(entry, currentTick);
 
-            if (score < 0.1 || _map.Count > _capacity)
+            if (score < 0.1 || ApproximateCount > _capacity)
             {
-                if (_map.TryRemove(key, out var evicted))
-                {
-                    evicted.Clear();
-                    _pool.Push(evicted);
-                }
+                TryRemove(key);
             }
         }
     }

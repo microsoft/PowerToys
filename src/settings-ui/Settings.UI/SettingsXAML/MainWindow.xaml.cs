@@ -148,6 +148,11 @@ namespace Microsoft.PowerToys.Settings.UI
             ShellPage.Navigate(type);
         }
 
+        public void BeginWindowSession()
+        {
+            shellPage.BeginWindowSession();
+        }
+
         public void CloseHiddenWindow()
         {
             var hWnd = WindowNative.GetWindowHandle(this);
@@ -164,6 +169,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
             if (!App.IsSecondaryWindowOpen())
             {
+                shellPage.Dispose();
                 App.ClearSettingsWindow();
             }
             else

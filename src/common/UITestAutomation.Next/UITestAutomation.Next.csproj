@@ -21,9 +21,11 @@
     <!--
       Engine is winappcli (Microsoft.WinAppCli) — installed once per machine via
       `winget install Microsoft.winappcli`. We shell out to winapp.exe and parse its
-      JSON output. No managed dependency on the engine — only MSTest's attribute surface.
+      JSON output. There is no managed dependency on the engine.
     -->
     <PackageReference Include="MSTest.TestFramework" />
+    <!-- Keep visual baseline comparison byte-for-byte compatible with the legacy UI-test harness. -->
+    <PackageReference Include="CoenM.ImageSharp.ImageHash" />
     <!--
       ScreenRecorderLib encodes the optional pipeline screen recording (ScreenRecording.cs)
       in realtime via native Media Foundation. Pipeline-only diagnostic; no PATH/FFmpeg setup.
@@ -33,6 +35,31 @@
       that reference this library.
     -->
     <PackageReference Include="ScreenRecorderLib" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="UITestAutomation.Next.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <COMReference Include="Shell32">
+      <VersionMinor>0</VersionMinor>
+      <VersionMajor>1</VersionMajor>
+      <Guid>50a7e9b0-70ef-11d1-b75a-00a0c90564fe</Guid>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>false</Isolated>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="SHDocVw">
+      <VersionMinor>1</VersionMinor>
+      <VersionMajor>1</VersionMajor>
+      <Guid>eab22ac0-30c1-11cf-a7eb-0000c05bae0b</Guid>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>false</Isolated>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </COMReference>
   </ItemGroup>
 
   <!--

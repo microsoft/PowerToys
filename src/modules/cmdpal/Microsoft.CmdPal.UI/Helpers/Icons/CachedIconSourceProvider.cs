@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
@@ -12,18 +13,18 @@ namespace Microsoft.CmdPal.UI.Helpers;
 internal sealed class CachedIconSourceProvider : IIconSourceProvider
 {
     private readonly AdaptiveCache<IconCacheKey, Task<IconSource?>> _cache;
+    private readonly ConcurrentDictionary<IconCacheKey, Task<IconSource?>> _inFlight = new();
     private readonly Size _iconSize;
-    private readonly IconLoaderService _loader;
-    private readonly Lock _lock = new();
+    private readonly IIconLoaderService _loader;
 
-    public CachedIconSourceProvider(IconLoaderService loader, Size iconSize, int cacheSize)
+    public CachedIconSourceProvider(IIconLoaderService loader, Size iconSize, int cacheSize)
     {
         _loader = loader;
         _iconSize = iconSize;
         _cache = new AdaptiveCache<IconCacheKey, Task<IconSource?>>(cacheSize, TimeSpan.FromMinutes(60));
     }
 
-    public CachedIconSourceProvider(IconLoaderService loader, int iconSize, int cacheSize)
+    public CachedIconSourceProvider(IIconLoaderService loader, int iconSize, int cacheSize)
         : this(loader, new Size(iconSize, iconSize), cacheSize)
     {
     }
@@ -39,38 +40,54 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
 
     private Task<IconSource?> GetOrCreateSlowPath(IconCacheKey key, IconDataViewModel icon, double scale)
     {
-        lock (_lock)
+        var tcs = new TaskCompletionSource<IconSource?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var task = tcs.Task;
+
+        var pending = _inFlight.GetOrAdd(key, task);
+        if (!ReferenceEquals(pending, task))
         {
-            if (_cache.TryGet(key, out var existingTask))
-            {
-                return existingTask;
-            }
-
-            var tcs = new TaskCompletionSource<IconSource?>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            _loader.EnqueueLoad(
-                icon.Icon,
-                icon.FontFamily,
-                icon.Data?.Unsafe,
-                _iconSize,
-                scale,
-                tcs);
-
-            var task = tcs.Task;
-
-            _ = task.ContinueWith(
-                _ =>
-                {
-                    lock (_lock)
-                    {
-                        _cache.TryRemove(key);
-                    }
-                },
-                TaskContinuationOptions.OnlyOnFaulted);
-
-            _cache.Add(key, task);
-            return task;
+            return pending;
         }
+
+        _ = task.ContinueWith(
+            completed =>
+            {
+                try
+                {
+                    if (completed.IsCompletedSuccessfully)
+                    {
+                        _cache.Add(key, completed);
+                    }
+                }
+                finally
+                {
+                    _inFlight.TryRemove(new KeyValuePair<IconCacheKey, Task<IconSource?>>(key, completed));
+                }
+            },
+            CancellationToken.None,
+            TaskContinuationOptions.None,
+            TaskScheduler.Default);
+
+        try
+        {
+            if (!_loader.TryEnqueueLoad(
+                    icon.Icon,
+                    icon.FontFamily,
+                    icon.Data?.Unsafe,
+                    _iconSize,
+                    scale,
+                    tcs,
+                    IconLoadPriority.Low))
+            {
+                tcs.TrySetException(new ObjectDisposedException(nameof(IIconLoaderService)));
+            }
+        }
+        catch (Exception ex)
+        {
+            tcs.TrySetException(ex);
+        }
+
+        return task;
     }
 
     private readonly struct IconCacheKey : IEquatable<IconCacheKey>

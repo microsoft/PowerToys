@@ -10,6 +10,15 @@ namespace Microsoft.CmdPal.Ext.System;
 public sealed partial class ExecuteCommandConfirmation : InvokableCommand
 {
     public ExecuteCommandConfirmation(string name, bool confirm, string confirmationMessage, Action command)
+        : this(name, confirm, confirmationMessage, () =>
+        {
+            command();
+            return CommandResult.Dismiss();
+        })
+    {
+    }
+
+    public ExecuteCommandConfirmation(string name, bool confirm, string confirmationMessage, Func<CommandResult> command)
     {
         Name = name;
         _command = command;
@@ -32,11 +41,10 @@ public sealed partial class ExecuteCommandConfirmation : InvokableCommand
             return CommandResult.Confirm(confirmationArgs);
         }
 
-        _command();
-        return CommandResult.Dismiss();
+        return _command();
     }
 
     private bool _confirm;
     private string _confirmationMessage;
-    private Action _command;
+    private Func<CommandResult> _command;
 }

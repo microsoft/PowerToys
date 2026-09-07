@@ -31,6 +31,8 @@ enum class SettingId
     WindowSwitching,
     NextTabHotkey,
     PrevTabHotkey,
+    MonitorRotation,
+    MonitorRotationHotkey,
     ExcludedApps,
     AllowSnapChildWindows,
     DisableRoundCornersOnSnapping,

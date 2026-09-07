@@ -161,7 +161,7 @@ Other primitives in `Primitives`: `ConstrainedBox`, `SwitchPresenter`, `WrapLayo
 | `CommunityToolkit.Mvvm` | `CommunityToolkit.Mvvm` (same) | |
 | `Microsoft.Toolkit.Wpf.*` | `CommunityToolkit.WinUI.*` | |
 | (none) | `Microsoft.Windows.SDK.BuildTools` | Required |
-| (none) | `WinUIEx` | Optional, window helpers |
+| (none) | `WinUIEx` | **Recommended for top-level windows in WinUI 3 modules** — add `<PackageReference Include="WinUIEx" />` without a version because PowerToys manages it centrally; use `WindowEx` or an existing PowerToys base derived from it, and prefer XAML properties over bare `Window` and manual `AppWindow` code-behind |
 | (none) | `CommunityToolkit.WinUI.Converters` | Optional |
 | (none) | `CommunityToolkit.WinUI.Extensions` | Optional |
 | (none) | `CommunityToolkit.WinUI.Controls.Primitives` | Optional — `WrapPanel`, `UniformGrid`, `DockPanel`, `ConstrainedBox`, `SwitchPresenter` |

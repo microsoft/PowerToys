@@ -57,6 +57,7 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ToggleDevRibbonMessage>,
     IRecipient<GetHwndMessage>,
     IRecipient<ExpandCompactModeMessage>,
+    IRecipient<MaximizeForDialogMessage>,
     IDisposable,
     IHostWindow
 {
@@ -71,6 +72,8 @@ public sealed partial class MainWindow : WindowEx,
     private readonly KeyboardListener _keyboardListener;
     private readonly LocalKeyboardListener _localKeyboardListener;
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
+    private readonly ICmdPalProtocolActivation _protocolActivation;
+    private readonly ViewModels.Models.IMonitorService _monitorService;
     private readonly IThemeService _themeService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
     private readonly List<long> _breakthroughTimestamps = [];
@@ -95,6 +98,7 @@ public sealed partial class MainWindow : WindowEx,
     private int _sessionErrorCount;
 
     private bool _isUpdatingBackdrop;
+    private bool _isBackdropUpdatePending;
     private TimeSpan _autoGoHomeInterval = Timeout.InfiniteTimeSpan;
 
     // Tracks the chrome mode currently applied to the HWND. Nullable so the first
@@ -112,6 +116,15 @@ public sealed partial class MainWindow : WindowEx,
     private bool _preventHideWhenDeactivated;
     private bool _isLoadedFromDock;
 
+    // While a modal dialog (e.g. a confirmation) is showing, the card is forced to fill the
+    // whole window so the dialog — which renders in the window's popup layer and is clipped to
+    // the card's HWND region — isn't cut off. Cleared when the dialog closes.
+    private bool _dialogFullExpandActive;
+
+    // The most recent expand/collapse request, remembered so the correct compact layout can be
+    // restored once a dialog-driven full expansion ends.
+    private bool _lastExpandRequested;
+
     private DevRibbon? _devRibbon;
 
     private MainWindowViewModel ViewModel { get; }
@@ -122,6 +135,9 @@ public sealed partial class MainWindow : WindowEx,
 
     public MainWindow()
     {
+        _protocolActivation = App.Current.Services.GetRequiredService<ICmdPalProtocolActivation>();
+        _monitorService = App.Current.Services.GetRequiredService<ViewModels.Models.IMonitorService>();
+
         InitializeComponent();
 
         ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
@@ -184,6 +200,7 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<ToggleDevRibbonMessage>(this);
         WeakReferenceMessenger.Default.Register<GetHwndMessage>(this);
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<MaximizeForDialogMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -226,12 +243,39 @@ public sealed partial class MainWindow : WindowEx,
 
     private void ThemeServiceOnThemeChanged(object? sender, ThemeChangedEventArgs e)
     {
-        UpdateBackdrop();
+        ScheduleBackdropUpdate();
     }
 
     private void RootElement_ActualThemeChanged(FrameworkElement sender, object args)
     {
-        DispatcherQueue.TryEnqueue(UpdateBackdrop);
+        ScheduleBackdropUpdate();
+    }
+
+    private void ScheduleBackdropUpdate()
+    {
+        // A theme reload changes RequestedTheme several times to force WinUI to refresh
+        // its resources. Coalesce the resulting ThemeChanged / ActualThemeChanged events
+        // so the SystemBackdropElement is only updated once with the final theme.
+        if (_isBackdropUpdatePending)
+        {
+            return;
+        }
+
+        _isBackdropUpdatePending = true;
+        if (!DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                UpdateBackdrop();
+            }
+            finally
+            {
+                _isBackdropUpdatePending = false;
+            }
+        }))
+        {
+            _isBackdropUpdatePending = false;
+        }
     }
 
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
@@ -1142,9 +1186,10 @@ public sealed partial class MainWindow : WindowEx,
 
     private void DisposeAcrylic()
     {
-        // The backdrop controllers now live on the SystemBackdropElement inside
-        // CmdPalMainControl. Clearing its SystemBackdrop fires OnTargetDisconnected on the
-        // current backdrop, which removes targets and disposes the underlying controller.
+        // Backdrop resources are thread-affine. ClearBackdrop closes the active controller or
+        // brush on the XAML thread, but leaves SystemBackdrop assigned so its target stays rooted.
+        // Clearing it can let C#/WinRT finalize ContentExternalBackdropLink off-thread, which
+        // fail-fasts with RPC_E_WRONG_THREAD (0x8001010E).
         try
         {
             RootElement?.ClearBackdrop();
@@ -1403,23 +1448,20 @@ public sealed partial class MainWindow : WindowEx,
 
             if (activatedEventArgs.Kind == ExtendedActivationKind.Protocol)
             {
-                if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs)
+                if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs &&
+                    _protocolActivation.TryParse(protocolArgs.Uri, out var route))
                 {
-                    if (protocolArgs.Uri.ToString() is string uri)
+                    switch (route)
                     {
-                        // was the URI "x-cmdpal://background" ?
-                        if (uri.StartsWith("x-cmdpal://background", StringComparison.OrdinalIgnoreCase))
-                        {
+                        case CmdPalProtocolRoute.Background:
                             // we're running, we don't want to activate our window. bail
                             return;
-                        }
-                        else if (uri.StartsWith("x-cmdpal://settings", StringComparison.OrdinalIgnoreCase))
-                        {
-                            WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
+
+                        case CmdPalProtocolRoute.OpenSettings openSettings:
+                            WeakReferenceMessenger.Default.Send(openSettings.Message);
                             return;
-                        }
-                        else if (uri.StartsWith("x-cmdpal://reload", StringComparison.OrdinalIgnoreCase))
-                        {
+
+                        case CmdPalProtocolRoute.Reload:
                             var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
                             if (settings?.AllowExternalReload == true)
                             {
@@ -1432,7 +1474,6 @@ public sealed partial class MainWindow : WindowEx,
                             }
 
                             return;
-                        }
                     }
                 }
             }
@@ -1700,6 +1741,23 @@ public sealed partial class MainWindow : WindowEx,
             case PInvoke.WM_NCACTIVATE when _hwndFrameVisible != true:
                 return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, new LPARAM(-1));
 
+            case PInvoke.WM_SYSCOMMAND:
+                {
+                    var command = (int)(wParam.Value & 0xFFF0);
+                    if (command == PInvoke.SC_CLOSE)
+                    {
+                        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+                        if (settings.AllowAltF4)
+                        {
+                            WeakReferenceMessenger.Default.Send<QuitMessage>();
+                        }
+
+                        return (LRESULT)IntPtr.Zero;
+                    }
+
+                    break;
+                }
+
             case PInvoke.WM_HOTKEY:
                 {
                     var hotkeyIndex = (int)wParam.Value;
@@ -1711,6 +1769,14 @@ public sealed partial class MainWindow : WindowEx,
 
                     return (LRESULT)IntPtr.Zero;
                 }
+
+            // Unlike DockWindow instances, MainWindow always exists, so it's the one
+            // reliable place to catch topology changes. Without this, the Settings page's
+            // monitor list goes stale whenever no dock window is around to see WM_DISPLAYCHANGE.
+            case PInvoke.WM_DISPLAYCHANGE:
+                Logger.LogDebug("MainWindow WM_DISPLAYCHANGE");
+                _monitorService.NotifyMonitorsChanged();
+                break;
 
             default:
                 if (uMsg == WM_TASKBAR_RESTART)
@@ -1901,16 +1967,32 @@ public sealed partial class MainWindow : WindowEx,
         this.DispatcherQueue.TryEnqueue(() => HandleExpandCompactOnUiThread(message.Expanded));
     }
 
+    public void Receive(MaximizeForDialogMessage message)
+    {
+        this.DispatcherQueue.TryEnqueue(() =>
+        {
+            _dialogFullExpandActive = message.Maximize;
+
+            // Re-run with the last requested state: when maximizing this fills the window; when
+            // the dialog closes it restores the normal compact/expanded layout.
+            HandleExpandCompactOnUiThread(_lastExpandRequested);
+        });
+    }
+
     // The HWND is already as large as it will ever need to be (and it's transparent), so
     // instead of resizing the window we simply shrink or grow the visible card inside it.
     private void HandleExpandCompactOnUiThread(bool expanded)
     {
+        _lastExpandRequested = expanded;
+
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
-        if (!settings.CompactMode)
+        var preventCompactMode = _dialogFullExpandActive || !settings.CompactMode;
+        if (preventCompactMode)
         {
-            // When compact mode is off the card is always static and fills the entire window,
-            // regardless of how much content is currently displayed.
+            // When compact mode is off, or a dialog is active, the card is
+            // always static and fills the entire window, regardless of how much
+            // content is currently displayed.
             RootElement.SetCardStretch(true);
             RootElement.SetCardMaxHeight(double.PositiveInfinity);
         }
@@ -1919,11 +2001,10 @@ public sealed partial class MainWindow : WindowEx,
             // In compact mode the card sizes itself to its content and anchors to the top.
             RootElement.SetCardStretch(false);
 
-            // Only the compact + centered configuration needs a screen-fit clamp. There the card
-            // is anchored near the vertical center of the display, so an expanded list could run
-            // off the bottom edge; cap its height so it always fits. In every other case the card
-            // is free to fill the (fixed-size) HWND as before.
-            var cardMaxHeight = expanded && IsCenteringSummon(settings)
+            // The HWND can extend below the current display after moving from a taller monitor.
+            // Always clamp an expanded compact card to the visible work area; the transparent
+            // portion of the HWND may remain off-screen, but the card and its content must not.
+            var cardMaxHeight = expanded
                 ? ComputeExpandedCardMaxHeightDip()
                 : double.PositiveInfinity;
             RootElement.SetCardMaxHeight(cardMaxHeight);
@@ -1937,18 +2018,19 @@ public sealed partial class MainWindow : WindowEx,
         var dpi = (int)this.GetDpiForWindow();
         var scale = dpi / 96.0;
 
-        var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
-        var workArea = displayArea.WorkArea;
-
         var padding = RootElement.ShadowPadding;
         var cardTopPhysical = AppWindow.Position.Y + (padding.Top * scale);
+
+        // Select the display from the visible card rather than from the HWND. An oversized HWND
+        // can overlap another display (or have its center below the intended display), causing
+        // GetFromWindowId to choose a work area unrelated to the card the user is looking at.
+        var cardCenterXPhysical = AppWindow.Position.X + (AppWindow.Size.Width / 2);
+        var displayArea = DisplayArea.GetFromPoint(
+            new PointInt32(cardCenterXPhysical, (int)Math.Round(cardTopPhysical)),
+            DisplayAreaFallback.Nearest);
+        var workArea = displayArea.WorkArea;
         var availablePhysical = (workArea.Y + workArea.Height) - cardTopPhysical - (padding.Bottom * scale);
 
-        if (availablePhysical <= 0)
-        {
-            return double.PositiveInfinity;
-        }
-
-        return availablePhysical / scale;
+        return Math.Max(0, availablePhysical / scale);
     }
 }

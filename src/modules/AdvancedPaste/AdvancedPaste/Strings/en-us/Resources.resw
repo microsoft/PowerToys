@@ -232,6 +232,12 @@
   <data name="PasteAsPlainText" xml:space="preserve">
     <value>Paste as plain text</value>
   </data>
+  <data name="FixSpellingAndGrammar" xml:space="preserve">
+    <value>Fix spelling and grammar</value>
+  </data>
+  <data name="CoachingExplanationTitle.Text" xml:space="preserve">
+    <value>What was changed and why</value>
+  </data>
   <data name="ImageToText" xml:space="preserve">
     <value>Image to text</value>
   </data>

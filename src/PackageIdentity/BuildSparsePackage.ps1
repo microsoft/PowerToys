@@ -13,7 +13,9 @@ Param(
     [switch]$Clean,
     [switch]$ForceCert,
     [switch]$NoSign,
-    [switch]$CIBuild
+    [switch]$CIBuild,
+    [switch]$DevRegister,
+    [switch]$Unregister
 )
 
 # PowerToys sparse packaging helper.
@@ -21,6 +23,19 @@ Param(
 # Multiple applications (PowerOCR, Settings UI, etc.) can share this single sparse identity.
 
 $ErrorActionPreference = 'Stop'
+
+# Handle -Unregister early exit
+if ($Unregister) {
+    $existing = Get-AppxPackage -Name 'Microsoft.PowerToys.SparseApp' -ErrorAction SilentlyContinue
+    if ($existing) {
+        Write-Host "Removing Microsoft.PowerToys.SparseApp..."
+        $existing | Remove-AppxPackage
+        Write-Host "Done."
+    } else {
+        Write-Host "Microsoft.PowerToys.SparseApp is not registered."
+    }
+    exit 0
+}
 
 $isCIBuild = $false
 if ($CIBuild.IsPresent) {
@@ -421,3 +436,85 @@ $winUI3AppsDir = Join-Path $outDir "WinUI3Apps"
 Write-BuildLog "Register sparse package:" -Level Info
 Write-BuildLog "  Add-AppxPackage -Path `"$msixPath`" -ExternalLocation `"$winUI3AppsDir`"" -Level Warning
 Write-BuildLog "(If already installed and you changed manifest only): Add-AppxPackage -Register `"$manifestPath`" -ExternalLocation `"$winUI3AppsDir`" -ForceApplicationShutdown" -Level Warning
+
+# -DevRegister: automatically register the sparse package for local development
+if ($DevRegister) {
+    Write-BuildLog "`nDev registration requested..." -Level Info
+
+    # Ensure the dev certificate is trusted (CurrentUser\TrustedPeople + CurrentUser\Root).
+    # Without trust, sparse identity lookup silently fails at runtime (GetPackageFamilyName
+    # returns APPMODEL_ERROR_NO_PACKAGE) so LAF unlocks like Phi Silica return Unavailable.
+    if (Test-Path $CertCerFile) {
+        try {
+            $devCert = (Get-PfxCertificate -FilePath $CertCerFile -ErrorAction Stop)
+            $devThumbprint = $devCert.Thumbprint
+            foreach ($store in @('TrustedPeople', 'Root')) {
+                $storePath = "Cert:\CurrentUser\$store"
+                $present = Get-ChildItem $storePath -ErrorAction SilentlyContinue |
+                    Where-Object { $_.Thumbprint -eq $devThumbprint }
+                if (-not $present) {
+                    Write-BuildLog "Importing dev certificate ($devThumbprint) into CurrentUser\$store" -Level Info
+                    Import-Certificate -FilePath $CertCerFile -CertStoreLocation $storePath | Out-Null
+                }
+            }
+        } catch {
+            Write-BuildLog "Failed to import dev certificate into trust stores: $($_.Exception.Message)" -Level Warning
+            Write-BuildLog "Sparse identity may not be granted at runtime; LAF unlocks (e.g., Phi Silica) will fail." -Level Warning
+        }
+    } else {
+        Write-BuildLog "Certificate .cer file not found at $CertCerFile; skipping trust-store import." -Level Warning
+    }
+
+    # Remove existing registration
+    $existing = Get-AppxPackage -Name $script:Config.IdentityName -ErrorAction SilentlyContinue
+    if ($existing) {
+        Write-BuildLog "Removing existing registration..." -Level Info
+        $existing | Remove-AppxPackage
+    }
+
+    # Create a temp manifest with the dev publisher for -Register
+    $devRegDir = Join-Path ([System.IO.Path]::GetTempPath()) "PowerToysSparseDevReg"
+    if (Test-Path $devRegDir) { Remove-Item $devRegDir -Recurse -Force }
+    New-Item -ItemType Directory -Path $devRegDir -Force | Out-Null
+
+    try {
+        Copy-Item $manifestPath (Join-Path $devRegDir 'AppxManifest.xml')
+        $imagesDir = Join-Path $sparseDir 'Images'
+        if (Test-Path $imagesDir) {
+            Copy-Item $imagesDir (Join-Path $devRegDir 'Images') -Recurse
+        }
+
+        $devManifest = Join-Path $devRegDir 'AppxManifest.xml'
+        [xml]$devXml = Get-Content $devManifest -Raw
+        $devIdentity = $devXml.Package.Identity
+
+        if ($devIdentity.Publisher -ne $script:Config.CertSubject) {
+            Write-BuildLog "Rewriting publisher for dev registration" -Level Info
+            $devIdentity.SetAttribute('Publisher', $script:Config.CertSubject)
+            $devXml.Save($devManifest)
+        }
+
+        Write-BuildLog "Registering with ExternalLocation: $winUI3AppsDir" -Level Info
+        Add-AppxPackage -Register $devManifest -ExternalLocation $winUI3AppsDir
+
+        $pkg = Get-AppxPackage -Name $script:Config.IdentityName -ErrorAction SilentlyContinue
+        if ($pkg) {
+            Write-BuildLog "Dev registration successful:" -Level Success
+            Write-BuildLog "  Publisher:         $($pkg.Publisher)" -Level Info
+            Write-BuildLog "  PublisherId:       $($pkg.PublisherId)" -Level Info
+            Write-BuildLog "  IsDevelopmentMode: $($pkg.IsDevelopmentMode)" -Level Info
+            Write-BuildLog "  InstallLocation:   $($pkg.InstallLocation)" -Level Info
+
+            if ($pkg.PublisherId -ne 'djwsxzxb4ksa8') {
+                Write-BuildLog "PublisherId mismatch! Expected 'djwsxzxb4ksa8', got '$($pkg.PublisherId)'. LAF unlock will fail." -Level Warning
+            }
+        } else {
+            Write-BuildLog "Dev registration failed — package not found." -Level Error
+            exit 1
+        }
+    } finally {
+        if (Test-Path $devRegDir) {
+            Remove-Item $devRegDir -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+}

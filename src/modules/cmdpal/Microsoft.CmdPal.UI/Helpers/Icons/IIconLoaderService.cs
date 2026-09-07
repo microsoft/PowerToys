@@ -10,7 +10,7 @@ namespace Microsoft.CmdPal.UI.Helpers;
 
 internal interface IIconLoaderService : IAsyncDisposable
 {
-    void EnqueueLoad(
+    bool TryEnqueueLoad(
         string? iconString,
         string? fontFamily,
         IRandomAccessStreamReference? streamRef,

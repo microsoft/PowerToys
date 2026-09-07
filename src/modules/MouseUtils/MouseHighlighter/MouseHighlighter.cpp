@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "MouseHighlighter.h"
 #include "trace.h"
+#include <array>
 #include <cmath>
 #include <algorithm>
 #include <memory>
@@ -30,6 +31,7 @@ struct Highlighter
     void Terminate();
     void SwitchActivationMode();
     void ApplySettings(MouseHighlighterSettings settings);
+    void QueueSettings(MouseHighlighterSettings settings);
 
 private:
     enum class MouseButton
@@ -39,25 +41,47 @@ private:
         None
     };
 
+    enum class MouseEventType
+    {
+        Reset,
+        LeftButtonDown,
+        LeftButtonUp,
+        RightButtonDown,
+        RightButtonUp,
+        Move,
+    };
+
+    struct MouseEvent
+    {
+        MouseEventType type;
+        POINT position;
+        DWORD timestamp;
+    };
+
     void DestroyHighlighter();
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) noexcept;
     void StartDrawing();
     void StopDrawing();
     bool CreateHighlighter();
-    void AddDrawingPoint(MouseButton button);
-    void UpdateDrawingPointPosition(MouseButton button);
+    void AddDrawingPoint(MouseButton button, POINT position);
+    void UpdateDrawingPointPosition(MouseButton button, POINT position);
     void StartDrawingPointFading(MouseButton button);
     void ClearDrawingPoint();
     void ClearDrawing();
     void BringToFront();
+    void QueueMouseEvent(MouseEvent event) noexcept;
+    void ProcessPendingMouseEvents();
+    void HandleMouseEvent(const MouseEvent& event);
+    void ResetPendingMouseInput();
+    void ProcessPendingSettings();
     // Ripple mode: spawn the press/hold ring + glow at the click point and
     // continue the animation into a fade-out on release. The held ring may
     // optionally follow the cursor while held (gated by m_rippleShowDragTrail).
-    void SpawnRippleHoldDot(MouseButton button);
+    void SpawnRippleHoldDot(MouseButton button, POINT position);
     void FadeRippleHoldDot(MouseButton button);
     // Ripple mode: emit a single self-contained ripple (grow + fade) for a quick
     // click, independent of any held indicator.
-    void EmitSingleRipple(MouseButton button);
+    void EmitSingleRipple(MouseButton button, POINT position);
     // Spotlight mode: pressed-state animation that shrinks the mask while
     // a mouse button is held and restores it on release.
     void SpotlightAnimatePress();
@@ -74,6 +98,8 @@ private:
     HWND m_hwnd = NULL;
     HINSTANCE m_hinstance = NULL;
     static constexpr DWORD WM_SWITCH_ACTIVATION_MODE = WM_APP;
+    static constexpr DWORD WM_PROCESS_MOUSE_EVENTS = WM_APP + 1;
+    static constexpr DWORD WM_APPLY_SETTINGS = WM_APP + 2;
 
     winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
     winrt::Compositor m_compositor{ nullptr };
@@ -118,6 +144,13 @@ private:
 
     bool m_leftButtonPressed = false;
     bool m_rightButtonPressed = false;
+    POINT m_leftPressPosition{};
+    POINT m_rightPressPosition{};
+    POINT m_latestMousePosition{};
+    DWORD m_leftPressTimestamp = 0;
+    DWORD m_rightPressTimestamp = 0;
+    bool m_leftHoldIndicatorShown = false;
+    bool m_rightHoldIndicatorShown = false;
     // Pending hold-detection timers. A ripple "held indicator" is only spawned
     // once the button has been held past a short threshold; a quick click that
     // releases before then emits a single self-contained ripple instead. This
@@ -125,6 +158,19 @@ private:
     UINT_PTR m_leftHoldTimer = 0;
     UINT_PTR m_rightHoldTimer = 0;
     UINT_PTR m_timer_id = 0;
+    int m_bringToFrontTimerFireCount = 0;
+
+    static constexpr size_t MOUSE_EVENT_QUEUE_CAPACITY = 128;
+    std::array<MouseEvent, MOUSE_EVENT_QUEUE_CAPACITY> m_mouseEventQueue{};
+    size_t m_mouseEventQueueHead = 0;
+    size_t m_mouseEventQueueSize = 0;
+    SRWLOCK m_mouseEventQueueLock = SRWLOCK_INIT;
+    bool m_mouseEventMessagePending = false;
+    bool m_acceptMouseEvents = false;
+
+    MouseHighlighterSettings m_pendingSettings{};
+    SRWLOCK m_settingsLock = SRWLOCK_INIT;
+    bool m_settingsPending = false;
 
     bool m_visible = false;
 
@@ -213,25 +259,20 @@ bool Highlighter::CreateHighlighter()
     }
 }
 
-void Highlighter::AddDrawingPoint(MouseButton button)
+void Highlighter::AddDrawingPoint(MouseButton button, POINT position)
 {
     if (!m_compositor)
         return;
 
-    POINT pt;
-
-    // Applies DPIs.
-    GetCursorPos(&pt);
-
     // Converts to client area of the Windows.
-    ScreenToClient(m_hwnd, &pt);
+    ScreenToClient(m_hwnd, &position);
 
     // Create circle and add it.
     auto circleGeometry = m_compositor.CreateEllipseGeometry();
     circleGeometry.Radius({ m_radius, m_radius });
 
     auto circleShape = m_compositor.CreateSpriteShape(circleGeometry);
-    circleShape.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+    circleShape.Offset({ static_cast<float>(position.x), static_cast<float>(position.y) });
     if (button == MouseButton::Left)
     {
         circleShape.FillBrush(m_compositor.CreateColorBrush(m_leftClickColor));
@@ -270,7 +311,7 @@ void Highlighter::AddDrawingPoint(MouseButton button)
         // always
         if (m_spotlightMode)
         {
-            UpdateSpotlightMask(static_cast<float>(pt.x), static_cast<float>(pt.y), m_radius, true);
+            UpdateSpotlightMask(static_cast<float>(position.x), static_cast<float>(position.y), m_radius, true);
             return;
         }
         else
@@ -290,30 +331,25 @@ void Highlighter::AddDrawingPoint(MouseButton button)
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN) + 1, GetSystemMetrics(SM_YVIRTUALSCREEN) + 1, GetSystemMetrics(SM_CXVIRTUALSCREEN) - 2, GetSystemMetrics(SM_CYVIRTUALSCREEN) - 2, 0);
 }
 
-void Highlighter::UpdateDrawingPointPosition(MouseButton button)
+void Highlighter::UpdateDrawingPointPosition(MouseButton button, POINT position)
 {
-    POINT pt;
-
-    // Applies DPIs.
-    GetCursorPos(&pt);
-
     // Converts to client area of the Windows.
-    ScreenToClient(m_hwnd, &pt);
+    ScreenToClient(m_hwnd, &position);
 
     if (button == MouseButton::Left)
     {
-        m_leftPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+        m_leftPointer.Offset({ static_cast<float>(position.x), static_cast<float>(position.y) });
         if (m_leftRippleGlow)
         {
-            m_leftRippleGlow.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+            m_leftRippleGlow.Offset({ static_cast<float>(position.x), static_cast<float>(position.y) });
         }
     }
     else if (button == MouseButton::Right)
     {
-        m_rightPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+        m_rightPointer.Offset({ static_cast<float>(position.x), static_cast<float>(position.y) });
         if (m_rightRippleGlow)
         {
-            m_rightRippleGlow.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+            m_rightRippleGlow.Offset({ static_cast<float>(position.x), static_cast<float>(position.y) });
         }
     }
     else
@@ -326,17 +362,17 @@ void Highlighter::UpdateDrawingPointPosition(MouseButton button)
                 // Only update position while pressed — radius is being animated
                 if (m_spotlightMaskGradient)
                 {
-                    m_spotlightMaskGradient.EllipseCenter({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+                    m_spotlightMaskGradient.EllipseCenter({ static_cast<float>(position.x), static_cast<float>(position.y) });
                 }
             }
             else
             {
-                UpdateSpotlightMask(static_cast<float>(pt.x), static_cast<float>(pt.y), m_radius, true);
+                UpdateSpotlightMask(static_cast<float>(position.x), static_cast<float>(position.y), m_radius, true);
             }
         }
         else if (m_alwaysPointer)
         {
-            m_alwaysPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+            m_alwaysPointer.Offset({ static_cast<float>(position.x), static_cast<float>(position.y) });
         }
     }
 }
@@ -417,208 +453,375 @@ void Highlighter::ClearDrawing()
 
 LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept
 {
-    if (nCode >= 0)
+    if (nCode == HC_ACTION && instance != nullptr)
     {
-        MSLLHOOKSTRUCT* hookData = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
+        const auto* hookData = reinterpret_cast<const MSLLHOOKSTRUCT*>(lParam);
         switch (wParam)
         {
         case WM_LBUTTONDOWN:
-            if (instance->m_spotlightMode)
-            {
-                instance->SpotlightAnimatePress();
-                break;
-            }
-            if (instance->m_rippleMode)
-            {
-                if (instance->m_leftPointerEnabled)
-                {
-                    // Defer the held indicator: only spawn it if the button is
-                    // still down after the hold threshold. A quick click handled
-                    // on button-up emits a single ripple instead.
-                    instance->m_leftButtonPressed = true;
-                    if (instance->m_leftHoldTimer == 0)
-                    {
-                        instance->m_leftHoldTimer = SetTimer(instance->m_hwnd, HOLD_RIPPLE_TIMER_LEFT, HOLD_RIPPLE_THRESHOLD_MS, nullptr);
-                    }
-                    if (instance->m_timer_id == 0)
-                    {
-                        instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
-                    }
-                }
-                break;
-            }
-            if (instance->m_leftPointerEnabled)
-            {
-                if (instance->m_alwaysPointerEnabled && !instance->m_rightButtonPressed)
-                {
-                    // Clear AlwaysPointer only when it's enabled and RightPointer is not active
-                    instance->ClearDrawingPoint();
-                }
-                if (instance->m_leftButtonPressed)
-                {
-                    // There might be a stray point from the user releasing the mouse button on an elevated window, which wasn't caught by us.
-                    instance->StartDrawingPointFading(MouseButton::Left);
-                }
-
-                instance->AddDrawingPoint(MouseButton::Left);
-                instance->m_leftButtonPressed = true;
-                // start a timer for the scenario, when the user clicks a pinned window which has no focus.
-                // after we drow the highlighting circle the pinned window will jump in front of us,
-                // we have to bring our window back to topmost position
-                if (instance->m_timer_id == 0)
-                {
-                    instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
-                }
-            }
+            instance->QueueMouseEvent({ MouseEventType::LeftButtonDown, hookData->pt, hookData->time });
             break;
         case WM_RBUTTONDOWN:
-            if (instance->m_spotlightMode)
-            {
-                instance->SpotlightAnimatePress();
-                break;
-            }
-            if (instance->m_rippleMode)
-            {
-                if (instance->m_rightPointerEnabled)
-                {
-                    // Defer the held indicator (see WM_LBUTTONDOWN).
-                    instance->m_rightButtonPressed = true;
-                    if (instance->m_rightHoldTimer == 0)
-                    {
-                        instance->m_rightHoldTimer = SetTimer(instance->m_hwnd, HOLD_RIPPLE_TIMER_RIGHT, HOLD_RIPPLE_THRESHOLD_MS, nullptr);
-                    }
-                    if (instance->m_timer_id == 0)
-                    {
-                        instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
-                    }
-                }
-                break;
-            }
-            if (instance->m_rightPointerEnabled)
-            {
-                if (instance->m_alwaysPointerEnabled && !instance->m_leftButtonPressed)
-                {
-                    // Clear AlwaysPointer only when it's enabled and LeftPointer is not active
-                    instance->ClearDrawingPoint();
-                }
-                if (instance->m_rightButtonPressed)
-                {
-                    // There might be a stray point from the user releasing the mouse button on an elevated window, which wasn't caught by us.
-                    instance->StartDrawingPointFading(MouseButton::Right);
-                }
-                instance->AddDrawingPoint(MouseButton::Right);
-                instance->m_rightButtonPressed = true;
-                // same as for the left button, start a timer to reposition ourselves to topmost position
-                if (instance->m_timer_id == 0)
-                {
-                    instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
-                }
-            }
+            instance->QueueMouseEvent({ MouseEventType::RightButtonDown, hookData->pt, hookData->time });
             break;
         case WM_MOUSEMOVE:
-            if (instance->m_rippleMode)
-            {
-                // Held ripple ring follows the cursor while a button is down,
-                // gated by the "follow cursor while held" setting. When the
-                // setting is off, the ring stays anchored at the click point.
-                if (instance->m_rippleShowDragTrail)
-                {
-                    if (instance->m_leftButtonPressed && instance->m_leftPointer)
-                    {
-                        instance->UpdateDrawingPointPosition(MouseButton::Left);
-                    }
-                    if (instance->m_rightButtonPressed && instance->m_rightPointer)
-                    {
-                        instance->UpdateDrawingPointPosition(MouseButton::Right);
-                    }
-                }
-                break;
-            }
-            if (instance->m_leftButtonPressed)
-            {
-                instance->UpdateDrawingPointPosition(MouseButton::Left);
-            }
-            if (instance->m_rightButtonPressed)
-            {
-                instance->UpdateDrawingPointPosition(MouseButton::Right);
-            }
-            if (instance->m_alwaysPointerEnabled && !instance->m_leftButtonPressed && !instance->m_rightButtonPressed)
-            {
-                instance->UpdateDrawingPointPosition(MouseButton::None);
-            }
+            instance->QueueMouseEvent({ MouseEventType::Move, hookData->pt, hookData->time });
             break;
         case WM_LBUTTONUP:
-            if (instance->m_spotlightPressed)
-            {
-                instance->SpotlightAnimateRelease();
-            }
-            if (instance->m_leftButtonPressed)
-            {
-                if (instance->m_rippleMode)
-                {
-                    if (instance->m_leftHoldTimer != 0)
-                    {
-                        // Released before the hold threshold => quick click.
-                        KillTimer(instance->m_hwnd, instance->m_leftHoldTimer);
-                        instance->m_leftHoldTimer = 0;
-                        instance->EmitSingleRipple(MouseButton::Left);
-                    }
-                    else
-                    {
-                        // Held indicator was already shown; expand + fade it.
-                        instance->FadeRippleHoldDot(MouseButton::Left);
-                    }
-                }
-                else
-                {
-                    instance->StartDrawingPointFading(MouseButton::Left);
-                }
-                instance->m_leftButtonPressed = false;
-                if (!instance->m_rippleMode && instance->m_alwaysPointerEnabled && !instance->m_rightButtonPressed)
-                {
-                    // Add AlwaysPointer only when it's enabled and RightPointer is not active
-                    instance->AddDrawingPoint(MouseButton::None);
-                }
-            }
+            instance->QueueMouseEvent({ MouseEventType::LeftButtonUp, hookData->pt, hookData->time });
             break;
         case WM_RBUTTONUP:
-            if (instance->m_spotlightPressed)
-            {
-                instance->SpotlightAnimateRelease();
-            }
-            if (instance->m_rightButtonPressed)
-            {
-                if (instance->m_rippleMode)
-                {
-                    if (instance->m_rightHoldTimer != 0)
-                    {
-                        // Released before the hold threshold => quick click.
-                        KillTimer(instance->m_hwnd, instance->m_rightHoldTimer);
-                        instance->m_rightHoldTimer = 0;
-                        instance->EmitSingleRipple(MouseButton::Right);
-                    }
-                    else
-                    {
-                        instance->FadeRippleHoldDot(MouseButton::Right);
-                    }
-                }
-                else
-                {
-                    instance->StartDrawingPointFading(MouseButton::Right);
-                }
-                instance->m_rightButtonPressed = false;
-                if (!instance->m_rippleMode && instance->m_alwaysPointerEnabled && !instance->m_leftButtonPressed)
-                {
-                    // Add AlwaysPointer only when it's enabled and LeftPointer is not active
-                    instance->AddDrawingPoint(MouseButton::None);
-                }
-            }
+            instance->QueueMouseEvent({ MouseEventType::RightButtonUp, hookData->pt, hookData->time });
             break;
         default:
             break;
         }
     }
     return CallNextHookEx(0, nCode, wParam, lParam);
+}
+
+void Highlighter::QueueMouseEvent(MouseEvent event) noexcept
+{
+    bool postMessage = false;
+    bool coalesced = false;
+
+    AcquireSRWLockExclusive(&m_mouseEventQueueLock);
+    if (m_acceptMouseEvents)
+    {
+        if (event.type == MouseEventType::Move && m_mouseEventQueueSize > 0)
+        {
+            const size_t lastIndex = (m_mouseEventQueueHead + m_mouseEventQueueSize - 1) % MOUSE_EVENT_QUEUE_CAPACITY;
+            if (m_mouseEventQueue[lastIndex].type == MouseEventType::Move)
+            {
+                m_mouseEventQueue[lastIndex] = event;
+                coalesced = true;
+            }
+        }
+
+        if (!coalesced && m_mouseEventQueueSize == MOUSE_EVENT_QUEUE_CAPACITY)
+        {
+            if (event.type == MouseEventType::Move)
+            {
+                ReleaseSRWLockExclusive(&m_mouseEventQueueLock);
+                return;
+            }
+
+            // Recover deterministically rather than risk dropping a button-up
+            // and leaving the visual pressed state stale.
+            m_mouseEventQueueHead = 0;
+            m_mouseEventQueueSize = 1;
+            m_mouseEventQueue[0] = { MouseEventType::Reset, event.position, event.timestamp };
+        }
+
+        if (!coalesced)
+        {
+            const size_t insertIndex = (m_mouseEventQueueHead + m_mouseEventQueueSize) % MOUSE_EVENT_QUEUE_CAPACITY;
+            m_mouseEventQueue[insertIndex] = event;
+            ++m_mouseEventQueueSize;
+        }
+
+        if (!m_mouseEventMessagePending)
+        {
+            m_mouseEventMessagePending = true;
+            postMessage = true;
+        }
+    }
+    ReleaseSRWLockExclusive(&m_mouseEventQueueLock);
+
+    HWND window = nullptr;
+    if (postMessage)
+    {
+        AcquireSRWLockShared(&m_settingsLock);
+        window = m_hwnd;
+        ReleaseSRWLockShared(&m_settingsLock);
+    }
+
+    if (postMessage && (window == nullptr || !PostMessage(window, WM_PROCESS_MOUSE_EVENTS, 0, 0)))
+    {
+        AcquireSRWLockExclusive(&m_mouseEventQueueLock);
+        // Preserve queued events so the next hook event can retry delivery.
+        m_mouseEventMessagePending = false;
+        ReleaseSRWLockExclusive(&m_mouseEventQueueLock);
+    }
+}
+
+void Highlighter::ProcessPendingMouseEvents()
+{
+    while (true)
+    {
+        MouseEvent event{};
+
+        AcquireSRWLockExclusive(&m_mouseEventQueueLock);
+        if (m_mouseEventQueueSize == 0)
+        {
+            m_mouseEventMessagePending = false;
+            ReleaseSRWLockExclusive(&m_mouseEventQueueLock);
+            return;
+        }
+
+        event = m_mouseEventQueue[m_mouseEventQueueHead];
+        m_mouseEventQueueHead = (m_mouseEventQueueHead + 1) % MOUSE_EVENT_QUEUE_CAPACITY;
+        --m_mouseEventQueueSize;
+        ReleaseSRWLockExclusive(&m_mouseEventQueueLock);
+
+        HandleMouseEvent(event);
+    }
+}
+
+void Highlighter::HandleMouseEvent(const MouseEvent& event)
+{
+    if (event.type == MouseEventType::Reset)
+    {
+        if (m_leftHoldTimer != 0)
+        {
+            KillTimer(m_hwnd, m_leftHoldTimer);
+            m_leftHoldTimer = 0;
+        }
+        if (m_rightHoldTimer != 0)
+        {
+            KillTimer(m_hwnd, m_rightHoldTimer);
+            m_rightHoldTimer = 0;
+        }
+        if (m_timer_id != 0)
+        {
+            KillTimer(m_hwnd, m_timer_id);
+            m_timer_id = 0;
+            m_bringToFrontTimerFireCount = 0;
+        }
+        if (m_rippleMode)
+        {
+            FadeRippleHoldDot(MouseButton::Left);
+            FadeRippleHoldDot(MouseButton::Right);
+        }
+        else
+        {
+            if (m_leftPointer)
+            {
+                StartDrawingPointFading(MouseButton::Left);
+            }
+            if (m_rightPointer)
+            {
+                StartDrawingPointFading(MouseButton::Right);
+            }
+        }
+        m_leftButtonPressed = false;
+        m_rightButtonPressed = false;
+        m_leftHoldIndicatorShown = false;
+        m_rightHoldIndicatorShown = false;
+        SpotlightAnimateRelease();
+        return;
+    }
+
+    m_latestMousePosition = event.position;
+
+    switch (event.type)
+    {
+    case MouseEventType::LeftButtonDown:
+        m_leftPressPosition = event.position;
+        m_leftPressTimestamp = event.timestamp;
+        m_leftHoldIndicatorShown = false;
+        if (m_spotlightMode)
+        {
+            UpdateDrawingPointPosition(MouseButton::None, event.position);
+            SpotlightAnimatePress();
+            break;
+        }
+        if (m_rippleMode)
+        {
+            if (m_leftPointerEnabled)
+            {
+                m_leftButtonPressed = true;
+                if (m_leftHoldTimer == 0)
+                {
+                    const DWORD elapsed = GetTickCount() - event.timestamp;
+                    const UINT delay = elapsed < HOLD_RIPPLE_THRESHOLD_MS ? HOLD_RIPPLE_THRESHOLD_MS - elapsed : 1;
+                    m_leftHoldTimer = SetTimer(m_hwnd, HOLD_RIPPLE_TIMER_LEFT, delay, nullptr);
+                }
+                if (m_timer_id == 0)
+                {
+                    m_timer_id = SetTimer(m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
+                }
+            }
+            break;
+        }
+        if (m_leftPointerEnabled)
+        {
+            if (m_alwaysPointerEnabled && !m_rightButtonPressed)
+            {
+                ClearDrawingPoint();
+            }
+            if (m_leftButtonPressed)
+            {
+                StartDrawingPointFading(MouseButton::Left);
+            }
+            AddDrawingPoint(MouseButton::Left, event.position);
+            m_leftButtonPressed = true;
+            if (m_timer_id == 0)
+            {
+                m_timer_id = SetTimer(m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
+            }
+        }
+        break;
+    case MouseEventType::RightButtonDown:
+        m_rightPressPosition = event.position;
+        m_rightPressTimestamp = event.timestamp;
+        m_rightHoldIndicatorShown = false;
+        if (m_spotlightMode)
+        {
+            UpdateDrawingPointPosition(MouseButton::None, event.position);
+            SpotlightAnimatePress();
+            break;
+        }
+        if (m_rippleMode)
+        {
+            if (m_rightPointerEnabled)
+            {
+                m_rightButtonPressed = true;
+                if (m_rightHoldTimer == 0)
+                {
+                    const DWORD elapsed = GetTickCount() - event.timestamp;
+                    const UINT delay = elapsed < HOLD_RIPPLE_THRESHOLD_MS ? HOLD_RIPPLE_THRESHOLD_MS - elapsed : 1;
+                    m_rightHoldTimer = SetTimer(m_hwnd, HOLD_RIPPLE_TIMER_RIGHT, delay, nullptr);
+                }
+                if (m_timer_id == 0)
+                {
+                    m_timer_id = SetTimer(m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
+                }
+            }
+            break;
+        }
+        if (m_rightPointerEnabled)
+        {
+            if (m_alwaysPointerEnabled && !m_leftButtonPressed)
+            {
+                ClearDrawingPoint();
+            }
+            if (m_rightButtonPressed)
+            {
+                StartDrawingPointFading(MouseButton::Right);
+            }
+            AddDrawingPoint(MouseButton::Right, event.position);
+            m_rightButtonPressed = true;
+            if (m_timer_id == 0)
+            {
+                m_timer_id = SetTimer(m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
+            }
+        }
+        break;
+    case MouseEventType::Move:
+        if (m_rippleMode)
+        {
+            if (m_rippleShowDragTrail)
+            {
+                if (m_leftButtonPressed && m_leftPointer)
+                {
+                    UpdateDrawingPointPosition(MouseButton::Left, event.position);
+                }
+                if (m_rightButtonPressed && m_rightPointer)
+                {
+                    UpdateDrawingPointPosition(MouseButton::Right, event.position);
+                }
+            }
+            break;
+        }
+        if (m_leftButtonPressed)
+        {
+            UpdateDrawingPointPosition(MouseButton::Left, event.position);
+        }
+        if (m_rightButtonPressed)
+        {
+            UpdateDrawingPointPosition(MouseButton::Right, event.position);
+        }
+        if (m_alwaysPointerEnabled && !m_leftButtonPressed && !m_rightButtonPressed)
+        {
+            UpdateDrawingPointPosition(MouseButton::None, event.position);
+        }
+        break;
+    case MouseEventType::LeftButtonUp:
+        if (m_spotlightPressed)
+        {
+            SpotlightAnimateRelease();
+        }
+        if (m_leftButtonPressed)
+        {
+            if (m_rippleMode)
+            {
+                const bool quickClick = event.timestamp - m_leftPressTimestamp < HOLD_RIPPLE_THRESHOLD_MS;
+                if (m_leftHoldTimer != 0)
+                {
+                    KillTimer(m_hwnd, m_leftHoldTimer);
+                    m_leftHoldTimer = 0;
+                }
+                if (quickClick)
+                {
+                    EmitSingleRipple(MouseButton::Left, event.position);
+                }
+                else
+                {
+                    if (!m_leftHoldIndicatorShown)
+                    {
+                        const POINT position = m_rippleShowDragTrail ? event.position : m_leftPressPosition;
+                        SpawnRippleHoldDot(MouseButton::Left, position);
+                    }
+                    FadeRippleHoldDot(MouseButton::Left);
+                }
+                m_leftHoldIndicatorShown = false;
+            }
+            else
+            {
+                StartDrawingPointFading(MouseButton::Left);
+            }
+            m_leftButtonPressed = false;
+            if (!m_rippleMode && m_alwaysPointerEnabled && !m_rightButtonPressed)
+            {
+                AddDrawingPoint(MouseButton::None, event.position);
+            }
+        }
+        break;
+    case MouseEventType::RightButtonUp:
+        if (m_spotlightPressed)
+        {
+            SpotlightAnimateRelease();
+        }
+        if (m_rightButtonPressed)
+        {
+            if (m_rippleMode)
+            {
+                const bool quickClick = event.timestamp - m_rightPressTimestamp < HOLD_RIPPLE_THRESHOLD_MS;
+                if (m_rightHoldTimer != 0)
+                {
+                    KillTimer(m_hwnd, m_rightHoldTimer);
+                    m_rightHoldTimer = 0;
+                }
+                if (quickClick)
+                {
+                    EmitSingleRipple(MouseButton::Right, event.position);
+                }
+                else
+                {
+                    if (!m_rightHoldIndicatorShown)
+                    {
+                        const POINT position = m_rippleShowDragTrail ? event.position : m_rightPressPosition;
+                        SpawnRippleHoldDot(MouseButton::Right, position);
+                    }
+                    FadeRippleHoldDot(MouseButton::Right);
+                }
+                m_rightHoldIndicatorShown = false;
+            }
+            else
+            {
+                StartDrawingPointFading(MouseButton::Right);
+            }
+            m_rightButtonPressed = false;
+            if (!m_rippleMode && m_alwaysPointerEnabled && !m_leftButtonPressed)
+            {
+                AddDrawingPoint(MouseButton::None, event.position);
+            }
+        }
+        break;
+    case MouseEventType::Reset:
+        break;
+    }
 }
 
 void Highlighter::StartDrawing()
@@ -638,18 +841,35 @@ void Highlighter::StartDrawing()
     ClearDrawing();
     ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
 
-    instance->AddDrawingPoint(Highlighter::MouseButton::None);
+    POINT cursorPosition{};
+    if (GetCursorPos(&cursorPosition))
+    {
+        m_latestMousePosition = cursorPosition;
+        AddDrawingPoint(MouseButton::None, cursorPosition);
+    }
 
+    AcquireSRWLockExclusive(&m_mouseEventQueueLock);
+    m_acceptMouseEvents = true;
+    ReleaseSRWLockExclusive(&m_mouseEventQueueLock);
     m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, m_hinstance, 0);
+    if (m_mouseHook == nullptr)
+    {
+        AcquireSRWLockExclusive(&m_mouseEventQueueLock);
+        m_acceptMouseEvents = false;
+        ReleaseSRWLockExclusive(&m_mouseEventQueueLock);
+    }
 }
 
 void Highlighter::StopDrawing()
 {
     Logger::info("Stopping draw mode.");
     m_visible = false;
-    m_leftButtonPressed = false;
-    m_rightButtonPressed = false;
-    m_spotlightPressed = false;
+    if (m_mouseHook != nullptr)
+    {
+        UnhookWindowsHookEx(m_mouseHook);
+        m_mouseHook = nullptr;
+    }
+    ResetPendingMouseInput();
     m_leftPointer = nullptr;
     m_rightPointer = nullptr;
     m_alwaysPointer = nullptr;
@@ -664,9 +884,40 @@ void Highlighter::StopDrawing()
         m_overlay.IsVisible(false);
     }
     ShowWindow(m_hwnd, SW_HIDE);
-    UnhookWindowsHookEx(m_mouseHook);
     ClearDrawing();
-    m_mouseHook = NULL;
+}
+
+void Highlighter::ResetPendingMouseInput()
+{
+    AcquireSRWLockExclusive(&m_mouseEventQueueLock);
+    m_acceptMouseEvents = false;
+    m_mouseEventQueueHead = 0;
+    m_mouseEventQueueSize = 0;
+    m_mouseEventMessagePending = false;
+    ReleaseSRWLockExclusive(&m_mouseEventQueueLock);
+
+    if (m_leftHoldTimer != 0)
+    {
+        KillTimer(m_hwnd, m_leftHoldTimer);
+        m_leftHoldTimer = 0;
+    }
+    if (m_rightHoldTimer != 0)
+    {
+        KillTimer(m_hwnd, m_rightHoldTimer);
+        m_rightHoldTimer = 0;
+    }
+    if (m_timer_id != 0)
+    {
+        KillTimer(m_hwnd, m_timer_id);
+        m_timer_id = 0;
+    }
+    m_bringToFrontTimerFireCount = 0;
+
+    m_leftButtonPressed = false;
+    m_rightButtonPressed = false;
+    m_spotlightPressed = false;
+    m_leftHoldIndicatorShown = false;
+    m_rightHoldIndicatorShown = false;
 }
 
 void Highlighter::SwitchActivationMode()
@@ -720,6 +971,47 @@ void Highlighter::ApplySettings(MouseHighlighterSettings settings)
     }
 }
 
+void Highlighter::QueueSettings(MouseHighlighterSettings settings)
+{
+    AcquireSRWLockExclusive(&m_settingsLock);
+    m_pendingSettings = settings;
+    m_settingsPending = true;
+    const HWND window = m_hwnd;
+    ReleaseSRWLockExclusive(&m_settingsLock);
+
+    if (window != nullptr)
+    {
+        if (!PostMessage(window, WM_APPLY_SETTINGS, 0, 0))
+        {
+            SendMessage(window, WM_APPLY_SETTINGS, 0, 0);
+        }
+    }
+}
+
+void Highlighter::ProcessPendingSettings()
+{
+    MouseHighlighterSettings settings;
+
+    AcquireSRWLockExclusive(&m_settingsLock);
+    if (!m_settingsPending)
+    {
+        ReleaseSRWLockExclusive(&m_settingsLock);
+        return;
+    }
+    settings = m_pendingSettings;
+    m_settingsPending = false;
+    ReleaseSRWLockExclusive(&m_settingsLock);
+
+    try
+    {
+        ApplySettings(settings);
+    }
+    catch (...)
+    {
+        Logger::error("Failed to apply Mouse Highlighter settings on the window thread.");
+    }
+}
+
 void Highlighter::BringToFront()
 {
     // HACK: Draw with 1 pixel off. Otherwise, Windows glitches the task bar transparency when a transparent window fill the whole screen.
@@ -737,10 +1029,17 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
     switch (message)
     {
     case WM_NCCREATE:
+        AcquireSRWLockExclusive(&instance->m_settingsLock);
         instance->m_hwnd = hWnd;
+        ReleaseSRWLockExclusive(&instance->m_settingsLock);
         return DefWindowProc(hWnd, message, wParam, lParam);
     case WM_CREATE:
-        return instance->CreateHighlighter() ? 0 : -1;
+        if (!instance->CreateHighlighter())
+        {
+            return -1;
+        }
+        instance->ProcessPendingSettings();
+        return 0;
     case WM_NCHITTEST:
         return HTTRANSPARENT;
     case WM_SWITCH_ACTIVATION_MODE:
@@ -752,6 +1051,12 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
         {
             instance->StartDrawing();
         }
+        break;
+    case WM_PROCESS_MOUSE_EVENTS:
+        instance->ProcessPendingMouseEvents();
+        break;
+    case WM_APPLY_SETTINGS:
+        instance->ProcessPendingSettings();
         break;
     case WM_DESTROY:
         instance->DestroyHighlighter();
@@ -767,12 +1072,11 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
             // the pinned window hides our window in a few milliseconds.
         case BRING_TO_FRONT_TIMER_ID:
         {
-            static int fireCount = 0;
-            if (fireCount++ >= 4)
+            if (instance->m_bringToFrontTimerFireCount++ >= 4)
             {
                 KillTimer(instance->m_hwnd, instance->m_timer_id);
                 instance->m_timer_id = 0;
-                fireCount = 0;
+                instance->m_bringToFrontTimerFireCount = 0;
             }
             instance->BringToFront();
             break;
@@ -783,7 +1087,9 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
             instance->m_leftHoldTimer = 0;
             if (instance->m_leftButtonPressed)
             {
-                instance->SpawnRippleHoldDot(MouseButton::Left);
+                const POINT position = instance->m_rippleShowDragTrail ? instance->m_latestMousePosition : instance->m_leftPressPosition;
+                instance->SpawnRippleHoldDot(MouseButton::Left, position);
+                instance->m_leftHoldIndicatorShown = true;
             }
             break;
         case HOLD_RIPPLE_TIMER_RIGHT:
@@ -791,7 +1097,9 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
             instance->m_rightHoldTimer = 0;
             if (instance->m_rightButtonPressed)
             {
-                instance->SpawnRippleHoldDot(MouseButton::Right);
+                const POINT position = instance->m_rippleShowDragTrail ? instance->m_latestMousePosition : instance->m_rightPressPosition;
+                instance->SpawnRippleHoldDot(MouseButton::Right, position);
+                instance->m_rightHoldIndicatorShown = true;
             }
             break;
         }
@@ -921,7 +1229,7 @@ void Highlighter::SpotlightAnimateRelease()
 // Spawn the press/hold ring + glow at the click point. The shapes persist
 // until FadeRippleHoldDot is called (button-up). While held they can be
 // re-positioned to follow the cursor (UpdateDrawingPointPosition).
-void Highlighter::SpawnRippleHoldDot(MouseButton button)
+void Highlighter::SpawnRippleHoldDot(MouseButton button, POINT position)
 {
     if (!m_compositor || !m_shape)
     {
@@ -934,14 +1242,9 @@ void Highlighter::SpawnRippleHoldDot(MouseButton button)
         return;
     }
 
-    POINT pt{};
-    if (!GetCursorPos(&pt))
-    {
-        return;
-    }
-    ScreenToClient(m_hwnd, &pt);
-    const float fx = static_cast<float>(pt.x);
-    const float fy = static_cast<float>(pt.y);
+    ScreenToClient(m_hwnd, &position);
+    const float fx = static_cast<float>(position.x);
+    const float fy = static_cast<float>(position.y);
 
     // Resolve sizing/intensity from the ripple-specific settings so they're
     // independent of the legacy "always-on dot" controls.
@@ -1236,7 +1539,7 @@ void Highlighter::FadeRippleHoldDot(MouseButton button)
 // outward and fade to transparent in one continuous animation — no held
 // indicator, so a single click produces exactly one ripple. For right-click,
 // optionally spawns the expanding crosshair lines too.
-void Highlighter::EmitSingleRipple(MouseButton button)
+void Highlighter::EmitSingleRipple(MouseButton button, POINT position)
 {
     if (!m_compositor || !m_shape)
     {
@@ -1249,14 +1552,9 @@ void Highlighter::EmitSingleRipple(MouseButton button)
         return;
     }
 
-    POINT pt{};
-    if (!GetCursorPos(&pt))
-    {
-        return;
-    }
-    ScreenToClient(m_hwnd, &pt);
-    const float fx = static_cast<float>(pt.x);
-    const float fy = static_cast<float>(pt.y);
+    ScreenToClient(m_hwnd, &position);
+    const float fx = static_cast<float>(position.x);
+    const float fy = static_cast<float>(position.y);
 
     const float baseSize = (m_rippleSize > 1.0f) ? m_rippleSize : 1.0f;
     float intensity = m_rippleIntensity;
@@ -1429,7 +1727,7 @@ void MouseHighlighterApplySettings(MouseHighlighterSettings settings)
     if (Highlighter::instance != nullptr)
     {
         Logger::info("Applying settings.");
-        Highlighter::instance->ApplySettings(settings);
+        Highlighter::instance->QueueSettings(settings);
     }
 }
 

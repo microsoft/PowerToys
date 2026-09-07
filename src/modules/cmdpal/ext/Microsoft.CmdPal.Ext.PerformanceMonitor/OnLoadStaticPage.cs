@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading;
+using Microsoft.CmdPal.Common;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -72,7 +73,9 @@ internal abstract partial class OnLoadContentPage : OnLoadBasePage, IContentPage
 internal abstract partial class OnLoadBasePage : Page
 {
     private readonly Lock _loadLock = new();
-    private int _loadCount;
+
+    // null means that the last transition failed and the applied state is unknown.
+    private bool? _isLoaded = false;
 
 #pragma warning disable CS0067 // The event is never used
 
@@ -83,30 +86,26 @@ internal abstract partial class OnLoadBasePage : Page
     {
         add
         {
-            InternalItemsChanged += value;
+            (Exception Exception, bool Loading)? failure;
             lock (_loadLock)
             {
-                if (_loadCount == 0)
-                {
-                    Loaded();
-                }
-
-                _loadCount++;
+                InternalItemsChanged += value;
+                failure = ReconcileLoadState();
             }
+
+            LogTransitionFailure(failure);
         }
 
         remove
         {
-            InternalItemsChanged -= value;
+            (Exception Exception, bool Loading)? failure;
             lock (_loadLock)
             {
-                _loadCount--;
-                _loadCount = Math.Max(0, _loadCount);
-                if (_loadCount == 0)
-                {
-                    Unloaded();
-                }
+                InternalItemsChanged -= value;
+                failure = ReconcileLoadState();
             }
+
+            LogTransitionFailure(failure);
         }
     }
 
@@ -116,14 +115,64 @@ internal abstract partial class OnLoadBasePage : Page
 
     protected void RaiseItemsChanged(int totalItems = -1)
     {
+        TypedEventHandler<object, IItemsChangedEventArgs>? handlers;
+        lock (_loadLock)
+        {
+            handlers = InternalItemsChanged;
+        }
+
         try
         {
             // TODO #181 - This is the same thing that BaseObservable has to deal with.
-            InternalItemsChanged?.Invoke(this, new ItemsChangedEventArgs(totalItems));
+            handlers?.Invoke(this, new ItemsChangedEventArgs(totalItems));
         }
         catch
         {
         }
+    }
+
+    private (Exception Exception, bool Loading)? ReconcileLoadState()
+    {
+        var shouldBeLoaded = InternalItemsChanged is not null;
+        if (_isLoaded == shouldBeLoaded)
+        {
+            return null;
+        }
+
+        try
+        {
+            if (shouldBeLoaded)
+            {
+                Loaded();
+            }
+            else
+            {
+                Unloaded();
+            }
+
+            _isLoaded = shouldBeLoaded;
+            return null;
+        }
+        catch (Exception ex)
+        {
+            // The hook may have failed after doing some work. Keep the state
+            // unknown so the next subscription change reasserts the desired state.
+            _isLoaded = null;
+            return (ex, shouldBeLoaded);
+        }
+    }
+
+    private void LogTransitionFailure((Exception Exception, bool Loading)? failure)
+    {
+        if (failure is not { } transitionFailure)
+        {
+            return;
+        }
+
+        var state = transitionFailure.Loading ? "loaded" : "unloaded";
+        CoreLogger.LogError(
+            $"Failed to transition {GetType().Name} to the {state} state. A later ItemsChanged subscription change will retry the transition.",
+            transitionFailure.Exception);
     }
 }
 

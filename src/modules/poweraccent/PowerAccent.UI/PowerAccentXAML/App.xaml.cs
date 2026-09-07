@@ -33,8 +33,8 @@ public partial class App : Application, IDisposable
         DispatcherQueueForApp = DispatcherQueue.GetForCurrentThread();
         Window = new MainWindow();
 
-        // Quick Accent has no visible main window until summoned by the keyboard hook;
-        // the accent selector keeps itself hidden (TransparentWindow hides its AppWindow on init).
+        // Quick Accent has no user-visible main window until summoned by the keyboard hook;
+        // the accent selector stays DWM-cloaked while its shown HWND keeps XAML warm.
     }
 
     protected virtual void Dispose(bool disposing)

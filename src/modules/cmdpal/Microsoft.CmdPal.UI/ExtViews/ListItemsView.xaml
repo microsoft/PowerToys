@@ -31,6 +31,7 @@
         <x:Double x:Key="MediumGridSize">48</x:Double>
         <x:Double x:Key="MediumGridContainerSize">100</x:Double>
         <x:Double x:Key="GalleryGridSize">160</x:Double>
+        <x:Double x:Key="GridItemSpacing">8</x:Double>
 
         <!--
             BEAR LOADING: The list view is virtualized and the item container style is set to a fixed height
@@ -41,6 +42,9 @@
         <x:Double x:Key="ListViewSeparatorHeight">28</x:Double>
 
         <Style x:Key="IconGridViewItemStyle" TargetType="GridViewItem">
+            <!--  Include the former panel spacing in the native cell's margin.  -->
+            <Setter Property="Margin" Value="0,0,12,12" />
+            <Setter Property="AllowFocusOnInteraction" Value="False" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Template">
@@ -105,9 +109,10 @@
         </Style>
 
         <Style x:Key="GalleryGridViewItemStyle" TargetType="GridViewItem">
+            <Setter Property="AllowFocusOnInteraction" Value="False" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Margin" Value="0" />
+            <Setter Property="Margin" Value="0,0,8,8" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="GridViewItem">
@@ -169,37 +174,45 @@
             </Setter>
         </Style>
 
-        <Style
-            x:Key="GridViewSectionItemStyle"
-            BasedOn="{StaticResource DefaultGridViewItemStyle}"
-            TargetType="GridViewItem">
+        <Style x:Key="GridGroupHeaderStyle" TargetType="GridViewHeaderItem">
             <Setter Property="IsHitTestVisible" Value="False" />
             <Setter Property="IsTabStop" Value="False" />
-            <Setter Property="IsHoldingEnabled" Value="False" />
-            <Setter Property="Padding" Value="4,0,12,0" />
+            <Setter Property="Padding" Value="0" />
             <Setter Property="Margin" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="VerticalContentAlignment" Value="Bottom" />
-            <Setter Property="MinHeight" Value="{StaticResource ListViewSectionHeight}" />
-            <Setter Property="Height" Value="{StaticResource ListViewSectionHeight}" />
-            <Setter Property="cpcontrols:WrapPanel.IsFullLine" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewHeaderItem">
+                        <ContentPresenter
+                            HorizontalContentAlignment="Stretch"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <Style
-            x:Key="GridViewSeparatorItemStyle"
-            BasedOn="{StaticResource DefaultGridViewItemStyle}"
-            TargetType="GridViewItem">
-            <Setter Property="IsHitTestVisible" Value="False" />
-            <Setter Property="IsTabStop" Value="False" />
-            <Setter Property="IsHoldingEnabled" Value="False" />
-            <Setter Property="Padding" Value="4,0,12,0" />
-            <Setter Property="Margin" Value="0" />
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="MinHeight" Value="{StaticResource ListViewSeparatorHeight}" />
-            <Setter Property="Height" Value="{StaticResource ListViewSeparatorHeight}" />
-            <Setter Property="cpcontrols:WrapPanel.IsFullLine" Value="True" />
-        </Style>
+        <DataTemplate x:Key="GridGroupHeaderTemplate" x:DataType="viewModels:GridItemGroupViewModel">
+            <Grid
+                Height="{StaticResource ListViewSectionHeight}"
+                Margin="0,0,8,8"
+                Visibility="{x:Bind HasHeader}">
+                <TextBlock
+                    Margin="4,8,12,0"
+                    VerticalAlignment="Bottom"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{ThemeResource CaptionTextBlockStyle}"
+                    Text="{x:Bind Title, Mode=OneWay}"
+                    Visibility="{x:Bind IsSectionHeader, Mode=OneWay}" />
+                <Rectangle
+                    Height="1"
+                    Margin="4,0,12,0"
+                    VerticalAlignment="Center"
+                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
+                    Visibility="{x:Bind IsSeparator, Mode=OneWay}" />
+            </Grid>
+        </DataTemplate>
 
         <ControlTemplate x:Key="ListViewItemWithoutVisualIndicatorTemplate" TargetType="ListViewItem">
             <ListViewItemPresenter
@@ -261,6 +274,7 @@
             x:Key="ListSingleRowItemContainerStyle"
             BasedOn="{StaticResource DefaultListViewItemStyle}"
             TargetType="ListViewItem">
+            <Setter Property="AllowFocusOnInteraction" Value="False" />
             <Setter Property="MinHeight" Value="{StaticResource SingleRowListViewItemHeight}" />
             <Setter Property="Height" Value="{StaticResource SingleRowListViewItemHeight}" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -329,25 +343,6 @@
             Default="{StaticResource ListSingleRowItemContainerStyle}"
             Section="{StaticResource ListSectionContainerStyle}"
             Separator="{StaticResource ListSeparatorContainerStyle}" />
-
-        <cmdpalUI:GridItemTemplateSelector
-            x:Key="GridItemTemplateSelector"
-            x:DataType="viewModels:ListItemViewModel"
-            Gallery="{StaticResource GalleryGridItemViewModelTemplate}"
-            GridProperties="{x:Bind ViewModel.GridProperties, Mode=OneWay}"
-            Medium="{StaticResource MediumGridItemViewModelTemplate}"
-            Section="{StaticResource ListSectionViewModelTemplate}"
-            Separator="{StaticResource GridSeparatorViewModelTemplate}"
-            Small="{StaticResource SmallGridItemViewModelTemplate}" />
-
-        <cmdpalUI:GridItemContainerStyleSelector
-            x:Key="GridItemContainerStyleSelector"
-            Gallery="{StaticResource GalleryGridViewItemStyle}"
-            GridProperties="{x:Bind ViewModel.GridProperties, Mode=OneWay}"
-            Medium="{StaticResource IconGridViewItemStyle}"
-            Section="{StaticResource GridViewSectionItemStyle}"
-            Separator="{StaticResource GridViewSeparatorItemStyle}"
-            Small="{StaticResource IconGridViewItemStyle}" />
 
         <DataTemplate x:Key="ListItemSingleRowViewModelTemplate" x:DataType="viewModels:ListItemViewModel">
             <Grid
@@ -444,7 +439,6 @@
             <Grid
                 Margin="0,8,0,0"
                 VerticalAlignment="Center"
-                cpcontrols:WrapPanel.IsFullLine="True"
                 ColumnSpacing="8"
                 IsTabStop="False"
                 IsTapEnabled="True">
@@ -563,7 +557,7 @@
                     Padding="4"
                     Orientation="Vertical"
                     Spacing="4"
-                    Visibility="{x:Bind help:BindTransformers.VisibleWhenAny(ShowTitle, ShowSubtitle)}">
+                    Visibility="{x:Bind help:BindTransformers.VisibleWhenAny(LayoutShowsTitle, LayoutShowsSubtitle), Mode=OneWay}">
                     <TextBlock
                         x:Name="TitleTextBlock"
                         MaxWidth="152"
@@ -573,11 +567,11 @@
                         CharacterSpacing="12"
                         FontSize="14"
                         Foreground="{ThemeResource TextFillColorPrimary}"
-                        Text="{x:Bind Title, Mode=OneWay}"
+                        Text="{x:Bind help:BindTransformers.ReserveTextLine(Title), Mode=OneWay}"
                         TextAlignment="Center"
                         TextTrimming="WordEllipsis"
                         TextWrapping="NoWrap"
-                        Visibility="{x:Bind ShowTitle, Mode=OneWay}" />
+                        Visibility="{x:Bind LayoutShowsTitle, Mode=OneWay}" />
                     <TextBlock
                         x:Name="SubTitleTextBlock"
                         MaxWidth="152"
@@ -587,18 +581,15 @@
                         CharacterSpacing="11"
                         FontSize="11"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="{x:Bind Subtitle, Mode=OneWay}"
+                        Text="{x:Bind help:BindTransformers.ReserveTextLine(Subtitle), Mode=OneWay}"
                         TextAlignment="Center"
                         TextTrimming="WordEllipsis"
                         TextWrapping="NoWrap"
-                        Visibility="{x:Bind ShowSubtitle, Mode=OneWay}" />
+                        Visibility="{x:Bind LayoutShowsSubtitle, Mode=OneWay}" />
                 </StackPanel>
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate x:Key="GridSeparatorViewModelTemplate" x:DataType="viewModels:ListItemViewModel">
-            <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
-        </DataTemplate>
     </UserControl.Resources>
 
     <Grid>
@@ -627,8 +618,12 @@
                             ItemContainerStyleSelector="{StaticResource ListItemContainerStyleSelector}"
                             ItemTemplateSelector="{StaticResource ListItemTemplateSelector}"
                             ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
+                            Loaded="Items_Loaded"
+                            PointerPressed="Items_PointerPressed"
+                            PreviewKeyDown="Items_PreviewKeyDown"
                             RightTapped="Items_RightTapped"
-                            SelectionChanged="Items_SelectionChanged">
+                            SelectionChanged="Items_SelectionChanged"
+                            Unloaded="Items_Unloaded">
                             <ListView.ItemContainerTransitions>
                                 <TransitionCollection />
                             </ListView.ItemContainerTransitions>
@@ -637,8 +632,9 @@
                     <controls:Case Value="True">
                         <GridView
                             x:Name="ItemsGrid"
-                            Padding="16,16"
+                            Padding="16,16,8,8"
                             CanDragItems="True"
+                            ChoosingGroupHeaderContainer="Grid_ChoosingGroupHeaderContainer"
                             ContextCanceled="Items_OnContextCanceled"
                             ContextRequested="Items_OnContextRequested"
                             DoubleTapped="Items_DoubleTapped"
@@ -647,17 +643,28 @@
                             IsDoubleTapEnabled="True"
                             IsItemClickEnabled="True"
                             ItemClick="Items_ItemClick"
-                            ItemContainerStyleSelector="{StaticResource GridItemContainerStyleSelector}"
-                            ItemTemplateSelector="{StaticResource GridItemTemplateSelector}"
-                            ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
+                            ItemContainerStyle="{x:Bind GetGridItemStyle(ViewModel.GridProperties), Mode=OneWay}"
+                            ItemTemplate="{x:Bind GetGridItemTemplate(ViewModel.GridProperties), Mode=OneWay}"
+                            ItemsSource="{x:Bind GridItemsSource.View, Mode=OneWay}"
+                            Loaded="Items_Loaded"
+                            PointerPressed="Items_PointerPressed"
+                            PreviewKeyDown="Items_PreviewKeyDown"
                             RightTapped="Items_RightTapped"
-                            SelectionChanged="Items_SelectionChanged">
+                            SelectionChanged="Items_SelectionChanged"
+                            Unloaded="Items_Unloaded">
+                            <GridView.GroupStyle>
+                                <GroupStyle
+                                    HeaderContainerStyle="{StaticResource GridGroupHeaderStyle}"
+                                    HeaderTemplate="{StaticResource GridGroupHeaderTemplate}"
+                                    HidesIfEmpty="False" />
+                            </GridView.GroupStyle>
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <cpcontrols:WrapPanel
-                                        HorizontalSpacing="8"
-                                        Orientation="Horizontal"
-                                        VerticalSpacing="8" />
+                                    <ItemsWrapGrid
+                                        AreStickyGroupHeadersEnabled="False"
+                                        GroupHeaderPlacement="Top"
+                                        GroupPadding="0"
+                                        Orientation="Horizontal" />
                                 </ItemsPanelTemplate>
                             </GridView.ItemsPanel>
                             <GridView.ItemContainerTransitions>

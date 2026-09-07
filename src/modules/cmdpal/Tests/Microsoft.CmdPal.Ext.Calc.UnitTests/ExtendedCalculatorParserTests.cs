@@ -264,6 +264,10 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
             ["(2+3)!", 120M],
             ["sign(-2)", -1M],
             ["sign(2)", +1M],
+            ["sgn(-2)", -1M],
+            ["sgn(2)", +1M],
+            ["sign(sqrt(-1))", 0M],
+            ["sgn(sqrt(-1))", 0M],
             ["abs(-2)", 2M],
             ["abs(2)", 2M],
             ["0+(1*2)/(0+1)", 2M], // Validate that division by "(0+1)" is not interpret as division by zero.
@@ -534,7 +538,6 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
     [DataRow("factorial(-1)")]
     [DataRow("factorial(0.5)")]
     [DataRow("factorial(sqrt(-1))")]
-    [DataRow("sign(sqrt(-1))")]
     [DataRow("arcsin(2)")] // inverse sine/cosine are undefined outside [-1, 1]
     [DataRow("arcsec(0.5)")] // inverse secant/cosecant are undefined inside (-1, 1)
     [DataRow("arcoth(0.5)")] // inverse hyperbolic cotangent is undefined inside [-1, 1]

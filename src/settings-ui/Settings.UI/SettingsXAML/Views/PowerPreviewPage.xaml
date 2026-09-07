@@ -132,7 +132,7 @@
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
 
-                    <tkcontrols:SettingsCard
+                    <tkcontrols:SettingsExpander
                         Name="FileExplorerPreviewToggleSwitchPreviewMD"
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE943;}"
@@ -141,7 +141,34 @@
                             x:Uid="ToggleSwitch"
                             IsEnabled="{x:Bind ViewModel.MDRenderIsGpoEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                             IsOn="{x:Bind ViewModel.MDRenderIsEnabled, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD_LocalImages" IsEnabled="{x:Bind ViewModel.MDRenderIsEnabled, Mode=OneWay}">
+                                <ToggleSwitch
+                                    x:Uid="ToggleSwitch"
+                                    IsEnabled="{x:Bind ViewModel.MDLocalImagesIsGPOConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                                    IsOn="{x:Bind ViewModel.MDLocalImagesIsEnabled, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Padding="0"
+                                HorizontalContentAlignment="Stretch"
+                                Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
+                                ContentAlignment="Vertical"
+                                Visibility="{x:Bind ViewModel.MDLocalImagesIsGPOConfigured, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <InfoBar
+                                    x:Uid="GPO_SettingIsManaged"
+                                    Background="Transparent"
+                                    BorderBrush="Transparent"
+                                    IsClosable="False"
+                                    IsOpen="True"
+                                    IsTabStop="{x:Bind ViewModel.MDLocalImagesIsGPOConfigured, Mode=OneWay}"
+                                    Severity="Informational">
+                                    <InfoBar.IconSource>
+                                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                                    </InfoBar.IconSource>
+                                </InfoBar>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
 
                     <tkcontrols:SettingsCard
                         Name="FileExplorerPreviewToggleSwitchPreviewPDF"
@@ -286,8 +313,8 @@
             <controls:PageLink x:Uid="LearnMore_PowerPreview" Link="https://aka.ms/PowerToysOverview_FileExplorerAddOns" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Link="https://noraajunker.ch" Text="Noraa Junker's work on developer file preview" />
-            <controls:PageLink Link="https://www.pedrolamas.com" Text="Pedro Lamas's work on G-Code, Binary G-Code, STL, and QOI" />
+            <controls:PageLink x:Uid="Attribution_PowerPreview_DeveloperFilePreview" Link="https://noraajunker.ch" />
+            <controls:PageLink x:Uid="Attribution_PowerPreview_FileFormats" Link="https://www.pedrolamas.com" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </local:NavigablePage>

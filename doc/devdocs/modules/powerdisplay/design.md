@@ -14,6 +14,7 @@
 6. [Component Design](#component-design)
    - [PowerDisplay Module Internal Structure](#powerdisplay-module-internal-structure)
    - [DisplayChangeWatcher - Monitor Hot-Plug Detection](#displaychangewatcher---monitor-hot-plug-detection)
+   - [Tray Icon Mouse Wheel Control](#tray-icon-mouse-wheel-control)
    - [DDC/CI and WMI Interaction Architecture](#ddcci-and-wmi-interaction-architecture)
    - [IMonitorController Interface Methods](#imonitorcontroller-interface-methods)
    - [Why WmiLight Instead of System.Management](#why-wmilight-instead-of-systemmanagement)
@@ -412,6 +413,66 @@ _deviceWatcher.Updated += OnDeviceUpdated;  // Monitor properties changed
 - Each device change event schedules a `DisplayChanged` event after 1 second
 - Subsequent events within the debounce window cancel the previous timer
 - This prevents excessive refreshes when multiple monitors change simultaneously
+
+---
+
+### Tray Icon Mouse Wheel Control
+
+Scrolling the mouse wheel over the notification-area icon adjusts brightness without opening the
+flyout. The scope comes from the **Tray icon mouse wheel** setting
+(`PowerDisplayProperties.MouseWheelControlMode`): `Disabled` (default), `PrimaryDisplay` or
+`AllDisplays`. The per-notch step reuses the existing **Mouse wheel increment** setting.
+
+**Off by default, on purpose.** The gesture claims a wheel notch that would otherwise reach the
+window under the pointer, and acting on it installs a system-wide `WH_MOUSE_LL` hook. Neither is
+something an existing installation should acquire silently on upgrade, so the feature is opt-in:
+`Disabled` also means the hook is never installed at all.
+
+The setting is scoped to the tray icon. The flyout sliders accept wheel input regardless, as they
+always have.
+
+**No feedback UI, on purpose.** Brightness is self-evidencing: the screen changes as you scroll, so
+there is nothing for a readout to add that the display itself does not already show. The tray icon
+keeps the standard Shell tooltip and its existing text, and the notification icon stays on the
+legacy protocol. This is a deliberate departure from volume-style tray controls, where an on-screen
+readout is the only feedback available.
+
+**Why a low-level hook.** The Shell does not forward `WM_MOUSEWHEEL` to a notification icon's
+callback window under any `NOTIFYICON_VERSION`, and a click-through overlay placed over the icon
+cannot receive wheel input either. `TrayIconMouseWheelListener` therefore installs a `WH_MOUSE_LL`
+hook - but only transiently:
+
+- The hook is installed in `EnsureHook()` when the UI thread confirms the pointer is inside the
+  rectangle returned by `Shell_NotifyIconGetRect` **and** `CanAdjustBrightnessFromTrayWheel` says
+  some monitor can accept a brightness write.
+- It is removed in `DisarmCore()` as soon as either condition stops holding, the pointer leaves the
+  rectangle, or the mode changes.
+- A notch is consumed (the hook proc returns non-zero) only while armed and only for points inside
+  the armed rectangle, so a wheel event PowerDisplay will not act on still reaches the window under
+  the cursor.
+
+The hook runs on a dedicated background thread with its own message loop. Deltas are queued as
+`TrayWheelSample` values and marshalled to the UI thread in batches; `WheelDeltaAccumulator` folds
+high-resolution deltas (precision wheels, touchpads) into whole notches. Each sample carries the
+hover generation it was captured under, so samples from a hover the UI thread has already retired
+are discarded rather than applied late.
+
+**Hover detection.** The Shell sends `WM_MOUSEMOVE` to the icon's callback window while the pointer
+is over it. `TrayIconService.HandleTrayMouseMove` resolves the icon rectangle with
+`Shell_NotifyIconGetRect`, caching it for a second because that message repeats for every pixel of
+travel.
+
+**Linked brightness.** While linked brightness is on, a wheel notch must move the whole group, so it
+is routed through `MainViewModel.LinkedBrightness` rather than the individual monitor setters. The
+new master value is derived from `TrayWheelAdjustmentPlanner`'s value for the monitor the wheel
+named, not from the current master: the master is positional only (`SeedInitialLinkedBrightness`
+takes it from the lowest-numbered linked monitor and never writes hardware, and every monitor-list
+rebuild re-seeds it), so stepping it relative to itself would apply a wrong-sized or wrong-signed
+change.
+
+**Testing.** Target selection and wheel accumulation are pure logic in `PowerDisplay.Lib/Services`
+with unit tests in `PowerDisplay.Lib.UnitTests`. The Win32 glue in `TrayIconService` and
+`TrayIconMouseWheelListener` is not unit tested and needs manual verification.
 
 ---
 

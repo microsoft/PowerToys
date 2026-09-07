@@ -482,10 +482,11 @@ public sealed partial class DockViewModel : IDisposable
     /// </summary>
     public void SaveBandOrder()
     {
-        // Save ShowLabels for all bands
+        var pendingBandSettings = new Dictionary<string, DockBandSettings>(StringComparer.Ordinal);
         foreach (var band in StartItems.Concat(CenterItems).Concat(EndItems))
         {
-            band.SaveShowLabels();
+            var settings = band.SaveShowLabels();
+            pendingBandSettings[settings.CommandId] = settings;
         }
 
         // Preserve any per-band label edits made while in edit mode. Those edits are
@@ -495,9 +496,9 @@ public sealed partial class DockViewModel : IDisposable
         var latestBandSettings = BuildBandSettingsLookup(latestStart, latestCenter, latestEnd);
         var (activeStart, activeCenter, activeEnd) = GetActiveBands();
         _settings = WithActiveBands(
-            MergeBandSettings(activeStart, latestBandSettings),
-            MergeBandSettings(activeCenter, latestBandSettings),
-            MergeBandSettings(activeEnd, latestBandSettings));
+            MergeBandSettings(activeStart, latestBandSettings, pendingBandSettings),
+            MergeBandSettings(activeCenter, latestBandSettings, pendingBandSettings),
+            MergeBandSettings(activeEnd, latestBandSettings, pendingBandSettings));
 
         _snapshotDockSettings = null;
         _snapshotBandViewModels = null;
@@ -589,15 +590,17 @@ public sealed partial class DockViewModel : IDisposable
 
     private static ImmutableList<DockBandSettings> MergeBandSettings(
         ImmutableList<DockBandSettings> targetBands,
-        IReadOnlyDictionary<string, DockBandSettings> latestBandSettings)
+        IReadOnlyDictionary<string, DockBandSettings> latestBandSettings,
+        IReadOnlyDictionary<string, DockBandSettings> pendingBandSettings)
     {
         var merged = targetBands;
         for (var i = 0; i < merged.Count; i++)
         {
             var commandId = merged[i].CommandId;
-            if (latestBandSettings.TryGetValue(commandId, out var latestSettings))
+            if (latestBandSettings.TryGetValue(commandId, out var settings)
+                || pendingBandSettings.TryGetValue(commandId, out settings))
             {
-                merged = merged.SetItem(i, latestSettings);
+                merged = merged.SetItem(i, settings);
             }
         }
 

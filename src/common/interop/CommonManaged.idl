@@ -4,6 +4,8 @@ namespace PowerToys
     {
         [default_interface] static runtimeclass CommonManaged {
             static String GetProductVersion();
+            static String GetProductVersionChannel();
+            static String GetProductVersionSourceCommit();
         }
     }
 }

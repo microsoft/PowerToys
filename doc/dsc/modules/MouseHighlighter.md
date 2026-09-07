@@ -45,7 +45,7 @@ Sets the color for left mouse button clicks.
 
 **Type:** string (hex color)  
 **Format:** `"#RRGGBB"`  
-**Default:** `"#FFFF00"` (yellow)
+**Default:** `"#BFFF00"` (green)
 
 ### RightButtonClickColor
 
@@ -53,7 +53,7 @@ Sets the color for right mouse button clicks.
 
 **Type:** string (hex color)  
 **Format:** `"#RRGGBB"`  
-**Default:** `"#0000FF"` (blue)
+**Default:** `"#00BFFF"` (blue)
 
 ### HighlightOpacity
 

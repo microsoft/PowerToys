@@ -33,14 +33,21 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
     private readonly IUserSettings _userSettings;
     private readonly IFileSystem _fileSystem;
     private readonly SettingsUtils _settingsUtil;
+    private readonly Func<string, string> _getLocalizedString;
 
     private static string Version => Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString() ?? string.Empty;
 
     public CustomActionKernelQueryCacheService(IUserSettings userSettings, IFileSystem fileSystem)
+        : this(userSettings, fileSystem, ResourceLoaderInstance.ResourceLoader.GetString)
+    {
+    }
+
+    internal CustomActionKernelQueryCacheService(IUserSettings userSettings, IFileSystem fileSystem, Func<string, string> getLocalizedString)
     {
         _userSettings = userSettings;
         _fileSystem = fileSystem;
         _settingsUtil = new SettingsUtils(fileSystem);
+        _getLocalizedString = getLocalizedString;
 
         _userSettings.Changed += OnUserSettingsChanged;
 
@@ -112,7 +119,7 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
                                    let metadata = pair.Value
                                    where !string.IsNullOrEmpty(metadata.ResourceId)
                                    where metadata.IsCoreAction || _userSettings.AdditionalActions.Contains(format)
-                                   select ResourceLoaderInstance.ResourceLoader.GetString(metadata.ResourceId);
+                                   select _getLocalizedString(metadata.ResourceId);
 
         var customActionPrompts = from customAction in _userSettings.CustomActions
                                   select customAction.Prompt;

@@ -19,6 +19,7 @@ public partial class EnvironmentStateToTitleConverter : IValueConverter
         return type switch
         {
             EnvironmentState.ProfileNotApplicable => resourceLoader.GetString("ProfileNotApplicableTitle"),
+            EnvironmentState.ProfileNameInvalid => resourceLoader.GetString("ProfileNameInvalidTitle"),
             _ => resourceLoader.GetString("StateNotUpToDateTitle"),
         };
     }

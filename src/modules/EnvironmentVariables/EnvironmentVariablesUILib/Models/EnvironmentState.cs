@@ -10,5 +10,6 @@ namespace EnvironmentVariablesUILib.Models
         ChangedOnStartup,
         EnvironmentMessageReceived,
         ProfileNotApplicable,
+        ProfileNameInvalid,
     }
 }

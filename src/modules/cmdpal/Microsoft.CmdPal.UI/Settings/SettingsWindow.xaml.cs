@@ -10,6 +10,7 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Gallery;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -69,6 +70,8 @@ public sealed partial class SettingsWindow : WindowEx,
         var title = RS_.GetString("SettingsWindowTitle");
         this.AppWindow.Title = title;
         this.AppTitleBar.Title = title;
+        TitleBarHelper.SetPreferredTheme(this);
+
         PositionCentered();
 
         WeakReferenceMessenger.Default.Register<NavigateToExtensionSettingsMessage>(this);
@@ -137,7 +140,7 @@ public sealed partial class SettingsWindow : WindowEx,
         Navigate((selectedItem.Tag as string)!);
     }
 
-    internal void Navigate(string page)
+    internal void Navigate(string page, string? extensionGalleryId = null)
     {
         Type? pageType;
         switch (page)
@@ -176,12 +179,24 @@ public sealed partial class SettingsWindow : WindowEx,
             return;
         }
 
+        var openGallery = pageType == typeof(ExtensionGalleryPage);
+        var openGalleryExtension = openGallery && !string.IsNullOrWhiteSpace(extensionGalleryId);
+        if (openGallery && TryOpenGallery(extensionGalleryId))
+        {
+            return;
+        }
+
         if (NavFrame.Content?.GetType() == pageType)
         {
             return;
         }
 
         NavFrame.Navigate(pageType);
+
+        if (openGalleryExtension && NavFrame.Content is ExtensionGalleryPage galleryPage)
+        {
+            galleryPage.OpenExtension(extensionGalleryId!);
+        }
 
         // Now, make sure to actually select the correct menu item too
         foreach (var obj in NavView.MenuItems)
@@ -191,6 +206,42 @@ public sealed partial class SettingsWindow : WindowEx,
                 NavView.SelectedItem = item;
             }
         }
+    }
+
+    private bool TryOpenGallery(string? extensionId)
+    {
+        var openExtension = !string.IsNullOrWhiteSpace(extensionId);
+        if (NavFrame.Content is ExtensionGalleryItemPage itemPage)
+        {
+            if (openExtension && string.Equals(itemPage.ViewModel?.Id, extensionId, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            // Details is a child of the gallery on the same frame. Return to the existing
+            // gallery entry so the next details page replaces this one in the journal.
+            if (NavFrame.CanGoBack &&
+                NavFrame.BackStack.Count > 0 &&
+                NavFrame.BackStack[NavFrame.BackStack.Count - 1].SourcePageType == typeof(ExtensionGalleryPage))
+            {
+                NavFrame.GoBack();
+                NavFrame.ForwardStack.Clear();
+            }
+        }
+
+        if (NavFrame.Content is not ExtensionGalleryPage galleryPage)
+        {
+            return false;
+        }
+
+        galleryPage.ClearPendingExtension();
+
+        if (openExtension)
+        {
+            galleryPage.OpenExtension(extensionId!);
+        }
+
+        return true;
     }
 
     private void Navigate(ProviderSettingsViewModel extension)

@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2026-02-05
+last updated: 2026-08-28
 issue id: n/a
 ---
 
@@ -85,6 +85,11 @@ functionality.
     - [Nov 2025 status](#nov-2025-status)
   - [Addenda IV: Dock bands](#addenda-iv-dock-bands)
     - [Pinning nested commands to the dock (and top level)](#pinning-nested-commands-to-the-dock-and-top-level)
+  - [Addenda V: Extra content types](#addenda-v-extra-content-types)
+    - [Image content](#image-content)
+    - [Plain text content](#plain-text-content)
+  - [Addenda VI: Adaptive Card Actions](#addenda-vi-adaptive-card-actions)
+  - [Addenda VII: Rich content details](#addenda-vii-rich-content-details)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
@@ -819,8 +824,21 @@ interface IListItem requires ICommandItem {
     String TextToSuggest { get; };
 }
 
-interface IGridProperties  {
-    Windows.Foundation.Size TileSize { get; };
+[uuid("50C6F080-1CBE-4CE4-B92F-DA2F116ED524")]
+interface IGridProperties requires INotifyPropChanged { }
+
+[uuid("05914D59-6ECB-4992-9CF2-5982B5120A26")]
+interface ISmallGridLayout requires IGridProperties { }
+
+interface IMediumGridLayout requires IGridProperties
+{
+    Boolean ShowTitle { get; };
+}
+
+interface IGalleryGridLayout requires IGridProperties
+{
+    Boolean ShowTitle { get; };
+    Boolean ShowSubtitle { get; };
 }
 
 interface IListPage requires IPage, INotifyItemsChanged {
@@ -942,9 +960,10 @@ of grouped results, they're free to have as many sections as they like.
 
 When the `GridProperties` property is set to null, DevPal will display the items
 as a simple list, grouping them by section. When the `GridProperties` property
-is set to a non-null value, DevPal will display the items as a grid, with each
-item in the grid being a `TileSize` square. Grids are useful for showing items
-that are more visual in nature, like images or icons.
+is set to a non-null value, DevPal uses the implemented layout interface:
+`ISmallGridLayout`, `IMediumGridLayout`, or `IGalleryGridLayout`. Medium and
+gallery layouts can show titles, and gallery layouts can also show subtitles.
+Grids are useful for visual content such as images or icons.
 
 Each item in the list may also include an optional `Details` property. This
 allows the extension to provide additional information about the item, like a
@@ -1125,7 +1144,7 @@ interface IFilterItem {}
 [uuid("0a923c7f-5b7b-431d-9898-3c8c841d02ed")]
 interface ISeparatorFilterItem requires IFilterItem {}
 
-interface IFilter requires IFilterItem {
+interface IFilter requires INotifyPropChanged, IFilterItem {
     String Id { get; };
     String Name { get; };
     IIconInfo Icon { get; };
@@ -1133,7 +1152,7 @@ interface IFilter requires IFilterItem {
 
 interface IFilters {
     String CurrentFilterId { get; set; };
-    IFilterItem[] Filters();
+    IFilterItem[] GetFilters();
 }
 ```
 
@@ -1416,6 +1435,15 @@ interface ITag {
 
 [uuid("6a6dd345-37a3-4a1e-914d-4f658a4d583d")]
 interface IDetailsData {}
+
+[contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+enum ContentSize
+{
+    Small = 0,
+    Medium = 1,
+    Large = 2,
+};
+
 interface IDetailsElement {
     String Key { get; };
     IDetailsData Data { get; };
@@ -1485,6 +1513,10 @@ interface IFallbackHandler {
 interface IFallbackCommandItem requires ICommandItem {
     IFallbackHandler FallbackHandler{ get; };
     String DisplayTitle { get; };
+};
+
+interface IFallbackCommandItem2 requires IFallbackCommandItem {
+    String Id { get; };
 };
 
 interface ICommandProvider requires Windows.Foundation.IClosable, INotifyItemsChanged
@@ -2355,6 +2387,82 @@ because that method is was designed for two main purposes:
 In neither of those scenarios was the full "display" of the item needed. In
 pinning scenarios, however, we need everything that the user would see in the UI
 for that item, which is all in the `ICommandItem`.
+
+## Addenda V: Extra content types
+
+Extra content types for [Content Pages](#content-pages) views so we can provide extra functionality to the user.
+
+### Image content
+
+Image content is dedicated to displaying a single image. The host will attempt to display the entire
+image in the UI or a scaled down preview, while respecting the max width and height. If possible, the host will
+provide UI controls to display the image 1:1, save it or copy it to the clipboard.
+
+```csharp
+interface IImageContent requires IContent {
+    IIconInfo Image { get; };
+    Int32 MaxWidth { get; };
+    Int32 MaxHeight { get; };
+}
+```
+
+### Plain text content
+
+Developers can declare that the content is unformatted plain text and provide
+hints about how to render it, such as what font to use and whether to
+wrap words or not. Users can control the view settings.
+
+```csharp
+enum FontFamily
+{
+    UserInterface,
+    Monospace,
+};
+
+interface IPlainTextContent requires IContent {
+    String Text { get; };
+    FontFamily FontFamily { get; };
+    Boolean WrapWords { get; };
+}
+```
+
+## Addenda VI: Adaptive Card Actions
+
+Adaptive Cards supports setting multiple actions on a card. Those actions can be
+identified by an `id` property on the action. That `id` is not necessarily
+encoded in the JSON payload of the action.
+
+For us to properly support the gammut of AC scenarios, we need to be able to
+pass the `id` of the action back to the extension. This is a relatively simple
+addition to the `IForm` interface.
+
+```csharp
+interface IFormContent2 requires IFormContent {
+    ICommandResult SubmitAction(String actionId, String inputs, String data);
+}
+```
+
+## Addenda VII: Rich content details
+
+Originally, the `IDetails` was designed for just a simple title, image, and
+markdown body. However it also makes sense to allow for more complex content in
+the details view. This is especially useful for extensions that want to provide
+richer inline content in the details view, like a card.
+
+```csharp
+interface IDetails2 requires IDetails {
+    IContent[] GetContent();
+}
+```
+
+This is a method, not a property, because we want to explicitly indicate that
+the content may be generated when it is requested. 
+
+Should an extension want to indicate that the content has changed, they can
+raise a `INotifyPropChanged` event on the `IDetails2` object for the property
+name "Content". The host will accept that as a notification that the content has
+changed. 
+
 ## Class diagram
 
 This is a diagram attempting to show the relationships between the various types we've defined for the SDK. Some elements are omitted for clarity. (Notably, `IconData` and `IPropChanged`, which are used in many places.)
@@ -2447,8 +2555,17 @@ classDiagram
     ITag "*" *-- IListItem
     IFallbackHandler "?" *-- IListItem
 
-    class IGridProperties  {
-        Windows.Foundation.Size TileSize
+    IGridProperties --|> INotifyPropChanged
+    class IGridProperties
+    ISmallGridLayout --|> IGridProperties
+    IMediumGridLayout --|> IGridProperties
+    IGalleryGridLayout --|> IGridProperties
+    class IMediumGridLayout {
+        Boolean ShowTitle
+    }
+    class IGalleryGridLayout {
+        Boolean ShowTitle
+        Boolean ShowSubtitle
     }
 
     IListPage --|> IPage
@@ -2607,19 +2724,22 @@ Is that just a `Details` object? A markdown body?
 
 ### Generating the `.idl`
 
-The `.idl` for this SDK can be generated directly from this file. To do so, run the following command:
+This Markdown file is the source for the SDK definitions. Do not edit
+`extensionsdk/Microsoft.CommandPalette.Extensions/Microsoft.CommandPalette.Extensions.idl`
+directly. API declarations use `csharp` or `c#` fences; implementation examples use
+`cs` fences and are not emitted by the generator.
+
+Install the generator dependency with `python -m pip install mistletoe`, and ensure
+its `mistletoe` command is on `PATH`. From `src/modules/cmdpal`, regenerate with:
 
 ```ps1
-.\generate-interface.ps1 > .\Microsoft.DevPalette.Extensions.idl
+.\doc\initial-sdk-spec\generate-interface.ps1 |
+    Set-Content -Encoding utf8 .\extensionsdk\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.idl
 ```
 
-(After a `pip3 install mistletoe`)
-
-Or, to generate straight to the place I'm consuming it from:
-
-```ps1
-.\doc\initial-sdk-spec\generate-interface.ps1 > .\extensionsdk\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.Toolkit.idl
-```
+Review the generated diff along with the Markdown changes. Existing interface
+members, UUIDs and `requires` declarations must be preserved when reconciling old
+source drift. Regenerating a second time should produce no further changes.
 
 ### Adding APIs
 

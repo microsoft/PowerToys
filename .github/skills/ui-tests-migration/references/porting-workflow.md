@@ -164,6 +164,9 @@ displayed HEX, a canvas color). If an assertion needs a hook the product doesn't
 - First try the existing readouts: `GetValue()` (reads the Text binding even when
   `AutomationProperties.Name` overrides the UIA Name), `Inspect(...)` tree walks, clipboard, window
   geometry.
+- If the control is simply unaddressable (an icon-only button whose only label is a tooltip), add
+  `AutomationProperties.AutomationId` to it — the one sanctioned product edit; see
+  [patterns-and-pitfalls.md](patterns-and-pitfalls.md) Recipe 16.
 - If there's truly no signal, **flag it to the user** that a small test-only UIA hook is needed (like
   ColorPicker's hidden `ColorHexAutomationPeer` TextBlock — `Visibility=Visible, Opacity=0`, bound to
   the same source). Do **not** add such a hook to product code yourself without sign-off; describe it
@@ -184,4 +187,8 @@ that covers it, and explicitly call out any items left as manual-only (e.g. "che
 - [ ] (A) Every legacy `[TestMethod]` has a `.Next` counterpart; the legacy project is untouched.
 - [ ] (B) Every actionable sign-off item maps to a test or is explicitly noted as manual-only.
 - [ ] Toggles/settings the test changes are restored in a `finally`; spawned windows are closed.
-- [ ] No product-code edits (or any needed UIA hook is flagged to the user, not silently added).
+- [ ] No product-code edits beyond `AutomationProperties.AutomationId` hooks; anything larger was
+  flagged to the user, not silently added.
+- [ ] One deterministic test and then the module suite were run through the local VM loop in
+  [ui-tests-local-vm](../../ui-tests-local-vm/SKILL.md), using a restored baseline or fresh volume
+  when clean-profile behavior matters, or the exact host prerequisite/environment blocker was reported.

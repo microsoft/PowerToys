@@ -38,7 +38,12 @@
                     </ListView.ItemContainerTransitions>
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" />
+                            <!--
+                                Leave one DIP of scroll extent outside the first and last containers.
+                                When ScrollIntoView lands exactly at the maximum offset, WinUI can
+                                clip the last item's selection visual even though the item is visible.
+                            -->
+                            <StackPanel Margin="1,0,1,0" Orientation="Horizontal" />
                         </ItemsPanelTemplate>
                     </ListView.ItemsPanel>
                     <!--

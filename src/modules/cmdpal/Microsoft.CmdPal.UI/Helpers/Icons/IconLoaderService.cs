@@ -40,7 +40,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         }
     }
 
-    public void EnqueueLoad(
+    public bool TryEnqueueLoad(
         string? iconString,
         string? fontFamily,
         IRandomAccessStreamReference? streamRef,
@@ -55,7 +55,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         {
             if (_highPriorityQueue.Writer.TryWrite(workItem))
             {
-                return;
+                return true;
             }
 
 #if DEBUG
@@ -63,7 +63,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
 #endif
         }
 
-        _lowPriorityQueue.Writer.TryWrite(workItem);
+        return _lowPriorityQueue.Writer.TryWrite(workItem);
     }
 
     public async ValueTask DisposeAsync()

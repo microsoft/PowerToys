@@ -65,6 +65,8 @@ winrt::IAsyncAction AudioSampleGenerator::InitializeAsync()
     auto expected = false;
     if (m_initialized.compare_exchange_strong(expected, true))
     {
+      try
+      {
         // Reset state in case this instance is reused.
         m_endEvent.ResetEvent();
         m_startEvent.ResetEvent();
@@ -78,17 +80,62 @@ winrt::IAsyncAction AudioSampleGenerator::InitializeAsync()
         }
         m_audioGraph = audioGraphResult.Graph();
 
+        // The default graph format follows the audio engine's processing format
+        // for the default render device, which can be multichannel (e.g. 7.1
+        // when spatial sound is enabled). Feeding more than two channels into
+        // the AAC encoding profile produces a multichannel HE-AAC track that
+        // most decoders, including the Media Foundation AAC decoder (max 5.1),
+        // cannot play, so recordings sound silent. Re-create the graph with an
+        // explicit stereo format at the device sample rate.
+        if (m_audioGraph.EncodingProperties().ChannelCount() > 2)
+        {
+            auto defaultProps = m_audioGraph.EncodingProperties();
+            auto stereoProps = winrt::AudioEncodingProperties();
+            stereoProps.Subtype(defaultProps.Subtype());
+            stereoProps.SampleRate(defaultProps.SampleRate());
+            stereoProps.BitsPerSample(defaultProps.BitsPerSample());
+            stereoProps.ChannelCount(2);
+            stereoProps.Bitrate(defaultProps.SampleRate() * 2 * defaultProps.BitsPerSample());
+
+            auto stereoSettings = winrt::AudioGraphSettings(winrt::AudioRenderCategory::Media);
+            stereoSettings.EncodingProperties(stereoProps);
+            auto stereoResult = co_await winrt::AudioGraph::CreateAsync(stereoSettings);
+            if (stereoResult.Status() == winrt::AudioGraphCreationStatus::Success)
+            {
+                m_audioGraph.Close();
+                m_audioGraph = stereoResult.Graph();
+                OutputDebugStringA("AudioGraph re-created with stereo format\n");
+            }
+            else
+            {
+                OutputDebugStringA("WARNING: Failed to re-create AudioGraph with stereo format, keeping default\n");
+            }
+        }
+
         // Get AudioGraph encoding properties for resampling
         auto graphProps = m_audioGraph.EncodingProperties();
         m_graphSampleRate = graphProps.SampleRate();
-        m_graphChannels = graphProps.ChannelCount();
+
+        // Force the captured audio to stereo.  The default render device mix format
+        // is often multichannel (e.g. 7.1 / 8 channels), which produces a multichannel
+        // AAC track that plays back fine but cannot be re-encoded by the trim /
+        // MediaComposition transcode source reader (fails with 0xC00DA7FC /
+        // TranscodeFailureReason::Unknown).  Screen recordings only need stereo, so we
+        // build a stereo output-node format and let the graph downmix the multichannel
+        // mix automatically.  (Forcing the whole graph to stereo via
+        // AudioGraphSettings.EncodingProperties is rejected by many devices, so we only
+        // constrain the frame output node.)
+        auto outputProps = m_audioGraph.EncodingProperties();
+        outputProps.ChannelCount(2);
+        outputProps.Bitrate(outputProps.SampleRate() * 2 * outputProps.BitsPerSample());
+        m_graphChannels = 2;
 
         OutputDebugStringA(("AudioGraph initialized: " + std::to_string(m_graphSampleRate) +
             " Hz, " + std::to_string(m_graphChannels) + " ch\n").c_str());
 
         // Create submix node to mix microphone and loopback audio
         m_submixNode = m_audioGraph.CreateSubmixNode();
-        m_audioOutputNode = m_audioGraph.CreateFrameOutputNode();
+        m_audioOutputNode = m_audioGraph.CreateFrameOutputNode(outputProps);
         m_submixNode.AddOutgoingConnection(m_audioOutputNode);
 
         // Initialize WASAPI loopback capture for system audio (if enabled)
@@ -179,6 +226,20 @@ winrt::IAsyncAction AudioSampleGenerator::InitializeAsync()
         m_audioGraph.Start();
 
         m_asyncInitialized.SetEvent();
+      }
+      catch (...)
+      {
+          // Initialization failed partway through (common on headless /
+          // GPU-less VMs, cloud PCs, or machines without a usable audio
+          // capture device, where CreateDeviceInputNodeAsync throws).
+          // m_initialized was already set to true at the top, so unless we
+          // release these events here, Stop() would block forever on
+          // m_asyncInitialized.wait() and TryGetNextSample() would block
+          // forever on m_endEvent during teardown — deadlocking the recorder.
+          m_asyncInitialized.SetEvent();
+          m_endEvent.SetEvent();
+          throw;
+      }
     }
 }
 
@@ -186,6 +247,40 @@ winrt::AudioEncodingProperties AudioSampleGenerator::GetEncodingProperties()
 {
     CheckInitialized();
     return m_audioOutputNode.EncodingProperties();
+}
+
+winrt::fire_and_forget AudioSampleGenerator::DisposeAsync(
+    std::unique_ptr<AudioSampleGenerator> generator,
+    winrt::IAsyncAction initAction )
+{
+    if (!generator)
+    {
+        co_return;
+    }
+
+    // InitializeAsync signals m_asyncInitialized from its own continuation.
+    // While it is still suspended at a co_await, that continuation is queued
+    // back to the apartment that started it - normally the UI STA.  Destroying
+    // the generator there runs Stop(), which waits on m_asyncInitialized and so
+    // stops the thread from pumping, meaning the continuation can never be
+    // delivered: a self-deadlock.  Awaiting yields the thread instead of
+    // blocking it, so the pending initialization can complete (or fail).
+    if (initAction)
+    {
+        try
+        {
+            co_await initAction;
+        }
+        catch (...)
+        {
+            // Initialization failed; the object still has to be torn down.
+        }
+    }
+
+    // Keep the teardown (graph stop, device node close, buffer flush) off the
+    // calling thread.
+    co_await winrt::resume_background();
+    generator.reset();
 }
 
 std::optional<winrt::MediaStreamSample> AudioSampleGenerator::TryGetNextSample()
@@ -326,8 +421,13 @@ void AudioSampleGenerator::Stop()
     // Flush any remaining samples from the loopback capture before stopping the audio graph
     FlushRemainingAudio();
 
-    // Stop the audio graph - no more quantum callbacks will run
-    m_audioGraph.Stop();
+    // Stop the audio graph - no more quantum callbacks will run.
+    // Guard against partial initialization: if InitializeAsync failed before
+    // the graph was created, m_audioGraph is null.
+    if (m_audioGraph)
+    {
+        m_audioGraph.Stop();
+    }
 
     // Close the microphone input node to release the device so Windows no longer
     // reports the microphone as in use by ZoomIt.
@@ -547,6 +647,7 @@ void AudioSampleGenerator::FlushRemainingAudio()
             }
 
             auto sample = winrt::MediaStreamSample::CreateFromBuffer(sampleBuffer, timestamp);
+            sample.Duration(duration);
             m_samples.push_back(sample);
             m_audioEvent.SetEvent();
 
@@ -620,6 +721,7 @@ void AudioSampleGenerator::CombineQueuedSamples()
     const uint32_t sampleCount = static_cast<uint32_t>(totalBytes) / sizeof(float);
     const uint32_t frames = (m_graphChannels > 0) ? (sampleCount / m_graphChannels) : 0;
     const int64_t durationTicks = (m_graphSampleRate > 0) ? (static_cast<int64_t>(frames) * 10000000LL / m_graphSampleRate) : 0;
+    combinedSample.Duration(winrt::Windows::Foundation::TimeSpan{ durationTicks });
     m_lastSampleTimestamp = firstTimestamp;
     m_lastSampleDuration = winrt::Windows::Foundation::TimeSpan{ durationTicks };
     m_hasLastSampleTimestamp = true;
@@ -790,6 +892,7 @@ void AudioSampleGenerator::OnAudioQuantumStarted(winrt::AudioGraph const& sender
             const uint32_t sampleCount = sampleBuffer.Length() / sizeof(float);
             const uint32_t frames = (m_graphChannels > 0) ? (sampleCount / m_graphChannels) : 0;
             const int64_t durationTicks = (m_graphSampleRate > 0) ? (static_cast<int64_t>(frames) * 10000000LL / m_graphSampleRate) : 0;
+            sample.Duration(winrt::TimeSpan{ durationTicks });
             m_lastSampleTimestamp = adjustedTs;
             m_lastSampleDuration = winrt::TimeSpan{ durationTicks };
             m_hasLastSampleTimestamp = true;

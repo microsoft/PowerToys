@@ -13,6 +13,14 @@ namespace ImageResizer.Cli.Options
         public HeightOption()
             : base(_aliases, Properties.Resources.CLI_Option_Height)
         {
+            AddValidator(result =>
+            {
+                var error = DimensionOptionValidator.Validate(result.Tokens.Count == 1 ? result.Tokens[0].Value : null);
+                if (error != null)
+                {
+                    result.ErrorMessage = error;
+                }
+            });
         }
     }
 }
