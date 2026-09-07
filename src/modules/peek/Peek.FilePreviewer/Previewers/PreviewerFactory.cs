@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.UI.Xaml;
-using Peek.Common.Extensions;
+using Peek.Common;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Archives;
@@ -25,7 +25,7 @@ namespace Peek.FilePreviewer.Previewers
             Func<IFileSystemItem, IPreviewer> Create);
 
         public PreviewerFactory()
-            : this(Application.Current.GetService<IPreviewSettings>())
+            : this(GetPreviewSettings())
         {
         }
 
@@ -45,6 +45,19 @@ namespace Peek.FilePreviewer.Previewers
                 new(typeof(SpecialFolderPreviewer), SpecialFolderPreviewer.IsItemSupported, item => new SpecialFolderPreviewer(item)),
                 new(typeof(UnsupportedFilePreviewer), _ => true, CreateDefaultPreviewer),
             ];
+        }
+
+        private static IPreviewSettings GetPreviewSettings()
+        {
+            try
+            {
+                return (Application.Current as IApp)?.GetService<IPreviewSettings>() ?? new PreviewSettings();
+            }
+            catch
+            {
+                // For unit tests, Application.Current is null.
+                return new PreviewSettings();
+            }
         }
 
         private PreviewerDefinition GetCompatiblePreviewerDefinition(IFileSystemItem item) => _previewers.First(config => config.IsSupported(item));

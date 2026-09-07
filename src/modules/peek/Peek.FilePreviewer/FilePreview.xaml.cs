@@ -34,10 +34,29 @@ namespace Peek.FilePreviewer
 
         private readonly PreviewerFactory previewerFactory = new();
 
-        private readonly DispatcherTimer _loadingProgressTimer = new()
+        private DispatcherTimer? _loadingProgressTimer;
+
+        private DispatcherTimer? GetLoadingProgressTimer()
         {
-            Interval = TimeSpan.FromMilliseconds(LoadingDelayBeforeProgressSpinnerShownMs),
-        };
+            if (_loadingProgressTimer is null)
+            {
+                try
+                {
+                    _loadingProgressTimer = new DispatcherTimer
+                    {
+                        Interval = TimeSpan.FromMilliseconds(LoadingDelayBeforeProgressSpinnerShownMs),
+                    };
+
+                    _loadingProgressTimer.Tick += LoadingProgressTimer_Tick;
+                }
+                catch
+                {
+                    // Headless test runner fallback.
+                }
+            }
+
+            return _loadingProgressTimer;
+        }
 
         public event EventHandler<PreviewSizeChangedArgs>? PreviewSizeChanged;
 
@@ -46,14 +65,14 @@ namespace Peek.FilePreviewer
             nameof(Item),
             typeof(IFileSystemItem),
             typeof(FilePreview),
-            new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnItemPropertyChanged()));
+            new PropertyMetadata(null, (d, e) => ((FilePreview)d).OnItemPropertyChanged()));
 
         public static readonly DependencyProperty ScalingFactorProperty =
             DependencyProperty.Register(
                 nameof(ScalingFactor),
                 typeof(double),
                 typeof(FilePreview),
-                new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnScalingFactorPropertyChanged()));
+                new PropertyMetadata(1.0, (d, e) => ((FilePreview)d).OnScalingFactorPropertyChanged()));
 
         public static readonly DependencyProperty ShowFilePreviewTooltipProperty =
             DependencyProperty.Register(
@@ -78,10 +97,10 @@ namespace Peek.FilePreviewer
         private IPreviewer? previewer;
 
         [ObservableProperty]
-        private string? infoTooltip = ResourceLoaderInstance.ResourceLoader.GetString("PreviewTooltip_Blank");
+        private string? infoTooltip = ResourceLoaderInstance.GetString("PreviewTooltip_Blank");
 
         [ObservableProperty]
-        private string noMoreFilesText = ResourceLoaderInstance.ResourceLoader.GetString("NoMoreFiles");
+        private string noMoreFilesText = ResourceLoaderInstance.GetString("NoMoreFiles");
 
         [ObservableProperty]
         private bool isLoadingIndicatorVisible;
@@ -91,19 +110,24 @@ namespace Peek.FilePreviewer
         public FilePreview()
         {
             InitializeComponent();
-            _loadingProgressTimer.Tick += LoadingProgressTimer_Tick;
         }
 
         public void Dispose()
         {
-            _loadingProgressTimer.Tick -= LoadingProgressTimer_Tick;
-            _loadingProgressTimer.Stop();
+            if (_loadingProgressTimer is not null)
+            {
+                _loadingProgressTimer.Tick -= LoadingProgressTimer_Tick;
+                _loadingProgressTimer.Stop();
+            }
+
             _cancellationTokenSource.Dispose();
         }
 
-        private void LoadingProgressTimer_Tick(object? sender, object e)
+        private void LoadingProgressTimer_Tick(object? sender, object e) => OnLoadingProgressTimerTick();
+
+        internal void OnLoadingProgressTimerTick()
         {
-            _loadingProgressTimer.Stop();
+            StopLoadingProgressTimer();
 
             if (Previewer?.State == PreviewState.Loading)
             {
@@ -113,17 +137,20 @@ namespace Peek.FilePreviewer
 
         private void StartLoadingProgressTimer()
         {
-            // Do not reset the timer if it's already running or if the indicator is already visible.
-            // This prevents rapid key repeats from indefinitely delaying the spinner.
-            if (!_loadingProgressTimer.IsEnabled && !IsLoadingIndicatorVisible)
+            var timer = GetLoadingProgressTimer();
+
+            // Do not reset the timer if it's already running or if the indicator is
+            // already visible. This prevents rapid key repeats from indefinitely delaying
+            // the spinner.
+            if (timer is not null && !timer.IsEnabled && !IsLoadingIndicatorVisible)
             {
-                _loadingProgressTimer.Start();
+                timer.Start();
             }
         }
 
         private void StopLoadingProgressTimer()
         {
-            _loadingProgressTimer.Stop();
+            _loadingProgressTimer?.Stop();
             IsLoadingIndicatorVisible = false;
         }
 
@@ -145,9 +172,11 @@ namespace Peek.FilePreviewer
                 {
                     // Cancel previous loading task
                     _cancellationTokenSource.Cancel();
+                    _cancellationTokenSource.Dispose();
+
                     _cancellationTokenSource = new();
 
-                    if (Previewer is not IUnsupportedFilePreviewer)
+                    if (Previewer is not IUnsupportedFilePreviewer && Item is not null)
                     {
                         Previewer = PreviewerFactory.CreateDefaultPreviewer(Item);
                         await UpdatePreviewAsync(_cancellationTokenSource.Token);
@@ -174,9 +203,9 @@ namespace Peek.FilePreviewer
 
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
 
-        public IFileSystemItem Item
+        public IFileSystemItem? Item
         {
-            get => (IFileSystemItem)GetValue(ItemProperty);
+            get => (IFileSystemItem?)GetValue(ItemProperty);
             set => SetValue(ItemProperty, value);
         }
 
@@ -250,14 +279,11 @@ namespace Peek.FilePreviewer
                 return Visibility.Visible;
             }
 
-            // Keep image preview visible while the next image is loading so the previous frame
-            // remains on screen until we can swap.
-            if (previewer is IImagePreviewer imagePreviewer && MatchPreviewState(state, PreviewState.Loading) && imagePreviewer.Preview is not null)
-            {
-                return Visibility.Visible;
-            }
-
-            return Visibility.Collapsed;
+            // Keep image preview visible while the next image is loading so the previous
+            // frame remains on screen until we can swap.
+            return previewer is IImagePreviewer imagePreviewer && MatchPreviewState(state, PreviewState.Loading) && imagePreviewer.Preview is not null
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
 
         public double GetImagePreviewOpacity(bool isLoadingIndicatorVisible)
@@ -275,7 +301,7 @@ namespace Peek.FilePreviewer
 
         public string GetWarningMessage(string missingCodecName)
         {
-            return ReadableStringHelper.FormatResourceString("VideoMissingCodec_WarningMessage", missingCodecName);
+            return ResourceLoaderInstance.FormatString("VideoMissingCodec_WarningMessage", missingCodecName);
         }
 
         private async void CodecSearchHyperlink_Click(Hyperlink sender, HyperlinkClickEventArgs args)
@@ -296,6 +322,9 @@ namespace Peek.FilePreviewer
 
         private void ClearAllPreviews()
         {
+            // Reset the spinner state immediately.
+            StopLoadingProgressTimer();
+
             (Previewer as IDisposable)?.Dispose();
             Previewer = null;
             HideAllPreviewControls();
@@ -303,33 +332,43 @@ namespace Peek.FilePreviewer
 
         private void HideAllPreviewControls()
         {
-            ImagePreview.Visibility = Visibility.Collapsed;
-            VideoPreview.Visibility = Visibility.Collapsed;
-            AudioPreview.Visibility = Visibility.Collapsed;
-            BrowserPreview.Visibility = Visibility.Collapsed;
-            ArchivePreview.Visibility = Visibility.Collapsed;
-            DrivePreview.Visibility = Visibility.Collapsed;
-            UnsupportedFilePreview.Visibility = Visibility.Collapsed;
+            try
+            {
+                ImagePreview.Visibility = Visibility.Collapsed;
+                VideoPreview.Visibility = Visibility.Collapsed;
+                AudioPreview.Visibility = Visibility.Collapsed;
+                BrowserPreview.Visibility = Visibility.Collapsed;
+                ArchivePreview.Visibility = Visibility.Collapsed;
+                DrivePreview.Visibility = Visibility.Collapsed;
+                UnsupportedFilePreview.Visibility = Visibility.Collapsed;
+            }
+            catch
+            {
+                // Headless test runner fallback.
+            }
         }
 
         private void UpdatePreviewerItem()
         {
-            if (Previewer is IReusablePreviewer reusablePreviewer)
+            if (Item is not null && Previewer is IReusablePreviewer reusablePreviewer)
             {
                 reusablePreviewer.Rebind(Item, ScalingFactor);
             }
         }
 
-        private async Task OnItemPropertyChanged()
+        private void OnItemPropertyChanged()
         {
             // Cancel previous loading task
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource = new();
 
-            // Ensure the loading timer is running so rapid skimming eventually shows the spinner.
+            // Ensure the loading timer is running so rapid skimming eventually shows the
+            // spinner.
             StartLoadingProgressTimer();
 
-            NoMoreFiles.Visibility = NumberOfFiles == 0 ? Visibility.Visible : Visibility.Collapsed;
+            NoMoreFiles.Visibility = NumberOfFiles == 0
+                ? Visibility.Visible
+                : Visibility.Collapsed;
 
             if (Item is null)
             {
@@ -339,8 +378,9 @@ namespace Peek.FilePreviewer
 
             var neededType = previewerFactory.GetCompatiblePreviewerType(Item);
 
-            // Reuse the existing previewer when the type matches and supports in-place item updates,
-            // avoiding control teardown which would cause a visible white flash between images.
+            // Reuse the existing previewer when the type matches and supports in-place
+            // item updates, avoiding control teardown which would cause a visible white
+            // flash between images.
             bool canReuse = Previewer is IReusablePreviewer && Previewer.GetType() == neededType;
 
             if (!canReuse)
@@ -351,15 +391,35 @@ namespace Peek.FilePreviewer
             }
 
             UpdatePreviewerItem();
-            await UpdatePreviewAsync(_cancellationTokenSource.Token);
+
+            _ = SafeUpdatePreviewAsync(_cancellationTokenSource.Token);
         }
 
-        private async Task OnScalingFactorPropertyChanged()
+        private async Task SafeUpdatePreviewAsync(CancellationToken cancellationToken)
         {
-            await UpdatePreviewSizeAsync(_cancellationTokenSource.Token);
+            try
+            {
+                await UpdatePreviewAsync(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected during rapid navigation.
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error in SafeUpdatePreviewAsync", ex);
+            }
         }
 
-        private async Task UpdatePreviewSizeAsync(CancellationToken cancellationToken)
+        private void OnScalingFactorPropertyChanged()
+        {
+            if (Previewer is IImagePreviewer imagePreviewer)
+            {
+                imagePreviewer.ScalingFactor = ScalingFactor;
+            }
+        }
+
+        public async Task UpdatePreviewSizeAsync(CancellationToken cancellationToken)
         {
             if (Previewer != null)
             {
@@ -370,23 +430,61 @@ namespace Peek.FilePreviewer
 
         private async Task UpdateImagePreviewAsync(CancellationToken cancellationToken)
         {
-            if (Previewer is IImagePreviewer imagePreviewer)
+            if (Previewer is not IImagePreviewer imagePreviewer)
             {
-                var previewSize = await Previewer.GetPreviewSizeAsync(cancellationToken);
-                cancellationToken.ThrowIfCancellationRequested();
-
-                await Previewer.LoadPreviewAsync(cancellationToken);
-                cancellationToken.ThrowIfCancellationRequested();
-
-                // Apply resize and image swap atomically on the UI thread once the image is ready.
-                PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(previewSize));
-                ImagePreview.InstantSwap();
+                return;
             }
+
+            var previewSize = await Previewer.GetPreviewSizeAsync(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await Previewer.LoadPreviewAsync(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            ImagePreview.PrepareNextImage(imagePreviewer.Preview);
+
+            PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(previewSize));
+
+            // Present the staged frame. NB: even with double-buffering, navigation that
+            // also resizes or repositions the window can briefly (1-2 frames) show the
+            // previous image: the window move goes through Win32/DWM while this swap is
+            // WinUI composition, and there is no way to guarantee both commit on the same
+            // frame. A settle-wait heuristic was tried and removed as unreliable; a real
+            // fix needs either WinUI-native window resize/reposition or a custom swap
+            // chain we control.
+            ImagePreview.InstantSwap();
+        }
+
+        /// <summary>
+        /// Rendered bounds of the currently visible image in physical pixels: arranged
+        /// size and offset within the preview host. Diagnostic-only, used to measure the
+        /// letterbox gap left by Stretch="Uniform" against the content region.
+        /// </summary>
+        public Windows.Foundation.Rect GetRenderedImageBoundsPhysical(double scale)
+        {
+            var boundsDip = ImagePreview.GetRenderedImageBoundsDip();
+            double safeScale = scale > 0 ? scale : 1.0;
+            return new Windows.Foundation.Rect(
+                boundsDip.X * safeScale,
+                boundsDip.Y * safeScale,
+                boundsDip.Width * safeScale,
+                boundsDip.Height * safeScale);
+        }
+
+        /// <summary>
+        /// Diagnostic-only: the image host size, the image's arranged render size, and the
+        /// image's natural pixel size, all in DIPs. Lets callers pinpoint whether the pixel
+        /// loss driving the Uniform letterbox is in the host arrange or the image arrange.
+        /// </summary>
+        public (Windows.Foundation.Size Host, Windows.Foundation.Size ImageRender, Windows.Foundation.Size ImageNatural) GetImageLayoutDiagnosticsDip()
+        {
+            return ImagePreview.GetImageLayoutDiagnosticsDip();
         }
 
         private async Task UpdatePreviewAsync(CancellationToken cancellationToken)
         {
-            if (Previewer is null)
+            var currentPreviewer = Previewer;
+            if (currentPreviewer is null)
             {
                 return;
             }
@@ -395,7 +493,7 @@ namespace Peek.FilePreviewer
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (Previewer is IImagePreviewer)
+                if (currentPreviewer is IImagePreviewer)
                 {
                     await UpdateImagePreviewAsync(cancellationToken);
                 }
@@ -403,22 +501,35 @@ namespace Peek.FilePreviewer
                 {
                     await UpdatePreviewSizeAsync(cancellationToken);
                     cancellationToken.ThrowIfCancellationRequested();
-                    await Previewer.LoadPreviewAsync(cancellationToken);
+                    await currentPreviewer.LoadPreviewAsync(cancellationToken);
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
-                await UpdateTooltipAsync(cancellationToken);
+
+                // Ensure previewer hasn't changed during async operations.
+                if (ReferenceEquals(currentPreviewer, Previewer))
+                {
+                    await UpdateTooltipAsync(cancellationToken);
+                }
             }
             catch (OperationCanceledException)
             {
-                // Expected during navigation.
+                // Expected during fast navigation.
             }
             catch (Exception ex)
             {
-                // Fall back to Default previewer.
-                PowerToysTelemetry.Log.WriteEvent(new ErrorEvent() { HResult = (Common.Models.HResult)ex.HResult, Message = ex.Message, Failure = ErrorEvent.FailureType.PreviewFail });
-                Logger.LogError("Error in UpdatePreviewAsync, falling back to default previewer: " + ex.Message);
-                Previewer.State = PreviewState.Error;
+                // Fall back to Default previewer if the request is still current.
+                if (ReferenceEquals(currentPreviewer, Previewer) && !cancellationToken.IsCancellationRequested)
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new ErrorEvent()
+                    {
+                        HResult = (HResult)ex.HResult,
+                        Message = ex.Message,
+                        Failure = ErrorEvent.FailureType.PreviewFail,
+                    });
+                    Logger.LogError("Error in UpdatePreviewAsync, falling back to default previewer: " + ex.Message);
+                    currentPreviewer.State = PreviewState.Error;
+                }
             }
         }
 
@@ -428,7 +539,7 @@ namespace Peek.FilePreviewer
             VideoPreview.MediaPlayer.Source = null;
             VideoPreview.Source = null;
             AudioPreview.Source = null;
-            ImagePreview.Source = null;
+            ImagePreview.Clear();
             ArchivePreview.Source = null;
             BrowserPreview.Source = null;
             DrivePreview.Source = null;
@@ -550,20 +661,26 @@ namespace Peek.FilePreviewer
             }
 
             // Fetch and format available file properties
-            string fileNameFormatted = ReadableStringHelper.FormatResourceString("PreviewTooltip_FileName", Item.Name);
+            string fileNameFormatted = ResourceLoaderInstance.FormatString("PreviewTooltip_FileName", Item.Name);
             var sb = new StringBuilder(fileNameFormatted, 256);
 
             cancellationToken.ThrowIfCancellationRequested();
             string fileType = await Task.Run(Item.GetContentTypeAsync);
-            string fileTypeFormatted = string.IsNullOrEmpty(fileType) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_FileType", fileType);
+            string fileTypeFormatted = string.IsNullOrEmpty(fileType)
+                ? string.Empty
+                : "\n" + ResourceLoaderInstance.FormatString("PreviewTooltip_FileType", fileType);
             sb.Append(fileTypeFormatted);
 
             string dateModified = Item.DateModified?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
-            string dateModifiedFormatted = string.IsNullOrEmpty(dateModified) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_DateModified", dateModified);
+            string dateModifiedFormatted = string.IsNullOrEmpty(dateModified)
+                ? string.Empty
+                : "\n" + ResourceLoaderInstance.FormatString("PreviewTooltip_DateModified", dateModified);
             sb.Append(dateModifiedFormatted);
 
             string fileSize = ReadableStringHelper.BytesToReadableString(Item.FileSizeBytes);
-            string fileSizeFormatted = string.IsNullOrEmpty(fileSize) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_FileSize", fileSize);
+            string fileSizeFormatted = string.IsNullOrEmpty(fileSize)
+                ? string.Empty
+                : "\n" + ResourceLoaderInstance.FormatString("PreviewTooltip_FileSize", fileSize);
             sb.Append(fileSizeFormatted);
 
             if (!ShowFilePreviewTooltip)

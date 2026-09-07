@@ -40,6 +40,18 @@ public sealed partial class DoubleBufferedImageControl : UserControl
         set => SetValue(SourceProperty, value);
     }
 
+    public void Clear()
+    {
+        if (Source is not null)
+        {
+            Source = null;
+        }
+        else
+        {
+            UpdateSource(null);
+        }
+    }
+
     private static void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         ((DoubleBufferedImageControl)d).UpdateSource(e.NewValue as ImageSource);
@@ -68,14 +80,29 @@ public sealed partial class DoubleBufferedImageControl : UserControl
             return;
         }
 
-        // Active image visible: prepare back buffer for immediate promotion.
+        // Active image visible: stage the back buffer. Callers that need to synchronize
+        // presentation with another surface should use PrepareNextImage instead.
         _currentImage.Opacity = 1;
         _hiddenImage.Opacity = 0;
         _hiddenImage.Source = newSource;
     }
 
+    /// <summary>Stages an already-loaded source in the back buffer.</summary>
+    public void PrepareNextImage(ImageSource? newSource)
+    {
+        if (newSource is null)
+        {
+            Clear();
+            return;
+        }
+
+        _hiddenImage.Source = newSource;
+        _hiddenImage.Opacity = 0;
+        _currentImage.Opacity = 1;
+    }
+
     /// <summary>
-    /// Promotes the back buffer immediately without animation.
+    /// Promotes the back buffer immediately.
     /// </summary>
     public void InstantSwap()
     {
@@ -84,11 +111,6 @@ public sealed partial class DoubleBufferedImageControl : UserControl
             return;
         }
 
-        PromoteHiddenImage();
-    }
-
-    private void PromoteHiddenImage()
-    {
         (_currentImage, _hiddenImage) = (_hiddenImage, _currentImage);
         _currentImage.Opacity = 1;
         _hiddenImage.Opacity = 0;

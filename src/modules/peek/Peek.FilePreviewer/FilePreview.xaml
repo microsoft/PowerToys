@@ -33,11 +33,11 @@
 
         <controls:DoubleBufferedImageControl
             x:Name="ImagePreview"
-            MaxWidth="{x:Bind ImagePreviewer.MaxImageSize.Width, Mode=OneWay}"
-            MaxHeight="{x:Bind ImagePreviewer.MaxImageSize.Height, Mode=OneWay}"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
             Opacity="{x:Bind GetImagePreviewOpacity(IsLoadingIndicatorVisible), Mode=OneWay}"
             PointerMoved="ToolTipParentControl_PointerMoved"
-            Source="{x:Bind ImagePreviewer.Preview, Mode=OneWay}"
+            UseLayoutRounding="True"
             Visibility="{x:Bind IsPreviewVisible(ImagePreviewer, Previewer.State), Mode=OneWay}">
             <ToolTipService.ToolTip>
                 <ToolTip Content="{x:Bind InfoTooltip, Mode=OneWay}" />

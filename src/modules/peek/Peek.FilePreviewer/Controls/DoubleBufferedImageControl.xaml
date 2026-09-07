@@ -6,19 +6,16 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Peek.FilePreviewer.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    UseLayoutRounding="True"
     mc:Ignorable="d">
 
     <Grid x:Name="RootGrid">
         <Image
             x:Name="Image1"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
             Opacity="1"
             Stretch="Uniform" />
         <Image
             x:Name="Image2"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
             Opacity="0"
             Stretch="Uniform" />
     </Grid>
