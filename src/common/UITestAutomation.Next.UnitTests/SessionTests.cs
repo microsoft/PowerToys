@@ -29,6 +29,22 @@ public sealed class SessionTests
     }
 
     [TestMethod]
+    public void SlugInspectionPreservesEmptyBoundsForOffscreenElements()
+    {
+        using var document = JsonDocument.Parse("""
+            {"windows":[{"elements":[{
+              "selector":"grp-offscreen-1234","type":"Group","className":"SettingsCard",
+              "isOffscreen":true,"x":0,"y":0,"width":0,"height":0
+            }]}]}
+            """);
+
+        var matches = Session.ParseSearchResult(document.RootElement, fromInspection: true);
+
+        Assert.HasCount(1, matches);
+        Assert.AreEqual(new Session.SearchHit("grp-offscreen-1234", string.Empty, "Group", "SettingsCard", 0, 0, 0, 0), matches[0]);
+    }
+
+    [TestMethod]
     public void TextSearchPreservesAllMatchesAndMetadata()
     {
         using var document = JsonDocument.Parse("""

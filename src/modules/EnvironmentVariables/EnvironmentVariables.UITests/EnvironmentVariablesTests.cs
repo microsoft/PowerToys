@@ -169,12 +169,19 @@ public sealed class EnvironmentVariablesTests : UITestBase
         Assert.IsFalse(editor.Session.IsElevated, "Launch as administrator OFF must launch a non-elevated editor.");
         Assert.IsTrue(editor.Session.Find<Button>(By.AccessibilityId("AddDefaultVariableUserBtn")).IsEnabled);
         Assert.IsFalse(editor.Session.Find<Button>(By.AccessibilityId("AddDefaultVariableSystemBtn")).IsEnabled);
-        var system = editor.ExpandDefaultSet(EnvironmentVariableTarget.Machine);
-        var path = editor.VariableCard(system, "Path");
-        var liveBounds = editor.Session.Find<Element>(By.Slug(path.Selector));
+
+        // Off-screen variable rows can legitimately have empty bounds. Exercise the CLI geometry
+        // contract on the visible window, independently of list length, scroll position, or DPI.
+        var root = editor.Session.Inspect(depth: 1).GetProperty("windows")[0].GetProperty("elements")[0];
+        var rootSelector = EditorUi.Property(root, "selector");
+        var liveBounds = editor.Session.Find<Window>(By.Slug(rootSelector));
         Assert.IsTrue(
             liveBounds.Width > 0 && liveBounds.Height > 0,
-            $"Live winapp ui inspect must preserve slug bounds for {path.Selector}; got {liveBounds.Width}x{liveBounds.Height}.");
+            $"Live winapp ui inspect must preserve visible window bounds for {rootSelector}; got {liveBounds.Width}x{liveBounds.Height}.");
+
+        var system = editor.ExpandDefaultSet(EnvironmentVariableTarget.Machine);
+        var path = editor.VariableCard(system, "Path");
+        editor.Step($"Checking System PATH editability independently of row geometry ({path.Width}x{path.Height}).");
         var options = editor.Child<Button>(path, "Button", automationId: "VariableOptionsButton");
         Assert.IsFalse(options.IsEnabled, "System variables must be read-only.");
         Assert.IsFalse(string.IsNullOrWhiteSpace(options.Name), "Variable options must expose an accessible name.");
