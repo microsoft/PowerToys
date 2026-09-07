@@ -58,10 +58,10 @@ namespace Peek.UI.Views
                new PropertyMetadata(null, (d, e) => ((TitleBar)d).OnNumberOfFilesPropertyChanged()));
 
         [ObservableProperty]
-        private string openWithAppText = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWith_Text");
+        private string openWithAppText = ResourceLoaderInstance.GetString("LaunchAppButton_OpenWith_Text");
 
         [ObservableProperty]
-        private string openWithAppToolTip = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWith_ToolTip");
+        private string openWithAppToolTip = ResourceLoaderInstance.GetString("LaunchAppButton_OpenWith_ToolTip");
 
         [ObservableProperty]
         private string? fileCountText;
@@ -179,7 +179,7 @@ namespace Peek.UI.Views
 
         public string PinToolTip(bool pinned)
         {
-            return pinned ? ResourceLoaderInstance.ResourceLoader.GetString("UnpinButton_ToolTip") : ResourceLoaderInstance.ResourceLoader.GetString("PinButton_ToolTip");
+            return pinned ? ResourceLoaderInstance.GetString("UnpinButton_ToolTip") : ResourceLoaderInstance.GetString("PinButton_ToolTip");
         }
 
         [RelayCommand]
@@ -272,7 +272,7 @@ namespace Peek.UI.Views
         {
             if (NumberOfFiles >= 1)
             {
-                string fileCountTextFormat = ResourceLoaderInstance.ResourceLoader.GetString("AppTitle_FileCounts_Text");
+                string fileCountTextFormat = ResourceLoaderInstance.GetString("AppTitle_FileCounts_Text");
                 FileCountText = string.Format(CultureInfo.InvariantCulture, fileCountTextFormat, FileIndex + 1, NumberOfFiles);
             }
             else
@@ -288,10 +288,10 @@ namespace Peek.UI.Views
                 // Update the name of default app to launch
                 DefaultAppName = DefaultAppHelper.TryGetDefaultAppName(Item.Extension);
 
-                string openWithAppTextFormat = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWithApp_Text");
+                string openWithAppTextFormat = ResourceLoaderInstance.GetString("LaunchAppButton_OpenWithApp_Text");
                 OpenWithAppText = string.Format(CultureInfo.InvariantCulture, openWithAppTextFormat, DefaultAppName);
 
-                string openWithAppToolTipFormat = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWithApp_ToolTip");
+                string openWithAppToolTipFormat = ResourceLoaderInstance.GetString("LaunchAppButton_OpenWithApp_ToolTip");
                 OpenWithAppToolTip = string.Format(CultureInfo.InvariantCulture, openWithAppToolTipFormat, DefaultAppName);
             }
             else

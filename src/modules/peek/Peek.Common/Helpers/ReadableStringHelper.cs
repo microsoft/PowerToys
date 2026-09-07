@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -10,14 +10,33 @@ namespace Peek.Common.Helpers
 {
     public static class ReadableStringHelper
     {
-        private const int MaxDigitsToDisplay = 3;
+        /// <summary>
+        /// The number of significant digits to show in the abbreviated size, spread
+        /// across the whole number rather than just the decimals. The integer part is
+        /// filled first and any remaining budget becomes decimal places, so the mantissa
+        /// renders as e.g. "1.23 GB", "12.3 GB", or "123 GB". This also caps the mantissa
+        /// below 1000 (see the unit-promotion guard in <see
+        /// cref="BytesToReadableString"/>), which keeps the integer part at three digits
+        /// or fewer and avoids any culture-specific thousands grouping on the abbreviated
+        /// value.
+        /// </summary>
+        private const int SignificantDigits = 3;
         private const int PowerFactor = 1024;
 
+        /// <summary>
+        /// Converts a byte count into a localized, human-readable size string, e.g.
+        /// "1.5 MB". Uses <see cref="CultureInfo.CurrentCulture"/> because the result is
+        /// user-facing display text.
+        /// </summary>
+        /// <param name="bytes">The size in bytes.</param>
+        /// <param name="showTotalBytes">Whether to append the exact byte count in
+        /// parentheses after the abbreviated size.</param>
+        /// <returns>The localized, human-readable size string.</returns>
         public static string BytesToReadableString(ulong bytes, bool showTotalBytes = true)
         {
             string totalBytesDisplays = (bytes == 1) ?
-                ResourceLoaderInstance.ResourceLoader.GetString("ReadableString_ByteString") :
-                ResourceLoaderInstance.ResourceLoader.GetString("ReadableString_BytesString");
+                ResourceLoaderInstance.GetString("ReadableString_ByteString") :
+                ResourceLoaderInstance.GetString("ReadableString_BytesString");
 
             int index = 0;
             double number = 0.0;
@@ -28,7 +47,7 @@ namespace Peek.Common.Helpers
                 number = bytes / Math.Pow(PowerFactor, index);
             }
 
-            if (index > 0 && number >= Math.Pow(10, MaxDigitsToDisplay))
+            if (index > 0 && number >= Math.Pow(10, SignificantDigits))
             {
                 index++;
                 number = bytes / Math.Pow(PowerFactor, index);
@@ -39,52 +58,35 @@ namespace Peek.Common.Helpers
 
             number = Math.Truncate(number * decimalPrecision) / decimalPrecision;
 
-            string formatSpecifier = GetFormatSpecifierString(index, number, bytes, precision);
+            string formatSpecifier = GetFormatSpecifierString(index, bytes, precision);
 
             return bytes == 0 || !showTotalBytes
                 ? string.Format(CultureInfo.CurrentCulture, formatSpecifier, number)
                 : string.Format(CultureInfo.CurrentCulture, formatSpecifier + totalBytesDisplays, number, bytes);
         }
 
-        public static string FormatResourceString(string resourceId, object? args)
-        {
-            var formatString = ResourceLoaderInstance.ResourceLoader.GetString(resourceId);
-            var formattedString = string.IsNullOrEmpty(formatString) ? string.Empty : string.Format(CultureInfo.InvariantCulture, formatString, args);
-
-            return formattedString;
-        }
-
-        public static string FormatResourceString(string resourceId, object? args0, object? args1)
-        {
-            var formatString = ResourceLoaderInstance.ResourceLoader.GetString(resourceId);
-            var formattedString = string.IsNullOrEmpty(formatString) ? string.Empty : string.Format(CultureInfo.InvariantCulture, formatString, args0, args1);
-
-            return formattedString;
-        }
-
-        public static int GetPrecision(int index, double number)
+        private static int GetPrecision(int index, double number)
         {
             int numberOfDigits = MathHelper.NumberOfDigits((int)number);
-            return index == 0 ?
-                0 :
-                MaxDigitsToDisplay - numberOfDigits;
+            return index == 0
+                ? 0
+                : SignificantDigits - numberOfDigits;
         }
 
-        public static string GetFormatSpecifierString(int index, double number, ulong bytes, int precision)
+        private static string GetFormatSpecifierString(int index, ulong bytes, int precision)
         {
-            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-            List<string> format = new List<string>
-            {
-                (bytes == 1) ?
-                    resourceLoader.GetString("ReadableString_ByteAbbreviationFormat") : // "byte"
-                    resourceLoader.GetString("ReadableString_BytesAbbreviationFormat"), // "bytes"
-                resourceLoader.GetString("ReadableString_KiloByteAbbreviationFormat"), // "KB"
-                resourceLoader.GetString("ReadableString_MegaByteAbbreviationFormat"), // "MB"
-                resourceLoader.GetString("ReadableString_GigaByteAbbreviationFormat"), // "GB"
-                resourceLoader.GetString("ReadableString_TeraByteAbbreviationFormat"), // "TB"
-                resourceLoader.GetString("ReadableString_PetaByteAbbreviationFormat"), // "PB"
-                resourceLoader.GetString("ReadableString_ExaByteAbbreviationFormat"),  // "EB"
-            };
+            List<string> format =
+            [
+                (bytes == 1)
+                    ? ResourceLoaderInstance.GetString("ReadableString_ByteAbbreviationFormat") // "byte"
+                    : ResourceLoaderInstance.GetString("ReadableString_BytesAbbreviationFormat"), // "bytes"
+                      ResourceLoaderInstance.GetString("ReadableString_KiloByteAbbreviationFormat"), // "KB"
+                      ResourceLoaderInstance.GetString("ReadableString_MegaByteAbbreviationFormat"), // "MB"
+                      ResourceLoaderInstance.GetString("ReadableString_GigaByteAbbreviationFormat"), // "GB"
+                      ResourceLoaderInstance.GetString("ReadableString_TeraByteAbbreviationFormat"), // "TB"
+                      ResourceLoaderInstance.GetString("ReadableString_PetaByteAbbreviationFormat"), // "PB"
+                      ResourceLoaderInstance.GetString("ReadableString_ExaByteAbbreviationFormat"),  // "EB"
+            ];
 
             return "{0:F" + precision + "} " + format[index];
         }
