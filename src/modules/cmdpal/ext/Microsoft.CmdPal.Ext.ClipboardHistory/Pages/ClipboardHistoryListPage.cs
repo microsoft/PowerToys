@@ -171,7 +171,16 @@ internal sealed partial class ClipboardHistoryListPage : ListPage, IDisposable, 
                 Refresh();
             }
 
-            return _cache.Items;
+            var items = _cache.Items;
+            foreach (var item in items)
+            {
+                if (item is ClipboardListItem clipboardItem)
+                {
+                    clipboardItem.RefreshFileSystemMetadata();
+                }
+            }
+
+            return items;
         }
     }
 

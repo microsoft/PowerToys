@@ -984,8 +984,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
             LoadExtendedAttributes(haveProperties.GetProperties().AsReadOnly());
         }
 
-        FetchItems(keepSelection: true, ensureSelectionVisible: true);
         model.ItemsChanged += Model_ItemsChanged;
+        FetchItems(keepSelection: true, ensureSelectionVisible: true);
     }
 
     private static IGridPropertiesViewModel? LoadGridPropertiesViewModel(IGridProperties? gridProperties)
