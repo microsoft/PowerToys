@@ -163,6 +163,9 @@ public sealed class EnvironmentVariablesTests : UITestBase
     [TestMethod]
     public void StandardUserCannotEditSystemVariables()
     {
+        Assert.IsTrue(
+            WindowHelper.IsWindowMaximized(new IntPtr(editor.Session.WindowHandle)),
+            "The editor must be maximized, matching the Settings window's default state.");
         Assert.IsFalse(editor.Session.IsElevated, "Launch as administrator OFF must launch a non-elevated editor.");
         Assert.IsTrue(editor.Session.Find<Button>(By.AccessibilityId("AddDefaultVariableUserBtn")).IsEnabled);
         Assert.IsFalse(editor.Session.Find<Button>(By.AccessibilityId("AddDefaultVariableSystemBtn")).IsEnabled);
@@ -317,10 +320,10 @@ public sealed class EnvironmentVariablesTests : UITestBase
         TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Launching Environment Variables from Settings with administrator mode OFF.");
         if (!Session.Has(By.AccessibilityId("EnvironmentVariablesNavItem"), 500))
         {
-            Session.Find<NavigationViewItem>(By.AccessibilityId("AdvancedNavItem")).Click();
+            Session.Find<NavigationViewItem>(By.AccessibilityId("AdvancedNavItem")).Click(msPostAction: 0);
         }
 
-        Session.Find<NavigationViewItem>(By.AccessibilityId("EnvironmentVariablesNavItem")).Click();
+        Session.Find<NavigationViewItem>(By.AccessibilityId("EnvironmentVariablesNavItem")).Click(msPostAction: 0);
         var settings = new EditorUi(Session, TestContext);
         var adminCard = Session.Find<Element>(By.AccessibilityId("EnvironmentVariablesToggleLaunchAdministrator"));
         EditorUi.SetToggle(settings.Child<ToggleSwitch>(adminCard, "ToggleSwitch"), false);
@@ -329,10 +332,10 @@ public sealed class EnvironmentVariablesTests : UITestBase
         Assert.IsTrue(
             WindowControl.WaitForForeground(new IntPtr(Session.WindowHandle), timeoutMS: 10_000),
             $"Settings must own foreground before clicking its launch card: {WindowControl.GetForegroundWindowInfo()}");
-        launchCard.Click();
+        launchCard.Click(msPostAction: 0);
         var window = WindowsFinder.WaitForWindowByApp(TestState.ProcessName, candidate => candidate.Width > 400 && candidate.Height > 300, timeoutMS: 30_000);
         Assert.IsNotNull(window, "Environment Variables did not launch from Settings.");
-        WindowHelper.SetWindowSize(new IntPtr(window.WindowHandle), WindowSize.Large);
+        WindowHelper.MaximizeWindow(new IntPtr(window.WindowHandle));
         editor = new EditorUi(window, TestContext);
         Assert.IsTrue(window.WaitForElement(By.AccessibilityId("AddDefaultVariableUserBtn"), 15_000), "The editor did not become ready.");
     }

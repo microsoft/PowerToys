@@ -105,7 +105,7 @@ internal sealed class EditorUi(Session session, TestContext context)
         Step($"{action} PATH list entry {index}");
         var buttons = Session.FindAll<Button>(By.AccessibilityId("PathEntryOptionsButton")).ToArray();
         Assert.IsTrue(index >= 0 && index < buttons.Length, $"PATH entry {index} was not found among {buttons.Length} entries.");
-        buttons[index].Invoke();
+        buttons[index].Invoke(msPostAction: 0);
         Menu($"{action}PathEntryMenuItem");
     }
 
@@ -159,7 +159,7 @@ internal sealed class EditorUi(Session session, TestContext context)
         if (header.GetProperty("ExpandCollapseState") != "Expanded")
         {
             Step($"Expanding {expander.Name}");
-            header.Invoke();
+            header.Invoke(msPostAction: 0);
             Assert.IsTrue(header.WaitForProperty("ExpandCollapseState", "Expanded", 10_000), $"'{expander.Name}' did not expand.");
         }
 
@@ -179,14 +179,14 @@ internal sealed class EditorUi(Session session, TestContext context)
         var save = Session.Find<Button>(By.AccessibilityId("PrimaryButton"));
         Assert.IsTrue(save.IsEnabled, "The dialog Save button should be enabled.");
         Step("Saving dialog");
-        save.Invoke();
+        save.Invoke(msPostAction: 0);
         Assert.IsTrue(save.WaitForGone(10_000), "The saved dialog did not close.");
     }
 
     internal void AddUserVariableAndVerify(string name, string value)
     {
         Step($"Adding User variable {name}");
-        Session.Find<Button>(By.AccessibilityId("AddDefaultVariableUserBtn")).Invoke();
+        Session.Find<Button>(By.AccessibilityId("AddDefaultVariableUserBtn")).Invoke(msPostAction: 0);
         Session.Find<TextBox>(By.AccessibilityId("DefaultVariableNameTextBox")).SetText(name);
         Session.Find<TextBox>(By.AccessibilityId("DefaultVariableValueTextBox")).SetText(value);
         SaveDialog();
@@ -202,10 +202,11 @@ internal sealed class EditorUi(Session session, TestContext context)
     {
         Step($"{action} variable {name} in {expander.Name}");
         var card = VariableCard(expander, name);
-        Child<Button>(card, "Button", automationId: "VariableOptionsButton").Invoke();
+        Child<Button>(card, "Button", automationId: "VariableOptionsButton").Invoke(msPostAction: 0);
         Menu($"{action}VariableMenuItem");
     }
 
+    // List-edit menu actions can re-realize controls that already exist, so retain their transition grace.
     private void Menu(string automationId) => Session.Find<Element>(By.AccessibilityId(automationId)).Invoke();
 
     internal void ConfirmRemoval()
@@ -213,14 +214,14 @@ internal sealed class EditorUi(Session session, TestContext context)
         Step("Confirming removal");
         var yes = Session.Find<Button>(By.AccessibilityId("PrimaryButton"));
         Assert.IsTrue(yes.IsEnabled, "The removal confirmation must be enabled.");
-        yes.Invoke();
+        yes.Invoke(msPostAction: 0);
         Assert.IsTrue(yes.WaitForGone(10_000), "The removal confirmation did not close.");
     }
 
     internal void CreateProfileAndVerify(string name, bool enabled, params (string Name, string Value)[] variables)
     {
         Step($"Creating profile {name}");
-        Session.Find<Button>(By.AccessibilityId("NewProfileButton")).Invoke();
+        Session.Find<Button>(By.AccessibilityId("NewProfileButton")).Invoke(msPostAction: 0);
         FillProfile(name, enabled, variables);
     }
 
@@ -235,7 +236,7 @@ internal sealed class EditorUi(Session session, TestContext context)
         Step($"{action} profile {name}");
         var options = Child<Button>(Expander(name), "Button", automationId: "ProfileOptionsButton");
         Assert.IsFalse(string.IsNullOrWhiteSpace(options.Name), "Profile options must expose an accessible name.");
-        options.Invoke();
+        options.Invoke(msPostAction: 0);
         Menu($"{action}ProfileMenuItem");
     }
 
@@ -245,12 +246,12 @@ internal sealed class EditorUi(Session session, TestContext context)
         foreach (var variable in variables)
         {
             Step($"Adding {variable.Name} to profile {name}");
-            Session.Find<Button>(By.AccessibilityId("AddProfileVariableButton")).Invoke();
+            Session.Find<Button>(By.AccessibilityId("AddProfileVariableButton")).Invoke(msPostAction: 0);
             Session.Find<TextBox>(By.AccessibilityId("AddNewVariableName")).SetText(variable.Name);
             Session.Find<TextBox>(By.AccessibilityId("AddNewVariableValue")).SetText(variable.Value);
             var add = Session.Find<Button>(By.AccessibilityId("ConfirmAddVariableBtn"));
             Assert.IsTrue(add.IsEnabled, $"Could not add {variable.Name} to {name}.");
-            add.Invoke();
+            add.Invoke(msPostAction: 0);
             Assert.IsTrue(add.WaitForGone(10_000), "The Add variable flyout did not close.");
         }
 
@@ -271,7 +272,7 @@ internal sealed class EditorUi(Session session, TestContext context)
     {
         if (toggle.IsOn != enabled)
         {
-            toggle.Invoke();
+            toggle.Invoke(msPostAction: 0);
         }
 
         Assert.IsTrue(toggle.WaitForProperty("ToggleState", enabled ? "On" : "Off", 10_000), "The toggle state did not update.");

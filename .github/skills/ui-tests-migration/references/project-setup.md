@@ -156,6 +156,18 @@ the defect especially visible, but ordinary `Element.Click()`, `MouseClick()`, `
 coordinate-based `MouseHelper` calls need the same physical coordinate space. Some older reference
 projects omit the manifest; do not copy that omission into new or migrated projects.
 
+**Size secondary windows explicitly.** `UITestBase` maximizes its own Settings/scope window by
+default, but an editor discovered with `WindowsFinder.WaitForWindowByApp` does not inherit that
+behavior. For an editor whose geometry is not the behavior under test, call
+`WindowHelper.MaximizeWindow(new IntPtr(editor.WindowHandle))` after discovery, just as Settings
+does. Windows then uses that window's monitor work area and DPI instead of a hand-sized rectangle.
+
+Keep the DPI manifest even when maximizing. With a DPI-aware test host, `WindowSize.Large` is a
+fixed **1920x1080 physical-pixel** preset (clamped to 90% of the primary display), not a 1920x1080
+DIP request; its logical size therefore changes with scaling. Use a preset only when the scenario
+needs a specific size, and account for the target monitor/DPI rather than assuming the preset is
+DPI-scaled. Passing `WindowSize.UnSpecified` to `SetWindowSize` is a no-op, not a maximize request.
+
 ## 4c. (Visual tests only) embed platform baselines
 
 Add baseline PNGs as embedded resources and use `VisualAssert.AreEqual`:
