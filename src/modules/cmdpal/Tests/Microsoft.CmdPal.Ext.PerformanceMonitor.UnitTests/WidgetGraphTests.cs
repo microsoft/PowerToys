@@ -30,16 +30,18 @@ public partial class WidgetGraphTests
         foreach (var page in pages)
         {
             var content = page.GetContent();
-            Assert.HasCount(2, content);
+            Assert.HasCount(ReferenceEquals(page, memory) ? 3 : 2, content);
             Assert.IsInstanceOfType<ILineGraphContent>(content[0]);
             var graph = (ILineGraphContent)content[0];
-            Assert.IsInstanceOfType<IFormContent>(content[1]);
+            Assert.IsInstanceOfType<IFormContent>(content[^1]);
             Assert.AreEqual(0d, graph.Minimum);
             Assert.AreEqual(100d, graph.Maximum);
             Assert.AreEqual(UsageHistory.Duration, graph.HistoryDuration);
             Assert.AreEqual("%", graph.ValueSuffix);
             Assert.AreSame(content[0], page.GetContent()[0]);
         }
+
+        Assert.IsInstanceOfType<IResourceBarContent>(memory.GetContent()[1]);
 
         var cpuGraph = (ILineGraphContent)cpu.GetContent()[0];
         var series = cpuGraph.GetSeries();

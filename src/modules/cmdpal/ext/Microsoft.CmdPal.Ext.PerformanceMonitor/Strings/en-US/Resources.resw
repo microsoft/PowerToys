@@ -509,4 +509,22 @@
   <data name="Disk_Speed_Unit_BinaryBytesPerSec" xml:space="preserve">
     <value>Binary bytes per second (KiB/s, MiB/s, GiB/s)</value>
   </data>
+  <data name="Memory_Composition_Title" xml:space="preserve">
+    <value>Memory composition</value>
+  </data>
+  <data name="Memory_Composition_HardwareReserved" xml:space="preserve">
+    <value>Hardware reserved</value>
+  </data>
+  <data name="Memory_Composition_InUse" xml:space="preserve">
+    <value>In use</value>
+  </data>
+  <data name="Memory_Composition_Modified" xml:space="preserve">
+    <value>Modified</value>
+  </data>
+  <data name="Memory_Composition_Standby" xml:space="preserve">
+    <value>Standby</value>
+  </data>
+  <data name="Memory_Composition_Free" xml:space="preserve">
+    <value>Free</value>
+  </data>
 </root>

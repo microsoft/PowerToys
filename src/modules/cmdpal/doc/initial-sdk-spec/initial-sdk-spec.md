@@ -2484,6 +2484,16 @@ interface IVerticalUsageBarContent requires IContent
     Double[] GetSnapshot(out Double value, out String valueText);
 };
 
+interface IResourceBarContent requires IContent
+{
+    String DisplayName { get; };
+    String ValueFormat { get; };
+    String ValueSuffix { get; };
+    IGraphValueScale[] GetValueScales();
+    IGraphSeriesInfo[] GetSeries();
+    Double[] GetSnapshot();
+};
+
 interface IDoughnutGraphContent requires IContent
 {
     String DisplayName { get; };
@@ -2575,6 +2585,19 @@ interface IDoughnutGraphContent requires IContent
 - With series: exactly one finite, nonnegative contribution per descriptor.
   Contributions stack bottom to top in array order, in range units.
   Clip at `Maximum - Minimum`; do not normalize to their sum.
+
+#### Resource bar
+
+A horizontal composition bar shows each series as a proportion of the total.
+`GetSnapshot()` returns one finite, non-negative value per configured series,
+all in a common unit. Series order determines the left-to-right segment order; zero values occupy no
+space, and an all-zero snapshot leaves the bar empty. Include unused capacity
+as an explicit series when it should occupy part of the bar. The host normalizes
+without overflowing the sum and preserves the original values for readouts.
+
+`ValueFormat`, `ValueSuffix`, and `GetValueScales()` follow the line graph's
+formatting rules. Labels and swatches wrap below the bar. The host owns its
+height, rounded corners, separators, and transitions.
 
 #### Doughnut graph
 

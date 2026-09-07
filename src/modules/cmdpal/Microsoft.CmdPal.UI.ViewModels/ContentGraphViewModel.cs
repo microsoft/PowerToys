@@ -23,6 +23,7 @@ public sealed partial class ContentGraphViewModel(IContent content, WeakReferenc
     {
         Line,
         VerticalBar,
+        ResourceBar,
         Doughnut,
     }
 
@@ -200,6 +201,7 @@ public sealed partial class ContentGraphViewModel(IContent content, WeakReferenc
         {
             ILineGraphContent line => new Configuration(GraphKind.Line, line.DisplayName, ReadSeries(line.GetSeries()), line.Minimum, line.Maximum, line.HistoryDuration, line.ValueFormat, line.ValueSuffix, Smoothing: line.Smoothing, AutoScaleMaximum: line.AutoScaleMaximum, ValueScales: ReadValueScales(line.GetValueScales())),
             IVerticalUsageBarContent bar => new Configuration(GraphKind.VerticalBar, bar.DisplayName, ReadSeries(bar.GetSeries()), bar.Minimum, bar.Maximum, IndicatorColor: bar.IndicatorColor),
+            IResourceBarContent bar => new Configuration(GraphKind.ResourceBar, bar.DisplayName, ReadSeries(bar.GetSeries()), ValueFormat: bar.ValueFormat, ValueSuffix: bar.ValueSuffix, ValueScales: ReadValueScales(bar.GetValueScales())),
             IDoughnutGraphContent doughnut => new Configuration(GraphKind.Doughnut, doughnut.DisplayName, ReadSeries(doughnut.GetSeries())),
             _ => throw new ArgumentException("Unsupported graph content.", nameof(content)),
         };
@@ -230,7 +232,7 @@ public sealed partial class ContentGraphViewModel(IContent content, WeakReferenc
             throw new ArgumentException("Graph smoothing must be finite and between zero and one.");
         }
 
-        if (configuration.Kind == GraphKind.Line)
+        if (configuration.Kind is GraphKind.Line or GraphKind.ResourceBar)
         {
             ArgumentNullException.ThrowIfNull(configuration.ValueScales);
             var previousDivisor = 0d;
@@ -278,6 +280,11 @@ public sealed partial class ContentGraphViewModel(IContent content, WeakReferenc
                 }
 
                 return new(configuration, [], contributions, value, valueText ?? string.Empty);
+
+            case IResourceBarContent resource:
+                var segments = resource.GetSnapshot() ?? [];
+                ValidateValues(segments, configuration.Series.Length);
+                return new(configuration, [], segments);
 
             case IDoughnutGraphContent doughnut:
                 var values = doughnut.GetSnapshot(out var centerValue, out var centerLabel) ?? [];

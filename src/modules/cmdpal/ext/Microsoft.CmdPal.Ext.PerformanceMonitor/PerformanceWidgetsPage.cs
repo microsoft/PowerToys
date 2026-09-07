@@ -473,11 +473,18 @@ internal abstract partial class WidgetPage : OnLoadContentPage
         }
 
         _formContent.DataJson = ContentDataJson.ToJsonString();
+        OnContentUpdated();
 
         Updated?.Invoke(this, EventArgs.Empty);
     }
 
     protected abstract void LoadContentData();
+
+    protected virtual void OnContentUpdated()
+    {
+    }
+
+    protected virtual IContent[] GetGraphContent() => UsageGraph is null ? [] : [UsageGraph];
 
     protected LineGraphContent CreateUsageGraph(params GraphSeriesInfo[] series)
     {
@@ -525,7 +532,7 @@ internal abstract partial class WidgetPage : OnLoadContentPage
 
         lock (ContentData)
         {
-            return UsageGraph is null ? [_formContent] : [UsageGraph, _formContent];
+            return [.. GetGraphContent(), _formContent];
         }
     }
 
@@ -825,12 +832,14 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
                 ContentData["pagedPoolMem"] = MemUlongToString(currentData.MemPagedPool);
                 ContentData["nonPagedPoolMem"] = MemUlongToString(currentData.MemNonPagedPool);
                 UsageGraph!.SetSnapshot(currentData.MemoryHistory.GetSnapshot());
+                UpdateComposition(currentData);
             }
         }
         catch (Exception e)
         {
             ContentData.Clear();
             ContentData["errorMessage"] = e.Message;
+            ClearComposition();
             return;
         }
     }

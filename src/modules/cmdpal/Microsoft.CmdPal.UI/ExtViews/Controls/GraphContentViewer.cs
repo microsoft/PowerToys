@@ -93,6 +93,7 @@ public sealed partial class GraphContentViewer : UserControl
             {
                 ContentGraphViewModel.GraphKind.Line => new LiveAreaGraph(series, configuration.Minimum, configuration.Maximum, configuration.HistoryDuration, configuration.ValueFormat, configuration.ValueSuffix, ResourceLoaderInstance.GetString("GraphInspection_Now"), ResourceLoaderInstance.GetString("GraphInspection_SecondsAgo"), smoothing: configuration.Smoothing, autoScaleMaximum: configuration.AutoScaleMaximum, valueScales: configuration.ValueScales),
                 ContentGraphViewModel.GraphKind.VerticalBar => new VerticalUsageBar(series, configuration.Minimum, configuration.Maximum, ToColor(configuration.IndicatorColor)),
+                ContentGraphViewModel.GraphKind.ResourceBar => new ResourceBar(series, configuration.ValueFormat, configuration.ValueSuffix, configuration.ValueScales),
                 ContentGraphViewModel.GraphKind.Doughnut => new DoughnutGraph(series),
                 _ => throw new InvalidOperationException("Unsupported graph kind."),
             };
@@ -132,6 +133,9 @@ public sealed partial class GraphContentViewer : UserControl
                 break;
             case VerticalUsageBar bar:
                 bar.SetSnapshot(snapshot.Value, snapshot.ValueText, snapshot.Values);
+                break;
+            case ResourceBar resource:
+                resource.SetSnapshot(snapshot.Values);
                 break;
             case DoughnutGraph doughnut:
                 doughnut.SetSnapshot(snapshot.Values, snapshot.ValueText, snapshot.CenterLabel);

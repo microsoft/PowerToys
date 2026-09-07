@@ -19,7 +19,7 @@ internal sealed partial class SampleGraphDetailsPage : ListPage
         Icon = new IconInfo("\uE9D9");
         ShowDetails = true;
         using var samples = new SampleGraphsPage();
-        var names = new[] { "Line graph", "Scalar usage bar", "Stacked usage bar", "Doughnut graph" };
+        var names = new[] { "Line graph", "Scalar usage bar", "Stacked usage bar", "Resource bar", "Doughnut graph" };
         _items = samples.Graphs.Select((graph, index) => new ListItem(new NoOpCommand())
         {
             Title = names[index],

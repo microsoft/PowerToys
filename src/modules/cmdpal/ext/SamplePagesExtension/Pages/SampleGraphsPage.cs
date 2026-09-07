@@ -41,6 +41,13 @@ internal sealed partial class SampleGraphsPage : ContentPage, INotifyItemsChange
         DisplayName = "Storage allocation",
     };
 
+    private readonly ResourceBarContent _resource = new(
+        [new GraphSeriesInfo { Name = "Active" }, new GraphSeriesInfo { Name = "Cached" }, new GraphSeriesInfo { Name = "Free" }])
+    {
+        DisplayName = "Resource composition",
+        ValueSuffix = " GB",
+    };
+
     private readonly DoughnutGraphContent _doughnut = new(
         [new GraphSeriesInfo { Name = "Documents" }, new GraphSeriesInfo { Name = "Media" }, new GraphSeriesInfo { Name = "Other" }])
     {
@@ -65,8 +72,8 @@ internal sealed partial class SampleGraphsPage : ContentPage, INotifyItemsChange
         SeedHistory();
         var description = new MarkdownContent("Interactive samples every second; Background samples every 3 seconds. The graph uses a 1.5-second buffer: Interactive scrolls smoothly and Background advances in steps. Use the command menu to pause, reset, or clear. Hover or use Left/Right and Home/End to inspect values.");
         _content = nested
-            ? [description, new TreeContent { RootContent = _line, Children = [_scalar, _stack, _doughnut] }]
-            : [description, _line, _scalar, _stack, _doughnut];
+            ? [description, new TreeContent { RootContent = _line, Children = [_scalar, _stack, _resource, _doughnut] }]
+            : [description, _line, _scalar, _stack, _resource, _doughnut];
         Commands =
         [
             new CommandContextItem(title: "Pause or resume", name: "Toggle", action: TogglePause, result: CommandResult.KeepOpen()),
@@ -106,7 +113,7 @@ internal sealed partial class SampleGraphsPage : ContentPage, INotifyItemsChange
         }
     }
 
-    internal IContent[] Graphs => [_line, _scalar, _stack, _doughnut];
+    internal IContent[] Graphs => [_line, _scalar, _stack, _resource, _doughnut];
 
     public override IContent[] GetContent() => _content;
 
@@ -194,6 +201,7 @@ internal sealed partial class SampleGraphsPage : ContentPage, INotifyItemsChange
         var active = 12 + (5 * Math.Sin(phase));
         const double cached = 8;
         _stack.SetSnapshot(active + cached, (active + cached).ToString("0.0", CultureInfo.CurrentCulture) + " / 32 GB", [active, cached]);
+        _resource.SetSnapshot([active, cached, 32 - active - cached]);
         _doughnut.SetSnapshot([active, cached, 4], (active + cached + 4).ToString("0.0", CultureInfo.CurrentCulture) + " GB", "Used");
     }
 
@@ -227,6 +235,7 @@ internal sealed partial class SampleGraphsPage : ContentPage, INotifyItemsChange
             _line.SetSnapshot([]);
             _scalar.SetSnapshot(0, "0%");
             _stack.SetSnapshot(0, "0 / 32 GB", [0, 0]);
+            _resource.SetSnapshot([0, 0, 0]);
             _doughnut.SetSnapshot([0, 0, 0], "0 GB", "Used");
         }
     }

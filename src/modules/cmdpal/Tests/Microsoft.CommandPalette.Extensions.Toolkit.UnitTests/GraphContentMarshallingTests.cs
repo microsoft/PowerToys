@@ -82,6 +82,22 @@ public class GraphContentMarshallingTests
         }
     }
 
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ResourceBar_RoundTripsArraysThroughTheAbi(bool empty)
+    {
+        var series = Series(empty);
+        GraphValueScale[] scales = empty ? [] : [new() { Divisor = 1024, Suffix = " KB" }];
+        double[] values = empty ? [] : [12.5, 0, 42.25];
+        var graph = new ResourceBarContent(series, scales);
+        graph.SetSnapshot(values);
+        using var reference = MarshalInterface<IResourceBarContent>.CreateMarshaler(graph);
+        EqualSeries(series, GraphAbi.IResourceBarContentMethods.GetSeries(reference));
+        EqualScales(scales, GraphAbi.IResourceBarContentMethods.GetValueScales(reference));
+        Equal(values, GraphAbi.IResourceBarContentMethods.GetSnapshot(reference));
+    }
+
     private static GraphSeriesInfo[] Series(bool empty) => empty ? [] :
     [
         new()

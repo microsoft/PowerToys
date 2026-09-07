@@ -96,7 +96,7 @@ public partial class MemoryReadoutTests
         AssertObservation(samples, 0, 75, 24, 8);
         AssertObservation(samples, 3, 62.5, 20, 12);
 
-        using var data = JsonDocument.Parse(((IFormContent)content[1]).DataJson);
+        using var data = JsonDocument.Parse(((IFormContent)content[^1]).DataJson);
         Assert.AreEqual(20d.ToString("0.00", CultureInfo.CurrentCulture) + " GB", data.RootElement.GetProperty("usedMem").GetString());
         Assert.AreEqual(12d.ToString("0.00", CultureInfo.CurrentCulture) + " GB", data.RootElement.GetProperty("availableMem").GetString());
         Assert.AreEqual(32d.ToString("0.00", CultureInfo.CurrentCulture) + " GB", data.RootElement.GetProperty("allMem").GetString());

@@ -97,6 +97,7 @@
     <Style BasedOn="{StaticResource DefaultGraphControlStyle}" TargetType="graphs:LiveAreaGraph" />
     <Style BasedOn="{StaticResource DefaultGraphControlStyle}" TargetType="graphs:DoughnutGraph" />
     <Style BasedOn="{StaticResource DefaultGraphControlStyle}" TargetType="graphs:VerticalUsageBar" />
+    <Style BasedOn="{StaticResource DefaultGraphControlStyle}" TargetType="graphs:ResourceBar" />
 
     <DataTemplate x:Key="GraphLegendItemTemplate">
         <Grid ColumnSpacing="6">

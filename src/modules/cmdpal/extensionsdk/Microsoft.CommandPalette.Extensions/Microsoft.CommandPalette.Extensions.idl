@@ -549,6 +549,17 @@ namespace Microsoft.CommandPalette.Extensions
     };
 
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IResourceBarContent requires IContent
+    {
+        String DisplayName { get; };
+        String ValueFormat { get; };
+        String ValueSuffix { get; };
+        IGraphValueScale[] GetValueScales();
+        IGraphSeriesInfo[] GetSeries();
+        Double[] GetSnapshot();
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IDoughnutGraphContent requires IContent
     {
         String DisplayName { get; };

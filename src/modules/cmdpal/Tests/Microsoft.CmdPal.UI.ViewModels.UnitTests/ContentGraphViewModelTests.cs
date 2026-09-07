@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -290,7 +291,7 @@ public partial class ContentGraphViewModelTests
         var context = new TestContext();
         var weakContext = new WeakReference<IPageContext>(context);
         var tree = new ContentTreeViewModel(new TreeContent(), weakContext);
-        IContent[] contents = [new LineGraphContent([]), new VerticalUsageBarContent(), new DoughnutGraphContent([])];
+        IContent[] contents = [new LineGraphContent([]), new VerticalUsageBarContent(), new ResourceBarContent([]), new DoughnutGraphContent([])];
         foreach (var content in contents)
         {
             Assert.IsInstanceOfType<ContentGraphViewModel>(CommandPaletteContentPageViewModel.CreateViewModel(content, weakContext));
@@ -420,6 +421,7 @@ public partial class ContentGraphViewModelTests
     [TestMethod]
     [DataRow(ContentGraphViewModel.GraphKind.Line)]
     [DataRow(ContentGraphViewModel.GraphKind.VerticalBar)]
+    [DataRow(ContentGraphViewModel.GraphKind.ResourceBar)]
     [DataRow(ContentGraphViewModel.GraphKind.Doughnut)]
     public async Task NullArrays_PublishEmptySnapshotsWithoutErrors(ContentGraphViewModel.GraphKind kind)
     {
@@ -427,6 +429,7 @@ public partial class ContentGraphViewModelTests
         {
             ContentGraphViewModel.GraphKind.Line => new NullArrayLineGraph(),
             ContentGraphViewModel.GraphKind.VerticalBar => new NullArrayVerticalBar(),
+            ContentGraphViewModel.GraphKind.ResourceBar => new NullArrayResourceBar(),
             ContentGraphViewModel.GraphKind.Doughnut => new NullArrayDoughnut(),
             _ => throw new ArgumentOutOfRangeException(nameof(kind)),
         };
@@ -443,7 +446,7 @@ public partial class ContentGraphViewModelTests
             Assert.IsEmpty(initial.Configuration.Series);
             Assert.IsEmpty(initial.Samples);
             Assert.IsEmpty(initial.Values);
-            if (kind == ContentGraphViewModel.GraphKind.Line)
+            if (kind is ContentGraphViewModel.GraphKind.Line or ContentGraphViewModel.GraphKind.ResourceBar)
             {
                 Assert.IsNotNull(initial.Configuration.ValueScales);
                 Assert.IsEmpty(initial.Configuration.ValueScales);
@@ -514,13 +517,17 @@ public partial class ContentGraphViewModelTests
 
     [TestMethod]
     [DataRow(ContentGraphViewModel.GraphKind.VerticalBar)]
+    [DataRow(ContentGraphViewModel.GraphKind.ResourceBar)]
     [DataRow(ContentGraphViewModel.GraphKind.Doughnut)]
     public void NullContributions_StillRequireMatchingSeries(ContentGraphViewModel.GraphKind kind)
     {
         IGraphSeriesInfo[] series = [new GraphSeriesInfo { Name = "Used" }];
-        NullArrayGraphContent graph = kind == ContentGraphViewModel.GraphKind.VerticalBar
-            ? new NullArrayVerticalBar { Series = series }
-            : new NullArrayDoughnut { Series = series };
+        NullArrayGraphContent graph = kind switch
+        {
+            ContentGraphViewModel.GraphKind.VerticalBar => new NullArrayVerticalBar { Series = series },
+            ContentGraphViewModel.GraphKind.ResourceBar => new NullArrayResourceBar { Series = series },
+            _ => new NullArrayDoughnut { Series = series },
+        };
         var context = new TestContext();
         var vm = Create(graph, context);
         try
@@ -530,6 +537,47 @@ public partial class ContentGraphViewModelTests
             Assert.IsInstanceOfType<ArgumentException>(context.Errors.Single());
             context.SchedulerImpl.RunAll();
             Assert.IsNull(vm.Data);
+        }
+        finally
+        {
+            vm.SafeCleanup();
+        }
+    }
+
+    [TestMethod]
+    public async Task ResourceBar_CachesMetadataAndPreservesRawValues()
+    {
+        var graph = new ResourceBarContent(
+            [new GraphSeriesInfo { Name = "Used" }, new GraphSeriesInfo { Name = "Free" }],
+            DisplayScales)
+        {
+            DisplayName = "Memory composition",
+            ValueFormat = "0.00",
+            ValueSuffix = " bytes",
+        };
+        double[] values = [24000, 8000];
+        double[] empty = [0, 0];
+        graph.SetSnapshot(values);
+        var context = new TestContext();
+        var vm = Create(graph, context);
+        try
+        {
+            await InitializeGraph(vm, context);
+            context.SchedulerImpl.RunAll();
+            var configuration = vm.Data!.Configuration;
+            Assert.AreEqual(ContentGraphViewModel.GraphKind.ResourceBar, configuration.Kind);
+            Assert.AreEqual("Memory composition", configuration.DisplayName);
+            Assert.AreEqual("0.00", configuration.ValueFormat);
+            Assert.AreEqual(" bytes", configuration.ValueSuffix);
+            Assert.AreEqual(24d.ToString("0.00", CultureInfo.CurrentCulture) + " k items", GraphValueFormatter.Format(24000, configuration.ValueFormat, configuration.ValueSuffix, configuration.ValueScales));
+            CollectionAssert.AreEqual(values, vm.Data.Values);
+
+            graph.SetSnapshot([0, 0]);
+            WaitFor(() => context.SchedulerImpl.Count > 0);
+            context.SchedulerImpl.RunAll();
+            Assert.AreSame(configuration, vm.Data!.Configuration);
+            CollectionAssert.AreEqual(empty, vm.Data.Values);
+            Assert.IsTrue(context.Errors.IsEmpty);
         }
         finally
         {
@@ -633,6 +681,17 @@ public partial class ContentGraphViewModelTests
             valueText = "42%";
             return null!;
         }
+    }
+
+    private sealed partial class NullArrayResourceBar : NullArrayGraphContent, IResourceBarContent
+    {
+        public string ValueFormat => "0.0";
+
+        public string ValueSuffix => " GB";
+
+        public IGraphValueScale[] GetValueScales() => null!;
+
+        public double[] GetSnapshot() => null!;
     }
 
     private sealed partial class NullArrayDoughnut : NullArrayGraphContent, IDoughnutGraphContent

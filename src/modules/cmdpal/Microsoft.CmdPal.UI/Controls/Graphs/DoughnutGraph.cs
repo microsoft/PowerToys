@@ -34,7 +34,7 @@ public sealed partial class DoughnutGraph : GraphControl
 
     public void SetSnapshot(double[] values, string centerValue, string centerLabel)
     {
-        var target = Normalize(values);
+        var target = GraphValueProportions.Normalize(values);
         _centerValue.Text = centerValue;
         _centerLabel.Text = centerLabel;
         SetLegend(Series.Select((series, index) => $"{series.Name}: {values[index].ToString("G4", CultureInfo.CurrentCulture)}").ToArray());
@@ -88,29 +88,5 @@ public sealed partial class DoughnutGraph : GraphControl
 
             angle += sweep;
         }
-    }
-
-    private static double[] Normalize(double[] values)
-    {
-        var normalized = new double[values.Length];
-        var maximum = values.Length == 0 ? 0 : values.Max();
-        if (maximum == 0)
-        {
-            return normalized;
-        }
-
-        // Scale before summing so finite inputs cannot overflow the total.
-        var total = 0d;
-        foreach (var value in values)
-        {
-            total += value / maximum;
-        }
-
-        for (var index = 0; index < values.Length; index++)
-        {
-            normalized[index] = (values[index] / maximum) / total;
-        }
-
-        return normalized;
     }
 }
