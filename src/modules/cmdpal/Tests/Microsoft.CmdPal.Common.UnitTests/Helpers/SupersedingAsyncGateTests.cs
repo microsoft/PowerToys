@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Helpers;
@@ -338,6 +339,76 @@ public sealed class SupersedingAsyncGateTests
         finally
         {
             release.TrySetResult();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExecuteAsync_ExternalCallbackCanReenterDuringSourceDisposal()
+    {
+        var scheduler = new QueuedScheduler();
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var callbackEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var runningToken = CancellationToken.None;
+        var calls = 0;
+        using var cancellation = new CancellationTokenSource();
+        using var gate = new SupersedingAsyncGate(
+            token =>
+            {
+                if (++calls == 1)
+                {
+                    runningToken = token;
+                    return release.Task;
+                }
+
+                return Task.CompletedTask;
+            },
+            scheduler);
+
+        // Observe cleanup directly so this race does not depend on thread timing.
+        var sourceField = typeof(SupersedingAsyncGate).GetField("_currentCancellationSource", BindingFlags.Instance | BindingFlags.NonPublic);
+        var lockField = typeof(SupersedingAsyncGate).GetField("_lock", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.IsNotNull(sourceField);
+        Assert.IsNotNull(lockField);
+        Assert.IsInstanceOfType<Lock>(lockField.GetValue(gate), out var gateLock);
+
+        var first = gate.ExecuteAsync(cancellation.Token);
+        scheduler.ExecuteAll();
+        Task? latest = null;
+        using var registration = runningToken.Register(() =>
+        {
+            callbackEntered.SetResult();
+            Assert.IsTrue(
+                SpinWait.SpinUntil(() => sourceField.GetValue(gate) is null, Timeout),
+                "Cleanup must retire the source while its cancellation callback is still running.");
+            Assert.IsTrue(
+                gateLock.TryEnter(Timeout),
+                "Source disposal must not hold the lock needed by the cancellation callback.");
+            try
+            {
+                latest = gate.ExecuteAsync();
+            }
+            finally
+            {
+                gateLock.Exit();
+            }
+        });
+        var cancelTask = Task.Run(cancellation.Cancel);
+
+        try
+        {
+            await callbackEntered.Task.WaitAsync(Timeout);
+            release.SetResult();
+            await cancelTask.WaitAsync(Timeout + Timeout);
+            await Assert.ThrowsAsync<OperationCanceledException>(() => first.WaitAsync(Timeout));
+
+            Assert.IsNotNull(latest);
+            await latest.WaitAsync(Timeout);
+            Assert.AreEqual(2, calls);
+        }
+        finally
+        {
+            release.TrySetResult();
+            await cancelTask.WaitAsync(Timeout + Timeout);
         }
     }
 

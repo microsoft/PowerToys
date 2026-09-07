@@ -123,8 +123,9 @@ public sealed partial class SupersedingAsyncGate : IDisposable
                 lock (_lock)
                 {
                     _currentCancellationSource = null;
-                    currentCts.Dispose();
                 }
+
+                currentCts.Dispose();
             }
         }
     }
