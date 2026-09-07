@@ -97,6 +97,7 @@ public sealed partial class ListItemsView : UserControl,
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         _isLoaded = false;
+        ViewModel?.CancelPendingActivation();
 
         // Release before the native panel tears down. A reattached grid rebuilds
         // its groups from the source, which is what it does after any teardown.
@@ -151,12 +152,22 @@ public sealed partial class ListItemsView : UserControl,
     /// </summary>
     public void EnsureInitialSelection()
     {
+        var viewModel = ViewModel;
+        var version = Volatile.Read(ref _itemsUpdatedVersion);
+        var filterVersion = viewModel?.PublishedFilterVersion ?? -1;
+
         // Must dispatch the selection to run at a lower priority; otherwise, GetFirstSelectableIndex
         // may return an incorrect index because item containers are not yet rendered.
         _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
         {
-            if (!_isLoaded)
+            if (!_isLoaded || version != Volatile.Read(ref _itemsUpdatedVersion) || !ReferenceEquals(viewModel, ViewModel))
             {
+                return;
+            }
+
+            if (viewModel is not null && filterVersion >= 0 && _forceFirstPending)
+            {
+                ProcessItemsUpdated(viewModel, new ItemsUpdatedEventArgs(forceFirstItem: false, ensureSelectionVisible: true), version);
                 return;
             }
 
@@ -182,6 +193,10 @@ public sealed partial class ListItemsView : UserControl,
 
             // Ensure the command bar refreshes with the restored page's commands.
             PushSelectionToVm();
+            if (!CompleteFilterSelection(viewModel, version, filterVersion) && viewModel is not null)
+            {
+                ProcessItemsUpdated(viewModel, new ItemsUpdatedEventArgs(forceFirstItem: false, ensureSelectionVisible: true), version);
+            }
         });
     }
 
@@ -497,9 +512,9 @@ public sealed partial class ListItemsView : UserControl,
         {
             ViewModel?.InvokeItemCommand.Execute(null);
         }
-        else if (ItemView.SelectedItem is ListItemViewModel item)
+        else
         {
-            ViewModel?.InvokeItemCommand.Execute(item);
+            ViewModel?.InvokeItemCommand.Execute(ItemView.SelectedItem as ListItemViewModel);
         }
     }
 
@@ -509,9 +524,9 @@ public sealed partial class ListItemsView : UserControl,
         {
             ViewModel?.InvokeSecondaryCommandCommand.Execute(null);
         }
-        else if (ItemView.SelectedItem is ListItemViewModel item)
+        else
         {
-            ViewModel?.InvokeSecondaryCommandCommand.Execute(item);
+            ViewModel?.InvokeSecondaryCommandCommand.Execute(ItemView.SelectedItem as ListItemViewModel);
         }
     }
 
@@ -715,6 +730,7 @@ public sealed partial class ListItemsView : UserControl,
             @this.CancelPendingContextMenuOpen();
             if (e.OldValue is ListViewModel old)
             {
+                old.CancelPendingActivation();
                 old.ItemsUpdated -= @this.Page_ItemsUpdated;
             }
 
@@ -782,6 +798,7 @@ public sealed partial class ListItemsView : UserControl,
         _forceFirstPending |= args.ForceFirstItem;
         var forceFirstItem = _forceFirstPending;
         var ensureSelectionVisible = args.EnsureSelectionVisible;
+        var filterVersion = sender.PublishedFilterVersion;
 
         if (_isLoaded)
         {
@@ -792,7 +809,7 @@ public sealed partial class ListItemsView : UserControl,
         // The grouped CollectionViewSource may still be processing its changes.
         // TrySetSelectionAfterUpdate clears _forceFirstPending internally once
         // selection stabilizes (no repair needed), so we don't clear it here.
-        if (TrySetSelectionAfterUpdate(sender, version, forceFirstItem, ensureSelectionVisible))
+        if (TrySetSelectionAfterUpdate(sender, version, forceFirstItem, ensureSelectionVisible, filterVersion))
         {
             return;
         }
@@ -807,7 +824,7 @@ public sealed partial class ListItemsView : UserControl,
                     return;
                 }
 
-                TrySetSelectionAfterUpdate(sender, version, forceFirstItem, ensureSelectionVisible);
+                TrySetSelectionAfterUpdate(sender, version, forceFirstItem, ensureSelectionVisible, filterVersion);
             });
     }
 
@@ -822,7 +839,7 @@ public sealed partial class ListItemsView : UserControl,
     /// <param name="ensureSelectionVisible">
     /// When true, scroll a preserved selection into view after a soft refresh.
     /// </param>
-    private bool TrySetSelectionAfterUpdate(ListViewModel sender, long version, bool forceFirstItem, bool ensureSelectionVisible)
+    private bool TrySetSelectionAfterUpdate(ListViewModel sender, long version, bool forceFirstItem, bool ensureSelectionVisible, long filterVersion)
     {
         if (version != Volatile.Read(ref _itemsUpdatedVersion))
         {
@@ -830,7 +847,7 @@ public sealed partial class ListItemsView : UserControl,
         }
 
         var vm = ViewModel;
-        if (vm is null)
+        if (!_isLoaded || vm is null || !ReferenceEquals(sender, vm))
         {
             return true;
         }
@@ -852,7 +869,7 @@ public sealed partial class ListItemsView : UserControl,
             }
 
             PushSelectionToVm();
-            return true;
+            return CompleteFilterSelection(vm, version, filterVersion);
         }
 
         // If ItemView.Items hasn't caught up with the ObservableCollection yet,
@@ -874,7 +891,7 @@ public sealed partial class ListItemsView : UserControl,
             }
 
             PushSelectionToVm();
-            return true;
+            return CompleteFilterSelection(vm, version, filterVersion);
         }
 
         var shouldUpdateSelection = forceFirstItem;
@@ -980,6 +997,16 @@ public sealed partial class ListItemsView : UserControl,
         }
 
         PushSelectionToVm();
+        return CompleteFilterSelection(vm, version, filterVersion);
+    }
+
+    private bool CompleteFilterSelection(ListViewModel? viewModel, long version, long filterVersion)
+    {
+        if (_isLoaded && version == Volatile.Read(ref _itemsUpdatedVersion) && ReferenceEquals(viewModel, ViewModel))
+        {
+            return viewModel?.CompleteStaticFilterSelection(filterVersion, ItemView.SelectedItem as ListItemViewModel) ?? true;
+        }
+
         return true;
     }
 

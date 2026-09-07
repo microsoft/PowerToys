@@ -409,6 +409,12 @@ public sealed partial class StaticPageFilteringTests
             Ui.ExecuteAll();
         }
 
+        internal void CompleteSelection(ListItemViewModel? item)
+        {
+            ViewModel.UpdateSelectedItemCommand.Execute(item);
+            ViewModel.CompleteStaticFilterSelection(ViewModel.PublishedFilterVersion, item);
+        }
+
         public void Dispose()
         {
             ViewModel.SafeCleanup();

@@ -33,7 +33,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private StaticFilterRequest? _pendingStaticFilter;
     private CancellationTokenSource? _staticFilterCancellationTokenSource;
     private long _staticFilterVersion;
+    private long _publishedStaticFilterVersion = -1;
+    private long _selectedStaticFilterVersion = -1;
+    private StaticActivationKind? _pendingStaticActivation;
     private int _itemsFetchGeneration;
+    private int _settledFetchGeneration;
     private bool _staticFilterWorkerQueued;
     private bool _staticFilterForceFirstPending;
     private bool _staticFilterEnsureSelectionVisible;
@@ -45,6 +49,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
     // Observable from MVVM Toolkit will auto create public properties that use INotifyPropertyChange change
     // https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/observablegroupedcollections for grouping support
     public ObservableCollection<ListItemViewModel> FilteredItems { get; } = [];
+
+    public long PublishedFilterVersion => Volatile.Read(ref _publishedStaticFilterVersion);
 
     public FiltersViewModel? Filters { get; set; }
 
@@ -226,6 +232,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             lock (_listLock)
             {
+                _pendingStaticActivation = null;
                 _staticFilterQuery = searchTextBox;
                 RequestStaticFilterUnderLock(forceFirstItem: true, ensureSelectionVisible: true);
             }
@@ -471,6 +478,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
                     PublishVmCache(nextCache);
                     _itemsFetchGeneration = fetchGeneration;
+                    _settledFetchGeneration = fetchGeneration;
                     itemsTransferredToList = true;
 
                     if (!_isDynamic)
@@ -528,6 +536,21 @@ public partial class ListViewModel : PageViewModel, IDisposable
             if (fetchCountIncremented && Interlocked.Decrement(ref _activeFetchCount) == 0)
             {
                 UpdateEmptyContent();
+            }
+
+            if (!itemsTransferredToList && !_isDynamic)
+            {
+                lock (_fetchStateLock)
+                {
+                    if (!_isDisposed && IsLatestFetchGeneration(fetchGeneration))
+                    {
+                        lock (_listLock)
+                        {
+                            _settledFetchGeneration = fetchGeneration;
+                            RequestStaticFilterUnderLock(forceFirstItem: false, ensureSelectionVisible);
+                        }
+                    }
+                }
             }
         }
 
@@ -702,7 +725,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _staticFilterEnsureSelectionVisible |= ensureSelectionVisible;
         InvalidateStaticFilterUnderLock();
 
-        if (_itemsFetchGeneration != Volatile.Read(ref _latestFetchGeneration))
+        if (_settledFetchGeneration != Volatile.Read(ref _latestFetchGeneration))
         {
             return;
         }
@@ -760,7 +783,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         !_isDynamic &&
         request.Version == _staticFilterVersion &&
         request.FetchGeneration == _itemsFetchGeneration &&
-        IsLatestFetchGeneration(request.FetchGeneration);
+        IsLatestFetchGeneration(_settledFetchGeneration);
 
     private void PublishStaticFilter(StaticFilterRequest request, ListItemViewModel[] filtered)
     {
@@ -794,10 +817,84 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     _forceFirstItemPending = false;
                     _isLoadingMore.Clear();
                     UpdateEmptyContent();
+                    _publishedStaticFilterVersion = request.Version;
                     ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(forceFirst, ensureVisible));
                 });
+
+                TryInvokePendingStaticActivation();
             }
         }
+    }
+
+    public bool CompleteStaticFilterSelection(long version, ListItemViewModel? item)
+    {
+        lock (_fetchStateLock)
+        {
+            lock (_listLock)
+            {
+                if (_isDisposed || _isDynamic ||
+                    version != _staticFilterVersion || version != _publishedStaticFilterVersion)
+                {
+                    return true;
+                }
+
+                if (!ReferenceEquals(item, _lastSelectedItem) ||
+                    (item is not null && (!item.IsInteractive || !FilteredItems.Contains(item, ReferenceEqualityComparer.Instance))) ||
+                    (item is null && FilteredItems.Any(candidate => candidate.IsInteractive)))
+                {
+                    return false;
+                }
+
+                _selectedStaticFilterVersion = version;
+                TryInvokePendingStaticActivation();
+                return true;
+            }
+        }
+    }
+
+    public void CancelPendingActivation()
+    {
+        lock (_listLock)
+        {
+            _pendingStaticActivation = null;
+            _selectedStaticFilterVersion = -1;
+        }
+    }
+
+    private bool IsStaticFilterSelectionCurrent =>
+        !_isUpdatingFilteredItems &&
+        _publishedStaticFilterVersion == _staticFilterVersion &&
+        _selectedStaticFilterVersion == _staticFilterVersion &&
+        IsLatestFetchGeneration(_settledFetchGeneration);
+
+    private void TryInvokePendingStaticActivation()
+    {
+        lock (_fetchStateLock)
+        {
+            lock (_listLock)
+            {
+                if (_isDisposed || _pendingStaticActivation is not { } activation || !IsStaticFilterSelectionCurrent)
+                {
+                    return;
+                }
+
+                var item = _lastSelectedItem;
+                if (activation == StaticActivationKind.Secondary && item is not null &&
+                    !item.Initialized.HasFlag(InitializedState.SelectionInitialized))
+                {
+                    return;
+                }
+
+                _pendingStaticActivation = null;
+                InvokeListItem(item, activation);
+            }
+        }
+    }
+
+    private enum StaticActivationKind
+    {
+        Primary,
+        Secondary,
     }
 
     private sealed record StaticFilterRequest(long Version, int FetchGeneration, string Query, CancellationToken CancellationToken);
@@ -1012,42 +1109,63 @@ public partial class ListViewModel : PageViewModel, IDisposable
     // InvokeItemCommand is what this will be in Xaml due to source generator
     // This is what gets invoked when the user presses <enter>
     [RelayCommand]
-    private void InvokeItem(ListItemViewModel? item)
-    {
-        if (item is not null)
-        {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command.Model, item.Model));
-        }
-        else if (ShowEmptyContent && EmptyContent.PrimaryCommand?.Model.Unsafe is not null)
-        {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
-                EmptyContent.PrimaryCommand.Command.Model,
-                EmptyContent.PrimaryCommand.Model));
-        }
-    }
+    private void InvokeItem(ListItemViewModel? item) => InvokeListItem(item, StaticActivationKind.Primary);
 
     // This is what gets invoked when the user presses <ctrl+enter>
     [RelayCommand]
-    private void InvokeSecondaryCommand(ListItemViewModel? item)
+    private void InvokeSecondaryCommand(ListItemViewModel? item) => InvokeListItem(item, StaticActivationKind.Secondary);
+
+    private void InvokeListItem(ListItemViewModel? item, StaticActivationKind activation)
     {
-        if (item is not null)
+        lock (_fetchStateLock)
         {
-            if (item.SecondaryCommand is not null)
+            lock (_listLock)
             {
-                WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.SecondaryCommand.Command.Model, item.Model));
+                if (_isDisposed)
+                {
+                    return;
+                }
+
+                if (!_isDynamic && !IsStaticFilterSelectionCurrent)
+                {
+                    _pendingStaticActivation = activation;
+                    return;
+                }
+
+                _pendingStaticActivation = null;
+                if (item is not null)
+                {
+                    if (!_isDynamic && (item.IsInErrorState || !item.IsInteractive || !FilteredItems.Contains(item, ReferenceEqualityComparer.Instance)))
+                    {
+                        return;
+                    }
+
+                    var command = activation == StaticActivationKind.Secondary ? item.SecondaryCommand?.Command : item.Command;
+                    if (command is not null)
+                    {
+                        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Model, item.Model));
+                    }
+                }
+                else if (ShowEmptyContent)
+                {
+                    var command = activation == StaticActivationKind.Secondary ? EmptyContent.SecondaryCommand : EmptyContent.PrimaryCommand;
+                    if (command?.Model.Unsafe is not null)
+                    {
+                        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
+                    }
+                }
             }
-        }
-        else if (ShowEmptyContent && EmptyContent.SecondaryCommand?.Model.Unsafe is not null)
-        {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
-                EmptyContent.SecondaryCommand.Command.Model,
-                EmptyContent.SecondaryCommand.Model));
         }
     }
 
     [RelayCommand]
     private void UpdateSelectedItem(ListItemViewModel? item)
     {
+        if (_selectedStaticFilterVersion == _staticFilterVersion && !ReferenceEquals(item, _lastSelectedItem))
+        {
+            _pendingStaticActivation = null;
+        }
+
         if (_lastSelectedItem is not null)
         {
             _lastSelectedItem.PropertyChanged -= SelectedItemPropertyChanged;
@@ -1119,6 +1237,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 {
                     TextToSuggest = suggestion;
                     WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(suggestion));
+                    TryInvokePendingStaticActivation();
                 });
             },
             ct);
@@ -1160,6 +1279,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private void ClearSelectedItem()
     {
+        _lastSelectedItem = null;
         CancelAndDisposeTokenSource(ref _selectedItemCts);
 
         WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
@@ -1378,6 +1498,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             lock (_listLock)
             {
                 _isDisposed = true;
+                _pendingStaticActivation = null;
                 InvalidateStaticFilterUnderLock();
                 foreach (var item in _staticFilterItems.Keys)
                 {
