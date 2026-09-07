@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -57,6 +59,32 @@ public partial class ContentPageViewModelTests
         Assert.AreEqual(1, moreCommands.Count);
         Assert.AreEqual("Primary", viewModel.PrimaryCommand?.Name);
         Assert.AreEqual("Secondary", viewModel.SecondaryCommand?.Name);
+    }
+
+    [TestMethod]
+    [DataRow(0)]
+    [DataRow(1)]
+    [DataRow(2)]
+    public void MoreCommands_ExcludesPrimaryRegardlessOfSeparatorPosition(int separatorIndex)
+    {
+        List<IContextItem> commands = [Command("Primary"), Command("Secondary")];
+        commands.Insert(separatorIndex, new Separator("Group"));
+        var page = new TestContentPage
+        {
+            Id = "content.page",
+            Commands = [.. commands],
+        };
+
+        var viewModel = CreateViewModel(page);
+        viewModel.InitializeProperties();
+
+        Assert.AreSame(viewModel.SecondaryCommand, viewModel.MoreCommands.OfType<CommandContextItemViewModel>().Single());
+        Assert.IsFalse(CommandBarViewModel.ShouldShowMoreCommandsButtonFor(viewModel));
+        Assert.IsTrue(viewModel.CanOpenContextMenu);
+
+        page.Commands = [.. page.Commands, Command("Additional")];
+
+        Assert.IsTrue(CommandBarViewModel.ShouldShowMoreCommandsButtonFor(viewModel));
     }
 
     [TestMethod]

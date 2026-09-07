@@ -16,14 +16,43 @@ public record UpdateCommandBarMessage(ICommandBarContext? ViewModel)
 {
 }
 
+/// <summary>
+/// Provides the command entries and availability used by a context menu.
+/// </summary>
 public interface IContextMenuContext : INotifyPropertyChanged
 {
+    /// <summary>
+    /// Gets the additional menu entries, excluding the primary command and including
+    /// the secondary command when present. The collection may contain separators.
+    /// </summary>
+    /// <remarks>
+    /// The first <see cref="CommandContextItemViewModel"/> is the secondary command.
+    /// The collection's entry count includes separators and is not a command count.
+    /// </remarks>
     public IReadOnlyList<IContextItemViewModel> MoreCommands { get; }
 
+    /// <summary>
+    /// Gets whether <see cref="MoreCommands"/> contains a command entry.
+    /// </summary>
+    /// <remarks>
+    /// A single secondary command is enough. This does not determine More-button visibility
+    /// or whether the menu has a visible command; use <see cref="CanOpenContextMenu"/> for menu availability.
+    /// </remarks>
     public bool HasMoreCommands { get; }
 
+    /// <summary>
+    /// Gets whether the menu has at least one command that should be visible.
+    /// </summary>
+    /// <remarks>
+    /// Includes the primary command when it is represented in the menu. Use this for keyboard
+    /// and item context-menu requests, independently of command-bar button visibility.
+    /// </remarks>
     public bool CanOpenContextMenu { get; }
 
+    /// <summary>
+    /// Gets all entries used to build the menu, including the primary command when present,
+    /// additional commands, and separators.
+    /// </summary>
     public IReadOnlyList<IContextItemViewModel> AllCommands { get; }
 
     /// <summary>
@@ -61,16 +90,24 @@ public interface IContextMenuContext : INotifyPropertyChanged
     }
 }
 
-// Represents everything the command bar needs to know about to show command
-// buttons at the bottom.
-//
-// This is implemented by both ListItemViewModel and ContentPageViewModel,
-// the two things with sub-commands.
+/// <summary>
+/// Supplies the primary and secondary actions for the command bar and the associated menu context.
+/// </summary>
 public interface ICommandBarContext : IContextMenuContext
 {
+    /// <summary>
+    /// Gets the secondary command's name, or an empty string when there is no secondary command.
+    /// </summary>
     public string SecondaryCommandName { get; }
 
+    /// <summary>
+    /// Gets the command used for the primary action, or <see langword="null"/> when there is none.
+    /// </summary>
     public CommandItemViewModel? PrimaryCommand { get; }
 
+    /// <summary>
+    /// Gets the first command in <see cref="IContextMenuContext.MoreCommands"/>, skipping separators,
+    /// or <see langword="null"/> when there is none. This command also has its own button in the command bar.
+    /// </summary>
     public CommandItemViewModel? SecondaryCommand { get; }
 }

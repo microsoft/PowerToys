@@ -264,15 +264,13 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     private void RefreshCommandSnapshotsUnsafe()
     {
         var allCommands = (IContextItemViewModel[])[.. Commands];
-        var moreCommands = allCommands.Length > 1
-            ? allCommands[1..]
-            : [];
+        IContextItemViewModel[] moreCommands = [];
 
         CommandContextItemViewModel? primary = null;
         CommandContextItemViewModel? secondary = null;
-        foreach (var item in allCommands)
+        for (var i = 0; i < allCommands.Length; i++)
         {
-            if (item is not CommandContextItemViewModel command)
+            if (allCommands[i] is not CommandContextItemViewModel command)
             {
                 continue;
             }
@@ -280,6 +278,9 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
             if (primary is null)
             {
                 primary = command;
+
+                // Skip the actual primary command, including any separators before it.
+                moreCommands = allCommands[(i + 1)..];
             }
             else if (secondary is null)
             {

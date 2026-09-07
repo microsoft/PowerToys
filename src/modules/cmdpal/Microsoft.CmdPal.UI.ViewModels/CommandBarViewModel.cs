@@ -66,8 +66,27 @@ public sealed partial class CommandBarViewModel : ObservableObject,
 
     public bool HasSecondaryCommand => SecondaryCommand is not null;
 
+    /// <summary>
+    /// Gets or sets whether the command bar shows the More button.
+    /// </summary>
+    /// <remarks>
+    /// The secondary command already has its own button, so More is shown only when
+    /// <see cref="IContextMenuContext.MoreCommands"/> contains another command beyond it.
+    /// Separators do not count. Use <see cref="CanOpenContextMenu"/> to decide whether
+    /// input can open the menu, independently of this button's visibility.
+    /// </remarks>
     [ObservableProperty]
     public partial bool ShouldShowMoreCommandsButton { get; set; } = false;
+
+    /// <summary>
+    /// Gets whether the selected context has a visible command and can open its context menu.
+    /// </summary>
+    /// <remarks>
+    /// Used by the menu and keyboard handlers. Ctrl+K can open the menu even when
+    /// <see cref="ShouldShowMoreCommandsButton"/> is false.
+    /// This value is read from <see cref="SelectedItem"/> on demand and does not raise change notifications.
+    /// </remarks>
+    public bool CanOpenContextMenu => SelectedItem?.CanOpenContextMenu ?? false;
 
     [ObservableProperty]
     public partial PageViewModel? CurrentPage { get; set; }
@@ -130,9 +149,9 @@ public sealed partial class CommandBarViewModel : ObservableObject,
         OnPropertyChanged(nameof(ShouldShowMoreCommandsButton));
     }
 
-    // The first entry in MoreCommands is already surfaced as SecondaryButton.
+    // MoreCommands excludes the primary command; its first command is the secondary action.
     internal static bool ShouldShowMoreCommandsButtonFor(ICommandBarContext context) =>
-        context.MoreCommands.Count > 1 && context.HasMoreCommands;
+        context.MoreCommands.OfType<CommandContextItemViewModel>().Count() > 1;
 
     // InvokeItemCommand is what this will be in Xaml due to source generator
     // this comes in when an item in the list is tapped

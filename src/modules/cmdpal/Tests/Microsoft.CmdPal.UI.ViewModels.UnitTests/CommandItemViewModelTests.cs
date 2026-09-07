@@ -3,10 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -108,16 +110,22 @@ public class CommandItemViewModelTests
     }
 
     [TestMethod]
-    public void SingleMoreCommand_HidesMoreButtonButKeepsContextMenuAvailable()
+    [DataRow(-1)]
+    [DataRow(0)]
+    [DataRow(1)]
+    public void SingleMoreCommand_HidesMoreButtonButKeepsContextMenuAvailable(int separatorIndex)
     {
         var pageContext = new TestPageContext();
+        List<IContextItem> moreCommands = [new CommandContextItem(new NoOpCommand { Name = "Secondary" })];
+        if (separatorIndex >= 0)
+        {
+            moreCommands.Insert(separatorIndex, new Separator("Group"));
+        }
+
         var item = new CommandItem(new NoOpCommand { Name = "Primary" })
         {
             Title = "Primary",
-            MoreCommands =
-            [
-                new CommandContextItem(new NoOpCommand { Name = "Secondary" }),
-            ],
+            MoreCommands = [.. moreCommands],
         };
 
         var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
