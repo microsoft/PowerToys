@@ -208,24 +208,30 @@ public class MouseHighlighterTests : UITestBase
         var outside = (X: centerX + 120, Y: centerY);
         var insideBase = GetStablePixel(inside.X, inside.Y);
         var outsideBase = GetStablePixel(outside.X, outside.Y);
-        var movedTarget = (X: centerX + 160, Y: centerY + 80);
-        var movedInside = (X: movedTarget.X + 30, Y: movedTarget.Y);
-        var movedOutside = (X: movedTarget.X + 120, Y: movedTarget.Y);
-        var movedInsideBase = GetStablePixel(movedInside.X, movedInside.Y);
-        var movedOutsideBase = GetStablePixel(movedOutside.X, movedOutside.Y);
+        var monitor = MonitorInfo.GetPrimary();
+        Assert.IsNotNull(monitor, "No primary monitor was reported.");
+        using var desktopBaseline = CaptureMonitor(monitor);
         MouseHelper.MoveTo(centerX, centerY);
         Activate();
 
         AssertPixelNear(inside.X, inside.Y, insideBase, 5, "transparent Spotlight hole inside the configured radius");
         AssertPixelNear(outside.X, outside.Y, Blend(Color.Red, outsideBase, 128), 5, "Spotlight tint outside the configured radius");
 
-        // Relative SendInput movement is affected by Windows pointer acceleration, so use a fixed
-        // screen target to isolate whether Spotlight tracks the cursor.
-        MouseHelper.MoveToWithInput(movedTarget.X, movedTarget.Y);
+        MouseHelper.MoveBy(160, 80, steps: 20, delayMs: 20);
         var moved = MouseHelper.GetMousePosition();
         Assert.IsTrue(
-            Math.Abs(moved.X - movedTarget.X) <= 1 && Math.Abs(moved.Y - movedTarget.Y) <= 1,
-            $"Cursor moved to ({moved.X},{moved.Y}), expected ({movedTarget.X},{movedTarget.Y}) within absolute-input normalization precision.");
+            Distance(moved.X, moved.Y, centerX, centerY) > 50,
+            $"Relative input did not move the cursor far enough: ({centerX},{centerY}) -> ({moved.X},{moved.Y}).");
+
+        var movedInside = (X: moved.X + 30, Y: moved.Y);
+        var movedOutside = (X: moved.X + 120, Y: moved.Y);
+        Assert.IsTrue(
+            movedInside.X >= monitor.Left && movedInside.X < monitor.Right &&
+            movedOutside.X >= monitor.Left && movedOutside.X < monitor.Right &&
+            moved.Y >= monitor.Top && moved.Y < monitor.Bottom,
+            $"Relative input ended too close to the primary monitor edge for Spotlight sampling: ({moved.X},{moved.Y}).");
+        var movedInsideBase = desktopBaseline.GetPixel(movedInside.X - monitor.Left, movedInside.Y - monitor.Top);
+        var movedOutsideBase = desktopBaseline.GetPixel(movedOutside.X - monitor.Left, movedOutside.Y - monitor.Top);
         AssertPixelNear(movedInside.X, movedInside.Y, movedInsideBase, 5, "transparent Spotlight hole after cursor movement");
         AssertPixelNear(movedOutside.X, movedOutside.Y, Blend(Color.Red, movedOutsideBase, 128), 5, "Spotlight tint after cursor movement");
     }
@@ -514,6 +520,22 @@ public class MouseHighlighterTests : UITestBase
         {
             using var graphics = Graphics.FromImage(bitmap);
             graphics.CopyFromScreen(centerX - radius, centerY - radius, 0, 0, bitmap.Size);
+            return bitmap;
+        }
+        catch
+        {
+            bitmap.Dispose();
+            throw;
+        }
+    }
+
+    private static Bitmap CaptureMonitor(MonitorInfo.Monitor monitor)
+    {
+        var bitmap = new Bitmap(monitor.Width, monitor.Height);
+        try
+        {
+            using var graphics = Graphics.FromImage(bitmap);
+            graphics.CopyFromScreen(monitor.Left, monitor.Top, 0, 0, bitmap.Size);
             return bitmap;
         }
         catch
