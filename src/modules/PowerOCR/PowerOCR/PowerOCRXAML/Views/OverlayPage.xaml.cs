@@ -6,6 +6,8 @@ using System;
 
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using PowerOCR.Core.Geometry;
@@ -52,6 +54,11 @@ public sealed partial class OverlayPage : UserControl
         SizeChanged += OnSizeChanged;
     }
 
+    protected override AutomationPeer OnCreateAutomationPeer()
+    {
+        return new OverlayPageAutomationPeer(this);
+    }
+
     /// <summary>
     /// Initializes the page with display capture and overlay references.
     /// </summary>
@@ -68,6 +75,7 @@ public sealed partial class OverlayPage : UserControl
         _settingsDeepLink = settingsDeepLink;
         ViewModel = viewModel;
 
+        AutomationProperties.SetName(this, parentWindow.Title);
         BackgroundImage.Source = capture.ImageSource;
 
         // Masks are sized against the real layout dimensions once the page is laid out
@@ -86,7 +94,7 @@ public sealed partial class OverlayPage : UserControl
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        RootGrid.Focus(FocusState.Programmatic);
+        LanguagesComboBox.Focus(FocusState.Programmatic);
         RefreshMasks();
     }
 
@@ -357,6 +365,10 @@ public sealed partial class OverlayPage : UserControl
         bool isClick = pixelSelection.Local.Width < 3 || pixelSelection.Local.Height < 3;
 
         EndSelectionCleanup(e.Pointer);
+
+        // Hiding the toolbar removes its focused control from the focus tree. Restore it
+        // on normal release so shortcuts keep working if capture leaves the overlay open.
+        LanguagesComboBox.Focus(FocusState.Programmatic);
         await _manager.CaptureAsync(_capture, pixelSelection, isClick);
     }
 
@@ -428,7 +440,9 @@ public sealed partial class OverlayPage : UserControl
     {
         // With no pointer position, place the menu near the toolbar where keyboard focus starts.
         double x = Math.Max(0, RegionClickCanvas.ActualWidth / 2);
-        double y = Math.Max(0, Toolbar.ActualHeight + Toolbar.Margin.Top);
+        var toolbarBottom = Toolbar.TransformToVisual(RegionClickCanvas)
+            .TransformPoint(new Windows.Foundation.Point(0, Toolbar.ActualHeight));
+        double y = Math.Max(0, toolbarBottom.Y);
         ContextMenuFlyout.ShowAt(RegionClickCanvas, new Windows.Foundation.Point(x, y));
     }
 

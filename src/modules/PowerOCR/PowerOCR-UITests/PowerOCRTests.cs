@@ -12,6 +12,15 @@ namespace PowerOCR.UITests;
 [TestClass]
 public class PowerOCRTests : UITestBase
 {
+    private static readonly string[] ToolbarAutomationIds =
+    {
+        "OCROverlayLanguagesComboBox",
+        "SingleLineToggleButton",
+        "TableToggleButton",
+        "SettingsButton",
+        "CancelButton",
+    };
+
     public PowerOCRTests()
         : base(PowerToysModule.PowerToysSettings, WindowSize.Medium)
     {
@@ -326,14 +335,14 @@ public class PowerOCRTests : UITestBase
         var textExtractorWindow = Find<Element>(By.AccessibilityId("TextExtractorWindow"), 10000, true);
         Assert.IsNotNull(textExtractorWindow, "TextExtractor window should be found after hotkey activation");
 
-        // Use the selection canvas for a stable, bounds-aware drag
-        var selectionCanvas = Find<Pane>(
-            By.AccessibilityId("RegionClickCanvas"),
+        // The full-overlay automation peer supplies stable selection bounds.
+        var selectionSurface = Find<Pane>(
+            By.AccessibilityId("TextExtractorWindow"),
             5000,
             true);
-        Assert.IsNotNull(selectionCanvas.Rect, "Selection canvas bounds should be available.");
-        var bounds = selectionCanvas.Rect.Value;
-        selectionCanvas.Drag(
+        Assert.IsNotNull(selectionSurface.Rect, "Overlay bounds should be available.");
+        var bounds = selectionSurface.Rect.Value;
+        selectionSurface.Drag(
             Math.Min(300, Math.Max(50, bounds.Width / 4)),
             Math.Min(200, Math.Max(50, bounds.Height / 4)));
         Thread.Sleep(3000); // Wait for OCR processing to complete
@@ -346,6 +355,184 @@ public class PowerOCRTests : UITestBase
         // Close the TextExtractor overlay
         SendKeys(Key.Esc);
         Thread.Sleep(1000);
+    }
+
+    [TestMethod("PowerOCR.BlankCaptureKeepsToolbarShortcuts")]
+    [TestCategory("PowerOCR Toolbar")]
+    public void BlankCaptureKeepsToolbarShortcutsTest()
+    {
+        WithBlankCaptureBackground(() =>
+        {
+            SendKeys(Key.Win, Key.Shift, Key.T);
+            var overlay = Find<Pane>(By.AccessibilityId("TextExtractorWindow"), 10000, true);
+            var singleLineButton = overlay.Find<Element>(By.AccessibilityId("SingleLineToggleButton"));
+            var tableButton = overlay.Find<Element>(By.AccessibilityId("TableToggleButton"));
+            var initialSingleLineState = singleLineButton.GetAttribute("Toggle.ToggleState");
+            var initialTableState = tableButton.GetAttribute("Toggle.ToggleState");
+            Assert.IsTrue(initialSingleLineState is "0" or "1", "Single-line mode should expose a two-state UIA toggle.");
+            Assert.IsTrue(initialTableState is "0" or "1", "Table mode should expose a two-state UIA toggle.");
+
+            var errorBar = CaptureBlankRegion(overlay);
+            Assert.IsNotNull(errorBar.Rect, "The visible error InfoBar should expose its bounds.");
+            var errorBounds = errorBar.Rect.Value;
+            foreach (var automationId in ToolbarAutomationIds)
+            {
+                var control = overlay.Find<Element>(By.AccessibilityId(automationId));
+                Assert.IsNotNull(control.Rect, $"{automationId} should expose its bounds.");
+                Assert.IsTrue(errorBounds.Top >= control.Rect.Value.Bottom, $"The error InfoBar must be below {automationId}, not overlap it.");
+            }
+
+            // Do not click or focus a toolbar control after capture: that hides the regression.
+            SendKeys(Key.S);
+            AssertToggleState(singleLineButton, initialSingleLineState == "0" ? "1" : "0", "S should toggle single-line mode immediately after a failed capture.");
+            SendKeys(Key.T);
+            AssertToggleState(tableButton, initialTableState == "0" ? "1" : "0", "T should toggle table mode immediately after a failed capture.");
+            SendKeys(Key.S);
+            AssertToggleState(singleLineButton, initialSingleLineState, "S should restore single-line mode on the next press.");
+            SendKeys(Key.T);
+            AssertToggleState(tableButton, initialTableState, "T should restore table mode on the next press.");
+        });
+    }
+
+    [TestMethod("PowerOCR.BlankCaptureKeepsLanguageShortcut")]
+    [TestCategory("PowerOCR Language")]
+    public void BlankCaptureKeepsLanguageShortcutTest()
+    {
+        WithBlankCaptureBackground(() =>
+        {
+            SendKeys(Key.Win, Key.Shift, Key.T);
+            var overlay = Find<Pane>(By.AccessibilityId("TextExtractorWindow"), 10000, true);
+            var languageComboBox = overlay.Find<ComboBox>(By.AccessibilityId("OCROverlayLanguagesComboBox"));
+            languageComboBox.Click();
+            var languages = FindAll<Element>(By.ClassName("ComboBoxItem"), 3000, true)
+                .Where(item => item.Displayed)
+                .ToList();
+            Assert.AreEqual(1, languages.Count(item => item.Selected), "The language ComboBox should have one selected language.");
+            if (languages.Count < 2)
+            {
+                Assert.Inconclusive("At least two installed OCR languages are required to verify the language shortcut changes selection.");
+            }
+
+            int targetIndex = languages[0].Selected ? 1 : 0;
+            var targetName = languages[targetIndex].Name;
+            SendKeys(Key.Esc);
+            CaptureBlankRegion(overlay);
+
+            // Reopening the ComboBox before the shortcut would restore focus and mask the bug.
+            SendKeys(targetIndex == 0 ? Key.Num1 : Key.Num2);
+            languageComboBox.Click();
+            Assert.IsTrue(
+                SpinWait.SpinUntil(
+                    () =>
+                    {
+                        var selectedLanguages = FindAll<Element>(By.ClassName("ComboBoxItem"), 500, true)
+                            .Where(item => item.Displayed && item.Selected)
+                            .ToList();
+                        return selectedLanguages.Count == 1 && selectedLanguages[0].Name == targetName;
+                    },
+                    TimeSpan.FromSeconds(5)),
+                "The language shortcut should select the target language immediately after a failed capture without a toolbar click.");
+        });
+    }
+
+    private static void AssertToggleState(Element button, string expected, string message)
+    {
+        Assert.IsTrue(
+            SpinWait.SpinUntil(() => button.GetAttribute("Toggle.ToggleState") == expected, TimeSpan.FromSeconds(5)),
+            message);
+    }
+
+    private static Element CaptureBlankRegion(Pane overlay)
+    {
+        Assert.IsFalse(
+            overlay.FindAll<Element>(By.AccessibilityId("ErrorInfoBar"), 500).Any(item => item.Displayed),
+            "Overlay activation must succeed before testing a blank capture.");
+        Assert.IsNotNull(overlay.Rect, "The overlay should expose selection bounds.");
+        var bounds = overlay.Rect.Value;
+        overlay.Drag(Math.Min(150, bounds.Width / 4), Math.Min(100, bounds.Height / 4));
+        Element? errorBar = null;
+        Assert.IsTrue(
+            SpinWait.SpinUntil(
+                () =>
+                {
+                    errorBar = overlay.FindAll<Element>(By.AccessibilityId("ErrorInfoBar"), 500)
+                        .FirstOrDefault(item => item.Displayed && item.Rect is { Width: > 0, Height: > 0 });
+                    return errorBar != null;
+                },
+                TimeSpan.FromSeconds(10)),
+            "A blank capture should leave the overlay open with a new visible error InfoBar.");
+        return errorBar!;
+    }
+
+    private void WithBlankCaptureBackground(Action test)
+    {
+        const string fixtureName = "PowerOCR blank capture fixture";
+        using var ready = new ManualResetEventSlim();
+        System.Windows.Forms.Form? background = null;
+        Exception? backgroundError = null;
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                using var form = new System.Windows.Forms.Form
+                {
+                    BackColor = System.Drawing.Color.White,
+                    Bounds = System.Windows.Forms.SystemInformation.VirtualScreen,
+                    FormBorderStyle = System.Windows.Forms.FormBorderStyle.None,
+                    ShowInTaskbar = false,
+                    StartPosition = System.Windows.Forms.FormStartPosition.Manual,
+                    Text = fixtureName,
+                    TopMost = true,
+                };
+                background = form;
+                form.Shown += (_, _) =>
+                {
+                    form.Refresh();
+                    ready.Set();
+                };
+                System.Windows.Forms.Application.Run(form);
+            }
+            catch (Exception exception)
+            {
+                backgroundError = exception;
+                ready.Set();
+            }
+        })
+        {
+            IsBackground = true,
+        };
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+
+        try
+        {
+            Assert.IsTrue(ready.Wait(TimeSpan.FromSeconds(5)), "The blank capture fixture should become visible.");
+            Assert.IsNull(backgroundError, $"The blank capture fixture failed: {backgroundError}");
+            var fixture = background ?? throw new InvalidOperationException("The blank capture fixture was not created.");
+            Find<Element>(By.Name(fixtureName), 5000, true).Click();
+            fixture.Invoke(new Action(() => fixture.TopMost = false));
+            test();
+        }
+        finally
+        {
+            try
+            {
+                // Escape dismisses a popup first, so a second press may be needed.
+                for (int attempt = 0; attempt < 2 && FindAll<Element>(By.AccessibilityId("TextExtractorWindow"), 1000, true).Count > 0; attempt++)
+                {
+                    SendKeys(Key.Esc);
+                }
+            }
+            finally
+            {
+                if (background is { IsHandleCreated: true, IsDisposed: false })
+                {
+                    background.BeginInvoke(new Action(background.Close));
+                }
+
+                Assert.IsTrue(thread.Join(TimeSpan.FromSeconds(5)), "The blank capture fixture should close after the test.");
+            }
+        }
     }
 
     private static void ClearClipboardSafely()

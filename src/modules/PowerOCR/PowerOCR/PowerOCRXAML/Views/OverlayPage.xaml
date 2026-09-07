@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:globalization="using:Windows.Globalization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    AutomationProperties.AutomationId="TextExtractorWindow"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -32,7 +33,6 @@
 
     <Grid
         x:Name="RootGrid"
-        AutomationProperties.AutomationId="TextExtractorWindow"
         Background="Transparent"
         ContextRequested="RootGrid_ContextRequested"
         KeyDown="RootGrid_KeyDown">
@@ -88,7 +88,6 @@
         <!--  Canvas for pointer events  -->
         <Canvas
             x:Name="RegionClickCanvas"
-            AutomationProperties.AutomationId="RegionClickCanvas"
             Background="Transparent"
             PointerCanceled="Canvas_PointerCanceled"
             PointerCaptureLost="Canvas_PointerCaptureLost"
@@ -126,73 +125,6 @@
             </Canvas.ContextFlyout>
         </Canvas>
 
-        <!--  Toolbar  -->
-        <Border
-            x:Name="Toolbar"
-            Margin="12"
-            Padding="4,8"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Top"
-            Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
-            BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
-            BorderThickness="1"
-            CornerRadius="8">
-            <Border.Shadow>
-                <ThemeShadow />
-            </Border.Shadow>
-            <StackPanel Orientation="Horizontal" Spacing="4">
-                <ComboBox
-                    x:Name="LanguagesComboBox"
-                    x:Uid="LanguagesComboBox"
-                    MinWidth="120"
-                    AutomationProperties.AutomationId="OCROverlayLanguagesComboBox"
-                    ItemsSource="{x:Bind ViewModel.Languages}"
-                    SelectedItem="{x:Bind ViewModel.SelectedLanguage, Mode=TwoWay}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="globalization:Language">
-                            <TextBlock Text="{x:Bind NativeName, Mode=OneTime}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-
-                <ToggleButton
-                    x:Name="SingleLineToggleButton"
-                    x:Uid="SingleLineToggleButton"
-                    AutomationProperties.AutomationId="SingleLineToggleButton"
-                    IsChecked="{x:Bind ViewModel.IsSingleLine, Mode=TwoWay}"
-                    Style="{StaticResource SubtleToggleButtonStyle}">
-                    <FontIcon FontSize="14" Glyph="&#xF16E;" />
-                </ToggleButton>
-
-                <ToggleButton
-                    x:Name="TableToggleButton"
-                    x:Uid="TableToggleButton"
-                    AutomationProperties.AutomationId="TableToggleButton"
-                    IsChecked="{x:Bind ViewModel.IsTable, Mode=TwoWay}"
-                    Style="{StaticResource SubtleToggleButtonStyle}">
-                    <FontIcon FontSize="14" Glyph="&#xE80A;" />
-                </ToggleButton>
-
-                <Button
-                    x:Name="SettingsButton"
-                    x:Uid="SettingsButton"
-                    AutomationProperties.AutomationId="SettingsButton"
-                    Click="SettingsButton_Click"
-                    Style="{StaticResource SubtleButtonStyle}">
-                    <FontIcon FontSize="14" Glyph="&#xE713;" />
-                </Button>
-
-                <Button
-                    x:Name="CancelButton"
-                    x:Uid="CancelButton"
-                    AutomationProperties.AutomationId="CancelButton"
-                    Click="CancelButton_Click"
-                    Style="{StaticResource SubtleButtonStyle}">
-                    <FontIcon FontSize="14" Glyph="&#xE711;" />
-                </Button>
-            </StackPanel>
-        </Border>
-
         <!--  Processing indicator  -->
         <ProgressRing
             x:Name="ProcessingRing"
@@ -200,16 +132,91 @@
             VerticalAlignment="Center"
             IsActive="{x:Bind ViewModel.IsProcessing, Mode=OneWay}" />
 
-        <!--  Error InfoBar  -->
-        <InfoBar
-            x:Name="ErrorInfoBar"
-            Margin="0,48,0,0"
+        <!--  Toolbar and error message share measured layout to avoid overlapping.  -->
+        <Grid
+            Margin="12"
             HorizontalAlignment="Center"
-            VerticalAlignment="Top"
-            AutomationProperties.AutomationId="ErrorInfoBar"
-            IsClosable="True"
-            IsOpen="{x:Bind ViewModel.HasError, Mode=TwoWay}"
-            Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
-            Severity="Error" />
+            VerticalAlignment="Top">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Border
+                x:Name="Toolbar"
+                Padding="4,8"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <Border.Shadow>
+                    <ThemeShadow />
+                </Border.Shadow>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <ComboBox
+                        x:Name="LanguagesComboBox"
+                        x:Uid="LanguagesComboBox"
+                        MinWidth="120"
+                        AutomationProperties.AutomationId="OCROverlayLanguagesComboBox"
+                        ItemsSource="{x:Bind ViewModel.Languages}"
+                        SelectedItem="{x:Bind ViewModel.SelectedLanguage, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="globalization:Language">
+                                <TextBlock Text="{x:Bind NativeName, Mode=OneTime}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <ToggleButton
+                        x:Name="SingleLineToggleButton"
+                        x:Uid="SingleLineToggleButton"
+                        AutomationProperties.AutomationId="SingleLineToggleButton"
+                        IsChecked="{x:Bind ViewModel.IsSingleLine, Mode=TwoWay}"
+                        Style="{StaticResource SubtleToggleButtonStyle}">
+                        <FontIcon FontSize="14" Glyph="&#xF16E;" />
+                    </ToggleButton>
+
+                    <ToggleButton
+                        x:Name="TableToggleButton"
+                        x:Uid="TableToggleButton"
+                        AutomationProperties.AutomationId="TableToggleButton"
+                        IsChecked="{x:Bind ViewModel.IsTable, Mode=TwoWay}"
+                        Style="{StaticResource SubtleToggleButtonStyle}">
+                        <FontIcon FontSize="14" Glyph="&#xE80A;" />
+                    </ToggleButton>
+
+                    <Button
+                        x:Name="SettingsButton"
+                        x:Uid="SettingsButton"
+                        AutomationProperties.AutomationId="SettingsButton"
+                        Click="SettingsButton_Click"
+                        Style="{StaticResource SubtleButtonStyle}">
+                        <FontIcon FontSize="14" Glyph="&#xE713;" />
+                    </Button>
+
+                    <Button
+                        x:Name="CancelButton"
+                        x:Uid="CancelButton"
+                        AutomationProperties.AutomationId="CancelButton"
+                        Click="CancelButton_Click"
+                        Style="{StaticResource SubtleButtonStyle}">
+                        <FontIcon FontSize="14" Glyph="&#xE711;" />
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <InfoBar
+                x:Name="ErrorInfoBar"
+                Grid.Row="1"
+                Margin="0,8,0,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                AutomationProperties.AutomationId="ErrorInfoBar"
+                IsClosable="True"
+                IsOpen="{x:Bind ViewModel.HasError, Mode=TwoWay}"
+                Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                Severity="Error" />
+        </Grid>
     </Grid>
 </UserControl>

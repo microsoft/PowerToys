@@ -9,6 +9,9 @@
    - [x] Try to select text and verify it is copied to the clipboard.
    - [ ] Click a single word or character without dragging and verify the recognized token is copied to the clipboard.
    - [ ] Select a blank region, wait for the error InfoBar, and verify one Escape press closes every overlay.
+   - [ ] After a blank capture, press `S`, `T`, and a number for another installed OCR language without clicking the toolbar; verify all shortcuts still change their controls.
+   - [ ] Repeat the shortcut check after a clipboard-copy failure, then retry capture in the same overlay and verify copying succeeds.
+   - [ ] With an error InfoBar open, verify it appears below every toolbar control without covering any control, including at 150% and 200% DPI.
    - [ ] Open the language ComboBox or context menu and verify the first Escape closes only the popup and the second closes the overlay.
    - [ ] Perform a fast drag and verify OCR uses the release point rather than the last rendered selection-border position.
    - [ ] Cancel or close the overlay while dragging and verify the cursor is no longer confined afterward.
@@ -21,6 +24,7 @@
    - [ ] Switch Windows to Dark theme; activate the overlay and verify the toolbar and canvas render correctly.
    - [ ] Switch Windows to High Contrast (Black or White); activate the overlay and verify all controls are legible and accessible.
  * Toolbar / flyout accessibility:
+   - [ ] Find the full-overlay `TextExtractorWindow` automation peer, verify its bounds cover the monitor, and use those bounds for selection instead of a `RegionClickCanvas` locator.
    - [ ] Confirm that `SingleLineToggleButton`, `TableToggleButton`, `SettingsButton`, and `CancelButton` each have a non-empty accessible name (Name property) readable by Narrator.
    - [ ] Tab through toolbar controls and confirm each is reachable by keyboard without a mouse.
    - [ ] Open the language flyout via keyboard (right-click key or Shift+F10) and confirm language items are accessible.
