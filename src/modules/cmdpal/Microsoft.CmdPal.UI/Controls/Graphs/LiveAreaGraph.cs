@@ -5,6 +5,8 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
+using System.Text;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Graphics.Canvas;
@@ -20,6 +22,17 @@ namespace Microsoft.CmdPal.UI.Controls.Graphs;
 
 public sealed partial class LiveAreaGraph : GraphControl
 {
+    private const float GridCrossRadius = 2;
+
+    private static readonly CompositeFormat _historyFormat = CompositeFormat.Parse(ResourceLoaderInstance.GetString("GraphAxis_History"));
+    private static readonly CompositeFormat[] _durationFormats =
+    [
+        CompositeFormat.Parse(ResourceLoaderInstance.GetString("GraphAxis_Seconds")),
+        CompositeFormat.Parse(ResourceLoaderInstance.GetString("GraphAxis_Minutes")),
+        CompositeFormat.Parse(ResourceLoaderInstance.GetString("GraphAxis_Hours")),
+        CompositeFormat.Parse(ResourceLoaderInstance.GetString("GraphAxis_Days")),
+    ];
+
     private readonly DateTimeOffset _clockOrigin = DateTimeOffset.UtcNow;
     private readonly long _clockTimestamp = Stopwatch.GetTimestamp();
     private readonly GraphTooltip _tooltip = new();
@@ -36,12 +49,20 @@ public sealed partial class LiveAreaGraph : GraphControl
     private readonly string _valueSuffix;
     private readonly string _nowText;
     private readonly string _secondsAgoFormat;
+    private readonly string _historyText;
     private LineGraphPoint[][] _samples = [];
     private LineGraphPresentation[] _presentations = [];
     private SeriesGeometry[] _geometry = [];
     private CanvasStrokeStyle? _dashedStrokeStyle;
     private CanvasStrokeStyle? _dottedStrokeStyle;
     private double _visibleMaximum;
+    private double[] _valueTicks = [];
+    private TimeSpan _timeStep;
+    private double _valueStep;
+    private double _gridDivisor = 1;
+    private double _gridMaximum = double.NaN;
+    private float _gridWidth;
+    private float _gridHeight;
     private float _geometryWidth;
     private float _geometryHeight;
     private DateTimeOffset _geometryTime;
@@ -77,6 +98,7 @@ public sealed partial class LiveAreaGraph : GraphControl
         _valueSuffix = valueSuffix;
         _nowText = nowText;
         _secondsAgoFormat = secondsAgoFormat;
+        _historyText = FormatHistory(history);
         if (_autoScaleMaximum)
         {
             SetScaleMaximumLabel(FormatValue(_visibleMaximum));
@@ -131,8 +153,10 @@ public sealed partial class LiveAreaGraph : GraphControl
         }
 
         ReleaseDrawingResources();
-        _latestCaption = SetLegend(Series.Select((series, index) =>
-            _samples[index].Length == 0 ? series.Name : $"{series.Name}: {FormatValue(_samples[index][^1].Value, index)}").ToArray());
+        _latestCaption = SetLegend(
+            Series.Select((series, index) =>
+                _samples[index].Length == 0 ? series.Name : $"{series.Name}: {FormatValue(_samples[index][^1].Value, index)}").ToArray(),
+            _historyText);
         UpdateInspection(now);
         BeginAnimation();
     }
@@ -142,18 +166,24 @@ public sealed partial class LiveAreaGraph : GraphControl
         var now = Now;
         var displayTime = new DateTimeOffset(Math.Max(0, now.UtcTicks - PresentationDelay.Ticks), TimeSpan.Zero);
         UpdateScale(displayTime);
+        UpdateGrid(width, height);
         if (_geometry.Length != _samples.Length || width != _geometryWidth || height != _geometryHeight)
         {
             BuildGeometry(canvas, width, height, displayTime);
         }
 
         using var clip = session.CreateLayer(1, new Rect(0, 0, width, height));
-        for (var y = 0f; y < height; y += 32)
+
+        var timeTicks = LineGraphGrid.GetTimeTicks(displayTime, _history, _timeStep);
+        for (var index = 0; index < timeTicks.Count; index++)
         {
-            for (var x = 0f; x < width; x += 32)
+            var time = new DateTimeOffset(timeTicks.First + (index * timeTicks.Step), TimeSpan.Zero);
+            var x = ToX(time, displayTime, width);
+            foreach (var value in _valueTicks)
             {
-                session.DrawLine(x - 2, y, x + 2, y, GridColor);
-                session.DrawLine(x, y - 2, x, y + 2, GridColor);
+                var y = height * (float)(1 - ((value - _minimum) / (_visibleMaximum - _minimum)));
+                session.DrawLine(x - GridCrossRadius, y, x + GridCrossRadius, y, GridColor);
+                session.DrawLine(x, y - GridCrossRadius, x, y + GridCrossRadius, GridColor);
             }
         }
 
@@ -211,6 +241,42 @@ public sealed partial class LiveAreaGraph : GraphControl
                 UpdateInspection(now);
             }
         }
+    }
+
+    private void UpdateGrid(float width, float height)
+    {
+        if (_gridWidth == width && _gridHeight == height && _gridMaximum == _visibleMaximum)
+        {
+            return;
+        }
+
+        // Round value intervals in the same display unit as the visible range.
+        var divisor = 1d;
+        if (_valueScales.Length > 0)
+        {
+            var magnitude = Math.Max(Math.Abs(_minimum), Math.Abs(_visibleMaximum));
+            var scaleIndex = 0;
+            while (scaleIndex < _valueScales.Length - 1 && magnitude >= _valueScales[scaleIndex + 1].Divisor)
+            {
+                scaleIndex++;
+            }
+
+            divisor = _valueScales[scaleIndex].Divisor;
+        }
+
+        var valueStep = LineGraphGrid.ChooseValueStep(_minimum, _visibleMaximum, height, divisor, _gridDivisor == divisor ? _valueStep : 0);
+        if (valueStep != _valueStep || _gridMaximum != _visibleMaximum || _gridDivisor != divisor)
+        {
+            _valueStep = valueStep;
+            _gridDivisor = divisor;
+            _valueTicks = LineGraphGrid.GetValueTicks(_minimum, _visibleMaximum, valueStep);
+        }
+
+        var valueSpacing = valueStep / (_visibleMaximum - _minimum) * height;
+        _timeStep = LineGraphGrid.ChooseTimeStep(_history, width, valueSpacing, _timeStep);
+        _gridWidth = width;
+        _gridHeight = height;
+        _gridMaximum = _visibleMaximum;
     }
 
     private void DrawInspection(CanvasDrawingSession session, DateTimeOffset now, double position, float width, float height)
@@ -450,6 +516,16 @@ public sealed partial class LiveAreaGraph : GraphControl
     }
 
     private string FormatValue(double value) => GraphValueFormatter.Format(value, _valueFormat, _valueSuffix, _valueScales);
+
+    private static string FormatHistory(TimeSpan duration)
+    {
+        var (value, format) = duration.TotalSeconds < 60 ? (duration.TotalSeconds, 0)
+            : duration.TotalMinutes < 60 ? (duration.TotalMinutes, 1)
+            : duration.TotalHours < 24 ? (duration.TotalHours, 2)
+            : (duration.TotalDays, 3);
+        var formatted = string.Format(CultureInfo.CurrentCulture, _durationFormats[format], value);
+        return string.Format(CultureInfo.CurrentCulture, _historyFormat, formatted);
+    }
 
     private string FormatValue(double value, int seriesIndex)
         => _readoutOnly[seriesIndex]
