@@ -76,9 +76,9 @@ public partial class LineGraphContent : BaseObservable, ILineGraphContent
         Maximum = maximum;
     }
 
-    public GraphSeriesInfo[] GetSeries() => [.. _series];
+    public IGraphSeriesInfo[] GetSeries() => [.. _series];
 
-    public GraphValueScale[] GetValueScales() => [.. _valueScales];
+    public IGraphValueScale[] GetValueScales() => [.. _valueScales];
 
     public GraphSample[] GetSnapshot() => [.. Volatile.Read(ref _samples)];
 
@@ -91,7 +91,7 @@ public partial class LineGraphContent : BaseObservable, ILineGraphContent
     {
         ArgumentNullException.ThrowIfNull(samples);
         GraphSample[] snapshot = [.. samples];
-        var lastTimestamps = new DateTimeOffset?[_series.Length];
+        var lastTimestamps = new long?[_series.Length];
 
         foreach (var sample in snapshot)
         {
@@ -106,12 +106,17 @@ public partial class LineGraphContent : BaseObservable, ILineGraphContent
             }
 
             var index = (int)sample.SeriesIndex;
-            if (lastTimestamps[index] is { } previous && sample.Timestamp <= previous)
+            if (sample.TimestampTicks < GraphSampleHelpers.MinTimestampTicks || sample.TimestampTicks > GraphSampleHelpers.MaxTimestampTicks)
+            {
+                throw new ArgumentException("Graph timestamps must represent a UTC time in years 0001 through 9999.", nameof(samples));
+            }
+
+            if (lastTimestamps[index] is { } previous && sample.TimestampTicks <= previous)
             {
                 throw new ArgumentException("Timestamps must increase within each graph series.", nameof(samples));
             }
 
-            lastTimestamps[index] = sample.Timestamp;
+            lastTimestamps[index] = sample.TimestampTicks;
         }
 
         Volatile.Write(ref _samples, snapshot);

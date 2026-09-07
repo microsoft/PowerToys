@@ -28,9 +28,9 @@ public class UsageHistoryTests
         Assert.AreEqual(1u, samples[1].SeriesIndex);
         Assert.AreEqual(65d, samples[0].Value);
         Assert.AreEqual(12d, samples[1].Value);
-        Assert.AreEqual(samples[0].Timestamp, samples[1].Timestamp);
-        Assert.AreEqual(samples[2].Timestamp, samples[3].Timestamp);
-        Assert.AreEqual(TimeSpan.FromSeconds(1), samples[2].Timestamp - samples[0].Timestamp);
+        Assert.AreEqual(samples[0].GetTimestamp(), samples[1].GetTimestamp());
+        Assert.AreEqual(samples[2].GetTimestamp(), samples[3].GetTimestamp());
+        Assert.AreEqual(TimeSpan.FromSeconds(1), samples[2].GetTimestamp() - samples[0].GetTimestamp());
 
         var graph = new LineGraphContent([new GraphSeriesInfo { Name = "Total" }, new GraphSeriesInfo { Name = "Kernel" }]);
         graph.SetSnapshot(samples);
@@ -49,7 +49,7 @@ public class UsageHistoryTests
         clock.Advance(TimeSpan.FromSeconds(1));
         history.Add(30);
 
-        Assert.AreEqual(first.Timestamp.AddSeconds(1), history.GetSnapshot()[1].Timestamp);
+        Assert.AreEqual(first.GetTimestamp().AddSeconds(1), history.GetSnapshot()[1].GetTimestamp());
     }
 
     [TestMethod]
@@ -66,8 +66,8 @@ public class UsageHistoryTests
 
         var samples = history.GetSnapshot();
         Assert.HasCount(126, samples);
-        Assert.AreEqual(start.AddSeconds(8), samples[0].Timestamp);
-        Assert.AreEqual(start.AddSeconds(70), samples[^1].Timestamp);
+        Assert.AreEqual(start.AddSeconds(8), samples[0].GetTimestamp());
+        Assert.AreEqual(start.AddSeconds(70), samples[^1].GetTimestamp());
 
         clock.Advance(TimeSpan.FromMinutes(5));
         history.Add(40, 10);

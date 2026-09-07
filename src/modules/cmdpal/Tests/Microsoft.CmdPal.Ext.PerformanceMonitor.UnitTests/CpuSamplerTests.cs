@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CoreWidgetProvider.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests;
@@ -46,7 +47,7 @@ public partial class CpuSamplerTests
         Assert.AreSame(firstSnapshots[0], secondSnapshots[0]);
         Assert.AreSame(first.GetCpuSnapshot(), second.GetCpuSnapshot());
         Assert.HasCount(2, sampler.Snapshot.History);
-        Assert.AreEqual(sampler.Snapshot.History[0].Timestamp, sampler.Snapshot.History[1].Timestamp);
+        Assert.AreEqual(sampler.Snapshot.History[0].GetTimestamp(), sampler.Snapshot.History[1].GetTimestamp());
 
         clock.Advance(TimeSpan.FromSeconds(1));
         first.Stop();
@@ -89,7 +90,7 @@ public partial class CpuSamplerTests
         Assert.AreEqual(2, source.Reads);
         Assert.AreEqual(TimeSpan.FromSeconds(1), source.Intervals[^1]);
         Assert.HasCount(4, sampler.Snapshot.History);
-        Assert.AreEqual(TimeSpan.FromSeconds(11), sampler.Snapshot.History[2].Timestamp - sampler.Snapshot.History[0].Timestamp);
+        Assert.AreEqual(TimeSpan.FromSeconds(11), sampler.Snapshot.History[2].GetTimestamp() - sampler.Snapshot.History[0].GetTimestamp());
     }
 
     [TestMethod]

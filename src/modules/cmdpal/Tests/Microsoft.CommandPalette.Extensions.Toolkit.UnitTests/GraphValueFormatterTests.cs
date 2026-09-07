@@ -97,9 +97,9 @@ public class GraphValueFormatterTests
         {
             AutoScaleMaximum = true,
         };
-        graph.SetSnapshot([new GraphSample { Timestamp = DateTimeOffset.UnixEpoch, Value = 50_000 }]);
-        scales[0].Divisor = 99;
-        graph.GetValueScales()[1].Suffix = "changed";
+        graph.SetSnapshot([GraphSampleHelpers.Create(0, DateTimeOffset.UnixEpoch, 50_000)]);
+        scales[0] = new GraphValueScale { Divisor = 99, Suffix = "changed" };
+        graph.GetValueScales()[1] = scales[0];
 
         ILineGraphContent content = graph;
         Assert.IsTrue(content.AutoScaleMaximum);

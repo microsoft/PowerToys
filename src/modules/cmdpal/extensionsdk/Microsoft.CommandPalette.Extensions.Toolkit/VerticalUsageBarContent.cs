@@ -34,7 +34,7 @@ public partial class VerticalUsageBarContent : BaseObservable, IVerticalUsageBar
         _snapshot = new Snapshot(minimum, string.Empty, new double[_series.Length]);
     }
 
-    public GraphSeriesInfo[] GetSeries() => [.. _series];
+    public IGraphSeriesInfo[] GetSeries() => [.. _series];
 
     /// <summary>
     /// Returns the headline value, footer, and all contributions from one publication.

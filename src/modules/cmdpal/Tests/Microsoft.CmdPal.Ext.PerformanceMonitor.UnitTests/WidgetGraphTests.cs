@@ -132,7 +132,7 @@ public partial class WidgetGraphTests
             }
         };
 
-        page.Samples = [new GraphSample { Timestamp = DateTimeOffset.UtcNow, Value = 42 }];
+        page.Samples = [GraphSampleHelpers.Create(0, DateTimeOffset.UtcNow, 42)];
         page.UpdateWidget();
         Assert.AreEqual(42d, graph.GetSnapshot()[0].Value);
         Assert.AreEqual(1, notifications);

@@ -38,9 +38,9 @@ public partial class NetworkTrafficTests
         Assert.AreEqual(1u, snapshot.TrafficHistory[^1].SeriesIndex);
         Assert.AreEqual(2000d, snapshot.TrafficHistory[^2].Value);
         Assert.AreEqual(10_000d, snapshot.TrafficHistory[^1].Value);
-        Assert.AreEqual(snapshot.UtilizationHistory[^1].Timestamp, snapshot.TrafficHistory[^2].Timestamp);
-        Assert.AreEqual(snapshot.TrafficHistory[^2].Timestamp, snapshot.TrafficHistory[^1].Timestamp);
-        Assert.AreEqual(clock.GetUtcNow(), snapshot.TrafficHistory[^1].Timestamp);
+        Assert.AreEqual(snapshot.UtilizationHistory[^1].GetTimestamp(), snapshot.TrafficHistory[^2].GetTimestamp());
+        Assert.AreEqual(snapshot.TrafficHistory[^2].GetTimestamp(), snapshot.TrafficHistory[^1].GetTimestamp());
+        Assert.AreEqual(clock.GetUtcNow(), snapshot.TrafficHistory[^1].GetTimestamp());
         CollectionAssert.AreEqual(snapshot.TrafficHistory, stats.GetSnapshot(0).TrafficHistory);
 
         clock.Advance(TimeSpan.FromSeconds(1));
@@ -116,7 +116,7 @@ public partial class NetworkTrafficTests
             Assert.AreEqual("120.0 Kbps", traffic.GetDownSpeed());
             Assert.AreEqual(traffic.GetDownSpeed(), GraphValueFormatter.Format(graph.GetSnapshot()[^1].Value, valueScales: graph.GetValueScales()));
             Assert.AreSame(source.Commands, traffic.Commands);
-            Assert.AreEqual(source.CurrentSnapshot.TrafficHistory[^1].Timestamp, graph.GetSnapshot()[^1].Timestamp);
+            Assert.AreEqual(source.CurrentSnapshot.TrafficHistory[^1].GetTimestamp(), graph.GetSnapshot()[^1].GetTimestamp());
 
             var notifications = 0;
             TypedEventHandler<object, IItemsChangedEventArgs> handler = (_, _) => notifications++;

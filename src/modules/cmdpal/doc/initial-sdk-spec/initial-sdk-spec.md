@@ -2430,10 +2430,10 @@ interface IPlainTextContent requires IContent {
 ### Graph content
 
 ```csharp
-struct GraphValueScale
+interface IGraphValueScale
 {
-    Double Divisor;
-    String Suffix;
+    Double Divisor { get; };
+    String Suffix { get; };
 };
 
 enum GraphLineStyle
@@ -2443,19 +2443,19 @@ enum GraphLineStyle
     Dotted = 2,
 };
 
-struct GraphSeriesInfo
+interface IGraphSeriesInfo
 {
-    String Name;
-    OptionalColor Color;
-    GraphLineStyle LineStyle;
-    Boolean IsReadoutOnly;
-    String ReadoutValueSuffix;
+    String Name { get; };
+    OptionalColor Color { get; };
+    GraphLineStyle LineStyle { get; };
+    Boolean IsReadoutOnly { get; };
+    String ReadoutValueSuffix { get; };
 };
 
 struct GraphSample
 {
     UInt32 SeriesIndex;
-    Windows.Foundation.DateTime Timestamp;
+    Int64 TimestampTicks;
     Double Value;
 };
 
@@ -2469,8 +2469,8 @@ interface ILineGraphContent requires IContent
     String ValueSuffix { get; };
     Double Smoothing { get; };
     Boolean AutoScaleMaximum { get; };
-    GraphValueScale[] GetValueScales();
-    GraphSeriesInfo[] GetSeries();
+    IGraphValueScale[] GetValueScales();
+    IGraphSeriesInfo[] GetSeries();
     GraphSample[] GetSnapshot();
 };
 
@@ -2480,14 +2480,14 @@ interface IVerticalUsageBarContent requires IContent
     Double Minimum { get; };
     Double Maximum { get; };
     OptionalColor IndicatorColor { get; };
-    GraphSeriesInfo[] GetSeries();
+    IGraphSeriesInfo[] GetSeries();
     Double[] GetSnapshot(out Double value, out String valueText);
 };
 
 interface IDoughnutGraphContent requires IContent
 {
     String DisplayName { get; };
-    GraphSeriesInfo[] GetSeries();
+    IGraphSeriesInfo[] GetSeries();
     Double[] GetSnapshot(out String centerValue, out String centerLabel);
 };
 ```
@@ -2498,21 +2498,29 @@ interface IDoughnutGraphContent requires IContent
 | --- | --- |
 | `DisplayName` | Localized graph heading and UI Automation name. Empty omits the heading. |
 | `GetSeries()` | Fixed, ordered series descriptions. Array index is identity; names are display labels and may repeat. |
-| `GraphSeriesInfo.Color` | Existing `OptionalColor`. Unset selects a host palette color. High contrast may override colors. |
-| `GraphSeriesInfo.LineStyle` | Line graph edge: `Solid` (default), `Dashed`, or `Dotted`. Ignored by bars and doughnuts. |
-| `GraphSeriesInfo.IsReadoutOnly` | Default false. A line graph includes this series in its legend and inspection readouts, without a plotted line, fill, marker, swatch, or contribution to automatic scaling. Ignored by bars and doughnuts. |
-| `GraphSeriesInfo.ReadoutValueSuffix` | Suffix for a readout-only line series, formatted as a number using the graph's `ValueFormat`. Overrides the graph's `ValueSuffix` and value scales for that series. Default empty; ignored for plotted series, bars, and doughnuts. |
-| Configuration | Immutable for the content lifetime. Replace the content instance to change configuration. |
+| `IGraphSeriesInfo.Color` | Existing `OptionalColor`. Unset selects a host palette color. High contrast may override colors. |
+| `IGraphSeriesInfo.LineStyle` | Line graph edge: `Solid` (default), `Dashed`, or `Dotted`. Ignored by bars and doughnuts. |
+| `IGraphSeriesInfo.IsReadoutOnly` | Default false. A line graph includes this series in its legend and inspection readouts, without a plotted line, fill, marker, swatch, or contribution to automatic scaling. Ignored by bars and doughnuts. |
+| `IGraphSeriesInfo.ReadoutValueSuffix` | Suffix for a readout-only line series, formatted as a number using the graph's `ValueFormat`. Overrides the graph's `ValueSuffix` and value scales for that series. Default empty; ignored for plotted series, bars, and doughnuts. |
+| Configuration | Immutable for the content lifetime, including all properties on series and value-scale objects. Replace the content instance to change configuration. The host reads metadata on its worker and retains local values for rendering. |
 | `GetSnapshot()` | Complete, coherent replacement of the changing data, including output parameters. Non-destructive; independent of other readers. |
 | Notification | Publish the snapshot before raising `PropChanged("Data")`. One notification per publication; consumers may skip intermediate snapshots. |
-| Ownership | Returned arrays are independent copies. No per-series or per-sample interface objects. |
+| Ownership | Returned arrays are independent copies. Immutable series and value-scale objects may be shared between reads. Samples are numeric values passed in bulk, with no per-sample interface objects. |
+| Empty arrays | A zero-length ABI array may have a null data pointer. Hosts treat a projected null array as empty. Null elements in metadata arrays are invalid. |
 | Presentation | Host owns layout, grid, stroke width and dash pattern, fill style, animation, inspection, ring thickness, and slice gaps. |
 
 #### Line graph
 
 - `SeriesIndex`: index into `GetSeries()`.
-- `Timestamp`: observation time; strictly increasing within each series.
+- `TimestampTicks`: observation time in signed 100-nanosecond UTC ticks since
+  1601-01-01T00:00:00Z (the Windows epoch). Valid values are -504911232000000000
+  through 2650467743999999999, covering years 0001 through 9999. Timestamps must
+  increase strictly within each series. UTC offsets are not retained.
   Different series may have independent timestamps and counts and may be interleaved.
+- The Toolkit's `GraphSampleHelpers.Create` accepts a `DateTimeOffset` without
+  losing tick precision. `ToTimestampTicks`, `FromTimestampTicks`, and the sample's
+  `GetTimestamp()` extension method convert between the transport value and UTC time.
+  The numeric sample layout supports standard blittable array marshalling under Native AOT.
 - `Value`: finite measurement in range units (or the readout's own units for a readout-only series). Preserve out-of-range values for
   inspection; clip drawing to the vertical range.
 - `Minimum` / `Maximum`: finite, ordered range with a finite positive difference. Defaults: 0 / 100.

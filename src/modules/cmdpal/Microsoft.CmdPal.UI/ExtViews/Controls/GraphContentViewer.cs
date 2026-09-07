@@ -7,6 +7,7 @@ using Microsoft.CmdPal.UI.Controls.Graphs;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
@@ -124,7 +125,7 @@ public sealed partial class GraphContentViewer : UserControl
                 Array.Clear(counts);
                 foreach (var sample in snapshot.Samples)
                 {
-                    points[sample.SeriesIndex][counts[sample.SeriesIndex]++] = new(sample.Timestamp, sample.Value);
+                    points[sample.SeriesIndex][counts[sample.SeriesIndex]++] = new(sample.GetTimestamp(), sample.Value);
                 }
 
                 line.SetSnapshot(points);

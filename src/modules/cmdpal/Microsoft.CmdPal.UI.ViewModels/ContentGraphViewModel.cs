@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -157,17 +158,53 @@ public sealed partial class ContentGraphViewModel(IContent content, WeakReferenc
         }
     }
 
+    // Materialize extension-owned metadata on this worker. UI snapshots only hold
+    // local immutable objects, so later validation and rendering cannot cross COM.
+    // Empty native arrays can project as null; normalize them at the read boundary.
+    private static GraphSeriesInfo[] ReadSeries(IGraphSeriesInfo[]? series)
+    {
+        series ??= [];
+        var result = new GraphSeriesInfo[series.Length];
+        for (var index = 0; index < series.Length; index++)
+        {
+            var item = series[index] ?? throw new ArgumentException("Graph series must not be null.", nameof(series));
+            result[index] = new GraphSeriesInfo
+            {
+                Name = item.Name,
+                Color = item.Color,
+                LineStyle = item.LineStyle,
+                IsReadoutOnly = item.IsReadoutOnly,
+                ReadoutValueSuffix = item.ReadoutValueSuffix ?? string.Empty,
+            };
+        }
+
+        return result;
+    }
+
+    private static GraphValueScale[] ReadValueScales(IGraphValueScale[]? scales)
+    {
+        scales ??= [];
+        var result = new GraphValueScale[scales.Length];
+        for (var index = 0; index < scales.Length; index++)
+        {
+            var scale = scales[index] ?? throw new ArgumentException("Graph value scales must not be null.", nameof(scales));
+            result[index] = new GraphValueScale { Divisor = scale.Divisor, Suffix = scale.Suffix };
+        }
+
+        return result;
+    }
+
     private Configuration ReadConfiguration()
     {
         var configuration = content switch
         {
-            ILineGraphContent line => new Configuration(GraphKind.Line, line.DisplayName, line.GetSeries(), line.Minimum, line.Maximum, line.HistoryDuration, line.ValueFormat, line.ValueSuffix, Smoothing: line.Smoothing, AutoScaleMaximum: line.AutoScaleMaximum, ValueScales: line.GetValueScales()),
-            IVerticalUsageBarContent bar => new Configuration(GraphKind.VerticalBar, bar.DisplayName, bar.GetSeries(), bar.Minimum, bar.Maximum, IndicatorColor: bar.IndicatorColor),
-            IDoughnutGraphContent doughnut => new Configuration(GraphKind.Doughnut, doughnut.DisplayName, doughnut.GetSeries()),
+            ILineGraphContent line => new Configuration(GraphKind.Line, line.DisplayName, ReadSeries(line.GetSeries()), line.Minimum, line.Maximum, line.HistoryDuration, line.ValueFormat, line.ValueSuffix, Smoothing: line.Smoothing, AutoScaleMaximum: line.AutoScaleMaximum, ValueScales: ReadValueScales(line.GetValueScales())),
+            IVerticalUsageBarContent bar => new Configuration(GraphKind.VerticalBar, bar.DisplayName, ReadSeries(bar.GetSeries()), bar.Minimum, bar.Maximum, IndicatorColor: bar.IndicatorColor),
+            IDoughnutGraphContent doughnut => new Configuration(GraphKind.Doughnut, doughnut.DisplayName, ReadSeries(doughnut.GetSeries())),
             _ => throw new ArgumentException("Unsupported graph content.", nameof(content)),
         };
 
-        if (configuration.Series is null || configuration.Series.Any(series => series.Name is null))
+        if (configuration.Series.Any(series => series.Name is null))
         {
             throw new ArgumentException("Graph series must have non-null names.");
         }
@@ -216,23 +253,24 @@ public sealed partial class ContentGraphViewModel(IContent content, WeakReferenc
         switch (content)
         {
             case ILineGraphContent line:
-                var samples = line.GetSnapshot();
-                var previous = new DateTimeOffset?[configuration.Series.Length];
+                var samples = line.GetSnapshot() ?? [];
+                var previous = new long?[configuration.Series.Length];
                 foreach (var sample in samples)
                 {
                     if (sample.SeriesIndex >= previous.Length || !double.IsFinite(sample.Value) ||
-                        (previous[sample.SeriesIndex] is { } timestamp && sample.Timestamp <= timestamp))
+                        sample.TimestampTicks < GraphSampleHelpers.MinTimestampTicks || sample.TimestampTicks > GraphSampleHelpers.MaxTimestampTicks ||
+                        (previous[sample.SeriesIndex] is { } timestamp && sample.TimestampTicks <= timestamp))
                     {
-                        throw new ArgumentException("Graph samples must be finite, indexed, and ordered within each series.");
+                        throw new ArgumentException("Graph samples must be finite, indexed, and ordered within each series, with UTC timestamps in years 0001 through 9999.");
                     }
 
-                    previous[sample.SeriesIndex] = sample.Timestamp;
+                    previous[sample.SeriesIndex] = sample.TimestampTicks;
                 }
 
                 return new(configuration, samples, []);
 
             case IVerticalUsageBarContent bar:
-                var contributions = bar.GetSnapshot(out var value, out var valueText);
+                var contributions = bar.GetSnapshot(out var value, out var valueText) ?? [];
                 ValidateValues(contributions, configuration.Series.Length);
                 if (!double.IsFinite(value))
                 {
@@ -242,7 +280,7 @@ public sealed partial class ContentGraphViewModel(IContent content, WeakReferenc
                 return new(configuration, [], contributions, value, valueText ?? string.Empty);
 
             case IDoughnutGraphContent doughnut:
-                var values = doughnut.GetSnapshot(out var centerValue, out var centerLabel);
+                var values = doughnut.GetSnapshot(out var centerValue, out var centerLabel) ?? [];
                 ValidateValues(values, configuration.Series.Length);
                 return new(configuration, [], values, ValueText: centerValue ?? string.Empty, CenterLabel: centerLabel ?? string.Empty);
 

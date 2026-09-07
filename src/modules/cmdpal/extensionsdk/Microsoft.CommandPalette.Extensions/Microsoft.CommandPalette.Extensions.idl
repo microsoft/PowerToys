@@ -490,10 +490,11 @@ namespace Microsoft.CommandPalette.Extensions
         Boolean WrapWords { get; };
     }
 
-    struct GraphValueScale
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IGraphValueScale
     {
-        Double Divisor;
-        String Suffix;
+        Double Divisor { get; };
+        String Suffix { get; };
     };
 
     enum GraphLineStyle
@@ -503,19 +504,20 @@ namespace Microsoft.CommandPalette.Extensions
         Dotted = 2,
     };
 
-    struct GraphSeriesInfo
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IGraphSeriesInfo
     {
-        String Name;
-        OptionalColor Color;
-        GraphLineStyle LineStyle;
-        Boolean IsReadoutOnly;
-        String ReadoutValueSuffix;
+        String Name { get; };
+        OptionalColor Color { get; };
+        GraphLineStyle LineStyle { get; };
+        Boolean IsReadoutOnly { get; };
+        String ReadoutValueSuffix { get; };
     };
 
     struct GraphSample
     {
         UInt32 SeriesIndex;
-        Windows.Foundation.DateTime Timestamp;
+        Int64 TimestampTicks;
         Double Value;
     };
 
@@ -530,8 +532,8 @@ namespace Microsoft.CommandPalette.Extensions
         String ValueSuffix { get; };
         Double Smoothing { get; };
         Boolean AutoScaleMaximum { get; };
-        GraphValueScale[] GetValueScales();
-        GraphSeriesInfo[] GetSeries();
+        IGraphValueScale[] GetValueScales();
+        IGraphSeriesInfo[] GetSeries();
         GraphSample[] GetSnapshot();
     };
 
@@ -542,7 +544,7 @@ namespace Microsoft.CommandPalette.Extensions
         Double Minimum { get; };
         Double Maximum { get; };
         OptionalColor IndicatorColor { get; };
-        GraphSeriesInfo[] GetSeries();
+        IGraphSeriesInfo[] GetSeries();
         Double[] GetSnapshot(out Double value, out String valueText);
     };
 
@@ -550,7 +552,7 @@ namespace Microsoft.CommandPalette.Extensions
     interface IDoughnutGraphContent requires IContent
     {
         String DisplayName { get; };
-        GraphSeriesInfo[] GetSeries();
+        IGraphSeriesInfo[] GetSeries();
         Double[] GetSnapshot(out String centerValue, out String centerLabel);
     };
 

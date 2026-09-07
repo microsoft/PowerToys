@@ -48,23 +48,24 @@ public class GraphContentTests
     [DataRow(GraphLineStyle.Dotted)]
     public void Configuration_PreservesDisplayNamesAndCopiesSeriesDescriptions(GraphLineStyle lineStyle)
     {
-        GraphSeriesInfo[] series = [Series("Used"), Series("Available")];
-        series[1].LineStyle = lineStyle;
-        series[1].IsReadoutOnly = true;
-        series[1].ReadoutValueSuffix = " GB";
+        GraphSeriesInfo[] series =
+        [
+            Series("Used"),
+            new() { Name = "Available", LineStyle = lineStyle, IsReadoutOnly = true, ReadoutValueSuffix = " GB" },
+        ];
+        var available = series[1];
         ILineGraphContent line = new LineGraphContent(series) { DisplayName = "Line graph" };
         IVerticalUsageBarContent bar = new VerticalUsageBarContent(series) { DisplayName = "Usage bar" };
         IDoughnutGraphContent doughnut = new DoughnutGraphContent(series) { DisplayName = "Doughnut graph" };
 
         series[0] = Series("Changed");
-        series[1].LineStyle = GraphLineStyle.Solid;
-        series[1].IsReadoutOnly = false;
-        series[1].ReadoutValueSuffix = " changed";
+        series[1] = Series("Changed");
         line.GetSeries()[0] = series[0];
-        line.GetSeries()[1].LineStyle = GraphLineStyle.Solid;
+        line.GetSeries()[1] = series[1];
         bar.GetSeries()[0] = series[0];
         doughnut.GetSeries()[0] = series[0];
 
+        Assert.AreSame(available, line.GetSeries()[1]);
         Assert.AreEqual("Used", line.GetSeries()[0].Name);
         Assert.AreEqual("Used", bar.GetSeries()[0].Name);
         Assert.AreEqual("Used", doughnut.GetSeries()[0].Name);
@@ -83,8 +84,7 @@ public class GraphContentTests
     [TestMethod]
     public void Configuration_RejectsAnUnknownLineStyle()
     {
-        var series = Series("CPU");
-        series.LineStyle = (GraphLineStyle)int.MaxValue;
+        var series = new GraphSeriesInfo { Name = "CPU", LineStyle = (GraphLineStyle)int.MaxValue };
         Assert.ThrowsExactly<ArgumentException>(() => _ = new LineGraphContent([series]));
     }
 
@@ -411,6 +411,25 @@ public class GraphContentTests
             });
     }
 
+    [TestMethod]
+    [DataRow(long.MinValue)]
+    [DataRow(GraphSampleHelpers.MinTimestampTicks - 1)]
+    [DataRow(GraphSampleHelpers.MaxTimestampTicks + 1)]
+    [DataRow(long.MaxValue)]
+    public void LineSnapshot_RejectsUnrepresentableTimestampsWithoutPublishing(long ticks)
+    {
+        AssertRejectedLineSnapshot([new GraphSample { TimestampTicks = ticks, Value = 20 }]);
+    }
+
+    [TestMethod]
+    public void Configuration_RejectsNullMetadataObjects()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => _ = new LineGraphContent([null!]));
+        Assert.ThrowsExactly<ArgumentException>(() => _ = new VerticalUsageBarContent([null!]));
+        Assert.ThrowsExactly<ArgumentException>(() => _ = new DoughnutGraphContent([null!]));
+        Assert.ThrowsExactly<ArgumentException>(() => _ = new LineGraphContent([], valueScales: [null!]));
+    }
+
     private static void AssertRejectedLineSnapshot(GraphSample[] samples)
     {
         var content = new LineGraphContent([Series("CPU"), Series("Memory")]);
@@ -427,10 +446,6 @@ public class GraphContentTests
 
     private static GraphSeriesInfo Series(string name) => new() { Name = name };
 
-    private static GraphSample Sample(uint seriesIndex, int seconds, double value) => new()
-    {
-        SeriesIndex = seriesIndex,
-        Timestamp = DateTimeOffset.UnixEpoch.AddSeconds(seconds),
-        Value = value,
-    };
+    private static GraphSample Sample(uint seriesIndex, int seconds, double value) =>
+        GraphSampleHelpers.Create(seriesIndex, DateTimeOffset.UnixEpoch.AddSeconds(seconds), value);
 }

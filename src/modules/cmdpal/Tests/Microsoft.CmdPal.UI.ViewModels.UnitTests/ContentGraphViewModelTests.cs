@@ -70,7 +70,9 @@ public partial class ContentGraphViewModelTests
         Assert.AreEqual(0.75, vm.Data.Configuration.Smoothing);
         Assert.AreEqual(1, graph.SmoothingReads);
         Assert.IsTrue(vm.Data.Configuration.AutoScaleMaximum);
-        CollectionAssert.AreEqual(DisplayScales, vm.Data.Configuration.ValueScales);
+        CollectionAssert.AreEqual(
+            DisplayScales.Select(scale => (scale.Divisor, scale.Suffix)).ToArray(),
+            vm.Data.Configuration.ValueScales!.Select(scale => (scale.Divisor, scale.Suffix)).ToArray());
         Assert.AreEqual(1, graph.ScaleReads);
 
         graph.Publish(11);
@@ -86,7 +88,9 @@ public partial class ContentGraphViewModelTests
         Assert.AreEqual(0.75, vm.Data.Configuration.Smoothing);
         Assert.AreEqual(1, graph.SmoothingReads);
         Assert.IsTrue(vm.Data.Configuration.AutoScaleMaximum);
-        CollectionAssert.AreEqual(DisplayScales, vm.Data.Configuration.ValueScales);
+        CollectionAssert.AreEqual(
+            DisplayScales.Select(scale => (scale.Divisor, scale.Suffix)).ToArray(),
+            vm.Data.Configuration.ValueScales!.Select(scale => (scale.Divisor, scale.Suffix)).ToArray());
         Assert.AreEqual(1, graph.ScaleReads);
         vm.SafeCleanup();
         WaitFor(() => graph.Subscribers == 0);
@@ -234,8 +238,8 @@ public partial class ContentGraphViewModelTests
         var time = DateTimeOffset.UtcNow;
         graph.SetSnapshot(
         [
-            new GraphSample { SeriesIndex = 1, Timestamp = time.AddSeconds(-2), Value = 123 },
-            new GraphSample { SeriesIndex = 0, Timestamp = time.AddSeconds(-1), Value = -5 },
+            GraphSampleHelpers.Create(1, time.AddSeconds(-2), 123),
+            GraphSampleHelpers.Create(0, time.AddSeconds(-1), -5),
         ]);
         var context = new TestContext();
         var vm = Create(graph, context);
@@ -363,6 +367,176 @@ public partial class ContentGraphViewModelTests
         Assert.IsTrue(context.Errors.IsEmpty);
     }
 
+    [TestMethod]
+    public async Task Metadata_IsMaterializedOnceBeforeUiPublication()
+    {
+        var metadata = new GuardedMetadata();
+        using var graph = new ControlledLineGraph { Series = [metadata], ValueScales = [metadata] };
+        var context = new TestContext();
+        var vm = Create(graph, context);
+        await InitializeGraph(vm, context);
+
+        // Any retained extension object would now fail on either the UI path or
+        // a subsequent publication. Local immutable values remain safe to read.
+        metadata.RejectReads = true;
+        context.SchedulerImpl.RunAll();
+        var configuration = vm.Data!.Configuration;
+        Assert.AreEqual(7, metadata.Reads);
+        Assert.AreEqual("Send", configuration.Series[0].Name);
+        Assert.AreEqual(GraphLineStyle.Dotted, configuration.Series[0].LineStyle);
+        Assert.IsTrue(configuration.Series[0].Color.HasValue);
+        Assert.IsTrue(configuration.Series[0].IsReadoutOnly);
+        Assert.AreEqual(" GB", configuration.Series[0].ReadoutValueSuffix);
+        Assert.AreEqual("1 k units", GraphValueFormatter.Format(1000, "0", valueScales: configuration.ValueScales));
+
+        graph.Publish(11);
+        WaitFor(() => graph.SnapshotReads == 2 && context.SchedulerImpl.Count > 0);
+        context.SchedulerImpl.RunAll();
+        Assert.AreSame(configuration, vm.Data!.Configuration);
+        Assert.AreEqual(7, metadata.Reads);
+        vm.SafeCleanup();
+        WaitFor(() => graph.Subscribers == 0);
+        Assert.IsTrue(context.Errors.IsEmpty);
+    }
+
+    [TestMethod]
+    [DataRow(long.MinValue)]
+    [DataRow(GraphSampleHelpers.MinTimestampTicks - 1)]
+    [DataRow(GraphSampleHelpers.MaxTimestampTicks + 1)]
+    [DataRow(long.MaxValue)]
+    public void InvalidTimestamp_RejectsSnapshotBeforeUiPublication(long ticks)
+    {
+        using var graph = new ControlledLineGraph { SnapshotTimestampTicks = ticks };
+        var context = new TestContext();
+        var vm = Create(graph, context);
+        vm.InitializeProperties();
+        WaitFor(() => context.Errors.Count == 1);
+        context.SchedulerImpl.RunAll();
+        Assert.IsNull(vm.Data);
+        vm.SafeCleanup();
+        WaitFor(() => graph.Subscribers == 0);
+    }
+
+    [TestMethod]
+    [DataRow(ContentGraphViewModel.GraphKind.Line)]
+    [DataRow(ContentGraphViewModel.GraphKind.VerticalBar)]
+    [DataRow(ContentGraphViewModel.GraphKind.Doughnut)]
+    public async Task NullArrays_PublishEmptySnapshotsWithoutErrors(ContentGraphViewModel.GraphKind kind)
+    {
+        NullArrayGraphContent graph = kind switch
+        {
+            ContentGraphViewModel.GraphKind.Line => new NullArrayLineGraph(),
+            ContentGraphViewModel.GraphKind.VerticalBar => new NullArrayVerticalBar(),
+            ContentGraphViewModel.GraphKind.Doughnut => new NullArrayDoughnut(),
+            _ => throw new ArgumentOutOfRangeException(nameof(kind)),
+        };
+        var context = new TestContext();
+        var vm = Create(graph, context);
+        try
+        {
+            await Task.Run(vm.InitializeProperties);
+            WaitFor(() => context.SchedulerImpl.Count > 0 || !context.Errors.IsEmpty);
+            Assert.IsTrue(context.Errors.IsEmpty, string.Join(Environment.NewLine, context.Errors));
+            context.SchedulerImpl.RunAll();
+            var initial = vm.Data!;
+            Assert.AreEqual(kind, initial.Configuration.Kind);
+            Assert.IsEmpty(initial.Configuration.Series);
+            Assert.IsEmpty(initial.Samples);
+            Assert.IsEmpty(initial.Values);
+            if (kind == ContentGraphViewModel.GraphKind.Line)
+            {
+                Assert.IsNotNull(initial.Configuration.ValueScales);
+                Assert.IsEmpty(initial.Configuration.ValueScales);
+            }
+            else if (kind == ContentGraphViewModel.GraphKind.VerticalBar)
+            {
+                Assert.AreEqual(42d, initial.Value);
+                Assert.AreEqual("42%", initial.ValueText);
+            }
+            else
+            {
+                Assert.AreEqual("0 GB", initial.ValueText);
+                Assert.AreEqual("Used", initial.CenterLabel);
+            }
+
+            graph.Publish();
+            WaitFor(() => context.SchedulerImpl.Count > 0 || !context.Errors.IsEmpty);
+            Assert.IsTrue(context.Errors.IsEmpty, string.Join(Environment.NewLine, context.Errors));
+            context.SchedulerImpl.RunAll();
+            Assert.AreNotSame(initial, vm.Data);
+            Assert.AreSame(initial.Configuration, vm.Data!.Configuration);
+            Assert.IsEmpty(vm.Data.Samples);
+            Assert.IsEmpty(vm.Data.Values);
+        }
+        finally
+        {
+            vm.SafeCleanup();
+        }
+    }
+
+    [TestMethod]
+    public async Task NullLineHistory_AcceptsLaterSamplesAndClearsPreviousData()
+    {
+        var graph = new NullArrayLineGraph { Series = [new GraphSeriesInfo { Name = "CPU" }] };
+        var context = new TestContext();
+        var vm = Create(graph, context);
+        try
+        {
+            await Task.Run(vm.InitializeProperties);
+            WaitFor(() => context.SchedulerImpl.Count > 0 || !context.Errors.IsEmpty);
+            Assert.IsTrue(context.Errors.IsEmpty, string.Join(Environment.NewLine, context.Errors));
+            context.SchedulerImpl.RunAll();
+            var configuration = vm.Data!.Configuration;
+            Assert.HasCount(1, configuration.Series);
+            Assert.IsNotNull(configuration.ValueScales);
+            Assert.IsEmpty(configuration.ValueScales);
+            Assert.IsEmpty(vm.Data.Samples);
+
+            graph.Samples = [GraphSampleHelpers.Create(0, DateTimeOffset.UnixEpoch, 42)];
+            graph.Publish();
+            WaitFor(() => context.SchedulerImpl.Count > 0);
+            context.SchedulerImpl.RunAll();
+            Assert.AreEqual(42d, vm.Data!.Samples[0].Value);
+
+            graph.Samples = null;
+            graph.Publish();
+            WaitFor(() => context.SchedulerImpl.Count > 0);
+            context.SchedulerImpl.RunAll();
+            Assert.AreSame(configuration, vm.Data!.Configuration);
+            Assert.IsEmpty(vm.Data.Samples);
+            Assert.IsTrue(context.Errors.IsEmpty);
+        }
+        finally
+        {
+            vm.SafeCleanup();
+        }
+    }
+
+    [TestMethod]
+    [DataRow(ContentGraphViewModel.GraphKind.VerticalBar)]
+    [DataRow(ContentGraphViewModel.GraphKind.Doughnut)]
+    public void NullContributions_StillRequireMatchingSeries(ContentGraphViewModel.GraphKind kind)
+    {
+        IGraphSeriesInfo[] series = [new GraphSeriesInfo { Name = "Used" }];
+        NullArrayGraphContent graph = kind == ContentGraphViewModel.GraphKind.VerticalBar
+            ? new NullArrayVerticalBar { Series = series }
+            : new NullArrayDoughnut { Series = series };
+        var context = new TestContext();
+        var vm = Create(graph, context);
+        try
+        {
+            vm.InitializeProperties();
+            WaitFor(() => !context.Errors.IsEmpty);
+            Assert.IsInstanceOfType<ArgumentException>(context.Errors.Single());
+            context.SchedulerImpl.RunAll();
+            Assert.IsNull(vm.Data);
+        }
+        finally
+        {
+            vm.SafeCleanup();
+        }
+    }
+
     private static ContentGraphViewModel Create(IContent graph, TestContext context)
         => new(graph, new WeakReference<IPageContext>(context));
 
@@ -407,6 +581,99 @@ public partial class ContentGraphViewModelTests
                 TryExecuteTask(task);
                 task.GetAwaiter().GetResult();
             }
+        }
+    }
+
+    // Model empty native arrays, which can project as null despite the C# signature.
+    private abstract partial class NullArrayGraphContent : BaseObservable, IContent
+    {
+        public string DisplayName => "Test graph";
+
+        public IGraphSeriesInfo[]? Series { get; init; }
+
+        public IGraphSeriesInfo[] GetSeries() => Series!;
+
+        public void Publish() => OnPropertyChanged("Data");
+    }
+
+    private sealed partial class NullArrayLineGraph : NullArrayGraphContent, ILineGraphContent
+    {
+        public double Minimum => 0;
+
+        public double Maximum => 100;
+
+        public TimeSpan HistoryDuration => TimeSpan.FromSeconds(60);
+
+        public string ValueFormat => "0.0";
+
+        public string ValueSuffix => "%";
+
+        public double Smoothing => 0;
+
+        public bool AutoScaleMaximum => false;
+
+        public GraphSample[]? Samples { get; set; }
+
+        public IGraphValueScale[] GetValueScales() => null!;
+
+        public GraphSample[] GetSnapshot() => Samples!;
+    }
+
+    private sealed partial class NullArrayVerticalBar : NullArrayGraphContent, IVerticalUsageBarContent
+    {
+        public double Minimum => 0;
+
+        public double Maximum => 100;
+
+        public OptionalColor IndicatorColor => default;
+
+        public double[] GetSnapshot(out double value, out string valueText)
+        {
+            value = 42;
+            valueText = "42%";
+            return null!;
+        }
+    }
+
+    private sealed partial class NullArrayDoughnut : NullArrayGraphContent, IDoughnutGraphContent
+    {
+        public double[] GetSnapshot(out string centerValue, out string centerLabel)
+        {
+            centerValue = "0 GB";
+            centerLabel = "Used";
+            return null!;
+        }
+    }
+
+    private sealed partial class GuardedMetadata : IGraphSeriesInfo, IGraphValueScale
+    {
+        public int Reads { get; private set; }
+
+        public bool RejectReads { get; set; }
+
+        public string Name => Read("Send");
+
+        public OptionalColor Color => Read(new OptionalColor { HasValue = true, Color = new Color { A = 255, R = 185, G = 120, B = 198 } });
+
+        public GraphLineStyle LineStyle => Read(GraphLineStyle.Dotted);
+
+        public bool IsReadoutOnly => Read(true);
+
+        public string ReadoutValueSuffix => Read(" GB");
+
+        public double Divisor => Read(1000d);
+
+        public string Suffix => Read(" k units");
+
+        private T Read<T>(T value)
+        {
+            if (RejectReads)
+            {
+                throw new InvalidOperationException("Metadata was read after configuration was captured.");
+            }
+
+            Reads++;
+            return value;
         }
     }
 
@@ -479,7 +746,11 @@ public partial class ContentGraphViewModelTests
 
         public bool AutoScaleMaximum { get; init; }
 
-        public GraphValueScale[] ValueScales { get; init; } = [];
+        public IGraphSeriesInfo[]? Series { get; init; }
+
+        public IGraphValueScale[] ValueScales { get; init; } = [];
+
+        public long SnapshotTimestampTicks { get; init; } = GraphSampleHelpers.ToTimestampTicks(DateTimeOffset.UnixEpoch);
 
         public int ScaleReads { get; private set; }
 
@@ -492,16 +763,16 @@ public partial class ContentGraphViewModelTests
             }
         }
 
-        public GraphValueScale[] GetValueScales()
+        public IGraphValueScale[] GetValueScales()
         {
             ScaleReads++;
             return [.. ValueScales];
         }
 
-        public GraphSeriesInfo[] GetSeries()
+        public IGraphSeriesInfo[] GetSeries()
         {
             SeriesReads++;
-            return [new GraphSeriesInfo { Name = "Test", LineStyle = LineStyle, IsReadoutOnly = IsReadoutOnly, ReadoutValueSuffix = ReadoutValueSuffix }];
+            return Series ?? [new GraphSeriesInfo { Name = "Test", LineStyle = LineStyle, IsReadoutOnly = IsReadoutOnly, ReadoutValueSuffix = ReadoutValueSuffix }];
         }
 
         public GraphSample[] GetSnapshot()
@@ -521,7 +792,7 @@ public partial class ContentGraphViewModelTests
                     }
                 }
 
-                return [new GraphSample { Timestamp = DateTimeOffset.UnixEpoch, Value = value }];
+                return [new GraphSample { TimestampTicks = SnapshotTimestampTicks, Value = value }];
             }
             finally
             {

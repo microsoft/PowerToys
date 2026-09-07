@@ -13,7 +13,7 @@ internal static class GraphContentValidation
         var previousDivisor = 0d;
         foreach (var scale in copy)
         {
-            if (!double.IsFinite(scale.Divisor) || scale.Divisor <= previousDivisor || scale.Suffix is null)
+            if (scale is null || !double.IsFinite(scale.Divisor) || scale.Divisor <= previousDivisor || scale.Suffix is null)
             {
                 throw new ArgumentException("Value scales require positive, finite, increasing divisors and non-null suffixes.", nameof(scales));
             }
@@ -30,7 +30,7 @@ internal static class GraphContentValidation
         GraphSeriesInfo[] copy = [.. series];
         foreach (var item in copy)
         {
-            if (item.Name is null)
+            if (item is null || item.Name is null)
             {
                 throw new ArgumentException("Series names must not be null.", nameof(series));
             }

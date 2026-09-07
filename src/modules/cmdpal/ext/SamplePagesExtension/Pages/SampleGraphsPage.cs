@@ -162,9 +162,10 @@ internal sealed partial class SampleGraphsPage : ContentPage, INotifyItemsChange
             }
 
             // Keep preceding points while the host retains the additional buffered history.
+            var cutoff = GraphSampleHelpers.ToTimestampTicks(now - _line.HistoryDuration);
             foreach (var history in _history)
             {
-                while (history.Count > 2 && history[2].Timestamp < now - _line.HistoryDuration)
+                while (history.Count > 2 && history[2].TimestampTicks < cutoff)
                 {
                     history.RemoveAt(0);
                 }
@@ -180,7 +181,7 @@ internal sealed partial class SampleGraphsPage : ContentPage, INotifyItemsChange
         var value = seriesIndex == 0
             ? 65 + (40 * Math.Sin(seconds / 3)) + (10 * Math.Cos(seconds * 1.8))
             : 28 + (18 * Math.Sin((seconds / 5) + 1));
-        _history[seriesIndex].Add(new GraphSample { SeriesIndex = seriesIndex, Timestamp = timestamp, Value = value });
+        _history[seriesIndex].Add(GraphSampleHelpers.Create(seriesIndex, timestamp, value));
     }
 
     private void Publish(DateTimeOffset now)

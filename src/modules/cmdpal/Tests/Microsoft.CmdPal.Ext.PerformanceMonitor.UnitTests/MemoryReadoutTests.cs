@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Text.Json;
 using CoreWidgetProvider.Helpers;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests;
@@ -29,7 +30,7 @@ public partial class MemoryReadoutTests
         Assert.HasCount(6, samples);
         AssertObservation(samples, 0, 75, 24, 8);
         AssertObservation(samples, 3, 37.5, 24, 40);
-        Assert.AreEqual(TimeSpan.FromSeconds(1), samples[3].Timestamp - samples[0].Timestamp);
+        Assert.AreEqual(TimeSpan.FromSeconds(1), samples[3].GetTimestamp() - samples[0].GetTimestamp());
         Assert.AreEqual(64 * Gigabyte, stats.AllMem);
         Assert.AreEqual(24 * Gigabyte, stats.UsedMem);
         Assert.AreEqual(40 * Gigabyte, stats.AvailableMem);
@@ -106,8 +107,8 @@ public partial class MemoryReadoutTests
         Assert.AreEqual(0u, samples[offset].SeriesIndex);
         Assert.AreEqual(1u, samples[offset + 1].SeriesIndex);
         Assert.AreEqual(2u, samples[offset + 2].SeriesIndex);
-        Assert.AreEqual(samples[offset].Timestamp, samples[offset + 1].Timestamp);
-        Assert.AreEqual(samples[offset].Timestamp, samples[offset + 2].Timestamp);
+        Assert.AreEqual(samples[offset].GetTimestamp(), samples[offset + 1].GetTimestamp());
+        Assert.AreEqual(samples[offset].GetTimestamp(), samples[offset + 2].GetTimestamp());
         Assert.AreEqual(percent, samples[offset].Value);
         Assert.AreEqual(used, samples[offset + 1].Value);
         Assert.AreEqual(available, samples[offset + 2].Value);

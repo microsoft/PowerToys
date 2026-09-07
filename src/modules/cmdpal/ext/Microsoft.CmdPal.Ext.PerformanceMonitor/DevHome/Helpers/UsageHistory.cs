@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace CoreWidgetProvider.Helpers;
 
@@ -49,21 +50,21 @@ internal sealed class UsageHistory
         lock (_samples)
         {
             // Use elapsed time so a wall-clock adjustment cannot reorder samples.
-            var timestamp = _origin + _timeProvider.GetElapsedTime(_originTimestamp);
-            if (_samples.Count > 0 && timestamp <= _samples[^1].Timestamp)
+            var timestamp = GraphSampleHelpers.ToTimestampTicks(_origin + _timeProvider.GetElapsedTime(_originTimestamp));
+            if (_samples.Count > 0 && timestamp <= _samples[^1].TimestampTicks)
             {
                 return;
             }
 
             for (var index = 0; index < values.Length; index++)
             {
-                _samples.Add(new GraphSample { SeriesIndex = (uint)index, Timestamp = timestamp, Value = values[index] });
+                _samples.Add(new GraphSample { SeriesIndex = (uint)index, TimestampTicks = timestamp, Value = values[index] });
             }
 
             // Retain two preceding observations for the graph's left boundary.
-            var cutoff = timestamp - Duration;
+            var cutoff = timestamp - Duration.Ticks;
             var removeCount = 0;
-            while (removeCount + (2 * _seriesCount) < _samples.Count && _samples[removeCount + (2 * _seriesCount)].Timestamp < cutoff)
+            while (removeCount + (2 * _seriesCount) < _samples.Count && _samples[removeCount + (2 * _seriesCount)].TimestampTicks < cutoff)
             {
                 removeCount += _seriesCount;
             }

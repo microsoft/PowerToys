@@ -20,7 +20,7 @@ public partial class DoughnutGraphContent : BaseObservable, IDoughnutGraphConten
         _snapshot = new Snapshot(new double[_series.Length], string.Empty, string.Empty);
     }
 
-    public GraphSeriesInfo[] GetSeries() => [.. _series];
+    public IGraphSeriesInfo[] GetSeries() => [.. _series];
 
     /// <summary>
     /// Returns all slice values and both center strings from one publication.

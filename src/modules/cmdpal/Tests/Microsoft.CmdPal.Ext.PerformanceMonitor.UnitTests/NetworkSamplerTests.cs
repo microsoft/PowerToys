@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using CoreWidgetProvider.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests;
@@ -62,10 +63,10 @@ public partial class NetworkSamplerTests
         {
             Assert.AreEqual(512d, history[index].Value);
             Assert.AreEqual(1024d, history[index + 1].Value);
-            Assert.AreEqual(history[index].Timestamp, history[index + 1].Timestamp);
+            Assert.AreEqual(history[index].GetTimestamp(), history[index + 1].GetTimestamp());
             if (index > 0)
             {
-                Assert.AreEqual(TimeSpan.FromSeconds(1), history[index].Timestamp - history[index - 2].Timestamp);
+                Assert.AreEqual(TimeSpan.FromSeconds(1), history[index].GetTimestamp() - history[index - 2].GetTimestamp());
             }
         }
 
@@ -99,7 +100,7 @@ public partial class NetworkSamplerTests
         var current = stats.GetSnapshot(0);
         Assert.AreEqual(4, provider.Reads);
         Assert.HasCount(4, current.TrafficHistory);
-        Assert.AreEqual(TimeSpan.FromSeconds(11), current.TrafficHistory[2].Timestamp - current.TrafficHistory[0].Timestamp);
+        Assert.AreEqual(TimeSpan.FromSeconds(11), current.TrafficHistory[2].GetTimestamp() - current.TrafficHistory[0].GetTimestamp());
         Assert.AreEqual(512f, current.Usage.Sent);
         Assert.AreEqual(1024f, current.Usage.Received);
     }

@@ -16,7 +16,7 @@ public static class GraphValueFormatter
     /// scale for smaller values. Scales must have positive, finite, increasing
     /// divisors and non-null suffixes. Empty scales use the value and suffix directly.
     /// </summary>
-    public static string Format(double value, string valueFormat = "0.0", string valueSuffix = "", ReadOnlySpan<GraphValueScale> valueScales = default)
+    public static string Format(double value, string valueFormat = "0.0", string valueSuffix = "", ReadOnlySpan<IGraphValueScale> valueScales = default)
     {
         if (!valueScales.IsEmpty)
         {
