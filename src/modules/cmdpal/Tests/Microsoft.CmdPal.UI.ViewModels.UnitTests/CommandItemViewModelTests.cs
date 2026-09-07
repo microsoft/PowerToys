@@ -442,6 +442,109 @@ public partial class CommandItemViewModelTests
     }
 
     [TestMethod]
+    public void RepeatedCommandBarMessages_PreserveMenuUntilExplicitReset()
+    {
+        var pageContext = new TestPageContext();
+        var parent = new CommandContextItem(new NoOpCommand())
+        {
+            Title = "Submenu",
+            MoreCommands =
+            [
+                new CommandContextItem(new NoOpCommand { Name = "Leaf" }),
+                new CommandContextItem(new NoOpCommand { Name = "Other" }),
+            ],
+        };
+        var item = new CommandItem(new NoOpCommand { Name = "Root" }) { MoreCommands = [parent] };
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        viewModel.SlowInitializeProperties();
+        var parentViewModel = viewModel.AllCommands.OfType<CommandContextItemViewModel>()
+            .Single(command => ReferenceEquals(command.Model.Unsafe, parent));
+        var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new())) { SelectedItem = viewModel };
+
+        try
+        {
+            Assert.AreEqual(ContextKeybindingResult.KeepOpen, menu.InvokeCommand(parentViewModel));
+            menu.SetSearchText("Leaf");
+            var filteredItems = menu.FilteredItems.ToArray();
+            Assert.AreEqual(1, filteredItems.Length);
+            var notifications = 0;
+            menu.PropertyChanged += (_, _) => notifications++;
+
+            menu.Receive(new(viewModel));
+            menu.Receive(new(viewModel));
+
+            Assert.AreEqual(0, notifications, "Repeated messages must not rebuild an unchanged menu.");
+            Assert.IsTrue(menu.CanPopContextStack());
+            CollectionAssert.AreEqual(filteredItems, menu.FilteredItems.ToArray());
+
+            menu.ResetContextMenu();
+            Assert.IsFalse(menu.CanPopContextStack());
+            CollectionAssert.AreEqual(viewModel.AllCommands.ToArray(), menu.FilteredItems.ToArray());
+
+            menu.InvokeCommand(parentViewModel);
+            menu.SelectedItem = viewModel;
+            Assert.IsFalse(menu.CanPopContextStack());
+            CollectionAssert.AreEqual(viewModel.AllCommands.ToArray(), menu.FilteredItems.ToArray());
+
+            menu.InvokeCommand(parentViewModel);
+            menu.UpdateContextItems();
+            Assert.IsFalse(menu.CanPopContextStack());
+            CollectionAssert.AreEqual(viewModel.AllCommands.ToArray(), menu.FilteredItems.ToArray());
+
+            menu.InvokeCommand(parentViewModel);
+            menu.Receive(new(null));
+            Assert.IsNull(menu.SelectedItem);
+            Assert.IsFalse(menu.CanPopContextStack());
+            Assert.AreEqual(0, menu.FilteredItems.Count);
+
+            menu.ResetContextMenu();
+            Assert.AreEqual(0, menu.FilteredItems.Count, "Reset must not restore commands from a cleared selection.");
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+            GC.KeepAlive(pageContext);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void CommandBarMessages_RefreshChangedContextOrSnapshot(bool changeContext)
+    {
+        IContextItemViewModel[] commands = [Mock.Of<IContextItemViewModel>()];
+        var context = new Mock<ICommandBarContext>();
+        context.SetupGet(value => value.AllCommands).Returns(() => commands);
+        var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new())) { SelectedItem = context.Object };
+        var notifications = 0;
+        menu.PropertyChanged += (_, _) => notifications++;
+
+        var nextContext = context.Object;
+        if (changeContext)
+        {
+            var replacement = new Mock<ICommandBarContext>();
+            replacement.SetupGet(value => value.AllCommands).Returns(() => commands);
+            nextContext = replacement.Object;
+        }
+        else
+        {
+            commands = [Mock.Of<IContextItemViewModel>()];
+        }
+
+        menu.Receive(new(nextContext));
+
+        Assert.AreSame(nextContext, menu.SelectedItem);
+        Assert.AreEqual(1, notifications, "A changed context or snapshot must refresh the menu exactly once.");
+        CollectionAssert.AreEqual(commands, menu.FilteredItems.ToArray());
+
+        menu.Receive(new(null));
+        menu.Receive(new(nextContext));
+
+        Assert.AreSame(nextContext, menu.SelectedItem);
+        Assert.AreEqual(2, notifications, "Returning after clearing the selection must refresh the menu.");
+    }
+
+    [TestMethod]
     public void UnnamedSubmenuChildren_NavigateWithoutInvokingParent()
     {
         var pageContext = new TestPageContext();

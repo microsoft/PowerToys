@@ -25,11 +25,11 @@ public sealed partial class CommandBarViewModel : ObservableObject,
         get;
         set
         {
-            // TODO: verify if we can safely return early
-            // if (ReferenceEquals(field, value))
-            // {
-            //     return;
-            // }
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
             if (field is not null)
             {
                 field.PropertyChanged -= SelectedItemPropertyChanged;
@@ -141,11 +141,8 @@ public sealed partial class CommandBarViewModel : ObservableObject,
         SecondaryCommand = SelectedItem.SecondaryCommand;
         ShouldShowMoreCommandsButton = SelectedItem.HasOverflowCommands && SelectedItem.CanOpenContextMenu;
 
+        // The primary command can change visibility without being replaced.
         OnPropertyChanged(nameof(HasPrimaryCommand));
-
-        OnPropertyChanged(nameof(HasSecondaryCommand));
-        OnPropertyChanged(nameof(SecondaryCommand));
-        OnPropertyChanged(nameof(ShouldShowMoreCommandsButton));
     }
 
     // InvokeItemCommand is what this will be in Xaml due to source generator

@@ -19,6 +19,8 @@ public partial class ContextMenuViewModel : ObservableObject,
 {
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
 
+    private IReadOnlyList<IContextItemViewModel>? _rootCommands;
+
     public IContextMenuContext? SelectedItem
     {
         get => field;
@@ -63,15 +65,28 @@ public partial class ContextMenuViewModel : ObservableObject,
 
     public void Receive(UpdateCommandBarMessage message)
     {
+        // Property changes can send multiple updates for the same published menu.
+        // Explicit selection assignments and resets still refresh the menu.
+        if (ReferenceEquals(SelectedItem, message.ViewModel) &&
+            ReferenceEquals(_rootCommands, message.ViewModel?.AllCommands))
+        {
+            return;
+        }
+
         SelectedItem = message.ViewModel;
     }
 
     public void UpdateContextItems()
     {
-        if (SelectedItem is not null)
+        _rootCommands = SelectedItem?.AllCommands;
+        ContextMenuStack.Clear();
+        if (_rootCommands is not null)
         {
-            ContextMenuStack.Clear();
-            PushContextStack(SelectedItem.AllCommands);
+            PushContextStack(_rootCommands);
+        }
+        else
+        {
+            FilteredItems.Clear();
         }
     }
 
