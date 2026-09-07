@@ -1492,7 +1492,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="GraphAxis_History" xml:space="preserve">
     <value>{0} history</value>
-    <comment>Graph time-axis caption. {0} is the formatted duration of the visible history, for example 60 s. Keep the placeholder intact.</comment>
+    <comment>Accessible graph description. {0} is the formatted history duration, including its unit. Keep the placeholder intact.</comment>
   </data>
   <data name="GraphAxis_Seconds" xml:space="preserve">
     <value>{0:0.#######} s</value>

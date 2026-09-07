@@ -20,29 +20,49 @@ using Windows.UI.ViewManagement;
 namespace Microsoft.CmdPal.UI.Controls.Graphs;
 
 // Local rendering only. This control has no dependency on extension interfaces.
+[TemplatePart(Name = HeaderPart, Type = typeof(Grid))]
+[TemplatePart(Name = TitlePart, Type = typeof(TextBlock))]
 [TemplatePart(Name = CaptionPart, Type = typeof(TextBlock))]
 [TemplatePart(Name = LegendPart, Type = typeof(WrapPanel))]
 [TemplatePart(Name = ScaleMaximumPart, Type = typeof(TextBlock))]
+[TemplatePart(Name = TimeAxisPart, Type = typeof(Grid))]
+[TemplatePart(Name = TimeStartPart, Type = typeof(TextBlock))]
+[TemplatePart(Name = TimeEndPart, Type = typeof(TextBlock))]
 public abstract partial class GraphControl : ContentControl
 {
     protected const float LineStrokeWidth = 1;
 
+    private const string HeaderPart = "PART_Header";
+    private const string TitlePart = "PART_Title";
     private const string CaptionPart = "PART_Caption";
     private const string LegendPart = "PART_Legend";
     private const string ScaleMaximumPart = "PART_ScaleMaximum";
+    private const string TimeAxisPart = "PART_TimeAxis";
+    private const string TimeStartPart = "PART_TimeStart";
+    private const string TimeEndPart = "PART_TimeEnd";
 
     public static readonly DependencyProperty SeriesAccentBrushProperty =
         DependencyProperty.Register(nameof(SeriesAccentBrush), typeof(Brush), typeof(GraphControl), new PropertyMetadata(null));
 
+    public static readonly DependencyProperty TitleProperty =
+        DependencyProperty.Register(nameof(Title), typeof(string), typeof(GraphControl), new PropertyMetadata(string.Empty, OnTitleChanged));
+
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(1000d / 30) };
     private readonly UISettings _uiSettings = new();
+    private Grid? _header;
+    private TextBlock? _title;
     private TextBlock? _caption;
     private WrapPanel? _legend;
     private TextBlock? _scaleMaximum;
+    private Grid? _timeAxis;
+    private TextBlock? _timeStart;
+    private TextBlock? _timeEnd;
     private LegendItem[] _legendItems = [];
     private string[] _legendLabels = [];
     private string _captionText = string.Empty;
     private string? _scaleMaximumText;
+    private string? _timeStartText;
+    private string? _timeEndText;
     private bool _useLineSwatches;
 
     private CanvasControl? _canvas;
@@ -82,6 +102,12 @@ public abstract partial class GraphControl : ContentControl
         set => SetValue(SeriesAccentBrushProperty, value);
     }
 
+    public string Title
+    {
+        get => (string)GetValue(TitleProperty);
+        set => SetValue(TitleProperty, value);
+    }
+
     protected Grid Plot { get; }
 
     protected GraphSeries[] Series { get; private set; } = [];
@@ -106,16 +132,22 @@ public abstract partial class GraphControl : ContentControl
         }
 
         base.OnApplyTemplate();
+        _header = GetTemplateChild(HeaderPart) as Grid;
+        _title = GetTemplateChild(TitlePart) as TextBlock;
         _caption = GetTemplateChild(CaptionPart) as TextBlock;
         _legend = GetTemplateChild(LegendPart) as WrapPanel;
         _scaleMaximum = GetTemplateChild(ScaleMaximumPart) as TextBlock;
+        _timeAxis = GetTemplateChild(TimeAxisPart) as Grid;
+        _timeStart = GetTemplateChild(TimeStartPart) as TextBlock;
+        _timeEnd = GetTemplateChild(TimeEndPart) as TextBlock;
         if (_legend is not null)
         {
             _legend.SizeChanged += OnLegendSizeChanged;
         }
 
         RebuildLegend();
-        UpdateReadouts();
+        UpdateHeader();
+        UpdateTimeAxis();
         ApplyTheme();
     }
 
@@ -180,20 +212,21 @@ public abstract partial class GraphControl : ContentControl
         }
 
         _legend.Visibility = Series.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
-        UpdateReadouts();
+        UpdateLegend();
         ApplyLegendTheme();
     }
 
-    protected string SetLegend(string[] labels, string caption = "")
+    protected string SetLegend(string[] labels, string caption = "", string? accessibleCaption = null)
     {
         _legendLabels = (string[])labels.Clone();
         _captionText = caption;
-        UpdateReadouts();
+        UpdateLegend();
 
         var summary = string.Join("   ", labels);
-        if (!string.IsNullOrEmpty(caption))
+        accessibleCaption ??= caption;
+        if (!string.IsNullOrEmpty(accessibleCaption))
         {
-            summary = summary.Length == 0 ? caption : caption + Environment.NewLine + summary;
+            summary = summary.Length == 0 ? accessibleCaption : accessibleCaption + Environment.NewLine + summary;
         }
 
         AutomationProperties.SetHelpText(this, summary);
@@ -202,11 +235,47 @@ public abstract partial class GraphControl : ContentControl
 
     protected void SetScaleMaximumLabel(string text)
     {
+        if (_scaleMaximumText == text)
+        {
+            return;
+        }
+
         _scaleMaximumText = text;
-        UpdateReadouts();
+        UpdateHeader();
     }
 
-    private void UpdateReadouts()
+    protected void SetTimeAxisLabels(string start, string end)
+    {
+        if (_timeStartText == start && _timeEndText == end)
+        {
+            return;
+        }
+
+        _timeStartText = start;
+        _timeEndText = end;
+        UpdateTimeAxis();
+    }
+
+    private void UpdateHeader()
+    {
+        if (_header is not null)
+        {
+            _header.Visibility = string.IsNullOrEmpty(Title) && _scaleMaximumText is null ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        if (_title is not null)
+        {
+            _title.Visibility = string.IsNullOrEmpty(Title) ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        if (_scaleMaximum is not null)
+        {
+            _scaleMaximum.Text = _scaleMaximumText ?? string.Empty;
+            _scaleMaximum.Visibility = _scaleMaximumText is null ? Visibility.Collapsed : Visibility.Visible;
+        }
+    }
+
+    private void UpdateLegend()
     {
         for (var index = 0; index < _legendItems.Length; index++)
         {
@@ -218,11 +287,23 @@ public abstract partial class GraphControl : ContentControl
             _caption.Text = _captionText;
             _caption.Visibility = string.IsNullOrEmpty(_captionText) ? Visibility.Collapsed : Visibility.Visible;
         }
+    }
 
-        if (_scaleMaximum is not null)
+    private void UpdateTimeAxis()
+    {
+        if (_timeAxis is not null)
         {
-            _scaleMaximum.Text = _scaleMaximumText ?? string.Empty;
-            _scaleMaximum.Visibility = _scaleMaximumText is null ? Visibility.Collapsed : Visibility.Visible;
+            _timeAxis.Visibility = _timeStartText is null ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        if (_timeStart is not null)
+        {
+            _timeStart.Text = _timeStartText ?? string.Empty;
+        }
+
+        if (_timeEnd is not null)
+        {
+            _timeEnd.Text = _timeEndText ?? string.Empty;
         }
     }
 
@@ -372,6 +453,9 @@ public abstract partial class GraphControl : ContentControl
 
     private static void OnThemeBrushChanged(DependencyObject sender, DependencyProperty property)
         => ((GraphControl)sender).ApplyTheme();
+
+    private static void OnTitleChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
+        => ((GraphControl)sender).UpdateHeader();
 
     private void ApplyTheme()
     {

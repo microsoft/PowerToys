@@ -49,7 +49,7 @@ public sealed partial class LiveAreaGraph : GraphControl
     private readonly string _valueSuffix;
     private readonly string _nowText;
     private readonly string _secondsAgoFormat;
-    private readonly string _historyText;
+    private readonly string _historyDescription;
     private LineGraphPoint[][] _samples = [];
     private LineGraphPresentation[] _presentations = [];
     private SeriesGeometry[] _geometry = [];
@@ -70,7 +70,7 @@ public sealed partial class LiveAreaGraph : GraphControl
     private double _inspectionY = 0.5;
     private bool _keyboardInspection;
     private long _lastInspectionUpdate;
-    private string _latestCaption = string.Empty;
+    private string _latestDescription = string.Empty;
 
     public LiveAreaGraph(GraphSeries[] series, double minimum, double maximum, TimeSpan history, string valueFormat, string valueSuffix, string nowText = "Now", string secondsAgoFormat = "{0:0.0} s ago", double smoothing = 0, TimeSpan? presentationDelay = null, bool autoScaleMaximum = false, GraphValueScale[]? valueScales = null)
     {
@@ -98,11 +98,13 @@ public sealed partial class LiveAreaGraph : GraphControl
         _valueSuffix = valueSuffix;
         _nowText = nowText;
         _secondsAgoFormat = secondsAgoFormat;
-        _historyText = FormatHistory(history);
-        if (_autoScaleMaximum)
-        {
-            SetScaleMaximumLabel(FormatValue(_visibleMaximum));
-        }
+        SetScaleMaximumLabel(FormatValue(_visibleMaximum));
+
+        // These endpoints describe offsets within the displayed history window.
+        // Inspection continues to report sample age against the real clock.
+        var historyText = FormatDuration(history);
+        _historyDescription = string.Format(CultureInfo.CurrentCulture, _historyFormat, historyText);
+        SetTimeAxisLabels(historyText, FormatDuration(TimeSpan.Zero));
 
         _tooltipItems = new GraphTooltipItem[series.Length];
         Plot.Children.Add(_tooltip);
@@ -153,10 +155,10 @@ public sealed partial class LiveAreaGraph : GraphControl
         }
 
         ReleaseDrawingResources();
-        _latestCaption = SetLegend(
+        _latestDescription = SetLegend(
             Series.Select((series, index) =>
                 _samples[index].Length == 0 ? series.Name : $"{series.Name}: {FormatValue(_samples[index][^1].Value, index)}").ToArray(),
-            _historyText);
+            accessibleCaption: _historyDescription);
         UpdateInspection(now);
         BeginAnimation();
     }
@@ -481,7 +483,7 @@ public sealed partial class LiveAreaGraph : GraphControl
     {
         _inspectionPosition = null;
         _tooltip.Hide();
-        AutomationProperties.SetHelpText(this, _latestCaption);
+        AutomationProperties.SetHelpText(this, _latestDescription);
         Invalidate();
     }
 
@@ -505,7 +507,7 @@ public sealed partial class LiveAreaGraph : GraphControl
         }
 
         var description = _tooltip.Show(new Point(position, _inspectionY), heading, _tooltipItems);
-        AutomationProperties.SetHelpText(this, description ?? _latestCaption);
+        AutomationProperties.SetHelpText(this, description ?? _latestDescription);
     }
 
     private DateTimeOffset InspectionTime(DateTimeOffset now, double position)
@@ -517,14 +519,13 @@ public sealed partial class LiveAreaGraph : GraphControl
 
     private string FormatValue(double value) => GraphValueFormatter.Format(value, _valueFormat, _valueSuffix, _valueScales);
 
-    private static string FormatHistory(TimeSpan duration)
+    private static string FormatDuration(TimeSpan duration)
     {
-        var (value, format) = duration.TotalSeconds < 60 ? (duration.TotalSeconds, 0)
+        var (value, format) = duration.TotalSeconds <= 60 ? (duration.TotalSeconds, 0)
             : duration.TotalMinutes < 60 ? (duration.TotalMinutes, 1)
             : duration.TotalHours < 24 ? (duration.TotalHours, 2)
             : (duration.TotalDays, 3);
-        var formatted = string.Format(CultureInfo.CurrentCulture, _durationFormats[format], value);
-        return string.Format(CultureInfo.CurrentCulture, _historyFormat, formatted);
+        return string.Format(CultureInfo.CurrentCulture, _durationFormats[format], value);
     }
 
     private string FormatValue(double value, int seriesIndex)

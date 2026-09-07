@@ -8,7 +8,6 @@ using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using NativeColor = Windows.UI.Color;
@@ -97,15 +96,9 @@ public sealed partial class GraphContentViewer : UserControl
                 ContentGraphViewModel.GraphKind.Doughnut => new DoughnutGraph(series),
                 _ => throw new InvalidOperationException("Unsupported graph kind."),
             };
+            _graph.Title = configuration.DisplayName;
             AutomationProperties.SetName(_graph, configuration.DisplayName);
-            var layout = new StackPanel { Spacing = 8 };
-            if (!string.IsNullOrEmpty(configuration.DisplayName))
-            {
-                layout.Children.Add(new TextBlock { Text = configuration.DisplayName, TextWrapping = TextWrapping.Wrap });
-            }
-
-            layout.Children.Add(_graph);
-            Content = layout;
+            Content = _graph;
             _configuration = configuration;
             if (ActualWidth > 0)
             {

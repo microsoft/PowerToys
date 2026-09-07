@@ -10,23 +10,26 @@
             <StaticResource x:Key="GraphBackground" ResourceKey="CardBackgroundFillColorDefaultBrush" />
             <StaticResource x:Key="GraphBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <StaticResource x:Key="GraphForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="GraphSecondaryForeground" ResourceKey="TextFillColorTertiaryBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="GraphBackground" ResourceKey="CardBackgroundFillColorDefaultBrush" />
             <StaticResource x:Key="GraphBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <StaticResource x:Key="GraphForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="GraphSecondaryForeground" ResourceKey="TextFillColorTertiaryBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="GraphBackground" ResourceKey="SystemColorWindowColorBrush" />
             <StaticResource x:Key="GraphBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
             <StaticResource x:Key="GraphForeground" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="GraphSecondaryForeground" ResourceKey="SystemColorWindowTextColorBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
     <Style x:Key="GraphPlotStyle" TargetType="Grid">
         <Setter Property="MinHeight" Value="96" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
     </Style>
 
     <Style x:Key="DefaultGraphControlStyle" TargetType="graphs:GraphControl">
@@ -37,7 +40,7 @@
         <Setter Property="BorderBrush" Value="{ThemeResource GraphBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
-        <Setter Property="Padding" Value="12" />
+        <Setter Property="Padding" Value="0" />
         <Setter Property="Foreground" Value="{ThemeResource GraphForeground}" />
         <Setter Property="SeriesAccentBrush" Value="{ThemeResource AccentFillColorDefaultBrush}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -45,50 +48,88 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="graphs:GraphControl">
-                    <Border
-                        Padding="{TemplateBinding Padding}"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
-                        <Grid RowSpacing="8">
+                    <Grid RowSpacing="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="*" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
+                            <Grid
+                                x:Name="PART_Header"
+                                Margin="0,0,0,8"
+                                ColumnSpacing="12"
+                                Visibility="Collapsed">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    x:Name="PART_Title"
+                                    VerticalAlignment="Center"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    Text="{TemplateBinding Title}"
+                                    TextTrimming="CharacterEllipsis"
+                                    Visibility="Collapsed" />
                                 <TextBlock
                                     x:Name="PART_ScaleMaximum"
-                                    Margin="0,0,0,4"
+                                    Grid.Column="1"
                                     HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
                                     FontSize="12"
-                                    Foreground="{TemplateBinding Foreground}"
+                                    Foreground="{ThemeResource GraphSecondaryForeground}"
                                     Visibility="Collapsed" />
+                            </Grid>
+                            <Border
+                                Grid.Row="1"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}">
                                 <ContentPresenter
-                                    Grid.Row="1"
                                     HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                     VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                     Content="{TemplateBinding Content}" />
-                            </Grid>
-                            <StackPanel Grid.Row="1" Spacing="6">
-                                <TextBlock
-                                    x:Name="PART_Caption"
-                                    FontSize="12"
-                                    Foreground="{TemplateBinding Foreground}"
-                                    TextWrapping="Wrap"
-                                    Visibility="Collapsed" />
-                                <toolkit:WrapPanel
-                                    x:Name="PART_Legend"
-                                    HorizontalSpacing="16"
-                                    Orientation="Horizontal"
-                                    VerticalSpacing="4" />
-                            </StackPanel>
+                            </Border>
                         </Grid>
-                    </Border>
+                        <StackPanel Grid.Row="1" Spacing="6">
+                            <Grid
+                                x:Name="PART_TimeAxis"
+                                ColumnSpacing="12"
+                                Visibility="Collapsed">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    x:Name="PART_TimeStart"
+                                    FontSize="12"
+                                    Foreground="{ThemeResource GraphSecondaryForeground}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <TextBlock
+                                    x:Name="PART_TimeEnd"
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Right"
+                                    FontSize="12"
+                                    Foreground="{ThemeResource GraphSecondaryForeground}" />
+                            </Grid>
+                            <TextBlock
+                                x:Name="PART_Caption"
+                                FontSize="12"
+                                Foreground="{TemplateBinding Foreground}"
+                                TextWrapping="Wrap"
+                                Visibility="Collapsed" />
+                            <toolkit:WrapPanel
+                                x:Name="PART_Legend"
+                                HorizontalSpacing="16"
+                                Orientation="Horizontal"
+                                VerticalSpacing="4" />
+                        </StackPanel>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
