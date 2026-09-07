@@ -5,18 +5,14 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
-using System.Text;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.UI.Xaml;
-using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
-using Microsoft.UI.Xaml.Automation.Peers;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
 using Windows.System;
 
@@ -26,14 +22,15 @@ public sealed partial class LiveAreaGraph : GraphControl
 {
     private readonly DateTimeOffset _clockOrigin = DateTimeOffset.UtcNow;
     private readonly long _clockTimestamp = Stopwatch.GetTimestamp();
-    private readonly TextBlock _tooltipTime = new() { FontSize = 12, FontWeight = FontWeights.SemiBold };
-    private readonly SolidColorBrush _tooltipForeground = new();
-    private readonly SolidColorBrush _tooltipStroke = new();
-    private readonly Border _tooltip;
-    private readonly TooltipRow[] _tooltipRows;
+    private readonly GraphTooltip _tooltip = new();
+    private readonly GraphTooltipItem[] _tooltipItems;
     private readonly TimeSpan _history;
     private readonly double _minimum;
     private readonly double _maximum;
+    private readonly bool _autoScaleMaximum;
+    private readonly bool[] _readoutOnly;
+    private readonly GraphValueScale[] _valueScales;
+    private readonly double[] _valueDivisors;
     private readonly double _smoothing;
     private readonly string _valueFormat;
     private readonly string _valueSuffix;
@@ -42,6 +39,9 @@ public sealed partial class LiveAreaGraph : GraphControl
     private LineGraphPoint[][] _samples = [];
     private LineGraphPresentation[] _presentations = [];
     private SeriesGeometry[] _geometry = [];
+    private CanvasStrokeStyle? _dashedStrokeStyle;
+    private CanvasStrokeStyle? _dottedStrokeStyle;
+    private double _visibleMaximum;
     private float _geometryWidth;
     private float _geometryHeight;
     private DateTimeOffset _geometryTime;
@@ -51,7 +51,7 @@ public sealed partial class LiveAreaGraph : GraphControl
     private long _lastInspectionUpdate;
     private string _latestCaption = string.Empty;
 
-    public LiveAreaGraph(GraphSeries[] series, double minimum, double maximum, TimeSpan history, string valueFormat, string valueSuffix, string nowText = "Now", string secondsAgoFormat = "{0:0.0} s ago", double smoothing = 0, TimeSpan? presentationDelay = null)
+    public LiveAreaGraph(GraphSeries[] series, double minimum, double maximum, TimeSpan history, string valueFormat, string valueSuffix, string nowText = "Now", string secondsAgoFormat = "{0:0.0} s ago", double smoothing = 0, TimeSpan? presentationDelay = null, bool autoScaleMaximum = false, GraphValueScale[]? valueScales = null)
     {
         if (!double.IsFinite(smoothing) || smoothing < 0 || smoothing > 1)
         {
@@ -64,56 +64,26 @@ public sealed partial class LiveAreaGraph : GraphControl
             throw new ArgumentOutOfRangeException(nameof(presentationDelay));
         }
 
-        ConfigureSeries(series);
+        ConfigureSeries(series, useLineSwatches: true);
         _minimum = minimum;
-        _maximum = maximum;
+        _maximum = _visibleMaximum = maximum;
+        _autoScaleMaximum = autoScaleMaximum;
+        _readoutOnly = series.Select(series => series.IsReadoutOnly).ToArray();
+        _valueScales = valueScales is null ? [] : [.. valueScales];
+        _valueDivisors = _valueScales.Select(scale => scale.Divisor).ToArray();
         _smoothing = smoothing;
         _history = history;
         _valueFormat = valueFormat;
         _valueSuffix = valueSuffix;
         _nowText = nowText;
         _secondsAgoFormat = secondsAgoFormat;
-        var tooltipContent = new StackPanel { Spacing = 6 };
-        _tooltipTime.Foreground = _tooltipForeground;
-        tooltipContent.Children.Add(_tooltipTime);
-        var values = new StackPanel { Spacing = 4 };
-        _tooltipRows = new TooltipRow[series.Length];
-        for (var index = 0; index < series.Length; index++)
+        if (_autoScaleMaximum)
         {
-            var row = new Grid { ColumnSpacing = 8 };
-            row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(10) });
-            row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            var swatch = new Ellipse { Width = 8, Height = 8, VerticalAlignment = VerticalAlignment.Center, Fill = new SolidColorBrush() };
-            var name = new TextBlock { Text = series[index].Name, FontSize = 12, Foreground = _tooltipForeground, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
-            var value = new TextBlock { FontSize = 12, FontWeight = FontWeights.SemiBold, Foreground = _tooltipForeground, VerticalAlignment = VerticalAlignment.Center, TextAlignment = TextAlignment.Right, MaxWidth = 144, TextTrimming = TextTrimming.CharacterEllipsis };
-            Grid.SetColumn(name, 1);
-            Grid.SetColumn(value, 2);
-            row.Children.Add(swatch);
-            row.Children.Add(name);
-            row.Children.Add(value);
-            values.Children.Add(row);
-            _tooltipRows[index] = new(row, swatch, name, value);
+            SetScaleMaximumLabel(FormatValue(_visibleMaximum));
         }
 
-        tooltipContent.Children.Add(values);
-        _tooltip = new Border
-        {
-            Child = tooltipContent,
-            Padding = new Thickness(10, 8, 10, 8),
-            Width = 220,
-            BorderBrush = _tooltipStroke,
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(6),
-            Visibility = Visibility.Collapsed,
-            IsHitTestVisible = false,
-        };
-        AutomationProperties.SetAccessibilityView(_tooltip, AccessibilityView.Raw);
-        var tooltipLayer = new Canvas { IsHitTestVisible = false };
-        tooltipLayer.Children.Add(_tooltip);
-        Plot.Children.Add(tooltipLayer);
-        _tooltip.SizeChanged += (_, _) => PositionTooltip();
-        Plot.SizeChanged += (_, _) => PositionTooltip();
+        _tooltipItems = new GraphTooltipItem[series.Length];
+        Plot.Children.Add(_tooltip);
         PointerMoved += InspectPointer;
         PointerExited += (_, _) =>
         {
@@ -161,9 +131,8 @@ public sealed partial class LiveAreaGraph : GraphControl
         }
 
         ReleaseDrawingResources();
-        _latestCaption = string.Join("   ", Series.Select((series, index) =>
-            _samples[index].Length == 0 ? series.Name : $"{series.Name}: {FormatValue(_samples[index][^1].Value)}"));
-        SetCaption(_latestCaption);
+        _latestCaption = SetLegend(Series.Select((series, index) =>
+            _samples[index].Length == 0 ? series.Name : $"{series.Name}: {FormatValue(_samples[index][^1].Value, index)}").ToArray());
         UpdateInspection(now);
         BeginAnimation();
     }
@@ -172,6 +141,7 @@ public sealed partial class LiveAreaGraph : GraphControl
     {
         var now = Now;
         var displayTime = new DateTimeOffset(Math.Max(0, now.UtcTicks - PresentationDelay.Ticks), TimeSpan.Zero);
+        UpdateScale(displayTime);
         if (_geometry.Length != _samples.Length || width != _geometryWidth || height != _geometryHeight)
         {
             BuildGeometry(canvas, width, height, displayTime);
@@ -217,11 +187,17 @@ public sealed partial class LiveAreaGraph : GraphControl
             if (geometry.Stroke is not null)
             {
                 var color = SeriesColor(index);
-                session.DrawGeometry(geometry.Stroke, color, 2);
+                var strokeStyle = Series[index].LineStyle switch
+                {
+                    GraphStrokeStyle.Dashed => _dashedStrokeStyle ??= new CanvasStrokeStyle { DashStyle = CanvasDashStyle.Dash },
+                    GraphStrokeStyle.Dotted => _dottedStrokeStyle ??= new CanvasStrokeStyle { DashStyle = CanvasDashStyle.Dot, DashCap = CanvasCapStyle.Round },
+                    _ => null,
+                };
+                session.DrawGeometry(geometry.Stroke, color, LineStrokeWidth, strokeStyle);
                 var last = geometry.Last;
                 if (last.X < width + offset)
                 {
-                    session.DrawLine(Math.Max(last.X, offset), last.Y, width + offset, last.Y, color, 2);
+                    session.DrawLine(Math.Max(last.X, offset), last.Y, width + offset, last.Y, color, LineStrokeWidth, strokeStyle);
                 }
             }
         }
@@ -241,11 +217,11 @@ public sealed partial class LiveAreaGraph : GraphControl
     {
         var time = InspectionTime(now, position);
         var x = (float)(position * width);
-        var outline = (ResourceBrush("SolidBackgroundFillColorBaseBrush") as SolidColorBrush)?.Color ?? ForegroundColor;
+        var outline = _tooltip.FallbackColor ?? ForegroundColor;
         var guideDrawn = false;
         for (var series = 0; series < _samples.Length; series++)
         {
-            if (_presentations[series].TryGetValue(time, out _, out var normalized))
+            if (!_readoutOnly[series] && _presentations[series].TryGetValue(time, out var value, out var normalized))
             {
                 if (!guideDrawn)
                 {
@@ -253,7 +229,7 @@ public sealed partial class LiveAreaGraph : GraphControl
                     guideDrawn = true;
                 }
 
-                var y = height * (float)(1 - normalized);
+                var y = ToY(value, normalized, height);
                 session.FillCircle(x, y, 4.25f, outline);
                 session.FillCircle(x, y, 2.75f, SeriesColor(series));
             }
@@ -269,6 +245,10 @@ public sealed partial class LiveAreaGraph : GraphControl
 
         _geometry = [];
         _geometryWidth = _geometryHeight = 0;
+        _dashedStrokeStyle?.Dispose();
+        _dashedStrokeStyle = null;
+        _dottedStrokeStyle?.Dispose();
+        _dottedStrokeStyle = null;
     }
 
     private void BuildGeometry(CanvasControl canvas, float width, float height, DateTimeOffset now)
@@ -282,7 +262,7 @@ public sealed partial class LiveAreaGraph : GraphControl
         {
             var samples = _samples[index];
             var presentation = _presentations[index];
-            if (samples.Length == 0)
+            if (_readoutOnly[index] || samples.Length == 0)
             {
                 _geometry[index] = new(null, null, default);
                 continue;
@@ -309,7 +289,7 @@ public sealed partial class LiveAreaGraph : GraphControl
 
     private Vector2 AddSegment(CanvasPathBuilder fill, CanvasPathBuilder stroke, LineGraphSegment segment, bool isStep, Vector2 start, DateTimeOffset geometryTime, float width, float height)
     {
-        var end = new Vector2(ToX(segment.EndTime, geometryTime, width), height * (float)(1 - segment.NormalizedEnd));
+        var end = new Vector2(ToX(segment.EndTime, geometryTime, width), ToY(segment.End, segment.NormalizedEnd, height));
         if (isStep)
         {
             var corner = new Vector2(end.X, start.Y);
@@ -326,8 +306,8 @@ public sealed partial class LiveAreaGraph : GraphControl
         else
         {
             var step = (end.X - start.X) / 3;
-            var control1 = new Vector2(start.X + step, height * (float)(1 - segment.NormalizedControl1));
-            var control2 = new Vector2(end.X - step, height * (float)(1 - segment.NormalizedControl2));
+            var control1 = new Vector2(start.X + step, ToY(segment.Control1, segment.NormalizedControl1, height));
+            var control2 = new Vector2(end.X - step, ToY(segment.Control2, segment.NormalizedControl2, height));
             fill.AddCubicBezier(control1, control2, end);
             stroke.AddCubicBezier(control1, control2, end);
         }
@@ -339,8 +319,37 @@ public sealed partial class LiveAreaGraph : GraphControl
     {
         var x = ToX(sample.Timestamp, now, width);
         var value = Math.Clamp(sample.Value, _minimum, _maximum);
-        var y = height * (float)(1 - ((value - _minimum) / (_maximum - _minimum)));
+        var y = ToY(sample.Value, (value - _minimum) / (_maximum - _minimum), height);
         return new(x, y);
+    }
+
+    private void UpdateScale(DateTimeOffset displayTime)
+    {
+        if (!_autoScaleMaximum)
+        {
+            return;
+        }
+
+        var maximum = LineGraphAutoScale.GetMaximum(_presentations, displayTime, _history, _minimum, _maximum, _valueDivisors, _readoutOnly);
+        if (maximum != _visibleMaximum)
+        {
+            _visibleMaximum = maximum;
+            SetScaleMaximumLabel(FormatValue(maximum));
+            ReleaseDrawingResources();
+        }
+    }
+
+    private float ToY(double value, double normalized, float height)
+    {
+        if (_autoScaleMaximum)
+        {
+            // Keep offscreen endpoints unclamped to the visible range so a
+            // boundary-crossing curve keeps its true shape after rescaling.
+            // Bound extreme offscreen coordinates before conversion to float.
+            normalized = Math.Clamp((value - _minimum) / (_visibleMaximum - _minimum), -1_000_000, 1_000_000);
+        }
+
+        return height * (float)(1 - normalized);
     }
 
     private float ToX(DateTimeOffset time, DateTimeOffset now, float width)
@@ -405,7 +414,7 @@ public sealed partial class LiveAreaGraph : GraphControl
     private void EndInspection()
     {
         _inspectionPosition = null;
-        _tooltip.Visibility = Visibility.Collapsed;
+        _tooltip.Hide();
         AutomationProperties.SetHelpText(this, _latestCaption);
         Invalidate();
     }
@@ -420,32 +429,17 @@ public sealed partial class LiveAreaGraph : GraphControl
         _lastInspectionUpdate = Stopwatch.GetTimestamp();
         var time = InspectionTime(now, position);
         var age = now - time;
-        _tooltipTime.Text = age.TotalMilliseconds < 50 ? _nowText : string.Format(CultureInfo.CurrentCulture, _secondsAgoFormat, age.TotalSeconds);
-        var description = new StringBuilder(_tooltipTime.Text);
-        var hasValues = false;
-        for (var series = 0; series < _samples.Length; series++)
+        var heading = age.TotalMilliseconds < 50 ? _nowText : string.Format(CultureInfo.CurrentCulture, _secondsAgoFormat, age.TotalSeconds);
+        for (var series = 0; series < _tooltipItems.Length; series++)
         {
-            var row = _tooltipRows[series];
-            if (!_presentations[series].TryGetValue(time, out var value, out _))
-            {
-                row.Root.Visibility = Visibility.Collapsed;
-                continue;
-            }
-
-            hasValues = true;
-            row.Root.Visibility = Visibility.Visible;
-            row.Value.Text = FormatValue(value);
-            row.Name.Opacity = HighContrast ? 1 : 0.78;
-            ((SolidColorBrush)row.Swatch.Fill).Color = SeriesColor(series);
-            description.AppendLine().Append(Series[series].Name).Append(": ").Append(row.Value.Text);
+            var text = series < _presentations.Length && _presentations[series].TryGetValue(time, out var value, out _)
+                ? FormatValue(value, series)
+                : null;
+            _tooltipItems[series] = new(Series[series].Name, text, _readoutOnly[series] ? null : SeriesColor(series));
         }
 
-        _tooltip.Visibility = hasValues ? Visibility.Visible : Visibility.Collapsed;
-        _tooltipForeground.Color = ForegroundColor;
-        _tooltipStroke.Color = GridColor;
-        _tooltip.Background = ResourceBrush("SolidBackgroundFillColorBaseBrush");
-        PositionTooltip();
-        AutomationProperties.SetHelpText(this, hasValues ? description.ToString() : _latestCaption);
+        var description = _tooltip.Show(new Point(position, _inspectionY), heading, _tooltipItems);
+        AutomationProperties.SetHelpText(this, description ?? _latestCaption);
     }
 
     private DateTimeOffset InspectionTime(DateTimeOffset now, double position)
@@ -455,40 +449,12 @@ public sealed partial class LiveAreaGraph : GraphControl
         return new DateTimeOffset(Math.Max(0, displayTicks - offsetTicks), TimeSpan.Zero);
     }
 
-    private void PositionTooltip()
-    {
-        if (_inspectionPosition is not { } position || _tooltip.Visibility != Visibility.Visible)
-        {
-            return;
-        }
+    private string FormatValue(double value) => GraphValueFormatter.Format(value, _valueFormat, _valueSuffix, _valueScales);
 
-        var width = Plot.ActualWidth;
-        var height = Plot.ActualHeight;
-        var tooltipWidth = Math.Min(220, Math.Max(0, width - 16));
-        _tooltip.Width = tooltipWidth;
-        var x = position * width;
-        var left = x + 12 + tooltipWidth <= width - 8 ? x + 12 : x - tooltipWidth - 12;
-        var top = (_inspectionY * height) - (_tooltip.ActualHeight / 2);
-        Canvas.SetLeft(_tooltip, Math.Clamp(left, 8, Math.Max(8, width - tooltipWidth - 8)));
-        Canvas.SetTop(_tooltip, Math.Clamp(top, 8, Math.Max(8, height - _tooltip.ActualHeight - 8)));
-    }
-
-    private string FormatValue(double value)
-    {
-        Span<char> buffer = stackalloc char[128];
-        try
-        {
-            if (value.TryFormat(buffer, out var written, _valueFormat, CultureInfo.CurrentCulture))
-            {
-                return string.Concat(buffer[..written], _valueSuffix);
-            }
-        }
-        catch (FormatException)
-        {
-        }
-
-        return value.ToString("0.0", CultureInfo.CurrentCulture) + _valueSuffix;
-    }
+    private string FormatValue(double value, int seriesIndex)
+        => _readoutOnly[seriesIndex]
+            ? GraphValueFormatter.Format(value, _valueFormat, Series[seriesIndex].ReadoutValueSuffix)
+            : FormatValue(value);
 
     private sealed record SeriesGeometry(CanvasGeometry? Fill, CanvasGeometry? Stroke, Vector2 Last)
     {
@@ -498,6 +464,4 @@ public sealed partial class LiveAreaGraph : GraphControl
             Stroke?.Dispose();
         }
     }
-
-    private sealed record TooltipRow(Grid Root, Ellipse Swatch, TextBlock Name, TextBlock Value);
 }

@@ -87,10 +87,10 @@ public sealed partial class GraphContentViewer : UserControl
         var configuration = snapshot.Configuration;
         if (!ReferenceEquals(_configuration, configuration))
         {
-            var series = configuration.Series.Select(series => new GraphSeries(series.Name, ToColor(series.Color))).ToArray();
+            var series = configuration.Series.Select(series => new GraphSeries(series.Name, ToColor(series.Color), ToStrokeStyle(series.LineStyle), series.IsReadoutOnly, series.ReadoutValueSuffix ?? string.Empty)).ToArray();
             _graph = configuration.Kind switch
             {
-                ContentGraphViewModel.GraphKind.Line => new LiveAreaGraph(series, configuration.Minimum, configuration.Maximum, configuration.HistoryDuration, configuration.ValueFormat, configuration.ValueSuffix, ResourceLoaderInstance.GetString("GraphInspection_Now"), ResourceLoaderInstance.GetString("GraphInspection_SecondsAgo"), smoothing: configuration.Smoothing),
+                ContentGraphViewModel.GraphKind.Line => new LiveAreaGraph(series, configuration.Minimum, configuration.Maximum, configuration.HistoryDuration, configuration.ValueFormat, configuration.ValueSuffix, ResourceLoaderInstance.GetString("GraphInspection_Now"), ResourceLoaderInstance.GetString("GraphInspection_SecondsAgo"), smoothing: configuration.Smoothing, autoScaleMaximum: configuration.AutoScaleMaximum, valueScales: configuration.ValueScales),
                 ContentGraphViewModel.GraphKind.VerticalBar => new VerticalUsageBar(series, configuration.Minimum, configuration.Maximum, ToColor(configuration.IndicatorColor)),
                 ContentGraphViewModel.GraphKind.Doughnut => new DoughnutGraph(series),
                 _ => throw new InvalidOperationException("Unsupported graph kind."),
@@ -137,6 +137,15 @@ public sealed partial class GraphContentViewer : UserControl
                 break;
         }
     }
+
+    private static GraphStrokeStyle ToStrokeStyle(GraphLineStyle style)
+        => style switch
+        {
+            GraphLineStyle.Solid => GraphStrokeStyle.Solid,
+            GraphLineStyle.Dashed => GraphStrokeStyle.Dashed,
+            GraphLineStyle.Dotted => GraphStrokeStyle.Dotted,
+            _ => throw new ArgumentOutOfRangeException(nameof(style)),
+        };
 
     private static NativeColor? ToColor(OptionalColor color)
         => color.HasValue ? NativeColor.FromArgb(color.Color.A, color.Color.R, color.Color.G, color.Color.B) : null;

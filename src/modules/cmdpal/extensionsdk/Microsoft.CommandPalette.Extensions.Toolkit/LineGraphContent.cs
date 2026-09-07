@@ -12,13 +12,24 @@ public partial class LineGraphContent : BaseObservable, ILineGraphContent
     private readonly GraphSeriesInfo[] _series;
     private readonly TimeSpan _historyDuration = TimeSpan.FromSeconds(60);
     private readonly double _smoothing;
+    private readonly GraphValueScale[] _valueScales;
     private GraphSample[] _samples = [];
 
     public string DisplayName { get; init; } = string.Empty;
 
     public double Minimum { get; }
 
+    /// <summary>
+    /// Gets the fixed upper bound, or the lowest upper bound allowed when
+    /// <see cref="AutoScaleMaximum"/> is enabled.
+    /// </summary>
     public double Maximum { get; }
+
+    /// <summary>
+    /// Gets whether the host derives one upper bound from all series in the
+    /// visible time window. Retained offscreen samples do not keep the scale high.
+    /// </summary>
+    public bool AutoScaleMaximum { get; init; }
 
     /// <summary>
     /// Gets the curve smoothing amount: zero draws straight segments; one draws
@@ -56,15 +67,18 @@ public partial class LineGraphContent : BaseObservable, ILineGraphContent
 
     public string ValueSuffix { get; init; } = string.Empty;
 
-    public LineGraphContent(GraphSeriesInfo[] series, double minimum = 0, double maximum = 100)
+    public LineGraphContent(GraphSeriesInfo[] series, double minimum = 0, double maximum = 100, GraphValueScale[]? valueScales = null)
     {
         GraphContentValidation.ValidateRange(minimum, maximum);
         _series = GraphContentValidation.CopySeries(series);
+        _valueScales = GraphContentValidation.CopyValueScales(valueScales ?? []);
         Minimum = minimum;
         Maximum = maximum;
     }
 
     public GraphSeriesInfo[] GetSeries() => [.. _series];
+
+    public GraphValueScale[] GetValueScales() => [.. _valueScales];
 
     public GraphSample[] GetSnapshot() => [.. Volatile.Read(ref _samples)];
 

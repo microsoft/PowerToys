@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.CmdPal.Common;
+using Microsoft.CommandPalette.Extensions;
 
 namespace CoreWidgetProvider.Helpers;
 
@@ -17,7 +18,7 @@ internal sealed partial class DiskStats : PerformanceCounterSourceBase, IDisposa
 
     private Dictionary<string, Data> DiskUsages { get; set; } = new();
 
-    private Dictionary<string, List<float>> DiskChartValues { get; set; } = new();
+    private Dictionary<string, UsageHistory> DiskHistories { get; set; } = new();
 
     public sealed class Data
     {
@@ -75,7 +76,7 @@ internal sealed partial class DiskStats : PerformanceCounterSourceBase, IDisposa
 
                     var instanceCounters = new List<PerformanceCounter> { bytesRead, bytesWritten, diskTime };
                     _diskCounters.Add(instanceName, instanceCounters);
-                    DiskChartValues.Add(instanceName, new List<float>());
+                    DiskHistories.Add(instanceName, new UsageHistory());
                     DiskUsages.Add(instanceName, new Data());
                 }
                 catch (Exception)
@@ -106,11 +107,7 @@ internal sealed partial class DiskStats : PerformanceCounterSourceBase, IDisposa
                 DiskUsages[name].Written = written;
                 DiskUsages[name].Usage = diskTimePercent / 100f;
 
-                var chartValues = DiskChartValues[name];
-                lock (chartValues)
-                {
-                    ChartHelper.AddNextChartValue(diskTimePercent, chartValues);
-                }
+                DiskHistories[name].Add(diskTimePercent);
             }
             catch (Exception ex)
             {
@@ -119,33 +116,34 @@ internal sealed partial class DiskStats : PerformanceCounterSourceBase, IDisposa
         }
     }
 
-    public string CreateDiskImageUrl(int diskChartIndex)
+    public GraphSample[] GetDiskHistory(int diskIndex)
     {
-        var chartValues = DiskChartValues.ElementAt(diskChartIndex).Value;
-        lock (chartValues)
+        if ((uint)diskIndex >= (uint)DiskHistories.Count)
         {
-            return ChartHelper.CreateImageUrl(chartValues, ChartHelper.ChartType.Dis);
+            return [];
         }
+
+        return DiskHistories.ElementAt(diskIndex).Value.GetSnapshot();
     }
 
     public string GetDiskName(int diskIndex)
     {
-        if (DiskChartValues.Count <= diskIndex)
+        if (DiskHistories.Count <= diskIndex)
         {
             return string.Empty;
         }
 
-        return DiskChartValues.ElementAt(diskIndex).Key;
+        return DiskHistories.ElementAt(diskIndex).Key;
     }
 
     public Data GetDiskUsage(int diskIndex)
     {
-        if (DiskChartValues.Count <= diskIndex)
+        if (DiskHistories.Count <= diskIndex)
         {
             return new Data();
         }
 
-        var currDiskName = DiskChartValues.ElementAt(diskIndex).Key;
+        var currDiskName = DiskHistories.ElementAt(diskIndex).Key;
         if (!DiskUsages.TryGetValue(currDiskName, out var value))
         {
             return new Data();
@@ -156,14 +154,14 @@ internal sealed partial class DiskStats : PerformanceCounterSourceBase, IDisposa
 
     public int GetPrevDiskIndex(int diskIndex)
     {
-        if (DiskChartValues.Count == 0)
+        if (DiskHistories.Count == 0)
         {
             return 0;
         }
 
         if (diskIndex == 0)
         {
-            return DiskChartValues.Count - 1;
+            return DiskHistories.Count - 1;
         }
 
         return diskIndex - 1;
@@ -171,12 +169,12 @@ internal sealed partial class DiskStats : PerformanceCounterSourceBase, IDisposa
 
     public int GetNextDiskIndex(int diskIndex)
     {
-        if (DiskChartValues.Count == 0)
+        if (DiskHistories.Count == 0)
         {
             return 0;
         }
 
-        if (diskIndex == DiskChartValues.Count - 1)
+        if (diskIndex == DiskHistories.Count - 1)
         {
             return 0;
         }

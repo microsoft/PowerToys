@@ -25,7 +25,7 @@ public sealed partial class ContentGraphViewModel(IContent content, WeakReferenc
         Doughnut,
     }
 
-    public sealed record Configuration(GraphKind Kind, string DisplayName, GraphSeriesInfo[] Series, double Minimum = 0, double Maximum = 100, TimeSpan HistoryDuration = default, string ValueFormat = "0.0", string ValueSuffix = "", OptionalColor IndicatorColor = default, double Smoothing = 0);
+    public sealed record Configuration(GraphKind Kind, string DisplayName, GraphSeriesInfo[] Series, double Minimum = 0, double Maximum = 100, TimeSpan HistoryDuration = default, string ValueFormat = "0.0", string ValueSuffix = "", OptionalColor IndicatorColor = default, double Smoothing = 0, bool AutoScaleMaximum = false, GraphValueScale[]? ValueScales = null);
 
     public sealed record Snapshot(Configuration Configuration, GraphSample[] Samples, double[] Values, double Value = 0, string ValueText = "", string CenterLabel = "");
 
@@ -161,7 +161,7 @@ public sealed partial class ContentGraphViewModel(IContent content, WeakReferenc
     {
         var configuration = content switch
         {
-            ILineGraphContent line => new Configuration(GraphKind.Line, line.DisplayName, line.GetSeries(), line.Minimum, line.Maximum, line.HistoryDuration, line.ValueFormat, line.ValueSuffix, Smoothing: line.Smoothing),
+            ILineGraphContent line => new Configuration(GraphKind.Line, line.DisplayName, line.GetSeries(), line.Minimum, line.Maximum, line.HistoryDuration, line.ValueFormat, line.ValueSuffix, Smoothing: line.Smoothing, AutoScaleMaximum: line.AutoScaleMaximum, ValueScales: line.GetValueScales()),
             IVerticalUsageBarContent bar => new Configuration(GraphKind.VerticalBar, bar.DisplayName, bar.GetSeries(), bar.Minimum, bar.Maximum, IndicatorColor: bar.IndicatorColor),
             IDoughnutGraphContent doughnut => new Configuration(GraphKind.Doughnut, doughnut.DisplayName, doughnut.GetSeries()),
             _ => throw new ArgumentException("Unsupported graph content.", nameof(content)),
@@ -170,6 +170,11 @@ public sealed partial class ContentGraphViewModel(IContent content, WeakReferenc
         if (configuration.Series is null || configuration.Series.Any(series => series.Name is null))
         {
             throw new ArgumentException("Graph series must have non-null names.");
+        }
+
+        if (configuration.Series.Any(series => series.LineStyle is not (GraphLineStyle.Solid or GraphLineStyle.Dashed or GraphLineStyle.Dotted)))
+        {
+            throw new ArgumentException("Graph series line styles must be solid, dashed, or dotted.");
         }
 
         if (!double.IsFinite(configuration.Minimum) || !double.IsFinite(configuration.Maximum) ||
@@ -186,6 +191,21 @@ public sealed partial class ContentGraphViewModel(IContent content, WeakReferenc
         if (!double.IsFinite(configuration.Smoothing) || configuration.Smoothing < 0 || configuration.Smoothing > 1)
         {
             throw new ArgumentException("Graph smoothing must be finite and between zero and one.");
+        }
+
+        if (configuration.Kind == GraphKind.Line)
+        {
+            ArgumentNullException.ThrowIfNull(configuration.ValueScales);
+            var previousDivisor = 0d;
+            foreach (var scale in configuration.ValueScales)
+            {
+                if (!double.IsFinite(scale.Divisor) || scale.Divisor <= previousDivisor || scale.Suffix is null)
+                {
+                    throw new ArgumentException("Graph value scales require positive, finite, increasing divisors and non-null suffixes.");
+                }
+
+                previousDivisor = scale.Divisor;
+            }
         }
 
         return configuration;

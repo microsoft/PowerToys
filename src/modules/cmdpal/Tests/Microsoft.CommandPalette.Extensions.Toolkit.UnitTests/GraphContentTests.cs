@@ -43,24 +43,49 @@ public class GraphContentTests
     }
 
     [TestMethod]
-    public void Configuration_PreservesDisplayNamesAndCopiesSeriesDescriptions()
+    [DataRow(GraphLineStyle.Solid)]
+    [DataRow(GraphLineStyle.Dashed)]
+    [DataRow(GraphLineStyle.Dotted)]
+    public void Configuration_PreservesDisplayNamesAndCopiesSeriesDescriptions(GraphLineStyle lineStyle)
     {
         GraphSeriesInfo[] series = [Series("Used"), Series("Available")];
+        series[1].LineStyle = lineStyle;
+        series[1].IsReadoutOnly = true;
+        series[1].ReadoutValueSuffix = " GB";
         ILineGraphContent line = new LineGraphContent(series) { DisplayName = "Line graph" };
         IVerticalUsageBarContent bar = new VerticalUsageBarContent(series) { DisplayName = "Usage bar" };
         IDoughnutGraphContent doughnut = new DoughnutGraphContent(series) { DisplayName = "Doughnut graph" };
 
         series[0] = Series("Changed");
+        series[1].LineStyle = GraphLineStyle.Solid;
+        series[1].IsReadoutOnly = false;
+        series[1].ReadoutValueSuffix = " changed";
         line.GetSeries()[0] = series[0];
+        line.GetSeries()[1].LineStyle = GraphLineStyle.Solid;
         bar.GetSeries()[0] = series[0];
         doughnut.GetSeries()[0] = series[0];
 
         Assert.AreEqual("Used", line.GetSeries()[0].Name);
         Assert.AreEqual("Used", bar.GetSeries()[0].Name);
         Assert.AreEqual("Used", doughnut.GetSeries()[0].Name);
+        Assert.AreEqual(GraphLineStyle.Solid, line.GetSeries()[0].LineStyle);
+        Assert.AreEqual(lineStyle, line.GetSeries()[1].LineStyle);
+        Assert.AreEqual(lineStyle, bar.GetSeries()[1].LineStyle);
+        Assert.AreEqual(lineStyle, doughnut.GetSeries()[1].LineStyle);
+        Assert.IsFalse(line.GetSeries()[0].IsReadoutOnly);
+        Assert.IsTrue(line.GetSeries()[1].IsReadoutOnly);
+        Assert.AreEqual(" GB", line.GetSeries()[1].ReadoutValueSuffix);
         Assert.AreEqual("Line graph", line.DisplayName);
         Assert.AreEqual("Usage bar", bar.DisplayName);
         Assert.AreEqual("Doughnut graph", doughnut.DisplayName);
+    }
+
+    [TestMethod]
+    public void Configuration_RejectsAnUnknownLineStyle()
+    {
+        var series = Series("CPU");
+        series.LineStyle = (GraphLineStyle)int.MaxValue;
+        Assert.ThrowsExactly<ArgumentException>(() => _ = new LineGraphContent([series]));
     }
 
     [TestMethod]

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using Microsoft.CommandPalette.Extensions;
 
 namespace CoreWidgetProvider.Helpers;
 
@@ -67,7 +68,7 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
 
         public float Temperature { get; set; }
 
-        public List<float> GpuChartValues { get; set; } = [];
+        public UsageHistory GpuHistory { get; } = new();
     }
 
     public GPUStats()
@@ -219,10 +220,7 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
                     var raw = gpuUsage.TryGetValue(gpu.LuidKey, out var usage) ? usage : 0f;
                     var clamped = Math.Clamp(raw, 0f, 100f);
                     gpu.Usage = clamped / 100f;
-                    lock (gpu.GpuChartValues)
-                    {
-                        ChartHelper.AddNextChartValue(clamped, gpu.GpuChartValues);
-                    }
+                    gpu.GpuHistory.Add(clamped);
                 }
             }
         }
@@ -331,16 +329,16 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
         return false;
     }
 
-    internal string CreateGPUImageUrl(int gpuChartIndex)
+    internal GraphSample[] GetGPUHistory(int gpuIndex)
     {
         lock (_statsLock)
         {
-            if (_stats.Count <= gpuChartIndex)
+            if ((uint)gpuIndex >= (uint)_stats.Count)
             {
-                return string.Empty;
+                return [];
             }
 
-            return ChartHelper.CreateImageUrl(_stats[gpuChartIndex].GpuChartValues, ChartHelper.ChartType.GPU);
+            return _stats[gpuIndex].GpuHistory.GetSnapshot();
         }
     }
 

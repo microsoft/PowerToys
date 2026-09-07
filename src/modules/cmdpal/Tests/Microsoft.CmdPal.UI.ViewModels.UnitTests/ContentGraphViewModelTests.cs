@@ -19,6 +19,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 public partial class ContentGraphViewModelTests
 {
     private static readonly double[] ExpectedMeterContributions = [16, 8];
+    private static readonly GraphValueScale[] DisplayScales = [new() { Divisor = 1, Suffix = " items" }, new() { Divisor = 1000, Suffix = " k items" }];
 
     [TestMethod]
     public async Task Initialization_ReturnsWhileTheFirstSnapshotIsBlocked()
@@ -49,9 +50,12 @@ public partial class ContentGraphViewModelTests
     }
 
     [TestMethod]
-    public async Task Attachment_SubscribesBeforeReading_AndCachesConfiguration()
+    [DataRow(GraphLineStyle.Solid)]
+    [DataRow(GraphLineStyle.Dashed)]
+    [DataRow(GraphLineStyle.Dotted)]
+    public async Task Attachment_SubscribesBeforeReading_AndCachesConfiguration(GraphLineStyle lineStyle)
     {
-        using var graph = new ControlledLineGraph { OnSubscribe = graph => graph.Value = 7 };
+        using var graph = new ControlledLineGraph { OnSubscribe = graph => graph.Value = 7, LineStyle = lineStyle, AutoScaleMaximum = true, ValueScales = DisplayScales, IsReadoutOnly = true, ReadoutValueSuffix = " GB" };
         var context = new TestContext();
         var vm = Create(graph, context);
         await InitializeGraph(vm, context);
@@ -60,8 +64,14 @@ public partial class ContentGraphViewModelTests
         Assert.AreEqual(1, graph.SeriesReads);
 
         Assert.AreEqual("Test graph", vm.Data.Configuration.DisplayName);
+        Assert.AreEqual(lineStyle, vm.Data.Configuration.Series[0].LineStyle);
+        Assert.IsTrue(vm.Data.Configuration.Series[0].IsReadoutOnly);
+        Assert.AreEqual(" GB", vm.Data.Configuration.Series[0].ReadoutValueSuffix);
         Assert.AreEqual(0.75, vm.Data.Configuration.Smoothing);
         Assert.AreEqual(1, graph.SmoothingReads);
+        Assert.IsTrue(vm.Data.Configuration.AutoScaleMaximum);
+        CollectionAssert.AreEqual(DisplayScales, vm.Data.Configuration.ValueScales);
+        Assert.AreEqual(1, graph.ScaleReads);
 
         graph.Publish(11);
         WaitFor(() => graph.SnapshotReads == 2 && context.SchedulerImpl.Count > 0);
@@ -69,9 +79,15 @@ public partial class ContentGraphViewModelTests
         Assert.AreEqual(11d, vm.Data!.Samples[0].Value);
         Assert.AreEqual(1, graph.SeriesReads);
         Assert.AreEqual(0, graph.PropertyNameReads);
+        Assert.AreEqual(lineStyle, vm.Data.Configuration.Series[0].LineStyle);
+        Assert.IsTrue(vm.Data.Configuration.Series[0].IsReadoutOnly);
+        Assert.AreEqual(" GB", vm.Data.Configuration.Series[0].ReadoutValueSuffix);
         Assert.AreEqual("Test graph", vm.Data.Configuration.DisplayName);
         Assert.AreEqual(0.75, vm.Data.Configuration.Smoothing);
         Assert.AreEqual(1, graph.SmoothingReads);
+        Assert.IsTrue(vm.Data.Configuration.AutoScaleMaximum);
+        CollectionAssert.AreEqual(DisplayScales, vm.Data.Configuration.ValueScales);
+        Assert.AreEqual(1, graph.ScaleReads);
         vm.SafeCleanup();
         WaitFor(() => graph.Subscribers == 0);
         Assert.IsTrue(context.Errors.IsEmpty);
@@ -86,6 +102,43 @@ public partial class ContentGraphViewModelTests
     public void InvalidSmoothing_RejectsConfigurationBeforeReadingSnapshot(double smoothing)
     {
         using var graph = new ControlledLineGraph { SmoothingAmount = smoothing };
+        var context = new TestContext();
+        var vm = Create(graph, context);
+        vm.InitializeProperties();
+        WaitFor(() => context.Errors.Count == 1);
+        context.SchedulerImpl.RunAll();
+        Assert.IsNull(vm.Data);
+        Assert.AreEqual(0, graph.SnapshotReads);
+        vm.SafeCleanup();
+        WaitFor(() => graph.Subscribers == 0);
+    }
+
+    [TestMethod]
+    public void InvalidLineStyle_RejectsConfigurationBeforeReadingSnapshot()
+    {
+        using var graph = new ControlledLineGraph { LineStyle = (GraphLineStyle)int.MaxValue };
+        var context = new TestContext();
+        var vm = Create(graph, context);
+        vm.InitializeProperties();
+        WaitFor(() => context.Errors.Count == 1);
+        context.SchedulerImpl.RunAll();
+        Assert.IsNull(vm.Data);
+        Assert.AreEqual(0, graph.SnapshotReads);
+        vm.SafeCleanup();
+        WaitFor(() => graph.Subscribers == 0);
+    }
+
+    [TestMethod]
+    [DataRow(0d, " items")]
+    [DataRow(-1d, " items")]
+    [DataRow(1d, " items")]
+    [DataRow(double.NaN, " items")]
+    [DataRow(double.PositiveInfinity, " items")]
+    [DataRow(double.NegativeInfinity, " items")]
+    [DataRow(1000d, null)]
+    public void InvalidValueScales_RejectConfigurationBeforeReadingSnapshot(double divisor, string? suffix)
+    {
+        using var graph = new ControlledLineGraph { ValueScales = [DisplayScales[0], new GraphValueScale { Divisor = divisor, Suffix = suffix! }] };
         var context = new TestContext();
         var vm = Create(graph, context);
         vm.InitializeProperties();
@@ -394,6 +447,12 @@ public partial class ContentGraphViewModelTests
 
         public double SmoothingAmount { get; init; } = 0.75;
 
+        public GraphLineStyle LineStyle { get; init; }
+
+        public bool IsReadoutOnly { get; init; }
+
+        public string ReadoutValueSuffix { get; init; } = string.Empty;
+
         public int SnapshotReads => Volatile.Read(ref _snapshotReads);
 
         public int ActiveReads => Volatile.Read(ref _activeReads);
@@ -418,6 +477,12 @@ public partial class ContentGraphViewModelTests
 
         public string ValueSuffix => "%";
 
+        public bool AutoScaleMaximum { get; init; }
+
+        public GraphValueScale[] ValueScales { get; init; } = [];
+
+        public int ScaleReads { get; private set; }
+
         public double Smoothing
         {
             get
@@ -427,10 +492,16 @@ public partial class ContentGraphViewModelTests
             }
         }
 
+        public GraphValueScale[] GetValueScales()
+        {
+            ScaleReads++;
+            return [.. ValueScales];
+        }
+
         public GraphSeriesInfo[] GetSeries()
         {
             SeriesReads++;
-            return [new GraphSeriesInfo { Name = "Test" }];
+            return [new GraphSeriesInfo { Name = "Test", LineStyle = LineStyle, IsReadoutOnly = IsReadoutOnly, ReadoutValueSuffix = ReadoutValueSuffix }];
         }
 
         public GraphSample[] GetSnapshot()

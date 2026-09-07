@@ -7,7 +7,6 @@ using System.Numerics;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.UI.Xaml;
-using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -15,8 +14,8 @@ namespace Microsoft.CmdPal.UI.Controls.Graphs;
 
 public sealed partial class DoughnutGraph : GraphControl
 {
-    private readonly TextBlock _centerValue = new() { FontSize = 22, FontWeight = FontWeights.SemiBold, TextAlignment = TextAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 110 };
-    private readonly TextBlock _centerLabel = new() { FontSize = 12, TextAlignment = TextAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 110 };
+    private readonly TextBlock _centerValue;
+    private readonly TextBlock _centerLabel;
     private double[] _start;
     private double[] _target;
 
@@ -27,14 +26,9 @@ public sealed partial class DoughnutGraph : GraphControl
         Width = 240;
         Height = 280;
         HorizontalAlignment = HorizontalAlignment.Left;
-        var center = new StackPanel
-        {
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-            IsHitTestVisible = false,
-        };
-        center.Children.Add(_centerValue);
-        center.Children.Add(_centerLabel);
+        var center = CreateGraphElement<StackPanel>("GraphDoughnutCenterTemplate");
+        _centerValue = (TextBlock)center.FindName("CenterValue");
+        _centerLabel = (TextBlock)center.FindName("CenterLabel");
         Plot.Children.Add(center);
     }
 
@@ -43,7 +37,7 @@ public sealed partial class DoughnutGraph : GraphControl
         var target = Normalize(values);
         _centerValue.Text = centerValue;
         _centerLabel.Text = centerLabel;
-        SetCaption(string.Join("   ", Series.Select((series, index) => $"{series.Name}: {values[index].ToString("G4", CultureInfo.CurrentCulture)}")));
+        SetLegend(Series.Select((series, index) => $"{series.Name}: {values[index].ToString("G4", CultureInfo.CurrentCulture)}").ToArray());
         if (!_target.AsSpan().SequenceEqual(target))
         {
             var progress = Ease(AnimationProgress);

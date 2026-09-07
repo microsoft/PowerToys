@@ -6,4 +6,5 @@ using Windows.UI;
 
 namespace Microsoft.CmdPal.UI.Controls.Graphs;
 
-public sealed record GraphSeries(string Name, Color? Color = null, GraphStrokeStyle LineStyle = GraphStrokeStyle.Solid, bool IsReadoutOnly = false, string ReadoutValueSuffix = "");
+// A null value hides the row; a null color hides its swatch.
+internal readonly record struct GraphTooltipItem(string Name, string? Value, Color? Color);

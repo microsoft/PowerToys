@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using CommunityToolkit.WinUI.Controls;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
@@ -11,21 +12,39 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Shapes;
 using Windows.UI;
 using Windows.UI.ViewManagement;
 
 namespace Microsoft.CmdPal.UI.Controls.Graphs;
 
 // Local rendering only. This control has no dependency on extension interfaces.
-public abstract partial class GraphControl : UserControl
+[TemplatePart(Name = CaptionPart, Type = typeof(TextBlock))]
+[TemplatePart(Name = LegendPart, Type = typeof(WrapPanel))]
+[TemplatePart(Name = ScaleMaximumPart, Type = typeof(TextBlock))]
+public abstract partial class GraphControl : ContentControl
 {
+    protected const float LineStrokeWidth = 1;
+
+    private const string CaptionPart = "PART_Caption";
+    private const string LegendPart = "PART_Legend";
+    private const string ScaleMaximumPart = "PART_ScaleMaximum";
+
+    public static readonly DependencyProperty SeriesAccentBrushProperty =
+        DependencyProperty.Register(nameof(SeriesAccentBrush), typeof(Brush), typeof(GraphControl), new PropertyMetadata(null));
+
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(1000d / 30) };
     private readonly UISettings _uiSettings = new();
-    private readonly Dictionary<string, Brush> _themeBrushes = [];
-    private readonly Border _border;
-    private readonly TextBlock _caption = new() { TextWrapping = TextWrapping.Wrap, FontSize = 12 };
+    private TextBlock? _caption;
+    private WrapPanel? _legend;
+    private TextBlock? _scaleMaximum;
+    private LegendItem[] _legendItems = [];
+    private string[] _legendLabels = [];
+    private string _captionText = string.Empty;
+    private string? _scaleMaximumText;
+    private bool _useLineSwatches;
+
     private CanvasControl? _canvas;
     private XamlRoot? _attachedRoot;
     private ThemeSettings? _themeSettings;
@@ -35,24 +54,13 @@ public abstract partial class GraphControl : UserControl
 
     protected GraphControl()
     {
-        IsTabStop = true;
-        UseSystemFocusVisuals = true;
-        Plot = new Grid { MinHeight = 96 };
-        var layout = new Grid { RowSpacing = 8 };
-        layout.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-        layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        layout.Children.Add(Plot);
-        Grid.SetRow(_caption, 1);
-        layout.Children.Add(_caption);
-        _border = new Border
-        {
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(8),
-            Padding = new Thickness(12),
-            Child = layout,
-        };
-        Content = _border;
-        Height = 220;
+        DefaultStyleKey = GetType();
+        Plot = new Grid { Style = (Style)Application.Current.Resources["GraphPlotStyle"] };
+        Content = Plot;
+        RegisterPropertyChangedCallback(ForegroundProperty, OnThemeBrushChanged);
+        RegisterPropertyChangedCallback(BorderBrushProperty, OnThemeBrushChanged);
+        RegisterPropertyChangedCallback(SeriesAccentBrushProperty, OnThemeBrushChanged);
+
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
         ActualThemeChanged += (_, _) => ApplyTheme();
@@ -66,6 +74,12 @@ public abstract partial class GraphControl : UserControl
             Invalidate();
             UpdateTimer();
         };
+    }
+
+    public Brush? SeriesAccentBrush
+    {
+        get => (Brush?)GetValue(SeriesAccentBrushProperty);
+        set => SetValue(SeriesAccentBrushProperty, value);
     }
 
     protected Grid Plot { get; }
@@ -84,16 +98,143 @@ public abstract partial class GraphControl : UserControl
 
     protected double AnimationProgress => !_animate ? 1 : Math.Clamp(Stopwatch.GetElapsedTime(_animationStarted).TotalMilliseconds / 300, 0, 1);
 
-    protected void ConfigureSeries(GraphSeries[] series)
+    protected override void OnApplyTemplate()
+    {
+        if (_legend is not null)
+        {
+            _legend.SizeChanged -= OnLegendSizeChanged;
+        }
+
+        base.OnApplyTemplate();
+        _caption = GetTemplateChild(CaptionPart) as TextBlock;
+        _legend = GetTemplateChild(LegendPart) as WrapPanel;
+        _scaleMaximum = GetTemplateChild(ScaleMaximumPart) as TextBlock;
+        if (_legend is not null)
+        {
+            _legend.SizeChanged += OnLegendSizeChanged;
+        }
+
+        RebuildLegend();
+        UpdateReadouts();
+        ApplyTheme();
+    }
+
+    protected static T CreateGraphElement<T>(string templateKey)
+        where T : FrameworkElement
+        => (T)((DataTemplate)Application.Current.Resources[templateKey]).LoadContent();
+
+    protected void ConfigureSeries(GraphSeries[] series, bool useLineSwatches = false)
     {
         Series = (GraphSeries[])series.Clone();
+        _useLineSwatches = useLineSwatches;
+        _legendLabels = series.Select(series => series.Name).ToArray();
+        RebuildLegend();
         Invalidate();
     }
 
-    protected void SetCaption(string text)
+    private void RebuildLegend()
     {
-        _caption.Text = text;
-        AutomationProperties.SetHelpText(this, text);
+        _legendItems = [];
+        if (_legend is null)
+        {
+            return;
+        }
+
+        _legend.Children.Clear();
+        _legendItems = new LegendItem[Series.Length];
+        for (var index = 0; index < Series.Length; index++)
+        {
+            var item = CreateGraphElement<Grid>("GraphLegendItemTemplate");
+            var label = (TextBlock)item.FindName("Label");
+            var swatch = (Shape)item.FindName(_useLineSwatches ? "LineSwatch" : "BlockSwatch");
+            var brush = (SolidColorBrush)(_useLineSwatches ? swatch.Stroke : swatch.Fill);
+            if (_useLineSwatches)
+            {
+                swatch.StrokeThickness = LineStrokeWidth;
+                swatch.StrokeDashArray = Series[index].LineStyle switch
+                {
+                    GraphStrokeStyle.Dashed => new DoubleCollection { 2, 2 },
+                    GraphStrokeStyle.Dotted => new DoubleCollection { 0, 2 },
+                    _ => null,
+                };
+                if (Series[index].LineStyle == GraphStrokeStyle.Dotted)
+                {
+                    swatch.StrokeDashCap = PenLineCap.Round;
+                }
+            }
+
+            var showSwatch = !_useLineSwatches || !Series[index].IsReadoutOnly;
+            swatch.Visibility = showSwatch ? Visibility.Visible : Visibility.Collapsed;
+            if (!showSwatch)
+            {
+                item.ColumnSpacing = 0;
+            }
+
+            if (_legend.ActualWidth > 0)
+            {
+                item.MaxWidth = _legend.ActualWidth;
+            }
+
+            _legend.Children.Add(item);
+            _legendItems[index] = new(label, brush);
+        }
+
+        _legend.Visibility = Series.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
+        UpdateReadouts();
+        ApplyLegendTheme();
+    }
+
+    protected string SetLegend(string[] labels, string caption = "")
+    {
+        _legendLabels = (string[])labels.Clone();
+        _captionText = caption;
+        UpdateReadouts();
+
+        var summary = string.Join("   ", labels);
+        if (!string.IsNullOrEmpty(caption))
+        {
+            summary = summary.Length == 0 ? caption : caption + Environment.NewLine + summary;
+        }
+
+        AutomationProperties.SetHelpText(this, summary);
+        return summary;
+    }
+
+    protected void SetScaleMaximumLabel(string text)
+    {
+        _scaleMaximumText = text;
+        UpdateReadouts();
+    }
+
+    private void UpdateReadouts()
+    {
+        for (var index = 0; index < _legendItems.Length; index++)
+        {
+            _legendItems[index].Label.Text = _legendLabels[index];
+        }
+
+        if (_caption is not null)
+        {
+            _caption.Text = _captionText;
+            _caption.Visibility = string.IsNullOrEmpty(_captionText) ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        if (_scaleMaximum is not null)
+        {
+            _scaleMaximum.Text = _scaleMaximumText ?? string.Empty;
+            _scaleMaximum.Visibility = _scaleMaximumText is null ? Visibility.Collapsed : Visibility.Visible;
+        }
+    }
+
+    private void OnLegendSizeChanged(object sender, SizeChangedEventArgs args)
+    {
+        if (_legend is not null)
+        {
+            foreach (FrameworkElement item in _legend.Children)
+            {
+                item.MaxWidth = args.NewSize.Width;
+            }
+        }
     }
 
     protected void BeginAnimation()
@@ -121,7 +262,7 @@ public abstract partial class GraphControl : UserControl
         var light = ActualTheme == ElementTheme.Light;
         return (index % 4) switch
         {
-            0 => ResourceColor("AccentFillColorDefaultBrush"),
+            0 => BrushColor(SeriesAccentBrush),
             1 => light ? Color.FromArgb(255, 0, 128, 117) : Color.FromArgb(255, 83, 211, 195),
             2 => light ? Color.FromArgb(255, 171, 90, 0) : Color.FromArgb(255, 255, 185, 85),
             _ => light ? Color.FromArgb(255, 125, 67, 175) : Color.FromArgb(255, 193, 154, 255),
@@ -129,7 +270,7 @@ public abstract partial class GraphControl : UserControl
     }
 
     protected Color IndicatorColor(Color? supplied)
-        => HighContrast ? ForegroundColor : supplied ?? ResourceColor("AccentFillColorDefaultBrush");
+        => HighContrast ? ForegroundColor : supplied ?? BrushColor(SeriesAccentBrush);
 
     protected static Color WithOpacity(Color color, double opacity)
         => Color.FromArgb((byte)(color.A * opacity), color.R, color.G, color.B);
@@ -226,33 +367,31 @@ public abstract partial class GraphControl : UserControl
         }
     }
 
-    protected Brush ResourceBrush(string key)
-    {
-        if (!_themeBrushes.TryGetValue(key, out var brush))
-        {
-            // Application.Resources resolves against the app theme. An explicit
-            // RequestedTheme makes this lookup follow the graph's window theme.
-            var source = (Border)XamlReader.Load($"<Border xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" RequestedTheme=\"{ActualTheme}\" Background=\"{{ThemeResource {key}}}\" />");
-            brush = source.Background;
-            _themeBrushes.Add(key, brush);
-        }
+    private static Color BrushColor(Brush? brush)
+        => (brush as SolidColorBrush)?.Color ?? Microsoft.UI.Colors.Gray;
 
-        return brush;
-    }
-
-    private Color ResourceColor(string key)
-        => (ResourceBrush(key) as SolidColorBrush)?.Color ?? Microsoft.UI.Colors.Gray;
+    private static void OnThemeBrushChanged(DependencyObject sender, DependencyProperty property)
+        => ((GraphControl)sender).ApplyTheme();
 
     private void ApplyTheme()
     {
-        _themeBrushes.Clear();
-        ForegroundColor = HighContrast ? _uiSettings.UIElementColor(UIElementType.WindowText) : ResourceColor("TextFillColorPrimaryBrush");
-        GridColor = HighContrast ? ForegroundColor : ResourceColor("CardStrokeColorDefaultBrush");
-        _border.Background = new SolidColorBrush(HighContrast ? _uiSettings.UIElementColor(UIElementType.Window) : ResourceColor("CardBackgroundFillColorDefaultBrush"));
-        _border.BorderBrush = new SolidColorBrush(GridColor);
-        _caption.Foreground = new SolidColorBrush(ForegroundColor);
+        ForegroundColor = HighContrast ? _uiSettings.UIElementColor(UIElementType.WindowText) : BrushColor(Foreground);
+        GridColor = HighContrast ? ForegroundColor : BrushColor(BorderBrush);
+
+        ApplyLegendTheme();
         Invalidate();
     }
+
+    private void ApplyLegendTheme()
+    {
+        for (var index = 0; index < _legendItems.Length; index++)
+        {
+            _legendItems[index].Label.Foreground = Foreground;
+            _legendItems[index].Brush.Color = SeriesColor(index);
+        }
+    }
+
+    private readonly record struct LegendItem(TextBlock Label, SolidColorBrush Brush);
 
     private sealed partial class GraphAutomationPeer(GraphControl owner) : FrameworkElementAutomationPeer(owner)
     {

@@ -128,6 +128,31 @@ public class NetworkStatsTests
         return new NetworkStats(new UnusedSnapshotProvider(), "All physical network adapters");
     }
 
+    [TestMethod]
+    public void GetNetworkHistory_KeepsEachAdaptersSamplesWhenTheirOrderChanges()
+    {
+        var stats = CreateNetworkStats();
+        stats.ApplySnapshots(
+            [new(1, EthernetGuid, "Ethernet", 0, 0, 1_000_000), new(2, WifiGuid, "Wi-Fi", 0, 0, 1_000_000)],
+            0);
+        stats.ApplySnapshots(
+            [new(1, EthernetGuid, "Ethernet", 10_000, 0, 1_000_000), new(2, WifiGuid, "Wi-Fi", 20_000, 0, 1_000_000)],
+            1);
+        var ethernet = stats.GetNetworkHistory(1);
+        var wifi = stats.GetNetworkHistory(2);
+        Assert.AreEqual(8d, ethernet[^1].Value, 0.001);
+        Assert.AreEqual(16d, wifi[^1].Value, 0.001);
+        Assert.AreEqual(12d, stats.GetNetworkHistory(0)[^1].Value, 0.001);
+
+        stats.ApplySnapshots(
+            [new(2, WifiGuid, "Wi-Fi", 30_000, 0, 1_000_000), new(1, EthernetGuid, "Ethernet", 30_000, 0, 1_000_000)],
+            1);
+
+        Assert.AreEqual(ethernet[^1], stats.GetNetworkHistory(2)[^2]);
+        Assert.AreEqual(wifi[^1], stats.GetNetworkHistory(1)[^2]);
+        CollectionAssert.AreEqual(stats.GetNetworkHistory(0), stats.GetNetworkHistory(99));
+    }
+
     private sealed class UnusedSnapshotProvider : IPhysicalNetworkInterfaceSnapshotProvider
     {
         public IReadOnlyList<PhysicalNetworkInterfaceSnapshot> GetSnapshots()

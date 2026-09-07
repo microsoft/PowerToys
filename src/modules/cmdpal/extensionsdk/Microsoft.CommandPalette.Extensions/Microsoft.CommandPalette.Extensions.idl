@@ -490,10 +490,26 @@ namespace Microsoft.CommandPalette.Extensions
         Boolean WrapWords { get; };
     }
 
+    struct GraphValueScale
+    {
+        Double Divisor;
+        String Suffix;
+    };
+
+    enum GraphLineStyle
+    {
+        Solid = 0,
+        Dashed = 1,
+        Dotted = 2,
+    };
+
     struct GraphSeriesInfo
     {
         String Name;
         OptionalColor Color;
+        GraphLineStyle LineStyle;
+        Boolean IsReadoutOnly;
+        String ReadoutValueSuffix;
     };
 
     struct GraphSample
@@ -513,6 +529,8 @@ namespace Microsoft.CommandPalette.Extensions
         String ValueFormat { get; };
         String ValueSuffix { get; };
         Double Smoothing { get; };
+        Boolean AutoScaleMaximum { get; };
+        GraphValueScale[] GetValueScales();
         GraphSeriesInfo[] GetSeries();
         GraphSample[] GetSnapshot();
     };

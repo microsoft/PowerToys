@@ -53,14 +53,9 @@ public sealed partial class VerticalUsageBar : GraphControl
             }
         }
 
-        var caption = valueText;
-        if (Series.Length > 0)
-        {
-            caption += Environment.NewLine + string.Join("   ", Series.Select((series, index) =>
-                $"{series.Name}: {contributions[index].ToString("G4", CultureInfo.CurrentCulture)}"));
-        }
-
-        SetCaption(caption);
+        SetLegend(
+            Series.Select((series, index) => $"{series.Name}: {contributions[index].ToString("G4", CultureInfo.CurrentCulture)}").ToArray(),
+            valueText);
         if (!_target.AsSpan().SequenceEqual(target))
         {
             var progress = Ease(AnimationProgress);
@@ -85,7 +80,7 @@ public sealed partial class VerticalUsageBar : GraphControl
             session.FillRectangle(0, top, width, segmentHeight, WithOpacity(color, HighContrast ? 0.8 : 0.3));
             if (segmentHeight > 0)
             {
-                session.DrawLine(0, top, width, top, color, 2);
+                session.DrawLine(0, top, width, top, color, LineStrokeWidth);
             }
         }
 

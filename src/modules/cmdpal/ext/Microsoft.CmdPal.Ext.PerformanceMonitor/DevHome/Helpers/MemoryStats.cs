@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Windows.Win32;
@@ -12,6 +11,8 @@ namespace CoreWidgetProvider.Helpers;
 
 internal sealed partial class MemoryStats : PerformanceCounterSourceBase, IDisposable
 {
+    private const double BytesPerGigabyte = 1024d * 1024 * 1024;
+
     private readonly PerformanceCounter? _memCommitted;
     private readonly PerformanceCounter? _memCached;
     private readonly PerformanceCounter? _memCommittedLimit;
@@ -33,6 +34,8 @@ internal sealed partial class MemoryStats : PerformanceCounterSourceBase, IDispo
     {
         get; set;
     }
+
+    public ulong AvailableMem { get; private set; }
 
     public ulong MemCommitted
     {
@@ -59,10 +62,11 @@ internal sealed partial class MemoryStats : PerformanceCounterSourceBase, IDispo
         get; set;
     }
 
-    public List<float> MemChartValues { get; set; } = new();
+    public UsageHistory MemoryHistory { get; }
 
-    public MemoryStats()
+    public MemoryStats(TimeProvider? timeProvider = null)
     {
+        MemoryHistory = new(seriesCount: 3, timeProvider);
         _memCommitted = CreatePerformanceCounter("Memory", "Committed Bytes");
         _memCached = CreatePerformanceCounter("Memory", "Cache Bytes");
         _memCommittedLimit = CreatePerformanceCounter("Memory", "Commit Limit");
@@ -76,15 +80,7 @@ internal sealed partial class MemoryStats : PerformanceCounterSourceBase, IDispo
         memStatus.dwLength = (uint)Marshal.SizeOf<Windows.Win32.System.SystemInformation.MEMORYSTATUSEX>();
         if (PInvoke.GlobalMemoryStatusEx(ref memStatus))
         {
-            AllMem = memStatus.ullTotalPhys;
-            var availableMem = memStatus.ullAvailPhys;
-            UsedMem = AllMem - availableMem;
-
-            MemUsage = (float)UsedMem / AllMem;
-            lock (MemChartValues)
-            {
-                ChartHelper.AddNextChartValue(MemUsage * 100, MemChartValues);
-            }
+            ApplyPhysicalMemory(memStatus.ullTotalPhys, memStatus.ullAvailPhys);
         }
 
         try
@@ -101,9 +97,21 @@ internal sealed partial class MemoryStats : PerformanceCounterSourceBase, IDispo
         }
     }
 
-    public string CreateMemImageUrl()
+    internal void ApplyPhysicalMemory(ulong totalBytes, ulong availableBytes)
     {
-        return ChartHelper.CreateImageUrl(MemChartValues, ChartHelper.ChartType.Mem);
+        if (totalBytes == 0 || availableBytes > totalBytes)
+        {
+            return;
+        }
+
+        AllMem = totalBytes;
+        AvailableMem = availableBytes;
+        UsedMem = totalBytes - availableBytes;
+        var usage = (double)UsedMem / totalBytes;
+        MemUsage = (float)usage;
+
+        // Keep the percentage and GB readouts at the same observation time.
+        MemoryHistory.Add(usage * 100, UsedMem / BytesPerGigabyte, AvailableMem / BytesPerGigabyte);
     }
 
     public void Dispose()

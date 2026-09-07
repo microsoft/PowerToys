@@ -6,6 +6,24 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 internal static class GraphContentValidation
 {
+    internal static GraphValueScale[] CopyValueScales(GraphValueScale[] scales)
+    {
+        ArgumentNullException.ThrowIfNull(scales);
+        GraphValueScale[] copy = [.. scales];
+        var previousDivisor = 0d;
+        foreach (var scale in copy)
+        {
+            if (!double.IsFinite(scale.Divisor) || scale.Divisor <= previousDivisor || scale.Suffix is null)
+            {
+                throw new ArgumentException("Value scales require positive, finite, increasing divisors and non-null suffixes.", nameof(scales));
+            }
+
+            previousDivisor = scale.Divisor;
+        }
+
+        return copy;
+    }
+
     internal static GraphSeriesInfo[] CopySeries(GraphSeriesInfo[] series)
     {
         ArgumentNullException.ThrowIfNull(series);
@@ -15,6 +33,11 @@ internal static class GraphContentValidation
             if (item.Name is null)
             {
                 throw new ArgumentException("Series names must not be null.", nameof(series));
+            }
+
+            if (item.LineStyle is not (GraphLineStyle.Solid or GraphLineStyle.Dashed or GraphLineStyle.Dotted))
+            {
+                throw new ArgumentException("Series line styles must be solid, dashed, or dotted.", nameof(series));
             }
         }
 

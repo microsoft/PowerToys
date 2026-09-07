@@ -13,6 +13,63 @@ public class LineGraphPresentationTests
     private static readonly DateTimeOffset Origin = new(2026, 9, 6, 0, 0, 0, TimeSpan.Zero);
 
     [TestMethod]
+    [DataRow(0d, false)]
+    [DataRow(0.5, false)]
+    [DataRow(1d, false)]
+    [DataRow(1d, true)]
+    public void PairedSeries_PreserveOrderingWhenTheyMeetAndChangeDirection(double smoothing, bool late)
+    {
+        LineGraphPoint[] totals = [new(Origin, 90), new(Origin.AddSeconds(1), 40), new(Origin.AddSeconds(2), 50)];
+        LineGraphPoint[] kernels = [new(Origin, 0), new(Origin.AddSeconds(1), 40), new(Origin.AddSeconds(2), 50)];
+        LineGraphPresentation? totalPresentation = null;
+        LineGraphPresentation? kernelPresentation = null;
+
+        for (var count = 1; count <= totals.Length; count++)
+        {
+            var received = totals[count - 1].Timestamp.AddMilliseconds(late ? 600 : 0);
+            totalPresentation = Create(totalPresentation, totals[..count], received, smoothing);
+            kernelPresentation = Create(kernelPresentation, kernels[..count], received, smoothing);
+            if (count > 1)
+            {
+                Assert.AreEqual(late, totalPresentation.IsStep(count - 2));
+                Assert.AreEqual(late, kernelPresentation.IsStep(count - 2));
+            }
+
+            for (var milliseconds = 0; milliseconds <= 3000; milliseconds += 25)
+            {
+                var timestamp = Origin.AddMilliseconds(milliseconds);
+                Assert.IsTrue(totalPresentation.TryGetValue(timestamp, out var total, out var totalNormalized));
+                Assert.IsTrue(kernelPresentation.TryGetValue(timestamp, out var kernel, out var kernelNormalized));
+                Assert.IsTrue(kernel <= total);
+                Assert.IsTrue(kernelNormalized <= totalNormalized);
+            }
+        }
+    }
+
+    [TestMethod]
+    [DataRow(0d)]
+    [DataRow(0.2d)]
+    [DataRow(1d)]
+    public void MemoryReadouts_InterpolateWithPercentWithoutClippingGigabytes(double smoothing)
+    {
+        var end = Origin.AddSeconds(1);
+        var percent = Create(null, [new(Origin, 75), new(end, 50)], smoothing: smoothing);
+        var used = Create(null, [new(Origin, 192), new(end, 128)], smoothing: smoothing);
+        var available = Create(null, [new(Origin, 64), new(end, 128)], smoothing: smoothing);
+
+        for (var milliseconds = 0; milliseconds <= 1000; milliseconds += 25)
+        {
+            var time = Origin.AddMilliseconds(milliseconds);
+            Assert.IsTrue(percent.TryGetValue(time, out var percentValue, out _));
+            Assert.IsTrue(used.TryGetValue(time, out var usedValue, out _));
+            Assert.IsTrue(available.TryGetValue(time, out var availableValue, out _));
+            Assert.AreEqual(256d, usedValue + availableValue, 1e-10);
+            Assert.AreEqual(percentValue, usedValue / 256 * 100, 1e-10);
+            Assert.IsTrue(usedValue > 100);
+        }
+    }
+
+    [TestMethod]
     [DataRow(0.5)]
     [DataRow(1d)]
     [DataRow(1.5)]

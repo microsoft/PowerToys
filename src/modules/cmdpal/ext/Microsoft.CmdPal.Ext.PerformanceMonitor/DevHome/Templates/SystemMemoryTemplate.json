@@ -19,14 +19,6 @@
       "$when": "${errorMessage == null}",
       "items": [
         {
-          "type": "Image",
-          "url": "${memGraphUrl}",
-          "height": "${chartHeight}",
-          "width": "${chartWidth}",
-          "$when": "${$host.widgetSize != \"small\"}",
-          "horizontalAlignment": "center"
-        },
-        {
           "type": "ColumnSet",
           "columns": [
             {
@@ -41,7 +33,7 @@
                 {
                   "text": "${usedMem}",
                   "type": "TextBlock",
-                  "size": "${if($host.widgetSize == \"small\", \"medium\", \"large\")}",
+                  "size": "large",
                   "weight": "bolder"
                 }
               ]
@@ -50,16 +42,16 @@
               "type": "Column",
               "items": [
                 {
-                  "text": "%Memory_Widget_Template/AllMemory%",
+                  "text": "%Memory_Widget_Template/AvailableMemory%",
                   "type": "TextBlock",
                   "size": "small",
                   "isSubtle": true,
                   "horizontalAlignment": "right"
                 },
                 {
-                  "text": "${allMem}",
+                  "text": "${availableMem}",
                   "type": "TextBlock",
-                  "size": "${if($host.widgetSize == \"small\", \"medium\", \"large\")}",
+                  "size": "large",
                   "weight": "bolder",
                   "horizontalAlignment": "right"
                 }
@@ -148,8 +140,23 @@
         },
         {
           "type": "ColumnSet",
-          "$when": "${$host.widgetSize != \"small\"}",
           "columns": [
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%Memory_Widget_Template/AllMemory%",
+                  "type": "TextBlock",
+                  "size": "small",
+                  "isSubtle": true
+                },
+                {
+                  "text": "${allMem}",
+                  "type": "TextBlock",
+                  "size": "medium"
+                }
+              ]
+            },
             {
               "type": "Column",
               "items": [

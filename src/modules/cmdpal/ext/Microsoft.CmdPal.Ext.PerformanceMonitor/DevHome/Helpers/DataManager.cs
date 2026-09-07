@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
 using Microsoft.CmdPal.Ext.PerformanceMonitor;
 using Timer = System.Timers.Timer;
 
@@ -12,16 +13,36 @@ internal sealed partial class DataManager : IDisposable
 {
     private readonly SystemData _systemData = SystemData.Shared;
     private readonly DataType _dataType;
-    private readonly Timer _updateTimer;
+    private readonly Timer? _updateTimer;
+    private readonly CpuSampler? _cpuSampler;
+    private readonly NetworkStats? _networkStats;
+    private readonly MemoryStats? _memoryStats;
+    private readonly Lock _lifecycleLock = new();
     private readonly Action _updateAction;
+    private IDisposable? _samplingSubscription;
+    private bool _disposed;
     private bool _updateFailureLogged;
 
     private const int OneSecondInMilliseconds = 1000;
 
-    public DataManager(DataType type, Action updateWidget)
+    public DataManager(DataType type, Action updateWidget, CpuSampler? cpuSampler = null, NetworkStats? networkStats = null, MemoryStats? memoryStats = null)
     {
         _updateAction = updateWidget;
         _dataType = type;
+        _networkStats = networkStats;
+        _memoryStats = memoryStats;
+
+        if (type is DataType.CPU or DataType.CpuWithTopProcesses)
+        {
+            _cpuSampler = cpuSampler ?? _systemData.CpuSampler;
+            return;
+        }
+
+        if (type == DataType.Network)
+        {
+            // The counter source owns a single polling timer for every network view.
+            return;
+        }
 
         _updateTimer = new Timer(OneSecondInMilliseconds);
         _updateTimer.Elapsed += UpdateTimer_Elapsed;
@@ -31,17 +52,10 @@ internal sealed partial class DataManager : IDisposable
 
     private void GetMemoryData()
     {
-        lock (_systemData.MemoryStats)
+        var stats = GetMemoryStats();
+        lock (stats)
         {
-            _systemData.MemoryStats.GetData();
-        }
-    }
-
-    private void GetNetworkData()
-    {
-        lock (_systemData.NetworkStats)
-        {
-            _systemData.NetworkStats.GetData();
+            stats.GetData();
         }
     }
 
@@ -58,14 +72,6 @@ internal sealed partial class DataManager : IDisposable
         lock (_systemData.GPUStats)
         {
             _systemData.GPUStats.GetData();
-        }
-    }
-
-    private void GetCPUData(bool includeTopProcesses)
-    {
-        lock (_systemData.CpuStats)
-        {
-            _systemData.CpuStats.GetData(includeTopProcesses);
         }
     }
 
@@ -86,14 +92,6 @@ internal sealed partial class DataManager : IDisposable
         {
             switch (_dataType)
             {
-                case DataType.CPU:
-                case DataType.CpuWithTopProcesses:
-                    {
-                        // CPU
-                        GetCPUData(_dataType == DataType.CpuWithTopProcesses);
-                        break;
-                    }
-
                 case DataType.GPU:
                     {
                         // gpu
@@ -105,13 +103,6 @@ internal sealed partial class DataManager : IDisposable
                     {
                         // memory
                         GetMemoryData();
-                        break;
-                    }
-
-                case DataType.Network:
-                    {
-                        // network
-                        GetNetworkData();
                         break;
                     }
 
@@ -143,7 +134,7 @@ internal sealed partial class DataManager : IDisposable
                 PerformanceMonitorCommandsProvider.CrashSentinel.CancelBlock(firstUpdateBlockSuffix!);
             }
 
-            _updateTimer.Stop();
+            _updateTimer!.Stop();
             if (!_updateFailureLogged)
             {
                 _updateFailureLogged = true;
@@ -156,32 +147,17 @@ internal sealed partial class DataManager : IDisposable
     {
         return _dataType switch
         {
-            DataType.CPU => "CPU.FirstUpdate",
-            DataType.CpuWithTopProcesses => "CPU.FirstUpdate",
             DataType.GPU => "GPU.FirstUpdate",
             DataType.Memory => "Memory.FirstUpdate",
-            DataType.Network => "Network.FirstUpdate",
             DataType.Disk => "Disk.FirstUpdate",
             DataType.Battery => "Battery.FirstUpdate",
             _ => null,
         };
     }
 
-    internal MemoryStats GetMemoryStats()
-    {
-        lock (_systemData.MemoryStats)
-        {
-            return _systemData.MemoryStats;
-        }
-    }
+    internal MemoryStats GetMemoryStats() => _memoryStats ?? _systemData.MemoryStats;
 
-    internal NetworkStats GetNetworkStats()
-    {
-        lock (_systemData.NetworkStats)
-        {
-            return _systemData.NetworkStats;
-        }
-    }
+    internal NetworkStats GetNetworkStats() => _networkStats ?? _systemData.NetworkStats;
 
     internal DiskStats GetDiskStats()
     {
@@ -199,13 +175,8 @@ internal sealed partial class DataManager : IDisposable
         }
     }
 
-    internal CPUStats GetCPUStats()
-    {
-        lock (_systemData.CpuStats)
-        {
-            return _systemData.CpuStats;
-        }
-    }
+    internal CpuSnapshot GetCpuSnapshot()
+        => (_cpuSampler ?? throw new InvalidOperationException("This data manager does not monitor CPU usage.")).Snapshot;
 
     internal BatteryStats GetBatteryStats()
     {
@@ -217,16 +188,47 @@ internal sealed partial class DataManager : IDisposable
 
     public void Start()
     {
-        _updateTimer.Start();
+        lock (_lifecycleLock)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_cpuSampler is not null)
+            {
+                _samplingSubscription ??= _cpuSampler.Subscribe(_updateAction, _dataType == DataType.CpuWithTopProcesses);
+            }
+            else if (_dataType == DataType.Network)
+            {
+                _samplingSubscription ??= GetNetworkStats().Sampler.Subscribe(_updateAction);
+            }
+            else
+            {
+                _updateTimer!.Start();
+            }
+        }
     }
 
     public void Stop()
     {
-        _updateTimer.Stop();
+        lock (_lifecycleLock)
+        {
+            _samplingSubscription?.Dispose();
+            _samplingSubscription = null;
+            _updateTimer?.Stop();
+        }
     }
 
     public void Dispose()
     {
-        _updateTimer.Dispose();
+        lock (_lifecycleLock)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _samplingSubscription?.Dispose();
+            _samplingSubscription = null;
+            _updateTimer?.Dispose();
+        }
     }
 }

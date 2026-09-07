@@ -2430,10 +2430,26 @@ interface IPlainTextContent requires IContent {
 ### Graph content
 
 ```csharp
+struct GraphValueScale
+{
+    Double Divisor;
+    String Suffix;
+};
+
+enum GraphLineStyle
+{
+    Solid = 0,
+    Dashed = 1,
+    Dotted = 2,
+};
+
 struct GraphSeriesInfo
 {
     String Name;
     OptionalColor Color;
+    GraphLineStyle LineStyle;
+    Boolean IsReadoutOnly;
+    String ReadoutValueSuffix;
 };
 
 struct GraphSample
@@ -2452,6 +2468,8 @@ interface ILineGraphContent requires IContent
     String ValueFormat { get; };
     String ValueSuffix { get; };
     Double Smoothing { get; };
+    Boolean AutoScaleMaximum { get; };
+    GraphValueScale[] GetValueScales();
     GraphSeriesInfo[] GetSeries();
     GraphSample[] GetSnapshot();
 };
@@ -2481,18 +2499,21 @@ interface IDoughnutGraphContent requires IContent
 | `DisplayName` | Localized graph heading and UI Automation name. Empty omits the heading. |
 | `GetSeries()` | Fixed, ordered series descriptions. Array index is identity; names are display labels and may repeat. |
 | `GraphSeriesInfo.Color` | Existing `OptionalColor`. Unset selects a host palette color. High contrast may override colors. |
+| `GraphSeriesInfo.LineStyle` | Line graph edge: `Solid` (default), `Dashed`, or `Dotted`. Ignored by bars and doughnuts. |
+| `GraphSeriesInfo.IsReadoutOnly` | Default false. A line graph includes this series in its legend and inspection readouts, without a plotted line, fill, marker, swatch, or contribution to automatic scaling. Ignored by bars and doughnuts. |
+| `GraphSeriesInfo.ReadoutValueSuffix` | Suffix for a readout-only line series, formatted as a number using the graph's `ValueFormat`. Overrides the graph's `ValueSuffix` and value scales for that series. Default empty; ignored for plotted series, bars, and doughnuts. |
 | Configuration | Immutable for the content lifetime. Replace the content instance to change configuration. |
 | `GetSnapshot()` | Complete, coherent replacement of the changing data, including output parameters. Non-destructive; independent of other readers. |
 | Notification | Publish the snapshot before raising `PropChanged("Data")`. One notification per publication; consumers may skip intermediate snapshots. |
 | Ownership | Returned arrays are independent copies. No per-series or per-sample interface objects. |
-| Presentation | Host owns layout, grid, line/fill style, animation, inspection, ring thickness, and slice gaps. |
+| Presentation | Host owns layout, grid, stroke width and dash pattern, fill style, animation, inspection, ring thickness, and slice gaps. |
 
 #### Line graph
 
 - `SeriesIndex`: index into `GetSeries()`.
 - `Timestamp`: observation time; strictly increasing within each series.
   Different series may have independent timestamps and counts and may be interleaved.
-- `Value`: finite measurement in range units. Preserve out-of-range values for
+- `Value`: finite measurement in range units (or the readout's own units for a readout-only series). Preserve out-of-range values for
   inspection; clip drawing to the vertical range.
 - `Minimum` / `Maximum`: finite, ordered range with a finite positive difference. Defaults: 0 / 100.
 - `HistoryDuration`: visible time span; at least one second. Default: 60 seconds.
@@ -2503,9 +2524,28 @@ interface IDoughnutGraphContent requires IContent
   Intermediate values blend these shapes. No overshoot between adjacent values.
   Applies to interpolated intervals; presentation may use steps for sparse or late data.
   Inspection follows the same interpolation; marker positions use clipped values.
+- Readout-only series use the same timestamp and interpolation rules as plotted series.
+  For related measurements (for example, utilization in percent and used/available GB),
+  publish their values together at the same observation time so historical inspection stays coherent.
 - Snapshots may append, expire, or correct retained observations.
 - `ValueFormat`: .NET numeric format using the user's culture; default `"0.0"`. Invalid format falls back to the default.
-- `ValueSuffix`: appended to formatted values; default empty.
+- `ValueSuffix`: appended to formatted values when no value scales are supplied; default empty.
+- `GetValueScales()`: optional, fixed display scales; an empty array leaves values unscaled.
+  Divisors must be finite, positive, and strictly increasing. Suffixes must be non-null
+  and include any desired spacing. The host selects the largest divisor that does not
+  exceed the absolute value, or the first scale for smaller values, including zero.
+  It formats `Value / Divisor` using `ValueFormat` and appends that scale's `Suffix`.
+  Samples and axis bounds remain in the original measurement units. Extensions own
+  unit choices and labels; for example, divisors 1, 1000, and 1000000 can carry suffixes
+  `" bps"`, `" Kbps"`, and `" Mbps"`. The Toolkit's `GraphValueFormatter` applies the same
+  scales to extension readouts without calls back to the extension during rendering.
+- `AutoScaleMaximum`: opt-in upper-bound scaling; default false. When enabled,
+  `Maximum` is the lowest allowed upper bound and `Minimum` remains fixed.
+  The host derives one upper bound across all plotted series in the visible time window,
+  including the interpolated or held values at its edges. Retained offscreen peaks
+  and future measurements do not affect the scale beyond their visible segments.
+  The range grows and shrinks as peaks enter or leave the window, with headroom and
+  readable rounding in the selected display scale; the current maximum appears above the plot.
 
 ##### Live presentation
 
@@ -2513,6 +2553,7 @@ interface IDoughnutGraphContent requires IContent
   Zero disables buffering. Configured on the native control; no SDK ABI member.
 - Shared display clock: current time minus `PresentationDelay`, independent of series cadence.
   No automatic increase in buffering. Latest numeric captions update immediately.
+- Automatic scaling follows this delayed display window, so the label and drawn data agree.
 - Rendering and buffering are host-local; no sampling requests or per-frame extension calls.
 
 #### Vertical usage bar

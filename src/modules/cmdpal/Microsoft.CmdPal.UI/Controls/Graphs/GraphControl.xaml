@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:graphs="using:Microsoft.CmdPal.UI.Controls.Graphs"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls">
+
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <StaticResource x:Key="GraphBackground" ResourceKey="CardBackgroundFillColorDefaultBrush" />
+            <StaticResource x:Key="GraphBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+            <StaticResource x:Key="GraphForeground" ResourceKey="TextFillColorPrimaryBrush" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <StaticResource x:Key="GraphBackground" ResourceKey="CardBackgroundFillColorDefaultBrush" />
+            <StaticResource x:Key="GraphBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+            <StaticResource x:Key="GraphForeground" ResourceKey="TextFillColorPrimaryBrush" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <StaticResource x:Key="GraphBackground" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="GraphBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="GraphForeground" ResourceKey="SystemColorWindowTextColorBrush" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+    <Style x:Key="GraphPlotStyle" TargetType="Grid">
+        <Setter Property="MinHeight" Value="96" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+    </Style>
+
+    <Style x:Key="DefaultGraphControlStyle" TargetType="graphs:GraphControl">
+        <Setter Property="Height" Value="220" />
+        <Setter Property="IsTabStop" Value="True" />
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="Background" Value="{ThemeResource GraphBackground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource GraphBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+        <Setter Property="Padding" Value="12" />
+        <Setter Property="Foreground" Value="{ThemeResource GraphForeground}" />
+        <Setter Property="SeriesAccentBrush" Value="{ThemeResource AccentFillColorDefaultBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="graphs:GraphControl">
+                    <Border
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                        <Grid RowSpacing="8">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    x:Name="PART_ScaleMaximum"
+                                    Margin="0,0,0,4"
+                                    HorizontalAlignment="Right"
+                                    FontSize="12"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    Visibility="Collapsed" />
+                                <ContentPresenter
+                                    Grid.Row="1"
+                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Content="{TemplateBinding Content}" />
+                            </Grid>
+                            <StackPanel Grid.Row="1" Spacing="6">
+                                <TextBlock
+                                    x:Name="PART_Caption"
+                                    FontSize="12"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    TextWrapping="Wrap"
+                                    Visibility="Collapsed" />
+                                <toolkit:WrapPanel
+                                    x:Name="PART_Legend"
+                                    HorizontalSpacing="16"
+                                    Orientation="Horizontal"
+                                    VerticalSpacing="4" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style BasedOn="{StaticResource DefaultGraphControlStyle}" TargetType="graphs:LiveAreaGraph" />
+    <Style BasedOn="{StaticResource DefaultGraphControlStyle}" TargetType="graphs:DoughnutGraph" />
+    <Style BasedOn="{StaticResource DefaultGraphControlStyle}" TargetType="graphs:VerticalUsageBar" />
+
+    <DataTemplate x:Key="GraphLegendItemTemplate">
+        <Grid ColumnSpacing="6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid>
+                <Line
+                    x:Name="LineSwatch"
+                    Width="20"
+                    Height="12"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AccessibilityView="Raw"
+                    Visibility="Collapsed"
+                    X1="0"
+                    X2="20"
+                    Y1="6"
+                    Y2="6">
+                    <Line.Stroke>
+                        <SolidColorBrush />
+                    </Line.Stroke>
+                </Line>
+                <Rectangle
+                    x:Name="BlockSwatch"
+                    Width="8"
+                    Height="8"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AccessibilityView="Raw"
+                    RadiusX="2"
+                    RadiusY="2"
+                    Visibility="Collapsed">
+                    <Rectangle.Fill>
+                        <SolidColorBrush />
+                    </Rectangle.Fill>
+                </Rectangle>
+            </Grid>
+            <TextBlock
+                x:Name="Label"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                FontSize="12"
+                TextWrapping="Wrap" />
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:Key="GraphDoughnutCenterTemplate">
+        <StackPanel
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            IsHitTestVisible="False">
+            <TextBlock
+                x:Name="CenterValue"
+                MaxWidth="110"
+                FontSize="22"
+                FontWeight="SemiBold"
+                TextAlignment="Center"
+                TextTrimming="CharacterEllipsis" />
+            <TextBlock
+                x:Name="CenterLabel"
+                MaxWidth="110"
+                FontSize="12"
+                TextAlignment="Center"
+                TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+    </DataTemplate>
+</ResourceDictionary>
