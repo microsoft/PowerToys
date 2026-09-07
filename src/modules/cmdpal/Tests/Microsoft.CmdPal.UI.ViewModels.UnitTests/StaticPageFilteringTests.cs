@@ -411,7 +411,7 @@ public sealed partial class StaticPageFilteringTests
 
         internal void CompleteSelection(ListItemViewModel? item)
         {
-            ViewModel.UpdateSelectedItemCommand.Execute(item);
+            ViewModel.SynchronizeSelection(item);
             ViewModel.CompleteStaticFilterSelection(ViewModel.PublishedFilterVersion, item);
         }
 

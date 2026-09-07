@@ -35,7 +35,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private long _staticFilterVersion;
     private long _publishedStaticFilterVersion = -1;
     private long _selectedStaticFilterVersion = -1;
-    private StaticActivationKind? _pendingStaticActivation;
+    private PendingStaticActivation? _pendingStaticActivation;
     private int _itemsFetchGeneration;
     private int _settledFetchGeneration;
     private bool _staticFilterWorkerQueued;
@@ -674,6 +674,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
 
         _staticFilterItems = snapshots;
+        CancelInvalidStaticActivationUnderLock();
     }
 
     private void StaticFilterItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -703,6 +704,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             }
 
             _staticFilterItems[item] = current;
+            CancelInvalidStaticActivationUnderLock();
             RequestStaticFilterUnderLock(forceFirstItem: false, ensureSelectionVisible: false);
         }
     }
@@ -810,6 +812,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         return;
                     }
 
+                    if (_pendingStaticActivation is { Target: { } target } &&
+                        !FilteredItems.Contains(target, ReferenceEqualityComparer.Instance))
+                    {
+                        _pendingStaticActivation = null;
+                    }
+
                     var forceFirst = _staticFilterForceFirstPending || (IsRootPage && _forceFirstItemPending);
                     var ensureVisible = _staticFilterEnsureSelectionVisible;
                     _staticFilterForceFirstPending = false;
@@ -846,6 +854,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 }
 
                 _selectedStaticFilterVersion = version;
+                if (_pendingStaticActivation is { HasTarget: false } activation)
+                {
+                    _pendingStaticActivation = activation with { Target = item, HasTarget = true };
+                }
+
                 TryInvokePendingStaticActivation();
                 return true;
             }
@@ -863,9 +876,21 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private bool IsStaticFilterSelectionCurrent =>
         !_isUpdatingFilteredItems &&
+        IsStaticFilterSelectionConfirmed;
+
+    private bool IsStaticFilterSelectionConfirmed =>
         _publishedStaticFilterVersion == _staticFilterVersion &&
         _selectedStaticFilterVersion == _staticFilterVersion &&
         IsLatestFetchGeneration(_settledFetchGeneration);
+
+    private void CancelInvalidStaticActivationUnderLock()
+    {
+        if (_pendingStaticActivation is { Target: { } target } &&
+            (target.IsInErrorState || !_staticFilterItems.ContainsKey(target)))
+        {
+            _pendingStaticActivation = null;
+        }
+    }
 
     private void TryInvokePendingStaticActivation()
     {
@@ -873,20 +898,27 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             lock (_listLock)
             {
-                if (_isDisposed || _pendingStaticActivation is not { } activation || !IsStaticFilterSelectionCurrent)
+                CancelInvalidStaticActivationUnderLock();
+                if (_isDisposed || _pendingStaticActivation is not { HasTarget: true } activation || !IsStaticFilterSelectionCurrent)
                 {
                     return;
                 }
 
-                var item = _lastSelectedItem;
-                if (activation == StaticActivationKind.Secondary && item is not null &&
+                var item = activation.Target;
+                if (!ReferenceEquals(item, _lastSelectedItem))
+                {
+                    _pendingStaticActivation = null;
+                    return;
+                }
+
+                if (activation.Kind == StaticActivationKind.Secondary && item is not null &&
                     !item.Initialized.HasFlag(InitializedState.SelectionInitialized))
                 {
                     return;
                 }
 
                 _pendingStaticActivation = null;
-                InvokeListItem(item, activation);
+                InvokeListItem(item, activation.Kind);
             }
         }
     }
@@ -896,6 +928,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
         Primary,
         Secondary,
     }
+
+    private readonly record struct PendingStaticActivation(StaticActivationKind Kind, ListItemViewModel? Target, bool HasTarget);
 
     private sealed record StaticFilterRequest(long Version, int FetchGeneration, string Query, CancellationToken CancellationToken);
 
@@ -1128,7 +1162,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
                 if (!_isDynamic && !IsStaticFilterSelectionCurrent)
                 {
-                    _pendingStaticActivation = activation;
+                    var confirmed = IsStaticFilterSelectionConfirmed;
+                    _pendingStaticActivation = new(activation, confirmed ? _lastSelectedItem : null, confirmed);
                     return;
                 }
 
@@ -1158,12 +1193,23 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
+    public void SynchronizeSelection(ListItemViewModel? item, bool forceUpdate = false)
+    {
+        if (forceUpdate || item is null || !ReferenceEquals(item, _lastSelectedItem))
+        {
+            UpdateSelectedItem(item);
+        }
+    }
+
     [RelayCommand]
     private void UpdateSelectedItem(ListItemViewModel? item)
     {
-        if (_selectedStaticFilterVersion == _staticFilterVersion && !ReferenceEquals(item, _lastSelectedItem))
+        lock (_listLock)
         {
-            _pendingStaticActivation = null;
+            if (_pendingStaticActivation is { HasTarget: true } activation && !ReferenceEquals(item, activation.Target))
+            {
+                _pendingStaticActivation = null;
+            }
         }
 
         if (_lastSelectedItem is not null)

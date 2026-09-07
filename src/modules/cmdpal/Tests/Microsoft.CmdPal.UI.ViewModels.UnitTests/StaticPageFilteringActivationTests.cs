@@ -210,9 +210,11 @@ public sealed partial class StaticPageFilteringTests
     }
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public async Task DeferredSecondaryActivation_WaitsForHydrationUnlessSelectionChanges(bool changeSelection)
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public async Task DeferredSecondaryActivation_WaitsForHydrationUnlessSelectionChanges(bool changeSelection, bool refreshWhileHydrating)
     {
         using var release = new ManualResetEventSlim();
         var secondary = new NoOpCommand { Name = "Secondary" };
@@ -225,14 +227,7 @@ public sealed partial class StaticPageFilteringTests
         fixture.ViewModel.InvokeSecondaryCommandCommand.Execute(previous);
         fixture.Drain();
         var selected = fixture.ViewModel.FilteredItems.First(item => ReferenceEquals(item.Model.Unsafe, beta));
-        var hydrated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        selected.PropertyChanged += (_, args) =>
-        {
-            if (args.PropertyName == nameof(ListItemViewModel.TextToSuggest))
-            {
-                hydrated.TrySetResult();
-            }
-        };
+        var hydrated = ObserveHydration(selected);
 
         fixture.CompleteSelection(selected);
         try
@@ -241,14 +236,24 @@ public sealed partial class StaticPageFilteringTests
             fixture.Ui.ExecuteAll();
             Assert.HasCount(0, commands.Messages);
 
+            if (refreshWhileHydrating)
+            {
+                fixture.Page.Refresh(ListViewModel.IncrementalRefresh);
+                fixture.Drain();
+            }
+
             if (changeSelection)
             {
                 fixture.CompleteSelection(fixture.ViewModel.FilteredItems.First(item => !ReferenceEquals(item, selected)));
             }
+            else
+            {
+                fixture.CompleteSelection(selected);
+            }
 
             release.Set();
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            while (!hydrated.Task.IsCompleted || (!changeSelection && commands.Messages.Count == 0))
+            while (!hydrated.IsCompleted || (!changeSelection && commands.Messages.Count == 0))
             {
                 await fixture.Ui.WhenQueued.WaitAsync(timeout.Token);
                 fixture.Ui.ExecuteAll();
@@ -264,6 +269,225 @@ public sealed partial class StaticPageFilteringTests
         finally
         {
             release.Set();
+        }
+    }
+
+    [TestMethod]
+    public async Task DeferredSecondaryActivation_FailedHydrationDoesNotActivateReplacement()
+    {
+        using var release = new ManualResetEventSlim();
+        var beta = new DeferredCommandsItem(release, new NoOpCommand(), failHydration: true) { Title = "Beta" };
+        var fallbackCommand = new NoOpCommand { Name = "Fallback secondary" };
+        var fallback = Item("Beta other");
+        fallback.MoreCommands = [new CommandContextItem(fallbackCommand)];
+        using var fixture = new Fixture(Item("Alpha"), beta, fallback);
+        using var commands = new CommandObserver();
+        var fallbackVm = fixture.ViewModel.FilteredItems[2];
+        Assert.IsTrue(fallbackVm.SafeSlowInit());
+        fixture.CompleteSelection(fixture.ViewModel.FilteredItems[0]);
+        fixture.ViewModel.SearchTextBox = "Beta";
+        fixture.ViewModel.InvokeSecondaryCommandCommand.Execute(fixture.ViewModel.FilteredItems[0]);
+        fixture.Drain();
+        var selected = fixture.ViewModel.FilteredItems.First(item => ReferenceEquals(item.Model.Unsafe, beta));
+
+        fixture.CompleteSelection(selected);
+        try
+        {
+            await beta.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.HasCount(0, commands.Messages);
+            release.Set();
+            await fixture.Worker.WhenQueued.WaitAsync(TimeSpan.FromSeconds(5));
+            fixture.Drain();
+
+            Assert.IsTrue(selected.IsInErrorState);
+            Assert.AreSame(fallbackVm, fixture.ViewModel.FilteredItems.Single());
+            fixture.CompleteSelection(fallbackVm);
+            Assert.HasCount(0, commands.Messages);
+
+            fixture.ViewModel.InvokeSecondaryCommandCommand.Execute(fallbackVm);
+            Assert.HasCount(1, commands.Messages);
+            Assert.AreSame(fallbackCommand, commands.Messages[0].Command.Unsafe);
+            Assert.AreSame(fallback, commands.Messages[0].Context);
+        }
+        finally
+        {
+            release.Set();
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task DeferredSecondaryActivation_RemovedTargetDoesNotActivateReplacement(bool filterOut)
+    {
+        using var release = new ManualResetEventSlim();
+        var beta = new DeferredCommandsItem(release, new NoOpCommand()) { Title = "Beta" };
+        var fallback = Item("Beta other");
+        fallback.MoreCommands = [new CommandContextItem(new NoOpCommand())];
+        using var fixture = new Fixture(Item("Alpha"), beta, fallback);
+        using var commands = new CommandObserver();
+        var fallbackVm = fixture.ViewModel.FilteredItems[2];
+        Assert.IsTrue(fallbackVm.SafeSlowInit());
+        fixture.CompleteSelection(fixture.ViewModel.FilteredItems[0]);
+        fixture.ViewModel.SearchTextBox = "Beta";
+        fixture.ViewModel.InvokeSecondaryCommandCommand.Execute(fixture.ViewModel.FilteredItems[0]);
+        fixture.Drain();
+        var selected = fixture.ViewModel.FilteredItems.First(item => ReferenceEquals(item.Model.Unsafe, beta));
+        var hydrated = ObserveHydration(selected);
+
+        fixture.CompleteSelection(selected);
+        try
+        {
+            await beta.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            if (filterOut)
+            {
+                beta.Title = "Unrelated";
+                selected.ApplyPendingUpdates();
+            }
+            else
+            {
+                fixture.Page.SetItems(fallback);
+                fixture.Page.Refresh(ListViewModel.IncrementalRefresh);
+            }
+
+            fixture.Drain();
+            Assert.AreSame(fallbackVm, fixture.ViewModel.FilteredItems.Single());
+            fixture.CompleteSelection(fallbackVm);
+            Assert.HasCount(0, commands.Messages);
+
+            release.Set();
+            await DrainUntilHydrated(fixture, hydrated);
+            Assert.HasCount(0, commands.Messages);
+        }
+        finally
+        {
+            release.Set();
+        }
+    }
+
+    [TestMethod]
+    public async Task DeferredSecondaryActivation_FilteredOutTargetCannotResumeWhenItReturns()
+    {
+        using var release = new ManualResetEventSlim();
+        var beta = new DeferredCommandsItem(release, new NoOpCommand()) { Title = "Beta" };
+        using var fixture = new Fixture(Item("Alpha"), beta, Item("Beta other"));
+        using var commands = new CommandObserver();
+        fixture.CompleteSelection(fixture.ViewModel.FilteredItems[0]);
+        fixture.ViewModel.SearchTextBox = "Beta";
+        fixture.ViewModel.InvokeSecondaryCommandCommand.Execute(fixture.ViewModel.FilteredItems[0]);
+        fixture.Drain();
+        var selected = fixture.ViewModel.FilteredItems.First(item => ReferenceEquals(item.Model.Unsafe, beta));
+        var hydrated = ObserveHydration(selected);
+
+        fixture.CompleteSelection(selected);
+        try
+        {
+            await beta.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            beta.Title = "Unrelated";
+            selected.ApplyPendingUpdates();
+            fixture.Drain();
+            Assert.IsFalse(fixture.ViewModel.FilteredItems.Contains(selected));
+            beta.Title = "Beta";
+            selected.ApplyPendingUpdates();
+            fixture.Drain();
+            fixture.CompleteSelection(selected);
+            release.Set();
+            await DrainUntilHydrated(fixture, hydrated);
+            Assert.IsTrue(fixture.ViewModel.CompleteStaticFilterSelection(fixture.ViewModel.PublishedFilterVersion, selected));
+
+            Assert.HasCount(0, commands.Messages);
+        }
+        finally
+        {
+            release.Set();
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public void SelectionSynchronization_AfterPointerSelection_ReleasesActivation(bool secondary, bool clearSelection)
+    {
+        var alpha = Item("Alpha");
+        var secondaryCommand = new NoOpCommand { Name = "Alpha secondary" };
+        alpha.MoreCommands = [new CommandContextItem(secondaryCommand)];
+        using var fixture = new Fixture(alpha, Item("Beta"));
+        using var commands = new CommandObserver();
+        var alphaVm = fixture.ViewModel.FilteredItems[0];
+        var betaVm = fixture.ViewModel.FilteredItems[1];
+        Assert.IsTrue(alphaVm.SafeSlowInit());
+        fixture.CompleteSelection(alphaVm);
+        fixture.ViewModel.SynchronizeSelection(betaVm);
+        Assert.IsTrue(fixture.ViewModel.CompleteStaticFilterSelection(fixture.ViewModel.PublishedFilterVersion, betaVm));
+        if (clearSelection)
+        {
+            fixture.ViewModel.SynchronizeSelection(null);
+        }
+
+        fixture.ViewModel.SearchTextBox = "a";
+        Activate(fixture, betaVm, secondary);
+        fixture.Drain();
+        Assert.HasCount(2, fixture.ViewModel.FilteredItems);
+        Assert.AreSame(alphaVm, fixture.ViewModel.FilteredItems[0]);
+        fixture.ViewModel.SynchronizeSelection(alphaVm);
+
+        Assert.IsTrue(fixture.ViewModel.CompleteStaticFilterSelection(fixture.ViewModel.PublishedFilterVersion, alphaVm));
+        Assert.HasCount(1, commands.Messages);
+        Assert.AreSame(secondary ? secondaryCommand : alpha.Command, commands.Messages[0].Command.Unsafe);
+        Assert.AreSame(alpha, commands.Messages[0].Context);
+    }
+
+    [TestMethod]
+    public void SelectionSynchronization_SameItemRefreshesOnlyWhenRequested()
+    {
+        using var fixture = new Fixture(Item("Alpha"), Item("Beta"));
+        var alpha = fixture.ViewModel.FilteredItems[0];
+        var beta = fixture.ViewModel.FilteredItems[1];
+        Assert.IsTrue(alpha.SafeSlowInit());
+        fixture.CompleteSelection(alpha);
+        var recipient = new object();
+        var updates = 0;
+        WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(recipient, (_, _) => updates++);
+        try
+        {
+            fixture.ViewModel.SynchronizeSelection(alpha);
+            Assert.AreEqual(0, updates);
+            fixture.ViewModel.SynchronizeSelection(alpha, forceUpdate: true);
+            Assert.AreEqual(1, updates);
+
+            fixture.ViewModel.UpdateSelectedItemCommand.Execute(beta);
+            fixture.ViewModel.SynchronizeSelection(alpha);
+            Assert.AreEqual(3, updates);
+            Assert.IsTrue(fixture.ViewModel.CompleteStaticFilterSelection(fixture.ViewModel.PublishedFilterVersion, alpha));
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+        }
+    }
+
+    private static Task ObserveHydration(ListItemViewModel item)
+    {
+        var hydrated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        item.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(ListItemViewModel.TextToSuggest))
+            {
+                hydrated.TrySetResult();
+            }
+        };
+        return hydrated.Task;
+    }
+
+    private static async Task DrainUntilHydrated(Fixture fixture, Task hydrated)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        while (!hydrated.IsCompleted)
+        {
+            await fixture.Ui.WhenQueued.WaitAsync(timeout.Token);
+            fixture.Ui.ExecuteAll();
         }
     }
 
@@ -293,7 +517,7 @@ public sealed partial class StaticPageFilteringTests
         public void Dispose() => WeakReferenceMessenger.Default.UnregisterAll(this);
     }
 
-    private sealed partial class DeferredCommandsItem(ManualResetEventSlim release, ICommand command) : ListItem(new NoOpCommand())
+    private sealed partial class DeferredCommandsItem(ManualResetEventSlim release, ICommand command, bool failHydration = false) : ListItem(new NoOpCommand())
     {
         internal TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -305,6 +529,11 @@ public sealed partial class StaticPageFilteringTests
                 if (!release.Wait(TimeSpan.FromSeconds(5)))
                 {
                     throw new TimeoutException("Command hydration was not released.");
+                }
+
+                if (failHydration)
+                {
+                    throw new InvalidOperationException("Command hydration failed.");
                 }
 
                 return [new CommandContextItem(command)];

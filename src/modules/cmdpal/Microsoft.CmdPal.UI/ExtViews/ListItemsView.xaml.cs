@@ -47,7 +47,6 @@ public sealed partial class ListItemsView : UserControl,
     private bool _scrollOnNextSelectionChange;
 
     private ListItemViewModel? _stickySelectedItem;
-    private ListItemViewModel? _lastPushedToVm;
     private long _pendingContextMenuOpenRequestId;
     private Action? _cancelPendingContextMenuOpen;
 
@@ -192,7 +191,7 @@ public sealed partial class ListItemsView : UserControl,
             }
 
             // Ensure the command bar refreshes with the restored page's commands.
-            PushSelectionToVm();
+            PushSelectionToVm(forceUpdate: true);
             if (!CompleteFilterSelection(viewModel, version, filterVersion) && viewModel is not null)
             {
                 ProcessItemsUpdated(viewModel, new ItemsUpdatedEventArgs(forceFirstItem: false, ensureSelectionVisible: true), version);
@@ -230,7 +229,7 @@ public sealed partial class ListItemsView : UserControl,
                 // Click-driven selection should scroll into view (but only once).
                 _scrollOnNextSelectionChange = true;
 
-                ViewModel?.UpdateSelectedItemCommand.Execute(item);
+                PushSelectionToVm(item);
                 WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
             }
         }
@@ -256,7 +255,6 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
-        var vm = ViewModel;
         var li = ItemView.SelectedItem as ListItemViewModel;
 
         // Transient null/separator selection can happen during in-place updates.
@@ -277,7 +275,7 @@ public sealed partial class ListItemsView : UserControl,
         _forceFirstPending = false;
 
         // Do not Task.Run (it reorders selection updates).
-        vm?.UpdateSelectedItemCommand.Execute(li);
+        PushSelectionToVm(li);
 
         // Only scroll when explicitly requested by navigation/click handlers.
         if (_scrollOnNextSelectionChange)
@@ -340,7 +338,7 @@ public sealed partial class ListItemsView : UserControl,
                 }
             }
 
-            ViewModel?.UpdateSelectedItemCommand.Execute(item);
+            PushSelectionToVm(item);
 
             var pos = e.GetPosition(element);
             RequestContextMenuOpen(item, element, pos);
@@ -410,27 +408,23 @@ public sealed partial class ListItemsView : UserControl,
     // Message-driven navigation should count as keyboard.
     private void MarkKeyboardNavigation() => _lastInputSource = InputSource.Keyboard;
 
-    private void PushSelectionToVm()
+    private void PushSelectionToVm(bool forceUpdate = false) => PushSelectionToVm(ItemView.SelectedItem as ListItemViewModel, forceUpdate);
+
+    private void PushSelectionToVm(ListItemViewModel? item, bool forceUpdate = false)
     {
         if (ViewModel is null)
         {
             return;
         }
 
-        if (ItemView.SelectedItem is not ListItemViewModel li || IsSeparator(li))
+        if (item is null || IsSeparator(item))
         {
-            ViewModel.UpdateSelectedItemCommand.Execute(null);
+            ViewModel.SynchronizeSelection(null);
             return;
         }
 
-        if (ReferenceEquals(_lastPushedToVm, li))
-        {
-            return;
-        }
-
-        _lastPushedToVm = li;
-        _stickySelectedItem = li;
-        ViewModel.UpdateSelectedItemCommand.Execute(li);
+        _stickySelectedItem = item;
+        ViewModel.SynchronizeSelection(item, forceUpdate);
     }
 
     public void Receive(NavigateNextCommand message)
@@ -734,11 +728,9 @@ public sealed partial class ListItemsView : UserControl,
                 old.ItemsUpdated -= @this.Page_ItemsUpdated;
             }
 
-            // Reset latched state — selection sticky/last-pushed only make sense
-            // for the previous ViewModel's items.
+            // Sticky selection belongs to the previous page.
             @this._forceFirstPending = false;
             @this._stickySelectedItem = null;
-            @this._lastPushedToVm = null;
 
             if (@this._isLoaded || e.NewValue is null)
             {
@@ -865,7 +857,6 @@ public sealed partial class ListItemsView : UserControl,
             {
                 ItemView.SelectedIndex = -1;
                 _stickySelectedItem = null;
-                _lastPushedToVm = null;
             }
 
             PushSelectionToVm();
@@ -887,7 +878,6 @@ public sealed partial class ListItemsView : UserControl,
             {
                 ItemView.SelectedIndex = -1;
                 _stickySelectedItem = null;
-                _lastPushedToVm = null;
             }
 
             PushSelectionToVm();
@@ -1066,7 +1056,7 @@ public sealed partial class ListItemsView : UserControl,
             pos = new(0, element.ActualHeight);
         }
 
-        ViewModel?.UpdateSelectedItemCommand.Execute(item);
+        PushSelectionToVm(item);
         RequestContextMenuOpen(item, element, pos);
         e.Handled = true;
     }
