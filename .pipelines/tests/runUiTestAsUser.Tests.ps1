@@ -446,17 +446,44 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
 }
 
 Describe 'UI-test pipeline non-elevated dispatch' {
-    It 'fails infrastructure instead of using the DLL when the required executable is absent' {
+    It 'fails infrastructure instead of using the DLL when <Suite> is absent' -TestCases @(
+        @{ Suite = 'CropAndLock.UITests' }
+        @{ Suite = 'Workspaces.UITests.Next' }
+    ) {
+        param($Suite)
+
         $template = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
-        $template | Should Match '\$nonElevatedSuites = @\(''CropAndLock.UITests''\)'
+        $declaration = [regex]::Match($template, '\$nonElevatedSuites = @\([^\r\n]*\)').Value
+        $declaration | Should Not BeNullOrEmpty
+        $nonElevatedSuites = @([regex]::Matches($declaration, "'([^']+)'") | ForEach-Object { $_.Groups[1].Value })
+        ($nonElevatedSuites -contains $Suite) | Should Be $true
         $dispatch = [regex]::Match($template, '(?ms)^ {10}if \(\$nonElevatedSuites -contains \$base\) \{.*?^ {10}\}').Value
         $dispatch | Should Not BeNullOrEmpty
-        $nonElevatedSuites = @('CropAndLock.UITests')
-        $base = 'CropAndLock.UITests'
+        $base = $Suite
         $exe = Join-Path $TestDrive "$base.exe"
         $dll = Join-Path $TestDrive "$base.dll"
         'not a test runner' | Set-Content -LiteralPath $dll
 
         { & ([scriptblock]::Create($dispatch)) } | Should Throw 'requires its staged executable for non-elevated dispatch'
+    }
+
+    It 'scopes Workspaces package and Quick Access signing to the selected suite' -TestCases @(
+        @{ Modules = @('Workspaces.UITests.Next'); AllModules = $false; Expected = $true }
+        @{ Modules = @('RegistryPreview.UITests'); AllModules = $false; Expected = $false }
+        @{ Modules = @(); AllModules = $true; Expected = $true }
+    ) {
+        param($Modules, $AllModules, $Expected)
+
+        $template = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
+        $signing = [regex]::Match($template, '(?ms)^ {6}if \(\$allModules -or \$selectedModules -contains ''Workspaces\.UITests\.Next''\) \{.*?^ {6}\}').Value
+        $signing | Should Not BeNullOrEmpty
+        $selectedModules = $Modules
+        $allModules = $AllModules
+        $requiredPackages = @()
+        $requiredAuthenticodeFiles = @()
+        . ([scriptblock]::Create($signing))
+
+        ($requiredPackages -contains 'Workspaces.TestApp.msix') | Should Be $Expected
+        ($requiredAuthenticodeFiles -contains 'PowerToys.QuickAccess.exe') | Should Be $Expected
     }
 }
