@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -29,6 +28,12 @@ namespace Peek.UI
         /// The minimum time in milliseconds between navigation events.
         /// </summary>
         private const int NavigationThrottleDelayMs = 100;
+
+        /// <summary>
+        /// The direction of the most recent navigation request, buffered while the
+        /// pacing timer is running. <see langword="null"/> when no navigation is pending.
+        /// </summary>
+        private NavigationDirection? _pendingNavigationDirection;
 
         /// <summary>
         /// The delay in milliseconds before a delete operation begins, to allow for navigation
@@ -124,15 +129,15 @@ namespace Peek.UI
 
         public NeighboringItemsQuery NeighboringItemsQuery { get; }
 
-        private DispatcherTimer NavigationThrottleTimer { get; set; } = new();
+        private readonly DispatcherTimer _navigationPacerTimer = new();
 
         public MainWindowViewModel(NeighboringItemsQuery query)
         {
             NeighboringItemsQuery = query;
             WindowTitle = _defaultWindowTitle;
 
-            NavigationThrottleTimer.Tick += NavigationThrottleTimer_Tick;
-            NavigationThrottleTimer.Interval = TimeSpan.FromMilliseconds(NavigationThrottleDelayMs);
+            _navigationPacerTimer.Interval = TimeSpan.FromMilliseconds(NavigationThrottleDelayMs);
+            _navigationPacerTimer.Tick += NavigationPacerTimer_Tick;
         }
 
         public void Initialize(SelectedItem selectedItem)
@@ -180,6 +185,8 @@ namespace Peek.UI
 
         public void Uninitialize()
         {
+            _navigationPacerTimer.Stop();
+            _pendingNavigationDirection = null;
             _currentIndex = DisplayIndex = 0;
             CurrentItem = null;
             _deletedItemIndexes.Clear();
@@ -189,24 +196,49 @@ namespace Peek.UI
             _isFromCli = false;
         }
 
-        public void AttemptPreviousNavigation() => Navigate(NavigationDirection.Backwards);
+        public void AttemptPreviousNavigation() => RequestNavigate(NavigationDirection.Backwards);
 
-        public void AttemptNextNavigation() => Navigate(NavigationDirection.Forwards);
+        public void AttemptNextNavigation() => RequestNavigate(NavigationDirection.Forwards);
+
+        private void RequestNavigate(NavigationDirection direction)
+        {
+            if (_isFromCli || Items is null || Items.Count == _deletedItemIndexes.Count)
+            {
+                return;
+            }
+
+            if (!_navigationPacerTimer.IsEnabled)
+            {
+                // First press or idle: Navigate immediately and start the cooldown timer.
+                Navigate(direction);
+                _navigationPacerTimer.Start();
+            }
+            else
+            {
+                // Coalesce rapid repeats/taps to a single pending navigation step.
+                _pendingNavigationDirection = direction;
+            }
+        }
+
+        private void NavigationPacerTimer_Tick(object? sender, object e)
+        {
+            if (_pendingNavigationDirection.HasValue)
+            {
+                var direction = _pendingNavigationDirection.Value;
+                _pendingNavigationDirection = null;
+
+                Navigate(direction);
+            }
+            else
+            {
+                _navigationPacerTimer.Stop();
+            }
+        }
 
         private void Navigate(NavigationDirection direction, bool isAfterDelete = false)
         {
-            if (NavigationThrottleTimer.IsEnabled)
-            {
-                return;
-            }
-
-            // TODO: implement navigation.
-            if (_isFromCli)
-            {
-                return;
-            }
-
-            if (Items == null || Items.Count == _deletedItemIndexes.Count)
+            // Check if every item in the folder/selection has been deleted.
+            if (Items is null || Items.Count == _deletedItemIndexes.Count)
             {
                 _currentIndex = DisplayIndex = 0;
                 CurrentItem = null;
@@ -219,11 +251,10 @@ namespace Peek.UI
 
             do
             {
-                _currentIndex = MathHelper.Modulo(_currentIndex + offset, Items.Count);
+                // Items cannot be null here.
+                _currentIndex = MathHelper.Modulo(_currentIndex + offset, Items!.Count);
             }
             while (_deletedItemIndexes.Contains(_currentIndex));
-
-            CurrentItem = Items[_currentIndex];
 
             // If we're navigating forwards after a delete operation, the displayed index does not
             // change, e.g. "(2/3)" becomes "(2/2)".
@@ -233,8 +264,7 @@ namespace Peek.UI
             }
 
             DisplayIndex = MathHelper.Modulo(DisplayIndex + offset, DisplayItemCount);
-
-            NavigationThrottleTimer.Start();
+            CurrentItem = Items[_currentIndex];
         }
 
         /// <summary>
@@ -261,12 +291,17 @@ namespace Peek.UI
                 return;
             }
 
-            // Update the file count and total files.
+            // Cancel any queued key-repeat navigation, as delete takes immediate priority.
+            _pendingNavigationDirection = null;
+            _navigationPacerTimer.Stop();
+
+            // Mark the item as deleted and update the displayed item count.
             int index = _currentIndex;
             _deletedItemIndexes.Add(index);
             OnPropertyChanged(nameof(DisplayItemCount));
 
-            // Attempt the deletion then navigate to the next file.
+            // Attempt the deletion then navigate to the next file. Captures item and index
+            // by value; CurrentItem may change before the delay completes.
             DispatcherQueue.GetForCurrentThread().TryEnqueue(async () =>
             {
                 await Task.Delay(DeleteDelayMs);
@@ -330,6 +365,12 @@ namespace Peek.UI
             return result;
         }
 
+        /// <summary>
+        /// Removes the item from the deleted set if the file still exists on disk, e.g.
+        /// after a cancelled or failed delete.
+        /// </summary>
+        /// <param name="item">The item to reinstate.</param>
+        /// <param name="index">The index of the item in the deleted set.</param>
         private void ReinstateDeletedFile(IFileSystemItem item, int index)
         {
             if (File.Exists(item.Path))
@@ -393,16 +434,6 @@ namespace Peek.UI
             IsErrorVisible = false;
             ErrorMessage = message;
             IsErrorVisible = true;
-        }
-
-        private void NavigationThrottleTimer_Tick(object? sender, object e)
-        {
-            if (sender == null)
-            {
-                return;
-            }
-
-            ((DispatcherTimer)sender).Stop();
         }
     }
 }
