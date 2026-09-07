@@ -250,6 +250,14 @@
   <data name="More_Options_ButtonTooltip.Text" xml:space="preserve">
     <value>More options</value>
   </data>
+  <data name="More_Options_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More options</value>
+    <comment>Accessible name for a variable or profile options button.</comment>
+  </data>
+  <data name="VariableListEntryValue.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>List entry value</value>
+    <comment>Accessible name for an editable entry in a list-valued environment variable, such as PATH.</comment>
+  </data>
   <data name="MoveDown.Text" xml:space="preserve">
     <value>Move down</value>
   </data>
