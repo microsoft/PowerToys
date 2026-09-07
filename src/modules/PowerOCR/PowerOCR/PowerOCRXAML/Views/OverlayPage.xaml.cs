@@ -30,7 +30,6 @@ public sealed partial class OverlayPage : UserControl
     private IOverlayManager? _manager;
     private DisplayCapture? _capture;
     private SettingsDeepLink? _settingsDeepLink;
-    private InputCursor? _selectionCursor;
     private IDisposable? _cursorClipLease;
     private Pointer? _activePointer;
 
@@ -101,9 +100,6 @@ public sealed partial class OverlayPage : UserControl
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         CancelSelection();
-        ProtectedCursor = null;
-        _selectionCursor?.Dispose();
-        _selectionCursor = null;
     }
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -410,25 +406,6 @@ public sealed partial class OverlayPage : UserControl
         }
 
         e.Handled = true;
-    }
-
-    private void Canvas_PointerEntered(object sender, PointerRoutedEventArgs e)
-    {
-        if (e.Pointer.PointerDeviceType != PointerDeviceType.Mouse)
-        {
-            return;
-        }
-
-        _selectionCursor ??= InputSystemCursor.Create(InputSystemCursorShape.Cross);
-        ProtectedCursor = _selectionCursor;
-    }
-
-    private void Canvas_PointerExited(object sender, PointerRoutedEventArgs e)
-    {
-        if (e.Pointer.PointerDeviceType == PointerDeviceType.Mouse)
-        {
-            ProtectedCursor = null;
-        }
     }
 
     private void ContextMenuFlyout_Opening(object sender, object e)

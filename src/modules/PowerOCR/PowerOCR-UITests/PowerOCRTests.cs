@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
+using System.Drawing;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.PowerToys.UITest.UITestBase;
@@ -318,6 +320,127 @@ public class PowerOCRTests : UITestBase
 
         var windowsAfterEscape = FindAll<Element>(By.AccessibilityId("TextExtractorWindow"), 2000, true);
         Assert.AreEqual(0, windowsAfterEscape.Count, "TextExtractor window should be dismissed after pressing Escape");
+    }
+
+    [TestMethod("PowerOCR.CursorStaysCrossDuringPointerMovement")]
+    [TestCategory("PowerOCR Selection")]
+    [DoNotParallelize]
+    public void CursorStaysCrossDuringPointerMovementTest()
+    {
+        const int sweepCount = 3;
+        const int stepsPerSweep = 60;
+        var originalCursor = CursorStateReader.Read();
+        var expectedCursor = System.Windows.Forms.Cursors.Cross.Handle;
+
+        try
+        {
+            SendKeys(Key.Win, Key.Shift, Key.T);
+            var overlay = Find<Pane>(By.AccessibilityId("TextExtractorWindow"), 10000, true);
+            Assert.IsNotNull(overlay.Rect, "The overlay should expose selection bounds.");
+            var bounds = overlay.Rect.Value;
+            Assert.IsTrue(bounds.Width >= 400 && bounds.Height >= 400, "The overlay must have room for an interior pointer sweep.");
+            Assert.AreEqual(System.Windows.Forms.MouseButtons.None, System.Windows.Forms.Control.MouseButtons, "Pointer sweeps must start without a pressed mouse button.");
+
+            // Stay below the toolbar and away from monitor edges; their cursor changes are intentional.
+            var interior = new Rectangle(bounds.Left + (bounds.Width / 4), bounds.Top + (bounds.Height / 2), bounds.Width / 2, bounds.Height / 4);
+            int startX = interior.Left + 1;
+            int startY = interior.Top + (interior.Height / 2);
+            Session.MoveMouseTo(startX, startY, msPreAction: 0, msPostAction: 0);
+            Assert.IsTrue(
+                SpinWait.SpinUntil(
+                    () =>
+                    {
+                        var cursor = CursorStateReader.Read();
+                        return cursor.IsVisible && cursor.Handle == expectedCursor && cursor.Position == new Point(startX, startY);
+                    },
+                    TimeSpan.FromSeconds(5)),
+                "The selection surface should display the system cross cursor before sweeping.");
+
+            using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+            using var samplingStarted = new ManualResetEventSlim();
+            var token = cancellation.Token;
+            string? samplingFailure = null;
+            int sampleCount = 0;
+            var sampledPositions = new HashSet<Point>();
+            var sampler = new Thread(() =>
+            {
+                var timer = Stopwatch.StartNew();
+                samplingStarted.Set();
+                try
+                {
+                    while (!token.IsCancellationRequested)
+                    {
+                        var cursor = CursorStateReader.Read();
+                        if (interior.Contains(cursor.Position))
+                        {
+                            sampleCount++;
+                            sampledPositions.Add(cursor.Position);
+                            if (!cursor.IsVisible || cursor.Handle != expectedCursor)
+                            {
+                                samplingFailure = $"Cursor changed at {timer.Elapsed.TotalMilliseconds:F3} ms, position ({cursor.Position.X}, {cursor.Position.Y}): expected 0x{expectedCursor.ToInt64():X}, observed 0x{cursor.Handle.ToInt64():X}, visible={cursor.IsVisible}, sample {sampleCount}.";
+                                return;
+                            }
+                        }
+
+                        // Sample through the dwell and movement: a settled screenshot misses transient resets.
+                        Thread.Yield();
+                    }
+                }
+                catch (Exception exception)
+                {
+                    samplingFailure = $"Cursor sampling failed: {exception}";
+                }
+            })
+            {
+                IsBackground = true,
+            };
+            sampler.Start();
+
+            int completedSteps = 0;
+            try
+            {
+                Assert.IsTrue(samplingStarted.Wait(TimeSpan.FromSeconds(2)), "Cursor sampling should start before pointer movement.");
+
+                // Keep sampling while hover timers elapse, including the root accelerator's automatic tooltip.
+                // Join returns early if sampling detects a failure; otherwise the pointer dwells for 1.5 seconds.
+                _ = sampler.Join(TimeSpan.FromMilliseconds(1500));
+                for (int sweep = 0; sweep < sweepCount && sampler.IsAlive; sweep++)
+                {
+                    for (int step = 0; step <= stepsPerSweep && sampler.IsAlive; step++)
+                    {
+                        int offset = (interior.Width - 3) * step / stepsPerSweep;
+                        int x = sweep % 2 == 0 ? startX + offset : interior.Right - 2 - offset;
+                        Session.MoveMouseTo(x, startY, msPreAction: 0, msPostAction: 0);
+                        completedSteps++;
+                        Thread.Sleep(10);
+                    }
+                }
+            }
+            finally
+            {
+                cancellation.Cancel();
+                Assert.IsTrue(sampler.Join(TimeSpan.FromSeconds(5)), "Cursor sampling should stop after the pointer sweep.");
+            }
+
+            Assert.IsNull(samplingFailure, samplingFailure);
+            Assert.AreEqual(sweepCount * (stepsPerSweep + 1), completedSteps, "All three pointer sweeps should finish before the sampling deadline.");
+            Assert.IsTrue(sampleCount >= 100, $"The pointer sweep should collect enough visible cursor samples; observed {sampleCount}.");
+            Assert.IsTrue(sampledPositions.Count >= 20, $"Cursor samples should cover moving positions, not just the final frame; observed {sampledPositions.Count}.");
+        }
+        finally
+        {
+            try
+            {
+                if (FindAll<Element>(By.AccessibilityId("TextExtractorWindow"), 1000, true).Count > 0)
+                {
+                    SendKeys(Key.Esc);
+                }
+            }
+            finally
+            {
+                Session.MoveMouseTo(originalCursor.Position.X, originalCursor.Position.Y, msPreAction: 0, msPostAction: 0);
+            }
+        }
     }
 
     [TestMethod("PowerOCR.TextSelectionAndClipboardTest")]

@@ -15,6 +15,11 @@
    - [ ] Open the language ComboBox or context menu and verify the first Escape closes only the popup and the second closes the overlay.
    - [ ] Perform a fast drag and verify OCR uses the release point rather than the last rendered selection-border position.
    - [ ] Cancel or close the overlay while dragging and verify the cursor is no longer confined afterward.
+   - [ ] Leave the mouse still inside the selection surface for at least 1.5 seconds, then move it repeatedly without pressing a button; verify the cross cursor never flashes back to the underlying application's cursor during either the dwell or movement, and no automatic Escape tooltip appears over the selection surface.
+   - [ ] Move from the selection surface onto every toolbar control and back; verify controls use their normal cursor and the surface returns to a stable cross cursor.
+   - [ ] Open and dismiss the language ComboBox and context menu, then repeat the mouse-up sweep on the selection surface.
+   - [ ] After a blank capture error, repeat the mouse-up sweep without dismissing the error InfoBar.
+   - [ ] Close and reopen the overlay, then repeat the mouse-up sweep to check cursor initialization and cleanup.
    - [x] Try to select a different OCR language by right-clicking and verify the change is applied.
    - [ ] Toggle Single-line mode via `SingleLineToggleButton`; verify the button reports Selected = true.
    - [ ] Toggle Table mode via `TableToggleButton`; verify the button reports Selected = true.
