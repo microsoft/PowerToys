@@ -69,6 +69,7 @@ namespace Microsoft.CropAndLock.UITests
         [TestMethod]
         public void SettingsToggleStopsAndStartsModule()
         {
+            SigningPrerequisites.RequireSettingsClient();
             PrepareModule();
             lifecycleToggle = Find<ToggleSwitch>(By.Name("Crop And Lock"));
             originalToggleState = lifecycleToggle.IsOn;

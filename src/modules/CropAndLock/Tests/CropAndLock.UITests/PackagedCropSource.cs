@@ -30,6 +30,7 @@ namespace Microsoft.CropAndLock.UITests
         {
             var packagePath = Path.Combine(AppContext.BaseDirectory, "CropAndLock.TestApp.msix");
             Assert.IsTrue(File.Exists(packagePath), $"The signed packaged fixture was not staged: {packagePath}.");
+            SigningPrerequisites.RequirePackage(packagePath);
             ReclaimPreviousRun(context);
 
             context.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Installing signed fixture for the current user: {packagePath}");

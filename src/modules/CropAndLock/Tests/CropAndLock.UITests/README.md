@@ -12,6 +12,31 @@ using `Microsoft.PowerToys.UITest.Next` and the real Runner hotkeys.
 | Additional lifecycle coverage | `SettingsToggleStopsAndStartsModule` |
 | Additional cancellation coverage | `EscapeCancelsSelectionWithoutChangingSource` |
 
+## Local Test Explorer
+
+Run Visual Studio/Test Explorer non-elevated on an English interactive desktop.
+A normal developer build produces an **unsigned** fixture, and unsigned Settings
+is rejected by Release Runner's authenticated IPC. These are setup requirements,
+not failures of the crop scenarios.
+
+For ordinary local runs, the two packaged scenarios and the authenticated Settings
+lifecycle scenario now check signing before installing the fixture or changing the
+toggle. If a trusted signature is unavailable, they report **Inconclusive/Skipped**
+with the missing file and setup instructions. The remaining scenarios and helper
+checks still run. The lifecycle scenario deliberately requires the authenticated
+signing setup rather than inferring it from the test project's Debug/Release
+configuration, since tests can target a different product build.
+
+To run those cases too, prepare the signed fixture and matching trusted
+Runner/Settings environment described below, then rerun them. The tests never
+install certificates or alter host trust automatically; isolated VM validation is
+recommended for disposable test signing.
+
+CI and pipeline-like VM runs (`TF_BUILD`/`platform`, as defined by the shared
+harness) remain **strict**: missing signing fails instead of skipping. Corrupt
+signatures and actual installation, lifecycle, pixel, or input failures are not
+converted into skips.
+
 ## Fixtures and prerequisites
 
 - Run in an unlocked, English-language standard-user desktop with PowerToys,
@@ -79,6 +104,8 @@ geometry, content and input after closing it.
 Failure media is captured before custom cleanup closes any diagnostic windows.
 Four additional pixel-comparison tests cover dimension diagnostics, repeated
 comparisons, blank-image rejection, and changed foreground content.
+Four signing-policy checks cover local skips, strict CI failures, trusted signing,
+and rejection of corrupt signatures.
 
 ### Why not Windows Settings?
 
@@ -90,7 +117,7 @@ acknowledges that some apps do not support reparenting.
 
 The suite therefore uses a deterministic **packaged desktop app**, preserving all
 pixel, live-update, interaction and parent/style/restoration assertions. It does
-not skip packaged coverage, lower comparison thresholds, or claim that UWP
+not skip prepared/CI packaged coverage, lower comparison thresholds, or claim that UWP
 Windows Settings supports reparenting. UWP-specific compatibility remains outside
 this fixture's coverage.
 
@@ -152,8 +179,9 @@ Copy-VMFile -VMName $vm -SourcePath $certificate `
 Package/deploy the signed files with the local-VM controller after this step.
 Repeat signing after every rebuild or restaging that replaces the package or
 companions. `-SkipLocalTrust` can report an untrusted signature on the host; the
-guest must trust it. Skipping this step makes the packaged cases fail at
-`AddPackageAsync`, and unsigned Release companions reject Settings IPC.
+guest must trust it. Missing this setup skips only the signing-dependent scenarios
+in local Test Explorer and fails the prerequisite in CI; unsigned Release
+companions cannot exercise authenticated Settings IPC.
 After validation, remove the session-added certificate thumbprint from the guest
 Root/TrustedPeople stores; do not remove pre-existing certificates.
 
@@ -165,6 +193,6 @@ Run the staged executable **inside the UI-test VM**, not on a working desktop:
 
 For a focused iteration, add
 `--filter "FullyQualifiedName~ThumbnailWin32ShowsSelectedRegionAndLiveUpdates"`.
-Validate the same complete ten-test executable (six UI scenarios and four
-pixel-comparison checks) on Windows 10 and Windows 11, recording the actual
+Validate the same complete fourteen-test executable (six UI scenarios, four
+pixel-comparison checks and four signing-policy checks) on Windows 10 and Windows 11, recording the actual
 Windows edition/build. A build or a focused run alone is not end-to-end sign-off.
