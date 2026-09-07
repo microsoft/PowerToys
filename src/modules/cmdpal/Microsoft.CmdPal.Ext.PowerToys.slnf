@@ -24,6 +24,9 @@
       "src\\modules\\cmdpal\\extensionsdk\\Microsoft.CommandPalette.Extensions\\Microsoft.CommandPalette.Extensions.vcxproj",
       "src\\modules\\colorPicker\\ColorPicker.ModuleServices\\ColorPicker.ModuleServices.csproj",
       "src\\modules\\fancyzones\\FancyZonesEditorCommon\\FancyZonesEditorCommon.csproj",
+      "src\\modules\\powerdisplay\\PowerDisplay.Cli.UnitTests\\PowerDisplay.Cli.UnitTests.csproj",
+      "src\\modules\\powerdisplay\\PowerDisplay.Cli\\PowerDisplay.Cli.csproj",
+      "src\\modules\\powerdisplay\\PowerDisplay.Contracts\\PowerDisplay.Contracts.csproj",
       "src\\modules\\powerdisplay\\PowerDisplay.Lib\\PowerDisplay.Lib.csproj",
       "src\\settings-ui\\Settings.UI.Library\\Settings.UI.Library.csproj"
     ]

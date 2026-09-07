@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
@@ -17,9 +18,22 @@ namespace PowerToysExtension;
 public partial class PowerToysExtensionCommandsProvider : CommandProvider
 {
     private readonly ICommandItem[] _commands;
+    private readonly IPowerDisplayCliService _powerDisplayCliService;
+    private readonly CancellationTokenSource _lifetimeCancellationSource = new();
+    private readonly CancellationToken _lifetimeCancellationToken;
+    private PowerDisplayProfileCommandResolver _powerDisplayProfileResolver;
+    private int _disposed;
 
     public PowerToysExtensionCommandsProvider()
+        : this(new PowerDisplayCliService())
     {
+    }
+
+    internal PowerToysExtensionCommandsProvider(IPowerDisplayCliService powerDisplayCliService)
+    {
+        _powerDisplayCliService = powerDisplayCliService ?? throw new ArgumentNullException(nameof(powerDisplayCliService));
+        _lifetimeCancellationToken = _lifetimeCancellationSource.Token;
+        _powerDisplayProfileResolver = new(_powerDisplayCliService, _lifetimeCancellationToken);
         DisplayName = Resources.PowerToys_DisplayName;
         Icon = PowerToysResourcesHelper.ProviderIcon();
         _commands = [
@@ -36,7 +50,26 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
 
     public override ICommandItem[] TopLevelCommands()
     {
+        // The host restores pinned commands and dock items after requesting top-level commands.
+        // Share their metadata query for this load, without retaining it across provider reloads.
+        // Overlapping host reloads can still hold items from the previous batch. Let their
+        // queries finish as well; all batches share the extension's shutdown token.
+        Volatile.Write(ref _powerDisplayProfileResolver, new(_powerDisplayCliService, _lifetimeCancellationToken));
         return _commands;
+    }
+
+    public override void Dispose()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) == 0)
+        {
+            SettingsChangeNotifier.SettingsChanged -= RaiseModuleItemsChanged;
+            KeyboardManagerStateService.StatusChanged -= RaiseModuleItemsChanged;
+            _lifetimeCancellationSource.Cancel();
+            _lifetimeCancellationSource.Dispose();
+            base.Dispose();
+        }
+
+        GC.SuppressFinalize(this);
     }
 
     public override IFallbackCommandItem[] FallbackCommands()
@@ -68,7 +101,7 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
             }
         }
 
-        return TryGetFancyZonesCommandItem(id);
+        return TryGetFancyZonesCommandItem(id) ?? TryGetPowerDisplayProfileCommandItem(id);
     }
 
     private void RaiseModuleItemsChanged()
@@ -117,5 +150,16 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
         {
             Subtitle = FancyZonesContextHelper.FormatApplyToMonitorTitle(monitor),
         };
+    }
+
+    private ICommandItem? TryGetPowerDisplayProfileCommandItem(string id)
+    {
+        if (!PowerDisplayCommandIds.TryParseApplyProfileCommandId(id, out var profileId) ||
+            !ModuleEnablementService.IsKeyEnabled("PowerDisplay"))
+        {
+            return null;
+        }
+
+        return Volatile.Read(ref _powerDisplayProfileResolver).GetCommandItem(profileId);
     }
 }

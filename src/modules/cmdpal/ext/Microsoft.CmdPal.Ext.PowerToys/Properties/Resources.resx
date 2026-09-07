@@ -486,6 +486,112 @@
   <data name="PowerRename_Settings_Subtitle" xml:space="preserve">
     <value>Open PowerRename settings</value>
   </data>
+  <!-- Power Display Module -->
+  <data name="PowerDisplay_DisplayName" xml:space="preserve">
+    <value>Power Display</value>
+  </data>
+  <data name="PowerDisplay_Profiles_Title" xml:space="preserve">
+    <value>Power Display: Profiles</value>
+  </data>
+  <data name="PowerDisplay_Profiles_Subtitle" xml:space="preserve">
+    <value>View and apply saved Power Display profiles</value>
+  </data>
+  <data name="PowerDisplay_Settings_Subtitle" xml:space="preserve">
+    <value>Open Power Display settings</value>
+  </data>
+  <data name="PowerDisplay_Profile_Title_Format" xml:space="preserve">
+    <value>{0} (#{1})</value>
+  </data>
+  <data name="PowerDisplay_Profile_FallbackName" xml:space="preserve">
+    <value>Power Display profile</value>
+  </data>
+  <data name="PowerDisplay_Profile_FallbackSubtitle" xml:space="preserve">
+    <value>Apply this saved Power Display profile</value>
+  </data>
+  <data name="PowerDisplay_Profile_Loading" xml:space="preserve">
+    <value>Loading profile details…</value>
+  </data>
+  <data name="PowerDisplay_Profile_DetailsUnavailable" xml:space="preserve">
+    <value>Profile details couldn't be loaded. You can still try applying this profile.</value>
+  </data>
+  <data name="PowerDisplay_Profile_OneMonitor" xml:space="preserve">
+    <value>1 monitor</value>
+  </data>
+  <data name="PowerDisplay_Profile_MonitorCount_Format" xml:space="preserve">
+    <value>{0} monitors</value>
+  </data>
+  <data name="PowerDisplay_Profile_Modified_Format" xml:space="preserve">
+    <value>Modified {0}</value>
+  </data>
+  <data name="PowerDisplay_Profile_ModifiedUnknown" xml:space="preserve">
+    <value>Modified time unavailable</value>
+  </data>
+  <data name="PowerDisplay_NoProfiles_Title" xml:space="preserve">
+    <value>No saved profiles</value>
+  </data>
+  <data name="PowerDisplay_NoProfiles_Subtitle" xml:space="preserve">
+    <value>Open Power Display settings to create a profile</value>
+  </data>
+  <data name="PowerDisplay_Retry" xml:space="preserve">
+    <value>Retry loading profiles</value>
+  </data>
+  <data name="PowerDisplay_Refresh" xml:space="preserve">
+    <value>Refresh profiles</value>
+  </data>
+  <data name="PowerDisplay_LoadError_Title" xml:space="preserve">
+    <value>Couldn't load Power Display profiles</value>
+  </data>
+  <data name="PowerDisplay_LoadError_Argument" xml:space="preserve">
+    <value>Power Display rejected the request. Select to try again.</value>
+  </data>
+  <data name="PowerDisplay_LoadError_Timeout" xml:space="preserve">
+    <value>Power Display didn't respond in time. Select to try again.</value>
+  </data>
+  <data name="PowerDisplay_LoadError_Internal" xml:space="preserve">
+    <value>Power Display couldn't process the request. Select to try again.</value>
+  </data>
+  <data name="PowerDisplay_LoadError_ProviderUnavailable" xml:space="preserve">
+    <value>Power Display isn't running. Select to try again.</value>
+  </data>
+  <data name="PowerDisplay_LoadError_MissingCli" xml:space="preserve">
+    <value>The Power Display command-line tool isn't available. Select to try again.</value>
+  </data>
+  <data name="PowerDisplay_LoadError_InvalidResponse" xml:space="preserve">
+    <value>Power Display returned an invalid response. Select to try again.</value>
+  </data>
+  <data name="PowerDisplay_LoadError_Cancelled" xml:space="preserve">
+    <value>Loading was cancelled. Select to try again.</value>
+  </data>
+  <data name="PowerDisplay_LoadError_Process" xml:space="preserve">
+    <value>The Power Display command-line tool couldn't be started. Select to try again.</value>
+  </data>
+  <data name="PowerDisplay_Apply_Processed_Format" xml:space="preserve">
+    <value>Power Display processed the “{0}” profile. Unsupported or unavailable monitor settings may have been skipped.</value>
+  </data>
+  <data name="PowerDisplay_Apply_ArgumentError" xml:space="preserve">
+    <value>This Power Display profile is no longer available.</value>
+  </data>
+  <data name="PowerDisplay_Apply_TimeoutError" xml:space="preserve">
+    <value>Power Display didn't respond in time while processing the profile.</value>
+  </data>
+  <data name="PowerDisplay_Apply_InternalError" xml:space="preserve">
+    <value>Power Display couldn't process the profile.</value>
+  </data>
+  <data name="PowerDisplay_Apply_ProviderUnavailableError" xml:space="preserve">
+    <value>Power Display isn't running.</value>
+  </data>
+  <data name="PowerDisplay_Apply_MissingCliError" xml:space="preserve">
+    <value>The Power Display command-line tool isn't available.</value>
+  </data>
+  <data name="PowerDisplay_Apply_InvalidResponseError" xml:space="preserve">
+    <value>Power Display returned an invalid response.</value>
+  </data>
+  <data name="PowerDisplay_Apply_CancelledError" xml:space="preserve">
+    <value>Processing the Power Display profile was cancelled.</value>
+  </data>
+  <data name="PowerDisplay_Apply_ProcessError" xml:space="preserve">
+    <value>The Power Display command-line tool couldn't process the profile.</value>
+  </data>
   <!-- PowerToys Run Module -->
   <data name="PowerToysRun_Settings_Subtitle" xml:space="preserve">
     <value>Open PowerToys Run settings</value>

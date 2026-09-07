@@ -43,6 +43,7 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly FallbackUpdateManager _fallbackUpdateManager;
     private readonly ThrottledDebouncedAction _refreshThrottledDebouncedAction;
     private readonly TopLevelCommandManager _tlcManager;
+    private readonly MainListPageCommandCatalog _commandCatalog;
     private readonly AliasManager _aliasManager;
     private readonly ISettingsService _settingsService;
     private readonly IAppStateService _appStateService;
@@ -83,6 +84,8 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
+    private long _filteredCommandGeneration = -1;
+    private volatile bool _disposed;
 
     // Last per-provider settings we reacted to, so a settings reload can tell whether any
     // provider's search weight actually changed and only then re-rank the active query.
@@ -126,13 +129,14 @@ public sealed partial class MainListPage : DynamicListPage,
         _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateService.State.RecentCommands, _fuzzyMatcherProvider.Current, ResolveProviderSearchWeight);
         _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, _settingsService.Settings.FallbackRanks);
 
-        _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
-        _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
-        _tlcManager.PinnedCommands.CollectionChanged += PinnedCommands_CollectionChanged;
-
         _refreshThrottledDebouncedAction = new ThrottledDebouncedAction(
             () =>
             {
+                if (_disposed)
+                {
+                    return;
+                }
+
                 try
                 {
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
@@ -177,6 +181,13 @@ public sealed partial class MainListPage : DynamicListPage,
         _settingsService.SettingsChanged += SettingsChangedHandler;
         HotReloadSettings(_settingsService.Settings);
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
+        lock (_tlcManager.TopLevelCommands)
+        {
+            _commandCatalog = new MainListPageCommandCatalog(_tlcManager.TopLevelCommands, CommandCatalogChanged);
+        }
+
+        _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
+        _tlcManager.PinnedCommands.CollectionChanged += PinnedCommands_CollectionChanged;
 
         IsLoading = true;
     }
@@ -199,26 +210,22 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private void PinnedCommands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        _defaultViewDirty = true;
-        RaiseItemsChanged();
+        _commandCatalog.Invalidate();
     }
 
-    private void Commands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    private void CommandCatalogChanged()
     {
         _defaultViewDirty = true;
-        _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
-        if (_includeApps != _filteredItemsIncludesApps)
-        {
-            ReapplySearchInBackground();
-        }
-        else
-        {
-            RequestRefresh(fullRefresh: false);
-        }
+        ReapplySearchInBackground();
     }
 
     private void RequestRefresh(bool fullRefresh, TimeSpan? interval = null)
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         if (fullRefresh)
         {
             _fullRefreshRequested.Set();
@@ -229,6 +236,11 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private void ReapplySearchInBackground()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         _refreshRequested.Set();
         if (!_refreshRunning.Set())
         {
@@ -245,9 +257,15 @@ public sealed partial class MainListPage : DynamicListPage,
             do
             {
                 _refreshRequested.Clear();
+
+                // Read provider state before taking the commands lock: provider reloads take
+                // those locks in that order, including while item metadata arrives asynchronously.
+                var includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
                 lock (_tlcManager.TopLevelCommands)
                 {
-                    if (_filteredItemsIncludesApps == _includeApps)
+                    _includeApps = includeApps;
+                    if (_disposed || (_filteredItemsIncludesApps == _includeApps
+                        && _commandCatalog.IsCurrent(_filteredCommandGeneration)))
                     {
                         break;
                     }
@@ -265,7 +283,7 @@ public sealed partial class MainListPage : DynamicListPage,
         finally
         {
             _refreshRunning.Clear();
-            if (_refreshRequested.Value && _refreshRunning.Set())
+            if (!_disposed && _refreshRequested.Value && _refreshRunning.Set())
             {
                 _ = Task.Run(RunRefreshLoop);
             }
@@ -510,15 +528,20 @@ public sealed partial class MainListPage : DynamicListPage,
     private void UpdateSearchTextCore(string oldSearch, string newSearch, bool isUserInput)
     {
         var stopwatch = Stopwatch.StartNew();
-
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
-        _cancellationTokenSource = new CancellationTokenSource();
-
-        var token = _cancellationTokenSource.Token;
-        if (token.IsCancellationRequested)
+        CancellationToken token;
+        lock (_tlcManager.TopLevelCommands)
         {
-            return;
+            // Metadata refreshes can race a keystroke. A delayed refresh must not cancel or
+            // publish over the newer query, and CTS replacement must be serialized with disposal.
+            if (_disposed || !string.Equals(newSearch, SearchText, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = new CancellationTokenSource();
+            token = _cancellationTokenSource.Token;
         }
 
         // Handle changes to the filter text here
@@ -564,6 +587,7 @@ public sealed partial class MainListPage : DynamicListPage,
         IReadOnlyList<IListItem> fallbackSource;
         IListItem[] globalFallbackSources;
         bool includeAppsSnapshot;
+        long commandGeneration;
         bool tookFullCatalog = false;
 
         // ===== SNAPSHOT PHASE (under lock) =====
@@ -607,6 +631,7 @@ public sealed partial class MainListPage : DynamicListPage,
             if (string.IsNullOrWhiteSpace(newSearch))
             {
                 _filteredItemsIncludesApps = _includeApps;
+                _commandCatalog.Snapshot(null, -1, out _filteredCommandGeneration);
                 ClearResults();
 
                 // Drop any pending settled-search telemetry so a cleared query never emits.
@@ -620,11 +645,11 @@ public sealed partial class MainListPage : DynamicListPage,
 
             includeAppsSnapshot = _includeApps;
 
-            // A query that doesn't extend the old one, or a change in app inclusion, means we
-            // can't re-use the previous results and have to rebuild from the full catalog. On an
-            // extend we re-score only the previously matched subset.
+            // Reuse the matched subset only for an extended query against the same catalog.
+            // Changed metadata can make an excluded command match, even with unchanged input.
             var reset = !newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase)
-                || _filteredItemsIncludesApps != includeAppsSnapshot;
+                || _filteredItemsIncludesApps != includeAppsSnapshot
+                || !_commandCatalog.IsCurrent(_filteredCommandGeneration);
 
             var prevFilteredItems = reset ? null : _filteredItems;
             var prevApps = reset ? null : _filteredApps;
@@ -687,7 +712,10 @@ public sealed partial class MainListPage : DynamicListPage,
 
             // Materialize every source while still under the lock, so the scoring passes never
             // touch the live TopLevelCommands collection or the app provider.
-            itemsSource = MaterializeSource(newFilteredItems);
+            itemsSource = _commandCatalog.Snapshot(
+                tookFullCatalog ? null : newFilteredItems,
+                _filteredCommandGeneration,
+                out commandGeneration);
             appsSource = MaterializeSource(newApps);
             fallbackSource = MaterializeSource(newFallbacks);
             globalFallbackSources = [.. specialFallbacks];
@@ -763,11 +791,13 @@ public sealed partial class MainListPage : DynamicListPage,
         {
             // A newer keystroke cancels this token before doing its own work, so a stale snapshot
             // can never overwrite a newer query's results.
-            if (token.IsCancellationRequested)
+            if (token.IsCancellationRequested || !_commandCatalog.IsCurrent(commandGeneration)
+                || !string.Equals(newSearch, SearchText, StringComparison.Ordinal))
             {
                 return;
             }
 
+            _filteredCommandGeneration = commandGeneration;
             if (tookFullCatalog)
             {
                 _filteredItemsIncludesApps = includeAppsSnapshot;
@@ -1080,13 +1110,20 @@ public sealed partial class MainListPage : DynamicListPage,
 
     public void Dispose()
     {
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
+        lock (_tlcManager.TopLevelCommands)
+        {
+            _disposed = true;
+            _commandCatalog.Dispose();
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = null;
+        }
+
+        _refreshThrottledDebouncedAction.Dispose();
         _fallbackUpdateManager.Dispose();
         _searchTelemetry.Dispose();
 
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
-        _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
         _tlcManager.PinnedCommands.CollectionChanged -= PinnedCommands_CollectionChanged;
 
         AllAppsCommandProvider.Page.PropChanged -= AllApps_PropChanged;

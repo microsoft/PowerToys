@@ -22,6 +22,7 @@ internal static class ModuleCommandCatalog
         new AdvancedPasteModuleCommandProvider(),
         new WorkspacesModuleCommandProvider(),
         new LightSwitchModuleCommandProvider(),
+        new PowerDisplayModuleCommandProvider(),
         new PowerToysRunModuleCommandProvider(),
         new ScreenRulerModuleCommandProvider(),
         new ShortcutGuideModuleCommandProvider(),

@@ -260,9 +260,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     {
         if (!string.IsNullOrEmpty(e.PropertyName))
         {
-            PropChanged?.Invoke(this, new PropChangedEventArgs(e.PropertyName));
-
-            if (e.PropertyName is nameof(CommandItemViewModel.Title) or nameof(CommandItemViewModel.Name))
+            if (e.PropertyName is nameof(CommandItemViewModel.Title) or nameof(CommandItemViewModel.Name) or nameof(CommandItemViewModel.Command))
             {
                 _titleCache.Invalidate();
             }
@@ -291,6 +289,10 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
                     OnPropertyChanged(nameof(CommandItem.DataPackage));
                 });
             }
+
+            // Search subscribers may immediately snapshot and score this item. Forward only after
+            // its cached targets and command identity reflect the updated model.
+            PropChanged?.Invoke(this, new PropChangedEventArgs(e.PropertyName));
         }
     }
 
