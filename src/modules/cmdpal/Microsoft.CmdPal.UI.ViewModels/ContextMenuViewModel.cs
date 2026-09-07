@@ -6,11 +6,9 @@ using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
 
@@ -21,7 +19,7 @@ public partial class ContextMenuViewModel : ObservableObject,
 {
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
 
-    public ICommandBarContext? SelectedItem
+    public IContextMenuContext? SelectedItem
     {
         get => field;
         set
@@ -141,44 +139,9 @@ public partial class ContextMenuViewModel : ObservableObject,
         return m > c ? m : c;
     }
 
-    /// <summary>
-    /// Generates a mapping of key -> command item for this particular item's
-    /// MoreCommands. (This won't include the primary Command, but it will
-    /// include the secondary one). This map can be used to quickly check if a
-    /// shortcut key was pressed. In case there are duplicate keybindings, the first
-    /// one is used and the rest are ignored.
-    /// </summary>
-    /// <returns>a dictionary of KeyChord -> Context commands, for all commands
-    /// that have a shortcut key set.</returns>
-    private Dictionary<KeyChord, CommandContextItemViewModel> Keybindings()
-    {
-        var result = new Dictionary<KeyChord, CommandContextItemViewModel>();
-
-        var menu = CurrentContextMenu;
-        if (menu is null)
-        {
-            return result;
-        }
-
-        foreach (var item in menu)
-        {
-            if (item is CommandContextItemViewModel cmd && cmd.HasRequestedShortcut)
-            {
-                var key = cmd.RequestedShortcut ?? new KeyChord(0, 0, 0);
-                var added = result.TryAdd(key, cmd);
-                if (!added)
-                {
-                    CoreLogger.LogWarning($"Ignoring duplicate keyboard shortcut {KeyChordHelpers.FormatForDebug(key)} on command '{cmd.Title ?? cmd.Name ?? "(unknown)"}'");
-                }
-            }
-        }
-
-        return result;
-    }
-
     public ContextKeybindingResult? CheckKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
     {
-        var keybindings = Keybindings();
+        var keybindings = IContextMenuContext.CreateKeybindings(CurrentContextMenu);
 
         // Does the pressed key match any of the keybindings?
         var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
@@ -249,7 +212,7 @@ public partial class ContextMenuViewModel : ObservableObject,
             return ContextKeybindingResult.Unhandled;
         }
 
-        if (command.HasMoreCommands)
+        if (command.HasSubmenu)
         {
             // Display the commands child commands
             PushContextStack(command.AllCommands);
