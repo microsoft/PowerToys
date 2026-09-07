@@ -217,7 +217,7 @@ jobs:
       $allModules = [string]::IsNullOrWhiteSpace($modulesRaw)
       $requiresModernContextMenu = '$(TestPlatform)' -ne 'x64Win10'
       $requiresPowerRename = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename' }).Count -gt 0
-      $requiresAuthenticatedSettingsIpc = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename|MouseUtils|PowerAccent|ColorPicker|Hosts|RegistryPreview' }).Count -gt 0
+      $requiresAuthenticatedSettingsIpc = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename|MouseUtils|PowerAccent|ColorPicker|Hosts|RegistryPreview|CropAndLock' }).Count -gt 0
       $requiredPackages = @()
       $requiredAuthenticodeFiles = @()
       $certificateMarkerPath = "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
@@ -228,6 +228,10 @@ jobs:
 
       if ($requiresModernContextMenu -and $requiresPowerRename) {
         $requiredPackages += 'PowerRenameContextMenuPackage.msix'
+      }
+
+      if ($allModules -or @($selectedModules | Where-Object { $_ -match 'CropAndLock' }).Count -gt 0) {
+        $requiredPackages += 'CropAndLock.TestApp.msix'
       }
 
       if ($requiresAuthenticatedSettingsIpc) {
@@ -340,6 +344,7 @@ jobs:
       $resultsDir = "$(Common.TestResultsDirectory)"
       New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
 
+      $nonElevatedSuites = @('CropAndLock.UITests')
       $failed = 0
       foreach ($rc in ($entries | Sort-Object FullName -Unique)) {
         $base = $rc.Name -replace '\.runtimeconfig\.json$', ''
@@ -349,7 +354,13 @@ jobs:
         Write-Host "##[group]Run UI tests: $base"
         Push-Location $dir
         try {
-          if (Test-Path $exe) {
+          if ($nonElevatedSuites -contains $base) {
+            if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) {
+              throw "$base requires its staged executable for non-elevated dispatch; missing runner: $exe"
+            }
+            & "$(build.sourcesdirectory)\.pipelines\runUiTestAsUser.ps1" `
+              -TestExecutable $exe -ResultsDirectory $resultsDir
+          } elseif (Test-Path $exe) {
             & $exe --report-trx --results-directory $resultsDir
           } elseif (Test-Path $dll) {
             & dotnet $dll --report-trx --results-directory $resultsDir
