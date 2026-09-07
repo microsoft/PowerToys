@@ -67,7 +67,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
     {
         try
         {
-            Lifetime.Run(FetchContent);
+            Lifetime.RunNotification(FetchContent, ex => ShowException(ex));
         }
         catch (Exception ex)
         {

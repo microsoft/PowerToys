@@ -17,6 +17,18 @@ internal sealed class ViewModelLifetime
 
     public void Run(Action action) => Enqueue(action, close: false);
 
+    public void RunNotification(Action action, Action<Exception> reportError) => Run(() =>
+    {
+        try
+        {
+            action();
+        }
+        catch (Exception ex)
+        {
+            reportError(ex);
+        }
+    });
+
     public void Close(Action cleanup) => Enqueue(cleanup, close: true);
 
     private void Enqueue(Action action, bool close)

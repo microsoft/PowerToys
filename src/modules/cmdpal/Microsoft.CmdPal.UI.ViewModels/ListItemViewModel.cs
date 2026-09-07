@@ -15,7 +15,7 @@ public partial class ListItemViewModel : CommandItemViewModel
     private const int MaxVisibleTags = 3;
 
     private readonly ViewModelLifetime _lifetime = new();
-    private int _selectionPending;
+    private TaskCompletionSource<bool>? _selectionPending;
     private bool _selectionInitialized;
 
     public new ExtensionObject<IListItem> Model { get; }
@@ -118,16 +118,31 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     public override void SlowInitializeProperties()
     {
-        if (Interlocked.Exchange(ref _selectionPending, 1) != 0)
+        if (_lifetime.IsClosed || IsInErrorState)
+        {
+            return;
+        }
+
+        var pending = Volatile.Read(ref _selectionPending);
+        if (pending is not null &&
+            (!pending.Task.IsCompleted || (_selectionInitialized && (Details is null || Details.IsObservable))))
+        {
+            return;
+        }
+
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        if (Interlocked.CompareExchange(ref _selectionPending, completion, pending) != pending)
         {
             return;
         }
 
         _lifetime.Run(() =>
         {
+            var initialized = false;
             try
             {
                 InitializeSelectedProperties();
+                initialized = !_lifetime.IsClosed && !IsInErrorState;
             }
             catch
             {
@@ -136,9 +151,28 @@ public partial class ListItemViewModel : CommandItemViewModel
             }
             finally
             {
-                Volatile.Write(ref _selectionPending, 0);
+                completion.TrySetResult(initialized);
             }
         });
+
+        if (_lifetime.IsClosed)
+        {
+            completion.TrySetResult(false);
+        }
+    }
+
+    public async Task<bool> SafeSlowInitAsync()
+    {
+        if (!SafeSlowInit())
+        {
+            return false;
+        }
+
+        var pending = Volatile.Read(ref _selectionPending);
+        return pending is not null &&
+            await pending.Task.ConfigureAwait(false) &&
+            !_lifetime.IsClosed &&
+            !IsInErrorState;
     }
 
     private void InitializeSelectedProperties()
@@ -164,7 +198,8 @@ public partial class ListItemViewModel : CommandItemViewModel
         _selectionInitialized = true;
     }
 
-    protected override void FetchProperty(string propertyName) => _lifetime.Run(() => FetchItemProperty(propertyName));
+    protected override void FetchProperty(string propertyName) =>
+        _lifetime.RunNotification(() => FetchItemProperty(propertyName), ex => ShowException(ex, Title));
 
     private void FetchItemProperty(string propertyName)
     {
@@ -405,7 +440,17 @@ public partial class ListItemViewModel : CommandItemViewModel
         }
     }
 
-    protected override void UnsafeCleanup() => _lifetime.Close(CleanupItem);
+    protected override void UnsafeCleanup()
+    {
+        try
+        {
+            _lifetime.Close(CleanupItem);
+        }
+        finally
+        {
+            Volatile.Read(ref _selectionPending)?.TrySetResult(false);
+        }
+    }
 
     private void CleanupItem()
     {

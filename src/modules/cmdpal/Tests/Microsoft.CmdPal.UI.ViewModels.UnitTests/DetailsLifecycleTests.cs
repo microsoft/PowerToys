@@ -142,6 +142,281 @@ public sealed partial class DetailsLifecycleTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task AsyncSelections_SharePendingInitializationResult(bool failInitialization)
+    {
+        using var entered = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        var details = new TrackedDetails { OnBodyRead = () => Block(entered, release) };
+        var item = new TrackedListItem
+        {
+            Details = details,
+            TextToSuggest = "completed suggestion",
+            FailTextToSuggest = failInitialization,
+        };
+        var vm = CreateItem(item);
+        var first = Task.Run(vm.SafeSlowInitAsync);
+        Task<bool>? second = null;
+        Task<bool>? third = null;
+        try
+        {
+            Assert.IsTrue(entered.Wait(TimeSpan.FromSeconds(5)));
+            second = vm.SafeSlowInitAsync();
+            third = vm.SafeSlowInitAsync();
+
+            Assert.IsFalse(second.IsCompleted);
+            Assert.IsFalse(third.IsCompleted);
+            item.Title = "changed while initializing";
+            Assert.AreEqual(1, item.DetailsReads);
+        }
+        finally
+        {
+            release.Set();
+            await first.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+
+        Assert.IsNotNull(second);
+        Assert.IsNotNull(third);
+        Assert.AreEqual(!failInitialization, await first);
+        Assert.AreEqual(!failInitialization, await second.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.AreEqual(!failInitialization, await third.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.AreEqual(failInitialization, vm.IsInErrorState);
+        Assert.AreEqual(1, details.Adds);
+        if (!failInitialization)
+        {
+            Assert.AreEqual("completed suggestion", vm.TextToSuggest);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task AsyncSelection_QueuedBehindInitializationCompletesOrCleansUp(bool cleanup)
+    {
+        using var entered = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        var item = new TrackedListItem
+        {
+            OnSectionRead = () => Block(entered, release),
+            TextToSuggest = "queued suggestion",
+        };
+        var vm = CreateItem(item);
+        var initialization = Task.Run(vm.SafeInitializeProperties);
+        Task<bool>? selection = null;
+        try
+        {
+            Assert.IsTrue(entered.Wait(TimeSpan.FromSeconds(5)));
+            selection = vm.SafeSlowInitAsync();
+            Assert.IsFalse(selection.IsCompleted);
+            if (cleanup)
+            {
+                vm.SafeCleanup();
+                Assert.IsFalse(await selection.WaitAsync(TimeSpan.FromSeconds(5)));
+            }
+        }
+        finally
+        {
+            release.Set();
+            await initialization.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+
+        Assert.IsNotNull(selection);
+        Assert.AreEqual(!cleanup, await selection.WaitAsync(TimeSpan.FromSeconds(5)));
+        if (!cleanup)
+        {
+            Assert.AreEqual("queued suggestion", vm.TextToSuggest);
+        }
+    }
+
+    [TestMethod]
+    public async Task Reselection_PublishesCompletedSuggestionAfterOriginalSelectionIsCanceled()
+    {
+        using var entered = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        var details = new TrackedDetails { OnBodyRead = () => Block(entered, release) };
+        var vm = CreateItem(new TrackedListItem { Details = details, TextToSuggest = "completed suggestion" });
+        var page = new ListViewModel(new TestListPage(), _context.Scheduler, new TestHost(), CommandProviderContext.Empty, DefaultContextMenuFactory.Instance);
+        var recipient = new SuggestionRecipient();
+        WeakReferenceMessenger.Default.Register<SuggestionRecipient, UpdateSuggestionMessage>(recipient, static (r, message) => r.Suggestions.Add(message.TextToSuggest));
+        Task? first = null;
+        Task? latest = null;
+        try
+        {
+            first = page.SetSelectedItemAsync(vm);
+            Assert.IsTrue(entered.Wait(TimeSpan.FromSeconds(5)));
+            page.UpdateSelectedItemCommand.Execute(null);
+            latest = page.SetSelectedItemAsync(vm);
+
+            release.Set();
+            await Task.WhenAll(first, latest).WaitAsync(TimeSpan.FromSeconds(5));
+            _context.Scheduler.RunAll();
+
+            CollectionAssert.AreEqual(new[] { string.Empty, "completed suggestion" }, recipient.Suggestions);
+            Assert.AreEqual("completed suggestion", page.TextToSuggest);
+            Assert.AreEqual(1, details.Adds);
+        }
+        finally
+        {
+            release.Set();
+            await Task.WhenAll(first ?? Task.CompletedTask, latest ?? Task.CompletedTask).WaitAsync(TimeSpan.FromSeconds(5));
+            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+            page.SafeCleanup();
+            page.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task SelectionCanceledBeforeUiPublication_DoesNotRestoreObsoleteSuggestion()
+    {
+        var vm = CreateItem(new TrackedListItem { TextToSuggest = "obsolete suggestion" });
+        var page = new ListViewModel(new TestListPage(), _context.Scheduler, new TestHost(), CommandProviderContext.Empty, DefaultContextMenuFactory.Instance);
+        var recipient = new SuggestionRecipient();
+        WeakReferenceMessenger.Default.Register<SuggestionRecipient, UpdateSuggestionMessage>(recipient, static (r, message) => r.Suggestions.Add(message.TextToSuggest));
+        try
+        {
+            await page.SetSelectedItemAsync(vm).WaitAsync(TimeSpan.FromSeconds(5));
+            page.UpdateSelectedItemCommand.Execute(null);
+            _context.Scheduler.RunAll();
+
+            CollectionAssert.AreEqual(new[] { string.Empty }, recipient.Suggestions);
+            Assert.AreEqual(string.Empty, page.TextToSuggest);
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+            page.SafeCleanup();
+            page.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task QueuedDetailsNotificationFailure_DoesNotFailItemInitialization()
+    {
+        using var entered = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        var command = new TrackedCommand();
+        var failure = new InvalidOperationException("notification failed");
+        var broken = new TrackedDetails { OnBodyRead = () => throw failure };
+        var item = new TrackedListItem
+        {
+            Command = command,
+            Title = "healthy item",
+            OnSectionRead = () => Block(entered, release),
+        };
+        var vm = CreateItem(item);
+        var initialization = Task.Run(vm.SafeInitializeProperties);
+        try
+        {
+            Assert.IsTrue(entered.Wait(TimeSpan.FromSeconds(5)));
+            item.Details = broken;
+            item.Title = "updated title";
+        }
+        finally
+        {
+            release.Set();
+            await initialization.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+
+        Assert.IsTrue(await initialization);
+        Assert.IsFalse(vm.IsInErrorState);
+        Assert.AreSame(command, vm.Command.Model.Unsafe);
+        Assert.AreEqual("updated title", vm.Title);
+        Assert.HasCount(1, _context.Errors);
+        Assert.AreSame(failure, _context.Errors[0]);
+        Assert.AreEqual(0, broken.Subscribers);
+
+        var healthyDetails = new TrackedDetails();
+        item.Details = healthyDetails;
+        healthyDetails.BodyValue = "live details";
+        healthyDetails.Raise(nameof(IDetails.Body));
+        Assert.AreEqual("live details", vm.Details?.Body);
+    }
+
+    [TestMethod]
+    public void QueuedDetailsBodyFailure_DoesNotFailSelectionOrDetachHealthyContent()
+    {
+        var failure = new InvalidOperationException("body notification failed");
+        var markdown = new TrackedMarkdown();
+        var details = new TrackedDetails { Content = [markdown] };
+        details.OnBodyRead = () =>
+        {
+            details.OnBodyRead = () => throw failure;
+            details.Raise(nameof(IDetails.Body));
+        };
+        var vm = CreateItem(new TrackedListItem { Details = details });
+
+        Assert.IsTrue(vm.SafeSlowInit());
+
+        Assert.IsFalse(vm.IsInErrorState);
+        Assert.AreEqual(1, details.Subscribers);
+        Assert.AreEqual(1, markdown.Subscribers);
+        Assert.HasCount(1, _context.Errors);
+        Assert.AreSame(failure, _context.Errors[0]);
+        details.OnBodyRead = null;
+        details.BodyValue = "recovered";
+        details.Raise(nameof(IDetails.Body));
+        Assert.AreEqual("recovered", vm.Details?.Body);
+    }
+
+    [TestMethod]
+    public void QueuedMarkdownFailure_DoesNotFailSelectionOrDetachContent()
+    {
+        var failure = new InvalidOperationException("markdown notification failed");
+        var markdown = new TrackedMarkdown();
+        markdown.OnBodyRead = () =>
+        {
+            markdown.OnBodyRead = () => throw failure;
+            markdown.Raise(nameof(IMarkdownContent.Body));
+        };
+        var vm = CreateItem(new TrackedListItem { Details = new TrackedDetails { Content = [markdown] } });
+
+        Assert.IsTrue(vm.SafeSlowInit());
+        _context.Scheduler.RunAll();
+
+        Assert.IsFalse(vm.IsInErrorState);
+        Assert.AreEqual(1, markdown.Subscribers);
+        Assert.HasCount(1, _context.Errors);
+        Assert.AreSame(failure, _context.Errors[0]);
+        markdown.OnBodyRead = null;
+        markdown.BodyValue = "recovered";
+        markdown.Raise(nameof(IMarkdownContent.Body));
+        Assert.IsInstanceOfType<ContentMarkdownViewModel>(vm.Details?.Content.Single(), out var content);
+        Assert.AreEqual("recovered", content.Body);
+    }
+
+    [TestMethod]
+    public void QueuedTreeItemsFailure_DoesNotFailSelectionOrDetachChildren()
+    {
+        var failure = new InvalidOperationException("tree notification failed");
+        var markdown = new TrackedMarkdown();
+        var tree = new TrackedTree { Children = [markdown] };
+        tree.OnChildrenRead = () =>
+        {
+            tree.OnChildrenRead = () => throw failure;
+            tree.RaiseItemsChanged();
+        };
+        var vm = CreateItem(new TrackedListItem { Details = new TrackedDetails { Content = [tree] } });
+
+        Assert.IsTrue(vm.SafeSlowInit());
+        _context.Scheduler.RunAll();
+
+        Assert.IsFalse(vm.IsInErrorState);
+        Assert.AreEqual(1, tree.Subscribers);
+        Assert.AreEqual(1, tree.ItemsSubscribers);
+        Assert.AreEqual(1, markdown.Subscribers);
+        Assert.HasCount(1, _context.Errors);
+        Assert.AreSame(failure, _context.Errors[0]);
+        tree.OnChildrenRead = null;
+        tree.Children = [];
+        tree.RaiseItemsChanged();
+        _context.Scheduler.RunAll();
+        Assert.IsInstanceOfType<ContentTreeViewModel>(vm.Details?.Content.Single(), out var content);
+        Assert.IsEmpty(content.Children);
+        Assert.AreEqual(0, markdown.Subscribers);
+    }
+
+    [TestMethod]
     public void Selection_NonObservableDetailsRefreshWithoutLeakingPreviousContent()
     {
         var first = new TrackedMarkdown();
@@ -616,7 +891,13 @@ public sealed partial class DetailsLifecycleTests
             remove => _itemsChanged -= value;
         }
 
-        public IContent[] GetChildren() => Children;
+        public Action? OnChildrenRead { get; set; }
+
+        public IContent[] GetChildren()
+        {
+            OnChildrenRead?.Invoke();
+            return Children;
+        }
 
         public void RaiseItemsChanged() => _itemsChanged?.Invoke(this, new ItemsChangedEventArgs());
 
@@ -632,6 +913,19 @@ public sealed partial class DetailsLifecycleTests
         public int DetailsReads { get; private set; }
 
         public bool FailTextToSuggest { get; set; }
+
+        public Action? OnSectionRead { get; set; }
+
+        public override string Section
+        {
+            get
+            {
+                OnSectionRead?.Invoke();
+                return base.Section;
+            }
+
+            set => base.Section = value;
+        }
 
         public override string TextToSuggest
         {
@@ -654,6 +948,11 @@ public sealed partial class DetailsLifecycleTests
     private sealed class DetailsRecipient
     {
         public DetailsViewModel? Details { get; set; }
+    }
+
+    private sealed class SuggestionRecipient
+    {
+        public List<string> Suggestions { get; } = [];
     }
 
     private sealed partial class TestListPage : ListPage

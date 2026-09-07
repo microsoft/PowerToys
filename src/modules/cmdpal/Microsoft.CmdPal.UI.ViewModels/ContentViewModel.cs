@@ -54,7 +54,7 @@ public abstract partial class ContentViewModel(WeakReference<IPageContext> conte
         try
         {
             var propertyName = args.PropertyName;
-            Lifetime.Run(() => FetchProperty(propertyName));
+            Lifetime.RunNotification(() => FetchProperty(propertyName), ex => ShowException(ex));
         }
         catch (Exception ex)
         {

@@ -48,7 +48,7 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
         try
         {
             var propertyName = args.PropertyName;
-            _lifetime.Run(() => FetchProperty(propertyName));
+            _lifetime.RunNotification(() => FetchProperty(propertyName), ex => ShowException(ex));
         }
         catch (Exception ex)
         {
