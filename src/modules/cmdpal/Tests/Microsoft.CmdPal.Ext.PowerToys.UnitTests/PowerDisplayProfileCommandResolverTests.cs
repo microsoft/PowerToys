@@ -28,31 +28,51 @@ public class PowerDisplayProfileCommandResolverTests
         var resolver = new PowerDisplayProfileCommandResolver(service);
         Assert.AreEqual(0, service.GetProfilesCallCount);
 
-        var first = resolver.GetCommandItem(3);
-        var second = resolver.GetCommandItem(8);
-        var firstUpdated = WaitForPropertyAsync(first, nameof(first.Subtitle), () => first.Subtitle.StartsWith("2 monitors", StringComparison.Ordinal));
-        var secondUpdated = WaitForPropertyAsync(second, nameof(second.Subtitle), () => second.Subtitle.StartsWith("1 monitor", StringComparison.Ordinal));
+        var restoreTask = Task.Run(() => (
+            resolver.GetCommandItem(3),
+            resolver.GetCommandItem(8)));
 
-        Assert.AreEqual("Power Display profile (#3)", first.Title);
-        await service.GetProfilesObserved.Task.WaitAsync(TestTimeout);
-        Assert.AreEqual(1, service.GetProfilesCallCount);
-
-        pending.SetResult(PowerDisplayCliResult<CliProfileListResult>.Success(new CliProfileListResult
+        try
         {
-            Profiles =
-            [
-                new() { Id = 3, Name = "Cinema", MonitorCount = 2 },
-                new() { Id = 8, Name = "Work", MonitorCount = 1 },
-            ],
-        }));
-        await Task.WhenAll(firstUpdated, secondUpdated);
+            var (first, second) = await restoreTask.WaitAsync(TestTimeout);
+            var firstUpdated = WaitForPropertyAsync(first, nameof(first.Subtitle), () => first.Subtitle.StartsWith("2 monitors", StringComparison.Ordinal));
+            var secondUpdated = WaitForPropertyAsync(second, nameof(second.Subtitle), () => second.Subtitle.StartsWith("1 monitor", StringComparison.Ordinal));
 
-        Assert.AreEqual("Cinema (#3)", first.Title);
-        Assert.AreEqual("Work (#8)", second.Title);
-        Assert.AreEqual("com.microsoft.powertoys.powerDisplay.applyProfile.3", first.Command!.Id);
-        Assert.IsInstanceOfType<ApplyPowerDisplayProfileCommand>(first.Command);
-        Assert.AreEqual("Cinema (#3)", resolver.GetCommandItem(3).Title);
-        Assert.AreEqual(1, service.GetProfilesCallCount);
+            Assert.AreEqual("Power Display profile (#3)", first.Title);
+            await service.GetProfilesObserved.Task.WaitAsync(TestTimeout);
+            Assert.AreEqual(1, service.GetProfilesCallCount);
+
+            pending.SetResult(PowerDisplayCliResult<CliProfileListResult>.Success(new CliProfileListResult
+            {
+                Profiles =
+                [
+                    new() { Id = 3, Name = "Cinema", MonitorCount = 2 },
+                    new() { Id = 8, Name = "Work", MonitorCount = 1 },
+                ],
+            }));
+            await Task.WhenAll(firstUpdated, secondUpdated);
+
+            Assert.AreEqual("Cinema (#3)", first.Title);
+            Assert.AreEqual("Work (#8)", second.Title);
+            Assert.AreEqual("com.microsoft.powertoys.powerDisplay.applyProfile.3", first.Command!.Id);
+            Assert.IsInstanceOfType<ApplyPowerDisplayProfileCommand>(first.Command);
+            Assert.AreEqual("Cinema (#3)", resolver.GetCommandItem(3).Title);
+            Assert.AreEqual(1, service.GetProfilesCallCount);
+        }
+        finally
+        {
+            // WaitAsync does not stop the worker. Complete the fake request so a blocking
+            // GetCommandItem can finish.
+            pending.TrySetResult(PowerDisplayCliResult<CliProfileListResult>.Failure(PowerDisplayCliFailureKind.Cancelled));
+            try
+            {
+                await restoreTask.WaitAsync(TestTimeout);
+            }
+            catch
+            {
+                // The original wait already reports failure; cleanup must not replace it.
+            }
+        }
     }
 
     [TestMethod]
