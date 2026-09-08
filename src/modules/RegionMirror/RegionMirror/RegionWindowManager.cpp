@@ -420,7 +420,15 @@ namespace RegionMirror
             // sees the existing maximized state and cannot queue another fit.
             const auto generation = found->second.generation;
             const Entry identity = found->second;
-            const bool accepted = SetWindowPos(target, nullptr, bounds->left, bounds->top, bounds->right - bounds->left, bounds->bottom - bounds->top, SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOOWNERZORDER) != FALSE;
+            UINT flags = SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOOWNERZORDER;
+            if (found->second.attempts > 1)
+            {
+                // Some windows rewrite maximized bounds in WM_WINDOWPOSCHANGING.
+                // Only bounded retries skip that callback; WM_WINDOWPOSCHANGED
+                // still lets the application lay out and repaint the new size.
+                flags |= SWP_NOSENDCHANGING;
+            }
+            const bool accepted = SetWindowPos(target, nullptr, bounds->left, bounds->top, bounds->right - bounds->left, bounds->bottom - bounds->top, flags) != FALSE;
             found = entries.find(target);
             if (found == entries.end() || !HasIdentity(target, identity) || found->second.generation != generation)
             {
