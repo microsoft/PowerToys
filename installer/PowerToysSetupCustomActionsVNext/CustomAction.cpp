@@ -1580,8 +1580,9 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     processes.resize(bytes / sizeof(processes[0]));
 
     // Retain old process names for upgrades.
-    // PowerToys.Update.exe is excluded because older versions use that same name
-    // for the temporary updater waiting for this installer to finish.
+    // Preserve update coordinators (PowerToys.Update.exe, PowerToys.ActionRunner.exe,
+    // and action_runner.exe). Older implementations use these names for temporary
+    // processes waiting for this installer to finish.
     static constexpr const wchar_t* processesToTerminate[] = {
         L"PowerToys.PowerLauncher.exe",
         L"PowerToys.Settings.exe",
@@ -1648,7 +1649,6 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.DSC.exe",
         L"PowerToys.BugReportTool.exe",
         L"PowerToys.StylesReportTool.exe",
-        L"PowerToys.ActionRunner.exe",
         L"PowerToys.exe",
     };
 
