@@ -37,6 +37,53 @@
 - Monaco UI components (JavaScript/HTML) generated during build
 - Localization files downloaded from server during CI release builds
 
+## Process Termination Coverage
+
+`TerminateProcessesCA` in `installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp`
+closes processes before MSI validates files in use. Its `processesToTerminate` list
+uses exact executable names with case-insensitive matching. Keep legacy names in
+the list so upgrades can also close programs from older installations.
+
+When adding a signed executable, add its runtime name to this list. The PR build
+runs `.pipelines/verifyInstallerProcesses.ps1` immediately after checkout, before
+restore or compilation. It checks every executable in all batches of
+`.pipelines/ESRPSigning_core.json`, including installed aliases declared through
+WiX `File/@Source` and `File/@Name`. For example, the signed `PowerToys.CliShim.exe`
+payload is installed under four CLI names; the check requires those installed
+names as well as the actual CLI targets. Unknown executable wildcard rules in
+the core signing policy fail validation rather than skipping coverage.
+Other ESRP signing policies that start matching executables also fail until their
+coverage handling is defined.
+
+Command Palette signs MSIX contents using `*.exe`. After CI produces the MSIX,
+the same check reads the package's ZIP entries and compares the matched executable
+names with the termination list. This step also runs on unsigned PR builds and
+does not require signing credentials. An executable missing from the list fails
+CI and the diagnostic identifies the signing source and missing runtime name.
+
+Exceptional executables must have an exact, scoped entry and a reason
+in `.pipelines/installerProcessExclusions.json`. Do not exempt an entire folder
+or wildcard. Optional CmdPal runtime helpers may be absent depending on the
+package configuration. Product executables should normally be added to the
+termination list instead of excluded.
+
+`PowerToys.Update.exe` is excluded to preserve upgrades from older versions.
+Those versions, including v0.99.1, run the updater waiting for installation from
+a temporary copy with the same `PowerToys.Update.exe` name. The current updater instead uses
+`PowerToys.Update.<PID>.exe`, but a name-only kill list must also protect the old
+temporary updater. Closing it would interrupt completion of the self-update.
+Do not add the exact updater name or an updater prefix/wildcard to the kill list.
+
+Run the source check and its fixture tests without building PowerToys:
+
+```powershell
+pwsh -NoProfile -File .pipelines/verifyInstallerProcesses.ps1
+pwsh -NoProfile -File .pipelines/tests/verifyInstallerProcesses.Tests.ps1
+```
+
+To additionally validate an existing CmdPal package, pass
+`-CmdPalPackagePath <path-to-msix>` to the check script.
+
 ## Per-User vs Per-Machine Installation
 
 - Functionality is identical

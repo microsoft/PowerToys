@@ -183,6 +183,11 @@ jobs:
       & '.pipelines/verifyCommonProps.ps1' -sourceDir '$(build.sourcesdirectory)\src'
     displayName: Audit shared common props for CSharp projects in src sub-folder
 
+  - pwsh: |-
+      & '.pipelines/tests/verifyInstallerProcesses.Tests.ps1'
+      & '.pipelines/verifyInstallerProcesses.ps1' -RepoRoot '$(Build.SourcesDirectory)'
+    displayName: Validate installer process termination coverage
+
   - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
     - pwsh: |-
         $MSBuildCacheParameters = ""
@@ -552,6 +557,11 @@ jobs:
           Write-Warning "No CmdPal MSIX packages found!"
       }
     displayName: Locate the CmdPal MSIX
+
+  # Resolve the *.exe signing rule against the package even when PR signing is disabled.
+  - pwsh: |-
+      & '.pipelines/verifyInstallerProcesses.ps1' -RepoRoot '$(Build.SourcesDirectory)' -CmdPalPackagePath '$(CmdPalPackagePath)'
+    displayName: Validate CmdPal signed executable termination coverage
 
   - ${{ if eq(parameters.codeSign, true) }}:
     - pwsh: |-
