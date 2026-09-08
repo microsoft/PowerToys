@@ -1579,8 +1579,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     }
     processes.resize(bytes / sizeof(processes[0]));
 
-    // Keep signed executables and their installed aliases covered. CI checks this list
-    // with .pipelines/verifyInstallerProcesses.ps1; retain old names for upgrades.
+    // Retain old process names for upgrades.
     // PowerToys.Update.exe is excluded because older versions use that same name
     // for the temporary updater waiting for this installer to finish.
     static constexpr const wchar_t* processesToTerminate[] = {
