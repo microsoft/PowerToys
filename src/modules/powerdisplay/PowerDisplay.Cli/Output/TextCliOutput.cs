@@ -141,7 +141,7 @@ public sealed class TextCliOutput : ICliOutput
         _stdout.WriteLine("Id | Name | Monitors | Last modified");
         foreach (var p in result.Profiles)
         {
-            _stdout.WriteLine($"{p.Id} | {p.Name} | {p.MonitorCount} | {p.LastModified}");
+            _stdout.WriteLine($"{p.Id:D} | {p.Name} | {p.MonitorCount} | {p.LastModified}");
         }
     }
 

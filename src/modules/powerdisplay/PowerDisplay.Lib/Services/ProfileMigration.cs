@@ -20,7 +20,7 @@ public static class ProfileMigration
         ArgumentNullException.ThrowIfNull(profiles);
         ArgumentNullException.ThrowIfNull(discovered);
 
-        var changed = profiles.EnsureIds();
+        var changed = profiles.EnsureIdsAndOrder();
         if (discovered.Count == 0)
         {
             return changed;

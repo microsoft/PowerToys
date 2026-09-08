@@ -49,7 +49,7 @@ public class CliRequestDispatcherTests
     private static CliRequestEnvelope MakeEnvelope(string command) => new() { Command = command };
 
     /// <summary>
-    /// Calls <c>BuildResponseAsync</c> with the int-based apply-profile delegate signature.
+    /// Calls <c>BuildResponseAsync</c> with the Guid-based apply-profile delegate signature.
     /// The delegate returns the resolved profile's name (<see langword="null"/> means "not found"),
     /// so the apply-profile handler never needs to fall back to <c>LoadProfiles</c>.
     /// </summary>
@@ -57,7 +57,7 @@ public class CliRequestDispatcherTests
         CliRequestEnvelope envelope,
         IReadOnlyList<Monitor>? monitors = null,
         PowerDisplayProfiles? profiles = null,
-        Func<int, CancellationToken, Task<string?>>? applyProfile = null,
+        Func<Guid, CancellationToken, Task<string?>>? applyProfile = null,
         int defaultStep = 5,
         Func<CancellationToken, Task<PowerDisplayProfiles>>? loadProfilesAsync = null,
         IReadOnlyList<CustomVcpValueMapping>? customMappings = null,
@@ -295,7 +295,7 @@ public class CliRequestDispatcherTests
         {
             Profiles = new List<PowerDisplayProfile>
             {
-                new PowerDisplayProfile { Name = "Night", MonitorSettings = new List<ProfileMonitorSetting>(), Id = 1 },
+                new PowerDisplayProfile { Name = "Night", MonitorSettings = new List<ProfileMonitorSetting>(), Id = ProfileTestIds.First },
             },
         };
         var envelope = MakeEnvelope(CliCommandNames.Profiles);
@@ -316,8 +316,8 @@ public class CliRequestDispatcherTests
         {
             Profiles = new List<PowerDisplayProfile>
             {
-                new PowerDisplayProfile { Name = "Legacy", MonitorSettings = new List<ProfileMonitorSetting>() },
-                new PowerDisplayProfile { Name = "Assigned", MonitorSettings = new List<ProfileMonitorSetting>(), Id = 2 },
+                new PowerDisplayProfile { Name = "Legacy", MonitorSettings = new List<ProfileMonitorSetting>(), Id = Guid.Empty },
+                new PowerDisplayProfile { Name = "Assigned", MonitorSettings = new List<ProfileMonitorSetting>(), Id = ProfileTestIds.Second },
             },
         };
 
@@ -326,7 +326,7 @@ public class CliRequestDispatcherTests
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliProfileListResult);
         Assert.IsNotNull(result);
         Assert.AreEqual(1, result.Profiles.Count);
-        Assert.AreEqual(2, result.Profiles[0].Id);
+        Assert.AreEqual(ProfileTestIds.Second, result.Profiles[0].Id);
     }
 
     // ─── apply-profile command ────────────────────────────────────────────────
@@ -334,12 +334,12 @@ public class CliRequestDispatcherTests
     public async Task ApplyProfile_FoundProfile_ReturnsCliApplyProfileResult()
     {
         // The apply delegate returns the resolved name directly; the handler must use it as-is.
-        Func<int, CancellationToken, Task<string?>> applyFn = (id, ct) => Task.FromResult<string?>("Night");
+        Func<Guid, CancellationToken, Task<string?>> applyFn = (id, ct) => Task.FromResult<string?>("Night");
 
         var envelope = new CliRequestEnvelope
         {
             Command = CliCommandNames.ApplyProfile,
-            ApplyProfile = new ApplyProfileRequest { ProfileId = 1 },
+            ApplyProfile = new ApplyProfileRequest { ProfileId = ProfileTestIds.First },
         };
 
         var json = await Dispatch(envelope, applyProfile: applyFn);
@@ -347,7 +347,7 @@ public class CliRequestDispatcherTests
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliApplyProfileResult);
         Assert.IsNotNull(result, "should deserialize to CliApplyProfileResult");
         Assert.AreEqual("apply-profile", result.Command);
-        Assert.AreEqual(1, result.ProfileId);
+        Assert.AreEqual(ProfileTestIds.First, result.ProfileId);
         Assert.AreEqual("Night", result.Profile);
     }
 
@@ -365,12 +365,12 @@ public class CliRequestDispatcherTests
             throw new InvalidOperationException("LoadProfilesAsync must not be called by apply-profile");
         };
 
-        Func<int, CancellationToken, Task<string?>> applyFn = (id, ct) => Task.FromResult<string?>("Night");
+        Func<Guid, CancellationToken, Task<string?>> applyFn = (id, ct) => Task.FromResult<string?>("Night");
 
         var envelope = new CliRequestEnvelope
         {
             Command = CliCommandNames.ApplyProfile,
-            ApplyProfile = new ApplyProfileRequest { ProfileId = 1 },
+            ApplyProfile = new ApplyProfileRequest { ProfileId = ProfileTestIds.First },
         };
 
         var json = await Dispatch(envelope, applyProfile: applyFn, loadProfilesAsync: loadProfilesAsync);
@@ -385,12 +385,12 @@ public class CliRequestDispatcherTests
     public async Task ApplyProfile_ProfileNotFound_ReturnsArgumentError()
     {
         // null = profile not found (unknown/invalid id)
-        Func<int, CancellationToken, Task<string?>> applyFn = (id, ct) => Task.FromResult<string?>(null);
+        Func<Guid, CancellationToken, Task<string?>> applyFn = (id, ct) => Task.FromResult<string?>(null);
 
         var envelope = new CliRequestEnvelope
         {
             Command = CliCommandNames.ApplyProfile,
-            ApplyProfile = new ApplyProfileRequest { ProfileId = 99 },
+            ApplyProfile = new ApplyProfileRequest { ProfileId = ProfileTestIds.Unknown },
         };
 
         var json = await Dispatch(envelope, applyProfile: applyFn);
@@ -401,16 +401,15 @@ public class CliRequestDispatcherTests
         Assert.AreEqual(CliExitCodes.ArgumentError, error.Error.ExitCode);
         Assert.AreEqual("apply-profile", error.Command);
         Assert.AreEqual(CliMessageIds.ProfileNotFound, error.Error.MessageId);
-        Assert.AreEqual("99", error.Error.Value);
+        Assert.AreEqual(ProfileTestIds.UnknownText, error.Error.Value);
     }
 
     [TestMethod]
-    public async Task ApplyProfile_EmptyProfileName_ReturnsArgumentError()
+    public async Task ApplyProfile_MissingPayload_ReturnsArgumentError()
     {
         var envelope = new CliRequestEnvelope
         {
             Command = CliCommandNames.ApplyProfile,
-            ApplyProfile = new ApplyProfileRequest { ProfileId = 0 },
         };
 
         var json = await Dispatch(envelope);
@@ -424,12 +423,12 @@ public class CliRequestDispatcherTests
     [TestMethod]
     public async Task ApplyProfile_UnknownId_ReturnsArgumentError()
     {
-        Func<int, CancellationToken, Task<string?>> applyFn = (id, ct) => Task.FromResult<string?>(null);
+        Func<Guid, CancellationToken, Task<string?>> applyFn = (id, ct) => Task.FromResult<string?>(null);
 
         var envelope = new CliRequestEnvelope
         {
             Command = CliCommandNames.ApplyProfile,
-            ApplyProfile = new ApplyProfileRequest { ProfileId = 99 },
+            ApplyProfile = new ApplyProfileRequest { ProfileId = ProfileTestIds.Unknown },
         };
 
         var json = await Dispatch(envelope, applyProfile: applyFn);
@@ -438,18 +437,23 @@ public class CliRequestDispatcherTests
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
         Assert.AreEqual(CliErrorCodes.ArgumentError, error.Error.Code);
         Assert.AreEqual(CliMessageIds.ProfileNotFound, error.Error.MessageId);
-        Assert.AreEqual("99", error.Error.Value);
+        Assert.AreEqual(ProfileTestIds.UnknownText, error.Error.Value);
     }
 
     [TestMethod]
-    public async Task ApplyProfile_NonPositiveId_ReturnsArgumentError()
+    public async Task ApplyProfile_EmptyId_ReturnsArgumentError()
     {
-        Func<int, CancellationToken, Task<string?>> applyFn = (id, ct) => Task.FromResult<string?>("Should not be called");
+        var applyCount = 0;
+        Func<Guid, CancellationToken, Task<string?>> applyFn = (id, ct) =>
+        {
+            applyCount++;
+            return Task.FromResult<string?>("Should not be called");
+        };
 
         var envelope = new CliRequestEnvelope
         {
             Command = CliCommandNames.ApplyProfile,
-            ApplyProfile = new ApplyProfileRequest { ProfileId = 0 },
+            ApplyProfile = new ApplyProfileRequest { ProfileId = Guid.Empty },
         };
 
         var json = await Dispatch(envelope, applyProfile: applyFn);
@@ -457,17 +461,23 @@ public class CliRequestDispatcherTests
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
         Assert.AreEqual(CliErrorCodes.ArgumentError, error.Error.Code);
+        Assert.AreEqual(0, applyCount, "an empty UUID must not reach the profile application delegate");
     }
 
     [TestMethod]
     public async Task ApplyProfile_FoundId_ReturnsSuccessWithId()
     {
-        Func<int, CancellationToken, Task<string?>> applyFn = (id, ct) => Task.FromResult<string?>("Gaming");
+        Guid? appliedId = null;
+        Func<Guid, CancellationToken, Task<string?>> applyFn = (id, ct) =>
+        {
+            appliedId = id;
+            return Task.FromResult<string?>("Gaming");
+        };
 
         var envelope = new CliRequestEnvelope
         {
             Command = CliCommandNames.ApplyProfile,
-            ApplyProfile = new ApplyProfileRequest { ProfileId = 3 },
+            ApplyProfile = new ApplyProfileRequest { ProfileId = ProfileTestIds.Second },
         };
 
         var json = await Dispatch(envelope, applyProfile: applyFn);
@@ -475,7 +485,8 @@ public class CliRequestDispatcherTests
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliApplyProfileResult);
         Assert.IsNotNull(result, "should deserialize to CliApplyProfileResult");
         Assert.AreEqual("apply-profile", result.Command);
-        Assert.AreEqual(3, result.ProfileId);
+        Assert.AreEqual(ProfileTestIds.Second, appliedId);
+        Assert.AreEqual(ProfileTestIds.Second, result.ProfileId);
         Assert.AreEqual("Gaming", result.Profile);
     }
 

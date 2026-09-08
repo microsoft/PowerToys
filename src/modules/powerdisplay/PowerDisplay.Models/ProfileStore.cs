@@ -49,6 +49,8 @@ namespace PowerDisplay.Models
             {
                 var profiles = LoadProfilesCore();
                 var originalId = profile.Id;
+                var originalOrder = profile.Order;
+                var originalLegacyId = profile.LegacyId;
                 var originalLastModified = profile.LastModified;
                 try
                 {
@@ -58,6 +60,8 @@ namespace PowerDisplay.Models
                 catch
                 {
                     profile.Id = originalId;
+                    profile.Order = originalOrder;
+                    profile.LegacyId = originalLegacyId;
                     profile.LastModified = originalLastModified;
                     throw;
                 }
@@ -75,7 +79,7 @@ namespace PowerDisplay.Models
                 },
                 cancellationToken);
 
-        internal bool RemoveProfileById(int id)
+        internal bool RemoveProfileById(Guid id)
         {
             return ExecuteLocked(() =>
             {
@@ -90,7 +94,7 @@ namespace PowerDisplay.Models
             });
         }
 
-        internal Task<bool> RemoveProfileByIdAsync(int id, CancellationToken cancellationToken = default)
+        internal Task<bool> RemoveProfileByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => RunAsync(() => RemoveProfileById(id), cancellationToken);
 
         internal bool UpdateProfiles(Func<PowerDisplayProfiles, bool> update)
@@ -173,8 +177,16 @@ namespace PowerDisplay.Models
             }
 
             var json = File.ReadAllText(_filePath);
-            return JsonSerializer.Deserialize(json, ProfileSerializationContext.Default.PowerDisplayProfiles)
+            var profiles = JsonSerializer.Deserialize(json, ProfileSerializationContext.Default.PowerDisplayProfiles)
                 ?? throw new JsonException($"Profile file '{_filePath}' deserialized to null.");
+            if (profiles.EnsureIdsAndOrder())
+            {
+                // All callers hold the store mutex. Never expose newly assigned UUIDs until the
+                // UUIDs and numeric migration references have been atomically persisted together.
+                SaveProfilesCore(profiles);
+            }
+
+            return profiles;
         }
 
         private void SaveProfilesCore(PowerDisplayProfiles profiles)

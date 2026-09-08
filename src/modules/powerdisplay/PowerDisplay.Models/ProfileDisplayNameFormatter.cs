@@ -22,7 +22,7 @@ namespace PowerDisplay.Models
             "PowerDisplay.Models.Properties.Resources",
             typeof(ProfileDisplayNameFormatter).Assembly);
 
-        public static string Format(string name, int id)
+        public static string Format(string name, Guid id)
         {
             var format = ResourceManager.GetString(
                 ResourceName,
@@ -30,8 +30,14 @@ namespace PowerDisplay.Models
             return Format(name, id, format);
         }
 
-        internal static string Format(string name, int id, string? format)
+        internal static string Format(string name, Guid id, string? format)
         {
+            if (id == Guid.Empty)
+            {
+                return name;
+            }
+
+            var shortId = id.ToString("D", CultureInfo.InvariantCulture)[..8];
             try
             {
                 var selectedFormat = string.IsNullOrEmpty(format)
@@ -44,7 +50,7 @@ namespace PowerDisplay.Models
                     CultureInfo.CurrentCulture,
                     selectedFormat,
                     name,
-                    id);
+                    shortId);
             }
             catch (FormatException ex)
             {
@@ -54,7 +60,7 @@ namespace PowerDisplay.Models
                     CultureInfo.CurrentCulture,
                     NeutralCompositeFormat,
                     name,
-                    id);
+                    shortId);
             }
         }
     }

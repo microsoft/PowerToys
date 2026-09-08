@@ -145,11 +145,11 @@ internal static class CliCommandHandlers
     {
         public async Task<string> ExecuteAsync(CliCommandContext context, CancellationToken ct)
         {
-            var profileId = context.Envelope.ApplyProfile?.ProfileId ?? 0;
-            if (profileId <= 0)
+            var profileId = context.Envelope.ApplyProfile?.ProfileId ?? Guid.Empty;
+            if (profileId == Guid.Empty)
             {
                 return CliResponse.SerializeError(
-                    CliResponse.MakeError(CliCommandNames.ApplyProfile, CliErrorCodes.ArgumentError, "profile id must be positive"));
+                    CliResponse.MakeError(CliCommandNames.ApplyProfile, CliErrorCodes.ArgumentError, "profile id must be a non-empty UUID"));
             }
 
             var name = await context.ApplyProfileAsync(profileId, ct).ConfigureAwait(false);
@@ -160,7 +160,7 @@ internal static class CliCommandHandlers
                         CliCommandNames.ApplyProfile,
                         CliErrorCodes.ArgumentError,
                         CliMessageIds.ProfileNotFound,
-                        value: profileId.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+                        value: profileId.ToString("D")));
             }
 
             var applyResult = new CliApplyProfileResult { ProfileId = profileId, Profile = name };

@@ -171,7 +171,7 @@ public partial class MainViewModel
     /// warning under <paramref name="logPrefix"/>) when it is missing or invalid.
     /// </summary>
     private static async Task<PowerDisplayProfile?> LoadValidProfileByIdAsync(
-        int profileId,
+        Guid profileId,
         string logPrefix,
         CancellationToken cancellationToken = default)
     {
@@ -190,7 +190,7 @@ public partial class MainViewModel
     /// only the lookup key changed from name to the stable id.
     /// </summary>
     /// <param name="profileId">The stable id of the profile to apply.</param>
-    public async Task ApplyProfileByIdAsync(int profileId)
+    public async Task ApplyProfileByIdAsync(Guid profileId)
     {
         try
         {
@@ -229,7 +229,7 @@ public partial class MainViewModel
     /// profile id is unknown or invalid. This does not attest that any hardware write succeeded.
     /// The IPC handler maps <see langword="null"/> to ARGUMENT_ERROR / exit code 7.
     /// </returns>
-    public async Task<string?> ApplyProfileForCliAsync(int profileId, CancellationToken ct = default)
+    public async Task<string?> ApplyProfileForCliAsync(Guid profileId, CancellationToken ct = default)
     {
         try
         {
@@ -265,7 +265,7 @@ public partial class MainViewModel
         {
             try
             {
-                var profileId = LightSwitchService.GetProfileIdForTheme(isLightMode);
+                var profileId = await LightSwitchService.GetProfileIdForThemeAsync(isLightMode);
                 if (profileId is null)
                 {
                     return;

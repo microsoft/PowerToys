@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using PowerDisplay.Cli.Commands;
 using PowerDisplay.Contracts;
 
@@ -111,7 +112,7 @@ public static class CliRequestBuilder
     };
 
     /// <summary>Builds an <c>apply-profile</c> request envelope.</summary>
-    public static CliRequestEnvelope BuildApplyProfile(int profileId) => new()
+    public static CliRequestEnvelope BuildApplyProfile(Guid profileId) => new()
     {
         Command = CliCommandNames.ApplyProfile,
         ApplyProfile = new ApplyProfileRequest { ProfileId = profileId },

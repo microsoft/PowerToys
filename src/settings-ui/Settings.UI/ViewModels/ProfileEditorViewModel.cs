@@ -4,6 +4,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -18,14 +19,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     /// </summary>
     public class ProfileEditorViewModel : INotifyPropertyChanged
     {
-        private readonly int _profileId;
+        private readonly Guid _profileId;
         private string _profileName = string.Empty;
         private ObservableCollection<MonitorSelectionItem> _monitors;
 
         public ProfileEditorViewModel(
             ObservableCollection<MonitorInfo> availableMonitors,
             string defaultName = "",
-            int profileId = 0)
+            Guid profileId = default)
         {
             _profileId = profileId;
             _profileName = defaultName;

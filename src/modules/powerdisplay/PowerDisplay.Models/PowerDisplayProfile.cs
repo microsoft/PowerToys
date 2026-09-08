@@ -11,13 +11,25 @@ namespace PowerDisplay.Models
     /// <summary>
     /// Represents a PowerDisplay profile containing monitor settings
     /// </summary>
+    [JsonConverter(typeof(PowerDisplayProfileJsonConverter))]
     public class PowerDisplayProfile
     {
         [JsonPropertyName("name")]
         public string Name { get; set; }
 
         [JsonPropertyName("id")]
-        public int Id { get; set; }
+        public Guid Id { get; set; }
+
+        [JsonPropertyName("order")]
+        public int Order { get; set; } = -1;
+
+        /// <summary>
+        /// Retains the former numeric id so references in other settings files can be upgraded
+        /// after the profile's UUID has been durably saved.
+        /// </summary>
+        [JsonPropertyName("legacyId")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int? LegacyId { get; set; }
 
         [JsonPropertyName("monitorSettings")]
         public List<ProfileMonitorSetting> MonitorSettings { get; set; }
@@ -61,7 +73,7 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
-        /// Gets a human-readable label that disambiguates duplicate names, e.g. "Gaming (#4)".
+        /// Gets a human-readable label that disambiguates duplicate names using a short UUID.
         /// Not serialized; UI display only.
         /// </summary>
         [JsonIgnore]

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -693,7 +693,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
-            var newId = value?.Id ?? 0;
+            var newId = value?.Id ?? Guid.Empty;
             var idProperty = isDarkMode
                 ? ModuleSettings.Properties.DarkModeProfileId
                 : ModuleSettings.Properties.LightModeProfileId;
@@ -724,6 +724,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             try
             {
                 var profilesData = await ProfileHelper.LoadProfilesAsync(cancellationToken);
+
+                // The store commits UUIDs and legacy-id mappings before returning. Only then
+                // can this separate settings file safely replace its old references.
+                if (LightSwitchProfileReferenceHelper.ReconcileReferences(ModuleSettings.Properties, profilesData))
+                {
+                    SaveSettings();
+                }
 
                 AvailableProfiles.Clear();
                 foreach (var profile in profilesData.GetAssignedProfiles())
@@ -758,7 +765,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Selects the profile object for the given theme from settings by stored profile id. Zero
+        /// Selects the profile object for the given theme from settings by stored profile UUID. Empty
         /// or a missing id produces no selection.
         /// </summary>
         private void SelectByStoredReference(bool isDarkMode)
@@ -766,7 +773,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var storedId = isDarkMode
                 ? ModuleSettings.Properties.DarkModeProfileId.Value
                 : ModuleSettings.Properties.LightModeProfileId.Value;
-            var match = storedId >= 1
+            var match = storedId != Guid.Empty
                 ? AvailableProfiles.FirstOrDefault(profile => profile.Id == storedId)
                 : null;
 

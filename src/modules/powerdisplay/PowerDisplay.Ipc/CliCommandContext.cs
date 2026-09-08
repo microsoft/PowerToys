@@ -40,7 +40,7 @@ internal sealed class CliCommandContext
         IMonitorManager manager,
         int defaultStep,
         Func<CancellationToken, Task<PowerDisplayProfiles>> loadProfilesAsync,
-        Func<int, CancellationToken, Task<string?>> applyProfileAsync)
+        Func<Guid, CancellationToken, Task<string?>> applyProfileAsync)
     {
         Envelope = envelope;
         Snapshot = snapshot;
@@ -78,5 +78,5 @@ internal sealed class CliCommandContext
     /// <see langword="null"/> when the profile is not found. The apply-profile handler uses the
     /// returned name directly and must not call <see cref="LoadProfilesAsync"/> to recover it.
     /// </summary>
-    public Func<int, CancellationToken, Task<string?>> ApplyProfileAsync { get; }
+    public Func<Guid, CancellationToken, Task<string?>> ApplyProfileAsync { get; }
 }

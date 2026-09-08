@@ -34,7 +34,7 @@ public class ProfileDtoProjectorTests
 
         var profile = new PowerDisplayProfile
         {
-            Id = 1,
+            Id = ProfileTestIds.First,
             Name = "Night",
             MonitorSettings = new List<ProfileMonitorSetting>
             {
@@ -51,6 +51,7 @@ public class ProfileDtoProjectorTests
 
         Assert.AreEqual(1, result.Profiles.Count);
         var info = result.Profiles[0];
+        Assert.AreEqual(ProfileTestIds.First, info.Id);
         Assert.AreEqual("Night", info.Name);
         Assert.AreEqual(2, info.MonitorCount);
 
@@ -73,12 +74,31 @@ public class ProfileDtoProjectorTests
         {
             new ProfileMonitorSetting("MON1", 50, null, null, null),
         });
-        p.Id = 4;
+        p.Id = ProfileTestIds.Second;
         profiles.Profiles.Add(p);
 
         var result = ProfileDtoProjector.BuildProfileListResult(profiles);
 
-        Assert.AreEqual(4, result.Profiles[0].Id);
+        Assert.AreEqual(ProfileTestIds.Second, result.Profiles[0].Id);
         Assert.AreEqual("Gaming", result.Profiles[0].Name);
+    }
+
+    [TestMethod]
+    public void BuildProfileListResult_UsesExplicitOrderInsteadOfArrayPositionOrId()
+    {
+        var profiles = new PowerDisplayProfiles
+        {
+            Profiles = new List<PowerDisplayProfile>
+            {
+                new() { Id = ProfileTestIds.Second, Name = "Second", Order = 1 },
+                new() { Id = ProfileTestIds.First, Name = "First", Order = 0 },
+            },
+        };
+
+        var result = ProfileDtoProjector.BuildProfileListResult(profiles);
+
+        Assert.AreEqual(2, result.Profiles.Count);
+        Assert.AreEqual(ProfileTestIds.First, result.Profiles[0].Id);
+        Assert.AreEqual(ProfileTestIds.Second, result.Profiles[1].Id);
     }
 }

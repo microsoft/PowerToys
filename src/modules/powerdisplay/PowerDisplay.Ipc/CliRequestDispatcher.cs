@@ -27,7 +27,7 @@ public static class CliRequestDispatcher
         IMonitorManager manager,
         int defaultStep,
         Func<CancellationToken, Task<PowerDisplayProfiles>> loadProfilesAsync,
-        Func<int, CancellationToken, Task<string?>> applyProfileAsync,
+        Func<Guid, CancellationToken, Task<string?>> applyProfileAsync,
         CancellationToken cancellationToken)
     {
         try

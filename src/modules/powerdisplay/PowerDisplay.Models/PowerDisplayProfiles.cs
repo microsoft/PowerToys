@@ -19,9 +19,6 @@ namespace PowerDisplay.Models
         [JsonPropertyName("profiles")]
         public List<PowerDisplayProfile> Profiles { get; set; }
 
-        [JsonPropertyName("nextId")]
-        public int NextId { get; set; }
-
         [JsonPropertyName("lastUpdated")]
         public DateTime LastUpdated { get; set; }
 
@@ -38,30 +35,38 @@ namespace PowerDisplay.Models
         public PowerDisplayProfile? GetLegacyProfileByName(string name)
         {
             return Profiles.FirstOrDefault(
-                profile => profile.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                profile => profile is not null && string.Equals(profile.Name, name, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
-        /// Gets the profile by its stable id, or null when id is not positive or no profile has it.
+        /// Gets the profile by its UUID, or null when the id is empty or no profile has it.
         /// </summary>
-        public PowerDisplayProfile? GetById(int id)
+        public PowerDisplayProfile? GetById(Guid id)
         {
-            return id <= 0 ? null : Profiles.FirstOrDefault(p => p.Id == id);
+            return id == Guid.Empty ? null : Profiles.FirstOrDefault(profile => profile?.Id == id);
         }
 
         /// <summary>
-        /// Returns profiles that have a usable stable id.
-        /// Legacy or corrupt profiles with non-positive ids remain hidden until migration.
+        /// Resolves a numeric reference retained in another settings file during UUID migration.
+        /// </summary>
+        public PowerDisplayProfile? GetByLegacyId(int legacyId)
+        {
+            return legacyId <= 0 ? null : Profiles.FirstOrDefault(profile => profile?.LegacyId == legacyId);
+        }
+
+        /// <summary>
+        /// Returns profiles with assigned UUIDs in display order, independent of their position
+        /// in the persisted array. Unassigned profiles remain hidden until migration is saved.
         /// </summary>
         public IEnumerable<PowerDisplayProfile> GetAssignedProfiles()
         {
-            return Profiles.Where(profile => profile is not null && profile.Id >= 1);
+            return Profiles.Where(profile => profile is not null && profile.Id != Guid.Empty)
+                .OrderBy(profile => profile.Order);
         }
 
         /// <summary>
-        /// Adds or updates a profile, keyed by its stable id. When the incoming profile has no id
-        /// (Id == 0) a new one is assigned from the monotonic NextId counter. Names are not required
-        /// to be unique.
+        /// Adds or updates a profile by UUID. New profiles receive a random UUID and are displayed
+        /// last. Updating preserves both display order and the legacy reference mapping.
         /// </summary>
         public void SetProfile(PowerDisplayProfile profile)
         {
@@ -70,44 +75,91 @@ namespace PowerDisplay.Models
                 throw new ArgumentException("Profile is invalid");
             }
 
-            if (profile.Id == 0)
+            var existingIndex = profile.Id != Guid.Empty ? Profiles.FindIndex(p => p?.Id == profile.Id) : -1;
+            if (existingIndex >= 0)
             {
-                // Assign the next id, self-healing a corrupt/legacy NextId that isn't already past
-                // the highest id in use (mirrors EnsureIds). This guarantees a new profile never
-                // collides with an existing one even when SetProfile runs before EnsureIds.
-                var maxId = Profiles.Count == 0 ? 0 : Profiles.Max(p => p?.Id ?? 0);
-                var next = Math.Max(Math.Max(NextId, 1), maxId + 1);
-                profile.Id = next;
-                NextId = next + 1;
+                profile.Order = Profiles[existingIndex].Order;
+                profile.LegacyId = Profiles[existingIndex].LegacyId;
             }
             else
             {
-                var existing = GetById(profile.Id);
-                if (existing != null)
+                if (profile.Id == Guid.Empty)
                 {
-                    Profiles.Remove(existing);
+                    do
+                    {
+                        profile.Id = Guid.NewGuid();
+                    }
+                    while (GetById(profile.Id) is not null);
                 }
 
-                if (NextId <= profile.Id)
-                {
-                    NextId = profile.Id + 1;
-                }
+                profile.Order = checked(Profiles.Where(p => p is not null).Select(p => p.Order).DefaultIfEmpty(-1).Max() + 1);
+                profile.LegacyId = null;
             }
 
             profile.Touch();
-            Profiles.Add(profile);
+            if (existingIndex >= 0)
+            {
+                Profiles[existingIndex] = profile;
+            }
+            else
+            {
+                Profiles.Add(profile);
+            }
+
             LastUpdated = DateTime.UtcNow;
         }
 
         /// <summary>
-        /// Removes a profile by its stable id.
+        /// Moves a profile before another UUID, or to the end when beforeProfileId is null.
+        /// Returns false without changing the collection when either id is invalid or missing,
+        /// or the profile is already at the requested position. Only display order is changed;
+        /// the persisted array and profile contents retain their original positions and values.
         /// </summary>
-        public bool RemoveProfile(int id)
+        public bool MoveProfileBefore(Guid profileId, Guid? beforeProfileId)
+        {
+            if (profileId == Guid.Empty || beforeProfileId == Guid.Empty || profileId == beforeProfileId)
+            {
+                return false;
+            }
+
+            var ordered = GetAssignedProfiles().ToList();
+            var sourceIndex = ordered.FindIndex(profile => profile.Id == profileId);
+            var targetIndex = beforeProfileId.HasValue
+                ? ordered.FindIndex(profile => profile.Id == beforeProfileId.Value)
+                : ordered.Count;
+            if (sourceIndex < 0 || targetIndex < 0)
+            {
+                return false;
+            }
+
+            if (targetIndex > sourceIndex)
+            {
+                targetIndex--;
+            }
+
+            if (sourceIndex == targetIndex)
+            {
+                return false;
+            }
+
+            var profile = ordered[sourceIndex];
+            ordered.RemoveAt(sourceIndex);
+            ordered.Insert(targetIndex, profile);
+            SetOrder(ordered);
+            LastUpdated = DateTime.UtcNow;
+            return true;
+        }
+
+        /// <summary>
+        /// Removes a profile by UUID and closes the gap in display order.
+        /// </summary>
+        public bool RemoveProfile(Guid id)
         {
             var profile = GetById(id);
             if (profile != null)
             {
                 Profiles.Remove(profile);
+                SetOrder(GetAssignedProfiles().ToList());
                 LastUpdated = DateTime.UtcNow;
                 return true;
             }
@@ -116,30 +168,60 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
-        /// One-shot upgrade: assigns a stable id to every profile still missing one (Id == 0), in
-        /// list order, and advances NextId past the highest id in use (self-healing a corrupt or
-        /// legacy counter). Returns true when anything changed. Idempotent on subsequent calls.
+        /// Assigns random UUIDs to missing or duplicate identities and repairs display order.
+        /// Missing orders fall back to array positions; ties retain array order. The array itself
+        /// is unchanged, and numeric migration references remain assigned to their first owner.
+        /// Returns true when anything changed. The caller must save before publishing new UUIDs.
         /// </summary>
-        public bool EnsureIds()
+        public bool EnsureIdsAndOrder()
         {
             var changed = false;
-
-            var maxId = Profiles.Count == 0 ? 0 : Profiles.Max(p => p?.Id ?? 0);
-            var next = Math.Max(Math.Max(NextId, 1), maxId + 1);
-
-            foreach (var p in Profiles)
+            var assignedIds = new HashSet<Guid>();
+            var legacyIds = new HashSet<int>();
+            foreach (var profile in Profiles)
             {
-                if (p is not null && p.Id == 0)
+                if (profile is null)
                 {
-                    p.Id = next++;
+                    continue;
+                }
+
+                if (profile.Id == Guid.Empty || !assignedIds.Add(profile.Id))
+                {
+                    do
+                    {
+                        profile.Id = Guid.NewGuid();
+                    }
+                    while (!assignedIds.Add(profile.Id));
+                    changed = true;
+                }
+
+                if (profile.LegacyId.HasValue
+                    && (profile.LegacyId.Value <= 0 || !legacyIds.Add(profile.LegacyId.Value)))
+                {
+                    profile.LegacyId = null;
                     changed = true;
                 }
             }
 
-            if (NextId != next)
+            var ordered = Profiles.Select((profile, index) => (Profile: profile, Index: index))
+                .Where(item => item.Profile is not null)
+                .OrderBy(item => item.Profile.Order >= 0 ? item.Profile.Order : item.Index)
+                .ThenBy(item => item.Index)
+                .Select(item => item.Profile)
+                .ToList();
+            return SetOrder(ordered) || changed;
+        }
+
+        private static bool SetOrder(List<PowerDisplayProfile> ordered)
+        {
+            var changed = false;
+            for (var index = 0; index < ordered.Count; index++)
             {
-                NextId = next;
-                changed = true;
+                if (ordered[index].Order != index)
+                {
+                    ordered[index].Order = index;
+                    changed = true;
+                }
             }
 
             return changed;

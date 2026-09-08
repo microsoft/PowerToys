@@ -108,7 +108,7 @@ public class IpcDispatchTests
             {
                 Code = CliErrorCodes.ArgumentError,
                 MessageId = CliMessageIds.ProfileNotFound,
-                Value = "42",
+                Value = ProfileTestIds.FirstText,
             },
         };
         var responseJson = SerializeError(errorResponse);
@@ -121,14 +121,14 @@ public class IpcDispatchTests
             AnyTimeout);
 
         var exit = await dispatcher.SendApplyProfileAsync(
-            CliRequestBuilder.BuildApplyProfile(42),
+            CliRequestBuilder.BuildApplyProfile(ProfileTestIds.First),
             CancellationToken.None);
 
         Assert.AreEqual(CliExitCodes.ArgumentError, exit);
         Assert.AreEqual(string.Empty, stdout.ToString());
         var rendered = JsonSerializer.Deserialize(stderr.ToString(), ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(rendered);
-        Assert.AreEqual("no profile with id 42", rendered.Error.Message);
+        Assert.AreEqual($"no profile with id {ProfileTestIds.FirstText}", rendered.Error.Message);
         Assert.AreEqual("run 'PowerToys.PowerDisplay.Cli.exe profiles' to see available profiles", rendered.Error.Hint);
     }
 
@@ -137,13 +137,27 @@ public class IpcDispatchTests
     public async Task ApplyProfile_success_exits_0()
     {
         var output = new RecordingCliOutput();
+        string? sentRequest = null;
         var responseJson = SerializeSuccess(
-            new CliApplyProfileResult { Profile = "Work" },
+            new CliApplyProfileResult { ProfileId = ProfileTestIds.First, Profile = "Work" },
             ContractsJsonContext.Default.CliApplyProfileResult);
-        var dispatcher = MakeDispatcher(responseJson, output);
-        var exit = await dispatcher.SendApplyProfileAsync(CliRequestBuilder.BuildApplyProfile(42), CancellationToken.None);
+        var dispatcher = new IpcDispatcher(
+            (requestJson, _, _) =>
+            {
+                sentRequest = requestJson;
+                return Task.FromResult<string?>(responseJson);
+            },
+            output,
+            AnyTimeout);
+        var exit = await dispatcher.SendApplyProfileAsync(CliRequestBuilder.BuildApplyProfile(ProfileTestIds.First), CancellationToken.None);
 
         Assert.AreEqual(CliExitCodes.Ok, exit, "apply-profile is best-effort and always exits 0 once the profile exists");
+        Assert.IsNotNull(sentRequest);
+        using var requestDocument = JsonDocument.Parse(sentRequest);
+        Assert.AreEqual("2.0", requestDocument.RootElement.GetProperty("version").GetString());
+        var profileId = requestDocument.RootElement.GetProperty("applyProfile").GetProperty("profileId");
+        Assert.AreEqual(JsonValueKind.String, profileId.ValueKind);
+        Assert.AreEqual(ProfileTestIds.FirstText, profileId.GetString());
 
         // apply-profile is a success envelope (isError=false): it must route through the success
         // renderer (stdout) and never WriteError.
@@ -174,6 +188,21 @@ public class IpcDispatchTests
         var exit = await dispatcher.SendListAsync(CliRequestBuilder.BuildList(), CancellationToken.None);
 
         Assert.AreEqual(CliExitCodes.InternalError, exit);
+    }
+
+    [TestMethod]
+    public async Task Legacy_numeric_profile_response_exits_internal_error()
+    {
+        var output = new RecordingCliOutput();
+        var dispatcher = MakeDispatcher(
+            "{\"isError\":false,\"version\":\"1.0\",\"command\":\"apply-profile\",\"profileId\":7,\"profile\":\"Work\"}",
+            output);
+
+        var exit = await dispatcher.SendApplyProfileAsync(CliRequestBuilder.BuildApplyProfile(ProfileTestIds.First), CancellationToken.None);
+
+        Assert.AreEqual(CliExitCodes.InternalError, exit);
+        Assert.AreEqual(0, output.StdoutLines.Count);
+        Assert.AreEqual(1, output.StderrLines.Count);
     }
 
     // ── CliRequestBuilder round-trips ────────────────────────────────────────
@@ -221,9 +250,9 @@ public class IpcDispatchTests
     [TestMethod]
     public void BuildApplyProfile_Maps_ProfileId()
     {
-        var envelope = CliRequestBuilder.BuildApplyProfile(7);
+        var envelope = CliRequestBuilder.BuildApplyProfile(ProfileTestIds.First);
         Assert.AreEqual(CliCommandNames.ApplyProfile, envelope.Command);
-        Assert.AreEqual(7, envelope.ApplyProfile!.ProfileId);
+        Assert.AreEqual(ProfileTestIds.First, envelope.ApplyProfile!.ProfileId);
     }
 
     // ── BuildAdjust round-trips ──────────────────────────────────────────────

@@ -4,6 +4,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -27,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public ProfileEditorDialog(
             ObservableCollection<MonitorInfo> availableMonitors,
             string defaultName = "",
-            int profileId = 0)
+            Guid profileId = default)
         {
             this.InitializeComponent();
             ViewModel = new ProfileEditorViewModel(availableMonitors, defaultName, profileId);

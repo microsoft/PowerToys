@@ -14,6 +14,6 @@
   </resheader>
   <data name="ProfileDisplayNameFormat" xml:space="preserve">
     <value>{0} (#{1})</value>
-    <comment>{0} is the profile name. {1} is the stable profile ID.</comment>
+    <comment>{0} is the profile name. {1} is the first eight characters of the profile UUID.</comment>
   </data>
 </root>

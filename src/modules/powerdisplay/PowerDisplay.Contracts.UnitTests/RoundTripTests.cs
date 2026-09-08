@@ -240,8 +240,8 @@ public class RoundTripTests
         {
             Profiles = new List<CliProfileInfo>
             {
-                new CliProfileInfo { Name = "Gaming", MonitorCount = 2, LastModified = "2024-01-15T10:30:00Z" },
-                new CliProfileInfo { Name = "Work", MonitorCount = 1, LastModified = null },
+                new CliProfileInfo { Id = ProfileTestIds.First, Name = "Gaming", MonitorCount = 2, LastModified = "2024-01-15T10:30:00Z" },
+                new CliProfileInfo { Id = ProfileTestIds.Second, Name = "Work", MonitorCount = 1, LastModified = null },
             },
         };
 
@@ -250,7 +250,9 @@ public class RoundTripTests
 
         Assert.IsNotNull(back);
         Assert.AreEqual("profiles", back!.Command);
+        Assert.AreEqual("2.0", back.Version);
         Assert.AreEqual(2, back.Profiles.Count);
+        Assert.AreEqual(ProfileTestIds.First, back.Profiles[0].Id);
         Assert.AreEqual("Gaming", back.Profiles[0].Name);
         Assert.AreEqual(2, back.Profiles[0].MonitorCount);
         Assert.AreEqual("2024-01-15T10:30:00Z", back.Profiles[0].LastModified);
@@ -261,7 +263,7 @@ public class RoundTripTests
     [TestMethod]
     public void CliApplyProfileResult_round_trips()
     {
-        var result = new CliApplyProfileResult { Profile = "Gaming" };
+        var result = new CliApplyProfileResult { ProfileId = ProfileTestIds.First, Profile = "Gaming" };
 
         var json = JsonSerializer.Serialize(result, ContractsJsonContext.Default.CliApplyProfileResult);
         var back = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliApplyProfileResult);
@@ -269,6 +271,8 @@ public class RoundTripTests
         Assert.IsNotNull(back);
         Assert.IsFalse(back!.IsError, "apply-profile is a success envelope (isError=false)");
         Assert.AreEqual("apply-profile", back.Command);
+        Assert.AreEqual("2.0", back.Version);
+        Assert.AreEqual(ProfileTestIds.First, back.ProfileId);
         Assert.AreEqual("Gaming", back.Profile);
     }
 
@@ -296,7 +300,7 @@ public class RoundTripTests
         var envelope = new CliRequestEnvelope
         {
             Command = CliCommandNames.ApplyProfile,
-            ApplyProfile = new ApplyProfileRequest { ProfileId = 7 },
+            ApplyProfile = new ApplyProfileRequest { ProfileId = ProfileTestIds.First },
         };
 
         var json = JsonSerializer.Serialize(envelope, ContractsJsonContext.Default.CliRequestEnvelope);
@@ -304,7 +308,8 @@ public class RoundTripTests
 
         Assert.IsNotNull(back);
         Assert.AreEqual(CliCommandNames.ApplyProfile, back!.Command);
-        Assert.AreEqual(7, back.ApplyProfile!.ProfileId);
+        Assert.AreEqual("2.0", back.Version);
+        Assert.AreEqual(ProfileTestIds.First, back.ApplyProfile!.ProfileId);
     }
 
     [TestMethod]
@@ -344,22 +349,42 @@ public class RoundTripTests
     }
 
     [TestMethod]
-    public void ApplyProfileRequest_And_ProfileInfo_And_ApplyResult_RoundTripIds()
+    public void ProfileIds_RoundTripAsCanonicalUuidStrings()
     {
-        var req = new ApplyProfileRequest { ProfileId = 7 };
+        var req = new ApplyProfileRequest { ProfileId = ProfileTestIds.First };
+        var reqJson = JsonSerializer.Serialize(req, ContractsJsonContext.Default.ApplyProfileRequest);
         var reqBack = JsonSerializer.Deserialize(
-            JsonSerializer.Serialize(req, ContractsJsonContext.Default.ApplyProfileRequest),
+            reqJson,
             ContractsJsonContext.Default.ApplyProfileRequest);
-        Assert.AreEqual(7, reqBack!.ProfileId);
+        Assert.AreEqual(ProfileTestIds.First, reqBack!.ProfileId);
+        using var requestDocument = JsonDocument.Parse(reqJson);
+        Assert.AreEqual(JsonValueKind.String, requestDocument.RootElement.GetProperty("profileId").ValueKind);
+        Assert.AreEqual(ProfileTestIds.FirstText, requestDocument.RootElement.GetProperty("profileId").GetString());
 
-        var info = new CliProfileInfo { Id = 3, Name = "Gaming", MonitorCount = 2 };
+        var info = new CliProfileInfo { Id = ProfileTestIds.Second, Name = "Gaming", MonitorCount = 2 };
         var infoJson = JsonSerializer.Serialize(info, ContractsJsonContext.Default.CliProfileInfo);
-        Assert.IsTrue(infoJson.Contains("\"id\":3"));
+        using var infoDocument = JsonDocument.Parse(infoJson);
+        Assert.AreEqual(JsonValueKind.String, infoDocument.RootElement.GetProperty("id").ValueKind);
+        Assert.AreEqual(ProfileTestIds.SecondText, infoDocument.RootElement.GetProperty("id").GetString());
+        Assert.AreEqual(ProfileTestIds.Second, JsonSerializer.Deserialize(infoJson, ContractsJsonContext.Default.CliProfileInfo)!.Id);
 
-        var applied = new CliApplyProfileResult { ProfileId = 3, Profile = "Gaming" };
+        var applied = new CliApplyProfileResult { ProfileId = ProfileTestIds.Second, Profile = "Gaming" };
+        var appliedJson = JsonSerializer.Serialize(applied, ContractsJsonContext.Default.CliApplyProfileResult);
         var appliedBack = JsonSerializer.Deserialize(
-            JsonSerializer.Serialize(applied, ContractsJsonContext.Default.CliApplyProfileResult),
+            appliedJson,
             ContractsJsonContext.Default.CliApplyProfileResult);
-        Assert.AreEqual(3, appliedBack!.ProfileId);
+        Assert.AreEqual(ProfileTestIds.Second, appliedBack!.ProfileId);
+        using var appliedDocument = JsonDocument.Parse(appliedJson);
+        Assert.AreEqual(JsonValueKind.String, appliedDocument.RootElement.GetProperty("profileId").ValueKind);
+        Assert.AreEqual(ProfileTestIds.SecondText, appliedDocument.RootElement.GetProperty("profileId").GetString());
+    }
+
+    [DataTestMethod]
+    [DataRow("{\"profileId\":7}")]
+    [DataRow("{\"profileId\":\"7\"}")]
+    [DataRow("{\"profileId\":\"not-a-uuid\"}")]
+    public void ApplyProfileRequest_RejectsLegacyNumericAndMalformedIds(string json)
+    {
+        Assert.ThrowsException<JsonException>(() => JsonSerializer.Deserialize(json, ContractsJsonContext.Default.ApplyProfileRequest));
     }
 }

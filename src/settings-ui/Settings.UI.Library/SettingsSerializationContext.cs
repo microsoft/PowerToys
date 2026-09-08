@@ -124,6 +124,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(BoolProperty))]
     [JsonSerializable(typeof(StringProperty))]
     [JsonSerializable(typeof(IntProperty))]
+    [JsonSerializable(typeof(ProfileIdProperty))]
     [JsonSerializable(typeof(DoubleProperty))]
 
     // Helper and Utility Types

@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public const string NoneSentinel = "(None)";
 
-        public static int? GetProfileIdForTheme(LightSwitchProperties properties, bool isLightMode)
+        public static Guid? GetProfileIdForTheme(LightSwitchProperties properties, bool isLightMode)
         {
             ArgumentNullException.ThrowIfNull(properties);
 
@@ -24,51 +24,44 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 ? properties.LightModeProfileId.Value
                 : properties.DarkModeProfileId.Value;
 
-            return enabled && profileId >= 1 ? profileId : null;
+            return enabled && profileId != Guid.Empty ? profileId : null;
         }
 
         public static bool SetProfileId(
-            IntProperty idProperty,
+            ProfileIdProperty idProperty,
             StringProperty legacyNameProperty,
-            int profileId)
+            Guid profileId)
         {
             ArgumentNullException.ThrowIfNull(idProperty);
             ArgumentNullException.ThrowIfNull(legacyNameProperty);
 
-            ArgumentOutOfRangeException.ThrowIfNegative(profileId);
-
             if (idProperty.Value == profileId
+                && idProperty.LegacyId is null
                 && string.IsNullOrEmpty(legacyNameProperty.Value))
             {
                 return false;
             }
 
             idProperty.Value = profileId;
+            idProperty.LegacyId = null;
             legacyNameProperty.Value = string.Empty;
             return true;
         }
 
         public static bool ClearProfileIdReferences(
             LightSwitchProperties properties,
-            int profileId)
+            Guid profileId,
+            int? legacyId = null)
         {
             ArgumentNullException.ThrowIfNull(properties);
 
-            ArgumentOutOfRangeException.ThrowIfLessThan(profileId, 1);
-
-            var changed = false;
-            if (properties.LightModeProfileId.Value == profileId)
+            if (profileId == Guid.Empty)
             {
-                properties.LightModeProfileId.Value = 0;
-                changed = true;
+                throw new ArgumentException("A deleted profile must have a UUID.", nameof(profileId));
             }
 
-            if (properties.DarkModeProfileId.Value == profileId)
-            {
-                properties.DarkModeProfileId.Value = 0;
-                changed = true;
-            }
-
+            var changed = ClearOne(properties.LightModeProfileId, properties.LightModeProfile, profileId, legacyId);
+            changed |= ClearOne(properties.DarkModeProfileId, properties.DarkModeProfile, profileId, legacyId);
             return changed;
         }
 
@@ -91,37 +84,47 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return changed;
         }
 
+        private static bool ClearOne(ProfileIdProperty reference, StringProperty legacyName, Guid profileId, int? legacyId)
+        {
+            if (reference.Value != profileId &&
+                !(reference.Value == Guid.Empty && legacyId is > 0 && reference.LegacyId == legacyId))
+            {
+                return false;
+            }
+
+            // Clearing a deleted reference also clears its migration fallback, so a later
+            // same-name profile cannot accidentally restore the deleted selection.
+            return SetProfileId(reference, legacyName, Guid.Empty);
+        }
+
         private static bool ReconcileOne(
             PowerDisplayProfiles profiles,
-            IntProperty idProperty,
+            ProfileIdProperty idProperty,
             StringProperty legacyNameProperty)
         {
             var originalId = idProperty.Value;
-            var originalName = legacyNameProperty.Value;
-
-            if (originalId >= 1)
+            if (originalId != Guid.Empty)
             {
-                if (profiles.GetById(originalId) is null)
-                {
-                    idProperty.Value = 0;
-                }
-            }
-            else if (!string.IsNullOrEmpty(originalName) && originalName != NoneSentinel)
-            {
-                var profile = profiles.GetLegacyProfileByName(originalName);
-                if (profile is not null && profile.Id >= 1)
-                {
-                    idProperty.Value = profile.Id;
-                }
+                // A canonical UUID takes precedence over all older references. A missing
+                // profile can be temporary, so only an explicit user action clears it.
+                return profiles.GetById(originalId) is not null &&
+                    SetProfileId(idProperty, legacyNameProperty, originalId);
             }
 
-            if (!string.IsNullOrEmpty(legacyNameProperty.Value))
+            PowerDisplayProfile? profile = null;
+            if (idProperty.LegacyId is > 0)
             {
-                legacyNameProperty.Value = string.Empty;
+                profile = profiles.GetByLegacyId(idProperty.LegacyId.Value);
+            }
+            else if (!string.IsNullOrEmpty(legacyNameProperty.Value) && legacyNameProperty.Value != NoneSentinel)
+            {
+                profile = profiles.GetLegacyProfileByName(legacyNameProperty.Value);
             }
 
-            return idProperty.Value != originalId
-                || legacyNameProperty.Value != originalName;
+            // Profiles must be the committed snapshot returned by ProfileStore. If either
+            // file failed to migrate, retain the old reference for the next attempt.
+            return profile is not null && profile.Id != Guid.Empty &&
+                SetProfileId(idProperty, legacyNameProperty, profile.Id);
         }
     }
 }

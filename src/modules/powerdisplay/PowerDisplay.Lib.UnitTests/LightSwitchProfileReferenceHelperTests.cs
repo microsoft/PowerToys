@@ -13,30 +13,33 @@ namespace PowerDisplay.UnitTests;
 [TestClass]
 public class LightSwitchProfileReferenceHelperTests
 {
+    private static readonly Guid DayId = new("4f7d8a46-9e11-43e0-bbc6-450402bb8abc");
+    private static readonly Guid NightId = new("a5f24452-4389-4f76-b6dd-4434f6c9c124");
+    private static readonly Guid MissingId = new("de7e65ef-92c5-480c-a263-5059d99d2409");
+
     [TestMethod]
-    public void GetProfileIdForTheme_DisabledOrZeroId_ReturnsNull()
+    public void GetProfileIdForTheme_DisabledOrEmptyId_ReturnsNull()
     {
         var properties = new LightSwitchProperties();
         properties.EnableDarkModeProfile.Value = false;
-        properties.DarkModeProfileId.Value = 7;
+        properties.DarkModeProfileId.Value = NightId;
         properties.EnableLightModeProfile.Value = true;
-        properties.LightModeProfileId.Value = 0;
 
         Assert.IsNull(LightSwitchProfileReferenceHelper.GetProfileIdForTheme(properties, isLightMode: false));
         Assert.IsNull(LightSwitchProfileReferenceHelper.GetProfileIdForTheme(properties, isLightMode: true));
     }
 
     [TestMethod]
-    public void GetProfileIdForTheme_EnabledPositiveIds_ReturnsThemeId()
+    public void GetProfileIdForTheme_EnabledIds_ReturnsThemeId()
     {
         var properties = new LightSwitchProperties();
         properties.EnableDarkModeProfile.Value = true;
-        properties.DarkModeProfileId.Value = 7;
+        properties.DarkModeProfileId.Value = NightId;
         properties.EnableLightModeProfile.Value = true;
-        properties.LightModeProfileId.Value = 4;
+        properties.LightModeProfileId.Value = DayId;
 
-        Assert.AreEqual(7, LightSwitchProfileReferenceHelper.GetProfileIdForTheme(properties, isLightMode: false));
-        Assert.AreEqual(4, LightSwitchProfileReferenceHelper.GetProfileIdForTheme(properties, isLightMode: true));
+        Assert.AreEqual(NightId, LightSwitchProfileReferenceHelper.GetProfileIdForTheme(properties, isLightMode: false));
+        Assert.AreEqual(DayId, LightSwitchProfileReferenceHelper.GetProfileIdForTheme(properties, isLightMode: true));
     }
 
     [TestMethod]
@@ -46,155 +49,168 @@ public class LightSwitchProfileReferenceHelperTests
         properties.DarkModeProfile.Value = "Night";
         properties.LightModeProfile.Value = "Day";
 
-        Assert.IsTrue(LightSwitchProfileReferenceHelper.ReconcileReferences(
-            properties,
-            Profiles(("Day", 4), ("Night", 7))));
-        Assert.AreEqual(7, properties.DarkModeProfileId.Value);
-        Assert.AreEqual(4, properties.LightModeProfileId.Value);
+        Assert.IsTrue(LightSwitchProfileReferenceHelper.ReconcileReferences(properties, Profiles()));
+        Assert.AreEqual(NightId, properties.DarkModeProfileId.Value);
+        Assert.AreEqual(DayId, properties.LightModeProfileId.Value);
         Assert.AreEqual(string.Empty, properties.DarkModeProfile.Value);
         Assert.AreEqual(string.Empty, properties.LightModeProfile.Value);
     }
 
     [TestMethod]
-    public void ReconcileReferences_ValidId_ClearsLegacyNameAndBecomesIdempotent()
+    public void ReconcileReferences_LegacyNumericIds_UsesPersistedMappingBeforeNames()
     {
         var properties = new LightSwitchProperties();
-        properties.DarkModeProfileId.Value = 7;
-        properties.DarkModeProfile.Value = "Night";
-        var profiles = Profiles(("Night", 7));
-
-        Assert.IsTrue(LightSwitchProfileReferenceHelper.ReconcileReferences(properties, profiles));
-        Assert.AreEqual(7, properties.DarkModeProfileId.Value);
-        Assert.AreEqual(string.Empty, properties.DarkModeProfile.Value);
-        Assert.IsFalse(LightSwitchProfileReferenceHelper.ReconcileReferences(properties, profiles));
-    }
-
-    [TestMethod]
-    public void ReconcileReferences_StaleId_DoesNotFallBackToLegacyName()
-    {
-        var properties = new LightSwitchProperties();
-        properties.DarkModeProfileId.Value = 99;
-        properties.DarkModeProfile.Value = "Night";
-
-        Assert.IsTrue(LightSwitchProfileReferenceHelper.ReconcileReferences(
-            properties,
-            Profiles(("Night", 7))));
-        Assert.AreEqual(0, properties.DarkModeProfileId.Value);
-        Assert.AreEqual(string.Empty, properties.DarkModeProfile.Value);
-    }
-
-    [TestMethod]
-    public void ReconcileReferences_UnknownLegacyName_ClearsNameAndLeavesZeroId()
-    {
-        var properties = new LightSwitchProperties();
-        properties.DarkModeProfile.Value = "Deleted";
+        properties.DarkModeProfileId.LegacyId = 7;
+        properties.DarkModeProfile.Value = "Day";
+        properties.LightModeProfileId.LegacyId = 4;
 
         Assert.IsTrue(LightSwitchProfileReferenceHelper.ReconcileReferences(properties, Profiles()));
-        Assert.AreEqual(0, properties.DarkModeProfileId.Value);
+        Assert.AreEqual(NightId, properties.DarkModeProfileId.Value);
+        Assert.AreEqual(DayId, properties.LightModeProfileId.Value);
+        Assert.IsNull(properties.DarkModeProfileId.LegacyId);
+        Assert.IsNull(properties.LightModeProfileId.LegacyId);
         Assert.AreEqual(string.Empty, properties.DarkModeProfile.Value);
+        Assert.IsFalse(LightSwitchProfileReferenceHelper.ReconcileReferences(properties, Profiles()));
+    }
+
+    [TestMethod]
+    public void ReconcileReferences_ValidUuid_ClearsLegacyReferencesAndBecomesIdempotent()
+    {
+        var properties = new LightSwitchProperties();
+        properties.DarkModeProfileId.Value = NightId;
+        properties.DarkModeProfileId.LegacyId = 4;
+        properties.DarkModeProfile.Value = "Day";
+
+        Assert.IsTrue(LightSwitchProfileReferenceHelper.ReconcileReferences(properties, Profiles()));
+        Assert.AreEqual(NightId, properties.DarkModeProfileId.Value);
+        Assert.IsNull(properties.DarkModeProfileId.LegacyId);
+        Assert.AreEqual(string.Empty, properties.DarkModeProfile.Value);
+        Assert.IsFalse(LightSwitchProfileReferenceHelper.ReconcileReferences(properties, Profiles()));
+    }
+
+    [TestMethod]
+    public void ReconcileReferences_MissingUuid_PreservesReferenceWithoutFallingBack()
+    {
+        var properties = new LightSwitchProperties();
+        properties.DarkModeProfileId.Value = MissingId;
+        properties.DarkModeProfileId.LegacyId = 7;
+        properties.DarkModeProfile.Value = "Night";
+
+        Assert.IsFalse(LightSwitchProfileReferenceHelper.ReconcileReferences(properties, Profiles()));
+        Assert.AreEqual(MissingId, properties.DarkModeProfileId.Value);
+        Assert.AreEqual(7, properties.DarkModeProfileId.LegacyId);
+        Assert.AreEqual("Night", properties.DarkModeProfile.Value);
+    }
+
+    [TestMethod]
+    public void ReconcileReferences_UnknownLegacyId_PreservesReferenceWithoutNameFallback()
+    {
+        var properties = new LightSwitchProperties();
+        properties.DarkModeProfileId.LegacyId = 99;
+        properties.DarkModeProfile.Value = "Night";
+
+        Assert.IsFalse(LightSwitchProfileReferenceHelper.ReconcileReferences(properties, Profiles()));
+        Assert.AreEqual(Guid.Empty, properties.DarkModeProfileId.Value);
+        Assert.AreEqual(99, properties.DarkModeProfileId.LegacyId);
+        Assert.AreEqual("Night", properties.DarkModeProfile.Value);
+    }
+
+    [TestMethod]
+    public void ReconcileReferences_UnknownLegacyName_PreservesNameForRetry()
+    {
+        var properties = new LightSwitchProperties();
+        properties.DarkModeProfile.Value = "Unavailable";
+
+        Assert.IsFalse(LightSwitchProfileReferenceHelper.ReconcileReferences(properties, Profiles()));
+        Assert.AreEqual(Guid.Empty, properties.DarkModeProfileId.Value);
+        Assert.AreEqual("Unavailable", properties.DarkModeProfile.Value);
     }
 
     [TestMethod]
     public void ReconcileReferences_EmptyReferences_RemainUnchanged()
     {
-        var properties = new LightSwitchProperties();
-
-        Assert.IsFalse(LightSwitchProfileReferenceHelper.ReconcileReferences(properties, Profiles()));
+        Assert.IsFalse(LightSwitchProfileReferenceHelper.ReconcileReferences(new LightSwitchProperties(), Profiles()));
     }
 
     [TestMethod]
-    public void SetProfileId_StoresIdAndClearsLegacyName()
+    public void SetProfileId_StoresIdAndClearsAllLegacyReferences()
     {
-        var idProperty = new IntProperty(3);
+        var idProperty = new ProfileIdProperty { LegacyId = 3 };
         var legacyNameProperty = new StringProperty("Old Name");
 
-        Assert.IsTrue(LightSwitchProfileReferenceHelper.SetProfileId(
-            idProperty,
-            legacyNameProperty,
-            7));
-        Assert.AreEqual(7, idProperty.Value);
+        Assert.IsTrue(LightSwitchProfileReferenceHelper.SetProfileId(idProperty, legacyNameProperty, NightId));
+        Assert.AreEqual(NightId, idProperty.Value);
+        Assert.IsNull(idProperty.LegacyId);
         Assert.AreEqual(string.Empty, legacyNameProperty.Value);
     }
 
     [TestMethod]
-    public void SetProfileId_UnchangedIdAndEmptyLegacyName_ReturnsFalse()
+    public void SetProfileId_ExplicitNone_ClearsUnresolvedLegacyReferences()
     {
-        var idProperty = new IntProperty(7);
-        var legacyNameProperty = new StringProperty(string.Empty);
+        var idProperty = new ProfileIdProperty { LegacyId = 7 };
+        var legacyNameProperty = new StringProperty("Night");
 
-        Assert.IsFalse(LightSwitchProfileReferenceHelper.SetProfileId(
-            idProperty,
-            legacyNameProperty,
-            7));
+        Assert.IsTrue(LightSwitchProfileReferenceHelper.SetProfileId(idProperty, legacyNameProperty, Guid.Empty));
+        Assert.AreEqual(Guid.Empty, idProperty.Value);
+        Assert.IsNull(idProperty.LegacyId);
+        Assert.AreEqual(string.Empty, legacyNameProperty.Value);
     }
 
     [TestMethod]
-    public void SetProfileId_NegativeId_Throws()
+    public void SetProfileId_UnchangedIdWithoutLegacyReferences_ReturnsFalse()
     {
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
-            LightSwitchProfileReferenceHelper.SetProfileId(
-                new IntProperty(0),
-                new StringProperty(string.Empty),
-                -1));
+        Assert.IsFalse(LightSwitchProfileReferenceHelper.SetProfileId(new ProfileIdProperty(NightId), new StringProperty(), NightId));
     }
 
     [TestMethod]
-    public void ClearProfileIdReferences_ClearsOnlyMatchingIds()
+    public void ClearProfileIdReferences_ClearsOnlyMatchingIdsAndTheirFallbacks()
     {
         var properties = new LightSwitchProperties();
-        properties.DarkModeProfileId.Value = 7;
-        properties.LightModeProfileId.Value = 4;
+        properties.DarkModeProfileId.Value = NightId;
+        properties.LightModeProfileId.Value = DayId;
         properties.DarkModeProfile.Value = "Legacy dark";
         properties.LightModeProfile.Value = "Legacy light";
 
-        Assert.IsTrue(LightSwitchProfileReferenceHelper.ClearProfileIdReferences(properties, 7));
-        Assert.AreEqual(0, properties.DarkModeProfileId.Value);
-        Assert.AreEqual(4, properties.LightModeProfileId.Value);
-        Assert.AreEqual("Legacy dark", properties.DarkModeProfile.Value);
+        Assert.IsTrue(LightSwitchProfileReferenceHelper.ClearProfileIdReferences(properties, NightId));
+        Assert.AreEqual(Guid.Empty, properties.DarkModeProfileId.Value);
+        Assert.AreEqual(DayId, properties.LightModeProfileId.Value);
+        Assert.AreEqual(string.Empty, properties.DarkModeProfile.Value);
         Assert.AreEqual("Legacy light", properties.LightModeProfile.Value);
     }
 
     [TestMethod]
-    public void ClearProfileIdReferences_BothMatchingIds_ClearsBothAndKeepsLegacyNames()
+    public void ClearProfileIdReferences_MatchingUnmigratedNumericId_ClearsIt()
     {
         var properties = new LightSwitchProperties();
-        properties.DarkModeProfileId.Value = 7;
-        properties.LightModeProfileId.Value = 7;
-        properties.DarkModeProfile.Value = "Legacy dark";
-        properties.LightModeProfile.Value = "Legacy light";
+        properties.DarkModeProfileId.LegacyId = 7;
+        properties.DarkModeProfile.Value = "Night";
+        properties.LightModeProfileId.Value = DayId;
+        properties.LightModeProfileId.LegacyId = 7;
 
-        Assert.IsTrue(LightSwitchProfileReferenceHelper.ClearProfileIdReferences(properties, 7));
-        Assert.AreEqual(0, properties.DarkModeProfileId.Value);
-        Assert.AreEqual(0, properties.LightModeProfileId.Value);
-        Assert.AreEqual("Legacy dark", properties.DarkModeProfile.Value);
-        Assert.AreEqual("Legacy light", properties.LightModeProfile.Value);
+        Assert.IsTrue(LightSwitchProfileReferenceHelper.ClearProfileIdReferences(properties, NightId, legacyId: 7));
+        Assert.AreEqual(Guid.Empty, properties.DarkModeProfileId.Value);
+        Assert.IsNull(properties.DarkModeProfileId.LegacyId);
+        Assert.AreEqual(string.Empty, properties.DarkModeProfile.Value);
+        Assert.AreEqual(DayId, properties.LightModeProfileId.Value);
+        Assert.AreEqual(7, properties.LightModeProfileId.LegacyId);
     }
 
     [TestMethod]
-    public void ClearProfileIdReferences_NonPositiveId_Throws()
+    public void ClearProfileIdReferences_EmptyId_Throws()
     {
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
-            LightSwitchProfileReferenceHelper.ClearProfileIdReferences(
-                new LightSwitchProperties(),
-                0));
+        Assert.ThrowsExactly<ArgumentException>(() =>
+            LightSwitchProfileReferenceHelper.ClearProfileIdReferences(new LightSwitchProperties(), Guid.Empty));
     }
 
-    private static PowerDisplayProfiles Profiles(params (string Name, int Id)[] items)
+    private static PowerDisplayProfiles Profiles()
     {
-        var profiles = new PowerDisplayProfiles();
-        foreach (var (name, id) in items)
+        return new PowerDisplayProfiles
         {
-            profiles.Profiles.Add(new PowerDisplayProfile(
-                name,
-                new List<ProfileMonitorSetting>
-                {
-                    new ProfileMonitorSetting("MON1", 50, null, null, null),
-                })
+            Profiles = new List<PowerDisplayProfile>
             {
-                Id = id,
-            });
-        }
-
-        return profiles;
+                new PowerDisplayProfile("Day", new List<ProfileMonitorSetting>()) { Id = DayId, LegacyId = 4, Order = 0 },
+                new PowerDisplayProfile("Night", new List<ProfileMonitorSetting>()) { Id = NightId, LegacyId = 7, Order = 1 },
+            },
+        };
     }
 }
