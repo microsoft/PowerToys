@@ -80,9 +80,6 @@ internal static partial class NativeSelectionInterop
     [LibraryImport("kernel32.dll", EntryPoint = "GetModuleHandleW", StringMarshalling = StringMarshalling.Utf16)]
     internal static partial nint GetModuleHandle(string? moduleName);
 
-    [LibraryImport("kernel32.dll")]
-    internal static partial uint GetCurrentThreadId();
-
     [LibraryImport("user32.dll", SetLastError = true)]
     internal static partial nint SetThreadDpiAwarenessContext(nint context);
 
@@ -118,9 +115,6 @@ internal static partial class NativeSelectionInterop
 
     [LibraryImport("user32.dll")]
     internal static partial int ShowWindow(nint hwnd, int command);
-
-    [LibraryImport("user32.dll")]
-    internal static partial nint GetWindow(nint hwnd, uint command);
 
     [LibraryImport("user32.dll", SetLastError = true)]
     internal static partial int SetWindowPos(nint hwnd, nint after, int x, int y, int width, int height, uint flags);
@@ -160,9 +154,6 @@ internal static partial class NativeSelectionInterop
 
     [LibraryImport("user32.dll", SetLastError = true)]
     internal static partial int ClientToScreen(nint hwnd, ref Point point);
-
-    [LibraryImport("user32.dll", SetLastError = true)]
-    internal static partial int GetClientRect(nint hwnd, out Rect rect);
 
     [LibraryImport("user32.dll", SetLastError = true)]
     internal static partial int SetWindowRgn(nint hwnd, nint region, int redraw);

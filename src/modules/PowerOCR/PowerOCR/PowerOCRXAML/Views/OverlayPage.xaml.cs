@@ -31,7 +31,6 @@ public sealed partial class OverlayPage : UserControl
     private DisplayCapture? _capture;
     private SettingsDeepLink? _settingsDeepLink;
     private IDisposable? _cursorClipLease;
-    private CursorDiagnostics? _cursorDiagnostics;
     private Pointer? _activePointer;
 
     private bool _isSelecting;
@@ -77,7 +76,6 @@ public sealed partial class OverlayPage : UserControl
 
         AutomationProperties.SetName(this, parentWindow.Title);
         BackgroundImage.Source = capture.ImageSource;
-        _cursorDiagnostics = CursorDiagnostics.TryStart(parentWindow, this, RegionClickCanvas, capture.Bounds);
         InitializeNativeSelection();
 
         // Masks are sized against the real layout dimensions once the page is laid out
@@ -105,8 +103,6 @@ public sealed partial class OverlayPage : UserControl
     {
         CancelSelection();
         StopNativeSelection();
-        _cursorDiagnostics?.Dispose();
-        _cursorDiagnostics = null;
     }
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -181,7 +177,7 @@ public sealed partial class OverlayPage : UserControl
 
     private void Canvas_PointerPressed(object sender, PointerRoutedEventArgs e)
     {
-        if (_nativePrototypeEnabled)
+        if (_nativeSelectionWindow is not null)
         {
             e.Handled = true;
             return;

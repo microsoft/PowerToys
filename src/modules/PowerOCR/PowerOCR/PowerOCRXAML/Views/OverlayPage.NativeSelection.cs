@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 
 using ManagedCommon;
@@ -25,7 +24,6 @@ public sealed partial class OverlayPage
     private NativeSelectionWindow? _nativeSelectionWindow;
     private Microsoft.UI.Dispatching.DispatcherQueue? _nativeDispatcher;
     private PixelRect[] _nativeExclusions = Array.Empty<PixelRect>();
-    private bool _nativePrototypeEnabled;
     private bool _nativeStarted;
     private bool _nativeClosing;
     private bool _nativeLanguagePopupOpen;
@@ -34,18 +32,15 @@ public sealed partial class OverlayPage
 
     private void InitializeNativeSelection()
     {
-        if (_parentWindow is null || _capture is null ||
-            !File.Exists(Path.Combine(Logger.AppLogDirectoryPath, "cursor-native-overlay.enabled")))
+        if (_parentWindow is null || _capture is null)
         {
             return;
         }
 
-        _nativePrototypeEnabled = true;
         _nativeDispatcher = _parentWindow.DispatcherQueue;
         try
         {
             _nativeSelectionWindow = new NativeSelectionWindow(
-                _parentWindow.GetWindowHandle(),
                 _capture,
                 (selection, isClick) => EnqueueNativeCallback(() => CompleteNativeSelection(selection, isClick)),
                 () => EnqueueNativeCallback(UpdateNativeSelectionExclusions),
@@ -61,12 +56,11 @@ public sealed partial class OverlayPage
             ContextMenuFlyout.Closed += OnNativeContextPopupClosed;
             _parentWindow.Closed += OnNativeParentClosed;
             _parentWindow.Activated += OnNativeParentActivated;
-            Logger.LogInfo("PowerOCR native selection prototype enabled. The selection surface uses a separate Win32 HWND and UI thread.");
         }
         catch (Exception exception)
         {
             StopNativeSelection();
-            Logger.LogError("Could not initialize the native selection prototype.", exception);
+            Logger.LogError("Could not initialize the native selection window.", exception);
             throw;
         }
     }
@@ -88,7 +82,7 @@ public sealed partial class OverlayPage
         catch (Exception exception)
         {
             StopNativeSelection();
-            Logger.LogError("Could not start the native selection prototype.", exception);
+            Logger.LogError("Could not start the native selection window.", exception);
             _manager?.CloseAll(cancelled: true);
         }
     }
@@ -96,7 +90,6 @@ public sealed partial class OverlayPage
     internal void PrepareForWindowClose()
     {
         _nativeClosing = true;
-        _cursorDiagnostics?.RecordCanvasState("window-close-preparing");
     }
 
     internal void StopNativeSelection()
@@ -106,7 +99,6 @@ public sealed partial class OverlayPage
         _nativeSelectionWindow = null;
         _nativeStarted = false;
         _nativeVisible = null;
-        _nativePrototypeEnabled = false;
 
         LayoutUpdated -= OnNativeLayoutUpdated;
         if (ViewModel is not null)
@@ -177,7 +169,7 @@ public sealed partial class OverlayPage
 
     private void FailNativeSelection(string message)
     {
-        Logger.LogError($"Native selection prototype failed: {message}");
+        Logger.LogError($"Native selection failed: {message}");
         _manager?.CloseAll(cancelled: true);
     }
 
@@ -269,7 +261,7 @@ public sealed partial class OverlayPage
 
     private void PrepareNativeContextMenu()
     {
-        if (!_nativePrototypeEnabled)
+        if (_nativeSelectionWindow is null)
         {
             return;
         }

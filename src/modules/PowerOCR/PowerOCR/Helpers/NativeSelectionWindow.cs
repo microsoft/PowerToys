@@ -20,14 +20,13 @@ using Native = PowerOCR.Helpers.NativeSelectionInterop;
 namespace PowerOCR.Helpers;
 
 /// <summary>
-/// Experimental GDI selection surface with no WinUI content island. The native thread owns
+/// Native GDI selection surface with no WinUI content island. The native thread owns
 /// its HWND, capture, cursor clip, and drawing resources; callbacks only notify the UI thread.
 /// </summary>
 internal sealed partial class NativeSelectionWindow : IDisposable
 {
     private readonly object _lifecycleGate = new();
     private readonly ConcurrentQueue<Action> _commands = new();
-    private readonly nint _winuiWindow;
     private readonly DisplayBounds _bounds;
     private readonly Bitmap _screenshot;
     private readonly Action<PixelSelection, bool> _completed;
@@ -35,14 +34,12 @@ internal sealed partial class NativeSelectionWindow : IDisposable
     private readonly Action<int, bool> _keyPressed;
     private readonly Action<Windows.Foundation.Point> _contextRequested;
     private readonly Action<string> _failed;
-    private readonly Action<string>? _trace;
     private readonly Native.WindowProcedure _windowProcedure;
     private nint _hwnd;
     private int _disposeRequested;
     private bool _started;
 
     // Accessed only on the native window's thread after Start.
-    private NativeSelectionDiagnostics? _diagnostics;
     private PixelRect[] _exclusions = [];
     private IDisposable? _cursorClip;
     private DrawingSurface? _original;
@@ -66,16 +63,13 @@ internal sealed partial class NativeSelectionWindow : IDisposable
     private double _lastY;
 
     internal NativeSelectionWindow(
-        nint owner,
         DisplayCapture capture,
         Action<PixelSelection, bool> completed,
         Action cancelled,
         Action<int, bool> keyPressed,
         Action<Windows.Foundation.Point> contextRequested,
-        Action<string> failed,
-        Action<string>? trace = null)
+        Action<string> failed)
     {
-        _winuiWindow = owner;
         _bounds = capture.Bounds;
 
         // The overlay manager may dispose DisplayCapture immediately after it requests close.
@@ -90,11 +84,10 @@ internal sealed partial class NativeSelectionWindow : IDisposable
         _keyPressed = keyPressed;
         _contextRequested = contextRequested;
         _failed = failed;
-        _trace = trace;
         _windowProcedure = WindowProcedure;
     }
 
-    internal nint Hwnd => Interlocked.CompareExchange(ref _hwnd, 0, 0);
+    private nint Hwnd => Interlocked.CompareExchange(ref _hwnd, 0, 0);
 
     internal void Start()
     {
@@ -238,7 +231,7 @@ internal sealed partial class NativeSelectionWindow : IDisposable
             nint hwnd = Native.CreateWindowEx(
                 0x00000088, // WS_EX_TOOLWINDOW | WS_EX_TOPMOST
                 className,
-                "PowerOCR native selection experiment",
+                "Text Extractor selection",
                 0x80000000, // WS_POPUP; deliberately not visible yet.
                 _bounds.X,
                 _bounds.Y,
@@ -262,13 +255,8 @@ internal sealed partial class NativeSelectionWindow : IDisposable
             }
 
             ApplyExclusions();
-            _diagnostics = NativeSelectionDiagnostics.TryStart(hwnd, _bounds);
             _ready = true;
             UpdateVisibility();
-            Native.Point clientOrigin = default;
-            bool originKnown = Native.ClientToScreen(hwnd, ref clientOrigin) != 0;
-            bool sizeKnown = Native.GetClientRect(hwnd, out Native.Rect clientRect) != 0;
-            Trace($"ready hwnd=0x{hwnd:X} owner=0x{Native.GetWindow(hwnd, 4):X} winui=0x{_winuiWindow:X} tid={Native.GetCurrentThreadId()} bounds={_bounds} cursor=0x{_crossCursor:X} clientOrigin={clientOrigin.X},{clientOrigin.Y} clientSize={clientRect.Right - clientRect.Left},{clientRect.Bottom - clientRect.Top} originKnown={originKnown} sizeKnown={sizeKnown}");
 
             int result;
             while ((result = Native.GetMessage(out Native.Message message, 0, 0, 0)) > 0)
@@ -295,8 +283,6 @@ internal sealed partial class NativeSelectionWindow : IDisposable
             _ready = false;
             CloseWindow();
             ReleaseCursorClip();
-            _diagnostics?.Dispose();
-            _diagnostics = null;
             _frame?.Dispose();
             _dimmed?.Dispose();
             _original?.Dispose();
@@ -319,8 +305,6 @@ internal sealed partial class NativeSelectionWindow : IDisposable
             while (_commands.TryDequeue(out _))
             {
             }
-
-            Trace("closed");
         }
     }
 
@@ -449,7 +433,6 @@ internal sealed partial class NativeSelectionWindow : IDisposable
         _ = Native.SetCapture(hwnd);
         if (Native.GetCapture() != hwnd)
         {
-            Trace("selection capture failed");
             return;
         }
 
@@ -463,7 +446,6 @@ internal sealed partial class NativeSelectionWindow : IDisposable
         _cursorClip = CursorClipper.TryAcquire(_bounds);
         ApplyExclusions();
         RedrawFrame();
-        Trace("selection started");
     }
 
     private void ApplyPointerPosition(nint lParam, bool shiftDown)
@@ -509,7 +491,6 @@ internal sealed partial class NativeSelectionWindow : IDisposable
         PixelSelection selection = CurrentSelection();
         bool isClick = selection.Local.Width < 3 || selection.Local.Height < 3;
         EndSelection(notifyCancellation: false);
-        Trace($"selection completed local={selection.Local} click={isClick}");
         Notify(() => _completed(selection, isClick));
     }
 
@@ -534,7 +515,6 @@ internal sealed partial class NativeSelectionWindow : IDisposable
 
             if (notifyCancellation)
             {
-                Trace("selection cancelled");
                 Notify(_cancelled);
             }
         }
@@ -733,25 +713,8 @@ internal sealed partial class NativeSelectionWindow : IDisposable
         }
 
         _failureReported = true;
-        LogError("PowerOCR native selection experiment failed.", exception);
+        LogError("PowerOCR native selection failed.", exception);
         Notify(() => _failed(exception.Message));
-    }
-
-    private void Trace(string message)
-    {
-        try
-        {
-            Logger.LogInfo($"PowerOCR native selection: {message}");
-        }
-        catch (Exception)
-        {
-            // Trace listeners must not interrupt window or clip cleanup.
-        }
-
-        if (_trace is not null)
-        {
-            Notify(() => _trace(message));
-        }
     }
 
     private static void Notify(Action callback)

@@ -5,7 +5,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-using ManagedCommon;
 using PowerOCR.Helpers;
 using Windows.ApplicationModel.DataTransfer;
 
@@ -18,14 +17,9 @@ internal sealed class ClipboardService : IClipboardService
         cancellationToken.ThrowIfCancellationRequested();
         var package = new DataPackage();
         package.SetText(text);
-        int attempts = await ClipboardWriteOperation.ExecuteAsync(
+        await ClipboardWriteOperation.ExecuteAsync(
             () => Clipboard.SetContent(package),
             Clipboard.Flush,
             cancellationToken);
-
-        if (attempts > 1)
-        {
-            Logger.LogInfo($"Clipboard flush succeeded after {attempts} attempts.");
-        }
     }
 }
