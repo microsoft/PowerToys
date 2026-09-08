@@ -1,0 +1,204 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using Microsoft.PowerToys.UITest.Next;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Forms = System.Windows.Forms;
+
+namespace AdvancedPaste.UITests;
+
+internal sealed class PasteTarget : IDisposable
+{
+    private readonly TaskCompletionSource<Forms.Form> ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly Thread thread;
+    private Forms.RichTextBox? editor;
+    private Forms.Form? form;
+    private Exception? threadFailure;
+    private int stopRequested;
+    private bool disposed;
+
+    internal PasteTarget()
+    {
+        thread = new Thread(Run)
+        {
+            IsBackground = true,
+            Name = "Advanced Paste test destination",
+        };
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+
+        try
+        {
+            form = ready.Task.WaitAsync(TimeSpan.FromSeconds(15)).GetAwaiter().GetResult();
+        }
+        catch
+        {
+            Dispose();
+            throw;
+        }
+    }
+
+    internal IntPtr Handle => Invoke(() => form!.Handle);
+
+    internal string Text => Invoke(() => editor!.Text.ReplaceLineEndings("\n"));
+
+    internal void Clear() => Invoke(() =>
+    {
+        editor!.Clear();
+        editor.SelectionFont = editor.Font;
+        editor.SelectionColor = editor.ForeColor;
+    });
+
+    internal bool IsBold(int start, int length) => Invoke(() =>
+    {
+        editor!.Select(start, length);
+        return editor.SelectionFont?.Bold == true;
+    });
+
+    internal void Focus()
+    {
+        var foreground = WindowControl.GetForegroundWindowInfo();
+        if (foreground.ProcessName is "SearchApp" or "SearchHost" or "StartMenuExperienceHost")
+        {
+            KeyboardHelper.SendKey(Key.Esc);
+        }
+
+        Invoke(() =>
+        {
+            form!.Show();
+            form.Activate();
+            editor!.Focus();
+        });
+
+        var handle = Handle;
+        if (WindowControl.GetForegroundWindowHandle() != handle)
+        {
+            // System toasts can reject programmatic activation. A real click on our own
+            // visible caption supplies the user-input handoff without dismissing other apps.
+            var bounds = WindowHelper.GetWindowBounds(handle);
+            foreach (var x in new[] { bounds.Left + 100, bounds.Right - 160 })
+            {
+                if (WindowControl.IsPointOwnedByWindow(handle, x, bounds.Top + 16))
+                {
+                    MouseHelper.LeftClickAt(x, bounds.Top + 16);
+                    break;
+                }
+            }
+        }
+
+        Assert.IsTrue(
+            WindowControl.WaitForForeground(handle, timeoutMS: 10_000, requiredConsecutiveMatches: 2),
+            $"Paste destination did not acquire foreground. Actual: {WindowControl.GetForegroundWindowInfo()}.");
+        Assert.IsTrue(Invoke(() => editor!.Focused), "The destination text box does not have keyboard focus.");
+    }
+
+    internal void Paste()
+    {
+        Focus();
+        Invoke(() => TestKeyboard.SendChord(Key.Ctrl, Key.V));
+    }
+
+    internal void AssertText(string expected)
+    {
+        var result = WaitHelper.WaitForStable(
+            () => Text,
+            text => string.Equals(text, expected.ReplaceLineEndings("\n"), StringComparison.Ordinal),
+            timeoutMS: 15_000,
+            requiredConsecutiveMatches: 2);
+        Assert.IsTrue(
+            result.Succeeded,
+            $"Advanced Paste did not paste the expected text into the destination. Expected: '{expected}'; actual: '{result.LastObservation}'.");
+    }
+
+    internal void Invoke(Action action) => Invoke(() =>
+    {
+        action();
+        return true;
+    });
+
+    internal T Invoke<T>(Func<T> action)
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        var window = form ?? throw new InvalidOperationException("The paste destination is not ready.");
+        var completion = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
+        window.BeginInvoke(new Action(() =>
+        {
+            try
+            {
+                completion.SetResult(action());
+            }
+            catch (Exception ex)
+            {
+                completion.SetException(ex);
+            }
+        }));
+        return completion.Task.WaitAsync(TimeSpan.FromSeconds(15)).GetAwaiter().GetResult();
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        Interlocked.Exchange(ref stopRequested, 1);
+        if (form is { IsDisposed: false })
+        {
+            Invoke(() => form.Close());
+        }
+
+        disposed = true;
+        if (!thread.Join(TimeSpan.FromSeconds(10)))
+        {
+            throw new TimeoutException("The paste destination UI thread did not stop.");
+        }
+
+        if (threadFailure is not null)
+        {
+            throw new InvalidOperationException("The paste destination UI thread failed.", threadFailure);
+        }
+    }
+
+    private void Run()
+    {
+        try
+        {
+            using var window = new Forms.Form
+            {
+                Text = "Advanced Paste test destination",
+                StartPosition = Forms.FormStartPosition.CenterScreen,
+                Size = new System.Drawing.Size(900, 360),
+            };
+            using var textBox = new Forms.RichTextBox
+            {
+                AccessibleName = "Pasted text",
+                Dock = Forms.DockStyle.Fill,
+                Multiline = true,
+                AcceptsTab = true,
+                Font = new System.Drawing.Font("Segoe UI", 14),
+            };
+            editor = textBox;
+            window.Controls.Add(textBox);
+            window.Shown += (_, _) =>
+            {
+                ready.TrySetResult(window);
+                if (Volatile.Read(ref stopRequested) != 0)
+                {
+                    window.Close();
+                }
+            };
+
+            if (Volatile.Read(ref stopRequested) == 0)
+            {
+                Forms.Application.Run(window);
+            }
+        }
+        catch (Exception ex)
+        {
+            threadFailure = ex;
+            ready.TrySetException(ex);
+        }
+    }
+}
