@@ -10,7 +10,7 @@ using Microsoft.UI.Dispatching;
 
 namespace PowerOCR.Helpers;
 
-public sealed class ThrottledActionInvoker : IThrottledActionInvoker, IDisposable
+public sealed partial class ThrottledActionInvoker : IThrottledActionInvoker, IDisposable
 {
     private readonly Lock _invokerLock = new();
     private readonly DispatcherQueue _dispatcherQueue;

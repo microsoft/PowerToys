@@ -15,7 +15,7 @@ namespace PowerOCR.Models;
 /// Owns a full-screen capture for a single display, including the GDI+ bitmap
 /// and a WinUI-compatible <see cref="SoftwareBitmapSource"/>.
 /// </summary>
-public sealed class DisplayCapture : IDisposable
+public sealed partial class DisplayCapture : IDisposable
 {
     private bool _disposed;
 

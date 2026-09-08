@@ -11,7 +11,7 @@ using static PowerOCR.OSInterop;
 
 namespace PowerOCR.Keyboard;
 
-internal sealed class GlobalKeyboardHook : IDisposable
+internal sealed partial class GlobalKeyboardHook : IDisposable
 {
     private IntPtr _windowsHookHandle;
     private IntPtr _user32LibraryHandle;

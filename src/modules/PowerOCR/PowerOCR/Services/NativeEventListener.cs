@@ -12,7 +12,7 @@ using Microsoft.UI.Dispatching;
 
 namespace PowerOCR.Services;
 
-internal sealed class NativeEventListener : INativeEventListener
+internal sealed partial class NativeEventListener : INativeEventListener
 {
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly CancellationTokenSource _cancellation = new();

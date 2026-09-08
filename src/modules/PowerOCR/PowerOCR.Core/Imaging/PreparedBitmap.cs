@@ -6,7 +6,7 @@ using System.Drawing;
 
 namespace PowerOCR.Core.Imaging;
 
-public sealed class PreparedBitmap : IDisposable
+public sealed partial class PreparedBitmap : IDisposable
 {
     public PreparedBitmap(Bitmap bitmap, double scaleX, double scaleY, int offsetX, int offsetY)
     {

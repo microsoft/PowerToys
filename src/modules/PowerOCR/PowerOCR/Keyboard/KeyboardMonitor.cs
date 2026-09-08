@@ -13,7 +13,7 @@ using static PowerOCR.OSInterop;
 
 namespace PowerOCR.Keyboard;
 
-internal sealed class KeyboardMonitor : IDisposable
+internal sealed partial class KeyboardMonitor : IDisposable
 {
     private readonly IUserSettings _userSettings;
     private readonly IActivationService _activationService;

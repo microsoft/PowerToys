@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerOCR.Helpers;
@@ -37,7 +38,7 @@ public sealed class ClipboardWriteOperationTests
             Assert.AreEqual(1, calls.SetCalls);
             if (calls.FlushCalls <= 2)
             {
-                throw new COMException("Clipboard is busy.", CannotOpenClipboard);
+                throw CreateComException("Clipboard is busy.", CannotOpenClipboard);
             }
         };
 
@@ -56,7 +57,7 @@ public sealed class ClipboardWriteOperationTests
     public async Task ExecuteAsync_FiveBusyFlushes_RethrowsLastExceptionWithoutAnotherDelay()
     {
         var failures = Enumerable.Range(1, 5)
-            .Select(attempt => new COMException($"Busy attempt {attempt}.", CannotOpenClipboard))
+            .Select(attempt => CreateComException($"Busy attempt {attempt}.", CannotOpenClipboard))
             .ToArray();
         var calls = new CallRecorder();
         calls.OnFlush = () => throw failures[calls.FlushCalls - 1];
@@ -73,7 +74,7 @@ public sealed class ClipboardWriteOperationTests
     [TestMethod]
     public async Task ExecuteAsync_OtherComFailure_DoesNotRetry()
     {
-        var failure = new COMException("Different COM failure.", unchecked((int)0x80004005));
+        var failure = CreateComException("Different COM failure.", unchecked((int)0x80004005));
         var calls = new CallRecorder { OnFlush = () => throw failure };
 
         COMException actual = await Assert.ThrowsExactlyAsync<COMException>(() => calls.ExecuteAsync());
@@ -101,7 +102,7 @@ public sealed class ClipboardWriteOperationTests
     [TestMethod]
     public async Task ExecuteAsync_SetContentBusyFailure_DoesNotFlushOrRetry()
     {
-        var failure = new COMException("SetContent is busy.", CannotOpenClipboard);
+        var failure = CreateComException("SetContent is busy.", CannotOpenClipboard);
         var calls = new CallRecorder { OnSet = () => throw failure };
 
         COMException actual = await Assert.ThrowsExactlyAsync<COMException>(() => calls.ExecuteAsync());
@@ -136,7 +137,7 @@ public sealed class ClipboardWriteOperationTests
         using var registration = cancellation.Token.Register(() => pendingDelay.TrySetCanceled(cancellation.Token));
         var calls = new CallRecorder
         {
-            OnFlush = () => throw new COMException("Clipboard is busy.", CannotOpenClipboard),
+            OnFlush = () => throw CreateComException("Clipboard is busy.", CannotOpenClipboard),
             OnDelay = (_, _) => pendingDelay.Task,
         };
 
@@ -176,7 +177,7 @@ public sealed class ClipboardWriteOperationTests
         using var cancellation = new CancellationTokenSource();
         var calls = new CallRecorder
         {
-            OnFlush = () => throw new COMException("Clipboard is busy.", CannotOpenClipboard),
+            OnFlush = () => throw CreateComException("Clipboard is busy.", CannotOpenClipboard),
             OnDelay = (_, _) =>
             {
                 cancellation.Cancel();
@@ -192,6 +193,10 @@ public sealed class ClipboardWriteOperationTests
         Assert.AreEqual(1, calls.FlushCalls);
         Assert.AreEqual(1, calls.DelayIntervals.Count);
     }
+
+    [SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "Tests simulate COM exceptions and HRESULTs returned by the Windows clipboard API.")]
+    private static COMException CreateComException(string message, int hresult)
+        => new COMException(message, hresult);
 
     private sealed class CallRecorder
     {

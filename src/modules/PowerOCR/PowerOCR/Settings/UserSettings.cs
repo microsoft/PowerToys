@@ -14,7 +14,7 @@ using PowerOCR.Helpers;
 
 namespace PowerOCR.Settings
 {
-    public class UserSettings : IUserSettings
+    public partial class UserSettings : IUserSettings
     {
         private readonly SettingsUtils _settingsUtils;
         private const string PowerOcrModuleName = "TextExtractor";

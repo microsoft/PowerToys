@@ -31,7 +31,7 @@ using WinUIEx;
 
 namespace PowerOCR.Services;
 
-internal sealed class OverlayManager : IOverlayManager
+internal sealed partial class OverlayManager : IOverlayManager
 {
     private readonly IActivationService _activationService;
     private readonly IScreenCaptureService _screenCaptureService;
