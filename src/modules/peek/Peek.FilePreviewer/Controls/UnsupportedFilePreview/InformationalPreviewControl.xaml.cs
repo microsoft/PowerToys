@@ -34,6 +34,9 @@ namespace Peek.FilePreviewer.Controls
         public string FormatFileSize(string? fileSize) =>
             ResourceLoaderInstance.FormatString("UnsupportedFile_FileSize", fileSize);
 
+        public string FormatFolderContains(string? folderContents) =>
+            ResourceLoaderInstance.FormatString("UnsupportedFile_FolderContains", folderContents);
+
         public string FormatFileDateModified(string? fileDateModified) =>
             ResourceLoaderInstance.FormatString("UnsupportedFile_DateModified", fileDateModified);
     }
