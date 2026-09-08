@@ -31,6 +31,7 @@ public sealed partial class OverlayPage : UserControl
     private DisplayCapture? _capture;
     private SettingsDeepLink? _settingsDeepLink;
     private IDisposable? _cursorClipLease;
+    private CursorDiagnostics? _cursorDiagnostics;
     private Pointer? _activePointer;
 
     private bool _isSelecting;
@@ -76,6 +77,8 @@ public sealed partial class OverlayPage : UserControl
 
         AutomationProperties.SetName(this, parentWindow.Title);
         BackgroundImage.Source = capture.ImageSource;
+        _cursorDiagnostics = CursorDiagnostics.TryStart(parentWindow, this, RegionClickCanvas, capture.Bounds);
+        InitializeNativeSelection();
 
         // Masks are sized against the real layout dimensions once the page is laid out
         // (see OnLoaded / OnSizeChanged). Computing them here would run before the first
@@ -95,11 +98,15 @@ public sealed partial class OverlayPage : UserControl
     {
         LanguagesComboBox.Focus(FocusState.Programmatic);
         RefreshMasks();
+        StartNativeSelection();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         CancelSelection();
+        StopNativeSelection();
+        _cursorDiagnostics?.Dispose();
+        _cursorDiagnostics = null;
     }
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -174,6 +181,12 @@ public sealed partial class OverlayPage : UserControl
 
     private void Canvas_PointerPressed(object sender, PointerRoutedEventArgs e)
     {
+        if (_nativePrototypeEnabled)
+        {
+            e.Handled = true;
+            return;
+        }
+
         var props = e.GetCurrentPoint(RegionClickCanvas).Properties;
         if (_isSelecting || !props.IsLeftButtonPressed)
         {
@@ -300,6 +313,7 @@ public sealed partial class OverlayPage : UserControl
 
     internal void CancelSelection()
     {
+        _nativeSelectionWindow?.CancelSelection();
         if (_isSelecting)
         {
             EndSelectionCleanup(_activePointer);
@@ -415,6 +429,8 @@ public sealed partial class OverlayPage : UserControl
 
     private void ShowContextMenuForKeyboard()
     {
+        PrepareNativeContextMenu();
+
         // With no pointer position, place the menu near the toolbar where keyboard focus starts.
         double x = Math.Max(0, RegionClickCanvas.ActualWidth / 2);
         var toolbarBottom = Toolbar.TransformToVisual(RegionClickCanvas)
@@ -463,33 +479,39 @@ public sealed partial class OverlayPage : UserControl
 
     private void RootGrid_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        switch (e.Key)
+        e.Handled = HandleOverlayKey(
+            e.Key,
+            InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift)
+                .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down));
+    }
+
+    private bool HandleOverlayKey(VirtualKey key, bool shiftDown)
+    {
+        switch (key)
         {
+            case VirtualKey.Escape:
+                CancelOverlay();
+                return true;
+
             case VirtualKey.Application:
                 ShowContextMenuForKeyboard();
-                e.Handled = true;
-                break;
+                return true;
 
             case VirtualKey.F10:
-                if (InputKeyboardSource
-                    .GetKeyStateForCurrentThread(VirtualKey.Shift)
-                    .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down))
+                if (shiftDown)
                 {
                     ShowContextMenuForKeyboard();
-                    e.Handled = true;
                 }
 
-                break;
+                return shiftDown;
 
             case VirtualKey.S:
                 ViewModel.IsSingleLine = !ViewModel.IsSingleLine;
-                e.Handled = true;
-                break;
+                return true;
 
             case VirtualKey.T:
                 ViewModel.IsTable = !ViewModel.IsTable;
-                e.Handled = true;
-                break;
+                return true;
 
             case VirtualKey.Number1:
             case VirtualKey.Number2:
@@ -500,14 +522,16 @@ public sealed partial class OverlayPage : UserControl
             case VirtualKey.Number7:
             case VirtualKey.Number8:
             case VirtualKey.Number9:
-                int langIndex = e.Key - VirtualKey.Number1;
+                int langIndex = key - VirtualKey.Number1;
                 if (langIndex < ViewModel.Languages.Count)
                 {
                     ViewModel.SelectedLanguage = ViewModel.Languages[langIndex];
                 }
 
-                e.Handled = true;
-                break;
+                return true;
+
+            default:
+                return false;
         }
     }
 

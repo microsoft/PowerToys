@@ -1,4 +1,15 @@
 ## Text Extractor
+
+For cursor flicker investigation, follow the opt-in [cursor diagnostics procedure](cursor-diagnostics.md).
+
+ * Native selection prototype (enable with `Cursor-NativeOverlay.ps1`; use the original project):
+   - [ ] Verify a `native selection: ready` log with `owner=0x0` and a separate native thread for each tested display.
+   - [ ] Rapidly hover and drag over the native surface; confirm a visible system Cross and inspect `NativeCursorTrace` for visible Arrow samples on `own-native`.
+   - [ ] Verify repeated startup without white/black flashes, click/drag OCR, Shift translation, toolbar and popup input, and mixed-DPI alignment.
+   - [ ] Verify Esc, Alt+F4, capture loss, and rapid reopen release capture/clipping and leave no native overlay behind.
+   - [ ] Verify Esc/Alt+F4 from both the native surface and WinUI toolbar, plus successful OCR close, hide every display without exposing a white teardown frame. Repeat after an OCR error and with a popup recently dismissed.
+   - [ ] Disable the prototype and repeat with the same binary's WinUI canvas as a control.
+
  * Enable Text Extractor. Then:
    - [x] Press the activation shortcut and verify the overlay appears.
    - [x] Press Escape and verify the overlay disappears.
@@ -11,6 +22,8 @@
    - [ ] Select a blank region, wait for the error InfoBar, and verify one Escape press closes every overlay.
    - [ ] After a blank capture, press `S`, `T`, and a number for another installed OCR language without clicking the toolbar; verify all shortcuts still change their controls.
    - [ ] Repeat the shortcut check after a clipboard-copy failure, then retry capture in the same overlay and verify copying succeeds.
+   - [ ] With a clipboard monitor/history tool running, repeat OCR capture; transient `0x800401D0` during Flush should retry up to five attempts without rewriting the text. A recovered retry logs only its attempt count, not clipboard content.
+   - [ ] Press Escape while clipboard persistence is retrying; verify all overlays close and no later retry or error prompt appears from the cancelled session.
    - [ ] With an error InfoBar open, verify it appears below every toolbar control without covering any control, including at 150% and 200% DPI.
    - [ ] Open the language ComboBox or context menu and verify the first Escape closes only the popup and the second closes the overlay.
    - [ ] Perform a fast drag and verify OCR uses the release point rather than the last rendered selection-border position.

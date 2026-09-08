@@ -378,6 +378,13 @@ internal sealed class OverlayManager : IOverlayManager
             App.Current.EnsureLifetimeWindow();
         }
 
+        // Native surfaces close on separate threads. Hide all WinUI hosts first so an
+        // early native close cannot expose a host while its XAML/backdrop is being released.
+        foreach (var window in session.Windows)
+        {
+            window.HideForClose();
+        }
+
         foreach (var window in session.Windows)
         {
             window.CloseFromManager();

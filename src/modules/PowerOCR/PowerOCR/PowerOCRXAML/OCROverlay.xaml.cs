@@ -28,6 +28,7 @@ public sealed partial class OCROverlay : WindowEx
     private readonly IOverlayManager _manager;
     private bool _closingFromManager;
     private bool _closeAllQueued;
+    private bool _hiddenForClose;
 
     public OCROverlay(
         DisplayCapture capture,
@@ -54,11 +55,19 @@ public sealed partial class OCROverlay : WindowEx
 
         SystemBackdrop = new TransparentTintBackdrop();
 
-        OverlayContent.Initialize(this, capture, manager, viewModel, settingsDeepLink);
-
-        PositionOnDisplay();
-
-        AppWindow.Closing += OnAppWindowClosing;
+        try
+        {
+            OverlayContent.Initialize(this, capture, manager, viewModel, settingsDeepLink);
+            PositionOnDisplay();
+            AppWindow.Closing += OnAppWindowClosing;
+        }
+        catch
+        {
+            // A constructor failure occurs before the window joins the manager's session.
+            // Release the native screenshot/window without depending on a later close event.
+            OverlayContent.StopNativeSelection();
+            throw;
+        }
     }
 
     public void PositionOnDisplay()
@@ -76,13 +85,31 @@ public sealed partial class OCROverlay : WindowEx
     }
 
     /// <summary>
+    /// Removes the WinUI host from the desktop before either rendering surface is torn down.
+    /// The manager hides every display before it starts closing any window.
+    /// </summary>
+    internal void HideForClose()
+    {
+        if (_hiddenForClose)
+        {
+            return;
+        }
+
+        _closingFromManager = true;
+        OverlayContent.PrepareForWindowClose();
+        AppWindow.Hide();
+        _hiddenForClose = true;
+    }
+
+    /// <summary>
     /// Closes this window without re-triggering CloseAll from the manager.
     /// Called by OverlayManager during session teardown.
     /// </summary>
     public void CloseFromManager()
     {
-        _closingFromManager = true;
+        HideForClose();
         OverlayContent.CancelSelection();
+        OverlayContent.StopNativeSelection();
         Close();
     }
 
@@ -117,6 +144,7 @@ public sealed partial class OCROverlay : WindowEx
             // A dispatcher that rejects new work is shutting down. Allow the native close
             // instead of leaving a window that can no longer be serviced.
             _closeAllQueued = false;
+            HideForClose();
             args.Cancel = false;
         }
     }
