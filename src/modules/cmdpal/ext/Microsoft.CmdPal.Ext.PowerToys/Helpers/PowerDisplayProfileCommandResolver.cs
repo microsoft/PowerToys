@@ -60,7 +60,9 @@ internal sealed class PowerDisplayProfileCommandResolver
 
             if (!result.IsSuccess || result.Value is null)
             {
-                item.Subtitle = Resources.PowerDisplay_Profile_DetailsUnavailable;
+                item.Subtitle = result.FailureKind == PowerDisplayCliFailureKind.ProviderUnavailable && !string.IsNullOrWhiteSpace(result.ErrorMessage)
+                    ? result.ErrorMessage
+                    : Resources.PowerDisplay_Profile_DetailsUnavailable;
                 return;
             }
 

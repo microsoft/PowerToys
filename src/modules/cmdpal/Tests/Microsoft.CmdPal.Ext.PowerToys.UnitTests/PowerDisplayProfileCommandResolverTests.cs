@@ -79,21 +79,24 @@ public class PowerDisplayProfileCommandResolverTests
     }
 
     [DataTestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public async Task FailedQuery_PreservesInvokableIdsWithoutRetryingPerItem(bool throws)
+    [DataRow(false, "", "Profile details couldn't be loaded. You can still try applying this profile.")]
+    [DataRow(true, "", "Profile details couldn't be loaded. You can still try applying this profile.")]
+    [DataRow(false, "PowerDisplay is not running. Enable it in PowerToys settings.", "PowerDisplay is not running. Enable it in PowerToys settings.")]
+    public async Task FailedQuery_PreservesInvokableIdsWithoutRetryingPerItem(bool throws, string errorMessage, string expectedSubtitle)
     {
         var service = new FakePowerDisplayCliService
         {
             GetProfilesHandler = _ => throws
                 ? Task.FromException<PowerDisplayCliResult<CliProfileListResult>>(new InvalidOperationException("test failure"))
-                : Task.FromResult(PowerDisplayCliResult<CliProfileListResult>.Failure(PowerDisplayCliFailureKind.ProviderUnavailable)),
+                : Task.FromResult(PowerDisplayCliResult<CliProfileListResult>.Failure(
+                    PowerDisplayCliFailureKind.ProviderUnavailable,
+                    errorMessage: errorMessage)),
         };
         var resolver = new PowerDisplayProfileCommandResolver(service);
         var first = resolver.GetCommandItem(3);
-        await WaitForPropertyAsync(first, nameof(first.Subtitle), () => first.Subtitle.Contains("couldn't be loaded", StringComparison.Ordinal));
+        await WaitForPropertyAsync(first, nameof(first.Subtitle), () => first.Subtitle == expectedSubtitle);
         var second = resolver.GetCommandItem(8);
-        await WaitForPropertyAsync(second, nameof(second.Subtitle), () => second.Subtitle.Contains("couldn't be loaded", StringComparison.Ordinal));
+        await WaitForPropertyAsync(second, nameof(second.Subtitle), () => second.Subtitle == expectedSubtitle);
 
         Assert.AreEqual(1, service.GetProfilesCallCount);
         Assert.AreEqual("com.microsoft.powertoys.powerDisplay.applyProfile.3", first.Command!.Id);

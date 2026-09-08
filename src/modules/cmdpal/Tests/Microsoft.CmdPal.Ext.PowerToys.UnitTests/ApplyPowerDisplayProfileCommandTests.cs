@@ -72,6 +72,27 @@ public class ApplyPowerDisplayProfileCommandTests
     }
 
     [TestMethod]
+    public void Invoke_ProviderUnavailableShowsCliMessageAndKeepsPaletteOpen()
+    {
+        const string ErrorMessage = "PowerDisplay is not running. Enable it in PowerToys settings.";
+        var service = new FakePowerDisplayCliService
+        {
+            ApplyProfileHandler = (_, _) => Task.FromResult(
+                PowerDisplayCliResult<CliApplyProfileResult>.Failure(
+                    PowerDisplayCliFailureKind.ProviderUnavailable,
+                    errorMessage: ErrorMessage)),
+        };
+        var command = new ApplyPowerDisplayProfileCommand(12, "Profile", service);
+
+        var result = command.Invoke();
+
+        Assert.AreEqual(CommandResultKind.ShowToast, result.Kind);
+        var toast = GetToast(result);
+        Assert.AreEqual(ErrorMessage, toast.Message);
+        Assert.AreEqual(CommandResultKind.KeepOpen, toast.Result!.Kind);
+    }
+
+    [TestMethod]
     public void Invoke_ServiceExceptionReturnsFailureToast()
     {
         var service = new FakePowerDisplayCliService

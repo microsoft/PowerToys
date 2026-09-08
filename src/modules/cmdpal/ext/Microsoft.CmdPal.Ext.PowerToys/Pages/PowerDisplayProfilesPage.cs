@@ -286,7 +286,7 @@ internal sealed partial class PowerDisplayProfilesPage : ListPage, INotifyItemsC
 
             var emptyContent = result.IsSuccess
                 ? _noProfilesContent
-                : CreateErrorContent(result.FailureKind);
+                : CreateErrorContent(result.FailureKind, result.ErrorMessage);
             lock (_stateLock)
             {
                 if (!ReferenceEquals(_activeLoad, load))
@@ -349,7 +349,7 @@ internal sealed partial class PowerDisplayProfilesPage : ListPage, INotifyItemsC
         };
     }
 
-    private CommandItem CreateErrorContent(PowerDisplayCliFailureKind failureKind)
+    private CommandItem CreateErrorContent(PowerDisplayCliFailureKind failureKind, string errorMessage)
     {
         var retryCommand = new AnonymousCommand(Refresh)
         {
@@ -361,17 +361,18 @@ internal sealed partial class PowerDisplayProfilesPage : ListPage, INotifyItemsC
         return new CommandItem(retryCommand)
         {
             Title = Resources.PowerDisplay_LoadError_Title,
-            Subtitle = GetLoadErrorSubtitle(failureKind),
+            Subtitle = GetLoadErrorSubtitle(failureKind, errorMessage),
             Icon = _icon,
             MoreCommands = [new CommandContextItem(_refreshCommand)],
         };
     }
 
-    private static string GetLoadErrorSubtitle(PowerDisplayCliFailureKind failureKind) => failureKind switch
+    private static string GetLoadErrorSubtitle(PowerDisplayCliFailureKind failureKind, string errorMessage) => failureKind switch
     {
         PowerDisplayCliFailureKind.ArgumentError => Resources.PowerDisplay_LoadError_Argument,
         PowerDisplayCliFailureKind.Timeout => Resources.PowerDisplay_LoadError_Timeout,
         PowerDisplayCliFailureKind.InternalError => Resources.PowerDisplay_LoadError_Internal,
+        PowerDisplayCliFailureKind.ProviderUnavailable when !string.IsNullOrWhiteSpace(errorMessage) => errorMessage,
         PowerDisplayCliFailureKind.ProviderUnavailable => Resources.PowerDisplay_LoadError_ProviderUnavailable,
         PowerDisplayCliFailureKind.MissingExecutable => Resources.PowerDisplay_LoadError_MissingCli,
         PowerDisplayCliFailureKind.InvalidResponse => Resources.PowerDisplay_LoadError_InvalidResponse,

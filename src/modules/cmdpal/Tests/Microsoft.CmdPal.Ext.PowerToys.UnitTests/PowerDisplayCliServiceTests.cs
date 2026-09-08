@@ -146,23 +146,24 @@ public class PowerDisplayCliServiceTests
     }
 
     [DataTestMethod]
-    [DataRow(CliExitCodes.ArgumentError, CliErrorCodes.ArgumentError, (int)PowerDisplayCliFailureKind.ArgumentError)]
-    [DataRow(CliExitCodes.Timeout, CliErrorCodes.Timeout, (int)PowerDisplayCliFailureKind.Timeout)]
-    [DataRow(CliExitCodes.InternalError, CliErrorCodes.InternalError, (int)PowerDisplayCliFailureKind.InternalError)]
-    [DataRow(CliExitCodes.ProviderUnavailable, CliErrorCodes.ProviderUnavailable, (int)PowerDisplayCliFailureKind.ProviderUnavailable)]
+    [DataRow(CliExitCodes.ArgumentError, CliErrorCodes.ArgumentError, (int)PowerDisplayCliFailureKind.ArgumentError, "structured failure")]
+    [DataRow(CliExitCodes.Timeout, CliErrorCodes.Timeout, (int)PowerDisplayCliFailureKind.Timeout, "structured failure")]
+    [DataRow(CliExitCodes.InternalError, CliErrorCodes.InternalError, (int)PowerDisplayCliFailureKind.InternalError, "structured failure")]
+    [DataRow(CliExitCodes.ProviderUnavailable, CliErrorCodes.ProviderUnavailable, (int)PowerDisplayCliFailureKind.ProviderUnavailable, "structured failure")]
+    [DataRow(CliExitCodes.ProviderUnavailable, CliErrorCodes.ProviderUnavailable, (int)PowerDisplayCliFailureKind.ProviderUnavailable, "")]
     public async Task GetProfilesAsync_MapsStructuredCommandFailures(
         int exitCode,
         string errorCode,
-        int expectedFailureKind)
+        int expectedFailureKind,
+        string errorMessage)
     {
-        const string ErrorMessage = "structured failure";
         var error = new CliErrorResult
         {
             Command = CliCommandNames.Profiles,
             Error = new CliError
             {
                 Code = errorCode,
-                Message = ErrorMessage,
+                Message = errorMessage,
             },
         };
         var runner = new FakePowerDisplayProcessRunner(
@@ -174,7 +175,7 @@ public class PowerDisplayCliServiceTests
         Assert.IsFalse(result.IsSuccess);
         Assert.AreEqual((PowerDisplayCliFailureKind)expectedFailureKind, result.FailureKind);
         Assert.AreEqual(exitCode, result.ExitCode);
-        Assert.AreEqual(ErrorMessage, result.ErrorMessage);
+        Assert.AreEqual(errorMessage, result.ErrorMessage);
     }
 
     [DataTestMethod]

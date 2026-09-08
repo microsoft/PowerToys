@@ -219,13 +219,10 @@ internal sealed class PowerDisplayCliService : IPowerDisplayCliService
                 return InvalidResponse<T>(processResult);
             }
 
-            var message = !string.IsNullOrWhiteSpace(error.Error.Message)
-                ? error.Error.Message
-                : error.Error.Code;
             return PowerDisplayCliResult<T>.Failure(
                 MapExitCode(processResult.ExitCode!.Value),
                 processResult.ExitCode,
-                message);
+                error.Error.Message ?? string.Empty);
         }
         catch (JsonException ex)
         {

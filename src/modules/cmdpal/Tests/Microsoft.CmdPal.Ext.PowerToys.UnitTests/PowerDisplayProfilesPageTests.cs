@@ -186,15 +186,18 @@ public class PowerDisplayProfilesPageTests
         observable.ItemsChanged -= handler;
     }
 
-    [TestMethod]
-    public async Task FailedLoad_ShowsRetryThatLoadsProfilesAgain()
+    [DataTestMethod]
+    [DataRow("", "Power Display isn't running. Select to try again.")]
+    [DataRow("PowerDisplay is not running. Enable it in PowerToys settings.", "PowerDisplay is not running. Enable it in PowerToys settings.")]
+    public async Task FailedLoad_ShowsRetryThatLoadsProfilesAgain(string errorMessage, string expectedSubtitle)
     {
         var service = new FakePowerDisplayCliService
         {
             GetProfilesHandler = _ => Task.FromResult(
                 PowerDisplayCliResult<CliProfileListResult>.Failure(
                     PowerDisplayCliFailureKind.ProviderUnavailable,
-                    CliExitCodes.ProviderUnavailable)),
+                    CliExitCodes.ProviderUnavailable,
+                    errorMessage)),
         };
         var page = new PowerDisplayProfilesPage(service);
         INotifyItemsChanged observable = page;
@@ -207,7 +210,7 @@ public class PowerDisplayProfilesPageTests
         var emptyContent = page.EmptyContent;
         Assert.IsNotNull(emptyContent);
         Assert.AreEqual("Couldn't load Power Display profiles", emptyContent.Title);
-        StringAssert.Contains(emptyContent.Subtitle, "isn't running");
+        Assert.AreEqual(expectedSubtitle, emptyContent.Subtitle);
         var retry = emptyContent.Command as AnonymousCommand;
         Assert.IsNotNull(retry);
         Assert.IsNotNull(GetRefreshCommand(emptyContent));

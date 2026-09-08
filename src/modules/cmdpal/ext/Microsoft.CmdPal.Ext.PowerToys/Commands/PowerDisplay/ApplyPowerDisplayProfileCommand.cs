@@ -51,7 +51,7 @@ internal sealed partial class ApplyPowerDisplayProfileCommand : InvokableCommand
                     CommandResult.Dismiss());
             }
 
-            return ShowToast(GetFailureMessage(result.FailureKind), CommandResult.KeepOpen());
+            return ShowToast(GetFailureMessage(result.FailureKind, result.ErrorMessage), CommandResult.KeepOpen());
         }
         catch (Exception ex)
         {
@@ -60,11 +60,12 @@ internal sealed partial class ApplyPowerDisplayProfileCommand : InvokableCommand
         }
     }
 
-    private static string GetFailureMessage(PowerDisplayCliFailureKind failureKind) => failureKind switch
+    private static string GetFailureMessage(PowerDisplayCliFailureKind failureKind, string errorMessage) => failureKind switch
     {
         PowerDisplayCliFailureKind.ArgumentError => Resources.PowerDisplay_Apply_ArgumentError,
         PowerDisplayCliFailureKind.Timeout => Resources.PowerDisplay_Apply_TimeoutError,
         PowerDisplayCliFailureKind.InternalError => Resources.PowerDisplay_Apply_InternalError,
+        PowerDisplayCliFailureKind.ProviderUnavailable when !string.IsNullOrWhiteSpace(errorMessage) => errorMessage,
         PowerDisplayCliFailureKind.ProviderUnavailable => Resources.PowerDisplay_Apply_ProviderUnavailableError,
         PowerDisplayCliFailureKind.MissingExecutable => Resources.PowerDisplay_Apply_MissingCliError,
         PowerDisplayCliFailureKind.InvalidResponse => Resources.PowerDisplay_Apply_InvalidResponseError,
