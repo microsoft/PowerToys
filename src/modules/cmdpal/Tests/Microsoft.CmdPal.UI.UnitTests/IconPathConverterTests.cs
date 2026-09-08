@@ -64,4 +64,67 @@ public class IconPathConverterTests
         Assert.AreEqual(IconPathConverter.PreparedIconKind.Glyph, relativeText.Kind);
         Assert.AreEqual("\u25CC", relativeText.Glyph);
     }
+
+    [TestMethod]
+    public void FallbackPreparationPreservesCandidateOrderAndFontSettings()
+    {
+        using var prepared = IconPathConverter.PrepareFirstAvailable(
+            ["\uE700", "\uE701"],
+            "Custom Font",
+            24);
+
+        Assert.AreEqual(IconPathConverter.PreparedIconKind.Glyph, prepared.Kind);
+        Assert.AreEqual("\uE700", prepared.Glyph);
+        Assert.AreEqual("Custom Font", prepared.FontFamily);
+        Assert.AreEqual(24, prepared.TargetSize);
+    }
+
+    [DataTestMethod]
+    [DataRow(".ico")]
+    [DataRow(".png")]
+    [DataRow(".svg")]
+    public void MissingImageFileDoesNotHideFallback(string extension)
+    {
+        var missingPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}{extension}");
+        using var prepared = IconPathConverter.PrepareFirstAvailable([missingPath, "\uE700"], null, 20);
+
+        Assert.AreEqual(IconPathConverter.PreparedIconKind.Glyph, prepared.Kind);
+        Assert.AreEqual("\uE700", prepared.Glyph);
+    }
+
+    [TestMethod]
+    public void EmptyAndPlaceholderPreparationsDoNotHideFallback()
+    {
+        using var prepared = IconPathConverter.PrepareFirstAvailable(
+            [string.Empty, "|AppIcon|", "not a glyph", "\u25CC"],
+            "Custom Font",
+            20);
+
+        Assert.AreEqual(IconPathConverter.PreparedIconKind.Glyph, prepared.Kind);
+        Assert.AreEqual("\u25CC", prepared.Glyph);
+        Assert.AreEqual("Custom Font", prepared.FontFamily);
+    }
+
+    [TestMethod]
+    public void FallbackPreparationPreservesNonFileUris()
+    {
+        const string uri = "ms-appx:///Assets/icon.svg";
+        using var prepared = IconPathConverter.PrepareFirstAvailable(["not a glyph", uri, "\uE700"], null, 24);
+
+        Assert.AreEqual(IconPathConverter.PreparedIconKind.SvgUri, prepared.Kind);
+        Assert.AreEqual(uri, prepared.Uri!.AbsoluteUri);
+        Assert.AreEqual(24, prepared.TargetSize);
+    }
+
+    [TestMethod]
+    public void FallbackPreparationReturnsEmptyWhenEveryCandidateFails()
+    {
+        var missingExecutable = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.exe");
+        using var prepared = IconPathConverter.PrepareFirstAvailable(
+            [missingExecutable, "|AppIcon|", "not a glyph"],
+            null,
+            20);
+
+        Assert.AreEqual(IconPathConverter.PreparedIconKind.Empty, prepared.Kind);
+    }
 }

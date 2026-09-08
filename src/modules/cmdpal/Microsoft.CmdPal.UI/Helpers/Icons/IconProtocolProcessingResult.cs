@@ -15,19 +15,19 @@ internal sealed partial class IconProtocolProcessingResult : IDisposable
         ResultKind kind,
         IconPathConverter.PreparedIcon? preparedIcon = null,
         IRandomAccessStream? bitmapStream = null,
-        string? fallbackIconString = null)
+        string[]? fallbackIconStrings = null)
     {
         Kind = kind;
         _preparedIcon = preparedIcon;
         _bitmapStream = bitmapStream;
-        FallbackIconString = fallbackIconString;
+        FallbackIconStrings = fallbackIconStrings;
     }
 
     public ResultKind Kind { get; }
 
     public IRandomAccessStream? BitmapStream => _bitmapStream;
 
-    public string? FallbackIconString { get; }
+    public string[]? FallbackIconStrings { get; }
 
     public static IconProtocolProcessingResult Empty() => new(ResultKind.Empty);
 
@@ -37,8 +37,8 @@ internal sealed partial class IconProtocolProcessingResult : IDisposable
     public static IconProtocolProcessingResult FromBitmapStream(IRandomAccessStream bitmapStream) =>
         new(ResultKind.BitmapStream, bitmapStream: bitmapStream);
 
-    public static IconProtocolProcessingResult FromFallbackIconString(string fallbackIconString) =>
-        new(ResultKind.FallbackIconString, fallbackIconString: fallbackIconString);
+    public static IconProtocolProcessingResult FromFallbackIconStrings(string[] fallbackIconStrings) =>
+        new(ResultKind.FallbackIconStrings, fallbackIconStrings: fallbackIconStrings);
 
     public IconPathConverter.PreparedIcon? TakePreparedIcon() =>
         Interlocked.Exchange(ref _preparedIcon, null);
@@ -54,6 +54,6 @@ internal sealed partial class IconProtocolProcessingResult : IDisposable
         Empty,
         PreparedIcon,
         BitmapStream,
-        FallbackIconString,
+        FallbackIconStrings,
     }
 }

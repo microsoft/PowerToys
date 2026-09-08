@@ -244,9 +244,9 @@ internal sealed partial class IconLoaderService : IIconLoaderService
                     }
 
                     preparedIcon = protocolResult.TakePreparedIcon();
-                    if (preparedIcon is null && protocolResult.FallbackIconString is { } fallbackIconString)
+                    if (preparedIcon is null && protocolResult.FallbackIconStrings is { } fallbackIconStrings)
                     {
-                        preparedIcon = IconPathConverter.Prepare(fallbackIconString, fontFamily, targetSize, theme);
+                        preparedIcon = IconPathConverter.PrepareFirstAvailable(fallbackIconStrings, fontFamily, targetSize, theme);
                     }
                 }
 

@@ -70,6 +70,6 @@ internal sealed class AppIconProtocolProcessor : IIconProtocolProcessor
             }
         }
 
-        return IconProtocolProcessingResult.FromFallbackIconString(candidates[0]);
+        return IconProtocolProcessingResult.FromFallbackIconStrings(candidates);
     }
 }

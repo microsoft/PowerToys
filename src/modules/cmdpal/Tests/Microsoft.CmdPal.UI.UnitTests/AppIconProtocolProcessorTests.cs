@@ -40,20 +40,55 @@ public class AppIconProtocolProcessorTests
         Assert.AreSame(stream, result.BitmapStream);
     }
 
-    [TestMethod]
-    public async Task FallsBackToPrimaryAfterEveryThumbnailMisses()
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task PreservesFallbackCandidatesAfterEveryThumbnailMisses(bool jumbo)
     {
         const string primary = "C:\\Icons\\primary.ico";
-        const string fallback = "C:\\Program Files\\Example\\app.exe";
+        const string finalFallback = "steam://run/123|variant";
+        var fallback = $"{GetShell32DllPath()},1";
         var processor = new AppIconProtocolProcessor(
-            (_, _) => Task.FromResult<IRandomAccessStream?>(null));
+            static (_, _) => Task.FromResult<IRandomAccessStream?>(null));
+
+        var iconDescription = jumbo
+            ? AppIconProtocol.CreateJumbo(primary, fallback, finalFallback)
+            : AppIconProtocol.Create(primary, fallback);
+        using var result = await processor.PrepareAsync(iconDescription, 20, ElementTheme.Default);
+
+        Assert.AreEqual(IconProtocolProcessingResult.ResultKind.FallbackIconStrings, result.Kind);
+        CollectionAssert.AreEqual(
+            jumbo ? new[] { primary, fallback, finalFallback } : new[] { primary, fallback },
+            result.FallbackIconStrings);
+    }
+
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    [Timeout(5_000)]
+    public async Task MissingExecutableUsesIndexedFallbackAfterThumbnailMisses(bool jumbo)
+    {
+        var primary = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.exe");
+        var fallback = $"{GetShell32DllPath()},1";
+        var processor = new AppIconProtocolProcessor(
+            static (_, _) => Task.FromResult<IRandomAccessStream?>(null));
 
         using var result = await processor.PrepareAsync(
-            AppIconProtocol.Create(primary, fallback),
-            20,
+            jumbo ? AppIconProtocol.CreateJumbo(primary, fallback) : AppIconProtocol.Create(primary, fallback),
+            32,
             ElementTheme.Default);
 
-        Assert.AreEqual(IconProtocolProcessingResult.ResultKind.FallbackIconString, result.Kind);
-        Assert.AreEqual(primary, result.FallbackIconString);
+        Assert.IsNotNull(result.FallbackIconStrings);
+        using var prepared = IconPathConverter.PrepareFirstAvailable(result.FallbackIconStrings, null, 32);
+
+        Assert.AreEqual(IconPathConverter.PreparedIconKind.Binary, prepared.Kind);
+        Assert.IsNotNull(prepared.SoftwareBitmap);
+        Assert.IsTrue(prepared.SoftwareBitmap.PixelWidth > 0);
+        Assert.IsTrue(prepared.SoftwareBitmap.PixelHeight > 0);
+    }
+
+    private static string GetShell32DllPath()
+    {
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "shell32.dll");
     }
 }
