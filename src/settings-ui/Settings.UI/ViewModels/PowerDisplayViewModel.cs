@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "crash_detected.flag");
 
         private readonly Func<CancellationToken, Task<PowerDisplayProfiles>> _loadProfilesAsync;
-        private readonly Func<Guid, Guid?, Task<bool>> _reorderProfileAsync;
+        private readonly Func<int, int?, Task<bool>> _reorderProfileAsync;
         private readonly Action _signalSettingsUpdated;
         private bool _isProfilesLoading;
 
@@ -66,7 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Func<string, int> ipcMSGCallBackFunc,
             Action<string, Action> waitForEventLoop,
             Func<CancellationToken, Task<PowerDisplayProfiles>> loadProfilesAsync = null,
-            Func<Guid, Guid?, Task<bool>> reorderProfileAsync = null,
+            Func<int, int?, Task<bool>> reorderProfileAsync = null,
             Action signalSettingsUpdated = null)
         {
             // To obtain the general settings configurations of PowerToys Settings.
@@ -935,11 +935,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         public bool CanMoveProfileUp(PowerDisplayProfile profile)
-            => CanUseProfiles && FindProfileIndex(profile?.Id ?? Guid.Empty) > 0;
+            => CanUseProfiles && FindProfileIndex(profile?.Id ?? 0) > 0;
 
         public bool CanMoveProfileDown(PowerDisplayProfile profile)
         {
-            var index = FindProfileIndex(profile?.Id ?? Guid.Empty);
+            var index = FindProfileIndex(profile?.Id ?? 0);
             return CanUseProfiles && index >= 0 && index < Profiles.Count - 1;
         }
 
@@ -962,11 +962,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             var index = FindProfileIndex(profile.Id);
-            Guid? beforeId = index + 2 < Profiles.Count ? Profiles[index + 2].Id : null;
+            int? beforeId = index + 2 < Profiles.Count ? Profiles[index + 2].Id : null;
             return ReorderProfileAsync(profile.Id, beforeId);
         }
 
-        private int FindProfileIndex(Guid id)
+        private int FindProfileIndex(int id)
         {
             for (var index = 0; index < Profiles.Count; index++)
             {
@@ -979,9 +979,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return -1;
         }
 
-        public async Task ReorderProfileAsync(Guid profileId, Guid? beforeProfileId)
+        public async Task ReorderProfileAsync(int profileId, int? beforeProfileId)
         {
-            if (!CanUseProfiles || profileId == Guid.Empty || beforeProfileId == Guid.Empty || profileId == beforeProfileId)
+            if (!CanUseProfiles || profileId < 1 || beforeProfileId is < 1 || profileId == beforeProfileId)
             {
                 return;
             }
@@ -1047,7 +1047,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         PowerDisplay = new PowerDisplayActionMessage.PowerDisplayAction
                         {
                             ActionName = "ApplyProfile",
-                            Value = profile.Id.ToString("D"),
+                            Value = profile.Id.ToString(System.Globalization.CultureInfo.InvariantCulture),
                         },
                     },
                 };
@@ -1101,9 +1101,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public async Task DeleteProfileAsync(Guid id)
+        public async Task DeleteProfileAsync(int id)
         {
-            if (id == Guid.Empty)
+            if (id < 1)
             {
                 return;
             }
@@ -1117,18 +1117,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             IsProfilesLoading = true;
             try
             {
-                var profilesBeforeDeletion = await LoadProfilesCoreAsync(CancellationToken.None);
-                var legacyId = profilesBeforeDeletion.GetById(id)?.LegacyId;
                 if (!await ProfileHelper.RemoveProfileByIdAsync(id))
                 {
                     Logger.LogWarning($"Profile id {id} was not found");
                     return;
                 }
 
-                await ClearDeletedProfileReferencesAsync(id, legacyId, profilesBeforeDeletion);
-                SignalSettingsUpdated();
                 var profiles = await LoadProfilesCoreAsync(CancellationToken.None);
                 ReplaceProfiles(profiles);
+                SignalSettingsUpdated();
+                await ClearDeletedProfileReferencesAsync(id);
             }
             catch (Exception ex)
             {
@@ -1141,7 +1139,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private async Task ClearDeletedProfileReferencesAsync(Guid deletedProfileId, int? legacyId, PowerDisplayProfiles profilesBeforeDeletion)
+        private async Task ClearDeletedProfileReferencesAsync(int deletedProfileId)
         {
             try
             {
@@ -1151,9 +1149,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 LightSwitchProfileSettingsUpdater.ClearDeletedProfileAndSend(
                     lightSwitch,
                     deletedProfileId,
-                    SendConfigMSG,
-                    legacyId,
-                    profilesBeforeDeletion);
+                    SendConfigMSG);
             }
             catch (Exception ex)
             {

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -64,8 +64,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     EnableLightModeProfile = new BoolProperty(Properties.EnableLightModeProfile.Value),
                     DarkModeProfile = new StringProperty(Properties.DarkModeProfile.Value),
                     LightModeProfile = new StringProperty(Properties.LightModeProfile.Value),
-                    DarkModeProfileId = Properties.DarkModeProfileId with { },
-                    LightModeProfileId = Properties.LightModeProfileId with { },
+                    DarkModeProfileId = new IntProperty(Properties.DarkModeProfileId.Value),
+                    LightModeProfileId = new IntProperty(Properties.LightModeProfileId.Value),
                 },
             };
         }

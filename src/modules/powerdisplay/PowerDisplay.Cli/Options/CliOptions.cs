@@ -144,7 +144,7 @@ public static class CliOptions
     };
 
     // A pure presence flag so it can appear immediately before a subcommand argument without
-    // consuming the UUID argument that follows `apply-profile --json`.
+    // consuming that argument (for example, `apply-profile --json 3`).
     public static readonly Option<bool> Json = new(
         ["--json"],
         "Write compact JSON Lines output for scripting and automation.")
@@ -162,24 +162,15 @@ public static class CliOptions
     };
 
     // --- apply-profile ---
-    public static readonly Argument<Guid> ProfileId = new(
+    public static readonly Argument<int> ProfileId = new(
         "id",
-        "UUID of the profile to apply. Run 'PowerToys.PowerDisplay.Cli.exe profiles' to list them.")
+        "Numeric id of the profile to apply. Run 'PowerToys.PowerDisplay.Cli.exe profiles' to list them.")
     {
         Arity = ArgumentArity.ExactlyOne,
     };
 
     static CliOptions()
     {
-        ProfileId.AddValidator(result =>
-        {
-            if (result.Tokens.Count != 0
-                && (!Guid.TryParseExact(result.Tokens[0].Value, "D", out var profileId) || profileId == Guid.Empty))
-            {
-                result.ErrorMessage = "profile id must be a non-empty UUID in xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx format";
-            }
-        });
-
         // Reject a negative --step at parse time so it flows through the single ArgumentError
         // envelope instead of an unfriendly framework message. 0 is allowed (a no-op adjust).
         Step.AddValidator(result =>

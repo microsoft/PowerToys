@@ -1,11 +1,8 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable enable
-
 using System;
-using PowerDisplay.Models;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -13,28 +10,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public static bool ClearDeletedProfileAndSend(
             LightSwitchSettings settings,
-            Guid deletedProfileId,
-            Func<string, int> sendConfigMessage,
-            int? legacyId = null,
-            PowerDisplayProfiles? profilesBeforeDeletion = null)
+            int deletedProfileId,
+            Func<string, int> sendConfigMessage)
         {
             ArgumentNullException.ThrowIfNull(settings);
             ArgumentNullException.ThrowIfNull(sendConfigMessage);
 
-            if (deletedProfileId == Guid.Empty)
-            {
-                throw new ArgumentException("A deleted profile must have a UUID.", nameof(deletedProfileId));
-            }
-
-            // Resolve name-only references before the profile disappears. Otherwise a new
-            // same-name profile could inherit a reference intended for the deleted profile.
-            var changed = profilesBeforeDeletion is not null &&
-                LightSwitchProfileReferenceHelper.ReconcileReferences(settings.Properties, profilesBeforeDeletion);
-            changed |= LightSwitchProfileReferenceHelper.ClearProfileIdReferences(
+            if (!LightSwitchProfileReferenceHelper.ClearProfileIdReferences(
                 settings.Properties,
-                deletedProfileId,
-                legacyId);
-            if (!changed)
+                deletedProfileId))
             {
                 return false;
             }

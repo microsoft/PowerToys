@@ -38,7 +38,7 @@ public class ProgramTokenTests
 
     [TestMethod]
     public void ApplyProfileWithId_IsNotHelp()
-        => Assert.IsFalse(Program.HasHelpToken(Parse("apply-profile", ProfileTestIds.FirstText)));
+        => Assert.IsFalse(Program.HasHelpToken(Parse("apply-profile", "5")));
 
     [TestMethod]
     public void VersionFlag_IsDetected()
@@ -63,7 +63,7 @@ public class ProgramTokenTests
     [TestMethod]
     public void IsVersionRequest_VersionUnderApplyProfile_True()
     {
-        // `apply-profile <id>` is a Guid argument, so it cannot greedily bind "--version" as
+        // `apply-profile <id>` is an int argument, so it can no longer greedily bind "--version" as
         // a profile id. The token is detected by HasVersionToken, and IsVersionRequest now allows
         // both RootCommand and apply-profile, so this returns True (version is shown for apply-profile --version).
         Assert.IsTrue(Program.IsVersionRequest(Parse("apply-profile", "--version")));
@@ -71,7 +71,7 @@ public class ProgramTokenTests
 
     [TestMethod]
     public void ApplyProfileWithId_IsNotVersion()
-        => Assert.IsFalse(Program.IsVersionRequest(Parse("apply-profile", ProfileTestIds.FirstText)));
+        => Assert.IsFalse(Program.IsVersionRequest(Parse("apply-profile", "5")));
 
     [TestMethod]
     public void BuildParseErrorResult_CollapsesMultipleMessagesIntoOneEnvelope()
@@ -131,26 +131,27 @@ public class ProgramTokenTests
     [TestMethod]
     public void Quiet_DoesNotSwallowFollowingArgument()
     {
-        // --quiet is a presence flag and must leave the UUID for the profile argument.
-        var parsed = Parse("apply-profile", "--quiet", ProfileTestIds.FirstText);
+        // Regression: --quiet is a global Option<bool>. With ArgumentArity.Zero it must NOT swallow a
+        // following bareword that parses as a bool, so `apply-profile --quiet 1` binds "1" as the
+        // profile id (not as --quiet's value, which would leave apply-profile with no argument).
+        var parsed = Parse("apply-profile", "--quiet", "1");
 
         Assert.AreEqual(0, parsed.Errors.Count, "--quiet must not consume the profile id");
-        Assert.AreEqual(ProfileTestIds.First, parsed.GetValueForArgument(CliOptions.ProfileId));
+        Assert.AreEqual(1, parsed.GetValueForArgument(CliOptions.ProfileId));
         Assert.IsTrue(parsed.GetValueForOption(CliOptions.Quiet), "a bare --quiet resolves to true");
-        Assert.AreEqual(ArgumentArity.Zero, CliOptions.Quiet.Arity);
     }
 
     [DataTestMethod]
-    [DataRow("--json", "apply-profile", ProfileTestIds.FirstText)]
-    [DataRow("apply-profile", "--json", ProfileTestIds.FirstText)]
-    [DataRow("apply-profile", ProfileTestIds.FirstText, "--json")]
+    [DataRow("--json", "apply-profile", "17")]
+    [DataRow("apply-profile", "--json", "17")]
+    [DataRow("apply-profile", "17", "--json")]
     public void Json_IsGlobalAndDoesNotSwallowApplyProfileId(string first, string second, string third)
     {
         var parsed = Parse(first, second, third);
 
         Assert.AreEqual(0, parsed.Errors.Count);
         Assert.IsTrue(parsed.GetValueForOption(CliOptions.Json));
-        Assert.AreEqual(ProfileTestIds.First, parsed.GetValueForArgument(CliOptions.ProfileId));
+        Assert.AreEqual(17, parsed.GetValueForArgument(CliOptions.ProfileId));
         Assert.AreEqual(ArgumentArity.Zero, CliOptions.Json.Arity);
     }
 
@@ -219,36 +220,21 @@ public class ProgramTokenTests
             $"ConnectTimeout ({Program.ConnectTimeout}) must be < OperationTimeout ({Program.OperationTimeout})");
     }
 
-    [DataTestMethod]
-    [DataRow(ProfileTestIds.FirstText)]
-    [DataRow("B869BD32-AACF-4408-9C00-B883143CE9A4")]
-    public void ApplyProfile_ParsesUuid(string id)
+    [TestMethod]
+    public void ApplyProfile_ParsesIntegerId()
     {
-        var parse = Parse("apply-profile", id);
+        var parse = Parse("apply-profile", "5");
 
         Assert.AreEqual(0, parse.Errors.Count);
-        Assert.AreEqual(ProfileTestIds.First, parse.GetValueForArgument(CliOptions.ProfileId));
-    }
-
-    [DataTestMethod]
-    [DataRow("Gaming")]
-    [DataRow("5")]
-    [DataRow("0")]
-    [DataRow("-1")]
-    [DataRow("00000000-0000-0000-0000-000000000000")]
-    [DataRow("b869bd32aacf44089c00b883143ce9a4")]
-    [DataRow("{b869bd32-aacf-4408-9c00-b883143ce9a4}")]
-    public void ApplyProfile_InvalidUuid_IsParseError(string id)
-    {
-        var parse = Parse("apply-profile", id);
-
-        Assert.IsTrue(parse.Errors.Count > 0);
+        Assert.AreEqual(5, parse.GetValueForArgument(CliOptions.ProfileId));
     }
 
     [TestMethod]
-    public void ApplyProfile_MissingUuid_IsParseError()
+    public void ApplyProfile_NonInteger_IsParseError()
     {
-        Assert.IsTrue(Parse("apply-profile").Errors.Count > 0);
+        var parse = Parse("apply-profile", "Gaming");
+
+        Assert.IsTrue(parse.Errors.Count > 0);
     }
 
     [TestMethod]

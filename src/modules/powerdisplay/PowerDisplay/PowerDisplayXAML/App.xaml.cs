@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -390,10 +391,10 @@ namespace PowerDisplay
             else if (messageType == Constants.PowerDisplayApplyProfileMessage())
             {
                 if (messageParts.Length <= 1
-                    || !Guid.TryParseExact(messageParts[1].Trim(), "D", out var profileId)
-                    || profileId == Guid.Empty)
+                    || !int.TryParse(messageParts[1].Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out var profileId)
+                    || profileId < 1)
                 {
-                    Logger.LogWarning("[NamedPipe] ApplyProfile message is missing a valid profile UUID");
+                    Logger.LogWarning("[NamedPipe] ApplyProfile message is missing a valid positive profile id");
                     return;
                 }
 

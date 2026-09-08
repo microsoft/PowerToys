@@ -1187,7 +1187,7 @@ flowchart TB
     LightEvent -->|"Event signaled"| EventWaiter
     DarkEvent -->|"Event signaled"| EventWaiter
     EventWaiter -->|"isLightMode"| LightSwitchSvc
-    LightSwitchSvc -->|"GetProfileIdForThemeAsync()"| LSSettingsJson
+    LightSwitchSvc -->|"GetProfileIdForTheme()"| LSSettingsJson
     LightSwitchSvc -->|"Profile id"| MainViewModel
     MainViewModel -->|"LoadProfilesAsync()"| ProfileHelper
     ProfileHelper --> ProfileStore
@@ -1212,18 +1212,15 @@ Native LightSwitch treats these named events as pure theme-change notifications 
   "properties": {
     "enableLightModeProfile": { "value": true },
     "lightModeProfile": { "value": "" },
-    "lightModeProfileId": { "value": "b869bd32-aacf-4408-9c00-b883143ce9a4" },
+    "lightModeProfileId": { "value": 3 },
     "enableDarkModeProfile": { "value": true },
     "darkModeProfile": { "value": "" },
-    "darkModeProfileId": { "value": "420c330a-a8d1-4e1b-a15c-e3c3465b7f20" }
+    "darkModeProfileId": { "value": 7 }
   }
 }
 ```
 
-Profile references store UUID strings. The name fields are retained only for migration from pre-ID
-settings. Older numeric references are resolved through the matching profile's persisted `legacyId`
-and rewritten with its UUID after the profile migration has been saved. Reordering or renaming a
-profile does not change its UUID or its LightSwitch references.
+The name fields are retained only for migration from pre-ID settings; current code persists and resolves the positive ID fields.
 
 ---
 
@@ -1422,13 +1419,13 @@ Implementation notes:
 
 ---
 
-### Profile Identity, Display Order, and CLI Compatibility
+### Profile Display Order
 
-Each profile has a stable UUID `id` and a separate integer `order`. All profile lists, including
-Settings, the flyout, LightSwitch selection, and CLI `profiles` output, use increasing `order`.
-Reordering updates the contiguous zero-based `order` values without changing UUIDs, monitor settings,
-or the physical order of entries in the `profiles` array. Editing a profile retains its order;
-new profiles receive a random UUID and the last display position.
+Each profile keeps its stable integer `id` and has a separate integer `order`. All profile lists,
+including Settings, the flyout, LightSwitch selection, and CLI `profiles` output, use increasing
+`order`. Reordering updates the contiguous zero-based `order` values without changing IDs, monitor
+settings, or the physical order of entries in the `profiles` array. Editing a profile retains its
+order and array position; new profiles receive the next integer ID and the last display position.
 
 The relevant fields in `profiles.json` are shown below; monitor settings and timestamps are omitted.
 Despite appearing second in the array, Night is displayed first because its `order` is zero.
@@ -1436,53 +1433,17 @@ Despite appearing second in the array, Night is displayed first because its `ord
 ```json
 {
   "profiles": [
-    {
-      "id": "b869bd32-aacf-4408-9c00-b883143ce9a4",
-      "name": "Day",
-      "order": 1,
-      "legacyId": 3
-    },
-    {
-      "id": "420c330a-a8d1-4e1b-a15c-e3c3465b7f20",
-      "name": "Night",
-      "order": 0,
-      "legacyId": 7
-    }
-  ]
+    { "id": 3, "name": "Day", "order": 1 },
+    { "id": 7, "name": "Night", "order": 0 }
+  ],
+  "nextId": 8
 }
 ```
 
-On migration, profiles with numeric IDs receive UUIDs and retain their former IDs in the optional
-`legacyId` field. Profiles without an explicit order initially retain their existing array order.
-The UUIDs and numeric mappings are saved atomically under the profile store lock before references
-in other settings files are migrated. The mappings remain available for a later retry if those
-settings could not be saved. New profiles do not receive a `legacyId`; `nextId` is no longer used.
-
-CLI and named-pipe profile commands use UUIDs in the standard hyphenated `D` format. Run
-`PowerToys.PowerDisplay.Cli.exe profiles` to obtain the current IDs, then apply one with:
-
-```powershell
-PowerToys.PowerDisplay.Cli.exe apply-profile b869bd32-aacf-4408-9c00-b883143ce9a4
-```
-
-An `apply-profile` IPC request is:
-
-```json
-{
-  "version": "2.0",
-  "command": "apply-profile",
-  "applyProfile": {
-    "profileId": "b869bd32-aacf-4408-9c00-b883143ce9a4"
-  }
-}
-```
-
-`profiles` responses likewise encode each `id` as a UUID string, and successful `apply-profile`
-responses echo that string in `profileId`. The CLI rejects numeric, malformed, and empty UUID IDs;
-legacy integer IDs are retained only for settings migration. This changes the CLI/IPC schema from
-`1.0` to `2.0`. Profile commands are incompatible with the older numeric-ID CLI or app. There is no
-version negotiation: incompatible profile payloads use the existing deserialization-error path
-(`INTERNAL_ERROR`, exit code 9). Other command behavior and pipe framing are unchanged.
+Profiles without an explicit order initially retain their existing array order. The profile store
+normalizes and persists the order under its existing lock. Sorting is available through drag and
+drop or Move up/Move down menu actions; elevated Settings uses the menu actions. LightSwitch
+references and CLI/IPC profile commands continue to use integer IDs with schema version `1.0`.
 
 ### Sequence: Creating and Saving a Profile
 
@@ -1518,7 +1479,7 @@ sequenceDiagram
     ProfileStore->>ProfileStore: Acquire process lock and named mutex
     ProfileStore->>FileSystem: Read profiles.json
     FileSystem-->>ProfileStore: Existing profiles
-    ProfileStore->>ProfileStore: Assign UUID and order, or preserve existing identity and order
+    ProfileStore->>ProfileStore: Assign id and update profile
     ProfileStore->>FileSystem: Write temp file and atomically replace profiles.json
     FileSystem-->>ProfileStore: Success
     ProfileStore-->>ProfileHelper: Completed
@@ -1565,7 +1526,7 @@ sequenceDiagram
     EventWaiter->>WinEvent: WaitAny([lightEvent, darkEvent]) returns index
 
     Note over EventWaiter: Theme determined from event:<br/>index 0 = Light, index 1 = Dark
-    EventWaiter->>LSSvc: GetProfileIdForThemeAsync(isLightMode)
+    EventWaiter->>LSSvc: GetProfileIdForTheme(isLightMode)
     LSSvc->>LSSvc: Read LightSwitch/settings.json
     LSSvc-->>EventWaiter: profileId (or null)
 

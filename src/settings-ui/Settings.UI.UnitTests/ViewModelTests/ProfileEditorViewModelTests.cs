@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.ObjectModel;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -14,7 +13,7 @@ namespace ViewModelTests
     public class ProfileEditorViewModelTests
     {
         [TestMethod]
-        public void CreateProfile_DefaultProfileId_ReturnsEmptyUntilSaved()
+        public void CreateProfile_DefaultProfileId_ReturnsZero()
         {
             var viewModel = new ProfileEditorViewModel(
                 new ObservableCollection<MonitorInfo>(),
@@ -22,13 +21,13 @@ namespace ViewModelTests
 
             var profile = viewModel.CreateProfile();
 
-            Assert.AreEqual(Guid.Empty, profile.Id);
+            Assert.AreEqual(0, profile.Id);
         }
 
         [TestMethod]
         public void CreateProfile_ExistingProfileId_PreservesId()
         {
-            var profileId = Guid.Parse("9d5a932a-1170-4fdc-998d-ac6be7eea8c3");
+            const int profileId = 42;
             var viewModel = new ProfileEditorViewModel(
                 new ObservableCollection<MonitorInfo>(),
                 "Existing profile",

@@ -43,7 +43,7 @@ namespace PowerDisplay.Models
             CancellationToken cancellationToken = default)
             => _profileStore.Value.AddOrUpdateProfileAsync(profile, cancellationToken);
 
-        public static Task<bool> RemoveProfileByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public static Task<bool> RemoveProfileByIdAsync(int id, CancellationToken cancellationToken = default)
             => _profileStore.Value.RemoveProfileByIdAsync(id, cancellationToken);
 
         public static Task<bool> UpdateProfilesAsync(

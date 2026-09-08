@@ -68,10 +68,10 @@ public class JsonCliOutputTests
         {
             Profiles = new List<CliProfileInfo>
             {
-                new() { Id = ProfileTestIds.First, Name = "Work", MonitorCount = 1, LastModified = "2026-08-28T00:00:00Z" },
+                new() { Id = 4, Name = "Work", MonitorCount = 1, LastModified = "2026-08-28T00:00:00Z" },
             },
         });
-        output.WriteApplyProfileResult(new CliApplyProfileResult { ProfileId = ProfileTestIds.First, Profile = "Work" });
+        output.WriteApplyProfileResult(new CliApplyProfileResult { ProfileId = 4, Profile = "Work" });
 
         Assert.AreEqual(string.Empty, stderr.ToString());
         var lines = Lines(stdout.ToString());
@@ -90,20 +90,6 @@ public class JsonCliOutputTests
         Assert.AreEqual(6, lines.Count);
         Assert.IsTrue(lines.All(line => line.StartsWith('{') && line.EndsWith('}')));
         Assert.IsTrue(lines.All(line => !line.Contains('\r') && !line.Contains('\n')));
-        foreach (var line in lines)
-        {
-            using var document = JsonDocument.Parse(line);
-            Assert.AreEqual("2.0", document.RootElement.GetProperty("version").GetString());
-        }
-
-        using var profilesDocument = JsonDocument.Parse(lines[4]);
-        var listedId = profilesDocument.RootElement.GetProperty("profiles")[0].GetProperty("id");
-        Assert.AreEqual(JsonValueKind.String, listedId.ValueKind);
-        Assert.AreEqual(ProfileTestIds.FirstText, listedId.GetString());
-        using var appliedDocument = JsonDocument.Parse(lines[5]);
-        var appliedId = appliedDocument.RootElement.GetProperty("profileId");
-        Assert.AreEqual(JsonValueKind.String, appliedId.ValueKind);
-        Assert.AreEqual(ProfileTestIds.FirstText, appliedId.GetString());
     }
 
     [TestMethod]
@@ -117,7 +103,7 @@ public class JsonCliOutputTests
         {
             Profiles = new List<CliProfileInfo>
             {
-                new() { Id = ProfileTestIds.Second, Name = ProfileName, MonitorCount = 2 },
+                new() { Id = 7, Name = ProfileName, MonitorCount = 2 },
             },
         });
 
@@ -171,7 +157,7 @@ public class JsonCliOutputTests
             {
                 Code = CliErrorCodes.ArgumentError,
                 MessageId = CliMessageIds.ProfileNotFound,
-                Value = ProfileTestIds.UnknownText,
+                Value = "404",
                 Detail = "profile store lookup completed",
             },
         };
@@ -188,9 +174,9 @@ public class JsonCliOutputTests
         Assert.IsNotNull(error);
         Assert.AreEqual(CliErrorCodes.ArgumentError, error.Error.Code);
         Assert.AreEqual(CliMessageIds.ProfileNotFound, error.Error.MessageId);
-        Assert.AreEqual(ProfileTestIds.UnknownText, error.Error.Value);
+        Assert.AreEqual("404", error.Error.Value);
         Assert.AreEqual("profile store lookup completed", error.Error.Detail);
-        Assert.AreEqual($"no profile with id {ProfileTestIds.UnknownText}", error.Error.Message);
+        Assert.AreEqual("no profile with id 404", error.Error.Message);
         Assert.AreEqual("run 'PowerToys.PowerDisplay.Cli.exe profiles' to see available profiles", error.Error.Hint);
     }
 

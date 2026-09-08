@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Services;
@@ -16,25 +15,22 @@ public class ProfileMigrationTests
     private const string NewMonitorId = @"\\?\DISPLAY#DELD1A8#5&abc&0&UID12345";
 
     [TestMethod]
-    public void Migrate_NoDiscoveredMonitors_BackfillsIdsWithoutChangingMonitorSettings()
+    public void Migrate_NoDiscoveredMonitors_BackfillsIdsAndOrderWithoutChangingMonitorSettings()
     {
         var profile = MakeProfile("Legacy", "DDC_DELD1A8_1");
-        profile.LastModified = DateTime.UnixEpoch;
         var profiles = new PowerDisplayProfiles();
         profiles.Profiles.Add(profile);
 
         var changed = ProfileMigration.Migrate(
             profiles,
-            Array.Empty<(string Id, int MonitorNumber)>());
+            System.Array.Empty<(string Id, int MonitorNumber)>());
 
         Assert.IsTrue(changed);
-        Assert.AreNotEqual(Guid.Empty, profile.Id);
+        Assert.AreEqual(1, profile.Id);
         Assert.AreEqual(0, profile.Order);
         Assert.AreEqual("DDC_DELD1A8_1", profile.MonitorSettings[0].MonitorId);
-        Assert.AreEqual(DateTime.UnixEpoch, profile.LastModified);
-        var assignedId = profile.Id;
-        Assert.IsFalse(ProfileMigration.Migrate(profiles, Array.Empty<(string Id, int MonitorNumber)>()));
-        Assert.AreEqual(assignedId, profile.Id);
+        Assert.AreEqual(2, profiles.NextId);
+        Assert.IsFalse(ProfileMigration.Migrate(profiles, System.Array.Empty<(string Id, int MonitorNumber)>()));
     }
 
     [TestMethod]
@@ -49,7 +45,7 @@ public class ProfileMigrationTests
             new[] { (NewMonitorId, 1) });
 
         Assert.IsTrue(changed);
-        Assert.AreNotEqual(Guid.Empty, profile.Id);
+        Assert.AreEqual(1, profile.Id);
         Assert.AreEqual(0, profile.Order);
         Assert.AreEqual(1, profile.MonitorSettings.Count);
         Assert.AreEqual(NewMonitorId, profile.MonitorSettings[0].MonitorId);
@@ -78,29 +74,26 @@ public class ProfileMigrationTests
     }
 
     [TestMethod]
-    public void Migrate_MonitorReferences_PreservesAssignedUuidOrderAndLegacyMapping()
+    public void Migrate_MonitorReferences_PreservesAssignedIdsOrderAndArrayPosition()
     {
-        var profiles = new PowerDisplayProfiles();
+        var profiles = new PowerDisplayProfiles { NextId = 3 };
         var first = MakeProfile("Legacy monitor", "DDC_DELD1A8_1");
-        first.Id = Guid.NewGuid();
+        first.Id = 1;
         first.Order = 1;
-        first.LegacyId = 7;
         var second = MakeProfile("Current monitor", NewMonitorId);
-        second.Id = Guid.NewGuid();
+        second.Id = 2;
         second.Order = 0;
         profiles.Profiles.Add(first);
         profiles.Profiles.Add(second);
-        var firstId = first.Id;
-        var secondId = second.Id;
         var discovered = new[] { (NewMonitorId, 1) };
 
         Assert.IsTrue(ProfileMigration.Migrate(profiles, discovered));
 
-        Assert.AreEqual(firstId, first.Id);
-        Assert.AreEqual(secondId, second.Id);
+        Assert.AreEqual(1, first.Id);
+        Assert.AreEqual(2, second.Id);
         Assert.AreEqual(1, first.Order);
         Assert.AreEqual(0, second.Order);
-        Assert.AreEqual(7, first.LegacyId);
+        Assert.AreEqual(3, profiles.NextId);
         Assert.AreSame(first, profiles.Profiles[0]);
         Assert.AreSame(second, profiles.Profiles[1]);
         Assert.IsFalse(ProfileMigration.Migrate(profiles, discovered));

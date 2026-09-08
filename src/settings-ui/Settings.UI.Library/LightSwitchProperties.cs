@@ -1,8 +1,7 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -22,8 +21,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const bool DefaultEnableLightModeProfile = false;
         public const string DefaultDarkModeProfile = "";
         public const string DefaultLightModeProfile = "";
-        public static readonly Guid DefaultDarkModeProfileId = Guid.Empty;
-        public static readonly Guid DefaultLightModeProfileId = Guid.Empty;
+        public const int DefaultDarkModeProfileId = 0;
+        public const int DefaultLightModeProfileId = 0;
         public static readonly HotkeySettings DefaultToggleThemeHotkey = new HotkeySettings(true, true, false, true, 0x44); // Ctrl+Win+Shift+D
 
         public LightSwitchProperties()
@@ -42,8 +41,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             EnableLightModeProfile = new BoolProperty(DefaultEnableLightModeProfile);
             DarkModeProfile = new StringProperty(DefaultDarkModeProfile);
             LightModeProfile = new StringProperty(DefaultLightModeProfile);
-            DarkModeProfileId = new ProfileIdProperty(DefaultDarkModeProfileId);
-            LightModeProfileId = new ProfileIdProperty(DefaultLightModeProfileId);
+            DarkModeProfileId = new IntProperty(DefaultDarkModeProfileId);
+            LightModeProfileId = new IntProperty(DefaultLightModeProfileId);
         }
 
         [JsonPropertyName("changeSystem")]
@@ -97,9 +96,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public StringProperty LightModeProfile { get; set; }
 
         [JsonPropertyName("darkModeProfileId")]
-        public ProfileIdProperty DarkModeProfileId { get; set; }
+        public IntProperty DarkModeProfileId { get; set; }
 
         [JsonPropertyName("lightModeProfileId")]
-        public ProfileIdProperty LightModeProfileId { get; set; }
+        public IntProperty LightModeProfileId { get; set; }
     }
 }

@@ -20,8 +20,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class PowerDisplayPage : NavigablePage, IRefreshablePage
     {
-        private Guid? _draggedProfileId;
-        private Guid[] _profileOrderBeforeDrag;
+        private int? _draggedProfileId;
+        private int[] _profileOrderBeforeDrag;
 
         private PowerDisplayViewModel ViewModel { get; set; }
 
@@ -110,7 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             _draggedProfileId = null;
             _profileOrderBeforeDrag = null;
 
-            if (sender != ProfilesList || args.DropResult != DataPackageOperation.Move || profileId is not Guid draggedId || previousOrder == null ||
+            if (sender != ProfilesList || args.DropResult != DataPackageOperation.Move || profileId is not int draggedId || previousOrder == null ||
                 args.Items.Count != 1 || args.Items[0] is not PowerDisplayProfile profile || profile.Id != draggedId)
             {
                 return;
@@ -130,7 +130,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            Guid? beforeProfileId = newIndex + 1 < currentOrder.Length ? currentOrder[newIndex + 1] : null;
+            int? beforeProfileId = newIndex + 1 < currentOrder.Length ? currentOrder[newIndex + 1] : null;
             await ViewModel.ReorderProfileAsync(draggedId, beforeProfileId);
             RestoreProfileFocus(draggedId);
         }
@@ -178,7 +178,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void RestoreProfileFocus(Guid profileId)
+        private void RestoreProfileFocus(int profileId)
         {
             // Wait for the menu to close and for the refreshed collection to be laid out.
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>

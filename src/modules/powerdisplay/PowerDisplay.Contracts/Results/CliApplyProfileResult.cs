@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-
 namespace PowerDisplay.Contracts;
 
 public sealed class CliApplyProfileResult
@@ -16,7 +14,7 @@ public sealed class CliApplyProfileResult
 
     public string Command { get; init; } = CliCommandNames.ApplyProfile;
 
-    public Guid ProfileId { get; init; }
+    public int ProfileId { get; init; }
 
     public string Profile { get; init; } = string.Empty;
 }

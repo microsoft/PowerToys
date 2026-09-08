@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,10 +20,10 @@ namespace ViewModelTests;
 [TestClass]
 public class PowerDisplayProfileReorderingTests
 {
-    private static readonly Guid FirstId = Guid.Parse("a3d1c892-98ae-47d5-a0f0-5ebbf6a7cc73");
-    private static readonly Guid SecondId = Guid.Parse("2142d5a3-18b7-48b2-96eb-c5680c99b2e0");
-    private static readonly Guid ThirdId = Guid.Parse("980e973a-eeb6-4cb8-b3d0-dc16793a69dc");
-    private static readonly Guid MissingId = Guid.Parse("47bd3fe8-a2cc-4c37-9af7-2a6c4cb00421");
+    private const int FirstId = 1;
+    private const int SecondId = 2;
+    private const int ThirdId = 3;
+    private const int MissingId = 4;
 
     [TestMethod]
     [DataRow(false)]
@@ -218,7 +217,6 @@ public class PowerDisplayProfileReorderingTests
         var store = new ProfileSession { FailRead = true };
         using var viewModel = CreateViewModel(store);
 
-        // A legacy UUID migration must not publish identities if its write fails.
         await viewModel.InitializeProfilesAsync();
 
         Assert.IsFalse(viewModel.HasProfiles);
@@ -246,20 +244,7 @@ public class PowerDisplayProfileReorderingTests
         Assert.AreEqual(0, store.Writes);
     }
 
-    [TestMethod]
-    public async Task ApplyProfile_SendsTheUuidInTheSettingsAction()
-    {
-        var store = new ProfileSession();
-        using var viewModel = CreateViewModel(store);
-        await viewModel.InitializeProfilesAsync();
-
-        viewModel.ApplyProfile(viewModel.Profiles[0]);
-
-        var action = JsonSerializer.Deserialize(store.Messages.Single(), SettingsSerializationContext.Default.PowerDisplayActionMessage);
-        Assert.AreEqual(FirstId.ToString("D"), action.Action.PowerDisplay.Value);
-    }
-
-    private static void AssertOrder(PowerDisplayViewModel viewModel, params Guid[] ids)
+    private static void AssertOrder(PowerDisplayViewModel viewModel, params int[] ids)
         => CollectionAssert.AreEqual(ids, viewModel.Profiles.Select(p => p.Id).ToArray());
 
     private static PowerDisplayViewModel CreateViewModel(ProfileSession store, bool elevated = false, bool enabled = true)
@@ -274,11 +259,7 @@ public class PowerDisplayProfileReorderingTests
             settingsUtils.Object,
             generalRepository,
             new BackCompatTestProperties.MockSettingsRepository<PowerDisplaySettings>(settingsUtils.Object),
-            message =>
-            {
-                store.Messages.Add(message);
-                return 0;
-            },
+            _ => 0,
             (_, _) => { },
             store.LoadAsync,
             store.ReorderAsync,
@@ -307,9 +288,7 @@ public class PowerDisplayProfileReorderingTests
 
         public TaskCompletionSource<bool> PendingWrite { get; set; }
 
-        public List<string> Messages { get; } = new List<string>();
-
-        private static PowerDisplayProfile CreateProfile(Guid id, string name, int order)
+        private static PowerDisplayProfile CreateProfile(int id, string name, int order)
         {
             return new PowerDisplayProfile(name, new List<ProfileMonitorSetting> { new ProfileMonitorSetting("monitor-1", brightness: 50) })
             {
@@ -327,7 +306,7 @@ public class PowerDisplayProfileReorderingTests
                     ProfileSerializationContext.Default.PowerDisplayProfiles));
         }
 
-        public async Task<bool> ReorderAsync(Guid id, Guid? beforeId)
+        public async Task<bool> ReorderAsync(int id, int? beforeId)
         {
             Writes++;
             if (PendingWrite != null)

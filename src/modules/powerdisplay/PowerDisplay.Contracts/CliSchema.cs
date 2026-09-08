@@ -9,10 +9,10 @@ namespace PowerDisplay.Contracts;
 /// metadata. NOTE: neither side validates this today — a mismatched CLI/app currently surfaces as
 /// a deserialization failure (INTERNAL_ERROR, exit 9), not a dedicated version error, and because
 /// the source-gen serializer ignores unknown members, additive ("minor") drift is accepted
-/// silently. Version 2 replaces numeric profile IDs with UUID strings; profile commands are not
-/// compatible with v1 clients or hosts. Version negotiation remains out of scope.
+/// silently. Version negotiation (rejecting an incompatible major) is intentionally out of scope
+/// for v1; wire it up here and in the dispatcher if forward-compat becomes a requirement.
 /// </summary>
 public static class CliSchema
 {
-    public const string Version = "2.0";
+    public const string Version = "1.0";
 }

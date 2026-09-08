@@ -60,7 +60,7 @@ public class TextCliOutputTests
         {
             Profiles = new List<CliProfileInfo>
             {
-                new() { Id = ProfileTestIds.First, Name = NonBmpName, MonitorCount = 2, LastModified = "2025-01-01T00:00:00Z" },
+                new() { Id = 7, Name = NonBmpName, MonitorCount = 2, LastModified = "2025-01-01T00:00:00Z" },
             },
         });
 
@@ -69,7 +69,7 @@ public class TextCliOutputTests
         StringAssert.Contains(row, NonBmpName);
         Assert.IsFalse(row.Contains('…'), "the row must not contain a truncation ellipsis");
 
-        var expectedRow = $"{ProfileTestIds.FirstText} | {NonBmpName} | 2 | 2025-01-01T00:00:00Z";
+        var expectedRow = $"7 | {NonBmpName} | 2 | 2025-01-01T00:00:00Z";
         Assert.AreEqual(expectedRow, row);
     }
 
@@ -79,7 +79,7 @@ public class TextCliOutputTests
         var stdout = new StringWriter();
         var output = new TextCliOutput(stdout, new StringWriter());
 
-        output.WriteApplyProfileResult(new CliApplyProfileResult { ProfileId = ProfileTestIds.First, Profile = "Office" });
+        output.WriteApplyProfileResult(new CliApplyProfileResult { ProfileId = 3, Profile = "Office" });
 
         var text = stdout.ToString().Trim();
         Assert.AreEqual("Processed profile 'Office' (best effort).", text);

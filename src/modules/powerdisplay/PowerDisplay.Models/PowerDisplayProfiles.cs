@@ -19,6 +19,9 @@ namespace PowerDisplay.Models
         [JsonPropertyName("profiles")]
         public List<PowerDisplayProfile> Profiles { get; set; }
 
+        [JsonPropertyName("nextId")]
+        public int NextId { get; set; }
+
         [JsonPropertyName("lastUpdated")]
         public DateTime LastUpdated { get; set; }
 
@@ -35,38 +38,30 @@ namespace PowerDisplay.Models
         public PowerDisplayProfile? GetLegacyProfileByName(string name)
         {
             return Profiles.FirstOrDefault(
-                profile => profile is not null && string.Equals(profile.Name, name, StringComparison.OrdinalIgnoreCase));
+                profile => profile.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
-        /// Gets the profile by its UUID, or null when the id is empty or no profile has it.
+        /// Gets the profile by its stable id, or null when id is not positive or no profile has it.
         /// </summary>
-        public PowerDisplayProfile? GetById(Guid id)
+        public PowerDisplayProfile? GetById(int id)
         {
-            return id == Guid.Empty ? null : Profiles.FirstOrDefault(profile => profile?.Id == id);
+            return id <= 0 ? null : Profiles.FirstOrDefault(p => p.Id == id);
         }
 
         /// <summary>
-        /// Resolves a numeric reference retained in another settings file during UUID migration.
-        /// </summary>
-        public PowerDisplayProfile? GetByLegacyId(int legacyId)
-        {
-            return legacyId <= 0 ? null : Profiles.FirstOrDefault(profile => profile?.LegacyId == legacyId);
-        }
-
-        /// <summary>
-        /// Returns profiles with assigned UUIDs in display order, independent of their position
-        /// in the persisted array. Unassigned profiles remain hidden until migration is saved.
+        /// Returns profiles with usable stable ids in display order, independent of their position
+        /// in the persisted array. Legacy or corrupt profiles with non-positive ids remain hidden.
         /// </summary>
         public IEnumerable<PowerDisplayProfile> GetAssignedProfiles()
         {
-            return Profiles.Where(profile => profile is not null && profile.Id != Guid.Empty)
+            return Profiles.Where(profile => profile is not null && profile.Id >= 1)
                 .OrderBy(profile => profile.Order);
         }
 
         /// <summary>
-        /// Adds or updates a profile by UUID. New profiles receive a random UUID and are displayed
-        /// last. Updating preserves both display order and the legacy reference mapping.
+        /// Adds or updates a profile by its stable id. New profiles receive an id from the monotonic
+        /// NextId counter and are displayed last. Updating preserves the profile's display order.
         /// </summary>
         public void SetProfile(PowerDisplayProfile profile)
         {
@@ -75,25 +70,29 @@ namespace PowerDisplay.Models
                 throw new ArgumentException("Profile is invalid");
             }
 
-            var existingIndex = profile.Id != Guid.Empty ? Profiles.FindIndex(p => p?.Id == profile.Id) : -1;
+            var existingIndex = profile.Id >= 1 ? Profiles.FindIndex(p => p?.Id == profile.Id) : -1;
+            if (profile.Id == 0)
+            {
+                // Assign the next id, self-healing a corrupt/legacy NextId that isn't already past
+                // the highest id in use (mirrors EnsureIds). This guarantees a new profile never
+                // collides with an existing one even when SetProfile runs before EnsureIds.
+                var maxId = Profiles.Count == 0 ? 0 : Profiles.Max(p => p?.Id ?? 0);
+                var next = Math.Max(Math.Max(NextId, 1), maxId + 1);
+                profile.Id = next;
+                NextId = next + 1;
+            }
+            else if (NextId <= profile.Id)
+            {
+                NextId = profile.Id + 1;
+            }
+
             if (existingIndex >= 0)
             {
                 profile.Order = Profiles[existingIndex].Order;
-                profile.LegacyId = Profiles[existingIndex].LegacyId;
             }
             else
             {
-                if (profile.Id == Guid.Empty)
-                {
-                    do
-                    {
-                        profile.Id = Guid.NewGuid();
-                    }
-                    while (GetById(profile.Id) is not null);
-                }
-
                 profile.Order = checked(Profiles.Where(p => p is not null).Select(p => p.Order).DefaultIfEmpty(-1).Max() + 1);
-                profile.LegacyId = null;
             }
 
             profile.Touch();
@@ -110,14 +109,14 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
-        /// Moves a profile before another UUID, or to the end when beforeProfileId is null.
+        /// Moves a profile before another id, or to the end when beforeProfileId is null.
         /// Returns false without changing the collection when either id is invalid or missing,
         /// or the profile is already at the requested position. Only display order is changed;
         /// the persisted array and profile contents retain their original positions and values.
         /// </summary>
-        public bool MoveProfileBefore(Guid profileId, Guid? beforeProfileId)
+        public bool MoveProfileBefore(int profileId, int? beforeProfileId)
         {
-            if (profileId == Guid.Empty || beforeProfileId == Guid.Empty || profileId == beforeProfileId)
+            if (profileId <= 0 || beforeProfileId is <= 0 || profileId == beforeProfileId)
             {
                 return false;
             }
@@ -151,9 +150,9 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
-        /// Removes a profile by UUID and closes the gap in display order.
+        /// Removes a profile by its stable id and closes the gap in display order.
         /// </summary>
-        public bool RemoveProfile(Guid id)
+        public bool RemoveProfile(int id)
         {
             var profile = GetById(id);
             if (profile != null)
@@ -168,41 +167,43 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
-        /// Assigns random UUIDs to missing or duplicate identities and repairs display order.
-        /// Missing orders fall back to array positions; ties retain array order. The array itself
-        /// is unchanged, and numeric migration references remain assigned to their first owner.
-        /// Returns true when anything changed. The caller must save before publishing new UUIDs.
+        /// One-shot upgrade: assigns a stable id to every profile still missing one (Id == 0), in
+        /// list order, and advances NextId past the highest id in use (self-healing a corrupt or
+        /// legacy counter). Returns true when anything changed. Idempotent on subsequent calls.
         /// </summary>
-        public bool EnsureIdsAndOrder()
+        public bool EnsureIds()
         {
             var changed = false;
-            var assignedIds = new HashSet<Guid>();
-            var legacyIds = new HashSet<int>();
-            foreach (var profile in Profiles)
+
+            var maxId = Profiles.Count == 0 ? 0 : Profiles.Max(p => p?.Id ?? 0);
+            var next = Math.Max(Math.Max(NextId, 1), maxId + 1);
+
+            foreach (var p in Profiles)
             {
-                if (profile is null)
+                if (p is not null && p.Id == 0)
                 {
-                    continue;
-                }
-
-                if (profile.Id == Guid.Empty || !assignedIds.Add(profile.Id))
-                {
-                    do
-                    {
-                        profile.Id = Guid.NewGuid();
-                    }
-                    while (!assignedIds.Add(profile.Id));
-                    changed = true;
-                }
-
-                if (profile.LegacyId.HasValue
-                    && (profile.LegacyId.Value <= 0 || !legacyIds.Add(profile.LegacyId.Value)))
-                {
-                    profile.LegacyId = null;
+                    p.Id = next++;
                     changed = true;
                 }
             }
 
+            if (NextId != next)
+            {
+                NextId = next;
+                changed = true;
+            }
+
+            return changed;
+        }
+
+        /// <summary>
+        /// Assigns missing stable ids and repairs display order. Missing orders fall back to array
+        /// positions; ties retain array order. Returns true when anything changed, without changing
+        /// the array itself or the profiles' timestamps.
+        /// </summary>
+        public bool EnsureIdsAndOrder()
+        {
+            var changed = EnsureIds();
             var ordered = Profiles.Select((profile, index) => (Profile: profile, Index: index))
                 .Where(item => item.Profile is not null)
                 .OrderBy(item => item.Profile.Order >= 0 ? item.Profile.Order : item.Index)

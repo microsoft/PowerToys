@@ -50,7 +50,6 @@ namespace PowerDisplay.Models
                 var profiles = LoadProfilesCore();
                 var originalId = profile.Id;
                 var originalOrder = profile.Order;
-                var originalLegacyId = profile.LegacyId;
                 var originalLastModified = profile.LastModified;
                 try
                 {
@@ -61,7 +60,6 @@ namespace PowerDisplay.Models
                 {
                     profile.Id = originalId;
                     profile.Order = originalOrder;
-                    profile.LegacyId = originalLegacyId;
                     profile.LastModified = originalLastModified;
                     throw;
                 }
@@ -79,7 +77,7 @@ namespace PowerDisplay.Models
                 },
                 cancellationToken);
 
-        internal bool RemoveProfileById(Guid id)
+        internal bool RemoveProfileById(int id)
         {
             return ExecuteLocked(() =>
             {
@@ -94,7 +92,7 @@ namespace PowerDisplay.Models
             });
         }
 
-        internal Task<bool> RemoveProfileByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        internal Task<bool> RemoveProfileByIdAsync(int id, CancellationToken cancellationToken = default)
             => RunAsync(() => RemoveProfileById(id), cancellationToken);
 
         internal bool UpdateProfiles(Func<PowerDisplayProfiles, bool> update)
@@ -181,8 +179,8 @@ namespace PowerDisplay.Models
                 ?? throw new JsonException($"Profile file '{_filePath}' deserialized to null.");
             if (profiles.EnsureIdsAndOrder())
             {
-                // All callers hold the store mutex. Never expose newly assigned UUIDs until the
-                // UUIDs and numeric migration references have been atomically persisted together.
+                // All callers hold the store mutex. Persist assigned ids and normalized display
+                // order before returning the snapshot.
                 SaveProfilesCore(profiles);
             }
 
