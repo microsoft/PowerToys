@@ -30,13 +30,11 @@ public sealed class ProfileResourceCommandTest : BaseDscTest
     {
         // Act
         var result = ExecuteDscCommand<GetCommand>("--resource", ProfileResource.ResourceName, "--module", "Awake");
-        var messages = result.Messages();
 
-        // Assert
+        // Assert: the module check in BaseCommand reports a plain-text line
+        // on the error stream, not a JSON message
         Assert.IsFalse(result.Success);
-        Assert.AreEqual(1, messages.Count);
-        Assert.AreEqual(DscMessageLevel.Error, messages[0].Level);
-        Assert.AreEqual(GetResourceString("ModuleNotSupportedByResource", "Awake", ProfileResource.ResourceName), messages[0].Message);
+        Assert.AreEqual(GetResourceString("ModuleNotSupportedByResource", "Awake", ProfileResource.ResourceName), result.Error.Trim());
     }
 
     [TestMethod]

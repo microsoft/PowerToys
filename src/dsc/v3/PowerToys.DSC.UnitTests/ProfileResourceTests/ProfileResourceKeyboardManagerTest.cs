@@ -34,12 +34,18 @@ public sealed class ProfileResourceKeyboardManagerTest : BaseDscTest
     };
 
     private readonly Dictionary<string, string> _originalFiles = [];
+    private Func<bool> _originalIsProcessElevated;
 
     private static string Module => nameof(ModuleType.KeyboardManager);
 
     [TestInitialize]
     public void TestInitialize()
     {
+        // Set rejects elevated writes and the CI agent runs elevated, so
+        // treat the test process as non-elevated while the tests run
+        _originalIsProcessElevated = ProfileFunctionData.IsProcessElevated;
+        ProfileFunctionData.IsProcessElevated = () => false;
+
         // Save the actual settings and profile files, then reset to defaults
         foreach (var fileName in new[] { "settings.json", DefaultProfileFileName, WorkProfileFileName })
         {
@@ -54,6 +60,8 @@ public sealed class ProfileResourceKeyboardManagerTest : BaseDscTest
     [TestCleanup]
     public void TestCleanup()
     {
+        ProfileFunctionData.IsProcessElevated = _originalIsProcessElevated;
+
         foreach (var (fileName, content) in _originalFiles)
         {
             var path = _settingsUtils.GetSettingsFilePath(KeyboardManagerSettings.ModuleName, fileName);

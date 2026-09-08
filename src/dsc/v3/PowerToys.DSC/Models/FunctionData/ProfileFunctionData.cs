@@ -58,13 +58,16 @@ public sealed class ProfileFunctionData : BaseFunctionData
     /// </summary>
     public IList<string> Warnings { get; } = [];
 
+    /// <summary>
+    /// Gets or sets the check used to decide whether the current process is
+    /// elevated when no check is supplied to the constructor. Tests that drive
+    /// the commands end to end replace it, because CI agents run elevated.
+    /// </summary>
+    public static Func<bool> IsProcessElevated { get; set; } = IsCurrentProcessElevated;
+
     public ProfileFunctionData(string? input = null, Func<bool>? isProcessElevated = null)
     {
-        _isProcessElevated = isProcessElevated ?? (() =>
-        {
-            using var identity = WindowsIdentity.GetCurrent();
-            return new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
-        });
+        _isProcessElevated = isProcessElevated ?? IsProcessElevated;
         Output = new();
         Input = new();
         _inputErrors = [];
@@ -167,6 +170,16 @@ public sealed class ProfileFunctionData : BaseFunctionData
     public string Schema()
     {
         return GenerateSchema<ProfileResourceObject>();
+    }
+
+    /// <summary>
+    /// Checks whether the current process runs with administrator privileges.
+    /// </summary>
+    /// <returns>True if the process is elevated; otherwise false.</returns>
+    private static bool IsCurrentProcessElevated()
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        return new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
     }
 
     /// <summary>
