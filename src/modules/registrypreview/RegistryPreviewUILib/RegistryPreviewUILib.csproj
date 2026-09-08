@@ -79,4 +79,9 @@
     <Folder Include="Controls\MonacoEditor\" />
     <Folder Include="Controls\HexBox\" />
   </ItemGroup>
+
+	<!-- Ensures FilePreviewCommon is built before this project, so that Monaco is available -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\FilePreviewCommon\FilePreviewCommon.csproj" />
+  </ItemGroup>
 </Project>
