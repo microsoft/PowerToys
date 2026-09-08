@@ -1,0 +1,3 @@
+<Project>
+  <!-- Keep this standalone PoC out of the repository's shipping/test-package targets. -->
+</Project>
