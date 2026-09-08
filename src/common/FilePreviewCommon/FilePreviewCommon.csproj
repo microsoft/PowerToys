@@ -12,6 +12,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!-- Download Monaco Editor with the help of the script downloadMonaco.ps1 before the build -->
+  <Target Name="DownloadMonacoEditor" BeforeTargets="Build">
+    <Exec Command="powershell -ExecutionPolicy Bypass -File &quot;$(ProjectDir)downloadMonaco.ps1&quot;" />
+  </Target>
+
   <ItemGroup>
     <PackageReference Include="Markdig.Signed" />
     <PackageReference Include="UTF.Unknown" />
