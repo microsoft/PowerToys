@@ -10,12 +10,10 @@ internal sealed class PowerDisplayCliResult<T>
     private PowerDisplayCliResult(
         T? value,
         PowerDisplayCliFailureKind failureKind,
-        int? exitCode,
         string errorMessage)
     {
         Value = value;
         FailureKind = failureKind;
-        ExitCode = exitCode;
         ErrorMessage = errorMessage;
     }
 
@@ -25,16 +23,13 @@ internal sealed class PowerDisplayCliResult<T>
 
     internal PowerDisplayCliFailureKind FailureKind { get; }
 
-    internal int? ExitCode { get; }
-
     internal string ErrorMessage { get; }
 
     internal static PowerDisplayCliResult<T> Success(T value)
-        => new(value, PowerDisplayCliFailureKind.None, 0, string.Empty);
+        => new(value, PowerDisplayCliFailureKind.None, string.Empty);
 
     internal static PowerDisplayCliResult<T> Failure(
         PowerDisplayCliFailureKind failureKind,
-        int? exitCode = null,
         string errorMessage = "")
-        => new(null, failureKind, exitCode, errorMessage);
+        => new(null, failureKind, errorMessage);
 }

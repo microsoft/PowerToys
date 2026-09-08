@@ -100,8 +100,7 @@ internal sealed class PowerDisplayCliService : IPowerDisplayCliService
         if (profileId <= 0)
         {
             return PowerDisplayCliResult<CliApplyProfileResult>.Failure(
-                PowerDisplayCliFailureKind.ArgumentError,
-                CliExitCodes.ArgumentError);
+                PowerDisplayCliFailureKind.ArgumentError);
         }
 
         string[] arguments =
@@ -180,8 +179,7 @@ internal sealed class PowerDisplayCliService : IPowerDisplayCliService
                 PowerDisplayCliFailureKind.MissingExecutable,
                 errorMessage: processResult.ErrorMessage),
             PowerDisplayProcessFailureKind.Timeout => PowerDisplayCliResult<T>.Failure(
-                PowerDisplayCliFailureKind.Timeout,
-                CliExitCodes.Timeout),
+                PowerDisplayCliFailureKind.Timeout),
             PowerDisplayProcessFailureKind.Cancelled => PowerDisplayCliResult<T>.Failure(
                 PowerDisplayCliFailureKind.Cancelled),
             _ => PowerDisplayCliResult<T>.Failure(
@@ -221,7 +219,6 @@ internal sealed class PowerDisplayCliService : IPowerDisplayCliService
 
             return PowerDisplayCliResult<T>.Failure(
                 MapExitCode(processResult.ExitCode!.Value),
-                processResult.ExitCode,
                 error.Error.Message ?? string.Empty);
         }
         catch (JsonException ex)
@@ -239,7 +236,6 @@ internal sealed class PowerDisplayCliService : IPowerDisplayCliService
             $"PowerDisplay CLI returned an invalid JSON response. ExitCode={processResult.ExitCode}; Detail={errorMessage}");
         return PowerDisplayCliResult<T>.Failure(
             PowerDisplayCliFailureKind.InvalidResponse,
-            processResult.ExitCode,
             errorMessage);
     }
 

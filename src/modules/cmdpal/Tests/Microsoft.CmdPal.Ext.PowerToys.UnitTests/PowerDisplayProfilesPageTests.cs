@@ -196,7 +196,6 @@ public class PowerDisplayProfilesPageTests
             GetProfilesHandler = _ => Task.FromResult(
                 PowerDisplayCliResult<CliProfileListResult>.Failure(
                     PowerDisplayCliFailureKind.ProviderUnavailable,
-                    CliExitCodes.ProviderUnavailable,
                     errorMessage)),
         };
         var page = new PowerDisplayProfilesPage(service);
