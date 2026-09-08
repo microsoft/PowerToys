@@ -19,6 +19,7 @@ namespace Microsoft.Workspaces.UITests
         private const string EditorProcess = "PowerToys.WorkspacesEditor";
         private const string LauncherProcess = "PowerToys.WorkspacesLauncher";
         private const string LauncherUiProcess = "PowerToys.WorkspacesLauncherUI";
+        private const string SettingsProcess = "PowerToys.Settings";
         private static readonly string[] ModuleProcesses =
         [
             LauncherProcess,
@@ -29,6 +30,7 @@ namespace Microsoft.Workspaces.UITests
         ];
         private static WorkspaceTestState? state;
         private Session? editor;
+        private Session? settingsUi;
 
         public WorkspacesTests()
             : base(PowerToysModule.PowerToysSettings, enableModules: ["Workspaces"])
@@ -44,6 +46,14 @@ namespace Microsoft.Workspaces.UITests
 
         private Session Editor => editor ?? throw new InvalidOperationException("The editor has not been opened.");
 
+        // The PowerToys.Settings process can replace its top-level window while it finishes initializing:
+        // the HWND the base Session bound to at launch is destroyed and a fresh one is created (observed in
+        // CI as a still-initializing "PowerToys Settings (Not Responding)" window with a new handle). A
+        // window-scoped session pinned to the original HWND then fails every lookup with "Window HWND ...
+        // not found". Route Settings UIA reads through a process-scoped session (-a) so navigation and
+        // toggles survive the swap — winappcli re-resolves the live window on every call.
+        private Session SettingsUi => settingsUi ??= Microsoft.PowerToys.UITest.Next.Session.FromProcess(SettingsProcess, timeoutMS: 30_000);
+
         protected override void PrepareTestState()
         {
             StopModuleProcesses();
@@ -58,6 +68,7 @@ namespace Microsoft.Workspaces.UITests
             StopModuleProcesses();
             State.Fixture.CloseAll();
             State.Reset();
+            settingsUi = null;
             NavigateToSettings();
         }
 
@@ -103,27 +114,51 @@ namespace Microsoft.Workspaces.UITests
         private void NavigateToSettings()
         {
             Step("Navigating to Workspaces Settings.");
-            if (!Session.Has(By.AccessibilityId("WorkspacesNavItem"), 500))
+
+            // Wait out any startup window replacement before driving the UI, so navigation runs against the
+            // window Settings actually settles on rather than the transient handle it was launched with.
+            _ = SettingsWindow();
+
+            if (!SettingsUi.Has(By.AccessibilityId("WorkspacesNavItem"), 500))
             {
-                Session.Find<NavigationViewItem>(By.AccessibilityId("WindowingAndLayoutsNavItem"), 15_000).Invoke(msPostAction: 0);
+                SettingsUi.Find<NavigationViewItem>(By.AccessibilityId("WindowingAndLayoutsNavItem"), 15_000).Invoke(msPostAction: 0);
             }
 
-            Session.Find<NavigationViewItem>(By.AccessibilityId("WorkspacesNavItem"), 15_000).Invoke(msPostAction: 0);
-            Assert.IsTrue(Session.Has(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000), "The Workspaces Settings page did not become ready.");
+            SettingsUi.Find<NavigationViewItem>(By.AccessibilityId("WorkspacesNavItem"), 15_000).Invoke(msPostAction: 0);
+            Assert.IsTrue(SettingsUi.Has(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000), "The Workspaces Settings page did not become ready.");
+        }
+
+        // Freshly resolve the current PowerToys.Settings main window for the few physical operations that
+        // need a real handle (foreground gating, coordinate clicks, and DPI seeding for fixture placement).
+        // requiredConsecutiveMatches guards against reading a handle that startup is about to replace.
+        private IntPtr SettingsWindow()
+        {
+            var result = WaitHelper.WaitForStable(
+                () => WindowsFinder.ListByApp(SettingsProcess)
+                    .Where(window => window.ClassName == "WinUIDesktopWin32WindowClass" && window.Width > 400 && window.Height > 300)
+                    .OrderByDescending(window => (long)window.Width * window.Height)
+                    .Select(window => (long?)window.Hwnd)
+                    .FirstOrDefault(),
+                hwnd => hwnd is > 0,
+                timeoutMS: 30_000,
+                requiredConsecutiveMatches: 2,
+                pollIntervalMS: 200);
+            Assert.IsTrue(result.Succeeded && result.LastObservation is > 0, "The PowerToys Settings window did not stabilize.");
+            return new IntPtr(result.LastObservation!.Value);
         }
 
         private ToggleSwitch ModuleToggle() =>
-            Session.Find<Element>(By.AccessibilityId("WorkspacesEnableToggleControlHeaderText"), 15_000)
+            SettingsUi.Find<Element>(By.AccessibilityId("WorkspacesEnableToggleControlHeaderText"), 15_000)
                 .Find<ToggleSwitch>(By.Name("Workspaces"), 15_000);
 
         private void OpenEditor()
         {
             Step("Clicking Open editor in Settings.");
-            var launch = Session.Find<Element>(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000);
+            var launch = SettingsUi.Find<Element>(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000);
             Assert.IsTrue(launch.Displayed && launch.Width > 0 && launch.Height > 0, "The launch card is not visible.");
-            Session.EnsureForeground();
+            SettingsUi.EnsureForeground();
             Assert.IsTrue(
-                WindowControl.WaitForForeground(new IntPtr(Session.WindowHandle), 10_000),
+                WindowControl.WaitForForeground(SettingsWindow(), 10_000),
                 $"Settings did not acquire foreground for the launch card: {WindowControl.GetForegroundWindowInfo()}.");
             // SettingsCard exposes a Button role but no InvokePattern; its pointer command is the user action.
             launch.Click(msPostAction: 0);
@@ -162,7 +197,7 @@ namespace Microsoft.Workspaces.UITests
             else
             {
                 Step($"Invoking the workspace card '{name}'.");
-                OpenCardForEditing(card);
+                OpenCardForEditing(name);
             }
 
             Assert.IsTrue(Editor.Has(By.AccessibilityId("EditNameTextBox"), 15_000), "The editing page did not open.");
@@ -174,18 +209,50 @@ namespace Microsoft.Workspaces.UITests
         // right. WPF drops the cards' descendant automation peers after the list re-projects its items
         // (a save, sort, or filter), so a UIA invoke on the descendant Edit button is unreliable; the item
         // container keeps correct on-screen bounds, so a physical click on it always reaches the button.
-        private void OpenCardForEditing(WorkspaceCard card)
+        // A single physical click can still be silently dropped while the editor is settling foreground /
+        // z-order right after it opens (observed in CI), so retry a bounded number of times: re-acquire the
+        // card by name (its bounds survive re-projection), click, and stop the moment the editing page's
+        // ready signal (EditNameTextBox) appears. Only click while the workspace list is still active, so a
+        // retry can never land a click on the editing page itself — this stays idempotent, never a longer
+        // arbitrary sleep.
+        private void OpenCardForEditing(string name)
         {
-            Editor.EnsureForeground();
-            Assert.IsTrue(
-                WindowControl.WaitForForeground(new IntPtr(Editor.WindowHandle), 10_000),
-                $"The editor did not acquire foreground to open a workspace card: {WindowControl.GetForegroundWindowInfo()}.");
-            var x = card.X + Math.Clamp(card.Width / 8, 24, 120);
-            var y = card.Y + (card.Height / 2);
-            MouseHelper.MoveTo(x, y);
-            Thread.Sleep(50);
-            MouseHelper.LeftClick();
-            Thread.Sleep(200);
+            const int maxAttempts = 4;
+            for (var attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                if (Editor.Has(By.AccessibilityId("EditNameTextBox"), 500))
+                {
+                    return;
+                }
+
+                if (!Editor.Has(By.AccessibilityId("NewProjectButton"), 500))
+                {
+                    // The list page is gone but the editing page has not rendered yet: a prior click
+                    // registered and the page is transitioning. Wait for the ready signal, do not re-click.
+                    if (Editor.Has(By.AccessibilityId("EditNameTextBox"), 3_000))
+                    {
+                        return;
+                    }
+
+                    continue;
+                }
+
+                var card = WaitForCard(name);
+                Editor.EnsureForeground();
+                Assert.IsTrue(
+                    WindowControl.WaitForForeground(new IntPtr(Editor.WindowHandle), 10_000),
+                    $"The editor did not acquire foreground to open a workspace card: {WindowControl.GetForegroundWindowInfo()}.");
+                var x = card.X + Math.Clamp(card.Width / 8, 24, 120);
+                var y = card.Y + (card.Height / 2);
+                Step($"Clicking the workspace card '{name}' (attempt {attempt}).");
+                MouseHelper.MoveTo(x, y);
+                Thread.Sleep(50);
+                MouseHelper.LeftClick();
+                if (Editor.Has(By.AccessibilityId("EditNameTextBox"), 3_000))
+                {
+                    return;
+                }
+            }
         }
 
         private void OpenWorkspaceMenu(WorkspaceCard card)

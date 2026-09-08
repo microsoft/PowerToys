@@ -61,13 +61,13 @@ namespace Microsoft.Workspaces.UITests
             var letter = original.Contains(Key.K) ? Key.J : Key.K;
             Key[] replacement = [Key.LWin, Key.Ctrl, Key.Shift, letter];
             Step("Opening the activation-shortcut editor.");
-            Session.Find<Element>(By.AccessibilityId("WorkspacesActivationShortcut"))
+            SettingsUi.Find<Element>(By.AccessibilityId("WorkspacesActivationShortcut"))
                 .Find<Button>(By.AccessibilityId("EditButton")).Invoke(msPostAction: 0);
-            var settings = Microsoft.PowerToys.UITest.Next.Session.FromProcess("PowerToys.Settings");
+            var settings = SettingsUi;
             Assert.IsTrue(settings.Has(By.AccessibilityId("PrimaryButton"), 15_000), "The shortcut dialog did not open.");
-            Session.EnsureForeground();
+            SettingsUi.EnsureForeground();
             Assert.IsTrue(
-                WindowControl.WaitForForeground(new IntPtr(Session.WindowHandle), 10_000),
+                WindowControl.WaitForForeground(SettingsWindow(), 10_000),
                 $"Settings did not acquire foreground for shortcut capture: {WindowControl.GetForegroundWindowInfo()}.");
             Step("Entering the replacement shortcut.");
             KeyboardHelper.SendKeys(replacement);
@@ -100,7 +100,7 @@ namespace Microsoft.Workspaces.UITests
                 toggle.Invoke(msPostAction: 0);
                 Assert.IsTrue(toggle.WaitForProperty("ToggleState", "Off", 15_000), "The Settings switch did not turn off.");
                 WaitForModuleEnabled(false);
-                Assert.IsFalse(Session.Find<Element>(By.AccessibilityId("WorkspacesLaunchEditorButtonControl")).IsEnabled, "The launch action remained enabled.");
+                Assert.IsFalse(SettingsUi.Find<Element>(By.AccessibilityId("WorkspacesLaunchEditorButtonControl")).IsEnabled, "The launch action remained enabled.");
 
                 Step("Sending the previously working shortcut while Workspaces is disabled.");
                 KeyboardHelper.SendKeys(shortcut);
@@ -135,7 +135,7 @@ namespace Microsoft.Workspaces.UITests
 
         private Key[] ReadActivationShortcut()
         {
-            var card = Session.Find<Element>(By.AccessibilityId("WorkspacesActivationShortcut"), 15_000);
+            var card = SettingsUi.Find<Element>(By.AccessibilityId("WorkspacesActivationShortcut"), 15_000);
             var text = card.Find<Button>(By.AccessibilityId("EditButton"), 15_000).HelpText;
             Assert.IsFalse(string.IsNullOrWhiteSpace(text), "The activation shortcut has no accessible HelpText.");
             Step($"Reading the current activation shortcut: {text}");

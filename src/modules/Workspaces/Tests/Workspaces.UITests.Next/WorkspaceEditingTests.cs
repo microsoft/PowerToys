@@ -154,7 +154,7 @@ namespace Microsoft.Workspaces.UITests
             var first = State.Application("Primary fixture", State.Prefix + "-first");
             var second = State.Application("Secondary fixture", State.Prefix + "-second");
             second["position"] = WorkspaceTestState.Position(1080, 550, 560, 390);
-            var project = State.Project("applications", new IntPtr(Session.WindowHandle), first, second);
+            var project = State.Project("applications", SettingsWindow(), first, second);
             State.WriteProjects(project);
             OpenEditor();
             EditWorkspace(WorkspaceTestState.Text(project, "name"));
@@ -205,16 +205,16 @@ namespace Microsoft.Workspaces.UITests
         private JsonObject SeedOneWorkspace()
         {
             var app = State.Application("Primary fixture", State.Prefix + "-app");
-            var project = State.Project("workspace", new IntPtr(Session.WindowHandle), app);
+            var project = State.Project("workspace", SettingsWindow(), app);
             State.WriteProjects(project);
             return project;
         }
 
         private JsonObject[] SeedSearchWorkspaces()
         {
-            var atlas = State.Project("Atlas", new IntPtr(Session.WindowHandle), State.Application("Browser fixture", "browser"));
-            var zenith = State.Project("Zenith", new IntPtr(Session.WindowHandle), State.Application("Editor fixture", "editor"));
-            var mesa = State.Project("Mesa", new IntPtr(Session.WindowHandle), State.Application("Editor fixture", "editor-two"));
+            var atlas = State.Project("Atlas", SettingsWindow(), State.Application("Browser fixture", "browser"));
+            var zenith = State.Project("Zenith", SettingsWindow(), State.Application("Editor fixture", "editor"));
+            var mesa = State.Project("Mesa", SettingsWindow(), State.Application("Editor fixture", "editor-two"));
             atlas["creation-time"] = 2_000;
             zenith["creation-time"] = 1_000;
             mesa["creation-time"] = 3_000;
