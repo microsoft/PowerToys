@@ -3,7 +3,6 @@
 
 #include "SelectionOverlay.h"
 #include "Geometry.h"
-#include <windowsx.h>
 #include <algorithm>
 #include <stdexcept>
 #include <string>
@@ -21,16 +20,17 @@ namespace RegionMirror
             POINT start{};
             POINT current{};
             RECT bounds{};
-            HMONITOR monitor{};
             bool dragging{};
             bool done{};
             std::optional<Selection> selection;
         };
 
-        POINT ScreenPoint(HWND window, LPARAM position)
+        POINT ScreenPoint()
         {
-            POINT point{ GET_X_LPARAM(position), GET_Y_LPARAM(position) };
-            ClientToScreen(window, &point);
+            // Mouse-message coordinates are signed 16-bit values. Query physical
+            // desktop coordinates instead so widely separated monitors work too.
+            POINT point{};
+            GetCursorPos(&point);
             return point;
         }
 
@@ -61,16 +61,8 @@ namespace RegionMirror
             {
             case WM_LBUTTONDOWN:
             {
-                state->start = ScreenPoint(window, lParam);
+                state->start = ScreenPoint();
                 state->current = state->start;
-                state->monitor = MonitorFromPoint(state->start, MONITOR_DEFAULTTONULL);
-                MONITORINFO info{ sizeof(info) };
-                if (!state->monitor || !GetMonitorInfoW(state->monitor, &info))
-                {
-                    End(*state);
-                    return 0;
-                }
-                state->bounds = info.rcMonitor;
                 state->dragging = true;
                 SetCapture(window);
                 return 0;
@@ -78,7 +70,7 @@ namespace RegionMirror
             case WM_MOUSEMOVE:
                 if (state->dragging)
                 {
-                    const auto point = ScreenPoint(window, lParam);
+                    const auto point = ScreenPoint();
                     state->current.x = std::clamp(point.x, state->bounds.left, state->bounds.right);
                     state->current.y = std::clamp(point.y, state->bounds.top, state->bounds.bottom);
                     InvalidateRect(window, nullptr, FALSE);
@@ -87,13 +79,13 @@ namespace RegionMirror
             case WM_LBUTTONUP:
                 if (state->dragging)
                 {
-                    const auto point = ScreenPoint(window, lParam);
+                    const auto point = ScreenPoint();
                     state->current.x = std::clamp(point.x, state->bounds.left, state->bounds.right);
                     state->current.y = std::clamp(point.y, state->bounds.top, state->bounds.bottom);
                     const auto region = NormalizeSelection(state->start, state->current);
                     if (IsContained(region, state->bounds))
                     {
-                        state->selection = Selection{ region, state->monitor };
+                        state->selection = Selection{ region };
                     }
                     End(*state);
                 }
@@ -106,6 +98,7 @@ namespace RegionMirror
                 return 0;
             case WM_RBUTTONDOWN:
             case WM_CLOSE:
+            case WM_DISPLAYCHANGE:
                 End(*state);
                 return 0;
             case WM_ACTIVATE:
@@ -131,7 +124,7 @@ namespace RegionMirror
                 FillRect(dc, &client, static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
                 SetTextColor(dc, RGB(255, 255, 255));
                 SetBkMode(dc, TRANSPARENT);
-                const std::wstring hint = L"Drag to select a region on one screen.  Esc to cancel.";
+                const std::wstring hint = L"Drag across screens to select a region.  Esc to cancel.";
                 POINT hintAt{};
                 GetCursorPos(&hintAt);
                 ScreenToClient(window, &hintAt);
@@ -199,6 +192,7 @@ namespace RegionMirror
         const int y = GetSystemMetrics(SM_YVIRTUALSCREEN);
         const int width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
         const int height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+        state.bounds = { x, y, x + width, y + height };
         const auto window = CreateWindowExW(WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_LAYERED, SelectionClass, L"Select a region", WS_POPUP, x, y, width, height, owner, nullptr, GetModuleHandleW(nullptr), &state);
         if (!window)
         {

@@ -11,9 +11,16 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace RegionMirror
 {
+    struct CaptureSource
+    {
+        HMONITOR monitor{};
+        RECT bounds{};
+    };
+
     // Start/Stop and destruction belong to the window's owning thread. Keep both
     // windows alive until Stop returns. The target must remain outside sourceRect.
     class CaptureMirror final
@@ -25,14 +32,16 @@ namespace RegionMirror
         CaptureMirror(const CaptureMirror&) = delete;
         CaptureMirror& operator=(const CaptureMirror&) = delete;
 
-        // sourceRect uses physical virtual-screen coordinates and must be fully
-        // inside sourceMonitor. Startup is asynchronous: worker failures set Error
-        // and post failureMessage to notifyWindow. No capture consent is bypassed.
-        void Start(HWND targetWindow, HMONITOR sourceMonitor, RECT sourceRect, HWND notifyWindow, UINT failureMessage);
+        // sourceRect and each source's bounds use physical virtual-screen pixels.
+        // Uncovered parts of the rectangle stay black. Startup is asynchronous:
+        // worker failures set Error and post failureMessage to notifyWindow.
+        void Start(HWND targetWindow, const std::vector<CaptureSource>& sources, RECT sourceRect, HWND notifyWindow, UINT failureMessage);
         void Stop() noexcept;
 
         // The final count/error remain available after Stop, until the next Start.
         uint64_t FramesPresented() const noexcept;
+        // Frames copied into the composite, in the same order as Start's sources.
+        std::vector<uint64_t> SourceFrames() const;
         std::wstring Error() const;
 
     private:

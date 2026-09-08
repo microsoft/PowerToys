@@ -2,7 +2,7 @@
 
 An independent, directly executable module for issue [#2774](https://github.com/microsoft/PowerToys/issues/2774):
 
-1. Select a rectangle on one physical screen.
+1. Select a rectangle across one or more physical screens.
 2. Create a temporary virtual monitor.
 3. Mirror the selected pixels onto that monitor, which a meeting application can share as a screen.
 
@@ -64,16 +64,20 @@ External development prerequisite:
 - Catalog and binary signer: SignPath Foundation. This is not a claim of WHQL certification.
 - No third-party driver source or binaries are committed or included in the PowerToys distribution.
 
+The upstream release also includes **Virtual Driver Control**, its GUI for driver installation, enablement and configuration. RegionMirror does not launch that GUI: it manages its own temporary software-device handle directly. Region selection, Windows Graphics Capture, cross-monitor composition and mirror output are implemented by this application, not by that controller or the driver.
+
 ## Run
 
 Launch PowerToys.RegionMirror.exe using **Run as administrator**:
 
-1. Click **Select region**, drag within a single source screen, then release. Escape, right-click, or losing focus cancels; dragging beyond the initial monitor clamps to its edges.
+1. Click **Select region**, drag across one or more screens, then release. Escape, right-click, losing focus, or a display configuration change cancels. The selection uses physical desktop pixels; empty space between monitors is filled black.
 2. Click **Start mirror**. A new virtual display appears to the right of the current desktop. The driver supplies supported modes; the closest available mode is chosen. Other aspect ratios are letterboxed, without stretching.
 3. In the meeting application, choose the new screen. The controller shows its Windows display name and the number of frames presented.
 4. Click **Stop**, use **Ctrl+Alt+Q**, or close the controller. Capture and output windows stop before the app releases its software-device handle, initiating removal of its virtual monitor.
 
-The source is a rectangle of visible desktop pixels. Notifications and other applications appearing inside it are included. The controller and green region indicator are excluded from capture; the output is deliberately capturable. The system capture border remains enabled.
+The source is a rectangle of visible desktop pixels. Each intersecting screen is captured separately and its intersection is copied into the combined image at the corresponding desktop offset. This preserves pixel geometry across different monitor DPI settings. Notifications and other applications appearing inside the region are included. The controller and green region indicator are excluded from capture; the output is deliberately capturable. The system capture border remains enabled on each source.
+
+All sources must deliver an initial frame before the first combined image is shown. Afterwards, each screen keeps its latest tile, so a static screen does not block other screens. Output is paced at up to approximately 60 frames per second. Different screens are not synchronized to a common capture instant.
 
 The app owns only the device it creates. It refuses to start if an existing MttVDD device or shared VDD configuration override is present, rather than changing another tool's virtual displays or settings. It never uses the driver's reload/count pipe. Stopping the app removes its transient device; the staged driver package remains in Windows' driver store.
 
@@ -91,22 +95,24 @@ Supply a rectangle in physical desktop pixels and an automatic stop time:
 & .\src\modules\RegionMirror\bin\x64\Debug\PowerToys.RegionMirror.exe --region "100,100,960,540" --duration 10 --report "$env:TEMP\region-mirror-result.json"
 ~~~
 
-Device creation still requires elevation. The report records the owned device instance, target display, frames presented, error, and displays observed after releasing the device. PnP removal is asynchronous; verify the device has disappeared separately before asserting complete cleanup.
+Device creation still requires elevation. The report records the owned device instance, target display, frames presented, source monitor identities and per-source copied-frame counts, errors, and displays observed after releasing the device. PnP removal is asynchronous; verify the device has disappeared separately before asserting complete cleanup.
 
-For capture-only diagnostics, the explicit option --target-display "\\.\DISPLAY2" uses an **existing** display instead of creating one. This never changes that display's mode or removes it, but temporarily covers it with the mirror output. It cannot target the source monitor. This diagnostic does not validate virtual-device creation.
+For capture-only diagnostics, the explicit option --target-display "\\.\DISPLAY2" uses an **existing** display instead of creating one. This never changes that display's mode or removes it, but temporarily covers it with the mirror output. It cannot target any source monitor or overlap the selection. This diagnostic does not validate virtual-device creation.
 
 Run RegionMirrorTests.dll through Visual Studio Test Explorer or vstest.console.exe (not dotnet test). See [fuzzing instructions](RegionMirrorFuzzTests/README.md) and [manual acceptance](RegionMirrorTests/ManualAcceptance.md).
 
 The complete bounded integration check is available in scripts/Validate-VirtualDisplay.ps1. Run it elevated after building; add -StageDriver only when the external package also needs staging. It captures for 15 seconds, records frame counts, and waits for removal and restoration of the original physical layout using stable monitor identities. It does not join or share a meeting.
 
+Pass -CrossMonitor to select a region across two active physical monitors and require frames from every source. This stores its evidence separately under artifacts/virtual-display-validation-cross-monitor. For example, two horizontally adjacent screens meeting at x=0 can use --region "-640,540,1280,360".
+
 ## Architecture and current limits
 
 - SelectionOverlay: per-monitor-aware Win32 selection in physical coordinates.
 - VirtualDisplay: software device with the installed MttVDD hardware ID; verifies PnP ownership, chooses an advertised display mode, and applies a transient position without CDS_UPDATEREGISTRY.
-- CaptureMirror: Windows Graphics Capture on an MTA worker, D3D11 texture crop and flip-model swapchain. Source geometry changes or capture errors end the session.
+- CaptureMirror: one Windows Graphics Capture session per source on an MTA worker, a shared D3D11 device, persistent composite texture, and flip-model swapchain. A source geometry change or capture error ends the session.
 - Main: independent controller, aspect-fitted output, cancellation, stop hotkey, diagnostic reports.
 - Geometry: checked integer geometry and strict CLI rectangle parsing, covered by native unit tests and a libFuzzer target.
 
-The initial PoC does not promise HDR color accuracy, remote-session support, cross-monitor selections, arbitrary virtual resolutions, or compatibility with every meeting client. The controller uses its initial DPI for child-control sizing. A virtual monitor is an actual extended desktop: the mouse and unrelated windows can enter it. Input redirection and cursor confinement are not implemented.
+The initial PoC does not promise HDR color accuracy, remote-session support, arbitrary virtual resolutions, or compatibility with every meeting client. Selections are limited to 16384 pixels per axis; disconnected sources or overlapping display rectangles are rejected. The controller uses its initial DPI for child-control sizing. A virtual monitor is an actual extended desktop: the mouse and unrelated windows can enter it. Input redirection and cursor confinement are not implemented.
 
 The creation → capture → removal path passed local acceptance. Meeting sharing must still be checked in the intended client; no Teams sharing is started automatically.

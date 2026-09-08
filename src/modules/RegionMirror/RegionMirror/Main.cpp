@@ -405,7 +405,7 @@ namespace
         bool m_hotkey{};
         Phase m_phase = Phase::Idle;
         std::optional<RegionMirror::Selection> m_selection;
-        MonitorInfo m_source;
+        std::vector<MonitorInfo> m_sources;
         MonitorInfo m_target;
         RegionMirror::VirtualDisplay m_virtual;
         RegionMirror::CaptureMirror m_capture;
@@ -419,6 +419,7 @@ namespace
         int m_exitCode{};
         bool m_reportWritten{};
         bool m_captureStarted{};
+        bool m_sessionHadCapture{};
 
         void SetStatus(const std::wstring& text) { SetWindowTextW(m_status, text.c_str()); }
 
@@ -440,7 +441,7 @@ namespace
             AdjustWindowRectExForDpi(&client, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, FALSE, 0, dpi);
             SetWindowPos(m_window, nullptr, 0, 0, client.right - client.left, client.bottom - client.top, SWP_NOMOVE | SWP_NOZORDER);
             AddControl(L"STATIC", L"Share a screen region through a temporary virtual monitor", SS_LEFT, 0, 20, 18, 550, 40);
-            m_selectionText = AddControl(L"STATIC", L"1. Select a region on one physical screen.", SS_LEFT, 0, 20, 66, 550, 32);
+            m_selectionText = AddControl(L"STATIC", L"1. Select a region across one or more screens.", SS_LEFT, 0, 20, 66, 550, 32);
             m_selectButton = AddControl(L"BUTTON", L"Select region", BS_PUSHBUTTON | WS_TABSTOP, SelectButton, 20, 108, 145, 36);
             m_startButton = AddControl(L"BUTTON", L"Start mirror", BS_DEFPUSHBUTTON | WS_TABSTOP, StartButton, 180, 108, 145, 36);
             m_stopButton = AddControl(L"BUTTON", L"Stop", BS_PUSHBUTTON | WS_TABSTOP, StopButton, 340, 108, 110, 36);
@@ -465,22 +466,49 @@ namespace
             {
                 throw std::runtime_error("The selected region is empty or too large.");
             }
-            for (const auto& monitor : Monitors())
+            const auto displays = Monitors();
+            if (displays.empty())
             {
-                if (monitor.handle == selection.monitor && RegionMirror::IsContained(selection.region, monitor.bounds))
+                throw std::runtime_error("No connected source monitors are available.");
+            }
+            RECT desktop = displays.front().bounds;
+            std::vector<MonitorInfo> sources;
+            for (const auto& monitor : displays)
+            {
+                desktop.left = std::min(desktop.left, monitor.bounds.left);
+                desktop.top = std::min(desktop.top, monitor.bounds.top);
+                desktop.right = std::max(desktop.right, monitor.bounds.right);
+                desktop.bottom = std::max(desktop.bottom, monitor.bounds.bottom);
+                if (RegionMirror::MakeCaptureTile(selection.region, monitor.bounds))
                 {
-                    m_source = monitor;
-                    m_selection = selection;
-                    const auto& region = selection.region;
-                    const auto label = L"Region: " + std::to_wstring(region.right - region.left) + L" x " +
-                                       std::to_wstring(region.bottom - region.top) + L" at (" + std::to_wstring(region.left) +
-                                       L", " + std::to_wstring(region.top) + L")";
-                    SetWindowTextW(m_selectionText, label.c_str());
-                    UpdateButtons();
-                    return;
+                    if (monitor.identity.empty())
+                    {
+                        throw std::runtime_error("Windows did not provide a stable identity for a selected source monitor.");
+                    }
+                    sources.push_back(monitor);
                 }
             }
-            throw std::runtime_error("The region must be contained in one connected source display.");
+            if (sources.empty() || !RegionMirror::IsContained(selection.region, desktop))
+            {
+                throw std::runtime_error("The region must lie within the desktop bounds and overlap at least one connected screen.");
+            }
+            m_sources = std::move(sources);
+            m_selection = selection;
+            // A new selection must not label a previous session's counters with
+            // different source identities if the user closes before starting.
+            m_finalFrames = 0;
+            m_sessionHadCapture = false;
+            m_reportWritten = false;
+            m_ownedInstance.clear();
+            m_target = {};
+            m_error.clear();
+            m_exitCode = 0;
+            const auto& region = selection.region;
+            const auto label = L"Region: " + std::to_wstring(region.right - region.left) + L" x " +
+                               std::to_wstring(region.bottom - region.top) + L" at (" + std::to_wstring(region.left) +
+                               L", " + std::to_wstring(region.top) + L") across " + std::to_wstring(m_sources.size()) + L" screen(s)";
+            SetWindowTextW(m_selectionText, label.c_str());
+            UpdateButtons();
         }
 
         void Select()
@@ -527,20 +555,17 @@ namespace
             m_finalFrames = 0;
             m_reportWritten = false;
             m_captureStarted = false;
+            m_sessionHadCapture = false;
             m_exitCode = 0;
             m_cancel.store(false);
             m_deviceError.clear();
             m_phase = Phase::Creating;
             UpdateButtons();
             SetStatus(L"Creating the temporary virtual monitor...");
-            const auto selectedSource = m_source;
-            if (selectedSource.identity.empty())
-            {
-                throw std::runtime_error("Windows did not provide a stable identity for the selected source monitor.");
-            }
+            const auto selectedSources = m_sources;
             const int width = m_selection->region.right - m_selection->region.left;
             const int height = m_selection->region.bottom - m_selection->region.top;
-            m_deviceWorker = std::thread([this, width, height, selectedSource] {
+            m_deviceWorker = std::thread([this, width, height, selectedSources] {
                 try
                 {
                     if (m_options.targetDisplay.empty())
@@ -554,7 +579,7 @@ namespace
                         // Explicit diagnostic mode. Never selected implicitly and never detached on Stop.
                         m_target = FindMonitor(m_options.targetDisplay);
                     }
-                    WaitForStableDisplays(selectedSource);
+                    WaitForStableDisplays(selectedSources);
                 }
                 catch (...)
                 {
@@ -564,44 +589,53 @@ namespace
             });
         }
 
-        void WaitForStableDisplays(const MonitorInfo& selectedSource)
+        void WaitForStableDisplays(const std::vector<MonitorInfo>& selectedSources)
         {
             const auto deadline = GetTickCount64() + 15000;
             ULONGLONG stableSince{};
-            MonitorInfo previousSource;
+            std::vector<MonitorInfo> previousSources;
             MonitorInfo previousTarget;
             while (GetTickCount64() < deadline && !m_cancel.load())
             {
                 const auto targetName = m_options.targetDisplay.empty() ? m_virtual.DeviceName() : m_target.name;
                 const auto displays = Monitors();
-                std::optional<MonitorInfo> source;
+                std::vector<MonitorInfo> sources;
                 std::optional<MonitorInfo> target;
+                for (const auto& expected : selectedSources)
+                {
+                    const auto found = std::find_if(displays.begin(), displays.end(), [&expected](const MonitorInfo& display) {
+                        return !display.identity.empty() && _wcsicmp(display.identity.c_str(), expected.identity.c_str()) == 0 &&
+                               EqualRect(&display.bounds, &expected.bounds);
+                    });
+                    if (found != displays.end())
+                    {
+                        sources.push_back(*found);
+                    }
+                }
                 for (const auto& display : displays)
                 {
-                    if (!display.identity.empty() && _wcsicmp(display.identity.c_str(), selectedSource.identity.c_str()) == 0)
-                    {
-                        source = display;
-                    }
                     if (!targetName.empty() && _wcsicmp(display.name.c_str(), targetName.c_str()) == 0 && !display.identity.empty())
                     {
                         target = display;
                     }
                 }
-                if (source && target && EqualRect(&source->bounds, &selectedSource.bounds) &&
+                if (!sources.empty() && sources.size() == selectedSources.size() && target &&
                     RegionMirror::IsValidRegion(target->bounds))
                 {
-                    const bool same = source->handle == previousSource.handle && target->handle == previousTarget.handle &&
-                                      source->identity == previousSource.identity && target->identity == previousTarget.identity &&
-                                      EqualRect(&source->bounds, &previousSource.bounds) && EqualRect(&target->bounds, &previousTarget.bounds);
+                    const bool same = sources.size() == previousSources.size() &&
+                                      std::equal(sources.begin(), sources.end(), previousSources.begin(), [](const MonitorInfo& left, const MonitorInfo& right) {
+                                          return left.handle == right.handle && left.identity == right.identity && EqualRect(&left.bounds, &right.bounds);
+                                      }) &&
+                                      target->handle == previousTarget.handle && target->identity == previousTarget.identity && EqualRect(&target->bounds, &previousTarget.bounds);
                     if (!same || !stableSince)
                     {
                         stableSince = GetTickCount64();
                     }
-                    previousSource = *source;
+                    previousSources = sources;
                     previousTarget = *target;
                     if (GetTickCount64() - stableSince >= 1000)
                     {
-                        m_source = *source;
+                        m_sources = std::move(sources);
                         m_target = *target;
                         return;
                     }
@@ -614,7 +648,7 @@ namespace
             }
             if (!m_cancel.load())
             {
-                throw std::runtime_error("The original source monitor and owned target did not settle within 15 seconds. Select the region again after the display layout stabilizes.");
+                throw std::runtime_error("The original source monitors and owned target did not settle within 15 seconds. Select the region again after the display layout stabilizes.");
             }
         }
 
@@ -630,15 +664,21 @@ namespace
                 Fail(m_deviceError);
                 return;
             }
-            auto currentSource = FindStableMonitor(m_source.identity);
-            if (!EqualRect(&currentSource.bounds, &m_source.bounds))
+            std::vector<RegionMirror::CaptureSource> captureSources;
+            for (auto& source : m_sources)
             {
-                throw std::runtime_error("The source display moved during device creation. Select the region again.");
+                auto currentSource = FindStableMonitor(source.identity);
+                if (!EqualRect(&currentSource.bounds, &source.bounds))
+                {
+                    throw std::runtime_error("A source display moved during device creation. Select the region again.");
+                }
+                source = currentSource;
+                captureSources.push_back({ source.handle, source.bounds });
             }
-            m_source = currentSource;
             m_target = FindStableMonitor(m_target.identity);
             RECT overlap{};
-            if (m_source.handle == m_target.handle || IntersectRect(&overlap, &m_selection->region, &m_target.bounds))
+            if (std::any_of(m_sources.begin(), m_sources.end(), [this](const MonitorInfo& source) { return source.handle == m_target.handle; }) ||
+                IntersectRect(&overlap, &m_selection->region, &m_target.bounds))
             {
                 throw std::runtime_error("The output display must be separate from the selected source region.");
             }
@@ -667,8 +707,9 @@ namespace
             ShowWindow(m_output, SW_SHOWNOACTIVATE);
             m_border = RegionMirror::CreateRegionBorder(m_selection->region);
             SetWindowDisplayAffinity(m_window, WDA_EXCLUDEFROMCAPTURE);
-            m_capture.Start(m_viewport, m_source.handle, m_selection->region, m_window, CaptureFailed);
+            m_capture.Start(m_viewport, captureSources, m_selection->region, m_window, CaptureFailed);
             m_captureStarted = true;
+            m_sessionHadCapture = true;
             m_started = GetTickCount64();
             m_phase = Phase::Mirroring;
             UpdateButtons();
@@ -734,9 +775,9 @@ namespace
             }
             const auto frames = m_capture.FramesPresented();
             const auto elapsed = GetTickCount64() - m_started;
-            if (!frames && elapsed > 10000)
+            if (!frames && elapsed > 15000)
             {
-                Fail(L"No capture frames arrived within 10 seconds.");
+                Fail(L"No complete capture frame arrived within 15 seconds.");
                 return;
             }
             const auto target = FindStableMonitor(m_target.identity);
@@ -748,7 +789,7 @@ namespace
             SetStatus(L"Mirroring to " + m_target.name + L" (" +
                       std::to_wstring(m_target.bounds.right - m_target.bounds.left) + L" x " +
                       std::to_wstring(m_target.bounds.bottom - m_target.bounds.top) + L").\r\n" +
-                      L"Select this screen in your meeting app. Frames presented: " + std::to_wstring(frames));
+                      std::to_wstring(m_sources.size()) + L" source screen(s). Frames presented: " + std::to_wstring(frames));
             if (m_options.duration && elapsed >= static_cast<ULONGLONG>(m_options.duration) * 1000)
             {
                 if (!frames)
@@ -774,12 +815,35 @@ namespace
                 throw std::runtime_error("Unable to write the requested report file.");
             }
             stream << "{\"exitCode\":" << m_exitCode << ",\"framesPresented\":" << m_finalFrames
-                   << ",\"sourceDisplay\":" << JsonString(m_source.name)
-                   << ",\"sourceIdentity\":" << JsonString(m_source.identity)
+                   << ",\"sourceDisplay\":" << JsonString(m_sources.empty() ? L"" : m_sources.front().name)
+                   << ",\"sourceIdentity\":" << JsonString(m_sources.empty() ? L"" : m_sources.front().identity)
                    << ",\"targetDisplay\":" << JsonString(m_target.name)
                    << ",\"targetIdentity\":" << JsonString(m_target.identity)
                    << ",\"ownedDeviceInstance\":" << JsonString(m_ownedInstance)
-                   << ",\"error\":" << JsonString(m_error) << ",\"displaysAfterStop\":";
+                   << ",\"error\":" << JsonString(m_error) << ",\"sourceCount\":" << m_sources.size() << ",\"sources\":[";
+            for (size_t index = 0; index < m_sources.size(); ++index)
+            {
+                if (index)
+                {
+                    stream << ",";
+                }
+                const auto& source = m_sources[index];
+                stream << "{\"device\":" << JsonString(source.name) << ",\"identity\":" << JsonString(source.identity)
+                       << ",\"x\":" << source.bounds.left << ",\"y\":" << source.bounds.top
+                       << ",\"width\":" << source.bounds.right - source.bounds.left
+                       << ",\"height\":" << source.bounds.bottom - source.bounds.top << "}";
+            }
+            stream << "],\"sourceFrames\":[";
+            const auto sourceFrames = m_sessionHadCapture ? m_capture.SourceFrames() : std::vector<uint64_t>(m_sources.size(), 0);
+            for (size_t index = 0; index < sourceFrames.size(); ++index)
+            {
+                if (index)
+                {
+                    stream << ",";
+                }
+                stream << sourceFrames[index];
+            }
+            stream << "],\"displaysAfterStop\":";
             WriteMonitors(stream);
             stream << "}\n";
             stream.flush();
@@ -826,7 +890,7 @@ namespace
                 }
                 return 0;
             case BeginAutomatic:
-                SetSelection({ *m_options.region, MonitorFromRect(&*m_options.region, MONITOR_DEFAULTTONULL) });
+                SetSelection({ *m_options.region });
                 Start();
                 return 0;
             case DeviceReady:

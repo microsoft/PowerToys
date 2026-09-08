@@ -1,5 +1,34 @@
 # Local acceptance — 2026-09-08
 
+## Cross-monitor extension
+
+The cross-monitor version was validated on the same two active 2560×1440 physical displays.
+
+| Check | Result |
+| --- | --- |
+| Debug x64 application and test builds | Both exit 0, no errors or warnings |
+| Native unit tests via vstest.console | 26 passed, including 8 capture-tile tests |
+| Release x64 ASan/libFuzzer build and run | Build exit 0; 527,290 executions in 31 seconds, exit 0 |
+| Actual source rectangle | x=-640, y=540, width=1280, height=360; intersects 640×360 on each physical screen |
+| Elevated cross-monitor session | Exit 0; 574 composite frames presented during 15 seconds |
+| Per-source frames copied | 397 and 563; both source identities matched the baseline screens |
+| Owned virtual-device removal | Confirmed |
+| Original physical display layout | Both identities, positions and dimensions preserved |
+
+Cross-monitor evidence is separate from the original single-monitor run:
+
+- artifacts/virtual-display-validation-cross-monitor/acceptance.json
+- artifacts/virtual-display-validation-cross-monitor/capture-result.json
+- artifacts/virtual-display-validation-cross-monitor/displays-before.json
+- artifacts/virtual-display-validation-cross-monitor/displays-after.json
+- artifacts/virtual-display-validation-cross-monitor/validation.log
+- artifacts/test-results-cross-monitor/*.trx
+- artifacts/fuzz-run-cross-monitor.log
+
+The real run used a CLI-specified cross-monitor rectangle. Horizontal/vertical layouts, negative origins, gaps and coordinate mapping are covered by unit tests and fuzzing; mixed-DPI output, actual gap pixels, mouse-drag interaction across screens and pixel-by-pixel image comparison were not separately exercised in this run. No meeting was joined or shared.
+
+## Original single-monitor PoC
+
 Validated on Windows 11 x64 (build 26200), with two active 2560×1440 physical displays, including a display at a negative desktop X coordinate.
 
 | Check | Result |

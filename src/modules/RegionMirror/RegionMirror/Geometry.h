@@ -13,6 +13,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <optional>
 #include <string_view>
 
 namespace RegionMirror
@@ -42,6 +43,40 @@ namespace RegionMirror
         return IsValidRegion(region) && bounds.left < bounds.right && bounds.top < bounds.bottom &&
                region.left >= bounds.left && region.top >= bounds.top &&
                region.right <= bounds.right && region.bottom <= bounds.bottom;
+    }
+
+    struct CaptureTile
+    {
+        RECT source;
+        POINT destination;
+    };
+
+    // Clip one monitor to the physical selection. The source is relative to that monitor's
+    // texture; the destination is relative to the selection. Uncovered desktop gaps have no tile.
+    inline std::optional<CaptureTile> MakeCaptureTile(const RECT& region, const RECT& monitorBounds) noexcept
+    {
+        if (!IsValidRegion(region) || !IsValidRegion(monitorBounds))
+        {
+            return std::nullopt;
+        }
+
+        const auto left = (std::max)(static_cast<std::int64_t>(region.left), static_cast<std::int64_t>(monitorBounds.left));
+        const auto top = (std::max)(static_cast<std::int64_t>(region.top), static_cast<std::int64_t>(monitorBounds.top));
+        const auto right = (std::min)(static_cast<std::int64_t>(region.right), static_cast<std::int64_t>(monitorBounds.right));
+        const auto bottom = (std::min)(static_cast<std::int64_t>(region.bottom), static_cast<std::int64_t>(monitorBounds.bottom));
+        if (left >= right || top >= bottom)
+        {
+            return std::nullopt;
+        }
+
+        // Validation and intersection bound each local coordinate to 0..16384 before narrowing.
+        return CaptureTile{
+            { static_cast<LONG>(left - monitorBounds.left),
+              static_cast<LONG>(top - monitorBounds.top),
+              static_cast<LONG>(right - monitorBounds.left),
+              static_cast<LONG>(bottom - monitorBounds.top) },
+            { static_cast<LONG>(left - region.left), static_cast<LONG>(top - region.top) }
+        };
     }
 
     // Invalid rectangles, or fits smaller than one pixel on either axis, return an empty rectangle.

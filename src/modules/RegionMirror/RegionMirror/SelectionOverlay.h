@@ -10,7 +10,6 @@ namespace RegionMirror
     struct Selection
     {
         RECT region{};
-        HMONITOR monitor{};
     };
 
     // Synchronous modal interaction on the UI thread. Escape or focus loss cancels.
