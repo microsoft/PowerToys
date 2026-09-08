@@ -45,6 +45,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring ShowPeekEvent();
         static hstring TerminatePeekEvent();
         static hstring PowerAccentExitEvent();
+        static hstring ShortcutGuideExitEvent();
         static hstring ShortcutGuideTriggerEvent();
         static hstring ShortcutGuideWinKeyHoldEvent();
         static hstring RegistryPreviewTriggerEvent();
@@ -91,4 +92,3 @@ namespace winrt::PowerToys::Interop::factory_implementation
     {
     };
 }
-

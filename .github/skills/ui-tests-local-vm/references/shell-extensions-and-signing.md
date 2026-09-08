@@ -65,10 +65,20 @@ whichever tree hosts the packages:
 
 **Where it is wired in CI.** This runs in `.pipelines/v2/templates/job-test-project.yml` after the
 download/install steps and before **Run UI Tests**. It recursively searches the run-in-place artifact
-and complete machine/per-user install roots. Windows 11/ARM64 Image Resizer and all-module jobs pass
-`-RequiredPackage ImageResizerContextMenuPackage.msix`, so missing, unsigned, or untrusted setup fails
-at the prerequisite instead of surfacing later as a product-test failure. Jobs that do not exercise
-Image Resizer keep signing best-effort because their suites can guard unavailable modern packages:
+and complete machine/per-user install roots. Windows 11/ARM64 Image Resizer, PowerRename, and
+all-module jobs pass their context-menu MSIX names through `-RequiredPackage`, so missing, unsigned,
+or untrusted setup fails at the prerequisite instead of surfacing later as a product-test failure.
+Jobs that do not exercise either modern context menu keep signing best-effort:
+
+PowerRename jobs also pass `PowerToys.exe` and `PowerToys.Settings.exe` through
+`-RequiredAuthenticodeFile` on every platform. Release IPC accepts only a Microsoft-named signer
+anchored in LocalMachine Root; unsigned PR binaries otherwise let the Settings toggle change
+visually while the runner rejects the command as `not-microsoft-signed`. The same disposable-agent
+test identity satisfies that authentication path without weakening the product policy. The job
+records the exact thumbprint in a durable agent-work-folder marker. It processes stale markers before
+signing, then removes the certificate from LocalMachine/User trust stores and CurrentUser\My
+(including its private key) in an `always()` cleanup step. Failed cleanup keeps the marker for the
+next job, so neither interruption nor agent reuse loses the recovery record.
 
 ```yaml
   - pwsh: |
@@ -76,20 +86,38 @@ Image Resizer keep signing best-effort because their suites can guard unavailabl
         "$(Pipeline.Workspace)\$(TestArtifactsName)",
         "$env:ProgramFiles\PowerToys",
         "$env:LOCALAPPDATA\PowerToys")
-      if ($requiresImageResizer) {
-        & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" `
-          -PackageRoot $roots -RequiredPackage 'ImageResizerContextMenuPackage.msix'
+      # Build the platform/module-specific arrays as shown in job-test-project.yml.
+      $requiredPackages = @('PowerRenameContextMenuPackage.msix')
+      $requiredAuthenticodeFiles = @('PowerToys.exe', 'PowerToys.Settings.exe')
+      if ($requiredPackages.Count -gt 0 -or $requiredAuthenticodeFiles.Count -gt 0) {
+        $signingArguments = @{
+          PackageRoot = $roots
+          CertificateMarkerPath = "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
+        }
+        if ($requiredPackages.Count -gt 0) {
+          $signingArguments.RequiredPackage = $requiredPackages
+        }
+        if ($requiredAuthenticodeFiles.Count -gt 0) {
+          $signingArguments.RequiredAuthenticodeFile = $requiredAuthenticodeFiles
+        }
+        & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" @signingArguments
       } else {
-        try { & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" -PackageRoot $roots }
+        try {
+          & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" `
+            -PackageRoot $roots `
+            -CertificateMarkerPath "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
+        }
         catch { Write-Host "##vso[task.logissue type=warning]Sparse MSIX signing skipped: $($_.Exception.Message)" }
       }
     displayName: "Sign sparse MSIX packages (test trust)"
 ```
 
 **Prerequisite:** `signtool.exe`. The script finds it across PATH, any `Windows Kits` install (all
-versions, plus the App Certification Kit), and a restored SDK BuildTools NuGet package; as a last
-resort it fetches the public `Microsoft.Windows.SDK.BuildTools` package from nuget.org, so an agent
-without the SDK still works given outbound access. Verified end-to-end in a local Win11
+versions, plus the App Certification Kit). As a fallback it verifies and freshly extracts the exact
+repository-pinned `Microsoft.Windows.SDK.BuildTools` `.nupkg` from the NuGet cache, or downloads that
+same version when absent. It verifies the NuGet author/repository signatures and refuses to run a
+`signtool.exe` without a valid Microsoft Authenticode signature. An agent without the SDK therefore
+still works without trusting an unversioned or stale extracted tool. Verified end-to-end in a local Win11
 VM — the unsigned package fails `Add-AppxPackage` / `AddPackageByUriAsync` with `0x800B0100`, and
 after `signSparsePackages.ps1` signs it and the cert is force-trusted (`LocalMachine\Root` +
 `TrustedPeople`) the same registration succeeds and the package appears in `Get-AppxPackage`.

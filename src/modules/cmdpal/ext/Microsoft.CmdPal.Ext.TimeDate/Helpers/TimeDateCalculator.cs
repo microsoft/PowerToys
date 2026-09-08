@@ -21,8 +21,8 @@ public sealed partial class TimeDateCalculator
     /// Searches for results
     /// </summary>
     /// <param name="query">Search query object</param>
-    /// <returns>List of Wox <see cref="Result"/>s.</returns>
-    public static List<ListItem> ExecuteSearch(ISettingsInterface settings, string query)
+    /// <returns>List of list items for the query.</returns>
+    public static List<ListItem> ExecuteSearch(ISettingsInterface settings, string query, DateTimeOffset? currentTime = null)
     {
         var isEmptySearchInput = string.IsNullOrWhiteSpace(query);
         List<AvailableResult> availableFormats = new List<AvailableResult>();
@@ -39,19 +39,19 @@ public sealed partial class TimeDateCalculator
         {
             // Return all results for system time/date on empty keyword search
             // or only time, date and now results for system time on global queries if the corresponding setting is enabled
-            availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings));
+            availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings, currentTime: currentTime));
         }
         else if (Regex.IsMatch(query, @".+" + Regex.Escape(InputDelimiter) + @".+"))
         {
             // Search for specified format with specified time/date value
             var userInput = query.Split(InputDelimiter);
-            if (TimeAndDateHelper.ParseStringAsDateTime(userInput[1], out DateTime timestamp, out lastInputParsingErrorMsg))
+            if (DateTimeInputParser.ParseStringAsDateTime(userInput[1], out DateTime timestamp, out lastInputParsingErrorMsg))
             {
                 availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings, null, null, timestamp));
                 query = userInput[0];
             }
         }
-        else if (TimeAndDateHelper.ParseStringAsDateTime(query, out DateTime timestamp, out lastInputParsingErrorMsg))
+        else if (DateTimeInputParser.ParseStringAsDateTime(query, out DateTime timestamp, out lastInputParsingErrorMsg))
         {
             // Return all formats for specified time/date value
             availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings, null, null, timestamp));
@@ -60,7 +60,7 @@ public sealed partial class TimeDateCalculator
         else
         {
             // Search for specified format with system time/date (All other cases)
-            availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings));
+            availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings, currentTime: currentTime));
         }
 
         // Check searchTerm after getting results to select type of result list

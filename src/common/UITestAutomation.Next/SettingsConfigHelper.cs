@@ -71,10 +71,30 @@ public static class SettingsConfigHelper
         return PreserveFile(Path.Combine(PowerToysSettingsRoot, moduleName, "settings.json"));
     }
 
-    internal static IDisposable PreserveFile(string path)
+    /// <summary>Snapshot an arbitrary file and restore its exact bytes or prior absence on disposal.</summary>
+    public static IDisposable PreserveFile(string path)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         return new FileSnapshot(path);
+    }
+
+    internal static IDisposable PreserveFirstRunSettings() => PreserveFirstRunSettings(PowerToysSettingsRoot);
+
+    internal static IDisposable PreserveFirstRunSettings(string settingsRoot)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(settingsRoot);
+
+        var globalSettings = PreserveFile(Path.Combine(settingsRoot, "settings.json"));
+        try
+        {
+            var oobeSettings = PreserveFile(Path.Combine(settingsRoot, "oobe_settings.json"));
+            return new CompositeSnapshot(globalSettings, oobeSettings);
+        }
+        catch
+        {
+            globalSettings.Dispose();
+            throw;
+        }
     }
 
     /// <summary>
@@ -228,6 +248,39 @@ public static class SettingsConfigHelper
             else
             {
                 File.Delete(path);
+            }
+        }
+    }
+
+    private sealed class CompositeSnapshot(params IDisposable[] snapshots) : IDisposable
+    {
+        private bool disposed;
+
+        public void Dispose()
+        {
+            if (disposed)
+            {
+                return;
+            }
+
+            disposed = true;
+            List<Exception>? failures = null;
+            foreach (var snapshot in snapshots.Reverse())
+            {
+                try
+                {
+                    snapshot.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    failures ??= [];
+                    failures.Add(ex);
+                }
+            }
+
+            if (failures is not null)
+            {
+                throw new AggregateException("One or more PowerToys settings files could not be restored.", failures);
             }
         }
     }

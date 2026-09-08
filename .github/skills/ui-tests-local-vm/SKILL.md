@@ -143,8 +143,9 @@ Create and maintain this task list:
 - [ ] 4. Package a lean exchange and verify archive hashes
 - [ ] 5. Run the controller with -PlanOnly and inspect its request/plan
 - [ ] 6. Probe the non-admin interactive desktop before test execution
-- [ ] 7. Run one focused test; read the controller result's `.Failed` array (non-passed tests + first
-        error line) instead of re-parsing TRX, and use `scripts/Invoke-GuestScript.ps1` for guest-state inspection
+- [ ] 7. Run one focused test synchronously; keep the agent turn attached, read the controller
+  result's `.Failed` array (non-passed tests + first error line) instead of re-parsing TRX, and
+  use `scripts/Invoke-GuestScript.ps1` for guest-state inspection
 - [ ] 8. Diagnose the first controlling failure without weakening assertions
 - [ ] 9. Rebuild and rerun with -ReuseStagedPayload
 - [ ] 10. Widen to the full module suite on Windows 10 and report pass rate/root-cause groups
@@ -193,9 +194,10 @@ pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
   -ReuseStagedPayload
 ```
 
-The controller starts the VM if needed, verifies the interactive standard-user token and desktop,
-dispatches the shared guest runner through a limited interactive scheduled task, streams progress,
-waits for parseable `status.json`, summarizes TRX, and leaves the persistent VM running by default.
+The controller starts the VM if needed, requests automatic host sleep prevention, verifies the
+interactive standard-user desktop, dispatches the guest runner, and waits synchronously for matching
+`status.json`. It reports whether sleep prevention succeeded, fails early if the guest task never
+starts or exits without status, summarizes TRX, and leaves the persistent VM running by default.
 
 ## Non-negotiable rules
 
@@ -212,6 +214,9 @@ waits for parseable `status.json`, summarizes TRX, and leaves the persistent VM 
   ReFS: Hyper-V on plain ReFS is supported, so `-AllowReFsVolume` overrides the default refusal. The
   scaffold and the exchange are unaffected and run fine on a Dev Drive.
 - Build on the host; run PowerToys and tests only in the VM when host execution is prohibited.
+- Invoke every focused, full-suite, and constrained controller run synchronously. Keep the active
+  agent turn attached until the controller returns matching status/TRX evidence; never background
+  the controller or end the turn while it runs.
 - Finish on two green full suites: Windows 10 and Windows 11, in separate VMs. Windows 10 runs first
   for speed; Windows 11 runs the same unfiltered suite, never a Win11-only subset. Narrow filters are
   for iteration, not for sign-off. On a Windows on ARM host the ARM64 Windows 11 guest covers the
@@ -235,5 +240,7 @@ waits for parseable `status.json`, summarizes TRX, and leaves the persistent VM 
   distinguish assertions, skipped/inconclusive tests, zero tests, timeout, or infrastructure failure.
 - Keep the VM after normal runs for iteration. Stop it explicitly when idle; delete its VHDX only for
   an intentional baseline reset.
+- The controller requests automatic host sleep prevention and reports `HostSleepPrevented`; failure
+  is a warning. It cannot override manual sleep, lid-close policy, reboot, shutdown, or power loss.
 - Final clean-profile claims require a restored baseline checkpoint or a recreated guest. Restore with
   `Reset-LocalVm.ps1 -Restore`.

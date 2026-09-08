@@ -10,6 +10,7 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Gallery;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -69,12 +70,7 @@ public sealed partial class SettingsWindow : WindowEx,
         var title = RS_.GetString("SettingsWindowTitle");
         this.AppWindow.Title = title;
         this.AppTitleBar.Title = title;
-
-        if (AppWindowTitleBar.IsCustomizationSupported())
-        {
-            var titleBar = this.AppWindow.TitleBar;
-            titleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
-        }
+        TitleBarHelper.SetPreferredTheme(this);
 
         PositionCentered();
 

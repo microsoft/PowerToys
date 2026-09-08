@@ -5,7 +5,7 @@ using Windows.Foundation.Collections;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class Details : BaseObservable, IDetails, IExtendedAttributesProvider
+public partial class Details : BaseObservable, IDetails2, IExtendedAttributesProvider
 {
     public virtual IIconInfo HeroImage { get; set => SetProperty(ref field, value); } = new IconInfo();
 
@@ -16,6 +16,10 @@ public partial class Details : BaseObservable, IDetails, IExtendedAttributesProv
     public virtual IDetailsElement[] Metadata { get; set => SetProperty(ref field, value); } = [];
 
     public virtual ContentSize Size { get; set => SetProperty(ref field, value); } = ContentSize.Small;
+
+    public virtual IContent[] Content { get; set => SetProperty(ref field, value); } = [];
+
+    public virtual IContent[] GetContent() => Content;
 
     public IDictionary<string, object>? GetProperties() => new ValueSet()
     {

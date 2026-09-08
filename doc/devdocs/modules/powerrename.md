@@ -87,6 +87,24 @@ PowerRename uses WinUI 3 for its user interface. The UI allows users to:
 - Settings panel for configuring rename options
 - Event handling for `SearchReplaceChanged` to update the preview in real-time
 
+## UI tests
+
+The migrated `PowerRename.UITests.Next` project drives the module through
+`Microsoft.PowerToys.UITest.Next` and `winappcli`. Keep these module-specific constraints in mind:
+
+- The PowerRename UI receives its selected files on the command line. Tests launch
+	`PowerToys.PowerRename.exe` directly with an argument per path, while retaining the runner/Settings
+	scope for module enablement and shell registration.
+- Windows 11 tier-1 context-menu tests require a signed and trusted
+	`PowerRenameContextMenuPackage.msix`. Unsigned builds can still exercise the classic menu.
+- `UseBoostLib` is read when the regex engine is constructed, so changing it requires a fresh
+	PowerRename process.
+- Shell handlers read global/module settings independently. Tests wait for persisted settings and
+	restart Explorer after registration changes instead of treating the Settings control state as the
+	final signal.
+
+See the [UI tests framework](../development/ui-tests.md) for build, local-VM, and pipeline workflows.
+
 ## Debugging
 
 ### Debugging the Context Menu

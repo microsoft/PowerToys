@@ -59,27 +59,41 @@ public static class DisplayConfiguration
 }
 '@
 
-$mode = New-Object DisplayConfiguration+DEVMODE
-# Pass the instance: Marshal::SizeOf binds its object overload, and a Type argument is rejected.
-$mode.dmSize = [int16][Runtime.InteropServices.Marshal]::SizeOf($mode)
+Add-Type -AssemblyName System.Windows.Forms
+$before = $null
+$result = -1
+$bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+for ($attempt = 1; $attempt -le 10; $attempt++) {
+    $mode = New-Object DisplayConfiguration+DEVMODE
+    # Pass the instance: Marshal::SizeOf binds its object overload, and a Type argument is rejected.
+    $mode.dmSize = [int16][Runtime.InteropServices.Marshal]::SizeOf($mode)
 
-# [NullString]::Value marshals as a real NULL; PowerShell would turn $null into an empty string,
-# and EnumDisplaySettings needs NULL to mean "the current display device".
-if ([DisplayConfiguration]::EnumDisplaySettings([NullString]::Value, -1, [ref]$mode) -eq 0) {
-    throw 'EnumDisplaySettings failed.'
+    # [NullString]::Value marshals as a real NULL; PowerShell would turn $null into an empty string,
+    # and EnumDisplaySettings needs NULL to mean "the current display device".
+    if ([DisplayConfiguration]::EnumDisplaySettings([NullString]::Value, -1, [ref]$mode) -eq 0) {
+        throw 'EnumDisplaySettings failed.'
+    }
+
+    if ($null -eq $before) {
+        $before = "$($mode.dmPelsWidth)x$($mode.dmPelsHeight)"
+    }
+    $mode.dmPelsWidth = $Width
+    $mode.dmPelsHeight = $Height
+    # DM_PELSWIDTH | DM_PELSHEIGHT
+    $mode.dmFields = 0x00080000 -bor 0x00100000
+
+    # CDS_UPDATEREGISTRY makes the change persist for later logons. The synthetic display can reject
+    # the first request while it is still initializing immediately after logon, so retry boundedly.
+    $result = [DisplayConfiguration]::ChangeDisplaySettings([ref]$mode, 0x00000001)
+    Start-Sleep -Milliseconds 500
+    $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+    if ($result -eq 0 -and $bounds.Width -eq $Width -and $bounds.Height -eq $Height) {
+        break
+    }
+
+    Start-Sleep -Seconds 1
 }
 
-$before = "$($mode.dmPelsWidth)x$($mode.dmPelsHeight)"
-$mode.dmPelsWidth = $Width
-$mode.dmPelsHeight = $Height
-# DM_PELSWIDTH | DM_PELSHEIGHT
-$mode.dmFields = 0x00080000 -bor 0x00100000
-
-# CDS_UPDATEREGISTRY makes the change persist for later logons.
-$result = [DisplayConfiguration]::ChangeDisplaySettings([ref]$mode, 0x00000001)
-
-Add-Type -AssemblyName System.Windows.Forms
-$bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
 [ordered]@{
     Before = $before
     Requested = "${Width}x${Height}"

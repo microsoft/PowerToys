@@ -130,6 +130,31 @@ jobs:
                 .sort((a, b) => b.id - a.id)[0] || null;
             };
 
+            const liveCandidateCache = new Map();
+            const resolveOpenIssueCandidates = async (candidates) => {
+              const openCandidates = [];
+              for (const candidate of candidates) {
+                let live = liveCandidateCache.get(candidate.number);
+                if (live === undefined) {
+                  try {
+                    live = (await github.rest.issues.get({
+                      owner, repo, issue_number: candidate.number
+                    })).data;
+                  } catch (e) {
+                    if (e.status !== 404) throw e;
+                    live = null;
+                  }
+                  liveCandidateCache.set(candidate.number, live);
+                }
+                if (!live || live.pull_request || live.state !== 'open') continue;
+                openCandidates.push({
+                  ...candidate,
+                  title: sanitize(live.title, 160)
+                });
+              }
+              return openCandidates;
+            };
+
             // --- 1. Ensure the digest label exists -------------------------------
             try {
               await github.rest.issues.getLabel({ owner, repo, name: LABEL });
@@ -202,7 +227,9 @@ jobs:
 
               const triageComment = await findTriageComment(number);
               if (!triageComment) continue;
-              const candidates = parseDuplicateCandidates(triageComment.body);
+              const candidates = await resolveOpenIssueCandidates(
+                parseDuplicateCandidates(triageComment.body)
+              );
               if (!candidates.length) continue;
 
               flagged.push({

@@ -43,6 +43,16 @@ public interface IWinGetPackageManagerService
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Resolves packages by Microsoft Store id.
+    /// </summary>
+    /// <param name="storeIds">The store ids to resolve.</param>
+    /// <param name="cancellationToken">A token that cancels the lookup.</param>
+    /// <returns>A query result containing the resolved packages keyed by store id.</returns>
+    Task<WinGetQueryResult<IReadOnlyDictionary<string, CatalogPackage>>> GetStorePackagesByIdAsync(
+        IEnumerable<string> storeIds,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Installs or updates the provided package and refreshes package catalogs when possible.
     /// </summary>
     /// <param name="package">The package to install or update.</param>

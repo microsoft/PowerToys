@@ -117,6 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Attribution_AltWindowCycle.Text" xml:space="preserve">
+    <value>Wzhudev's work on AltBackTick</value>
+    <comment>Wzhudev is a person's GitHub username and AltBackTick is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
   <data name="Attribution_Rooler.Text" xml:space="preserve">
     <value>Inspired by Rooler</value>
     <comment>Rooler is a name of the tool.</comment>
@@ -243,6 +247,9 @@
   <data name="MeasureTool_UnitsOfMeasure.Header" xml:space="preserve">
     <value>Extra units of measurement</value>
   </data>
+  <data name="MeasureTool_UnitsOfMeasure.Description" xml:space="preserve">
+    <value>Display-independent pixels adjust for Windows display scaling</value>
+  </data>
   <data name="MeasureTool_UnitsOfMeasure_Pixels.Content" xml:space="preserve">
     <value>Show only pixels</value>
   </data>
@@ -254,6 +261,9 @@
   </data>
   <data name="MeasureTool_UnitsOfMeasure_Millimeters.Content" xml:space="preserve">
     <value>Millimeters</value>
+  </data>
+  <data name="MeasureTool_UnitsOfMeasure_DIP.Content" xml:space="preserve">
+    <value>Display-independent pixels (DIP)</value>
   </data>
   <data name="MeasureTool_PixelTolerance.Header" xml:space="preserve">
     <value>Pixel tolerance for edge detection</value>
@@ -6502,6 +6512,7 @@ Text uses the current drawing color.</value>
   </data>
   <data name="GeneralPage_EnableQuickAccess.Description" xml:space="preserve">
     <value>Fast access to quick actions and module toggles</value>
+    <comment>Simplified Chinese: translate the full string as "快速操作和模块切换", not "快速访问快速作和模块切换".</comment>
   </data>
   <data name="GeneralPage_QuickAccessShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
