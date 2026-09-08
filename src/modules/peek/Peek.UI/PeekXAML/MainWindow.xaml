@@ -24,6 +24,14 @@
             <KeyboardAccelerator Key="Up" Invoked="PreviousNavigationInvoked" />
             <KeyboardAccelerator Key="Right" Invoked="NextNavigationInvoked" />
             <KeyboardAccelerator Key="Down" Invoked="NextNavigationInvoked" />
+            <KeyboardAccelerator
+                Key="Left"
+                Invoked="PreviousNavigationInvoked"
+                Modifiers="Menu" />
+            <KeyboardAccelerator
+                Key="Right"
+                Invoked="NextNavigationInvoked"
+                Modifiers="Menu" />
             <KeyboardAccelerator Key="Escape" Invoked="CloseInvoked" />
             <KeyboardAccelerator
                 Key="W"
