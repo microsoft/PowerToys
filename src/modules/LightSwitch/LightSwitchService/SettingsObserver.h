@@ -21,7 +21,7 @@ public:
     }
 
     // Override this in your class to respond to updates
-    virtual void SettingsUpdate(SettingId type) {}
+    virtual void SettingsUpdate(SettingId) {}
 
     virtual bool WantsToBeNotified(SettingId type) const noexcept
     {

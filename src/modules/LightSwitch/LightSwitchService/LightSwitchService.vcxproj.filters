@@ -18,6 +18,12 @@
     <ClCompile Include="LightSwitchService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CliPipeServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CliProtocol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="ThemeScheduler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -45,6 +51,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ThemeScheduler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CliPipeServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CliProtocol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ScheduleCommandQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ThemeHelper.h">

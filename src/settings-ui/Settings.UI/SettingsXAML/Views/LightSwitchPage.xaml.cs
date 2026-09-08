@@ -71,6 +71,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.fileSystemWatcher.Filter = this.fileSystem.Path.GetFileName(settingsPath);
             this.fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime;
             this.fileSystemWatcher.Changed += Settings_Changed;
+
+            // CLI updates replace the settings file after checking the complete write.
+            this.fileSystemWatcher.Created += Settings_Changed;
+            this.fileSystemWatcher.Renamed += Settings_Changed;
             this.fileSystemWatcher.EnableRaisingEvents = true;
 
             this.InitializeComponent();
