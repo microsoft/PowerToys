@@ -303,7 +303,7 @@ internal sealed class OverlayManager : IOverlayManager
             // content is not silently lost.
             try
             {
-                await _clipboardService.SetTextAsync(result);
+                await _clipboardService.SetTextAsync(result, session.Token);
             }
             catch (OperationCanceledException)
             {

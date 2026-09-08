@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\PowerOCR\Helpers\ClipboardWriteOperation.cs" Link="Helpers\ClipboardWriteOperation.cs" />
     <ProjectReference Include="..\PowerOCR.Core\PowerOCR.Core.csproj" />
   </ItemGroup>
 </Project>
