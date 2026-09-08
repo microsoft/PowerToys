@@ -15,6 +15,8 @@ Monaco is primarily used in:
 
 Monaco is embedded into PowerToys' WinUI 3 applications using WebView2. This integration allows PowerToys to leverage Monaco's web-based capabilities within desktop applications.
 
+The [`FilePreviewCommon`](/src/common/FilePreviewCommon/FilePreviewCommon.csproj) project downloads the monaco editor source code and adds it to [`/src/Monaco/MonacoSRC`] before the build step.
+
 ### Directory Structure
 
 The Monaco editor files are located in the relevant module directories. For example, in Registry Preview, Monaco files are bundled with the application resources.
@@ -23,16 +25,9 @@ The Monaco editor files are located in the relevant module directories. For exam
 
 ### Current Version
 
-The current Monaco version can be found in the `loader.js` file, specifically in the variable named `versionMonaco`.
+The current Monaco version can be found in the `$pkgVersion` variable in [`downloadMonaco.ps1`](/src/common/FilePreviewCommon/downloadMonaco.ps1).
 
 ### Update Process
-
-Updating Monaco requires several steps:
-
-1. Download the latest version of Monaco
-2. Replace/override the main folder with the new version
-3. Generate the new Monaco language JSON file
-4. Override the existing JSON file
 
 For detailed step-by-step instructions, see the [FilePreviewCommon documentation](FilePreviewCommon.md#update-monaco-editor).
 
