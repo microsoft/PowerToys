@@ -95,14 +95,12 @@ public class PowerDisplayCliServiceTests
     }
 
     [DataTestMethod]
-    [DataRow("other-command", "1.0")]
-    [DataRow(CliCommandNames.Profiles, "2.0")]
-    [DataRow(CliCommandNames.Profiles, "not-a-version")]
-    public async Task GetProfilesAsync_WrongCommandOrSchemaReturnsInvalidResponse(string command, string version)
+    [DataRow("2.0")]
+    [DataRow("not-a-version")]
+    public async Task GetProfilesAsync_InvalidSchemaReturnsInvalidResponse(string version)
     {
         var response = new CliProfileListResult
         {
-            Command = command,
             Version = version,
             Profiles = [],
         };

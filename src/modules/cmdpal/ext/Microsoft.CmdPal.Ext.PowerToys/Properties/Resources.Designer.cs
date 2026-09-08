@@ -1164,9 +1164,6 @@ namespace PowerToysExtension.Properties {
             get { return ResourceManager.GetString("PowerDisplay_Profile_FallbackName", resourceCulture); }
         }
 
-        internal static string PowerDisplay_Profile_FallbackSubtitle {
-            get { return ResourceManager.GetString("PowerDisplay_Profile_FallbackSubtitle", resourceCulture); }
-        }
         internal static string PowerDisplay_Profile_Loading {
             get { return ResourceManager.GetString("PowerDisplay_Profile_Loading", resourceCulture); }
         }

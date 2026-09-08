@@ -505,9 +505,6 @@
   <data name="PowerDisplay_Profile_FallbackName" xml:space="preserve">
     <value>Power Display profile</value>
   </data>
-  <data name="PowerDisplay_Profile_FallbackSubtitle" xml:space="preserve">
-    <value>Apply this saved Power Display profile</value>
-  </data>
   <data name="PowerDisplay_Profile_Loading" xml:space="preserve">
     <value>Loading profile details…</value>
   </data>

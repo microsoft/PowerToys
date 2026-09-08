@@ -32,7 +32,7 @@ internal sealed class PowerDisplayModuleCommandProvider : ModuleCommandProvider
 
         if (ModuleEnablementService.IsKeyEnabled("PowerDisplay"))
         {
-            yield return new ListItem(new CommandItem(new PowerDisplayProfilesPage(_cliService)))
+            yield return new ListItem(new PowerDisplayProfilesPage(_cliService))
             {
                 Title = Resources.PowerDisplay_Profiles_Title,
                 Subtitle = Resources.PowerDisplay_Profiles_Subtitle,

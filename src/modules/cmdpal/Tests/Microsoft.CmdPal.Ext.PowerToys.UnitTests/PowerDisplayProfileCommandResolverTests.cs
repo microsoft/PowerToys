@@ -56,7 +56,7 @@ public class PowerDisplayProfileCommandResolverTests
     }
 
     [TestMethod]
-    public async Task NewRestorationBatch_RereadsNamesAndRecognizesDeletedProfiles()
+    public async Task NewResolver_RereadsNamesAndReportsMissingProfiles()
     {
         var service = new FakePowerDisplayCliService
         {
@@ -69,13 +69,13 @@ public class PowerDisplayProfileCommandResolverTests
         service.GetProfilesHandler = _ => Task.FromResult(ProfileResult("Renamed"));
         var nextBatch = new PowerDisplayProfileCommandResolver(service);
         var renamed = nextBatch.GetCommandItem(3);
-        var removed = nextBatch.GetCommandItem(8);
+        var missing = nextBatch.GetCommandItem(8);
         await Task.WhenAll(
             WaitForPropertyAsync(renamed, nameof(renamed.Title), () => renamed.Title == "Renamed (#3)"),
-            WaitForPropertyAsync(removed, nameof(removed.Subtitle), () => removed.Subtitle.Contains("no longer available", StringComparison.Ordinal)));
+            WaitForPropertyAsync(missing, nameof(missing.Subtitle), () => missing.Subtitle.Contains("no longer available", StringComparison.Ordinal)));
 
         Assert.AreEqual(2, service.GetProfilesCallCount);
-        Assert.AreEqual("com.microsoft.powertoys.powerDisplay.applyProfile.8", removed.Command!.Id);
+        Assert.AreEqual("com.microsoft.powertoys.powerDisplay.applyProfile.8", missing.Command!.Id);
     }
 
     [DataTestMethod]
@@ -141,7 +141,7 @@ public class PowerDisplayProfileCommandResolverTests
     }
 
     [TestMethod]
-    public async Task ProviderShutdown_CancelsPendingCliQuery()
+    public async Task LifetimeCancellation_CancelsPendingCliQuery()
     {
         var requestReady = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         var cancellationObserved = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
