@@ -3,6 +3,7 @@
 
 #include "CaptureMirror.h"
 #include "Geometry.h"
+#include "RegionWindowManager.h"
 #include "SelectionOverlay.h"
 #include "VirtualDisplay.h"
 
@@ -168,6 +169,7 @@ namespace
         std::filesystem::path report;
         unsigned duration{};
         bool listDisplays{};
+        bool windowManagerOnly{};
     };
 
     Options ParseOptions()
@@ -187,6 +189,11 @@ namespace
                 if (option == L"--list-displays")
                 {
                     options.listDisplays = true;
+                    continue;
+                }
+                if (option == L"--window-manager-only")
+                {
+                    options.windowManagerOnly = true;
                     continue;
                 }
                 if (++i >= count)
@@ -247,6 +254,10 @@ namespace
         if (options.listDisplays && options.report.empty())
         {
             throw std::runtime_error("--list-displays requires --report <path>.");
+        }
+        if (options.windowManagerOnly && !options.targetDisplay.empty())
+        {
+            throw std::runtime_error("--window-manager-only cannot be combined with --target-display.");
         }
         return options;
     }
@@ -389,6 +400,7 @@ namespace
             Selecting,
             Creating,
             Mirroring,
+            Managing,
             Stopping
         };
         Options m_options;
@@ -409,6 +421,7 @@ namespace
         MonitorInfo m_target;
         RegionMirror::VirtualDisplay m_virtual;
         RegionMirror::CaptureMirror m_capture;
+        RegionMirror::RegionWindowManager m_windowManager;
         std::thread m_deviceWorker;
         std::atomic_bool m_cancel{};
         std::wstring m_deviceError;
@@ -420,6 +433,9 @@ namespace
         bool m_reportWritten{};
         bool m_captureStarted{};
         bool m_sessionHadCapture{};
+        bool m_managerStarted{};
+        bool m_sessionHadManager{};
+        size_t m_finalManagedCount{};
 
         void SetStatus(const std::wstring& text) { SetWindowTextW(m_status, text.c_str()); }
 
@@ -443,9 +459,9 @@ namespace
             AddControl(L"STATIC", L"Share a screen region through a temporary virtual monitor", SS_LEFT, 0, 20, 18, 550, 40);
             m_selectionText = AddControl(L"STATIC", L"1. Select a region across one or more screens.", SS_LEFT, 0, 20, 66, 550, 32);
             m_selectButton = AddControl(L"BUTTON", L"Select region", BS_PUSHBUTTON | WS_TABSTOP, SelectButton, 20, 108, 145, 36);
-            m_startButton = AddControl(L"BUTTON", L"Start mirror", BS_DEFPUSHBUTTON | WS_TABSTOP, StartButton, 180, 108, 145, 36);
+            m_startButton = AddControl(L"BUTTON", m_options.windowManagerOnly ? L"Start manager" : L"Start mirror", BS_DEFPUSHBUTTON | WS_TABSTOP, StartButton, 180, 108, 145, 36);
             m_stopButton = AddControl(L"BUTTON", L"Stop", BS_PUSHBUTTON | WS_TABSTOP, StopButton, 340, 108, 110, 36);
-            m_status = AddControl(L"STATIC", L"Ready. The virtual display driver must be staged before Start.\r\nLaunch elevated to create the temporary software device.", SS_LEFT, 0, 20, 161, 550, 78);
+            m_status = AddControl(L"STATIC", m_options.windowManagerOnly ? L"Window-management diagnostic mode. Select a region, then Start.\r\nNo virtual display or capture is started." : L"Ready. The virtual display driver must be staged before Start.\r\nLaunch elevated to create the temporary software device.", SS_LEFT, 0, 20, 161, 550, 78);
             m_hotkey = RegisterHotKey(m_window, StopHotkey, MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, 'Q') != FALSE;
             AddControl(L"STATIC", m_hotkey ? L"Stop at any time: Ctrl+Alt+Q. Closing this window also cleans up." : L"Ctrl+Alt+Q is in use. Use Stop or close this window to clean up.", SS_LEFT, 0, 20, 247, 550, 25);
             UpdateButtons();
@@ -457,7 +473,7 @@ namespace
             const bool idle = m_phase == Phase::Idle;
             EnableWindow(m_selectButton, idle);
             EnableWindow(m_startButton, idle && m_selection.has_value());
-            EnableWindow(m_stopButton, m_phase == Phase::Creating || m_phase == Phase::Mirroring);
+            EnableWindow(m_stopButton, m_phase == Phase::Creating || m_phase == Phase::Mirroring || m_phase == Phase::Managing);
         }
 
         void SetSelection(RegionMirror::Selection selection)
@@ -498,6 +514,8 @@ namespace
             // different source identities if the user closes before starting.
             m_finalFrames = 0;
             m_sessionHadCapture = false;
+            m_sessionHadManager = false;
+            m_finalManagedCount = 0;
             m_reportWritten = false;
             m_ownedInstance.clear();
             m_target = {};
@@ -556,9 +574,20 @@ namespace
             m_reportWritten = false;
             m_captureStarted = false;
             m_sessionHadCapture = false;
+            m_sessionHadManager = false;
+            m_finalManagedCount = 0;
             m_exitCode = 0;
             m_cancel.store(false);
             m_deviceError.clear();
+            if (m_options.windowManagerOnly)
+            {
+                StartWindowManager();
+                m_started = GetTickCount64();
+                m_phase = Phase::Managing;
+                UpdateButtons();
+                Tick();
+                return;
+            }
             m_phase = Phase::Creating;
             UpdateButtons();
             SetStatus(L"Creating the temporary virtual monitor...");
@@ -587,6 +616,13 @@ namespace
                 }
                 PostMessageW(m_window, DeviceReady, 0, 0);
             });
+        }
+
+        void StartWindowManager()
+        {
+            m_windowManager.Start(m_selection->region);
+            m_managerStarted = true;
+            m_sessionHadManager = true;
         }
 
         void WaitForStableDisplays(const std::vector<MonitorInfo>& selectedSources)
@@ -710,6 +746,7 @@ namespace
             m_capture.Start(m_viewport, captureSources, m_selection->region, m_window, CaptureFailed);
             m_captureStarted = true;
             m_sessionHadCapture = true;
+            StartWindowManager();
             m_started = GetTickCount64();
             m_phase = Phase::Mirroring;
             UpdateButtons();
@@ -723,6 +760,12 @@ namespace
                 return;
             }
             m_phase = Phase::Stopping;
+            if (m_managerStarted)
+            {
+                m_finalManagedCount = m_windowManager.ManagedCount();
+                m_windowManager.Stop();
+                m_managerStarted = false;
+            }
             m_cancel.store(true);
             JoinWorker(m_deviceWorker);
             m_capture.Stop();
@@ -769,6 +812,22 @@ namespace
 
         void Tick()
         {
+            if (m_phase == Phase::Managing)
+            {
+                auto status = L"Window manager active. Drag a window into the region, then maximize.\r\nManaged: " +
+                              std::to_wstring(m_windowManager.ManagedCount()) + L"  Adjusted: " + std::to_wstring(m_windowManager.AdjustedCount());
+                const auto error = m_windowManager.LastError();
+                if (!error.empty())
+                {
+                    status += L"\r\n" + error;
+                }
+                SetStatus(status);
+                if (m_options.duration && GetTickCount64() - m_started >= static_cast<ULONGLONG>(m_options.duration) * 1000)
+                {
+                    PostMessageW(m_window, WM_CLOSE, 0, 0);
+                }
+                return;
+            }
             if (m_phase != Phase::Mirroring)
             {
                 return;
@@ -786,10 +845,17 @@ namespace
                 Fail(L"The output display changed. Restart mirroring.");
                 return;
             }
-            SetStatus(L"Mirroring to " + m_target.name + L" (" +
-                      std::to_wstring(m_target.bounds.right - m_target.bounds.left) + L" x " +
-                      std::to_wstring(m_target.bounds.bottom - m_target.bounds.top) + L").\r\n" +
-                      std::to_wstring(m_sources.size()) + L" source screen(s). Frames presented: " + std::to_wstring(frames));
+            auto status = L"Mirroring to " + m_target.name + L" (" +
+                          std::to_wstring(m_target.bounds.right - m_target.bounds.left) + L" x " +
+                          std::to_wstring(m_target.bounds.bottom - m_target.bounds.top) + L").\r\n" +
+                          std::to_wstring(m_sources.size()) + L" source screen(s). Frames presented: " + std::to_wstring(frames) +
+                          L"\r\nMaximize to region: " + std::to_wstring(m_windowManager.ManagedCount()) + L" window(s) registered.";
+            const auto managerError = m_windowManager.LastError();
+            if (!managerError.empty())
+            {
+                status = L"Mirroring to " + m_target.name + L".\r\nWindow fit: " + managerError;
+            }
+            SetStatus(status);
             if (m_options.duration && elapsed >= static_cast<ULONGLONG>(m_options.duration) * 1000)
             {
                 if (!frames)
@@ -843,7 +909,10 @@ namespace
                 }
                 stream << sourceFrames[index];
             }
-            stream << "],\"displaysAfterStop\":";
+            stream << "],\"windowManager\":{\"managedCount\":" << m_finalManagedCount
+                   << ",\"adjustedCount\":" << (m_sessionHadManager ? m_windowManager.AdjustedCount() : 0)
+                   << ",\"error\":" << JsonString(m_sessionHadManager ? m_windowManager.LastError() : L"")
+                   << "},\"displaysAfterStop\":";
             WriteMonitors(stream);
             stream << "}\n";
             stream.flush();
@@ -886,7 +955,7 @@ namespace
                 else if (LOWORD(wParam) == StopButton)
                 {
                     Stop();
-                    SetStatus(L"Stopped. The owned virtual device was released.");
+                    SetStatus(L"Stopped. Window management and mirroring have ended.");
                 }
                 return 0;
             case BeginAutomatic:

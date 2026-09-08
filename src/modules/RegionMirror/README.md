@@ -72,8 +72,13 @@ Launch PowerToys.RegionMirror.exe using **Run as administrator**:
 
 1. Click **Select region**, drag across one or more screens, then release. Escape, right-click, losing focus, or a display configuration change cancels. The selection uses physical desktop pixels; empty space between monitors is filled black.
 2. Click **Start mirror**. A new virtual display appears to the right of the current desktop. The driver supplies supported modes; the closest available mode is chosen. Other aspect ratios are letterboxed, without stretching.
-3. In the meeting application, choose the new screen. The controller shows its Windows display name and the number of frames presented.
-4. Click **Stop**, use **Ctrl+Alt+Q**, or close the controller. Capture and output windows stop before the app releases its software-device handle, initiating removal of its virtual monitor.
+3. Drag a normal application window into the outlined region and release the mouse there to register it. Clicking its native maximize button then fits its visible frame to the region, including cross-monitor selections. The controller shows the registered-window count.
+4. In the meeting application, choose the new screen. The controller shows its Windows display name and the number of frames presented.
+5. Click **Stop**, use **Ctrl+Alt+Q**, or close the controller. Window-event subscriptions are removed, then capture and output windows stop before the app releases its software-device handle, initiating removal of its virtual monitor.
+
+Window management uses out-of-process WinEvent subscriptions; it does not load code into other applications. Ordinary moves and resizes do not fit the window. Only a registered window's transition from normal to maximized requests a fit, with measured DWM frame compensation. Windows keeps the original normal placement and handles native Restore. Moving a window out of the region removes its registration. Existing windows are not automatically registered merely because they overlap the region at startup.
+
+The feature does not convert full-screen modes into maximization, alter the display work area, or manually restore another application's saved coordinates. Windows that cannot accept the requested dimensions or permissions are reported through the controller; correction attempts are bounded. Stopping management removes the subscriptions and leaves window placement under the user's control.
 
 The source is a rectangle of visible desktop pixels. Each intersecting screen is captured separately and its intersection is copied into the combined image at the corresponding desktop offset. This preserves pixel geometry across different monitor DPI settings. Notifications and other applications appearing inside the region are included. The controller and green region indicator are excluded from capture; the output is deliberately capturable. The system capture border remains enabled on each source.
 
@@ -97,6 +102,14 @@ Supply a rectangle in physical desktop pixels and an automatic stop time:
 
 Device creation still requires elevation. The report records the owned device instance, target display, frames presented, source monitor identities and per-source copied-frame counts, errors, and displays observed after releasing the device. PnP removal is asynchronous; verify the device has disappeared separately before asserting complete cleanup.
 
+The diagnostic flag --window-manager-only runs the same window manager without a virtual display or screen capture, so ordinary same-permission test windows can be checked without elevation:
+
+~~~powershell
+& .\src\modules\RegionMirror\bin\x64\Debug\PowerToys.RegionMirror.exe --window-manager-only --region "120,100,960,540"
+~~~
+
+Window-manager reports include the registered count at Stop, successful adjustment count, and any window-fit error. The no-build Python integration script scripts/Validate-WindowManager.py tests disposable standard Win32 windows against the real manager. Its controlled drag-boundary notifications are explicitly distinguished from real native maximize/restore operations.
+
 For capture-only diagnostics, the explicit option --target-display "\\.\DISPLAY2" uses an **existing** display instead of creating one. This never changes that display's mode or removes it, but temporarily covers it with the mirror output. It cannot target any source monitor or overlap the selection. This diagnostic does not validate virtual-device creation.
 
 Run RegionMirrorTests.dll through Visual Studio Test Explorer or vstest.console.exe (not dotnet test). See [fuzzing instructions](RegionMirrorFuzzTests/README.md) and [manual acceptance](RegionMirrorTests/ManualAcceptance.md).
@@ -110,6 +123,7 @@ Pass -CrossMonitor to select a region across two active physical monitors and re
 - SelectionOverlay: per-monitor-aware Win32 selection in physical coordinates.
 - VirtualDisplay: software device with the installed MttVDD hardware ID; verifies PnP ownership, chooses an advertised display mode, and applies a transient position without CDS_UPDATEREGISTRY.
 - CaptureMirror: one Windows Graphics Capture session per source on an MTA worker, a shared D3D11 device, persistent composite texture, and flip-model swapchain. A source geometry change or capture error ends the session.
+- RegionWindowManager: out-of-process window enrollment, maximize-state observation, coalesced frame-aware fitting and bounded result verification. Original window procedures and native restore placement are preserved.
 - Main: independent controller, aspect-fitted output, cancellation, stop hotkey, diagnostic reports.
 - Geometry: checked integer geometry and strict CLI rectangle parsing, covered by native unit tests and a libFuzzer target.
 

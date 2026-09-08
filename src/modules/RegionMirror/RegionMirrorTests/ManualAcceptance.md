@@ -25,6 +25,17 @@ Record the PowerToys commit, OS build, GPU, Teams version, display topology, sca
 - [ ] Minimize and restore the output, then stop and restart Teams window sharing. Record whether frames resume and whether the meeting client retains the correct target.
 - [ ] Check the selected-region boundary from the remote participant's view. Windows or notifications outside it must not become visible through a crop or DPI error.
 
+## Maximize to the selected region
+
+- [ ] Start mirroring, drag a normal application window into the outlined region, and release the mouse there. Confirm the registered-window count increases. Click its native maximize button: the visible frame fits the region and the button retains native Restore behavior.
+- [ ] Restore, move and resize the registered window normally. None of these operations should force it back to the region. Maximize again and confirm a new fit occurs with the updated normal placement preserved.
+- [ ] Maximize an unregistered window. Its normal system maximize behavior must remain unchanged.
+- [ ] Drag a registered window out of the region and release outside. It is no longer registered; subsequent native maximization uses the system's normal monitor work area.
+- [ ] Drag a maximized window by its caption to invoke native drag-to-restore. The manager must not pull it back while the move loop is active. Repeat with the drop inside and outside the region.
+- [ ] Repeat on negative-origin monitors, cross-monitor regions and different target-app DPI modes. Visible borders should align using measured margins.
+- [ ] Stop mirroring or close the controller while a fit is pending. No subsequent window adjustment may occur; native Restore remains usable without the manager.
+- [ ] Repeat with standard Win32, WPF, WinUI and browser windows. Record applications that reject external sizing or impose a minimum size; retries must end with a bounded error rather than repeatedly fighting the application.
+
 ## Lifetime and display changes
 
 - [ ] Close the output while frames are arriving, repeat start/stop, and exit during selection. The process exits cleanly and capture borders/overlays disappear.

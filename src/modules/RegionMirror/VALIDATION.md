@@ -1,5 +1,38 @@
 # Local acceptance — 2026-09-08
 
+## Automatic maximize-to-region window manager
+
+The actual out-of-process RegionWindowManager is integrated with mirror Start/Stop. The diagnostic flag --window-manager-only starts the same component without the driver or capture pipeline.
+
+| Check | Result |
+| --- | --- |
+| Debug x64 application and native test builds | Both exit 0, no errors or warnings |
+| Native tests | 42 passed, including 16 window-management tests |
+| Release x64 ASan/libFuzzer build and run | Build exit 0; 579,968 executions in 31 seconds, exit 0 |
+| Actual-manager integration script | 8 scenarios passed, exit 0; 3 successful automatic fits and no manager error |
+| Real title-bar mouse interaction | Drag-in enrollment, native maximize, native restore and drag-out removal passed |
+| Test cleanup | Manager and all disposable child processes exited |
+
+The integration script uses disposable standard Win32 windows. Drag boundaries are controlled NotifyWinEvent events emitted by the child UI thread; maximize/restore use real system commands and OS-generated location events. The test never resizes a maximized window itself. It confirmed:
+
+- Unregistered windows keep ordinary system maximization.
+- Ordinary move/resize is unchanged before and after enrollment.
+- Repeated native maximize fits the selected visible rectangle while keeping IsZoomed, WS_MAXIMIZE and SW_SHOWMAXIMIZED.
+- Native Restore returns to the updated normal placement without custom restoration.
+- Drag-out removes enrollment; re-enrollment works.
+- After the manager stops, native maximization is no longer adjusted.
+
+A separate real UI check used a title-bar drag and the actual Maximize/Restore controls. For region [500,300,1200,800], the maximized visible frame matched exactly, and native Restore returned to [490,381,1190,831], the normal position reached by the drag. After dragging out, maximization used the regular monitor work area [0,0,2560,1368]. The manager recorded one adjustment and no error.
+
+Evidence (ignored by Git):
+
+- artifacts/window-manager-validation/result.json and manager-result.json
+- artifacts/ui-window-manager/result.json and manager.json
+- artifacts/test-results-window-manager/*.trx
+- artifacts/fuzz-run-window-manager.log
+
+These runs used standard Win32 test windows at 144 DPI. Other application frameworks, mixed-DPI real applications, minimize-to-maximize restoration, and native drag-to-restore remain compatibility checks. The window-manager-only runs did not create virtual displays; prior capture/driver acceptance is recorded below.
+
 ## External maximized-window resize experiment
 
 The standalone script scripts/Probe-MaximizedWindow.py passed on Windows 11 build 26200, x64, at 144 DPI (150% scaling).
@@ -24,7 +57,7 @@ In this environment the maximized test window had 11-pixel invisible margins. Th
 
 Evidence: artifacts/maximize-probe/result.json (ignored by Git).
 
-This demonstrates the primitive needed by an out-of-process maximize listener for a standard Win32 window. It does not prove compatibility with all applications, mixed DPI, drag-to-restore, Snap layouts, or physical maximize-button interaction. The probe invokes the same system commands as the standard buttons. Automatic window enrollment and event handling have not been added to RegionMirror.
+This isolated probe demonstrates the primitive needed by an out-of-process maximize listener for a standard Win32 window. It did not test all applications, mixed DPI, drag-to-restore, Snap layouts, or physical maximize-button interaction. The later automatic-manager and real UI acceptance is recorded above.
 
 ## Cross-monitor extension
 

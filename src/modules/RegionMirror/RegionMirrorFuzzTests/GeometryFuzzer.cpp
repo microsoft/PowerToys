@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include "../RegionMirror/Geometry.h"
+#include "../RegionMirror/WindowManagementLogic.h"
 
 #include <bit>
 #include <cstddef>
@@ -197,6 +198,56 @@ namespace
         Require(physicalRight == (std::min)(region.right, monitor.right));
         Require(physicalBottom == (std::min)(region.bottom, monitor.bottom));
     }
+
+    void VerifyWindowFrame(const RECT& desired, const RECT& currentOuter, const RECT& currentVisible)
+    {
+        const auto outer = RegionMirror::ComputeOuterBoundsForVisibleRect(desired, currentOuter, currentVisible);
+        if (!outer)
+        {
+            return;
+        }
+
+        Require(RegionMirror::IsValidRegion(desired));
+        for (const auto& rectangle : std::array{ currentOuter, currentVisible, *outer })
+        {
+            const auto width = static_cast<std::int64_t>(rectangle.right) - rectangle.left;
+            const auto height = static_cast<std::int64_t>(rectangle.bottom) - rectangle.top;
+            Require(width > 0 && height > 0 && width <= RegionMirror::MaximumWindowDimension && height <= RegionMirror::MaximumWindowDimension);
+        }
+
+        const auto leftMargin = static_cast<std::int64_t>(currentVisible.left) - currentOuter.left;
+        const auto topMargin = static_cast<std::int64_t>(currentVisible.top) - currentOuter.top;
+        const auto rightMargin = static_cast<std::int64_t>(currentOuter.right) - currentVisible.right;
+        const auto bottomMargin = static_cast<std::int64_t>(currentOuter.bottom) - currentVisible.bottom;
+        for (const auto margin : std::array{ leftMargin, topMargin, rightMargin, bottomMargin })
+        {
+            Require(margin >= -RegionMirror::MaximumWindowFrameMargin && margin <= RegionMirror::MaximumWindowFrameMargin);
+        }
+        Require(static_cast<std::int64_t>(outer->left) + leftMargin == desired.left);
+        Require(static_cast<std::int64_t>(outer->top) + topMargin == desired.top);
+        Require(static_cast<std::int64_t>(outer->right) - rightMargin == desired.right);
+        Require(static_cast<std::int64_t>(outer->bottom) - bottomMargin == desired.bottom);
+
+        // Measuring the resulting frame again must not introduce additional movement or growth.
+        const auto repeated = RegionMirror::ComputeOuterBoundsForVisibleRect(desired, *outer, desired);
+        Require(repeated.has_value());
+        Require(RectanglesEqual(*outer, *repeated));
+    }
+
+    void VerifyMaximizedSequence(const std::uint8_t* data, std::size_t size)
+    {
+        bool wasMaximized = size > 0 && (data[0] & 4U) != 0;
+        for (std::size_t index = 0; index < size; ++index)
+        {
+            const bool maximized = (data[index] & 1U) != 0;
+            const bool dragging = (data[index] & 2U) != 0;
+            const bool expected = !wasMaximized && maximized && !dragging;
+            Require(RegionMirror::ObserveMaximized(wasMaximized, maximized, dragging) == expected);
+            Require(wasMaximized == maximized);
+            Require(!RegionMirror::ObserveMaximized(wasMaximized, maximized, false));
+            Require(wasMaximized == maximized);
+        }
+    }
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size)
@@ -205,6 +256,8 @@ extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size
     {
         return 0;
     }
+
+    VerifyMaximizedSequence(data, size);
 
     // Exercise ASCII CLI strings and arbitrary UTF-16 code units without unaligned pointer casts.
     std::wstring ascii;
@@ -249,5 +302,24 @@ extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size
     const auto overlapping = MakeOverlappingRegion(content, reader);
     VerifyCaptureTile(content, overlapping);
     VerifyCaptureTile(overlapping, content);
+
+    VerifyWindowFrame(normalized, rawTarget, target);
+    VerifyWindowFrame(content, rawTarget, normalized);
+    Require(RegionMirror::ComputeOuterBoundsForVisibleRect(content, target, target).has_value());
+    VerifyWindowFrame(content, target, target);
+
+    // Every bounded signed margin combination produces a valid measured frame around this window.
+    // A large desired rectangle guarantees success; arbitrary desired origins also exercise overflow.
+    std::array<LONG, 4> margins{};
+    for (auto& margin : margins)
+    {
+        margin = static_cast<LONG>(reader.ReadUnsigned() % static_cast<std::uint32_t>(2 * RegionMirror::MaximumWindowFrameMargin + 1)) - RegionMirror::MaximumWindowFrameMargin;
+    }
+    const RECT currentVisible{ 0, 0, 1024, 768 };
+    const RECT currentOuter{ -margins[0], -margins[1], 1024 + margins[2], 768 + margins[3] };
+    const RECT desired{ -2048, -1024, 2048, 1024 };
+    Require(RegionMirror::ComputeOuterBoundsForVisibleRect(desired, currentOuter, currentVisible).has_value());
+    VerifyWindowFrame(desired, currentOuter, currentVisible);
+    VerifyWindowFrame(content, currentOuter, currentVisible);
     return 0;
 }

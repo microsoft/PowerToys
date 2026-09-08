@@ -30,12 +30,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="RegionWindowManager.cpp" />
     <ClCompile Include="SelectionOverlay.cpp" />
     <ClCompile Include="CaptureMirror.cpp" />
     <ClCompile Include="VirtualDisplay.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Geometry.h" />
+    <ClInclude Include="RegionWindowManager.h" />
+    <ClInclude Include="WindowManagementLogic.h" />
     <ClInclude Include="SelectionOverlay.h" />
     <ClInclude Include="CaptureMirror.h" />
     <ClInclude Include="VirtualDisplay.h" />

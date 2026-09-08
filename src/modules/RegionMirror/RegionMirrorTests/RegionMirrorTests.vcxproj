@@ -21,6 +21,9 @@
       <AdditionalLibraryDirectories>$(VCInstallDir)Auxiliary\VS\UnitTest\lib;$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup><ClCompile Include="GeometryTests.cpp" /></ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="GeometryTests.cpp" />
+    <ClCompile Include="WindowManagementTests.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
