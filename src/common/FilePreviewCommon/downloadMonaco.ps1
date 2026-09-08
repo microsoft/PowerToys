@@ -1,19 +1,29 @@
-# Save current directory
 $CurrentDir = Get-Location
-$repoRoot = (Get-Item -Path $PSScriptRoot).Parent.Parent.FullName
-# Go into the temporary directory
+$repoRoot = (Get-Item -Path $PSScriptRoot).Parent.Parent.Parent.FullName
+$tempRoot = Join-Path $env:TEMP "monaco-editor"
+$pkgVersion = "0.52.2"
+$tgzPath = Join-Path $tempRoot "monaco-editor-$pkgVersion.tgz"
+$extractPath = Join-Path $tempRoot "extract"
+
 Set-Location -Path $env:TEMP
-# Create a temporary directory for the monaco-editor
-if (Test-Path -Path "monaco-editor") {
-    Remove-Item -Path "monaco-editor" -Recurse -Force
+if (Test-Path $tempRoot) {
+	Remove-Item $tempRoot -Recurse -Force
 }
-New-Item -Path "monaco-editor" -ItemType Directory -Force
-Set-Location -Path "monaco-editor"
-# Install the monaco-editor package
-npm i monaco-editor@0.52.2 --prefix
-# Copy the minified files to the src/monaco/MonacoSRC directory
-New-Item -Path $repoRoot\src\monaco\MonacoSRC -ItemType Directory -Force
-Copy-Item -Path "$env:TEMP\monaco-editor\node_modules\monaco-editor\min" -Destination "$repoRoot\monaco\MonacoSRC\min" -Recurse -Force
-# Delete the temporary directory
+New-Item -ItemType Directory -Path $tempRoot, $extractPath | Out-Null
+
+# Download package tarball from npm registry
+Invoke-WebRequest -Uri "https://registry.npmjs.org/monaco-editor/-/monaco-editor-$pkgVersion.tgz" -OutFile $tgzPath
+
+# Extract tgz (tar in modern Windows)
+tar -xzf $tgzPath -C $extractPath
+
+# npm tarballs unpack into "package/"
+$srcMin = Join-Path $extractPath "package\min"
+$dstRoot = Join-Path $repoRoot "src\monaco\MonacoSRC"
+$dstMin = Join-Path $dstRoot "min"
+
+New-Item -ItemType Directory -Path $dstRoot -Force | Out-Null
+Copy-Item -Path $srcMin -Destination $dstMin -Recurse -Force
+
 Set-Location -Path $CurrentDir
-Remove-Item -Path "$env:TEMP\monaco-editor" -Recurse -Force
+Remove-Item -Path $tempRoot -Recurse -Force
