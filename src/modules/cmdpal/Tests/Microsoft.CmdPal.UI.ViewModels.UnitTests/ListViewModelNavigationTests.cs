@@ -12,6 +12,8 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -73,6 +75,12 @@ public sealed partial class ListViewModelNavigationTests
         {
             Interlocked.Increment(ref _getItemsCount);
             return items;
+        }
+
+        internal void ReplaceItems(IListItem[] replacement)
+        {
+            items = replacement;
+            RaiseItemsChanged(items.Length);
         }
     }
 
@@ -888,6 +896,64 @@ public sealed partial class ListViewModelNavigationTests
 
     [TestMethod]
     [Timeout(15000)]
+    public async Task FilterReplacingDeferredPublicationCompletesTheCurrentFetch()
+    {
+        var scheduler = new QueuedTaskScheduler();
+        var page = new StaticPage([CreateItem("Alpha"), CreateItem("Beta")]);
+        var viewModel = CreateViewModel(page, scheduler);
+        var reentered = false;
+        var publications = 0;
+        void OnItemsUpdated(ListViewModel sender, ItemsUpdatedEventArgs args) => publications++;
+        void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args)
+        {
+            if (reentered)
+            {
+                return;
+            }
+
+            reentered = true;
+            page.ReplaceItems([CreateItem("Current")]);
+            scheduler.Drain();
+            Assert.AreEqual(ListPageFetchPhase.Committed, GetWorkState(viewModel).Phase);
+            Assert.AreEqual(0, publications, "The replacement has not reached the collection yet.");
+            viewModel.SearchTextBox = "Current";
+        }
+
+        try
+        {
+            viewModel.InitializeProperties();
+            scheduler.Drain();
+            viewModel.ItemsUpdated += OnItemsUpdated;
+            viewModel.FilteredItems.CollectionChanged += OnCollectionChanged;
+            typeof(ListViewModel).GetField("_isLoadingMore", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .SetValue(viewModel, new InterlockedBoolean(true));
+
+            viewModel.SearchTextBox = "Alpha";
+            scheduler.Drain();
+
+            Assert.IsTrue(reentered);
+            Assert.AreEqual("Current", viewModel.FilteredItems.Single().Title);
+            Assert.IsFalse(GetPrivateField<InterlockedBoolean>(viewModel, "_isLoadingMore").Value);
+            Assert.AreEqual(ListPageFetchPhase.Published, GetWorkState(viewModel).Phase);
+
+            var beforeBack = publications;
+            viewModel.SuspendForNavigation();
+            await viewModel.ResumeAfterNavigation();
+            scheduler.Drain();
+            Assert.AreEqual(beforeBack, publications, "Back must not repeat an already completed publication.");
+        }
+        finally
+        {
+            viewModel.FilteredItems.CollectionChanged -= OnCollectionChanged;
+            viewModel.ItemsUpdated -= OnItemsUpdated;
+            viewModel.Dispose();
+            scheduler.Drain();
+            viewModel.SafeCleanup();
+        }
+    }
+
+    [TestMethod]
+    [Timeout(15000)]
     public async Task DuplicateSuspendedRequestsReuseTheirPendingRecord()
     {
         var scheduler = new QueuedTaskScheduler();
@@ -914,6 +980,45 @@ public sealed partial class ListViewModelNavigationTests
         }
         finally
         {
+            viewModel.Dispose();
+            scheduler.Drain();
+            viewModel.SafeCleanup();
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    [Timeout(15000)]
+    public async Task SuspendedSelectionIsReplayedOnlyAfterResume(bool clearSelection)
+    {
+        var scheduler = new QueuedTaskScheduler();
+        var page = new StaticPage([CreateItem("Alpha"), CreateItem("Beta")]);
+        var viewModel = CreateViewModel(page, scheduler);
+        var recipient = new object();
+        var contexts = new List<ICommandBarContext?>();
+
+        try
+        {
+            viewModel.InitializeProperties();
+            scheduler.Drain();
+            viewModel.UpdateSelectedItemCommand.Execute(viewModel.FilteredItems[0]);
+            scheduler.Drain();
+            viewModel.SuspendForNavigation();
+            WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(recipient, (_, message) => contexts.Add(message.ViewModel));
+
+            var requested = clearSelection ? null : viewModel.FilteredItems[1];
+            viewModel.UpdateSelectedItemCommand.Execute(requested);
+            Assert.AreEqual(0, contexts.Count, "A suspended page must not update the active page's command bar.");
+
+            await viewModel.ResumeAfterNavigation();
+            scheduler.Drain();
+            Assert.IsTrue(contexts.Count > 0, "The requested selection must be replayed on resume.");
+            Assert.AreSame(requested, contexts[^1]);
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(recipient);
             viewModel.Dispose();
             scheduler.Drain();
             viewModel.SafeCleanup();

@@ -57,6 +57,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private bool _isUpdatingFilteredItems;
     private Action? _pendingFilteredItemsUpdate;
 
+    // A filter can replace a pending collection mutation without completing the
+    // fetch that supplied its items. Keep that generation until mutations drain.
+    private int? _pendingPublication;
+
     [ThreadStatic]
     private static Dictionary<ListViewModel, int>? _getItemsDepthByViewModel;
 
@@ -542,20 +546,18 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
                 lock (_listLock)
                 {
-                    // A deferred mutation is not a completed milestone. Keep its
-                    // notification and phase advancement inside the guarded action.
-                    RunFilteredItemsUpdate(() => PublishItemsUnderLock(fetchGeneration));
+                    _pendingPublication = fetchGeneration;
+                    RunFilteredItemsUpdate(() => ApplyFetchedItemsUnderLock(fetchGeneration));
                 }
             }
         });
     }
 
-    private void PublishItemsUnderLock(int fetchGeneration)
+    private void ApplyFetchedItemsUnderLock(int fetchGeneration)
     {
         // RunFilteredItemsUpdate's callers hold _listLock, including when a
         // reentrant publication is deferred until an earlier mutation finishes.
-        var work = Volatile.Read(ref _workState);
-        if (work.Status != ListPageWorkStatus.Active || work.Generation != fetchGeneration)
+        if (!IsCurrentFetch(fetchGeneration))
         {
             return;
         }
@@ -571,9 +573,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
             var snapshot = Items.Where(i => !i.IsInErrorState).ToList();
             ListHelpers.InPlaceUpdateList(FilteredItems, snapshot);
         }
+    }
 
+    private void CompleteItemsPublication(int fetchGeneration)
+    {
         UpdateEmptyContent();
-        if (!IsCurrentFetch(fetchGeneration))
+        var work = Volatile.Read(ref _workState);
+        if (work.Status != ListPageWorkStatus.Active || work.Generation != fetchGeneration)
         {
             return;
         }
@@ -680,12 +686,28 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             updateAction();
 
-            // Drain any update that was enqueued while we were running.
-            while (_pendingFilteredItemsUpdate is not null)
+            // Finish the latest mutation before publishing its fetch. Completion
+            // callbacks can reenter too, so drain any updates they request before
+            // considering another publication.
+            while (true)
             {
-                var pending = _pendingFilteredItemsUpdate;
-                _pendingFilteredItemsUpdate = null;
-                pending();
+                if (_pendingFilteredItemsUpdate is { } pending)
+                {
+                    _pendingFilteredItemsUpdate = null;
+                    pending();
+                }
+                else if (_pendingPublication is { } generation)
+                {
+                    _pendingPublication = null;
+                    if (IsCurrentFetch(generation))
+                    {
+                        CompleteItemsPublication(generation);
+                    }
+                }
+                else
+                {
+                    break;
+                }
             }
         }
         finally
@@ -868,9 +890,22 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [RelayCommand]
     private void UpdateSelectedItem(ListItemViewModel? item)
     {
+        if (Volatile.Read(ref _workState).Status == ListPageWorkStatus.Stopped)
+        {
+            return;
+        }
+
         if (_lastSelectedItem is not null)
         {
             _lastSelectedItem.PropertyChanged -= SelectedItemPropertyChanged;
+        }
+
+        // Retain selection changes, including clearing selection, during navigation.
+        // Only the active page may update the shared command bar and details.
+        _lastSelectedItem = item;
+        if (!IsWorkActive)
+        {
+            return;
         }
 
         if (item is not null)
@@ -885,13 +920,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private void SetSelectedItem(ListItemViewModel item)
     {
-        if (!IsWorkActive)
-        {
-            return;
-        }
-
-        _lastSelectedItem = item;
-        _lastSelectedItem.PropertyChanged += SelectedItemPropertyChanged;
+        item.PropertyChanged += SelectedItemPropertyChanged;
 
         WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(item));
 
@@ -982,7 +1011,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private void SelectedItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         var item = _lastSelectedItem;
-        if (item is null)
+        if (!IsWorkActive || item is null)
         {
             return;
         }
@@ -1231,6 +1260,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             return Task.CompletedTask;
         }
+
+        UpdateSelectedItem(_lastSelectedItem);
 
         // Do not consume the recovery record when queueing: another navigation
         // can invalidate this visit before the worker or UI callback ever runs.

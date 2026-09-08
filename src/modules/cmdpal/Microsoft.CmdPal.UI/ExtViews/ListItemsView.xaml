@@ -636,6 +636,7 @@
                             Padding="16,16,8,8"
                             CanDragItems="True"
                             ChoosingGroupHeaderContainer="Grid_ChoosingGroupHeaderContainer"
+                            ContainerContentChanging="Items_ContainerContentChanging"
                             ContextCanceled="Items_OnContextCanceled"
                             ContextRequested="Items_OnContextRequested"
                             DoubleTapped="Items_DoubleTapped"

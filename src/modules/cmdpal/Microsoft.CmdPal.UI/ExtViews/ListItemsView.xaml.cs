@@ -39,7 +39,7 @@ public sealed partial class ListItemsView : UserControl,
     IRecipient<ActivateSelectedListItemMessage>,
     IRecipient<ActivateSecondaryCommandMessage>
 {
-    private readonly Dictionary<SelectorItem, ListItemRealizationRegistration> _realizedItems = new(64);
+    private readonly Dictionary<SelectorItem, (ListViewBase Owner, ListItemRealizationRegistration Registration)> _realizedItems = new(64);
 
     private InputSource _lastInputSource;
 
@@ -350,6 +350,13 @@ public sealed partial class ListItemsView : UserControl,
 
     private void Items_Unloaded(object sender, RoutedEventArgs e)
     {
+        if (sender is ListViewBase view)
+        {
+            // The incoming view may already be loaded. Release only the outgoing
+            // view's demand, even if its detached panel still has children.
+            ReleaseRealizedItems(view);
+        }
+
         if (ReferenceEquals(sender, _itemsScrollViewerOwner))
         {
             SetItemsScrollViewer(null);
@@ -385,13 +392,13 @@ public sealed partial class ListItemsView : UserControl,
         try
         {
             var container = args.ItemContainer;
-            if (args.InRecycleQueue || args.Item is not ListItemViewModel item)
+            if (!sender.IsLoaded || args.InRecycleQueue || args.Item is not ListItemViewModel item)
             {
                 ReleaseRealizedItem(container);
                 return;
             }
 
-            RegisterRealizedItem(container, item);
+            RegisterRealizedItem(sender, container, item);
         }
         catch (Exception ex)
         {
@@ -399,25 +406,25 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
-    private void RegisterRealizedItem(SelectorItem container, ListItemViewModel item)
+    private void RegisterRealizedItem(ListViewBase owner, SelectorItem container, ListItemViewModel item)
     {
         if (_realizedItems.TryGetValue(container, out var existing))
         {
             // Demand belongs to the item, not its current coordinator. A refetch
             // replays a live registration even when this container is unchanged.
-            if (existing.IsFor(item))
+            if (ReferenceEquals(existing.Owner, owner) && existing.Registration.IsFor(item))
             {
                 return;
             }
 
-            existing.Release();
+            existing.Registration.Release();
             _realizedItems.Remove(container);
         }
 
         var registration = item.BeginRealization();
         if (registration.IsValid)
         {
-            _realizedItems.Add(container, registration);
+            _realizedItems.Add(container, (owner, registration));
         }
     }
 
@@ -428,16 +435,8 @@ public sealed partial class ListItemsView : UserControl,
             // Unloading releases demand. Loading the same view need not raise
             // ContainerContentChanging again. Only visit realized panel children,
             // never the potentially very large Items collection.
-            if (ItemsList.ItemsPanelRoot is { } panel)
-            {
-                foreach (var child in panel.Children)
-                {
-                    if (child is SelectorItem container && ItemsList.ItemFromContainer(container) is ListItemViewModel item)
-                    {
-                        RegisterRealizedItem(container, item);
-                    }
-                }
-            }
+            RegisterExistingRealizedItems(ItemsList);
+            RegisterExistingRealizedItems(ItemsGrid);
         }
         catch (Exception ex)
         {
@@ -445,19 +444,43 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
+    private void RegisterExistingRealizedItems(ListViewBase view)
+    {
+        if (!view.IsLoaded || view.ItemsPanelRoot is not { } panel)
+        {
+            return;
+        }
+
+        foreach (var child in panel.Children)
+        {
+            if (child is SelectorItem container && view.ItemFromContainer(container) is ListItemViewModel item)
+            {
+                RegisterRealizedItem(view, container, item);
+            }
+        }
+    }
+
     private void ReleaseRealizedItem(SelectorItem container)
     {
-        if (_realizedItems.Remove(container, out var registration))
+        if (_realizedItems.Remove(container, out var realized))
         {
-            registration.Release();
+            realized.Registration.Release();
+        }
+    }
+
+    private void ReleaseRealizedItems(ListViewBase owner)
+    {
+        foreach (var container in _realizedItems.Where(entry => ReferenceEquals(entry.Value.Owner, owner)).Select(entry => entry.Key).ToArray())
+        {
+            ReleaseRealizedItem(container);
         }
     }
 
     private void ReleaseRealizedItems()
     {
-        foreach (var registration in _realizedItems.Values)
+        foreach (var realized in _realizedItems.Values)
         {
-            registration.Release();
+            realized.Registration.Release();
         }
 
         _realizedItems.Clear();
