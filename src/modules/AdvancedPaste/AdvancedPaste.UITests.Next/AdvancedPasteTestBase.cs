@@ -233,22 +233,52 @@ public abstract class AdvancedPasteTestBase : UITestBase
     protected void SelectAction(Session window, string name)
     {
         Step($"Invoking '{name}'");
-        var action = window.FindAll<Element>(By.Name(name), 15_000)
+        var handle = new IntPtr(window.WindowHandle);
+        Assert.IsTrue(
+            WindowControl.WaitForForeground(handle, timeoutMS: 10_000, requiredConsecutiveMatches: 2),
+            $"Advanced Paste did not acquire foreground before selecting '{name}'.");
+        var windowBounds = WindowHelper.GetWindowBounds(handle);
+        MouseHelper.MoveTo((windowBounds.Left + windowBounds.Right) / 2, windowBounds.Top + 16);
+
+        Element? FindAction(int timeoutMS) => window.FindAll<Element>(By.Name(name), timeoutMS)
             .FirstOrDefault(element => element.ControlType.Equals("ListItem", StringComparison.OrdinalIgnoreCase) &&
                 element.Name.StartsWith(name + " (", StringComparison.OrdinalIgnoreCase));
+
+        var action = FindAction(15_000);
         Assert.IsNotNull(action, $"Enabled action '{name}' was not exposed as an accessible list item.");
         if (action.IsOffscreen)
         {
             action.ScrollIntoView();
-            action = window.FindAll<Element>(By.Name(name), 5_000)
-                .First(element => element.ControlType.Equals("ListItem", StringComparison.OrdinalIgnoreCase) &&
-                    element.Name.StartsWith(name + " (", StringComparison.OrdinalIgnoreCase));
         }
 
+        // Let first-show layout settle and hover tooltips disappear before resolving the click point.
+        (int X, int Y, int Width, int Height, (int Left, int Top, int Right, int Bottom) Window)? previous = null;
+        var ready = WaitHelper.WaitForStable(
+            () => FindAction(0),
+            candidate =>
+            {
+                if (candidate is null)
+                {
+                    previous = null;
+                    return false;
+                }
+
+                var bounds = (candidate.X, candidate.Y, candidate.Width, candidate.Height, WindowHelper.GetWindowBounds(handle));
+                var unchanged = previous == bounds;
+                previous = bounds;
+                return unchanged && candidate.Width > 0 && candidate.Height > 0 && !candidate.IsOffscreen &&
+                    WindowControl.GetForegroundWindowHandle() == handle &&
+                    WindowControl.IsPointOwnedByWindow(handle, candidate.X + (candidate.Width / 2), candidate.Y + (candidate.Height / 2));
+            },
+            timeoutMS: 30_000,
+            requiredConsecutiveMatches: 3,
+            shouldRetryException: AdvancedPasteUi.IsStaleElement);
         Assert.IsTrue(
-            WindowControl.WaitForForeground(new IntPtr(window.WindowHandle), timeoutMS: 10_000, requiredConsecutiveMatches: 2),
-            $"Advanced Paste did not acquire foreground before selecting '{name}'.");
-        action.Click(msPostAction: 0);
+            ready.Succeeded,
+            $"The '{name}' row and window did not settle for real input. Last bounds: {previous}; foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        action = ready.LastObservation!;
+        Step($"Clicking settled '{name}' row at ({action.X},{action.Y}) {action.Width}x{action.Height}");
+        MouseHelper.LeftClickAt(action.X + (action.Width / 2), action.Y + (action.Height / 2));
     }
 
     protected void SetClipboardText(string text)
