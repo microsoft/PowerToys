@@ -1,5 +1,31 @@
 # Local acceptance — 2026-09-08
 
+## External maximized-window resize experiment
+
+The standalone script scripts/Probe-MaximizedWindow.py passed on Windows 11 build 26200, x64, at 144 DPI (150% scaling).
+
+The child process owns an ordinary WS_OVERLAPPEDWINDOW and delegates its messages to DefWindowProc. A separate parent process sends the native SC_MAXIMIZE command, calls SetWindowPos without first restoring the window, then sends SC_RESTORE. No DLL, hook, target-process message override, driver change, or existing user application is involved. Python ctypes allows the test to run without a repository build.
+
+All 6 scenarios passed, each for 2 consecutive cycles (12 cycles total):
+
+- Primary monitor, synchronous and asynchronous SetWindowPos.
+- Negative-origin secondary monitor, synchronous and asynchronous SetWindowPos.
+- Rectangle spanning the two monitors, synchronous and asynchronous SetWindowPos.
+
+Each cycle confirmed:
+
+- The requested outer rectangle is reached and stable.
+- IsZoomed remains true, WS_MAXIMIZE remains set, and WINDOWPLACEMENT.showCmd remains SW_SHOWMAXIMIZED.
+- The saved normal placement remains unchanged.
+- Compensating the measured DWM frame margins aligns the visible window exactly with the desired rectangle, while preserving the same maximize state.
+- Native SC_RESTORE clears maximize state and returns to the original normal rectangle, without manually restoring saved coordinates.
+
+In this environment the maximized test window had 11-pixel invisible margins. These were measured from GetWindowRect and DWMWA_EXTENDED_FRAME_BOUNDS, not hardcoded into the test.
+
+Evidence: artifacts/maximize-probe/result.json (ignored by Git).
+
+This demonstrates the primitive needed by an out-of-process maximize listener for a standard Win32 window. It does not prove compatibility with all applications, mixed DPI, drag-to-restore, Snap layouts, or physical maximize-button interaction. The probe invokes the same system commands as the standard buttons. Automatic window enrollment and event handling have not been added to RegionMirror.
+
 ## Cross-monitor extension
 
 The cross-monitor version was validated on the same two active 2560×1440 physical displays.
