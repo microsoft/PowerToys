@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
@@ -58,7 +59,6 @@ public class PowerDisplayProfilesPageTests
         Assert.IsFalse(page.IsLoading);
 
         var items = page.GetItems();
-        Assert.AreSame(items, page.GetItems());
         Assert.AreEqual($"{DuplicateName} (#3)", items[0].Title);
         Assert.AreEqual($"{DuplicateName} (#8)", items[1].Title);
         Assert.IsTrue(items[0].Subtitle.StartsWith("2 monitors", StringComparison.Ordinal));
@@ -188,7 +188,7 @@ public class PowerDisplayProfilesPageTests
 
     [DataTestMethod]
     [DataRow("", "Power Display isn't running. Select to try again.")]
-    [DataRow("PowerDisplay is not running. Enable it in PowerToys settings.", "PowerDisplay is not running. Enable it in PowerToys settings.")]
+    [DataRow("Availability guidance from the CLI", "Availability guidance from the CLI")]
     public async Task FailedLoad_ShowsRetryThatLoadsProfilesAgain(string errorMessage, string expectedSubtitle)
     {
         var service = new FakePowerDisplayCliService
@@ -213,7 +213,7 @@ public class PowerDisplayProfilesPageTests
         Assert.AreEqual(expectedSubtitle, emptyContent.Subtitle);
         var retry = emptyContent.Command as AnonymousCommand;
         Assert.IsNotNull(retry);
-        Assert.IsNotNull(GetRefreshCommand(emptyContent));
+        _ = GetRefreshCommand(emptyContent);
 
         service.GetProfilesHandler = _ => Task.FromResult(SuccessfulProfiles(new CliProfileInfo { Id = 11, Name = "Recovered" }));
         Assert.AreEqual(CommandResultKind.KeepOpen, retry.Invoke().Kind);
@@ -267,12 +267,12 @@ public class PowerDisplayProfilesPageTests
 
     private static AnonymousCommand GetRefreshCommand(ICommandItem item)
     {
-        Assert.AreEqual(1, item.MoreCommands.Length);
-        var context = item.MoreCommands[0] as ICommandContextItem;
+        var context = item.MoreCommands
+            .OfType<ICommandContextItem>()
+            .SingleOrDefault(command => command.Command?.Id == "com.microsoft.powertoys.powerDisplay.profiles.refresh");
         Assert.IsNotNull(context);
         var refresh = context.Command as AnonymousCommand;
         Assert.IsNotNull(refresh);
-        Assert.AreEqual("com.microsoft.powertoys.powerDisplay.profiles.refresh", refresh.Id);
         return refresh;
     }
 

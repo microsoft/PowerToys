@@ -81,7 +81,7 @@ public class PowerDisplayProfileCommandResolverTests
     [DataTestMethod]
     [DataRow(false, "", "Profile details couldn't be loaded. You can still try applying this profile.")]
     [DataRow(true, "", "Profile details couldn't be loaded. You can still try applying this profile.")]
-    [DataRow(false, "PowerDisplay is not running. Enable it in PowerToys settings.", "PowerDisplay is not running. Enable it in PowerToys settings.")]
+    [DataRow(false, "Availability guidance from the CLI", "Availability guidance from the CLI")]
     public async Task FailedQuery_PreservesInvokableIdsWithoutRetryingPerItem(bool throws, string errorMessage, string expectedSubtitle)
     {
         var service = new FakePowerDisplayCliService

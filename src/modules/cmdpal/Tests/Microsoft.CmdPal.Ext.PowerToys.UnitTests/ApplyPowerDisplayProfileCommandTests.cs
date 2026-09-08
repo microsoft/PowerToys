@@ -74,7 +74,7 @@ public class ApplyPowerDisplayProfileCommandTests
     [TestMethod]
     public void Invoke_ProviderUnavailableShowsCliMessageAndKeepsPaletteOpen()
     {
-        const string ErrorMessage = "PowerDisplay is not running. Enable it in PowerToys settings.";
+        const string ErrorMessage = "Availability guidance from the CLI";
         var service = new FakePowerDisplayCliService
         {
             ApplyProfileHandler = (_, _) => Task.FromResult(

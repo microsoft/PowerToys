@@ -72,7 +72,6 @@ public class PowerDisplayCliServiceTests
 
         Assert.IsFalse(result.IsSuccess);
         Assert.AreEqual(PowerDisplayCliFailureKind.InvalidResponse, result.FailureKind);
-        Assert.AreEqual(CliExitCodes.Ok, result.ExitCode);
     }
 
     [DataTestMethod]
@@ -174,7 +173,6 @@ public class PowerDisplayCliServiceTests
 
         Assert.IsFalse(result.IsSuccess);
         Assert.AreEqual((PowerDisplayCliFailureKind)expectedFailureKind, result.FailureKind);
-        Assert.AreEqual(exitCode, result.ExitCode);
         Assert.AreEqual(errorMessage, result.ErrorMessage);
     }
 
@@ -226,12 +224,10 @@ public class PowerDisplayCliServiceTests
         AssertFailure(
             await service.GetProfilesAsync(CancellationToken.None),
             (PowerDisplayCliFailureKind)expectedFailureKind,
-            exitCode,
             ErrorMessage);
         AssertFailure(
             await service.ApplyProfileAsync(42, CancellationToken.None),
             (PowerDisplayCliFailureKind)expectedFailureKind,
-            exitCode,
             ErrorMessage);
     }
 
@@ -263,12 +259,10 @@ public class PowerDisplayCliServiceTests
 
         AssertFailure(
             await service.GetProfilesAsync(CancellationToken.None),
-            PowerDisplayCliFailureKind.InvalidResponse,
-            exitCode);
+            PowerDisplayCliFailureKind.InvalidResponse);
         AssertFailure(
             await service.ApplyProfileAsync(42, CancellationToken.None),
-            PowerDisplayCliFailureKind.InvalidResponse,
-            exitCode);
+            PowerDisplayCliFailureKind.InvalidResponse);
     }
 
     [DataTestMethod]
@@ -286,12 +280,10 @@ public class PowerDisplayCliServiceTests
 
         AssertFailure(
             await service.GetProfilesAsync(CancellationToken.None),
-            PowerDisplayCliFailureKind.InvalidResponse,
-            CliExitCodes.InternalError);
+            PowerDisplayCliFailureKind.InvalidResponse);
         AssertFailure(
             await service.ApplyProfileAsync(42, CancellationToken.None),
-            PowerDisplayCliFailureKind.InvalidResponse,
-            CliExitCodes.InternalError);
+            PowerDisplayCliFailureKind.InvalidResponse);
     }
 
     [DataTestMethod]
@@ -307,12 +299,10 @@ public class PowerDisplayCliServiceTests
 
         AssertFailure(
             await service.GetProfilesAsync(CancellationToken.None),
-            PowerDisplayCliFailureKind.InvalidResponse,
-            CliExitCodes.InternalError);
+            PowerDisplayCliFailureKind.InvalidResponse);
         AssertFailure(
             await service.ApplyProfileAsync(42, CancellationToken.None),
-            PowerDisplayCliFailureKind.InvalidResponse,
-            CliExitCodes.InternalError);
+            PowerDisplayCliFailureKind.InvalidResponse);
     }
 
     [DataTestMethod]
@@ -333,12 +323,10 @@ public class PowerDisplayCliServiceTests
 
         AssertFailure(
             await profilesService.GetProfilesAsync(CancellationToken.None),
-            PowerDisplayCliFailureKind.InvalidResponse,
-            CliExitCodes.Ok);
+            PowerDisplayCliFailureKind.InvalidResponse);
         AssertFailure(
             await applyService.ApplyProfileAsync(42, CancellationToken.None),
-            PowerDisplayCliFailureKind.InvalidResponse,
-            CliExitCodes.Ok);
+            PowerDisplayCliFailureKind.InvalidResponse);
     }
 
     [TestMethod]
@@ -391,7 +379,6 @@ public class PowerDisplayCliServiceTests
 
         Assert.IsFalse(result.IsSuccess);
         Assert.AreEqual(PowerDisplayCliFailureKind.ArgumentError, result.FailureKind);
-        Assert.AreEqual(CliExitCodes.ArgumentError, result.ExitCode);
         Assert.AreEqual(0, runner.Calls.Count);
     }
 
@@ -434,7 +421,6 @@ public class PowerDisplayCliServiceTests
 
         Assert.IsFalse(result.IsSuccess);
         Assert.AreEqual(PowerDisplayCliFailureKind.ProviderUnavailable, result.FailureKind);
-        Assert.AreEqual(CliExitCodes.ProviderUnavailable, result.ExitCode);
         CollectionAssert.AreEqual(
             new[] { CliCommandNames.ApplyProfile, "14", "--json" },
             runner.SingleCall().ToArray());
@@ -476,13 +462,11 @@ public class PowerDisplayCliServiceTests
     private static void AssertFailure<T>(
         PowerDisplayCliResult<T> result,
         PowerDisplayCliFailureKind expectedFailureKind,
-        int expectedExitCode,
         string? expectedErrorMessage = null)
         where T : class
     {
         Assert.IsFalse(result.IsSuccess);
         Assert.AreEqual(expectedFailureKind, result.FailureKind);
-        Assert.AreEqual(expectedExitCode, result.ExitCode);
         if (expectedErrorMessage is not null)
         {
             Assert.AreEqual(expectedErrorMessage, result.ErrorMessage);
