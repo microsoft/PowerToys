@@ -7,11 +7,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Nodes;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
-public class SettingsManager : JsonSettingsManager, ISettingsInterface
+public class SettingsManager : JsonSettingsManager, IDockClockSettings
 {
     // Line break character used in WinUI3 TextBox and TextBlock.
     private const char TEXTBOXNEWLINE = '\r';
@@ -19,6 +20,12 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
     private const string CUSTOMFORMATPLACEHOLDER = "MyFormat=dd-MMM-yyyy\rMySecondFormat=dddd (Da\\y nu\\mber: DOW)\rMyUtcFormat=UTC:hh:mm:ss";
 
     private static readonly string _namespace = "timeDate";
+
+    private string _dockClockTitleFormat = "t";
+    private string _dockClockSubtitleFormat = "d";
+    private string _dockClockCopyFormat = string.Empty;
+
+    internal event EventHandler? DockClockFormatsChanged;
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
@@ -31,6 +38,13 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
     };
 
     private static readonly List<ChoiceSetSetting.Choice> _firstDayOfWeekChoices = GetFirstDayOfWeekChoices();
+
+    private static readonly List<ChoiceSetSetting.Choice> _dockClockClickActionChoices = new()
+    {
+        new ChoiceSetSetting.Choice(Resources.timedate_dock_clock_click_action_default, "default"),
+        new ChoiceSetSetting.Choice(Resources.timedate_dock_clock_click_action_notification_center, "notificationCenter"),
+        new ChoiceSetSetting.Choice(Resources.timedate_dock_clock_click_action_all_clocks, "allClocks"),
+    };
 
     private static List<ChoiceSetSetting.Choice> GetFirstDayOfWeekChoices()
     {
@@ -75,23 +89,11 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek,
         _firstDayOfWeekChoices);
 
-    private readonly ToggleSetting _enableFallbackItems = new(
-        Namespaced(nameof(EnableFallbackItems)),
-        Resources.Microsoft_plugin_timedate_SettingEnableFallbackItems,
-        Resources.Microsoft_plugin_timedate_SettingEnableFallbackItems_Description,
-        true);
-
     private readonly ToggleSetting _timeWithSeconds = new(
         Namespaced(nameof(TimeWithSecond)),
         Resources.Microsoft_plugin_timedate_SettingTimeWithSeconds,
         Resources.Microsoft_plugin_timedate_SettingTimeWithSeconds_Description,
         false); // TODO -- double check default value
-
-    private readonly ToggleSetting _dockClockWithSeconds = new(
-        Namespaced(nameof(DockClockWithSecond)),
-        Resources.Microsoft_plugin_timedate_SettingDockClockWithSeconds,
-        Resources.Microsoft_plugin_timedate_SettingDockClockWithSeconds_Description,
-        false);
 
     private readonly ToggleSetting _dateWithWeekday = new(
         Namespaced(nameof(DateWithWeekday)),
@@ -99,33 +101,11 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Resources.Microsoft_plugin_timedate_SettingDateWithWeekday_Description,
         false); // TODO -- double check default value
 
-    private static readonly List<ChoiceSetSetting.Choice> _clockBandDateModeChoices = new()
-    {
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_SystemDate, "0"),
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_WeekNumber, "1"),
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_IsoWeekDate, "2"),
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_CustomFormat, "3"),
-    };
-
-    // Choice sets render the description as the visible line above the dropdown,
-    // so label and description carry the same text (same pattern as _firstDayOfWeek).
-    private readonly ChoiceSetSetting _clockBandDateMode = new(
-        Namespaced(nameof(ClockBandDateMode)),
-        Resources.Microsoft_plugin_timedate_SettingClockBandDateMode,
-        Resources.Microsoft_plugin_timedate_SettingClockBandDateMode,
-        _clockBandDateModeChoices);
-
-    private readonly TextSetting _customDateFormatInClockBand = new(
-        Namespaced(nameof(CustomDateFormatInClockBand)),
-        Resources.Microsoft_plugin_timedate_SettingClockBandCustomFormat,
-        Resources.Microsoft_plugin_timedate_SettingClockBandCustomFormat_Description,
-        string.Empty);
-
-    private readonly ToggleSetting _clockBandOpensNotificationCenter = new(
-        Namespaced(nameof(ClockBandOpensNotificationCenter)),
-        Resources.Microsoft_plugin_timedate_SettingClockBandOpensNotificationCenter,
-        Resources.Microsoft_plugin_timedate_SettingClockBandOpensNotificationCenter_Description,
-        true);
+    private readonly ChoiceSetSetting _dockClockClickAction = new(
+        Namespaced(nameof(DockClockClickAction)),
+        Resources.timedate_dock_clock_click_action,
+        Resources.timedate_dock_clock_click_action_description,
+        _dockClockClickActionChoices);
 
     private readonly TextSetting _customFormats = new(
         Namespaced(nameof(CustomFormats)),
@@ -137,15 +117,17 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public int FirstDayOfWeek => ParseIntSetting(_firstDayOfWeek.Value, -1);
 
-    public bool EnableFallbackItems => _enableFallbackItems.Value;
-
     public bool TimeWithSecond => _timeWithSeconds.Value;
 
-    public bool DockClockWithSecond => _dockClockWithSeconds.Value;
+    public string DockClockTitleFormat => _dockClockTitleFormat;
+
+    public string DockClockSubtitleFormat => _dockClockSubtitleFormat;
+
+    public string DockClockCopyFormat => _dockClockCopyFormat;
+
+    public string DockClockClickAction => _dockClockClickAction.Value ?? "default";
 
     public bool DateWithWeekday => _dateWithWeekday.Value;
-
-    public int ClockBandDateMode => ParseIntSetting(_clockBandDateMode.Value, 0);
 
     private static int ParseIntSetting(string? value, int fallback)
     {
@@ -157,11 +139,67 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         return int.TryParse(value, out var result) ? result : fallback;
     }
 
-    public string CustomDateFormatInClockBand => _customDateFormatInClockBand.Value ?? string.Empty;
-
-    public bool ClockBandOpensNotificationCenter => _clockBandOpensNotificationCenter.Value;
-
     public List<string> CustomFormats => (_customFormats.Value ?? string.Empty).Split(TEXTBOXNEWLINE).ToList();
+
+    public void SetDockClockFormats(string titleFormat, string subtitleFormat, string copyFormat)
+    {
+        ValidateDockClockFormat(titleFormat, nameof(titleFormat));
+        ValidateDockClockFormat(subtitleFormat, nameof(subtitleFormat));
+        ValidateDockClockFormat(copyFormat, nameof(copyFormat));
+
+        _dockClockTitleFormat = titleFormat;
+        _dockClockSubtitleFormat = subtitleFormat;
+        _dockClockCopyFormat = copyFormat;
+        SaveSettings();
+        DockClockFormatsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected override void LoadAdditionalSettings(JsonObject settings)
+    {
+        var useLegacySeconds =
+            !settings.ContainsKey(Namespaced(nameof(DockClockTitleFormat))) &&
+            settings[Namespaced("DockClockWithSecond")] is JsonValue legacySeconds &&
+            legacySeconds.TryGetValue<string>(out var value) &&
+            bool.TryParse(value, out var showSeconds) &&
+            showSeconds;
+
+        _dockClockTitleFormat = LoadDockClockFormat(settings, nameof(DockClockTitleFormat), useLegacySeconds ? "T" : "t");
+        _dockClockSubtitleFormat = LoadDockClockFormat(settings, nameof(DockClockSubtitleFormat), "d");
+        _dockClockCopyFormat = LoadDockClockFormat(settings, nameof(DockClockCopyFormat), string.Empty);
+    }
+
+    protected override void SaveAdditionalSettings(JsonObject settings)
+    {
+        settings[Namespaced(nameof(DockClockTitleFormat))] = _dockClockTitleFormat;
+        settings[Namespaced(nameof(DockClockSubtitleFormat))] = _dockClockSubtitleFormat;
+        settings[Namespaced(nameof(DockClockCopyFormat))] = _dockClockCopyFormat;
+    }
+
+    private static string LoadDockClockFormat(JsonObject settings, string propertyName, string defaultFormat)
+    {
+        try
+        {
+            var format = settings[Namespaced(propertyName)]?.GetValue<string>() ?? defaultFormat;
+            _ = CustomClockDisplay.CompileFormat(format);
+            return format;
+        }
+        catch (Exception ex) when (ex is FormatException or InvalidOperationException)
+        {
+            return defaultFormat;
+        }
+    }
+
+    private static void ValidateDockClockFormat(string format, string parameterName)
+    {
+        try
+        {
+            _ = CustomClockDisplay.CompileFormat(format);
+        }
+        catch (FormatException ex)
+        {
+            throw new ArgumentException("The dock clock contains an invalid format.", parameterName, ex);
+        }
+    }
 
     internal static string SettingsJsonPath()
     {
@@ -172,19 +210,19 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
     }
 
     public SettingsManager()
+        : this(SettingsJsonPath())
     {
-        FilePath = SettingsJsonPath();
+    }
 
-        Settings.Add(_enableFallbackItems);
+    internal SettingsManager(string filePath)
+    {
+        FilePath = filePath;
+
         Settings.Add(_timeWithSeconds);
-        Settings.Add(_dockClockWithSeconds);
         Settings.Add(_dateWithWeekday);
+        Settings.Add(_dockClockClickAction);
         Settings.Add(_firstWeekOfYear);
         Settings.Add(_firstDayOfWeek);
-        Settings.Add(_clockBandDateMode);
-        _customDateFormatInClockBand.Placeholder = "ddd dd.MM \\KW WOY";
-        Settings.Add(_customDateFormatInClockBand);
-        Settings.Add(_clockBandOpensNotificationCenter);
 
         _customFormats.Multiline = true;
         _customFormats.Placeholder = CUSTOMFORMATPLACEHOLDER;

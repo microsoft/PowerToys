@@ -3,219 +3,162 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Globalization;
+using System.Threading;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
+using Microsoft.CmdPal.Ext.TimeDate.Pages;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate;
 
 internal sealed partial class NowDockBand : ListItem, IDisposable
 {
-    private static readonly TimeSpan PerSecondUpdateInterval = TimeSpan.FromSeconds(1);
-    private static readonly TimeSpan PerMinuteUpdateInterval = TimeSpan.FromMinutes(1);
-
     // Manually set the icon to blank, to override the "open link" icon on the
     // command itself
     public override IconInfo Icon => new(string.Empty);
 
-    private readonly ISettingsInterface _settings;
-    private readonly System.Timers.Timer _timer;
-    private readonly Action? _onUpdated;
     private readonly Func<DateTime> _clock;
-    private readonly object _updateLock = new();
-    private readonly OpenUrlCommand _notificationCenterCommand;
-    private readonly NoOpCommand _noOpCommand;
-    private bool _timeWithSeconds;
+    private readonly ClockUpdateService _clockUpdateService;
+    private readonly ICommand _allClocksPage;
+    private readonly CopyTextCommand _copyTitleCommand;
+    private readonly CopyTextCommand _copySubtitleCommand;
+    private readonly Lock _lifecycleLock = new();
+    private IDockClockSettings _settings;
+    private CompiledClockFormat _titleFormat;
+    private CompiledClockFormat _subtitleFormat;
+    private CompiledClockFormat? _copyFormat;
+    private CopyCurrentClockFormatCommand? _copyCustomFormatCommand;
     private bool _disposed;
-    private (bool Seconds, int DateMode, string CustomFormat, bool NotificationCenter, int FirstWeek, int FirstDay) _appliedSettings;
 
-    private CopyTextCommand _copyTimeCommand;
-    private CopyTextCommand _copyDateCommand;
-    private CopyTextCommand _copyWeekNumberCommand;
-    private bool? _weekNumberShown;
-    private bool? _notificationCenterOnClick;
+    internal CopyTextCommand CopyTitleCommand => _copyTitleCommand;
 
-    internal CopyTextCommand CopyTimeCommand => _copyTimeCommand;
+    internal CopyTextCommand CopySubtitleCommand => _copySubtitleCommand;
 
-    internal CopyTextCommand CopyDateCommand => _copyDateCommand;
+    internal CopyCurrentClockFormatCommand? CopyCustomFormatCommand => _copyCustomFormatCommand;
 
-    internal CopyTextCommand CopyWeekNumberCommand => _copyWeekNumberCommand;
-
-    internal NowDockBand(ISettingsInterface settings, Action? onUpdated = null, Func<DateTime>? clock = null)
+    internal NowDockBand(IDockClockSettings settings, ICommand allClocksPage, ClockUpdateService clockUpdateService, Func<DateTime>? clock = null)
     {
         _settings = settings;
-        _appliedSettings = ReadSettings();
-        _timeWithSeconds = _appliedSettings.Seconds;
-        _onUpdated = onUpdated;
+        _allClocksPage = allClocksPage;
+        _titleFormat = CustomClockDisplay.CompileFormat(settings.DockClockTitleFormat);
+        _subtitleFormat = CustomClockDisplay.CompileFormat(settings.DockClockSubtitleFormat);
+        _copyFormat = CompileOptionalFormat(settings.DockClockCopyFormat);
         _clock = clock ?? (() => DateTime.Now);
+        _clockUpdateService = clockUpdateService;
+        _copyTitleCommand = new CopyTextCommand(string.Empty);
+        _copySubtitleCommand = new CopyTextCommand(string.Empty);
 
-        // Open Notification Center on click (can be turned off in the settings)
-        _notificationCenterCommand = new OpenUrlCommand("ms-actioncenter:")
-        {
-            Id = "com.microsoft.cmdpal.timedate.dockBand",
-            Name = Resources.timedate_show_notification_center_command_name,
-            Result = CommandResult.Dismiss(),
-        };
-        _noOpCommand = new NoOpCommand() { Id = "com.microsoft.cmdpal.timedate.dockBand", Name = Resources.Microsoft_plugin_timedate_dock_band_title };
-        _copyTimeCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_time_command_name };
-        _copyDateCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_date_command_name };
-        _copyWeekNumberCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_week_number_command_name };
-
-        UpdateText();
-
-        _timer = new System.Timers.Timer() { AutoReset = true };
-        ConfigureTimer();
-    }
-
-    // Re-reads the settings and, if any of them changed, refreshes the displayed text.
-    // If the "show seconds" preference changed, the timer cadence is reconfigured as
-    // well. Safe to call at any time (e.g. from a settings-changed handler) so the dock
-    // clock stays in sync without requiring the app to restart.
-    internal void UpdateSettings()
-    {
-        var settings = ReadSettings();
-        if (_appliedSettings == settings)
-        {
-            return;
-        }
-
-        var secondsChanged = _appliedSettings.Seconds != settings.Seconds;
-        _appliedSettings = settings;
-        _timeWithSeconds = settings.Seconds;
-        if (secondsChanged)
-        {
-            ConfigureTimer();
-        }
-
+        UpdateCommand(settings);
+        UpdateCopyCommandNames(settings);
+        UpdateMoreCommands(settings);
         UpdateText();
     }
 
-    private (bool Seconds, int DateMode, string CustomFormat, bool NotificationCenter, int FirstWeek, int FirstDay) ReadSettings() =>
-        (_settings.DockClockWithSecond,
-         _settings.ClockBandDateMode,
-         _settings.CustomDateFormatInClockBand,
-         _settings.ClockBandOpensNotificationCenter,
-         _settings.FirstWeekOfYear,
-         _settings.FirstDayOfWeek);
-
-    private void ConfigureTimer()
+    // Ticking is gated on CmdPal actually rendering the band; see OnLoadDockBandItem.
+    // A render can arrive after the provider tore the band down, so start and disposal must agree on whether this band may subscribe.
+    internal void StartUpdating()
     {
-        _timer.Stop();
-        _timer.Elapsed -= Timer_Elapsed;
-        _timer.Elapsed -= Timer_ElapsedFirstMinuteTick;
-
-        if (_timeWithSeconds)
-        {
-            _timer.Interval = PerSecondUpdateInterval.TotalMilliseconds;
-            _timer.Elapsed += Timer_Elapsed;
-        }
-        else
-        {
-            // Align the first tick to the next minute boundary so the clock flips
-            // exactly when the system clock does, then fall back to a per-minute cadence.
-            var now = _clock();
-            _timer.Interval = PerMinuteUpdateInterval.TotalMilliseconds - ((now.Second * 1000) + now.Millisecond);
-            _timer.Elapsed += Timer_ElapsedFirstMinuteTick;
-        }
-
-        _timer.Start();
-    }
-
-    private void Timer_ElapsedFirstMinuteTick(object? sender, System.Timers.ElapsedEventArgs e)
-    {
-        if (sender is System.Timers.Timer timer)
-        {
-            timer.Interval = PerMinuteUpdateInterval.TotalMilliseconds;
-            timer.Elapsed -= Timer_ElapsedFirstMinuteTick;
-            timer.Elapsed += Timer_Elapsed;
-        }
-
-        Timer_Elapsed(sender, e);
-    }
-
-    private void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
-    {
-        UpdateText();
-    }
-
-    internal void UpdateText()
-    {
-        // Runs on the timer thread and on the settings changed event; serialize the
-        // updates so observers never see a half-applied state.
-        lock (_updateLock)
+        lock (_lifecycleLock)
         {
             if (_disposed)
             {
                 return;
             }
 
-            UpdateTextCore();
+            _clockUpdateService.Subscribe(this, ClockUpdateService_Tick, RequiresSecondUpdates);
         }
 
-        _onUpdated?.Invoke(); // Must remain last — ViewModel reads Title/Subtitle via GetItems() on callback
+        UpdateText();
     }
 
-    private void UpdateTextCore()
+    internal void StopUpdating() => _clockUpdateService.Unsubscribe(this);
+
+    internal void UpdateSettings(IDockClockSettings settings)
+    {
+        _settings = settings;
+        _titleFormat = CustomClockDisplay.CompileFormat(settings.DockClockTitleFormat);
+        _subtitleFormat = CustomClockDisplay.CompileFormat(settings.DockClockSubtitleFormat);
+        _copyFormat = CompileOptionalFormat(settings.DockClockCopyFormat);
+        UpdateCommand(settings);
+        UpdateCopyCommandNames(settings);
+        UpdateMoreCommands(settings);
+        _clockUpdateService.SetRequiresSecondUpdates(this, RequiresSecondUpdates);
+        UpdateText();
+    }
+
+    private bool RequiresSecondUpdates => _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates;
+
+    private void UpdateCommand(IDockClockSettings settings)
+    {
+        Command = settings.DockClockClickAction == "allClocks"
+            ? _allClocksPage
+            : new OpenUrlCommand("ms-actioncenter:")
+            {
+                Id = CustomClockIds.LocalDockBand,
+                Name = Resources.timedate_show_notification_center_command_name,
+                Result = CommandResult.Dismiss(),
+            };
+    }
+
+    private void ClockUpdateService_Tick(object? sender, EventArgs e)
+    {
+        UpdateText();
+    }
+
+    internal void UpdateText()
     {
         var now = _clock();
-        var timeString = now.ToString(
-            TimeAndDateHelper.GetStringFormat(FormatStringType.Time, _timeWithSeconds, false),
-            CultureInfo.CurrentCulture);
-        var dateString = now.ToString(
-            TimeAndDateHelper.GetStringFormat(FormatStringType.Date, false, false),
-            CultureInfo.CurrentCulture);
-
-        var dateMode = _settings.ClockBandDateMode;
-        var subtitleString = TimeAndDateHelper.GetClockBandDateLine(now, _settings);
-
-        // The week number is part of the band (subtitle and copy command) in the
-        // week number and ISO week date modes. The copy command matches what is
-        // shown: the configured week number in mode 1, the ISO week number in mode 2.
-        var showWeekNumber = dateMode is 1 or 2;
-        if (showWeekNumber)
+        var timeString = GetTitle(now);
+        var dateString = GetSubtitle(now);
+        if (timeString == Title && dateString == Subtitle)
         {
-            var weekNumber = dateMode == 2 ? ISOWeek.GetWeekOfYear(now) : TimeAndDateHelper.GetWeekOfYear(now, _settings);
-            _copyWeekNumberCommand.Text = weekNumber.ToString(CultureInfo.CurrentCulture);
+            return;
         }
 
         Title = timeString;
-        Subtitle = subtitleString;
-
-        _copyTimeCommand.Text = timeString;
-        _copyDateCommand.Text = dateString;
-
-        var notificationCenterOnClick = _settings.ClockBandOpensNotificationCenter;
-        if (_notificationCenterOnClick != notificationCenterOnClick)
-        {
-            _notificationCenterOnClick = notificationCenterOnClick;
-            Command = notificationCenterOnClick ? _notificationCenterCommand : _noOpCommand;
-        }
-
-        // Only rebuild the context menu when the setting changed.
-        if (_weekNumberShown != showWeekNumber)
-        {
-            _weekNumberShown = showWeekNumber;
-            MoreCommands = showWeekNumber
-                ? [
-                    new CommandContextItem(_copyTimeCommand),
-                    new CommandContextItem(_copyDateCommand),
-                    new CommandContextItem(_copyWeekNumberCommand)
-                ]
-                : [
-                    new CommandContextItem(_copyTimeCommand),
-                    new CommandContextItem(_copyDateCommand)
-                ];
-        }
+        Subtitle = dateString;
+        _copyTitleCommand.Text = timeString;
+        _copySubtitleCommand.Text = dateString;
     }
+
+    private string GetTitle(DateTime now) => CustomClockDisplay.Format(new DateTimeOffset(now), _titleFormat, _settings);
+
+    private string GetSubtitle(DateTime now) => CustomClockDisplay.Format(new DateTimeOffset(now), _subtitleFormat, _settings);
+
+    private string GetCustomCopyText()
+    {
+        var format = _copyFormat;
+        return format is null ? string.Empty : CustomClockDisplay.Format(new DateTimeOffset(_clock()), format, _settings);
+    }
+
+    private void UpdateMoreCommands(IDockClockSettings settings)
+    {
+        _copyCustomFormatCommand = _copyFormat is null
+            ? null
+            : new CopyCurrentClockFormatCommand(CustomClockFormatOptions.GetCopyCommandName(settings, settings.DockClockCopyFormat), GetCustomCopyText);
+        MoreCommands =
+        [
+            new CommandContextItem(_copyTitleCommand),
+            new CommandContextItem(_copySubtitleCommand),
+            .. _copyCustomFormatCommand is null ? [] : new CommandContextItem[] { new(_copyCustomFormatCommand) },
+            new CommandContextItem(new EditDefaultDockClockPage(settings)),
+        ];
+    }
+
+    private void UpdateCopyCommandNames(IDockClockSettings settings)
+    {
+        _copyTitleCommand.Name = CustomClockFormatOptions.GetCopyCommandName(settings, settings.DockClockTitleFormat);
+        _copySubtitleCommand.Name = CustomClockFormatOptions.GetCopyCommandName(settings, settings.DockClockSubtitleFormat);
+    }
+
+    private static CompiledClockFormat? CompileOptionalFormat(string format) => string.IsNullOrEmpty(format) ? null : CustomClockDisplay.CompileFormat(format);
 
     public void Dispose()
     {
-        lock (_updateLock)
+        lock (_lifecycleLock)
         {
             _disposed = true;
+            _clockUpdateService.Unsubscribe(this);
         }
-
-        _timer.Stop();
-        _timer.Dispose();
     }
 }

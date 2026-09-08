@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <RootNamespace>Microsoft.CropAndLock.UITests</RootNamespace>
+    <AssemblyName>CropAndLock.UITests</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <RunVSTest>false</RunVSTest>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\CropAndLock.UITests\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+    <ProjectReference Include="..\..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
+    <!-- Share identical fixture source without loading the self-contained packaged executable into the test host. -->
+    <ProjectReference Include="..\CropAndLock.TestApp\CropAndLock.TestApp.csproj" ReferenceOutputAssembly="false" />
+    <Compile Include="..\CropAndLock.TestApp\CropSourceForm.cs" Link="CropSourceForm.cs" />
+  </ItemGroup>
+
+  <Target Name="StageFixturePackage" AfterTargets="Build" Condition="'$(DesignTimeBuild)' != 'true' and '$(_IsSkippedTestProject)' != 'true'">
+    <MSBuild Projects="$(MSBuildProjectDirectory)\..\CropAndLock.TestApp\CropAndLock.TestApp.csproj"
+             Targets="GetFixturePackage"
+             Properties="Configuration=$(Configuration);Platform=$(Platform)">
+      <Output TaskParameter="TargetOutputs" ItemName="_CropFixturePackage" />
+    </MSBuild>
+    <Copy SourceFiles="@(_CropFixturePackage)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <FileWrites Include="$(TargetDir)CropAndLock.TestApp.msix" />
+    </ItemGroup>
+  </Target>
+</Project>

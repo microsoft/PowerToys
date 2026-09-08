@@ -3,23 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Windows.Media;
+
+using Windows.UI;
 
 namespace ColorPicker.Controls
 {
     public static class HSVColor
     {
-        public static Color[] GetSpectrum()
-        {
-            var rgbs = new Color[360];
-
-            for (int h = 0; h < 360; h++)
-            {
-                rgbs[h] = RGBFromHSV(h, 1f, 1f);
-            }
-
-            return rgbs;
-        }
+        private static Color FromRgb(byte r, byte g, byte b) => new() { A = 255, R = r, G = g, B = b };
 
         public static Color[] HueSpectrum(double saturation, double value)
         {
@@ -37,7 +28,7 @@ namespace ColorPicker.Controls
         {
             if (h > 360 || h < 0 || s > 1 || s < 0 || v > 1 || v < 0)
             {
-                return Color.FromRgb(0, 0, 0);
+                return FromRgb(0, 0, 0);
             }
 
             double c = v * s;
@@ -77,7 +68,7 @@ namespace ColorPicker.Controls
                 b = x;
             }
 
-            return Color.FromRgb((byte)((r + m) * 255), (byte)((g + m) * 255), (byte)((b + m) * 255));
+            return FromRgb((byte)((r + m) * 255), (byte)((g + m) * 255), (byte)((b + m) * 255));
         }
     }
 }

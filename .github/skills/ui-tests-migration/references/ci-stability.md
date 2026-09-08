@@ -84,6 +84,22 @@ the clipboard is empty. Both adapt to a slow agent for free.
 > Corollary: **fail with the signal in the message.** `Assert.Fail("overlay never appeared after N
 > attempts")` tells you *which* signal missed on CI; `Assert.IsTrue(x)` tells you nothing.
 
+Avoid stacking fixed pacing on top of an authoritative wait. `Element.Invoke` and `Click` default
+to a 200ms post-action sleep. When the next step already waits for the transition, opt out locally:
+
+```csharp
+save.Invoke(msPostAction: 0);
+Assert.IsTrue(save.WaitForGone(10_000), "The saved dialog did not close.");
+```
+
+Do not remove shared defaults or stability samples globally. A control that already exists can
+still be awaiting list re-realization or an animation, so merely finding it is not always readiness.
+Also distinguish polling **intervals** from timeout **ceilings**: a two-match stable wait with a
+200ms interval pays at least 200ms, but a 10s timeout does not impose a 10s sleep. Every CLI-backed
+lookup, action, property read, or inspection starts another `winapp.exe`; repeated subtree
+inspections and re-resolution add real work even when explicit sleeps are zero. `TextBox.SetText`
+does not add a post-action sleep in the managed wrapper.
+
 ### Observed once is not necessarily stable
 
 Explorer selection, foreground, window bounds, and renderer state can briefly match and then regress
