@@ -243,8 +243,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             if (!ViewModel.IsNested)
             {
-                // todo BODGY
-                RootFrame.BackStack.Clear();
+                // Clear history before cleanup can reenter navigation through extension calls.
+                var discardedEntries = RootFrame.BackStack!.ToArray();
+                RootFrame.BackStack!.Clear();
+                foreach (var entry in discardedEntries)
+                {
+                    if (entry.Parameter is AsyncNavigationRequest { TargetViewModel: PageViewModel discardedPage })
+                    {
+                        discardedPage.SafeCleanup();
+                    }
+                }
             }
         });
     }
