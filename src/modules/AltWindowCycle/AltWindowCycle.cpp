@@ -1314,7 +1314,7 @@ void Switcher::RenderLayered()
             // Single accent focus ring hugging the selected tile.
             if (sel)
             {
-                int gPad = Scaled(4);
+                int gPad = Scaled(6);
                 Gdiplus::GraphicsPath ring;
                 BuildRoundRect(ring, InflateF(tile, gPad),
                                static_cast<Gdiplus::REAL>(radius + gPad));
