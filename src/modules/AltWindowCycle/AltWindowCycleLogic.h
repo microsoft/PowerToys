@@ -106,7 +106,7 @@ namespace AltWindowCycleLogic
         layout.inner = ScaledValue(scale, 8);
         layout.radius = ScaledValue(scale, 8);
         layout.cardTrimBottom = 0;
-        layout.iconSize = ScaledValue(scale, 24);
+        layout.iconSize = ScaledValue(scale, 16);
         layout.tileH = layout.headerH + layout.inner + layout.previewH + layout.inner;
 
         const int workW = work.right - work.left;

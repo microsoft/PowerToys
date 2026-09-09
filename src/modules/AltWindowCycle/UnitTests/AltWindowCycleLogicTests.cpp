@@ -67,7 +67,7 @@ namespace AltWindowCycleUnitTests
             Assert::AreEqual(158, layout.previewH);
             Assert::AreEqual(8, layout.inner);
             Assert::AreEqual(8, layout.radius);
-            Assert::AreEqual(24, layout.iconSize);
+            Assert::AreEqual(16, layout.iconSize);
             Assert::AreEqual(218, layout.tileH);
             Assert::AreEqual(4, layout.cols);
             Assert::AreEqual(1, layout.rows);
@@ -91,7 +91,7 @@ namespace AltWindowCycleUnitTests
             Assert::AreEqual(237, layout.previewH);
             Assert::AreEqual(12, layout.inner);
             Assert::AreEqual(12, layout.radius);
-            Assert::AreEqual(36, layout.iconSize);
+            Assert::AreEqual(24, layout.iconSize);
             Assert::AreEqual(327, layout.tileH);
             Assert::AreEqual(3, layout.cols);
             Assert::AreEqual(2, layout.rows);
