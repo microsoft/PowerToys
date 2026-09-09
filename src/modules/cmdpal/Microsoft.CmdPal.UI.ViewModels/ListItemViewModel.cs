@@ -14,6 +14,10 @@ public partial class ListItemViewModel : CommandItemViewModel
 {
     private const int MaxVisibleTags = 3;
 
+    private readonly ViewModelLifetime _lifetime = new();
+    private TaskCompletionSource<bool>? _selectionPending;
+    private bool _selectionInitialized;
+
     public new ExtensionObject<IListItem> Model { get; }
 
     public List<TagViewModel>? Tags { get; set; }
@@ -79,7 +83,9 @@ public partial class ListItemViewModel : CommandItemViewModel
         Model = new ExtensionObject<IListItem>(model);
     }
 
-    public override void InitializeProperties()
+    public override void InitializeProperties() => _lifetime.Run(InitializeItemProperties);
+
+    private void InitializeItemProperties()
     {
         if (IsInitialized)
         {
@@ -112,28 +118,90 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     public override void SlowInitializeProperties()
     {
-        base.SlowInitializeProperties();
-        var model = Model.Unsafe;
-        if (model is null)
+        if (_lifetime.IsClosed || IsInErrorState)
         {
             return;
         }
 
-        var extensionDetails = model.Details;
-        if (extensionDetails is not null)
+        var pending = Volatile.Read(ref _selectionPending);
+        if (pending is not null &&
+            (!pending.Task.IsCompleted || (_selectionInitialized && (Details is null || Details.IsObservable))))
         {
-            Details = new(extensionDetails, PageContext);
-            Details.InitializeProperties();
-            UpdateProperty(nameof(Details), nameof(HasDetails));
+            return;
         }
 
-        AddShowDetailsCommands();
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        if (Interlocked.CompareExchange(ref _selectionPending, completion, pending) != pending)
+        {
+            return;
+        }
 
-        TextToSuggest = model.TextToSuggest;
-        UpdateProperty(nameof(TextToSuggest));
+        _lifetime.Run(() =>
+        {
+            var initialized = false;
+            try
+            {
+                InitializeSelectedProperties();
+                initialized = !_lifetime.IsClosed && !IsInErrorState;
+            }
+            catch
+            {
+                _lifetime.Close(CleanupItem);
+                throw;
+            }
+            finally
+            {
+                completion.TrySetResult(initialized);
+            }
+        });
+
+        if (_lifetime.IsClosed)
+        {
+            completion.TrySetResult(false);
+        }
     }
 
-    protected override void FetchProperty(string propertyName)
+    public async Task<bool> SafeSlowInitAsync()
+    {
+        if (!SafeSlowInit())
+        {
+            return false;
+        }
+
+        var pending = Volatile.Read(ref _selectionPending);
+        return pending is not null &&
+            await pending.Task.ConfigureAwait(false) &&
+            !_lifetime.IsClosed &&
+            !IsInErrorState;
+    }
+
+    private void InitializeSelectedProperties()
+    {
+        if (IsInErrorState || (_selectionInitialized && (Details is null || Details.IsObservable)))
+        {
+            return;
+        }
+
+        InitializeItemProperties();
+        base.SlowInitializeProperties();
+        var model = Model.Unsafe;
+        if (model is null || _lifetime.IsClosed)
+        {
+            return;
+        }
+
+        ReplaceDetails(model.Details);
+        AddShowDetailsCommands();
+
+        TextToSuggest = model.TextToSuggest ?? string.Empty;
+        UpdateProperty(nameof(TextToSuggest));
+        _selectionInitialized = true;
+    }
+
+    protected override void FetchProperty(string propertyName) =>
+        _lifetime.RunNotification(() => FetchItemProperty(propertyName), ex => ShowException(ex, Title));
+
+    private void FetchItemProperty(string propertyName)
     {
         base.FetchProperty(propertyName);
 
@@ -162,13 +230,7 @@ public partial class ListItemViewModel : CommandItemViewModel
                 UpdateProperty(nameof(Type), nameof(IsInteractive));
                 break;
             case nameof(Details):
-                var existingReference = Details;
-                var extensionDetails = model.Details;
-                Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
-                Details?.InitializeProperties();
-                UpdateProperty(nameof(Details), nameof(HasDetails));
-                UpdateShowDetailsCommand();
-                existingReference?.SafeCleanup();
+                ReplaceDetails(model.Details);
                 break;
             case nameof(model.MoreCommands):
                 AddShowDetailsCommands();
@@ -196,6 +258,47 @@ public partial class ListItemViewModel : CommandItemViewModel
     public override bool Equals(object? obj) => obj is ListItemViewModel vm && vm.Model.Equals(this.Model);
 
     public override int GetHashCode() => Model.GetHashCode();
+
+    private void ReplaceDetails(IDetails? model)
+    {
+        if (model is null && Details is null)
+        {
+            return;
+        }
+
+        if (Details?.Represents(model) == true)
+        {
+            Details.InitializeProperties();
+            return;
+        }
+
+        DetailsViewModel? replacement = null;
+        try
+        {
+            if (model is not null)
+            {
+                replacement = new(model, PageContext);
+                replacement.InitializeProperties();
+            }
+        }
+        catch
+        {
+            replacement?.SafeCleanup();
+            throw;
+        }
+
+        if (_lifetime.IsClosed)
+        {
+            replacement?.SafeCleanup();
+            return;
+        }
+
+        var previous = Details;
+        Details = replacement;
+        previous?.SafeCleanup();
+        UpdateProperty(nameof(Details), nameof(HasDetails));
+        UpdateShowDetailsCommand();
+    }
 
     private void AddShowDetailsCommands()
     {
@@ -238,41 +341,28 @@ public partial class ListItemViewModel : CommandItemViewModel
     // have the latest details in the show details command.
     private void UpdateShowDetailsCommand()
     {
-        // If the parent page has ShowDetails = false and we have details,
-        // then we should add a show details action in the context menu.
-        if (HasDetails &&
-            PageContext.TryGetTarget(out var pageContext) &&
-            pageContext is ListViewModel listViewModel &&
-            !listViewModel.ShowDetails)
+        CommandContextItemViewModel? oldCommand;
+        lock (MoreCommandsLock)
         {
-            CommandContextItemViewModel? oldCommand = null;
-            lock (MoreCommandsLock)
+            oldCommand = UnsafeMoreCommands
+                .OfType<CommandContextItemViewModel>()
+                .FirstOrDefault(contextItemViewModel => contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId);
+
+            if (oldCommand is not null)
             {
-                oldCommand = UnsafeMoreCommands
-                    .OfType<CommandContextItemViewModel>()
-                    .FirstOrDefault(contextItemViewModel => contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId);
-
-                if (oldCommand is not null)
-                {
-                    UnsafeMoreCommands.Remove(oldCommand);
-                }
-
-                var showDetailsCommand = new ShowDetailsCommand(Details);
-                var showDetailsContextItem = new CommandContextItem(showDetailsCommand)
-                {
-                    Icon = showDetailsCommand.Icon,
-                };
-                var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
-                showDetailsContextItemViewModel.SlowInitializeProperties();
-                UnsafeMoreCommands.Add(showDetailsContextItemViewModel);
+                UnsafeMoreCommands.Remove(oldCommand);
                 RefreshMoreCommandStateUnsafe();
             }
+        }
 
+        if (oldCommand is not null)
+        {
             oldCommand?.SafeCleanup();
-
             UpdateProperty(nameof(MoreCommands), nameof(AllCommands));
             UpdateProperty(nameof(SecondaryCommand), nameof(SecondaryCommandName), nameof(HasMoreCommands));
         }
+
+        AddShowDetailsCommands();
     }
 
     private void UpdateTags(ITag[]? newTagsFromModel)
@@ -352,20 +442,23 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     protected override void UnsafeCleanup()
     {
-        base.UnsafeCleanup();
+        try
+        {
+            _lifetime.Close(CleanupItem);
+        }
+        finally
+        {
+            Volatile.Read(ref _selectionPending)?.TrySetResult(false);
+        }
+    }
 
-        // Tags don't have event handlers or anything to cleanup
+    private void CleanupItem()
+    {
         Tags?.ForEach(t => t.SafeCleanup());
         _overflowTag?.SafeCleanup();
         Details?.SafeCleanup();
-
-        var model = Model.Unsafe;
-        if (model is not null)
-        {
-            // We don't need to revoke the PropChanged event handler here,
-            // because we are just overriding CommandItem's FetchProperty and
-            // piggy-backing off their PropChanged
-        }
+        Details = null;
+        base.UnsafeCleanup();
     }
 
     protected void UpdateAccessibleName()

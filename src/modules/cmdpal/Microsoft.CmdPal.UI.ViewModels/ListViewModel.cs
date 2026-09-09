@@ -827,7 +827,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         if (item is not null)
         {
-            SetSelectedItem(item);
+            _ = SetSelectedItemAsync(item);
         }
         else
         {
@@ -835,7 +835,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    private void SetSelectedItem(ListItemViewModel item)
+    internal Task SetSelectedItemAsync(ListItemViewModel item)
     {
         _lastSelectedItem = item;
         _lastSelectedItem.PropertyChanged += SelectedItemPropertyChanged;
@@ -849,15 +849,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
         var cts = _selectedItemCts = new CancellationTokenSource();
         var ct = cts.Token;
 
-        _ = Task.Run(
-            () =>
+        return Task.Run(
+            async () =>
             {
                 if (ct.IsCancellationRequested)
                 {
                     return;
                 }
 
-                if (!item.SafeSlowInit())
+                if (!await item.SafeSlowInitAsync().ConfigureAwait(false))
                 {
                     if (ct.IsCancellationRequested)
                     {
@@ -874,8 +874,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     return;
                 }
 
-                // SafeSlowInit completed on a background thread — details
-                // messages will be marshalled to the UI thread by the receiver.
+                // Reselection waits for the same initialization without blocking extension callbacks.
                 if (ShowDetails && item.HasDetails)
                 {
                     WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(item.Details));
@@ -888,6 +887,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 var suggestion = item.TextToSuggest;
                 DoOnUiThread(() =>
                 {
+                    if (ct.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
                     TextToSuggest = suggestion;
                     WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(suggestion));
                 });

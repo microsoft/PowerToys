@@ -23,7 +23,9 @@ public partial class ContentImageViewModel : ContentViewModel
         Model = new ExtensionObject<IImageContent>(content);
     }
 
-    public override void InitializeProperties()
+    protected override INotifyPropChanged? ObservableModel => Model.Unsafe;
+
+    protected override void InitializeContent()
     {
         var model = Model.Unsafe;
         if (model is null)
@@ -38,23 +40,9 @@ public partial class ContentImageViewModel : ContentViewModel
         MaxHeight = model.MaxHeight <= 0 ? double.PositiveInfinity : model.MaxHeight;
 
         UpdateProperty(nameof(Image), nameof(MaxWidth), nameof(MaxHeight));
-        model.PropChanged += Model_PropChanged;
     }
 
-    private void Model_PropChanged(object sender, IPropChangedEventArgs args)
-    {
-        try
-        {
-            var propName = args.PropertyName;
-            FetchProperty(propName);
-        }
-        catch (Exception ex)
-        {
-            ShowException(ex);
-        }
-    }
-
-    private void FetchProperty(string propertyName)
+    protected override void FetchProperty(string propertyName)
     {
         var model = Model.Unsafe;
         if (model is null)
@@ -79,16 +67,6 @@ public partial class ContentImageViewModel : ContentViewModel
                 MaxHeight = model.MaxHeight <= 0 ? double.PositiveInfinity : model.MaxHeight;
                 UpdateProperty(propertyName);
                 break;
-        }
-    }
-
-    protected override void UnsafeCleanup()
-    {
-        base.UnsafeCleanup();
-        var model = Model.Unsafe;
-        if (model is not null)
-        {
-            model.PropChanged -= Model_PropChanged;
         }
     }
 }
