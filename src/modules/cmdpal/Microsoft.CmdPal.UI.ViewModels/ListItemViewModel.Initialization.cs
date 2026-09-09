@@ -11,19 +11,14 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 /// </summary>
 public partial class ListItemViewModel
 {
-    private const int InitializationNotStarted = 0;
-    private const int InitializationInProgress = 1;
-    private const int InitializationSucceeded = 2;
-    private const int InitializationFailed = 3;
-
     private int _initializationState;
     private TaskCompletionSource<bool>? _initializationCompletion;
     private ListItemInitializationCoordinator? _initializationCoordinator;
-    private ListItemInitializationDemandNode? _initializationDemands;
+    private ListItemInitializationDemandStack _initializationDemands; // can't be readonly
 
-    internal bool IsInitializationComplete => Volatile.Read(ref _initializationState) >= InitializationSucceeded;
+    internal bool IsInitializationComplete => Volatile.Read(ref _initializationState) >= InitializationState.Succeeded;
 
-    internal bool InitializationWasSuccessful => Volatile.Read(ref _initializationState) == InitializationSucceeded;
+    internal bool InitializationWasSuccessful => Volatile.Read(ref _initializationState) == InitializationState.Succeeded;
 
     internal void AttachInitializationCoordinator(ListItemInitializationCoordinator coordinator)
     {
@@ -32,7 +27,7 @@ public partial class ListItemViewModel
         // store/load pair alone could let both sides miss one another.
         Interlocked.Exchange(ref _initializationCoordinator, coordinator);
 
-        var head = Volatile.Read(ref _initializationDemands);
+        var head = _initializationDemands.CaptureAndPrune();
         if (head is null)
         {
             return;
@@ -41,23 +36,11 @@ public partial class ListItemViewModel
         // TryEnqueue re-checks the demand, so a released head costs only this call.
         coordinator.TryEnqueue(head.Demand);
 
-        // Prune inactive interior nodes during this already-required replay. Keep the
-        // captured head: producers CAS-push new heads while background fetches serialize
-        // attachment, so only this thread rewrites existing Next links. This retains live
-        // demand plus at most one inactive node from this pass; newer nodes are pruned on
-        // a later replay. Never write the head back: initialization or cleanup may have
-        // cleared it while this pass was running.
         var previous = head;
         while (previous.Next is { } current)
         {
-            if (current.Demand.IsActive)
-            {
-                coordinator.TryEnqueue(current.Demand);
-                previous = current;
-                continue;
-            }
-
-            previous.Next = current.Next;
+            coordinator.TryEnqueue(current.Demand);
+            previous = current;
         }
     }
 
@@ -136,7 +119,10 @@ public partial class ListItemViewModel
 
     internal void InitializePropertiesOnce()
     {
-        if (Interlocked.CompareExchange(ref _initializationState, InitializationInProgress, InitializationNotStarted) != InitializationNotStarted)
+        // CAS _initializationState
+        // Coordinator and selection fallback callers compete for this claim.
+        // Only the winner may run the extension's initialization.
+        if (Interlocked.CompareExchange(ref _initializationState, InitializationState.InProgress, InitializationState.NotStarted) != InitializationState.NotStarted)
         {
             return;
         }
@@ -151,8 +137,8 @@ public partial class ListItemViewModel
             // The base phase flag is set before the derived tags/section work ends.
             // This separate latch covers the whole call. Its full fence pairs with
             // the waiter's completion-source publication so neither can miss the other.
-            Interlocked.Exchange(ref _initializationState, succeeded ? InitializationSucceeded : InitializationFailed);
-            Interlocked.Exchange(ref _initializationDemands, null);
+            Interlocked.Exchange(ref _initializationState, succeeded ? InitializationState.Succeeded : InitializationState.Failed);
+            _initializationDemands.Clear();
             Volatile.Read(ref _initializationCompletion)?.TrySetResult(succeeded);
         }
     }
@@ -160,15 +146,18 @@ public partial class ListItemViewModel
     internal Task<bool> WaitForInitializationAsync(CancellationToken cancellationToken)
     {
         var state = Volatile.Read(ref _initializationState);
-        if (state >= InitializationSucceeded)
+        if (state >= InitializationState.Succeeded)
         {
-            return Task.FromResult(state == InitializationSucceeded);
+            return Task.FromResult(state == InitializationState.Succeeded);
         }
 
         var completion = Volatile.Read(ref _initializationCompletion);
         if (completion is null)
         {
             var newCompletion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            // CAS _initializationCompletion
+            // All waiters must use the same published completion source, even callers that lose this race.
             completion = Interlocked.CompareExchange(ref _initializationCompletion, newCompletion, null) ?? newCompletion;
         }
 
@@ -176,9 +165,9 @@ public partial class ListItemViewModel
         // publishing the completion source. Complete it here as the finding
         // thread so no waiter can be stranded by that race.
         state = Volatile.Read(ref _initializationState);
-        if (state >= InitializationSucceeded)
+        if (state >= InitializationState.Succeeded)
         {
-            completion.TrySetResult(state == InitializationSucceeded);
+            completion.TrySetResult(state == InitializationState.Succeeded);
         }
 
         return cancellationToken.CanBeCanceled
@@ -191,8 +180,12 @@ public partial class ListItemViewModel
     private void CleanupInitializationState()
     {
         Interlocked.Exchange(ref _initializationCoordinator, null);
-        Interlocked.Exchange(ref _initializationDemands, null);
-        if (Interlocked.CompareExchange(ref _initializationState, InitializationFailed, InitializationNotStarted) == InitializationNotStarted)
+        _initializationDemands.Clear();
+
+        // CAS _initializationState
+        // Cleanup settles only an unclaimed initialization.
+        // In-progress initializer retains responsibility for its waiters.
+        if (Interlocked.CompareExchange(ref _initializationState, InitializationState.Failed, InitializationState.NotStarted) == InitializationState.NotStarted)
         {
             Volatile.Read(ref _initializationCompletion)?.TrySetResult(false);
         }
@@ -206,24 +199,51 @@ public partial class ListItemViewModel
         }
 
         var demand = new ListItemInitializationDemand(this, cancellationToken);
-        var node = new ListItemInitializationDemandNode(demand);
-        ListItemInitializationDemandNode? head;
-        do
-        {
-            head = Volatile.Read(ref _initializationDemands);
-            node.Next = head;
-        }
-        while (Interlocked.CompareExchange(ref _initializationDemands, node, head) != head);
+
+        // Recycling must not retain every past realization while the page is
+        // suspended or an extension getter prevents initialization from finishing.
+        _initializationDemands.Push(demand);
 
         // Demand is only retained for the pending initialization, not for the item's
         // entire lifetime. Close the race with completion clearing the list too.
         if (IsInitializationComplete)
         {
-            Interlocked.Exchange(ref _initializationDemands, null);
+            _initializationDemands.Clear();
             demand.Release();
             return null;
         }
 
         return demand;
+    }
+
+    /// <summary>
+    /// Integer states used to atomically coordinate an item's run-once initialization.
+    /// </summary>
+    /// <remarks>
+    /// Completion checks compare the state with <see cref="Succeeded"/>.
+    /// Both terminal states must remain greater than or equal to that value,
+    /// and both pending states must remain below it.
+    /// </remarks>
+    private static class InitializationState
+    {
+        /// <summary>
+        /// Initialization has not been claimed.
+        /// </summary>
+        public const int NotStarted = 0;
+
+        /// <summary>
+        /// One caller owns initialization and is responsible for settling its waiters.
+        /// </summary>
+        public const int InProgress = 1;
+
+        /// <summary>
+        /// The complete initialization call succeeded.
+        /// </summary>
+        public const int Succeeded = 2;
+
+        /// <summary>
+        /// Initialization failed, or cleanup prevented it from starting.
+        /// </summary>
+        public const int Failed = 3;
     }
 }

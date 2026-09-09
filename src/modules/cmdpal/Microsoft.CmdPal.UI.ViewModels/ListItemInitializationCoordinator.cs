@@ -8,14 +8,10 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 internal sealed class ListItemInitializationCoordinator
 {
-    private const int NotStarted = 0;
-    private const int Running = 1;
-    private const int Completed = 2;
-
     private readonly ListItemViewModel[] _items;
     private readonly TaskCompletionSource _completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
-    private ListItemInitializationDemandNode? _incomingRequests;
-    private ListItemInitializationDemandNode? _priorityRequests;
+    private readonly Stack<ListItemInitializationDemand> _priorityRequests = new();
+    private ListItemInitializationDemandStack _incomingRequests; // can't be readonly
     private int _accepting = 1;
     private int _runState;
 
@@ -40,20 +36,13 @@ internal sealed class ListItemInitializationCoordinator
         }
 
         // Producers include the UI thread. Unlike ConcurrentQueue segment growth,
-        // publishing a node never takes a worker-owned lock. The single consumer
-        // reverses each detached batch to preserve publication order.
-        var entry = new ListItemInitializationDemandNode(demand);
-        ListItemInitializationDemandNode? head;
-        do
-        {
-            head = Volatile.Read(ref _incomingRequests);
-            entry.Next = head;
-        }
-        while (Interlocked.CompareExchange(ref _incomingRequests, entry, head) != head);
+        // publishing a node never takes a worker-owned lock.
+        // Prune here as well as in the item so a blocked consumer cannot retain recycled requests forever.
+        _incomingRequests.Push(demand);
 
         if (Volatile.Read(ref _accepting) == 0)
         {
-            Interlocked.Exchange(ref _incomingRequests, null);
+            _incomingRequests.Clear();
             return false;
         }
 
@@ -62,7 +51,10 @@ internal sealed class ListItemInitializationCoordinator
 
     internal void Run(CancellationToken cancellationToken)
     {
-        if (Interlocked.CompareExchange(ref _runState, Running, NotStarted) != NotStarted)
+        // CAS _runState
+        // Exactly one Run call may claim the worker.
+        // A failed claim also covers Stop completing a worker that never started.
+        if (Interlocked.CompareExchange(ref _runState, RunState.Running, RunState.NotStarted) != RunState.NotStarted)
         {
             return;
         }
@@ -101,10 +93,10 @@ internal sealed class ListItemInitializationCoordinator
             StopAccepting();
 
             // Consumer-owned, so only this thread may clear it.
-            _priorityRequests = null;
+            _priorityRequests.Clear();
 
             // This worker ran, so this worker publishes its own return.
-            Volatile.Write(ref _runState, Completed);
+            Volatile.Write(ref _runState, RunState.Completed);
             SignalCompleted();
         }
     }
@@ -117,7 +109,11 @@ internal sealed class ListItemInitializationCoordinator
     internal void Stop()
     {
         StopAccepting();
-        if (Interlocked.CompareExchange(ref _runState, Completed, NotStarted) == NotStarted)
+
+        // CAS _runState
+        // Complete here only if Run never claimed the worker.
+        // A running worker must settle Completion after its initializer returns.
+        if (Interlocked.CompareExchange(ref _runState, RunState.Completed, RunState.NotStarted) == RunState.NotStarted)
         {
             SignalCompleted();
         }
@@ -132,7 +128,7 @@ internal sealed class ListItemInitializationCoordinator
     private void StopAccepting()
     {
         Interlocked.Exchange(ref _accepting, 0);
-        Interlocked.Exchange(ref _incomingRequests, null);
+        _incomingRequests.Clear();
     }
 
     // Publishes "the executor has returned". Callers must own that transition:
@@ -157,26 +153,29 @@ internal sealed class ListItemInitializationCoordinator
     {
         while (true)
         {
-            if (_priorityRequests is null)
+            if (_priorityRequests.Count == 0)
             {
-                var incoming = Interlocked.Exchange(ref _incomingRequests, null);
+                var incoming = _incomingRequests.TakeAll();
                 while (incoming is not null)
                 {
-                    var next = incoming.Next;
-                    incoming.Next = _priorityRequests;
-                    _priorityRequests = incoming;
-                    incoming = next;
+                    // Copy demand into a consumer-owned stack to restore FIFO order.
+                    // Producers may still be pruning the detached links, so those
+                    // links must keep their original direction.
+                    if (IsDemandServiceable(incoming.Demand))
+                    {
+                        _priorityRequests.Push(incoming.Demand);
+                    }
+
+                    incoming = incoming.Next;
                 }
             }
 
-            if (_priorityRequests is not { } entry)
+            if (!_priorityRequests.TryPop(out var demand))
             {
                 item = null!;
                 return false;
             }
 
-            _priorityRequests = entry.Next;
-            var demand = entry.Demand;
             if (!IsDemandServiceable(demand))
             {
                 continue;
@@ -185,5 +184,26 @@ internal sealed class ListItemInitializationCoordinator
             item = demand.Item;
             return true;
         }
+    }
+
+    /// <summary>
+    /// Integer states used to atomically coordinate ownership of the single worker.
+    /// </summary>
+    private static class RunState
+    {
+        /// <summary>
+        /// No worker has claimed execution.
+        /// </summary>
+        public const int NotStarted = 0;
+
+        /// <summary>
+        /// A worker owns execution and is responsible for publishing completion.
+        /// </summary>
+        public const int Running = 1;
+
+        /// <summary>
+        /// Execution has finished, or was stopped before a worker claimed it.
+        /// </summary>
+        public const int Completed = 2;
     }
 }

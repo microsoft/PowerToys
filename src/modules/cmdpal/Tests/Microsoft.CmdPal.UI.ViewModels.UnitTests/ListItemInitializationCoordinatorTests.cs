@@ -349,7 +349,7 @@ public sealed partial class ListItemInitializationCoordinatorTests
 
         try
         {
-            Assert.AreEqual(130, originalNodes.Length);
+            Assert.AreEqual(3, originalNodes.Length, "Arrivals should already prune released interior nodes.");
             replacement = new ListItemInitializationCoordinator(viewModels);
             previous.Stop();
 
@@ -1055,8 +1055,17 @@ public sealed partial class ListItemInitializationCoordinatorTests
         // retention is the behavior under test, not a new production-facing API.
         var field = typeof(ListItemViewModel).GetField("_initializationDemands", BindingFlags.Instance | BindingFlags.NonPublic)
             ?? throw new AssertFailedException("The item's demand storage was not found.");
+        return GetDemandNodes(field.GetValue(item));
+    }
+
+    private static ListItemInitializationDemandNode[] GetDemandNodes(object? stack)
+    {
+        // Reflection boxes the embedded struct. Only read its captured head;
+        // invoking stack operations on that copy would not update the owner.
+        var field = typeof(ListItemInitializationDemandStack).GetField("_head", BindingFlags.Instance | BindingFlags.NonPublic)
+            ?? throw new AssertFailedException("The demand stack's head was not found.");
         var nodes = new List<ListItemInitializationDemandNode>();
-        for (var node = (ListItemInitializationDemandNode?)field.GetValue(item); node is not null; node = node.Next)
+        for (var node = (ListItemInitializationDemandNode?)field.GetValue(stack); node is not null; node = node.Next)
         {
             nodes.Add(node);
         }
