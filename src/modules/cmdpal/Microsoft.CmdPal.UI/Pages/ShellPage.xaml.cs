@@ -323,7 +323,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private async Task HandlePinToDockDialogOnUiThread(ShowPinToDockDialogMessage message)
     {
         (ContentDialogResult Result, PinToDockDialogContent Content) dialogResult;
-        using (var dialogLease = await _dialogHost.AcquireAsync())
+        using (var dialogLease = await _dialogHost.AcquireAsync(enterDialogMode: true))
         {
             if (dialogLease is null)
             {

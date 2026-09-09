@@ -19,6 +19,11 @@ internal sealed partial class AllIssueSamplesIndexPage : ListPage
     {
         return new IListItem[]
         {
+            new ListItem(new SampleCompactPinToDockPage())
+            {
+                Title = "Compact Pin to Dock dialog",
+                Subtitle = "Repro steps: Enable compact mode and the dock, open this page, then press Ctrl+K and choose Pin to Dock. The entire dialog should be visible.",
+            },
             new ListItem(new SamplePageForIssue42827_FilterDropDownStaysVisibleAfterSwitchingFromListToContentPage())
             {
                 Title = "Issue 42827 - Filter Drop Down Stays Visible After Switching From List To Content Page",
