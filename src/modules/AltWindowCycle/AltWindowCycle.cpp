@@ -1396,16 +1396,28 @@ void Switcher::RenderLayered()
                     // Unlike a live DWM thumbnail -- an OS-composited plain rectangle we
                     // have no way to clip -- this bitmap is painted entirely by us, so we
                     // can round its corners to match the card instead of using a square
-                    // punch. Map source->dest with a texture-brush transform and fill a
-                    // rounded-rect path so the clip edge is anti-aliased.
+                    // punch. Pre-render the cropped/scaled image into a dest-sized
+                    // offscreen bitmap via a plain DrawImage first, then use *that* as
+                    // an identity-scale texture brush to fill the rounded-rect path.
+                    // (A TextureBrush sampled through a non-identity scale Matrix bleeds
+                    // a thin edge from outside its WrapModeClamp bounds -- a known GDI+
+                    // artifact -- so scaling has to happen in DrawImage, not the brush.)
+                    Gdiplus::REAL srcLeft = static_cast<Gdiplus::REAL>(rcSrc.left);
+                    Gdiplus::REAL srcTop = static_cast<Gdiplus::REAL>(rcSrc.top);
                     Gdiplus::REAL srcW = static_cast<Gdiplus::REAL>(rcSrc.right - rcSrc.left);
                     Gdiplus::REAL srcH = static_cast<Gdiplus::REAL>(rcSrc.bottom - rcSrc.top);
-                    Gdiplus::REAL scaleX = srcW > 0 ? static_cast<Gdiplus::REAL>(pw) / srcW : 1.0f;
-                    Gdiplus::REAL scaleY = srcH > 0 ? static_cast<Gdiplus::REAL>(ph) / srcH : 1.0f;
-                    Gdiplus::TextureBrush brush(snap, Gdiplus::WrapModeClamp);
-                    Gdiplus::Matrix xform(scaleX, 0.0f, 0.0f, scaleY,
-                                          static_cast<Gdiplus::REAL>(pv.left) - rcSrc.left * scaleX,
-                                          static_cast<Gdiplus::REAL>(pv.top) - rcSrc.top * scaleY);
+
+                    Gdiplus::Bitmap scaled(pw, ph, PixelFormat32bppPARGB);
+                    Gdiplus::Graphics tg(&scaled);
+                    tg.SetInterpolationMode(Gdiplus::InterpolationModeHighQualityBicubic);
+                    tg.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHighQuality);
+                    tg.DrawImage(snap, Gdiplus::RectF(0.0f, 0.0f, static_cast<Gdiplus::REAL>(pw), static_cast<Gdiplus::REAL>(ph)),
+                                 srcLeft, srcTop, srcW, srcH, Gdiplus::UnitPixel);
+
+                    Gdiplus::TextureBrush brush(&scaled, Gdiplus::WrapModeClamp);
+                    Gdiplus::Matrix xform(1.0f, 0.0f, 0.0f, 1.0f,
+                                          static_cast<Gdiplus::REAL>(pv.left),
+                                          static_cast<Gdiplus::REAL>(pv.top));
                     brush.SetTransform(&xform);
 
                     Gdiplus::GraphicsPath previewPath;
