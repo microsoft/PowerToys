@@ -54,18 +54,73 @@ serializes outstanding instances. Cancellation proves that a final pending app
 never started while an already-open HWND survives. Dismissal releases the gate
 after the UI closes and requires every configured app to appear and be positioned.
 
-Run in an unlocked, English-language **non-elevated** desktop. Use the local VM
-skill rather than a working desktop. No Visual Studio, Store access, third-party
-applications, or elevated fixture process is needed inside the guest. The test
-fixture is representative packaged/unpackaged desktop coverage, not a claim of
-compatibility testing every application named as an example in the issue.
+Run in an unlocked, English-language **non-elevated** desktop. No Visual Studio,
+Store access, third-party applications, or elevated fixture process is needed on
+the machine under test. The test fixture is representative packaged/unpackaged
+desktop coverage, not a claim of compatibility testing every application named as
+an example in the issue.
+
+Placement cases seed each application against the display Workspaces actually
+enumerates at launch: `WorkspacesDisplay` resolves the primary monitor to the
+product's GDI monitor **number**, effective DPI, and physical/logical work area
+(the same contract as `src\common\Display\DisplayUtils.cpp`), and the seed uses
+those real values plus a default rectangle kept inside the target work area. This
+replaces the previous fixed `monitor = 1` / `(240, 220, 720, 460)` assumption,
+which made the native launcher's live-monitor lookup miss and minimize the
+window when display 1 was absent. The fixed geometry/DPI assumptions could also
+produce incorrect placement on other display configurations.
+The class preflight fails fast with actionable guidance when the host cannot support real
+placement — for example a disconnected RDP session that reports only
+the numberless `WinDisc` pseudo-display — instead of a ~96s minimized-placement
+assertion timeout, and before any window is opened or state is mutated.
+
+### Running on the host via Visual Studio Test Explorer
+
+These tests can run directly on a developer machine, not only inside the local VM.
+Requirements for a host run:
+
+- A **connected, unlocked, interactive** desktop in an **English** display
+  language. A disconnected/locked RDP session (`WinDisc` primary) is rejected up
+  front by the placement preflight.
+- **Non-elevated** Test Explorer / `testhost`. The suite asserts it is not
+  elevated and drives the real standard-user Settings/Runner scope; do not launch
+  Visual Studio "as administrator".
+- Build the project (and its `Workspaces.TestApp` fixture) with the repository
+  script for the platform under test, then let Test Explorer discover the
+  `Microsoft.Testing.Platform` executable. Make sure the build selected in Test
+  Explorer matches the bits you intend to exercise.
+- Build the **product runtime from the same branch** too. Building the UI-test
+  project does not rebuild Runner, Settings, or Workspaces Editor. Stale editor
+  binaries can lack the automation identifiers used by the suite. When staging
+  binaries elsewhere, keep the complete runtime/dependency set, including
+  `PowerToys.WorkspacesEditor.dll.config` and the launcher UI configuration;
+  copying a lone editor DLL is not a supported deployment.
+- **Do not touch the mouse or keyboard** while a case runs — the tests move the
+  real cursor and rely on foreground ownership.
+- Settings, workspace storage, temporary snapshots, desktop shortcuts, and
+  generated icons are journaled before each run and restored afterwards, so a run
+  does not lose your existing Workspaces data. Cleanup stops only the fixture and
+  Workspaces module processes it owns, never unrelated apps.
+
+The **unpackaged** placement/launch/cancel cases can use matching local Debug
+product builds without signing the fixture. The two **packaged** cases report
+Inconclusive/Skipped locally when the fixture is unsigned or its root certificate
+is untrusted. CI and pipeline-like VM runs remain strict, and malformed packages,
+corrupt signatures, missing files, and unrelated deployment failures are never
+converted into skips. Package preparation happens before opening the capture
+overlay. The tests never add host certificate trust automatically.
+
+For the optional host signing/trust command and cleanup instructions, see
+`doc\devdocs\modules\workspaces.md`, **Optional packaged-fixture setup**. Do not
+claim full packaged coverage on an unsigned host. Authenticated **Release**
+Runner/Settings IPC is a separate prerequisite and remains unchanged.
 
 The full suite needs a signed/trusted `Workspaces.TestApp.msix`. Release
 Runner/Settings must have matching versions and valid Microsoft-named signatures.
 Quick Access has its own authenticated pipe, so `PowerToys.QuickAccess.exe` must
 also satisfy that contract. The existing CI companion/package-signing step covers
-all three executables and the fixture. The suite is dispatched through the shared
-limited-token UI-test runner, not through an elevated test host.
+all three executables and the fixture. In CI the suite is dispatched through the
+shared limited-token UI-test runner, not through an elevated test host.
 
 ## Checklist coverage
 
@@ -129,6 +184,20 @@ missing; build with the repository script, not `dotnet build`, because the share
 harness has COM references. Build `ARM64` as well before CI. The project reference
 builds the matching fixture and stages its complete self-contained payload under
 `Fixture`, plus `Workspaces.TestApp.msix` beside the MTP test executable.
+
+On a connected, unlocked, non-elevated host you can run the unpackaged cases from
+Visual Studio Test Explorer, or directly against the built executable:
+
+```powershell
+$tests = (Resolve-Path .\x64\Debug\tests\Workspaces.UITests.Next\net10.0-windows10.0.26100.0).Path
+& "$tests\Workspaces.UITests.Next.exe" `
+    --filter "FullyQualifiedName~CancelLaunchStopsPendingAppsAndPreservesOpenedWindows" `
+    --report-trx --results-directory .\TestResults
+```
+
+The placement preflight rejects a disconnected/locked (`WinDisc`) desktop with
+actionable guidance before touching any state. Packaged-fixture and Release-IPC
+cases still need the signed artifacts below; run those in the VM or CI.
 
 Sign the staged payload before packaging it for a VM. Use the existing signer
 without adding trust to the build host:

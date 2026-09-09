@@ -22,7 +22,7 @@ namespace Microsoft.Workspaces.UITests
             var app = State.Application("Placement fixture", title);
             app["minimized"] = minimized;
             app["maximized"] = maximized;
-            var project = State.Project("launch", SettingsWindow(), app);
+            var project = State.Project("launch", app);
             State.WriteProjects(project);
             OpenEditor();
             LaunchWorkspace(WorkspaceTestState.Text(project, "name"));
@@ -54,7 +54,7 @@ namespace Microsoft.Workspaces.UITests
                 app["app-user-model-id"] = State.Fixture.AppUserModelId;
             }
 
-            var project = State.Project("arguments", SettingsWindow(), app);
+            var project = State.Project("arguments", app);
             State.WriteProjects(project);
             OpenEditor();
             EditWorkspace(WorkspaceTestState.Text(project, "name"));
@@ -77,7 +77,7 @@ namespace Microsoft.Workspaces.UITests
         {
             var title = State.Prefix + "-shortcut";
             var app = State.Application("Shortcut fixture", title);
-            var project = State.Project("shortcut", SettingsWindow(), app);
+            var project = State.Project("shortcut", app);
             State.WriteProjects(project);
             var name = WorkspaceTestState.Text(project, "name");
             var shortcut = WorkspaceTestState.ShortcutPath(name);
@@ -130,7 +130,7 @@ namespace Microsoft.Workspaces.UITests
             var originalTitle = State.Prefix + "-original";
             var addedTitle = State.Prefix + "-added";
             var app = State.Application("Workspaces.TestApp", originalTitle);
-            var project = State.Project("launch-edit", SettingsWindow(), app);
+            var project = State.Project("launch-edit", app);
             State.WriteProjects(project);
             var name = WorkspaceTestState.Text(project, "name");
             OpenEditor();
@@ -162,7 +162,7 @@ namespace Microsoft.Workspaces.UITests
             var title = State.Prefix + "-reuse";
             var original = State.Fixture.OpenUnpackaged(title, TestContext);
             var app = State.Application("Existing fixture", title);
-            var project = State.Project("reuse", SettingsWindow(), app);
+            var project = State.Project("reuse", app);
             State.WriteProjects(project);
             OpenEditor();
             EditWorkspace(WorkspaceTestState.Text(project, "name"));
@@ -182,9 +182,9 @@ namespace Microsoft.Workspaces.UITests
         {
             var title = State.Prefix + "-missing-monitor";
             var app = State.Application("Topology fixture", title);
-            var missingNumber = MonitorInfo.Count + 10;
+            var missingNumber = WorkspacesDisplay.FirstUnusedNumber(WorkspacesDisplay.ConnectedMonitorNumbers());
             app["monitor"] = missingNumber;
-            var project = State.Project("topology", SettingsWindow(), app);
+            var project = State.Project("topology", app);
             var missingMonitor = project["monitor-configuration"]!.AsArray()[0]!.DeepClone();
             missingMonitor["monitor-number"] = missingNumber;
             missingMonitor["id"] = "Disconnected test monitor";
@@ -210,7 +210,7 @@ namespace Microsoft.Workspaces.UITests
             var missing = State.Application("Missing fixture", "missing", path: Path.Combine(Path.GetTempPath(), State.Prefix + "-missing.exe"));
             var applications = new List<JsonObject> { first, missing };
             applications.AddRange(PendingApplications(10, $@"Local\{State.Prefix}-progress-gate"));
-            var project = State.Project("progress", SettingsWindow(), applications.ToArray());
+            var project = State.Project("progress", applications.ToArray());
             State.WriteProjects(project);
             OpenEditor();
             LaunchWorkspace(WorkspaceTestState.Text(project, "name"));
@@ -243,7 +243,7 @@ namespace Microsoft.Workspaces.UITests
             var first = State.Application("Opened fixture", firstTitle);
             var applications = new List<JsonObject> { first };
             applications.AddRange(PendingApplications(16, gateName, startedName, tailName));
-            var project = State.Project("cancel-launch", SettingsWindow(), applications.ToArray());
+            var project = State.Project("cancel-launch", applications.ToArray());
             State.WriteProjects(project);
             OpenEditor();
             LaunchWorkspace(WorkspaceTestState.Text(project, "name"));
@@ -270,7 +270,7 @@ namespace Microsoft.Workspaces.UITests
             using var gate = new EventWaitHandle(false, EventResetMode.ManualReset, gateName);
             using var started = new EventWaitHandle(false, EventResetMode.ManualReset, startedName);
             var applications = PendingApplications(8, gateName, startedName).ToArray();
-            var project = State.Project("dismiss", SettingsWindow(), applications);
+            var project = State.Project("dismiss", applications);
             State.WriteProjects(project);
             OpenEditor();
             LaunchWorkspace(WorkspaceTestState.Text(project, "name"));

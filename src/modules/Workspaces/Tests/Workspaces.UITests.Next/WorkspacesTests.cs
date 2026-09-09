@@ -54,6 +54,15 @@ namespace Microsoft.Workspaces.UITests
         // toggles survive the swap — winappcli re-resolves the live window on every call.
         private Session SettingsUi => settingsUi ??= Microsoft.PowerToys.UITest.Next.Session.FromProcess(SettingsProcess, timeoutMS: 30_000);
 
+        [ClassInitialize]
+        public static void ValidateDesktop(TestContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+            Assert.IsFalse(ElevationHelper.IsProcessElevated(Environment.ProcessId), "Run Test Explorer and the Workspaces UI tests without elevation.");
+            var target = WorkspacesDisplay.GetPrimaryTarget();
+            context.WriteLine($"Workspaces placement target: {target.DeviceName}, monitor {target.Number}, DPI {target.Dpi}.");
+        }
+
         protected override void PrepareTestState()
         {
             StopModuleProcesses();
@@ -65,6 +74,9 @@ namespace Microsoft.Workspaces.UITests
         public void PrepareWorkspace()
         {
             Assert.IsFalse(ElevationHelper.IsProcessElevated(Environment.ProcessId), "Run the Workspaces suite in a standard-user desktop.");
+
+            // Refresh the topology between cases; the class preflight runs before base initialization.
+            State.ResolveTarget();
             StopModuleProcesses();
             State.Fixture.CloseAll();
             State.Reset();
@@ -101,6 +113,11 @@ namespace Microsoft.Workspaces.UITests
         [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
         public static void RestoreWorkspaceState()
         {
+            if (state is null)
+            {
+                return;
+            }
+
             try
             {
                 StopModuleProcesses();

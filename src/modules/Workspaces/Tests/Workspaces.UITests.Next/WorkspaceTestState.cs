@@ -15,6 +15,7 @@ namespace Microsoft.Workspaces.UITests
         private readonly List<IDisposable> snapshots = [];
         private readonly HashSet<string> trackedFiles = new(StringComparer.OrdinalIgnoreCase);
         private int applicationIndex;
+        private WorkspacesDisplay.TargetDisplay? target;
 
         internal WorkspaceTestState()
         {
@@ -34,6 +35,17 @@ namespace Microsoft.Workspaces.UITests
         internal TestAppFixture Fixture { get; } = new();
 
         internal string Prefix { get; private set; } = string.Empty;
+
+        // The connected display Workspaces will actually enumerate at launch (the primary monitor resolved to
+        // the product's number/DPI/geometry contract). Seeding uses its real values so a launched fixture is
+        // placed rather than falling into the native missing-monitor minimize path.
+        internal WorkspacesDisplay.TargetDisplay Target =>
+            target ?? throw new InvalidOperationException("The target display has not been resolved. Call ResolveTarget first.");
+
+        // Fail fast with actionable guidance when the host cannot support real placement (e.g. a disconnected
+        // or locked RDP session that only reports the numberless 'WinDisc' pseudo-display), before any window
+        // is opened or seeded.
+        internal void ResolveTarget() => target = WorkspacesDisplay.GetPrimaryTarget();
 
         internal void PrepareSettings()
         {
@@ -80,6 +92,7 @@ namespace Microsoft.Workspaces.UITests
         internal JsonObject Application(string name, string title, string? arguments = null, string? path = null)
         {
             applicationIndex++;
+            var (x, y, width, height) = WorkspacesDisplay.DefaultApplicationPosition(Target);
             return new JsonObject
             {
                 // Deterministic, ordering-stable application IDs. The value keeps its ascending index in
@@ -100,22 +113,23 @@ namespace Microsoft.Workspaces.UITests
                 ["can-launch-elevated"] = true,
                 ["minimized"] = false,
                 ["maximized"] = false,
-                ["position"] = Position(240, 220, 720, 460),
-                ["monitor"] = 1,
+                ["position"] = Position(x, y, width, height),
+
+                // The GDI monitor number the product will resolve for the target display. Assuming 1 here
+                // makes moveWindow fail its live-monitor lookup and minimize the window whenever the primary
+                // is not DISPLAY1.
+                ["monitor"] = Target.Number,
                 ["version"] = "1",
             };
         }
 
-        internal JsonObject Project(string suffix, IntPtr settingsWindow, params JsonObject[] applications)
+        internal JsonObject Project(string suffix, params JsonObject[] applications)
         {
             var name = $"{Prefix}-{suffix}";
             var id = Guid.NewGuid().ToString("B");
             Preserve(Path.Combine(DirectoryPath, "WorkspacesIcons", id + ".ico"));
             TrackShortcut(name);
-            var monitor = MonitorInfo.GetPrimary() ?? throw new InvalidOperationException("No primary monitor is available.");
-            var dpi = NativeMethods.GetDpiForWindow(settingsWindow);
-            Assert.IsTrue(dpi > 0, "The Settings window did not report a usable DPI.");
-            var scale = dpi / 96.0;
+            var display = Target;
             return new JsonObject
             {
                 ["id"] = id,
@@ -128,16 +142,16 @@ namespace Microsoft.Workspaces.UITests
                 {
                     new JsonObject
                     {
-                        ["id"] = monitor.DeviceName,
-                        ["instance-id"] = string.Empty,
-                        ["monitor-number"] = 1,
-                        ["dpi"] = dpi,
-                        ["monitor-rect-dpi-aware"] = MonitorRectangle(monitor.Left, monitor.Top, monitor.Width, monitor.Height),
+                        ["id"] = display.Id,
+                        ["instance-id"] = display.InstanceId,
+                        ["monitor-number"] = display.Number,
+                        ["dpi"] = (int)display.Dpi,
+                        ["monitor-rect-dpi-aware"] = MonitorRectangle(display.MonitorLeft, display.MonitorTop, display.MonitorWidth, display.MonitorHeight),
                         ["monitor-rect-dpi-unaware"] = MonitorRectangle(
-                            (int)Math.Round(monitor.Left / scale),
-                            (int)Math.Round(monitor.Top / scale),
-                            (int)Math.Round(monitor.Width / scale),
-                            (int)Math.Round(monitor.Height / scale)),
+                            display.LogicalMonitorLeft,
+                            display.LogicalMonitorTop,
+                            display.LogicalMonitorRight - display.LogicalMonitorLeft,
+                            display.LogicalMonitorBottom - display.LogicalMonitorTop),
                     },
                 },
                 ["applications"] = new JsonArray(applications.Select(application => application.DeepClone()).ToArray()),

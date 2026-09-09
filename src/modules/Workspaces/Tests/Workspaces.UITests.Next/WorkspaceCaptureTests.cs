@@ -13,6 +13,7 @@ namespace Microsoft.Workspaces.UITests
         [TestMethod]
         public void CaptureIncludesPackagedUnpackagedAndMinimizedWindows()
         {
+            State.Fixture.PreparePackage(TestContext);
             var firstTitle = State.Prefix + "-normal";
             var minimizedTitle = State.Prefix + "-minimized";
             var first = State.Fixture.OpenUnpackaged(firstTitle, TestContext);

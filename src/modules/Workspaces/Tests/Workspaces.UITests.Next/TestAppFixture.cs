@@ -56,7 +56,7 @@ namespace Microsoft.Workspaces.UITests
 
         internal Session OpenPackaged(TestContext context)
         {
-            EnsurePackage(context);
+            PreparePackage(context);
             var entries = package!.GetAppListEntriesAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(20)).GetAwaiter().GetResult();
             var application = entries.Single(entry => entry.AppUserModelId == AppUserModelId);
             context.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Activating packaged fixture '{AppUserModelId}'.");
@@ -196,7 +196,7 @@ namespace Microsoft.Workspaces.UITests
             }
         }
 
-        private void EnsurePackage(TestContext context)
+        internal void PreparePackage(TestContext context)
         {
             if (package is not null)
             {
@@ -204,13 +204,28 @@ namespace Microsoft.Workspaces.UITests
             }
 
             var packagePath = Path.Combine(AppContext.BaseDirectory, "Workspaces.TestApp.msix");
-            Assert.IsTrue(File.Exists(packagePath), $"The signed fixture package was not staged: {packagePath}");
+            PackagedFixturePrerequisites.RequireSignature(packagePath, EnvironmentConfig.IsInPipeline);
             Assert.HasCount(0, RegisteredPackages(), "A previous fixture package is still registered; remove it before starting a new suite.");
             context.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Installing the signed fixture for the current user: {packagePath}");
             ownsRegistration = true;
-            installationOperation = packageManager.AddPackageAsync(new Uri(packagePath), [], DeploymentOptions.None);
-            installation = installationOperation.AsTask();
-            var deployment = installation.WaitAsync(TimeSpan.FromSeconds(90)).GetAwaiter().GetResult();
+            DeploymentResult deployment;
+            try
+            {
+                installationOperation = packageManager.AddPackageAsync(new Uri(packagePath), [], DeploymentOptions.None);
+                installation = installationOperation.AsTask();
+                deployment = installation.WaitAsync(TimeSpan.FromSeconds(90)).GetAwaiter().GetResult();
+            }
+            catch (COMException error) when (PackagedFixturePrerequisites.IsMissingSigning(error.HResult))
+            {
+                throw PackagedFixturePrerequisites.MissingSigningException(packagePath, error.HResult, EnvironmentConfig.IsInPipeline);
+            }
+
+            if (deployment.ExtendedErrorCode is { } deploymentError &&
+                PackagedFixturePrerequisites.IsMissingSigning(deploymentError.HResult))
+            {
+                throw PackagedFixturePrerequisites.MissingSigningException(packagePath, deploymentError.HResult, EnvironmentConfig.IsInPipeline);
+            }
+
             Assert.IsNull(
                 deployment.ExtendedErrorCode,
                 $"Fixture deployment failed: {deployment.ErrorText}. Activity: {deployment.ActivityId}. " +
