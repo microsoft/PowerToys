@@ -81,7 +81,7 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     public override void InitializeProperties()
     {
-        if (IsInitialized)
+        if (IsInitialized || IsCleanedUp)
         {
             return;
         }
@@ -90,7 +90,7 @@ public partial class ListItemViewModel : CommandItemViewModel
         base.InitializeProperties();
 
         var li = Model.Unsafe;
-        if (li is null)
+        if (li is null || IsCleanedUp)
         {
             return; // throw?
         }
@@ -114,7 +114,7 @@ public partial class ListItemViewModel : CommandItemViewModel
     {
         base.SlowInitializeProperties();
         var model = Model.Unsafe;
-        if (model is null)
+        if (model is null || IsCleanedUp)
         {
             return;
         }
@@ -138,7 +138,7 @@ public partial class ListItemViewModel : CommandItemViewModel
         base.FetchProperty(propertyName);
 
         var model = this.Model.Unsafe;
-        if (model is null)
+        if (model is null || IsCleanedUp)
         {
             return; // throw?
         }
