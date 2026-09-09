@@ -70,8 +70,11 @@ namespace Microsoft.Workspaces.UITests
         {
             Prefix = $"PTUITest-{Guid.NewGuid():N}";
             applicationIndex = 0;
-            File.Delete(TemporaryPath);
+
+            // WriteProjects creates the Workspaces directory; run it first so deleting a leftover
+            // temporary snapshot cannot throw DirectoryNotFoundException on a fresh profile.
             WriteProjects();
+            File.Delete(TemporaryPath);
         }
 
         internal JsonObject Application(string name, string title, string? arguments = null, string? path = null)

@@ -218,6 +218,11 @@ namespace Microsoft.Workspaces.UITests
             AssertPositioned(window, first);
             var progress = LauncherWindow();
             AssertLaunchGlyph(progress, "Ready fixture", "\uF78C");
+
+            // The missing app has no executable on disk, so it reaches Failed. Failed and the "\uEF2C"
+            // fallback share a glyph, but a still-pending app (Waiting/Launched) has Loading == true and
+            // hides its glyph behind the progress ring, and Canceled cannot occur before the Cancel below.
+            // A displayed "\uEF2C" here therefore uniquely proves the Failed state without a product hook.
             AssertLaunchGlyph(progress, "Missing fixture", "\uEF2C");
             var loading = progress.Find(By.AccessibilityId("LaunchProgress_Pending fixture 01"), 15_000);
             Assert.IsTrue(loading.Displayed, "The not-yet-ready application did not show its launching indicator.");

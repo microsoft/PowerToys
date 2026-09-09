@@ -19,30 +19,22 @@ namespace Microsoft.Workspaces.UITests
             this.bitmap = bitmap;
         }
 
+        // Grab the current preview as a baseline: park the cursor once and attach the frame as a single
+        // piece of evidence. Callers keep the returned snapshot to compare against with
+        // AssertChanged/AssertRestored.
         internal static PreviewSnapshot Capture(TestContext context, Session editor, string label)
         {
             MouseHelper.MoveTo(0, 0);
-            var image = editor.Find<Element>(By.AccessibilityId("WorkspacePreviewImage"), 15_000);
-            Assert.IsTrue(image.Width > 0 && image.Height > 0, "The visible workspace preview has no geometry.");
-            var directory = context.TestRunResultsDirectory ?? throw new InvalidOperationException("No results directory is available.");
-            var framePath = Path.Combine(directory, $"{context.TestName}-{Guid.NewGuid():N}-frame.png");
-            var previewPath = Path.Combine(directory, $"{context.TestName}-{Guid.NewGuid():N}-{label}.png");
-            Directory.CreateDirectory(directory);
+            var snapshot = CaptureBitmap(context, editor);
             try
             {
-                editor.ScreenshotVisibleWindow(framePath);
-                var bounds = WindowHelper.GetVisibleBounds(new IntPtr(editor.WindowHandle));
-                var rectangle = new Rectangle(image.X - bounds.Left, image.Y - bounds.Top, image.Width, image.Height);
-                using var frame = new Bitmap(framePath);
-                Assert.IsTrue(new Rectangle(0, 0, frame.Width, frame.Height).Contains(rectangle), "The preview is not entirely within the composed editor frame.");
-                var cropped = frame.Clone(rectangle, PixelFormat.Format32bppArgb);
-                cropped.Save(previewPath, ImageFormat.Png);
-                context.AddResultFile(previewPath);
-                return new PreviewSnapshot(cropped);
+                snapshot.Attach(context, label);
+                return snapshot;
             }
-            finally
+            catch
             {
-                File.Delete(framePath);
+                snapshot.Dispose();
+                throw;
             }
         }
 
@@ -54,21 +46,99 @@ namespace Microsoft.Workspaces.UITests
 
         public void Dispose() => bitmap.Dispose();
 
+        // Capture the visible preview into an in-memory bitmap without attaching any evidence. The
+        // composed frame is written to a transient file only long enough to crop the preview region out
+        // of it, then deleted, so a long comparison loop never accumulates result files.
+        private static PreviewSnapshot CaptureBitmap(TestContext context, Session editor)
+        {
+            var image = editor.Find<Element>(By.AccessibilityId("WorkspacePreviewImage"), 15_000);
+            Assert.IsTrue(image.Width > 0 && image.Height > 0, "The visible workspace preview has no geometry.");
+            var directory = context.TestRunResultsDirectory ?? throw new InvalidOperationException("No results directory is available.");
+            Directory.CreateDirectory(directory);
+            var framePath = Path.Combine(directory, $"{context.TestName}-{Guid.NewGuid():N}-frame.png");
+            try
+            {
+                editor.ScreenshotVisibleWindow(framePath);
+                var bounds = WindowHelper.GetVisibleBounds(new IntPtr(editor.WindowHandle));
+                var rectangle = new Rectangle(image.X - bounds.Left, image.Y - bounds.Top, image.Width, image.Height);
+                using var frame = new Bitmap(framePath);
+                Assert.IsTrue(new Rectangle(0, 0, frame.Width, frame.Height).Contains(rectangle), "The preview is not entirely within the composed editor frame.");
+                return new PreviewSnapshot(frame.Clone(rectangle, PixelFormat.Format32bppArgb));
+            }
+            finally
+            {
+                File.Delete(framePath);
+            }
+        }
+
+        // Persist the in-memory bitmap as a TRX result file. Used for the baseline frame and for the
+        // single final frame retained by a comparison, so the attached evidence stays bounded.
+        private void Attach(TestContext context, string label)
+        {
+            var directory = context.TestRunResultsDirectory ?? throw new InvalidOperationException("No results directory is available.");
+            Directory.CreateDirectory(directory);
+            var previewPath = Path.Combine(directory, $"{context.TestName}-{Guid.NewGuid():N}-{label}.png");
+            bitmap.Save(previewPath, ImageFormat.Png);
+            context.AddResultFile(previewPath);
+        }
+
         private static void AssertDifference(TestContext context, Session editor, PreviewSnapshot before, bool changed)
         {
-            var result = WaitHelper.WaitForStable(
-                () =>
+            // Park the cursor once for the whole comparison rather than on every poll.
+            MouseHelper.MoveTo(0, 0);
+            var label = changed ? "changed-preview" : "restored-preview";
+            PreviewSnapshot? latest = null;
+            try
+            {
+                WaitHelper.StableWaitResult<double> result;
+                try
                 {
-                    using var after = Capture(context, editor, changed ? "changed-preview" : "restored-preview");
-                    return before.ChangedFraction(after);
-                },
-                fraction => changed ? fraction >= 0.005 : fraction <= 0.001,
-                timeoutMS: 20_000,
-                requiredConsecutiveMatches: 2,
-                pollIntervalMS: 150);
-            Assert.IsTrue(
-                result.Succeeded,
-                $"The preview {(changed ? "did not materially change" : "did not return to its original pixels")}. Changed fraction: {result.LastObservation:P3}.");
+                    result = WaitHelper.WaitForStable(
+                        () =>
+                        {
+                            var after = CaptureBitmap(context, editor);
+                            latest?.Dispose();
+                            latest = after;
+                            return before.ChangedFraction(after);
+                        },
+                        fraction => changed ? fraction >= 0.005 : fraction <= 0.001,
+                        timeoutMS: 20_000,
+                        requiredConsecutiveMatches: 2,
+                        pollIntervalMS: 150);
+                }
+                finally
+                {
+                    // Retain exactly one comparison frame (the final observation) alongside the baseline,
+                    // whether the wait succeeded, timed out, or a dimension mismatch propagated.
+                    TryAttach(context, latest, label);
+                }
+
+                Assert.IsTrue(
+                    result.Succeeded,
+                    $"The preview {(changed ? "did not materially change" : "did not return to its original pixels")}. Changed fraction: {result.LastObservation:P3}.");
+            }
+            finally
+            {
+                latest?.Dispose();
+            }
+        }
+
+        private static void TryAttach(TestContext context, PreviewSnapshot? snapshot, string label)
+        {
+            if (snapshot is null)
+            {
+                return;
+            }
+
+            try
+            {
+                snapshot.Attach(context, label);
+            }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException or ExternalException or InvalidOperationException)
+            {
+                // Evidence attachment is best-effort; it must never mask the comparison outcome.
+                context.WriteLine($"Could not attach the '{label}' preview evidence: {error.Message}");
+            }
         }
 
         private double ChangedFraction(PreviewSnapshot other)

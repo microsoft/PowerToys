@@ -469,6 +469,9 @@ Describe 'UI-test pipeline non-elevated dispatch' {
 
     It 'scopes Workspaces package and Quick Access signing to the selected suite' -TestCases @(
         @{ Modules = @('Workspaces.UITests.Next'); AllModules = $false; Expected = $true }
+        @{ Modules = @('Workspaces.Editor.UITests'); AllModules = $false; Expected = $false }
+        @{ Modules = @('Other.Workspaces.UITests.Next'); AllModules = $false; Expected = $false }
+        @{ Modules = @('Workspaces.UITests.Next.Other'); AllModules = $false; Expected = $false }
         @{ Modules = @('RegistryPreview.UITests'); AllModules = $false; Expected = $false }
         @{ Modules = @(); AllModules = $true; Expected = $true }
     ) {
@@ -485,5 +488,26 @@ Describe 'UI-test pipeline non-elevated dispatch' {
 
         ($requiredPackages -contains 'Workspaces.TestApp.msix') | Should Be $Expected
         ($requiredAuthenticodeFiles -contains 'PowerToys.QuickAccess.exe') | Should Be $Expected
+    }
+
+    It 'scopes Workspaces authenticated Settings IPC signing without changing other families' -TestCases @(
+        @{ Modules = @('Workspaces.UITests.Next'); AllModules = $false; Expected = $true }
+        @{ Modules = @('Workspaces.Editor.UITests'); AllModules = $false; Expected = $false }
+        @{ Modules = @('Other.Workspaces.UITests.Next'); AllModules = $false; Expected = $false }
+        @{ Modules = @('Workspaces.UITests.Next.Other'); AllModules = $false; Expected = $false }
+        @{ Modules = @('RegistryPreview.UITests'); AllModules = $false; Expected = $true }
+        @{ Modules = @('CropAndLock.UITests'); AllModules = $false; Expected = $true }
+        @{ Modules = @(); AllModules = $true; Expected = $true }
+    ) {
+        param($Modules, $AllModules, $Expected)
+
+        $template = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
+        $selection = [regex]::Match($template, '(?m)^\s*\$requiresAuthenticatedSettingsIpc = [^\r\n]+').Value
+        $selection | Should Not BeNullOrEmpty
+        $selectedModules = $Modules
+        $allModules = $AllModules
+        . ([scriptblock]::Create($selection))
+
+        $requiresAuthenticatedSettingsIpc | Should Be $Expected
     }
 }

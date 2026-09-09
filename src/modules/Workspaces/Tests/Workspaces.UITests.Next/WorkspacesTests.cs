@@ -75,6 +75,8 @@ namespace Microsoft.Workspaces.UITests
         [TestCleanup]
         public async Task CleanUpWorkspace()
         {
+            // MSTest appends cleanup errors to the original failure and fails passing tests on leaks.
+            // Capture evidence first; fixture cleanup must still run if stopping module processes fails.
             try
             {
                 await CaptureFailureArtifactsBeforeCleanupAsync();
@@ -102,6 +104,8 @@ namespace Microsoft.Workspaces.UITests
             try
             {
                 StopModuleProcesses();
+
+                // Defensive and idempotent: stop before file restoration even if inherited cleanup already ran.
                 StopSharedScope();
             }
             finally
