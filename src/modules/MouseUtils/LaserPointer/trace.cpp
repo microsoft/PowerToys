@@ -21,7 +21,7 @@ void Trace::EnableLaserPointer(const bool enabled) noexcept
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
-// Log that the user started drawing a laser trail
+// Log that the user armed the laser pointer with its shortcut, starting a session
 void Trace::StartLaserPointerSession() noexcept
 {
     TraceLoggingWriteWrapper(
