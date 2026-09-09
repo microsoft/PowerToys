@@ -35,6 +35,12 @@
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #endif
+#ifndef DWMWA_NCRENDERING_POLICY
+#define DWMWA_NCRENDERING_POLICY 2
+#endif
+#ifndef DWMNCRP_DISABLED
+#define DWMNCRP_DISABLED 1
+#endif
 #ifndef DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
 #define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((DPI_AWARENESS_CONTEXT)-4)
 #endif
@@ -507,6 +513,17 @@ bool Switcher::Init(HINSTANCE instance)
         0, 0, 0, 0, nullptr, nullptr, hinst, nullptr);
     if (!thumbHost)
         return false;
+
+    // The system-backdrop material (DWMWA_SYSTEMBACKDROP_TYPE) draws DWM's
+    // default elevation shadow around the window's *rectangular* bounds. That
+    // shadow ignores the rounded SetWindowRgn applied below, so it peeks out
+    // past the rounded corners as a stray gray sliver. Disabling non-client
+    // rendering removes DWM's default shadow/border chrome while leaving the
+    // backdrop material and extended-frame glass (drawn per pixel by us)
+    // untouched.
+    DWORD ncRenderingPolicy = DWMNCRP_DISABLED;
+    DwmSetWindowAttribute(thumbHost, DWMWA_NCRENDERING_POLICY,
+                          &ncRenderingPolicy, sizeof(ncRenderingPolicy));
 
     WNDCLASSW wc = {};
     wc.style = CS_HREDRAW | CS_VREDRAW;
