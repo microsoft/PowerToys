@@ -1362,19 +1362,25 @@ void Switcher::RenderLayered()
                 {
                     RECT avail = { 0, 0, snapshotSizes[slot].cx, snapshotSizes[slot].cy };
                     RECT rcSrc = AltWindowCycleLogic::CoverSource(pv, avail);
-                    // Draw the captured window content as-is -- no color adjustment.
-                    g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
-                    g.DrawImage(snap,
-                                Gdiplus::RectF(static_cast<Gdiplus::REAL>(pv.left),
-                                               static_cast<Gdiplus::REAL>(pv.top),
-                                               static_cast<Gdiplus::REAL>(pw),
-                                               static_cast<Gdiplus::REAL>(ph)),
-                                static_cast<Gdiplus::REAL>(rcSrc.left),
-                                static_cast<Gdiplus::REAL>(rcSrc.top),
-                                static_cast<Gdiplus::REAL>(rcSrc.right - rcSrc.left),
-                                static_cast<Gdiplus::REAL>(rcSrc.bottom - rcSrc.top),
-                                Gdiplus::UnitPixel);
+                    // Unlike a live DWM thumbnail -- an OS-composited plain rectangle we
+                    // have no way to clip -- this bitmap is painted entirely by us, so we
+                    // can round its corners to match the card instead of using a square
+                    // punch. Map source->dest with a texture-brush transform and fill a
+                    // rounded-rect path so the clip edge is anti-aliased.
+                    Gdiplus::REAL srcW = static_cast<Gdiplus::REAL>(rcSrc.right - rcSrc.left);
+                    Gdiplus::REAL srcH = static_cast<Gdiplus::REAL>(rcSrc.bottom - rcSrc.top);
+                    Gdiplus::REAL scaleX = srcW > 0 ? static_cast<Gdiplus::REAL>(pw) / srcW : 1.0f;
+                    Gdiplus::REAL scaleY = srcH > 0 ? static_cast<Gdiplus::REAL>(ph) / srcH : 1.0f;
+                    Gdiplus::TextureBrush brush(snap, Gdiplus::WrapModeClamp);
+                    Gdiplus::Matrix xform(scaleX, 0.0f, 0.0f, scaleY,
+                                          static_cast<Gdiplus::REAL>(pv.left) - rcSrc.left * scaleX,
+                                          static_cast<Gdiplus::REAL>(pv.top) - rcSrc.top * scaleY);
+                    brush.SetTransform(&xform);
+
+                    Gdiplus::GraphicsPath previewPath;
+                    BuildRoundRect(previewPath, InflateF(pv, 0), static_cast<Gdiplus::REAL>(radius));
                     g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    g.FillPath(&brush, &previewPath);
                 }
                 else
                 {
