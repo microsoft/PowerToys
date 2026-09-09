@@ -82,52 +82,37 @@ namespace AltTabStyle
     }
 
     inline COLORREF AccentFallbackRef() { return RGB(0, 120, 215); }
-    constexpr COLORREF HeaderTextRef(bool light)
+    constexpr COLORREF HeaderTextRef(bool selected)
     {
-        return light ? RGB(26, 26, 26) : RGB(235, 235, 235);
+        return selected ? RGB(255, 255, 255) : RGB(207, 207, 207);
     }
 
     inline Gdiplus::Color Transparent() { return Gdiplus::Color(0, 0, 0, 0); }
-
-    // WinUI CardBackgroundFillColorDefault. Same for every tile; selection is shown
-    // only by the accent focus outline. Semi-transparent so the acrylic shows through.
-    inline Gdiplus::Color Card(bool light)
+    inline Gdiplus::Color Card(bool selected)
     {
-        return light ? Gdiplus::Color(179, 255, 255, 255)  // #B3FFFFFF
-                     : Gdiplus::Color(210, 18, 18, 18);     // dark, mostly-opaque tile
+        return selected ? Gdiplus::Color(255, 58, 58, 62)
+                        : Gdiplus::Color(255, 43, 43, 46);
     }
-    constexpr COLORREF CardRef(bool light)
+    constexpr COLORREF CardRef(bool selected)
     {
-        // Opaque approximation of the card-over-acrylic color, available for any
-        // surface that needs a solid blend background.
-        return light ? RGB(248, 248, 248) : RGB(20, 20, 20);
-    }
-    // WinUI CardStrokeColorDefault: a subtle 1px edge around each card.
-    inline Gdiplus::Color CardStroke(bool light)
-    {
-        return light ? Gdiplus::Color(15, 0, 0, 0)
-                     : Gdiplus::Color(25, 0, 0, 0);
+        return selected ? RGB(58, 58, 62) : RGB(43, 43, 46);
     }
     inline Gdiplus::Color Accent(COLORREF accent)
     {
         return Gdiplus::Color(255, GetRValue(accent), GetGValue(accent), GetBValue(accent));
     }
-    inline Gdiplus::Color SurfaceStrokeDefault(bool light)
+    inline Gdiplus::Color SurfaceStrokeDefault()
     {
-        return light ? Gdiplus::Color(24, 0, 0, 0)
-                     : Gdiplus::Color(64, 255, 255, 255);
+        return Gdiplus::Color(64, 255, 255, 255);
     }
-    inline Gdiplus::Color PreviewStroke(bool light)
+    inline Gdiplus::Color PreviewStroke(bool selected)
     {
-        return light ? Gdiplus::Color(28, 0, 0, 0)
-                     : Gdiplus::Color(60, 255, 255, 255);
+        return selected ? Gdiplus::Color(90, 255, 255, 255)
+                        : Gdiplus::Color(45, 255, 255, 255);
     }
-    inline Gdiplus::Color FocusShadow(bool light)
+    inline Gdiplus::Color FocusShadow()
     {
-        // Contrast hairline just inside the accent ring: white in light mode,
-        // black in dark mode.
-        return light ? Gdiplus::Color(120, 255, 255, 255)
-                     : Gdiplus::Color(150, 0, 0, 0);
+        return Gdiplus::Color(150, 0, 0, 0);
     }
 }
 
@@ -946,7 +931,7 @@ void Switcher::EnsureFont()
         DeleteObject(font);
         font = nullptr;
     }
-    int height = -Scaled(14);
+    int height = -Scaled(15);
     font = CreateFontW(height, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
                        DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
                        CLEARTYPE_NATURAL_QUALITY, DEFAULT_PITCH | FF_DONTCARE, L"Segoe UI");
@@ -966,24 +951,6 @@ static void BuildRoundRect(Gdiplus::GraphicsPath& path, const Gdiplus::RectF& r,
     }
     path.AddArc(r.X, r.Y, d, d, 180, 90);
     path.AddArc(r.GetRight() - d, r.Y, d, d, 270, 90);
-    path.AddArc(r.GetRight() - d, r.GetBottom() - d, d, d, 0, 90);
-    path.AddArc(r.X, r.GetBottom() - d, d, d, 90, 90);
-    path.CloseFigure();
-}
-
-// Square top edge, rounded bottom corners. Used for the live preview viewport so
-// the full-bleed DWM thumbnail reads as rounded at the bottom of the card.
-static void BuildBottomRoundRect(Gdiplus::GraphicsPath& path, const Gdiplus::RectF& r, Gdiplus::REAL rad)
-{
-    path.Reset();
-    Gdiplus::REAL d = rad * 2;
-    if (d <= 0 || d > r.Width || d > r.Height)
-    {
-        path.AddRectangle(r);
-        return;
-    }
-    path.AddLine(r.X, r.Y, r.GetRight(), r.Y);
-    path.AddLine(r.GetRight(), r.Y, r.GetRight(), r.GetBottom() - rad);
     path.AddArc(r.GetRight() - d, r.GetBottom() - d, d, d, 0, 90);
     path.AddArc(r.X, r.GetBottom() - d, d, d, 90, 90);
     path.CloseFigure();
@@ -1139,7 +1106,7 @@ static void DrawIconOverPARGB(void* destBits, int destW, int destH,
 
 static void DrawHeaderText(BYTE* destBits, int destW, int destH, HFONT fontHandle,
                            const RECT& rc, const std::wstring& text,
-                           COLORREF textColor,
+                           COLORREF textColor, COLORREF backgroundColor,
                            UINT alignFlag = DT_LEFT)
 {
     if (!destBits || destW <= 0 || destH <= 0 || text.empty() || !fontHandle)
@@ -1173,15 +1140,12 @@ static void DrawHeaderText(BYTE* destBits, int destW, int destH, HFONT fontHandl
     HGDIOBJ oldBmp = SelectObject(textDC, scratch);
     HGDIOBJ oldFont = SelectObject(textDC, fontHandle);
     RECT fill = { 0, 0, w, h };
-    // Render white text on a black scratch; the luminance doubles as a coverage
-    // mask so the glyphs can be composited onto the translucent card without
-    // painting an opaque background box behind them.
-    HBRUSH bg = CreateSolidBrush(RGB(0, 0, 0));
+    HBRUSH bg = CreateSolidBrush(backgroundColor);
     FillRect(textDC, &fill, bg);
     DeleteObject(bg);
 
     int oldBk = SetBkMode(textDC, TRANSPARENT);
-    COLORREF oldColor = SetTextColor(textDC, RGB(255, 255, 255));
+    COLORREF oldColor = SetTextColor(textDC, textColor);
 
     RECT textRc = fill;
     DrawTextW(textDC, text.c_str(), static_cast<int>(text.size()), &textRc,
@@ -1191,9 +1155,6 @@ static void DrawHeaderText(BYTE* destBits, int destW, int destH, HFONT fontHandl
     SetBkMode(textDC, oldBk);
     SelectObject(textDC, oldFont);
 
-    const int tb = GetBValue(textColor);
-    const int tg = GetGValue(textColor);
-    const int tr = GetRValue(textColor);
     const BYTE* src = static_cast<const BYTE*>(scratchBits);
     for (int y = 0; y < h; ++y)
     {
@@ -1207,18 +1168,11 @@ static void DrawHeaderText(BYTE* destBits, int destW, int destH, HFONT fontHandl
                 continue;
 
             const BYTE* s = src + (static_cast<size_t>(y) * w + x) * 4;
-            int a = (s[0] + s[1] + s[2] + 1) / 3; // glyph coverage 0..255
-            if (a == 0)
-                continue;
-
-            // Source-over onto premultiplied-alpha dest (BGRA). The text is opaque,
-            // so its premultiplied contribution is colour * coverage.
             BYTE* d = destBits + (static_cast<size_t>(dy) * destW + dx) * 4;
-            int inv = 255 - a;
-            d[0] = static_cast<BYTE>((tb * a + 127) / 255 + (d[0] * inv + 127) / 255);
-            d[1] = static_cast<BYTE>((tg * a + 127) / 255 + (d[1] * inv + 127) / 255);
-            d[2] = static_cast<BYTE>((tr * a + 127) / 255 + (d[2] * inv + 127) / 255);
-            d[3] = static_cast<BYTE>(a + (d[3] * inv + 127) / 255);
+            d[0] = s[0];
+            d[1] = s[1];
+            d[2] = s[2];
+            d[3] = 255;
         }
     }
 
@@ -1285,7 +1239,6 @@ void Switcher::RenderLayered()
         g.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAliasGridFit);
 
         // Leave the panel background transparent; acrylic lives on thumbHost.
-        bool light = AltTabStyle::IsLightTheme();
         Gdiplus::REAL panelRadius = static_cast<Gdiplus::REAL>(Scaled(8));
         RECT panelRect = { 0, 0, w, h };
         Gdiplus::GraphicsPath panel;
@@ -1294,7 +1247,7 @@ void Switcher::RenderLayered()
         g.SetCompositingMode(Gdiplus::CompositingModeSourceCopy);
         g.FillPath(&panelBrush, &panel);
         g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
-        Gdiplus::Pen panelStroke(AltTabStyle::SurfaceStrokeDefault(light),
+        Gdiplus::Pen panelStroke(AltTabStyle::SurfaceStrokeDefault(),
                                  static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
         g.DrawPath(&panelStroke, &panel);
 
@@ -1314,51 +1267,27 @@ void Switcher::RenderLayered()
             // viewport inside it, which avoids fighting public DWM's square thumbnail.
             Gdiplus::GraphicsPath cardPath;
             BuildRoundRect(cardPath, InflateF(tile, 0), static_cast<Gdiplus::REAL>(radius));
-            Gdiplus::SolidBrush cardBrush(AltTabStyle::Card(light));
+            Gdiplus::SolidBrush cardBrush(AltTabStyle::Card(sel));
             g.FillPath(&cardBrush, &cardPath);
-
-            g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
-            Gdiplus::Pen cardPen(AltTabStyle::CardStroke(light),
-                                 static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
-            g.DrawPath(&cardPen, &cardPath);
 
             int pw = pv.right - pv.left;
             int ph = pv.bottom - pv.top;
             if (pw > 0 && ph > 0)
             {
-                Gdiplus::RectF pvF(
-                    static_cast<Gdiplus::REAL>(pv.left),
-                    static_cast<Gdiplus::REAL>(pv.top),
-                    static_cast<Gdiplus::REAL>(pw),
-                    static_cast<Gdiplus::REAL>(ph));
-
-                // Bottom-rounded viewport for the DWM thumbnail (square top, rounded
-                // bottom corners matching the card radius).
-                Gdiplus::GraphicsPath pvHole;
-                BuildBottomRoundRect(pvHole, pvF, static_cast<Gdiplus::REAL>(radius));
-
-                // The DWM thumbnail is a square rectangle that lives on the acrylic
-                // host behind this layer. Lay an OPAQUE card backing across the whole
-                // preview (clipped to the rounded card so it can't spill past the
-                // card's corners), then punch the rounded-bottom hole. The thumbnail
-                // only shows through the rounded viewport; its square bottom corners
-                // stay hidden behind the opaque backing. (A translucent card alone
-                // would let those square corners bleed through.)
-                COLORREF cardSolid = AltTabStyle::CardRef(light);
-                Gdiplus::SolidBrush previewBacking(Gdiplus::Color(
-                    255, GetRValue(cardSolid), GetGValue(cardSolid), GetBValue(cardSolid)));
-                g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
-                g.SetClip(&cardPath, Gdiplus::CombineModeReplace);
-                g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
-                g.FillRectangle(&previewBacking, pvF);
-
-                // Punch the rounded-bottom transparent hole; the acrylic host with the
-                // live thumbnail composites behind it.
+                g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
                 g.SetCompositingMode(Gdiplus::CompositingModeSourceCopy);
                 Gdiplus::SolidBrush previewBrush(AltTabStyle::Transparent());
-                g.FillPath(&previewBrush, &pvHole);
+                g.FillRectangle(&previewBrush,
+                                static_cast<Gdiplus::REAL>(pv.left),
+                                static_cast<Gdiplus::REAL>(pv.top),
+                                static_cast<Gdiplus::REAL>(pw),
+                                static_cast<Gdiplus::REAL>(ph));
                 g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
-                g.ResetClip();
+                Gdiplus::Pen previewPen(AltTabStyle::PreviewStroke(sel),
+                                         static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
+                g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
+                g.DrawRectangle(&previewPen, pv.left, pv.top, pw - 1, ph - 1);
+                g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
             }
 
             // Header tab: app icon + window title.
@@ -1379,25 +1308,23 @@ void Switcher::RenderLayered()
                 g.Flush();
                 RECT textRc = { textLeft, tile.top, hdr.right, tile.top + headerH };
                 DrawHeaderText(static_cast<BYTE*>(bits), w, h, font, textRc, *text,
-                               AltTabStyle::HeaderTextRef(light));
+                               AltTabStyle::HeaderTextRef(sel), AltTabStyle::CardRef(sel));
             }
 
             // Two-ring accent focus ring around the selected tile.
             if (sel)
             {
-                int gPad = Scaled(6);
+                int gPad = Scaled(10);
                 int gOut = gPad + Scaled(2);
-                int outerRadius = Scaled(18);
-                int innerRadius = outerRadius - Scaled(2);
                 Gdiplus::GraphicsPath innerRing, out;
                 BuildRoundRect(innerRing, InflateF(tile, gPad),
-                               static_cast<Gdiplus::REAL>(innerRadius));
+                               static_cast<Gdiplus::REAL>(radius + gPad));
                 BuildRoundRect(out, InflateF(tile, gOut),
-                               static_cast<Gdiplus::REAL>(outerRadius));
-                Gdiplus::Pen darkPen(AltTabStyle::FocusShadow(light),
+                               static_cast<Gdiplus::REAL>(radius + gOut));
+                Gdiplus::Pen darkPen(AltTabStyle::FocusShadow(),
                                      static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
                 Gdiplus::Pen accentPen(accentClr,
-                                       static_cast<Gdiplus::REAL>((std::max)(2, Scaled(4))));
+                                       static_cast<Gdiplus::REAL>((std::max)(2, Scaled(3))));
                 g.DrawPath(&darkPen, &innerRing);
                 g.DrawPath(&accentPen, &out);
             }
@@ -1414,7 +1341,7 @@ void Switcher::RenderLayered()
                 std::to_wstring(currentPage) + L" / " + std::to_wstring(totalPages);
             RECT pageRc = { pad, h - pad, w - pad, h };
             DrawHeaderText(static_cast<BYTE*>(bits), w, h, font, pageRc, pageText,
-                           AltTabStyle::HeaderTextRef(light), DT_CENTER);
+                           AltTabStyle::HeaderTextRef(false), AltTabStyle::CardRef(false), DT_CENTER);
         }
 
         g.Flush();
