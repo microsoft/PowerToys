@@ -62,11 +62,26 @@ batch so the test's modifier releases cannot interrupt the module's own Ctrl+V.
 Settings and clipboard state are restored, generated files and windows are
 removed, and failure media is captured before cleanup.
 
+The paste destination acquires foreground and editor focus on its own STA thread.
+If foreground lock requires a physical caption click, any temporary topmost state
+is restored before the fixture is considered ready.
+
+Before file actions, the fixture focuses Explorer's empty content area and
+requires native keyboard focus under `SHELLDLL_DefView`; an empty `UIItemsView`
+does not expose a keyboard-focusable UIA item. Action-list clicks require stable
+geometry, foreground ownership, pointer arrival, and point ownership before one
+real click. Readiness failures report the individual gates rather than retrying
+the paste or copying the generated file into the destination.
+File delivery is observed on disk before reading CF_HDROP, so the test does not
+open the clipboard while Explorer is consuming the product's Ctrl+V.
+
 History tests use a fresh process per case so restoring the OS history preference
 does not carry an old ItemsView and pending notifications into the next fixture.
 They remove only their own entries and fail explicitly rather than
 evicting unrelated history when the OS history has insufficient capacity or the
 disable scenario cannot safely start with an empty history.
+Cleanup clears only the current test-owned clipboard content before re-enabling
+history, then drains late test-owned IDs while preserving all original entries.
 
 ## HTML-only conversion regression
 

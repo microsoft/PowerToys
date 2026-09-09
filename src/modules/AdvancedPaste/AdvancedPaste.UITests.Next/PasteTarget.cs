@@ -58,39 +58,64 @@ internal sealed class PasteTarget : IDisposable
 
     internal void Focus()
     {
-        var foreground = WindowControl.GetForegroundWindowInfo();
+        var foreground = Invoke(WindowControl.GetForegroundWindowInfo);
         if (foreground.ProcessName is "SearchApp" or "SearchHost" or "StartMenuExperienceHost")
         {
             KeyboardHelper.SendKey(Key.Esc);
         }
 
-        Invoke(() =>
+        var handle = Handle;
+        var originalTopMost = Invoke(() => form!.TopMost);
+        void Activate() => Invoke(() =>
         {
             form!.Show();
             form.Activate();
+            WindowControl.TryBringToForeground(handle);
             editor!.Focus();
-        });
-
-        var handle = Handle;
-        if (WindowControl.GetForegroundWindowHandle() != handle)
-        {
-            // System toasts can reject programmatic activation. A real click on our own
-            // visible caption supplies the user-input handoff without dismissing other apps.
-            var bounds = WindowHelper.GetWindowBounds(handle);
-            foreach (var x in new[] { bounds.Left + 100, bounds.Right - 160 })
+            if (WindowControl.GetForegroundWindowHandle() != handle)
             {
-                if (WindowControl.IsPointOwnedByWindow(handle, x, bounds.Top + 16))
+                // Foreground lock can leave the new fixture behind maximized Settings.
+                // Expose only our own caption for a real click, then restore its topmost state.
+                form.TopMost = true;
+                var bounds = WindowHelper.GetWindowBounds(handle);
+                foreach (var x in new[] { bounds.Left + 100, bounds.Right - 160 })
                 {
-                    MouseHelper.LeftClickAt(x, bounds.Top + 16);
-                    break;
+                    if (WindowControl.IsPointOwnedByWindow(handle, x, bounds.Top + 16))
+                    {
+                        MouseHelper.LeftClickAt(x, bounds.Top + 16);
+                        break;
+                    }
                 }
             }
-        }
+        });
 
-        Assert.IsTrue(
-            WindowControl.WaitForForeground(handle, timeoutMS: 10_000, requiredConsecutiveMatches: 2),
-            $"Paste destination did not acquire foreground. Actual: {WindowControl.GetForegroundWindowInfo()}.");
-        Assert.IsTrue(Invoke(() => editor!.Focused), "The destination text box does not have keyboard focus.");
+        try
+        {
+            Activate();
+            var ready = WaitHelper.WaitForStable(
+                () => Invoke(() => (Foreground: WindowControl.GetForegroundWindowHandle(), EditorFocused: editor!.Focused, TopMost: form!.TopMost)),
+                state => state.Foreground == handle && state.EditorFocused && state.TopMost == originalTopMost,
+                timeoutMS: 10_000,
+                requiredConsecutiveMatches: 2,
+                recover: state =>
+                {
+                    if (state.Foreground == handle && state.EditorFocused)
+                    {
+                        Invoke(() => form!.TopMost = originalTopMost);
+                    }
+                    else
+                    {
+                        Activate();
+                    }
+                });
+            Assert.IsTrue(
+                ready.Succeeded,
+                $"Paste destination did not acquire foreground and editor focus. Last state: {ready.LastObservation}; actual: {Invoke(WindowControl.GetForegroundWindowInfo)}.");
+        }
+        finally
+        {
+            Invoke(() => form!.TopMost = originalTopMost);
+        }
     }
 
     internal void Paste()

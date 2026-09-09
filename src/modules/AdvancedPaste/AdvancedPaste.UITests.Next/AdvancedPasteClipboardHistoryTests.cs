@@ -186,10 +186,7 @@ public class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
                 "BLOCKED: the OS-history disable scenario requires an initially empty history so turning it off cannot discard unrelated entries.");
 
             Step("Reloading the Advanced Paste Settings page after the OS fixture reaches its enabled state");
-            Session.Find<NavigationViewItem>(By.AccessibilityId("GeneralNavItem"), 10_000).Invoke(msPostAction: 0);
-            WaitUntil(
-                () => !Session.Has(By.AccessibilityId(HistoryCard), 0),
-                "Settings did not navigate away before reloading the clipboard-history state.");
+            NavigateToGeneralSettings();
             NavigateToSettings();
             Assert.IsTrue(HistoryCheckbox().IsEnabled, "BLOCKED: the OS history fixture is enabled, but the Advanced Paste history checkbox is disabled.");
             Assert.IsTrue(HistoryCheckbox().IsChecked, "Settings did not reflect the enabled OS history fixture.");
@@ -347,25 +344,30 @@ public class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
             return;
         }
 
-        // History must be queryable to remove our entries after the disable scenario. This is
-        // fixture cleanup, after the real UI-driven disable and runtime assertions have completed.
-        EnableHistoryFixture();
-        var items = await ReadHistoryAsync();
-        await DiscoverOwnedHistoryItemsAsync(items);
-        foreach (var item in items.Where(item => ownedHistoryItems.ContainsKey(item.Id)))
-        {
-            Assert.IsTrue(
-                Target.Invoke(() => WinClipboard.DeleteItemFromHistory(item)),
-                "Windows could not delete a test-owned clipboard-history item during cleanup.");
-        }
-
+        // Clear our current content before re-enabling history, otherwise Windows can
+        // asynchronously capture it as a new ID after the first cleanup snapshot.
         if (fixtureContents.Contains(ClipboardHelper.GetText()))
         {
             Assert.IsTrue(ClipboardHelper.Clear(), "The test-owned current clipboard content could not be cleared.");
         }
 
+        EnableHistoryFixture();
+        var deletedIds = new HashSet<string>(StringComparer.Ordinal);
         var remaining = await WaitForHistoryAsync(
-            history => history.All(item => !ownedHistoryItems.ContainsKey(item.Id)),
+            history =>
+            {
+                foreach (var item in history.Where(item => ownedHistoryItems.ContainsKey(item.Id)))
+                {
+                    if (deletedIds.Add(item.Id))
+                    {
+                        Assert.IsTrue(
+                            Target.Invoke(() => WinClipboard.DeleteItemFromHistory(item)),
+                            "Windows could not delete a test-owned clipboard-history item during cleanup.");
+                    }
+                }
+
+                return history.All(item => !ownedHistoryItems.ContainsKey(item.Id));
+            },
             "Test-owned clipboard-history IDs remained after cleanup.");
         Assert.IsTrue(
             originalHistoryIds.IsSubsetOf(remaining.Select(item => item.Id)),

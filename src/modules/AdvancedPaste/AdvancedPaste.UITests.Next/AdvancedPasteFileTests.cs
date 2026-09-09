@@ -146,7 +146,7 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
                 window.Hwnd.ToInt64() == explorer.WindowHandle && window.Title.Contains(destination.Name, StringComparison.OrdinalIgnoreCase)),
             "The new Explorer window did not navigate to the unique paste destination.",
             timeoutMS: 30_000);
-        Assert.IsTrue(WindowControl.WaitForForeground(new IntPtr(explorer.WindowHandle), timeoutMS: 15_000, requiredConsecutiveMatches: 2));
+        FocusExplorerItemsView(explorer);
 
         Step($"Executing '{action}' and waiting for Explorer to receive the generated file");
         if (directShortcut)
@@ -157,6 +157,18 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
         {
             SelectAction(OpenAdvancedPasteForWindow(new IntPtr(explorer.WindowHandle)), action);
         }
+
+        // Reading CF_HDROP opens the clipboard and can race Explorer's actual Ctrl+V.
+        // Observe the destination first, then inspect the transferred clipboard data.
+        WaitUntil(
+            () =>
+            {
+                Assert.IsNotEmpty(GetModuleProcessIds(), $"Advanced Paste exited while '{action}' was running.");
+                return destination.EnumerateFiles().Any();
+            },
+            $"Explorer did not receive any file from '{action}'.",
+            timeoutMS: 60_000,
+            shouldRetryException: exception => exception is IOException);
 
         var result = WaitHelper.WaitForStable(
             () =>
@@ -183,6 +195,61 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
         CollectionAssert.AreEqual(expectedBytes, await File.ReadAllBytesAsync(pasted), "Explorer received different file content.");
         WaitUntil(() => !IsAdvancedPasteVisible(), "Advanced Paste remained visible after file paste.");
         return pasted;
+    }
+
+    private void FocusExplorerItemsView(Session explorer)
+    {
+        var handle = new IntPtr(explorer.WindowHandle);
+        (bool Visible, bool Foreground, bool ShellReady, bool EmptySelection, bool KeyboardFocus)? lastState = null;
+        var ready = WaitHelper.WaitForStable(
+            () => explorer.FindAll<Element>(By.Name("Items View"), 0)
+                .SingleOrDefault(element => element.ControlType == "List" && element.ClassName == "UIItemsView"),
+            view =>
+            {
+                if (view is null)
+                {
+                    lastState = null;
+                    return false;
+                }
+
+                var selection = ExplorerShell.TryGetSelection(handle);
+                var state = (
+                    Visible: view.Width > 0 && view.Height > 0 && !view.IsOffscreen,
+                    Foreground: WindowControl.GetForegroundWindowHandle() == handle,
+                    ShellReady: selection is not null,
+                    EmptySelection: selection?.SelectedPaths.Count == 0,
+                    KeyboardFocus: WindowControl.IsKeyboardFocusWithinClass(handle, "SHELLDLL_DefView"));
+                lastState = state;
+                return state.Visible && state.Foreground && state.ShellReady && state.EmptySelection && state.KeyboardFocus;
+            },
+            timeoutMS: 30_000,
+            requiredConsecutiveMatches: 3,
+            recover: view =>
+            {
+                if (WindowControl.GetForegroundWindowHandle() != handle)
+                {
+                    WindowControl.TryBringToForeground(handle);
+                }
+                else if (view is { Width: > 0, Height: > 0 } &&
+                    WindowControl.IsPointOwnedByWindow(handle, view.X + (view.Width / 2), view.Y + (view.Height / 2)))
+                {
+                    // Empty Items View has no focusable UIA item. Focus Shell's native view
+                    // through its blank content area, not the address bar or navigation tree.
+                    view.Click(msPostAction: 0);
+                }
+            },
+            shouldRetryException: AdvancedPasteUi.IsStaleElement);
+        if (!ready.Succeeded && ready.LastObservation is { } lastView)
+        {
+            var focused = WinappCli.Invoke("ui", "get-focused", explorer.TargetFlag, explorer.TargetValue, "--json");
+            var properties = WinappCli.Invoke("ui", "get-property", lastView.Selector, explorer.TargetFlag, explorer.TargetValue, "--json");
+            Step($"Explorer focus diagnostic: {focused.StdOut}; items view properties: {properties.StdOut}");
+        }
+
+        Assert.IsTrue(
+            ready.Succeeded,
+            $"Explorer's empty file view did not acquire stable keyboard focus. Last state: {lastState} (visible, foreground, Shell ready, empty selection, keyboard focus); foreground: {WindowControl.GetForegroundWindowInfo()}; last exception: {ready.LastException}.");
+        Step("Explorer's empty file view has stable keyboard focus");
     }
 
     private static async Task AssertAudio(string path)

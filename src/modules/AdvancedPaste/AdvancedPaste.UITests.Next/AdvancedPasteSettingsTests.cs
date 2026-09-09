@@ -394,8 +394,7 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                 {
                     SetPreference(card, property, value);
                     Step($"Navigating away and back to verify persisted {property}={value}");
-                    Session.Find<NavigationViewItem>(By.AccessibilityId("GeneralNavItem")).Invoke(msPostAction: 0);
-                    WaitUntil(() => !Session.Has(By.AccessibilityId(card), 0), "Settings did not leave the Advanced Paste page.");
+                    NavigateToGeneralSettings();
                     NavigateToSettings();
                     Assert.AreEqual(value, Preference(card).IsChecked, $"The reloaded Settings page did not retain {property}.");
                     Assert.AreEqual(value, ReadBoolean(property), $"The persisted {property} value changed during navigation.");

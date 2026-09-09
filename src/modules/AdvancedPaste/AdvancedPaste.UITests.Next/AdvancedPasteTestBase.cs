@@ -65,6 +65,24 @@ public abstract class AdvancedPasteTestBase : UITestBase
     {
         try
         {
+            Step("Waiting for the Settings navigation tree before preparing the paste destination");
+            var settingsHandle = new IntPtr(Session.WindowHandle);
+            var settingsReady = WaitHelper.WaitForStable(
+                () => Session.Has(By.AccessibilityId("GeneralNavItem"), 0),
+                visible => visible,
+                timeoutMS: 30_000,
+                requiredConsecutiveMatches: 2,
+                shouldRetryException: exception =>
+                    AdvancedPasteUi.IsStaleElement(exception) ||
+                    (exception is AssertFailedException &&
+                        exception.Message.Contains($"Window HWND {Session.WindowHandle} not found or not accessible.", StringComparison.Ordinal) &&
+                        WindowControl.EnumerateProcessWindows([Session.ProcessId]).Any(window => window.Hwnd == settingsHandle)));
+            Assert.IsTrue(
+                settingsReady.Succeeded,
+                $"Settings did not finish initializing its navigation tree. Last exception: {settingsReady.LastException}");
+            WindowHelper.MaximizeWindow(settingsHandle);
+            WaitUntil(() => WindowHelper.IsWindowMaximized(settingsHandle), "Settings did not retain its initialized maximized layout.");
+
             Step("Preparing the clipboard and a real rich-text paste destination");
             target = new PasteTarget();
             testDirectory = Directory.CreateTempSubdirectory("PowerToys_AdvancedPaste_UITests_");
@@ -175,6 +193,16 @@ public abstract class AdvancedPasteTestBase : UITestBase
         Session.Find(By.AccessibilityId("AdvancedPasteEnableToggleControlHeaderText"), 15_000);
     }
 
+    protected void NavigateToGeneralSettings()
+    {
+        Step("Navigating to General settings and waiting for its loaded page");
+        Session.Find<NavigationViewItem>(By.AccessibilityId("GeneralNavItem"), 10_000).Invoke(msPostAction: 0);
+        WaitUntil(
+            () => Session.Has(By.AccessibilityId("GeneralOpenUpdateSurfaceButton"), 0),
+            "The General settings page did not finish loading.",
+            timeoutMS: 30_000);
+    }
+
     protected Session OpenAdvancedPaste(params Key[] shortcut)
     {
         Target.Focus();
@@ -240,12 +268,18 @@ public abstract class AdvancedPasteTestBase : UITestBase
         var windowBounds = WindowHelper.GetWindowBounds(handle);
         MouseHelper.MoveTo((windowBounds.Left + windowBounds.Right) / 2, windowBounds.Top + 16);
 
-        Element? FindAction(int timeoutMS) => window.FindAll<Element>(By.Name(name), timeoutMS)
+        Element? FindAction() => window.FindAll<Element>(By.Name(name), 0)
             .FirstOrDefault(element => element.ControlType.Equals("ListItem", StringComparison.OrdinalIgnoreCase) &&
                 element.Name.StartsWith(name + " (", StringComparison.OrdinalIgnoreCase));
 
-        var action = FindAction(15_000);
-        Assert.IsNotNull(action, $"Enabled action '{name}' was not exposed as an accessible list item.");
+        // A matching tooltip or label can appear before the enabled action's ListItem.
+        var located = WaitHelper.WaitForStable(
+            FindAction,
+            candidate => candidate is not null,
+            timeoutMS: 15_000,
+            shouldRetryException: AdvancedPasteUi.IsStaleElement);
+        var action = located.LastObservation;
+        Assert.IsNotNull(action, $"Enabled action '{name}' was not exposed as an accessible list item. Last exception: {located.LastException}.");
         if (action.IsOffscreen)
         {
             action.ScrollIntoView();
@@ -253,32 +287,53 @@ public abstract class AdvancedPasteTestBase : UITestBase
 
         // Let first-show layout settle and hover tooltips disappear before resolving the click point.
         (int X, int Y, int Width, int Height, (int Left, int Top, int Right, int Bottom) Window)? previous = null;
+        (bool Unchanged, bool Offscreen, IntPtr Foreground, bool PointerAtTarget, bool OwnsPoint)? lastInputState = null;
+        var samples = 0;
+        var sampling = Stopwatch.StartNew();
         var ready = WaitHelper.WaitForStable(
-            () => FindAction(0),
+            FindAction,
             candidate =>
             {
+                samples++;
                 if (candidate is null)
                 {
                     previous = null;
+                    lastInputState = null;
                     return false;
                 }
 
                 var bounds = (candidate.X, candidate.Y, candidate.Width, candidate.Height, WindowHelper.GetWindowBounds(handle));
                 var unchanged = previous == bounds;
                 previous = bounds;
-                return unchanged && candidate.Width > 0 && candidate.Height > 0 && !candidate.IsOffscreen &&
-                    WindowControl.GetForegroundWindowHandle() == handle &&
-                    WindowControl.IsPointOwnedByWindow(handle, candidate.X + (candidate.Width / 2), candidate.Y + (candidate.Height / 2));
+                var offscreen = candidate.IsOffscreen;
+                var foreground = WindowControl.GetForegroundWindowHandle();
+                var point = new System.Drawing.Point(candidate.X + (candidate.Width / 2), candidate.Y + (candidate.Height / 2));
+                if (unchanged && candidate.Width > 0 && candidate.Height > 0 && !offscreen && foreground == handle &&
+                    System.Windows.Forms.Cursor.Position != point)
+                {
+                    MouseHelper.MoveTo(point.X, point.Y);
+                }
+
+                var state = (
+                    Unchanged: unchanged,
+                    Offscreen: offscreen,
+                    Foreground: foreground,
+                    PointerAtTarget: System.Windows.Forms.Cursor.Position == point,
+                    OwnsPoint: WindowControl.IsPointOwnedByWindow(handle, point.X, point.Y));
+                lastInputState = state;
+                return state.Unchanged && candidate.Width > 0 && candidate.Height > 0 && !state.Offscreen &&
+                    state.Foreground == handle && state.PointerAtTarget && state.OwnsPoint;
             },
             timeoutMS: 30_000,
             requiredConsecutiveMatches: 3,
             shouldRetryException: AdvancedPasteUi.IsStaleElement);
+        Step($"Action readiness for '{name}': HWND={handle}; samples={samples}; stable={ready.ConsecutiveMatches}; elapsed={sampling.Elapsed}; state={lastInputState} (unchanged, offscreen, foreground, pointer at target, owns point).");
         Assert.IsTrue(
             ready.Succeeded,
-            $"The '{name}' row and window did not settle for real input. Last bounds: {previous}; foreground: {WindowControl.GetForegroundWindowInfo()}.");
+            $"The '{name}' row and window did not settle for real input. Last bounds: {previous}; state: {lastInputState}; foreground: {WindowControl.GetForegroundWindowInfo()}; last exception: {ready.LastException}.");
         action = ready.LastObservation!;
         Step($"Clicking settled '{name}' row at ({action.X},{action.Y}) {action.Width}x{action.Height}");
-        MouseHelper.LeftClickAt(action.X + (action.Width / 2), action.Y + (action.Height / 2));
+        MouseHelper.LeftClick();
     }
 
     protected void SetClipboardText(string text)
@@ -397,7 +452,12 @@ public abstract class AdvancedPasteTestBase : UITestBase
         int timeoutMS = 15_000,
         Func<Exception, bool>? shouldRetryException = null)
     {
-        var result = WaitHelper.WaitForStable(condition, value => value, timeoutMS, requiredConsecutiveMatches: 2, shouldRetryException: shouldRetryException);
+        var result = WaitHelper.WaitForStable(
+            condition,
+            value => value,
+            timeoutMS,
+            requiredConsecutiveMatches: 2,
+            shouldRetryException: shouldRetryException ?? AdvancedPasteUi.IsStaleElement);
         Assert.IsTrue(result.Succeeded, $"{message} Last exception: {result.LastException?.Message}");
     }
 }
