@@ -172,25 +172,44 @@ public static void Write(object imageStream, string path)
 {
     System.Runtime.InteropServices.ComTypes.IStream source =
         (System.Runtime.InteropServices.ComTypes.IStream)imageStream;
-    System.Runtime.InteropServices.ComTypes.IStream target;
-    // STGM_CREATE | STGM_WRITE, FILE_ATTRIBUTE_NORMAL
-    SHCreateStreamOnFileEx(path, 0x00001001, 0x80, true, null, out target);
-    source.CopyTo(target, long.MaxValue, System.IntPtr.Zero, System.IntPtr.Zero);
-    target.Commit(0);
+    System.Runtime.InteropServices.ComTypes.IStream target = null;
+    try
+    {
+        // STGM_CREATE | STGM_WRITE, FILE_ATTRIBUTE_NORMAL
+        SHCreateStreamOnFileEx(path, 0x00001001, 0x80, true, null, out target);
+        source.CopyTo(target, long.MaxValue, System.IntPtr.Zero, System.IntPtr.Zero);
+        target.Commit(0);
+    }
+    finally
+    {
+        if (target != null && System.Runtime.InteropServices.Marshal.IsComObject(target))
+        {
+            System.Runtime.InteropServices.Marshal.FinalReleaseComObject(target);
+        }
+    }
 }
 '@
     }
 
     Remove-Item $Destination -Force -ErrorAction SilentlyContinue
     $fileSystemImage = New-Object -ComObject IMAPI2FS.MsftFileSystemImage
+    $resultImage = $null
+    $imageStream = $null
     try {
         $fileSystemImage.FileSystemsToCreate = 3 # ISO9660 | Joliet
         $fileSystemImage.VolumeName = $VolumeName
         $fileSystemImage.Root.AddTree($SourceFolder, $false)
         $resultImage = $fileSystemImage.CreateResultImage()
-        [PowerToysUiTestVm.IsoWriter]::Write($resultImage.ImageStream, $Destination)
+        $imageStream = $resultImage.ImageStream
+        [PowerToysUiTestVm.IsoWriter]::Write($imageStream, $Destination)
     }
     finally {
+        if ($null -ne $imageStream) {
+            [Runtime.InteropServices.Marshal]::FinalReleaseComObject($imageStream) | Out-Null
+        }
+        if ($null -ne $resultImage) {
+            [Runtime.InteropServices.Marshal]::FinalReleaseComObject($resultImage) | Out-Null
+        }
         [Runtime.InteropServices.Marshal]::ReleaseComObject($fileSystemImage) | Out-Null
     }
 

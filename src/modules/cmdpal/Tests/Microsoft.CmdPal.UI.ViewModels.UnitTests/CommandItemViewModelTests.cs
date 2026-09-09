@@ -5,6 +5,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -15,6 +16,11 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 [TestClass]
 public partial class CommandItemViewModelTests
 {
+    private sealed partial class PropertiesTestItem : ListItem
+    {
+        public void NotifyPropertiesChanged() => OnPropertyChanged("Properties");
+    }
+
     private sealed class TestPageContext : IPageContext
     {
         public TaskScheduler Scheduler => TaskScheduler.Default;
@@ -62,6 +68,62 @@ public partial class CommandItemViewModelTests
         Assert.AreSame(allCommands, viewModel.AllCommands);
         Assert.AreEqual(1, moreCommands.Count);
         Assert.AreEqual(2, allCommands.Count);
+    }
+
+    [TestMethod]
+    public void InitializeProperties_CachesDockCommandId()
+    {
+        var pageContext = new TestPageContext();
+        var item = new ListItem(new NoOpCommand { Name = "Primary" });
+        item.GetProperties()[WellKnownExtensionAttributes.DockCommandId] = "provider.item.dock";
+
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        viewModel.InitializeProperties();
+
+        Assert.AreEqual("provider.item.dock", viewModel.DockCommandId);
+    }
+
+    [TestMethod]
+    public void PropertiesNotification_RefreshesAndClearsDockCommandId()
+    {
+        var pageContext = new TestPageContext();
+        var item = new PropertiesTestItem();
+        item.GetProperties()[WellKnownExtensionAttributes.DockCommandId] = "provider.item.dock";
+
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        try
+        {
+            viewModel.InitializeProperties();
+
+            item.GetProperties()[WellKnownExtensionAttributes.DockCommandId] = "provider.updated.dock";
+            item.NotifyPropertiesChanged();
+
+            Assert.AreEqual("provider.updated.dock", viewModel.DockCommandId);
+
+            item.GetProperties().Remove(WellKnownExtensionAttributes.DockCommandId);
+            item.NotifyPropertiesChanged();
+
+            Assert.IsNull(viewModel.DockCommandId);
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+        }
+    }
+
+    [TestMethod]
+    public void DockBandItems_UsesWrappedListItems()
+    {
+        var pageContext = new TestPageContext();
+        var child = new ListItem(new NoOpCommand()) { Title = "Child" };
+        var band = new WrappedDockItem([child], "provider.band", "Band");
+        var viewModel = new CommandItemViewModel(new(band), new(pageContext), DefaultContextMenuFactory.Instance);
+        viewModel.InitializeProperties();
+
+        var items = DockBandViewModel.GetItemsForDisplay(viewModel);
+
+        Assert.AreEqual(1, items.Length);
+        Assert.AreSame(child, items[0]);
     }
 
     [TestMethod]

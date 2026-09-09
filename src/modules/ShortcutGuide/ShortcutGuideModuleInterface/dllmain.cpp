@@ -41,6 +41,12 @@ public:
             Logger::warn(L"Failed to create {} event. {}", CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT, get_last_error_or_default(GetLastError()));
         }
 
+        winKeyHoldEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::SHORTCUT_GUIDE_WIN_KEY_HOLD_EVENT);
+        if (!winKeyHoldEvent)
+        {
+            Logger::warn(L"Failed to create {} event. {}", CommonSharedConstants::SHORTCUT_GUIDE_WIN_KEY_HOLD_EVENT, get_last_error_or_default(GetLastError()));
+        }
+
         InitSettings();
     }
 
@@ -105,10 +111,7 @@ public:
         if (_enabled)
         {
             _enabled = false;
-            if (IsProcessActive())
-            {
-                TerminateProcess(m_hProcess, 0);
-            }
+            StopProcess();
         }
         else
         {
@@ -132,6 +135,10 @@ public:
         {
             CloseHandle(triggerEvent);
         }
+        if (winKeyHoldEvent)
+        {
+            CloseHandle(winKeyHoldEvent);
+        }
 
         delete this;
     }
@@ -144,18 +151,17 @@ public:
 
     virtual void OnHotkeyEx() override
     {
-        Logger::trace("OnHotkeyEx()");
-        if (!_enabled)
+        SignalEvent(triggerEvent, CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT, L"regular hotkey");
+    }
+
+    virtual bool on_hotkey(size_t hotkeyId) override
+    {
+        if (hotkeyId == PowertoyModuleIface::WIN_KEY_HOLD_HOTKEY_ID && m_windowsKeyAction != WindowsKeyAction::Off)
         {
-            return;
+            SignalEvent(winKeyHoldEvent, CommonSharedConstants::SHORTCUT_GUIDE_WIN_KEY_HOLD_EVENT, L"Windows key hold");
         }
 
-        if (!IsProcessActive())
-        {
-            StartProcess();
-        }
-
-        SetEvent(triggerEvent);
+        return false;
     }
 
     virtual void send_settings_telemetry() override
@@ -170,11 +176,18 @@ public:
     virtual UINT milliseconds_win_key_must_be_pressed() override { return m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts; }
 
 private:
+    enum class WindowsKeyAction
+    {
+        Off = 0,
+        TaskbarIndicators = 1,
+        OpenShortcutGuide = 2,
+    };
+
     std::wstring app_name;
     //contains the non localized key of the powertoy
     std::wstring app_key;
     bool _enabled = false;
-    HANDLE m_hProcess = nullptr;
+    winrt::handle m_process;
 
     // Hotkey to invoke the module
     HotkeyEx m_hotkey;
@@ -186,18 +199,53 @@ private:
     UINT m_millisecondsWinKeyPressTimeForTaskbarIconShortcuts = DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_TASKBAR_ICON_SHORTCUTS;
 
     HANDLE triggerEvent;
+    HANDLE winKeyHoldEvent;
     HANDLE exitEvent;
+    WindowsKeyAction m_windowsKeyAction = WindowsKeyAction::TaskbarIndicators;
+
+    void SignalEvent(HANDLE eventHandle, const wchar_t* eventName, const wchar_t* activationSource)
+    {
+        Logger::trace(L"Shortcut Guide was invoked by {}", activationSource);
+        if (!_enabled)
+        {
+            return;
+        }
+
+        if (!IsProcessActive() && !StartProcess())
+        {
+            return;
+        }
+
+        if (!SetEvent(eventHandle))
+        {
+            Logger::error(L"Failed to signal {}. {}", eventName, get_last_error_or_default(GetLastError()));
+        }
+    }
 
     bool StartProcess(std::wstring args = L"")
     {
-        if (exitEvent)
+        const bool trackProcess = args.empty();
+        if (trackProcess && IsProcessActive())
         {
-            ResetEvent(exitEvent);
+            return true;
         }
 
-        if (triggerEvent)
+        if (trackProcess)
         {
-            ResetEvent(triggerEvent);
+            if (exitEvent)
+            {
+                ResetEvent(exitEvent);
+            }
+
+            if (triggerEvent)
+            {
+                ResetEvent(triggerEvent);
+            }
+
+            if (winKeyHoldEvent)
+            {
+                ResetEvent(winKeyHoldEvent);
+            }
         }
 
         unsigned long powertoys_pid = GetCurrentProcessId();
@@ -226,23 +274,78 @@ private:
             return false;
         }
 
-        Logger::trace(L"Started SG process with pid={}", GetProcessId(sei.hProcess));
-        m_hProcess = sei.hProcess;
+        winrt::handle launchedProcess{ sei.hProcess };
+        Logger::trace(L"Started SG process with pid={}", GetProcessId(launchedProcess.get()));
+        if (trackProcess)
+        {
+            m_process = std::move(launchedProcess);
+        }
+
         return true;
     }
 
     bool IsProcessActive()
     {
-        if (!m_hProcess)
+        if (!m_process)
         {
             return false;
         }
-        auto result = WaitForSingleObject(m_hProcess, 0);
+
+        auto result = WaitForSingleObject(m_process.get(), 0);
         if (result == WAIT_FAILED)
         {
             Logger::error("Failed to wait for SG process.");
         }
+
+        if (result == WAIT_OBJECT_0)
+        {
+            m_process = {};
+        }
+
         return result == WAIT_TIMEOUT;
+    }
+
+    void StopProcess()
+    {
+        if (exitEvent)
+        {
+            if (!SetEvent(exitEvent))
+            {
+                Logger::error(L"Failed to signal {}. {}", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT, get_last_error_or_default(GetLastError()));
+            }
+        }
+
+        if (!m_process)
+        {
+            return;
+        }
+
+        if (!IsProcessActive())
+        {
+            return;
+        }
+
+        constexpr DWORD gracefulShutdownTimeoutMs = 2000;
+        constexpr DWORD forcedShutdownTimeoutMs = 5000;
+        auto waitResult = WaitForSingleObject(m_process.get(), gracefulShutdownTimeoutMs);
+        if (waitResult == WAIT_TIMEOUT)
+        {
+            Logger::warn("Shortcut Guide did not exit gracefully; terminating it.");
+            if (!TerminateProcess(m_process.get(), 0))
+            {
+                Logger::error(L"Failed to terminate Shortcut Guide. {}", get_last_error_or_default(GetLastError()));
+            }
+            else if (WaitForSingleObject(m_process.get(), forcedShutdownTimeoutMs) != WAIT_OBJECT_0)
+            {
+                Logger::error("Shortcut Guide did not terminate within the timeout.");
+            }
+        }
+        else if (waitResult == WAIT_FAILED)
+        {
+            Logger::error(L"Failed to wait for Shortcut Guide shutdown. {}", get_last_error_or_default(GetLastError()));
+        }
+
+        m_process = {};
     }
 
     void InitSettings()
@@ -302,7 +405,7 @@ private:
                 Logger::warn("Failed to initialize Shortcut Guide start shortcut");
             }
 
-try
+            try
             {
                 auto propertiesObject = settingsObject.GetNamedObject(L"properties");
                 if (propertiesObject.HasKey(L"press_time"))
@@ -324,7 +427,34 @@ try
                     }
                 }
             }
-            catch (...) { /* Keep defaults */ }
+            catch (...)
+            { /* Keep defaults */
+            }
+
+            try
+            {
+                auto propertiesObject = settingsObject.GetNamedObject(L"properties");
+                if (propertiesObject.HasKey(L"win_key_action"))
+                {
+                    const auto value = static_cast<int>(propertiesObject.GetNamedObject(L"win_key_action").GetNamedNumber(L"value"));
+                    switch (value)
+                    {
+                    case static_cast<int>(WindowsKeyAction::Off):
+                        m_windowsKeyAction = WindowsKeyAction::Off;
+                        break;
+                    case static_cast<int>(WindowsKeyAction::OpenShortcutGuide):
+                        m_windowsKeyAction = WindowsKeyAction::OpenShortcutGuide;
+                        break;
+                    case static_cast<int>(WindowsKeyAction::TaskbarIndicators):
+                    default:
+                        m_windowsKeyAction = WindowsKeyAction::TaskbarIndicators;
+                        break;
+                    }
+                }
+            }
+            catch (...)
+            { /* Keep defaults */
+            }
         }
         else
         {
@@ -341,10 +471,7 @@ try
 
     void WindowsKeyPressBehavior()
     {
-        if (IsProcessActive())
-        {
-            TerminateProcess(m_hProcess, 0);
-        }
+        StopProcess();
     }
 };
 

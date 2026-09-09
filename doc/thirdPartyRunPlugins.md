@@ -57,6 +57,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [QuickAI](https://github.com/ruslanlap/PowerToysRun-QuickAi) | [ruslanlap](https://github.com/ruslanlap) | AI-powered assistance with instant, smart responses from multiple providers (Groq, Together, Fireworks, OpenRouter, Cohere) |
 | [Launchy](https://github.com/PsychodelEKS/PowerToysRun-Launchy) | [PsychodelEKS](https://github.com/PsychodelEKS) | Index and launch files from configured folders |
 | [DevDocs](https://github.com/jan-jaros/PowerToys-Run-DevDocs) | [jan-jaros](https://github.com/jan-jaros) | Search programming documentation from DevDocs.io |
+| [PoetSearch](https://github.com/Greyaircraft/PowerToysRun-PoetSearch) | [Greyaircraft](https://github.com/Greyaircraft) | Search 78,581 classical Chinese poems (全唐诗 + 全宋词) |
 
 ## Extending software plugins
 
@@ -83,3 +84,4 @@ Below are community created plugins that target a website or software.  They are
 | [PerplexitySearchShortcut](https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut) | [0x6f677548](https://github.com/0x6f677548) | Search Perplexity |
 | [SpeedTest](https://github.com/ruslanlap/PowerToysRun-SpeedTest) | [ruslanlap](https://github.com/ruslanlap) | One-command internet speed tests with real-time results, modern UI, and shareable links. |
 | [DiskAnalyzer](https://github.com/valley-soft/powertoys-diskanalyzer) | [ValleySoft](https://github.com/valley-soft) | Scan folders, find the largest files, and view drive space usage. |
+| [New Chat for Claude](https://github.com/tit-exe/PowerToys-Run-for-Claude) | [tit-exe](https://github.com/tit-exe) | Start a new Claude conversation in the desktop app or the browser. |

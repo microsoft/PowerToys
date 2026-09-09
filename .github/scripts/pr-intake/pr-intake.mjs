@@ -44,6 +44,53 @@ const VISUAL_PRODUCT_PREFIXES = [
   'src/settings-ui/',
 ];
 
+export const PRODUCT_PATH_LABEL_MAP = [
+  ['src/modules/MouseUtils/MousePointerCrosshairs/', 'Product-Mouse Pointer Crosshairs'],
+  ['src/modules/MouseUtils/MouseHighlighter/', 'Product-Mouse Highlighter'],
+  ['src/modules/MouseUtils/FindMyMouse/', 'Product-Find My Mouse'],
+  ['src/modules/MouseUtils/CursorWrap/', 'Product-Cursor Wrap'],
+  ['src/modules/MouseUtils/MouseJump', 'Product-Mouse Jump'],
+  ['src/modules/AltWindowCycle/', 'Product-Window Hopper'],
+  ['src/modules/MouseUtils/', 'Product-Mouse Utilities'],
+  ['src/modules/AdvancedPaste/', 'Product-Advanced Paste'],
+  ['src/modules/alwaysontop/', 'Product-Always On Top'],
+  ['src/modules/awake/', 'Product-Awake'],
+  ['src/modules/cmdNotFound/', 'Product-CommandNotFound'],
+  ['src/modules/cmdpal/', 'Product-Command Palette'],
+  ['src/modules/colorPicker/', 'Product-Color Picker'],
+  ['src/modules/CropAndLock/', 'Product-CropAndLock'],
+  ['src/modules/EnvironmentVariables/', 'Product-Environment Variables'],
+  ['src/modules/fancyzones/', 'Product-FancyZones'],
+  ['src/modules/FileLocksmith/', 'Product-File Locksmith'],
+  ['src/modules/GrabAndMove/', 'Product-Grab And Move'],
+  ['src/modules/Hosts/', 'Product-Hosts File Editor'],
+  ['src/modules/imageresizer/', 'Product-Image Resizer'],
+  ['src/modules/interface/', 'Product-General'],
+  ['src/modules/keyboardmanager/', 'Product-Keyboard Manager'],
+  ['src/modules/launcher/', 'Product-PowerToys Run'],
+  ['src/modules/LightSwitch/', 'Product-LightSwitch'],
+  ['src/modules/MeasureTool/', 'Product-Screen Ruler'],
+  ['src/modules/MouseWithoutBorders/', 'Product-Mouse Without Borders'],
+  ['src/modules/NewPlus/', 'Product-New+'],
+  ['src/modules/peek/', 'Product-Peek'],
+  ['src/modules/poweraccent/', 'Product-Quick Accent'],
+  ['src/modules/powerdisplay/', 'Product-PowerDisplay'],
+  ['src/modules/PowerOCR/', 'Product-Text Extractor'],
+  ['src/modules/powerrename/', 'Product-PowerRename'],
+  ['src/modules/previewpane/', 'Product-File Explorer'],
+  ['src/modules/registrypreview/', 'Product-Registry Preview'],
+  ['src/modules/ShortcutGuide/', 'Product-Shortcut Guide'],
+  ['src/modules/shortcut_guide/', 'Product-Shortcut Guide'],
+  ['src/modules/Workspaces/', 'Product-Workspaces'],
+  ['src/modules/ZoomIt/', 'Product-ZoomIt'],
+  ['src/runner/', 'Product-General'],
+  ['src/common/', 'Product-General'],
+  ['src/settings-ui/', 'Product-Settings'],
+];
+
+const SORTED_PRODUCT_PATH_LABEL_MAP = [...PRODUCT_PATH_LABEL_MAP]
+  .sort((left, right) => right[0].length - left[0].length);
+
 export class ApiError extends Error {
   constructor(message, status, details = '') {
     super(message);
@@ -127,6 +174,41 @@ export function normalizePath(value) {
     .replace(/^\.\//, '')
     .replace(/^\/+/, '')
     .trim();
+}
+
+export function deriveProductLabelsFromPaths(paths, currentLabels = []) {
+  if (!Array.isArray(paths)) {
+    throw new Error('Changed paths must be an array');
+  }
+
+  const labels = new Set();
+  for (const rawPath of paths) {
+    const changedPath = normalizePath(rawPath).toLowerCase();
+    if (!changedPath) {
+      continue;
+    }
+    const match = SORTED_PRODUCT_PATH_LABEL_MAP.find(
+      ([prefix]) => changedPath.startsWith(prefix.toLowerCase()),
+    );
+    if (match) {
+      labels.add(match[1]);
+    }
+  }
+
+  const existingProductLabels = (Array.isArray(currentLabels) ? currentLabels : [])
+    .map((entry) => typeof entry === 'string' ? entry : entry?.name)
+    .filter((label) => typeof label === 'string' && label.startsWith('Product-'));
+  const matchedProductLabels = [...existingProductLabels, ...labels];
+  if (matchedProductLabels.some((label) => label !== 'Product-Settings')) {
+    labels.delete('Product-Settings');
+  }
+  if (matchedProductLabels.some(
+    (label) => !['Product-General', 'Product-Settings'].includes(label),
+  )) {
+    labels.delete('Product-General');
+  }
+
+  return uniqueSorted([...labels]);
 }
 
 function isTestPath(changedPath) {
@@ -649,6 +731,24 @@ export async function upsertCanonicalComment({
   };
 }
 
+export async function deleteCanonicalComments({
+  api,
+  issueNumber,
+  comments = null,
+}) {
+  const existingComments = Array.isArray(comments)
+    ? comments
+    : await listAllComments(api, issueNumber);
+  const { canonical, extras } = selectCanonicalComment(existingComments);
+  const trustedComments = canonical ? [canonical, ...extras] : [];
+  const deletedCommentIds = [];
+  for (const comment of trustedComments) {
+    await api.deleteIssueComment(comment.id);
+    deletedCommentIds.push(comment.id);
+  }
+  return deletedCommentIds;
+}
+
 export function planManagedLabelChanges(
   currentLabels,
   desiredLabels,
@@ -677,7 +777,7 @@ export function planManagedLabelChanges(
   };
 }
 
-async function syncManagedLabels(api, issueNumber, labelPlan) {
+async function syncLabelChanges(api, issueNumber, labelPlan) {
   for (const label of labelPlan.remove) {
     await api.removeLabel(issueNumber, label);
   }
@@ -735,26 +835,35 @@ export async function runPullRequestIntake({ api, event }) {
   const issueNumber = pullNumber;
 
   const issue = await api.getIssue(issueNumber);
+  const currentLabels = parseIssueLabels(issue);
+  const fileDetails = await listAllPullRequestFileDetails(api, issueNumber);
+  const changedPaths = changedPathsFromFileDetails(fileDetails);
+  const pathProductLabels = deriveProductLabelsFromPaths(changedPaths, currentLabels);
   if (pullRequest.draft === true) {
     const labelPlan = planManagedLabelChanges(
-      parseIssueLabels(issue),
-      [],
+      currentLabels,
+      pathProductLabels,
       [
         READY_FOR_REVIEW_LABEL,
         NEEDS_AUTHOR_FEEDBACK_LABEL,
         LEGACY_READY_FOR_REVIEW_LABEL,
       ],
     );
-    await syncManagedLabels(api, issueNumber, labelPlan);
+    await syncLabelChanges(api, issueNumber, labelPlan);
+    const deletedCanonicalCommentIds = await deleteCanonicalComments({
+      api,
+      issueNumber,
+    });
     return {
       issueNumber,
       skippedDraft: true,
+      changedPathCount: changedPaths.length,
+      pathProductLabels,
       labelPlan,
+      deletedCanonicalCommentIds,
     };
   }
 
-  const fileDetails = await listAllPullRequestFileDetails(api, issueNumber);
-  const changedPaths = changedPathsFromFileDetails(fileDetails);
   const closingReferenceVerification = await verifyClosingIssueReferences({
     api,
     repositoryFullName: event.repository.full_name,
@@ -781,13 +890,14 @@ export async function runPullRequestIntake({ api, event }) {
     senderLogin: event.sender?.login,
     authorLogin: pullRequest.user?.login,
   });
-  const desiredManagedLabels = [
+  const desiredLabels = [
     ...(report.readyForReview ? [READY_FOR_REVIEW_LABEL] : []),
     ...(report.needsAuthorFeedback ? [NEEDS_AUTHOR_FEEDBACK_LABEL] : []),
+    ...pathProductLabels,
   ];
   const labelPlan = planManagedLabelChanges(
-    parseIssueLabels(issue),
-    desiredManagedLabels,
+    currentLabels,
+    desiredLabels,
     [
       READY_FOR_REVIEW_LABEL,
       NEEDS_AUTHOR_FEEDBACK_LABEL,
@@ -795,7 +905,7 @@ export async function runPullRequestIntake({ api, event }) {
     ],
   );
 
-  await syncManagedLabels(api, issueNumber, labelPlan);
+  await syncLabelChanges(api, issueNumber, labelPlan);
 
   // Only surface a comment when there is something for the author to act on or
   // consider. When a previously flagged PR becomes clean we replace the stale
@@ -827,6 +937,7 @@ export async function runPullRequestIntake({ api, event }) {
   return {
     issueNumber,
     changedPathCount: changedPaths.length,
+    pathProductLabels,
     labelPlan,
     commentResult: {
       operation: commentResult.operation,

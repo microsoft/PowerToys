@@ -25,7 +25,9 @@ using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
+using Windows.Foundation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using VirtualKey = Windows.System.VirtualKey;
 
@@ -197,6 +199,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
+        AddHandler(LosingFocusEvent, new TypedEventHandler<UIElement, LosingFocusEventArgs>(ShellPage_LosingFocus), false);
 
         RootFrame.Navigate(typeof(LoadingPage), new AsyncNavigationRequest(ViewModel, CancellationToken.None));
 
@@ -982,6 +985,26 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         if (sender is Button button && button.DataContext is CommandViewModel commandViewModel)
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(commandViewModel.Model));
+        }
+    }
+
+    private void ShellPage_LosingFocus(UIElement sender, LosingFocusEventArgs args)
+    {
+        if (HostWindow?.IsVisibleToUser != true || args.NewFocusedElement is null)
+        {
+            return;
+        }
+
+        // Empty-space clicks can move focus to a window ancestor, outside both the search bar's and the shell's key-event routes.
+        // Keep the current control focused, but allow focus to move to other controls, flyouts, and dialogs.
+        // With a bit of luck this won't bite us later.
+        for (var ancestor = VisualTreeHelper.GetParent(this); ancestor is not null; ancestor = VisualTreeHelper.GetParent(ancestor))
+        {
+            if (ReferenceEquals(args.NewFocusedElement, ancestor))
+            {
+                args.TryCancel();
+                return;
+            }
         }
     }
 

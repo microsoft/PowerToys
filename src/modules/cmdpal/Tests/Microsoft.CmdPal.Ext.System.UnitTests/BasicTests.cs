@@ -4,6 +4,8 @@
 
 using System;
 using Microsoft.CmdPal.Ext.System.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.System.UnitTests;
@@ -36,6 +38,72 @@ public class BasicTests
         // Assert
         // Just testing that they don't throw exceptions
         Assert.IsTrue(Enum.IsDefined(typeof(FirmwareType), firmwareType));
+    }
+
+    [TestMethod]
+    public void UpdateShutdownFlagsTest()
+    {
+        // SHUTDOWN_INSTALL_UPDATES | SHUTDOWN_RESTART
+        Assert.AreEqual(0x44u, WindowsUpdateHelper.GetUpdateShutdownFlags(restart: true));
+
+        // SHUTDOWN_INSTALL_UPDATES | SHUTDOWN_POWEROFF
+        Assert.AreEqual(0x48u, WindowsUpdateHelper.GetUpdateShutdownFlags(restart: false));
+    }
+
+    [TestMethod]
+    public void UpdatePendingDetectionDoesNotThrowTest()
+    {
+        // The WUAPI query must never throw; on any failure it reports false. The actual
+        // value depends on the machine's update state, but back-to-back calls within the
+        // cache interval must agree (the second call takes the cached path).
+        var first = WindowsUpdateHelper.IsUpdatePending();
+        var second = WindowsUpdateHelper.IsUpdatePending();
+
+        Assert.AreEqual(first, second, "Cached query should return the same value within the cache interval.");
+    }
+
+    [TestMethod]
+    public void ExecuteCommandSurfacesFuncResult()
+    {
+        // A command built from a Func<CommandResult> must return that result rather than
+        // always dismissing, so a failed action can keep the palette open.
+        var command = new ExecuteCommand(() => CommandResult.ShowToast("failure"));
+
+        var result = command.Invoke();
+
+        Assert.AreEqual(CommandResultKind.ShowToast, result.Kind);
+    }
+
+    [TestMethod]
+    public void ConfirmationCommandDirectPathSurfacesFailureResult()
+    {
+        // Confirmation off: invoking runs the action directly and must return its result
+        // (here a failure toast) instead of silently dismissing.
+        var command = new ExecuteCommandConfirmation("name", confirm: false, "message", () => CommandResult.ShowToast("failure"));
+
+        var result = command.Invoke();
+
+        Assert.AreEqual(CommandResultKind.ShowToast, result.Kind);
+    }
+
+    [TestMethod]
+    public void ConfirmationCommandConfirmedPathSurfacesFailureResult()
+    {
+        // Confirmation on: Invoke returns a Confirm result, and the primary command it
+        // carries must surface the same failure result when the user confirms.
+        var command = new ExecuteCommandConfirmation("name", confirm: true, "message", () => CommandResult.ShowToast("failure"));
+
+        var confirmResult = command.Invoke();
+        Assert.AreEqual(CommandResultKind.Confirm, confirmResult.Kind);
+
+        var args = confirmResult.Args as ConfirmationArgs;
+        Assert.IsNotNull(args, "Confirm result should carry ConfirmationArgs.");
+
+        var primary = args.PrimaryCommand as InvokableCommand;
+        Assert.IsNotNull(primary, "Confirmation should carry an invokable primary command.");
+
+        var innerResult = primary.Invoke();
+        Assert.AreEqual(CommandResultKind.ShowToast, innerResult.Kind);
     }
 
     [TestMethod]

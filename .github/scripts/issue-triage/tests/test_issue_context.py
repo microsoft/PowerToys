@@ -1,4 +1,6 @@
 import importlib.util
+import json
+import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -87,6 +89,16 @@ class IssueContextTests(unittest.TestCase):
         self.assertEqual(CONTEXT.parse_version(BUG_BODY), "0.100.2")
         self.assertEqual(CONTEXT.reproduction_quality(BUG_BODY), "SUFFICIENT")
 
+    def test_parses_combined_version_and_release_channel(self):
+        body = BUG_BODY.replace(
+            "### Microsoft PowerToys version\n\n0.100.2",
+            "### Microsoft PowerToys version and release channel\n\n"
+            "0.101.2211.0 - Preview (Insider)",
+        )
+
+        self.assertTrue(CONTEXT.is_bug_template(body))
+        self.assertEqual(CONTEXT.parse_version(body), "0.101.2211.0")
+
     def test_version_status_distinguishes_outdated_current_and_preview(self):
         self.assertEqual(
             CONTEXT.version_status("0.99.1", "0.100.2"),
@@ -138,6 +150,20 @@ class IssueContextTests(unittest.TestCase):
         self.assertEqual(
             CONTEXT.extract_section(body, "Actual Behavior"),
             "Nothing happens and the current settings page remains open.",
+        )
+        self.assertEqual(CONTEXT.reproduction_quality(body), "SUFFICIENT")
+
+    def test_natural_language_shortcut_reproduction_is_sufficient(self):
+        body = BUG_BODY.replace(
+            "1. Open Keyboard Manager.\n"
+            "2. Select Remap a shortcut.\n"
+            "3. Press a key and observe that the editor closes.",
+            "Make a key remap, (alt (left) + tab), then try and use it. "
+            "It's disabled!\n\n"
+            "Now hold alt + tab, then press w, or any other key. It activates it.",
+        ).replace(
+            "The editor exits.",
+            "Alt+Tab still functions when using other keys alongside it.",
         )
         self.assertEqual(CONTEXT.reproduction_quality(body), "SUFFICIENT")
 
@@ -518,6 +544,31 @@ class IssueContextTests(unittest.TestCase):
         self.assertFalse(should_process)
         self.assertEqual(api.queries, [])
 
+    def test_closed_issue_writes_noop_without_api_reads(self):
+        event = {
+            "action": "edited",
+            "issue": {
+                "number": 10,
+                "state": "closed",
+                "title": "Keyboard Manager exits",
+                "body": BUG_BODY,
+                "user": {"login": "alice"},
+                "labels": [],
+            },
+        }
+        api = FakeApi()
+        with (
+            mock.patch.object(CONTEXT, "write_noop") as noop,
+            mock.patch.object(
+                api,
+                "list_comments",
+                side_effect=AssertionError("Closed issues must not read comments"),
+            ),
+        ):
+            _, _, should_process = CONTEXT.prepare(event, api)
+        noop.assert_called_once_with("Closed issues are not triaged")
+        self.assertFalse(should_process)
+
     def test_prepare_emits_bounded_ranked_candidates(self):
         issue = {
             "number": 10,
@@ -578,6 +629,94 @@ class IssueContextTests(unittest.TestCase):
             evidence["allowed_product_labels"],
             ["Product-Screen Ruler"],
         )
+
+    def test_force_evidence_skips_issue_closed_after_trigger(self):
+        stale_issue = {
+            "number": 10,
+            "state": "open",
+            "title": "Keyboard Manager exits",
+            "body": BUG_BODY,
+            "user": {"login": "alice"},
+            "labels": [],
+        }
+        current_issue = {**stale_issue, "state": "closed"}
+        api = FakeApi(current_issue=current_issue)
+
+        with (
+            mock.patch.object(CONTEXT, "write_noop") as noop,
+            mock.patch.object(
+                api,
+                "list_comments",
+                side_effect=AssertionError("Closed issues must not read comments"),
+            ),
+        ):
+            _, normalized, should_process, evidence = CONTEXT.prepare_with_evidence(
+                {"action": "opened", "issue": stale_issue},
+                api,
+                force_evidence=True,
+            )
+
+        noop.assert_called_once_with("Closed issues are not triaged")
+        self.assertEqual(normalized["issue"]["state"], "closed")
+        self.assertFalse(should_process)
+        self.assertIsNone(evidence)
+
+    def test_main_cleanly_skips_closed_issue_during_evidence_refresh(self):
+        stale_issue = {
+            "number": 10,
+            "state": "open",
+            "title": "Keyboard Manager exits",
+            "body": BUG_BODY,
+            "user": {"login": "alice"},
+            "labels": [],
+        }
+        current_issue = {**stale_issue, "state": "closed"}
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            event_path = root / "event.json"
+            context_path = root / "context.md"
+            normalized_event_path = root / "normalized-event.json"
+            evidence_path = root / "evidence.json"
+            output_path = root / "github-output.txt"
+            event_path.write_text(
+                json.dumps({"action": "opened", "issue": stale_issue}),
+                encoding="utf-8",
+            )
+
+            with (
+                mock.patch.object(
+                    CONTEXT,
+                    "GitHubApi",
+                    return_value=FakeApi(current_issue=current_issue),
+                ),
+                mock.patch.object(
+                    CONTEXT.sys,
+                    "argv",
+                    [
+                        "issue-context.py",
+                        str(event_path),
+                        str(context_path),
+                        str(normalized_event_path),
+                        str(evidence_path),
+                    ],
+                ),
+                mock.patch.dict(
+                    CONTEXT.os.environ,
+                    {
+                        "GITHUB_OUTPUT": str(output_path),
+                        "ISSUE_TRIAGE_FORCE_EVIDENCE": "true",
+                    },
+                    clear=True,
+                ),
+            ):
+                self.assertEqual(CONTEXT.main(), 0)
+
+            self.assertFalse(evidence_path.exists())
+            self.assertEqual(
+                output_path.read_text(encoding="utf-8"),
+                "should_process=false\n",
+            )
 
     def test_candidate_retrieval_only_returns_older_issues(self):
         issue = {

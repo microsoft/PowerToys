@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
+using System.Text.Json;
 using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -13,6 +14,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.UI.Dispatching;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -314,15 +316,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
-            var generalSettings = _settingsRepository.SettingsConfig;
-            generalSettings.CustomActionName = "check_for_updates";
-            var customAction = new GeneralSettingsCustomAction(new OutGoingGeneralSettings(generalSettings));
+            var checkForUpdatesAction = JsonSerializer.Serialize(
+                ActionMessage.Create("check_for_updates"),
+                SourceGenerationContextContext.Default.ActionMessage);
 
             RequestActivity();
             StartTransientOperation(TransientUpdateOperation.Checking);
             try
             {
-                if (_sendCheckForUpdatesConfigMessage(customAction.ToString()) != 0)
+                if (_sendCheckForUpdatesConfigMessage(checkForUpdatesAction) != 0)
                 {
                     FailTransientOperation(UpdateUIState.NetworkError, "Failed to send the update check request.");
                 }

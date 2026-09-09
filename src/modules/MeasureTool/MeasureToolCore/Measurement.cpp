@@ -4,8 +4,8 @@
 
 #include <iostream>
 
-Measurement::Measurement(RECT winRect, float px2mmRatio) :
-    px2mmRatio{ px2mmRatio }
+Measurement::Measurement(RECT winRect, float px2mmRatio, float monitorDpi) :
+    px2mmRatio{ px2mmRatio }, monitorDpi{ monitorDpi }
 {
     rect.left = static_cast<float>(winRect.left);
     rect.right = static_cast<float>(winRect.right);
@@ -13,77 +13,21 @@ Measurement::Measurement(RECT winRect, float px2mmRatio) :
     rect.bottom = static_cast<float>(winRect.bottom);
 }
 
-Measurement::Measurement(D2D1_RECT_F d2dRect, float px2mmRatio) :
-    rect{ d2dRect }, px2mmRatio{ px2mmRatio }
+Measurement::Measurement(D2D1_RECT_F d2dRect, float px2mmRatio, float monitorDpi) :
+    rect{ d2dRect }, px2mmRatio{ px2mmRatio }, monitorDpi{ monitorDpi }
 {
 }
 
-namespace
-{
-    inline float Convert(const float pixels, const Measurement::Unit units, float px2mmRatio)
-    {
-        if (px2mmRatio > 0)
-        {
-            switch (units)
-            {
-            case Measurement::Unit::Pixel:
-                return pixels;
-            case Measurement::Unit::Inch:
-                return pixels * px2mmRatio / 10.0f / 2.54f;
-            case Measurement::Unit::Centimetre:
-                return pixels * px2mmRatio / 10.0f;
-            case Measurement::Unit::Millimetre:
-                return pixels * px2mmRatio;
-            default:
-                return pixels;
-            }
-        }
-        else
-        {
-            switch (units)
-            {
-            case Measurement::Unit::Pixel:
-                return pixels;
-            case Measurement::Unit::Inch:
-                return pixels / 96.0f;
-            case Measurement::Unit::Centimetre:
-                return pixels / 96.0f * 2.54f;
-            case Measurement::Unit::Millimetre:
-                return pixels / 96.0f / 10.0f * 2.54f;
-            default:
-                return pixels;
-            }
-        }
-    }
-}
-
-winrt::hstring Measurement::abbreviations[4]{};
+winrt::hstring Measurement::abbreviations[5]{};
 
 inline float Measurement::Width(const Unit units) const
 {
-    return Convert(rect.right - rect.left + 1.f, units, px2mmRatio);
+    return MeasurementLogic::Convert(rect.right - rect.left + 1.f, units, px2mmRatio, monitorDpi);
 }
 
 inline float Measurement::Height(const Unit units) const
 {
-    return Convert(rect.bottom - rect.top + 1.f, units, px2mmRatio);
-}
-
-Measurement::Unit Measurement::GetUnitFromIndex(int index)
-{
-    switch (index)
-    {
-    case 0:
-        return Measurement::Unit::Pixel;
-    case 1:
-        return Measurement::Unit::Inch;
-    case 2:
-        return Measurement::Unit::Centimetre;
-    case 3:
-        return Measurement::Unit::Millimetre;
-    default:
-        return Measurement::Unit::Pixel;
-    }
+    return MeasurementLogic::Convert(rect.bottom - rect.top + 1.f, units, px2mmRatio, monitorDpi);
 }
 
 void Measurement::InitResources()
@@ -94,6 +38,7 @@ void Measurement::InitResources()
     abbreviations[1] = mm.GetValue(L"Resources/MeasurementUnitAbbrInch").ValueAsString();
     abbreviations[2] = mm.GetValue(L"Resources/MeasurementUnitAbbrCentimetre").ValueAsString();
     abbreviations[3] = mm.GetValue(L"Resources/MeasurementUnitAbbrMillimetre").ValueAsString();
+    abbreviations[4] = mm.GetValue(L"Resources/MeasurementUnitAbbrDip").ValueAsString();
 }
 
 const wchar_t* Measurement::GetUnitAbbreviation(Measurement::Unit units)
@@ -108,6 +53,8 @@ const wchar_t* Measurement::GetUnitAbbreviation(Measurement::Unit units)
         return abbreviations[2].c_str();
     case Unit::Millimetre:
         return abbreviations[3].c_str();
+    case Unit::Dip:
+        return abbreviations[4].c_str();
     default:
         return L"??";
     }
@@ -175,6 +122,12 @@ Measurement::PrintResult Measurement::Print(wchar_t* buf,
                                         Measurement::GetUnitAbbreviation(unit));
 
             break;
+        case Measurement::Unit::Dip:
+            result.strLen += swprintf_s(buf + result.strLen,
+                                        bufSize - result.strLen,
+                                        L" %s",
+                                        Measurement::GetUnitAbbreviation(unit));
+            break;
         }
         if (paren)
         {
@@ -185,6 +138,7 @@ Measurement::PrintResult Measurement::Print(wchar_t* buf,
     int count = 0;
     const Measurement::Unit allUnits[] = {
         Measurement::Unit::Pixel,
+        Measurement::Unit::Dip,
         Measurement::Unit::Millimetre,
         Measurement::Unit::Inch,
         Measurement::Unit::Centimetre,

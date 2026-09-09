@@ -73,6 +73,8 @@
                         </StackPanel>
                     </tkcontrols:SettingsCard.Description>
                     <Button
+                        x:Uid="More_Options_Button"
+                        AutomationProperties.AutomationId="VariableOptionsButton"
                         Content="{ui:FontIcon Glyph=&#xE712;}"
                         IsEnabled="{x:Bind IsEditable}"
                         Style="{StaticResource SubtleButtonStyle}">
@@ -80,12 +82,14 @@
                             <MenuFlyout>
                                 <MenuFlyoutItem
                                     x:Uid="EditItem"
+                                    AutomationProperties.AutomationId="EditVariableMenuItem"
                                     Click="EditVariable_Click"
                                     CommandParameter="{x:Bind (models:Variable)}"
                                     Icon="{ui:FontIcon Glyph=&#xE70F;}" />
                                 <MenuFlyoutSeparator />
                                 <MenuFlyoutItem
                                     x:Uid="RemoveItem"
+                                    AutomationProperties.AutomationId="RemoveVariableMenuItem"
                                     Click="Delete_Variable_Click"
                                     CommandParameter="{x:Bind (models:Variable)}"
                                     Icon="{ui:FontIcon Glyph=&#xE74D;}" />
@@ -129,7 +133,7 @@
 
         <!--  buttons  -->
         <StackPanel Orientation="Horizontal">
-            <Button Command="{x:Bind NewProfileCommand}">
+            <Button AutomationProperties.AutomationId="NewProfileButton" Command="{x:Bind NewProfileCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <FontIcon
                         x:Name="Icon"
@@ -212,17 +216,23 @@
                                             x:Uid="ToggleSwitch"
                                             IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
                                             Style="{StaticResource RightAlignedCompactToggleSwitchStyle}" />
-                                        <Button Content="{ui:FontIcon Glyph=&#xE712;}" Style="{StaticResource SubtleButtonStyle}">
+                                        <Button
+                                            x:Uid="More_Options_Button"
+                                            AutomationProperties.AutomationId="ProfileOptionsButton"
+                                            Content="{ui:FontIcon Glyph=&#xE712;}"
+                                            Style="{StaticResource SubtleButtonStyle}">
                                             <Button.Flyout>
                                                 <MenuFlyout>
                                                     <MenuFlyoutItem
                                                         x:Uid="EditItem"
+                                                        AutomationProperties.AutomationId="EditProfileMenuItem"
                                                         Click="EditProfileBtn_Click"
                                                         CommandParameter="{x:Bind (models:ProfileVariablesSet)}"
                                                         Icon="{ui:FontIcon Glyph=&#xE70F;}" />
                                                     <MenuFlyoutSeparator />
                                                     <MenuFlyoutItem
                                                         x:Uid="RemoveItem"
+                                                        AutomationProperties.AutomationId="RemoveProfileMenuItem"
                                                         Click="RemoveProfileBtn_Click"
                                                         CommandParameter="{x:Bind (models:ProfileVariablesSet)}"
                                                         Icon="{ui:FontIcon Glyph=&#xE74D;}" />
@@ -256,6 +266,7 @@
 
                     <tkcontrols:SettingsExpander
                         Margin="0,4,0,0"
+                        AutomationProperties.AutomationId="UserVariablesExpander"
                         Header="{x:Bind ViewModel.UserDefaultSet.Name}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE77B;}">
                         <tkcontrols:SettingsExpander.ItemsHeader>
@@ -280,7 +291,10 @@
                         </StackPanel>
                     </tkcontrols:SettingsExpander>
 
-                    <tkcontrols:SettingsExpander Header="{x:Bind ViewModel.SystemDefaultSet.Name}" HeaderIcon="{ui:FontIcon Glyph=&#xE977;}">
+                    <tkcontrols:SettingsExpander
+                        AutomationProperties.AutomationId="SystemVariablesExpander"
+                        Header="{x:Bind ViewModel.SystemDefaultSet.Name}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE977;}">
                         <tkcontrols:SettingsExpander.ItemsHeader>
                             <ItemsRepeater
                                 ItemTemplate="{StaticResource VariableTemplate}"
@@ -416,6 +430,7 @@
                 Spacing="16">
                 <TextBox
                     x:Uid="AddNewVariableName"
+                    AutomationProperties.AutomationId="DefaultVariableNameTextBox"
                     IsSpellCheckEnabled="False"
                     Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     TextChanged="AddDefaultVariableNameTxtBox_TextChanged" />
@@ -423,6 +438,7 @@
                     x:Uid="AddNewVariableValue"
                     MaxHeight="240"
                     AcceptsReturn="False"
+                    AutomationProperties.AutomationId="DefaultVariableValueTextBox"
                     IsSpellCheckEnabled="False"
                     ScrollViewer.IsVerticalRailEnabled="True"
                     ScrollViewer.VerticalScrollBarVisibility="Auto"
@@ -478,6 +494,8 @@
                                         <ColumnDefinition Width="40" />
                                     </Grid.ColumnDefinitions>
                                     <TextBox
+                                        x:Uid="VariableListEntryValue"
+                                        AutomationProperties.AutomationId="VariableListEntryValueTextBox"
                                         Background="Transparent"
                                         BorderBrush="Transparent"
                                         LostFocus="EditVariableValuesListTextBox_LostFocus"
@@ -486,6 +504,7 @@
                                         x:Uid="More_Options_Button"
                                         Grid.Column="1"
                                         VerticalAlignment="Center"
+                                        AutomationProperties.AutomationId="PathEntryOptionsButton"
                                         Content="&#xE712;"
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         Style="{StaticResource SubtleButtonStyle}">
@@ -493,24 +512,29 @@
                                             <MenuFlyout>
                                                 <MenuFlyoutItem
                                                     x:Uid="MoveUp"
+                                                    AutomationProperties.AutomationId="MoveUpPathEntryMenuItem"
                                                     Click="ReorderButtonUp_Click"
                                                     Icon="{ui:FontIcon Glyph=&#xE74A;}" />
                                                 <MenuFlyoutItem
                                                     x:Uid="MoveDown"
+                                                    AutomationProperties.AutomationId="MoveDownPathEntryMenuItem"
                                                     Click="ReorderButtonDown_Click"
                                                     Icon="{ui:FontIcon Glyph=&#xE74B;}" />
                                                 <MenuFlyoutSeparator />
                                                 <MenuFlyoutItem
                                                     x:Uid="RemoveListItem"
+                                                    AutomationProperties.AutomationId="DeletePathEntryMenuItem"
                                                     Click="RemoveListVariableButton_Click"
                                                     Icon="{ui:FontIcon Glyph=&#xE74D;}" />
                                                 <MenuFlyoutSeparator />
                                                 <MenuFlyoutItem
                                                     x:Uid="InsertListEntryBefore"
+                                                    AutomationProperties.AutomationId="InsertBeforePathEntryMenuItem"
                                                     Click="InsertListEntryBeforeButton_Click"
                                                     Icon="{ui:FontIcon Glyph=&#xECC8;}" />
                                                 <MenuFlyoutItem
                                                     x:Uid="InsertListEntryAfter"
+                                                    AutomationProperties.AutomationId="InsertAfterPathEntryMenuItem"
                                                     Click="InsertListEntryAfterButton_Click"
                                                     Icon="{ui:FontIcon Glyph=&#xECC8;}" />
                                             </MenuFlyout>
@@ -551,6 +575,7 @@
                             x:Uid="NewProfileNameTxtBox"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Center"
+                            AutomationProperties.AutomationId="ProfileNameTextBox"
                             IsSpellCheckEnabled="False"
                             Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         <ToggleSwitch
@@ -559,6 +584,7 @@
                             MinWidth="0"
                             Margin="0,0,0,0"
                             VerticalAlignment="Center"
+                            AutomationProperties.AutomationId="ProfileEnabledToggle"
                             IsOn="{Binding IsEnabled, Mode=TwoWay}"
                             OffContent=""
                             OnContent="" />
@@ -619,7 +645,7 @@
 
                     </Grid>
 
-                    <Button>
+                    <Button AutomationProperties.AutomationId="AddProfileVariableButton">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon
                                 x:Name="AddVariableIcon"

@@ -52,6 +52,48 @@ namespace
     static ThemeListener theme_listener;
     static bool theme_adaptive_enabled = false;
     static bool update_available = false;
+
+    void log_session_end_message(UINT message, WPARAM wparam, LPARAM lparam)
+    {
+        if (message != WM_QUERYENDSESSION && message != WM_ENDSESSION)
+        {
+            return;
+        }
+
+        const auto flags = static_cast<DWORD>(lparam);
+        const bool close_app = (flags & ENDSESSION_CLOSEAPP) != 0;
+        const bool critical = (flags & ENDSESSION_CRITICAL) != 0;
+        const bool logoff = (flags & ENDSESSION_LOGOFF) != 0;
+        const wchar_t* reason = L"shutdown_or_restart";
+        if (close_app)
+        {
+            reason = L"restart_manager_close_app";
+        }
+        else if (logoff)
+        {
+            reason = L"logoff";
+        }
+
+        if (message == WM_QUERYENDSESSION)
+        {
+            Logger::info(L"Runner received WM_QUERYENDSESSION: reason={}, flags={:#010x}, close_app={}, critical={}, logoff={}",
+                         reason,
+                         flags,
+                         close_app,
+                         critical,
+                         logoff);
+        }
+        else
+        {
+            Logger::info(L"Runner received WM_ENDSESSION: session_ending={}, reason={}, flags={:#010x}, close_app={}, critical={}, logoff={}",
+                         wparam != FALSE,
+                         reason,
+                         flags,
+                         close_app,
+                         critical,
+                         logoff);
+        }
+    }
 }
 
 // Struct to fill with callback and the data. The window_proc is responsible for cleaning it.
@@ -160,6 +202,8 @@ void click_timer_elapsed()
 
 LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
+    log_session_end_message(message, wparam, lparam);
+
     LRESULT session_end_result = 0;
     if (handle_stateless_session_end_message(window, message, wparam, lparam, session_end_result, &g_system_session_ending))
     {

@@ -80,7 +80,7 @@ Michael contributed the [initial version](https://github.com/microsoft/PowerToys
 
 ### [@Noraa-Junker](https://github.com/Noraa-Junker) - [Noraa Junker](https://noraajunker.ch)
 
-Noraa has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes. Noraa was the primary person for helping build the File Explorer preview pane handler for developer files.
+Noraa has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes. Noraa was the primary person for helping build the File Explorer preview pane handler for developer files and the second iteration of the Shortcut Guide.
 
 ### [@pedrolamas](https://github.com/pedrolamas/) - Pedro Lamas
 

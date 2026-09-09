@@ -22,12 +22,6 @@
         (the shared Common.UI.Controls backdrop).
     -->
     <!--
-        The base TransparentWindow applies the TransparentTintBackdrop and strips
-        the native chrome; this overlay additionally opts into the full-bleed DWM
-        hardening because it is edge-to-edge (see ApplyFullBleedHardening).
-    -->
-
-    <!--
         OverlayRoot must have a Background brush so it is hit-test opaque —
         otherwise clicks on the transparent margin fall through to whatever
         is underneath and the click-outside-to-close UX breaks. A fully

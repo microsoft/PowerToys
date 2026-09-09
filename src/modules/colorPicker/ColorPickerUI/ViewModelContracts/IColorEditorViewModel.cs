@@ -1,13 +1,13 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using System.Windows.Media;
 
 using ColorPicker.Models;
+using Windows.UI;
 
 namespace ColorPicker.ViewModelContracts
 {
@@ -20,6 +20,8 @@ namespace ColorPicker.ViewModelContracts
         ICommand OpenColorPickerCommand { get; }
 
         ICommand OpenSettingsCommand { get; }
+
+        ICommand CopyColorTextCommand { get; }
 
         ICommand RemoveColorsCommand { get; }
 
@@ -34,6 +36,10 @@ namespace ColorPicker.ViewModelContracts
         Color SelectedColor { get; set; }
 
         int SelectedColorIndex { get; set; }
+
+        // HWND of the host ColorEditorWindow, assigned by AppStateHandler once the window exists.
+        // Export converts this handle to a WindowId for the Windows App SDK FileSavePicker.
+        IntPtr WindowHandle { get; set; }
 
         void Initialize();
     }

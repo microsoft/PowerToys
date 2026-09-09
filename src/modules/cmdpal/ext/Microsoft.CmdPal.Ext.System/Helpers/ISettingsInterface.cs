@@ -21,4 +21,6 @@ public interface ISettingsInterface
     public bool HideDisconnectedNetworkInfo();
 
     public FirmwareType GetSystemFirmwareType();
+
+    public bool IsUpdatePending();
 }

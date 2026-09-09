@@ -49,6 +49,7 @@ namespace CommonSharedConstants
     const wchar_t TERMINATE_COLOR_PICKER_SHARED_EVENT[] = L"Local\\TerminateColorPickerEvent-3d676258-c4d5-424e-a87a-4be22020e813";
 
     const wchar_t SHORTCUT_GUIDE_TRIGGER_EVENT[] = L"Local\\ShortcutGuide-TriggerEvent-d4275ad3-2531-4d19-9252-c0becbd9b496";
+    const wchar_t SHORTCUT_GUIDE_WIN_KEY_HOLD_EVENT[] = L"Local\\ShortcutGuide-WinKeyHoldEvent-b5eb7614-d1c4-49d7-9813-ab277aabdd80";
 
     const wchar_t SHORTCUT_GUIDE_EXIT_EVENT[] = L"Local\\ShortcutGuide-ExitEvent-35697cdd-a3d2-47d6-a246-34efcc73eac0";
 
