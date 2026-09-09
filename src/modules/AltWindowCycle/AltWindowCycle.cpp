@@ -202,6 +202,19 @@ static void ApplyBackdrop(HWND hwnd)
         DwmExtendFrameIntoClientArea(hwnd, &glass);
         int backdrop = DWMSBT_TRANSIENTWINDOW;
         DwmSetWindowAttribute(hwnd, DWMWA_SYSTEMBACKDROP_TYPE, &backdrop, sizeof(backdrop));
+
+        // DWM automatically flattens Mica/acrylic backdrop material to a
+        // solid, non-blurred tint on any window it considers "inactive".
+        // thumbHost is WS_EX_NOACTIVATE (it must never steal real
+        // keyboard/foreground focus from whatever app the user is
+        // switching away from), so without this call DWM would always see
+        // it as inactive and always render the flattened/opaque fallback
+        // color -- never live blur, no matter how correctly the backdrop
+        // attribute itself is set. WM_NCACTIVATE with wParam=TRUE tells DWM
+        // to paint this window's frame/backdrop as if it were active,
+        // purely for rendering purposes; it does not change real Win32
+        // input focus or activate the window.
+        SendMessageW(hwnd, WM_NCACTIVATE, TRUE, 0);
     }
     else
     {
@@ -786,6 +799,10 @@ void Switcher::ShowOverlayWindow()
     RenderLayered();
     SetWindowPos(thumbHost, HWND_TOPMOST, x, y, panelW, panelH,
                  SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    // Re-assert the fake-active state after showing: some DWM paths reset
+    // a window's WM_NCACTIVATE state to inactive around SWP_SHOWWINDOW,
+    // which would flatten the Mica/acrylic backdrop right after it appears.
+    SendMessageW(thumbHost, WM_NCACTIVATE, TRUE, 0);
     SetWindowPos(overlay, HWND_TOPMOST, x, y, panelW, panelH,
                  SWP_NOACTIVATE | SWP_SHOWWINDOW);
     SetWindowPos(thumbHost, overlay, 0, 0, 0, 0,
