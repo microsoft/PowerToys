@@ -1311,25 +1311,16 @@ void Switcher::RenderLayered()
                                AltTabStyle::HeaderTextRef(sel), AltTabStyle::CardRef(sel));
             }
 
-            // Two-ring accent focus ring around the selected tile.
+            // Single accent focus ring hugging the selected tile.
             if (sel)
             {
-                int gPad = Scaled(10);
-                int gOut = gPad + Scaled(2);
-                // Both rings share the same corner radius (grown from the inner gap)
-                // so the outer accent ring stays concentric with the inner hairline
-                // instead of ballooning into a rounder, ill-fitting corner.
-                Gdiplus::GraphicsPath innerRing, out;
-                BuildRoundRect(innerRing, InflateF(tile, gPad),
+                int gPad = Scaled(4);
+                Gdiplus::GraphicsPath ring;
+                BuildRoundRect(ring, InflateF(tile, gPad),
                                static_cast<Gdiplus::REAL>(radius + gPad));
-                BuildRoundRect(out, InflateF(tile, gOut),
-                               static_cast<Gdiplus::REAL>(radius + gPad));
-                Gdiplus::Pen darkPen(AltTabStyle::FocusShadow(),
-                                     static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
                 Gdiplus::Pen accentPen(accentClr,
                                        static_cast<Gdiplus::REAL>((std::max)(2, Scaled(3))));
-                g.DrawPath(&darkPen, &innerRing);
-                g.DrawPath(&accentPen, &out);
+                g.DrawPath(&accentPen, &ring);
             }
         }
 
