@@ -760,6 +760,12 @@ void Switcher::ShowOverlayWindow()
     DwmSetWindowAttribute(thumbHost, DWMWA_WINDOW_CORNER_PREFERENCE,
                           &cornerPref, sizeof(cornerPref));
     SetWindowRgn(thumbHost, nullptr, FALSE);
+    // DWM doesn't always repaint non-client chrome immediately after
+    // DwmSetWindowAttribute calls (backdrop type, corner preference, dark
+    // mode) on a window whose size didn't change. A no-op SWP_FRAMECHANGED
+    // forces DWM to recompute and actually apply them.
+    SetWindowPos(thumbHost, nullptr, 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
     RedrawWindow(thumbHost, nullptr, nullptr,
                  RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW | RDW_ALLCHILDREN);
     RegisterThumbnails();
