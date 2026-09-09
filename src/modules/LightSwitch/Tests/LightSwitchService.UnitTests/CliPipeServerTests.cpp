@@ -55,12 +55,12 @@ namespace LightSwitchServiceUnitTests
             return options;
         }
 
-        TestHandle Connect(const std::wstring& name)
+        TestHandle Connect(const std::wstring& name, DWORD identificationLevel = SECURITY_IDENTIFICATION)
         {
             const auto deadline = GetTickCount64() + 5000;
             while (true)
             {
-                HANDLE pipe = CreateFileW(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED | SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION, nullptr);
+                HANDLE pipe = CreateFileW(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED | SECURITY_SQOS_PRESENT | identificationLevel, nullptr);
                 if (pipe != INVALID_HANDLE_VALUE)
                 {
                     return TestHandle(pipe);
@@ -203,6 +203,54 @@ namespace LightSwitchServiceUnitTests
             Assert::IsTrue(first.Start());
             Assert::IsFalse(second.Start());
             Assert::IsTrue(Exchange(options.pipeName, StatusRequest).GetNamedBoolean(L"success"));
+        }
+
+        TEST_METHOD (HandlerRunsAsTheServiceAfterClientIdentification)
+        {
+            Apartment apartment;
+            const auto options = TestOptions();
+            std::atomic<bool> ranWithoutImpersonation = false;
+            CliPipeServer server([&](const Request&) {
+                HANDLE token = nullptr;
+                const BOOL opened = OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, &token);
+                const auto error = GetLastError();
+                TestHandle cleanup(token);
+                ranWithoutImpersonation = !opened && error == ERROR_NO_TOKEN;
+                return MakeSuccess(TestState());
+            },
+                                 options);
+            Assert::IsTrue(server.Start());
+            Assert::IsTrue(Exchange(options.pipeName, StatusRequest).GetNamedBoolean(L"success"));
+            server.Stop();
+            Assert::IsTrue(ranWithoutImpersonation.load());
+        }
+
+        TEST_METHOD (AnonymousClientsAreRejectedAndDoNotAffectTheNextClient)
+        {
+            Apartment apartment;
+            const auto options = TestOptions();
+            std::atomic<int> calls = 0;
+            std::atomic<bool> ranWithoutImpersonation = false;
+            CliPipeServer server([&](const Request&) {
+                ++calls;
+                HANDLE token = nullptr;
+                const BOOL opened = OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, &token);
+                const auto error = GetLastError();
+                TestHandle cleanup(token);
+                ranWithoutImpersonation = !opened && error == ERROR_NO_TOKEN;
+                return MakeSuccess(TestState());
+            },
+                                 options);
+            Assert::IsTrue(server.Start());
+            auto anonymous = Connect(options.pipeName, SECURITY_ANONYMOUS);
+            WriteRequest(anonymous.Get(), StatusRequest);
+            AssertError(ReadResponse(anonymous.Get()), L"SERVICE_UNAVAILABLE");
+            anonymous.Reset();
+            Assert::AreEqual(0, calls.load());
+            Assert::IsTrue(Exchange(options.pipeName, StatusRequest).GetNamedBoolean(L"success"));
+            server.Stop();
+            Assert::AreEqual(1, calls.load());
+            Assert::IsTrue(ranWithoutImpersonation.load());
         }
 
         TEST_METHOD (HandlesUtf16CodeUnitsSplitAcrossWrites)

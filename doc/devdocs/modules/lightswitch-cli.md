@@ -4,6 +4,12 @@
 service in the current Windows user session. Enable Light Switch in PowerToys
 before using it. The CLI does not start PowerToys or enable the module.
 
+On its first startup, the service creates the default settings if the module's
+settings file does not exist: scheduling is off and both theme targets are
+enabled. Existing, malformed, or unreadable files are never replaced with
+defaults. This also supports enabling the module through preconfigured general
+settings or policy before visiting the settings page.
+
 The PATH-visible executable is a [CLI shim](../cli-conventions.md). Its target,
 `PowerToys.LightSwitch.Cli.exe`, is installed in the PowerToys installation root.
 Terminals opened before installation may need to be reopened to pick up PATH.
@@ -104,6 +110,10 @@ server executable, sends one request, reads one response, and closes.
 
 The pipe name is `PowerToys_LightSwitch_Cli_<sessionId>`. Its access control
 restricts callers to the service's user/logon scope and rejects remote clients.
+After reading a bounded frame, the service obtains the connection's identification
+token and verifies its user SID, desktop session, and logon SID. This accepts the
+same user's linked UAC tokens while rejecting independent logons. The service
+reverts to its own identity before parsing or executing commands.
 Wire messages are single-line JSON encoded as BOM-less UTF-16LE, with a maximum
 of 32,768 UTF-16 code units per request or response. Version 1 requests contain
 `version`, `command`, and, only for `schedule-enable`, an optional `mode`.

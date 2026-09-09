@@ -35,12 +35,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CliIdentityTests.cpp" />
     <ClCompile Include="CliProtocolTests.cpp" />
     <ClCompile Include="CliPipeServerTests.cpp" />
     <ClCompile Include="ScheduleCommandQueueTests.cpp" />
     <ClCompile Include="StateManagerTests.cpp" />
     <ClCompile Include="SettingsTests.cpp" />
     <ClCompile Include="ThemeHelperTests.cpp" />
+    <ClCompile Include="..\..\LightSwitchService\CliIdentity.cpp" />
     <ClCompile Include="..\..\LightSwitchService\CliProtocol.cpp" />
     <ClCompile Include="..\..\LightSwitchService\CliPipeServer.cpp" />
     <ClCompile Include="..\..\LightSwitchService\LightSwitchStateManager.cpp" />
@@ -50,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestSupport.h" />
+    <ClInclude Include="..\..\LightSwitchService\CliIdentity.h" />
     <ClInclude Include="..\..\LightSwitchService\CliProtocol.h" />
     <ClInclude Include="..\..\LightSwitchService\CliPipeServer.h" />
   </ItemGroup>

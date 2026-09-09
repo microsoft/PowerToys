@@ -66,16 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             this.fileSystem = new FileSystem();
 
-            this.fileSystemWatcher = this.fileSystem.FileSystemWatcher.New();
-            this.fileSystemWatcher.Path = this.fileSystem.Path.GetDirectoryName(settingsPath);
-            this.fileSystemWatcher.Filter = this.fileSystem.Path.GetFileName(settingsPath);
-            this.fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime;
-            this.fileSystemWatcher.Changed += Settings_Changed;
-
-            // CLI updates replace the settings file after checking the complete write.
-            this.fileSystemWatcher.Created += Settings_Changed;
-            this.fileSystemWatcher.Renamed += Settings_Changed;
-            this.fileSystemWatcher.EnableRaisingEvents = true;
+            this.fileSystemWatcher = CreateSettingsWatcher(this.fileSystem, settingsPath, OnSettingsChanged);
 
             this.InitializeComponent();
             Loaded += LightSwitchPage_Loaded;
@@ -85,6 +76,23 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void RefreshEnabledState()
         {
             this.ViewModel.RefreshEnabledState();
+        }
+
+        internal static IFileSystemWatcher CreateSettingsWatcher(IFileSystem fileSystem, string settingsPath, Action onChanged)
+        {
+            var watcher = fileSystem.FileSystemWatcher.New();
+            watcher.Path = fileSystem.Path.GetDirectoryName(settingsPath);
+            watcher.Filter = fileSystem.Path.GetFileName(settingsPath);
+
+            // CLI saves replace the file. FileName enables the rename/create notifications.
+            watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime | NotifyFilters.FileName;
+            watcher.Changed += SettingsChanged;
+            watcher.Created += SettingsChanged;
+            watcher.Renamed += SettingsChanged;
+            watcher.EnableRaisingEvents = true;
+            return watcher;
+
+            void SettingsChanged(object sender, FileSystemEventArgs e) => onChanged();
         }
 
         private async void LightSwitchPage_Loaded(object sender, RoutedEventArgs e)
@@ -301,7 +309,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void Settings_Changed(object sender, FileSystemEventArgs e)
+        private void OnSettingsChanged()
         {
             this.dispatcherQueue.TryEnqueue(() =>
             {

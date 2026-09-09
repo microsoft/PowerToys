@@ -71,6 +71,8 @@ struct LightSwitchConfig
 
 // Parsing and patching preserve the existing settings schema.
 bool TryParseLightSwitchConfig(const json::JsonObject& values, LightSwitchConfig& config, std::wstring& error);
+// Startup only: create defaults if the file is absent, preserving any existing file.
+bool TryInitializeLightSwitchSettings(const std::wstring& path, LightSwitchConfig& config, std::wstring& error);
 bool TryPatchLightSwitchScheduleMode(const std::wstring& path, ScheduleMode mode, LightSwitchConfig& config, std::wstring& error);
 bool HasSameEffectiveLightSwitchSettings(const LightSwitchConfig& left, const LightSwitchConfig& right);
 

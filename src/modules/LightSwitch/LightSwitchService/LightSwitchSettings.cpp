@@ -8,6 +8,7 @@
 #include <climits>
 #include <stdexcept>
 #include <roapi.h>
+#include <wil/resource.h>
 #include <logger.h>
 #include <LightSwitchService/trace.h>
 
@@ -28,6 +29,81 @@ namespace
             return SUCCEEDED(result) || result == RPC_E_CHANGED_MODE;
         }
     };
+
+    class TemporarySettingsFile
+    {
+    public:
+        TemporarySettingsFile(const std::wstring& destination, const wchar_t* operation)
+        {
+            static std::atomic<unsigned long> sequence{ 0 };
+            _path = destination + L"." + operation + L"." + std::to_wstring(GetCurrentProcessId()) + L"." + std::to_wstring(GetTickCount64()) + L"." + std::to_wstring(++sequence) + L".tmp";
+        }
+
+        ~TemporarySettingsFile()
+        {
+            if (_created)
+                DeleteFileW(_path.c_str());
+        }
+
+        TemporarySettingsFile(const TemporarySettingsFile&) = delete;
+        TemporarySettingsFile& operator=(const TemporarySettingsFile&) = delete;
+
+        bool Write(const std::string& contents, std::wstring& error)
+        {
+            wil::unique_hfile file(CreateFileW(_path.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr));
+            if (!file)
+            {
+                error = L"A temporary settings file could not be created (error " + std::to_wstring(GetLastError()) + L").";
+                return false;
+            }
+            _created = true;
+            DWORD written = 0;
+            if (contents.size() > MAXDWORD ||
+                !WriteFile(file.get(), contents.data(), static_cast<DWORD>(contents.size()), &written, nullptr) ||
+                written != contents.size() || !FlushFileBuffers(file.get()))
+            {
+                error = L"Light Switch settings could not be written.";
+                return false;
+            }
+            return true;
+        }
+
+        bool Publish(const std::wstring& destination, DWORD flags)
+        {
+            if (!MoveFileExW(_path.c_str(), destination.c_str(), flags))
+                return false;
+            _created = false;
+            return true;
+        }
+
+    private:
+        std::wstring _path;
+        bool _created = false;
+    };
+
+    std::string DefaultSettingsJson()
+    {
+        // Match LightSwitchProperties in Settings UI and the module's hotkey defaults.
+        const LightSwitchConfig defaults;
+        PowerToysSettings::PowerToyValues values(L"LightSwitch", L"LightSwitch");
+        values.add_property(L"scheduleMode", L"Off");
+        values.add_property(L"changeSystem", true);
+        values.add_property(L"changeApps", true);
+        values.add_property(L"lightTime", defaults.lightTime);
+        values.add_property(L"darkTime", defaults.darkTime);
+        values.add_property(L"latitude", defaults.latitude);
+        values.add_property(L"longitude", defaults.longitude);
+        values.add_property(L"sunrise_offset", defaults.sunrise_offset);
+        values.add_property(L"sunset_offset", defaults.sunset_offset);
+        values.add_property(L"toggle-theme-hotkey", PowerToysSettings::HotkeyObject::from_settings(true, true, false, true, 'D').get_json());
+        values.add_property(L"enableDarkModeProfile", false);
+        values.add_property(L"enableLightModeProfile", false);
+        values.add_property(L"darkModeProfile", L"");
+        values.add_property(L"lightModeProfile", L"");
+        values.add_property(L"darkModeProfileId", 0);
+        values.add_property(L"lightModeProfileId", 0);
+        return winrt::to_string(values.serialize());
+    }
 }
 
 LightSwitchSettings& LightSwitchSettings::instance()
@@ -38,7 +114,16 @@ LightSwitchSettings& LightSwitchSettings::instance()
 
 LightSwitchSettings::LightSwitchSettings()
 {
-    LoadSettings();
+    LightSwitchConfig config;
+    std::wstring error;
+    if (TryInitializeLightSwitchSettings(GetSettingsFileName(), config, error))
+    {
+        ApplySettingsLocked(config);
+    }
+    else
+    {
+        Logger::warn(L"[LightSwitchSettings] Could not initialize settings: {}", error);
+    }
 }
 
 std::wstring LightSwitchSettings::GetSettingsFileName()
@@ -220,6 +305,64 @@ bool HasSameEffectiveLightSwitchSettings(const LightSwitchConfig& left, const Li
            (!compareTimes || (left.lightTime == right.lightTime && left.darkTime == right.darkTime));
 }
 
+bool TryInitializeLightSwitchSettings(const std::wstring& path, LightSwitchConfig& config, std::wstring& error)
+{
+    const ApartmentScope apartment;
+    if (!apartment.IsReady())
+    {
+        error = L"The settings JSON runtime could not be initialized.";
+        return false;
+    }
+
+    try
+    {
+        wil::unique_hfile existing(CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
+        if (!existing)
+        {
+            const auto openError = GetLastError();
+            // The settings helper has already created the module directory. Missing
+            // parents and unreadable files are errors, not a first-run configuration.
+            if (openError != ERROR_FILE_NOT_FOUND)
+            {
+                error = L"Light Switch settings could not be opened (error " + std::to_wstring(openError) + L").";
+                return false;
+            }
+
+            TemporarySettingsFile temporary(path, L"init");
+            if (!temporary.Write(DefaultSettingsJson(), error))
+            {
+                return false;
+            }
+
+            // Publish the complete document without replacing a concurrent first
+            // save from Settings UI or another service. Read whichever file won.
+            if (!temporary.Publish(path, MOVEFILE_WRITE_THROUGH))
+            {
+                const auto moveError = GetLastError();
+                if (moveError != ERROR_ALREADY_EXISTS && moveError != ERROR_FILE_EXISTS)
+                {
+                    error = L"Light Switch default settings could not be saved (error " + std::to_wstring(moveError) + L").";
+                    return false;
+                }
+            }
+        }
+        existing.reset();
+
+        const auto document = json::from_file(path);
+        if (!document)
+        {
+            error = L"Light Switch settings could not be read or contain invalid JSON.";
+            return false;
+        }
+        return TryParseLightSwitchConfig(*document, config, error);
+    }
+    catch (...)
+    {
+        error = L"Light Switch settings could not be initialized.";
+        return false;
+    }
+}
+
 bool TryPatchLightSwitchScheduleMode(const std::wstring& path, ScheduleMode mode, LightSwitchConfig& config, std::wstring& error)
 {
     const ApartmentScope apartment;
@@ -234,8 +377,6 @@ bool TryPatchLightSwitchScheduleMode(const std::wstring& path, ScheduleMode mode
         error = L"The requested schedule mode is not supported.";
         return false;
     }
-    std::wstring temporaryPath;
-    HANDLE file = INVALID_HANDLE_VALUE;
     try
     {
         auto document = json::from_file(path);
@@ -258,25 +399,9 @@ bool TryPatchLightSwitchScheduleMode(const std::wstring& path, ScheduleMode mode
         const std::wstring original = document->Stringify().c_str();
         auto property = document->GetNamedObject(L"properties").GetNamedObject(L"scheduleMode");
         property.SetNamedValue(L"value", json::value(ToString(mode)));
-        const auto serialized = winrt::to_string(document->Stringify());
-        static std::atomic<unsigned long> sequence{ 0 };
-        temporaryPath = path + L".cli." + std::to_wstring(GetCurrentProcessId()) + L"." + std::to_wstring(++sequence) + L".tmp";
-        file = CreateFileW(temporaryPath.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
-        if (file == INVALID_HANDLE_VALUE)
+        TemporarySettingsFile temporary(path, L"cli");
+        if (!temporary.Write(winrt::to_string(document->Stringify()), error))
         {
-            error = L"A temporary settings file could not be created (error " + std::to_wstring(GetLastError()) + L").";
-            return false;
-        }
-        DWORD written = 0;
-        const bool saved = serialized.size() <= MAXDWORD &&
-                           WriteFile(file, serialized.data(), static_cast<DWORD>(serialized.size()), &written, nullptr) &&
-                           written == serialized.size() && FlushFileBuffers(file);
-        CloseHandle(file);
-        file = INVALID_HANDLE_VALUE;
-        if (!saved)
-        {
-            DeleteFileW(temporaryPath.c_str());
-            error = L"Light Switch settings could not be written.";
             return false;
         }
 
@@ -284,18 +409,15 @@ bool TryPatchLightSwitchScheduleMode(const std::wstring& path, ScheduleMode mode
         const auto latest = json::from_file(path);
         if (!latest || std::wstring(latest->Stringify().c_str()) != original)
         {
-            DeleteFileW(temporaryPath.c_str());
             error = L"Light Switch settings changed during the update. Try the command again.";
             return false;
         }
-        if (!MoveFileExW(temporaryPath.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+        if (!temporary.Publish(path, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
         {
             const auto replacementError = GetLastError();
-            DeleteFileW(temporaryPath.c_str());
             error = L"Light Switch settings could not be replaced (error " + std::to_wstring(replacementError) + L").";
             return false;
         }
-        temporaryPath.clear();
         const auto savedDocument = json::from_file(path);
         if (!savedDocument || !TryParseLightSwitchConfig(*savedDocument, config, error) ||
             config.scheduleMode != mode || savedDocument->Stringify() != document->Stringify())
@@ -308,14 +430,6 @@ bool TryPatchLightSwitchScheduleMode(const std::wstring& path, ScheduleMode mode
     }
     catch (...)
     {
-        if (file != INVALID_HANDLE_VALUE)
-        {
-            CloseHandle(file);
-        }
-        if (!temporaryPath.empty())
-        {
-            DeleteFileW(temporaryPath.c_str());
-        }
         error = L"Light Switch settings could not be updated.";
         return false;
     }

@@ -21,6 +21,9 @@
     <ClCompile Include="CliPipeServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CliIdentity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="CliProtocol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -54,6 +57,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CliPipeServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CliIdentity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CliProtocol.h">

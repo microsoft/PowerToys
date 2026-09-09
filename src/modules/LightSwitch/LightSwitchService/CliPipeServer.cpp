@@ -3,15 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 #include "CliPipeServer.h"
+#include "CliIdentity.h"
 
 #include <array>
 #include <future>
 #include <mutex>
 #include <thread>
 #include <utility>
-#include <vector>
 #include <sddl.h>
 #include <roapi.h>
+#include <wil/resource.h>
 
 using namespace winrt::Windows::Data::Json;
 
@@ -51,61 +52,11 @@ namespace light_switch_cli
             ~LocalMemory() { LocalFree(value); }
         };
 
-        struct TokenIdentity
-        {
-            DWORD sessionId = 0;
-            LUID logonId{};
-            std::vector<BYTE> userSid;
-            std::wstring logonSid;
-        };
-
-        std::vector<BYTE> QueryToken(HANDLE token, TOKEN_INFORMATION_CLASS informationClass)
-        {
-            DWORD size = 0;
-            GetTokenInformation(token, informationClass, nullptr, 0, &size);
-            if (GetLastError() != ERROR_INSUFFICIENT_BUFFER || size == 0)
-            {
-                winrt::throw_last_error();
-            }
-            std::vector<BYTE> result(size);
-            winrt::check_bool(GetTokenInformation(token, informationClass, result.data(), size, &size));
-            return result;
-        }
-
         std::wstring SidString(PSID sid)
         {
             LocalMemory text;
             winrt::check_bool(ConvertSidToStringSidW(sid, reinterpret_cast<LPWSTR*>(&text.value)));
             return static_cast<const wchar_t*>(text.value);
-        }
-
-        TokenIdentity ReadIdentity(HANDLE process, bool includeLogonSid)
-        {
-            Handle token;
-            winrt::check_bool(OpenProcessToken(process, TOKEN_QUERY, token.Put()));
-            TokenIdentity identity;
-            const auto user = QueryToken(token.Get(), TokenUser);
-            const auto userSid = reinterpret_cast<const TOKEN_USER*>(user.data())->User.Sid;
-            identity.userSid.resize(GetLengthSid(userSid));
-            winrt::check_bool(CopySid(static_cast<DWORD>(identity.userSid.size()), identity.userSid.data(), userSid));
-
-            DWORD size = 0;
-            winrt::check_bool(GetTokenInformation(token.Get(), TokenSessionId, &identity.sessionId, sizeof(identity.sessionId), &size));
-            TOKEN_STATISTICS statistics{};
-            winrt::check_bool(GetTokenInformation(token.Get(), TokenStatistics, &statistics, sizeof(statistics), &size));
-            identity.logonId = statistics.AuthenticationId;
-
-            if (includeLogonSid)
-            {
-                const auto groupsBuffer = QueryToken(token.Get(), TokenLogonSid);
-                const auto groups = reinterpret_cast<const TOKEN_GROUPS*>(groupsBuffer.data());
-                if (groups->GroupCount != 1)
-                {
-                    throw winrt::hresult_error(HRESULT_FROM_WIN32(ERROR_NO_SUCH_LOGON_SESSION));
-                }
-                identity.logonSid = SidString(groups->Groups[0].Sid);
-            }
-            return identity;
         }
 
         DWORD RemainingTime(ULONGLONG deadline) noexcept
@@ -157,7 +108,9 @@ namespace light_switch_cli
                     m_options.pipeName = GetPipeName();
                 }
 
-                m_identity = ReadIdentity(GetCurrentProcess(), true);
+                Handle token;
+                winrt::check_bool(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, token.Put()));
+                m_identity = ReadTokenIdentity(token.Get());
                 m_stopEvent.Reset(CreateEventW(nullptr, TRUE, FALSE, nullptr));
                 winrt::check_bool(m_stopEvent.Get() != nullptr);
 
@@ -165,7 +118,7 @@ namespace light_switch_cli
                 // when PowerToys is elevated. GR/GW includes the pipe-instance right, so keep
                 // the single, first instance open until Stop; never release/reacquire its name.
                 const auto descriptorText = L"O:" + SidString(m_identity.userSid.data()) +
-                                            L"D:P(A;;GRGW;;;" + m_identity.logonSid + L")S:(ML;;NW;;;ME)";
+                                            L"D:P(A;;GRGW;;;" + SidString(m_identity.logonSid.data()) + L")S:(ML;;NW;;;ME)";
                 LocalMemory descriptor;
                 winrt::check_bool(ConvertStringSecurityDescriptorToSecurityDescriptorW(
                     descriptorText.c_str(), SDDL_REVISION_1, &descriptor.value, nullptr));
@@ -297,21 +250,32 @@ namespace light_switch_cli
 
         bool AuthenticateClient()
         {
-            ULONG pid = 0;
-            if (!GetNamedPipeClientProcessId(m_pipe.Get(), &pid))
+            // ReadRequest has consumed a bounded frame, so the pipe can identify its
+            // sender. Identification-level impersonation needs no SeImpersonatePrivilege
+            // and avoids opening an elevated client's process or primary token.
+            if (!ImpersonateNamedPipeClient(m_pipe.Get()))
             {
                 return false;
             }
-            Handle process(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid));
-            if (!process.Get())
+            Handle token;
+            {
+                const auto revert = wil::scope_exit([]() {
+                    // Continuing with a client's thread token would compromise later requests.
+                    FAIL_FAST_IF_WIN32_BOOL_FALSE(RevertToSelf());
+                });
+                if (!OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, token.Put()))
+                {
+                    return false;
+                }
+            }
+            try
+            {
+                return IsSameLogon(m_identity, ReadTokenIdentity(token.Get()));
+            }
+            catch (...)
             {
                 return false;
             }
-            auto client = ReadIdentity(process.Get(), false);
-            return client.sessionId == m_identity.sessionId &&
-                   client.logonId.LowPart == m_identity.logonId.LowPart &&
-                   client.logonId.HighPart == m_identity.logonId.HighPart &&
-                   EqualSid(client.userSid.data(), m_identity.userSid.data());
         }
 
         std::wstring ReadRequest()
@@ -420,13 +384,14 @@ namespace light_switch_cli
             JsonObject response;
             try
             {
+                const auto message = ReadRequest();
                 if (!AuthenticateClient())
                 {
                     response = MakeError(L"SERVICE_UNAVAILABLE", L"The client is not in the Light Switch user's logon session.");
                 }
                 else
                 {
-                    const auto request = ParseRequest(ReadRequest());
+                    const auto request = ParseRequest(message);
                     response = IsStopped() ? MakeError(L"SERVICE_UNAVAILABLE", L"Light Switch is stopping.") : m_handler(request);
                     if (!response)
                     {
