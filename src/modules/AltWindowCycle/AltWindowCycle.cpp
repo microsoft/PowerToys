@@ -1362,19 +1362,7 @@ void Switcher::RenderLayered()
                 {
                     RECT avail = { 0, 0, snapshotSizes[slot].cx, snapshotSizes[slot].cy };
                     RECT rcSrc = AltWindowCycleLogic::CoverSource(pv, avail);
-                    // Uniform dark wash: scales each color channel down so a captured
-                    // snapshot reads consistently regardless of the source window's
-                    // own light/dark theme, instead of looking mismatched against the
-                    // surrounding dark card chrome.
-                    Gdiplus::ColorMatrix darkWash = {
-                        0.55f, 0.f,   0.f,   0.f, 0.f,
-                        0.f,   0.55f, 0.f,   0.f, 0.f,
-                        0.f,   0.f,   0.55f, 0.f, 0.f,
-                        0.f,   0.f,   0.f,   1.f, 0.f,
-                        0.f,   0.f,   0.f,   0.f, 1.f
-                    };
-                    Gdiplus::ImageAttributes attrs;
-                    attrs.SetColorMatrix(&darkWash);
+                    // Draw the captured window content as-is -- no color adjustment.
                     g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
                     g.DrawImage(snap,
                                 Gdiplus::RectF(static_cast<Gdiplus::REAL>(pv.left),
@@ -1385,7 +1373,7 @@ void Switcher::RenderLayered()
                                 static_cast<Gdiplus::REAL>(rcSrc.top),
                                 static_cast<Gdiplus::REAL>(rcSrc.right - rcSrc.left),
                                 static_cast<Gdiplus::REAL>(rcSrc.bottom - rcSrc.top),
-                                Gdiplus::UnitPixel, &attrs);
+                                Gdiplus::UnitPixel);
                     g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
                 }
                 else
@@ -1399,12 +1387,16 @@ void Switcher::RenderLayered()
                                     static_cast<Gdiplus::REAL>(pw),
                                     static_cast<Gdiplus::REAL>(ph));
                     g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
+                    // The subtle semi-transparent white stroke below is meant to catch
+                    // light against the blurred/transparent DWM punch above; it was
+                    // designed for that see-through case, not for an opaque snapshot
+                    // (where it reads as a harsh white border), so only draw it here.
+                    Gdiplus::Pen previewPen(AltTabStyle::PreviewStroke(sel),
+                                             static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
+                    g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
+                    g.DrawRectangle(&previewPen, pv.left, pv.top, pw - 1, ph - 1);
+                    g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
                 }
-                Gdiplus::Pen previewPen(AltTabStyle::PreviewStroke(sel),
-                                         static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
-                g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
-                g.DrawRectangle(&previewPen, pv.left, pv.top, pw - 1, ph - 1);
-                g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
             }
 
             // Header tab: app icon + window title.
