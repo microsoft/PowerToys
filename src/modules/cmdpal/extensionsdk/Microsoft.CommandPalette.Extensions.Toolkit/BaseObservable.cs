@@ -17,17 +17,7 @@ public partial class BaseObservable : INotifyPropChanged
 
     protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        try
-        {
-            // TODO #181 - This is dangerous! If the original host goes away,
-            // this can crash as we try to invoke the handlers from that process.
-            // However, just catching it seems to still raise the event on the
-            // new host?
-            PropChanged?.Invoke(this, new PropChangedEventArgs(propertyName!));
-        }
-        catch
-        {
-        }
+        EventHelpers.Raise(PropChanged, this, new PropChangedEventArgs(propertyName!), handler => PropChanged -= handler);
     }
 
     /// <summary>
