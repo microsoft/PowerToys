@@ -65,7 +65,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private static Dictionary<ListViewModel, int>? _getItemsDepthByViewModel;
 
     private InterlockedBoolean _isLoadingMore;
-    private int _activeFetchCount;
+    private long _activeFetchGeneration = long.MinValue;
     private bool _deferredFetchRequested;
     private bool _deferredFetchKeepSelection = true;
     private bool _deferredFetchEnsureSelectionVisible;
@@ -82,7 +82,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public IGridPropertiesViewModel? GridProperties { get; private set; }
 
-    private bool IsFetching => Volatile.Read(ref _activeFetchCount) > 0;
+    private bool IsFetching => IsCurrentFetch(Volatile.Read(ref _activeFetchGeneration));
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -357,22 +357,18 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
                 return;
             }
+
+            Volatile.Write(ref _activeFetchGeneration, fetchGeneration);
         }
 
         // Declared outside try so catch blocks can reference them
         List<ListItemViewModel> createdViewModels = [];
         var itemsTransferredToList = false;
-        var fetchCountIncremented = false;
 
         try
         {
-            fetchCountIncremented = true;
-            if (Interlocked.Increment(ref _activeFetchCount) == 1)
-            {
-                UpdateEmptyContent();
-            }
-
             ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
+            UpdateEmptyContent();
 
             IListItem[] newItems;
             try
@@ -523,7 +519,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
         finally
         {
-            if (fetchCountIncremented && Interlocked.Decrement(ref _activeFetchCount) == 0)
+            // A canceled extension call may return after another fetch has taken ownership.
+            if (Interlocked.CompareExchange(ref _activeFetchGeneration, long.MinValue, fetchGeneration) == fetchGeneration && IsCurrentFetch(fetchGeneration))
             {
                 UpdateEmptyContent();
             }
@@ -805,7 +802,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    private bool IsCurrentFetch(int fetchGeneration)
+    private bool IsCurrentFetch(long fetchGeneration)
     {
         var work = Volatile.Read(ref _workState);
         return work.Status == ListPageWorkStatus.Active && work.Generation == fetchGeneration;
