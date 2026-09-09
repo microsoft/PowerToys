@@ -21,5 +21,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\UITestAutomation.Next\UITestAutomation.Next.csproj" />
+    <Compile Include="..\..\modules\EnvironmentVariables\EnvironmentVariables.UITests\TestState.cs" Link="EnvironmentVariables\TestState.cs" />
   </ItemGroup>
 </Project>

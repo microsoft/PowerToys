@@ -78,7 +78,7 @@ public abstract partial class CommandProvider :
     /// <returns>an array of objects that implement all the leaf interfaces we support</returns>
     public object[] GetApiExtensionStubs()
     {
-        return [new SupportCommandsWithProperties(), new SupportFormActions()];
+        return [new SupportCommandsWithProperties(), new SupportFormActions(), new SupportDetailsContent()];
     }
 
     /// <summary>
@@ -89,6 +89,19 @@ public abstract partial class CommandProvider :
     private sealed partial class SupportCommandsWithProperties : IExtendedAttributesProvider
     {
         public IDictionary<string, object>? GetProperties() => null;
+    }
+
+    private sealed partial class SupportDetailsContent : IDetails2
+    {
+        public IIconInfo? HeroImage => null;
+
+        public string Title => string.Empty;
+
+        public string Body => string.Empty;
+
+        public IDetailsElement[] Metadata => [];
+
+        public IContent[] GetContent() => [];
     }
 
     private sealed partial class SupportFormActions : IFormContent2

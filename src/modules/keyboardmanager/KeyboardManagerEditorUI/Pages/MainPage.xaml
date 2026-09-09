@@ -96,20 +96,152 @@
             VerticalContentAlignment="Stretch">
             <Grid RowSpacing="16">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="48" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <Grid VerticalAlignment="Top">
+
+                <!--  Add remapping (always visible) + filter / bulk-select toolbar  -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <!--
+                        "Add new remapping" is a list-level action, so it sits at the leading edge of the list
+                        toolbar (aligned with the list below). Kept outside the HasAnyData filter cluster so the
+                        first remapping can still be added from the empty state.
+                    -->
                     <Button
                         x:Name="NewRemappingBtn"
-                        VerticalAlignment="Top"
-                        Click="NewRemappingBtn_Click">
+                        Grid.Column="0"
+                        Margin="0,0,8,0"
+                        VerticalAlignment="Center"
+                        Click="NewRemappingBtn_Click"
+                        Style="{StaticResource AccentButtonStyle}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon FontSize="14" Glyph="&#xE710;" />
                             <TextBlock x:Uid="NewRemappingBtn_Text" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
+                    <StackPanel
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="8"
+                        Visibility="{x:Bind HasAnyData, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Button
+                            x:Name="FilterButton"
+                            x:Uid="FilterButton"
+                            Width="36"
+                            Height="32"
+                            Padding="0"
+                            Style="{StaticResource SubtleButtonStyle}">
+                            <FontIcon FontSize="16" Glyph="&#xE71C;" />
+                            <Button.Flyout>
+                                <Flyout Placement="BottomEdgeAlignedRight">
+                                    <StackPanel
+                                        MinWidth="260"
+                                        Padding="4"
+                                        Spacing="16">
+                                        <StackPanel Spacing="8">
+                                            <TextBlock
+                                                x:Uid="FilterModifiersHeader"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Style="{StaticResource CaptionTextBlockStyle}" />
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <ToggleButton
+                                                    x:Name="WinFilterToggle"
+                                                    x:Uid="FilterWinToggle"
+                                                    Checked="ModifierFilter_Changed"
+                                                    Style="{StaticResource SubtleToggleButtonStyle}"
+                                                    Unchecked="ModifierFilter_Changed" />
+                                                <ToggleButton
+                                                    x:Name="CtrlFilterToggle"
+                                                    x:Uid="FilterCtrlToggle"
+                                                    Checked="ModifierFilter_Changed"
+                                                    Style="{StaticResource SubtleToggleButtonStyle}"
+                                                    Unchecked="ModifierFilter_Changed" />
+                                                <ToggleButton
+                                                    x:Name="AltFilterToggle"
+                                                    x:Uid="FilterAltToggle"
+                                                    Checked="ModifierFilter_Changed"
+                                                    Style="{StaticResource SubtleToggleButtonStyle}"
+                                                    Unchecked="ModifierFilter_Changed" />
+                                                <ToggleButton
+                                                    x:Name="ShiftFilterToggle"
+                                                    x:Uid="FilterShiftToggle"
+                                                    Checked="ModifierFilter_Changed"
+                                                    Style="{StaticResource SubtleToggleButtonStyle}"
+                                                    Unchecked="ModifierFilter_Changed" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <StackPanel Spacing="8">
+                                            <TextBlock
+                                                x:Uid="FilterApplicationsHeader"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Style="{StaticResource CaptionTextBlockStyle}" />
+                                            <ComboBox
+                                                x:Name="AppFilterCombo"
+                                                HorizontalAlignment="Stretch"
+                                                ItemsSource="{x:Bind AppFilterOptions}"
+                                                SelectedIndex="0"
+                                                SelectionChanged="AppFilterCombo_SelectionChanged" />
+                                        </StackPanel>
+                                        <Button
+                                            x:Name="ClearFiltersBtn"
+                                            x:Uid="FilterClearBtn"
+                                            HorizontalAlignment="Right"
+                                            Click="ClearFilters_Click"
+                                            Style="{StaticResource SubtleButtonStyle}" />
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Rectangle
+                            Width="1"
+                            Height="20"
+                            Margin="4,0"
+                            VerticalAlignment="Center"
+                            Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                        <Button
+                            x:Name="DeleteSelectedBtn"
+                            MinWidth="0"
+                            Padding="10,0"
+                            AutomationProperties.Name="{x:Bind DeleteSelectedLabel, Mode=OneWay}"
+                            Click="DeleteSelectedBtn_Click"
+                            IsEnabled="{x:Bind HasSelection, Mode=OneWay}"
+                            Style="{StaticResource SubtleButtonStyle}"
+                            ToolTipService.ToolTip="{x:Bind DeleteSelectedLabel, Mode=OneWay}"
+                            Visibility="{x:Bind IsSelectionMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon FontSize="16" Glyph="&#xE74D;" />
+                                <TextBlock VerticalAlignment="Center" Text="{x:Bind SelectedCount, Mode=OneWay}" />
+                            </StackPanel>
+                        </Button>
+                        <Button
+                            x:Name="SelectionModeButton"
+                            Width="36"
+                            Height="32"
+                            Padding="0"
+                            AutomationProperties.Name="{x:Bind SelectModeLabel, Mode=OneWay}"
+                            Click="SelectionModeButton_Click"
+                            Style="{StaticResource SubtleButtonStyle}"
+                            ToolTipService.ToolTip="{x:Bind SelectModeTooltip, Mode=OneWay}">
+                            <Grid>
+                                <FontIcon
+                                    FontSize="16"
+                                    Glyph="&#xE762;"
+                                    Visibility="{x:Bind IsNotSelectionMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                <FontIcon
+                                    FontSize="16"
+                                    Glyph="&#xE711;"
+                                    Visibility="{x:Bind IsSelectionMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            </Grid>
+                        </Button>
+                    </StackPanel>
                 </Grid>
+
                 <Grid
                     Grid.Row="1"
                     Background="{ThemeResource LayerFillColorDefaultBrush}"
@@ -163,11 +295,13 @@
                                                 HorizontalAlignment="Stretch"
                                                 Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
                                             <ListView
-                                                IsItemClickEnabled="True"
+                                                x:Name="RemappingsListView"
+                                                IsItemClickEnabled="{x:Bind IsNotSelectionMode, Mode=OneWay}"
                                                 ItemClick="RemappingsList_ItemClick"
                                                 ItemsSource="{x:Bind RemappingList}"
                                                 ScrollViewer.VerticalScrollMode="Disabled"
-                                                SelectionMode="None">
+                                                SelectionChanged="MappingList_SelectionChanged"
+                                                SelectionMode="{x:Bind ListSelectionMode, Mode=OneWay}">
                                                 <ListView.ItemTemplate>
                                                     <DataTemplate x:DataType="helper:Remapping">
                                                         <Grid MinHeight="48" Padding="0,8,0,8">
@@ -272,11 +406,13 @@
                                                 HorizontalAlignment="Stretch"
                                                 Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
                                             <ListView
-                                                IsItemClickEnabled="True"
+                                                x:Name="TextListView"
+                                                IsItemClickEnabled="{x:Bind IsNotSelectionMode, Mode=OneWay}"
                                                 ItemClick="TextMappingsList_ItemClick"
                                                 ItemsSource="{x:Bind TextMappings}"
                                                 ScrollViewer.VerticalScrollMode="Disabled"
-                                                SelectionMode="None">
+                                                SelectionChanged="MappingList_SelectionChanged"
+                                                SelectionMode="{x:Bind ListSelectionMode, Mode=OneWay}">
                                                 <ListView.ItemTemplate>
                                                     <DataTemplate x:DataType="helper:TextMapping">
                                                         <Grid MinHeight="48" Padding="0,8,0,8">
@@ -363,11 +499,13 @@
                                                 Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
 
                                             <ListView
-                                                IsItemClickEnabled="True"
+                                                x:Name="ProgramsListView"
+                                                IsItemClickEnabled="{x:Bind IsNotSelectionMode, Mode=OneWay}"
                                                 ItemClick="ProgramShortcutsList_ItemClick"
                                                 ItemsSource="{x:Bind ProgramShortcuts}"
                                                 ScrollViewer.VerticalScrollMode="Disabled"
-                                                SelectionMode="None">
+                                                SelectionChanged="MappingList_SelectionChanged"
+                                                SelectionMode="{x:Bind ListSelectionMode, Mode=OneWay}">
                                                 <ListView.ItemTemplate>
                                                     <DataTemplate x:DataType="helper:ProgramShortcut">
                                                         <Grid MinHeight="48" Padding="0,8,0,8">
@@ -482,11 +620,13 @@
                                                 HorizontalAlignment="Stretch"
                                                 Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
                                             <ListView
-                                                IsItemClickEnabled="True"
+                                                x:Name="UrlsListView"
+                                                IsItemClickEnabled="{x:Bind IsNotSelectionMode, Mode=OneWay}"
                                                 ItemClick="UrlShortcutsList_ItemClick"
                                                 ItemsSource="{x:Bind UrlShortcuts}"
                                                 ScrollViewer.VerticalScrollMode="Disabled"
-                                                SelectionMode="None">
+                                                SelectionChanged="MappingList_SelectionChanged"
+                                                SelectionMode="{x:Bind ListSelectionMode, Mode=OneWay}">
                                                 <ListView.ItemTemplate>
                                                     <DataTemplate x:DataType="helper:URLShortcut">
                                                         <Grid MinHeight="48" Padding="0,8,0,8">
@@ -572,11 +712,13 @@
                                                 HorizontalAlignment="Stretch"
                                                 Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
                                             <ListView
-                                                IsItemClickEnabled="True"
+                                                x:Name="DisabledListView"
+                                                IsItemClickEnabled="{x:Bind IsNotSelectionMode, Mode=OneWay}"
                                                 ItemClick="DisabledList_ItemClick"
                                                 ItemsSource="{x:Bind DisabledList}"
                                                 ScrollViewer.VerticalScrollMode="Disabled"
-                                                SelectionMode="None">
+                                                SelectionChanged="MappingList_SelectionChanged"
+                                                SelectionMode="{x:Bind ListSelectionMode, Mode=OneWay}">
                                                 <ListView.ItemTemplate>
                                                     <DataTemplate x:DataType="helper:Remapping">
                                                         <Grid MinHeight="48" Padding="0,8,0,8">
@@ -647,6 +789,33 @@
                                 </Grid>
                             </ScrollViewer>
                         </tkcontrols:Case>
+                        <tkcontrols:Case Value="NoResults">
+                            <StackPanel
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Spacing="8">
+                                <FontIcon
+                                    HorizontalAlignment="Center"
+                                    FontSize="24"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Glyph="&#xE721;" />
+                                <TextBlock
+                                    x:Uid="NoResultsTitle"
+                                    HorizontalAlignment="Center"
+                                    TextAlignment="Center" />
+                                <TextBlock
+                                    x:Uid="NoResultsDescription"
+                                    HorizontalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    TextAlignment="Center" />
+                                <Button
+                                    x:Uid="NoResultsClearBtn"
+                                    Margin="0,8,0,0"
+                                    HorizontalAlignment="Center"
+                                    Click="ClearFilters_Click" />
+                            </StackPanel>
+                        </tkcontrols:Case>
                     </tkcontrols:SwitchPresenter>
                 </Grid>
 
@@ -655,6 +824,7 @@
                 <ContentDialog
                     x:Name="RemappingDialog"
                     x:Uid="RemappingDialog"
+                    Grid.Row="1"
                     Width="760"
                     MinWidth="800"
                     MinHeight="500"
@@ -669,8 +839,18 @@
                 <ContentDialog
                     x:Name="DeleteConfirmationDialog"
                     x:Uid="DeleteConfirmationDialog"
+                    Grid.Row="1"
                     DefaultButton="Primary">
                     <TextBlock x:Uid="DeleteConfirmationDialogContent" TextWrapping="Wrap" />
+                </ContentDialog>
+
+                <!--  Confirmation Dialog for bulk delete  -->
+                <ContentDialog
+                    x:Name="BulkDeleteConfirmationDialog"
+                    x:Uid="BulkDeleteConfirmationDialog"
+                    Grid.Row="1"
+                    DefaultButton="Close">
+                    <TextBlock x:Name="BulkDeleteConfirmationText" TextWrapping="Wrap" />
                 </ContentDialog>
             </Grid>
         </ContentControl>

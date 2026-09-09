@@ -4,10 +4,12 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Cli;
 using PowerDisplay.Cli.Commands;
 using PowerDisplay.Cli.Options;
+using PowerDisplay.Cli.Output;
 using PowerDisplay.Contracts;
 
 namespace PowerDisplay.Cli.UnitTests;
@@ -137,6 +139,62 @@ public class ProgramTokenTests
         Assert.AreEqual(0, parsed.Errors.Count, "--quiet must not consume the profile id");
         Assert.AreEqual(1, parsed.GetValueForArgument(CliOptions.ProfileId));
         Assert.IsTrue(parsed.GetValueForOption(CliOptions.Quiet), "a bare --quiet resolves to true");
+    }
+
+    [DataTestMethod]
+    [DataRow("--json", "apply-profile", "17")]
+    [DataRow("apply-profile", "--json", "17")]
+    [DataRow("apply-profile", "17", "--json")]
+    public void Json_IsGlobalAndDoesNotSwallowApplyProfileId(string first, string second, string third)
+    {
+        var parsed = Parse(first, second, third);
+
+        Assert.AreEqual(0, parsed.Errors.Count);
+        Assert.IsTrue(parsed.GetValueForOption(CliOptions.Json));
+        Assert.AreEqual(17, parsed.GetValueForArgument(CliOptions.ProfileId));
+        Assert.AreEqual(ArgumentArity.Zero, CliOptions.Json.Arity);
+    }
+
+    [DataTestMethod]
+    [DataRow("--json", "profiles")]
+    [DataRow("profiles", "--json")]
+    public void Json_ParsesBeforeOrAfterProfilesCommand(string first, string second)
+    {
+        var parsed = Parse(first, second);
+
+        Assert.AreEqual(0, parsed.Errors.Count);
+        Assert.IsTrue(parsed.GetValueForOption(CliOptions.Json));
+    }
+
+    [TestMethod]
+    public void Json_ParseError_SelectsJsonErrorRenderer()
+    {
+        var parsed = Parse("--json", "apply-profile", "not-an-id");
+        Assert.IsTrue(parsed.Errors.Count > 0);
+
+        var stdout = new System.IO.StringWriter();
+        var stderr = new System.IO.StringWriter();
+        var output = Program.CreateOutput(parsed, stdout, stderr);
+        Assert.IsInstanceOfType<JsonCliOutput>(output);
+
+        output.WriteError(Program.BuildParseErrorResult(
+            parsed.CommandResult.Command.Name,
+            parsed.Errors.Select(error => error.Message)));
+
+        Assert.AreEqual(string.Empty, stdout.ToString());
+        var error = System.Text.Json.JsonSerializer.Deserialize(
+            stderr.ToString(),
+            ContractsJsonContext.Default.CliErrorResult);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliErrorCodes.ArgumentError, error.Error.Code);
+    }
+
+    [TestMethod]
+    public void NoJson_SelectsExistingTextRenderer()
+    {
+        var output = Program.CreateOutput(Parse("profiles"), new System.IO.StringWriter(), new System.IO.StringWriter());
+
+        Assert.IsInstanceOfType<TextCliOutput>(output);
     }
 
     [TestMethod]

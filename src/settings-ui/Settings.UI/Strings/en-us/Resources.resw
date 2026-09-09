@@ -247,6 +247,9 @@
   <data name="MeasureTool_UnitsOfMeasure.Header" xml:space="preserve">
     <value>Extra units of measurement</value>
   </data>
+  <data name="MeasureTool_UnitsOfMeasure.Description" xml:space="preserve">
+    <value>Display-independent pixels adjust for Windows display scaling</value>
+  </data>
   <data name="MeasureTool_UnitsOfMeasure_Pixels.Content" xml:space="preserve">
     <value>Show only pixels</value>
   </data>
@@ -258,6 +261,9 @@
   </data>
   <data name="MeasureTool_UnitsOfMeasure_Millimeters.Content" xml:space="preserve">
     <value>Millimeters</value>
+  </data>
+  <data name="MeasureTool_UnitsOfMeasure_DIP.Content" xml:space="preserve">
+    <value>Display-independent pixels (DIP)</value>
   </data>
   <data name="MeasureTool_PixelTolerance.Header" xml:space="preserve">
     <value>Pixel tolerance for edge detection</value>
