@@ -170,6 +170,17 @@ static LRESULT CALLBACK ThumbHostProc(HWND h, UINT msg, WPARAM w, LPARAM l)
         }
         return 1;
     }
+    if (msg == WM_NCCALCSIZE && w)
+    {
+        // thumbHost carries WS_CAPTION solely so DWM treats it as a "framed"
+        // top-level window -- DWMWA_SYSTEMBACKDROP_TYPE (Mica/acrylic) is
+        // silently ignored on plain WS_POPUP windows with no frame at all.
+        // Returning 0 here (instead of calling DefWindowProc) collapses the
+        // non-client caption/border to nothing, so the window still looks
+        // like a plain borderless popup while DWM still applies the
+        // backdrop material to it.
+        return 0;
+    }
     return DefWindowProcW(h, msg, w, l);
 }
 
@@ -503,7 +514,7 @@ bool Switcher::Init(HINSTANCE instance)
 
     thumbHost = CreateWindowExW(
         WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
-        hc.lpszClassName, L"", WS_POPUP,
+        hc.lpszClassName, L"", WS_POPUP | WS_CAPTION,
         0, 0, 0, 0, nullptr, nullptr, hinst, nullptr);
     if (!thumbHost)
         return false;
