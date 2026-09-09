@@ -364,6 +364,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int SourceCodeMaxFileSize
+        {
+            get => _peekPreviewSettings.SourceCodeMaxFileSize.Value;
+            set
+            {
+                if (_peekPreviewSettings.SourceCodeMaxFileSize.Value != value)
+                {
+                    _peekPreviewSettings.SourceCodeMaxFileSize.Value = value;
+                    OnPropertyChanged(nameof(SourceCodeMaxFileSize));
+                    SavePreviewSettings();
+                }
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             // Do not send IPC message if the settings file has been updated by Peek itself.

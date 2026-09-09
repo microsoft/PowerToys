@@ -20,25 +20,24 @@ namespace Peek.FilePreviewer.Previewers
         // Matches the sample size commonly used by tools like git to decide whether a file is text or binary.
         private const int SampleSize = 8000;
 
-        // Files larger than this are rejected outright, so an oversized file never reaches ReadHelper.Read
-        // and the Monaco/WebView pipeline, which load the full content into memory. See ReadHelper.MaxReadableFileSizeBytes,
-        // which enforces the same limit while actually reading a file's content.
-        private const long MaxFileSizeBytes = ReadHelper.MaxReadableFileSizeBytes;
-
         /// <summary>
         /// Determines whether the file at the given path is likely to be a text file, based on its size and content.
         /// </summary>
         /// <param name="path">The path to the file to check.</param>
+        /// <param name="maxFileSizeBytes">
+        /// Files larger than this are rejected outright, so an oversized file never reaches ReadHelper.Read
+        /// and the Monaco/WebView pipeline, which load the full content into memory.
+        /// </param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
         /// <returns>True if the file is likely to be a text file; otherwise, false.</returns>
-        public static async Task<bool> IsTextFileAsync(string path, CancellationToken cancellationToken)
+        public static async Task<bool> IsTextFileAsync(string path, long maxFileSizeBytes = ReadHelper.MaxReadableFileSizeBytes, CancellationToken cancellationToken = default)
         {
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using var stream = ReadHelper.OpenReadOnly(path);
-                if (stream.Length > MaxFileSizeBytes)
+                if (stream.Length > maxFileSizeBytes)
                 {
                     return false;
                 }
@@ -50,7 +49,10 @@ namespace Peek.FilePreviewer.Previewers
                 }
 
                 var buffer = new byte[bytesToRead];
-                int bytesRead = await stream.ReadAsync(buffer.AsMemory(0, bytesToRead), cancellationToken);
+
+                // A single ReadAsync can return fewer bytes than requested (common on network or
+                // compressed streams), so keep reading until the sample buffer is full or we hit EOF.
+                int bytesRead = await stream.ReadAtLeastAsync(buffer.AsMemory(0, bytesToRead), bytesToRead, throwOnEndOfStream: false, cancellationToken).ConfigureAwait(false);
 
                 // If the file starts with a Unicode BOM, we can assume it's a text file.
                 if (HasUnicodeBom(buffer, bytesRead))

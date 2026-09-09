@@ -37,7 +37,7 @@ namespace Peek.FilePreviewer.UnitTests
         {
             File.WriteAllText(_tempFilePath, "Hello, world!\r\nThis is a plain text file.");
 
-            Assert.IsTrue(await TextFileHelper.IsTextFileAsync(_tempFilePath, CancellationToken.None));
+            Assert.IsTrue(await TextFileHelper.IsTextFileAsync(_tempFilePath));
         }
 
         [TestMethod]
@@ -45,7 +45,7 @@ namespace Peek.FilePreviewer.UnitTests
         {
             File.WriteAllBytes(_tempFilePath, Array.Empty<byte>());
 
-            Assert.IsTrue(await TextFileHelper.IsTextFileAsync(_tempFilePath, CancellationToken.None));
+            Assert.IsTrue(await TextFileHelper.IsTextFileAsync(_tempFilePath));
         }
 
         [TestMethod]
@@ -57,7 +57,7 @@ namespace Peek.FilePreviewer.UnitTests
             withNul[content.Length] = 0;
             File.WriteAllBytes(_tempFilePath, withNul);
 
-            Assert.IsFalse(await TextFileHelper.IsTextFileAsync(_tempFilePath, CancellationToken.None));
+            Assert.IsFalse(await TextFileHelper.IsTextFileAsync(_tempFilePath));
         }
 
         [TestMethod]
@@ -65,7 +65,7 @@ namespace Peek.FilePreviewer.UnitTests
         {
             File.WriteAllText(_tempFilePath, "Text with a BOM", new UTF8Encoding(true));
 
-            Assert.IsTrue(await TextFileHelper.IsTextFileAsync(_tempFilePath, CancellationToken.None));
+            Assert.IsTrue(await TextFileHelper.IsTextFileAsync(_tempFilePath));
         }
 
         [TestMethod]
@@ -73,7 +73,7 @@ namespace Peek.FilePreviewer.UnitTests
         {
             File.WriteAllText(_tempFilePath, "Text with a UTF-16LE BOM", Encoding.Unicode);
 
-            Assert.IsTrue(await TextFileHelper.IsTextFileAsync(_tempFilePath, CancellationToken.None));
+            Assert.IsTrue(await TextFileHelper.IsTextFileAsync(_tempFilePath));
         }
 
         [TestMethod]
@@ -81,7 +81,7 @@ namespace Peek.FilePreviewer.UnitTests
         {
             File.WriteAllText(_tempFilePath, "Text with a UTF-16BE BOM", Encoding.BigEndianUnicode);
 
-            Assert.IsTrue(await TextFileHelper.IsTextFileAsync(_tempFilePath, CancellationToken.None));
+            Assert.IsTrue(await TextFileHelper.IsTextFileAsync(_tempFilePath));
         }
 
         [TestMethod]
@@ -89,7 +89,7 @@ namespace Peek.FilePreviewer.UnitTests
         {
             File.WriteAllText(_tempFilePath, "Text with a UTF-32LE BOM", new UTF32Encoding(bigEndian: false, byteOrderMark: true));
 
-            Assert.IsTrue(await TextFileHelper.IsTextFileAsync(_tempFilePath, CancellationToken.None));
+            Assert.IsTrue(await TextFileHelper.IsTextFileAsync(_tempFilePath));
         }
 
         [TestMethod]
@@ -97,7 +97,7 @@ namespace Peek.FilePreviewer.UnitTests
         {
             File.WriteAllText(_tempFilePath, "Text with a UTF-32BE BOM", new UTF32Encoding(bigEndian: true, byteOrderMark: true));
 
-            Assert.IsTrue(await TextFileHelper.IsTextFileAsync(_tempFilePath, CancellationToken.None));
+            Assert.IsTrue(await TextFileHelper.IsTextFileAsync(_tempFilePath));
         }
 
         [TestMethod]
@@ -111,7 +111,23 @@ namespace Peek.FilePreviewer.UnitTests
 
             File.WriteAllBytes(_tempFilePath, buffer);
 
-            Assert.IsFalse(await TextFileHelper.IsTextFileAsync(_tempFilePath, CancellationToken.None));
+            Assert.IsFalse(await TextFileHelper.IsTextFileAsync(_tempFilePath));
+        }
+
+        [TestMethod]
+        public async Task IsTextFile_FileExceedsExplicitMaxSize_ShouldReturnFalse()
+        {
+            File.WriteAllText(_tempFilePath, new string('a', 4096));
+
+            Assert.IsFalse(await TextFileHelper.IsTextFileAsync(_tempFilePath, maxFileSizeBytes: 1024));
+        }
+
+        [TestMethod]
+        public async Task IsTextFile_FileWithinExplicitMaxSize_ShouldReturnTrue()
+        {
+            File.WriteAllText(_tempFilePath, "small text");
+
+            Assert.IsTrue(await TextFileHelper.IsTextFileAsync(_tempFilePath, maxFileSizeBytes: 1024));
         }
 
         [TestMethod]
@@ -119,7 +135,7 @@ namespace Peek.FilePreviewer.UnitTests
         {
             string missingPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".missing");
 
-            Assert.IsFalse(await TextFileHelper.IsTextFileAsync(missingPath, CancellationToken.None));
+            Assert.IsFalse(await TextFileHelper.IsTextFileAsync(missingPath));
         }
 
         // Only the first 8000 bytes are sniffed, so a NUL byte past that point must not affect the result.
@@ -135,7 +151,7 @@ namespace Peek.FilePreviewer.UnitTests
             buffer[8500] = 0;
             File.WriteAllBytes(_tempFilePath, buffer);
 
-            Assert.IsTrue(await TextFileHelper.IsTextFileAsync(_tempFilePath, CancellationToken.None));
+            Assert.IsTrue(await TextFileHelper.IsTextFileAsync(_tempFilePath));
         }
 
         [TestMethod]
@@ -150,7 +166,7 @@ namespace Peek.FilePreviewer.UnitTests
             buffer[7999] = 0;
             File.WriteAllBytes(_tempFilePath, buffer);
 
-            Assert.IsFalse(await TextFileHelper.IsTextFileAsync(_tempFilePath, CancellationToken.None));
+            Assert.IsFalse(await TextFileHelper.IsTextFileAsync(_tempFilePath));
         }
 
         [TestMethod]
@@ -160,7 +176,7 @@ namespace Peek.FilePreviewer.UnitTests
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 
-            await Assert.ThrowsExceptionAsync<OperationCanceledException>(() => TextFileHelper.IsTextFileAsync(_tempFilePath, cts.Token));
+            await Assert.ThrowsExceptionAsync<OperationCanceledException>(() => TextFileHelper.IsTextFileAsync(_tempFilePath, cancellationToken: cts.Token));
         }
     }
 }
