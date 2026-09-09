@@ -25,6 +25,11 @@ public class CommandPalettePageViewModelFactory
         {
             MainListPage listPage => new ListViewModel(listPage, _scheduler, host, providerContext, _contextMenuFactory) { IsRootPage = !nested, IsMainPage = true },
             IListPage listPage => new ListViewModel(listPage, _scheduler, host, providerContext, _contextMenuFactory) { IsRootPage = !nested },
+
+            // ITabbedPage must be matched before IContentPage: the Toolkit
+            // TabbedPage base implements both, and only newer hosts render the
+            // tab strip (older hosts fall back to the IContentPage message).
+            ITabbedPage tabbedPage => new TabbedPageViewModel(tabbedPage, _scheduler, host, providerContext, this) { IsRootPage = !nested },
             IContentPage contentPage => new CommandPaletteContentPageViewModel(contentPage, _scheduler, host, providerContext),
             IParametersPage paramsPage => new ParametersPageViewModel(paramsPage, _scheduler, host, providerContext, _contextMenuFactory),
             _ => null,
