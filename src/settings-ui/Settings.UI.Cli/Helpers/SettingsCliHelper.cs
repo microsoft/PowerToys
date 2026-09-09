@@ -67,7 +67,7 @@ internal static class SettingsCliHelper
             try
             {
                 var val = prop.GetValue(propertiesObject);
-                result[prop.Name] = val;
+                result[prop.Name] = UnwrapPropertyValue(val);
             }
             catch
             {
@@ -109,12 +109,18 @@ internal static class SettingsCliHelper
             throw new ArgumentException($"Module settings for '{moduleName}' were not found.");
         }
 
-        return CommandLineUtils.GetPropertyValue(propertyName, config);
+        var rawValue = CommandLineUtils.GetPropertyValue(propertyName, config);
+        return UnwrapPropertyValue(rawValue);
     }
 
     public static void SetSettingValue(string qualifiedName, string newValueStr, SettingsUtils? settingsUtils = null)
     {
         settingsUtils ??= SettingsUtils.Default;
+        if (qualifiedName.StartsWith("Enabled.", StringComparison.OrdinalIgnoreCase))
+        {
+            qualifiedName = "GeneralSettings." + qualifiedName;
+        }
+
         SetSettingCommandLineCommand.Execute(qualifiedName, newValueStr, settingsUtils);
     }
 
@@ -133,7 +139,7 @@ internal static class SettingsCliHelper
         var currentState = modules[matchedKey];
         var newState = targetState ?? !currentState;
 
-        SetSettingCommandLineCommand.Execute($"Enabled.{matchedKey}", newState.ToString().ToLowerInvariant(), settingsUtils);
+        SetSettingCommandLineCommand.Execute($"GeneralSettings.Enabled.{matchedKey}", newState.ToString().ToLowerInvariant(), settingsUtils);
         return newState;
     }
 
@@ -232,6 +238,31 @@ internal static class SettingsCliHelper
     public static string SerializeToJson<T>(T obj)
     {
         return JsonSerializer.Serialize(obj, JsonOptions);
+    }
+
+    private static object? UnwrapPropertyValue(object? val)
+    {
+        if (val == null)
+        {
+            return null;
+        }
+
+        if (val is BoolProperty bp)
+        {
+            return bp.Value;
+        }
+
+        if (val is IntProperty ip)
+        {
+            return ip.Value;
+        }
+
+        if (val is StringProperty sp)
+        {
+            return sp.Value;
+        }
+
+        return val;
     }
 
     private static void CopyDirectory(string sourceDir, string targetDir)
