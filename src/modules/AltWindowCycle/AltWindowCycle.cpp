@@ -14,6 +14,7 @@
 #include <objidl.h>
 #include <gdiplus.h>
 #include <atomic>
+#include <memory>
 
 // Win11 system backdrop / corner attributes (in case SDK is older).
 #ifndef DWMWA_SYSTEMBACKDROP_TYPE
@@ -142,6 +143,17 @@ static bool SupportsSystemBackdrop()
 // opaque with this tinted brush.
 static HBRUSH g_thumbSolidBrush = nullptr;
 static bool g_thumbSolidMode = false;
+
+// Prototype: preview mode. Live thumbnails (default) use the public DWM
+// thumbnail API for a real-time mirror of the target window, but that mirror
+// always shows the target window's own current light/dark rendering, which can
+// look mismatched against our fixed-dark card chrome. As an alternative, a
+// static-snapshot mode captures the window once (via the public PrintWindow
+// API) and draws it with a uniform dark wash so every preview looks
+// consistent regardless of the source window's theme, at the cost of live
+// updates. Hardcoded for now to evaluate the approach; intended to become a
+// user-facing setting (a per-user choice between live vs. static previews).
+constexpr bool kUseStaticSnapshotPreview = true;
 
 static LRESULT CALLBACK ThumbHostProc(HWND h, UINT msg, WPARAM w, LPARAM l)
 {
@@ -442,6 +454,10 @@ private:
     St state = St::Idle;
     std::vector<HWND> windows;
     std::vector<HTHUMBNAIL> thumbs;
+    // Static-snapshot preview mode only (kUseStaticSnapshotPreview): one captured
+    // bitmap + its native size per visible slot, refreshed on show/page change.
+    std::vector<std::unique_ptr<Gdiplus::Bitmap>> snapshots;
+    std::vector<SIZE> snapshotSizes;
     std::vector<HICON> icons;
     std::vector<std::wstring> titles;
     HWND anchorWindow = nullptr;
@@ -868,6 +884,59 @@ static SIZE ClientSourceSize(HWND hwnd)
     return { 0, 0 };
 }
 
+// Prototype (kUseStaticSnapshotPreview): captures a window's client area into a
+// GDI+ bitmap via the public PrintWindow API. Unlike a live DWM thumbnail this
+// is a one-shot snapshot (no further updates until the caller re-captures), but
+// it lets the renderer apply a uniform color treatment so previews don't look
+// mismatched when the source window's own light/dark theme differs from ours.
+static std::unique_ptr<Gdiplus::Bitmap> CaptureWindowSnapshot(HWND hwnd, SIZE& outSize)
+{
+    outSize = { 0, 0 };
+    SIZE clientSize = ClientSourceSize(hwnd);
+    if (clientSize.cx <= 0 || clientSize.cy <= 0)
+        return nullptr;
+
+    HDC hdcWindow = GetDC(hwnd);
+    if (!hdcWindow)
+        return nullptr;
+    HDC hdcMem = CreateCompatibleDC(hdcWindow);
+    HBITMAP hbmp = hdcMem ? CreateCompatibleBitmap(hdcWindow, clientSize.cx, clientSize.cy) : nullptr;
+    if (!hdcMem || !hbmp)
+    {
+        if (hdcMem) DeleteDC(hdcMem);
+        if (hbmp) DeleteObject(hbmp);
+        ReleaseDC(hwnd, hdcWindow);
+        return nullptr;
+    }
+
+    HGDIOBJ old = SelectObject(hdcMem, hbmp);
+    // PW_RENDERFULLCONTENT asks the window to render its full (potentially
+    // GPU/DirectComposition-backed) content; without it, many modern XAML/WinUI
+    // apps paint a blank surface into the DC.
+    BOOL ok = PrintWindow(hwnd, hdcMem, PW_CLIENTONLY | PW_RENDERFULLCONTENT);
+    SelectObject(hdcMem, old);
+    ReleaseDC(hwnd, hdcWindow);
+
+    std::unique_ptr<Gdiplus::Bitmap> bmp;
+    if (ok)
+    {
+        // The Gdiplus::Bitmap(HBITMAP, HPALETTE) constructor copies the pixel
+        // data, so hbmp can be safely destroyed once it returns.
+        bmp = std::make_unique<Gdiplus::Bitmap>(hbmp, static_cast<HPALETTE>(nullptr));
+        if (bmp->GetLastStatus() != Gdiplus::Ok)
+        {
+            bmp.reset();
+        }
+        else
+        {
+            outSize = clientSize;
+        }
+    }
+    DeleteObject(hbmp);
+    DeleteDC(hdcMem);
+    return bmp;
+}
+
 void Switcher::RegisterThumbnails()
 {
     UnregisterThumbnails();
@@ -878,6 +947,16 @@ void Switcher::RegisterThumbnails()
     for (int windowIndex = pageStart, slot = 0; windowIndex < pageEnd; ++windowIndex, ++slot)
     {
         RECT dest = PreviewRect(TileRect(slot));
+
+        if (kUseStaticSnapshotPreview)
+        {
+            SIZE srcSize = {};
+            snapshots.push_back(CaptureWindowSnapshot(windows[windowIndex], srcSize));
+            snapshotSizes.push_back(srcSize);
+            thumbs.push_back(nullptr);
+            continue;
+        }
+
         HTHUMBNAIL th = nullptr;
         if (FAILED(DwmRegisterThumbnail(thumbHost, windows[windowIndex], &th)) || !th)
         {
@@ -920,6 +999,8 @@ void Switcher::UnregisterThumbnails()
         if (th)
             DwmUnregisterThumbnail(th);
     thumbs.clear();
+    snapshots.clear();
+    snapshotSizes.clear();
 }
 
 void Switcher::EnsureFont()
@@ -1274,15 +1355,51 @@ void Switcher::RenderLayered()
             int ph = pv.bottom - pv.top;
             if (pw > 0 && ph > 0)
             {
-                g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
-                g.SetCompositingMode(Gdiplus::CompositingModeSourceCopy);
-                Gdiplus::SolidBrush previewBrush(AltTabStyle::Transparent());
-                g.FillRectangle(&previewBrush,
-                                static_cast<Gdiplus::REAL>(pv.left),
-                                static_cast<Gdiplus::REAL>(pv.top),
-                                static_cast<Gdiplus::REAL>(pw),
-                                static_cast<Gdiplus::REAL>(ph));
-                g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
+                Gdiplus::Bitmap* snap = (kUseStaticSnapshotPreview && slot < static_cast<int>(snapshots.size()))
+                                             ? snapshots[slot].get()
+                                             : nullptr;
+                if (snap)
+                {
+                    RECT avail = { 0, 0, snapshotSizes[slot].cx, snapshotSizes[slot].cy };
+                    RECT rcSrc = AltWindowCycleLogic::CoverSource(pv, avail);
+                    // Uniform dark wash: scales each color channel down so a captured
+                    // snapshot reads consistently regardless of the source window's
+                    // own light/dark theme, instead of looking mismatched against the
+                    // surrounding dark card chrome.
+                    Gdiplus::ColorMatrix darkWash = {
+                        0.55f, 0.f,   0.f,   0.f, 0.f,
+                        0.f,   0.55f, 0.f,   0.f, 0.f,
+                        0.f,   0.f,   0.55f, 0.f, 0.f,
+                        0.f,   0.f,   0.f,   1.f, 0.f,
+                        0.f,   0.f,   0.f,   0.f, 1.f
+                    };
+                    Gdiplus::ImageAttributes attrs;
+                    attrs.SetColorMatrix(&darkWash);
+                    g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
+                    g.DrawImage(snap,
+                                Gdiplus::RectF(static_cast<Gdiplus::REAL>(pv.left),
+                                               static_cast<Gdiplus::REAL>(pv.top),
+                                               static_cast<Gdiplus::REAL>(pw),
+                                               static_cast<Gdiplus::REAL>(ph)),
+                                static_cast<Gdiplus::REAL>(rcSrc.left),
+                                static_cast<Gdiplus::REAL>(rcSrc.top),
+                                static_cast<Gdiplus::REAL>(rcSrc.right - rcSrc.left),
+                                static_cast<Gdiplus::REAL>(rcSrc.bottom - rcSrc.top),
+                                Gdiplus::UnitPixel, &attrs);
+                    g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                }
+                else
+                {
+                    g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
+                    g.SetCompositingMode(Gdiplus::CompositingModeSourceCopy);
+                    Gdiplus::SolidBrush previewBrush(AltTabStyle::Transparent());
+                    g.FillRectangle(&previewBrush,
+                                    static_cast<Gdiplus::REAL>(pv.left),
+                                    static_cast<Gdiplus::REAL>(pv.top),
+                                    static_cast<Gdiplus::REAL>(pw),
+                                    static_cast<Gdiplus::REAL>(ph));
+                    g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
+                }
                 Gdiplus::Pen previewPen(AltTabStyle::PreviewStroke(sel),
                                          static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
                 g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
