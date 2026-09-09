@@ -1037,6 +1037,25 @@ static void BuildRoundRect(Gdiplus::GraphicsPath& path, const Gdiplus::RectF& r,
     path.CloseFigure();
 }
 
+// Same as BuildRoundRect but only rounds the bottom-left/bottom-right corners,
+// leaving the top edge a hard cut. Used for the preview image, which now sits
+// flush under the header row (no gap to round away) but still needs to match
+// the card's rounded bottom corners where it meets the card edge.
+static void BuildBottomRoundRect(Gdiplus::GraphicsPath& path, const Gdiplus::RectF& r, Gdiplus::REAL rad)
+{
+    path.Reset();
+    Gdiplus::REAL d = rad * 2;
+    if (d <= 0 || d > r.Width || d > r.Height)
+    {
+        path.AddRectangle(r);
+        return;
+    }
+    path.AddLine(r.X, r.Y, r.GetRight(), r.Y);
+    path.AddArc(r.GetRight() - d, r.GetBottom() - d, d, d, 0, 90);
+    path.AddArc(r.X, r.GetBottom() - d, d, d, 90, 90);
+    path.CloseFigure();
+}
+
 static Gdiplus::RectF InflateF(const RECT& r, int by)
 {
     return Gdiplus::RectF(
@@ -1378,20 +1397,18 @@ void Switcher::RenderLayered()
                     brush.SetTransform(&xform);
 
                     Gdiplus::GraphicsPath previewPath;
-                    BuildRoundRect(previewPath, InflateF(pv, 0), static_cast<Gdiplus::REAL>(radius));
+                    BuildBottomRoundRect(previewPath, InflateF(pv, 0), static_cast<Gdiplus::REAL>(radius));
                     g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
                     g.FillPath(&brush, &previewPath);
                 }
                 else
                 {
-                    g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
+                    Gdiplus::GraphicsPath previewPath;
+                    BuildBottomRoundRect(previewPath, InflateF(pv, 0), static_cast<Gdiplus::REAL>(radius));
+                    g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
                     g.SetCompositingMode(Gdiplus::CompositingModeSourceCopy);
                     Gdiplus::SolidBrush previewBrush(AltTabStyle::Transparent());
-                    g.FillRectangle(&previewBrush,
-                                    static_cast<Gdiplus::REAL>(pv.left),
-                                    static_cast<Gdiplus::REAL>(pv.top),
-                                    static_cast<Gdiplus::REAL>(pw),
-                                    static_cast<Gdiplus::REAL>(ph));
+                    g.FillPath(&previewBrush, &previewPath);
                     g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
                     // The subtle semi-transparent white stroke below is meant to catch
                     // light against the blurred/transparent DWM punch above; it was
@@ -1399,9 +1416,7 @@ void Switcher::RenderLayered()
                     // (where it reads as a harsh white border), so only draw it here.
                     Gdiplus::Pen previewPen(AltTabStyle::PreviewStroke(sel),
                                              static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
-                    g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
-                    g.DrawRectangle(&previewPen, pv.left, pv.top, pw - 1, ph - 1);
-                    g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    g.DrawPath(&previewPen, &previewPath);
                 }
             }
 

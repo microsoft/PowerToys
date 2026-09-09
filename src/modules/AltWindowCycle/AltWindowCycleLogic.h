@@ -173,13 +173,15 @@ namespace AltWindowCycleLogic
         return { left, top, left + layout.tileW, top + layout.tileH - layout.cardTrimBottom };
     }
 
+    // Flush to the card's left/right/bottom edges -- like the native Alt-Tab
+    // switcher's thumbnail -- with only a small gap under the header row.
     inline RECT PreviewRect(const OverlayLayout& layout, const RECT& tile)
     {
         return {
-            tile.left + layout.inner,
+            tile.left,
             tile.top + layout.headerH + layout.inner,
-            tile.right - layout.inner,
-            tile.bottom - layout.inner
+            tile.right,
+            tile.bottom
         };
     }
 
