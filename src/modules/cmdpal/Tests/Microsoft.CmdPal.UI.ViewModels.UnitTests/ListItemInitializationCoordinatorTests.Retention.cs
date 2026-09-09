@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,6 +15,74 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 public sealed partial class ListItemInitializationCoordinatorTests
 {
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    [Timeout(15000)]
+    public void CompletedCoordinatorReleasesItemSnapshot(bool stopBeforeRun)
+    {
+        var order = new ConcurrentQueue<int>();
+        var coordinator = CreateCoordinatorWithSnapshot(order, out var snapshot);
+        Assert.IsTrue(IsSnapshotAliveAfterCollection(snapshot));
+
+        if (stopBeforeRun)
+        {
+            coordinator.Stop();
+        }
+
+        coordinator.Run(CancellationToken.None);
+
+        Assert.IsTrue(coordinator.Completion.IsCompletedSuccessfully);
+        Assert.AreEqual(stopBeforeRun ? 0 : 4, order.Count);
+        Assert.IsFalse(IsSnapshotAliveAfterCollection(snapshot), "A completed coordinator must release its item snapshot.");
+        GC.KeepAlive(coordinator);
+    }
+
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    [Timeout(15000)]
+    public async Task InterruptedWorkerReleasesItemSnapshotAfterReturning(bool cancel)
+    {
+        using var firstStarted = new ManualResetEventSlim();
+        using var continueFirst = new ManualResetEventSlim();
+        using var cancellation = new CancellationTokenSource();
+        var order = new ConcurrentQueue<int>();
+        var coordinator = CreateCoordinatorWithSnapshot(order, out var snapshot, firstStarted, continueFirst);
+        var worker = Task.Run(() => coordinator.Run(cancellation.Token));
+
+        try
+        {
+            Assert.IsTrue(firstStarted.Wait(TimeSpan.FromSeconds(2)));
+            if (cancel)
+            {
+                cancellation.Cancel();
+            }
+            else
+            {
+                coordinator.Stop();
+            }
+
+            Assert.IsFalse(coordinator.Completion.IsCompleted);
+            Assert.IsTrue(IsSnapshotAliveAfterCollection(snapshot), "The running worker still owns its snapshot.");
+
+            continueFirst.Set();
+            await worker.WaitAsync(TimeSpan.FromSeconds(2));
+
+            Assert.IsTrue(coordinator.Completion.IsCompletedSuccessfully);
+            Assert.AreEqual(1, order.Count);
+            Assert.IsFalse(IsSnapshotAliveAfterCollection(snapshot), "The snapshot must be released after the worker returns.");
+        }
+        finally
+        {
+            continueFirst.Set();
+            coordinator.Stop();
+            await worker.WaitAsync(TimeSpan.FromSeconds(2));
+        }
+
+        GC.KeepAlive(coordinator);
+    }
+
     [DataTestMethod]
     [DataRow(false)]
     [DataRow(true)]
@@ -158,6 +227,28 @@ public sealed partial class ListItemInitializationCoordinatorTests
                 await Task.WhenAll(producer, worker).WaitAsync(TimeSpan.FromSeconds(10));
             }
         }
+    }
+
+    // Separate frames keep Debug locals from extending the snapshot's lifetime.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static ListItemInitializationCoordinator CreateCoordinatorWithSnapshot(
+        ConcurrentQueue<int> order,
+        out WeakReference<ListItemViewModel[]> snapshot,
+        ManualResetEventSlim? firstStarted = null,
+        ManualResetEventSlim? continueFirst = null)
+    {
+        var (_, items) = CreateItems(4, order, firstStarted, continueFirst);
+        snapshot = new(items);
+        return new(items);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool IsSnapshotAliveAfterCollection(WeakReference<ListItemViewModel[]> snapshot)
+    {
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true);
+        GC.WaitForPendingFinalizers();
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true);
+        return snapshot.TryGetTarget(out _);
     }
 
     private static ListItemInitializationDemandNode[] GetIncomingDemandNodes(ListItemInitializationCoordinator coordinator)

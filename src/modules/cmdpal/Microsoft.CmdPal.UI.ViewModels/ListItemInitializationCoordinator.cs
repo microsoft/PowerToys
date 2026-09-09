@@ -8,9 +8,9 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 internal sealed class ListItemInitializationCoordinator
 {
-    private readonly ListItemViewModel[] _items;
     private readonly TaskCompletionSource _completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly Stack<ListItemInitializationDemand> _priorityRequests = new();
+    private ListItemViewModel[] _items;
     private ListItemInitializationDemandStack _incomingRequests; // can't be readonly
     private int _accepting = 1;
     private int _runState;
@@ -131,9 +131,12 @@ internal sealed class ListItemInitializationCoordinator
         _incomingRequests.Clear();
     }
 
-    // Publishes "the executor has returned". Callers must own that transition:
-    // Run's final cleanup, or Stop when no worker ever claimed _runState.
-    private void SignalCompleted() => _completion.TrySetResult();
+    // Only the exiting worker, or Stop before it starts, owns snapshot release and completion.
+    private void SignalCompleted()
+    {
+        _items = [];
+        _completion.TrySetResult();
+    }
 
     private static void InitializeItem(ListItemViewModel item)
     {
