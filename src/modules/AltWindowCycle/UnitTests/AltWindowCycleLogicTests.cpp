@@ -62,20 +62,20 @@ namespace AltWindowCycleUnitTests
 
             Assert::AreEqual(32, layout.pad);
             Assert::AreEqual(26, layout.gap);
-            Assert::AreEqual(270, layout.tileW);
-            Assert::AreEqual(48, layout.headerH);
-            Assert::AreEqual(142, layout.previewH);
-            Assert::AreEqual(6, layout.inner);
-            Assert::AreEqual(10, layout.radius);
+            Assert::AreEqual(300, layout.tileW);
+            Assert::AreEqual(44, layout.headerH);
+            Assert::AreEqual(158, layout.previewH);
+            Assert::AreEqual(8, layout.inner);
+            Assert::AreEqual(8, layout.radius);
             Assert::AreEqual(16, layout.iconSize);
-            Assert::AreEqual(202, layout.tileH);
+            Assert::AreEqual(218, layout.tileH);
             Assert::AreEqual(4, layout.cols);
             Assert::AreEqual(1, layout.rows);
             Assert::AreEqual(4, layout.pageSize);
-            Assert::AreEqual(1222, layout.panelW);
-            Assert::AreEqual(266, layout.panelH);
-            Assert::AreEqual(349, layout.panelX);
-            Assert::AreEqual(407, layout.panelY);
+            Assert::AreEqual(1342, layout.panelW);
+            Assert::AreEqual(282, layout.panelH);
+            Assert::AreEqual(289, layout.panelX);
+            Assert::AreEqual(399, layout.panelY);
         }
 
         TEST_METHOD(ComputeOverlayLayoutUsesRoundedScaledGeometry)
@@ -86,20 +86,20 @@ namespace AltWindowCycleUnitTests
 
             Assert::AreEqual(48, layout.pad);
             Assert::AreEqual(39, layout.gap);
-            Assert::AreEqual(405, layout.tileW);
-            Assert::AreEqual(72, layout.headerH);
-            Assert::AreEqual(213, layout.previewH);
-            Assert::AreEqual(9, layout.inner);
-            Assert::AreEqual(15, layout.radius);
+            Assert::AreEqual(450, layout.tileW);
+            Assert::AreEqual(66, layout.headerH);
+            Assert::AreEqual(237, layout.previewH);
+            Assert::AreEqual(12, layout.inner);
+            Assert::AreEqual(12, layout.radius);
             Assert::AreEqual(24, layout.iconSize);
-            Assert::AreEqual(303, layout.tileH);
-            Assert::AreEqual(4, layout.cols);
+            Assert::AreEqual(327, layout.tileH);
+            Assert::AreEqual(3, layout.cols);
             Assert::AreEqual(2, layout.rows);
             Assert::AreEqual(6, layout.pageSize);
-            Assert::AreEqual(1833, layout.panelW);
-            Assert::AreEqual(741, layout.panelH);
-            Assert::AreEqual(43, layout.panelX);
-            Assert::AreEqual(169, layout.panelY);
+            Assert::AreEqual(1524, layout.panelW);
+            Assert::AreEqual(789, layout.panelH);
+            Assert::AreEqual(198, layout.panelX);
+            Assert::AreEqual(145, layout.panelY);
         }
 
         TEST_METHOD(ComputeOverlayLayoutHandlesEmptyWindowCount)
@@ -119,13 +119,13 @@ namespace AltWindowCycleUnitTests
             const auto layout = AltWindowCycleLogic::ComputeOverlayLayout(work, 4, 1.0);
 
             const RECT tile = AltWindowCycleLogic::TileRect(layout, 0);
-            AssertRectEqual({ 32, 32, 302, 234 }, tile);
+            AssertRectEqual({ 32, 32, 332, 250 }, tile);
 
             const RECT preview = AltWindowCycleLogic::PreviewRect(layout, tile);
-            AssertRectEqual({ 33, 80, 301, 233 }, preview);
+            AssertRectEqual({ 32, 76, 332, 250 }, preview);
 
             const RECT header = AltWindowCycleLogic::HeaderRect(layout, tile);
-            AssertRectEqual({ 44, 32, 290, 80 }, header);
+            AssertRectEqual({ 44, 32, 320, 76 }, header);
         }
 
         TEST_METHOD(CoverSourceCropsWideSourceToDestinationAspectRatio)
@@ -332,10 +332,10 @@ namespace AltWindowCycleUnitTests
 
             const auto layout = AltWindowCycleLogic::ComputeOverlayLayout(work, 8, 1.0);
 
-            // (640 - 64 + 26) / (270 + 26) = 2 columns fit the work area.
-            Assert::AreEqual(2, layout.cols);
+            // (640 - 64 + 26) / (300 + 26) = 1 column fits the work area.
+            Assert::AreEqual(1, layout.cols);
             Assert::AreEqual(1, layout.rows);
-            Assert::AreEqual(2, layout.pageSize);
+            Assert::AreEqual(1, layout.pageSize);
             Assert::IsTrue(layout.panelH <= work.bottom - work.top);
         }
 
@@ -355,9 +355,9 @@ namespace AltWindowCycleUnitTests
 
             const auto layout = AltWindowCycleLogic::ComputeOverlayLayout(work, 13, 1.5);
 
-            Assert::AreEqual(4, layout.cols);
+            Assert::AreEqual(3, layout.cols);
             Assert::AreEqual(2, layout.rows);
-            Assert::AreEqual(8, layout.pageSize);
+            Assert::AreEqual(6, layout.pageSize);
             Assert::IsTrue(layout.panelH <= work.bottom - work.top);
         }
 
@@ -388,12 +388,12 @@ namespace AltWindowCycleUnitTests
             const RECT work = { 0, 0, 1920, 1080 };
             const auto layout = AltWindowCycleLogic::ComputeOverlayLayout(work, 8, 1.0);
 
-            Assert::AreEqual(6, layout.cols); // sanity: second row exists
+            Assert::AreEqual(5, layout.cols); // sanity: second row exists
 
             // Second column, first row.
-            AssertRectEqual({ 328, 32, 598, 234 }, AltWindowCycleLogic::TileRect(layout, 1));
+            AssertRectEqual({ 358, 32, 658, 250 }, AltWindowCycleLogic::TileRect(layout, 1));
             // First column, second row.
-            AssertRectEqual({ 32, 260, 302, 462 }, AltWindowCycleLogic::TileRect(layout, 6));
+            AssertRectEqual({ 32, 276, 332, 494 }, AltWindowCycleLogic::TileRect(layout, 5));
         }
 
         TEST_METHOD(WrapIndexNormalizesNegativeAndOversizedIndices)
