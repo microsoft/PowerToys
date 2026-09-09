@@ -503,7 +503,7 @@ bool Switcher::Init(HINSTANCE instance)
 
     thumbHost = CreateWindowExW(
         WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
-        hc.lpszClassName, L"", WS_POPUP | WS_DISABLED,
+        hc.lpszClassName, L"", WS_POPUP,
         0, 0, 0, 0, nullptr, nullptr, hinst, nullptr);
     if (!thumbHost)
         return false;
