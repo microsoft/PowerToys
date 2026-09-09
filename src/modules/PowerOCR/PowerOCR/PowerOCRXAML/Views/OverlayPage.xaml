@@ -11,14 +11,6 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
-        <Style x:Key="SubtleButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{ThemeResource SubtleFillColorTransparentBrush}" />
-            <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
-            <Setter Property="BorderBrush" Value="{ThemeResource ControlStrokeColorDefaultBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="8,4" />
-            <Setter Property="CornerRadius" Value="4" />
-        </Style>
         <Style x:Key="SubtleToggleButtonStyle" TargetType="ToggleButton">
             <Setter Property="Background" Value="{ThemeResource SubtleFillColorTransparentBrush}" />
             <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
@@ -43,8 +35,8 @@
         <Image
             x:Name="BackgroundImage"
             HorizontalAlignment="Stretch"
-            IsHitTestVisible="False"
             VerticalAlignment="Stretch"
+            IsHitTestVisible="False"
             Stretch="Fill" />
 
         <!--  Four mask rectangles around the selection  -->
@@ -52,33 +44,33 @@
             x:Name="TopMask"
             Height="0"
             HorizontalAlignment="Stretch"
-            IsHitTestVisible="False"
             VerticalAlignment="Top"
             Fill="Black"
+            IsHitTestVisible="False"
             Opacity="0.4" />
         <Rectangle
             x:Name="BottomMask"
             Height="0"
             HorizontalAlignment="Stretch"
-            IsHitTestVisible="False"
             VerticalAlignment="Bottom"
             Fill="Black"
+            IsHitTestVisible="False"
             Opacity="0.4" />
         <Rectangle
             x:Name="LeftMask"
             Width="0"
             HorizontalAlignment="Left"
-            IsHitTestVisible="False"
             VerticalAlignment="Stretch"
             Fill="Black"
+            IsHitTestVisible="False"
             Opacity="0.4" />
         <Rectangle
             x:Name="RightMask"
             Width="0"
             HorizontalAlignment="Right"
-            IsHitTestVisible="False"
             VerticalAlignment="Stretch"
             Fill="Black"
+            IsHitTestVisible="False"
             Opacity="0.4" />
 
         <!--  Selection border  -->
@@ -87,10 +79,10 @@
             Width="0"
             Height="0"
             HorizontalAlignment="Left"
-            IsHitTestVisible="False"
             VerticalAlignment="Top"
             BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
             BorderThickness="2"
+            IsHitTestVisible="False"
             Visibility="Collapsed" />
 
         <!--  Canvas for pointer events  -->
@@ -135,9 +127,9 @@
         <ProgressRing
             x:Name="ProcessingRing"
             HorizontalAlignment="Center"
-            IsHitTestVisible="False"
             VerticalAlignment="Center"
-            IsActive="{x:Bind ViewModel.IsProcessing, Mode=OneWay}" />
+            IsActive="{x:Bind ViewModel.IsProcessing, Mode=OneWay}"
+            IsHitTestVisible="False" />
 
         <!--  Toolbar and error message share measured layout to avoid overlapping.  -->
         <Grid
@@ -150,67 +142,73 @@
             </Grid.RowDefinitions>
             <Border
                 x:Name="Toolbar"
-                Padding="4,8"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
-                Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
                 BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
                 BorderThickness="1"
                 CornerRadius="8">
                 <Border.Shadow>
                     <ThemeShadow />
                 </Border.Shadow>
-                <StackPanel Orientation="Horizontal" Spacing="4">
-                    <ComboBox
-                        x:Name="LanguagesComboBox"
-                        x:Uid="LanguagesComboBox"
-                        MinWidth="120"
-                        AutomationProperties.AutomationId="OCROverlayLanguagesComboBox"
-                        ItemsSource="{x:Bind ViewModel.Languages}"
-                        SelectedItem="{x:Bind ViewModel.SelectedLanguage, Mode=TwoWay}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="globalization:Language">
-                                <TextBlock Text="{x:Bind NativeName, Mode=OneTime}" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                <Grid>
+                    <SystemBackdropElement CornerRadius="8">
+                        <SystemBackdropElement.SystemBackdrop>
+                            <DesktopAcrylicBackdrop />
+                        </SystemBackdropElement.SystemBackdrop>
+                    </SystemBackdropElement>
+                    <StackPanel
+                        Margin="4,8"
+                        Orientation="Horizontal"
+                        Spacing="4">
+                        <ComboBox
+                            x:Name="LanguagesComboBox"
+                            x:Uid="LanguagesComboBox"
+                            MinWidth="120"
+                            AutomationProperties.AutomationId="OCROverlayLanguagesComboBox"
+                            ItemsSource="{x:Bind ViewModel.Languages}"
+                            SelectedItem="{x:Bind ViewModel.SelectedLanguage, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="globalization:Language">
+                                    <TextBlock Text="{x:Bind NativeName, Mode=OneTime}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
 
-                    <ToggleButton
-                        x:Name="SingleLineToggleButton"
-                        x:Uid="SingleLineToggleButton"
-                        AutomationProperties.AutomationId="SingleLineToggleButton"
-                        IsChecked="{x:Bind ViewModel.IsSingleLine, Mode=TwoWay}"
-                        Style="{StaticResource SubtleToggleButtonStyle}">
-                        <FontIcon FontSize="14" Glyph="&#xF16E;" />
-                    </ToggleButton>
+                        <ToggleButton
+                            x:Name="SingleLineToggleButton"
+                            x:Uid="SingleLineToggleButton"
+                            AutomationProperties.AutomationId="SingleLineToggleButton"
+                            IsChecked="{x:Bind ViewModel.IsSingleLine, Mode=TwoWay}"
+                            Style="{StaticResource SubtleToggleButtonStyle}">
+                            <FontIcon FontSize="16" Glyph="&#xF16E;" />
+                        </ToggleButton>
 
-                    <ToggleButton
-                        x:Name="TableToggleButton"
-                        x:Uid="TableToggleButton"
-                        AutomationProperties.AutomationId="TableToggleButton"
-                        IsChecked="{x:Bind ViewModel.IsTable, Mode=TwoWay}"
-                        Style="{StaticResource SubtleToggleButtonStyle}">
-                        <FontIcon FontSize="14" Glyph="&#xE80A;" />
-                    </ToggleButton>
+                        <ToggleButton
+                            x:Name="TableToggleButton"
+                            x:Uid="TableToggleButton"
+                            AutomationProperties.AutomationId="TableToggleButton"
+                            IsChecked="{x:Bind ViewModel.IsTable, Mode=TwoWay}"
+                            Style="{StaticResource SubtleToggleButtonStyle}">
+                            <FontIcon FontSize="16" Glyph="&#xE80A;" />
+                        </ToggleButton>
 
-                    <Button
-                        x:Name="SettingsButton"
-                        x:Uid="SettingsButton"
-                        AutomationProperties.AutomationId="SettingsButton"
-                        Click="SettingsButton_Click"
-                        Style="{StaticResource SubtleButtonStyle}">
-                        <FontIcon FontSize="14" Glyph="&#xE713;" />
-                    </Button>
+                        <Button
+                            x:Name="SettingsButton"
+                            x:Uid="SettingsButton"
+                            AutomationProperties.AutomationId="SettingsButton"
+                            Click="SettingsButton_Click">
+                            <FontIcon FontSize="16" Glyph="&#xE713;" />
+                        </Button>
 
-                    <Button
-                        x:Name="CancelButton"
-                        x:Uid="CancelButton"
-                        AutomationProperties.AutomationId="CancelButton"
-                        Click="CancelButton_Click"
-                        Style="{StaticResource SubtleButtonStyle}">
-                        <FontIcon FontSize="14" Glyph="&#xE711;" />
-                    </Button>
-                </StackPanel>
+                        <Button
+                            x:Name="CancelButton"
+                            x:Uid="CancelButton"
+                            AutomationProperties.AutomationId="CancelButton"
+                            Click="CancelButton_Click">
+                            <FontIcon FontSize="16" Glyph="&#xE711;" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
             </Border>
 
             <InfoBar
