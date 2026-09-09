@@ -297,5 +297,23 @@ namespace EditorHelpersTests
             // Assert
             Assert::IsTrue(result == ShortcutErrorType::NoError);
         }
+
+        // Test if the IsShortcutIllegal method returns WinL on Win+L and any chords involving Win+L
+        TEST_METHOD (IsShortcutIllegal_ShouldReturnWinL_OnWinLAndChordsInvolvingWinL)
+        {
+            // Win+L
+            Assert::IsTrue(EditorHelpers::IsShortcutIllegal(Shortcut(std::vector<int32_t>{ VK_LWIN, 0x4C })) == ShortcutErrorType::WinL);
+            Assert::IsTrue(EditorHelpers::IsShortcutIllegal(Shortcut(std::vector<int32_t>{ CommonSharedConstants::VK_WIN_BOTH, 0x4C })) == ShortcutErrorType::WinL);
+
+            // Chords with Win+L
+            Assert::IsTrue(EditorHelpers::IsShortcutIllegal(Shortcut(std::vector<int32_t>{ VK_LWIN, VK_CONTROL, 0x4C })) == ShortcutErrorType::WinL);
+            Assert::IsTrue(EditorHelpers::IsShortcutIllegal(Shortcut(std::vector<int32_t>{ VK_LWIN, VK_SHIFT, 0x4C })) == ShortcutErrorType::WinL);
+            Assert::IsTrue(EditorHelpers::IsShortcutIllegal(Shortcut(std::vector<int32_t>{ VK_LWIN, VK_MENU, 0x4C })) == ShortcutErrorType::WinL);
+            Assert::IsTrue(EditorHelpers::IsShortcutIllegal(Shortcut(std::vector<int32_t>{ VK_LWIN, VK_CONTROL, VK_SHIFT, 0x4C })) == ShortcutErrorType::WinL);
+
+            // Valid combinations (not Win+L)
+            Assert::IsTrue(EditorHelpers::IsShortcutIllegal(Shortcut(std::vector<int32_t>{ VK_CONTROL, 0x4C })) == ShortcutErrorType::NoError);
+            Assert::IsTrue(EditorHelpers::IsShortcutIllegal(Shortcut(std::vector<int32_t>{ VK_LWIN, VK_CONTROL, 0x41 })) == ShortcutErrorType::NoError);
+        }
     };
 }
