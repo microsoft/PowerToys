@@ -35,12 +35,6 @@
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #endif
-#ifndef DWMWA_NCRENDERING_POLICY
-#define DWMWA_NCRENDERING_POLICY 2
-#endif
-#ifndef DWMNCRP_DISABLED
-#define DWMNCRP_DISABLED 1
-#endif
 #ifndef DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
 #define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((DPI_AWARENESS_CONTEXT)-4)
 #endif
@@ -514,17 +508,6 @@ bool Switcher::Init(HINSTANCE instance)
     if (!thumbHost)
         return false;
 
-    // The system-backdrop material (DWMWA_SYSTEMBACKDROP_TYPE) draws DWM's
-    // default elevation shadow around the window's *rectangular* bounds. That
-    // shadow ignores the rounded SetWindowRgn applied below, so it peeks out
-    // past the rounded corners as a stray gray sliver. Disabling non-client
-    // rendering removes DWM's default shadow/border chrome while leaving the
-    // backdrop material and extended-frame glass (drawn per pixel by us)
-    // untouched.
-    DWORD ncRenderingPolicy = DWMNCRP_DISABLED;
-    DwmSetWindowAttribute(thumbHost, DWMWA_NCRENDERING_POLICY,
-                          &ncRenderingPolicy, sizeof(ncRenderingPolicy));
-
     WNDCLASSW wc = {};
     wc.style = CS_HREDRAW | CS_VREDRAW;
     wc.lpfnWndProc = &Switcher::WndProc;
@@ -767,20 +750,16 @@ void Switcher::ShowOverlayWindow()
     SetWindowPos(thumbHost, HWND_TOPMOST, x, y, panelW, panelH,
                  SWP_NOACTIVATE | SWP_NOOWNERZORDER);
     ApplyBackdrop(thumbHost);
+    // Let DWM itself round thumbHost's corners instead of cutting a manual
+    // SetWindowRgn. DWM's default elevation shadow is drawn to match whatever
+    // corner shape DWM is applying; a hand-cut region at a slightly different
+    // radius/metric than DWM's own rounding left a sliver of that shadow
+    // peeking out past our rounded corner. Using only DWMWA_WINDOW_CORNER_PREFERENCE
+    // keeps the corner shape and its shadow self-consistent.
     DWORD cornerPref = DWMWCP_ROUND;
     DwmSetWindowAttribute(thumbHost, DWMWA_WINDOW_CORNER_PREFERENCE,
                           &cornerPref, sizeof(cornerPref));
-    HRGN rgn = CreateRoundRectRgn(0, 0, panelW + 1, panelH + 1,
-                                  2 * Scaled(8), 2 * Scaled(8));
-    if (rgn != nullptr)
-    {
-        // SetWindowRgn takes ownership of the region on success; on failure the
-        // caller still owns it, so delete it to avoid leaking the HRGN.
-        if (SetWindowRgn(thumbHost, rgn, FALSE) == 0)
-        {
-            DeleteObject(rgn);
-        }
-    }
+    SetWindowRgn(thumbHost, nullptr, FALSE);
     RedrawWindow(thumbHost, nullptr, nullptr,
                  RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW | RDW_ALLCHILDREN);
     RegisterThumbnails();
