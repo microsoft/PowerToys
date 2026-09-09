@@ -21,13 +21,19 @@ public static class LayoutHelper
             (combined, screenBounds) => combined.Union(screenBounds));
     }
 
+    /// <param name="maximumSize">
+    /// An upper bound on the layout's size. In real usage, pass the size of the screen the
+    /// preview form was activated on to ensure the entire form is scaled to fit on that
+    /// screen. For Settings UI, specify the available size of the control the preview image
+    /// will be placed into in order to ensure the preview is rendered at 100% and avoid
+    /// distorting bezels and screenshots.
+    /// </param>
     public static FormViewModel GetFormLayout(
-        PreviewStyle previewStyle, DisplayInfo displayInfo, ScreenInfo activatedScreen, PointInfo activatedLocation)
+        PreviewStyle previewStyle, DisplayInfo displayInfo, SizeInfo maximumSize)
     {
         ArgumentNullException.ThrowIfNull(previewStyle);
         ArgumentNullException.ThrowIfNull(displayInfo);
-        ArgumentNullException.ThrowIfNull(activatedScreen);
-        ArgumentNullException.ThrowIfNull(activatedLocation);
+        ArgumentNullException.ThrowIfNull(maximumSize);
 
         /*
 
@@ -68,20 +74,40 @@ public static class LayoutHelper
         */
 
         // arrange the form, canvas, devices and screens
-        var formLayout = LayoutHelper.CreateInitialFormLayout(previewStyle, displayInfo, activatedScreen);
+        var formLayout = LayoutHelper.CreateInitialFormLayout(previewStyle, displayInfo, maximumSize);
         LayoutHelper.ArrangeAndScaleDeviceLayouts(formLayout);
         LayoutHelper.ArrangeAndScaleScreenLayouts(formLayout);
         LayoutHelper.ArrangeAndResizeCanvasLayout(formLayout);
-        LayoutHelper.ArrangeAndResizeFormLayout(formLayout, activatedScreen, activatedLocation);
 
         return formLayout.Build();
     }
 
+    /// <summary>
+    /// Positions an arbitrary rectangle (typically a preview form's own outer bounds) on
+    /// the desktop - centered on the activated location, but also nudged to ensure it
+    /// lands entirely within the bounds of the activated screen and doesn't fall across
+    /// multiple screens. If this cannot be achieved it throws an exception.
+    /// </summary>
+    public static RectangleInfo PositionOnScreen(RectangleInfo formBounds, ScreenInfo activatedScreen, PointInfo activatedLocation)
+    {
+        ArgumentNullException.ThrowIfNull(formBounds);
+        ArgumentNullException.ThrowIfNull(activatedScreen);
+        ArgumentNullException.ThrowIfNull(activatedLocation);
+
+        // center the bounds on the activated location, *but* if the activated location is
+        // near the edge of the screen that *could* cause the bounding box to fall partially
+        // outside the screen bounds so we'll nudge it back inside the screen bounds as well
+        return formBounds
+            .Center(activatedLocation)
+            .MoveInside(activatedScreen.DisplayArea);
+    }
+
     internal static FormViewModel.Builder CreateInitialFormLayout(
-        PreviewStyle previewStyle, DisplayInfo displayInfo, ScreenInfo activatedScreen)
+        PreviewStyle previewStyle, DisplayInfo displayInfo, SizeInfo maximumSize)
     {
         ArgumentNullException.ThrowIfNull(previewStyle);
         ArgumentNullException.ThrowIfNull(displayInfo);
+        ArgumentNullException.ThrowIfNull(maximumSize);
 
         // check we have at least one device
         if (displayInfo.Devices.Count == 0)
@@ -102,11 +128,11 @@ public static class LayoutHelper
         */
 
         // work out the maximum allowed size of the preview form:
-        // * can't be bigger than the activated screen
+        // * can't be bigger than maximumSize
         // * can't be bigger than the configured canvas size
         var formMaxBounds = new RectangleInfo(
             previewStyle.CanvasSize
-                .Clamp(activatedScreen.DisplayArea.Size));
+                .Clamp(maximumSize));
 
         var screenStyles = LayoutHelper.GetDeviceScreenStyles(previewStyle, displayInfo.Devices.Count).ToList();
 
@@ -115,7 +141,6 @@ public static class LayoutHelper
         // build the final immutable layout objects once all the bounds have been calculated
         var formLayout = new FormViewModel.Builder
         {
-            FormBounds = RectangleInfo.Empty,
             CanvasLayout = new()
             {
                 CanvasBounds = BoxBounds.CreateFromOuterBounds(
@@ -387,16 +412,5 @@ public static class LayoutHelper
         canvasLayout.CanvasBounds = BoxBounds.CreateFromOuterBounds(
             outerBounds: positionedOuterBounds,
             boxStyle: formLayout.CanvasLayout.CanvasStyle);
-    }
-
-    internal static void ArrangeAndResizeFormLayout(FormViewModel.Builder formLayout, ScreenInfo activatedScreen, PointInfo activatedLocation)
-    {
-        var canvasOuterBounds = formLayout.CanvasLayout?.CanvasBounds?.OuterBounds
-            ?? throw new InvalidOperationException();
-
-        // resize and center the form on the activated location
-        formLayout.FormBounds = canvasOuterBounds
-            .Center(activatedLocation)
-            .MoveInside(activatedScreen.DisplayArea);
     }
 }
