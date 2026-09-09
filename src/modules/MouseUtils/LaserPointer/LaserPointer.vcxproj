@@ -99,7 +99,11 @@
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="LaserPointer.cpp" />
-    <ClCompile Include="LaserStroke.cpp" />
+    <ClCompile Include="LaserStroke.cpp">
+      <!-- The stroke model is Windows-free on purpose so the unit tests can compile it on
+           their own; going through the module's precompiled header would undo that. -->
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="PresenterWindow.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
@@ -124,9 +128,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <!-- Standalone checks for the stroke model; built separately, see LaserPointerTests\README.md -->
-    <None Include="LaserPointerTests\LaserStrokeChecks.cpp" />
-    <None Include="LaserPointerTests\README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$(RepoRoot)deps\spdlog.props" />

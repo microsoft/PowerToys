@@ -94,6 +94,8 @@ The module's three user-visible native strings (`Present: `, `window`, `Capturin
 
 ## Tests
 
-`LaserPointerTests/LaserStrokeChecks.cpp` covers the stroke model — taper, decay, streamline, pruning, degenerate input. It is not an MSBuild project and does not run in CI; see the README beside it for how to build and run it. Note that `LaserStroke.cpp` includes `"pch.h"`, which resolves next to the source file, so a standalone build needs the model copied beside a stub `pch.h`.
+`LaserPointerTests/LaserStrokeTests.cpp` covers the stroke model — taper, decay, streamline, pruning, degenerate input. It builds as `LaserPointer.UnitTests`, a native unit test project in the solution, and CI runs it in the `Native Tests` step, which collects `**\*UnitTest*.dll`. The project name is what puts it in that set, so renaming it would drop it from the run without failing anything.
+
+`LaserStroke.cpp` is compiled into the test binary as well as into the module, which is why it includes no `pch.h` and the module marks it `PrecompiledHeader=NotUsing`.
 
 Behaviour that involves the overlay, the hook, capture or the presenter is not covered by automated tests.

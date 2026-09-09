@@ -1,4 +1,5 @@
-#include "pch.h"
+// No pch.h on purpose: the stroke model needs nothing from it, and leaving it out is what
+// lets the unit tests compile this file on its own. See LaserPointerTests.
 #include "LaserStroke.h"
 
 #include <algorithm>
