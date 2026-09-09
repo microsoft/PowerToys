@@ -11,10 +11,14 @@ using CommunityToolkit.WinUI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using PowerDisplay.Models;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.System;
+using Windows.UI.Core;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -86,6 +90,37 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // ListView needs a bounded viewport for native edge scrolling while reordering.
             ProfilesList.MaxHeight = Math.Max(120, e.NewSize.Height / 2);
         }
+
+        private async void ProfilesList_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Handled ||
+                e.OriginalKey is not (VirtualKey.Up or VirtualKey.Down or VirtualKey.Left or VirtualKey.Right) ||
+                !IsKeyDown(VirtualKey.Menu) || !IsKeyDown(VirtualKey.Shift) || IsKeyDown(VirtualKey.Control))
+            {
+                return;
+            }
+
+            if (e.OriginalSource is not DependencyObject source ||
+                source.FindAscendantOrSelf<ListViewItem>() is not ListViewItem container ||
+                ItemsControl.ItemsControlFromItemContainer(container) != ProfilesList ||
+                ProfilesList.ItemFromContainer(container) is not PowerDisplayProfile profile)
+            {
+                return;
+            }
+
+            // Native keyboard reordering changes ItemsSource without raising DragItemsCompleted.
+            // Handle the shared key event before awaiting so it cannot also move the item.
+            e.Handled = true;
+            if (_draggedProfileId.HasValue)
+            {
+                return;
+            }
+
+            await MoveProfileAndRestoreFocusAsync(profile, e.OriginalKey is VirtualKey.Up or VirtualKey.Left);
+        }
+
+        private static bool IsKeyDown(VirtualKey key)
+            => InputKeyboardSource.GetKeyStateForCurrentThread(key).HasFlag(CoreVirtualKeyStates.Down);
 
         private void ProfilesList_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
@@ -164,8 +199,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             if (sender is MenuFlyoutItem item && item.Tag is PowerDisplayProfile profile)
             {
-                await ViewModel.MoveProfileUpAsync(profile);
-                RestoreProfileFocus(profile.Id);
+                await MoveProfileAndRestoreFocusAsync(profile, moveUp: true);
             }
         }
 
@@ -173,9 +207,27 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             if (sender is MenuFlyoutItem item && item.Tag is PowerDisplayProfile profile)
             {
-                await ViewModel.MoveProfileDownAsync(profile);
-                RestoreProfileFocus(profile.Id);
+                await MoveProfileAndRestoreFocusAsync(profile, moveUp: false);
             }
+        }
+
+        private async Task MoveProfileAndRestoreFocusAsync(PowerDisplayProfile profile, bool moveUp)
+        {
+            if (moveUp ? !ViewModel.CanMoveProfileUp(profile) : !ViewModel.CanMoveProfileDown(profile))
+            {
+                return;
+            }
+
+            if (moveUp)
+            {
+                await ViewModel.MoveProfileUpAsync(profile);
+            }
+            else
+            {
+                await ViewModel.MoveProfileDownAsync(profile);
+            }
+
+            RestoreProfileFocus(profile.Id);
         }
 
         private void RestoreProfileFocus(int profileId)
