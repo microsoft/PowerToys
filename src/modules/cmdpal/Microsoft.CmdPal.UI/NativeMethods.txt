@@ -57,6 +57,7 @@ INFINITE
 CWMO_FLAGS
 
 GetCurrentThreadId
+HC_ACTION
 SetWindowsHookEx
 UnhookWindowsHookEx
 CallNextHookEx

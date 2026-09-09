@@ -8,6 +8,7 @@
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:extViews="using:Microsoft.CmdPal.UI.ExtViews.Controls"
     xmlns:h="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:markdownImageProviders="using:Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders"
@@ -179,6 +180,38 @@
                 x:Key="DefaultMarkdownConfig"
                 ImageProvider="{StaticResource ImageProvider}"
                 Themes="{StaticResource DefaultMarkdownThemeConfig}" />
+
+            <StackLayout x:Key="DetailsContentLayout" Orientation="Vertical" Spacing="8" />
+
+            <cmdpalUI:ContentTemplateSelector
+                x:Key="DetailsContentTemplateSelector"
+                FormTemplate="{StaticResource DetailsFormContentTemplate}"
+                ImageTemplate="{StaticResource DetailsImageContentTemplate}"
+                MarkdownTemplate="{StaticResource DetailsMarkdownContentTemplate}"
+                PlainTextTemplate="{StaticResource DetailsPlainTextContentTemplate}" />
+
+            <DataTemplate x:Key="DetailsFormContentTemplate" x:DataType="viewModels:ContentFormViewModel">
+                <cpcontrols:ContentFormControl ViewModel="{x:Bind}" />
+            </DataTemplate>
+
+            <DataTemplate x:Key="DetailsMarkdownContentTemplate" x:DataType="viewModels:ContentMarkdownViewModel">
+                <tkcontrols:MarkdownTextBlock
+                    Config="{StaticResource DefaultMarkdownConfig}"
+                    Text="{x:Bind Body, Mode=OneWay}"
+                    UseEmphasisExtras="True"
+                    UsePipeTables="True" />
+            </DataTemplate>
+
+            <DataTemplate x:Key="DetailsPlainTextContentTemplate" x:DataType="viewModels:ContentPlainTextViewModel">
+                <extViews:PlainTextContentViewer
+                    Text="{x:Bind Text, Mode=OneWay}"
+                    UseMonospace="{x:Bind UseMonospace, Mode=OneWay}"
+                    WordWrapEnabled="{x:Bind WordWrapEnabled, Mode=OneWay}" />
+            </DataTemplate>
+
+            <DataTemplate x:Key="DetailsImageContentTemplate" x:DataType="viewModels:ContentImageViewModel">
+                <extViews:ImageContentViewer DataContext="{x:Bind}" />
+            </DataTemplate>
         </ResourceDictionary>
     </Page.Resources>
 
@@ -459,6 +492,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
@@ -492,6 +526,14 @@
 
                         <ItemsRepeater
                             Grid.Row="3"
+                            Margin="0,4,0,16"
+                            IsTabStop="False"
+                            ItemTemplate="{StaticResource DetailsContentTemplateSelector}"
+                            ItemsSource="{x:Bind ViewModel.Details.Content, Mode=OneWay}"
+                            Layout="{StaticResource DetailsContentLayout}" />
+
+                        <ItemsRepeater
+                            Grid.Row="4"
                             IsTabStop="False"
                             ItemTemplate="{StaticResource DetailsDataTemplateSelector}"
                             ItemsSource="{x:Bind ViewModel.Details.Metadata, Mode=OneWay}">

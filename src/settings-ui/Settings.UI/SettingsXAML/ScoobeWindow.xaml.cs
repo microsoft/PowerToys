@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
@@ -57,17 +58,9 @@ namespace Microsoft.PowerToys.Settings.UI
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(this));
             this.ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(AppTitleBar);
-            Title = ResourceLoaderInstance.ResourceLoader.GetString("ScoobeWindow_Title");
+            TitleBarHelper.SetPreferredTheme(this);
 
-            // The built-in WinUI TitleBar does not tint the system caption buttons (min/max/close)
-            // to match the app's selected theme, so they can be unreadable when the OS theme differs
-            // from the PowerToys theme. Drive their colors from the window content's actual theme.
-            if (this.Content is FrameworkElement rootElement)
-            {
-                TitleBarHelper.ApplySystemThemeToCaptionButtons(this, rootElement.ActualTheme);
-                rootElement.ActualThemeChanged += (s, e) =>
-                    TitleBarHelper.ApplySystemThemeToCaptionButtons(this, s.ActualTheme);
-            }
+            Title = ResourceLoaderInstance.ResourceLoader.GetString("ScoobeWindow_Title");
         }
 
         private void Window_Activated(object sender, WindowActivatedEventArgs args)

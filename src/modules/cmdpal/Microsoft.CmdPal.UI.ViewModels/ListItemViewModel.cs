@@ -50,8 +50,10 @@ public partial class ListItemViewModel : CommandItemViewModel
         get;
         set
         {
-            if (SetProperty(ref field, value))
+            if (field != value)
             {
+                field = value;
+                UpdateProperty(nameof(LayoutShowsTitle));
                 UpdateShowsTitle();
             }
         }
@@ -62,8 +64,10 @@ public partial class ListItemViewModel : CommandItemViewModel
         get;
         set
         {
-            if (SetProperty(ref field, value))
+            if (field != value)
             {
+                field = value;
+                UpdateProperty(nameof(LayoutShowsSubtitle));
                 UpdateShowsSubtitle();
             }
         }

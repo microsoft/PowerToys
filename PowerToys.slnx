@@ -189,6 +189,12 @@
     </Project>
     <Project Path="src/modules/awake/AwakeModuleInterface/AwakeModuleInterface.vcxproj" Id="5e7360a8-d048-4ed3-8f09-0bfd64c5529a" />
   </Folder>
+  <Folder Name="/modules/awake/Tests/">
+    <Project Path="src/modules/awake/Awake.UnitTests/Awake.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/modules/cmdNotFound/">
     <Project Path="src/modules/cmdNotFound/CmdNotFoundModuleInterface/CmdNotFoundModuleInterface.vcxproj" Id="0014d652-901f-4456-8d65-06fc5f997fb0" />
   </Folder>
@@ -426,6 +432,16 @@
     <Project Path="src/modules/CropAndLock/CropAndLock/CropAndLock.vcxproj" Id="f5e1146e-b7b3-4e11-85fd-270a500bd78c" />
     <Project Path="src/modules/CropAndLock/CropAndLockModuleInterface/CropAndLockModuleInterface.vcxproj" Id="3157fa75-86cf-4ee2-8f62-c43f776493c6" />
   </Folder>
+  <Folder Name="/modules/CropAndLock/Tests/">
+    <Project Path="src/modules/CropAndLock/Tests/CropAndLock.TestApp/CropAndLock.TestApp.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/CropAndLock/Tests/CropAndLock.UITests/CropAndLock.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/modules/EnvironmentVariables/">
     <Project Path="src/modules/EnvironmentVariables/EnvironmentVariables/EnvironmentVariables.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
@@ -435,6 +451,10 @@
     <Project Path="src/modules/EnvironmentVariables/EnvironmentVariablesUILib/EnvironmentVariablesUILib.csproj" />
   </Folder>
   <Folder Name="/modules/EnvironmentVariables/Tests/">
+    <Project Path="src/modules/EnvironmentVariables/EnvironmentVariables.UITests/EnvironmentVariables.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/EnvironmentVariables/EnvironmentVariablesUILib.Tests/EnvironmentVariablesUILib.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -522,6 +542,10 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/Hosts/Hosts.UITests/HostsEditor.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Hosts/Hosts.UITests.Next/Hosts.UITests.Next.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -866,6 +890,7 @@
     </Project>
   </Folder>
   <Folder Name="/modules/MeasureTool/Tests/">
+    <Project Path="src/modules/MeasureTool/Tests/MeasureToolCore.UnitTests/MeasureToolCore.UnitTests.vcxproj" Id="1b76e770-b56f-486f-89d9-9dfe7c5289e8" />
     <Project Path="src/modules/MeasureTool/Tests/ScreenRuler.UITests/ScreenRuler.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -946,6 +971,10 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/poweraccent/PowerAccent.UI/PowerAccent.UI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/poweraccent/PowerAccent.UITests/PowerAccent.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -1136,6 +1165,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/registrypreview/Tests/RegistryPreview.UITests/RegistryPreview.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/modules/ShortcutGuide/">
     <Project Path="src/modules/ShortcutGuide/ShortcutGuide.IndexYmlGenerator/ShortcutGuide.IndexYmlGenerator.csproj">
@@ -1202,6 +1235,7 @@
     <Project Path="src/modules/ZoomIt/ZoomItBreak/ZoomItBreak.vcxproj" Id="94ba3051-c8d7-454a-9d46-1a7c78e228a3" />
     <Project Path="src/modules/ZoomIt/ZoomItModuleInterface/ZoomItModuleInterface.vcxproj" Id="e4585179-2ac1-4d5f-a3ff-cfc5392f694c" />
     <Project Path="src/modules/ZoomIt/ZoomItSettingsInterop/ZoomItSettingsInterop.vcxproj" Id="ca7d8106-30b9-4aec-9d05-b69b31b8c461" />
+    <Project Path="src/modules/ZoomIt/unittests/ZoomItAnimation.UnitTests.vcxproj" Id="67b0a49b-34da-4c99-9d1d-b247a6b9fb3e" />
   </Folder>
   <Folder Name="/modules/GrabAndMove/">
     <Project Path="src/modules/GrabAndMove/GrabAndMove/GrabAndMove.vcxproj" Id="568c4c30-2e3c-4c2c-a691-007362073765" />
@@ -1293,4 +1327,3 @@
   <Project Path="tools/CliShim/CliShim.vcxproj" Id="8a7fb7fa-65ea-4004-ba73-1b237435a57b" />
   <Project Path="tools/CliShim.UnitTests/CliShim.UnitTests.vcxproj" Id="d4b0ed68-867d-46b4-a03f-ec52b9fbebe5" />
 </Solution>
-

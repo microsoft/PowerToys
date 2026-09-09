@@ -80,6 +80,9 @@ steps:
       "/tmp/gh-aw/bug-report-context.md"
 safe-outputs:
   report-failure-as-issue: false
+  report-failed-jobs: false
+  report-incomplete:
+    create-issue: false
   noop:
     report-as-issue: false
   jobs:

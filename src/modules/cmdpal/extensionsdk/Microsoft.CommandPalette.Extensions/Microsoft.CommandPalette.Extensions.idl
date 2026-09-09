@@ -495,5 +495,10 @@ namespace Microsoft.CommandPalette.Extensions
         ICommandResult SubmitAction(String actionId, String inputs, String data);
     }
 
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IDetails2 requires IDetails {
+        IContent[] GetContent();
+    }
+
 
 }

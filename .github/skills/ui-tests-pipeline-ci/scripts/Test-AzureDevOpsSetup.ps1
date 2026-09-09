@@ -415,13 +415,17 @@ if ($pipelineId -ne 0)
         }
 
         $moduleAssignments = @($preview.finalYaml -split "`n" |
-                Where-Object { $_ -match '\$modulesRaw\s*=' } |
+                Where-Object { $_ -match '^\s*\$modulesRaw\s*=\s*''[^'']*''\s*$' } |
                 ForEach-Object { $_.Trim() })
         $expectedModuleAssignment = "`$modulesRaw = '$ProbeModule'"
-        if ($moduleAssignments.Count -eq 0 -or
-            @($moduleAssignments | Where-Object { $_ -ne $expectedModuleAssignment }).Count -ne 0)
+        if ($moduleAssignments.Count -eq 0)
         {
-            throw "Pipeline preview did not resolve only module '$ProbeModule'."
+            throw 'Pipeline preview parser found no literal $modulesRaw assignments; the template quoting or line layout may have changed.'
+        }
+
+        if (@($moduleAssignments | Where-Object { $_ -ne $expectedModuleAssignment }).Count -ne 0)
+        {
+            throw "Pipeline preview did not resolve only module '$ProbeModule'. Assignments: $($moduleAssignments -join ' | ')."
         }
 
         Add-SetupCheck `

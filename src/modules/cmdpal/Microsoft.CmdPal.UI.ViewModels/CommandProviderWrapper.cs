@@ -442,6 +442,10 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             {
                 Logger.LogDebug($"{ProviderId}: Found an IExtendedAttributesProvider");
             }
+            else if (a is IDetails2)
+            {
+                Logger.LogDebug($"{ProviderId}: Found an IDetails2");
+            }
             else if (a is ICommandItem[] commands)
             {
                 Logger.LogDebug($"{ProviderId}: Found an ICommandItem[]");
