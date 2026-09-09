@@ -1,4 +1,5 @@
 GlobalMemoryStatusEx
+GetPhysicallyInstalledSystemMemory
 GetSystemPowerStatus
 CreateDXGIFactory1
 IDXGIFactory1

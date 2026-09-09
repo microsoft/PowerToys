@@ -22,6 +22,8 @@ public partial class ContentTemplateSelector : DataTemplateSelector
 
     public DataTemplate? ImageTemplate { get; set; }
 
+    public DataTemplate? GraphTemplate { get; set; }
+
     protected override DataTemplate? SelectTemplateCore(object item)
     {
         return item is ContentViewModel element
@@ -31,6 +33,7 @@ public partial class ContentTemplateSelector : DataTemplateSelector
                 ContentMarkdownViewModel => MarkdownTemplate,
                 ContentTreeViewModel => TreeTemplate,
                 ContentImageViewModel => ImageTemplate,
+                ContentGraphViewModel => GraphTemplate,
                 ContentPlainTextViewModel => PlainTextTemplate,
                 _ => null,
             }

@@ -76,6 +76,21 @@ public partial class SamplesListPage : ListPage
         },
 
         // Content pages
+        new ListItem(new SampleGraphsPage())
+        {
+            Title = "Live graphs",
+            Subtitle = "Line graphs, vertical usage bars, and doughnut charts",
+        },
+        new ListItem(new SampleGraphsPage(nested: true))
+        {
+            Title = "Nested graphs",
+            Subtitle = "Graphs at the root and children of a content tree",
+        },
+        new ListItem(new SampleGraphDetailsPage())
+        {
+            Title = "Graphs in details",
+            Subtitle = "All graph types displayed in list-item details",
+        },
         new ListItem(new SampleContentPage())
         {
             Title = "Sample content page",

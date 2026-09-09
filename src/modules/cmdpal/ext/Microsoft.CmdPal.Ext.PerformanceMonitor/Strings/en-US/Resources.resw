@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -156,10 +156,14 @@
     <value>Utilization</value>
   </data>
   <data name="Memory_Widget_Template.AllMemory" xml:space="preserve">
-    <value>All memory</value>
+    <value>Total memory</value>
   </data>
   <data name="Memory_Widget_Template.UsedMemory" xml:space="preserve">
-    <value>In use (compressed)</value>
+    <value>Used</value>
+  </data>
+  <data name="Memory_Widget_Template.AvailableMemory" xml:space="preserve">
+    <value>Available</value>
+    <comment>Physical memory immediately available for use, including reusable standby memory.</comment>
   </data>
   <data name="Memory_Widget_Template.Committed" xml:space="preserve">
     <value>Committed</value>
@@ -308,6 +312,22 @@
   <data name="Performance_Monitor_Reenable_Failed" xml:space="preserve">
     <value>Performance monitor could not be restored right now. It will stay disabled for this session.</value>
   </data>
+  <data name="CPU_Total_Time" xml:space="preserve">
+    <value>Total CPU</value>
+    <comment>CPU graph series: total processor usage, including kernel time.</comment>
+  </data>
+  <data name="CPU_Kernel_Time" xml:space="preserve">
+    <value>Kernel time</value>
+    <comment>CPU graph series: processor time spent executing in kernel mode.</comment>
+  </data>
+  <data name="CPU_Show_Kernel_Time_Setting_Title" xml:space="preserve">
+    <value>Show kernel time</value>
+    <comment>Toggle setting for the kernel CPU usage graph series.</comment>
+  </data>
+  <data name="CPU_Show_Kernel_Time_Setting_Description" xml:space="preserve">
+    <value>Show the portion of CPU usage spent in kernel mode with a dashed line.</value>
+    <comment>Describes the optional kernel time series in the CPU graph.</comment>
+  </data>
   <data name="CPU_Usage_Title" xml:space="preserve">
     <value>CPU Usage</value>
   </data>
@@ -336,6 +356,19 @@
   </data>
   <data name="Network_Usage_Title" xml:space="preserve">
     <value>Network Usage</value>
+  </data>
+  <data name="Network_Traffic_Title" xml:space="preserve">
+    <value>Network Traffic</value>
+  </data>
+  <data name="Network_Traffic_Send" xml:space="preserve">
+    <value>Send</value>
+  </data>
+  <data name="Network_Traffic_Receive" xml:space="preserve">
+    <value>Receive</value>
+  </data>
+  <data name="Network_Traffic_Summary" xml:space="preserve">
+    <value>{0} · ↑ {1} · ↓ {2}</value>
+    <comment>{0} is the adapter name, {1} is upload speed, {2} is download speed.</comment>
   </data>
   <data name="Network_Speed_Title" xml:space="preserve">
     <value>Network Speed</value>
@@ -475,5 +508,23 @@
   </data>
   <data name="Disk_Speed_Unit_BinaryBytesPerSec" xml:space="preserve">
     <value>Binary bytes per second (KiB/s, MiB/s, GiB/s)</value>
+  </data>
+  <data name="Memory_Composition_Title" xml:space="preserve">
+    <value>Memory composition</value>
+  </data>
+  <data name="Memory_Composition_HardwareReserved" xml:space="preserve">
+    <value>Hardware reserved</value>
+  </data>
+  <data name="Memory_Composition_InUse" xml:space="preserve">
+    <value>In use</value>
+  </data>
+  <data name="Memory_Composition_Modified" xml:space="preserve">
+    <value>Modified</value>
+  </data>
+  <data name="Memory_Composition_Standby" xml:space="preserve">
+    <value>Standby</value>
+  </data>
+  <data name="Memory_Composition_Free" xml:space="preserve">
+    <value>Free</value>
   </data>
 </root>

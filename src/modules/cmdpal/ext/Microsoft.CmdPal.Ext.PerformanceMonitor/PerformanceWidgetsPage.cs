@@ -15,7 +15,6 @@ using CoreWidgetProvider.Widgets.Enums;
 using Microsoft.CmdPal.Common;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.ApplicationModel;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 
@@ -83,6 +82,8 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     private readonly SystemNetworkUsageWidgetPage? _networkPage;
     private readonly ListItem? _networkItem;
+    private readonly SystemNetworkTrafficWidgetPage? _networkTrafficPage;
+    private readonly ListItem? _networkTrafficItem;
 
     private readonly SystemGPUUsageWidgetPage? _gpuPage;
     private readonly ListItem? _gpuItem;
@@ -108,7 +109,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
         if (IncludesMetric(PerformanceMetricKind.Cpu))
         {
-            _cpuPage = new SystemCPUUsageWidgetPage();
+            _cpuPage = new SystemCPUUsageWidgetPage(settingsManager);
             _cpuItem = new ListItem(_cpuPage)
             {
                 Title = _cpuPage.GetItemTitle(isBandPage),
@@ -148,8 +149,23 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             _networkPage.Updated += (s, e) =>
             {
                 _networkItem.Title = _networkPage.GetItemTitle(isBandPage);
-                _networkUpItem?.Title = _networkPage.GetUpSpeed();
-                _networkDownItem?.Title = _networkPage.GetDownSpeed();
+            };
+        }
+
+        if (IncludesMetric(PerformanceMetricKind.NetworkSpeed))
+        {
+            _networkTrafficPage = new SystemNetworkTrafficWidgetPage(_networkPage!, settingsManager);
+            _networkTrafficItem = new ListItem(_networkTrafficPage)
+            {
+                Title = _networkTrafficPage.Title,
+                Subtitle = _networkTrafficPage.GetSummary(),
+                MoreCommands = _networkTrafficPage.Commands,
+            };
+            _networkTrafficPage.Updated += (s, e) =>
+            {
+                _networkTrafficItem.Subtitle = _networkTrafficPage.GetSummary();
+                _networkUpItem?.Title = _networkTrafficPage.GetUpSpeed();
+                _networkDownItem?.Title = _networkTrafficPage.GetDownSpeed();
             };
         }
 
@@ -257,6 +273,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _cpuPage?.PushActivate();
         _memoryPage?.PushActivate();
         _networkPage?.PushActivate();
+        _networkTrafficPage?.PushActivate();
         _diskPage?.PushActivate();
         _gpuPage?.PushActivate();
         _batteryPage?.PushActivate();
@@ -267,6 +284,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _cpuPage?.PopActivate();
         _memoryPage?.PopActivate();
         _networkPage?.PopActivate();
+        _networkTrafficPage?.PopActivate();
         _diskPage?.PopActivate();
         _gpuPage?.PopActivate();
         _batteryPage?.PopActivate();
@@ -295,7 +313,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 PerformanceMetricKind.Cpu => new IListItem[] { _cpuItem! },
                 PerformanceMetricKind.Memory => new IListItem[] { _memoryItem! },
                 PerformanceMetricKind.Network => new IListItem[] { _networkItem! },
-                PerformanceMetricKind.NetworkSpeed => new IListItem[] { _networkItem! },
+                PerformanceMetricKind.NetworkSpeed => new IListItem[] { _networkTrafficItem! },
                 PerformanceMetricKind.Disk => new IListItem[] { _diskItem! },
                 PerformanceMetricKind.Gpu => new IListItem[] { _gpuItem! },
                 PerformanceMetricKind.Battery => new IListItem[] { _batteryItem! },
@@ -307,8 +325,8 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         {
             // TODO add details
             return _batteryItem is not null
-                ? new[] { _cpuItem!, _memoryItem!, _networkItem!, _diskItem!, _gpuItem!, _batteryItem! }
-                : new[] { _cpuItem!, _memoryItem!, _networkItem!, _diskItem!, _gpuItem! };
+                ? new[] { _cpuItem!, _memoryItem!, _networkItem!, _networkTrafficItem!, _diskItem!, _gpuItem!, _batteryItem! }
+                : new[] { _cpuItem!, _memoryItem!, _networkItem!, _networkTrafficItem!, _diskItem!, _gpuItem! };
         }
 
         return [_cpuItem!, _memoryItem!];
@@ -316,21 +334,21 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     private IListItem[] CreateNetworkBandItems()
     {
-        _networkUpItem ??= new ListItem(_networkPage!)
+        _networkUpItem ??= new ListItem(_networkTrafficPage!)
         {
             Subtitle = Resources.GetResource("Network_Send_Subtitle"),
             Icon = Icons.NetworkUpIcon,
-            MoreCommands = _networkPage!.Commands,
+            MoreCommands = _networkTrafficPage!.Commands,
         };
-        _networkUpItem.Title = _networkPage!.GetUpSpeed();
+        _networkUpItem.Title = _networkTrafficPage!.GetUpSpeed();
 
-        _networkDownItem ??= new ListItem(_networkPage!)
+        _networkDownItem ??= new ListItem(_networkTrafficPage!)
         {
             Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
             Icon = Icons.NetworkDownIcon,
-            MoreCommands = _networkPage!.Commands,
+            MoreCommands = _networkTrafficPage!.Commands,
         };
-        _networkDownItem.Title = _networkPage!.GetDownSpeed();
+        _networkDownItem.Title = _networkTrafficPage!.GetDownSpeed();
 
         return [_networkUpItem, _networkDownItem];
     }
@@ -360,6 +378,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     {
         _cpuPage?.Dispose();
         _memoryPage?.Dispose();
+        _networkTrafficPage?.Dispose();
         _networkPage?.Dispose();
         _diskPage?.Dispose();
         _gpuPage?.Dispose();
@@ -400,8 +419,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
 /// <summary>
 /// Base class for all the performance monitor widget pages.
-/// This handles common stuff like loading their widget JSON
-/// and updating it when needed.
+/// Loads the widget's readings and publishes native graph snapshots.
 /// </summary>
 internal abstract partial class WidgetPage : OnLoadContentPage
 {
@@ -414,6 +432,8 @@ internal abstract partial class WidgetPage : OnLoadContentPage
     internal event EventHandler? Updated;
 
     protected Dictionary<string, string> ContentData { get; } = new();
+
+    protected LineGraphContent? UsageGraph { get; set; }
 
     protected WidgetPageState Page { get; set; } = WidgetPageState.Unknown;
 
@@ -446,14 +466,36 @@ internal abstract partial class WidgetPage : OnLoadContentPage
         lock (ContentData)
         {
             LoadContentData();
+            if (ContentData.ContainsKey("errorMessage"))
+            {
+                UsageGraph?.SetSnapshot([]);
+            }
         }
 
         _formContent.DataJson = ContentDataJson.ToJsonString();
+        OnContentUpdated();
 
         Updated?.Invoke(this, EventArgs.Empty);
     }
 
     protected abstract void LoadContentData();
+
+    protected virtual void OnContentUpdated()
+    {
+    }
+
+    protected virtual IContent[] GetGraphContent() => UsageGraph is null ? [] : [UsageGraph];
+
+    protected LineGraphContent CreateUsageGraph(params GraphSeriesInfo[] series)
+    {
+        return new LineGraphContent(series)
+        {
+            DisplayName = Title,
+            HistoryDuration = UsageHistory.Duration,
+            Smoothing = 1,
+            ValueSuffix = "%",
+        };
+    }
 
     protected abstract string GetTemplatePath(WidgetPageState page);
 
@@ -467,7 +509,9 @@ internal abstract partial class WidgetPage : OnLoadContentPage
 
         try
         {
-            var path = Path.Combine(Package.Current.EffectivePath, GetTemplatePath(page));
+            // Templates are copied beside the host, including unpackaged dev
+            // and test hosts that cannot access Package.Current.
+            var path = Path.Combine(AppContext.BaseDirectory, GetTemplatePath(page));
             var template = File.ReadAllText(path, Encoding.Default) ?? throw new FileNotFoundException(path);
 
             template = Resources.ReplaceIdentifersFast(template);
@@ -486,7 +530,10 @@ internal abstract partial class WidgetPage : OnLoadContentPage
     {
         _formContent.TemplateJson = GetTemplateForPage(WidgetPageState.Content);
 
-        return [_formContent];
+        lock (ContentData)
+        {
+            return [.. GetGraphContent(), _formContent];
+        }
     }
 
     /// <summary>
@@ -602,13 +649,63 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
     public override IconInfo Icon => Icons.CpuIcon;
 
     private readonly DataManager _dataManager;
+    private readonly SettingsManager _settingsManager;
+    private GraphSample[] _cpuSamples = [];
+    private bool _showKernelTime;
+    private bool _disposed;
 
-    public SystemCPUUsageWidgetPage()
+    public SystemCPUUsageWidgetPage(SettingsManager settingsManager, CpuSampler? cpuSampler = null)
     {
-        _dataManager = new(DataType.CPU, () => UpdateWidget());
+        _settingsManager = settingsManager;
+        _showKernelTime = settingsManager.ShowKernelTime;
+        UsageGraph = CreateCpuUsageGraph();
+        _dataManager = new(DataType.CPU, () => UpdateWidget(), cpuSampler);
+        _settingsManager.Settings.SettingsChanged += Settings_SettingsChanged;
         Commands = [
             new CommandContextItem(OpenTaskManagerCommand.Instance),
         ];
+    }
+
+    private LineGraphContent CreateCpuUsageGraph()
+    {
+        GraphSeriesInfo total = new() { Name = Resources.GetResource("CPU_Total_Time"), Color = ColorHelpers.FromRgb(43, 143, 190) };
+        GraphSeriesInfo kernel = new()
+        {
+            Name = Resources.GetResource("CPU_Kernel_Time"),
+            Color = ColorHelpers.FromRgb(111, 204, 237),
+            LineStyle = GraphLineStyle.Dashed,
+        };
+
+        return new LineGraphContent(_showKernelTime ? [total, kernel] : [total])
+        {
+            DisplayName = Title,
+            HistoryDuration = UsageHistory.Duration,
+            ValueSuffix = "%",
+            Smoothing = 0.2,
+        };
+    }
+
+    private GraphSample[] GetVisibleSamples(GraphSample[] samples)
+        => _showKernelTime ? samples : Array.FindAll(samples, static sample => sample.SeriesIndex == 0);
+
+    private void Settings_SettingsChanged(object sender, Settings args)
+    {
+        lock (ContentData)
+        {
+            if (_disposed || _showKernelTime == _settingsManager.ShowKernelTime)
+            {
+                return;
+            }
+
+            _showKernelTime = _settingsManager.ShowKernelTime;
+            var graph = CreateCpuUsageGraph();
+            graph.SetSnapshot(GetVisibleSamples(_cpuSamples));
+
+            // Series configuration is immutable; publish a populated replacement.
+            UsageGraph = graph;
+        }
+
+        RaiseItemsChanged();
     }
 
     protected override void LoadContentData()
@@ -620,15 +717,14 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
 
             var timer = Stopwatch.StartNew();
 
-            var currentData = _dataManager.GetCPUStats();
+            var currentData = _dataManager.GetCpuSnapshot();
 
             var dataDuration = timer.ElapsedMilliseconds;
 
             ContentData["cpuUsage"] = FloatToPercentString(currentData.CpuUsage);
             ContentData["cpuSpeed"] = SpeedToString(currentData.CpuSpeed);
-            ContentData["cpuGraphUrl"] = currentData.CreateCPUImageUrl();
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            _cpuSamples = currentData.History;
+            UsageGraph!.SetSnapshot(GetVisibleSamples(_cpuSamples));
 
             // ContentData["cpuProc1"] = currentData.GetCpuProcessText(0);
             // ContentData["cpuProc2"] = currentData.GetCpuProcessText(1);
@@ -641,6 +737,7 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
         catch (Exception e)
         {
             // Log.Error(e, "Error retrieving stats.");
+            _cpuSamples = [];
             ContentData.Clear();
             ContentData["errorMessage"] = e.Message;
 
@@ -683,6 +780,12 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
 
     public void Dispose()
     {
+        lock (ContentData)
+        {
+            _disposed = true;
+            _settingsManager.Settings.SettingsChanged -= Settings_SettingsChanged;
+        }
+
         _dataManager.Dispose();
     }
 }
@@ -697,9 +800,13 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
 
     private readonly DataManager _dataManager;
 
-    public SystemMemoryUsageWidgetPage()
+    public SystemMemoryUsageWidgetPage(MemoryStats? memoryStats = null)
     {
-        _dataManager = new(DataType.Memory, () => UpdateWidget());
+        UsageGraph = CreateUsageGraph(
+            new GraphSeriesInfo { Name = Resources.GetResource("Memory_Widget_Template/MemoryUsage"), Color = ColorHelpers.FromRgb(92, 158, 250) },
+            new GraphSeriesInfo { Name = Resources.GetResource("Memory_Widget_Template/UsedMemory"), IsReadoutOnly = true, ReadoutValueSuffix = " GB" },
+            new GraphSeriesInfo { Name = Resources.GetResource("Memory_Widget_Template/AvailableMemory"), IsReadoutOnly = true, ReadoutValueSuffix = " GB" });
+        _dataManager = new(DataType.Memory, () => UpdateWidget(), memoryStats: memoryStats);
         Commands = [
             new CommandContextItem(OpenTaskManagerCommand.Instance),
         ];
@@ -712,32 +819,27 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
         {
             ContentData.Clear();
 
-            var timer = Stopwatch.StartNew();
-
             var currentData = _dataManager.GetMemoryStats();
-
-            var dataDuration = timer.ElapsedMilliseconds;
-
-            ContentData["allMem"] = MemUlongToString(currentData.AllMem);
-            ContentData["usedMem"] = MemUlongToString(currentData.UsedMem);
-            ContentData["memUsage"] = FloatToPercentString(currentData.MemUsage);
-            ContentData["committedMem"] = MemUlongToString(currentData.MemCommitted);
-            ContentData["committedLimitMem"] = MemUlongToString(currentData.MemCommitLimit);
-            ContentData["cachedMem"] = MemUlongToString(currentData.MemCached);
-            ContentData["pagedPoolMem"] = MemUlongToString(currentData.MemPagedPool);
-            ContentData["nonPagedPoolMem"] = MemUlongToString(currentData.MemNonPagedPool);
-            ContentData["memGraphUrl"] = currentData.CreateMemImageUrl();
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
-
-            var contentDuration = timer.ElapsedMilliseconds - dataDuration;
-
-            // CoreLogger.LogDebug($"Memory stats retrieved in {dataDuration} ms, content prepared in {contentDuration} ms. (Total {timer.ElapsedMilliseconds} ms)");
+            lock (currentData)
+            {
+                ContentData["allMem"] = MemUlongToString(currentData.AllMem);
+                ContentData["usedMem"] = MemUlongToString(currentData.UsedMem);
+                ContentData["availableMem"] = MemUlongToString(currentData.AvailableMem);
+                ContentData["memUsage"] = FloatToPercentString(currentData.MemUsage);
+                ContentData["committedMem"] = MemUlongToString(currentData.MemCommitted);
+                ContentData["committedLimitMem"] = MemUlongToString(currentData.MemCommitLimit);
+                ContentData["cachedMem"] = MemUlongToString(currentData.MemCached);
+                ContentData["pagedPoolMem"] = MemUlongToString(currentData.MemPagedPool);
+                ContentData["nonPagedPoolMem"] = MemUlongToString(currentData.MemNonPagedPool);
+                UsageGraph!.SetSnapshot(currentData.MemoryHistory.GetSnapshot());
+                UpdateComposition(currentData);
+            }
         }
         catch (Exception e)
         {
             ContentData.Clear();
             ContentData["errorMessage"] = e.Message;
+            ClearComposition();
             return;
         }
     }
@@ -768,23 +870,23 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
     {
         if (memBytes < 1024)
         {
-            return memBytes.ToString(CultureInfo.InvariantCulture) + " B";
+            return memBytes.ToString(CultureInfo.CurrentCulture) + " B";
         }
 
         var memSize = memBytes / 1024.0;
         if (memSize < 1024)
         {
-            return memSize.ToString("0.00", CultureInfo.InvariantCulture) + " kB";
+            return memSize.ToString("0.00", CultureInfo.CurrentCulture) + " kB";
         }
 
         memSize /= 1024;
         if (memSize < 1024)
         {
-            return memSize.ToString("0.00", CultureInfo.InvariantCulture) + " MB";
+            return memSize.ToString("0.00", CultureInfo.CurrentCulture) + " MB";
         }
 
         memSize /= 1024;
-        return memSize.ToString("0.00", CultureInfo.InvariantCulture) + " GB";
+        return memSize.ToString("0.00", CultureInfo.CurrentCulture) + " GB";
     }
 
     protected override void OnActivated() => _dataManager.Start();
@@ -811,6 +913,7 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
 
     public SystemDiskUsageWidgetPage(SettingsManager settingsManager)
     {
+        UsageGraph = CreateUsageGraph(new GraphSeriesInfo { Name = Title, Color = ColorHelpers.FromRgb(103, 153, 24) });
         _settingsManager = settingsManager;
         _dataManager = new(DataType.Disk, () => UpdateWidget());
         Commands = [
@@ -840,9 +943,7 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
             ContentData["diskRead"] = SpeedToString(diskStats.Read);
             ContentData["diskWrite"] = SpeedToString(diskStats.Written);
             ContentData["diskName"] = diskName;
-            ContentData["diskGraphUrl"] = currentData.CreateDiskImageUrl(_diskIndex);
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            UsageGraph!.SetSnapshot(currentData.GetDiskHistory(_diskIndex));
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -987,11 +1088,15 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     private readonly SettingsManager _settingsManager;
     private int _networkIndex;
     private bool _defaultNetworkInitialized;
+    private NetworkSnapshot _snapshot = NetworkSnapshot.Empty;
 
-    public SystemNetworkUsageWidgetPage(SettingsManager settingsManager)
+    internal NetworkSnapshot CurrentSnapshot => Volatile.Read(ref _snapshot);
+
+    public SystemNetworkUsageWidgetPage(SettingsManager settingsManager, NetworkStats? networkStats = null)
     {
+        UsageGraph = CreateUsageGraph(new GraphSeriesInfo { Name = Title, Color = ColorHelpers.FromRgb(230, 111, 120) });
         _settingsManager = settingsManager;
-        _dataManager = new(DataType.Network, () => UpdateWidget());
+        _dataManager = new(DataType.Network, () => UpdateWidget(), networkStats: networkStats);
         Commands = [
             new CommandContextItem(new PrevNetworkCommand(this) { Name = Resources.GetResource("Previous_Network_Title") }),
             new CommandContextItem(new NextNetworkCommand(this) { Name = Resources.GetResource("Next_Network_Title") }),
@@ -1023,16 +1128,13 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
             var dataDuration = timer.ElapsedMilliseconds;
 
-            var netName = currentData.GetNetworkName(_networkIndex);
-            var networkStats = currentData.GetNetworkUsage(_networkIndex);
-
-            ContentData["networkUsage"] = FloatToPercentString(networkStats.Usage);
-            ContentData["netSent"] = SpeedToString(networkStats.Sent);
-            ContentData["netReceived"] = SpeedToString(networkStats.Received);
-            ContentData["networkName"] = netName;
-            ContentData["netGraphUrl"] = currentData.CreateNetImageUrl(_networkIndex);
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            var snapshot = currentData.GetSnapshot(_networkIndex);
+            Volatile.Write(ref _snapshot, snapshot);
+            ContentData["networkUsage"] = FloatToPercentString(snapshot.Usage.Usage);
+            ContentData["netSent"] = SpeedToString(snapshot.Usage.Sent);
+            ContentData["netReceived"] = SpeedToString(snapshot.Usage.Received);
+            ContentData["networkName"] = snapshot.Name;
+            UsageGraph!.SetSnapshot(snapshot.UtilizationHistory);
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -1042,6 +1144,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         {
             ContentData.Clear();
             ContentData["errorMessage"] = e.Message;
+            Volatile.Write(ref _snapshot, NetworkSnapshot.Empty with { ErrorMessage = e.Message });
             return;
         }
     }
@@ -1199,6 +1302,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
 
     public SystemGPUUsageWidgetPage()
     {
+        UsageGraph = CreateUsageGraph(new GraphSeriesInfo { Name = Title, Color = ColorHelpers.FromRgb(222, 104, 242) });
         _dataManager = new(DataType.GPU, () => UpdateWidget());
 
         Commands = [
@@ -1226,9 +1330,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
             ContentData["gpuUsage"] = FloatToPercentString(stats.GetGPUUsage(_gpuActiveIndex, _gpuActiveEngType));
             ContentData["gpuName"] = gpuName;
             ContentData["gpuTemp"] = stats.GetGPUTemperature(_gpuActiveIndex);
-            ContentData["gpuGraphUrl"] = stats.CreateGPUImageUrl(_gpuActiveIndex);
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            UsageGraph!.SetSnapshot(stats.GetGPUHistory(_gpuActiveIndex));
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 

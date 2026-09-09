@@ -26,12 +26,15 @@ internal sealed partial class SystemData
 
     public GPUStats GPUStats => _gpuStats.Value;
 
-    public CPUStats CpuStats => _cpuStats.Value;
+    private CPUStats CpuStats => _cpuStats.Value;
+
+    public CpuSampler CpuSampler { get; }
 
     public BatteryStats BatteryStats => _batteryStats.Value;
 
     private SystemData()
     {
+        CpuSampler = new CpuSampler(() => CpuStats);
     }
 
     private static T CreateGuarded<T>(string blockSuffix, Func<T> factory)

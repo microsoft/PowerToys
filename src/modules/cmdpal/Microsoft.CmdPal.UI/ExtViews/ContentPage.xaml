@@ -45,6 +45,7 @@
             <cmdpalUI:ContentTemplateSelector
                 x:Key="ContentTemplateSelector"
                 FormTemplate="{StaticResource FormContentTemplate}"
+                GraphTemplate="{StaticResource GraphContentTemplate}"
                 ImageTemplate="{StaticResource ImageContentTemplate}"
                 MarkdownTemplate="{StaticResource MarkdownContentTemplate}"
                 PlainTextTemplate="{StaticResource PlainTextContentTemplate}"
@@ -53,6 +54,7 @@
             <cmdpalUI:ContentTemplateSelector
                 x:Key="NestedContentTemplateSelector"
                 FormTemplate="{StaticResource NestedFormContentTemplate}"
+                GraphTemplate="{StaticResource GraphContentTemplate}"
                 ImageTemplate="{StaticResource ImageContentTemplate}"
                 MarkdownTemplate="{StaticResource NestedMarkdownContentTemplate}"
                 PlainTextTemplate="{StaticResource PlainTextContentTemplate}"
@@ -89,6 +91,12 @@
                 </Grid>
             </DataTemplate>
 
+            <DataTemplate x:Key="GraphContentTemplate" x:DataType="viewModels:ContentGraphViewModel">
+                <Grid Margin="0,4,4,4" Padding="12,8,8,8">
+                    <extViews:GraphContentViewer DataContext="{x:Bind}" />
+                </Grid>
+            </DataTemplate>
+
             <DataTemplate x:Key="NestedFormContentTemplate" x:DataType="viewModels:ContentFormViewModel">
                 <Grid>
                     <cmdPalControls:ContentFormControl ViewModel="{x:Bind}" />
@@ -114,6 +122,7 @@
                         <ItemsRepeater.ItemTemplate>
                             <cmdpalUI:ContentTemplateSelector
                                 FormTemplate="{StaticResource NestedFormContentTemplate}"
+                                GraphTemplate="{StaticResource GraphContentTemplate}"
                                 MarkdownTemplate="{StaticResource NestedMarkdownContentTemplate}"
                                 TreeTemplate="{StaticResource TreeContentTemplate}" />
                         </ItemsRepeater.ItemTemplate>
@@ -128,6 +137,7 @@
                         <ItemsRepeater.ItemTemplate>
                             <cmdpalUI:ContentTemplateSelector
                                 FormTemplate="{StaticResource FormContentTemplate}"
+                                GraphTemplate="{StaticResource GraphContentTemplate}"
                                 MarkdownTemplate="{StaticResource MarkdownContentTemplate}"
                                 TreeTemplate="{StaticResource TreeContentTemplate}" />
                         </ItemsRepeater.ItemTemplate>

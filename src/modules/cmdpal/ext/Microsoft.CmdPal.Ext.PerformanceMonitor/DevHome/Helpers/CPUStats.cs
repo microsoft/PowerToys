@@ -6,18 +6,19 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.CmdPal.Ext.PerformanceMonitor;
 
 namespace CoreWidgetProvider.Helpers;
 
-internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposable
+internal sealed partial class CPUStats : PerformanceCounterSourceBase, ICpuSampleSource, IDisposable
 {
     // CPU counters
     private readonly PerformanceCounter? _procPerf;
+    private readonly PerformanceCounter? _procPrivileged;
     private readonly PerformanceCounter? _procPerformance;
     private readonly PerformanceCounter? _procFrequency;
     private readonly Dictionary<Process, PerformanceCounter> _cpuCounters = new();
     private bool _processCountersInitialized;
-    private bool _cpuCounterReadFailureLogged;
     private bool _processCounterEnumerationFailureLogged;
     private bool _processCounterReadFailureLogged;
 
@@ -30,11 +31,11 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
 
     public float CpuUsage { get; set; }
 
+    public float KernelUsage { get; private set; }
+
     public float CpuSpeed { get; set; }
 
     public ProcessStats[] ProcessCPUStats { get; set; }
-
-    public List<float> CpuChartValues { get; set; } = new();
 
     public CPUStats()
     {
@@ -51,6 +52,7 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
         // which produced values like 144% in the dock under heavy load. % Processor Time is the same
         // counter Task Manager renders and is naturally bounded to 0-100%. See issue #46381.
         _procPerf = CreatePerformanceCounter("Processor Information", "% Processor Time", "_Total");
+        _procPrivileged = CreatePerformanceCounter("Processor Information", "% Privileged Time", "_Total");
         _procPerformance = CreatePerformanceCounter("Processor Information", "% Processor Performance", "_Total");
         _procFrequency = CreatePerformanceCounter("Processor Information", "Processor Frequency", "_Total");
     }
@@ -90,15 +92,23 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
         }
     }
 
-    public void GetData(bool includeTopProcesses)
+    public void ResetSamplingInterval() => _ = ReadSample(includeTopProcesses: false);
+
+    public CpuSample Sample(bool includeTopProcesses) => ReadSample(includeTopProcesses);
+
+    private CpuSample ReadSample(bool includeTopProcesses)
     {
+        var isTracked = PerformanceMonitorCommandsProvider.CrashSentinel.BeginBlock("CPU.FirstUpdate");
         try
         {
             var timer = Stopwatch.StartNew();
             if (_procPerf is not null)
             {
-                CpuUsage = _procPerf.NextValue() / 100;
+                CpuUsage = Math.Clamp(_procPerf.NextValue() / 100, 0f, 1f);
             }
+
+            // Kernel time is included in total processor time, not added to it.
+            KernelUsage = Math.Clamp((_procPrivileged?.NextValue() ?? 0) / 100, 0f, CpuUsage);
 
             var usageMs = timer.ElapsedMilliseconds;
             if (_procFrequency is not null && _procPerformance is not null)
@@ -107,10 +117,6 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
             }
 
             var speedMs = timer.ElapsedMilliseconds - usageMs;
-            lock (CpuChartValues)
-            {
-                ChartHelper.AddNextChartValue(CpuUsage * 100, CpuChartValues);
-            }
 
             var chartMs = timer.ElapsedMilliseconds - speedMs;
 
@@ -160,16 +166,22 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
             var processesMs = total - chartMs;
 
             // CoreLogger.LogDebug($"[{usageMs}]+[{speedMs}]+[{chartMs}]+[{processesMs}]=[{total}]");
-        }
-        catch (Exception ex)
-        {
-            LogFailureOnce(ref _cpuCounterReadFailureLogged, "Failed while reading CPU performance counters.", ex);
-        }
-    }
+            if (isTracked)
+            {
+                PerformanceMonitorCommandsProvider.CrashSentinel.CompleteBlock("CPU.FirstUpdate");
+            }
 
-    internal string CreateCPUImageUrl()
-    {
-        return ChartHelper.CreateImageUrl(CpuChartValues, ChartHelper.ChartType.CPU);
+            return new CpuSample(CpuUsage, KernelUsage, CpuSpeed);
+        }
+        catch
+        {
+            if (isTracked)
+            {
+                PerformanceMonitorCommandsProvider.CrashSentinel.CancelBlock("CPU.FirstUpdate");
+            }
+
+            throw;
+        }
     }
 
     internal string GetCpuProcessText(int cpuProcessIndex)
@@ -195,6 +207,7 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
     public void Dispose()
     {
         _procPerf?.Dispose();
+        _procPrivileged?.Dispose();
         _procPerformance?.Dispose();
         _procFrequency?.Dispose();
 

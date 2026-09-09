@@ -22,6 +22,14 @@ internal sealed class SettingsManager : JsonSettingsManager
 
     private static string Namespaced(string propertyName) => $"{Namespace}.{propertyName}";
 
+    private readonly ToggleSetting _showKernelTime = new(
+        Namespaced(nameof(ShowKernelTime)),
+        Resources.GetResource("CPU_Show_Kernel_Time_Setting_Title"),
+        Resources.GetResource("CPU_Show_Kernel_Time_Setting_Description"),
+        false);
+
+    public bool ShowKernelTime => _showKernelTime.Value;
+
     private readonly ChoiceSetSetting _networkSpeedUnit = new(
         Namespaced(nameof(NetworkSpeedUnit)),
         Resources.GetResource("Network_Speed_Unit_Setting_Title"),
@@ -70,6 +78,7 @@ internal sealed class SettingsManager : JsonSettingsManager
     {
         FilePath = filePath;
 
+        Settings.Add(_showKernelTime);
         Settings.Add(_networkSpeedUnit);
         Settings.Add(_diskSpeedUnit);
 

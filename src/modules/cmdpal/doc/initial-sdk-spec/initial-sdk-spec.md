@@ -88,6 +88,7 @@ functionality.
   - [Addenda V: Extra content types](#addenda-v-extra-content-types)
     - [Image content](#image-content)
     - [Plain text content](#plain-text-content)
+    - [Graph content](#graph-content)
   - [Addenda VI: Adaptive Card Actions](#addenda-vi-adaptive-card-actions)
   - [Addenda VII: Rich content details](#addenda-vii-rich-content-details)
   - [Class diagram](#class-diagram)
@@ -721,7 +722,7 @@ Use cases for each `CommandResultKind`:
     * `Icon` is displayed next to the message.
     * `Command` manifests as an action button on the right side of the toast
       (e.g. "Undo", "View details"), using the command's icon and name. When
-      clicked, the toast is dismissed and the command is performed — an
+      clicked, the toast is dismissed and the command is performed. An
       invokable command is invoked directly, and a page command summons the
       palette and navigates to the page.
     * Hosts that predate `IToastArgs2` display just the message.
@@ -1964,7 +1965,7 @@ When displaying a list item:
 * The icon is `ICommandItem.Icon ?? ICommandItem.Command.Icon`
 * The title is `ICommandItem.Title ?? ICommandItem.Command.Name`
 * The Subtitle is `ICommandItem.Subtitle`
-* The text displayed for the default action (<kbd>↲</kbd>) is `ICommandItem.Command.Name`
+* The text displayed for the default action (<kbd>Enter</kbd>) is `ICommandItem.Command.Name`
 
 When displaying a command context menu item:
 * The icon is `ICommandItem.Icon ?? ICommandItem.Command.Icon`
@@ -2425,6 +2426,186 @@ interface IPlainTextContent requires IContent {
     Boolean WrapWords { get; };
 }
 ```
+
+### Graph content
+
+```csharp
+interface IGraphValueScale
+{
+    Double Divisor { get; };
+    String Suffix { get; };
+};
+
+enum GraphLineStyle
+{
+    Solid = 0,
+    Dashed = 1,
+    Dotted = 2,
+};
+
+interface IGraphSeriesInfo
+{
+    String Name { get; };
+    OptionalColor Color { get; };
+    GraphLineStyle LineStyle { get; };
+    Boolean IsReadoutOnly { get; };
+    String ReadoutValueSuffix { get; };
+};
+
+struct GraphSample
+{
+    UInt32 SeriesIndex;
+    Int64 TimestampTicks;
+    Double Value;
+};
+
+interface ILineGraphContent requires IContent
+{
+    String DisplayName { get; };
+    Double Minimum { get; };
+    Double Maximum { get; };
+    Windows.Foundation.TimeSpan HistoryDuration { get; };
+    String ValueFormat { get; };
+    String ValueSuffix { get; };
+    Double Smoothing { get; };
+    Boolean AutoScaleMaximum { get; };
+    IGraphValueScale[] GetValueScales();
+    IGraphSeriesInfo[] GetSeries();
+    GraphSample[] GetSnapshot();
+};
+
+interface IVerticalUsageBarContent requires IContent
+{
+    String DisplayName { get; };
+    Double Minimum { get; };
+    Double Maximum { get; };
+    OptionalColor IndicatorColor { get; };
+    IGraphSeriesInfo[] GetSeries();
+    Double[] GetSnapshot(out Double value, out String valueText);
+};
+
+interface IResourceBarContent requires IContent
+{
+    String DisplayName { get; };
+    String ValueFormat { get; };
+    String ValueSuffix { get; };
+    IGraphValueScale[] GetValueScales();
+    IGraphSeriesInfo[] GetSeries();
+    Double[] GetSnapshot();
+};
+
+interface IDoughnutGraphContent requires IContent
+{
+    String DisplayName { get; };
+    IGraphSeriesInfo[] GetSeries();
+    Double[] GetSnapshot(out String centerValue, out String centerLabel);
+};
+```
+
+#### Common contract
+
+| Member | Contract |
+| --- | --- |
+| `DisplayName` | Localized graph heading and UI Automation name. Empty omits the heading. |
+| `GetSeries()` | Fixed, ordered series descriptions. Array index is identity; names are display labels and may repeat. |
+| `IGraphSeriesInfo.Color` | Existing `OptionalColor`. Unset selects a host palette color. High contrast may override colors. |
+| `IGraphSeriesInfo.LineStyle` | Line graph edge: `Solid` (default), `Dashed`, or `Dotted`. Ignored by bars and doughnuts. |
+| `IGraphSeriesInfo.IsReadoutOnly` | Default false. A line graph includes this series in its legend and inspection readouts, without a plotted line, fill, marker, swatch, or contribution to automatic scaling. Ignored by bars and doughnuts. |
+| `IGraphSeriesInfo.ReadoutValueSuffix` | Suffix for a readout-only line series, formatted as a number using the graph's `ValueFormat`. Overrides the graph's `ValueSuffix` and value scales for that series. Default empty; ignored for plotted series, bars, and doughnuts. |
+| Configuration | Immutable for the content lifetime, including all properties on series and value-scale objects. Replace the content instance to change configuration. The host reads metadata on its worker and retains local values for rendering. |
+| `GetSnapshot()` | Complete, coherent replacement of the changing data, including output parameters. Non-destructive; independent of other readers. |
+| Notification | Publish the snapshot before raising `PropChanged("Data")`. One notification per publication; consumers may skip intermediate snapshots. |
+| Ownership | Returned arrays are independent copies. Immutable series and value-scale objects may be shared between reads. Samples are numeric values passed in bulk, with no per-sample interface objects. |
+| Empty arrays | A zero-length ABI array may have a null data pointer. Hosts treat a projected null array as empty. Null elements in metadata arrays are invalid. |
+| Presentation | Host owns layout, grid, stroke width and dash pattern, fill style, animation, inspection, ring thickness, and slice gaps. |
+
+#### Line graph
+
+- `SeriesIndex`: index into `GetSeries()`.
+- `TimestampTicks`: observation time in signed 100-nanosecond UTC ticks since
+  1601-01-01T00:00:00Z (the Windows epoch). Valid values are -504911232000000000
+  through 2650467743999999999, covering years 0001 through 9999. Timestamps must
+  increase strictly within each series. UTC offsets are not retained.
+  Different series may have independent timestamps and counts and may be interleaved.
+- The Toolkit's `GraphSampleHelpers.Create` accepts a `DateTimeOffset` without
+  losing tick precision. `ToTimestampTicks`, `FromTimestampTicks`, and the sample's
+  `GetTimestamp()` extension method convert between the transport value and UTC time.
+  The numeric sample layout supports standard blittable array marshalling under Native AOT.
+- `Value`: finite measurement in range units (or the readout's own units for a readout-only series). Preserve out-of-range values for
+  inspection; clip drawing to the vertical range.
+- `Minimum` / `Maximum`: finite, ordered range with a finite positive difference. Defaults: 0 / 100.
+- `HistoryDuration`: visible time span; at least one second. Default: 60 seconds.
+- Producer retains bounded history plus the preceding observation per series.
+  No data before the first observation. Empty arrays clear the graph.
+- `Smoothing`: finite amount in [0, 1]; Default: 0.
+  0 draws straight segments; 1 draws monotone cubic segments through observations.
+  Intermediate values blend these shapes. No overshoot between adjacent values.
+  Applies to interpolated intervals; presentation may use steps for sparse or late data.
+  Inspection follows the same interpolation; marker positions use clipped values.
+- Readout-only series use the same timestamp and interpolation rules as plotted series.
+  For related measurements (for example, utilization in percent and used/available GB),
+  publish their values together at the same observation time so historical inspection stays coherent.
+- Snapshots may append, expire, or correct retained observations.
+- `ValueFormat`: .NET numeric format using the user's culture; default `"0.0"`. Invalid format falls back to the default.
+- `ValueSuffix`: appended to formatted values when no value scales are supplied; default empty.
+- `GetValueScales()`: optional, fixed display scales; an empty array leaves values unscaled.
+  Divisors must be finite, positive, and strictly increasing. Suffixes must be non-null
+  and include any desired spacing. The host selects the largest divisor that does not
+  exceed the absolute value, or the first scale for smaller values, including zero.
+  It formats `Value / Divisor` using `ValueFormat` and appends that scale's `Suffix`.
+  Samples and axis bounds remain in the original measurement units. Extensions own
+  unit choices and labels; for example, divisors 1, 1000, and 1000000 can carry suffixes
+  `" bps"`, `" Kbps"`, and `" Mbps"`. The Toolkit's `GraphValueFormatter` applies the same
+  scales to extension readouts without calls back to the extension during rendering.
+- `AutoScaleMaximum`: opt-in upper-bound scaling; default false. When enabled,
+  `Maximum` is the lowest allowed upper bound and `Minimum` remains fixed.
+  The host derives one upper bound across all plotted series in the visible time window,
+  including the interpolated or held values at its edges. Retained offscreen peaks
+  and future measurements do not affect the scale beyond their visible segments.
+  The range grows and shrinks as peaks enter or leave the window, with headroom and
+  readable rounding in the selected display scale; the current maximum appears above the plot.
+
+##### Live presentation
+
+- Host-local `PresentationDelay`: nonnegative duration; default 1.5 seconds. !!
+  Zero disables buffering. Configured on the native control; no SDK ABI member.
+- Shared display clock: current time minus `PresentationDelay`, independent of series cadence.
+  No automatic increase in buffering. Latest numeric captions update immediately.
+- Automatic scaling follows this delayed display window, so the label and drawn data agree.
+- Rendering and buffering are host-local; no sampling requests or per-frame extension calls.
+
+#### Vertical usage bar
+
+- `Minimum` / `Maximum`: same range requirements and defaults as line graphs.
+- `value`: finite headline measurement. Independent of contributions.
+- `valueText`: localized headline text.
+- No series: snapshot array is empty; fill represents
+  `(value - Minimum) / (Maximum - Minimum)`, clamped to [0, 1].
+  `IndicatorColor` selects the fill color.
+- With series: exactly one finite, nonnegative contribution per descriptor.
+  Contributions stack bottom to top in array order, in range units.
+  Clip at `Maximum - Minimum`; do not normalize to their sum.
+
+#### Resource bar
+
+A horizontal composition bar shows each series as a proportion of the total.
+`GetSnapshot()` returns one finite, non-negative value per configured series,
+all in a common unit. Series order determines the left-to-right segment order; zero values occupy no
+space, and an all-zero snapshot leaves the bar empty. Include unused capacity
+as an explicit series when it should occupy part of the bar. The host normalizes
+without overflowing the sum and preserves the original values for readouts.
+
+`ValueFormat`, `ValueSuffix`, and `GetValueScales()` follow the line graph's
+formatting rules. Labels and swatches wrap below the bar. The host owns its
+height, rounded corners, separators, and transitions.
+
+#### Doughnut graph
+
+- Exactly one finite, non-negative value per descriptor, in a common unit.
+- Normalize to proportions; scale before summing to avoid overflow.
+- Array order determines clockwise slice order, starting at the top.
+- Zero values preserve series identity. All-zero or empty data displays the track.
+- `centerValue` / `centerLabel`: localized center text, returned atomically with values.
 
 ## Addenda VI: Adaptive Card Actions
 

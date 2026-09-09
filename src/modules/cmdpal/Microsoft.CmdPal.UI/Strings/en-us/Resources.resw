@@ -431,7 +431,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Windows Command Palette</value>
   </data>
   <data name="Settings_GeneralPage_About_SettingsExpander.Description" xml:space="preserve">
-    <value>© 2026. All rights reserved.</value>
+    <value>Copyright 2026. All rights reserved.</value>
   </data>
   <data name="Settings_GeneralPage_About_GithubLink_Hyperlink.Content" xml:space="preserve">
     <value>View GitHub repository</value>
@@ -787,7 +787,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>System accent color</value>
   </data>
   <data name="Settings_GeneralPage_WindowsAccentColor_OpenWindowsColorsLinkText.Text" xml:space="preserve">
-    <value>Personalization › Colors</value>
+    <value>Personalization > Colors</value>
   </data>
   <data name="Settings_GeneralPage_BackgroundImageBlur_SettingsCard.Header" xml:space="preserve">
     <value>Background image blur</value>
@@ -1481,5 +1481,33 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="AdaptiveFilePathInput_ValidationError" xml:space="preserve">
     <value>The path has an invalid format.</value>
     <comment>Validation error shown when a single path does not match its configured regular expression.</comment>
+  </data>
+  <data name="GraphInspection_Now" xml:space="preserve">
+    <value>Now</value>
+    <comment>Live graph tooltip heading when inspecting the present time.</comment>
+  </data>
+  <data name="GraphInspection_SecondsAgo" xml:space="preserve">
+    <value>{0:0.0} s ago</value>
+    <comment>Live graph tooltip heading. {0:0.0} is the elapsed number of seconds, formatted with one decimal place. Keep the format placeholder intact; s abbreviates seconds.</comment>
+  </data>
+  <data name="GraphAxis_History" xml:space="preserve">
+    <value>{0} history</value>
+    <comment>Accessible graph description. {0} is the formatted history duration, including its unit. Keep the placeholder intact.</comment>
+  </data>
+  <data name="GraphAxis_Seconds" xml:space="preserve">
+    <value>{0:0.#######} s</value>
+    <comment>Graph duration in seconds. Keep the numeric format placeholder intact; s abbreviates seconds.</comment>
+  </data>
+  <data name="GraphAxis_Minutes" xml:space="preserve">
+    <value>{0:0.##} min</value>
+    <comment>Graph duration in minutes. Keep the numeric format placeholder intact; min abbreviates minutes.</comment>
+  </data>
+  <data name="GraphAxis_Hours" xml:space="preserve">
+    <value>{0:0.##} h</value>
+    <comment>Graph duration in hours. Keep the numeric format placeholder intact; h abbreviates hours.</comment>
+  </data>
+  <data name="GraphAxis_Days" xml:space="preserve">
+    <value>{0:0.##} d</value>
+    <comment>Graph duration in days. Keep the numeric format placeholder intact; d abbreviates days.</comment>
   </data>
 </root>

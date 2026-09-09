@@ -14,6 +14,7 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
     private readonly ExtensionObject<IDetails> _detailsModel;
     private INotifyPropChanged? _observableDetails;
     private bool _isSubscribed;
+    private volatile bool _contentStopped;
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -159,6 +160,11 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
 
     private void RebuildContent(IDetails model)
     {
+        if (_contentStopped)
+        {
+            return;
+        }
+
         List<ContentViewModel> content = [];
         if (model is IDetails2 details2)
         {
@@ -177,14 +183,32 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
         DoOnUiThread(
             () =>
             {
-                ListHelpers.InPlaceUpdateList(Content, content);
+                if (_contentStopped)
+                {
+                    content.ForEach(item => item.SafeCleanup());
+                    return;
+                }
+
+                ListHelpers.InPlaceUpdateList(Content, content, out var removedContent);
+                removedContent.ForEach(item => item.SafeCleanup());
                 UpdateProperty(nameof(Content));
             });
     }
 
     protected override void UnsafeCleanup()
     {
+        _contentStopped = true;
         base.UnsafeCleanup();
+
+        DoOnUiThread(() =>
+        {
+            foreach (var item in Content)
+            {
+                item.SafeCleanup();
+            }
+
+            Content.Clear();
+        });
 
         if (_isSubscribed && _observableDetails is not null)
         {

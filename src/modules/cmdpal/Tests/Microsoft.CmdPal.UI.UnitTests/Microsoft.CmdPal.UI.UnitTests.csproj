@@ -23,6 +23,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\Graphs\GraphValueProportions.cs" Link="Controls\Graphs\GraphValueProportions.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\Graphs\LineGraphAutoScale.cs" Link="Controls\Graphs\LineGraphAutoScale.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\Graphs\LineGraphCurve.cs" Link="Controls\Graphs\LineGraphCurve.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\Graphs\LineGraphGrid.cs" Link="Controls\Graphs\LineGraphGrid.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\Graphs\LineGraphPoint.cs" Link="Controls\Graphs\LineGraphPoint.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\Graphs\LineGraphPresentation.cs" Link="Controls\Graphs\LineGraphPresentation.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\AdaptiveCache`2.cs" Link="Helpers\AdaptiveCache`2.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\CachedIconSourceProvider.cs" Link="Helpers\Icons\CachedIconSourceProvider.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadPriority.cs" Link="Helpers\Icons\IconLoadPriority.cs" />

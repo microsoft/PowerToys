@@ -4,10 +4,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 using Microsoft.CmdPal.Common;
+using Microsoft.CommandPalette.Extensions;
 
 namespace CoreWidgetProvider.Helpers;
 
@@ -18,8 +18,9 @@ internal sealed partial class NetworkStats
     private readonly IPhysicalNetworkInterfaceSnapshotProvider _snapshotProvider;
     private readonly string _allAdaptersName;
     private readonly Dictionary<ulong, CounterSample> _previousSamples = new();
-    private readonly Dictionary<ulong, List<float>> _chartValues = new();
-    private readonly List<float> _allAdaptersChartValues = new();
+    private readonly Dictionary<ulong, UsageHistory> _histories = new();
+    private readonly UsageHistory _allAdaptersHistory;
+    private readonly TimeProvider _timeProvider;
     private readonly List<ulong> _missingInterfaceIds = new();
     private NetworkAdapterData[] _networkAdapters = [];
     private long? _lastTimestamp;
@@ -43,9 +44,13 @@ internal sealed partial class NetworkStats
         }
     }
 
-    private sealed record NetworkAdapterData(string Id, string Name, Data Usage, List<float> ChartValues);
+    private sealed record NetworkAdapterData(string Id, string Name, Data Usage, GraphSample[] History);
 
     private readonly record struct CounterSample(ulong ReceivedBytes, ulong SentBytes);
+
+    internal NetworkSampler Sampler { get; }
+
+    internal readonly record struct Observation(IReadOnlyList<PhysicalNetworkInterfaceSnapshot> Interfaces, long Timestamp);
 
     public NetworkStats()
         : this(new PhysicalNetworkInterfaceSnapshotProvider(), Resources.GetResource("All_Physical_Network_Adapters"))
@@ -53,25 +58,21 @@ internal sealed partial class NetworkStats
         GetData();
     }
 
-    internal NetworkStats(IPhysicalNetworkInterfaceSnapshotProvider snapshotProvider, string allAdaptersName)
+    internal NetworkStats(IPhysicalNetworkInterfaceSnapshotProvider snapshotProvider, string allAdaptersName, TimeProvider? timeProvider = null)
     {
         _snapshotProvider = snapshotProvider;
         _allAdaptersName = allAdaptersName;
-        _networkAdapters = [new(AllPhysicalAdaptersId, _allAdaptersName, new Data(), _allAdaptersChartValues)];
+        _timeProvider = timeProvider ?? TimeProvider.System;
+        Sampler = new NetworkSampler(this, _timeProvider);
+        _allAdaptersHistory = new UsageHistory(seriesCount: 3, _timeProvider);
+        _networkAdapters = [new(AllPhysicalAdaptersId, _allAdaptersName, new Data(), [])];
     }
 
     public void GetData()
     {
         try
         {
-            var snapshots = _snapshotProvider.GetSnapshots();
-            var timestamp = Stopwatch.GetTimestamp();
-            var elapsedSeconds = _lastTimestamp is long previousTimestamp
-                ? Stopwatch.GetElapsedTime(previousTimestamp, timestamp).TotalSeconds
-                : 0;
-
-            ApplySnapshots(snapshots, elapsedSeconds);
-            _lastTimestamp = timestamp;
+            ApplyObservation(ReadObservation());
         }
         catch (Exception ex)
         {
@@ -81,6 +82,31 @@ internal sealed partial class NetworkStats
                 CoreLogger.LogError("Failed while reading physical network interface statistics.", ex);
             }
         }
+    }
+
+    internal Observation ReadObservation() => new(_snapshotProvider.GetSnapshots(), _timeProvider.GetTimestamp());
+
+    internal void ResetSamplingInterval(Observation observation)
+    {
+        var currentInterfaceIds = new HashSet<ulong>(observation.Interfaces.Count);
+        foreach (var snapshot in observation.Interfaces)
+        {
+            currentInterfaceIds.Add(snapshot.InterfaceLuid);
+            _previousSamples[snapshot.InterfaceLuid] = new(snapshot.ReceivedBytes, snapshot.SentBytes);
+        }
+
+        RemoveMissingInterfaces(currentInterfaceIds);
+        _lastTimestamp = observation.Timestamp;
+    }
+
+    internal void ApplyObservation(Observation observation)
+    {
+        var elapsedSeconds = _lastTimestamp is long previousTimestamp
+            ? _timeProvider.GetElapsedTime(previousTimestamp, observation.Timestamp).TotalSeconds
+            : 0;
+
+        ApplySnapshots(observation.Interfaces, elapsedSeconds);
+        _lastTimestamp = observation.Timestamp;
     }
 
     internal void ApplySnapshots(IReadOnlyList<PhysicalNetworkInterfaceSnapshot> snapshots, double elapsedSeconds)
@@ -115,32 +141,52 @@ internal sealed partial class NetworkStats
         RemoveMissingInterfaces(currentInterfaceIds);
 
         var aggregateUsage = CreateUsage(totalSent, totalReceived, totalBandwidth);
-        AddChartValue(_allAdaptersChartValues, aggregateUsage.Usage);
+        _allAdaptersHistory.Add(aggregateUsage.Usage * 100, aggregateUsage.Sent, aggregateUsage.Received);
 
         var adapters = new NetworkAdapterData[adapterMeasurements.Count + 1];
-        adapters[0] = new(AllPhysicalAdaptersId, _allAdaptersName, aggregateUsage, _allAdaptersChartValues);
+        adapters[0] = new(AllPhysicalAdaptersId, _allAdaptersName, aggregateUsage, _allAdaptersHistory.GetSnapshot());
 
         for (var index = 0; index < adapterMeasurements.Count; index++)
         {
             var (snapshot, usage) = adapterMeasurements[index];
-            if (!_chartValues.TryGetValue(snapshot.InterfaceLuid, out var chartValues))
+            if (!_histories.TryGetValue(snapshot.InterfaceLuid, out var history))
             {
-                chartValues = new List<float>();
-                _chartValues.Add(snapshot.InterfaceLuid, chartValues);
+                history = new UsageHistory(seriesCount: 3, _timeProvider);
+                _histories.Add(snapshot.InterfaceLuid, history);
             }
 
-            AddChartValue(chartValues, usage.Usage);
-            adapters[index + 1] = new(GetPhysicalAdapterId(snapshot), snapshot.Name, usage, chartValues);
+            history.Add(usage.Usage * 100, usage.Sent, usage.Received);
+            adapters[index + 1] = new(GetPhysicalAdapterId(snapshot), snapshot.Name, usage, history.GetSnapshot());
         }
 
         Volatile.Write(ref _networkAdapters, adapters);
     }
 
-    public string CreateNetImageUrl(int netChartIndex)
+    public GraphSample[] GetNetworkHistory(int networkIndex) => GetSnapshot(networkIndex).UtilizationHistory;
+
+    public NetworkSnapshot GetSnapshot(int networkIndex)
     {
         var adapters = Volatile.Read(ref _networkAdapters);
-        var resolvedIndex = ResolveIndex(netChartIndex, adapters.Length);
-        return ChartHelper.CreateImageUrl(adapters[resolvedIndex].ChartValues, ChartHelper.ChartType.Net);
+        var adapter = adapters[ResolveIndex(networkIndex, adapters.Length)];
+        var utilization = new GraphSample[adapter.History.Length / 3];
+        var traffic = new GraphSample[utilization.Length * 2];
+        var utilizationIndex = 0;
+        var trafficIndex = 0;
+        foreach (var sample in adapter.History)
+        {
+            if (sample.SeriesIndex == 0)
+            {
+                utilization[utilizationIndex++] = sample;
+            }
+            else
+            {
+                var rate = sample;
+                rate.SeriesIndex--;
+                traffic[trafficIndex++] = rate;
+            }
+        }
+
+        return new NetworkSnapshot(adapter.Name, adapter.Usage, utilization, traffic);
     }
 
     public string GetNetworkName(int networkIndex)
@@ -225,14 +271,6 @@ internal sealed partial class NetworkStats
         };
     }
 
-    private static void AddChartValue(List<float> chartValues, float usage)
-    {
-        lock (chartValues)
-        {
-            ChartHelper.AddNextChartValue(usage * 100, chartValues);
-        }
-    }
-
     private void RemoveMissingInterfaces(HashSet<ulong> currentInterfaceIds)
     {
         _missingInterfaceIds.Clear();
@@ -247,7 +285,7 @@ internal sealed partial class NetworkStats
         foreach (var interfaceId in _missingInterfaceIds)
         {
             _previousSamples.Remove(interfaceId);
-            _chartValues.Remove(interfaceId);
+            _histories.Remove(interfaceId);
         }
     }
 }

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Microsoft.CmdPal.Ext.PerformanceMonitor;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.NetworkManagement.IpHelper;
@@ -13,7 +14,31 @@ namespace CoreWidgetProvider.Helpers;
 
 internal sealed class PhysicalNetworkInterfaceSnapshotProvider : IPhysicalNetworkInterfaceSnapshotProvider
 {
-    public unsafe IReadOnlyList<PhysicalNetworkInterfaceSnapshot> GetSnapshots()
+    public IReadOnlyList<PhysicalNetworkInterfaceSnapshot> GetSnapshots()
+    {
+        var isTracked = PerformanceMonitorCommandsProvider.CrashSentinel.BeginBlock("Network.FirstUpdate");
+        try
+        {
+            var snapshots = ReadSnapshots();
+            if (isTracked)
+            {
+                PerformanceMonitorCommandsProvider.CrashSentinel.CompleteBlock("Network.FirstUpdate");
+            }
+
+            return snapshots;
+        }
+        catch
+        {
+            if (isTracked)
+            {
+                PerformanceMonitorCommandsProvider.CrashSentinel.CancelBlock("Network.FirstUpdate");
+            }
+
+            throw;
+        }
+    }
+
+    private static unsafe IReadOnlyList<PhysicalNetworkInterfaceSnapshot> ReadSnapshots()
     {
         var result = PInvoke.GetIfTable2(out var table);
         if (result != WIN32_ERROR.NO_ERROR)

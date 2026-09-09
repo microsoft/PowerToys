@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.Graphs.GraphTooltip"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    HorizontalContentAlignment="Stretch"
+    VerticalContentAlignment="Stretch"
+    AutomationProperties.AccessibilityView="Raw"
+    IsHitTestVisible="False"
+    IsTabStop="False"
+    SizeChanged="OnSizeChanged">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Default">
+                    <StaticResource x:Key="TooltipForeground" ResourceKey="TextFillColorPrimaryBrush" />
+                    <StaticResource x:Key="TooltipBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+                    <x:Double x:Key="SeriesNameOpacity">0.78</x:Double>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <StaticResource x:Key="TooltipForeground" ResourceKey="TextFillColorPrimaryBrush" />
+                    <StaticResource x:Key="TooltipBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+                    <x:Double x:Key="SeriesNameOpacity">0.78</x:Double>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <StaticResource x:Key="TooltipForeground" ResourceKey="SystemColorWindowTextColorBrush" />
+                    <StaticResource x:Key="TooltipBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
+                    <x:Double x:Key="SeriesNameOpacity">1</x:Double>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+
+            <DataTemplate x:Key="RowTemplate">
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Ellipse
+                        x:Name="Swatch"
+                        Width="8"
+                        Height="8"
+                        VerticalAlignment="Center">
+                        <Ellipse.Fill>
+                            <SolidColorBrush />
+                        </Ellipse.Fill>
+                    </Ellipse>
+                    <TextBlock
+                        x:Name="SeriesName"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        Foreground="{ThemeResource TooltipForeground}"
+                        Opacity="{ThemeResource SeriesNameOpacity}"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        x:Name="Value"
+                        Grid.Column="2"
+                        MaxWidth="144"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="{ThemeResource TooltipForeground}"
+                        TextAlignment="Right"
+                        TextTrimming="CharacterEllipsis" />
+                </Grid>
+            </DataTemplate>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Canvas>
+        <Border
+            x:Name="TooltipBorder"
+            Width="220"
+            MaxWidth="220"
+            Padding="10,8"
+            Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource TooltipBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            SizeChanged="OnSizeChanged"
+            Visibility="Collapsed">
+            <StackPanel Spacing="6">
+                <TextBlock
+                    x:Name="Heading"
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TooltipForeground}" />
+                <StackPanel x:Name="Rows" Spacing="4" />
+            </StackPanel>
+        </Border>
+    </Canvas>
+</UserControl>

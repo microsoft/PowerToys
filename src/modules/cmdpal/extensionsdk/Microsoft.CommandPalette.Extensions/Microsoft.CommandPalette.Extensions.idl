@@ -491,6 +491,83 @@ namespace Microsoft.CommandPalette.Extensions
     }
 
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IGraphValueScale
+    {
+        Double Divisor { get; };
+        String Suffix { get; };
+    };
+
+    enum GraphLineStyle
+    {
+        Solid = 0,
+        Dashed = 1,
+        Dotted = 2,
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IGraphSeriesInfo
+    {
+        String Name { get; };
+        OptionalColor Color { get; };
+        GraphLineStyle LineStyle { get; };
+        Boolean IsReadoutOnly { get; };
+        String ReadoutValueSuffix { get; };
+    };
+
+    struct GraphSample
+    {
+        UInt32 SeriesIndex;
+        Int64 TimestampTicks;
+        Double Value;
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ILineGraphContent requires IContent
+    {
+        String DisplayName { get; };
+        Double Minimum { get; };
+        Double Maximum { get; };
+        Windows.Foundation.TimeSpan HistoryDuration { get; };
+        String ValueFormat { get; };
+        String ValueSuffix { get; };
+        Double Smoothing { get; };
+        Boolean AutoScaleMaximum { get; };
+        IGraphValueScale[] GetValueScales();
+        IGraphSeriesInfo[] GetSeries();
+        GraphSample[] GetSnapshot();
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IVerticalUsageBarContent requires IContent
+    {
+        String DisplayName { get; };
+        Double Minimum { get; };
+        Double Maximum { get; };
+        OptionalColor IndicatorColor { get; };
+        IGraphSeriesInfo[] GetSeries();
+        Double[] GetSnapshot(out Double value, out String valueText);
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IResourceBarContent requires IContent
+    {
+        String DisplayName { get; };
+        String ValueFormat { get; };
+        String ValueSuffix { get; };
+        IGraphValueScale[] GetValueScales();
+        IGraphSeriesInfo[] GetSeries();
+        Double[] GetSnapshot();
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IDoughnutGraphContent requires IContent
+    {
+        String DisplayName { get; };
+        IGraphSeriesInfo[] GetSeries();
+        Double[] GetSnapshot(out String centerValue, out String centerLabel);
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IFormContent2 requires IFormContent {
         ICommandResult SubmitAction(String actionId, String inputs, String data);
     }
