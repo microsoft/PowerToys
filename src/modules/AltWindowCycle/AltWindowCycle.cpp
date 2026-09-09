@@ -1316,11 +1316,14 @@ void Switcher::RenderLayered()
             {
                 int gPad = Scaled(10);
                 int gOut = gPad + Scaled(2);
+                // Both rings share the same corner radius (grown from the inner gap)
+                // so the outer accent ring stays concentric with the inner hairline
+                // instead of ballooning into a rounder, ill-fitting corner.
                 Gdiplus::GraphicsPath innerRing, out;
                 BuildRoundRect(innerRing, InflateF(tile, gPad),
                                static_cast<Gdiplus::REAL>(radius + gPad));
                 BuildRoundRect(out, InflateF(tile, gOut),
-                               static_cast<Gdiplus::REAL>(radius + gOut));
+                               static_cast<Gdiplus::REAL>(radius + gPad));
                 Gdiplus::Pen darkPen(AltTabStyle::FocusShadow(),
                                      static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
                 Gdiplus::Pen accentPen(accentClr,
