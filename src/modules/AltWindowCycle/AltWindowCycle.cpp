@@ -32,6 +32,9 @@
 #ifndef DWMWCP_ROUND
 #define DWMWCP_ROUND 2
 #endif
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
 #ifndef DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
 #define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((DPI_AWARENESS_CONTEXT)-4)
 #endif
@@ -171,9 +174,16 @@ static LRESULT CALLBACK ThumbHostProc(HWND h, UINT msg, WPARAM w, LPARAM l)
 }
 
 // Apply the overlay backdrop to thumbHost. Win11 22H2+ gets public acrylic via
-// DWMWA_SYSTEMBACKDROP_TYPE; older builds get an opaque tinted fill.
-static void ApplyBackdrop(HWND hwnd, bool light)
+// DWMWA_SYSTEMBACKDROP_TYPE; older builds get an opaque tinted fill. The card
+// chrome is a fixed dark look regardless of the user's OS theme, so the
+// backdrop is forced dark too (DWMWA_USE_IMMERSIVE_DARK_MODE) -- otherwise
+// DWMSBT_TRANSIENTWINDOW would tint itself light on a light-mode system and
+// clash with the dark cards drawn on top of it.
+static void ApplyBackdrop(HWND hwnd)
 {
+    BOOL dark = TRUE;
+    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &dark, sizeof(dark));
+
     if (SupportsSystemBackdrop())
     {
         g_thumbSolidMode = false;
@@ -187,7 +197,7 @@ static void ApplyBackdrop(HWND hwnd, bool light)
         g_thumbSolidMode = true;
         if (g_thumbSolidBrush)
             DeleteObject(g_thumbSolidBrush);
-        g_thumbSolidBrush = CreateSolidBrush(AltTabStyle::BackdropSolidRef(light));
+        g_thumbSolidBrush = CreateSolidBrush(AltTabStyle::BackdropSolidRef(false));
     }
 }
 
@@ -739,7 +749,7 @@ void Switcher::ShowOverlayWindow()
 
     SetWindowPos(thumbHost, HWND_TOPMOST, x, y, panelW, panelH,
                  SWP_NOACTIVATE | SWP_NOOWNERZORDER);
-    ApplyBackdrop(thumbHost, AltTabStyle::IsLightTheme());
+    ApplyBackdrop(thumbHost);
     DWORD cornerPref = DWMWCP_ROUND;
     DwmSetWindowAttribute(thumbHost, DWMWA_WINDOW_CORNER_PREFERENCE,
                           &cornerPref, sizeof(cornerPref));
@@ -812,13 +822,15 @@ void Switcher::SetSelection(int index)
     RenderLayered();
 }
 
-// React to a live OS Light/Dark theme switch while the overlay is visible:
-// refresh the backdrop (re-tints the solid fallback) and repaint the chrome.
+// React to a live OS Light/Dark theme switch while the overlay is visible.
+// The backdrop is forced dark regardless of system theme (to match the fixed
+// dark card chrome), so this just re-applies it defensively -- e.g. in case
+// DWM cleared window attributes across a theme transition -- and repaints.
 void Switcher::OnThemeChanged()
 {
     if (state != St::Visible)
         return;
-    ApplyBackdrop(thumbHost, AltTabStyle::IsLightTheme());
+    ApplyBackdrop(thumbHost);
     RedrawWindow(thumbHost, nullptr, nullptr,
                  RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW | RDW_ALLCHILDREN);
     RenderLayered();
