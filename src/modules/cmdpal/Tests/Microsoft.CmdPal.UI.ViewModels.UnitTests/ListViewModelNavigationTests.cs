@@ -562,21 +562,26 @@ public sealed partial class ListViewModelNavigationTests
         }
     }
 
-    [TestMethod]
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
     [Timeout(15000)]
-    public async Task InterruptedFetchIsRecoveredBeforeTheOldGetItemsReturns()
+    public async Task InterruptedFetchRecoveryTracksOnlyTheCurrentFetch(bool finishOldFetchFirst)
     {
         using var started = new ManualResetEventSlim();
         using var release = new ManualResetEventSlim();
         var scheduler = new QueuedTaskScheduler();
         var page = new SearchPage();
+        page.ReplaceItems([], notify: false);
         var viewModel = CreateViewModel(page, scheduler);
         Task? oldFetch = null;
+        bool? showEmptyDuringRecovery = null;
 
         try
         {
-            viewModel.InitializeProperties();
+            Assert.IsTrue(await viewModel.InitializeAsync());
             scheduler.Drain();
+            Assert.IsTrue(viewModel.ShowEmptyContent);
             page.OnGetItems = count =>
             {
                 if (count == 2)
@@ -584,9 +589,19 @@ public sealed partial class ListViewModelNavigationTests
                     started.Set();
                     Assert.IsTrue(release.Wait(TimeSpan.FromSeconds(5)));
                 }
+                else if (count == 3)
+                {
+                    if (finishOldFetchFirst)
+                    {
+                        release.Set();
+                        oldFetch!.WaitAsync(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
+                    }
+
+                    showEmptyDuringRecovery = viewModel.ShowEmptyContent;
+                }
             };
 
-            oldFetch = Task.Run(() => page.ReplaceItems([CreateItem("Current")]));
+            oldFetch = Task.Run(page.Refresh);
             Assert.IsTrue(started.Wait(TimeSpan.FromSeconds(2)));
             viewModel.SuspendForNavigation();
 
@@ -594,8 +609,11 @@ public sealed partial class ListViewModelNavigationTests
             // unwound: recovery must already know that the snapshot is unfinished.
             await viewModel.ResumeAfterNavigation();
             scheduler.Drain();
-            Assert.IsFalse(oldFetch.IsCompleted);
-            Assert.AreEqual("Current", viewModel.FilteredItems.Single().Title);
+            Assert.AreEqual(finishOldFetchFirst, oldFetch.IsCompleted);
+            Assert.AreEqual(false, showEmptyDuringRecovery, "The current recovery fetch is still running.");
+            Assert.AreEqual(0, viewModel.FilteredItems.Count);
+            Assert.IsTrue(viewModel.ShowEmptyContent);
+            Assert.AreEqual(ListPageFetchPhase.Published, GetWorkState(viewModel).Phase);
             Assert.AreEqual(3, page.GetItemsCount);
 
             release.Set();
@@ -604,6 +622,7 @@ public sealed partial class ListViewModelNavigationTests
             await viewModel.ResumeAfterNavigation();
             scheduler.Drain();
             Assert.AreEqual(3, page.GetItemsCount, "The late unwind must not create another recovery fetch.");
+            Assert.IsTrue(viewModel.ShowEmptyContent);
         }
         finally
         {
@@ -701,11 +720,12 @@ public sealed partial class ListViewModelNavigationTests
     {
         var scheduler = new QueuedTaskScheduler();
         var page = new SearchPage();
+        page.ReplaceItems([], notify: false);
         var viewModel = CreateViewModel(page, scheduler);
 
         try
         {
-            viewModel.InitializeProperties();
+            Assert.IsTrue(await viewModel.InitializeAsync());
             scheduler.Drain();
             page.OnGetItems = count =>
             {
@@ -716,6 +736,7 @@ public sealed partial class ListViewModelNavigationTests
             };
             page.ReplaceItems([CreateItem("Current")]);
             Assert.AreEqual(ListPageFetchPhase.Fetching, GetWorkState(viewModel).Phase);
+            Assert.IsTrue(viewModel.ShowEmptyContent, "The failed fetch has finished even though recovery is still required.");
 
             viewModel.SuspendForNavigation();
             await viewModel.ResumeAfterNavigation();
