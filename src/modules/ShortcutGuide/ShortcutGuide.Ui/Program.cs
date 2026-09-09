@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -19,9 +20,13 @@ namespace ShortcutGuide
 {
     public sealed class Program
     {
+        private static readonly ManualResetEvent _runnerExitEvent = new(false);
+
         public static Thread CopyAndIndexGenerationThread { get; private set; } = null!;
 
         public static nint ForegroundWindowHandle { get; set; } = nint.Zero;
+
+        internal static WaitHandle RunnerExitEvent => _runnerExitEvent;
 
         [STAThread]
         public static void Main(string[] args)
@@ -38,19 +43,15 @@ namespace ShortcutGuide
                 return;
             }
 
-            if (args.Length >= 1 && int.TryParse(args[0], out int runnerPID))
-            {
-                RunnerHelper.WaitForPowerToysRunner(runnerPID, () =>
-                {
-                    Logger.LogInfo($"PowerToys runner process (PID={runnerPID}) exited. Exiting ShortcutGuide.");
-                    Environment.Exit(0);
-                });
-            }
-
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredShortcutGuideEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
                 return;
+            }
+
+            if (args.Length >= 1 && int.TryParse(args[0], out int runnerPID))
+            {
+                MonitorPowerToysRunner(runnerPID);
             }
 
             Directory.CreateDirectory(ManifestInterpreter.PathOfManifestFiles);
@@ -136,9 +137,48 @@ namespace ShortcutGuide
             {
                 Logger.LogWarning("Another instance of ShortcutGuide is running. Exiting ShortcutGuide");
             }
+        }
 
-            // The WinRT/WinUI dispatcher thread doesn't terminate cleanly; force exit.
-            Environment.Exit(0);
+        private static void MonitorPowerToysRunner(int runnerPID)
+        {
+            Process runnerProcess;
+            try
+            {
+                runnerProcess = Process.GetProcessById(runnerPID);
+
+                // Force the process handle to open synchronously so a Runner exit
+                // during WinUI initialization cannot be missed or confused with PID reuse.
+                _ = runnerProcess.Handle;
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or Win32Exception)
+            {
+                Logger.LogWarning($"PowerToys runner process (PID={runnerPID}) is no longer available. Exiting ShortcutGuide.");
+                _runnerExitEvent.Set();
+                return;
+            }
+
+            var runnerWatcher = new Thread(() =>
+            {
+                try
+                {
+                    runnerProcess.WaitForExit();
+                    Logger.LogInfo($"PowerToys runner process (PID={runnerPID}) exited. Exiting ShortcutGuide.");
+                }
+                catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
+                {
+                    Logger.LogWarning($"Failed while waiting for PowerToys runner process (PID={runnerPID}): {ex.Message}");
+                }
+                finally
+                {
+                    runnerProcess.Dispose();
+                    _runnerExitEvent.Set();
+                }
+            })
+            {
+                IsBackground = true,
+                Name = "ShortcutGuide-RunnerWatcher",
+            };
+            runnerWatcher.Start();
         }
 
         private static void SendSettingsTelemetry()

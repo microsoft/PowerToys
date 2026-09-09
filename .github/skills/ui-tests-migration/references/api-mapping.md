@@ -84,8 +84,9 @@ is the `Microsoft.PowerToys.UITest.Next` equivalent. "—" means no direct membe
 
 | Legacy | `.Next` | Notes |
 |---|---|---|
-| `Click(rightClick=false, msPreAction=500, msPostAction=500)` | `Click(rightClick=false, msPostAction=200)` | **No `msPreAction`.** Uses UIA invoke (falls back to toggle/select/expand); `rightClick` → `click --right`. Add an explicit `Thread.Sleep` before if you relied on `msPreAction`. |
-| `Click()` on a non-invokable element (TextBlock/ListItem) | `MouseClick(msPostAction=200)` | Real mouse simulation — use when the click is handled by an ancestor (the ColorPicker utility-stack label pattern). |
+| `Click(rightClick=false, msPreAction=500, msPostAction=500)` | `Click(rightClick=false, msPostAction=200)` | **No `msPreAction`.** Uses winappcli's physical bounds, raises the target window, and clicks the centre through `MouseHelper`; zero-bounds controls fall back to `Invoke`. Add an explicit `Thread.Sleep` before if you relied on `msPreAction`. |
+| Coordinate-free activation | `Invoke(rightClick=false, msPostAction=200)` | UIA Invoke → Toggle → Select → Expand; use when moving the cursor is undesirable. A right click still uses real mouse input. |
+| `Click()` on a non-invokable element (TextBlock/ListItem) | `Click(msPostAction=200)` / `MouseClick(msPostAction=200)` | `Click` is already physical; `MouseClick` delegates the real-mouse click to winappcli. |
 | `DoubleClick()` | `DoubleClick(msPostAction=200)` | Real mouse double-click. |
 | Selenium `Actions` drag | `Drag(offsetX, offsetY, steps=10)` / `DragTo(target)` | Win32 mouse; uses cached center. |
 | `Actions` key-down + drag | `KeyDownAndDrag(key, targetX, targetY, steps)` | Modifier-drag (FancyZones merge, tab tear-off). |
@@ -141,6 +142,8 @@ is the `Microsoft.PowerToys.UITest.Next` equivalent. "—" means no direct membe
 | Wait for consecutive stable observations | `WaitHelper.WaitForStable(observe, isMatch, timeoutMS, requiredConsecutiveMatches, …)` |
 | Wait for exact HWND foreground | `WindowControl.WaitForForeground(hwnd, timeoutMS, stableSamples)` |
 | Diagnose current foreground owner | `WindowControl.GetForegroundWindowInfo()` |
+| Read DWM cloak state / physical visible frame bounds | `WindowHelper.IsWindowCloaked(hwnd)` / `WindowHelper.GetVisibleBounds(hwnd)` |
+| Resolve an HWND's monitor and work area | `MonitorInfo.GetFromWindow(hwnd)` (`WorkLeft`, `WorkTop`, `WorkRight`, `WorkBottom`) |
 | Stop an exact process tree and await exit | `WindowControl.TryKillProcessTreeByNameAndWait(name, timeoutMS)` |
 | Set/read exact Explorer Shell selection | `ExplorerShell.SetSelectionAndWaitForStable(...)` / `TryGetSelection(hwnd)` |
 | Set/read Explorer view mode + icon size | `ExplorerShell.SetViewModeAndIconSizeAndWait(hwnd, ViewMode.Icons, iconSize)` | Uses Shell automation, not a timing-sensitive keyboard shortcut. |

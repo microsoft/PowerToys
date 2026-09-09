@@ -111,10 +111,7 @@ public:
         if (_enabled)
         {
             _enabled = false;
-            if (IsProcessActive())
-            {
-                TerminateProcess(m_hProcess, 0);
-            }
+            StopProcess();
         }
         else
         {
@@ -190,7 +187,7 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key;
     bool _enabled = false;
-    HANDLE m_hProcess = nullptr;
+    winrt::handle m_process;
 
     // Hotkey to invoke the module
     HotkeyEx m_hotkey;
@@ -227,18 +224,28 @@ private:
 
     bool StartProcess(std::wstring args = L"")
     {
-        if (exitEvent)
+        const bool trackProcess = args.empty();
+        if (trackProcess && IsProcessActive())
         {
-            ResetEvent(exitEvent);
+            return true;
         }
 
-        if (triggerEvent)
+        if (trackProcess)
         {
-            ResetEvent(triggerEvent);
-        }
-        if (winKeyHoldEvent)
-        {
-            ResetEvent(winKeyHoldEvent);
+            if (exitEvent)
+            {
+                ResetEvent(exitEvent);
+            }
+
+            if (triggerEvent)
+            {
+                ResetEvent(triggerEvent);
+            }
+
+            if (winKeyHoldEvent)
+            {
+                ResetEvent(winKeyHoldEvent);
+            }
         }
 
         unsigned long powertoys_pid = GetCurrentProcessId();
@@ -267,23 +274,78 @@ private:
             return false;
         }
 
-        Logger::trace(L"Started SG process with pid={}", GetProcessId(sei.hProcess));
-        m_hProcess = sei.hProcess;
+        winrt::handle launchedProcess{ sei.hProcess };
+        Logger::trace(L"Started SG process with pid={}", GetProcessId(launchedProcess.get()));
+        if (trackProcess)
+        {
+            m_process = std::move(launchedProcess);
+        }
+
         return true;
     }
 
     bool IsProcessActive()
     {
-        if (!m_hProcess)
+        if (!m_process)
         {
             return false;
         }
-        auto result = WaitForSingleObject(m_hProcess, 0);
+
+        auto result = WaitForSingleObject(m_process.get(), 0);
         if (result == WAIT_FAILED)
         {
             Logger::error("Failed to wait for SG process.");
         }
+
+        if (result == WAIT_OBJECT_0)
+        {
+            m_process = {};
+        }
+
         return result == WAIT_TIMEOUT;
+    }
+
+    void StopProcess()
+    {
+        if (exitEvent)
+        {
+            if (!SetEvent(exitEvent))
+            {
+                Logger::error(L"Failed to signal {}. {}", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT, get_last_error_or_default(GetLastError()));
+            }
+        }
+
+        if (!m_process)
+        {
+            return;
+        }
+
+        if (!IsProcessActive())
+        {
+            return;
+        }
+
+        constexpr DWORD gracefulShutdownTimeoutMs = 2000;
+        constexpr DWORD forcedShutdownTimeoutMs = 5000;
+        auto waitResult = WaitForSingleObject(m_process.get(), gracefulShutdownTimeoutMs);
+        if (waitResult == WAIT_TIMEOUT)
+        {
+            Logger::warn("Shortcut Guide did not exit gracefully; terminating it.");
+            if (!TerminateProcess(m_process.get(), 0))
+            {
+                Logger::error(L"Failed to terminate Shortcut Guide. {}", get_last_error_or_default(GetLastError()));
+            }
+            else if (WaitForSingleObject(m_process.get(), forcedShutdownTimeoutMs) != WAIT_OBJECT_0)
+            {
+                Logger::error("Shortcut Guide did not terminate within the timeout.");
+            }
+        }
+        else if (waitResult == WAIT_FAILED)
+        {
+            Logger::error(L"Failed to wait for Shortcut Guide shutdown. {}", get_last_error_or_default(GetLastError()));
+        }
+
+        m_process = {};
     }
 
     void InitSettings()
@@ -409,10 +471,7 @@ private:
 
     void WindowsKeyPressBehavior()
     {
-        if (IsProcessActive())
-        {
-            TerminateProcess(m_hProcess, 0);
-        }
+        StopProcess();
     }
 };
 

@@ -94,6 +94,11 @@ Use the default VM resource profile (4 vCPUs and 8 GB RAM) while creating and st
 not begin on the constrained profile: first prove the test and product behavior with sufficient CPU
 and RAM.
 
+Run the controller synchronously in the foreground and keep the active agent turn attached. It
+requests automatic host sleep prevention, reports `HostSleepPrevented`, and returns only after
+matching status/TRX evidence or a bounded controller failure. It cannot override manual sleep,
+lid-close policy, reboot, or power loss.
+
 ```pwsh
 pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
   -VmName PowerToysUiTest-Win10 `
@@ -151,6 +156,8 @@ The controller prints scalar TRX counters and per-test outcomes. Read both `stat
   `executed == total` even when the test process exits 0.
 - Zero selected tests/MTP exit code 8 is `BLOCKED`.
 - Missing desktop, control channel, archive, or status is `BLOCKED`.
+- A guest task that never starts or exits without matching status is `BLOCKED` immediately; do not
+  wait out the full suite timeout or accept task exit as completion.
 - Proven display/profile/compositor differences are `ENVIRONMENT`.
 - An N/M pass rate proves the execution loop ran, even when the task did not ask to stabilize tests.
 

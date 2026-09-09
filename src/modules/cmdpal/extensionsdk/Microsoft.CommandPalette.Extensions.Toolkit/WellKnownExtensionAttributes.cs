@@ -8,5 +8,7 @@ public static class WellKnownExtensionAttributes
 {
     public const string DataPackage = "Microsoft.CommandPalette.DataPackage";
 
+    public const string DockCommandId = "Microsoft.CommandPalette.DockCommandId";
+
     public const string FontFamily = "FontFamily";
 }

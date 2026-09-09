@@ -14,12 +14,46 @@ private:
     // the (serialized) low-level keyboard hook thread.
     std::unordered_set<DWORD> singleKeyRemapInjectionFailedKeys;
 
+    // Dual-key ("Alone") runtime bookkeeping. Down and key-up arrive as separate hook
+    // invocations, so we must remember, across invocations, whether an alone-mapped key that
+    // is currently held is still a tap candidate (no other key intervened) or has already
+    // started a combination (its original key-down was injected as a real modifier/key).
+    // Only accessed from the (serialized) low-level keyboard hook thread.
+    std::unordered_set<DWORD> alonePendingKeys;      // held, still a tap candidate
+    std::unordered_set<DWORD> aloneCombinationKeys;  // real key-down injected (combination started)
+
 public:
     // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
     std::optional<SingleKeyRemapTable::iterator> GetSingleKeyRemap(const DWORD& originalKey);
 
     // Function to get a unicode string remap given the source key. Returns nullopt if it isn't remapped
     std::optional<std::wstring> GetSingleKeyToTextRemapEvent(const DWORD originalKey) const;
+
+    // Function to get the iterator of an "Alone" single key remap given the source key. Returns nullopt if it isn't remapped
+    std::optional<SingleKeyRemapTable::iterator> GetSingleKeyAloneRemap(const DWORD& originalKey);
+
+    // Dual-key ("Alone") runtime state transitions (see member declarations above).
+    // Mark an alone-mapped key as held and still a tap candidate.
+    void SetAlonePending(const DWORD key);
+    bool IsAlonePending(const DWORD key) const;
+    // Promote a pending alone key into a started combination (its real key-down was injected).
+    void SetAloneCombination(const DWORD key);
+    bool IsAloneCombination(const DWORD key) const;
+    // Forget all alone runtime state for a key (on its key-up, once resolved).
+    void ClearAloneKeyState(const DWORD key);
+    // Forget ALL alone runtime state. Called when the mapping tables are reloaded so a key that was
+    // physically held across a settings reload can't leave a stale pending/combination entry that a
+    // later mouse/keyboard event would promote -- injecting an original key-down with no matching up.
+    void ClearAllAloneKeyState();
+    // Snapshot of currently pending (tap-candidate) alone keys, for flushing when another key arrives.
+    std::vector<DWORD> GetPendingAloneKeys() const;
+    // Cheap check for whether any alone key is currently held as a tap candidate. Used by the mouse
+    // hook to early-out before doing any work on the common (no alone key held) path.
+    bool HasPendingAloneKeys() const;
+    // True if any alone-mapped key OTHER THAN `except` is currently held -- either pending (tap
+    // candidate) or already promoted to a combination. Used on a key-down to tell that the key was
+    // pressed while another alone key was down, so it is part of a combination and not a solo tap.
+    bool HasOtherHeldAloneKey(const DWORD except) const;
 
     bool CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName);
 

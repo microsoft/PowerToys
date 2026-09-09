@@ -1579,23 +1579,36 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     }
     processes.resize(bytes / sizeof(processes[0]));
 
-    std::array<std::wstring_view, 45> processesToTerminate = {
+    // Retain old process names for upgrades.
+    // Preserve update coordinators (PowerToys.Update.exe, PowerToys.ActionRunner.exe,
+    // and action_runner.exe). Older implementations use these names for temporary
+    // processes waiting for this installer to finish.
+    static constexpr const wchar_t* processesToTerminate[] = {
         L"PowerToys.PowerLauncher.exe",
         L"PowerToys.Settings.exe",
         L"PowerToys.AdvancedPaste.exe",
         L"PowerToys.Awake.exe",
         L"PowerToys.FancyZones.exe",
         L"PowerToys.FancyZonesEditor.exe",
+        L"FancyZonesCLI.exe",
+        L"PowerToys.FancyZones.CLI.exe",
         L"PowerToys.FileLocksmithUI.exe",
+        L"FileLocksmithCLI.exe",
+        L"PowerToys.FileLocksmith.CLI.exe",
         L"PowerToys.MouseJumpUI.exe",
+        L"PowerToys.MouseJump.WinUI3.exe",
         L"PowerToys.ColorPickerUI.exe",
         L"PowerToys.AlwaysOnTop.exe",
         L"PowerToys.RegistryPreview.exe",
         L"PowerToys.Hosts.exe",
         L"PowerToys.PowerRename.exe",
         L"PowerToys.ImageResizer.exe",
+        L"PowerToys.ImageResizerCLI.exe",
+        L"PowerToys.ImageResizer.CLI.exe",
         L"PowerToys.LightSwitchService.exe",
         L"PowerToys.PowerDisplay.exe",
+        // Also matches the installed shim PowerToys.PowerDisplay.CLI.exe.
+        L"PowerToys.PowerDisplay.Cli.exe",
         L"PowerToys.GcodeThumbnailProvider.exe",
         L"PowerToys.BgcodeThumbnailProvider.exe",
         L"PowerToys.PdfThumbnailProvider.exe",
@@ -1623,7 +1636,19 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.WorkspacesWindowArranger.exe",
         L"Microsoft.CmdPal.UI.exe",
         L"Microsoft.CmdPal.Ext.PowerToys.exe",
+        L"PowerToys.KeyboardManagerEditorUI.exe",
+        L"PowerToys.KeyboardManagerEditor.exe",
+        L"PowerToys.KeyboardManagerEngine.exe",
+        L"PowerToys.GrabAndMove.exe",
+        L"PowerToys.PowerAccent.exe",
+        L"PowerToys.PowerOCR.exe",
+        L"PowerToys.MeasureToolUI.exe",
+        L"PowerToys.ShortcutGuide.exe",
+        L"PowerToys.ShortcutGuide.IndexYmlGenerator.exe",
         L"PowerToys.ZoomIt.exe",
+        L"PowerToys.DSC.exe",
+        L"PowerToys.BugReportTool.exe",
+        L"PowerToys.StylesReportTool.exe",
         L"PowerToys.exe",
     };
 
@@ -1652,7 +1677,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
 
         for (const auto processToTerminate : processesToTerminate)
         {
-            if (processName == processToTerminate)
+            if (_wcsicmp(processName, processToTerminate) == 0)
             {
                 const DWORD timeout = 500;
                 auto windowEnumerator = [](HWND hwnd, LPARAM procIDPtr) -> BOOL

@@ -126,12 +126,6 @@ namespace ShortcutGuide
                 }
             };
 
-            // Edge-to-edge overlay: opt into the aggressive full-bleed DWM
-            // hardening so the OS never reveals a 1-px frame seam around the
-            // monitor-sized transparent window. The baseline chrome is already
-            // applied by the base constructor.
-            this.ApplyFullBleedHardening();
-
             // Pre-size and position BEFORE Activate so the first frame the
             // user sees is already at the correct work-area size on the
             // cursor's monitor. Doing this in OnActivated produces a single
@@ -494,11 +488,8 @@ namespace ShortcutGuide
 
             // Cross-monitor moves can trigger WM_DPICHANGED, and Windows may
             // reset some of our DWM attributes (border color, corner pref)
-            // during that transition. Re-apply them defensively so the
-            // overlay never reveals an OS-drawn 1-px stroke or rounded
-            // shadow.
+            // during that transition. Re-apply the baseline transparent chrome.
             this.ApplyTransparentChrome();
-            this.ApplyFullBleedHardening();
 
             // The taskbar pane is anchored against the bottom of the work area,
             // so any move/resize needs a fresh layout pass.

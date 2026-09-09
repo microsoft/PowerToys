@@ -129,6 +129,82 @@ public class SettingsConfigHelperTests
         }
     }
 
+    [TestMethod]
+    public void PreserveFirstRunSettingsRestoresExistingFiles()
+    {
+        var root = CreateTemporaryDirectory();
+        var settingsPath = Path.Combine(root, "settings.json");
+        var oobePath = Path.Combine(root, "oobe_settings.json");
+        var originalSettings = new byte[] { 1, 2, 3 };
+        var originalOobe = new byte[] { 4, 5, 6 };
+
+        try
+        {
+            File.WriteAllBytes(settingsPath, originalSettings);
+            File.WriteAllBytes(oobePath, originalOobe);
+
+            using (SettingsConfigHelper.PreserveFirstRunSettings(root))
+            {
+                File.WriteAllText(settingsPath, "changed settings");
+                File.WriteAllText(oobePath, "changed oobe");
+            }
+
+            CollectionAssert.AreEqual(originalSettings, File.ReadAllBytes(settingsPath));
+            CollectionAssert.AreEqual(originalOobe, File.ReadAllBytes(oobePath));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void PreserveFirstRunSettingsDeletesCreatedFiles()
+    {
+        var root = CreateTemporaryDirectory();
+        var settingsPath = Path.Combine(root, "settings.json");
+        var oobePath = Path.Combine(root, "oobe_settings.json");
+
+        try
+        {
+            using (SettingsConfigHelper.PreserveFirstRunSettings(root))
+            {
+                File.WriteAllText(settingsPath, "created settings");
+                File.WriteAllText(oobePath, "created oobe");
+            }
+
+            Assert.IsFalse(File.Exists(settingsPath));
+            Assert.IsFalse(File.Exists(oobePath));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void PreserveFirstRunSettingsRestoresFirstSnapshotWhenSecondFails()
+    {
+        var root = CreateTemporaryDirectory();
+        var settingsPath = Path.Combine(root, "settings.json");
+        var oobePath = Path.Combine(root, "oobe_settings.json");
+        var originalSettings = new byte[] { 1, 2, 3 };
+
+        try
+        {
+            File.WriteAllBytes(settingsPath, originalSettings);
+            File.WriteAllText(oobePath, "locked");
+
+            using var lockedOobe = new FileStream(oobePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            Assert.ThrowsExactly<IOException>(() => SettingsConfigHelper.PreserveFirstRunSettings(root));
+            CollectionAssert.AreEqual(originalSettings, File.ReadAllBytes(settingsPath));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     private static string CreateTemporaryDirectory()
     {
         var path = Path.Combine(Path.GetTempPath(), "PowerToys-UITestAutomationNext-UnitTests", Guid.NewGuid().ToString("N"));
