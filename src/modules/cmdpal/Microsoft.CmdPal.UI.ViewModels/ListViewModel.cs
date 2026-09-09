@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Input;
@@ -25,8 +26,21 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private static readonly IEqualityComparer<IListItem> VmCacheComparer = new ProxyReferenceEqualityComparer();
 
     private readonly TaskFactory filterTaskFactory = new(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
+    private readonly SupersedingAsyncGate _staticFilterGate;
 
     private Dictionary<IListItem, ListItemViewModel> _vmCache = new(VmCacheComparer);
+    private Dictionary<ListItemViewModel, StaticFilterItem> _staticFilterItems = new(ReferenceEqualityComparer.Instance);
+    private CancellationTokenSource? _staticFilterCancellationTokenSource;
+    private long _staticFilterVersion;
+    private long _publishedStaticFilterVersion = -1;
+    private long _selectedStaticFilterVersion = -1;
+    private PendingStaticActivation? _pendingStaticActivation;
+    private int _itemsFetchGeneration;
+    private int _settledFetchGeneration;
+    private bool _staticFilterForceFirstPending;
+    private bool _staticFilterEnsureSelectionVisible;
+    private string _staticFilterQuery = string.Empty;
+    private volatile bool _isDisposed;
 
     // TODO: Do we want a base "ItemsPageViewModel" for anything that's going to have items?
 
@@ -34,9 +48,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
     // https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/observablegroupedcollections for grouping support
     public ObservableCollection<ListItemViewModel> FilteredItems { get; } = [];
 
+    public long PublishedFilterVersion => Volatile.Read(ref _publishedStaticFilterVersion);
+
     public FiltersViewModel? Filters { get; set; }
 
-    private ObservableCollection<ListItemViewModel> Items { get; set; } = [];
+    private List<ListItemViewModel> Items { get; } = [];
 
     private readonly ExtensionObject<IListPage> _model;
 
@@ -130,10 +146,16 @@ public partial class ListViewModel : PageViewModel, IDisposable
     }
 
     public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory)
+        : this(model, scheduler, host, providerContext, contextMenuFactory, TaskScheduler.Default)
+    {
+    }
+
+    internal ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory, TaskScheduler staticFilterScheduler)
         : base(model, scheduler, host, providerContext)
     {
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
+        _staticFilterGate = new(FilterStaticItemsAsync, staticFilterScheduler);
         EmptyContent = new(new(null), PageContext, contextMenuFactory: null);
     }
 
@@ -162,6 +184,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     protected override void OnSearchTextBoxUpdated(string searchTextBox)
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
         // Dynamic pages will handler their own filtering. They will tell us if
         // something needs to change, by raising ItemsChanged.
         if (_isDynamic)
@@ -201,15 +228,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
         else
         {
-            // But for all normal pages, we should run our fuzzy match on them.
             lock (_listLock)
             {
-                RunFilteredItemsUpdate(ApplyFilterUnderLock);
+                _pendingStaticActivation = null;
+                _staticFilterQuery = searchTextBox;
+                RequestStaticFilterUnderLock(forceFirstItem: true, ensureSelectionVisible: true);
             }
-
-            ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(forceFirstItem: true, ensureSelectionVisible: true));
-            UpdateEmptyContent();
-            _isLoadingMore.Clear();
         }
     }
 
@@ -308,23 +332,34 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         System.Diagnostics.Debug.Assert(!IsCurrentThreadUiThread(), "FetchItems should not run on the UI thread.");
 
-        // If this fetch should reset selection, remember that intent even if
-        // a later incremental fetch cancels us.
-        if (!keepSelection)
-        {
-            _forceFirstItemPending = true;
-        }
-
         CancellationToken cancellationToken;
         int fetchGeneration;
         lock (_fetchStateLock)
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            if (!keepSelection)
+            {
+                _forceFirstItemPending = true;
+            }
+
             // Cancel any previous FetchItems operation
             CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
             _fetchItemsCancellationTokenSource = new CancellationTokenSource();
 
             cancellationToken = _fetchItemsCancellationTokenSource.Token;
             fetchGeneration = Interlocked.Increment(ref _latestFetchGeneration);
+
+            if (!_isDynamic)
+            {
+                lock (_listLock)
+                {
+                    InvalidateStaticFilterUnderLock();
+                }
+            }
         }
 
         // Declared outside try so catch blocks can reference them
@@ -425,15 +460,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 item?.SafeInitializeProperties();
             }
 
-            // Cancel any ongoing property initialization for the previous list.
-            CancelAndDisposeTokenSource(ref _cancellationTokenSource);
-
             ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
             List<ListItemViewModel> removedItems;
             lock (_fetchStateLock)
             {
                 ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
+                CancelAndDisposeTokenSource(ref _cancellationTokenSource);
 
                 lock (_listLock)
                 {
@@ -442,14 +475,21 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     ListHelpers.InPlaceUpdateList(Items, newViewModels, out removedItems);
 
                     PublishVmCache(nextCache);
+                    _itemsFetchGeneration = fetchGeneration;
+                    _settledFetchGeneration = fetchGeneration;
+                    itemsTransferredToList = true;
+
+                    if (!_isDynamic)
+                    {
+                        UpdateStaticFilterItemsUnderLock(newViewModels);
+                        RequestStaticFilterUnderLock(forceFirstItem: false, ensureSelectionVisible);
+                    }
 
                     // DO NOT ThrowIfCancellationRequested AFTER THIS! If you do,
                     // you'll clean up list items that we've now transferred into
                     // .Items
                 }
             }
-
-            itemsTransferredToList = true;
 
             // If we removed items, we need to clean them up, to remove our event handlers
             foreach (var removedItem in removedItems)
@@ -495,24 +535,48 @@ public partial class ListViewModel : PageViewModel, IDisposable
             {
                 UpdateEmptyContent();
             }
+
+            if (!itemsTransferredToList && !_isDynamic)
+            {
+                lock (_fetchStateLock)
+                {
+                    if (!_isDisposed && IsLatestFetchGeneration(fetchGeneration))
+                    {
+                        lock (_listLock)
+                        {
+                            _settledFetchGeneration = fetchGeneration;
+                            RequestStaticFilterUnderLock(forceFirstItem: false, ensureSelectionVisible);
+                        }
+                    }
+                }
+            }
         }
 
-        var initializeItemsCts = new CancellationTokenSource();
-        _cancellationTokenSource = initializeItemsCts;
-        var initializeItemsToken = initializeItemsCts.Token;
-
-        _initializeItemsTask = new Task(() =>
+        lock (_fetchStateLock)
         {
-            InitializeItemsTask(initializeItemsToken);
-        });
-        _initializeItemsTask.Start();
+            if (_isDisposed || !IsLatestFetchGeneration(fetchGeneration))
+            {
+                return;
+            }
+
+            var initializeItemsCts = new CancellationTokenSource();
+            _cancellationTokenSource = initializeItemsCts;
+            var initializeItemsToken = initializeItemsCts.Token;
+
+            _initializeItemsTask = Task.Run(() => InitializeItemsTask(initializeItemsToken));
+        }
+
+        if (!_isDynamic)
+        {
+            return;
+        }
 
         DoOnUiThread(
             () =>
             {
                 lock (_fetchStateLock)
                 {
-                    if (!IsLatestFetchGeneration(fetchGeneration))
+                    if (_isDisposed || !IsLatestFetchGeneration(fetchGeneration))
                     {
                         return;
                     }
@@ -524,20 +588,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
                             return;
                         }
 
-                        // Now that our Items contains everything we want, it's time for us to
-                        // re-evaluate our Filter on those items.
-                        if (!_isDynamic)
-                        {
-                            // A static list? Great! Just run the filter.
-                            RunFilteredItemsUpdate(ApplyFilterUnderLock);
-                        }
-                        else
-                        {
-                            // A dynamic list? Even better! Just stick everything into
-                            // FilteredItems. The extension already did any filtering it cared about.
-                            var snapshot = Items.Where(i => !i.IsInErrorState).ToList();
-                            RunFilteredItemsUpdate(() => ListHelpers.InPlaceUpdateList(FilteredItems, snapshot));
-                        }
+                        var snapshot = Items.Where(i => !i.IsInErrorState).ToList();
+                        RunFilteredItemsUpdate(() => ListHelpers.InPlaceUpdateList(FilteredItems, snapshot));
 
                         UpdateEmptyContent();
                     }
@@ -583,12 +635,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 return;
             }
 
-            // TODO: GH #502
-            // We should probably remove the item from the list if it
-            // entered the error state. I had issues doing that without having
-            // multiple threads muck with `Items` (and possibly FilteredItems!)
-            // at once.
             item.SafeInitializeProperties();
+            RefreshStaticFilterItem(item);
 
             if (ct.IsCancellationRequested)
             {
@@ -597,11 +645,315 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    /// <summary>
-    /// Apply our current filter text to the list of items, and update
-    /// FilteredItems to match the results.
-    /// </summary>
-    private void ApplyFilterUnderLock() => ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(Items, SearchTextBox));
+    private void UpdateStaticFilterItemsUnderLock(List<ListItemViewModel> items)
+    {
+        var snapshots = new Dictionary<ListItemViewModel, StaticFilterItem>(items.Count, ReferenceEqualityComparer.Instance);
+        foreach (var item in items)
+        {
+            if (snapshots.ContainsKey(item))
+            {
+                continue;
+            }
+
+            if (!_staticFilterItems.ContainsKey(item))
+            {
+                item.PropertyChangedBackground += StaticFilterItemPropertyChanged;
+            }
+
+            snapshots.Add(item, StaticFilterItem.Capture(item));
+        }
+
+        foreach (var item in _staticFilterItems.Keys)
+        {
+            if (!snapshots.ContainsKey(item))
+            {
+                item.PropertyChangedBackground -= StaticFilterItemPropertyChanged;
+            }
+        }
+
+        _staticFilterItems = snapshots;
+        CancelInvalidStaticActivationUnderLock();
+    }
+
+    private void StaticFilterItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (sender is ListItemViewModel item &&
+            (string.IsNullOrEmpty(e.PropertyName) ||
+             e.PropertyName is nameof(ListItemViewModel.Title) or nameof(ListItemViewModel.Subtitle) or
+                 nameof(ListItemViewModel.Name) or nameof(ListItemViewModel.IsInErrorState) or nameof(IsInitialized)))
+        {
+            RefreshStaticFilterItem(item);
+        }
+    }
+
+    private void RefreshStaticFilterItem(ListItemViewModel item)
+    {
+        lock (_listLock)
+        {
+            if (_isDisposed || !_staticFilterItems.TryGetValue(item, out var previous))
+            {
+                return;
+            }
+
+            var current = StaticFilterItem.Capture(item);
+            if (current == previous)
+            {
+                return;
+            }
+
+            _staticFilterItems[item] = current;
+            CancelInvalidStaticActivationUnderLock();
+            RequestStaticFilterUnderLock(forceFirstItem: false, ensureSelectionVisible: false);
+        }
+    }
+
+    private void InvalidateStaticFilterUnderLock()
+    {
+        _staticFilterVersion++;
+        CancelAndDisposeTokenSource(ref _staticFilterCancellationTokenSource);
+    }
+
+    private void RequestStaticFilterUnderLock(bool forceFirstItem, bool ensureSelectionVisible)
+    {
+        if (_isDisposed || _isDynamic)
+        {
+            return;
+        }
+
+        _staticFilterForceFirstPending |= forceFirstItem;
+        _staticFilterEnsureSelectionVisible |= ensureSelectionVisible;
+        InvalidateStaticFilterUnderLock();
+
+        if (_settledFetchGeneration != Volatile.Read(ref _latestFetchGeneration))
+        {
+            return;
+        }
+
+        _staticFilterCancellationTokenSource = new();
+        _ = RunStaticFilterAsync(_staticFilterCancellationTokenSource.Token);
+    }
+
+    private async Task RunStaticFilterAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _staticFilterGate.ExecuteAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+        catch (ObjectDisposedException) when (_isDisposed)
+        {
+        }
+        catch (Exception ex)
+        {
+            ShowException(ex);
+        }
+    }
+
+    private Task FilterStaticItemsAsync(CancellationToken cancellationToken)
+    {
+        StaticFilterRequest request;
+        StaticFilterItem[] snapshot;
+        lock (_listLock)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (_isDisposed || _isDynamic || !IsLatestFetchGeneration(_settledFetchGeneration))
+            {
+                return Task.CompletedTask;
+            }
+
+            request = new(_staticFilterVersion, _itemsFetchGeneration, _staticFilterQuery);
+            snapshot = Items.Select(item => _staticFilterItems[item]).ToArray();
+        }
+
+        var filtered = FilterSnapshot(snapshot, request.Query, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        DoOnUiThread(() => PublishStaticFilter(request, filtered));
+        return Task.CompletedTask;
+    }
+
+    private bool IsCurrentStaticFilter(StaticFilterRequest request) =>
+        !_isDisposed &&
+        !_isDynamic &&
+        request.Version == _staticFilterVersion &&
+        request.FetchGeneration == _itemsFetchGeneration &&
+        IsLatestFetchGeneration(_settledFetchGeneration);
+
+    private void PublishStaticFilter(StaticFilterRequest request, ListItemViewModel[] filtered)
+    {
+        lock (_fetchStateLock)
+        {
+            lock (_listLock)
+            {
+                if (!IsCurrentStaticFilter(request))
+                {
+                    return;
+                }
+
+                RunFilteredItemsUpdate(() =>
+                {
+                    // A renderer callback can change the query or navigate away before this action runs.
+                    if (!IsCurrentStaticFilter(request))
+                    {
+                        return;
+                    }
+
+                    ListHelpers.InPlaceUpdateList(FilteredItems, filtered);
+                    if (!IsCurrentStaticFilter(request))
+                    {
+                        return;
+                    }
+
+                    if (_pendingStaticActivation is { Target: { } target } &&
+                        !FilteredItems.Contains(target, ReferenceEqualityComparer.Instance))
+                    {
+                        _pendingStaticActivation = null;
+                    }
+
+                    var forceFirst = _staticFilterForceFirstPending || (IsRootPage && _forceFirstItemPending);
+                    var ensureVisible = _staticFilterEnsureSelectionVisible;
+                    _staticFilterForceFirstPending = false;
+                    _staticFilterEnsureSelectionVisible = false;
+                    _forceFirstItemPending = false;
+                    _isLoadingMore.Clear();
+                    UpdateEmptyContent();
+                    _publishedStaticFilterVersion = request.Version;
+                    ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(forceFirst, ensureVisible));
+                });
+
+                TryInvokePendingStaticActivation();
+            }
+        }
+    }
+
+    public bool CompleteStaticFilterSelection(long version, ListItemViewModel? item)
+    {
+        lock (_fetchStateLock)
+        {
+            lock (_listLock)
+            {
+                if (_isDisposed || _isDynamic ||
+                    version != _staticFilterVersion || version != _publishedStaticFilterVersion)
+                {
+                    return true;
+                }
+
+                if (!ReferenceEquals(item, _lastSelectedItem) ||
+                    (item is not null && (!item.IsInteractive || !FilteredItems.Contains(item, ReferenceEqualityComparer.Instance))) ||
+                    (item is null && FilteredItems.Any(candidate => candidate.IsInteractive)))
+                {
+                    return false;
+                }
+
+                _selectedStaticFilterVersion = version;
+                if (_pendingStaticActivation is { HasTarget: false } activation)
+                {
+                    _pendingStaticActivation = activation with { Target = item, HasTarget = true };
+                }
+
+                TryInvokePendingStaticActivation();
+                return true;
+            }
+        }
+    }
+
+    public void CancelPendingActivation()
+    {
+        lock (_listLock)
+        {
+            _pendingStaticActivation = null;
+            _selectedStaticFilterVersion = -1;
+        }
+    }
+
+    private bool IsStaticFilterSelectionCurrent =>
+        !_isUpdatingFilteredItems &&
+        IsStaticFilterSelectionConfirmed;
+
+    private bool IsStaticFilterSelectionConfirmed =>
+        _publishedStaticFilterVersion == _staticFilterVersion &&
+        _selectedStaticFilterVersion == _staticFilterVersion &&
+        IsLatestFetchGeneration(_settledFetchGeneration);
+
+    private void CancelInvalidStaticActivationUnderLock()
+    {
+        if (_pendingStaticActivation is { Target: { } target } &&
+            (target.IsInErrorState || !_staticFilterItems.ContainsKey(target)))
+        {
+            _pendingStaticActivation = null;
+        }
+    }
+
+    private void TryInvokePendingStaticActivation()
+    {
+        lock (_fetchStateLock)
+        {
+            lock (_listLock)
+            {
+                CancelInvalidStaticActivationUnderLock();
+                if (_isDisposed || _pendingStaticActivation is not { HasTarget: true } activation || !IsStaticFilterSelectionCurrent)
+                {
+                    return;
+                }
+
+                var item = activation.Target;
+                if (!ReferenceEquals(item, _lastSelectedItem))
+                {
+                    _pendingStaticActivation = null;
+                    return;
+                }
+
+                if (activation.Kind == StaticActivationKind.Secondary && item is not null &&
+                    !item.Initialized.HasFlag(InitializedState.SelectionInitialized))
+                {
+                    return;
+                }
+
+                _pendingStaticActivation = null;
+                InvokeListItem(item, activation.Kind);
+            }
+        }
+    }
+
+    private enum StaticActivationKind
+    {
+        Primary,
+        Secondary,
+    }
+
+    private readonly record struct PendingStaticActivation(StaticActivationKind Kind, ListItemViewModel? Target, bool HasTarget);
+
+    private sealed record StaticFilterRequest(long Version, int FetchGeneration, string Query);
+
+    internal readonly record struct StaticFilterItem(ListItemViewModel ViewModel, string Title, string Subtitle, bool IsInErrorState)
+    {
+        internal static StaticFilterItem Capture(ListItemViewModel item) => new(item, item.Title, item.Subtitle, item.IsInErrorState);
+    }
+
+    internal static ListItemViewModel[] FilterSnapshot(StaticFilterItem[] items, string query, CancellationToken cancellationToken)
+    {
+        var scores = new List<ScoredListItemViewModel>(items.Length);
+        foreach (var item in items)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (item.IsInErrorState)
+            {
+                continue;
+            }
+
+            var score = ScoreListItem(query, item.Title, item.Subtitle);
+            if (score > 0)
+            {
+                scores.Add(new() { ViewModel = item.ViewModel, Score = score });
+            }
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        var result = scores.OrderByDescending(item => item.Score).Select(item => item.ViewModel).ToArray();
+        cancellationToken.ThrowIfCancellationRequested();
+        return result;
+    }
 
     /// <summary>
     /// Executes an action that mutates <see cref="FilteredItems"/> with a
@@ -730,7 +1082,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private void ThrowIfFetchCanceledOrStale(int fetchGeneration, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (Volatile.Read(ref _latestFetchGeneration) != fetchGeneration)
+        if (_isDisposed || Volatile.Read(ref _latestFetchGeneration) != fetchGeneration)
         {
             throw new OperationCanceledException();
         }
@@ -751,16 +1103,16 @@ public partial class ListViewModel : PageViewModel, IDisposable
     /// subtitle, etc. Largely a copy of the version in ListHelpers, but
     /// operating on ViewModels instead of extension objects.
     /// </summary>
-    private static int ScoreListItem(string query, CommandItemViewModel listItem)
+    private static int ScoreListItem(string query, string title, string subtitle)
     {
         if (string.IsNullOrEmpty(query))
         {
             return 1;
         }
 
-        var nameMatch = FuzzyStringMatcher.ScoreFuzzy(query, listItem.Title);
-        var descriptionMatch = FuzzyStringMatcher.ScoreFuzzy(query, listItem.Subtitle);
-        return new[] { nameMatch, (descriptionMatch - 4) / 2, 0 }.Max();
+        var nameMatch = FuzzyStringMatcher.ScoreFuzzy(query, title);
+        var descriptionMatch = FuzzyStringMatcher.ScoreFuzzy(query, subtitle);
+        return Math.Max(Math.Max(nameMatch, (descriptionMatch - 4) / 2), 0);
     }
 
     private struct ScoredListItemViewModel
@@ -774,7 +1126,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         var scores = items
             .Where(i => !i.IsInErrorState)
-            .Select(li => new ScoredListItemViewModel() { ViewModel = li, Score = ScoreListItem(query, li) })
+            .Select(li => new ScoredListItemViewModel() { ViewModel = li, Score = string.IsNullOrEmpty(query) ? 1 : ScoreListItem(query, li.Title, li.Subtitle) })
             .Where(score => score.Score > 0)
             .OrderByDescending(score => score.Score);
         return scores
@@ -784,42 +1136,75 @@ public partial class ListViewModel : PageViewModel, IDisposable
     // InvokeItemCommand is what this will be in Xaml due to source generator
     // This is what gets invoked when the user presses <enter>
     [RelayCommand]
-    private void InvokeItem(ListItemViewModel? item)
-    {
-        if (item is not null)
-        {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command.Model, item.Model));
-        }
-        else if (ShowEmptyContent && EmptyContent.PrimaryCommand?.Model.Unsafe is not null)
-        {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
-                EmptyContent.PrimaryCommand.Command.Model,
-                EmptyContent.PrimaryCommand.Model));
-        }
-    }
+    private void InvokeItem(ListItemViewModel? item) => InvokeListItem(item, StaticActivationKind.Primary);
 
     // This is what gets invoked when the user presses <ctrl+enter>
     [RelayCommand]
-    private void InvokeSecondaryCommand(ListItemViewModel? item)
+    private void InvokeSecondaryCommand(ListItemViewModel? item) => InvokeListItem(item, StaticActivationKind.Secondary);
+
+    private void InvokeListItem(ListItemViewModel? item, StaticActivationKind activation)
     {
-        if (item is not null)
+        lock (_fetchStateLock)
         {
-            if (item.SecondaryCommand is not null)
+            lock (_listLock)
             {
-                WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.SecondaryCommand.Command.Model, item.Model));
+                if (_isDisposed)
+                {
+                    return;
+                }
+
+                if (!_isDynamic && !IsStaticFilterSelectionCurrent)
+                {
+                    var confirmed = IsStaticFilterSelectionConfirmed;
+                    _pendingStaticActivation = new(activation, confirmed ? _lastSelectedItem : null, confirmed);
+                    return;
+                }
+
+                _pendingStaticActivation = null;
+                if (item is not null)
+                {
+                    if (!_isDynamic && (item.IsInErrorState || !item.IsInteractive || !FilteredItems.Contains(item, ReferenceEqualityComparer.Instance)))
+                    {
+                        return;
+                    }
+
+                    var command = activation == StaticActivationKind.Secondary ? item.SecondaryCommand?.Command : item.Command;
+                    if (command is not null)
+                    {
+                        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Model, item.Model));
+                    }
+                }
+                else if (ShowEmptyContent)
+                {
+                    var command = activation == StaticActivationKind.Secondary ? EmptyContent.SecondaryCommand : EmptyContent.PrimaryCommand;
+                    if (command?.Model.Unsafe is not null)
+                    {
+                        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
+                    }
+                }
             }
         }
-        else if (ShowEmptyContent && EmptyContent.SecondaryCommand?.Model.Unsafe is not null)
+    }
+
+    public void SynchronizeSelection(ListItemViewModel? item, bool forceUpdate = false)
+    {
+        if (forceUpdate || item is null || !ReferenceEquals(item, _lastSelectedItem))
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
-                EmptyContent.SecondaryCommand.Command.Model,
-                EmptyContent.SecondaryCommand.Model));
+            UpdateSelectedItem(item);
         }
     }
 
     [RelayCommand]
     private void UpdateSelectedItem(ListItemViewModel? item)
     {
+        lock (_listLock)
+        {
+            if (_pendingStaticActivation is { HasTarget: true } activation && !ReferenceEquals(item, activation.Target))
+            {
+                _pendingStaticActivation = null;
+            }
+        }
+
         if (_lastSelectedItem is not null)
         {
             _lastSelectedItem.PropertyChanged -= SelectedItemPropertyChanged;
@@ -859,6 +1244,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
                 if (!item.SafeSlowInit())
                 {
+                    RefreshStaticFilterItem(item);
                     if (ct.IsCancellationRequested)
                     {
                         return;
@@ -890,6 +1276,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 {
                     TextToSuggest = suggestion;
                     WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(suggestion));
+                    TryInvokePendingStaticActivation();
                 });
             },
             ct);
@@ -931,6 +1318,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private void ClearSelectedItem()
     {
+        _lastSelectedItem = null;
         CancelAndDisposeTokenSource(ref _selectedItemCts);
 
         WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
@@ -941,6 +1329,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public override void InitializeProperties()
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
         base.InitializeProperties();
 
         var model = _model.Unsafe;
@@ -985,7 +1378,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
 
         FetchItems(keepSelection: true, ensureSelectionVisible: true);
-        model.ItemsChanged += Model_ItemsChanged;
+        lock (_fetchStateLock)
+        {
+            if (!_isDisposed)
+            {
+                model.ItemsChanged += Model_ItemsChanged;
+            }
+        }
     }
 
     private static IGridPropertiesViewModel? LoadGridPropertiesViewModel(IGridProperties? gridProperties)
@@ -1133,23 +1532,36 @@ public partial class ListViewModel : PageViewModel, IDisposable
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        CancelAndDisposeTokenSource(ref _cancellationTokenSource);
-        CancelAndDisposeTokenSource(ref filterCancellationTokenSource);
-        CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
-        CancelAndDisposeTokenSource(ref _selectedItemCts);
+        lock (_fetchStateLock)
+        {
+            lock (_listLock)
+            {
+                _isDisposed = true;
+                _pendingStaticActivation = null;
+                InvalidateStaticFilterUnderLock();
+                _staticFilterGate.Dispose();
+                foreach (var item in _staticFilterItems.Keys)
+                {
+                    item.PropertyChangedBackground -= StaticFilterItemPropertyChanged;
+                }
+
+                _staticFilterItems.Clear();
+            }
+
+            CancelAndDisposeTokenSource(ref _cancellationTokenSource);
+            CancelAndDisposeTokenSource(ref filterCancellationTokenSource);
+            CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
+            CancelAndDisposeTokenSource(ref _selectedItemCts);
+        }
     }
 
     protected override void UnsafeCleanup()
     {
+        Dispose();
         base.UnsafeCleanup();
 
         EmptyContent?.SafeCleanup();
         EmptyContent = new(new(null), PageContext, contextMenuFactory: null); // necessary?
-
-        CancelAndDisposeTokenSource(ref _cancellationTokenSource);
-        CancelAndDisposeTokenSource(ref filterCancellationTokenSource);
-        CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
-        CancelAndDisposeTokenSource(ref _selectedItemCts);
 
         lock (_listLock)
         {
@@ -1159,16 +1571,23 @@ public partial class ListViewModel : PageViewModel, IDisposable
             }
 
             Items.Clear();
-            RunFilteredItemsUpdate(() =>
-            {
-                foreach (var item in FilteredItems)
-                {
-                    item.SafeCleanup();
-                }
-
-                FilteredItems.Clear();
-            });
         }
+
+        DoOnUiThread(() =>
+        {
+            lock (_listLock)
+            {
+                RunFilteredItemsUpdate(() =>
+                {
+                    foreach (var item in FilteredItems)
+                    {
+                        item.SafeCleanup();
+                    }
+
+                    FilteredItems.Clear();
+                });
+            }
+        });
 
         PublishVmCache(new(VmCacheComparer));
 
