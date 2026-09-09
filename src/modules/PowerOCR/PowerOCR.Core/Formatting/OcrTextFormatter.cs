@@ -93,9 +93,11 @@ public static partial class OcrTextFormatter
         UnicodeCategory leftCategory = Rune.GetUnicodeCategory(left.LastRune);
         UnicodeCategory rightCategory = Rune.GetUnicodeCategory(right.FirstRune);
 
+        // A leading '.' or '%' can belong to a complete word, such as .gitignore or %PATH%.
+        // Only punctuation-only tokens should attach as suffix punctuation.
         if (IsOpeningPunctuation(leftCategory)
             || IsClosingPunctuation(rightCategory)
-            || IsSuffixPunctuation(right.FirstRune)
+            || (right.IsPunctuationOnly && IsSuffixPunctuation(right.FirstRune))
             || IsCjkTightPunctuation(left.LastRune)
             || IsCjkTightPunctuation(right.FirstRune)
             || IsCombiningMark(rightCategory))
@@ -149,6 +151,7 @@ public static partial class OcrTextFormatter
         Rune lastRune = default;
         bool foundRune = false;
         bool usesSpaces = false;
+        bool isPunctuationOnly = true;
 
         foreach (Rune rune in text.EnumerateRunes())
         {
@@ -160,11 +163,12 @@ public static partial class OcrTextFormatter
 
             lastRune = rune;
             usesSpaces |= IsSpaceJoiningCategory(Rune.GetUnicodeCategory(rune));
+            isPunctuationOnly &= Rune.IsPunctuation(rune);
         }
 
-        boundary = new WordBoundary(firstRune, lastRune, usesSpaces);
+        boundary = new WordBoundary(firstRune, lastRune, usesSpaces, isPunctuationOnly);
         return foundRune;
     }
 
-    private readonly record struct WordBoundary(Rune FirstRune, Rune LastRune, bool UsesSpaces);
+    private readonly record struct WordBoundary(Rune FirstRune, Rune LastRune, bool UsesSpaces, bool IsPunctuationOnly);
 }

@@ -131,6 +131,25 @@ public sealed class TableTextFormatterTests
     }
 
     [TestMethod]
+    [DataRow("zh-CN", "echo", "%PATH%")]
+    [DataRow("ja-JP", "echo", "%PATH%")]
+    [DataRow("zh-CN", "open", ".gitignore")]
+    [DataRow("ja-JP", "open", ".gitignore")]
+    public void Format_CjkPunctuationPrefixedWord_PreservesWordSpacing(string languageTag, string firstWord, string secondWord)
+    {
+        string expected = $"{firstWord} {secondWord}";
+        OcrLineData[] cells =
+        [
+            new(
+                expected,
+                new OcrRect(0, 0, 130, 20),
+                [new(firstWord, new(0, 0, 40, 20)), new(secondWord, new(50, 0, 80, 20))]),
+        ];
+
+        Assert.AreEqual(expected, TableTextFormatter.Format(cells, languageTag));
+    }
+
+    [TestMethod]
     public void Format_EnglishFragmentsInSameCell_InsertsSpace()
     {
         OcrLineData[] cells =

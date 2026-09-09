@@ -70,6 +70,31 @@ public sealed class OcrTextFormatterTests
     }
 
     [TestMethod]
+    [DataRow("zh-CN", "echo", "%PATH%")]
+    [DataRow("ja-JP", "echo", "%PATH%")]
+    [DataRow("zh-CN", "open", ".gitignore")]
+    [DataRow("ja-JP", "open", ".gitignore")]
+    [DataRow("zh-CN", "Use", ".NET")]
+    [DataRow("ja-JP", "Use", ".NET")]
+    [DataRow("zh-CN", "value", ".5")]
+    [DataRow("ja-JP", "value", ".5")]
+    [DataRow("zh-CN", "open", ".配置")]
+    [DataRow("ja-JP", "open", ".配置")]
+    [DataRow("zh-CN", "echo", "%变量%")]
+    [DataRow("ja-JP", "echo", "%变量%")]
+    public void FormatCjkText_PunctuationPrefixedWord_PreservesWordSpacing(string languageTag, string firstWord, string secondWord)
+    {
+        string expected = $"{firstWord} {secondWord}";
+        var document = new OcrDocument(
+        [
+            new OcrLineData(expected, new OcrRect(0, 0, 100, 20), Words(firstWord, secondWord)),
+        ]);
+
+        Assert.AreEqual(expected, OcrTextFormatter.FormatDocument(document, languageTag));
+        Assert.AreEqual(expected, OcrTextFormatter.FormatSingleLine(document, languageTag));
+    }
+
+    [TestMethod]
     public void FormatDocument_RightToLeftLanguage_ReversesWordOrderPerLine()
     {
         var document = new OcrDocument(
@@ -171,6 +196,15 @@ public sealed class OcrTextFormatterTests
         Assert.AreEqual(
             "PowerToys, OCR",
             OcrTextFormatter.JoinCjkAwareWords(Words("PowerToys", ",", "OCR")));
+    }
+
+    [TestMethod]
+    [DataRow("50", "%", "complete", "50% complete")]
+    [DataRow("Wait", "...", "now", "Wait... now")]
+    [DataRow("done", "...）", "Next", "done...） Next")]
+    public void JoinCjkAwareWords_SuffixPunctuationOnly_AttachesToPreviousWord(string firstWord, string punctuation, string lastWord, string expected)
+    {
+        Assert.AreEqual(expected, OcrTextFormatter.JoinCjkAwareWords(Words(firstWord, punctuation, lastWord)));
     }
 
     [TestMethod]
