@@ -122,7 +122,7 @@ namespace AltWindowCycleUnitTests
             AssertRectEqual({ 32, 32, 332, 250 }, tile);
 
             const RECT preview = AltWindowCycleLogic::PreviewRect(layout, tile);
-            AssertRectEqual({ 32, 84, 332, 250 }, preview);
+            AssertRectEqual({ 32, 76, 332, 250 }, preview);
 
             const RECT header = AltWindowCycleLogic::HeaderRect(layout, tile);
             AssertRectEqual({ 44, 32, 320, 76 }, header);
