@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
+  
+  <PropertyGroup>
+    <AssemblyTitle>PowerToys.Settings.Cli</AssemblyTitle>
+    <AssemblyDescription>PowerToys Settings Command Line Interface</AssemblyDescription>
+    <Description>PowerToys Settings CLI</Description>
+    <OutputType>Exe</OutputType>
+    <Platforms>x64;ARM64</Platforms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <AssemblyName>PowerToys.Settings.Cli</AssemblyName>
+    <NoWarn>$(NoWarn);SA1500;SA1402;CA1852;CA1863;CA1305</NoWarn>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Settings.UI.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+  </ItemGroup>
+
+  <!-- Force using WindowsDesktop runtime to ensure consistent dll versions with other projects -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
+  </ItemGroup>
+
+</Project>
