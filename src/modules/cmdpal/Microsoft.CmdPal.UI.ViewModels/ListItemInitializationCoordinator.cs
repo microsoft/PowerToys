@@ -25,7 +25,6 @@ internal sealed class ListItemInitializationCoordinator
     }
 
     // Completion means the initializer has returned, not just that Stop was called.
-    // A selection fallback must not start another initializer while this one is exiting.
     internal Task Completion => _completion.Task;
 
     internal bool TryEnqueue(ListItemInitializationDemand demand)

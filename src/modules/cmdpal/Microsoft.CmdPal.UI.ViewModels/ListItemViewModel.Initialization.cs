@@ -51,7 +51,7 @@ public partial class ListItemViewModel
 
     public ListItemRealizationRegistration BeginRealization()
     {
-        var demand = CreateInitializationDemand(CancellationToken.None);
+        var demand = CreateInitializationDemand();
         if (demand is not null)
         {
             Volatile.Read(ref _initializationCoordinator)?.TryEnqueue(demand);
@@ -60,67 +60,18 @@ public partial class ListItemViewModel
         return new(demand);
     }
 
-    // Called from the existing background selection task, never from the UI event
-    // handler. Waiting follows item completion rather than a captured coordinator.
+    // Must run on a background thread because initialization can block on extension calls.
     internal async Task<bool> RequestInitializationAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var demand = CreateInitializationDemand(cancellationToken);
-        if (demand is null)
-        {
-            return InitializationWasSuccessful;
-        }
-
-        try
-        {
-            var initialization = WaitForInitializationAsync(cancellationToken);
-            while (!initialization.IsCompleted)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                var coordinator = Volatile.Read(ref _initializationCoordinator);
-                if (coordinator is null)
-                {
-                    InitializePropertiesOnce();
-                    break;
-                }
-
-                if (!coordinator.TryEnqueue(demand))
-                {
-                    if (!IsAttachedTo(coordinator))
-                    {
-                        continue;
-                    }
-
-                    if (coordinator.Completion.IsCompleted)
-                    {
-                        // No running initializer owns this item. Keep the existing
-                        // background selection fallback, but await a concurrent claim
-                        // rather than reading an in-progress state as failure.
-                        InitializePropertiesOnce();
-                        break;
-                    }
-                }
-
-                // Reached both after a successful enqueue and after a refusal that
-                // leaves this coordinator still owning the item. Stop/replacement is
-                // not initialization failure. A new coordinator replays this same
-                // demand; if none replaces it, retry after the old worker has
-                // returned before using the fallback above.
-                await Task.WhenAny(initialization, coordinator.Completion).ConfigureAwait(false);
-            }
-
-            return await initialization.ConfigureAwait(false);
-        }
-        finally
-        {
-            demand.Release();
-        }
+        InitializePropertiesOnce();
+        cancellationToken.ThrowIfCancellationRequested();
+        return await WaitForInitializationAsync(cancellationToken).ConfigureAwait(false);
     }
 
     internal void InitializePropertiesOnce()
     {
         // CAS _initializationState
-        // Coordinator and selection fallback callers compete for this claim.
         // Only the winner may run the extension's initialization.
         if (Interlocked.CompareExchange(ref _initializationState, InitializationState.InProgress, InitializationState.NotStarted) != InitializationState.NotStarted)
         {
@@ -191,14 +142,14 @@ public partial class ListItemViewModel
         }
     }
 
-    private ListItemInitializationDemand? CreateInitializationDemand(CancellationToken cancellationToken)
+    private ListItemInitializationDemand? CreateInitializationDemand()
     {
         if (IsInitializationComplete)
         {
             return null;
         }
 
-        var demand = new ListItemInitializationDemand(this, cancellationToken);
+        var demand = new ListItemInitializationDemand(this);
 
         // Recycling must not retain every past realization while the page is
         // suspended or an extension getter prevents initialization from finishing.

@@ -187,22 +187,31 @@ public sealed partial class ListItemInitializationCoordinatorTests
 
     [TestMethod]
     [Timeout(15000)]
-    public async Task SelectionRequestUsesSameWorkerAndJumpsAhead()
+    public async Task SelectionDoesNotWaitForBusyWorkerOrOlderRealizations()
     {
         using var firstStarted = new ManualResetEventSlim();
         using var continueFirst = new ManualResetEventSlim();
         var order = new ConcurrentQueue<int>();
-        var (_, viewModels) = CreateItems(4, order, firstStarted, continueFirst);
+        var (models, viewModels) = CreateItems(4, order, firstStarted, continueFirst);
         var coordinator = new ListItemInitializationCoordinator(viewModels);
         var worker = Task.Run(() => coordinator.Run(CancellationToken.None));
+        ListItemRealizationRegistration firstVisible = default;
+        ListItemRealizationRegistration secondVisible = default;
 
         try
         {
             Assert.IsTrue(firstStarted.Wait(TimeSpan.FromSeconds(2)));
-            var selectedInitialization = viewModels[3].RequestInitializationAsync(CancellationToken.None);
+            firstVisible = viewModels[1].BeginRealization();
+            secondVisible = viewModels[2].BeginRealization();
+            var selectedInitialization = Task.Run(() => viewModels[3].RequestInitializationAsync(CancellationToken.None));
+
+            Assert.IsTrue(await selectedInitialization.WaitAsync(TimeSpan.FromSeconds(2)));
+            Assert.IsFalse(worker.IsCompleted);
+            Assert.AreEqual(0, models[1].InitializationCount);
+            Assert.AreEqual(0, models[2].InitializationCount);
+            Assert.AreEqual(1, models[3].InitializationCount);
 
             continueFirst.Set();
-            Assert.IsTrue(await selectedInitialization.WaitAsync(TimeSpan.FromSeconds(2)));
             await worker.WaitAsync(TimeSpan.FromSeconds(2));
 
             CollectionAssert.AreEqual(RealizedPriorityOrder, order.ToArray());
@@ -211,6 +220,9 @@ public sealed partial class ListItemInitializationCoordinatorTests
         {
             continueFirst.Set();
             coordinator.Stop();
+            firstVisible.Release();
+            secondVisible.Release();
+            await worker.WaitAsync(TimeSpan.FromSeconds(2));
         }
     }
 
@@ -256,20 +268,21 @@ public sealed partial class ListItemInitializationCoordinatorTests
 
     [TestMethod]
     [Timeout(15000)]
-    public async Task SelectionUsesCurrentCoordinatorAndOldCoordinatorCannotInitializeIt()
+    public async Task SelectionCanInitializeBeforeCurrentCoordinatorStarts()
     {
         var order = new ConcurrentQueue<int>();
         var (_, viewModels) = CreateItems(1, order);
         var oldCoordinator = new ListItemInitializationCoordinator(viewModels);
         var currentCoordinator = new ListItemInitializationCoordinator(viewModels);
 
-        var selectedInitialization = viewModels[0].RequestInitializationAsync(CancellationToken.None);
         oldCoordinator.Run(CancellationToken.None);
         Assert.AreEqual(0, order.Count);
-        Assert.IsFalse(selectedInitialization.IsCompleted);
+
+        var selectedInitialization = Task.Run(() => viewModels[0].RequestInitializationAsync(CancellationToken.None));
+        Assert.IsTrue(await selectedInitialization.WaitAsync(TimeSpan.FromSeconds(2)));
+        Assert.AreEqual(1, order.Count);
 
         currentCoordinator.Run(CancellationToken.None);
-        Assert.IsTrue(await selectedInitialization.WaitAsync(TimeSpan.FromSeconds(2)));
         Assert.AreEqual(1, order.Count);
     }
 
@@ -414,43 +427,41 @@ public sealed partial class ListItemInitializationCoordinatorTests
 
     [TestMethod]
     [Timeout(15000)]
-    public async Task ReplacementPrunesCanceledSelectionWithoutWithdrawingRealization()
+    public async Task CancelingSelectionWaitDoesNotCancelAnotherWaiter()
     {
+        using var firstStarted = new ManualResetEventSlim();
+        using var continueFirst = new ManualResetEventSlim();
         using var cancellation = new CancellationTokenSource();
         var order = new ConcurrentQueue<int>();
-        var (_, viewModels) = CreateItems(4, order);
-        var previous = new ListItemInitializationCoordinator(viewModels);
-        var item = viewModels[3];
-        var selection = item.RequestInitializationAsync(cancellation.Token);
-        var visible = item.BeginRealization();
-        var liveNode = GetRetainedDemandNodes(item)[0];
-        AddReleasedRealizations(item, 32);
-        var retainedHead = GetRetainedDemandNodes(item)[0];
-        ListItemInitializationCoordinator? replacement = null;
+        var (models, viewModels) = CreateItems(1, order, firstStarted, continueFirst);
+        var coordinator = new ListItemInitializationCoordinator(viewModels);
+        var worker = Task.Run(() => coordinator.Run(CancellationToken.None));
 
         try
         {
+            Assert.IsTrue(firstStarted.Wait(TimeSpan.FromSeconds(2)));
+            var selection = viewModels[0].RequestInitializationAsync(cancellation.Token);
+            var another = viewModels[0].RequestInitializationAsync(CancellationToken.None);
             cancellation.Cancel();
             await Assert.ThrowsExceptionAsync<TaskCanceledException>(async () => await selection);
-            replacement = new ListItemInitializationCoordinator(viewModels);
-            previous.Stop();
+            Assert.IsFalse(another.IsCompleted);
 
-            CollectionAssert.AreEqual(new[] { retainedHead, liveNode }, GetRetainedDemandNodes(item));
-            Assert.IsTrue(visible.IsFor(item));
-            replacement.Run(CancellationToken.None);
-            CollectionAssert.AreEqual(EarlyRealizedPriorityOrder, order.ToArray());
+            continueFirst.Set();
+            Assert.IsTrue(await another.WaitAsync(TimeSpan.FromSeconds(2)));
+            await worker.WaitAsync(TimeSpan.FromSeconds(2));
+            Assert.AreEqual(1, models[0].InitializationCount);
         }
         finally
         {
-            visible.Release();
-            previous.Stop();
-            replacement?.Stop();
+            continueFirst.Set();
+            coordinator.Stop();
+            await worker.WaitAsync(TimeSpan.FromSeconds(2));
         }
     }
 
     [TestMethod]
     [Timeout(15000)]
-    public async Task CanceledSelectionLosesPriorityBeforeDequeue()
+    public async Task CanceledSelectionDoesNotClaimInitialization()
     {
         using var firstStarted = new ManualResetEventSlim();
         using var continueFirst = new ManualResetEventSlim();
@@ -462,9 +473,9 @@ public sealed partial class ListItemInitializationCoordinatorTests
         try
         {
             Assert.IsTrue(firstStarted.Wait(TimeSpan.FromSeconds(2)));
-            var selected = viewModels[1].RequestInitializationAsync(cancellation.Token);
             cancellation.Cancel();
-            await Assert.ThrowsExceptionAsync<TaskCanceledException>(async () => await selected);
+            await Assert.ThrowsExceptionAsync<OperationCanceledException>(async () =>
+                await viewModels[1].RequestInitializationAsync(cancellation.Token));
             var visible = viewModels[3].BeginRealization();
 
             continueFirst.Set();
@@ -494,11 +505,11 @@ public sealed partial class ListItemInitializationCoordinatorTests
         try
         {
             Assert.IsTrue(firstStarted.Wait(TimeSpan.FromSeconds(2)));
-            var selected = viewModels[3].RequestInitializationAsync(cancellation.Token);
             var visible = viewModels[3].BeginRealization();
             var laterVisible = viewModels[2].BeginRealization();
             cancellation.Cancel();
-            await Assert.ThrowsExceptionAsync<TaskCanceledException>(async () => await selected);
+            await Assert.ThrowsExceptionAsync<OperationCanceledException>(async () =>
+                await viewModels[3].RequestInitializationAsync(cancellation.Token));
 
             continueFirst.Set();
             await worker.WaitAsync(TimeSpan.FromSeconds(2));
@@ -528,12 +539,12 @@ public sealed partial class ListItemInitializationCoordinatorTests
         {
             Assert.IsTrue(firstStarted.Wait(TimeSpan.FromSeconds(2)));
             var visible = viewModels[3].BeginRealization();
-            var selected = viewModels[3].RequestInitializationAsync(CancellationToken.None);
+            var selected = Task.Run(() => viewModels[3].RequestInitializationAsync(CancellationToken.None));
             var laterVisible = viewModels[2].BeginRealization();
             visible.Release();
 
-            continueFirst.Set();
             Assert.IsTrue(await selected.WaitAsync(TimeSpan.FromSeconds(2)));
+            continueFirst.Set();
             await worker.WaitAsync(TimeSpan.FromSeconds(2));
             laterVisible.Release();
             CollectionAssert.AreEqual(SharedDemandPriorityOrder, order.ToArray());
@@ -561,16 +572,19 @@ public sealed partial class ListItemInitializationCoordinatorTests
         try
         {
             Assert.IsTrue(firstStarted.Wait(TimeSpan.FromSeconds(2)));
-            var selected = viewModels[3].RequestInitializationAsync(CancellationToken.None);
+            var selected = viewModels[0].RequestInitializationAsync(CancellationToken.None);
             replacement = new ListItemInitializationCoordinator(viewModels);
             previous.Stop();
             replacementWorker = Task.Run(() => replacement.Run(CancellationToken.None));
 
-            Assert.IsTrue(await selected.WaitAsync(TimeSpan.FromSeconds(2)));
-            Assert.IsTrue(viewModels[3].SafeSlowInit());
-            Assert.AreEqual("item-3", viewModels[3].TextToSuggest);
+            await replacementWorker.WaitAsync(TimeSpan.FromSeconds(2));
+            Assert.IsFalse(selected.IsCompleted);
             Assert.IsFalse(previous.Completion.IsCompleted);
-            Assert.AreEqual(1, models[3].InitializationCount);
+            continueFirst.Set();
+            Assert.IsTrue(await selected.WaitAsync(TimeSpan.FromSeconds(2)));
+            Assert.IsTrue(viewModels[0].SafeSlowInit());
+            Assert.AreEqual("item-0", viewModels[0].TextToSuggest);
+            Assert.AreEqual(1, models[0].InitializationCount);
         }
         finally
         {
@@ -587,46 +601,61 @@ public sealed partial class ListItemInitializationCoordinatorTests
 
     [TestMethod]
     [Timeout(15000)]
-    public async Task CancellationBeforeReplacementDoesNotReplaySelectionPriority()
+    public async Task SelectionCanceledDuringItsOwnInitializationDoesNotReportSuccess()
     {
         using var firstStarted = new ManualResetEventSlim();
         using var continueFirst = new ManualResetEventSlim();
         using var cancellation = new CancellationTokenSource();
         var order = new ConcurrentQueue<int>();
-        var (_, viewModels) = CreateItems(4, order, firstStarted, continueFirst);
-        var previous = new ListItemInitializationCoordinator(viewModels);
-        var previousWorker = Task.Run(() => previous.Run(CancellationToken.None));
+        var (models, viewModels) = CreateItems(1, order, firstStarted, continueFirst);
+        var selected = Task.Run(() => viewModels[0].RequestInitializationAsync(cancellation.Token));
         try
         {
             Assert.IsTrue(firstStarted.Wait(TimeSpan.FromSeconds(2)));
-            var selected = viewModels[1].RequestInitializationAsync(cancellation.Token);
             cancellation.Cancel();
-            await Assert.ThrowsExceptionAsync<TaskCanceledException>(async () => await selected);
-            var visible = viewModels[3].BeginRealization();
+            Assert.IsFalse(selected.IsCompleted, "Cancellation cannot interrupt a synchronous getter.");
 
-            var replacement = new ListItemInitializationCoordinator(viewModels);
-            previous.Stop();
-            replacement.Run(CancellationToken.None);
-            visible.Release();
-            CollectionAssert.AreEqual(RealizedPriorityOrder, order.ToArray());
+            continueFirst.Set();
+            await Assert.ThrowsExceptionAsync<OperationCanceledException>(async () =>
+                await selected.WaitAsync(TimeSpan.FromSeconds(2)));
+            Assert.IsTrue(await viewModels[0].RequestInitializationAsync(CancellationToken.None));
+            Assert.AreEqual(1, models[0].InitializationCount);
         }
         finally
         {
             continueFirst.Set();
-            previous.Stop();
-            await previousWorker.WaitAsync(TimeSpan.FromSeconds(2));
+            try
+            {
+                await selected.WaitAsync(TimeSpan.FromSeconds(2));
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
     }
 
-    [TestMethod]
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
     [Timeout(15000)]
-    public async Task SelectionWithoutCoordinatorWaitsForAnExistingInitializationClaim()
+    public async Task SelectionWaitsForAnExistingInitializationClaim(bool useCoordinator)
     {
         using var initializationStarted = new ManualResetEventSlim();
         using var continueInitialization = new ManualResetEventSlim();
         var order = new ConcurrentQueue<int>();
         var (models, viewModels) = CreateItems(1, order, initializationStarted, continueInitialization);
-        var worker = Task.Run(viewModels[0].InitializePropertiesOnce);
+        var coordinator = useCoordinator ? new ListItemInitializationCoordinator(viewModels) : null;
+        var worker = Task.Run(() =>
+        {
+            if (coordinator is not null)
+            {
+                coordinator.Run(CancellationToken.None);
+            }
+            else
+            {
+                viewModels[0].InitializePropertiesOnce();
+            }
+        });
         try
         {
             Assert.IsTrue(initializationStarted.Wait(TimeSpan.FromSeconds(2)));
@@ -641,13 +670,14 @@ public sealed partial class ListItemInitializationCoordinatorTests
         finally
         {
             continueInitialization.Set();
+            coordinator?.Stop();
             await worker.WaitAsync(TimeSpan.FromSeconds(2));
         }
     }
 
     [TestMethod]
     [Timeout(15000)]
-    public async Task SelectionFallbackWaitsForStoppedWorkerToReturn()
+    public async Task SelectionDoesNotWaitForStoppedWorkerInitializingAnotherItem()
     {
         using var firstStarted = new ManualResetEventSlim();
         using var continueFirst = new ManualResetEventSlim();
@@ -660,12 +690,12 @@ public sealed partial class ListItemInitializationCoordinatorTests
             Assert.IsTrue(firstStarted.Wait(TimeSpan.FromSeconds(2)));
             coordinator.Stop();
             Assert.IsFalse(coordinator.Completion.IsCompleted);
-            var selected = viewModels[3].RequestInitializationAsync(CancellationToken.None);
-            Assert.IsFalse(selected.IsCompleted);
-            Assert.AreEqual(0, models[3].InitializationCount);
+            var selected = Task.Run(() => viewModels[3].RequestInitializationAsync(CancellationToken.None));
+            Assert.IsTrue(await selected.WaitAsync(TimeSpan.FromSeconds(2)));
+            Assert.IsFalse(worker.IsCompleted);
+            Assert.AreEqual(1, models[3].InitializationCount);
 
             continueFirst.Set();
-            Assert.IsTrue(await selected.WaitAsync(TimeSpan.FromSeconds(2)));
             await worker.WaitAsync(TimeSpan.FromSeconds(2));
             CollectionAssert.AreEqual(StoppedFallbackOrder, order.ToArray());
         }
@@ -684,10 +714,11 @@ public sealed partial class ListItemInitializationCoordinatorTests
         var order = new ConcurrentQueue<int>();
         var (models, viewModels) = CreateItems(4, order);
         var coordinator = new ListItemInitializationCoordinator(viewModels);
-        var selected = viewModels[3].RequestInitializationAsync(CancellationToken.None);
+        var selected = viewModels[3].WaitForInitializationAsync(CancellationToken.None);
         viewModels[3].SafeCleanup();
 
         Assert.IsFalse(await selected.WaitAsync(TimeSpan.FromSeconds(2)));
+        Assert.IsFalse(await viewModels[3].RequestInitializationAsync(CancellationToken.None));
         coordinator.Run(CancellationToken.None);
         Assert.AreEqual(0, models[3].InitializationCount);
         CollectionAssert.AreEqual(RemovedPendingOrder, order.ToArray());
@@ -972,9 +1003,11 @@ public sealed partial class ListItemInitializationCoordinatorTests
         Assert.AreEqual(0, await waiter);
     }
 
-    [TestMethod]
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
     [Timeout(15000)]
-    public async Task ListRefreshDoesNotAbandonSelectedItemSlowInitialization()
+    public async Task SelectionCompletesWhileUnrelatedInitializationIsBlocked(bool refresh)
     {
         using var initializationStarted = new ManualResetEventSlim();
         using var continueInitialization = new ManualResetEventSlim();
@@ -1018,9 +1051,14 @@ public sealed partial class ListItemInitializationCoordinatorTests
             selected.PropertyChangedBackground += OnSelectedPropertyChanged;
 
             viewModel.UpdateSelectedItemCommand.Execute(selected);
-            page.Refresh();
+            if (refresh)
+            {
+                page.Refresh();
+            }
+
             await slowInitialized.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.AreEqual("item-47", selected.TextToSuggest);
+            Assert.IsFalse(blockedInitialization.IsCompleted);
         }
         finally
         {
