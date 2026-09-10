@@ -103,7 +103,7 @@ namespace Microsoft.PowerToys.UITest
                 [PowerToysModule.FancyZone] = new ModuleInfo("PowerToys.FancyZonesEditor.exe", "FancyZones Layout"),
                 [PowerToysModule.Hosts] = new ModuleInfo("PowerToys.Hosts.exe", "Hosts File Editor", "WinUI3Apps"),
                 [PowerToysModule.Runner] = new ModuleInfo("PowerToys.exe", "PowerToys"),
-                [PowerToysModule.Workspaces] = new ModuleInfo("PowerToys.WorkspacesEditor.exe", "Workspaces Editor"),
+                [PowerToysModule.Workspaces] = new ModuleInfo("PowerToys.WorkspacesEditor.exe", "Workspaces Editor", "WinUI3Apps"),
                 [PowerToysModule.PowerRename] = new ModuleInfo("PowerToys.PowerRename.exe", "PowerRename", "WinUI3Apps"),
                 [PowerToysModule.CommandPalette] = new ModuleInfo("Microsoft.CmdPal.UI.exe", "PowerToys Command Palette", "WinUI3Apps\\CmdPal"),
                 [PowerToysModule.ScreenRuler] = new ModuleInfo("PowerToys.MeasureToolUI.exe", "PowerToys.ScreenRuler", "WinUI3Apps"),
