@@ -23,6 +23,9 @@ namespace ShortcutGuide.IndexYmlGenerator
 
         public static void CreateIndexYmlFile(string path)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+            Directory.CreateDirectory(path);
+
             IndexFile indexFile = new() { };
             Dictionary<(string WindowFilter, bool BackgroundProcess), List<string>> processes = [];
 
