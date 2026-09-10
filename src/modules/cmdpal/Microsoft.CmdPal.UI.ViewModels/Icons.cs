@@ -8,19 +8,19 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public static class Icons
 {
-    public static IconInfo PinIcon => new("\uE718"); // Pin icon
+    public static IconInfo PinIcon => new(Glyphs.Pin);
 
-    public static IconInfo UnpinIcon => new("\uE77A"); // Unpin icon
+    public static IconInfo UnpinIcon => new(Glyphs.Unpin);
 
-    public static IconInfo MoveUpIcon => new("\uE74A"); // Up icon
+    public static IconInfo MoveUpIcon => new(Glyphs.MoveUp);
 
-    public static IconInfo MoveDownIcon => new("\uE74B"); // Down icon
+    public static IconInfo MoveDownIcon => new(Glyphs.MoveDown);
 
-    public static IconInfo MoveToTopIcon => new("\uE898"); // Move to top icon
+    public static IconInfo MoveToTopIcon => new(Glyphs.MoveToTop);
 
-    public static IconInfo SettingsIcon => new("\uE713"); // Settings icon
+    public static IconInfo SettingsIcon => new(Glyphs.Settings);
 
-    public static IconInfo EditIcon => new("\uE70F"); // Edit icon
+    public static IconInfo EditIcon => new(Glyphs.Edit);
 
-    public static IconInfo DeleteIcon => new("\uE74D"); // Delete icon
+    public static IconInfo DeleteIcon => new(Glyphs.Delete);
 }

@@ -21,10 +21,16 @@ namespace Microsoft.CmdPal.UI.Settings;
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class AppearancePage : Page
+public sealed partial class AppearancePage : Page, IDisposable
 {
+    internal const string QuickAccessShelfSettingsElementTag = "QuickAccessShelf";
+
+    private const int SettingsExpanderAnimationDurationMs = 250;
+
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-    private readonly IAppStateService _appStateService;
+
+    private bool _quickAccessShelfNavigationPending;
+    private bool _disposed;
 
     internal SettingsViewModel ViewModel { get; }
 
@@ -35,22 +41,67 @@ public sealed partial class AppearancePage : Page
         var themeService = App.Current.Services.GetRequiredService<IThemeService>();
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
-        _appStateService = App.Current.Services.GetRequiredService<IAppStateService>();
         ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
+        Loaded += AppearancePage_Loaded;
     }
 
-    private void ClearRecentCommands_Click(object sender, RoutedEventArgs e)
+    public void Dispose()
     {
-        var current = _appStateService.State.RecentCommands;
-        if (current.IsEmpty)
+        _disposed = true;
+        Loaded -= AppearancePage_Loaded;
+        ViewModel.Dispose();
+    }
+
+    internal bool TryNavigateToSettingsElement(string elementTag)
+    {
+        if (_disposed || !string.Equals(elementTag, QuickAccessShelfSettingsElementTag, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        _quickAccessShelfNavigationPending = true;
+        NavigateToPendingSettingsElement();
+        return true;
+    }
+
+    private void AppearancePage_Loaded(object sender, RoutedEventArgs e)
+    {
+        NavigateToPendingSettingsElement();
+    }
+
+    private void NavigateToPendingSettingsElement()
+    {
+        if (_disposed || !_quickAccessShelfNavigationPending || !IsLoaded)
         {
             return;
         }
 
-        _appStateService.UpdateState(state => state with
+        _quickAccessShelfNavigationPending = false;
+        CompactModeSettingsExpander.IsExpanded = true;
+        _ = BringQuickAccessShelfSettingsIntoViewAsync();
+    }
+
+    private async Task BringQuickAccessShelfSettingsIntoViewAsync()
+    {
+        await Task.Delay(SettingsExpanderAnimationDurationMs);
+        if (_disposed || !IsLoaded)
         {
-            RecentCommands = state.RecentCommands.ClearHistory(),
+            return;
+        }
+
+        QuickAccessShelfSettingsCard.StartBringIntoView(new BringIntoViewOptions
+        {
+            AnimationDesired = true,
+            VerticalOffset = -20,
         });
+        _ = QuickAccessShelfToggle.Focus(FocusState.Programmatic);
+    }
+
+    private void OpenRecentItemsSettings_Click(object sender, RoutedEventArgs e)
+    {
+        WeakReferenceMessenger.Default.Send(new OpenSettingsMessage(
+            "General",
+            SettingsPageElementTag: GeneralPage.RecentItemsSettingsElementTag));
     }
 
     private async void PickBackgroundImage_Click(object sender, RoutedEventArgs e)

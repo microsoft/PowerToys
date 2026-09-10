@@ -18,7 +18,7 @@ using Microsoft.Windows.Storage.Pickers;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
-public sealed partial class DockSettingsPage : Page
+public sealed partial class DockSettingsPage : Page, IDisposable
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
@@ -40,6 +40,8 @@ public sealed partial class DockSettingsPage : Page
         // Initialize UI state
         InitializeSettings();
     }
+
+    public void Dispose() => ViewModel.Dispose();
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {

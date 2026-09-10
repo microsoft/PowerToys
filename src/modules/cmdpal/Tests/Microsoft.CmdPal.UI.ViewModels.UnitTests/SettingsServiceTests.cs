@@ -150,7 +150,7 @@ public class SettingsServiceTests
 
     [DataTestMethod]
     [DataRow(-1, 0, 0, 1)]
-    [DataRow(100, 100, 9, 10)]
+    [DataRow(100, 100, 99, 10)]
     public void QuickAccessLimits_OutOfRangePersistedValuesAreClamped(
         int pinnedCommandLimit,
         int recentCommandLimit,
