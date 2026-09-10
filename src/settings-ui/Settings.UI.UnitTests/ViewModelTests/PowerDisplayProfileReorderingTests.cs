@@ -13,6 +13,7 @@ using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using PowerDisplay.Models;
 
 namespace ViewModelTests;
@@ -230,6 +231,89 @@ public class PowerDisplayProfileReorderingTests
     }
 
     [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task FailedReorder_SuccessfulUpsertClearsError(bool isNew)
+    {
+        var store = new ProfileSession();
+        using var viewModel = CreateViewModel(store);
+        await viewModel.InitializeProfilesAsync();
+        store.FailWrite = true;
+        await viewModel.ReorderProfileAsync(ThirdId, FirstId);
+        Assert.IsTrue(viewModel.IsProfileReorderError);
+
+        store.FailWrite = false;
+        var profile = CreateProfile(isNew ? 0 : SecondId, "Saved");
+        if (isNew)
+        {
+            await viewModel.CreateProfileAsync(profile);
+            AssertOrder(viewModel, FirstId, SecondId, ThirdId, MissingId);
+        }
+        else
+        {
+            await viewModel.UpdateProfileAsync(profile);
+            AssertOrder(viewModel, FirstId, SecondId, ThirdId);
+        }
+
+        Assert.AreEqual("Saved", viewModel.Profiles.Single(item => item.Id == profile.Id).Name);
+        Assert.IsFalse(viewModel.IsProfileReorderError);
+        Assert.IsFalse(viewModel.IsProfilesLoading);
+        Assert.AreEqual(1, store.Notifications);
+    }
+
+    [TestMethod]
+    public async Task FailedReorder_SuccessfulDeleteClearsError()
+    {
+        var store = new ProfileSession();
+        using var viewModel = CreateViewModel(store);
+        await viewModel.InitializeProfilesAsync();
+        store.FailWrite = true;
+        await viewModel.ReorderProfileAsync(ThirdId, FirstId);
+        Assert.IsTrue(viewModel.IsProfileReorderError);
+
+        store.FailWrite = false;
+        await viewModel.DeleteProfileAsync(SecondId);
+
+        AssertOrder(viewModel, FirstId, ThirdId);
+        Assert.IsFalse(viewModel.IsProfileReorderError);
+        Assert.IsFalse(viewModel.IsProfilesLoading);
+        Assert.AreEqual(1, store.Notifications);
+    }
+
+    [TestMethod]
+    public async Task FailedLoad_SuccessfulCreateClearsError()
+    {
+        var store = new ProfileSession { FailRead = true };
+        using var viewModel = CreateViewModel(store);
+        await viewModel.InitializeProfilesAsync();
+        Assert.IsTrue(viewModel.IsProfileReorderError);
+
+        store.FailRead = false;
+        await viewModel.CreateProfileAsync(CreateProfile(0, "Added"));
+
+        AssertOrder(viewModel, FirstId, SecondId, ThirdId, MissingId);
+        Assert.IsFalse(viewModel.IsProfileReorderError);
+        Assert.IsFalse(viewModel.IsProfilesLoading);
+        Assert.AreEqual(1, store.Notifications);
+    }
+
+    [TestMethod]
+    public async Task FailedLoad_SuccessfulWriteButFailedReloadKeepsError()
+    {
+        var store = new ProfileSession { FailRead = true };
+        using var viewModel = CreateViewModel(store);
+        await viewModel.InitializeProfilesAsync();
+        Assert.IsTrue(viewModel.IsProfileReorderError);
+
+        await viewModel.CreateProfileAsync(CreateProfile(0, "Added"));
+
+        Assert.AreEqual("Added", store.Data.GetById(MissingId).Name);
+        Assert.IsTrue(viewModel.IsProfileReorderError);
+        Assert.IsFalse(viewModel.IsProfilesLoading);
+        Assert.IsFalse(viewModel.HasProfiles);
+    }
+
+    [TestMethod]
     public async Task LoadProfiles_UsesExplicitOrderInsteadOfArrayPositions()
     {
         var store = new ProfileSession();
@@ -244,12 +328,24 @@ public class PowerDisplayProfileReorderingTests
         Assert.AreEqual(0, store.Writes);
     }
 
+    private static PowerDisplayProfile CreateProfile(int id, string name, int order = -1)
+    {
+        return new PowerDisplayProfile(name, new List<ProfileMonitorSetting> { new ProfileMonitorSetting("monitor-1", brightness: 50) })
+        {
+            Id = id,
+            Order = order,
+        };
+    }
+
     private static void AssertOrder(PowerDisplayViewModel viewModel, params int[] ids)
         => CollectionAssert.AreEqual(ids, viewModel.Profiles.Select(p => p.Id).ToArray());
 
     private static PowerDisplayViewModel CreateViewModel(ProfileSession store, bool elevated = false, bool enabled = true)
     {
         var settingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<PowerDisplaySettings>();
+        settingsUtils
+            .Setup(utils => utils.GetSettingsOrDefault<LightSwitchSettings>(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(new LightSwitchSettings());
         var generalSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
         var generalRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(generalSettingsUtils.Object);
         generalRepository.SettingsConfig.IsElevated = elevated;
@@ -263,7 +359,9 @@ public class PowerDisplayProfileReorderingTests
             (_, _) => { },
             store.LoadAsync,
             store.ReorderAsync,
-            () => store.Notifications++);
+            () => store.Notifications++,
+            store.AddOrUpdateAsync,
+            store.RemoveAsync);
     }
 
     private sealed class ProfileSession
@@ -288,15 +386,6 @@ public class PowerDisplayProfileReorderingTests
 
         public TaskCompletionSource<bool> PendingWrite { get; set; }
 
-        private static PowerDisplayProfile CreateProfile(int id, string name, int order)
-        {
-            return new PowerDisplayProfile(name, new List<ProfileMonitorSetting> { new ProfileMonitorSetting("monitor-1", brightness: 50) })
-            {
-                Id = id,
-                Order = order,
-            };
-        }
-
         public Task<PowerDisplayProfiles> LoadAsync(CancellationToken cancellationToken)
         {
             return FailRead
@@ -304,6 +393,26 @@ public class PowerDisplayProfileReorderingTests
                 : Task.FromResult(JsonSerializer.Deserialize(
                     JsonSerializer.Serialize(Data, ProfileSerializationContext.Default.PowerDisplayProfiles),
                     ProfileSerializationContext.Default.PowerDisplayProfiles));
+        }
+
+        public Task AddOrUpdateAsync(PowerDisplayProfile profile)
+        {
+            Writes++;
+            if (FailWrite)
+            {
+                return Task.FromException(new IOException("Cannot write profiles"));
+            }
+
+            Data.SetProfile(profile);
+            return Task.CompletedTask;
+        }
+
+        public Task<bool> RemoveAsync(int id)
+        {
+            Writes++;
+            return FailWrite
+                ? Task.FromException<bool>(new IOException("Cannot write profiles"))
+                : Task.FromResult(Data.RemoveProfile(id));
         }
 
         public async Task<bool> ReorderAsync(int id, int? beforeId)

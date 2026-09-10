@@ -13,6 +13,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using PowerDisplay.Models;
@@ -26,6 +27,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     {
         private int? _draggedProfileId;
         private int[] _profileOrderBeforeDrag;
+        private int _profileFocusRequestId;
+        private Action _cancelPendingProfileFocus;
 
         private PowerDisplayViewModel ViewModel { get; set; }
 
@@ -42,6 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             InitializeComponent();
             Loaded += PowerDisplayPage_Loaded;
             SizeChanged += PowerDisplayPage_SizeChanged;
+            Unloaded += (_, _) => CancelProfileFocusRestoration();
         }
 
         private async void PowerDisplayPage_Loaded(object sender, RoutedEventArgs e)
@@ -122,8 +126,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private static bool IsKeyDown(VirtualKey key)
             => InputKeyboardSource.GetKeyStateForCurrentThread(key).HasFlag(CoreVirtualKeyStates.Down);
 
+        private void ProfilesList_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            if (!args.InRecycleQueue && args.Item is PowerDisplayProfile profile)
+            {
+                AutomationProperties.SetName(args.ItemContainer, profile.DisplayName);
+            }
+            else
+            {
+                args.ItemContainer.ClearValue(AutomationProperties.NameProperty);
+            }
+        }
+
         private void ProfilesList_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
+            CancelProfileFocusRestoration();
             _draggedProfileId = null;
             _profileOrderBeforeDrag = null;
 
@@ -166,8 +183,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             int? beforeProfileId = newIndex + 1 < currentOrder.Length ? currentOrder[newIndex + 1] : null;
+            CancelProfileFocusRestoration();
+            var focusRequestId = _profileFocusRequestId;
             await ViewModel.ReorderProfileAsync(draggedId, beforeProfileId);
-            RestoreProfileFocus(draggedId);
+            RestoreProfileFocus(draggedId, focusRequestId);
         }
 
         private void ProfileMenuFlyout_Opening(object sender, object e)
@@ -218,6 +237,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
+            CancelProfileFocusRestoration();
+            var focusRequestId = _profileFocusRequestId;
             if (moveUp)
             {
                 await ViewModel.MoveProfileUpAsync(profile);
@@ -227,15 +248,22 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 await ViewModel.MoveProfileDownAsync(profile);
             }
 
-            RestoreProfileFocus(profile.Id);
+            RestoreProfileFocus(profile.Id, focusRequestId);
         }
 
-        private void RestoreProfileFocus(int profileId)
+        private void CancelProfileFocusRestoration()
         {
-            // Wait for the menu to close and for the refreshed collection to be laid out.
+            _profileFocusRequestId++;
+            _cancelPendingProfileFocus?.Invoke();
+            _cancelPendingProfileFocus = null;
+        }
+
+        private void RestoreProfileFocus(int profileId, int requestId)
+        {
+            // Let the menu close and the collection refresh settle before requesting layout.
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
             {
-                if (!IsLoaded)
+                if (!IsLoaded || requestId != _profileFocusRequestId || !ViewModel.CanUseProfiles)
                 {
                     return;
                 }
@@ -246,17 +274,74 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     return;
                 }
 
-                ProfilesList.ScrollIntoView(profile);
+                // Clear/Add invalidates the virtualizing panel's item-to-container mapping.
+                // Update it before scrolling; the target container may still arrive in a later layout.
                 ProfilesList.UpdateLayout();
-                if (ProfilesList.ContainerFromItem(profile) is ListViewItem container)
+                var previousFocus = FocusManager.GetFocusedElement(XamlRoot);
+                var timeout = DispatcherQueue.CreateTimer();
+                timeout.Interval = TimeSpan.FromSeconds(1);
+                timeout.IsRepeating = false;
+                var completed = false;
+
+                void Complete()
                 {
-                    var moreButton = container.FindDescendants().OfType<Button>().FirstOrDefault(button => button.Name == "ProfileMoreButton");
-                    if (moreButton != null)
+                    if (completed)
                     {
-                        moreButton.StartBringIntoView();
-                        moreButton.Focus(FocusState.Programmatic);
+                        return;
+                    }
+
+                    completed = true;
+                    ProfilesList.LayoutUpdated -= OnLayoutUpdated;
+                    timeout.Tick -= OnTimeout;
+                    timeout.Stop();
+                    if (requestId == _profileFocusRequestId)
+                    {
+                        _cancelPendingProfileFocus = null;
                     }
                 }
+
+                void TryRestoreFocus()
+                {
+                    if (completed)
+                    {
+                        return;
+                    }
+
+                    if (!IsLoaded || requestId != _profileFocusRequestId || !ViewModel.CanUseProfiles)
+                    {
+                        Complete();
+                        return;
+                    }
+
+                    var container = ProfilesList.ContainerFromItem(profile) as ListViewItem;
+                    var moreButton = container?.FindDescendants().OfType<Button>().FirstOrDefault(button => button.Name == "ProfileMoreButton");
+                    var currentFocus = FocusManager.GetFocusedElement(XamlRoot);
+                    if (currentFocus != null && !ReferenceEquals(currentFocus, previousFocus) && !ReferenceEquals(currentFocus, moreButton))
+                    {
+                        // A newer user interaction must not lose its focus to this pending request.
+                        Complete();
+                        return;
+                    }
+
+                    if (moreButton is { IsLoaded: true, IsEnabled: true, ActualWidth: > 0, ActualHeight: > 0 })
+                    {
+                        moreButton.StartBringIntoView();
+                        if (moreButton.Focus(FocusState.Programmatic))
+                        {
+                            Complete();
+                        }
+                    }
+                }
+
+                void OnLayoutUpdated(object sender, object args) => TryRestoreFocus();
+                void OnTimeout(Microsoft.UI.Dispatching.DispatcherQueueTimer sender, object args) => Complete();
+
+                _cancelPendingProfileFocus = Complete;
+                ProfilesList.LayoutUpdated += OnLayoutUpdated;
+                timeout.Tick += OnTimeout;
+                timeout.Start();
+                ProfilesList.ScrollIntoView(profile);
+                TryRestoreFocus();
             });
         }
 

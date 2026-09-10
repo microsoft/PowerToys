@@ -16,6 +16,8 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
 {
     private const string ApplyButtonId = "ProfileApplyButton";
     private const string MoreButtonId = "ProfileMoreButton";
+    private const string FixtureNamePrefix = "Keyboard reorder fixture ";
+    private const int VirtualizedProfileCount = 20;
     private const string InitialOrder = "1,2,3,4";
     private const string ReorderedOrder = "1,3,2,4";
     private const string TerminatePowerDisplayEvent = @"Local\PowerToysPowerDisplay-TerminateEvent-7b9c2e1f-8a5d-4c3e-9f6b-2a1d8c5e3b7a";
@@ -96,11 +98,14 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
 
         // Seed after the previous Settings/runner processes exit, so cleanup cannot overwrite it.
         // Stable ids and orders avoid a migration write. No test invokes the Apply button.
+        var profileCount = TestContext.TestName == nameof(ReorderShortcut_VirtualizedTailKeepsFocusForRepeatedMoves)
+            ? VirtualizedProfileCount
+            : ProfileIds.Length;
         Directory.CreateDirectory(Path.GetDirectoryName(ProfilesPath)!);
         var timestamp = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         File.WriteAllText(ProfilesPath, JsonSerializer.Serialize(new
         {
-            profiles = ProfileIds.Select(id => new
+            profiles = Enumerable.Range(1, profileCount).Select(id => new
             {
                 id,
                 name = ProfileName(id),
@@ -109,7 +114,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
                 createdDate = timestamp,
                 lastModified = timestamp,
             }),
-            nextId = 5,
+            nextId = profileCount + 1,
             lastUpdated = timestamp,
         }));
     }
@@ -203,7 +208,59 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
         }
     }
 
-    private static string ProfileName(int id) => $"Keyboard reorder fixture {id}";
+    [TestMethod]
+    [TestCategory("Settings")]
+    [TestCategory("PowerDisplay")]
+    public void ReorderShortcut_VirtualizedTailKeepsFocusForRepeatedMoves()
+    {
+        NavigateToProfiles(useVirtualizedList: true);
+        Assert.AreEqual(string.Join(",", Enumerable.Range(1, VirtualizedProfileCount)), ReadPersistedOrder());
+        Assert.IsFalse(IsProfileButtonVisible(VirtualizedProfileCount, MoreButtonId), "The fixture must start with the last profile outside the list viewport.");
+
+        Step("Scrolling the virtualized profile list to its last item");
+        Find<Element>(By.AccessibilityId("ProfilesList")).ScrollToEdge(toBottom: true);
+        var tailViewport = WaitHelper.WaitForStable(
+            observe: () => IsProfileButtonVisible(VirtualizedProfileCount, MoreButtonId),
+            isMatch: visible => visible,
+            timeoutMS: 30_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 100,
+            recover: _ => Find<Element>(By.AccessibilityId("PageScrollViewer"), 1_000).Scroll(ScrollDirection.Down));
+        Assert.IsTrue(
+            tailViewport.Succeeded,
+            "The last profile did not appear after scrolling the list.");
+        FocusProfileButton(VirtualizedProfileCount, MoreButtonId);
+
+        Step("Moving the last profile up through the keyboard shortcut");
+        KeyboardHelper.SendKeys(Key.Alt, Key.Shift, Key.Up);
+        var firstOrder = string.Join(",", Enumerable.Range(1, 18).Concat([20, 19]));
+        AssertStableTargetFocusAndOrder(VirtualizedProfileCount, firstOrder);
+
+        // Send the next chord directly: focusing or scrolling here would conceal a failure to
+        // restore focus after the collection reload recycled the last row's container.
+        Step("Moving the same profile up again using the restored keyboard focus");
+        KeyboardHelper.SendKeys(Key.Alt, Key.Shift, Key.Up);
+        var secondOrder = string.Join(",", Enumerable.Range(1, 17).Concat([20, 18, 19]));
+        AssertStableTargetFocusAndOrder(VirtualizedProfileCount, secondOrder);
+    }
+
+    [TestMethod]
+    [TestCategory("Settings")]
+    [TestCategory("PowerDisplay")]
+    public void ProfileListItems_ExposeDisplayNamesToAutomation()
+    {
+        NavigateToProfiles();
+        AssertStableOrder(InitialOrder);
+
+        var expectedNames = ProfileIds.Select(id => GetProfileButton(id, ApplyButtonId).HelpText).ToArray();
+        var itemNames = Session.FindAll<Element>(By.Name(FixtureNamePrefix))
+            .Where(element => string.Equals(element.ControlType, "ListItem", StringComparison.OrdinalIgnoreCase))
+            .Select(element => element.Name)
+            .ToArray();
+        CollectionAssert.AreEquivalent(expectedNames, itemNames, "Every profile ListItem must expose its DisplayName as its automation Name.");
+    }
+
+    private static string ProfileName(int id) => $"{FixtureNamePrefix}{id:D2}";
 
     private static void StopPowerToysProcesses()
     {
@@ -251,7 +308,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
         }
     }
 
-    private void NavigateToProfiles()
+    private void NavigateToProfiles(bool useVirtualizedList = false)
     {
         Step("Opening Power Display profiles");
         Assert.IsTrue(Session.IsElevated == false, "Keyboard reordering must be tested with a non-elevated Settings process, where native reordering is enabled.");
@@ -266,15 +323,17 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
             Find<Element>(By.AccessibilityId("ProfilesList")).WaitForProperty("IsEnabled", "True", 10_000),
             "Power Display profiles did not finish loading.");
 
-        Step("Scrolling the page until all four profile buttons are visible");
+        Step("Scrolling the page until the profile list is visible");
         var viewport = WaitHelper.WaitForStable(
-            observe: () => AreAllProfilesVisible(Session.FindAll<Button>(By.AccessibilityId(ApplyButtonId), 1_000)),
+            observe: () => useVirtualizedList
+                ? IsProfileButtonVisible(1, MoreButtonId)
+                : AreAllProfilesVisible(Session.FindAll<Button>(By.AccessibilityId(ApplyButtonId), 1_000)),
             isMatch: visible => visible,
             timeoutMS: 30_000,
             requiredConsecutiveMatches: 2,
             pollIntervalMS: 100,
             recover: _ => Find<Element>(By.AccessibilityId("PageScrollViewer"), 1_000).Scroll(ScrollDirection.Down));
-        Assert.IsTrue(viewport.Succeeded, "The page did not scroll all four profile buttons into view.");
+        Assert.IsTrue(viewport.Succeeded, "The page did not scroll the profile list into view.");
     }
 
     private Button GetProfileButton(int profileId, string buttonId)
@@ -312,6 +371,58 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
         Assert.IsTrue(result.Succeeded, $"Expected order {expectedOrder} after save/reload. Last state: {result.LastObservation}; error: {result.LastException}");
     }
 
+    private void AssertStableTargetFocusAndOrder(int profileId, string expectedOrder)
+    {
+        Step($"Waiting for persisted order {expectedOrder} and keyboard focus on profile {profileId}");
+        var result = WaitHelper.WaitForStable(
+            observe: () =>
+            {
+                var button = FindVisibleProfileButton(profileId, MoreButtonId);
+                return new TargetFocusObservation(
+                    ReadPersistedOrder(),
+                    button is not null,
+                    button is not null && string.Equals(button.GetProperty("HasKeyboardFocus"), "True", StringComparison.OrdinalIgnoreCase));
+            },
+            isMatch: state => state is not null && state.PersistedOrder == expectedOrder && state.Visible && state.Focused,
+            timeoutMS: 30_000,
+            requiredConsecutiveMatches: 3,
+            pollIntervalMS: 100,
+            shouldRetryException: ex => ex is IOException || (ex is AssertFailedException && ex.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase)));
+        Assert.IsTrue(result.Succeeded, $"The moved profile {profileId} did not retain visible keyboard focus after save/reload. Last state: {result.LastObservation}; error: {result.LastException}");
+    }
+
+    private bool IsProfileButtonVisible(int profileId, string buttonId)
+    {
+        return FindVisibleProfileButton(profileId, buttonId) is not null;
+    }
+
+    private Button? FindVisibleProfileButton(int profileId, string buttonId)
+    {
+        var row = Session.FindAll<Element>(By.Name(ProfileName(profileId)), 1_000)
+            .SingleOrDefault(element => string.Equals(element.ControlType, "ListItem", StringComparison.OrdinalIgnoreCase));
+        if (row is null || row.Width <= 0 || row.Height <= 0)
+        {
+            return null;
+        }
+
+        // Bounds only associate a candidate with this row; they do not prove full visibility.
+        // Validate its HelpText and IsOffscreen instead of reading every virtualized button.
+        var candidates = Session.FindAll<Button>(By.AccessibilityId(buttonId), 1_000)
+            .Where(button => button.Width > 0 && button.Height > 0 &&
+                button.X >= row.X && button.Y >= row.Y &&
+                button.X + button.Width <= row.X + row.Width && button.Y + button.Height <= row.Y + row.Height)
+            .ToArray();
+        if (candidates.Length != 1)
+        {
+            return null;
+        }
+
+        var candidate = candidates[0];
+        return candidate.HelpText.Contains(ProfileName(profileId), StringComparison.Ordinal) && IsButtonVisible(candidate)
+            ? candidate
+            : null;
+    }
+
     private OrderObservation ObserveOrder()
     {
         var buttons = Session.FindAll<Button>(By.AccessibilityId(ApplyButtonId), 1_000);
@@ -320,22 +431,30 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
             var helpText = button.HelpText;
             return ProfileIds.SingleOrDefault(id => helpText.Contains(ProfileName(id), StringComparison.Ordinal));
         });
-        using var document = JsonDocument.Parse(File.ReadAllText(ProfilesPath));
-        var persistedOrder = document.RootElement.GetProperty("profiles").EnumerateArray()
-            .OrderBy(profile => profile.GetProperty("order").GetInt32())
-            .Select(profile => profile.GetProperty("id").GetInt32());
         var enabled = string.Equals(Find<Element>(By.AccessibilityId("ProfilesList"), 1_000).GetProperty("IsEnabled"), "True", StringComparison.OrdinalIgnoreCase);
         var allProfilesVisible = AreAllProfilesVisible(buttons);
-        return new OrderObservation(string.Join(",", visibleOrder), string.Join(",", persistedOrder), enabled, allProfilesVisible);
+        return new OrderObservation(string.Join(",", visibleOrder), ReadPersistedOrder(), enabled, allProfilesVisible);
+    }
+
+    private static string ReadPersistedOrder()
+    {
+        using var document = JsonDocument.Parse(File.ReadAllText(ProfilesPath));
+        return string.Join(",", document.RootElement.GetProperty("profiles").EnumerateArray()
+            .OrderBy(profile => profile.GetProperty("order").GetInt32())
+            .Select(profile => profile.GetProperty("id").GetInt32()));
     }
 
     private static bool AreAllProfilesVisible(IReadOnlyCollection<Button> buttons)
     {
-        return buttons.Count == ProfileIds.Length && buttons.All(button =>
-            button.Width > 0 && button.Height > 0 && string.Equals(button.GetProperty("IsOffscreen"), "False", StringComparison.OrdinalIgnoreCase));
+        return buttons.Count == ProfileIds.Length && buttons.All(IsButtonVisible);
     }
+
+    private static bool IsButtonVisible(Button button) =>
+        button.Width > 0 && button.Height > 0 && string.Equals(button.GetProperty("IsOffscreen"), "False", StringComparison.OrdinalIgnoreCase);
 
     private void Step(string message) => TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
 
     private sealed record OrderObservation(string UiOrder, string PersistedOrder, bool Enabled, bool AllProfilesVisible);
+
+    private sealed record TargetFocusObservation(string PersistedOrder, bool Visible, bool Focused);
 }

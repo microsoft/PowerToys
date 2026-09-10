@@ -186,6 +186,7 @@
                                         AllowDrop="{x:Bind ViewModel.CanDragProfiles, Mode=OneWay}"
                                         CanDragItems="{x:Bind ViewModel.CanDragProfiles, Mode=OneWay}"
                                         CanReorderItems="{x:Bind ViewModel.CanDragProfiles, Mode=OneWay}"
+                                        ContainerContentChanging="ProfilesList_ContainerContentChanging"
                                         DragItemsCompleted="ProfilesList_DragItemsCompleted"
                                         DragItemsStarting="ProfilesList_DragItemsStarting"
                                         IsTabStop="False"

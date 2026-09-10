@@ -38,6 +38,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private readonly Func<CancellationToken, Task<PowerDisplayProfiles>> _loadProfilesAsync;
         private readonly Func<int, int?, Task<bool>> _reorderProfileAsync;
+        private readonly Func<PowerDisplayProfile, Task> _addOrUpdateProfileAsync;
+        private readonly Func<int, Task<bool>> _removeProfileByIdAsync;
         private readonly Action _signalSettingsUpdated;
         private bool _isProfilesLoading;
 
@@ -67,7 +69,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Action<string, Action> waitForEventLoop,
             Func<CancellationToken, Task<PowerDisplayProfiles>> loadProfilesAsync = null,
             Func<int, int?, Task<bool>> reorderProfileAsync = null,
-            Action signalSettingsUpdated = null)
+            Action signalSettingsUpdated = null,
+            Func<PowerDisplayProfile, Task> addOrUpdateProfileAsync = null,
+            Func<int, Task<bool>> removeProfileByIdAsync = null)
         {
             // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);
@@ -78,6 +82,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _loadProfilesAsync = loadProfilesAsync ?? ProfileHelper.LoadProfilesAsync;
             _reorderProfileAsync = reorderProfileAsync ?? ((id, beforeId) =>
                 ProfileHelper.UpdateProfilesAsync(profiles => profiles.MoveProfileBefore(id, beforeId)));
+            _addOrUpdateProfileAsync = addOrUpdateProfileAsync ?? (profile => ProfileHelper.AddOrUpdateProfileAsync(profile));
+            _removeProfileByIdAsync = removeProfileByIdAsync ?? (id => ProfileHelper.RemoveProfileByIdAsync(id));
             _signalSettingsUpdated = signalSettingsUpdated ?? (() => SignalNamedEvent(Constants.SettingsUpdatedPowerDisplayEvent()));
 
             _settings = powerDisplaySettingsRepository.SettingsConfig;
@@ -1085,9 +1091,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             IsProfilesLoading = true;
             try
             {
-                await ProfileHelper.AddOrUpdateProfileAsync(profile);
+                await _addOrUpdateProfileAsync(profile);
                 var profiles = await LoadProfilesCoreAsync(CancellationToken.None);
                 ReplaceProfiles(profiles);
+                IsProfileReorderError = false;
                 SignalSettingsUpdated();
             }
             catch (Exception ex)
@@ -1117,7 +1124,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             IsProfilesLoading = true;
             try
             {
-                if (!await ProfileHelper.RemoveProfileByIdAsync(id))
+                if (!await _removeProfileByIdAsync(id))
                 {
                     Logger.LogWarning($"Profile id {id} was not found");
                     return;
@@ -1125,6 +1132,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 var profiles = await LoadProfilesCoreAsync(CancellationToken.None);
                 ReplaceProfiles(profiles);
+                IsProfileReorderError = false;
                 SignalSettingsUpdated();
                 await ClearDeletedProfileReferencesAsync(id);
             }
