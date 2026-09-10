@@ -251,6 +251,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
                                     serverChannel.Disconnect();
                                 }
 
+                                await Task.Delay(250, cancellationToken);
                                 continue;
                             }
 
