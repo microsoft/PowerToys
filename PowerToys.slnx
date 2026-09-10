@@ -1216,6 +1216,14 @@
     <Project Path="src/modules/Workspaces/WorkspacesWindowArranger/WorkspacesWindowArranger.vcxproj" Id="37d07516-4185-43a4-924f-3c7a5d95ecf6" />
   </Folder>
   <Folder Name="/modules/Workspaces/Tests/">
+    <Project Path="src/modules/Workspaces/Tests/Workspaces.TestApp/Workspaces.TestApp.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Workspaces/Tests/Workspaces.UITests.Next/Workspaces.UITests.Next.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/Workspaces/WorkspacesEditorUITest/Workspaces.Editor.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />

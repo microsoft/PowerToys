@@ -1,0 +1,65 @@
+<!--
+  Copyright (c) Microsoft Corporation
+  The Microsoft Corporation licenses this file to you under the MIT license.
+  See the LICENSE file in the project root for more information.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AssemblyName>Workspaces.TestApp</AssemblyName>
+    <RootNamespace>Microsoft.Workspaces.TestApp</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RuntimeIdentifier>win-$([System.String]::Copy('$(Platform)').ToLowerInvariant())</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <UseAppHost>true</UseAppHost>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>false</IsTestProject>
+    <!-- Referenced only as a fixture artifact, never loaded into the test process. -->
+    <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
+    <EnableMSTestRunner>false</EnableMSTestRunner>
+    <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
+    <TestingPlatformDotNetTestSupport>false</TestingPlatformDotNetTestSupport>
+    <TestingPlatformDisableCustomTestTarget>true</TestingPlatformDisableCustomTestTarget>
+    <RunVSTest>false</RunVSTest>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\Workspaces.TestApp\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="$(RepoRoot)src\PackageIdentity\Images\*.png" Link="Assets\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="BuildFixturePackage"
+          AfterTargets="Build"
+          DependsOnTargets="GetFixturePayload"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(_IsSkippedTestProject)' != 'true'"
+          Inputs="@(_FixturePayload);$(MSBuildProjectFullPath);$(MSBuildProjectDirectory)\AppxManifest.xml;$(MSBuildProjectDirectory)\BuildFixturePackage.ps1"
+          Outputs="$(TargetDir)Workspaces.TestApp.msix">
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)"
+          Command="powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\BuildFixturePackage.ps1&quot; -BinaryDirectory &quot;$(TargetDir).&quot; -StagingDirectory &quot;$(IntermediateOutputPath)Package&quot; -Platform &quot;$(Platform)&quot;" />
+    <ItemGroup>
+      <FileWrites Include="$(TargetDir)Workspaces.TestApp.msix" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetFixturePackage" DependsOnTargets="GetTargetPath" Returns="$(TargetDir)Workspaces.TestApp.msix">
+    <Error Condition="!Exists('$(TargetDir)Workspaces.TestApp.msix')" Text="The Workspaces fixture package was not built." />
+  </Target>
+
+  <Target Name="GetFixturePayload" DependsOnTargets="GetTargetPath" Returns="@(_FixturePayload)">
+    <Error Condition="!Exists('$(TargetPath)') or !Exists('$(TargetDir)$(AssemblyName).exe')" Text="The Workspaces fixture executable was not built." />
+    <ItemGroup>
+      <_FixturePayload Include="$(TargetDir)**\*" Exclude="$(TargetDir)**\*.msix;$(TargetDir)**\*.pdb" />
+      <_FixturePayload>
+        <RelativePath>%(_FixturePayload.RecursiveDir)%(_FixturePayload.Filename)%(_FixturePayload.Extension)</RelativePath>
+      </_FixturePayload>
+    </ItemGroup>
+  </Target>
+</Project>
