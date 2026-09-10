@@ -9,6 +9,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
@@ -113,11 +114,61 @@ internal static class SettingsCliHelper
         return UnwrapPropertyValue(rawValue);
     }
 
+    public static GpoRuleConfigured GetModuleGpoRule(string moduleName)
+    {
+        try
+        {
+            return moduleName.ToLowerInvariant() switch
+            {
+                "advancedpaste" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAdvancedPasteEnabledValue(),
+                "alwaysontop" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAlwaysOnTopEnabledValue(),
+                "awake" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue(),
+                "cmdpal" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredCmdPalEnabledValue(),
+                "colorpicker" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredColorPickerEnabledValue(),
+                "cropandlock" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredCropAndLockEnabledValue(),
+                "cursorwrap" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredCursorWrapEnabledValue(),
+                "environmentvariables" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue(),
+                "fancyzones" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredFancyZonesEnabledValue(),
+                "filelocksmith" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredFileLocksmithEnabledValue(),
+                "findmymouse" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredFindMyMouseEnabledValue(),
+                "altwindowcycle" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAltWindowCycleEnabledValue(),
+                "hosts" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredHostsFileEditorEnabledValue(),
+                "imageresizer" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredImageResizerEnabledValue(),
+                "keyboardmanager" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredKeyboardManagerEnabledValue(),
+                "lightswitch" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredLightSwitchEnabledValue(),
+                "mousehighlighter" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMouseHighlighterEnabledValue(),
+                "mousejump" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMouseJumpEnabledValue(),
+                "mousepointercrosshairs" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMousePointerCrosshairsEnabledValue(),
+                "mousewithoutborders" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMouseWithoutBordersEnabledValue(),
+                "newplus" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredNewPlusEnabledValue(),
+                "peek" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPeekEnabledValue(),
+                "powerrename" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPowerRenameEnabledValue(),
+                "powerlauncher" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPowerLauncherEnabledValue(),
+                "poweraccent" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredQuickAccentEnabledValue(),
+                "workspaces" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredWorkspacesEnabledValue(),
+                "registrypreview" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredRegistryPreviewEnabledValue(),
+                "measuretool" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredScreenRulerEnabledValue(),
+                "shortcutguide" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredShortcutGuideEnabledValue(),
+                "powerocr" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredTextExtractorEnabledValue(),
+                "powerdisplay" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPowerDisplayEnabledValue(),
+                "zoomit" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredZoomItEnabledValue(),
+                "grabandmove" => (GpoRuleConfigured)global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredGrabAndMoveEnabledValue(),
+                _ => GpoRuleConfigured.NotConfigured,
+            };
+        }
+        catch
+        {
+            return GpoRuleConfigured.NotConfigured;
+        }
+    }
+
     public static void SetSettingValue(string qualifiedName, string newValueStr, SettingsUtils? settingsUtils = null)
     {
         settingsUtils ??= SettingsUtils.Default;
         if (qualifiedName.StartsWith("Enabled.", StringComparison.OrdinalIgnoreCase))
         {
+            var moduleName = qualifiedName.Substring("Enabled.".Length);
+            CheckModuleGpoLock(moduleName);
             qualifiedName = "GeneralSettings." + qualifiedName;
         }
 
@@ -136,11 +187,27 @@ internal static class SettingsCliHelper
             throw new ArgumentException($"Module '{moduleName}' was not found.");
         }
 
+        CheckModuleGpoLock(matchedKey);
+
         var currentState = modules[matchedKey];
         var newState = targetState ?? !currentState;
 
         SetSettingCommandLineCommand.Execute($"GeneralSettings.Enabled.{matchedKey}", newState.ToString().ToLowerInvariant(), settingsUtils);
         return newState;
+    }
+
+    private static void CheckModuleGpoLock(string moduleName)
+    {
+        var gpoRule = GetModuleGpoRule(moduleName);
+        if (gpoRule == GpoRuleConfigured.Disabled)
+        {
+            throw new InvalidOperationException($"Module '{moduleName}' is disabled by Group Policy and cannot be modified.");
+        }
+
+        if (gpoRule == GpoRuleConfigured.Enabled)
+        {
+            throw new InvalidOperationException($"Module '{moduleName}' is force-enabled by Group Policy and cannot be modified.");
+        }
     }
 
     public static void BackupSettings(string outputPath, SettingsUtils? settingsUtils = null)

@@ -15,6 +15,7 @@
     <AssemblyName>PowerToys.Settings.Cli</AssemblyName>
     <NoWarn>$(NoWarn);SA1500;SA1402;CA1852;CA1863;CA1305</NoWarn>
     <Nullable>enable</Nullable>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,6 +30,7 @@
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+    <ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
   </ItemGroup>
 
   <!-- Force using WindowsDesktop runtime to ensure consistent dll versions with other projects -->

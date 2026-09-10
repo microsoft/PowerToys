@@ -48,6 +48,16 @@ internal sealed class ListCommand : Command
                     foreach (var (mod, enabled) in modules.OrderBy(x => x.Key))
                     {
                         var statusStr = enabled ? "Enabled" : "Disabled";
+                        var gpoRule = SettingsCliHelper.GetModuleGpoRule(mod);
+                        if (gpoRule == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+                        {
+                            statusStr += " [GPO: Disabled]";
+                        }
+                        else if (gpoRule == PowerToys.GPOWrapper.GpoRuleConfigured.Enabled)
+                        {
+                            statusStr += " [GPO: Enabled]";
+                        }
+
                         Console.WriteLine($"  {mod,-25}: {statusStr}");
                     }
                 }
