@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     // Needs to be kept in sync with src\modules\alwaysontop\AlwaysOnTop\Settings.h
     public class AlwaysOnTopProperties
     {
-        public static readonly HotkeySettings DefaultHotkeyValue = new HotkeySettings(true, true, false, false, 0x54);
+        public static readonly HotkeySettings DefaultHotkeyValue = new HotkeySettings(true, true, true, false, 0x54);
         public static readonly HotkeySettings DefaultIncreaseOpacityHotkeyValue = new HotkeySettings(true, true, false, false, 0xBB);
         public static readonly HotkeySettings DefaultDecreaseOpacityHotkeyValue = new HotkeySettings(true, true, false, false, 0xBD);
         public const bool DefaultFrameEnabled = true;
