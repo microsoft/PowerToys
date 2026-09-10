@@ -49,6 +49,9 @@ schedule. If the mode is `Off`, it fails with exit code 2 and asks for an explic
 mode. Re-selecting the current mode does not clear a manual theme override.
 
 All commands support `--json`. `--help` and `--version` work without the service.
+Boolean options also accept explicit values, such as `--help=true`,
+`--version:true`, and `--json false`. A false help or version option does not
+suppress the command. Options after the literal `--` remain arguments.
 
 ## Output and exit codes
 
@@ -134,6 +137,14 @@ modifying Windows and sending a delayed completion notification. The Command
 Palette's existing toggle event still reaches that shortcut adapter. This
 preserves the number of requests received by the module and avoids an old
 completion event cancelling a newer CLI override.
+
+Manual overrides use a full local date/time baseline. Scheduled boundaries that
+pass during sleep expire an override, while a backward clock adjustment does
+not masquerade as midnight. Sun times are cached by their full calendar date.
+New manual commands account for already-occurring schedule or Night Light
+transitions before establishing their override; delayed notifications cannot
+cancel that newer choice. Unchanged settings notifications preserve detected
+external theme choices while genuine plan changes still take effect.
 
 ## Validation
 

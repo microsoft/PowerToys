@@ -14,6 +14,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -50,23 +51,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.generalSettingsRepository = SettingsRepository<GeneralSettings>.GetInstance(this.settingsUtils);
             this.moduleSettingsRepository = SettingsRepository<LightSwitchSettings>.GetInstance(this.settingsUtils);
 
-            // Get settings from JSON (or defaults if JSON missing)
-            var darkSettings = this.moduleSettingsRepository.SettingsConfig;
+            var settingsPath = this.settingsUtils.GetSettingsFilePath(this.appName);
+            this.dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            this.fileSystem = new FileSystem();
+
+            var initialization = InitializeSettings(
+                this.fileSystem, settingsPath, this.moduleSettingsRepository, OnSettingsChanged);
+            this.fileSystemWatcher = initialization.Watcher;
 
             // Pass them into the ViewModel
-            this.ViewModel = new LightSwitchViewModel(this.generalSettingsRepository, darkSettings, ShellPage.SendDefaultIPCMessage);
+            this.ViewModel = new LightSwitchViewModel(this.generalSettingsRepository, initialization.Settings, ShellPage.SendDefaultIPCMessage);
             this.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             this.LoadSettings(this.generalSettingsRepository, this.moduleSettingsRepository);
 
             DataContext = this.ViewModel;
-
-            var settingsPath = this.settingsUtils.GetSettingsFilePath(this.appName);
-
-            this.dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-            this.fileSystem = new FileSystem();
-
-            this.fileSystemWatcher = CreateSettingsWatcher(this.fileSystem, settingsPath, OnSettingsChanged);
 
             this.InitializeComponent();
             Loaded += LightSwitchPage_Loaded;
@@ -76,6 +75,29 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void RefreshEnabledState()
         {
             this.ViewModel.RefreshEnabledState();
+        }
+
+        internal static (IFileSystemWatcher Watcher, LightSwitchSettings Settings) InitializeSettings(
+            IFileSystem fileSystem,
+            string settingsPath,
+            ISettingsRepository<LightSwitchSettings> settingsRepository,
+            Action onChanged)
+        {
+            // Dashboard can have cached this repository before a CLI file replacement.
+            // Subscribe first so an edit during the initial read also triggers a reload.
+            var watcher = CreateSettingsWatcher(fileSystem, settingsPath, onChanged);
+            try
+            {
+                settingsRepository.ReloadSettings();
+
+                // Preserve the repository's cached/default fallback if reading fails.
+                return (watcher, settingsRepository.SettingsConfig);
+            }
+            catch
+            {
+                watcher.Dispose();
+                throw;
+            }
         }
 
         internal static IFileSystemWatcher CreateSettingsWatcher(IFileSystem fileSystem, string settingsPath, Action onChanged)
@@ -314,11 +336,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.dispatcherQueue.TryEnqueue(() =>
             {
                 this.suppressViewModelUpdates = true;
-
-                this.moduleSettingsRepository.ReloadSettings();
-                this.LoadSettings(this.generalSettingsRepository, this.moduleSettingsRepository);
-
-                this.suppressViewModelUpdates = false;
+                try
+                {
+                    this.moduleSettingsRepository.ReloadSettings();
+                    this.LoadSettings(this.generalSettingsRepository, this.moduleSettingsRepository);
+                }
+                finally
+                {
+                    this.suppressViewModelUpdates = false;
+                }
             });
         }
 

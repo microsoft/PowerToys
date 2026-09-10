@@ -2,6 +2,7 @@
 #include <common/utils/json.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include "SettingsObserver.h"
+#include <array>
 #include <filesystem>
 #include <fstream>
 #include <cmath>
@@ -29,6 +30,33 @@ namespace
             return SUCCEEDED(result) || result == RPC_E_CHANGED_MODE;
         }
     };
+
+    std::optional<json::JsonObject> ReadInitialSettings(HANDLE file, std::wstring& error)
+    {
+        // Keep the share-delete handle open throughout the read. Reopening with
+        // std::ifstream can conflict with another initializer publishing its file.
+        std::string contents;
+        std::array<char, 4096> buffer{};
+        for (;;)
+        {
+            DWORD read = 0;
+            if (!ReadFile(file, buffer.data(), static_cast<DWORD>(buffer.size()), &read, nullptr))
+            {
+                error = L"Light Switch settings could not be read (error " + std::to_wstring(GetLastError()) + L").";
+                return std::nullopt;
+            }
+            if (read == 0)
+                break;
+            contents.append(buffer.data(), read);
+        }
+        json::JsonObject document;
+        if (!json::JsonObject::TryParse(winrt::to_hstring(contents), document))
+        {
+            error = L"Light Switch settings contain invalid JSON.";
+            return std::nullopt;
+        }
+        return document;
+    }
 
     class TemporarySettingsFile
     {
@@ -336,22 +364,23 @@ bool TryInitializeLightSwitchSettings(const std::wstring& path, LightSwitchConfi
 
             // Publish the complete document without replacing a concurrent first
             // save from Settings UI or another service. Read whichever file won.
-            if (!temporary.Publish(path, MOVEFILE_WRITE_THROUGH))
+            const auto published = temporary.Publish(path, MOVEFILE_WRITE_THROUGH);
+            const auto publishError = published ? ERROR_SUCCESS : GetLastError();
+            existing.reset(CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
+            if (!existing)
             {
-                const auto moveError = GetLastError();
-                if (moveError != ERROR_ALREADY_EXISTS && moveError != ERROR_FILE_EXISTS)
-                {
-                    error = L"Light Switch default settings could not be saved (error " + std::to_wstring(moveError) + L").";
-                    return false;
-                }
+                const auto readError = GetLastError();
+                error = L"Light Switch settings could not be opened after initialization (open error " +
+                        std::to_wstring(readError) + L", publish error " + std::to_wstring(publishError) + L").";
+                return false;
             }
+            // A failed publish is only acceptable when a readable, valid file
+            // actually won the race. Never replace it or return guessed defaults.
         }
-        existing.reset();
 
-        const auto document = json::from_file(path);
+        const auto document = ReadInitialSettings(existing.get(), error);
         if (!document)
         {
-            error = L"Light Switch settings could not be read or contain invalid JSON.";
             return false;
         }
         return TryParseLightSwitchConfig(*document, config, error);

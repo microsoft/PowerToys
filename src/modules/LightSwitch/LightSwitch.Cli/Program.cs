@@ -73,7 +73,7 @@ public static class Program
             LogError(ex.ToString());
             try
             {
-                return CliApplication.WriteUnexpectedFailure(CliCommandLine.HasFlag(args, "--json"), Console.Out, Console.Error);
+                return CliApplication.WriteUnexpectedFailure(CliCommandLine.ParsePresentationOptions(args).Json, Console.Out, Console.Error);
             }
             catch (Exception)
             {

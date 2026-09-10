@@ -33,24 +33,31 @@ internal sealed class CliApplication
 
     internal async Task<int> RunAsync(string[] args, TextWriter stdout, TextWriter stderr, CancellationToken cancellationToken = default)
     {
-        bool json = CliCommandLine.HasFlag(args, "--json");
+        bool json = false;
 
         try
         {
-            if (CliCommandLine.IsHelpRequest(args))
+            var presentation = CliCommandLine.ParsePresentationOptions(args);
+            json = presentation.Json;
+            if (presentation.Error is not null)
+            {
+                throw new CliException("INVALID_ARGUMENT", presentation.Error);
+            }
+
+            if (presentation.Help)
             {
                 WriteInformation(new CliInformation { Help = CliCommandLine.HelpText }, json, stdout);
                 return 0;
             }
 
-            if (CliCommandLine.HasFlag(args, "--version"))
+            if (presentation.Version)
             {
                 WriteInformation(new CliInformation { CliVersion = CliVersion }, json, stdout);
                 return 0;
             }
 
             var commandLine = new CliCommandLine();
-            var parsed = commandLine.Parse(args);
+            var parsed = commandLine.Parse(presentation.Arguments);
 
             if (parsed.Errors.Count != 0)
             {

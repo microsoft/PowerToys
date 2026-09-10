@@ -151,6 +151,23 @@ namespace LightSwitchServiceUnitTests
             Assert::AreEqual(original, file.Read());
         }
 
+        TEST_METHOD (StartupReadsSettingsWhileAnotherHandleHasDeleteAccess)
+        {
+            TemporarySettings file;
+            file.Write(ValidSettings);
+            const auto original = file.Read();
+            wil::unique_hfile publisher(CreateFileW(file.path.c_str(), DELETE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
+            Assert::IsTrue(static_cast<bool>(publisher));
+            LightSwitchConfig config;
+            std::wstring error;
+            Assert::IsTrue(TryInitializeLightSwitchSettings(file.path, config, error), error.c_str());
+            Assert::IsTrue(config.scheduleMode == ScheduleMode::FixedHours);
+            Assert::IsTrue(config.changeSystem);
+            Assert::IsFalse(config.changeApps);
+            publisher.reset();
+            Assert::AreEqual(original, file.Read());
+        }
+
         TEST_METHOD (StartupDoesNotTreatAMissingParentAsAMissingSettingsFile)
         {
             TemporarySettings file;
@@ -169,20 +186,25 @@ namespace LightSwitchServiceUnitTests
             Assert::IsTrue(DeleteFileW(file.path.c_str()));
             std::promise<void> start;
             auto ready = start.get_future().share();
-            std::vector<std::future<bool>> operations;
+            std::vector<std::future<std::wstring>> operations;
             for (int index = 0; index < 12; ++index)
             {
                 operations.push_back(std::async(std::launch::async, [&, ready]() {
                     ready.wait();
                     LightSwitchConfig config;
                     std::wstring error;
-                    return TryInitializeLightSwitchSettings(file.path, config, error) &&
-                           config.scheduleMode == ScheduleMode::Off && config.changeSystem && config.changeApps;
+                    if (!TryInitializeLightSwitchSettings(file.path, config, error))
+                        return error.empty() ? std::wstring{ L"Initialization failed without an error message." } : error;
+                    return config.scheduleMode == ScheduleMode::Off && config.changeSystem && config.changeApps ?
+                               std::wstring{} : std::wstring{ L"The published default configuration is inconsistent." };
                 }));
             }
             start.set_value();
             for (auto& operation : operations)
-                Assert::IsTrue(operation.get());
+            {
+                const auto error = operation.get();
+                Assert::IsTrue(error.empty(), error.c_str());
+            }
             Assert::IsTrue(json::from_file(file.path).has_value());
             WIN32_FIND_DATAW entry{};
             const auto leftover = FindFirstFileW((file.path + L".init.*").c_str(), &entry);

@@ -1,5 +1,6 @@
 #pragma once
 #include "LightSwitchSettings.h"
+#include <cstdint>
 #include <functional>
 #include <optional>
 #include <utility>
@@ -12,8 +13,7 @@ struct LightSwitchState
     bool isSystemLightActive = false;
     bool isAppsLightActive = false;
     bool isNightLightActive = false;
-    int lastEvaluatedDay = -1;
-    int lastTickMinutes = -1;
+    std::optional<std::uint64_t> lastEvaluatedDate;
     int effectiveLightMinutes = 0;
     int effectiveDarkMinutes = 0;
 };
@@ -71,11 +71,19 @@ private:
     LightSwitchStateManagerDependencies _dependencies;
     LightSwitchConfig _settingsSnapshot;
     bool _hasSettingsSnapshot = false;
+    std::optional<bool> _lastObservedSystemTheme;
+    std::optional<bool> _lastObservedAppsTheme;
+    std::optional<std::uint64_t> _lastTickTime;
+    int _lastTickLightMinutes = 0;
+    int _lastTickDarkMinutes = 0;
 
     bool LoadSettingsLocked(std::wstring& error);
     StatusSnapshot GetStatusSnapshotLocked(const LightSwitchConfig& config);
-    void SyncThemeStateLocked(const StatusSnapshot& snapshot);
+    void SyncThemeStateLocked(const StatusSnapshot& snapshot, bool recordObservation = true);
+    void DetectExternalThemeChangeLocked(const LightSwitchConfig& config, const SYSTEMTIME& now);
     void UpdateEffectiveTimesLocked(const LightSwitchConfig& config, const SYSTEMTIME& now);
+    void RecordEvaluationTimeLocked(const SYSTEMTIME& now);
+    bool HasCrossedScheduleBoundaryLocked(const SYSTEMTIME& now) const;
     bool ScheduledThemeLocked(const LightSwitchConfig& config, const SYSTEMTIME& now);
     LSTATUS ApplyThemeLocked(bool light, const LightSwitchConfig& config, bool& changed);
     LSTATUS EvaluateAndApplyIfNeededLocked(const LightSwitchConfig& config, const SYSTEMTIME& now);

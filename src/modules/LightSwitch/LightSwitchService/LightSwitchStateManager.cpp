@@ -9,9 +9,30 @@
 
 namespace
 {
+    constexpr int MinutesPerDay = 24 * 60;
+
     int Minutes(const SYSTEMTIME& time)
     {
         return time.wHour * 60 + time.wMinute;
+    }
+
+    constexpr int NormalizeMinutes(int minutes, int offset = 0)
+    {
+        const auto total = static_cast<std::int64_t>(minutes) + offset;
+        return static_cast<int>((total % MinutesPerDay + MinutesPerDay) % MinutesPerDay);
+    }
+
+    std::optional<std::uint64_t> LocalMinutes(const SYSTEMTIME& time)
+    {
+        // Encode the complete local wall-clock date without a time-zone conversion.
+        // A backward clock adjustment must not look like a forward midnight wrap.
+        FILETIME fileTime{};
+        if (!SystemTimeToFileTime(&time, &fileTime))
+            return std::nullopt;
+        ULARGE_INTEGER value{};
+        value.LowPart = fileTime.dwLowDateTime;
+        value.HighPart = fileTime.dwHighDateTime;
+        return value.QuadPart / (60ULL * 10000000ULL);
     }
 
     std::pair<int, int> UpdateSunTimes(const LightSwitchConfig& settings, const SYSTEMTIME& time)
@@ -87,7 +108,7 @@ bool LightSwitchStateManager::LoadSettingsLocked(std::wstring& error)
     {
         const bool enteringNightLight = !_hasSettingsSnapshot || _settingsSnapshot.scheduleMode != ScheduleMode::FollowNightLight;
         _state.isManualOverride = false;
-        _state.lastEvaluatedDay = -1;
+        _state.lastEvaluatedDate.reset();
         if (config.scheduleMode == ScheduleMode::FollowNightLight && enteringNightLight)
         {
             _state.isNightLightActive = _dependencies.readNightLight();
@@ -125,29 +146,44 @@ StatusSnapshot LightSwitchStateManager::GetStatusSnapshot()
     return GetStatusSnapshotLocked(_settingsSnapshot);
 }
 
-void LightSwitchStateManager::SyncThemeStateLocked(const StatusSnapshot& snapshot)
+void LightSwitchStateManager::SyncThemeStateLocked(const StatusSnapshot& snapshot, bool recordObservation)
 {
     if (snapshot.systemLight)
+    {
         _state.isSystemLightActive = *snapshot.systemLight;
+        if (recordObservation)
+            _lastObservedSystemTheme = snapshot.systemLight;
+    }
     if (snapshot.appsLight)
+    {
         _state.isAppsLightActive = *snapshot.appsLight;
+        if (recordObservation)
+            _lastObservedAppsTheme = snapshot.appsLight;
+    }
 }
 
 ThemeCommandResult LightSwitchStateManager::CompleteCommandLocked(const LightSwitchConfig& config, const wchar_t* errorCode, const std::wstring& message)
 {
     auto snapshot = GetStatusSnapshotLocked(config);
-    SyncThemeStateLocked(snapshot);
+    // Reporting an error must not consume an external change that the scheduler
+    // has not handled yet (for example, when the settings file is unreadable).
+    SyncThemeStateLocked(snapshot, false);
     return { errorCode[0] == L'\0', errorCode, message, std::move(snapshot) };
 }
 
 ThemeCommandResult LightSwitchStateManager::OnSettingsChanged()
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
+    const bool hadSettingsSnapshot = _hasSettingsSnapshot;
+    const auto previousConfig = _settingsSnapshot;
     std::wstring error;
     if (!LoadSettingsLocked(error))
         return CompleteCommandLocked(_settingsSnapshot, L"SETTINGS_READ_FAILED", error);
     const auto config = _settingsSnapshot;
-    const auto result = EvaluateAndApplyIfNeededLocked(config, _dependencies.localTime());
+    const auto now = _dependencies.localTime();
+    if (hadSettingsSnapshot && HasSameEffectiveLightSwitchSettings(previousConfig, config))
+        DetectExternalThemeChangeLocked(config, now);
+    const auto result = EvaluateAndApplyIfNeededLocked(config, now);
     return result == ERROR_SUCCESS ? CompleteCommandLocked(config) : CompleteCommandLocked(config, L"THEME_WRITE_FAILED", ThemeError(result));
 }
 
@@ -171,8 +207,32 @@ void LightSwitchStateManager::OnManualOverride()
 
 LSTATUS LightSwitchStateManager::OnManualOverrideLocked(const LightSwitchConfig& config, const SYSTEMTIME& now)
 {
-    _state.isManualOverride = !_state.isManualOverride;
+    UpdateEffectiveTimesLocked(config, now);
+    bool crossedBoundary = false;
+    if (config.scheduleMode == ScheduleMode::FollowNightLight)
+    {
+        const bool nightLight = _dependencies.readNightLight();
+        crossedBoundary = _state.isNightLightActive != nightLight;
+        _state.isNightLightActive = nightLight;
+    }
+    else if (config.scheduleMode != ScheduleMode::Off)
+    {
+        crossedBoundary = HasCrossedScheduleBoundaryLocked(now);
+    }
     const auto snapshot = GetStatusSnapshotLocked(config);
+    if (crossedBoundary)
+    {
+        // The old override expired before this toggle. Keep the new selection
+        // only when it differs from the current plan, as for an explicit set.
+        const bool scheduledLight = ScheduledThemeLocked(config, now);
+        _state.isManualOverride = (config.changeSystem && snapshot.systemLight && *snapshot.systemLight != scheduledLight) ||
+                                  (config.changeApps && snapshot.appsLight && *snapshot.appsLight != scheduledLight);
+        RecordEvaluationTimeLocked(now);
+    }
+    else
+    {
+        _state.isManualOverride = !_state.isManualOverride;
+    }
     SyncThemeStateLocked(snapshot);
     NotifyAppliedThemeLocked(config, snapshot);
     return EvaluateAndApplyIfNeededLocked(config, now);
@@ -181,17 +241,20 @@ LSTATUS LightSwitchStateManager::OnManualOverrideLocked(const LightSwitchConfig&
 void LightSwitchStateManager::OnNightLightChange()
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
+    const bool hadSettingsSnapshot = _hasSettingsSnapshot;
+    const auto previousConfig = _settingsSnapshot;
     std::wstring error;
     if (!LoadSettingsLocked(error))
         return;
     const bool nightLight = _dependencies.readNightLight();
-    if (_state.isNightLightActive != nightLight)
-    {
-        if (_settingsSnapshot.scheduleMode == ScheduleMode::FollowNightLight)
-            _state.isManualOverride = false;
-        _state.isNightLightActive = nightLight;
-    }
-    EvaluateAndApplyIfNeededLocked(_settingsSnapshot, _dependencies.localTime());
+    const bool crossedBoundary = _settingsSnapshot.scheduleMode == ScheduleMode::FollowNightLight && _state.isNightLightActive != nightLight;
+    if (crossedBoundary)
+        _state.isManualOverride = false;
+    _state.isNightLightActive = nightLight;
+    const auto now = _dependencies.localTime();
+    if (!crossedBoundary && hadSettingsSnapshot && HasSameEffectiveLightSwitchSettings(previousConfig, _settingsSnapshot))
+        DetectExternalThemeChangeLocked(_settingsSnapshot, now);
+    EvaluateAndApplyIfNeededLocked(_settingsSnapshot, now);
 }
 
 void LightSwitchStateManager::SyncInitialThemeState()
@@ -222,19 +285,50 @@ void LightSwitchStateManager::UpdateEffectiveTimesLocked(const LightSwitchConfig
 {
     if (config.scheduleMode == ScheduleMode::SunsetToSunrise && CoordinatesAreValid(config.latitude, config.longitude))
     {
-        if (_state.lastEvaluatedDay != now.wDay)
+        const auto localMinutes = LocalMinutes(now);
+        if (!localMinutes)
+            return;
+        const auto date = *localMinutes / MinutesPerDay;
+        if (_state.lastEvaluatedDate != date)
         {
             const auto [light, dark] = _dependencies.updateSunTimes(config, now);
-            _state.lastEvaluatedDay = now.wDay;
-            _state.effectiveLightMinutes = light + config.sunrise_offset;
-            _state.effectiveDarkMinutes = dark + config.sunset_offset;
+            _state.lastEvaluatedDate = date;
+            _state.effectiveLightMinutes = NormalizeMinutes(light, config.sunrise_offset);
+            _state.effectiveDarkMinutes = NormalizeMinutes(dark, config.sunset_offset);
         }
     }
     else if (config.scheduleMode == ScheduleMode::FixedHours)
     {
-        _state.effectiveLightMinutes = config.lightTime;
-        _state.effectiveDarkMinutes = config.darkTime;
+        _state.effectiveLightMinutes = NormalizeMinutes(config.lightTime);
+        _state.effectiveDarkMinutes = NormalizeMinutes(config.darkTime);
     }
+}
+
+void LightSwitchStateManager::RecordEvaluationTimeLocked(const SYSTEMTIME& now)
+{
+    _lastTickTime = LocalMinutes(now);
+    _lastTickLightMinutes = _state.effectiveLightMinutes;
+    _lastTickDarkMinutes = _state.effectiveDarkMinutes;
+}
+
+bool LightSwitchStateManager::HasCrossedScheduleBoundaryLocked(const SYSTEMTIME& now) const
+{
+    const auto current = LocalMinutes(now);
+    if (!_lastTickTime || !current || *current <= *_lastTickTime)
+        return false;
+    if (*current - *_lastTickTime >= static_cast<std::uint64_t>(MinutesPerDay))
+        return true;
+
+    const int previousMinutes = static_cast<int>(*_lastTickTime % MinutesPerDay);
+    const int currentMinutes = static_cast<int>(*current % MinutesPerDay);
+    if (*_lastTickTime / MinutesPerDay != *current / MinutesPerDay)
+    {
+        // Sun times can change at midnight. Use each date's own boundaries.
+        return previousMinutes < _lastTickLightMinutes || previousMinutes < _lastTickDarkMinutes ||
+               currentMinutes >= _state.effectiveLightMinutes || currentMinutes >= _state.effectiveDarkMinutes;
+    }
+    return (previousMinutes < _state.effectiveLightMinutes && currentMinutes >= _state.effectiveLightMinutes) ||
+           (previousMinutes < _state.effectiveDarkMinutes && currentMinutes >= _state.effectiveDarkMinutes);
 }
 
 bool LightSwitchStateManager::ScheduledThemeLocked(const LightSwitchConfig& config, const SYSTEMTIME& now)
@@ -273,10 +367,9 @@ LSTATUS LightSwitchStateManager::ApplyThemeLocked(bool light, const LightSwitchC
 
 LSTATUS LightSwitchStateManager::EvaluateAndApplyIfNeededLocked(const LightSwitchConfig& config, const SYSTEMTIME& now)
 {
-    const int minutes = Minutes(now);
     if (config.scheduleMode == ScheduleMode::Off)
     {
-        _state.lastTickMinutes = minutes;
+        RecordEvaluationTimeLocked(now);
         return ERROR_SUCCESS;
     }
     UpdateEffectiveTimesLocked(config, now);
@@ -285,27 +378,12 @@ LSTATUS LightSwitchStateManager::EvaluateAndApplyIfNeededLocked(const LightSwitc
         // Night Light overrides end on an actual Night Light transition, not a clock tick.
         if (config.scheduleMode == ScheduleMode::FollowNightLight)
         {
-            _state.lastTickMinutes = minutes;
+            RecordEvaluationTimeLocked(now);
             return ERROR_SUCCESS;
         }
-        bool crossedBoundary = false;
-        if (_state.lastTickMinutes != -1)
+        if (!HasCrossedScheduleBoundaryLocked(now))
         {
-            const int previous = _state.lastTickMinutes;
-            if (minutes < previous)
-            {
-                crossedBoundary = (previous <= _state.effectiveLightMinutes || minutes >= _state.effectiveLightMinutes) ||
-                                  (previous <= _state.effectiveDarkMinutes || minutes >= _state.effectiveDarkMinutes);
-            }
-            else
-            {
-                crossedBoundary = (previous < _state.effectiveLightMinutes && minutes >= _state.effectiveLightMinutes) ||
-                                  (previous < _state.effectiveDarkMinutes && minutes >= _state.effectiveDarkMinutes);
-            }
-        }
-        if (!crossedBoundary)
-        {
-            _state.lastTickMinutes = minutes;
+            RecordEvaluationTimeLocked(now);
             return ERROR_SUCCESS;
         }
         _state.isManualOverride = false;
@@ -317,7 +395,7 @@ LSTATUS LightSwitchStateManager::EvaluateAndApplyIfNeededLocked(const LightSwitc
         NotifyAppliedThemeLocked(config, GetStatusSnapshotLocked(config));
     else if (result != ERROR_SUCCESS)
         Logger::warn(L"[LightSwitchStateManager] Scheduled theme application failed (error: {}).", result);
-    _state.lastTickMinutes = minutes;
+    RecordEvaluationTimeLocked(now);
     return result;
 }
 
@@ -348,8 +426,10 @@ ThemeCommandResult LightSwitchStateManager::SetTheme(bool light)
 
     const auto now = _dependencies.localTime();
     UpdateEffectiveTimesLocked(config, now);
+    if (config.scheduleMode == ScheduleMode::FollowNightLight)
+        _state.isNightLightActive = _dependencies.readNightLight();
     _state.isManualOverride = config.scheduleMode != ScheduleMode::Off && light != ScheduledThemeLocked(config, now);
-    _state.lastTickMinutes = Minutes(now);
+    RecordEvaluationTimeLocked(now);
     if (changed)
         NotifyAppliedThemeLocked(config, GetStatusSnapshotLocked(config));
     return CompleteCommandLocked(config);
@@ -402,17 +482,30 @@ void LightSwitchStateManager::DetectExternalThemeChange()
     // Let the scheduler apply that edit before comparing Windows with the new plan.
     if (hadSettingsSnapshot && !HasSameEffectiveLightSwitchSettings(previousConfig, _settingsSnapshot))
         return;
-    const auto config = _settingsSnapshot;
-    const auto now = _dependencies.localTime();
+    DetectExternalThemeChangeLocked(_settingsSnapshot, _dependencies.localTime());
+}
+
+void LightSwitchStateManager::DetectExternalThemeChangeLocked(const LightSwitchConfig& config, const SYSTEMTIME& now)
+{
+    if (config.scheduleMode == ScheduleMode::Off || _state.isManualOverride)
+        return;
     UpdateEffectiveTimesLocked(config, now);
-    const bool scheduledLight = config.scheduleMode == ScheduleMode::FollowNightLight ? !_dependencies.readNightLight() : ScheduledThemeLocked(config, now);
+    const bool nightLight = config.scheduleMode == ScheduleMode::FollowNightLight ? _dependencies.readNightLight() : _state.isNightLightActive;
+    const bool scheduledLight = config.scheduleMode == ScheduleMode::FollowNightLight ? !nightLight : ScheduledThemeLocked(config, now);
     const auto snapshot = GetStatusSnapshotLocked(config);
-    const bool mismatch = (config.changeSystem && snapshot.systemLight && *snapshot.systemLight != scheduledLight) ||
-                          (config.changeApps && snapshot.appsLight && *snapshot.appsLight != scheduledLight);
+    // An unchanged Windows theme at a new scheduled boundary is not an external
+    // edit. Require a change from the last observation as well as a plan mismatch.
+    const bool mismatch = (config.changeSystem && snapshot.systemLight && *snapshot.systemLight != scheduledLight && snapshot.systemLight != _lastObservedSystemTheme) ||
+                          (config.changeApps && snapshot.appsLight && *snapshot.appsLight != scheduledLight && snapshot.appsLight != _lastObservedAppsTheme);
     if (mismatch)
     {
         Logger::info(L"[LightSwitchStateManager] External theme change detected.");
-        OnManualOverrideLocked(config, now);
+        _state.isManualOverride = true;
+        if (config.scheduleMode == ScheduleMode::FollowNightLight)
+            _state.isNightLightActive = nightLight;
+        SyncThemeStateLocked(snapshot);
+        RecordEvaluationTimeLocked(now);
+        NotifyAppliedThemeLocked(config, snapshot);
     }
 }
 // Notify PowerDisplay that LightSwitch applied a new theme.
