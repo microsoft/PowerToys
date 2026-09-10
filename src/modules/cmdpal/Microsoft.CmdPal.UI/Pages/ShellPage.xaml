@@ -47,14 +47,12 @@
             <!--  Backdrop requires ShouldConstrainToRootBounds="False"  -->
             <Flyout
                 x:Name="QuickAccessShelfContextMenuFlyout"
-                FlyoutPresenterStyle="{StaticResource QuickAccessShelfContextMenuFlyoutStyle}"
                 Closed="QuickAccessShelfContextMenuFlyout_Closed"
+                FlyoutPresenterStyle="{StaticResource QuickAccessShelfContextMenuFlyoutStyle}"
                 Opened="QuickAccessShelfContextMenuFlyout_Opened"
                 ShouldConstrainToRootBounds="False"
                 SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
-                <cpcontrols:ContextMenu
-                    x:Name="QuickAccessShelfContextControl"
-                    SubscribeToCommandBar="False" />
+                <cpcontrols:ContextMenu x:Name="QuickAccessShelfContextControl" SubscribeToCommandBar="False" />
             </Flyout>
 
             <cmdpalUI:DetailsDataTemplateSelector
@@ -207,7 +205,10 @@
                 ImageProvider="{StaticResource ImageProvider}"
                 Themes="{StaticResource DefaultMarkdownThemeConfig}" />
 
-            <StackLayout x:Key="DetailsContentLayout" Orientation="Vertical" Spacing="8" />
+            <StackLayout
+                x:Key="DetailsContentLayout"
+                Orientation="Vertical"
+                Spacing="8" />
 
             <cmdpalUI:ContentTemplateSelector
                 x:Key="DetailsContentTemplateSelector"
@@ -780,13 +781,13 @@
 
         <!--
             Horrifying: You may ask yourself - why is there a Background on this InfoBar?
-            
+
             Well, as it turns out, the Informational InfoBar has a transparent
             background. It just cannot be bothered. So, we need to manually give
             it one to actually obscure the text beneath it. And you can't just give
             the InfoBar itself a Background, because then the other Severity's
             won't get colorized.
-            
+
             See https://github.com/microsoft/microsoft-ui-xaml/issues/5741
         -->
         <StackPanel

@@ -132,6 +132,7 @@
         <Button
             x:Name="SettingsIconButton"
             x:Uid="SettingsButton"
+            AccessKey="S"
             Click="SettingsIcon_Clicked"
             Style="{StaticResource SubtleButtonStyle}"
             Visibility="{x:Bind CurrentPageViewModel.IsRootPage, Mode=OneWay}">

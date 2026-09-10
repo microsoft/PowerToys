@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.ListItemsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -40,6 +40,28 @@
         <x:Double x:Key="SingleRowListViewItemHeight">44</x:Double>
         <x:Double x:Key="ListViewSectionHeight">28</x:Double>
         <x:Double x:Key="ListViewSeparatorHeight">28</x:Double>
+
+        <Style x:Key="NumberedShortcutCueBorderStyle" TargetType="Border">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
+            <Setter Property="Background" Value="{ThemeResource KeyTipBackground}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource KeyTipBorderBrush}" />
+            <Setter Property="BorderThickness" Value="{ThemeResource KeyTipBorderThemeThickness}" />
+            <Setter Property="Padding" Value="{ThemeResource KeyTipThemePadding}" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Setter Property="Canvas.ZIndex" Value="1" />
+        </Style>
+
+        <Style x:Key="NumberedShortcutCueTextStyle" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontFamily" Value="{ThemeResource KeyTipFontFamily}" />
+            <Setter Property="FontSize" Value="{ThemeResource KeyTipContentThemeFontSize}" />
+            <Setter Property="Foreground" Value="{ThemeResource KeyTipForeground}" />
+            <Setter Property="TextAlignment" Value="Center" />
+        </Style>
 
         <Style x:Key="IconGridViewItemStyle" TargetType="GridViewItem">
             <!--  Include the former panel spacing in the native cell's margin.  -->
@@ -705,5 +727,16 @@
                 </StackPanel>
             </controls:Case>
         </controls:SwitchPresenter>
+
+        <!--
+            Numbered access-key cues are created lazily in code and positioned over
+            realized containers. Keeping them out of the item templates avoids adding
+            visual-tree and container-processing cost to normal list and grid rendering.
+        -->
+        <Canvas
+            x:Name="NumberedShortcutCueOverlay"
+            AutomationProperties.AccessibilityView="Raw"
+            IsHitTestVisible="False"
+            Canvas.ZIndex="1" />
     </Grid>
 </UserControl>

@@ -27,6 +27,7 @@ using Microsoft.UI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.Windows.AppLifecycle;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
@@ -70,12 +71,13 @@ public sealed partial class MainWindow : WindowEx,
     private readonly WNDPROC? _originalWndProc;
     private readonly List<TopLevelHotkey> _hotkeys = [];
     private readonly KeyboardListener _keyboardListener;
-    private readonly LocalKeyboardListener _localKeyboardListener;
+    private readonly LocalKeyboardListener _localKeyboardListener = new();
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private readonly ICmdPalProtocolActivation _protocolActivation;
     private readonly ViewModels.Models.IMonitorService _monitorService;
     private readonly IThemeService _themeService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
+    private readonly AccessKeyModeController _accessKeyMode;
     private readonly List<long> _breakthroughTimestamps = [];
 
     private bool _ignoreHotKeyWhenFullScreen = true;
@@ -137,6 +139,7 @@ public sealed partial class MainWindow : WindowEx,
     {
         _protocolActivation = App.Current.Services.GetRequiredService<ICmdPalProtocolActivation>();
         _monitorService = App.Current.Services.GetRequiredService<ViewModels.Models.IMonitorService>();
+        _accessKeyMode = App.Current.Services.GetRequiredService<AccessKeyModeController>();
 
         InitializeComponent();
 
@@ -210,6 +213,7 @@ public sealed partial class MainWindow : WindowEx,
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
         SizeChanged += WindowSizeChanged;
         RootElement.Loaded += RootElementLoaded;
+        RootElement.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootElement_PointerPressed), true);
 
         // Load our settings, and then also wire up a settings changed handler
         HotReloadSettings();
@@ -224,7 +228,7 @@ public sealed partial class MainWindow : WindowEx,
             Summon(string.Empty);
         });
 
-        _localKeyboardListener = new LocalKeyboardListener();
+        _accessKeyMode.AttachInput(controller => new AccessKeyInputHandler(this, controller));
         _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
         _localKeyboardListener.Start();
 
@@ -285,6 +289,8 @@ public sealed partial class MainWindow : WindowEx,
             WeakReferenceMessenger.Default.Send(new GoBackMessage());
         }
     }
+
+    private void RootElement_PointerPressed(object sender, PointerRoutedEventArgs e) => _accessKeyMode.Exit();
 
     private void SettingsChangedHandler(ISettingsService sender, SettingsModel args)
     {
@@ -1146,6 +1152,11 @@ public sealed partial class MainWindow : WindowEx,
 
     private void SetIsVisibleToUser(bool isVisibleToUser)
     {
+        if (!isVisibleToUser)
+        {
+            _accessKeyMode.Exit();
+        }
+
         if (IsVisibleToUser == isVisibleToUser)
         {
             return;
@@ -1187,7 +1198,9 @@ public sealed partial class MainWindow : WindowEx,
         // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
         // Workaround by turning it off before shutdown.
         App.Current.DebugSettings.FailFastOnErrors = false;
+        _accessKeyMode.Dispose();
         _localKeyboardListener.Dispose();
+        (RootElement.MainContent as ShellPage)?.Dispose();
         DisposeAcrylic();
 
         _keyboardListener.Stop();
@@ -1380,6 +1393,8 @@ public sealed partial class MainWindow : WindowEx,
 
     internal void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
+        _localKeyboardListener.EnableRaisingEvents = args.WindowActivationState != WindowActivationState.Deactivated;
+
         if (!_themeServiceInitialized && args.WindowActivationState != WindowActivationState.Deactivated)
         {
             try
@@ -1395,6 +1410,8 @@ public sealed partial class MainWindow : WindowEx,
 
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
+            _accessKeyMode.Exit();
+
             // Save the current window position before hiding the window
             // but not when opened from dock — preserve the pre-dock size.
             if (!_isLoadedFromDock)
@@ -1707,6 +1724,10 @@ public sealed partial class MainWindow : WindowEx,
     {
         switch (uMsg)
         {
+            case PInvoke.WM_ACTIVATEAPP when wParam.Value == 0:
+                _accessKeyMode.Exit();
+                break;
+
             // Prevent the window from maximizing when double-clicking the title bar area
             case PInvoke.WM_NCLBUTTONDBLCLK:
                 return (LRESULT)IntPtr.Zero;
@@ -1920,6 +1941,7 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Dispose()
     {
+        _accessKeyMode.Dispose();
         _themeService.ThemeChanged -= ThemeServiceOnThemeChanged;
         App.Current.Services.GetRequiredService<ISettingsService>().SettingsChanged -= SettingsChangedHandler;
 
