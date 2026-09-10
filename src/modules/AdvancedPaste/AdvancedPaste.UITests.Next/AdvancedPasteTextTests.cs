@@ -29,15 +29,12 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
     public void PlainTextRemovesRichFormattingAndReplacesClipboard(Invocation invocation)
     {
         const string text = "Bold and plain\r\nSecond line";
-        var package = new DataPackage();
-        package.SetText(text);
-        package.SetRtf(@"{\rtf1\ansi{\fonttbl{\f0 Segoe UI;}}\f0\fs28\b Bold\b0  and plain\par Second line}");
-        SetClipboard(package);
+        SetRichTextClipboard(text, @"{\rtf1\ansi{\fonttbl{\f0 Segoe UI;}}\f0\fs28\b Bold\b0  and plain\par Second line}");
 
         Step("Proving normal paste preserves the rich-text source");
         Target.Paste();
         Target.AssertText(text);
-        Assert.IsTrue(Target.IsBold(0, 4), "The rich-text fixture was not bold before conversion.");
+        WaitUntil(() => Target.IsBold(0, 4), "The rich-text fixture was not bold before conversion.");
         Target.Clear();
 
         InvokeCoreAction("Paste as plain text", Key.O, Key.Num1, invocation);
@@ -104,7 +101,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
         SetClipboardText(input);
         InvokeCoreAction("Paste as JSON", Key.J, Key.Num3, Invocation.DirectShortcut);
         Target.AssertText(input);
-        Assert.AreEqual(input, ClipboardHelper.GetText(), "Already-valid JSON was reformatted.");
+        Assert.AreEqual(input, ReadClipboardText(), "Already-valid JSON was reformatted.");
     }
 
     [TestMethod]
@@ -125,7 +122,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
         SetClipboardText(input);
         InvokeCoreAction("Paste as plain text", Key.O, Key.Num1, Invocation.DirectShortcut);
         Target.AssertText(input);
-        Assert.AreEqual(input, ClipboardHelper.GetText(), "Plain-text conversion changed Unicode or whitespace.");
+        Assert.AreEqual(input, ReadClipboardText(), "Plain-text conversion changed Unicode or whitespace.");
     }
 
     [TestMethod]
@@ -138,7 +135,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
         Step("Dismissing Advanced Paste with Escape");
         SendShortcut(Key.Esc);
         WaitUntil(() => !IsAdvancedPasteVisible(), "Escape did not dismiss Advanced Paste.");
-        Assert.AreEqual(input, ClipboardHelper.GetText());
+        Assert.AreEqual(input, ReadClipboardText());
         Assert.AreEqual(string.Empty, Target.Text, "Escape unexpectedly pasted content.");
         OpenAdvancedPaste();
         Assert.IsTrue(IsAdvancedPasteVisible(), "Advanced Paste could not reopen after Escape.");
@@ -153,7 +150,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
             .Where(element => element.ControlType.Equals("ListItem", StringComparison.OrdinalIgnoreCase)).ToArray();
         Assert.IsEmpty(actions, "An empty clipboard exposed an enabled action/accelerator.");
         Assert.AreEqual(string.Empty, Target.Text);
-        Assert.AreEqual(string.Empty, ClipboardHelper.GetText());
+        Assert.AreEqual(string.Empty, ReadClipboardText());
     }
 
     private void InvokeCoreAction(string name, Key directKey, Key accelerator, Invocation invocation)
@@ -182,7 +179,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
     private void AssertTransformedText()
     {
         WaitUntil(() => !string.IsNullOrEmpty(Target.Text), "The destination did not receive transformed text.");
-        Assert.AreEqual(ClipboardHelper.GetText().ReplaceLineEndings("\n"), Target.Text, "The clipboard and actual pasted text differ.");
+        Assert.AreEqual(ReadClipboardText().ReplaceLineEndings("\n"), Target.Text, "The clipboard and actual pasted text differ.");
         WaitUntil(() => !IsAdvancedPasteVisible(), "Advanced Paste did not hide after pasting.");
     }
 

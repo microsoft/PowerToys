@@ -54,7 +54,7 @@ public class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
                 Step("Selecting the second Advanced Paste history entry without pasting it");
                 FindHistoryItem(history, second.Content).Invoke(msPostAction: 0);
                 WaitUntil(
-                    () => ClipboardHelper.GetText() == second.Content,
+                    () => ReadClipboardText() == second.Content,
                     "Selecting an Advanced Paste history entry did not put its exact text on the OS clipboard.");
                 var after = await WaitForHistoryAsync(
                     items => items.Select(item => item.Id).Order(StringComparer.Ordinal).SequenceEqual(expectedIds.Order(StringComparer.Ordinal)),
@@ -70,7 +70,7 @@ public class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
                     await selected.Content.GetTextAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(10)),
                     "The selected Windows history ID no longer refers to its original test content.");
                 FindHistoryItem(history, second.Content);
-                Assert.AreEqual(second.Content, ClipboardHelper.GetText(), "The selected history item did not remain the current clipboard content.");
+                Assert.AreEqual(second.Content, ReadClipboardText(), "The selected history item did not remain the current clipboard content.");
                 Assert.AreEqual(string.Empty, Target.Text, "Selecting a clipboard-history entry unexpectedly pasted it into the destination.");
                 Assert.IsTrue(IsAdvancedPasteVisible(), "Selecting clipboard history unexpectedly closed Advanced Paste.");
             });
@@ -118,7 +118,7 @@ public class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
                     "The deleted entry remained in the Advanced Paste history flyout.",
                     shouldRetryException: AdvancedPasteUi.IsStaleElement);
                 FindHistoryItem(history, survivor.Content);
-                Assert.AreEqual(survivor.Content, ClipboardHelper.GetText(), "Deleting a non-current history entry changed the current clipboard.");
+                Assert.AreEqual(survivor.Content, ReadClipboardText(), "Deleting a non-current history entry changed the current clipboard.");
                 Assert.AreEqual(string.Empty, Target.Text, "Deleting history unexpectedly pasted content.");
             });
     }
@@ -163,7 +163,7 @@ public class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
                     "The Advanced Paste history button remained available while OS clipboard history was disabled.");
                 Assert.IsTrue(window.Has(By.AccessibilityId("PasteOptionsListView")), "The module did not finish opening with history disabled.");
                 window.Find<TextBlock>(By.Name(content), 15_000);
-                Assert.AreEqual(content, ClipboardHelper.GetText(), "The current clipboard was not usable after disabling history.");
+                Assert.AreEqual(content, ReadClipboardText(), "The current clipboard was not usable after disabling history.");
                 Assert.IsFalse(WinClipboard.IsHistoryEnabled(), "Copying fresh text or opening Advanced Paste unexpectedly re-enabled OS history.");
                 Assert.AreEqual(string.Empty, Target.Text, "Disabling clipboard history pasted content.");
             });
@@ -243,7 +243,7 @@ public class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
                 "Windows rejected the test clipboard content.");
             WinClipboard.Flush();
         });
-        Assert.AreEqual(content, ClipboardHelper.GetText(), "The test history content did not reach the current clipboard.");
+        Assert.AreEqual(content, ReadClipboardText(), "The test history content did not reach the current clipboard.");
 
         var items = await WaitForHistoryAsync(
             history => history.Count(item => ownedHistoryItems.TryGetValue(item.Id, out var text) && text == content) == 1,
@@ -346,7 +346,7 @@ public class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
 
         // Clear our current content before re-enabling history, otherwise Windows can
         // asynchronously capture it as a new ID after the first cleanup snapshot.
-        if (fixtureContents.Contains(ClipboardHelper.GetText()))
+        if (fixtureContents.Contains(ReadClipboardText()))
         {
             Assert.IsTrue(ClipboardHelper.Clear(), "The test-owned current clipboard content could not be cleared.");
         }

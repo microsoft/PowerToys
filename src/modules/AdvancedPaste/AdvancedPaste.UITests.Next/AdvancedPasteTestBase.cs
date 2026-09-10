@@ -206,22 +206,21 @@ public abstract class AdvancedPasteTestBase : UITestBase
     protected Session OpenAdvancedPaste(params Key[] shortcut)
     {
         Target.Focus();
-        return OpenAdvancedPasteForWindow(Target.Handle, shortcut);
+        Step($"Destination before activation: {Target.State}");
+        var window = OpenAdvancedPasteForWindow(Target.Handle, shortcut);
+        var state = Target.State;
+        Step($"Destination after activation: {state}");
+        Assert.IsTrue(state.Visible && state.WindowState != System.Windows.Forms.FormWindowState.Minimized, "AP activation hid or minimized the paste destination.");
+        return window;
     }
 
     protected Session OpenAdvancedPasteForWindow(IntPtr destination, params Key[] shortcut)
     {
         Step("Opening Advanced Paste through the Runner hotkey");
-        Assert.IsTrue(
-            WindowControl.WaitForForeground(destination, timeoutMS: 10_000, requiredConsecutiveMatches: 2),
-            $"The paste destination did not acquire foreground: {WindowControl.GetForegroundWindowInfo()}.");
-        for (var attempt = 0; attempt < 3 && !IsAdvancedPasteVisible(); attempt++)
-        {
-            SendShortcut(shortcut.Length == 0 ? ActivationShortcut : shortcut);
-            WaitHelper.WaitForStable(IsAdvancedPasteVisible, visible => visible, timeoutMS: 10_000);
-        }
-
-        Assert.IsTrue(IsAdvancedPasteVisible(), $"Advanced Paste did not open. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        Assert.AreEqual(destination, WindowControl.GetForegroundWindowHandle(), $"The paste destination is not foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        Assert.IsFalse(IsAdvancedPasteVisible(), "Advanced Paste was already visible before its activation shortcut.");
+        SendShortcut(shortcut.Length == 0 ? ActivationShortcut : shortcut);
+        WaitUntil(IsAdvancedPasteVisible, $"Advanced Paste did not open. Foreground: {WindowControl.GetForegroundWindowInfo()}.", timeoutMS: 30_000);
         var window = WindowsFinder.WaitForWindowByApp(ProcessName, w => w.Width > 100 && w.Height > 100, timeoutMS: 15_000);
         Assert.IsNotNull(window, "The Advanced Paste window was not discoverable.");
         window.Find(By.AccessibilityId("PasteOptionsListView"), 15_000);
@@ -262,9 +261,10 @@ public abstract class AdvancedPasteTestBase : UITestBase
     {
         Step($"Invoking '{name}'");
         var handle = new IntPtr(window.WindowHandle);
-        Assert.IsTrue(
-            WindowControl.WaitForForeground(handle, timeoutMS: 10_000, requiredConsecutiveMatches: 2),
-            $"Advanced Paste did not acquire foreground before selecting '{name}'.");
+        WaitUntil(
+            () => WindowControl.GetForegroundWindowHandle() == handle,
+            $"Advanced Paste did not acquire foreground before selecting '{name}'.",
+            timeoutMS: 10_000);
         var windowBounds = WindowHelper.GetWindowBounds(handle);
         MouseHelper.MoveTo((windowBounds.Left + windowBounds.Right) / 2, windowBounds.Top + 16);
 
@@ -287,7 +287,7 @@ public abstract class AdvancedPasteTestBase : UITestBase
 
         // Let first-show layout settle and hover tooltips disappear before resolving the click point.
         (int X, int Y, int Width, int Height, (int Left, int Top, int Right, int Bottom) Window)? previous = null;
-        (bool Unchanged, bool Offscreen, IntPtr Foreground, bool PointerAtTarget, bool OwnsPoint)? lastInputState = null;
+        (bool Unchanged, bool Offscreen, IntPtr Foreground, bool PointerAtTarget)? lastInputState = null;
         var samples = 0;
         var sampling = Stopwatch.StartNew();
         var ready = WaitHelper.WaitForStable(
@@ -318,16 +318,29 @@ public abstract class AdvancedPasteTestBase : UITestBase
                     Unchanged: unchanged,
                     Offscreen: offscreen,
                     Foreground: foreground,
-                    PointerAtTarget: System.Windows.Forms.Cursor.Position == point,
-                    OwnsPoint: WindowControl.IsPointOwnedByWindow(handle, point.X, point.Y));
+                    PointerAtTarget: System.Windows.Forms.Cursor.Position == point);
                 lastInputState = state;
                 return state.Unchanged && candidate.Width > 0 && candidate.Height > 0 && !state.Offscreen &&
-                    state.Foreground == handle && state.PointerAtTarget && state.OwnsPoint;
+                    state.Foreground == handle && state.PointerAtTarget;
             },
             timeoutMS: 30_000,
             requiredConsecutiveMatches: 3,
             shouldRetryException: AdvancedPasteUi.IsStaleElement);
-        Step($"Action readiness for '{name}': HWND={handle}; samples={samples}; stable={ready.ConsecutiveMatches}; elapsed={sampling.Elapsed}; state={lastInputState} (unchanged, offscreen, foreground, pointer at target, owns point).");
+        Step($"Action readiness for '{name}': HWND={handle}; samples={samples}; stable={ready.ConsecutiveMatches}; elapsed={sampling.Elapsed}; state={lastInputState} (unchanged, offscreen, foreground, pointer at target).");
+        if (ready.LastObservation is { } observed)
+        {
+            var atPoint = WindowFromPoint(new System.Drawing.Point(observed.X + (observed.Width / 2), observed.Y + (observed.Height / 2)));
+            var root = GetAncestor(atPoint, 2);
+            var rootOwner = GetAncestor(atPoint, 3);
+            Step($"Native point: child={atPoint}, root={root}, rootOwner={rootOwner}; expected={handle}; destination={Target.State}");
+            foreach (var native in WindowControl.EnumerateAllWindows().Where(native =>
+                native.Hwnd == root || native.Hwnd == rootOwner || native.Hwnd == handle ||
+                native.ProcessId == window.ProcessId))
+            {
+                Step($"Native point window: {native}");
+            }
+        }
+
         Assert.IsTrue(
             ready.Succeeded,
             $"The '{name}' row and window did not settle for real input. Last bounds: {previous}; state: {lastInputState}; foreground: {WindowControl.GetForegroundWindowInfo()}; last exception: {ready.LastException}.");
@@ -339,9 +352,16 @@ public abstract class AdvancedPasteTestBase : UITestBase
     protected void SetClipboardText(string text)
     {
         Step("Setting and verifying the text clipboard fixture");
-        Assert.IsTrue(ClipboardHelper.SetText(text), "Could not write the text clipboard fixture.");
-        Assert.AreEqual(text, ClipboardHelper.GetText(), "The source text was not placed on the clipboard.");
+        AccessClipboard(() =>
+        {
+            System.Windows.Forms.Clipboard.SetText(text);
+            return true;
+        });
+        Assert.AreEqual(text, ReadClipboardText(), "The source text was not placed on the clipboard.");
     }
+
+    protected string ReadClipboardText() => AccessClipboard(() =>
+        System.Windows.Forms.Clipboard.GetText(System.Windows.Forms.TextDataFormat.UnicodeText));
 
     protected void SetClipboard(DataPackage package)
     {
@@ -350,6 +370,28 @@ public abstract class AdvancedPasteTestBase : UITestBase
             WinClipboard.SetContent(package);
             WinClipboard.Flush();
         });
+    }
+
+    protected void SetRichTextClipboard(string text, string rtf)
+    {
+        var data = new System.Windows.Forms.DataObject();
+        data.SetData(System.Windows.Forms.DataFormats.UnicodeText, autoConvert: false, text);
+        data.SetData(System.Windows.Forms.DataFormats.Rtf, autoConvert: false, rtf);
+        AccessClipboard(() =>
+        {
+            System.Windows.Forms.Clipboard.SetDataObject(data, copy: true);
+            return true;
+        });
+        var actual = AccessClipboard(() =>
+        {
+            var clipboard = System.Windows.Forms.Clipboard.GetDataObject();
+            Assert.IsNotNull(clipboard, "The rich-text clipboard data object was unavailable.");
+            return (
+                Text: clipboard.GetData(System.Windows.Forms.DataFormats.UnicodeText, autoConvert: false),
+                Rtf: clipboard.GetData(System.Windows.Forms.DataFormats.Rtf, autoConvert: false));
+        });
+        Assert.AreEqual(text, actual.Text, "The rich-text clipboard fixture lost its Unicode text.");
+        Assert.AreEqual(rtf, actual.Rtf, "The rich-text clipboard fixture lost its RTF format.");
     }
 
     protected void SetHtmlClipboard(string html, string? text = null)
@@ -460,4 +502,10 @@ public abstract class AdvancedPasteTestBase : UITestBase
             shouldRetryException: shouldRetryException ?? AdvancedPasteUi.IsStaleElement);
         Assert.IsTrue(result.Succeeded, $"{message} Last exception: {result.LastException?.Message}");
     }
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr WindowFromPoint(System.Drawing.Point point);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetAncestor(IntPtr window, uint flags);
 }

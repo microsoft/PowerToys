@@ -159,7 +159,7 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                 Assert.IsFalse(IsAdvancedPasteVisible(), "A direct conversion unexpectedly opened the Advanced Paste window.");
 
                 SetDirectShortcutFixture(property);
-                var source = ClipboardHelper.GetText();
+                var source = ReadClipboardText();
                 AssertShortcutInactive(original, source);
 
                 if (canClear)
@@ -249,7 +249,7 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                     "Re-enabling clipboard preview did not restore the current content.",
                     shouldRetryException: AdvancedPasteUi.IsStaleElement);
                 Assert.AreEqual(originalProcess, WaitForStableModuleProcess(), "Changing clipboard preview restarted the module.");
-                Assert.AreEqual(second, ClipboardHelper.GetText(), "Changing preview visibility modified the clipboard.");
+                Assert.AreEqual(second, ReadClipboardText(), "Changing preview visibility modified the clipboard.");
                 Assert.AreEqual(string.Empty, Target.Text, "Changing preview visibility pasted into the destination.");
                 return Task.CompletedTask;
             },
@@ -326,7 +326,7 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                 AssertAIUnavailable(window);
                 SetAIEnabled(false);
                 AssertAIUnavailable(window);
-                Assert.AreEqual(ShortcutFixtureText, ClipboardHelper.GetText(), "AI configuration without a provider changed the clipboard.");
+                Assert.AreEqual(ShortcutFixtureText, ReadClipboardText(), "AI configuration without a provider changed the clipboard.");
                 Assert.AreEqual(string.Empty, Target.Text, "AI configuration without a provider pasted content.");
                 return Task.CompletedTask;
             },
@@ -369,7 +369,7 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                     () => Target.Text == ClipboardFixtures.OcrText,
                     "Image to text did not paste automatically after Settings disabled custom preview.",
                     timeoutMS: 30_000);
-                Assert.AreEqual(ClipboardFixtures.OcrText, ClipboardHelper.GetText(), "Automatic OCR did not put the recognized text on the clipboard.");
+                Assert.AreEqual(ClipboardFixtures.OcrText, ReadClipboardText(), "Automatic OCR did not put the recognized text on the clipboard.");
                 WaitUntil(
                     () => !IsAdvancedPasteVisible(),
                     "Disabling custom preview left an OCR preview or Advanced Paste window open.");
@@ -695,13 +695,13 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         SendShortcut(shortcut);
         var unexpectedEffect = WaitHelper.WaitForStable(
             () => IsAdvancedPasteVisible() || Target.Text.Length != 0 ||
-                ClipboardHelper.GetText() != source ||
+                ReadClipboardText() != source ||
                 !WinClipboard.GetContent().AvailableFormats.Order().SequenceEqual(formats) ||
                 (requireStopped && GetModuleProcessIds().Length != 0),
             changed => changed,
             timeoutMS: 2_500);
         Assert.IsFalse(unexpectedEffect.Succeeded, "An inactive shortcut opened Advanced Paste, started its process, pasted, or changed the clipboard.");
-        Assert.AreEqual(source, ClipboardHelper.GetText(), "An inactive shortcut changed the text clipboard.");
+        Assert.AreEqual(source, ReadClipboardText(), "An inactive shortcut changed the text clipboard.");
         Assert.AreEqual(string.Empty, Target.Text, "An inactive shortcut pasted into the destination.");
     }
 
@@ -729,7 +729,7 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                 "The newly configured JSON shortcut did not paste the expected offline XML conversion.",
                 shouldRetryException: exception => exception is JsonException);
             Assert.IsTrue(
-                JsonNode.DeepEquals(expectedJson, JsonNode.Parse(ClipboardHelper.GetText())),
+                JsonNode.DeepEquals(expectedJson, JsonNode.Parse(ReadClipboardText())),
                 "The JSON clipboard does not match the pasted result.");
             return;
         }
@@ -739,7 +739,7 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         WaitUntil(
             () => (markdown ? NormalizeMarkdown(Target.Text) : Target.Text) == normalized,
             $"The newly configured {property} shortcut did not paste its expected offline conversion.");
-        var clipboard = ClipboardHelper.GetText();
+        var clipboard = ReadClipboardText();
         Assert.AreEqual(normalized, markdown ? NormalizeMarkdown(clipboard) : clipboard, "The converted clipboard does not match the pasted result.");
         if (property == "paste-as-plain-hotkey")
         {
@@ -751,9 +751,7 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         string.Join("\n", text.ReplaceLineEndings("\n").Split('\n').Select(line => string.IsNullOrWhiteSpace(line) ? string.Empty : line)).TrimEnd();
 
     private static void RequireForeground(Session window) =>
-        Assert.IsTrue(
-            WindowControl.WaitForForeground(new IntPtr(window.WindowHandle), timeoutMS: 10_000, requiredConsecutiveMatches: 2),
-            $"The input window did not acquire foreground. Actual: {WindowControl.GetForegroundWindowInfo()}.");
+        TestWindow.SelectFromTaskbar(new IntPtr(window.WindowHandle), window.ProcessName);
 
     private static bool HasText(Session window, string text) =>
         window.FindAll<TextBlock>(By.Name(text), 0).Any(element => element.Name == text);

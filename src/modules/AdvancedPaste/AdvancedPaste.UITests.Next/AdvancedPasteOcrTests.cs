@@ -53,7 +53,7 @@ public sealed class AdvancedPasteOcrTests : AdvancedPasteTestBase
         }
 
         Target.AssertText(ClipboardFixtures.OcrText);
-        Assert.AreEqual(ClipboardFixtures.OcrText, ClipboardHelper.GetText());
+        Assert.AreEqual(ClipboardFixtures.OcrText, ReadClipboardText());
         WaitUntil(() => !IsAdvancedPasteVisible(), "Advanced Paste remained visible after accepting OCR.");
     }
 
@@ -65,7 +65,7 @@ public sealed class AdvancedPasteOcrTests : AdvancedPasteTestBase
         Step("Executing the Image to text direct shortcut without a model/provider");
         SendShortcut(Key.Ctrl, Key.Alt, Key.LWin, Key.I);
         Target.AssertText(ClipboardFixtures.OcrText);
-        Assert.AreEqual(ClipboardFixtures.OcrText, ClipboardHelper.GetText());
+        Assert.AreEqual(ClipboardFixtures.OcrText, ReadClipboardText());
         WaitUntil(() => !IsAdvancedPasteVisible(), "Direct OCR unexpectedly left a preview open.");
     }
 

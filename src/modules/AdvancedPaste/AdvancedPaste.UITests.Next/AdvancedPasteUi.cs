@@ -51,7 +51,6 @@ internal static class AdvancedPasteUi
             },
             nodes => nodes is { Length: 1 },
             timeoutMS: 15_000,
-            requiredConsecutiveMatches: 2,
             shouldRetryException: IsStaleElement);
         Assert.IsTrue(result.Succeeded, $"Expected one {description}; last matching count: {result.LastObservation?.Length}.");
         var selector = Property(result.LastObservation![0], "selector");

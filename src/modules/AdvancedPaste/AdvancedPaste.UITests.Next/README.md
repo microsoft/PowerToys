@@ -62,18 +62,23 @@ batch so the test's modifier releases cannot interrupt the module's own Ctrl+V.
 Settings and clipboard state are restored, generated files and windows are
 removed, and failure media is captured before cleanup.
 
-The paste destination acquires foreground and editor focus on its own STA thread.
-If foreground lock requires a physical caption click, any temporary topmost state
-is restored before the fixture is considered ready.
+The paste destination and Settings keyboard-input surface are selected with a
+single click on their normal taskbar buttons. The destination acquires editor
+focus on its own STA thread. It is never forced topmost, minimized, or
+reactivated to rescue a failed paste. Its visibility is checked across AP
+activation, which sends the activation shortcut only once.
 
 Before file actions, the fixture focuses Explorer's empty content area and
 requires native keyboard focus under `SHELLDLL_DefView`; an empty `UIItemsView`
 does not expose a keyboard-focusable UIA item. Action-list clicks require stable
-geometry, foreground ownership, pointer arrival, and point ownership before one
+geometry, foreground ownership, and pointer arrival before one
 real click. Readiness failures report the individual gates rather than retrying
 the paste or copying the generated file into the destination.
 File delivery is observed on disk before reading CF_HDROP, so the test does not
 open the clipboard while Explorer is consuming the product's Ctrl+V.
+Text and rich-text clipboard access uses the fixture's message-pumping STA.
+Read errors are reported rather than converted to an empty string, and RTF
+fixtures are round-tripped before the formatting-removal scenarios start.
 
 History tests use a fresh process per case so restoring the OS history preference
 does not carry an old ItemsView and pending notifications into the next fixture.
