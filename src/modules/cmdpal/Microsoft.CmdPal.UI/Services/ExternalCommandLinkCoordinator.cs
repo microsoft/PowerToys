@@ -171,7 +171,7 @@ internal sealed partial class ExternalCommandLinkCoordinator : IDisposable
         }
 
         // Re-resolve so consent cannot transfer across a provider reload.
-        using var refreshedResolution = await ResolveCommandAsync(executeCommand);
+        await using var refreshedResolution = await ResolveCommandAsync(executeCommand);
         if (_isDisposed)
         {
             return;
@@ -213,7 +213,7 @@ internal sealed partial class ExternalCommandLinkCoordinator : IDisposable
         var resolutionTask = ResolveCommandAsync(executeCommand, resolutionCancellation.Token);
         if (await Task.WhenAny(resolutionTask, Task.Delay(LoadingDelay, _lifetimeToken)) == resolutionTask)
         {
-            using var resolution = await resolutionTask;
+            await using var resolution = await resolutionTask;
             return await AuthorizeResolvedCommandAsync(route, executeCommand, resolution, windowWasSummoned: false);
         }
 
@@ -233,7 +233,7 @@ internal sealed partial class ExternalCommandLinkCoordinator : IDisposable
         if (resolutionTask.IsCompleted)
         {
             await dialogSession.DisposeAsync();
-            using var completedResolution = await resolutionTask;
+            await using var completedResolution = await resolutionTask;
             return await AuthorizeResolvedCommandAsync(route, executeCommand, completedResolution, windowWasSummoned: true);
         }
 
@@ -246,7 +246,7 @@ internal sealed partial class ExternalCommandLinkCoordinator : IDisposable
                 return null;
             }
 
-            using var resolution = await resolutionTask;
+            await using var resolution = await resolutionTask;
             return await AuthorizeResolvedCommandAsync(
                 route,
                 executeCommand,
@@ -351,7 +351,7 @@ internal sealed partial class ExternalCommandLinkCoordinator : IDisposable
         Task<CommandResolution?> resolutionTask)
     {
         cancellation.Cancel();
-        using var resolution = await resolutionTask;
+        await using var resolution = await resolutionTask;
     }
 
     private static bool CanExecute(CommandViewModel command, ListPageLaunchOptions? options)

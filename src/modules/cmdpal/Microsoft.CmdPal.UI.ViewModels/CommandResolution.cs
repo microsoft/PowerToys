@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed partial class CommandResolution : IDisposable
+public sealed partial class CommandResolution : IAsyncDisposable
 {
     private TopLevelViewModel? _ownedCommand;
 
@@ -19,5 +19,9 @@ public sealed partial class CommandResolution : IDisposable
         _ownedCommand = ownsCommand ? command : null;
     }
 
-    public void Dispose() => Interlocked.Exchange(ref _ownedCommand, null)?.Cleanup();
+    public ValueTask DisposeAsync()
+    {
+        var command = Interlocked.Exchange(ref _ownedCommand, null);
+        return command is null ? ValueTask.CompletedTask : new ValueTask(Task.Run(command.Cleanup));
+    }
 }

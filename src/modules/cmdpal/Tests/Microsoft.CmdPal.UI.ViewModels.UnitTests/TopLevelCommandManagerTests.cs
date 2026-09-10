@@ -53,7 +53,7 @@ public partial class TopLevelCommandManagerTests
         using var manager = new TopLevelCommandManager(services, [CreateExtensionService(wrapper).Object]);
         await manager.LoadExternalProvidersAsync();
 
-        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        await using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
 
         Assert.IsNotNull(resolution);
         Assert.AreSame(wrapper, resolution.Provider);
@@ -70,7 +70,7 @@ public partial class TopLevelCommandManagerTests
         using var manager = new TopLevelCommandManager(services, [CreateExtensionService(wrapper).Object]);
         await manager.LoadExternalProvidersAsync();
 
-        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        await using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
 
         Assert.IsNull(resolution);
         Assert.AreEqual(1, provider.LookupCount);
