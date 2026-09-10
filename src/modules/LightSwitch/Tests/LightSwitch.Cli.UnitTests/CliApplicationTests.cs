@@ -122,6 +122,12 @@ public sealed class CliApplicationTests
     [DataRow("light --help=true --help=false")]
     [DataRow("light --help=false --help=true")]
     [DataRow("toggle --version=false --version=true")]
+    [DataRow("[parse] toggle")]
+    [DataRow("[parse] dark --help=false")]
+    [DataRow("[suggest] light")]
+    [DataRow("[suggest:6] dark")]
+    [DataRow("[bogus] schedule disable")]
+    [DataRow("[env:FOO=bar] schedule enable --mode fixed-hours")]
     public async Task InvalidArgumentsProduceOneJsonErrorWithoutCallingTheService(string arguments)
     {
         int calls = 0;
@@ -162,6 +168,9 @@ public sealed class CliApplicationTests
     [DataRow("--json false")]
     [DataRow("--json=false --help=true")]
     [DataRow("schedule enable --mode --json false --help")]
+    [DataRow("[parse] light --help")]
+    [DataRow("[suggest] dark --help=true")]
+    [DataRow("light --help -- [parse]")]
     public async Task HelpAndNoArgumentsDoNotContactTheService(string arguments)
     {
         var application = new CliApplication(static (_, _) => throw new InvalidOperationException("Help must not invoke IPC."));
@@ -276,6 +285,9 @@ public sealed class CliApplicationTests
     [DataRow("toggle --version:true --json", "cliVersion", 0, 0)]
     [DataRow("status --json:true", "state", 0, 1)]
     [DataRow("light --help=invalid --json", "error", 2, 0)]
+    [DataRow("[parse] toggle --json", "error", 2, 0)]
+    [DataRow("[suggest] dark --json", "error", 2, 0)]
+    [DataRow("[bogus] schedule disable --json", "error", 2, 0)]
     public async Task ResponseFilesKeepPresentationAndCommandParsingConsistent(string contents, string outputField, int expectedExit, int expectedCalls)
     {
         string path = Path.GetTempFileName();
@@ -417,6 +429,9 @@ public sealed class CliApplicationTests
     [DataRow("light -- --help=true")]
     [DataRow("toggle -- --version:true")]
     [DataRow("status -- --json=true")]
+    [DataRow("light -- [parse]")]
+    [DataRow("toggle -- [suggest]")]
+    [DataRow("schedule disable -- [bogus]")]
     public async Task FlagsAfterTheTerminatorRemainArguments(string arguments)
     {
         int calls = 0;

@@ -48,6 +48,28 @@ namespace LightSwitchServiceUnitTests
                 return { std::istreambuf_iterator<char>(stream), std::istreambuf_iterator<char>() };
             }
         };
+
+        json::JsonObject SunSettings()
+        {
+            auto document = json::JsonObject::Parse(ValidSettings);
+            const auto properties = document.GetNamedObject(L"properties");
+            properties.GetNamedObject(L"scheduleMode").SetNamedValue(L"value", json::value(L"SunsetToSunrise"));
+            json::JsonObject latitude;
+            latitude.SetNamedValue(L"value", json::value(L"22.3"));
+            properties.SetNamedValue(L"latitude", latitude);
+            json::JsonObject longitude;
+            longitude.SetNamedValue(L"value", json::value(L"114.2"));
+            properties.SetNamedValue(L"longitude", longitude);
+            return document;
+        }
+
+        LightSwitchConfig ParseConfig(const json::JsonObject& document)
+        {
+            LightSwitchConfig config;
+            std::wstring error;
+            Assert::IsTrue(TryParseLightSwitchConfig(document, config, error), error.c_str());
+            return config;
+        }
     }
 
     TEST_CLASS (SettingsTests)
@@ -287,6 +309,174 @@ namespace LightSwitchServiceUnitTests
             std::ifstream input(file.path.c_str(), std::ios::binary);
             const std::string remaining{ std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>() };
             Assert::AreEqual("not json", remaining.c_str());
+        }
+
+        TEST_METHOD (SunTimesSavePreservesLatestFieldsAndPropertyMetadata)
+        {
+            Apartment apartment;
+            TemporarySettings file;
+            auto document = SunSettings();
+            const auto expected = ParseConfig(document);
+            document.SetNamedValue(L"metadata", json::value(L"latest metadata"));
+            const auto properties = document.GetNamedObject(L"properties");
+            properties.GetNamedObject(L"futureProperty").SetNamedValue(L"value", json::value(L"latest future value"));
+            properties.GetNamedObject(L"lightTime").SetNamedValue(L"retained", json::value(L"light metadata"));
+            properties.GetNamedObject(L"darkTime").SetNamedValue(L"retained", json::value(L"dark metadata"));
+            // Cache values may have changed without invalidating the calculation.
+            properties.GetNamedObject(L"lightTime").SetNamedValue(L"value", json::value(490));
+            file.Write(document.Stringify().c_str());
+            LightSwitchConfig saved;
+            std::wstring error;
+            Assert::IsTrue(SaveLightSwitchSunTimes(file.path, expected, 500, 1210, saved, error) == SunTimesSaveResult::Saved, error.c_str());
+            Assert::AreEqual(500, saved.lightTime);
+            Assert::AreEqual(1210, saved.darkTime);
+            properties.GetNamedObject(L"lightTime").SetNamedValue(L"value", json::value(500));
+            properties.GetNamedObject(L"darkTime").SetNamedValue(L"value", json::value(1210));
+            Assert::AreEqual(document.Stringify().c_str(), json::from_file(file.path)->Stringify().c_str());
+        }
+
+        TEST_METHOD (SunTimesSaveAddsMissingCacheProperties)
+        {
+            Apartment apartment;
+            TemporarySettings file;
+            auto document = SunSettings();
+            document.GetNamedObject(L"properties").Remove(L"lightTime");
+            document.GetNamedObject(L"properties").Remove(L"darkTime");
+            const auto expected = ParseConfig(document);
+            file.Write(document.Stringify().c_str());
+            LightSwitchConfig saved;
+            std::wstring error;
+            Assert::IsTrue(SaveLightSwitchSunTimes(file.path, expected, 500, 1210, saved, error) == SunTimesSaveResult::Saved, error.c_str());
+            const auto properties = json::from_file(file.path)->GetNamedObject(L"properties");
+            Assert::AreEqual(500.0, properties.GetNamedObject(L"lightTime").GetNamedNumber(L"value"));
+            Assert::AreEqual(1210.0, properties.GetNamedObject(L"darkTime").GetNamedNumber(L"value"));
+        }
+
+        TEST_METHOD (UnchangedSunTimesDoNotRequireWriteOrDeleteAccess)
+        {
+            Apartment apartment;
+            TemporarySettings file;
+            const auto document = SunSettings();
+            const auto expected = ParseConfig(document);
+            file.Write(document.Stringify().c_str());
+            const auto original = file.Read();
+            wil::unique_hfile reader(CreateFileW(file.path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
+            Assert::IsTrue(static_cast<bool>(reader));
+            LightSwitchConfig saved;
+            std::wstring error;
+            Assert::IsTrue(SaveLightSwitchSunTimes(file.path, expected, expected.lightTime, expected.darkTime, saved, error) == SunTimesSaveResult::Saved, error.c_str());
+            reader.reset();
+            Assert::AreEqual(original, file.Read());
+        }
+
+        TEST_METHOD (SunCalculationCannotUndoALaterCliScheduleDisable)
+        {
+            Apartment apartment;
+            TemporarySettings file;
+            const auto document = SunSettings();
+            const auto expected = ParseConfig(document);
+            file.Write(document.Stringify().c_str());
+            LightSwitchConfig saved;
+            std::wstring error;
+            Assert::IsTrue(TryPatchLightSwitchScheduleMode(file.path, ScheduleMode::Off, saved, error), error.c_str());
+            const auto disabled = file.Read();
+            Assert::IsTrue(SaveLightSwitchSunTimes(file.path, expected, 500, 1210, saved, error) == SunTimesSaveResult::Superseded);
+            Assert::IsTrue(error.empty());
+            Assert::AreEqual(disabled, file.Read());
+            Assert::IsTrue(ParseConfig(*json::from_file(file.path)).scheduleMode == ScheduleMode::Off);
+        }
+
+        TEST_METHOD (CliScheduleDisableRetainsAnEarlierSolarCacheSave)
+        {
+            Apartment apartment;
+            TemporarySettings file;
+            const auto document = SunSettings();
+            const auto expected = ParseConfig(document);
+            file.Write(document.Stringify().c_str());
+            LightSwitchConfig saved;
+            std::wstring error;
+            Assert::IsTrue(SaveLightSwitchSunTimes(file.path, expected, 500, 1210, saved, error) == SunTimesSaveResult::Saved, error.c_str());
+            Assert::IsTrue(TryPatchLightSwitchScheduleMode(file.path, ScheduleMode::Off, saved, error), error.c_str());
+            Assert::IsTrue(saved.scheduleMode == ScheduleMode::Off);
+            Assert::AreEqual(500, saved.lightTime);
+            Assert::AreEqual(1210, saved.darkTime);
+        }
+
+        TEST_METHOD (SunTimesSaveSkipsSupersededEffectiveSettings)
+        {
+            Apartment apartment;
+            const std::vector<std::pair<std::wstring, json::JsonValue>> edits{
+                { L"scheduleMode", json::value(L"FixedHours") },
+                { L"scheduleMode", json::value(L"FollowNightLight") },
+                { L"latitude", json::value(L"23.3") },
+                { L"longitude", json::value(L"115.2") },
+                { L"sunrise_offset", json::value(1) },
+                { L"sunset_offset", json::value(-1) },
+                { L"changeSystem", json::value(false) },
+                { L"changeApps", json::value(true) },
+            };
+            const auto expected = ParseConfig(SunSettings());
+            for (const auto& [name, value] : edits)
+            {
+                TemporarySettings file;
+                auto document = SunSettings();
+                json::JsonObject property;
+                property.SetNamedValue(L"value", value);
+                document.GetNamedObject(L"properties").SetNamedValue(name, property);
+                file.Write(document.Stringify().c_str());
+                const auto original = file.Read();
+                LightSwitchConfig saved;
+                std::wstring error = L"previous error";
+                Assert::IsTrue(SaveLightSwitchSunTimes(file.path, expected, 500, 1210, saved, error) == SunTimesSaveResult::Superseded, name.c_str());
+                Assert::IsTrue(error.empty());
+                Assert::AreEqual(original, file.Read());
+            }
+        }
+
+        TEST_METHOD (SunTimesSaveDoesNotReplaceMalformedOrUnreadableSettings)
+        {
+            Apartment apartment;
+            TemporarySettings file;
+            const auto document = SunSettings();
+            const auto expected = ParseConfig(document);
+            LightSwitchConfig saved;
+            std::wstring error;
+            file.Write(L"not json");
+            Assert::IsTrue(SaveLightSwitchSunTimes(file.path, expected, 500, 1210, saved, error) == SunTimesSaveResult::Failed);
+            Assert::IsFalse(error.empty());
+            Assert::AreEqual("not json", file.Read().c_str());
+
+            file.Write(document.Stringify().c_str());
+            const auto original = file.Read();
+            wil::unique_hfile reader(CreateFileW(file.path.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
+            Assert::IsTrue(static_cast<bool>(reader));
+            Assert::IsTrue(SaveLightSwitchSunTimes(file.path, expected, 500, 1210, saved, error) == SunTimesSaveResult::Failed);
+            Assert::IsFalse(error.empty());
+            reader.reset();
+            Assert::AreEqual(original, file.Read());
+        }
+
+        TEST_METHOD (SunTimesSaveReportsAReplacementFailureWithoutChangingTheFile)
+        {
+            Apartment apartment;
+            TemporarySettings file;
+            const auto document = SunSettings();
+            const auto expected = ParseConfig(document);
+            file.Write(document.Stringify().c_str());
+            const auto original = file.Read();
+            wil::unique_hfile reader(CreateFileW(file.path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
+            Assert::IsTrue(static_cast<bool>(reader));
+            LightSwitchConfig saved;
+            std::wstring error;
+            Assert::IsTrue(SaveLightSwitchSunTimes(file.path, expected, 500, 1210, saved, error) == SunTimesSaveResult::Failed);
+            Assert::IsFalse(error.empty());
+            reader.reset();
+            Assert::AreEqual(original, file.Read());
+            WIN32_FIND_DATAW entry{};
+            const auto leftover = FindFirstFileW((file.path + L".sun.*").c_str(), &entry);
+            if (leftover != INVALID_HANDLE_VALUE)
+                FindClose(leftover);
+            Assert::IsTrue(leftover == INVALID_HANDLE_VALUE);
         }
 
         TEST_METHOD (EffectiveSettingsIgnoreOnlyDerivedSunTimes)

@@ -235,22 +235,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             double latitude = this.LatitudeBox.Value;
             double longitude = this.LongitudeBox.Value;
 
-            // need to save the values
-            this.ViewModel.Latitude = latitude.ToString(CultureInfo.InvariantCulture);
-            this.ViewModel.Longitude = longitude.ToString(CultureInfo.InvariantCulture);
-            this.ViewModel.SyncButtonInformation = $"{this.ViewModel.Latitude}°, {this.ViewModel.Longitude}°";
-
-            var result = SunCalc.CalculateSunriseSunset(latitude, longitude, DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
-
-            this.ViewModel.LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
-            this.ViewModel.DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
+            this.ViewModel.UpdateSunTimes(latitude, longitude);
 
             this.SunriseModeChartState();
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (this.suppressViewModelUpdates)
+            if (this.suppressViewModelUpdates || this.ViewModel.IsRefreshingModuleSettings)
             {
                 return;
             }

@@ -78,7 +78,7 @@ internal sealed class CliCommandLine
     internal Option<bool> Version { get; } = new("--version", "Show the CLI version.");
 
     internal ParseResult Parse(string[] expandedArgs)
-        => new Parser(new CommandLineConfiguration(_root, enableTokenReplacement: false)).Parse(expandedArgs);
+        => new Parser(new CommandLineConfiguration(_root, enableDirectives: false, enableTokenReplacement: false)).Parse(expandedArgs);
 
     internal static (string[] Arguments, bool Json, bool Help, bool Version, string? Error) ParsePresentationOptions(string[] args)
     {

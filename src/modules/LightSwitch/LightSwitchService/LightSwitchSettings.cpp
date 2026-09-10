@@ -109,6 +109,57 @@ namespace
         bool _created = false;
     };
 
+    enum class SettingsFileSaveResult
+    {
+        Saved,
+        Superseded,
+        Failed,
+    };
+
+    SettingsFileSaveResult SaveSettingsDocument(
+        const std::wstring& path,
+        const std::wstring& original,
+        const json::JsonObject& document,
+        const wchar_t* operation,
+        LightSwitchConfig& config,
+        std::wstring& error)
+    {
+        const auto serialized = document.Stringify();
+        TemporarySettingsFile temporary(path, operation);
+        if (!temporary.Write(winrt::to_string(serialized), error))
+            return SettingsFileSaveResult::Failed;
+
+        // Avoid replacing an external edit received while preparing the patch.
+        const auto latest = json::from_file(path);
+        if (!latest)
+        {
+            error = L"Light Switch settings could not be read during the update.";
+            return SettingsFileSaveResult::Failed;
+        }
+        if (std::wstring(latest->Stringify().c_str()) != original)
+        {
+            error = L"Light Switch settings changed during the update. Try the command again.";
+            return SettingsFileSaveResult::Superseded;
+        }
+        if (!temporary.Publish(path, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+        {
+            const auto replacementError = GetLastError();
+            error = L"Light Switch settings could not be replaced (error " + std::to_wstring(replacementError) + L").";
+            return SettingsFileSaveResult::Failed;
+        }
+
+        const auto savedDocument = json::from_file(path);
+        LightSwitchConfig saved;
+        if (!savedDocument || !TryParseLightSwitchConfig(*savedDocument, saved, error) || savedDocument->Stringify() != serialized)
+        {
+            error = L"The saved Light Switch settings could not be verified.";
+            return SettingsFileSaveResult::Failed;
+        }
+        config = std::move(saved);
+        error.clear();
+        return SettingsFileSaveResult::Saved;
+    }
+
     std::string DefaultSettingsJson()
     {
         // Match LightSwitchProperties in Settings UI and the module's hotkey defaults.
@@ -428,39 +479,73 @@ bool TryPatchLightSwitchScheduleMode(const std::wstring& path, ScheduleMode mode
         const std::wstring original = document->Stringify().c_str();
         auto property = document->GetNamedObject(L"properties").GetNamedObject(L"scheduleMode");
         property.SetNamedValue(L"value", json::value(ToString(mode)));
-        TemporarySettingsFile temporary(path, L"cli");
-        if (!temporary.Write(winrt::to_string(document->Stringify()), error))
-        {
-            return false;
-        }
-
-        // Avoid replacing a settings edit that arrived while we prepared the patch.
-        const auto latest = json::from_file(path);
-        if (!latest || std::wstring(latest->Stringify().c_str()) != original)
-        {
-            error = L"Light Switch settings changed during the update. Try the command again.";
-            return false;
-        }
-        if (!temporary.Publish(path, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
-        {
-            const auto replacementError = GetLastError();
-            error = L"Light Switch settings could not be replaced (error " + std::to_wstring(replacementError) + L").";
-            return false;
-        }
-        const auto savedDocument = json::from_file(path);
-        if (!savedDocument || !TryParseLightSwitchConfig(*savedDocument, config, error) ||
-            config.scheduleMode != mode || savedDocument->Stringify() != document->Stringify())
-        {
-            error = L"The saved Light Switch settings could not be verified.";
-            return false;
-        }
-        error.clear();
-        return true;
+        return SaveSettingsDocument(path, original, *document, L"cli", config, error) == SettingsFileSaveResult::Saved;
     }
     catch (...)
     {
         error = L"Light Switch settings could not be updated.";
         return false;
+    }
+}
+
+SunTimesSaveResult SaveLightSwitchSunTimes(const std::wstring& path, const LightSwitchConfig& expected, int lightMinutes, int darkMinutes, LightSwitchConfig& config, std::wstring& error)
+{
+    const ApartmentScope apartment;
+    if (!apartment.IsReady())
+    {
+        error = L"The settings JSON runtime could not be initialized.";
+        return SunTimesSaveResult::Failed;
+    }
+    try
+    {
+        auto document = json::from_file(path);
+        LightSwitchConfig current;
+        if (!document || !TryParseLightSwitchConfig(*document, current, error))
+        {
+            if (!document)
+                error = L"Light Switch settings could not be read.";
+            return SunTimesSaveResult::Failed;
+        }
+        // Calculated values belong to one effective configuration. A later
+        // schedule or location edit must win over an in-flight cache update.
+        if (expected.scheduleMode != ScheduleMode::SunsetToSunrise ||
+            current.scheduleMode != ScheduleMode::SunsetToSunrise ||
+            !HasSameEffectiveLightSwitchSettings(expected, current))
+        {
+            error.clear();
+            return SunTimesSaveResult::Superseded;
+        }
+        if (current.lightTime == lightMinutes && current.darkTime == darkMinutes)
+        {
+            config = std::move(current);
+            error.clear();
+            return SunTimesSaveResult::Saved;
+        }
+
+        const std::wstring original = document->Stringify().c_str();
+        const auto properties = document->GetNamedObject(L"properties");
+        const auto updateTime = [&](const wchar_t* name, int minutes) {
+            auto property = properties.GetNamedObject(name, json::JsonObject{});
+            property.SetNamedValue(L"value", json::value(minutes));
+            properties.SetNamedValue(name, property);
+        };
+        updateTime(L"lightTime", lightMinutes);
+        updateTime(L"darkTime", darkMinutes);
+        switch (SaveSettingsDocument(path, original, *document, L"sun", config, error))
+        {
+        case SettingsFileSaveResult::Saved:
+            return SunTimesSaveResult::Saved;
+        case SettingsFileSaveResult::Superseded:
+            error.clear();
+            return SunTimesSaveResult::Superseded;
+        default:
+            return SunTimesSaveResult::Failed;
+        }
+    }
+    catch (...)
+    {
+        error = L"Light Switch sun times could not be saved.";
+        return SunTimesSaveResult::Failed;
     }
 }
 
@@ -505,6 +590,17 @@ bool LightSwitchSettings::TrySetScheduleMode(ScheduleMode mode, LightSwitchConfi
     }
     ApplySettingsLocked(config);
     return true;
+}
+
+SunTimesSaveResult LightSwitchSettings::SaveSunTimes(const LightSwitchConfig& expected, int lightMinutes, int darkMinutes, std::wstring& error)
+{
+    // Share the complete read-modify-write lock with CLI schedule persistence.
+    std::lock_guard<std::mutex> guard(m_settingsMutex);
+    LightSwitchConfig config;
+    const auto result = SaveLightSwitchSunTimes(GetSettingsFileName(), expected, lightMinutes, darkMinutes, config, error);
+    if (result == SunTimesSaveResult::Saved)
+        ApplySettingsLocked(config);
+    return result;
 }
 
 void LightSwitchSettings::ApplySettingsLocked(const LightSwitchConfig& config)

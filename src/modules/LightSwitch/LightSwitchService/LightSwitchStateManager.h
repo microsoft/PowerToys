@@ -78,6 +78,7 @@ private:
     int _lastTickDarkMinutes = 0;
 
     bool LoadSettingsLocked(std::wstring& error);
+    bool RefreshNightLightStateLocked(const LightSwitchConfig& config);
     StatusSnapshot GetStatusSnapshotLocked(const LightSwitchConfig& config);
     void SyncThemeStateLocked(const StatusSnapshot& snapshot, bool recordObservation = true);
     void DetectExternalThemeChangeLocked(const LightSwitchConfig& config, const SYSTEMTIME& now);

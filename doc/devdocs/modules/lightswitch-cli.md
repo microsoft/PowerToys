@@ -52,6 +52,8 @@ All commands support `--json`. `--help` and `--version` work without the service
 Boolean options also accept explicit values, such as `--help=true`,
 `--version:true`, and `--json false`. A false help or version option does not
 suppress the command. Options after the literal `--` remain arguments.
+Parser directives such as `[parse]` and `[suggest]` are unsupported and are
+rejected as arguments, including when supplied through response files.
 
 ## Output and exit codes
 
@@ -145,6 +147,12 @@ New manual commands account for already-occurring schedule or Night Light
 transitions before establishing their override; delayed notifications cannot
 cancel that newer choice. Unchanged settings notifications preserve detected
 external theme choices while genuine plan changes still take effect.
+
+The worker also reconciles Night Light on minute ticks, recovering from a
+settings read or theme write failure without requiring another notification.
+Calculated sun times share the schedule command's settings lock and are saved
+only while their effective configuration remains current. An older calculation
+cannot restore a mode that a completed schedule command has replaced.
 
 ## Validation
 

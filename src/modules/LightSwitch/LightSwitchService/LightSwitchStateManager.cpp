@@ -42,10 +42,9 @@ namespace
         const int dark = sun.sunsetHour * 60 + sun.sunsetMinute;
         try
         {
-            auto values = PowerToysSettings::PowerToyValues::load_from_settings_file(L"LightSwitch");
-            values.add_property(L"lightTime", light);
-            values.add_property(L"darkTime", dark);
-            values.save_to_settings_file();
+            std::wstring error;
+            if (LightSwitchSettings::instance().SaveSunTimes(settings, light, dark, error) == SunTimesSaveResult::Failed)
+                Logger::error(L"[LightSwitchStateManager] Could not save calculated sun times: {}", error);
         }
         catch (...)
         {
@@ -126,6 +125,16 @@ LightSwitchState LightSwitchStateManager::GetState() const
     return _state;
 }
 
+bool LightSwitchStateManager::RefreshNightLightStateLocked(const LightSwitchConfig& config)
+{
+    const bool nightLight = _dependencies.readNightLight();
+    const bool crossedBoundary = config.scheduleMode == ScheduleMode::FollowNightLight && _state.isNightLightActive != nightLight;
+    if (crossedBoundary)
+        _state.isManualOverride = false;
+    _state.isNightLightActive = nightLight;
+    return crossedBoundary;
+}
+
 StatusSnapshot LightSwitchStateManager::GetStatusSnapshotLocked(const LightSwitchConfig& config)
 {
     StatusSnapshot snapshot;
@@ -183,6 +192,10 @@ ThemeCommandResult LightSwitchStateManager::OnSettingsChanged()
     const auto now = _dependencies.localTime();
     if (hadSettingsSnapshot && HasSameEffectiveLightSwitchSettings(previousConfig, config))
         DetectExternalThemeChangeLocked(config, now);
+    // External detection records the current Night Light baseline when it finds
+    // a new manual choice. Sampling afterwards preserves that newer override.
+    if (config.scheduleMode == ScheduleMode::FollowNightLight)
+        RefreshNightLightStateLocked(config);
     const auto result = EvaluateAndApplyIfNeededLocked(config, now);
     return result == ERROR_SUCCESS ? CompleteCommandLocked(config) : CompleteCommandLocked(config, L"THEME_WRITE_FAILED", ThemeError(result));
 }
@@ -191,8 +204,12 @@ void LightSwitchStateManager::OnTick()
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
     std::wstring error;
-    if (LoadSettingsLocked(error) && _settingsSnapshot.scheduleMode != ScheduleMode::FollowNightLight)
+    if (LoadSettingsLocked(error))
     {
+        // A notification can be missed while settings are unreadable, and a
+        // failed theme write still needs a retry even without another transition.
+        if (_settingsSnapshot.scheduleMode == ScheduleMode::FollowNightLight)
+            RefreshNightLightStateLocked(_settingsSnapshot);
         EvaluateAndApplyIfNeededLocked(_settingsSnapshot, _dependencies.localTime());
     }
 }
@@ -246,11 +263,7 @@ void LightSwitchStateManager::OnNightLightChange()
     std::wstring error;
     if (!LoadSettingsLocked(error))
         return;
-    const bool nightLight = _dependencies.readNightLight();
-    const bool crossedBoundary = _settingsSnapshot.scheduleMode == ScheduleMode::FollowNightLight && _state.isNightLightActive != nightLight;
-    if (crossedBoundary)
-        _state.isManualOverride = false;
-    _state.isNightLightActive = nightLight;
+    const bool crossedBoundary = RefreshNightLightStateLocked(_settingsSnapshot);
     const auto now = _dependencies.localTime();
     if (!crossedBoundary && hadSettingsSnapshot && HasSameEffectiveLightSwitchSettings(previousConfig, _settingsSnapshot))
         DetectExternalThemeChangeLocked(_settingsSnapshot, now);
@@ -348,6 +361,9 @@ LSTATUS LightSwitchStateManager::ApplyThemeLocked(bool light, const LightSwitchC
         bool actual = false;
         if (_dependencies.readTheme(system, actual) != ERROR_SUCCESS || actual != light)
         {
+            // If readback fails, this write's result must not later look like
+            // an external edit relative to the value observed before the write.
+            (system ? _lastObservedSystemTheme : _lastObservedAppsTheme).reset();
             const auto writeResult = _dependencies.writeTheme(system, light);
             if (writeResult != ERROR_SUCCESS && result == ERROR_SUCCESS)
                 result = writeResult;
@@ -453,6 +469,7 @@ ThemeCommandResult LightSwitchStateManager::ToggleTheme()
     {
         if (!(system ? config.changeSystem : config.changeApps))
             continue;
+        (system ? _lastObservedSystemTheme : _lastObservedAppsTheme).reset();
         const auto writeResult = _dependencies.writeTheme(system, !(system ? *before.systemLight : *before.appsLight));
         if (writeResult != ERROR_SUCCESS && result == ERROR_SUCCESS)
             result = writeResult;
@@ -494,9 +511,10 @@ void LightSwitchStateManager::DetectExternalThemeChangeLocked(const LightSwitchC
     const bool scheduledLight = config.scheduleMode == ScheduleMode::FollowNightLight ? !nightLight : ScheduledThemeLocked(config, now);
     const auto snapshot = GetStatusSnapshotLocked(config);
     // An unchanged Windows theme at a new scheduled boundary is not an external
-    // edit. Require a change from the last observation as well as a plan mismatch.
-    const bool mismatch = (config.changeSystem && snapshot.systemLight && *snapshot.systemLight != scheduledLight && snapshot.systemLight != _lastObservedSystemTheme) ||
-                          (config.changeApps && snapshot.appsLight && *snapshot.appsLight != scheduledLight && snapshot.appsLight != _lastObservedAppsTheme);
+    // edit. Require a known earlier observation: recovering access to an unreadable
+    // theme alone is not evidence that an external editor changed it.
+    const bool mismatch = (config.changeSystem && snapshot.systemLight && _lastObservedSystemTheme && *snapshot.systemLight != scheduledLight && snapshot.systemLight != _lastObservedSystemTheme) ||
+                          (config.changeApps && snapshot.appsLight && _lastObservedAppsTheme && *snapshot.appsLight != scheduledLight && snapshot.appsLight != _lastObservedAppsTheme);
     if (mismatch)
     {
         Logger::info(L"[LightSwitchStateManager] External theme change detected.");

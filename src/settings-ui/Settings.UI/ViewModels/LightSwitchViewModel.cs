@@ -130,6 +130,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        internal bool IsRefreshingModuleSettings => _refreshingModuleSettings;
+
         public bool IsEnabled
         {
             get => _isEnabled;
@@ -424,16 +426,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         // === Picker values (TwoWay binding targets for TimePickers) ===
+        private static TimeSpan ToPickerTime(int minutes) =>
+            minutes is >= 0 and < 1440 ? TimeSpan.FromMinutes(minutes) : TimeSpan.FromTicks(-1);
+
         public TimeSpan LightTimePickerValue
         {
-            get => TimeSpan.FromMinutes(LightTime);
-            set => LightTime = (int)value.TotalMinutes;
+            // TimePicker only accepts -1 tick for an unset value. Keep missing sun
+            // times in settings without passing other negative durations to XAML.
+            get => ToPickerTime(LightTime);
+            set
+            {
+                if (value.Ticks >= 0 && value.Ticks < TimeSpan.TicksPerDay)
+                {
+                    LightTime = (int)value.TotalMinutes;
+                }
+            }
         }
 
         public TimeSpan DarkTimePickerValue
         {
-            get => TimeSpan.FromMinutes(DarkTime);
-            set => DarkTime = (int)value.TotalMinutes;
+            get => ToPickerTime(DarkTime);
+            set
+            {
+                if (value.Ticks >= 0 && value.Ticks < TimeSpan.TicksPerDay)
+                {
+                    DarkTime = (int)value.TotalMinutes;
+                }
+            }
         }
 
         public string Latitude
@@ -472,11 +491,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (!_refreshingModuleSettings && _selectedSearchLocation != value)
                 {
                     _selectedSearchLocation = value;
-                    NotifyPropertyChanged();
 
                     if (_selectedSearchLocation != null)
                     {
                         UpdateSunTimes(_selectedSearchLocation.Latitude, _selectedSearchLocation.Longitude, _selectedSearchLocation.City);
+                    }
+                    else
+                    {
+                        NotifyPropertyChanged();
                     }
                 }
             }
@@ -835,7 +857,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             RefreshModuleSettings(calculateSunTimes: false);
         }
 
-        private void RefreshModuleSettings(bool calculateSunTimes)
+        private void RefreshModuleSettings(bool calculateSunTimes, string? locationName = null)
         {
             var wasRefreshing = _refreshingModuleSettings;
             _refreshingModuleSettings = true;
@@ -844,6 +866,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Reloaded values are authoritative. Updating TwoWay controls (in
                 // particular NumberBox bounds) must not write their old values back.
                 RefreshScheduleDisplay(calculateSunTimes);
+                if (locationName != null)
+                {
+                    _syncButtonInformation = locationName;
+                }
+
                 OnPropertyChanged(nameof(ModuleSettings));
                 OnPropertyChanged(nameof(ChangeSystem));
                 OnPropertyChanged(nameof(ChangeApps));
@@ -907,24 +934,63 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _syncButtonInformation = _selectedSearchLocation?.City ?? $"{Latitude}°,{Longitude}°";
         }
 
-        private void UpdateSunTimes(double latitude, double longitude, string city = "n/a")
+        public void UpdateSunTimes(double latitude, double longitude, string city = "n/a")
         {
+            var today = DateTime.Now;
             SunTimes result = SunCalc.CalculateSunriseSunset(
                 latitude,
                 longitude,
-                DateTime.Now.Year,
-                DateTime.Now.Month,
-                DateTime.Now.Day);
+                today.Year,
+                today.Month,
+                today.Day);
 
-            LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
-            DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
-            Latitude = latitude.ToString(CultureInfo.InvariantCulture);
-            Longitude = longitude.ToString(CultureInfo.InvariantCulture);
+            ApplyLocation(latitude, longitude, (result.SunriseHour * 60) + result.SunriseMinute, (result.SunsetHour * 60) + result.SunsetMinute, city);
+        }
 
-            if (city != "n/a")
+        internal void ApplyLocation(double latitude, double longitude, int lightMinutes, int darkMinutes, string city = "n/a")
+        {
+            if (_refreshingModuleSettings)
             {
-                SyncButtonInformation = city;
+                return;
             }
+
+            var properties = ModuleSettings.Properties;
+            string latitudeText = latitude.ToString(CultureInfo.InvariantCulture);
+            string longitudeText = longitude.ToString(CultureInfo.InvariantCulture);
+            int sunriseOffset = properties.SunriseOffset.Value;
+            int sunsetOffset = properties.SunsetOffset.Value;
+
+            if (lightMinutes is >= 0 and < 1440 && darkMinutes is >= 0 and < 1440)
+            {
+                // Clamp against the complete new schedule, in the same order as the
+                // offset controls. Recheck sunset after a sunrise adjustment. Missing
+                // polar sun times retain the existing offsets rather than invent bounds.
+                sunsetOffset = ClampSunsetOffset(sunsetOffset, sunriseOffset);
+                sunriseOffset = (int)Math.Clamp((long)sunriseOffset, -lightMinutes, Math.Max(0L, (long)darkMinutes + sunsetOffset - lightMinutes - 1));
+                sunsetOffset = ClampSunsetOffset(sunsetOffset, sunriseOffset);
+            }
+
+            bool changed = properties.Latitude.Value != latitudeText || properties.Longitude.Value != longitudeText ||
+                properties.LightTime.Value != lightMinutes || properties.DarkTime.Value != darkMinutes ||
+                properties.SunriseOffset.Value != sunriseOffset || properties.SunsetOffset.Value != sunsetOffset;
+
+            // Publish all source values before any binding or persistence callback
+            // can observe the new location. A partial pair can clamp a valid offset.
+            properties.Latitude.Value = latitudeText;
+            properties.Longitude.Value = longitudeText;
+            properties.LightTime.Value = lightMinutes;
+            properties.DarkTime.Value = darkMinutes;
+            properties.SunriseOffset.Value = sunriseOffset;
+            properties.SunsetOffset.Value = sunsetOffset;
+            RefreshModuleSettings(calculateSunTimes: false, locationName: city == "n/a" ? null : city);
+
+            if (changed)
+            {
+                SaveSettings();
+            }
+
+            int ClampSunsetOffset(int value, int lightOffset) =>
+                (int)Math.Clamp((long)value, Math.Min(0L, (long)lightMinutes + lightOffset - darkMinutes + 1), 1439 - darkMinutes);
         }
 
         public void InitializeScheduleMode()

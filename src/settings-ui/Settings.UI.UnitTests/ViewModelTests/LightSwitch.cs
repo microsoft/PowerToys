@@ -4,7 +4,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
+using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
@@ -201,6 +204,257 @@ public class LightSwitch
     }
 
     [TestMethod]
+    [DataRow(-61)]
+    [DataRow(-1)]
+    [DataRow(1440)]
+    [DataRow(int.MinValue)]
+    [DataRow(int.MaxValue)]
+    public void InvalidStoredTimesRefreshAsUnsetPickersWithoutChangingTheSettings(int minutes)
+    {
+        var messages = new List<string>();
+        using var viewModel = CreateViewModel(new LightSwitchSettings(), message =>
+        {
+            messages.Add(message);
+            return 0;
+        });
+        var notifications = new HashSet<string>();
+        viewModel.PropertyChanged += (_, e) =>
+        {
+            notifications.Add(e.PropertyName);
+            if (e.PropertyName == nameof(viewModel.LightTimePickerValue))
+            {
+                Assert.AreEqual(TimeSpan.FromTicks(-1), viewModel.LightTimePickerValue);
+                viewModel.LightTimePickerValue = viewModel.LightTimePickerValue;
+            }
+            else if (e.PropertyName == nameof(viewModel.DarkTimePickerValue))
+            {
+                Assert.AreEqual(TimeSpan.FromTicks(-1), viewModel.DarkTimePickerValue);
+                viewModel.DarkTimePickerValue = viewModel.DarkTimePickerValue;
+            }
+        };
+        var settings = CreateSunSettings(minutes, minutes, 0, 0);
+        string original = settings.ToJsonString();
+
+        viewModel.ModuleSettings = settings;
+
+        Assert.IsTrue(notifications.Contains(nameof(viewModel.LightTimePickerValue)));
+        Assert.IsTrue(notifications.Contains(nameof(viewModel.DarkTimePickerValue)));
+        Assert.AreEqual(original, settings.ToJsonString());
+        Assert.AreEqual(0, messages.Count);
+    }
+
+    [TestMethod]
+    [DataRow(-61, -61)]
+    [DataRow(-61, 1080)]
+    [DataRow(360, -61)]
+    public void ApplyingLocationWithMissingSunTimesPreservesRawValuesAndUsesSafePickers(int lightMinutes, int darkMinutes)
+    {
+        var messages = new List<string>();
+        using var viewModel = CreateViewModel(CreateSunSettings(360, 1080, 15, -20), message =>
+        {
+            messages.Add(message);
+            return 0;
+        });
+        viewModel.PropertyChanged += (_, e) =>
+        {
+            // Replay the generated TwoWay feedback while refreshing both pickers.
+            if (e.PropertyName == nameof(viewModel.LightTimePickerValue))
+            {
+                viewModel.LightTimePickerValue = viewModel.LightTimePickerValue;
+            }
+            else if (e.PropertyName == nameof(viewModel.DarkTimePickerValue))
+            {
+                viewModel.DarkTimePickerValue = viewModel.DarkTimePickerValue;
+            }
+        };
+
+        viewModel.ApplyLocation(85, 0, lightMinutes, darkMinutes);
+
+        Assert.AreEqual(lightMinutes, viewModel.LightTime);
+        Assert.AreEqual(darkMinutes, viewModel.DarkTime);
+        Assert.AreEqual(lightMinutes < 0 ? TimeSpan.FromTicks(-1) : TimeSpan.FromMinutes(lightMinutes), viewModel.LightTimePickerValue);
+        Assert.AreEqual(darkMinutes < 0 ? TimeSpan.FromTicks(-1) : TimeSpan.FromMinutes(darkMinutes), viewModel.DarkTimePickerValue);
+        Assert.AreEqual(15, viewModel.SunriseOffset);
+        Assert.AreEqual(-20, viewModel.SunsetOffset);
+        AssertCompleteSavedSettings(viewModel, messages);
+    }
+
+    [TestMethod]
+    public void UnsetAndInvalidPickerFeedbackDoesNotWriteMidnightOrNotifyASave()
+    {
+        using var viewModel = CreateViewModel(CreateSunSettings(-61, 1080, 0, 0), _ => 0);
+        int notifications = 0;
+        viewModel.PropertyChanged += (_, _) => ++notifications;
+
+        foreach (var invalid in new[]
+        {
+            TimeSpan.FromTicks(-1),
+            TimeSpan.FromMinutes(-61),
+            TimeSpan.FromDays(1),
+            TimeSpan.FromHours(25),
+            TimeSpan.MinValue,
+            TimeSpan.MaxValue,
+        })
+        {
+            viewModel.LightTimePickerValue = invalid;
+            viewModel.DarkTimePickerValue = invalid;
+        }
+
+        Assert.AreEqual(-61, viewModel.LightTime);
+        Assert.AreEqual(1080, viewModel.DarkTime);
+        Assert.AreEqual(0, notifications, "Rejected picker feedback must not trigger the page's settings-save handler.");
+    }
+
+    [TestMethod]
+    [DataRow(0, 1439)]
+    [DataRow(437, 1259)]
+    public void ValidPickerEditsIncludeMidnightAndTheLastMinuteOfTheDay(int lightMinutes, int darkMinutes)
+    {
+        var settings = new LightSwitchSettings();
+        settings.Properties.ScheduleMode.Value = "FixedHours";
+        using var viewModel = CreateViewModel(settings, _ => 0);
+        var notifications = new HashSet<string>();
+        viewModel.PropertyChanged += (_, e) => notifications.Add(e.PropertyName);
+
+        viewModel.LightTimePickerValue = TimeSpan.FromMinutes(lightMinutes);
+        viewModel.DarkTimePickerValue = TimeSpan.FromMinutes(darkMinutes);
+
+        Assert.AreEqual(lightMinutes, settings.Properties.LightTime.Value);
+        Assert.AreEqual(darkMinutes, settings.Properties.DarkTime.Value);
+        Assert.AreEqual(TimeSpan.FromMinutes(lightMinutes), viewModel.LightTimePickerValue);
+        Assert.AreEqual(TimeSpan.FromMinutes(darkMinutes), viewModel.DarkTimePickerValue);
+        Assert.IsTrue(notifications.Contains(nameof(viewModel.LightTime)));
+        Assert.IsTrue(notifications.Contains(nameof(viewModel.DarkTime)));
+    }
+
+    [TestMethod]
+    public void ApplyingLocationPreservesValidOffsetsAndPublishesOneCompleteSnapshot()
+    {
+        var settings = CreateSunSettings(60, 180, 30, 0);
+        var messages = new List<string>();
+        using var viewModel = CreateViewModel(settings, message =>
+        {
+            messages.Add(message);
+            return 0;
+        });
+        viewModel.RefreshModuleSettings();
+        using var controls = new OffsetControlFeedback(viewModel);
+        int notifications = 0;
+        int pageSaves = 0;
+        viewModel.PropertyChanged += (_, _) =>
+        {
+            ++notifications;
+
+            // The page suppresses persistence while a complete source snapshot is
+            // being published to bindings; the location operation saves once later.
+            if (!viewModel.IsRefreshingModuleSettings)
+            {
+                ++pageSaves;
+            }
+
+            Assert.AreEqual("22.3", viewModel.Latitude);
+            Assert.AreEqual("114.2", viewModel.Longitude);
+            Assert.AreEqual(480, viewModel.LightTime);
+            Assert.AreEqual(1080, viewModel.DarkTime);
+            Assert.AreEqual<TimeSpan?>(TimeSpan.FromMinutes(480), viewModel.SunriseTimeSpan);
+            Assert.AreEqual<TimeSpan?>(TimeSpan.FromMinutes(1080), viewModel.SunsetTimeSpan);
+        };
+
+        viewModel.ApplyLocation(22.3, 114.2, 480, 1080);
+
+        Assert.IsTrue(notifications > 0);
+        Assert.AreEqual(0, pageSaves);
+        Assert.AreEqual(30, viewModel.SunriseOffset);
+        Assert.AreEqual(30, controls.SunriseValue);
+        Assert.AreEqual(0, viewModel.SunsetOffset);
+        AssertCompleteSavedSettings(viewModel, messages);
+
+        viewModel.ApplyLocation(22.3, 114.2, 480, 1080);
+        Assert.AreEqual(1, messages.Count, "An unchanged location must not send another settings save.");
+    }
+
+    [TestMethod]
+    [DataRow(-500, 0, 60, 120, -60, 0)]
+    [DataRow(500, 100, 600, 660, 159, 100)]
+    [DataRow(0, 100, 480, 1400, 0, 39)]
+    public void ApplyingLocationClampsOffsetsAgainstTheCompleteFinalRange(
+        int oldSunriseOffset, int oldSunsetOffset, int lightMinutes, int darkMinutes, int expectedSunriseOffset, int expectedSunsetOffset)
+    {
+        var messages = new List<string>();
+        using var viewModel = CreateViewModel(CreateSunSettings(600, 1200, oldSunriseOffset, oldSunsetOffset), message =>
+        {
+            messages.Add(message);
+            return 0;
+        });
+        viewModel.RefreshModuleSettings();
+        using var controls = new OffsetControlFeedback(viewModel);
+
+        viewModel.ApplyLocation(22.3, 114.2, lightMinutes, darkMinutes);
+
+        Assert.AreEqual(expectedSunriseOffset, viewModel.SunriseOffset);
+        Assert.AreEqual(expectedSunsetOffset, viewModel.SunsetOffset);
+        Assert.AreEqual(expectedSunriseOffset, controls.SunriseValue);
+        Assert.AreEqual(expectedSunsetOffset, controls.SunsetValue);
+        Assert.IsTrue(viewModel.SunriseOffset >= viewModel.SunriseOffsetMin && viewModel.SunriseOffset <= viewModel.SunriseOffsetMax);
+        Assert.IsTrue(viewModel.SunsetOffset >= viewModel.SunsetOffsetMin && viewModel.SunsetOffset <= viewModel.SunsetOffsetMax);
+        AssertCompleteSavedSettings(viewModel, messages);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ManualAndSelectedCityLocationsUseTheSameAtomicApplication(bool selectCity)
+    {
+        var messages = new List<string>();
+        using var viewModel = CreateViewModel(CreateSunSettings(60, 180, 30, 0), message =>
+        {
+            messages.Add(message);
+            return 0;
+        });
+
+        // Keep solar noon near local noon in every test machine's time zone.
+        // Near the equator the new sunrise stays later than the old 03:00 sunset.
+        var today = DateTime.Now;
+        double longitude = (((TimeZoneInfo.Local.GetUtcOffset(today).TotalHours * 15) + 540) % 360) - 180;
+        var city = new SearchLocation("Test city", "Test country", 1, longitude);
+        viewModel.SearchLocations.Add(city);
+        viewModel.RefreshModuleSettings();
+        using var controls = new OffsetControlFeedback(viewModel);
+        var expected = SunCalc.CalculateSunriseSunset(city.Latitude, city.Longitude, today.Year, today.Month, today.Day);
+        int lightMinutes = (expected.SunriseHour * 60) + expected.SunriseMinute;
+        int darkMinutes = (expected.SunsetHour * 60) + expected.SunsetMinute;
+        int pageSaves = 0;
+        viewModel.PropertyChanged += (_, _) =>
+        {
+            if (!viewModel.IsRefreshingModuleSettings)
+            {
+                ++pageSaves;
+            }
+
+            Assert.AreEqual(lightMinutes, viewModel.LightTime);
+            Assert.AreEqual(darkMinutes, viewModel.DarkTime);
+        };
+
+        if (selectCity)
+        {
+            viewModel.SelectedCity = city;
+        }
+        else
+        {
+            // This is the same entry point used by LocationDialog_PrimaryButtonClick.
+            viewModel.UpdateSunTimes(city.Latitude, city.Longitude);
+        }
+
+        Assert.AreEqual(0, pageSaves);
+        Assert.AreSame(city, viewModel.SelectedCity);
+        Assert.AreEqual(city.Latitude.ToString(CultureInfo.InvariantCulture), viewModel.Latitude);
+        Assert.AreEqual(city.Longitude.ToString(CultureInfo.InvariantCulture), viewModel.Longitude);
+        Assert.AreEqual(30, viewModel.SunriseOffset);
+        Assert.AreEqual(30, controls.SunriseValue);
+        AssertCompleteSavedSettings(viewModel, messages);
+    }
+
+    [TestMethod]
     public void SuppressedProfileSelectionChange_DoesNotPersistTemporaryZero()
     {
         var settings = new LightSwitchSettings();
@@ -227,6 +481,106 @@ public class LightSwitch
 
         Assert.AreEqual(7, settings.Properties.DarkModeProfileId.Value);
         Assert.AreEqual(0, messages.Count);
+    }
+
+    private static LightSwitchSettings CreateSunSettings(int lightMinutes, int darkMinutes, int sunriseOffset, int sunsetOffset)
+    {
+        var settings = new LightSwitchSettings();
+        settings.Properties.ScheduleMode.Value = "SunsetToSunrise";
+        settings.Properties.LightTime.Value = lightMinutes;
+        settings.Properties.DarkTime.Value = darkMinutes;
+        settings.Properties.SunriseOffset.Value = sunriseOffset;
+        settings.Properties.SunsetOffset.Value = sunsetOffset;
+        return settings;
+    }
+
+    private static void AssertCompleteSavedSettings(LightSwitchViewModel viewModel, List<string> messages)
+    {
+        Assert.AreEqual(1, messages.Count);
+        using var document = JsonDocument.Parse(messages[0]);
+        var saved = JsonSerializer.Deserialize<LightSwitchSettings>(document.RootElement.GetProperty("powertoys").GetProperty("LightSwitch"));
+        Assert.IsNotNull(saved);
+        Assert.AreEqual(viewModel.ModuleSettings.ToJsonString(), saved.ToJsonString());
+    }
+
+    // Models the generated x:Bind maximum/minimum/value assignments and synchronous
+    // NumberBox coercion callbacks while executing the production ViewModel unchanged.
+    private sealed class OffsetControlFeedback : IDisposable
+    {
+        private readonly LightSwitchViewModel viewModel;
+        private readonly OffsetControl sunrise;
+        private readonly OffsetControl sunset;
+
+        public OffsetControlFeedback(LightSwitchViewModel viewModel)
+        {
+            this.viewModel = viewModel;
+            sunrise = new OffsetControl(viewModel.SunriseOffsetMin, viewModel.SunriseOffsetMax, viewModel.SunriseOffset, value => viewModel.SunriseOffset = value);
+            sunset = new OffsetControl(viewModel.SunsetOffsetMin, viewModel.SunsetOffsetMax, viewModel.SunsetOffset, value => viewModel.SunsetOffset = value);
+            viewModel.PropertyChanged += OnPropertyChanged;
+        }
+
+        public int SunriseValue => sunrise.Value;
+
+        public int SunsetValue => sunset.Value;
+
+        public void Dispose() => viewModel.PropertyChanged -= OnPropertyChanged;
+
+        private void OnPropertyChanged(object sender, PropertyChangedEventArgs args)
+        {
+            switch (args.PropertyName)
+            {
+                case nameof(viewModel.SunriseOffsetMin):
+                    sunrise.SetMinimum(viewModel.SunriseOffsetMin);
+                    break;
+                case nameof(viewModel.SunriseOffsetMax):
+                    sunrise.SetMaximum(viewModel.SunriseOffsetMax);
+                    break;
+                case nameof(viewModel.SunriseOffset):
+                    sunrise.SetValue(viewModel.SunriseOffset);
+                    break;
+                case nameof(viewModel.SunsetOffsetMin):
+                    sunset.SetMinimum(viewModel.SunsetOffsetMin);
+                    break;
+                case nameof(viewModel.SunsetOffsetMax):
+                    sunset.SetMaximum(viewModel.SunsetOffsetMax);
+                    break;
+                case nameof(viewModel.SunsetOffset):
+                    sunset.SetValue(viewModel.SunsetOffset);
+                    break;
+            }
+        }
+
+        private sealed class OffsetControl(int initialMinimum, int initialMaximum, int initialValue, Action<int> writeBack)
+        {
+            private int minimum = initialMinimum;
+            private int maximum = initialMaximum;
+
+            public int Value { get; private set; } = initialValue;
+
+            public void SetMinimum(int value)
+            {
+                minimum = value;
+                maximum = Math.Max(maximum, minimum);
+                SetValue(Value);
+            }
+
+            public void SetMaximum(int value)
+            {
+                maximum = value;
+                minimum = Math.Min(minimum, maximum);
+                SetValue(Value);
+            }
+
+            public void SetValue(int value)
+            {
+                int previous = Value;
+                Value = Math.Clamp(value, minimum, maximum);
+                if (Value != previous)
+                {
+                    writeBack(Value);
+                }
+            }
+        }
     }
 
     private static LightSwitchViewModel CreateViewModel(
