@@ -24,6 +24,11 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 [TestClass]
 public partial class CommandItemViewModelTests
 {
+    private sealed partial class PropertiesTestItem : ListItem
+    {
+        public void NotifyPropertiesChanged() => OnPropertyChanged("Properties");
+    }
+
     private sealed class TestPageContext(TaskScheduler? scheduler = null) : IPageContext
     {
         public TaskScheduler Scheduler => scheduler ?? TaskScheduler.Default;
@@ -72,6 +77,34 @@ public partial class CommandItemViewModelTests
         viewModel.InitializeProperties();
 
         Assert.AreEqual("provider.item.dock", viewModel.DockCommandId);
+    }
+
+    [TestMethod]
+    public void PropertiesNotification_RefreshesAndClearsDockCommandId()
+    {
+        var pageContext = new TestPageContext();
+        var item = new PropertiesTestItem();
+        item.GetProperties()[WellKnownExtensionAttributes.DockCommandId] = "provider.item.dock";
+
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        try
+        {
+            viewModel.InitializeProperties();
+
+            item.GetProperties()[WellKnownExtensionAttributes.DockCommandId] = "provider.updated.dock";
+            item.NotifyPropertiesChanged();
+
+            Assert.AreEqual("provider.updated.dock", viewModel.DockCommandId);
+
+            item.GetProperties().Remove(WellKnownExtensionAttributes.DockCommandId);
+            item.NotifyPropertiesChanged();
+
+            Assert.IsNull(viewModel.DockCommandId);
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+        }
     }
 
     [TestMethod]
