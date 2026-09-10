@@ -77,8 +77,9 @@ the paste or copying the generated file into the destination.
 File delivery is observed on disk before reading CF_HDROP, so the test does not
 open the clipboard while Explorer is consuming the product's Ctrl+V.
 Text and rich-text clipboard access uses the fixture's message-pumping STA.
-Read errors are reported rather than converted to an empty string, and RTF
-fixtures are round-tripped before the formatting-removal scenarios start.
+Read errors are reported rather than converted to an empty string. RTF fixtures
+are copied from the real editor with Ctrl+C, and both text and RTF formats are
+verified before the formatting-removal scenarios start.
 
 History tests use a fresh process per case so restoring the OS history preference
 does not carry an old ItemsView and pending notifications into the next fixture.

@@ -346,7 +346,7 @@ public abstract class AdvancedPasteTestBase : UITestBase
             $"The '{name}' row and window did not settle for real input. Last bounds: {previous}; state: {lastInputState}; foreground: {WindowControl.GetForegroundWindowInfo()}; last exception: {ready.LastException}.");
         action = ready.LastObservation!;
         Step($"Clicking settled '{name}' row at ({action.X},{action.Y}) {action.Width}x{action.Height}");
-        MouseHelper.LeftClick();
+        action.MouseClick(msPostAction: 0);
     }
 
     protected void SetClipboardText(string text)
@@ -374,24 +374,13 @@ public abstract class AdvancedPasteTestBase : UITestBase
 
     protected void SetRichTextClipboard(string text, string rtf)
     {
-        var data = new System.Windows.Forms.DataObject();
-        data.SetData(System.Windows.Forms.DataFormats.UnicodeText, autoConvert: false, text);
-        data.SetData(System.Windows.Forms.DataFormats.Rtf, autoConvert: false, rtf);
-        AccessClipboard(() =>
-        {
-            System.Windows.Forms.Clipboard.SetDataObject(data, copy: true);
-            return true;
-        });
-        var actual = AccessClipboard(() =>
-        {
-            var clipboard = System.Windows.Forms.Clipboard.GetDataObject();
-            Assert.IsNotNull(clipboard, "The rich-text clipboard data object was unavailable.");
-            return (
-                Text: clipboard.GetData(System.Windows.Forms.DataFormats.UnicodeText, autoConvert: false),
-                Rtf: clipboard.GetData(System.Windows.Forms.DataFormats.Rtf, autoConvert: false));
-        });
-        Assert.AreEqual(text, actual.Text, "The rich-text clipboard fixture lost its Unicode text.");
-        Assert.AreEqual(rtf, actual.Rtf, "The rich-text clipboard fixture lost its RTF format.");
+        Step("Copying rich text from the real editor");
+        Target.CopyRichText(rtf);
+        WaitUntil(
+            () => ReadClipboardText() == text &&
+                AccessClipboard(() => System.Windows.Forms.Clipboard.ContainsData(System.Windows.Forms.DataFormats.Rtf)),
+            "Copying the rich-text source did not produce its expected text and RTF clipboard formats.");
+        Target.Clear();
     }
 
     protected void SetHtmlClipboard(string html, string? text = null)

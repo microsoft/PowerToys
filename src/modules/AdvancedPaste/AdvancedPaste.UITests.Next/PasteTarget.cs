@@ -86,6 +86,17 @@ internal sealed class PasteTarget : IDisposable
         Invoke(() => TestKeyboard.SendChord(Key.Ctrl, Key.V));
     }
 
+    internal void CopyRichText(string rtf)
+    {
+        Focus();
+        Invoke(() =>
+        {
+            editor!.Rtf = rtf;
+            editor.SelectAll();
+            TestKeyboard.SendChord(Key.Ctrl, Key.C);
+        });
+    }
+
     internal void AssertText(string expected)
     {
         var result = WaitHelper.WaitForStable(
