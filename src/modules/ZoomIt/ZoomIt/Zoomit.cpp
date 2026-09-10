@@ -21,6 +21,7 @@
 #include "BreakTimer.h"
 #include "PanoramaCapture.h"
 #include "ImageEncoder.h"
+#include "ZoomAnimation.h"
 #include <wtsapi32.h>
 #include <tlhelp32.h>
 #include <vector>
@@ -400,6 +401,19 @@ void OutputDebug(const TCHAR* format, ...)
 
     OutputDebugString(msg);
 #endif
+}
+
+//----------------------------------------------------------------------
+//
+// IsLiveZoomActive
+//
+// The live zoom window is kept cached while hidden, so a non-NULL handle
+// does not mean live zoom is on screen.
+//
+//----------------------------------------------------------------------
+bool IsLiveZoomActive()
+{
+    return g_hWndLiveZoom != nullptr && IsWindowVisible( g_hWndLiveZoom );
 }
 
 const wchar_t* HotkeyIdToString( WPARAM hotkeyId )
@@ -1485,6 +1499,28 @@ void GetZoomedTopLeftCoordinates( float zoomLevel, POINT *cursorPos, int *x, int
     AdjustToMoveBoundary( zoomLevel, x, cursorPos->x, static_cast<int>(scaledWidth), width );
     *y = max( 0, min( (int) (height - scaledHeight), (int) (cursorPos->y - (int) (((float) cursorPos->y/ (float) height)*scaledHeight))));
     AdjustToMoveBoundary( zoomLevel, y, cursorPos->y, static_cast<int>(scaledHeight), height );
+}
+
+void GetAnimatedZoomSourceCoordinates( float zoomLevel, const POINT* cursorPos, int width, int height, float* x, float* y )
+{
+    const auto scaledWidth = static_cast<float>(width) / zoomLevel;
+    const auto scaledHeight = static_cast<float>(height) / zoomLevel;
+    *x = max(0.0f, min(static_cast<float>(width) - scaledWidth,
+                       static_cast<float>(cursorPos->x) - static_cast<float>(cursorPos->x) / static_cast<float>(width) * scaledWidth));
+    *y = max(0.0f, min(static_cast<float>(height) - scaledHeight,
+                       static_cast<float>(cursorPos->y) - static_cast<float>(cursorPos->y) / static_cast<float>(height) * scaledHeight));
+
+    const auto horizontalBoundary = scaledWidth / static_cast<float>(LIVEZOOM_MOVE_REGIONS);
+    if (static_cast<float>(cursorPos->x) - *x < horizontalBoundary)
+        *x = max(0.0f, static_cast<float>(cursorPos->x) - horizontalBoundary);
+    else if ((*x + scaledWidth) - static_cast<float>(cursorPos->x) < horizontalBoundary)
+        *x = min(static_cast<float>(cursorPos->x) + horizontalBoundary - scaledWidth, static_cast<float>(width) - scaledWidth);
+
+    const auto verticalBoundary = scaledHeight / static_cast<float>(LIVEZOOM_MOVE_REGIONS);
+    if (static_cast<float>(cursorPos->y) - *y < verticalBoundary)
+        *y = max(0.0f, static_cast<float>(cursorPos->y) - verticalBoundary);
+    else if ((*y + scaledHeight) - static_cast<float>(cursorPos->y) < verticalBoundary)
+        *y = min(static_cast<float>(cursorPos->y) + verticalBoundary - scaledHeight, static_cast<float>(height) - scaledHeight);
 }
 
 
@@ -3591,8 +3627,8 @@ void RegisterAllHotkeys(HWND hWnd)
 
     if (g_ToggleKey) 			registerHotkey( ZOOM_HOTKEY, g_ToggleMod, g_ToggleKey & 0xFF );
     if (g_LiveZoomToggleKey) {
-        registerHotkey( LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF );
-        registerHotkey( LIVE_DRAW_HOTKEY, ( g_LiveZoomToggleMod ^ MOD_SHIFT ), g_LiveZoomToggleKey & 0xFF );
+        registerHotkey( LIVE_HOTKEY, g_LiveZoomToggleMod | MOD_NOREPEAT, g_LiveZoomToggleKey & 0xFF );
+        registerHotkey( LIVE_DRAW_HOTKEY, ( g_LiveZoomToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_LiveZoomToggleKey & 0xFF );
     }
     if (g_DrawToggleKey) 		registerHotkey( DRAW_HOTKEY, g_DrawToggleMod, g_DrawToggleKey & 0xFF );
     if (g_BreakToggleKey) 		registerHotkey( BREAK_HOTKEY, g_BreakToggleMod, g_BreakToggleKey & 0xFF );
@@ -5608,8 +5644,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 break;
 
             } else if(newLiveZoomToggleKey &&
-                (!RegisterHotKey( GetParent( hDlg ), LIVE_HOTKEY, newLiveZoomToggleMod, newLiveZoomToggleKey & 0xFF ) ||
-                !RegisterHotKey(GetParent(hDlg), LIVE_DRAW_HOTKEY, (newLiveZoomToggleMod ^ MOD_SHIFT), newLiveZoomToggleKey & 0xFF))) {
+                (!RegisterHotKey( GetParent( hDlg ), LIVE_HOTKEY, newLiveZoomToggleMod | MOD_NOREPEAT, newLiveZoomToggleKey & 0xFF ) ||
+                !RegisterHotKey(GetParent(hDlg), LIVE_DRAW_HOTKEY, (newLiveZoomToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, newLiveZoomToggleKey & 0xFF))) {
 
                 MessageBox( hDlg, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.",
                     APPNAME, MB_ICONERROR );
@@ -7130,7 +7166,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
 
         recordingStarted = (g_GifRecordingSession != nullptr);
 
-        if( g_hWndLiveZoom != NULL )
+        if( IsLiveZoomActive() )
             g_GifRecordingSession->EnableCursorCapture( false );
 
         if (recordingStarted)
@@ -7201,7 +7237,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
             RegisterHotKey( hWnd, WEBCAM_TOGGLE_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 'C' );
         }
 
-        if( g_hWndLiveZoom != NULL )
+        if( IsLiveZoomActive() )
             g_RecordingSession->EnableCursorCapture( false );
 
         if (recordingStarted)
@@ -7592,8 +7628,8 @@ LRESULT APIENTRY MainWndProc(
     static RECT		g_LiveZoomSourceRect;
     static float	g_LiveZoomLevel;
     static float	zoomLevel;
-    static float	zoomTelescopeStep;
     static float	zoomTelescopeTarget;
+    static ZoomAnimation zoomAnimation;
     static POINT	cursorPos;
     static POINT	savedCursorPos;
     static RECT		cursorRc;
@@ -7646,8 +7682,6 @@ LRESULT APIENTRY MainWndProc(
     HMENU			hPopupMenu;
     static TCHAR	filePath[MAX_PATH] = {L"zoomit"};
     NOTIFYICONDATA	tNotifyIconData;
-    static DWORD64  g_TelescopingZoomLastTick = 0ull;
-
     const auto drawAllRightJustifiedLines = [&rc]( long lineHeight, bool doPop = false ) {
         rc.top = textPt.y - static_cast<LONG>(g_TextBufferPreviousLines.size()) * lineHeight;
 
@@ -7674,31 +7708,30 @@ LRESULT APIENTRY MainWndProc(
     };
 
     const auto doTelescopingZoomTimer = [hWnd, wParam, lParam, &x, &y]( bool invalidate = true ) {
-        if( zoomTelescopeStep != 0.0f )
+        if( zoomAnimation.IsActive() )
         {
-            zoomLevel *= zoomTelescopeStep;
-            g_TelescopingZoomLastTick = GetTickCount64();
-            if( (zoomTelescopeStep > 1 && zoomLevel >= zoomTelescopeTarget) ||
-                (zoomTelescopeStep < 1 && zoomLevel <= zoomTelescopeTarget) )
+            zoomLevel = zoomAnimation.Sample( GetTickCount64() );
+            if( !zoomAnimation.IsActive() )
             {
                 zoomLevel = zoomTelescopeTarget;
 
-                g_TelescopingZoomLastTick = 0ull;
                 KillTimer( hWnd, wParam );
-                OutputDebug( L"SETCURSOR mon_left: %x mon_top: %x x: %d y: %d\n",
-                            monInfo.rcMonitor.left,
-                            monInfo.rcMonitor.top,
-                            cursorPos.x,
-                            cursorPos.y );
-                SetCursorPos( monInfo.rcMonitor.left + cursorPos.x,
-                             monInfo.rcMonitor.top + cursorPos.y );
             }
         }
         else
         {
             // Case where we didn't zoom at all
-            g_TelescopingZoomLastTick = 0ull;
             KillTimer( hWnd, wParam );
+        }
+        if( wParam == 1 && !zoomAnimation.IsActive() )
+        {
+            OutputDebug( L"SETCURSOR mon_left: %x mon_top: %x x: %d y: %d\n",
+                        monInfo.rcMonitor.left,
+                        monInfo.rcMonitor.top,
+                        cursorPos.x,
+                        cursorPos.y );
+            SetCursorPos( monInfo.rcMonitor.left + cursorPos.x,
+                         monInfo.rcMonitor.top + cursorPos.y );
         }
         if( wParam == 2 && zoomLevel == 1 )
         {
@@ -7847,8 +7880,8 @@ LRESULT APIENTRY MainWndProc(
                 showOptions = TRUE;
 
             } else if( g_LiveZoomToggleKey &&
-                (!RegisterHotKey( hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF) ||
-                    !RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, (g_LiveZoomToggleMod ^ MOD_SHIFT), g_LiveZoomToggleKey & 0xFF))) {
+                (!RegisterHotKey( hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod | MOD_NOREPEAT, g_LiveZoomToggleKey & 0xFF) ||
+                    !RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, (g_LiveZoomToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_LiveZoomToggleKey & 0xFF))) {
 
                 MessageBox( hWnd, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.",
                     APPNAME, MB_ICONERROR );
@@ -8458,9 +8491,13 @@ LRESULT APIENTRY MainWndProc(
                         L"MagnifierClass", L"ZoomIt Live Zoom",
                         WS_POPUP | WS_CLIPSIBLINGS,
                         0, 0, 0, 0, NULL, NULL, g_hInstance, static_cast<PVOID>(GetForegroundWindow()) );
-                    pSetLayeredWindowAttributes( hWnd, 0, 0, LWA_ALPHA );
-                    EnableWindow( g_hWndLiveZoom, FALSE );
-                    pMagSetWindowFilterList( g_hWndLiveZoomMag, MW_FILTERMODE_EXCLUDE, 1, &hWnd );
+                    if( g_hWndLiveZoom != NULL )
+                    {
+                        pSetLayeredWindowAttributes( hWnd, 0, 0, LWA_ALPHA );
+                        EnableWindow( g_hWndLiveZoom, FALSE );
+                        pMagSetWindowFilterList( g_hWndLiveZoomMag, MW_FILTERMODE_EXCLUDE, 1, &hWnd );
+                        ShowWindow( g_hWndLiveZoom, SW_SHOW );
+                    }
 
                 } else {
 #if WINDOWS_CURSOR_RECORDING_WORKAROUND
@@ -8558,12 +8595,12 @@ LRESULT APIENTRY MainWndProc(
                 RECT savedClip = {};
 
                 // Handle the cursor for live zoom and static zoom modes.
-                if( ( g_hWndLiveZoom != nullptr ) || ( g_Zoomed == TRUE ) )
+                if( IsLiveZoomActive() || ( g_Zoomed == TRUE ) )
                 {
                     GetCursorPos( &savedPoint );
                     UpdateMonitorInfo( savedPoint, &monInfo );
                 }
-                if( g_hWndLiveZoom != nullptr )
+                if( IsLiveZoomActive() )
                 {
                     // Hide the magnified cursor.
                     SendMessage( g_hWndLiveZoom, WM_USER_MAGNIFY_CURSOR, FALSE, 0 );
@@ -8595,11 +8632,11 @@ LRESULT APIENTRY MainWndProc(
 
                 // This call blocks with a message loop while cropping.
                 g_SelectRectangle.AspectRatio( g_RecordAspectRatio ? 16.0 / 9.0 : 0.0 );
-                auto canceled = !g_SelectRectangle.Start( ( g_hWndLiveZoom != nullptr ) ? g_hWndLiveZoom : hWnd );
+                auto canceled = !g_SelectRectangle.Start( IsLiveZoomActive() ? g_hWndLiveZoom : hWnd );
                 g_RecordCropping = FALSE;
 
                 // Restore the cursor if applicable.
-                if( g_hWndLiveZoom != nullptr )
+                if( IsLiveZoomActive() )
                 {
                     // Hide the system cursor.
                     if ( pMagShowSystemCursor != nullptr )
@@ -8635,7 +8672,7 @@ LRESULT APIENTRY MainWndProc(
                     break;
                 }
 
-                g_SelectRectangle.UpdateOwner( ( g_hWndLiveZoom != nullptr ) ? g_hWndLiveZoom : hWnd );
+                g_SelectRectangle.UpdateOwner( IsLiveZoomActive() ? g_hWndLiveZoom : hWnd );
                 cropRc = g_SelectRectangle.SelectedRect();
             }
             else
@@ -8912,7 +8949,7 @@ LRESULT APIENTRY MainWndProc(
 #endif // __ZOOMIT_POWERTOYS__
 
                     // Hide the cursor before capturing if in live zoom
-                    if( g_hWndLiveZoom != nullptr )
+                    if( IsLiveZoomActive() )
                     {
                         OutputDebug(L"Hide cursor\n");
                         SendMessage( g_hWndLiveZoom, WM_USER_MAGNIFY_CURSOR, FALSE, 0 );
@@ -9090,16 +9127,19 @@ LRESULT APIENTRY MainWndProc(
 
                     } else if( lParam != 0 && lParam != LIVE_DRAW_ZOOM ) {
 
-                        zoomTelescopeStep = ZOOM_LEVEL_STEP_IN;
                         zoomTelescopeTarget = g_ZoomLevels[g_SliderZoomLevel];
                         if( g_AnimateZoom )
                         {
-                            zoomLevel = static_cast<float>(1.0) * zoomTelescopeStep;
-                            g_TelescopingZoomLastTick = GetTickCount64();
+                            zoomLevel = 1.0f;
+                            zoomAnimation.Start( zoomLevel, zoomTelescopeTarget, GetTickCount64(),
+                                                 ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, true ) );
                         }
                         else
+                        {
                             zoomLevel = zoomTelescopeTarget;
-                        SetTimer( hWnd, 1, ZOOM_LEVEL_STEP_TIME, NULL );
+                            zoomAnimation.Stop( zoomLevel );
+                        }
+                        SetTimer( hWnd, 1, ZOOM_ANIMATION_FRAME_TIME, NULL );
                     }
 
                 } else {
@@ -9112,16 +9152,16 @@ LRESULT APIENTRY MainWndProc(
                         g_TelescopeZoomOut && zoomTelescopeTarget != 1 ) {
 
                         // Start telescoping zoom.
-                        zoomTelescopeStep = ZOOM_LEVEL_STEP_OUT;
                         zoomTelescopeTarget = 1.0;
-                        g_TelescopingZoomLastTick = GetTickCount64();
-                        SetTimer( hWnd, 2, ZOOM_LEVEL_STEP_TIME, NULL );
+                        zoomAnimation.Start( zoomLevel, zoomTelescopeTarget, GetTickCount64(),
+                                             ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, false ) );
+                        SetTimer( hWnd, 2, ZOOM_ANIMATION_FRAME_TIME, NULL );
 
                     } else {
 
                         // Simulate timer expiration
-                        zoomTelescopeStep = 0;
                         zoomTelescopeTarget = zoomLevel = 1.0;
+                        zoomAnimation.Stop( zoomLevel );
                         SendMessage( hWnd, WM_TIMER, 2, lParam );
                     }
                 }
@@ -9248,16 +9288,19 @@ LRESULT APIENTRY MainWndProc(
                                     // Start telescoping zoom
                                     zoomTelescopeTarget = zoomTelescopeTarget * 2;
                                 }
-                                zoomTelescopeStep = ZOOM_LEVEL_STEP_IN;
                                 if( g_AnimateZoom )
-                                    zoomLevel *= zoomTelescopeStep;
+                                    zoomLevel = zoomAnimation.Retarget( zoomTelescopeTarget, GetTickCount64(),
+                                                                      ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, true ) );
                                 else
+                                {
                                     zoomLevel = zoomTelescopeTarget;
+                                    zoomAnimation.Stop( zoomLevel );
+                                }
 
                                 if( zoomLevel > zoomTelescopeTarget )
                                     zoomLevel = zoomTelescopeTarget;
                                 else
-                                    SetTimer( hWnd, 1, ZOOM_LEVEL_STEP_TIME, NULL );
+                                    SetTimer( hWnd, 1, ZOOM_ANIMATION_FRAME_TIME, NULL );
                             }
 
                         } else if( zoomTelescopeTarget > ZOOM_LEVEL_MIN ) {
@@ -9273,11 +9316,14 @@ LRESULT APIENTRY MainWndProc(
 
                                 zoomTelescopeTarget = zoomTelescopeTarget/2;
                             }
-                            zoomTelescopeStep = ZOOM_LEVEL_STEP_OUT;
                             if( g_AnimateZoom )
-                                zoomLevel *= zoomTelescopeStep;
+                                zoomLevel = zoomAnimation.Retarget( zoomTelescopeTarget, GetTickCount64(),
+                                                                  ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, true ) );
                             else
+                            {
                                 zoomLevel = zoomTelescopeTarget;
+                                zoomAnimation.Stop( zoomLevel );
+                            }
 
                             if( zoomLevel < zoomTelescopeTarget )
                             {
@@ -9287,7 +9333,7 @@ LRESULT APIENTRY MainWndProc(
                             }
                             else
                             {
-                                SetTimer( hWnd, 1, ZOOM_LEVEL_STEP_TIME, NULL );
+                                SetTimer( hWnd, 1, ZOOM_ANIMATION_FRAME_TIME, NULL );
                             }
                         }
                     }
@@ -9828,13 +9874,9 @@ LRESULT APIENTRY MainWndProc(
             g_Zoomed, g_Drawing, g_Tracing);
 
         OutputDebug(L"Window visible: %d Topmost: %d\n", IsWindowVisible(hWnd), GetWindowLong(hWnd, GWL_EXSTYLE)& WS_EX_TOPMOST);
-        if( g_Zoomed && g_TelescopingZoomLastTick != 0ull && !g_Drawing && !g_Tracing )
+        if( g_Zoomed && zoomAnimation.IsActive() && !g_Drawing && !g_Tracing )
         {
-            ULONG64 now = GetTickCount64();
-            if( now - g_TelescopingZoomLastTick >= ZOOM_LEVEL_STEP_TIME )
-            {
-                doTelescopingZoomTimer( false );
-            }
+            doTelescopingZoomTimer( false );
         }
 
         if( g_Zoomed && (g_TypeMode == TypeModeOff) && !g_bSaveInProgress ) {
@@ -10689,8 +10731,8 @@ LRESULT APIENTRY MainWndProc(
         }
         if (g_LiveZoomToggleKey)
         {
-            if (!RegisterHotKey(hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, g_LiveZoomToggleMod ^ MOD_SHIFT, g_LiveZoomToggleKey & 0xFF))
+            if (!RegisterHotKey(hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod | MOD_NOREPEAT, g_LiveZoomToggleKey & 0xFF) ||
+                !RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, (g_LiveZoomToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_LiveZoomToggleKey & 0xFF))
             {
                 if(!g_StartedByPowerToys)
                 {
@@ -11577,7 +11619,7 @@ LRESULT APIENTRY MainWndProc(
                             width/zoomLevel, height/zoomLevel );
             } else {
                 // do a fast, less accurate render (but use smooth if enabled)
-                SetStretchBltMode( hDc, g_SmoothImage ? HALFTONE : COLORONCOLOR );
+                SetStretchBltMode( hDc, g_SmoothImage && !zoomAnimation.IsActive() ? HALFTONE : COLORONCOLOR );
                 StretchBlt( ps.hdc,
                         0, 0,
                         bmp.bmWidth, bmp.bmHeight,
@@ -11590,20 +11632,49 @@ LRESULT APIENTRY MainWndProc(
 #if SCALE_HALFTONE
             SetStretchBltMode( hDc, zoomLevel == zoomTelescopeTarget ? HALFTONE : COLORONCOLOR );
 #else
-            // Use HALFTONE for better quality when smooth image is enabled
-            if (g_SmoothImage) {
+            // Interpolate while the scale is changing so sub-pixel motion is smooth; keep the user's setting once settled.
+            if (zoomAnimation.IsActive() || g_SmoothImage) {
                 SetStretchBltMode( hDc, HALFTONE );
+                SetBrushOrgEx( hDc, 0, 0, nullptr );
             } else {
                 SetStretchBltMode( hDc, COLORONCOLOR );
             }
 #endif
-            StretchBlt( ps.hdc,
-                    0, 0,
-                    bmp.bmWidth, bmp.bmHeight,
-                    hdcScreenCompat,
-                    x, y,
-                    static_cast<int>(width/zoomLevel), static_cast<int>(height/zoomLevel),
-                    SRCCOPY|CAPTUREBLT );
+            // Render with the continuous fractional viewport whenever we are not drawing/typing/tracing so the
+            // animation moves at device-pixel granularity and converges without snapping on the final frame.
+            const bool renderFractionalZoom = zoomAnimation.IsActive() ||
+                ( !g_Drawing && !g_Tracing && g_TypeMode == TypeModeOff );
+            if( renderFractionalZoom ) {
+                float sourceX;
+                float sourceY;
+                GetAnimatedZoomSourceCoordinates( zoomLevel, &cursorPos, width, height, &sourceX, &sourceY );
+
+                const int sourceLeft = static_cast<int>( std::floor( sourceX ) );
+                const int sourceTop = static_cast<int>( std::floor( sourceY ) );
+                const int sourceRight = min( width, static_cast<int>( std::ceil( sourceX + static_cast<float>( width ) / zoomLevel ) ) );
+                const int sourceBottom = min( height, static_cast<int>( std::ceil( sourceY + static_cast<float>( height ) / zoomLevel ) ) );
+                const int srcW = sourceRight - sourceLeft;
+                const int srcH = sourceBottom - sourceTop;
+                // Enlarge with StretchBlt (so HALFTONE interpolates) and offset the destination to compensate the
+                // sub-pixel origin, giving smooth device-pixel-granular motion instead of source-pixel snapping.
+                const int destX = static_cast<int>( std::lround( ( static_cast<float>( sourceLeft ) - sourceX ) * zoomLevel ) );
+                const int destY = static_cast<int>( std::lround( ( static_cast<float>( sourceTop ) - sourceY ) * zoomLevel ) );
+                const int destW = static_cast<int>( std::lround( static_cast<float>( srcW ) * zoomLevel ) );
+                const int destH = static_cast<int>( std::lround( static_cast<float>( srcH ) * zoomLevel ) );
+                StretchBlt( ps.hdc,
+                        destX, destY, destW, destH,
+                        hdcScreenCompat,
+                        sourceLeft, sourceTop, srcW, srcH,
+                        SRCCOPY|CAPTUREBLT );
+            } else {
+                StretchBlt( ps.hdc,
+                        0, 0,
+                        bmp.bmWidth, bmp.bmHeight,
+                        hdcScreenCompat,
+                        x, y,
+                        static_cast<int>(width/zoomLevel), static_cast<int>(height/zoomLevel),
+                        SRCCOPY|CAPTUREBLT );
+            }
 #endif
         } else if( g_TimerActive ) {
 
@@ -11769,7 +11840,6 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
     POINT		cursorPos;
     static int	width, height;
     static MONITORINFO	monInfo;
-    HDC			hdcScreen;
 #if 0
     int			delta;
     BOOLEAN		zoomIn;
@@ -11778,22 +11848,21 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
     POINT			adjustedCursorPos, zoomCenterPos;
     int				moveWidth, moveHeight;
     int				sourceRectHeight, sourceRectWidth;
-    DWORD			curTickCount;
     RECT			sourceRect{};
     static RECT		lastSourceRect;
     static float	zoomLevel;
-    static float	zoomTelescopeStep;
     static float	zoomTelescopeTarget;
-    static DWORD	prevZoomStepTickCount = 0;
+    static ZoomAnimation zoomAnimation;
+    static BOOLEAN animationSmoothingForced = FALSE;
     static BOOL		dwmEnabled = FALSE;
     static BOOLEAN	startedInPresentationMode = FALSE;
     MAGTRANSFORM matrix;
 
     switch (message)  {
-    case WM_CREATE:
+    case WM_CREATE: {
 
         // Initialize
-        pMagInitialize();
+        const BOOL magnificationInitialized = pMagInitialize();
         if (pDwmIsCompositionEnabled) pDwmIsCompositionEnabled(&dwmEnabled);
 
         // Create the zoom window
@@ -11805,7 +11874,10 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                                         WS_CHILD | MS_SHOWMAGNIFIEDCURSOR | WS_VISIBLE,
                                         0, 0, 0, 0, hWnd, NULL, g_hInstance, NULL );
         }
-        ShowWindow( hWnd, SW_SHOW );
+        if( !magnificationInitialized || (!g_fullScreenWorkaround && g_hWndLiveZoomMag == nullptr) )
+        {
+            return -1;
+        }
         InvalidateRect( g_hWndLiveZoomMag, NULL, TRUE );
 
         if( !g_fullScreenWorkaround )
@@ -11823,13 +11895,23 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             }
         }
         break;
+    }
 
     case WM_SHOWWINDOW:
         if( wParam == TRUE ) {
 
+            animationSmoothingForced = FALSE;
+            KillTimer( hWnd, 1 );
+
+            // The cached control relinquishes cursor rendering while hidden. Restore it before live zoom is shown.
+            if( !g_fullScreenWorkaround )
+                SendMessage( hWnd, WM_USER_MAGNIFY_CURSOR, TRUE, 0 );
+
+            if( !g_fullScreenWorkaround && pMagSetLensUseBitmapSmoothing )
+                pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, g_SmoothImage );
+
             // Determine what monitor we're on
             lastCursorPos.x = -1;
-            hdcScreen	= GetDC( NULL );
             GetCursorPos( &cursorPos );
             UpdateMonitorInfo( cursorPos, &monInfo );
             width = monInfo.rcMonitor.right - monInfo.rcMonitor.left;
@@ -11853,24 +11935,24 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             if( g_ZoomOnLiveZoom ) {
 
                 // Force a zoom to 2x without telescope
-                prevZoomStepTickCount = 0;
-                zoomLevel = static_cast<float>(1.9);
                 zoomTelescopeTarget = 2.0;
-                zoomTelescopeStep = 2.0;
+                zoomLevel = zoomTelescopeTarget;
+                zoomAnimation.Stop( zoomLevel );
 
             } else {
 
-                zoomTelescopeStep = ZOOM_LEVEL_STEP_IN;
                 zoomTelescopeTarget = g_ZoomLevels[g_SliderZoomLevel];
 
-                prevZoomStepTickCount = 0;
                 if( dwmEnabled ) {
 
                     zoomLevel = static_cast<float>(1);
+                    zoomAnimation.Start( zoomLevel, zoomTelescopeTarget, GetTickCount64(),
+                                         ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, true ) );
 
                 } else {
 
-                    zoomLevel = static_cast<float>(1.9);
+                    zoomLevel = zoomTelescopeTarget;
+                    zoomAnimation.Stop( zoomLevel );
                 }
             }
             RegisterHotKey( hWnd, 0, MOD_CONTROL, VK_UP );
@@ -11886,27 +11968,36 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             GetCursorPos( &lastCursorPos );
             SetCursorPos( lastCursorPos.x, lastCursorPos.y );
 
+            SetTimer( hWnd, 0, ZOOM_ANIMATION_FRAME_TIME, NULL );
             SendMessage( hWnd, WM_TIMER, 0, 0);
-            SetTimer( hWnd, 0, ZOOM_LEVEL_STEP_TIME, NULL );
 
         } else {
 
             KillTimer( hWnd, 0 );
+            if( animationSmoothingForced ) {
+
+                animationSmoothingForced = FALSE;
+                if( pMagSetLensUseBitmapSmoothing )
+                    pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, g_SmoothImage );
+            }
 
             if( g_RecordToggle )
                 g_RecordingSession->EnableCursorCapture();
 
-            if( !g_fullScreenWorkaround )
-                if( pMagShowSystemCursor ) pMagShowSystemCursor( TRUE );
+            if( !g_fullScreenWorkaround ) {
 
-            // Reset the timer to expire two hours from now
+                // Stop the magnifier control from retaining ownership of the cursor while its expensive surfaces
+                // remain resident. Destroying the control also releases the cursor, but makes the next activation cold.
+                SendMessage( hWnd, WM_USER_MAGNIFY_CURSOR, FALSE, 0 );
+                if( pMagShowSystemCursor ) pMagShowSystemCursor( TRUE );
+            }
+
+            // Keep the magnifier control resident on current Windows. Re-creating it costs ~200ms while warm and can
+            // take much longer after its ~76MB of fullscreen surfaces have left the standby list.
+            KillTimer( hWnd, 1 );
             if( g_OsVersion < WIN7_VERSION && !IsPresentationMode()) {
 
-                KillTimer( hWnd, 1 );
                 SetTimer( hWnd, 1, LIVEZOOM_WINDOW_TIMEOUT, NULL );
-            } else {
-
-                DestroyWindow( hWnd );
             }
             UnregisterHotKey( hWnd, 0 );
             UnregisterHotKey( hWnd, 1 );
@@ -11951,19 +12042,21 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             sourceRectHeight = lastSourceRect.bottom - lastSourceRect.top;
             moveWidth = sourceRectWidth/LIVEZOOM_MOVE_REGIONS;
             moveHeight = sourceRectHeight/LIVEZOOM_MOVE_REGIONS;
-            curTickCount = GetTickCount();
-            if( zoomLevel != zoomTelescopeTarget &&
-                (prevZoomStepTickCount == 0 || (curTickCount - prevZoomStepTickCount > ZOOM_LEVEL_STEP_TIME)) ) {
+            if( zoomAnimation.IsActive() ) {
 
-                prevZoomStepTickCount = curTickCount;
-                if( (zoomTelescopeStep > 1 && zoomLevel*zoomTelescopeStep >= zoomTelescopeTarget ) ||
-                    (zoomTelescopeStep < 1 && zoomLevel*zoomTelescopeStep <= zoomTelescopeTarget )) {
+                // Force interpolated magnification while the scale changes so sub-pixel motion is smooth, not blocky.
+                if( !g_fullScreenWorkaround && !animationSmoothingForced ) {
 
-                    zoomLevel = zoomTelescopeTarget;
+                    animationSmoothingForced = TRUE;
+                    if( pMagSetLensUseBitmapSmoothing )
+                        pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, TRUE );
+                }
+                zoomLevel = zoomAnimation.Sample( GetTickCount64() );
+                if( animationSmoothingForced && !zoomAnimation.IsActive() ) {
 
-                } else {
-
-                    zoomLevel *= zoomTelescopeStep;
+                    animationSmoothingForced = FALSE;
+                    if( pMagSetLensUseBitmapSmoothing )
+                        pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, g_SmoothImage );
                 }
                 // Time to exit zoom mode?
                 if( zoomTelescopeTarget == 1 && zoomLevel == 1 ) {
@@ -11989,14 +12082,13 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                 //
                 adjustedCursorPos.x = cursorPos.x - monInfo.rcMonitor.left;
                 adjustedCursorPos.y = cursorPos.y - monInfo.rcMonitor.top;
-                GetZoomedTopLeftCoordinates( zoomLevel, &adjustedCursorPos, reinterpret_cast<int *>(&zoomCenterPos.x), width,
-                                reinterpret_cast<int *>(&zoomCenterPos.y), height );
+                GetZoomedTopLeftCoordinates( zoomLevel, &adjustedCursorPos,
+                    reinterpret_cast<int*>(&zoomCenterPos.x), width,
+                    reinterpret_cast<int*>(&zoomCenterPos.y), height );
 
-                //
-                // Add back monitor boundary
-                //
-                zoomCenterPos.x += monInfo.rcMonitor.left + static_cast<LONG>(width/zoomLevel/2);
-                zoomCenterPos.y += monInfo.rcMonitor.top + static_cast<LONG>(height/zoomLevel/2);
+                // Add back monitor boundary.
+                zoomCenterPos.x += monInfo.rcMonitor.left + static_cast<LONG>(width / zoomLevel / 2);
+                zoomCenterPos.y += monInfo.rcMonitor.top + static_cast<LONG>(height / zoomLevel / 2);
 
             } else {
 
@@ -12084,7 +12176,7 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             }
 
             // are we done zooming?
-            if( zoomLevel == 1 ) {
+            if( zoomTelescopeTarget == 1 && zoomLevel == 1 ) {
 
 #if WINDOWS_CURSOR_RECORDING_WORKAROUND
                 if( g_RecordToggle ) {
@@ -12094,14 +12186,7 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                 else {
 
 #endif
-                if( g_OsVersion < WIN7_VERSION ) {
-
-                    ShowWindow( hWnd, SW_HIDE );
-
-                } else {
-
-                    DestroyWindow( hWnd );
-                }
+                ShowWindow( hWnd, SW_HIDE );
             }
 #if WINDOWS_CURSOR_RECORDING_WORKAROUND
             }
@@ -12142,13 +12227,12 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
         break;
 
     case WM_HOTKEY: {
-        float newZoomLevel = zoomLevel;
+        float newZoomLevel = zoomAnimation.IsActive() ? zoomTelescopeTarget : zoomLevel;
         switch( wParam ) {
         case 0:
             // zoom in
             if( newZoomLevel < ZOOM_LEVEL_MAX )
                 newZoomLevel *= 2;
-            zoomTelescopeStep = ZOOM_LEVEL_STEP_IN;
             break;
 
         case 1:
@@ -12160,13 +12244,17 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                 if( newZoomLevel < ZOOM_LEVEL_MIN )
                     newZoomLevel = ZOOM_LEVEL_MIN;
             }
-            zoomTelescopeStep = ZOOM_LEVEL_STEP_OUT;
             break;
         }
         zoomTelescopeTarget = newZoomLevel;
         if( !dwmEnabled ) {
 
             zoomLevel = newZoomLevel;
+            zoomAnimation.Stop( zoomLevel );
+        } else {
+
+            zoomLevel = zoomAnimation.Retarget( zoomTelescopeTarget, GetTickCount64(),
+                                                ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, false ) );
         }
         }
         break;
@@ -12175,11 +12263,15 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
     case WM_KEYDOWN:
         switch( wParam ) {
         case VK_ESCAPE:
-            zoomTelescopeStep = ZOOM_LEVEL_STEP_OUT;
             zoomTelescopeTarget = 1.0;
             if( !dwmEnabled ) {
 
-                zoomLevel = static_cast<float>(1.1);
+                zoomLevel = zoomTelescopeTarget;
+                zoomAnimation.Stop( zoomLevel );
+            } else {
+
+                zoomLevel = zoomAnimation.Retarget( zoomTelescopeTarget, GetTickCount64(),
+                                                    ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, false ) );
             }
             break;
 
@@ -12195,6 +12287,9 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
         }
         break;
     case WM_DESTROY:
+        if( animationSmoothingForced && pMagSetLensUseBitmapSmoothing )
+            pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, g_SmoothImage );
+        animationSmoothingForced = FALSE;
         g_hWndLiveZoom = NULL;
         break;
 
@@ -12244,15 +12339,16 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                 g_LiveZoomLevelOne = FALSE;
 
                 zoomTelescopeTarget = static_cast<float>(wParam);
-                zoomTelescopeStep = ZOOM_LEVEL_STEP_IN;
-                prevZoomStepTickCount = 0;
                 zoomLevel = 1.0;
+                zoomAnimation.Start( zoomLevel, zoomTelescopeTarget, GetTickCount64(),
+                                     ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, false ) );
 
                 break;
             }
 #endif
             zoomLevel = static_cast<float>(wParam);
             zoomTelescopeTarget = zoomLevel;
+            zoomAnimation.Stop( zoomLevel );
             matrix.v[0][0] = zoomLevel;
             matrix.v[0][2] = (static_cast<float>(-lastSourceRect.left) * static_cast<float>(wParam));
 

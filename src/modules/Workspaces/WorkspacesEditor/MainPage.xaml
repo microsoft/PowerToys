@@ -111,7 +111,10 @@
                 VerticalAlignment="Center"
                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                 Text="{x:Static props:Resources.SortBy}" />
-            <ComboBox MinWidth="140" SelectedIndex="{Binding OrderByIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+            <ComboBox
+                MinWidth="140"
+                AutomationProperties.AutomationId="WorkspaceSortComboBox"
+                SelectedIndex="{Binding OrderByIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                 <ComboBoxItem Content="{x:Static props:Resources.LastLaunched}" />
                 <ComboBoxItem Content="{x:Static props:Resources.Created}" />
                 <ComboBoxItem Content="{x:Static props:Resources.Name}" />
@@ -138,6 +141,11 @@
                 x:Name="WorkspacesItemsControl"
                 Margin="24,0,24,24"
                 ItemsSource="{Binding WorkspacesView, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+                <ItemsControl.ItemContainerStyle>
+                    <Style TargetType="ContentPresenter">
+                        <Setter Property="AutomationProperties.AutomationId" Value="{Binding Name, Mode=OneWay}" />
+                    </Style>
+                </ItemsControl.ItemContainerStyle>
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel
