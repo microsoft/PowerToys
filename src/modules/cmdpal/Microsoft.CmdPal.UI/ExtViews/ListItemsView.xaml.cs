@@ -97,6 +97,13 @@ public sealed partial class ListItemsView : UserControl,
         RegisterExistingRealizedItems();
     }
 
+    internal void DetachFromPage()
+    {
+        Bindings.StopTracking();
+        ViewModel = null;
+        ItemsList.ItemsSource = null;
+    }
+
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         _isLoaded = false;

@@ -243,10 +243,22 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             if (!ViewModel.IsNested)
             {
-                // todo BODGY
-                RootFrame.BackStack.Clear();
+                ClearPageHistory(RootFrame.BackStack);
             }
         });
+    }
+
+    private static void ClearPageHistory(IList<Microsoft.UI.Xaml.Navigation.PageStackEntry> history)
+    {
+        var discardedEntries = history.ToArray();
+        history.Clear();
+        foreach (var entry in discardedEntries)
+        {
+            if (entry.Parameter is AsyncNavigationRequest { TargetViewModel: PageViewModel page })
+            {
+                _ = page.CleanupAsync();
+            }
+        }
     }
 
     public void Receive(ShowConfirmationMessage message)
@@ -601,7 +613,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // TODO: In the future we probably want a short cache (3-5?) of recent VMs in case the user re-navigates
             // back to a recent page they visited (like the Pokedex) so we don't have to reload it from  scratch.
             // That'd be retrieved as we re-navigate in the PerformCommandMessage logic above
-            RootFrame.ForwardStack.Clear();
+            ClearPageHistory(RootFrame.ForwardStack);
         }
 
         if (!RootFrame.CanGoBack)

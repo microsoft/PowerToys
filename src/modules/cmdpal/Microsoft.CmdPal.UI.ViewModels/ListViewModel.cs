@@ -176,6 +176,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     protected override void OnSearchTextBoxUpdated(string searchTextBox)
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
         // Dynamic pages will handler their own filtering. They will tell us if
         // something needs to change, by raising ItemsChanged.
         if (_isDynamic)
@@ -325,6 +331,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchItems(bool keepSelection, bool ensureSelectionVisible, int? recoveryGeneration = null)
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
         System.Diagnostics.Debug.Assert(!IsCurrentThreadUiThread(), "FetchItems should not run on the UI thread.");
 
         CancellationToken cancellationToken;
@@ -1051,6 +1063,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public override void InitializeProperties()
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
         base.InitializeProperties();
 
         var model = _model.Unsafe;
@@ -1218,7 +1236,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         UpdateProperty(nameof(EmptyContent));
 
-        DoOnUiThread(
+        DoOnActivePage(
            () =>
            {
                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(EmptyContent));
@@ -1242,16 +1260,18 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     // The shell serializes navigation transitions on the UI thread. Terminal
     // cleanup may race them, but resumption can only transition Suspended -> Active.
-    internal void SuspendForNavigation()
+    internal override void SuspendForNavigation()
     {
+        base.SuspendForNavigation();
         if (TryChangeWorkStatus(ListPageWorkStatus.Active, ListPageWorkStatus.Suspended) is not null)
         {
             CancelPendingWork();
         }
     }
 
-    internal Task ResumeAfterNavigation()
+    internal override Task ResumeAfterNavigation()
     {
+        base.ResumeAfterNavigation();
         var work = TryChangeWorkStatus(ListPageWorkStatus.Suspended, ListPageWorkStatus.Active);
         if (work is null)
         {
@@ -1436,6 +1456,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         CancelPendingWork();
     }
+
+    protected override void OnCleanupRequested() => StopWork();
 
     protected override void UnsafeCleanup()
     {

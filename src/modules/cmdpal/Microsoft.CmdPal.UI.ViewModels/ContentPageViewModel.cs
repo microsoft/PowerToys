@@ -61,6 +61,12 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchContent()
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
         List<ContentViewModel> newContent = [];
         try
         {
@@ -71,13 +77,14 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 var viewModel = ViewModelFromContent(item, PageContext);
                 if (viewModel is not null)
                 {
-                    viewModel.InitializeProperties();
                     newContent.Add(viewModel);
+                    viewModel.InitializeProperties();
                 }
             }
         }
         catch (Exception ex)
         {
+            CleanupContent(newContent);
             ShowException(ex, _model?.Unsafe?.Name);
             throw;
         }
@@ -86,11 +93,29 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         newContent.ForEach(c => c.OnlyControlOnPage = oneContent);
 
         // Now, back to a UI thread to update the observable collection
-        DoOnUiThread(
+        if (!TryDoOnUiThread(
         () =>
         {
+            using var publication = TryBeginPageOperation();
+            if (publication is null)
+            {
+                _ = Task.Run(() => CleanupContent(newContent));
+                return;
+            }
+
             ListHelpers.InPlaceUpdateList(Content, newContent);
-        });
+        }))
+        {
+            CleanupContent(newContent);
+        }
+    }
+
+    private static void CleanupContent(IEnumerable<ContentViewModel> content)
+    {
+        foreach (var item in content)
+        {
+            item.SafeCleanup();
+        }
     }
 
     public virtual ContentViewModel? ViewModelFromContent(IContent content, WeakReference<IPageContext> context)
@@ -103,6 +128,12 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
     public override void InitializeProperties()
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
         base.InitializeProperties();
 
         var model = _model.Unsafe;
@@ -132,7 +163,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         FetchContent();
         model.ItemsChanged += Model_ItemsChanged;
 
-        DoOnUiThread(
+        DoOnActivePage(
         () =>
         {
             WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(this));
@@ -189,7 +220,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 UpdateProperty(nameof(CanOpenContextMenu));
                 UpdateProperty(nameof(MoreCommands));
                 UpdateProperty(nameof(AllCommands));
-                DoOnUiThread(
+                DoOnActivePage(
                 () =>
                 {
                     WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(this));
@@ -211,7 +242,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         UpdateProperty(nameof(Details));
         UpdateProperty(nameof(HasDetails));
 
-        DoOnUiThread(
+        DoOnActivePage(
             () =>
             {
                 if (HasDetails)
@@ -310,6 +341,14 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(SecondaryCommand.Command.Model, SecondaryCommand.Model));
         }
+    }
+
+    internal override Task ResumeAfterNavigation()
+    {
+        base.ResumeAfterNavigation();
+        UpdateDetails();
+        DoOnActivePage(() => WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(this)));
+        return Task.CompletedTask;
     }
 
     protected override void UnsafeCleanup()
