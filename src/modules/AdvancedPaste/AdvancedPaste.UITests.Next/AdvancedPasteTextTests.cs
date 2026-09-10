@@ -179,7 +179,15 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
     private void AssertTransformedText()
     {
         WaitUntil(() => !string.IsNullOrEmpty(Target.Text), "The destination did not receive transformed text.");
-        Assert.AreEqual(ReadClipboardText().ReplaceLineEndings("\n"), Target.Text, "The clipboard and actual pasted text differ.");
+        var result = WaitHelper.WaitForStable(
+            () => (ClipboardText: ReadClipboardText().ReplaceLineEndings("\n"), PastedText: Target.Text),
+            state => !string.IsNullOrEmpty(state.PastedText) && state.ClipboardText == state.PastedText,
+            timeoutMS: 15_000,
+            requiredConsecutiveMatches: 2);
+        Assert.IsTrue(
+            result.Succeeded,
+            $"The clipboard and actual pasted text did not reach the same nonempty value. " +
+            $"Clipboard: '{result.LastObservation.ClipboardText}'; pasted: '{result.LastObservation.PastedText}'.");
         WaitUntil(() => !IsAdvancedPasteVisible(), "Advanced Paste did not hide after pasting.");
     }
 

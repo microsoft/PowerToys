@@ -293,7 +293,9 @@ public abstract class AdvancedPasteTestBase : UITestBase
             System.Windows.Forms.Clipboard.SetText(text);
             return true;
         });
-        Assert.AreEqual(text, ReadClipboardText(), "The source text was not placed on the clipboard.");
+        WaitUntil(
+            () => ReadClipboardText() == text,
+            "The source text did not become readable on the clipboard.");
     }
 
     protected string ReadClipboardText() => AccessClipboard(() =>
