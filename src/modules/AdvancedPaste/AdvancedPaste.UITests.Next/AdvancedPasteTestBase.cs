@@ -265,88 +265,24 @@ public abstract class AdvancedPasteTestBase : UITestBase
             () => WindowControl.GetForegroundWindowHandle() == handle,
             $"Advanced Paste did not acquire foreground before selecting '{name}'.",
             timeoutMS: 10_000);
-        var windowBounds = WindowHelper.GetWindowBounds(handle);
-        MouseHelper.MoveTo((windowBounds.Left + windowBounds.Right) / 2, windowBounds.Top + 16);
-
         Element? FindAction() => window.FindAll<Element>(By.Name(name), 0)
             .FirstOrDefault(element => element.ControlType.Equals("ListItem", StringComparison.OrdinalIgnoreCase) &&
                 element.Name.StartsWith(name + " (", StringComparison.OrdinalIgnoreCase));
 
-        // A matching tooltip or label can appear before the enabled action's ListItem.
         var located = WaitHelper.WaitForStable(
             FindAction,
-            candidate => candidate is not null,
+            candidate => candidate is not null && candidate.IsEnabled,
             timeoutMS: 15_000,
             shouldRetryException: AdvancedPasteUi.IsStaleElement);
         var action = located.LastObservation;
+        Assert.IsTrue(located.Succeeded, $"Action '{name}' did not become enabled. Last exception: {located.LastException}.");
         Assert.IsNotNull(action, $"Enabled action '{name}' was not exposed as an accessible list item. Last exception: {located.LastException}.");
         if (action.IsOffscreen)
         {
             action.ScrollIntoView();
         }
 
-        // Let first-show layout settle and hover tooltips disappear before resolving the click point.
-        (int X, int Y, int Width, int Height, (int Left, int Top, int Right, int Bottom) Window)? previous = null;
-        (bool Unchanged, bool Offscreen, IntPtr Foreground, bool PointerAtTarget)? lastInputState = null;
-        var samples = 0;
-        var sampling = Stopwatch.StartNew();
-        var ready = WaitHelper.WaitForStable(
-            FindAction,
-            candidate =>
-            {
-                samples++;
-                if (candidate is null)
-                {
-                    previous = null;
-                    lastInputState = null;
-                    return false;
-                }
-
-                var bounds = (candidate.X, candidate.Y, candidate.Width, candidate.Height, WindowHelper.GetWindowBounds(handle));
-                var unchanged = previous == bounds;
-                previous = bounds;
-                var offscreen = candidate.IsOffscreen;
-                var foreground = WindowControl.GetForegroundWindowHandle();
-                var point = new System.Drawing.Point(candidate.X + (candidate.Width / 2), candidate.Y + (candidate.Height / 2));
-                if (unchanged && candidate.Width > 0 && candidate.Height > 0 && !offscreen && foreground == handle &&
-                    System.Windows.Forms.Cursor.Position != point)
-                {
-                    MouseHelper.MoveTo(point.X, point.Y);
-                }
-
-                var state = (
-                    Unchanged: unchanged,
-                    Offscreen: offscreen,
-                    Foreground: foreground,
-                    PointerAtTarget: System.Windows.Forms.Cursor.Position == point);
-                lastInputState = state;
-                return state.Unchanged && candidate.Width > 0 && candidate.Height > 0 && !state.Offscreen &&
-                    state.Foreground == handle && state.PointerAtTarget;
-            },
-            timeoutMS: 30_000,
-            requiredConsecutiveMatches: 3,
-            shouldRetryException: AdvancedPasteUi.IsStaleElement);
-        Step($"Action readiness for '{name}': HWND={handle}; samples={samples}; stable={ready.ConsecutiveMatches}; elapsed={sampling.Elapsed}; state={lastInputState} (unchanged, offscreen, foreground, pointer at target).");
-        if (ready.LastObservation is { } observed)
-        {
-            var atPoint = WindowFromPoint(new System.Drawing.Point(observed.X + (observed.Width / 2), observed.Y + (observed.Height / 2)));
-            var root = GetAncestor(atPoint, 2);
-            var rootOwner = GetAncestor(atPoint, 3);
-            Step($"Native point: child={atPoint}, root={root}, rootOwner={rootOwner}; expected={handle}; destination={Target.State}");
-            foreach (var native in WindowControl.EnumerateAllWindows().Where(native =>
-                native.Hwnd == root || native.Hwnd == rootOwner || native.Hwnd == handle ||
-                native.ProcessId == window.ProcessId))
-            {
-                Step($"Native point window: {native}");
-            }
-        }
-
-        Assert.IsTrue(
-            ready.Succeeded,
-            $"The '{name}' row and window did not settle for real input. Last bounds: {previous}; state: {lastInputState}; foreground: {WindowControl.GetForegroundWindowInfo()}; last exception: {ready.LastException}.");
-        action = ready.LastObservation!;
-        Step($"Clicking settled '{name}' row at ({action.X},{action.Y}) {action.Width}x{action.Height}");
-        action.MouseClick(msPostAction: 0);
+        action.Invoke(msPostAction: 0);
     }
 
     protected void SetClipboardText(string text)
@@ -363,12 +299,16 @@ public abstract class AdvancedPasteTestBase : UITestBase
     protected string ReadClipboardText() => AccessClipboard(() =>
         System.Windows.Forms.Clipboard.GetText(System.Windows.Forms.TextDataFormat.UnicodeText));
 
+    protected string[] ReadClipboardFormats() => AccessClipboard(() =>
+        WinClipboard.GetContent().AvailableFormats.Order().ToArray());
+
     protected void SetClipboard(DataPackage package)
     {
-        Target.Invoke(() =>
+        AccessClipboard(() =>
         {
             WinClipboard.SetContent(package);
             WinClipboard.Flush();
+            return true;
         });
     }
 
@@ -492,9 +432,4 @@ public abstract class AdvancedPasteTestBase : UITestBase
         Assert.IsTrue(result.Succeeded, $"{message} Last exception: {result.LastException?.Message}");
     }
 
-    [DllImport("user32.dll")]
-    private static extern IntPtr WindowFromPoint(System.Drawing.Point point);
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetAncestor(IntPtr window, uint flags);
 }

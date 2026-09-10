@@ -690,17 +690,26 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
     {
         Target.Clear();
         Target.Focus();
-        var formats = WinClipboard.GetContent().AvailableFormats.Order().ToArray();
+        var formats = ReadClipboardFormats();
         Step($"Verifying that {string.Join(" + ", shortcut)} has no UI, paste, or clipboard effect");
         SendShortcut(shortcut);
         var unexpectedEffect = WaitHelper.WaitForStable(
-            () => IsAdvancedPasteVisible() || Target.Text.Length != 0 ||
-                ReadClipboardText() != source ||
-                !WinClipboard.GetContent().AvailableFormats.Order().SequenceEqual(formats) ||
-                (requireStopped && GetModuleProcessIds().Length != 0),
-            changed => changed,
+            () => (
+                Visible: IsAdvancedPasteVisible(),
+                TargetText: Target.Text,
+                ClipboardText: ReadClipboardText(),
+                Formats: ReadClipboardFormats(),
+                ProcessIds: GetModuleProcessIds()),
+            state => state.Visible || state.TargetText.Length != 0 ||
+                state.ClipboardText != source || !state.Formats.SequenceEqual(formats) ||
+                (requireStopped && state.ProcessIds.Length != 0),
             timeoutMS: 2_500);
-        Assert.IsFalse(unexpectedEffect.Succeeded, "An inactive shortcut opened Advanced Paste, started its process, pasted, or changed the clipboard.");
+        var observed = unexpectedEffect.LastObservation;
+        Assert.IsFalse(
+            unexpectedEffect.Succeeded,
+            $"An inactive shortcut had an effect: visible={observed.Visible}; processes={string.Join(", ", observed.ProcessIds)}; " +
+            $"pasted characters={observed.TargetText.Length}; clipboard matches={observed.ClipboardText == source}; " +
+            $"formats before=[{string.Join(", ", formats)}], after=[{string.Join(", ", observed.Formats)}].");
         Assert.AreEqual(source, ReadClipboardText(), "An inactive shortcut changed the text clipboard.");
         Assert.AreEqual(string.Empty, Target.Text, "An inactive shortcut pasted into the destination.");
     }
