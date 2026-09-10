@@ -76,10 +76,84 @@ public partial class TopLevelCommandManagerTests
         Assert.AreEqual(1, provider.LookupCount);
     }
 
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task ResolveCommandAsync_RejectsDisabledProviderWithCachedSettings(bool includeTopLevelCommand)
+    {
+        await using var services = CreateServices();
+        var settingsService = services.GetRequiredService<ISettingsService>();
+        var provider = new TestCommandProvider(TestCommandProvider.NestedCommandId)
+        {
+            IncludeTopLevelCommand = includeTopLevelCommand,
+        };
+        var wrapper = new CommandProviderWrapper(provider, TaskScheduler.Default);
+        using var manager = new TopLevelCommandManager(services, [CreateExtensionService(wrapper).Object]);
+        await manager.LoadExternalProvidersAsync();
+
+        settingsService.UpdateSettings(settings => settings with
+        {
+            ProviderSettings = settings.ProviderSettings.SetItem(provider.Id, new ProviderSettings(false)),
+        });
+
+        await using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+
+        Assert.IsFalse(manager.IsProviderEnabled(provider.Id));
+        Assert.IsNull(resolution);
+        Assert.AreEqual(0, provider.LookupCount);
+    }
+
+    [TestMethod]
+    public async Task ResolveCommandAsync_DoesNotReconstructCommandsAfterProviderIsDisabled()
+    {
+        await using var services = CreateServices();
+        var settingsService = services.GetRequiredService<ISettingsService>();
+        var provider = new TestCommandProvider(TestCommandProvider.NestedCommandId) { IncludeTopLevelCommand = true };
+        var wrapper = new CommandProviderWrapper(provider, TaskScheduler.Default);
+        using var manager = new TopLevelCommandManager(services, [CreateExtensionService(wrapper).Object]);
+        await manager.LoadExternalProvidersAsync();
+        var providerSettings = new ProviderSettingsViewModel(wrapper, settingsService.Settings.ProviderSettings[provider.Id], settingsService);
+
+        providerSettings.IsEnabled = false;
+        await using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+
+        Assert.IsNull(manager.LookupCommand(provider.Id, TestCommandProvider.NestedCommandId));
+        Assert.IsNull(resolution);
+        Assert.AreEqual(0, provider.LookupCount);
+
+        providerSettings.IsEnabled = true;
+        await manager.WaitForCurrentLoadAsync().WaitAsync(TimeSpan.FromSeconds(5));
+        await using var enabledResolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        Assert.IsNotNull(enabledResolution);
+    }
+
+    [TestMethod]
+    public async Task ResolveCommandAsync_RejectsProviderDisabledDuringLookup()
+    {
+        await using var services = CreateServices();
+        var settingsService = services.GetRequiredService<ISettingsService>();
+        var provider = new TestCommandProvider(TestCommandProvider.NestedCommandId);
+        provider.OnLookup = () => settingsService.UpdateSettings(settings => settings with
+        {
+            ProviderSettings = settings.ProviderSettings.SetItem(provider.Id, new ProviderSettings(false)),
+        });
+        var wrapper = new CommandProviderWrapper(provider, TaskScheduler.Default);
+        using var manager = new TopLevelCommandManager(services, [CreateExtensionService(wrapper).Object]);
+        await manager.LoadExternalProvidersAsync();
+
+        await using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+
+        Assert.IsNull(resolution);
+        Assert.AreEqual(1, provider.LookupCount);
+    }
+
     private static ServiceProvider CreateServices()
     {
+        var settings = new SettingsModel();
         var settingsService = new Mock<ISettingsService>();
-        settingsService.SetupGet(service => service.Settings).Returns(new SettingsModel());
+        settingsService.SetupGet(service => service.Settings).Returns(() => settings);
+        settingsService.Setup(service => service.UpdateSettings(It.IsAny<Func<SettingsModel, SettingsModel>>(), It.IsAny<bool>()))
+            .Callback<Func<SettingsModel, SettingsModel>, bool>((update, _) => settings = update(settings));
 
         return new ServiceCollection()
             .AddSingleton(TaskScheduler.Default)
@@ -105,6 +179,10 @@ public partial class TopLevelCommandManagerTests
 
         public int LookupCount => _lookupCount;
 
+        public bool IncludeTopLevelCommand { get; init; }
+
+        public Action? OnLookup { get; set; }
+
         public TestCommandProvider(string resolvedCommandId)
         {
             Id = "test-provider";
@@ -116,11 +194,12 @@ public partial class TopLevelCommandManagerTests
             });
         }
 
-        public override ICommandItem[] TopLevelCommands() => [];
+        public override ICommandItem[] TopLevelCommands() => IncludeTopLevelCommand ? [_resolvedItem] : [];
 
         public override ICommandItem? GetCommandItem(string id)
         {
             Interlocked.Increment(ref _lookupCount);
+            OnLookup?.Invoke();
             return id == NestedCommandId ? _resolvedItem : null;
         }
     }

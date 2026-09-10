@@ -183,6 +183,7 @@ internal sealed partial class ExternalCommandLinkCoordinator : IDisposable
         if (refreshedCommand is null ||
             refreshedProvider is null ||
             refreshedCommandViewModel is null ||
+            !_topLevelCommandManager.IsProviderEnabled(refreshedProvider.ProviderId) ||
             authorized.Permission.Key.PackageFamilyName != (refreshedProvider.Extension?.PackageFamilyName ?? string.Empty) ||
             refreshedCommandViewModel.IsPage != authorized.IsPage ||
             !CanExecute(refreshedCommandViewModel, executeCommand.ListPageOptions))

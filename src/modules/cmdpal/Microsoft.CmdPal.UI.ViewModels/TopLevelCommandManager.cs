@@ -743,6 +743,13 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         return null;
     }
 
+    public bool IsProviderEnabled(string providerId)
+    {
+        // A loaded wrapper can retain IsActive after its provider is disabled.
+        var settings = _serviceProvider.GetRequiredService<ISettingsService>().Settings;
+        return !settings.ProviderSettings.TryGetValue(providerId, out var providerSettings) || providerSettings.IsEnabled;
+    }
+
     public async Task<CommandResolution?> ResolveCommandAsync(
         string providerId,
         string commandId,
@@ -750,7 +757,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     {
         cancellationToken.ThrowIfCancellationRequested();
         var provider = LookupProvider(providerId);
-        if (provider is null)
+        if (provider is null || !IsProviderEnabled(providerId))
         {
             return null;
         }
@@ -766,6 +773,12 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         try
         {
             command = await resolutionTask.WaitAsync(cancellationToken).ConfigureAwait(false);
+            if (command is not null && !IsProviderEnabled(providerId))
+            {
+                await Task.Run(command.Cleanup, CancellationToken.None).ConfigureAwait(false);
+                return null;
+            }
+
             return command is null ? null : new(command, provider, ownsCommand: true);
         }
         catch (OperationCanceledException)
