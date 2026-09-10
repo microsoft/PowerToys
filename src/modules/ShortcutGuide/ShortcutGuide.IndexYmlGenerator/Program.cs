@@ -12,6 +12,7 @@ namespace ShortcutGuide.IndexYmlGenerator
         public static void Main()
         {
             Logger.InitializeLogger(@"\ShortcutGuide\IndexYmlGenerator\Logs");
+            Logger.LogInfo("Shortcut Guide index file generation started.");
 
             try
             {
@@ -24,6 +25,8 @@ namespace ShortcutGuide.IndexYmlGenerator
                 // Informs the Shortcut Guide UI that the index generation failed.
                 Environment.ExitCode = 1;
             }
+
+            Logger.LogInfo("Shortcut Guide index file generation completed.");
         }
     }
 }

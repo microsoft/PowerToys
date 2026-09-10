@@ -30,8 +30,10 @@ namespace ShortcutGuide.IndexYmlGenerator
 
             foreach (string file in Directory.EnumerateFiles(path, "*.yml"))
             {
+                string filename = Path.GetFileName(file);
+
                 // Skip index file.
-                if (string.Equals(Path.GetFileName(file), IndexFileName, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(filename, IndexFileName, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -41,14 +43,21 @@ namespace ShortcutGuide.IndexYmlGenerator
                     string content = File.ReadAllText(file);
                     if (string.IsNullOrWhiteSpace(content))
                     {
+                        Logger.LogWarning($"Skipping manifest '{filename}': file is empty.");
                         continue;
                     }
 
                     ShortcutFile shortcutFile = deserializer.Deserialize<ShortcutFile>(content);
 
-                    if (string.IsNullOrWhiteSpace(shortcutFile.WindowFilter) ||
-                        string.IsNullOrWhiteSpace(shortcutFile.PackageName))
+                    if (string.IsNullOrWhiteSpace(shortcutFile.PackageName))
                     {
+                        Logger.LogWarning($"Skipping manifest '{filename}': required property 'PackageName' is missing or empty.");
+                        continue;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(shortcutFile.WindowFilter))
+                    {
+                        Logger.LogWarning($"Skipping manifest '{filename}': required property 'WindowFilter' is missing or empty.");
                         continue;
                     }
 
@@ -72,8 +81,7 @@ namespace ShortcutGuide.IndexYmlGenerator
                 {
                     // Bad YAML, file access or permission issue. Log and continue with
                     // the next file.
-                    string filename = Path.GetFileName(file);
-                    Logger.LogError($"Error processing file {filename}.", ex);
+                    Logger.LogError($"Error processing file '{filename}'.", ex);
                 }
             }
 
