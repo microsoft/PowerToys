@@ -160,6 +160,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         {
             _settingsService.UpdateSettings(s => s with { CompactMode = value });
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactMode)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanConfigureQuickAccessShelf)));
         }
     }
 
@@ -169,6 +170,57 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         set
         {
             _settingsService.UpdateSettings(s => s with { ShowQuickAccessShelf = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanConfigureQuickAccessShelf)));
+        }
+    }
+
+    public bool CanConfigureQuickAccessShelf => CompactMode && ShowQuickAccessShelf;
+
+    public double QuickAccessShelfPinnedCommandLimit
+    {
+        get => _settingsService.Settings.QuickAccessShelfPinnedCommandLimit;
+        set
+        {
+            if (double.IsNaN(value))
+            {
+                return;
+            }
+
+            var limit = (int)Math.Round(value, MidpointRounding.AwayFromZero);
+            _settingsService.UpdateSettings(s => s with { QuickAccessShelfPinnedCommandLimit = limit });
+        }
+    }
+
+    public int RecentCommandsOnQuickAccessShelfIndex
+    {
+        get => (int)_settingsService.Settings.RecentCommandsOnQuickAccessShelf;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { RecentCommandsOnQuickAccessShelf = (RecentCommandsPlacement)value });
+        }
+    }
+
+    public int RecentCommandsOnHomeIndex
+    {
+        get => (int)_settingsService.Settings.RecentCommandsOnHome;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { RecentCommandsOnHome = (RecentCommandsPlacement)value });
+        }
+    }
+
+    public double RecentCommandsDisplayLimit
+    {
+        get => _settingsService.Settings.RecentCommandsDisplayLimit;
+        set
+        {
+            if (double.IsNaN(value))
+            {
+                return;
+            }
+
+            var limit = (int)Math.Round(value, MidpointRounding.AwayFromZero);
+            _settingsService.UpdateSettings(s => s with { RecentCommandsDisplayLimit = limit });
         }
     }
 

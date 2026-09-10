@@ -9,6 +9,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -24,12 +25,18 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 {
     private readonly ISettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
+    private readonly IAppStateService _appStateService;
     private readonly IMonitorService? _monitorService;
 
-    public CommandPaletteContextMenuFactory(ISettingsService settingsService, TopLevelCommandManager topLevelCommandManager, IMonitorService? monitorService = null)
+    public CommandPaletteContextMenuFactory(
+        ISettingsService settingsService,
+        TopLevelCommandManager topLevelCommandManager,
+        IAppStateService appStateService,
+        IMonitorService? monitorService = null)
     {
         _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
+        _appStateService = appStateService;
         _monitorService = monitorService;
     }
 
@@ -64,33 +71,28 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         List<IContextItem> moreCommands = [];
         var itemId = commandItem.Command.Id;
         var providerContext = page.ProviderContext;
+        var model = commandItem.Model.Unsafe;
+        var sourceModel = model is RecentCommandListItem recentItem ? recentItem.Source : model;
 
         // AppListItems can be surfaced on the main page even though they still
         // belong to the All Apps provider.
         // MainListPage only returns our in-proc wrappers/items.
         if (providerContext.ProviderId != AllAppsCommandProvider.WellKnownId &&
             page is ListViewModel { IsMainPage: true } &&
-            commandItem.Model.Unsafe is AppListItem)
+            sourceModel is AppListItem)
         {
             providerContext = _topLevelCommandManager.LookupProvider(AllAppsCommandProvider.WellKnownId)?.GetProviderContext() ?? providerContext;
         }
 
         var supportsPinning = providerContext.SupportsPinning;
 
-        // Also bail early for ListItemViewModels that wrap a TopLevelViewModel.
-        // For those items, TopLevelViewModel.BuildContextMenu() already includes
-        // the correct pin commands by calling AddMoreCommandsToTopLevel with the
-        // item's own provider context. Adding them again here (using the page's
-        // potentially incorrect provider context) would produce duplicate pin
-        // entries such as two "Pin to Dock" buttons.
-        // Check SupportsPinning first to avoid the .Unsafe type-check in the
-        // common non-pinning case.
-        if (supportsPinning && commandItem.Model.Unsafe is TopLevelViewModel)
-        {
-            return results;
-        }
+        // TopLevelViewModel.BuildContextMenu() already includes the correct pin commands using the
+        // item's own provider context. Adding them again here would produce duplicate entries,
+        // including when a recent-section marker wraps the TopLevelViewModel.
+        var pinCommandsAlreadyAdded = sourceModel is TopLevelViewModel;
 
-        if (supportsPinning &&
+        if (!pinCommandsAlreadyAdded &&
+            supportsPinning &&
             !string.IsNullOrEmpty(itemId))
         {
             // Add pin/unpin commands for pinning items to the top-level or to
@@ -122,6 +124,19 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
                 TryAddPinToDockCommand(itemId, providerId, moreCommands, commandItem);
             }
+        }
+
+        if (model is RecentCommandListItem recentCommandItem)
+        {
+            if (moreCommands.Count > 0)
+            {
+                moreCommands.Add(new Separator());
+            }
+
+            moreCommands.Add(new CommandContextItem(new RemoveFromRecentCommand(recentCommandItem.CommandId, _appStateService))
+            {
+                IsCritical = true,
+            });
         }
 
         if (moreCommands.Count > 0)
@@ -333,6 +348,37 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         ~MovePinnedContextItem()
         {
             _command.MoveStateChanged -= this.OnMoveStateChanged;
+        }
+    }
+
+    private sealed partial class RemoveFromRecentCommand : InvokableCommand
+    {
+        private readonly string _commandId;
+        private readonly IAppStateService _appStateService;
+
+        public override IconInfo Icon => Icons.DeleteIcon;
+
+        public override string Name => RS_.GetString("recent_commands_remove_name");
+
+        public RemoveFromRecentCommand(string commandId, IAppStateService appStateService)
+        {
+            _commandId = commandId;
+            _appStateService = appStateService;
+        }
+
+        public override CommandResult Invoke()
+        {
+            var current = _appStateService.State.RecentCommands;
+            if (ReferenceEquals(current, current.WithoutHistoryItem(_commandId)))
+            {
+                return CommandResult.KeepOpen();
+            }
+
+            _appStateService.UpdateState(state => state with
+            {
+                RecentCommands = state.RecentCommands.WithoutHistoryItem(_commandId),
+            });
+            return CommandResult.KeepOpen();
         }
     }
 

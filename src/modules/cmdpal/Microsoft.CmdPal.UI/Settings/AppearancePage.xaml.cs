@@ -24,6 +24,7 @@ namespace Microsoft.CmdPal.UI.Settings;
 public sealed partial class AppearancePage : Page
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+    private readonly IAppStateService _appStateService;
 
     internal SettingsViewModel ViewModel { get; }
 
@@ -34,7 +35,22 @@ public sealed partial class AppearancePage : Page
         var themeService = App.Current.Services.GetRequiredService<IThemeService>();
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+        _appStateService = App.Current.Services.GetRequiredService<IAppStateService>();
         ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
+    }
+
+    private void ClearRecentCommands_Click(object sender, RoutedEventArgs e)
+    {
+        var current = _appStateService.State.RecentCommands;
+        if (current.IsEmpty)
+        {
+            return;
+        }
+
+        _appStateService.UpdateState(state => state with
+        {
+            RecentCommands = state.RecentCommands.ClearHistory(),
+        });
     }
 
     private async void PickBackgroundImage_Click(object sender, RoutedEventArgs e)

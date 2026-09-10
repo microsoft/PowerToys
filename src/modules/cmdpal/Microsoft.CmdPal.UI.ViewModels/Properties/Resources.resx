@@ -322,6 +322,9 @@
   <data name="home_sections_pinned_title" xml:space="preserve">
     <value>Pinned</value>
   </data>
+  <data name="home_sections_recent_title" xml:space="preserve">
+    <value>Recent</value>
+  </data>
   <data name="home_sections_commands_title" xml:space="preserve">
     <value>Commands</value>
   </data>
