@@ -14,7 +14,7 @@
 #include "../../../common/utils/gpo.h"
 #include "../../../common/utils/logger_helper.h"
 #include "../../../common/utils/process_path.h"
-#include "../../../interface/powertoy_module_interface.h"
+#include "../../interface/powertoy_module_interface.h"
 
 #include <mutex>
 #include <string>

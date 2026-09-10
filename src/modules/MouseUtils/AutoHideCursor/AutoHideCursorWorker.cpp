@@ -15,6 +15,7 @@ namespace
     constexpr UINT hideCursorMessage = WM_APP + 1;
     constexpr UINT showCursorMessage = WM_APP + 2;
     constexpr DWORD timerIntervalMs = 100;
+    constexpr unsigned int maximumMessagesPerBatch = 64;
 
     struct Options
     {
@@ -104,12 +105,12 @@ namespace
             bool running = true;
             while (running)
             {
-                const auto waitResult = MsgWaitForMultipleObjects(
+                const auto waitResult = MsgWaitForMultipleObjectsEx(
                     static_cast<DWORD>(std::size(waitHandles)),
                     waitHandles,
-                    FALSE,
                     timerIntervalMs,
-                    QS_ALLINPUT);
+                    QS_ALLINPUT,
+                    MWMO_INPUTAVAILABLE);
 
                 if (waitResult == WAIT_OBJECT_0 || waitResult == WAIT_OBJECT_0 + 1)
                 {
@@ -125,10 +126,11 @@ namespace
                     running = false;
                 }
 
-                if (running && waitResult == WAIT_TIMEOUT)
+                // Ignored injected input still wakes the hook thread. Do not require a quiet
+                // message queue to evaluate the physical-input idle deadline.
+                if (running && m_error == ERROR_SUCCESS)
                 {
                     QueueAction(m_state.OnTimer(GetTickCount64(), GetCursorPosition()));
-                    ProcessMessages();
                 }
 
                 if (m_error != ERROR_SUCCESS)
@@ -220,7 +222,11 @@ namespace
         void ProcessMessages()
         {
             MSG message{};
-            while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE))
+            // Return to the deadline and stop-handle checks even if producers keep posting.
+            // MWMO_INPUTAVAILABLE makes the next wait observe messages left in this batch.
+            for (unsigned int count = 0;
+                 count < maximumMessagesPerBatch && PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE);
+                 ++count)
             {
                 if (message.message == hideCursorMessage)
                 {

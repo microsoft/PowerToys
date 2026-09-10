@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.PowerToys.UITest.Next;
@@ -66,9 +68,11 @@ public class AutoHideCursorSettingsTests : UITestBase
 
     protected override void PrepareTestState()
     {
+        var testingIdleDispatch = TestContext.TestName?.StartsWith(
+            nameof(IdleDeadlineSurvivesIgnoredInput), StringComparison.Ordinal) == true;
         MouseUtilsTestHelper.ReplaceModuleSettings(
             ModuleName,
-            CreateSettings(hideOnTyping: true, hideOnIdle: false, idleDelayMs: 5000));
+            CreateSettings(hideOnTyping: !testingIdleDispatch, hideOnIdle: false, idleDelayMs: testingIdleDispatch ? 1000 : 5000));
     }
 
     [TestMethod]
@@ -140,6 +144,146 @@ public class AutoHideCursorSettingsTests : UITestBase
         idleDelay = Session.Find<NumberBox>(By.AccessibilityId(IdleDelayId), 5_000);
         Assert.IsTrue(idleDelay.IsEnabled, "Persisted hide-on-idle should keep the delay enabled.");
         AssertIdleDelaySetting(60000);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    [TestCategory("MouseUtils")]
+    [TestCategory("AutoHideCursor")]
+    public void IdleDeadlineSurvivesIgnoredInput(bool floodMessageQueue)
+    {
+        OpenSettings();
+        AssertWorkerState(expectedRunning: false);
+        Assert.IsFalse(IsSystemArrowTransparent(), "The system cursor was already transparent before enabling idle hiding.");
+
+        using var stopInput = new CancellationTokenSource();
+        var workerThreadId = 0;
+        var injectedPairs = 0;
+        var postedMessages = 0;
+        var input = Task.Factory.StartNew(
+            () =>
+            {
+                while (!stopInput.IsCancellationRequested)
+                {
+                    MouseHelper.MoveBy(1, 0);
+                    MouseHelper.MoveBy(-1, 0);
+                    Interlocked.Increment(ref injectedPairs);
+
+                    var threadId = Volatile.Read(ref workerThreadId);
+                    if (floodMessageQueue && threadId != 0)
+                    {
+                        for (var index = 0; index < 256; index++)
+                        {
+                            if (!PostThreadMessage((uint)threadId, 0, UIntPtr.Zero, IntPtr.Zero))
+                            {
+                                throw new Win32Exception(Marshal.GetLastWin32Error());
+                            }
+
+                            Interlocked.Increment(ref postedMessages);
+                        }
+                    }
+
+                    // Keep the real hook thread awake more frequently than its 100 ms idle wait.
+                    stopInput.Token.WaitHandle.WaitOne(10);
+                }
+            },
+            CancellationToken.None,
+            TaskCreationOptions.LongRunning,
+            TaskScheduler.Default);
+
+        try
+        {
+            SetToggleState(HideOnIdleToggleId, enabled: true);
+            AssertWorkerState(expectedRunning: true);
+            var processes = Process.GetProcessesByName(WorkerProcessName);
+            try
+            {
+                Assert.HasCount(1, processes, "Expected exactly one Auto Hide Cursor worker.");
+                Volatile.Write(ref workerThreadId, processes[0].Threads[0].Id);
+            }
+            finally
+            {
+                foreach (var process in processes)
+                {
+                    process.Dispose();
+                }
+            }
+
+            var hidden = WaitHelper.WaitForStable(
+                IsSystemArrowTransparent,
+                transparent => transparent,
+                timeoutMS: 5_000,
+                requiredConsecutiveMatches: 3,
+                pollIntervalMS: 20);
+            Assert.IsTrue(hidden.Succeeded, "Ignored injected mouse input starved the worker's one-second idle deadline.");
+
+            var heldHidden = Stopwatch.StartNew();
+            while (heldHidden.ElapsedMilliseconds < 300)
+            {
+                Assert.IsTrue(IsSystemArrowTransparent(), "Injected input restored the hidden cursor.");
+                Thread.Sleep(20);
+            }
+
+            Assert.IsTrue(Volatile.Read(ref injectedPairs) > 20, "The regression did not exercise repeated injected input.");
+            if (floodMessageQueue)
+            {
+                Assert.IsTrue(Volatile.Read(ref postedMessages) > 256, "The regression did not exercise a busy message queue.");
+            }
+
+            // Stop posting to the worker before it exits, but keep injected mouse input flowing
+            // while exercising the real module-disable path.
+            Volatile.Write(ref workerThreadId, 0);
+            MouseUtilsTestHelper.SetModuleEnabled(this, ModuleToggleId, false);
+            AssertWorkerState(expectedRunning: false);
+            Assert.IsFalse(IsSystemArrowTransparent(), "Disabling the module did not restore the system cursor.");
+        }
+        finally
+        {
+            stopInput.Cancel();
+            input.GetAwaiter().GetResult();
+            TestContext.WriteLine($"Injected mouse pairs: {injectedPairs}; posted messages: {postedMessages}.");
+        }
+    }
+
+    private static bool IsSystemArrowTransparent()
+    {
+        var arrow = LoadCursor(IntPtr.Zero, new IntPtr(32512));
+        if (arrow == IntPtr.Zero)
+        {
+            throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
+
+        using var bitmap = new Bitmap(32, 32);
+        using (var graphics = Graphics.FromImage(bitmap))
+        {
+            graphics.Clear(Color.Magenta);
+            var dc = graphics.GetHdc();
+            try
+            {
+                if (!DrawIconEx(dc, 0, 0, arrow, 32, 32, 0, IntPtr.Zero, 3))
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                }
+            }
+            finally
+            {
+                graphics.ReleaseHdc(dc);
+            }
+        }
+
+        for (var y = 0; y < bitmap.Height; y++)
+        {
+            for (var x = 0; x < bitmap.Width; x++)
+            {
+                if (bitmap.GetPixel(x, y).ToArgb() != Color.Magenta.ToArgb())
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     private void OpenSettings()
@@ -256,4 +400,15 @@ public class AutoHideCursorSettingsTests : UITestBase
 
     [DllImport("user32.dll", EntryPoint = "SystemParametersInfoW", SetLastError = true)]
     private static extern bool SystemParametersInfo(int uiAction, int uiParam, IntPtr pvParam, int fWinIni);
+
+    [DllImport("user32.dll", EntryPoint = "LoadCursorW", SetLastError = true)]
+    private static extern IntPtr LoadCursor(IntPtr instance, IntPtr cursorName);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool DrawIconEx(IntPtr dc, int x, int y, IntPtr icon, int width, int height, int step, IntPtr brush, int flags);
+
+    [DllImport("user32.dll", EntryPoint = "PostThreadMessageW", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool PostThreadMessage(uint threadId, uint message, UIntPtr wParam, IntPtr lParam);
 }
