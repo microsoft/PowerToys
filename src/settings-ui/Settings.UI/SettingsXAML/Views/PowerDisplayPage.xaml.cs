@@ -25,15 +25,20 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class PowerDisplayPage : NavigablePage, IRefreshablePage
     {
+        private readonly KeyEventHandler _profileKeyDownHandler;
+        private readonly PointerEventHandler _profilePointerInputHandler;
         private int? _draggedProfileId;
         private int[] _profileOrderBeforeDrag;
         private int _profileFocusRequestId;
         private Action _cancelPendingProfileFocus;
+        private UIElement _profileInputRoot;
 
         private PowerDisplayViewModel ViewModel { get; set; }
 
         public PowerDisplayPage()
         {
+            _profileKeyDownHandler = ProfileInputRoot_PreviewKeyDown;
+            _profilePointerInputHandler = ProfileInputRoot_PointerInput;
             var settingsUtils = SettingsUtils.Default;
             ViewModel = new PowerDisplayViewModel(
                 settingsUtils,
@@ -45,14 +50,58 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             InitializeComponent();
             Loaded += PowerDisplayPage_Loaded;
             SizeChanged += PowerDisplayPage_SizeChanged;
-            Unloaded += (_, _) => CancelProfileFocusRestoration();
+            Unloaded += PowerDisplayPage_Unloaded;
         }
 
         private async void PowerDisplayPage_Loaded(object sender, RoutedEventArgs e)
         {
+            DetachProfileInputHandlers();
+            if (XamlRoot?.Content is UIElement inputRoot)
+            {
+                // Observe input outside the page too, including events handled by child controls.
+                _profileInputRoot = inputRoot;
+                inputRoot.AddHandler(PreviewKeyDownEvent, _profileKeyDownHandler, true);
+                inputRoot.AddHandler(PointerPressedEvent, _profilePointerInputHandler, true);
+                inputRoot.AddHandler(PointerWheelChangedEvent, _profilePointerInputHandler, true);
+            }
+
             ViewModel.OnPageLoaded();
             await ViewModel.InitializeProfilesAsync();
         }
+
+        private void PowerDisplayPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            CancelProfileFocusRestoration();
+            DetachProfileInputHandlers();
+        }
+
+        private void DetachProfileInputHandlers()
+        {
+            if (_profileInputRoot != null)
+            {
+                _profileInputRoot.RemoveHandler(PreviewKeyDownEvent, _profileKeyDownHandler);
+                _profileInputRoot.RemoveHandler(PointerPressedEvent, _profilePointerInputHandler);
+                _profileInputRoot.RemoveHandler(PointerWheelChangedEvent, _profilePointerInputHandler);
+                _profileInputRoot = null;
+            }
+        }
+
+        private void ProfileInputRoot_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            // Modifier presses and repeated reorder shortcuts while saving still belong to the move.
+            if (e.OriginalKey is VirtualKey.Shift or VirtualKey.LeftShift or VirtualKey.RightShift or
+                VirtualKey.Menu or VirtualKey.LeftMenu or VirtualKey.RightMenu or
+                VirtualKey.Control or VirtualKey.LeftControl or VirtualKey.RightControl ||
+                IsProfileReorderKey(e.OriginalKey))
+            {
+                return;
+            }
+
+            CancelProfileFocusRestoration();
+        }
+
+        private void ProfileInputRoot_PointerInput(object sender, PointerRoutedEventArgs e)
+            => CancelProfileFocusRestoration();
 
         private async Task<bool> ShowDangerousFeatureDialogAsync(PowerDisplayWarningKind kind)
         {
@@ -97,9 +146,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void ProfilesList_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (e.Handled ||
-                e.OriginalKey is not (VirtualKey.Up or VirtualKey.Down or VirtualKey.Left or VirtualKey.Right) ||
-                !IsKeyDown(VirtualKey.Menu) || !IsKeyDown(VirtualKey.Shift) || IsKeyDown(VirtualKey.Control))
+            if (e.Handled || !IsProfileReorderKey(e.OriginalKey))
             {
                 return;
             }
@@ -122,6 +169,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             await MoveProfileAndRestoreFocusAsync(profile, e.OriginalKey is VirtualKey.Up or VirtualKey.Left);
         }
+
+        private static bool IsProfileReorderKey(VirtualKey key)
+            => key is (VirtualKey.Up or VirtualKey.Down or VirtualKey.Left or VirtualKey.Right) &&
+                IsKeyDown(VirtualKey.Menu) && IsKeyDown(VirtualKey.Shift) && !IsKeyDown(VirtualKey.Control);
 
         private static bool IsKeyDown(VirtualKey key)
             => InputKeyboardSource.GetKeyStateForCurrentThread(key).HasFlag(CoreVirtualKeyStates.Down);

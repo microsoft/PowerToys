@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
@@ -20,6 +21,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
     private const int VirtualizedProfileCount = 20;
     private const string InitialOrder = "1,2,3,4";
     private const string ReorderedOrder = "1,3,2,4";
+    private const string ProfilesMutexName = @"Local\PowerToys_PowerDisplay_Profiles";
     private const string TerminatePowerDisplayEvent = @"Local\PowerToysPowerDisplay-TerminateEvent-7b9c2e1f-8a5d-4c3e-9f6b-2a1d8c5e3b7a";
     private static readonly int[] ProfileIds = [1, 2, 3, 4];
     private static readonly string[] ProcessNames = ["PowerToys.Settings", "PowerToys"];
@@ -98,7 +100,8 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
 
         // Seed after the previous Settings/runner processes exit, so cleanup cannot overwrite it.
         // Stable ids and orders avoid a migration write. No test invokes the Apply button.
-        var profileCount = TestContext.TestName == nameof(ReorderShortcut_VirtualizedTailKeepsFocusForRepeatedMoves)
+        var profileCount = TestContext.TestName == nameof(ReorderShortcut_VirtualizedTailKeepsFocusForRepeatedMoves) ||
+            TestContext.TestName == nameof(ReorderDrag_AcrossViewportKeepsMovedProfileFocus)
             ? VirtualizedProfileCount
             : ProfileIds.Length;
         Directory.CreateDirectory(Path.GetDirectoryName(ProfilesPath)!);
@@ -247,6 +250,191 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
     [TestMethod]
     [TestCategory("Settings")]
     [TestCategory("PowerDisplay")]
+    public void ReorderDrag_AcrossViewportKeepsMovedProfileFocus()
+    {
+        using var dpiScope = new PhysicalCoordinateScope();
+        NavigateToProfiles(useVirtualizedList: true);
+        Assert.AreEqual(string.Join(",", Enumerable.Range(1, VirtualizedProfileCount)), ReadPersistedOrder());
+        Session.EnsureForeground();
+        Assert.IsTrue(
+            WindowControl.WaitForForeground(new IntPtr(Session.WindowHandle), requiredConsecutiveMatches: 2),
+            $"Settings did not obtain mouse input. Foreground: {WindowControl.GetForegroundWindowInfo()}");
+
+        var page = Find<Element>(By.AccessibilityId("PageScrollViewer"));
+        var list = Find<Element>(By.AccessibilityId("ProfilesList"));
+        var listRight = list.X + list.Width;
+        var gutterX = listRight + ((page.X + page.Width - listRight) / 2);
+        var gutterY = page.Y + (page.Height / 2);
+        Assert.IsTrue(gutterX > listRight && gutterX < page.X + page.Width, "The page has no outer scrolling gutter to the right of the profile list.");
+
+        Step("Measuring complete second and third profile rows before the drag");
+        list.ScrollToEdge(toBottom: false);
+        Element? firstRow = null;
+        Element? secondRow = null;
+        Element? thirdRow = null;
+        var topViewport = WaitHelper.WaitForStable(
+            observe: () =>
+            {
+                firstRow = FindProfileRow(1);
+                secondRow = FindProfileRow(2);
+                thirdRow = FindProfileRow(3);
+                return firstRow is { Height: > 0 } && secondRow is { Height: > 0 } && thirdRow is { Height: > 0 } &&
+                    Math.Abs(secondRow.Height - thirdRow.Height) <= 1 && firstRow.Y > page.Y &&
+                    IsProfileButtonVisible(1, MoreButtonId);
+            },
+            isMatch: complete => complete,
+            timeoutMS: 30_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 100,
+            recover: _ => ScrollOuterPageDown(gutterX, gutterY));
+        Assert.IsTrue(topViewport.Succeeded, $"Could not measure complete second and third rows. Heights: {firstRow?.Height}, {secondRow?.Height}, {thirdRow?.Height}.");
+
+        // The expander's negative content margin slightly clips row 1 even at the list's top.
+        // Preserve that observed baseline separately from the full height of the interior rows.
+        var firstRowBaselineHeight = firstRow!.Height;
+        var fullRowHeight = secondRow!.Height;
+        Step($"Measured first-row baseline height {firstRowBaselineHeight}; complete row height {fullRowHeight}");
+
+        Step("Locating the bottom edge of the profile viewport using the complete last row");
+        Find<Element>(By.AccessibilityId("ProfilesList")).ScrollToEdge(toBottom: true);
+        Element? lastRow = null;
+        var bottomViewport = WaitHelper.WaitForStable(
+            observe: () =>
+            {
+                lastRow = FindProfileRow(VirtualizedProfileCount);
+                return lastRow is not null && Math.Abs(lastRow.Height - fullRowHeight) <= 1 &&
+                    IsProfileButtonVisible(VirtualizedProfileCount, MoreButtonId);
+            },
+            isMatch: complete => complete,
+            timeoutMS: 30_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 100,
+            recover: _ => ScrollOuterPageDown(gutterX, gutterY));
+        Assert.IsTrue(bottomViewport.Succeeded, $"The last row did not become complete. Expected height: {fullRowHeight}; actual: {lastRow?.Height}.");
+        var bottomAnchorY = lastRow!.Y + lastRow.Height - Math.Max(4, fullRowHeight / 8);
+        var calibratedLastRowBounds = $"({lastRow.X}, {lastRow.Y}, {lastRow.Width}, {lastRow.Height})";
+
+        Find<Element>(By.AccessibilityId("ProfilesList")).ScrollToEdge(toBottom: false);
+        Assert.IsTrue(
+            Session.WaitFor(() =>
+            {
+                firstRow = FindProfileRow(1);
+                return firstRow is not null && Math.Abs(firstRow.Height - firstRowBaselineHeight) <= 1 && firstRow.Y > page.Y &&
+                    IsProfileButtonVisible(1, MoreButtonId) &&
+                    !IsProfileButtonVisible(VirtualizedProfileCount, MoreButtonId);
+            }),
+            "The drag must start with the first row at its observed baseline and the last row outside the viewport.");
+
+        // From this point on, scrolling comes only from ListView's native drag edge scrolling.
+        var applyButton = FindVisibleProfileButton(1, ApplyButtonId);
+        Assert.IsNotNull(applyButton, "The first profile's Apply button is not visible for locating the header drag target.");
+        var headerCandidates = Session.FindAll<Element>(By.Name(ProfileName(1)))
+            .Where(element => string.Equals(element.ControlType, "Text", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(element.ClassName, "TextBlock", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        foreach (var candidate in headerCandidates)
+        {
+            TestContext.WriteLine($"Header drag candidate Name='{candidate.Name}', bounds=({candidate.X}, {candidate.Y}, {candidate.Width}, {candidate.Height})");
+        }
+
+        var headers = headerCandidates.Where(element => element.Name == firstRow!.Name && element.Width > 0 && element.Height > 0 &&
+                element.X >= firstRow.X && element.Y >= firstRow.Y &&
+                element.X + element.Width <= firstRow.X + firstRow.Width && element.Y + element.Height <= firstRow.Y + firstRow.Height &&
+                element.X + element.Width < applyButton.X && string.Equals(element.GetProperty("IsOffscreen"), "False", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        Assert.AreEqual(1, headers.Length, "The drag setup requires one visible profile header TextBlock inside row 1 and to the left of Apply.");
+        var header = headers[0];
+        var startX = header.X + (header.Width / 2);
+        var startY = header.Y + (header.Height / 2);
+        Assert.IsTrue(startX < applyButton.X && bottomAnchorY > startY, "The drag must begin to the left of Apply and move down toward the viewport edge.");
+        list = Find<Element>(By.AccessibilityId("ProfilesList"));
+        TestContext.WriteLine($"Profile list bounds before drag=({list.X}, {list.Y}, {list.Width}, {list.Height}); bottom anchor={bottomAnchorY}; calibrated row 20 bounds={calibratedLastRowBounds}");
+        TestContext.WriteLine($"Profile list ScrollVerticalPercent before drag: {list.GetProperty("ScrollVerticalPercent")}");
+        AssertSettingsForeground("before the drag");
+        Step($"Dragging profile 1 from ({startX}, {startY}) to the lower viewport edge {bottomAnchorY}; full row height {fullRowHeight}");
+        try
+        {
+            AssertMovePhysicalPointer(startX, startY);
+            Thread.Sleep(100);
+            MouseHelper.LeftDown();
+            Thread.Sleep(100);
+            Assert.IsTrue(KeyboardHelper.IsKeyDown((Key)0x01), "The left mouse button was not held after mouse-down; the drag input scenario is invalid.");
+            for (var step = 1; step <= 12; step++)
+            {
+                AssertMovePhysicalPointer(startX, startY + (((bottomAnchorY - startY) * step) / 12));
+                Thread.Sleep(20);
+            }
+
+            var heldScreenshot = Path.Combine(TestContext.TestResultsDirectory ?? Path.GetTempPath(), $"powerdisplay-drag-held-{Guid.NewGuid():N}.png");
+            if (ScreenCapture.TryCaptureDesktop(heldScreenshot))
+            {
+                TestContext.AddResultFile(heldScreenshot);
+            }
+            else
+            {
+                TestContext.WriteLine("Could not capture the desktop while the drag button was held.");
+            }
+
+            TestContext.WriteLine($"Profile list ScrollVerticalPercent while holding drag: {list.GetProperty("ScrollVerticalPercent")}");
+
+            var jiggle = false;
+            var reachedLastRow = WaitHelper.WaitForStable(
+                observe: () =>
+                {
+                    AssertSettingsForeground("while dragging");
+                    Assert.IsTrue(KeyboardHelper.IsKeyDown((Key)0x01), "The left mouse button was released during the gesture; the drag input scenario is invalid.");
+                    lastRow = FindProfileRow(VirtualizedProfileCount);
+
+                    // WinUI scales items during a drag, so their unscaled setup height no longer
+                    // determines readiness. Require a visible row and its visible More button.
+                    return lastRow is { Width: > 0, Height: > 0 } &&
+                        string.Equals(lastRow.GetProperty("IsOffscreen"), "False", StringComparison.OrdinalIgnoreCase) &&
+                        IsProfileButtonVisible(VirtualizedProfileCount, MoreButtonId);
+                },
+                isMatch: complete => complete,
+                timeoutMS: 20_000,
+                pollIntervalMS: 100,
+                recover: _ =>
+                {
+                    jiggle = !jiggle;
+                    AssertMovePhysicalPointer(startX + (jiggle ? 1 : 0), bottomAnchorY);
+                });
+            TestContext.WriteLine($"Profile list ScrollVerticalPercent at end of drag hold: {list.GetProperty("ScrollVerticalPercent")}");
+            TestContext.WriteLine(lastRow is null
+                ? "Last profile at end of drag hold: no ListItem found."
+                : $"Last profile at end of drag hold: Name='{lastRow.Name}', bounds=({lastRow.X}, {lastRow.Y}, {lastRow.Width}, {lastRow.Height}), IsOffscreen={lastRow.GetProperty("IsOffscreen")}");
+            var heldEndScreenshot = Path.Combine(TestContext.TestResultsDirectory ?? Path.GetTempPath(), $"powerdisplay-drag-held-end-{Guid.NewGuid():N}.png");
+            if (ScreenCapture.TryCaptureDesktop(heldEndScreenshot))
+            {
+                TestContext.AddResultFile(heldEndScreenshot);
+            }
+            else
+            {
+                TestContext.WriteLine("Could not capture the desktop at the end of the drag hold.");
+            }
+
+            Assert.IsTrue(reachedLastRow.Succeeded, "Holding the drag at the viewport edge did not reveal the complete last profile.");
+            AssertMovePhysicalPointer(startX, lastRow!.Y + ((lastRow.Height * 3) / 4));
+            Thread.Sleep(300);
+        }
+        finally
+        {
+            try
+            {
+                AssertSettingsForeground("before releasing the drag");
+            }
+            finally
+            {
+                MouseHelper.LeftUp();
+            }
+        }
+
+        AssertStableTargetFocusAndOrder(1, string.Join(",", Enumerable.Range(2, 19).Append(1)));
+    }
+
+    [TestMethod]
+    [TestCategory("Settings")]
+    [TestCategory("PowerDisplay")]
     public void ProfileListItems_ExposeDisplayNamesToAutomation()
     {
         NavigateToProfiles();
@@ -258,6 +446,331 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
             .Select(element => element.Name)
             .ToArray();
         CollectionAssert.AreEquivalent(expectedNames, itemNames, "Every profile ListItem must expose its DisplayName as its automation Name.");
+    }
+
+    [TestMethod]
+    [TestCategory("Settings")]
+    [TestCategory("PowerDisplay")]
+    public void ReorderShortcut_SavePendingDoesNotStealSearchFocus()
+    {
+        NavigateToProfiles();
+        AssertStableOrder(InitialOrder);
+        FocusProfileButton(3, MoreButtonId);
+
+        Step("Calibrating Ctrl+F against the actual focused search editor");
+        KeyboardHelper.SendKeys(Key.Ctrl, Key.F);
+        var calibration = Session.GetFocused();
+        TestContext.WriteLine($"Search calibration: {calibration.GetRawText()}");
+        Assert.IsTrue(calibration.GetProperty("hasFocus").GetBoolean(), "Ctrl+F did not produce a focused element.");
+        var focusedElement = calibration.GetProperty("element");
+        Assert.AreEqual("Edit", focusedElement.GetProperty("type").GetString(), "Ctrl+F did not focus an editor.");
+        Assert.AreEqual("TextBox", focusedElement.GetProperty("automationId").GetString(), "Ctrl+F did not focus the search TextBox.");
+        var selector = focusedElement.GetProperty("selector").GetString();
+        Assert.IsFalse(string.IsNullOrWhiteSpace(selector), "The focused search editor has no selector.");
+        var search = Find<TextBox>(By.Slug(selector!));
+        Assert.IsTrue(search.WaitForProperty("HasKeyboardFocus", "True"), "The calibrated search editor did not retain focus.");
+
+        // get-value falls back to the automation Name for an empty editor. Clear the actual
+        // input here; the final non-empty value assertion verifies where the later key landed.
+        KeyboardHelper.SendKeys(Key.Ctrl, Key.A);
+        KeyboardHelper.SendKeys(Key.Backspace);
+
+        // Resolve every element before holding the store mutex. Only the two bounded property
+        // waits below launch winappcli while the save is suspended.
+        var profilesList = Find<Element>(By.AccessibilityId("ProfilesList"));
+        FocusProfileButton(3, MoreButtonId);
+        RunReorderWhileStoreLocked(profilesList, () =>
+        {
+            Step("Moving keyboard focus to search and entering z before the save completes");
+            KeyboardHelper.SendKeys(Key.Ctrl, Key.F);
+            KeyboardHelper.SendKeys(Key.Z);
+            Assert.IsTrue(
+                search.WaitForProperty("HasKeyboardFocus", "True", 1_000),
+                "The search editor did not receive focus while the save was pending.");
+        });
+
+        AssertStableOrder(ReorderedOrder);
+        var afterSaveFocus = Session.GetFocused();
+        var searchText = search.GetValue();
+        var foreground = WindowControl.GetForegroundWindowInfo();
+        TestContext.WriteLine($"Focus after save: {afterSaveFocus.GetRawText()}");
+        TestContext.WriteLine($"Foreground after save: {foreground}; search text: '{searchText}'");
+        Assert.AreEqual(
+            new IntPtr(Session.WindowHandle),
+            foreground.Hwnd,
+            "An external foreground change invalidated the focus preservation scenario.");
+        Assert.AreEqual("z", searchText, "The search editor did not receive the text entered while the save was pending.");
+        Assert.IsTrue(
+            search.WaitForProperty("HasKeyboardFocus", "True", 1_000),
+            "Completing the profile save stole the user's newer search focus.");
+    }
+
+    [TestMethod]
+    [TestCategory("Settings")]
+    [TestCategory("PowerDisplay")]
+    public void ReorderShortcut_SavePendingDoesNotStealCheckboxFocus()
+    {
+        using var dpiScope = new PhysicalCoordinateScope();
+        NavigateToProfiles();
+        AssertStableOrder(InitialOrder, timeoutMS: 90_000);
+        const string restoreSettingName = "Restore monitor brightness and color temperature when Power Display launches";
+        CheckBox FindRestoreCheckbox()
+        {
+            var matches = Session.FindAll<CheckBox>(By.Name(restoreSettingName))
+                .Where(element => element.Name == restoreSettingName)
+                .ToArray();
+            Assert.AreEqual(1, matches.Length, "The startup restore checkbox was not uniquely identified.");
+            return matches[0];
+        }
+
+        var checkbox = FindRestoreCheckbox();
+        Assert.IsTrue(
+            checkbox.Width > 0 && checkbox.Height > 0 && string.Equals(checkbox.GetProperty("IsOffscreen"), "False", StringComparison.OrdinalIgnoreCase),
+            "The startup restore checkbox must be visible before suspending the profile save.");
+        Assert.IsFalse(checkbox.IsChecked, "The fixture must disable startup restoration before the module launches.");
+        Session.EnsureForeground();
+        Assert.IsTrue(
+            WindowControl.WaitForForeground(new IntPtr(Session.WindowHandle), requiredConsecutiveMatches: 2),
+            $"Settings did not obtain foreground before checkbox calibration; the input scenario is invalid. Foreground: {WindowControl.GetForegroundWindowInfo()}");
+        Step("Calibrating a real checkbox click before suspending the profile save");
+        ClickCheckboxGlyph(checkbox);
+        Assert.IsTrue(checkbox.WaitForProperty("ToggleState", "On", 1_000), "The calibration click did not check the checkbox; the input scenario is invalid.");
+        Assert.IsTrue(checkbox.WaitForProperty("HasKeyboardFocus", "True", 1_000), "The calibration click did not focus the checkbox; the input scenario is invalid.");
+        checkbox = FindRestoreCheckbox();
+        ClickCheckboxGlyph(checkbox);
+        Assert.IsTrue(checkbox.WaitForProperty("ToggleState", "Off", 1_000), "The calibration click did not restore the unchecked fixture state.");
+        Assert.IsTrue(checkbox.WaitForProperty("HasKeyboardFocus", "True", 1_000), "The checkbox lost focus during calibration.");
+
+        var profilesList = Find<Element>(By.AccessibilityId("ProfilesList"));
+        FocusProfileButton(3, MoreButtonId);
+        checkbox = FindRestoreCheckbox();
+        Assert.IsTrue(
+            checkbox.Width > 0 && checkbox.Height > 0 && string.Equals(checkbox.GetProperty("IsOffscreen"), "False", StringComparison.OrdinalIgnoreCase),
+            "The checkbox must remain visible after the profile button receives focus.");
+
+        RunReorderWhileStoreLocked(profilesList, () =>
+        {
+            Step("Clicking the startup restore checkbox before the profile save completes");
+            ClickCheckboxGlyph(checkbox);
+            Assert.IsTrue(
+                checkbox.WaitForProperty("HasKeyboardFocus", "True", 1_000),
+                "The startup restore checkbox did not receive focus while the save was pending.");
+        });
+
+        AssertStableOrder(ReorderedOrder, timeoutMS: 90_000);
+        var afterSaveFocus = Session.GetFocused();
+        var isChecked = checkbox.IsChecked;
+        var foreground = WindowControl.GetForegroundWindowInfo();
+        TestContext.WriteLine($"Focus after save: {afterSaveFocus.GetRawText()}");
+        TestContext.WriteLine($"Foreground after save: {foreground}; startup restore checked: {isChecked}");
+        Assert.AreEqual(
+            new IntPtr(Session.WindowHandle),
+            foreground.Hwnd,
+            "An external foreground change invalidated the focus preservation scenario.");
+        Assert.IsTrue(isChecked, "The startup restore checkbox did not receive the click while the save was pending.");
+        Assert.IsTrue(
+            checkbox.WaitForProperty("HasKeyboardFocus", "True", 1_000),
+            "Completing the profile save stole the user's newer checkbox focus.");
+    }
+
+    private void RunReorderWhileStoreLocked(Element profilesList, Action transferFocus)
+    {
+        using var ready = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        var holder = Task.Factory.StartNew(
+            () =>
+            {
+                using var mutex = new Mutex(initiallyOwned: false, ProfilesMutexName);
+                var acquired = false;
+                try
+                {
+                    try
+                    {
+                        acquired = mutex.WaitOne(1_000);
+                    }
+                    catch (AbandonedMutexException ex)
+                    {
+                        acquired = true;
+                        throw new InvalidOperationException("The profile mutex was abandoned before the test could suspend the save.", ex);
+                    }
+
+                    if (!acquired)
+                    {
+                        throw new TimeoutException("Could not acquire the profile store mutex for the focus test.");
+                    }
+
+                    ready.Set();
+                    return release.Wait(TimeSpan.FromMilliseconds(4_500));
+                }
+                finally
+                {
+                    if (acquired)
+                    {
+                        mutex.ReleaseMutex();
+                    }
+                }
+            },
+            CancellationToken.None,
+            TaskCreationOptions.LongRunning,
+            TaskScheduler.Default);
+
+        try
+        {
+            Assert.IsTrue(ready.Wait(TimeSpan.FromSeconds(2)), "The worker did not acquire the profile store mutex.");
+            Step("Moving profile 3 up while the profile store mutex is held");
+            KeyboardHelper.SendKeys(Key.Alt, Key.Shift, Key.Up);
+            Assert.IsTrue(
+                profilesList.WaitForProperty("IsEnabled", "False", 1_000),
+                "The keyboard reorder did not enter its pending save state.");
+
+            transferFocus();
+        }
+        finally
+        {
+            // Even an assertion or worker failure must release and join before disposing the
+            // events. A watchdog release invalidates the scenario rather than making it pass.
+            release.Set();
+            var releasedExplicitly = holder.GetAwaiter().GetResult();
+            TestContext.WriteLine($"Profile mutex released by test: {releasedExplicitly}");
+            Assert.IsTrue(releasedExplicitly, "The mutex watchdog expired before the test explicitly released the pending save; the focus scenario is invalid.");
+        }
+    }
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetPhysicalCursorPos(out PhysicalPoint point);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern IntPtr SetThreadDpiAwarenessContext(IntPtr dpiContext);
+
+    [DllImport("user32.dll")]
+    private static extern int GetSystemMetrics(int index);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern uint SendInput(uint count, NativeInput[] inputs, int size);
+
+    private sealed class PhysicalCoordinateScope : IDisposable
+    {
+        private readonly IntPtr previousContext;
+
+        public PhysicalCoordinateScope()
+        {
+            // UIA reports physical coordinates. Keep all native input in the same coordinate
+            // system for this synchronous test, without changing the test host's global DPI mode.
+            previousContext = SetThreadDpiAwarenessContext(new IntPtr(-4));
+            var error = Marshal.GetLastWin32Error();
+            Assert.AreNotEqual(IntPtr.Zero, previousContext, $"Could not enter per-monitor-aware V2 input scope; Win32 error {error}.");
+        }
+
+        public void Dispose()
+        {
+            var restored = SetThreadDpiAwarenessContext(previousContext);
+            var error = Marshal.GetLastWin32Error();
+            Assert.AreNotEqual(IntPtr.Zero, restored, $"Could not restore the original thread DPI context; Win32 error {error}.");
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct PhysicalPoint
+    {
+        public int X;
+        public int Y;
+    }
+
+    // MOUSEINPUT is the largest INPUT union member. Keep native pointer alignment on both
+    // structures: on x64/ARM64 Mouse starts at offset 8 and NativeInput occupies 40 bytes.
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeInput
+    {
+        public uint Type;
+        public MouseInputData Mouse;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MouseInputData
+    {
+        public int Dx;
+        public int Dy;
+        public uint MouseData;
+        public uint Flags;
+        public uint Time;
+        public UIntPtr ExtraInfo;
+    }
+
+    private void AssertMovePhysicalPointer(int x, int y)
+    {
+        // SM_XVIRTUALSCREEN through SM_CYVIRTUALSCREEN are read in the test's PMv2 scope.
+        var left = GetSystemMetrics(76);
+        var top = GetSystemMetrics(77);
+        var width = GetSystemMetrics(78);
+        var height = GetSystemMetrics(79);
+        var relativeX = (long)x - left;
+        var relativeY = (long)y - top;
+        Assert.IsTrue(width > 0 && height > 0, "The virtual desktop has no valid physical dimensions.");
+        Assert.IsTrue(relativeX >= 0 && relativeX < width && relativeY >= 0 && relativeY < height, "The requested pointer position is outside the virtual desktop.");
+        var absoluteX = ((relativeX * 65536L) + 32768L) / width;
+        var absoluteY = ((relativeY * 65536L) + 32768L) / height;
+        Assert.IsTrue(absoluteX is >= 0 and <= 65535 && absoluteY is >= 0 and <= 65535, "The normalized pointer position is outside the SendInput range.");
+
+        var input = new NativeInput
+        {
+            Type = 0,
+            Mouse = new MouseInputData
+            {
+                Dx = (int)absoluteX,
+                Dy = (int)absoluteY,
+                MouseData = 0,
+                Flags = 0xC001, // MOVE | ABSOLUTE | VIRTUALDESK; preserve the held button state.
+                Time = 0,
+                ExtraInfo = UIntPtr.Zero,
+            },
+        };
+        var sent = SendInput(1, [input], Marshal.SizeOf<NativeInput>());
+        var error = Marshal.GetLastWin32Error();
+        Assert.AreEqual(1U, sent, $"Could not inject the pointer move to ({x}, {y}); Win32 error {error}.");
+
+        var actual = default(PhysicalPoint);
+        var arrived = WaitHelper.WaitForStable(
+            observe: () =>
+            {
+                var read = GetPhysicalCursorPos(out actual);
+                var readError = Marshal.GetLastWin32Error();
+                Assert.IsTrue(read, $"Could not read the physical pointer position; Win32 error {readError}.");
+                return actual.X == x && actual.Y == y;
+            },
+            isMatch: atTarget => atTarget,
+            timeoutMS: 200,
+            pollIntervalMS: 5);
+        TestContext.WriteLine($"Physical pointer requested ({x}, {y}); actual ({actual.X}, {actual.Y})");
+        Assert.IsTrue(arrived.Succeeded, "The physical pointer did not reach the requested position; the input scenario is invalid.");
+    }
+
+    private void ClickCheckboxGlyph(CheckBox checkbox)
+    {
+        var x = checkbox.X + (checkbox.Height / 2);
+        var y = checkbox.Y + (checkbox.Height / 2);
+        TestContext.WriteLine($"Checkbox bounds ({checkbox.X}, {checkbox.Y}, {checkbox.Width}, {checkbox.Height}); click ({x}, {y}); foreground: {WindowControl.GetForegroundWindowInfo()}");
+        AssertSettingsForeground("before the checkbox click");
+        AssertMovePhysicalPointer(x, y);
+        Thread.Sleep(40);
+        MouseHelper.LeftClick();
+        AssertSettingsForeground("after the checkbox click");
+    }
+
+    private void AssertSettingsForeground(string stage)
+    {
+        var foreground = WindowControl.GetForegroundWindowInfo();
+        TestContext.WriteLine($"Foreground {stage}: {foreground}");
+        Assert.AreEqual(
+            new IntPtr(Session.WindowHandle),
+            foreground.Hwnd,
+            $"Settings lost foreground {stage}; an external foreground change invalidated the input scenario.");
+    }
+
+    private void ScrollOuterPageDown(int x, int y)
+    {
+        AssertMovePhysicalPointer(x, y);
+        MouseHelper.ScrollWheel(-30);
     }
 
     private static string ProfileName(int id) => $"{FixtureNamePrefix}{id:D2}";
@@ -358,13 +871,13 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
         Assert.IsTrue(button.WaitForProperty("HasKeyboardFocus", "True"), $"{buttonId} for profile {profileId} did not receive keyboard focus.");
     }
 
-    private void AssertStableOrder(string expectedOrder)
+    private void AssertStableOrder(string expectedOrder, int timeoutMS = 20_000)
     {
         Step($"Waiting for enabled profiles and stable UI/persisted order {expectedOrder}");
         var result = WaitHelper.WaitForStable(
             observe: ObserveOrder,
             isMatch: state => state is not null && state.Enabled && state.AllProfilesVisible && state.UiOrder == expectedOrder && state.PersistedOrder == expectedOrder,
-            timeoutMS: 20_000,
+            timeoutMS: timeoutMS,
             requiredConsecutiveMatches: 3,
             pollIntervalMS: 100,
             shouldRetryException: ex => ex is IOException || (ex is AssertFailedException && ex.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase)));
@@ -398,8 +911,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
 
     private Button? FindVisibleProfileButton(int profileId, string buttonId)
     {
-        var row = Session.FindAll<Element>(By.Name(ProfileName(profileId)), 1_000)
-            .SingleOrDefault(element => string.Equals(element.ControlType, "ListItem", StringComparison.OrdinalIgnoreCase));
+        var row = FindProfileRow(profileId);
         if (row is null || row.Width <= 0 || row.Height <= 0)
         {
             return null;
@@ -421,6 +933,12 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
         return candidate.HelpText.Contains(ProfileName(profileId), StringComparison.Ordinal) && IsButtonVisible(candidate)
             ? candidate
             : null;
+    }
+
+    private Element? FindProfileRow(int profileId)
+    {
+        return Session.FindAll<Element>(By.Name(ProfileName(profileId)), 1_000)
+            .SingleOrDefault(element => string.Equals(element.ControlType, "ListItem", StringComparison.OrdinalIgnoreCase));
     }
 
     private OrderObservation ObserveOrder()
