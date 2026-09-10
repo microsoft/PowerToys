@@ -17,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.VisualStudio.Threading;
 using MouseWithoutBorders.Core;
 using Newtonsoft.Json;
@@ -179,7 +180,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
                 PipeAccessRights.ReadWrite | PipeAccessRights.CreateNewInstance,
                 AccessControlType.Allow));
 
-            _ = Task.Factory.StartNew(
+            _ = Task.Run(
                 async () =>
                 {
                     try
@@ -206,9 +207,76 @@ WellKnownSidType.AuthenticatedUserSid, null);
 #endif
                     }
                 },
-                cancellationToken,
-                TaskCreationOptions.None,
-                TaskScheduler.Default);
+                cancellationToken);
+
+            return default(T);
+        }
+
+        public static T StartAuthenticatedIpcServer(
+            string pipeName,
+            SecurityIdentifier allowedUser,
+            NamedPipePeerPolicy clientPolicy,
+            CancellationToken cancellationToken)
+        {
+            return StartAuthenticatedIpcServer(pipeName, allowedUser, clientPolicy, null, cancellationToken);
+        }
+
+        internal static T StartAuthenticatedIpcServer(
+            string pipeName,
+            SecurityIdentifier allowedUser,
+            NamedPipePeerPolicy clientPolicy,
+            Action<Exception> serverErrorObserver,
+            CancellationToken cancellationToken)
+        {
+            var authenticator = new NamedPipePeerAuthenticator(
+                new WindowsNamedPipePeerIdentityProvider(new MicrosoftMachineRootSignatureVerifier()));
+
+            _ = Task.Run(
+                async () =>
+                {
+                    while (!cancellationToken.IsCancellationRequested)
+                    {
+                        try
+                        {
+                            using var serverChannel = RestrictedNamedPipeServer.Create(pipeName, allowedUser);
+                            await serverChannel.WaitForConnectionAsync(cancellationToken);
+
+                            JsonRpc taskRpc = null;
+                            var authentication = authenticator.AuthenticateClientAndExecute(
+                                serverChannel,
+                                clientPolicy,
+                                () => taskRpc = JsonRpc.Attach(serverChannel, new T()));
+                            if (!authentication.Accepted)
+                            {
+#if !MM_HELPER
+                                Logger.Log($"Rejected Settings IPC client: {authentication.ReasonCode}");
+#endif
+                                serverChannel.Disconnect();
+                                continue;
+                            }
+
+                            await taskRpc.Completion;
+                        }
+                        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                        {
+                            break;
+                        }
+                        catch (Exception e)
+                        {
+                            serverErrorObserver?.Invoke(e);
+#if MM_HELPER
+                            _ = e;
+#else
+                            Logger.Log(e);
+#endif
+                            if (!cancellationToken.IsCancellationRequested)
+                            {
+                                await Task.Delay(250);
+                            }
+                        }
+                    }
+                },
+                cancellationToken);
 
             return default(T);
         }
