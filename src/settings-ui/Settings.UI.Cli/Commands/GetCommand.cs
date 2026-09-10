@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Linq;
 using PowerToys.Settings.Cli.Helpers;
 
@@ -21,14 +22,12 @@ internal sealed class GetCommand : Command
         AddArgument(targetArg);
         AddOption(jsonOpt);
 
-        this.SetHandler(
-            (string target, bool json) =>
-            {
-                var exitCode = Execute(target, json);
-                Environment.ExitCode = exitCode;
-            },
-            targetArg,
-            jsonOpt);
+        this.SetHandler(context =>
+        {
+            var target = context.ParseResult.GetValueForArgument(targetArg);
+            var json = context.ParseResult.GetValueForOption(jsonOpt);
+            context.ExitCode = Execute(target, json);
+        });
     }
 
     private static int Execute(string target, bool json)

@@ -40,11 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public void DeleteSettings(string powertoy = "")
         {
-            var folderPath = System.IO.Path.Combine(Helper.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}");
-            if (_directory.Exists(folderPath))
-            {
-                _directory.Delete(folderPath, true);
-            }
+            _directory.Delete(System.IO.Path.Combine(Helper.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
         }
 
         /// <summary>

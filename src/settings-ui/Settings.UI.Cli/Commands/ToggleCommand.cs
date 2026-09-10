@@ -4,6 +4,7 @@
 
 using System;
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using PowerToys.Settings.Cli.Helpers;
 
 namespace PowerToys.Settings.Cli.Commands;
@@ -21,15 +22,13 @@ internal sealed class ToggleCommand : Command
         AddOption(enableOpt);
         AddOption(disableOpt);
 
-        this.SetHandler(
-            (string module, bool enable, bool disable) =>
-            {
-                var exitCode = Execute(module, enable, disable);
-                Environment.ExitCode = exitCode;
-            },
-            moduleArg,
-            enableOpt,
-            disableOpt);
+        this.SetHandler(context =>
+        {
+            var module = context.ParseResult.GetValueForArgument(moduleArg);
+            var enable = context.ParseResult.GetValueForOption(enableOpt);
+            var disable = context.ParseResult.GetValueForOption(disableOpt);
+            context.ExitCode = Execute(module, enable, disable);
+        });
     }
 
     private static int Execute(string module, bool enable, bool disable)
@@ -55,7 +54,7 @@ internal sealed class ToggleCommand : Command
 
             var newState = SettingsCliHelper.ToggleModule(module, targetState);
             var statusStr = newState ? "Enabled" : "Disabled";
-            Console.WriteLine($"Module '{module}' is now {statusStr}.");
+            Console.WriteLine($"Module '{module}' is saved as {statusStr}. Restart PowerToys to apply the module state.");
             return 0;
         }
         catch (Exception ex)

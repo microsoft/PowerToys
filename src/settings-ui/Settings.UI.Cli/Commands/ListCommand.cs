@@ -4,6 +4,7 @@
 
 using System;
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Linq;
 using PowerToys.Settings.Cli.Helpers;
 
@@ -20,14 +21,12 @@ internal sealed class ListCommand : Command
         AddArgument(moduleArg);
         AddOption(jsonOpt);
 
-        this.SetHandler(
-            (string? module, bool json) =>
-            {
-                var exitCode = Execute(module, json);
-                Environment.ExitCode = exitCode;
-            },
-            moduleArg,
-            jsonOpt);
+        this.SetHandler(context =>
+        {
+            var module = context.ParseResult.GetValueForArgument(moduleArg);
+            var json = context.ParseResult.GetValueForOption(jsonOpt);
+            context.ExitCode = Execute(module, json);
+        });
     }
 
     private static int Execute(string? module, bool json)

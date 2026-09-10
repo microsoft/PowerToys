@@ -4,6 +4,7 @@
 
 using System;
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using PowerToys.Settings.Cli.Helpers;
 
 namespace PowerToys.Settings.Cli.Commands;
@@ -19,14 +20,12 @@ internal sealed class SetCommand : Command
         AddArgument(settingArg);
         AddArgument(valueArg);
 
-        this.SetHandler(
-            (string setting, string value) =>
-            {
-                var exitCode = Execute(setting, value);
-                Environment.ExitCode = exitCode;
-            },
-            settingArg,
-            valueArg);
+        this.SetHandler(context =>
+        {
+            var setting = context.ParseResult.GetValueForArgument(settingArg);
+            var value = context.ParseResult.GetValueForArgument(valueArg);
+            context.ExitCode = Execute(setting, value);
+        });
     }
 
     private static int Execute(string setting, string value)
@@ -40,7 +39,7 @@ internal sealed class SetCommand : Command
             }
 
             SettingsCliHelper.SetSettingValue(setting, value);
-            Console.WriteLine($"Successfully updated setting '{setting}' to '{value}'.");
+            Console.WriteLine($"Saved setting '{setting}' as '{value}'. Restart PowerToys if the running module does not reload settings automatically.");
             return 0;
         }
         catch (ArgumentException ex)

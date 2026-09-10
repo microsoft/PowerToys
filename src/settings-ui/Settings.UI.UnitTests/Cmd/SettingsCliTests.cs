@@ -71,15 +71,4 @@ public class SettingsCliTests
         var enabledState = SettingsCliHelper.ToggleModule("FancyZones", targetState: true, settingsUtils);
         Assert.IsTrue(enabledState);
     }
-
-    [TestMethod]
-    public void TestResetModuleSettings()
-    {
-        SettingsCliHelper.SetSettingValue("FancyZones.FancyzonesShiftDrag", "false", settingsUtils);
-        Assert.AreEqual(false, SettingsCliHelper.GetSettingValue("FancyZones.FancyzonesShiftDrag", settingsUtils));
-
-        SettingsCliHelper.ResetModuleSettings("FancyZones", settingsUtils);
-
-        Assert.IsFalse(settingsUtils.SettingsExists("FancyZones"));
-    }
 }

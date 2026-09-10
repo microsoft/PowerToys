@@ -19,9 +19,6 @@ internal static class Program
         rootCommand.AddCommand(new GetCommand());
         rootCommand.AddCommand(new SetCommand());
         rootCommand.AddCommand(new ToggleCommand());
-        rootCommand.AddCommand(new BackupCommand());
-        rootCommand.AddCommand(new RestoreCommand());
-        rootCommand.AddCommand(new ResetCommand());
 
         return await rootCommand.InvokeAsync(args);
     }
