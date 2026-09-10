@@ -83,14 +83,14 @@ public class ProfileDtoProjectorTests
     }
 
     [TestMethod]
-    public void BuildProfileListResult_UsesExplicitOrderInsteadOfArrayPositionOrId()
+    public void BuildProfileListResult_UsesArrayOrderInsteadOfIdOrder()
     {
         var profiles = new PowerDisplayProfiles
         {
             Profiles = new List<PowerDisplayProfile>
             {
-                new() { Id = 1, Name = "Second", Order = 1 },
-                new() { Id = 4, Name = "First", Order = 0 },
+                new() { Id = 4, Name = "First" },
+                new() { Id = 1, Name = "Second" },
             },
         };
 

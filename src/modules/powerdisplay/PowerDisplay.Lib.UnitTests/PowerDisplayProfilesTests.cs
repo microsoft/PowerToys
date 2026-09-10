@@ -8,7 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Resources;
 using System.Text.Json;
-using System.Text.Json.Nodes;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Models;
 
@@ -19,22 +19,21 @@ public class PowerDisplayProfilesTests
 {
     private static readonly string[] ExpectedAssignedProfileNames = { "Assigned" };
 
-    private static PowerDisplayProfile MakeProfile(string name, int id = 0, int order = -1)
+    private static PowerDisplayProfile MakeProfile(string name, int id = 0)
     {
         var p = new PowerDisplayProfile(name, new List<ProfileMonitorSetting>
         {
             new ProfileMonitorSetting("MON1", 50, null, null, null),
         });
         p.Id = id;
-        p.Order = order;
         return p;
     }
 
     [TestMethod]
-    public void IdOrderAndNextId_RoundTripThroughJson_AndUseExpectedDefaults()
+    public void IdAndNextId_RoundTripThroughJson_AndDefaultToZero()
     {
         var profiles = new PowerDisplayProfiles();
-        var p = MakeProfile("Gaming", id: 7, order: 3);
+        var p = MakeProfile("Gaming", id: 7);
         profiles.Profiles.Add(p);
         profiles.NextId = 8;
 
@@ -44,8 +43,6 @@ public class PowerDisplayProfilesTests
         Assert.IsNotNull(back);
         Assert.AreEqual(8, back!.NextId);
         Assert.AreEqual(7, back.Profiles[0].Id);
-        Assert.AreEqual(3, back.Profiles[0].Order);
-        Assert.AreEqual(-1, new PowerDisplayProfile().Order);
         Assert.AreEqual(0, new PowerDisplayProfile().Id);
         Assert.AreEqual(0, new PowerDisplayProfiles().NextId);
     }
@@ -123,8 +120,6 @@ public class PowerDisplayProfilesTests
         Assert.AreEqual(1, a.Id);
         Assert.AreEqual(2, b.Id);
         Assert.AreEqual(3, profiles.NextId);
-        Assert.AreEqual(0, a.Order);
-        Assert.AreEqual(1, b.Order);
         Assert.AreEqual(2, profiles.Profiles.Count); // both kept: duplicate names allowed
     }
 
@@ -247,28 +242,33 @@ public class PowerDisplayProfilesTests
     }
 
     [TestMethod]
-    public void GetAssignedProfiles_UsesOrderRegardlessOfArrayPosition()
+    public void GetAssignedProfiles_UsesArrayOrder()
     {
         var profiles = MakeOrderedProfiles();
         profiles.Profiles.Reverse();
 
-        Assert.AreEqual("1,2,3,4", DisplayOrder(profiles));
+        Assert.AreEqual("4,3,2,1", DisplayOrder(profiles));
     }
 
     [TestMethod]
-    public void GetLegacyProfileByName_UsesFirstArrayMatchRegardlessOfDisplayOrder()
+    public void MoveProfileBefore_PreservesLightSwitchIdReferences()
     {
         var profiles = MakeOrderedProfiles();
-        profiles.Profiles[0].Name = "Same";
-        profiles.Profiles[1].Name = "same";
-        profiles.MoveProfileBefore(2, 1);
+        var selectedProfile = profiles.GetById(2);
+        var properties = new LightSwitchProperties();
+        properties.EnableLightModeProfile.Value = true;
+        properties.LightModeProfileId.Value = 2;
 
-        Assert.AreSame(profiles.Profiles[0], profiles.GetLegacyProfileByName("SAME"));
-        Assert.IsNull(profiles.GetLegacyProfileByName("Missing"));
+        Assert.IsTrue(profiles.MoveProfileBefore(2, 1));
+
+        Assert.IsFalse(LightSwitchProfileReferenceHelper.ReconcileReferences(properties, profiles));
+        Assert.AreEqual(2, LightSwitchProfileReferenceHelper.GetProfileIdForTheme(properties, isLightMode: true));
+        Assert.AreSame(selectedProfile, profiles.GetById(properties.LightModeProfileId.Value));
+        Assert.AreSame(selectedProfile, profiles.Profiles[0]);
     }
 
     [TestMethod]
-    public void RemoveProfile_ClosesOrderGap()
+    public void RemoveProfile_PreservesRemainingArrayOrder()
     {
         var profiles = MakeOrderedProfiles();
         profiles.MoveProfileBefore(3, 1);
@@ -278,7 +278,6 @@ public class PowerDisplayProfilesTests
         Assert.IsFalse(profiles.RemoveProfile(0));
 
         Assert.AreEqual("3,2,4", DisplayOrder(profiles));
-        Assert.AreEqual("0,1,2", string.Join(",", profiles.GetAssignedProfiles().Select(profile => profile.Order)));
         Assert.AreEqual(3, profiles.Profiles.Count);
     }
 
@@ -289,21 +288,23 @@ public class PowerDisplayProfilesTests
     [DataRow(2, 4, "1,3,2,4")]
     [DataRow(1, null, "2,3,4,1")]
     [DataRow(3, null, "1,2,4,3")]
-    public void MoveProfileBefore_ChangesOnlyOrderAndPreservesPhysicalArray(int profileId, int? beforeProfileId, string expectedOrder)
+    public void MoveProfileBefore_ReordersArrayWithoutChangingProfiles(int profileId, int? beforeProfileId, string expectedOrder)
     {
         var profiles = MakeOrderedProfiles();
-        var originalArray = profiles.Profiles.ToArray();
+        var originalProfiles = profiles.Profiles.ToDictionary(profile => profile.Id);
         var originalContents = profiles.Profiles.ToDictionary(profile => profile.Id, SerializeContents);
+        var originalNextId = profiles.NextId;
 
         Assert.IsTrue(profiles.MoveProfileBefore(profileId, beforeProfileId));
 
         Assert.AreEqual(expectedOrder, DisplayOrder(profiles));
-        Assert.AreEqual("0,1,2,3", string.Join(",", profiles.GetAssignedProfiles().Select(profile => profile.Order)));
+        Assert.AreEqual(expectedOrder, string.Join(",", profiles.Profiles.Select(profile => profile.Id)));
+        Assert.AreEqual(originalProfiles.Count, profiles.Profiles.Count);
+        Assert.AreEqual(originalNextId, profiles.NextId);
         Assert.IsTrue(profiles.LastUpdated > DateTime.UnixEpoch);
-        for (var index = 0; index < profiles.Profiles.Count; index++)
+        foreach (var profile in profiles.Profiles)
         {
-            var profile = profiles.Profiles[index];
-            Assert.AreSame(originalArray[index], profile);
+            Assert.AreSame(originalProfiles[profile.Id], profile);
             Assert.AreEqual(originalContents[profile.Id], SerializeContents(profile));
         }
     }
@@ -335,31 +336,28 @@ public class PowerDisplayProfilesTests
         Assert.IsFalse(profiles.MoveProfileBefore(1, null));
         Assert.IsFalse(profiles.MoveProfileBefore(1, 2));
 
-        var profile = MakeProfile("Only", 1, order: 0);
+        var profile = MakeProfile("Only", 1);
         profiles.Profiles.Add(profile);
 
         Assert.IsFalse(profiles.MoveProfileBefore(1, null));
         Assert.IsFalse(profiles.MoveProfileBefore(1, 1));
         Assert.AreSame(profile, profiles.Profiles[0]);
-        Assert.AreEqual(0, profile.Order);
         Assert.AreEqual(DateTime.UnixEpoch, profiles.LastUpdated);
     }
 
     [TestMethod]
-    public void MoveProfileBefore_ShuffledArray_RoundTripsIndependentDisplayOrder()
+    public void MoveProfileBefore_RoundTripsArrayOrderThroughJson()
     {
         var profiles = MakeOrderedProfiles();
         profiles.Profiles.Reverse();
-        var originalArrayIds = profiles.Profiles.Select(profile => profile.Id).ToArray();
-
-        Assert.IsTrue(profiles.MoveProfileBefore(2, 1));
+        Assert.IsTrue(profiles.MoveProfileBefore(1, 3));
 
         var json = JsonSerializer.Serialize(profiles, ProfileSerializationContext.Default.PowerDisplayProfiles);
         var restored = JsonSerializer.Deserialize(json, ProfileSerializationContext.Default.PowerDisplayProfiles);
         Assert.IsNotNull(restored);
-        Assert.AreEqual("2,1,3,4", DisplayOrder(restored));
-        CollectionAssert.AreEqual(originalArrayIds, restored.Profiles.Select(profile => profile.Id).ToArray());
-        Assert.IsFalse(restored.EnsureIdsAndOrder());
+        Assert.AreEqual("4,1,3,2", DisplayOrder(restored));
+        Assert.AreEqual("4,1,3,2", string.Join(",", restored.Profiles.Select(profile => profile.Id)));
+        Assert.IsFalse(restored.EnsureIds());
     }
 
     [TestMethod]
@@ -367,19 +365,18 @@ public class PowerDisplayProfilesTests
     [DataRow(2)]
     [DataRow(3)]
     [DataRow(4)]
-    public void SetProfile_AfterReordering_PreservesOrderAndArrayPosition(int profileId)
+    public void SetProfile_AfterReordering_PreservesArrayPosition(int profileId)
     {
         var profiles = MakeOrderedProfiles();
         profiles.MoveProfileBefore(3, 1);
         var existing = profiles.GetById(profileId)!;
-        var originalOrder = existing.Order;
-        var replacement = MakeProfile("Edited", existing.Id, order: 99);
+        var originalIndex = profiles.Profiles.IndexOf(existing);
+        var replacement = MakeProfile("Edited", existing.Id);
 
         profiles.SetProfile(replacement);
 
         Assert.AreEqual("3,1,2,4", DisplayOrder(profiles));
-        Assert.AreSame(replacement, profiles.Profiles[profileId - 1]);
-        Assert.AreEqual(originalOrder, replacement.Order);
+        Assert.AreSame(replacement, profiles.Profiles[originalIndex]);
     }
 
     [TestMethod]
@@ -387,58 +384,30 @@ public class PowerDisplayProfilesTests
     {
         var profiles = MakeOrderedProfiles();
         profiles.MoveProfileBefore(3, 1);
-        var added = MakeProfile("New", order: 0);
+        var added = MakeProfile("New");
 
         profiles.SetProfile(added);
 
         Assert.AreSame(added, profiles.GetAssignedProfiles().Last());
-        Assert.AreEqual(4, added.Order);
+        Assert.AreEqual("3,1,2,4,5", DisplayOrder(profiles));
     }
 
     [TestMethod]
-    public void EnsureIdsAndOrder_BackfillsMissingIdsAndOrdersIdempotently()
+    public void EnsureIds_BackfillsMissingIdsWithoutChangingArrayOrder()
     {
         const string json = """
             {"nextId":8,"profiles":[{"name":"Existing ID","id":7},{"name":"No ID"}]}
             """;
         var profiles = JsonSerializer.Deserialize(json, ProfileSerializationContext.Default.PowerDisplayProfiles)!;
 
-        Assert.IsTrue(profiles.EnsureIdsAndOrder());
+        Assert.IsTrue(profiles.EnsureIds());
 
         Assert.AreEqual(7, profiles.Profiles[0].Id);
         Assert.AreEqual(8, profiles.Profiles[1].Id);
         Assert.AreEqual(9, profiles.NextId);
-        Assert.AreEqual(0, profiles.Profiles[0].Order);
-        Assert.AreEqual(1, profiles.Profiles[1].Order);
+        Assert.AreEqual("Existing ID,No ID", string.Join(",", profiles.Profiles.Select(profile => profile.Name)));
         var repairedJson = JsonSerializer.Serialize(profiles, ProfileSerializationContext.Default.PowerDisplayProfiles);
-        Assert.IsFalse(profiles.EnsureIdsAndOrder());
-        Assert.AreEqual(repairedJson, JsonSerializer.Serialize(profiles, ProfileSerializationContext.Default.PowerDisplayProfiles));
-    }
-
-    [TestMethod]
-    public void EnsureIdsAndOrder_RepairsMissingDuplicateAndNegativeOrdersWithoutRearrangingArray()
-    {
-        var profiles = MakeOrderedProfiles();
-        profiles.Profiles[0].Order = 5;
-        profiles.Profiles[1].Order = -1;
-        profiles.Profiles[2].Order = 5;
-        profiles.Profiles[3].Order = -4;
-        var originalArray = profiles.Profiles.ToArray();
-        var originalContents = profiles.Profiles.ToDictionary(profile => profile.Id, SerializeContents);
-
-        Assert.IsTrue(profiles.EnsureIdsAndOrder());
-
-        Assert.AreEqual("2,4,1,3", DisplayOrder(profiles));
-        Assert.AreEqual("0,1,2,3", string.Join(",", profiles.GetAssignedProfiles().Select(profile => profile.Order)));
-        Assert.AreEqual(5, profiles.NextId);
-        CollectionAssert.AreEqual(originalArray, profiles.Profiles.ToArray());
-        foreach (var profile in profiles.Profiles)
-        {
-            Assert.AreEqual(originalContents[profile.Id], SerializeContents(profile));
-        }
-
-        var repairedJson = JsonSerializer.Serialize(profiles, ProfileSerializationContext.Default.PowerDisplayProfiles);
-        Assert.IsFalse(profiles.EnsureIdsAndOrder());
+        Assert.IsFalse(profiles.EnsureIds());
         Assert.AreEqual(repairedJson, JsonSerializer.Serialize(profiles, ProfileSerializationContext.Default.PowerDisplayProfiles));
     }
 
@@ -447,7 +416,7 @@ public class PowerDisplayProfilesTests
         var profiles = new PowerDisplayProfiles { NextId = 5, LastUpdated = DateTime.UnixEpoch };
         for (var id = 1; id <= 4; id++)
         {
-            var profile = MakeProfile("Same", id, order: id - 1);
+            var profile = MakeProfile("Same", id);
             profile.CreatedDate = DateTime.UnixEpoch;
             profile.LastModified = DateTime.UnixEpoch;
             profiles.Profiles.Add(profile);
@@ -460,9 +429,5 @@ public class PowerDisplayProfilesTests
         => string.Join(",", profiles.GetAssignedProfiles().Select(profile => profile.Id));
 
     private static string SerializeContents(PowerDisplayProfile profile)
-    {
-        var node = JsonNode.Parse(JsonSerializer.Serialize(profile, ProfileSerializationContext.Default.PowerDisplayProfile))!.AsObject();
-        node.Remove("order");
-        return node.ToJsonString();
-    }
+        => JsonSerializer.Serialize(profile, ProfileSerializationContext.Default.PowerDisplayProfile);
 }

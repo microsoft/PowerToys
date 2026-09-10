@@ -19,9 +19,6 @@ namespace PowerDisplay.Models
         [JsonPropertyName("id")]
         public int Id { get; set; }
 
-        [JsonPropertyName("order")]
-        public int Order { get; set; } = -1;
-
         [JsonPropertyName("monitorSettings")]
         public List<ProfileMonitorSetting> MonitorSettings { get; set; }
 

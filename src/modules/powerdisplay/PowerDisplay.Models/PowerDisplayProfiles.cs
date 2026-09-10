@@ -50,13 +50,12 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
-        /// Returns profiles with usable stable ids in display order, independent of their position
-        /// in the persisted array. Legacy or corrupt profiles with non-positive ids remain hidden.
+        /// Returns profiles with usable stable ids in their persisted array order.
+        /// Legacy or corrupt profiles with non-positive ids remain hidden until migration.
         /// </summary>
         public IEnumerable<PowerDisplayProfile> GetAssignedProfiles()
         {
-            return Profiles.Where(profile => profile is not null && profile.Id >= 1)
-                .OrderBy(profile => profile.Order);
+            return Profiles.Where(profile => profile is not null && profile.Id >= 1);
         }
 
         /// <summary>
@@ -86,15 +85,6 @@ namespace PowerDisplay.Models
                 NextId = profile.Id + 1;
             }
 
-            if (existingIndex >= 0)
-            {
-                profile.Order = Profiles[existingIndex].Order;
-            }
-            else
-            {
-                profile.Order = checked(Profiles.Where(p => p is not null).Select(p => p.Order).DefaultIfEmpty(-1).Max() + 1);
-            }
-
             profile.Touch();
             if (existingIndex >= 0)
             {
@@ -111,8 +101,8 @@ namespace PowerDisplay.Models
         /// <summary>
         /// Moves a profile before another id, or to the end when beforeProfileId is null.
         /// Returns false without changing the collection when either id is invalid or missing,
-        /// or the profile is already at the requested position. Only display order is changed;
-        /// the persisted array and profile contents retain their original positions and values.
+        /// or the profile is already at the requested position. Moves the existing array entry
+        /// without changing its stable id, contents, or timestamps.
         /// </summary>
         public bool MoveProfileBefore(int profileId, int? beforeProfileId)
         {
@@ -121,11 +111,10 @@ namespace PowerDisplay.Models
                 return false;
             }
 
-            var ordered = GetAssignedProfiles().ToList();
-            var sourceIndex = ordered.FindIndex(profile => profile.Id == profileId);
+            var sourceIndex = Profiles.FindIndex(profile => profile?.Id == profileId);
             var targetIndex = beforeProfileId.HasValue
-                ? ordered.FindIndex(profile => profile.Id == beforeProfileId.Value)
-                : ordered.Count;
+                ? Profiles.FindIndex(profile => profile?.Id == beforeProfileId.Value)
+                : Profiles.Count;
             if (sourceIndex < 0 || targetIndex < 0)
             {
                 return false;
@@ -141,16 +130,15 @@ namespace PowerDisplay.Models
                 return false;
             }
 
-            var profile = ordered[sourceIndex];
-            ordered.RemoveAt(sourceIndex);
-            ordered.Insert(targetIndex, profile);
-            SetOrder(ordered);
+            var profile = Profiles[sourceIndex];
+            Profiles.RemoveAt(sourceIndex);
+            Profiles.Insert(targetIndex, profile);
             LastUpdated = DateTime.UtcNow;
             return true;
         }
 
         /// <summary>
-        /// Removes a profile by its stable id and closes the gap in display order.
+        /// Removes a profile by its stable id.
         /// </summary>
         public bool RemoveProfile(int id)
         {
@@ -158,7 +146,6 @@ namespace PowerDisplay.Models
             if (profile != null)
             {
                 Profiles.Remove(profile);
-                SetOrder(GetAssignedProfiles().ToList());
                 LastUpdated = DateTime.UtcNow;
                 return true;
             }
@@ -191,38 +178,6 @@ namespace PowerDisplay.Models
             {
                 NextId = next;
                 changed = true;
-            }
-
-            return changed;
-        }
-
-        /// <summary>
-        /// Assigns missing stable ids and repairs display order. Missing orders fall back to array
-        /// positions; ties retain array order. Returns true when anything changed, without changing
-        /// the array itself or the profiles' timestamps.
-        /// </summary>
-        public bool EnsureIdsAndOrder()
-        {
-            var changed = EnsureIds();
-            var ordered = Profiles.Select((profile, index) => (Profile: profile, Index: index))
-                .Where(item => item.Profile is not null)
-                .OrderBy(item => item.Profile.Order >= 0 ? item.Profile.Order : item.Index)
-                .ThenBy(item => item.Index)
-                .Select(item => item.Profile)
-                .ToList();
-            return SetOrder(ordered) || changed;
-        }
-
-        private static bool SetOrder(List<PowerDisplayProfile> ordered)
-        {
-            var changed = false;
-            for (var index = 0; index < ordered.Count; index++)
-            {
-                if (ordered[index].Order != index)
-                {
-                    ordered[index].Order = index;
-                    changed = true;
-                }
             }
 
             return changed;

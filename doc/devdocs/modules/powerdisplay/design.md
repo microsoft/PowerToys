@@ -1421,29 +1421,30 @@ Implementation notes:
 
 ### Profile Display Order
 
-Each profile keeps its stable integer `id` and has a separate integer `order`. All profile lists,
-including Settings, the flyout, LightSwitch selection, and CLI `profiles` output, use increasing
-`order`. Reordering updates the contiguous zero-based `order` values without changing IDs, monitor
-settings, or the physical order of entries in the `profiles` array. Editing a profile retains its
-order and array position; new profiles receive the next integer ID and the last display position.
+Each profile has a stable integer `id` that identifies it. Its position in the `profiles` array
+defines its display position in Settings, the flyout, LightSwitch selection, and CLI `profiles`
+output. Reordering moves the existing entry within that array while preserving its ID and monitor
+settings. Editing a profile retains its array position; new profiles receive the next integer ID
+and are appended to the array.
 
 The relevant fields in `profiles.json` are shown below; monitor settings and timestamps are omitted.
-Despite appearing second in the array, Night is displayed first because its `order` is zero.
+Night is displayed first because it is the first array entry, even though its ID is larger than Day's.
 
 ```json
 {
   "profiles": [
-    { "id": 3, "name": "Day", "order": 1 },
-    { "id": 7, "name": "Night", "order": 0 }
+    { "id": 7, "name": "Night" },
+    { "id": 3, "name": "Day" }
   ],
   "nextId": 8
 }
 ```
 
-Profiles without an explicit order initially retain their existing array order. The profile store
-normalizes and persists the order under its existing lock. Sorting is available through drag and
-drop or Move up/Move down menu actions; elevated Settings uses the menu actions. LightSwitch
-references and CLI/IPC profile commands continue to use integer IDs with schema version `1.0`.
+Reorder requests identify the source profile and its destination neighbor by stable ID. The profile
+store reloads the current array and applies the move under its existing lock before atomically
+saving it. Reordering is available through drag and drop, Move up/Move down menu actions, or
+Alt+Shift+arrow keys. Drag and drop is disabled in elevated Settings. LightSwitch references and
+CLI/IPC profile commands continue to use integer IDs with schema version `1.0`.
 
 ### Sequence: Creating and Saving a Profile
 

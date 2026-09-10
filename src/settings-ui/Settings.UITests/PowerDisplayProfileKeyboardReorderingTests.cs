@@ -99,7 +99,8 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
             });
 
         // Seed after the previous Settings/runner processes exit, so cleanup cannot overwrite it.
-        // Stable ids and orders avoid a migration write. No test invokes the Apply button.
+        // Stable ids avoid a migration write. Array positions define the initial display order.
+        // No test invokes the Apply button.
         var profileCount = TestContext.TestName == nameof(ReorderShortcut_VirtualizedTailKeepsFocusForRepeatedMoves) ||
             TestContext.TestName == nameof(ReorderDrag_AcrossViewportKeepsMovedProfileFocus)
             ? VirtualizedProfileCount
@@ -112,7 +113,6 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
             {
                 id,
                 name = ProfileName(id),
-                order = id - 1,
                 monitorSettings = new[] { new { monitorId = "powerdisplay-keyboard-test-monitor", brightness = 50 } },
                 createdDate = timestamp,
                 lastModified = timestamp,
@@ -958,7 +958,6 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
     {
         using var document = JsonDocument.Parse(File.ReadAllText(ProfilesPath));
         return string.Join(",", document.RootElement.GetProperty("profiles").EnumerateArray()
-            .OrderBy(profile => profile.GetProperty("order").GetInt32())
             .Select(profile => profile.GetProperty("id").GetInt32()));
     }
 

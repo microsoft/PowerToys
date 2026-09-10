@@ -49,7 +49,6 @@ namespace PowerDisplay.Models
             {
                 var profiles = LoadProfilesCore();
                 var originalId = profile.Id;
-                var originalOrder = profile.Order;
                 var originalLastModified = profile.LastModified;
                 try
                 {
@@ -59,7 +58,6 @@ namespace PowerDisplay.Models
                 catch
                 {
                     profile.Id = originalId;
-                    profile.Order = originalOrder;
                     profile.LastModified = originalLastModified;
                     throw;
                 }
@@ -175,16 +173,8 @@ namespace PowerDisplay.Models
             }
 
             var json = File.ReadAllText(_filePath);
-            var profiles = JsonSerializer.Deserialize(json, ProfileSerializationContext.Default.PowerDisplayProfiles)
+            return JsonSerializer.Deserialize(json, ProfileSerializationContext.Default.PowerDisplayProfiles)
                 ?? throw new JsonException($"Profile file '{_filePath}' deserialized to null.");
-            if (profiles.EnsureIdsAndOrder())
-            {
-                // All callers hold the store mutex. Persist assigned ids and normalized display
-                // order before returning the snapshot.
-                SaveProfilesCore(profiles);
-            }
-
-            return profiles;
         }
 
         private void SaveProfilesCore(PowerDisplayProfiles profiles)

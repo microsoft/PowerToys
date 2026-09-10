@@ -15,7 +15,7 @@ public class ProfileMigrationTests
     private const string NewMonitorId = @"\\?\DISPLAY#DELD1A8#5&abc&0&UID12345";
 
     [TestMethod]
-    public void Migrate_NoDiscoveredMonitors_BackfillsIdsAndOrderWithoutChangingMonitorSettings()
+    public void Migrate_NoDiscoveredMonitors_BackfillsIdsWithoutChangingMonitorSettings()
     {
         var profile = MakeProfile("Legacy", "DDC_DELD1A8_1");
         var profiles = new PowerDisplayProfiles();
@@ -27,7 +27,6 @@ public class ProfileMigrationTests
 
         Assert.IsTrue(changed);
         Assert.AreEqual(1, profile.Id);
-        Assert.AreEqual(0, profile.Order);
         Assert.AreEqual("DDC_DELD1A8_1", profile.MonitorSettings[0].MonitorId);
         Assert.AreEqual(2, profiles.NextId);
         Assert.IsFalse(ProfileMigration.Migrate(profiles, System.Array.Empty<(string Id, int MonitorNumber)>()));
@@ -46,7 +45,6 @@ public class ProfileMigrationTests
 
         Assert.IsTrue(changed);
         Assert.AreEqual(1, profile.Id);
-        Assert.AreEqual(0, profile.Order);
         Assert.AreEqual(1, profile.MonitorSettings.Count);
         Assert.AreEqual(NewMonitorId, profile.MonitorSettings[0].MonitorId);
     }
@@ -74,25 +72,21 @@ public class ProfileMigrationTests
     }
 
     [TestMethod]
-    public void Migrate_MonitorReferences_PreservesAssignedIdsOrderAndArrayPosition()
+    public void Migrate_MonitorReferences_PreservesAssignedIdsAndArrayOrder()
     {
         var profiles = new PowerDisplayProfiles { NextId = 3 };
         var first = MakeProfile("Legacy monitor", "DDC_DELD1A8_1");
-        first.Id = 1;
-        first.Order = 1;
+        first.Id = 2;
         var second = MakeProfile("Current monitor", NewMonitorId);
-        second.Id = 2;
-        second.Order = 0;
+        second.Id = 1;
         profiles.Profiles.Add(first);
         profiles.Profiles.Add(second);
         var discovered = new[] { (NewMonitorId, 1) };
 
         Assert.IsTrue(ProfileMigration.Migrate(profiles, discovered));
 
-        Assert.AreEqual(1, first.Id);
-        Assert.AreEqual(2, second.Id);
-        Assert.AreEqual(1, first.Order);
-        Assert.AreEqual(0, second.Order);
+        Assert.AreEqual(2, first.Id);
+        Assert.AreEqual(1, second.Id);
         Assert.AreEqual(3, profiles.NextId);
         Assert.AreSame(first, profiles.Profiles[0]);
         Assert.AreSame(second, profiles.Profiles[1]);

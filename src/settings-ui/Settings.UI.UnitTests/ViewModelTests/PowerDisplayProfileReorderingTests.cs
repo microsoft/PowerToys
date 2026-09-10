@@ -80,13 +80,8 @@ public class PowerDisplayProfileReorderingTests
 
         AssertOrder(viewModel, ThirdId, FirstId, SecondId);
 
-        // The persisted array keeps its physical positions; order is stored on each profile.
-        Assert.AreEqual(FirstId, store.Data.Profiles[0].Id);
-        Assert.AreEqual(SecondId, store.Data.Profiles[1].Id);
-        Assert.AreEqual(ThirdId, store.Data.Profiles[2].Id);
-        Assert.AreEqual(0, store.Data.GetById(ThirdId).Order);
-        Assert.AreEqual(1, store.Data.GetById(FirstId).Order);
-        Assert.AreEqual(2, store.Data.GetById(SecondId).Order);
+        // The persisted array is the display order; moving an entry preserves its stable id.
+        CollectionAssert.AreEqual(new[] { ThirdId, FirstId, SecondId }, store.Data.Profiles.Select(profile => profile.Id).ToArray());
         Assert.AreEqual(1, store.Notifications);
         Assert.IsFalse(observedEmptyList);
         Assert.IsFalse(viewModel.IsProfileReorderError);
@@ -314,12 +309,15 @@ public class PowerDisplayProfileReorderingTests
     }
 
     [TestMethod]
-    public async Task LoadProfiles_UsesExplicitOrderInsteadOfArrayPositions()
+    public async Task LoadProfiles_UsesArrayOrderInsteadOfIdOrder()
     {
         var store = new ProfileSession();
-        store.Data.Profiles[0].Order = 2;
-        store.Data.Profiles[1].Order = 0;
-        store.Data.Profiles[2].Order = 1;
+        store.Data.Profiles = new List<PowerDisplayProfile>
+        {
+            CreateProfile(SecondId, "Second"),
+            CreateProfile(ThirdId, "Third"),
+            CreateProfile(FirstId, "First"),
+        };
         using var viewModel = CreateViewModel(store);
 
         await viewModel.InitializeProfilesAsync();
@@ -328,12 +326,11 @@ public class PowerDisplayProfileReorderingTests
         Assert.AreEqual(0, store.Writes);
     }
 
-    private static PowerDisplayProfile CreateProfile(int id, string name, int order = -1)
+    private static PowerDisplayProfile CreateProfile(int id, string name)
     {
         return new PowerDisplayProfile(name, new List<ProfileMonitorSetting> { new ProfileMonitorSetting("monitor-1", brightness: 50) })
         {
             Id = id,
-            Order = order,
         };
     }
 
@@ -370,9 +367,9 @@ public class PowerDisplayProfileReorderingTests
         {
             Profiles = new List<PowerDisplayProfile>
             {
-                CreateProfile(FirstId, "First", 0),
-                CreateProfile(SecondId, "Second", 1),
-                CreateProfile(ThirdId, "Third", 2),
+                CreateProfile(FirstId, "First"),
+                CreateProfile(SecondId, "Second"),
+                CreateProfile(ThirdId, "Third"),
             },
         };
 
