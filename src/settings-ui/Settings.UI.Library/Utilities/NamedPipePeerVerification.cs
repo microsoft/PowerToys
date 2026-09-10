@@ -366,8 +366,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
                 roots.Open(OpenFlags.ReadOnly);
 
                 using var chain = new X509Chain();
-                chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+                chain.ChainPolicy.RevocationMode = X509RevocationMode.Offline;
                 chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
+                chain.ChainPolicy.VerificationFlags = X509VerificationFlags.IgnoreEndRevocationUnknown | X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown | X509VerificationFlags.IgnoreRootRevocationUnknown;
 
                 // Check lifetime at the same current time or validated timestamp that Windows used.
                 chain.ChainPolicy.VerificationTime = verificationTime;
