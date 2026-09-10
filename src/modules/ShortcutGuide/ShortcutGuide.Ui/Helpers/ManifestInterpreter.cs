@@ -203,6 +203,7 @@ namespace ShortcutGuide.Helpers
                             process.Dispose();
                         }
                     }
+                }
             }
 
             return applicationIds;
