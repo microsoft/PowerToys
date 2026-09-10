@@ -69,26 +69,15 @@ public partial class ShellViewModel : ObservableObject,
 
                 try
                 {
-                    if (oldValue is ListViewModel previousList)
-                    {
-                        // Frame keeps the VM in its navigation parameter for Back.
-                        // Cancel this visit's work without permanently disposing it.
-                        previousList.SuspendForNavigation();
-                    }
-                    else if (oldValue is IDisposable disposable)
-                    {
-                        disposable.Dispose();
-                    }
+                    // Frame retains the page for Back until its history entry is discarded.
+                    oldValue.SuspendForNavigation();
                 }
                 catch (Exception ex)
                 {
                     CoreLogger.LogError(ex.ToString());
                 }
 
-                if (value is ListViewModel currentList)
-                {
-                    _ = currentList.ResumeAfterNavigation();
-                }
+                _ = value.ResumeAfterNavigation();
             }
         }
     }
@@ -200,6 +189,11 @@ public partial class ShellViewModel : ObservableObject,
                         var t = Task.Factory.StartNew(
                             () =>
                             {
+                                if (viewModel.IsDiscarded)
+                                {
+                                    return;
+                                }
+
                                 if (cancellationToken.IsCancellationRequested)
                                 {
                                     if (viewModel is IDisposable disposable)
@@ -230,6 +224,11 @@ public partial class ShellViewModel : ObservableObject,
         }
         else
         {
+            if (viewModel.IsDiscarded)
+            {
+                return;
+            }
+
             if (cancellationToken.IsCancellationRequested)
             {
                 if (viewModel is IDisposable disposable)
