@@ -17,67 +17,212 @@
     DataContext="DashboardViewModel"
     mc:Ignorable="d">
     <local:NavigablePage.Resources>
-        <converters:ModuleItemTemplateSelector
-            x:Key="ModuleItemTemplateSelector"
-            ActivationTemplate="{StaticResource ModuleItemActivationTemplate}"
-            ShortcutTemplate="{StaticResource ModuleItemShortcutTemplate}" />
-        <controlConverters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
-        <converters:EnumToModuleListSortOptionConverter x:Key="EnumToModuleListSortOptionConverter" />
-        <DataTemplate x:Key="ModuleItemShortcutTemplate" x:DataType="viewmodels:DashboardModuleShortcutItem">
-            <Grid MinHeight="36" ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" MinWidth="140" />
-                </Grid.ColumnDefinitions>
-                <ItemsControl
-                    Grid.Column="1"
-                    HorizontalAlignment="Left"
-                    AutomationProperties.AccessibilityView="Raw"
-                    IsTabStop="False"
-                    ItemsSource="{x:Bind Shortcut, Mode=OneWay}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="4" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <ptcontrols:KeyVisual
-                                VerticalAlignment="Center"
-                                AutomationProperties.AccessibilityView="Raw"
-                                Content="{Binding}"
-                                FontSize="12"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                IsTabStop="False"
-                                RenderKeyAsGlyph="True" />
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <TextBlock
-                    VerticalAlignment="Center"
-                    Text="{x:Bind Label, Mode=OneWay}"
-                    TextWrapping="WrapWholeWords" />
-            </Grid>
-        </DataTemplate>
-        <DataTemplate x:Key="ModuleItemActivationTemplate" x:DataType="viewmodels:DashboardModuleActivationItem">
-            <Grid MinHeight="36" ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" MinWidth="140" />
-                </Grid.ColumnDefinitions>
-                <TextBlock
-                    VerticalAlignment="Center"
-                    Text="{x:Bind Label, Mode=OneWay}"
-                    TextWrapping="WrapWholeWords" />
-                <TextBlock
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    FontSize="12"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="{x:Bind Activation, Mode=OneWay}"
-                    TextWrapping="WrapWholeWords" />
-            </Grid>
-        </DataTemplate>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Default">
+                    <StaticResource x:Key="DashboardRowBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
+                    <StaticResource x:Key="DashboardRowBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
+                    <StaticResource x:Key="DashboardRowBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
+                    <StaticResource x:Key="DashboardRowBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+                    <StaticResource x:Key="DashboardRowForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+                    <StaticResource x:Key="DashboardRowForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+                    <StaticResource x:Key="DashboardRowForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <StaticResource x:Key="DashboardRowBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
+                    <StaticResource x:Key="DashboardRowBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
+                    <StaticResource x:Key="DashboardRowBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
+                    <StaticResource x:Key="DashboardRowBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+                    <StaticResource x:Key="DashboardRowForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+                    <StaticResource x:Key="DashboardRowForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+                    <StaticResource x:Key="DashboardRowForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <StaticResource x:Key="DashboardRowBackgroundPointerOver" ResourceKey="SystemColorHighlightTextColorBrush" />
+                    <StaticResource x:Key="DashboardRowBackgroundPressed" ResourceKey="SystemColorHighlightTextColorBrush" />
+                    <StaticResource x:Key="DashboardRowBorderBrushPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
+                    <StaticResource x:Key="DashboardRowBorderBrushPressed" ResourceKey="SystemColorHighlightTextColorBrush" />
+                    <StaticResource x:Key="DashboardRowForegroundPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
+                    <StaticResource x:Key="DashboardRowForegroundPressed" ResourceKey="SystemColorHighlightColorBrush" />
+                    <StaticResource x:Key="DashboardRowForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+            <converters:ModuleItemTemplateSelector
+                x:Key="ModuleItemTemplateSelector"
+                ActivationTemplate="{StaticResource ModuleItemActivationTemplate}"
+                ShortcutTemplate="{StaticResource ModuleItemShortcutTemplate}" />
+            <controlConverters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+            <converters:EnumToModuleListSortOptionConverter x:Key="EnumToModuleListSortOptionConverter" />
+            <!--  Derived from the Community Toolkit SettingsCard template, licensed by the .NET Foundation under the MIT license.  -->
+            <!--  Home rows have no description or wrapping content, so they do not need the general-purpose layout triggers.  -->
+            <Style x:Key="DashboardModuleListRowStyle" TargetType="tkcontrols:SettingsCard">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="tkcontrols:SettingsCard">
+                            <Grid
+                                x:Name="PART_RootGrid"
+                                MinWidth="{TemplateBinding MinWidth}"
+                                MinHeight="{TemplateBinding MinHeight}"
+                                MaxWidth="{TemplateBinding MaxWidth}"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                                Background="{TemplateBinding Background}"
+                                BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}">
+                                <Grid.BackgroundTransition>
+                                    <BrushTransition Duration="0:0:0.083" />
+                                </Grid.BackgroundTransition>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Viewbox
+                                    x:Name="PART_HeaderIconPresenterHolder"
+                                    MaxWidth="20"
+                                    MaxHeight="20"
+                                    Margin="2,0,20,0">
+                                    <ContentPresenter
+                                        x:Name="PART_HeaderIconPresenter"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        Content="{TemplateBinding HeaderIcon}"
+                                        HighContrastAdjustment="None" />
+                                </Viewbox>
+                                <ContentPresenter
+                                    x:Name="PART_HeaderPresenter"
+                                    Grid.Column="1"
+                                    Margin="0,0,24,0"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Content="{TemplateBinding Header}"
+                                    HighContrastAdjustment="None"
+                                    TextWrapping="Wrap" />
+                                <ContentPresenter
+                                    x:Name="PART_ContentPresenter"
+                                    Grid.Column="2"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    Content="{TemplateBinding Content}" />
+                                <Viewbox
+                                    x:Name="PART_ActionIconPresenterHolder"
+                                    Grid.Column="3"
+                                    MaxWidth="13"
+                                    MaxHeight="13"
+                                    Margin="14,0,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    HighContrastAdjustment="None"
+                                    Visibility="Collapsed">
+                                    <ContentPresenter
+                                        x:Name="PART_ActionIconPresenter"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        Content="{TemplateBinding ActionIcon}"
+                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                        HighContrastAdjustment="None"
+                                        ToolTipService.ToolTip="{TemplateBinding ActionIconToolTip}" />
+                                </Viewbox>
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="PointerOver">
+                                            <VisualState.Setters>
+                                                <Setter Target="PART_RootGrid.Background" Value="{ThemeResource DashboardRowBackgroundPointerOver}" />
+                                                <Setter Target="PART_RootGrid.BorderBrush" Value="{ThemeResource DashboardRowBorderBrushPointerOver}" />
+                                                <Setter Target="PART_HeaderPresenter.Foreground" Value="{ThemeResource DashboardRowForegroundPointerOver}" />
+                                                <Setter Target="PART_HeaderIconPresenter.Foreground" Value="{ThemeResource DashboardRowForegroundPointerOver}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Pressed">
+                                            <VisualState.Setters>
+                                                <Setter Target="PART_RootGrid.Background" Value="{ThemeResource DashboardRowBackgroundPressed}" />
+                                                <Setter Target="PART_RootGrid.BorderBrush" Value="{ThemeResource DashboardRowBorderBrushPressed}" />
+                                                <Setter Target="PART_HeaderPresenter.Foreground" Value="{ThemeResource DashboardRowForegroundPressed}" />
+                                                <Setter Target="PART_HeaderIconPresenter.Foreground" Value="{ThemeResource DashboardRowForegroundPressed}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Disabled">
+                                            <VisualState.Setters>
+                                                <Setter Target="PART_ActionIconPresenter.Foreground" Value="{ThemeResource DashboardRowForegroundDisabled}" />
+                                                <Setter Target="PART_HeaderPresenter.Foreground" Value="{ThemeResource DashboardRowForegroundDisabled}" />
+                                                <Setter Target="PART_HeaderIconPresenter.Foreground" Value="{ThemeResource DashboardRowForegroundDisabled}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                    <VisualStateGroup x:Name="BitmapHeaderIconStates">
+                                        <VisualState x:Name="BitmapHeaderIconEnabled" />
+                                        <VisualState x:Name="BitmapHeaderIconDisabled">
+                                            <VisualState.Setters>
+                                                <Setter Target="PART_HeaderIconPresenterHolder.Opacity" Value="0.4" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <DataTemplate x:Key="ModuleItemShortcutTemplate" x:DataType="viewmodels:DashboardModuleShortcutItem">
+                <Grid MinHeight="36" ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" MinWidth="140" />
+                    </Grid.ColumnDefinitions>
+                    <ItemsControl
+                        Grid.Column="1"
+                        HorizontalAlignment="Left"
+                        AutomationProperties.AccessibilityView="Raw"
+                        IsTabStop="False"
+                        ItemsSource="{x:Bind Shortcut, Mode=OneWay}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ptcontrols:KeyVisual
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    Content="{Binding}"
+                                    FontSize="12"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    IsTabStop="False"
+                                    RenderKeyAsGlyph="True" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Text="{x:Bind Label, Mode=OneWay}"
+                        TextWrapping="WrapWholeWords" />
+                </Grid>
+            </DataTemplate>
+            <DataTemplate x:Key="ModuleItemActivationTemplate" x:DataType="viewmodels:DashboardModuleActivationItem">
+                <Grid MinHeight="36" ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" MinWidth="140" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Text="{x:Bind Label, Mode=OneWay}"
+                        TextWrapping="WrapWholeWords" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind Activation, Mode=OneWay}"
+                        TextWrapping="WrapWholeWords" />
+                </Grid>
+            </DataTemplate>
+        </ResourceDictionary>
     </local:NavigablePage.Resources>
     <Grid Margin="16,0,0,0" RowSpacing="12">
         <Grid.RowDefinitions>
@@ -259,6 +404,7 @@
                         <controls:ModuleList
                             x:Name="ModulesCard"
                             Grid.Row="1"
+                            ItemContainerStyle="{StaticResource DashboardModuleListRowStyle}"
                             ItemsSource="{x:Bind ViewModel.AllModules, Mode=OneWay}"
                             SortOption="{x:Bind ViewModel.DashboardSortOrder, Mode=TwoWay, Converter={StaticResource EnumToModuleListSortOptionConverter}}" />
                     </controls:Card>
