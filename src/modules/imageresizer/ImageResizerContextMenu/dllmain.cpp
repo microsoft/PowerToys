@@ -195,18 +195,13 @@ private:
     HRESULT WaitForNamedPipeClient()
     {
         // This call blocks until a client process connects to the pipe
-        BOOL connected = ConnectNamedPipe(hPipe, NULL);
+        const BOOL connected =
+            ConnectNamedPipe(hPipe, nullptr) ||
+            GetLastError() == ERROR_PIPE_CONNECTED;
         if (!connected)
         {
-            if (GetLastError() == ERROR_PIPE_CONNECTED)
-            {
-                return S_OK;
-            }
-            else
-            {
-                CloseHandle(hPipe);
-                hPipe = INVALID_HANDLE_VALUE;
-            }
+            CloseHandle(hPipe);
+            hPipe = INVALID_HANDLE_VALUE;
             return E_FAIL;
         }
 
