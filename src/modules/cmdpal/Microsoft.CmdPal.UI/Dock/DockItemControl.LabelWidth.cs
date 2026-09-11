@@ -45,6 +45,8 @@ public sealed partial class DockItemControl
     private double? _subtitleCharacterWidth;
     private double? _titleSampleWidth;
     private double? _subtitleSampleWidth;
+    private double? _minimumSampleWidth;
+    private double? _maximumSampleWidth;
     private UISettings? _textSettings;
     private XamlRoot? _labelXamlRoot;
     private double _labelRasterizationScale;
@@ -56,6 +58,8 @@ public sealed partial class DockItemControl
         var control = (DockItemControl)d;
         control._titleSampleWidth = null;
         control._subtitleSampleWidth = null;
+        control._minimumSampleWidth = null;
+        control._maximumSampleWidth = null;
         control.UpdateTextVisibility();
     }
 
@@ -69,6 +73,8 @@ public sealed partial class DockItemControl
         _subtitleCharacterWidth = null;
         _titleSampleWidth = null;
         _subtitleSampleWidth = null;
+        _minimumSampleWidth = null;
+        _maximumSampleWidth = null;
     }
 
     private void UpdateLabelWidth()
@@ -94,14 +100,20 @@ public sealed partial class DockItemControl
         var showSubtitle = ShowSubtitle && !IsCompact;
         var titleCharacterWidth = constraints.UsesCharacters ? _titleCharacterWidth ??= MeasureTextWidth(_titleText, "0") : 0;
         var subtitleCharacterWidth = constraints.SubtitleWidth?.InCharacters == true ? _subtitleCharacterWidth ??= MeasureTextWidth(_subtitleText, "0") : 0;
-        double? titleSampleWidth = showTitle && constraints.TitleWidthSample is { } titleSample
+        double? titleSampleWidth = showTitle && constraints.TitleWidth?.Sample is { } titleSample
             ? _titleSampleWidth ??= MeasureTextWidth(_titleText, titleSample, useLayoutRounding: true)
             : null;
-        double? subtitleSampleWidth = showSubtitle && constraints.SubtitleWidthSample is { } subtitleSample
+        double? subtitleSampleWidth = showSubtitle && constraints.SubtitleWidth?.Sample is { } subtitleSample
             ? _subtitleSampleWidth ??= MeasureTextWidth(_subtitleText, subtitleSample, useLayoutRounding: true)
             : null;
+        double? minimumSampleWidth = constraints.Minimum?.Sample is { } minimumSample
+            ? _minimumSampleWidth ??= MeasureTextWidth(_titleText, minimumSample, useLayoutRounding: true)
+            : null;
+        double? maximumSampleWidth = constraints.Maximum?.Sample is { } maximumSample
+            ? _maximumSampleWidth ??= MeasureTextWidth(_titleText, maximumSample, useLayoutRounding: true)
+            : null;
         var defaultMinimum = hasVisibleText && HasTitle ? 24 : 0;
-        var (minimum, maximum) = constraints.Resolve(titleCharacterWidth, subtitleCharacterWidth, defaultMinimum, 100, showTitle, showSubtitle, titleSampleWidth, subtitleSampleWidth);
+        var (minimum, maximum) = constraints.Resolve(titleCharacterWidth, subtitleCharacterWidth, defaultMinimum, 100, showTitle, showSubtitle, titleSampleWidth, subtitleSampleWidth, minimumSampleWidth, maximumSampleWidth);
 
         // A vertical Dock owns its width. A provider's reservation must not push the label outside it.
         if (_parentDock?.DockSide is DockSide.Left or DockSide.Right)
@@ -197,6 +209,8 @@ public sealed partial class DockItemControl
         _subtitleCharacterWidth = null;
         _titleSampleWidth = null;
         _subtitleSampleWidth = null;
+        _minimumSampleWidth = null;
+        _maximumSampleWidth = null;
     }
 
     private void OnLabelFontChanged(DependencyObject sender, DependencyProperty dp) => InvalidateLabelFont();
@@ -216,6 +230,8 @@ public sealed partial class DockItemControl
         _subtitleCharacterWidth = null;
         _titleSampleWidth = null;
         _subtitleSampleWidth = null;
+        _minimumSampleWidth = null;
+        _maximumSampleWidth = null;
         UpdateLabelWidth();
     }
 

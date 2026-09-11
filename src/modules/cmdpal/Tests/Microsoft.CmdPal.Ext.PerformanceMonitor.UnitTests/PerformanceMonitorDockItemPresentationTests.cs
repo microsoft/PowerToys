@@ -16,7 +16,7 @@ public class PerformanceMonitorDockItemPresentationTests
     [DataRow("Network")]
     [DataRow("\u010cas aktivity")]
     [DataRow("Battery")]
-    public void ConfigureValueLabel_ReservesPercentageWidthAndLocalizedSubtitleSample(string subtitle)
+    public void ConfigureValueLabel_ReservesPercentageAndLocalizedSubtitleSamples(string subtitle)
     {
         var item = new ListItem { Subtitle = subtitle };
 
@@ -26,10 +26,8 @@ public class PerformanceMonitorDockItemPresentationTests
 
         Assert.AreSame(item, configured);
         var properties = item.GetProperties();
-        Assert.AreEqual("4.6ch", properties[WellKnownExtensionAttributes.DockTitleWidth]);
-        Assert.AreEqual("4.6ch", properties[WellKnownExtensionAttributes.DockSubtitleWidth]);
-        Assert.AreEqual(subtitle, properties[WellKnownExtensionAttributes.DockSubtitleWidthSample]);
-        Assert.IsFalse(properties.ContainsKey(WellKnownExtensionAttributes.DockTitleWidthSample));
+        Assert.AreEqual("text:100%", properties[WellKnownExtensionAttributes.DockTitleWidth]);
+        Assert.AreEqual("text:" + subtitle, properties[WellKnownExtensionAttributes.DockSubtitleWidth]);
         Assert.IsFalse(properties.ContainsKey(WellKnownExtensionAttributes.DockMinLabelWidth));
         Assert.IsFalse(properties.ContainsKey(WellKnownExtensionAttributes.DockMaxLabelWidth));
         Assert.AreEqual(true, properties[WellKnownExtensionAttributes.DockLabelTabularDigits]);
@@ -38,13 +36,14 @@ public class PerformanceMonitorDockItemPresentationTests
         item.Title = "100%";
         item.Subtitle = string.Empty;
 
-        Assert.AreEqual(subtitle, properties[WellKnownExtensionAttributes.DockSubtitleWidthSample]);
+        Assert.AreEqual("text:100%", properties[WellKnownExtensionAttributes.DockTitleWidth]);
+        Assert.AreEqual("text:" + subtitle, properties[WellKnownExtensionAttributes.DockSubtitleWidth]);
     }
 
     [TestMethod]
-    public void ConfigureValueLabel_DynamicGpuSubtitleKeepsAFixedWidth()
+    public void ConfigureValueLabel_DynamicGpuSubtitleReplacesAnySampleWithAFixedWidth()
     {
-        var item = new ListItem { Subtitle = "GPU" }.SetDockLabelWidthSamples(subtitleSample: "GPU");
+        var item = new ListItem { Subtitle = "GPU" }.SetDockLabelReservations(null, DockLabelWidth.Sample("GPU"));
 
         PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
             item,
@@ -53,13 +52,12 @@ public class PerformanceMonitorDockItemPresentationTests
         item.Subtitle = "A different graphics adapter";
 
         var properties = item.GetProperties();
-        Assert.AreEqual("4.6ch", properties[WellKnownExtensionAttributes.DockTitleWidth]);
+        Assert.AreEqual("text:100%", properties[WellKnownExtensionAttributes.DockTitleWidth]);
         Assert.AreEqual("12ch", properties[WellKnownExtensionAttributes.DockSubtitleWidth]);
-        Assert.IsFalse(properties.ContainsKey(WellKnownExtensionAttributes.DockSubtitleWidthSample));
     }
 
     [TestMethod]
-    public void ConfigureValueLabel_TransferRatesKeepTheirValueWidthInBothModes()
+    public void ConfigureValueLabel_TransferRatesKeepTheirValueReservation()
     {
         var item = PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
             new ListItem { Subtitle = "Download" },
@@ -67,8 +65,11 @@ public class PerformanceMonitorDockItemPresentationTests
         var properties = item.GetProperties();
 
         Assert.AreEqual("10ch", properties[WellKnownExtensionAttributes.DockTitleWidth]);
-        Assert.AreEqual("10ch", properties[WellKnownExtensionAttributes.DockSubtitleWidth]);
-        Assert.AreEqual("Download", properties[WellKnownExtensionAttributes.DockSubtitleWidthSample]);
-        Assert.AreEqual(true, properties[WellKnownExtensionAttributes.DockLabelTabularDigits]);
+        Assert.AreEqual("text:Download", properties[WellKnownExtensionAttributes.DockSubtitleWidth]);
+
+        item.Title = "999 Mbps";
+
+        Assert.AreEqual("10ch", properties[WellKnownExtensionAttributes.DockTitleWidth]);
+        Assert.AreEqual("text:Download", properties[WellKnownExtensionAttributes.DockSubtitleWidth]);
     }
 }

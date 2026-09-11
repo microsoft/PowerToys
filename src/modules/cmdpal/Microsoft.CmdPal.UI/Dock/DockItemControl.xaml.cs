@@ -203,9 +203,9 @@ public sealed partial class DockItemControl : Control
     }
 
     // Explicit row widths keep their slots when text is temporarily empty.
-    internal bool HasTitle => ShowTitle && (!string.IsNullOrEmpty(Title) || LabelWidthConstraints?.TitleWidth is not null || LabelWidthConstraints?.TitleWidthSample is not null);
+    internal bool HasTitle => ShowTitle && (!string.IsNullOrEmpty(Title) || LabelWidthConstraints?.TitleWidth is not null);
 
-    internal bool HasSubtitle => ShowSubtitle && !IsCompact && (!string.IsNullOrEmpty(Subtitle) || LabelWidthConstraints?.SubtitleWidth is not null || LabelWidthConstraints?.SubtitleWidthSample is not null);
+    internal bool HasSubtitle => ShowSubtitle && !IsCompact && (!string.IsNullOrEmpty(Subtitle) || LabelWidthConstraints?.SubtitleWidth is not null);
 
     internal bool HasText => HasTitle || HasSubtitle;
 
