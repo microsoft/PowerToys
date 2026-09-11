@@ -60,7 +60,8 @@ namespace KeyboardManagerEditorUI.Helpers
                 return ValidationErrorType.EmptyAppName;
             }
 
-            if (originalKeys.Count > 1 && IsIllegalShortcut(originalKeys, mappingService))
+            if ((originalKeys.Count > 1 && IsIllegalShortcut(originalKeys, mappingService)) ||
+                (remappedKeys.Count > 1 && IsIllegalShortcut(remappedKeys, mappingService)))
             {
                 return ValidationErrorType.IllegalShortcut;
             }

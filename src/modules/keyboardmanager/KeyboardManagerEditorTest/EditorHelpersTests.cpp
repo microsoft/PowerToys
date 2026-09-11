@@ -9,6 +9,7 @@
 #include <keyboardmanager/KeyboardManagerEditorLibrary/ShortcutErrorType.h>
 #include <keyboardmanager/common/Helpers.h>
 #include <common/interop/keyboard_layout.h>
+#include <common/interop/shared_constants.h>
 #include <keyboardmanager/KeyboardManagerEditorLibrary/EditorHelpers.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
