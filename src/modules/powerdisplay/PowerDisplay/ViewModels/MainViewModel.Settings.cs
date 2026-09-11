@@ -166,6 +166,12 @@ public partial class MainViewModel
         }
     }
 
+    private void ApplyVcpValueRestrictions(PowerDisplaySettings settings)
+    {
+        _monitorManager.SetDisabledVcpValues(settings.Properties.Monitors.Select(monitor =>
+            new KeyValuePair<string, List<VcpValueBlock>>(monitor.Id, monitor.DisabledVcpValues)));
+    }
+
     /// <summary>
     /// Loads the saved profiles and returns the valid profile with the given id, or null (logging a
     /// warning under <paramref name="logPrefix"/>) when it is missing or invalid.
@@ -633,6 +639,11 @@ public partial class MainViewModel
         target.EnableRotation = source.EnableRotation;
         target.EnableColorTemperature = source.EnableColorTemperature;
         target.EnablePowerState = source.EnablePowerState;
+        target.DisabledVcpValues = source.DisabledVcpValues.Where(block => block != null).Select(block => new VcpValueBlock
+        {
+            VcpCode = block.VcpCode,
+            Values = block.Values.ToList(),
+        }).ToList();
     }
 
     /// <summary>
