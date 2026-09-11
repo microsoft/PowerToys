@@ -349,8 +349,8 @@ public partial class ShellViewModel : ObservableObject,
                 if (host is not null)
                 {
                     var extensionId = host.GetExtensionDisplayName() ?? "builtin";
-                    var commandId = command?.Id ?? "unknown";
-                    var commandName = command?.Name ?? "unknown";
+                    var commandId = command.Id ?? "unknown";
+                    var commandName = command.Name ?? "unknown";
                     WeakReferenceMessenger.Default.Send<TelemetryCommandStartedMessage>();
                     WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
                         new(extensionId, commandId, commandName, true, 0));
