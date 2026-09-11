@@ -191,6 +191,26 @@ namespace WorkspacesLibUnitTests
 
     TEST_CLASS (PackageVerificationTests)
     {
+        static PackageVerification::details::Registration RegisteredPackage()
+        {
+            PackageVerification::details::Registration registration;
+            registration.identity.fullName = L"PowerToys.Test_1.0.0.0_x64__8wekyb3d8bbwe";
+            registration.identity.applicationUserModelId = L"PowerToys.Test_8wekyb3d8bbwe!App";
+            registration.identity.installedPath = L"C:\\Packages\\Test";
+            registration.identity.effectivePath = registration.identity.installedPath;
+            registration.state = HealthyPackage();
+            registration.identity.signatureKind = static_cast<int32_t>(registration.state.signatureKind);
+            return registration;
+        }
+
+        static SignatureVerification::LaunchTarget MissingPackageTarget()
+        {
+            SignatureVerification::LaunchTarget target;
+            target.path = L"shell:AppsFolder\\" + RegisteredPackage().identity.applicationUserModelId;
+            target.result = { Status::UnableToVerify, HRESULT_FROM_WIN32(ERROR_NOT_FOUND) };
+            return target;
+        }
+
         static constexpr PackageVerification::PackageState HealthyPackage()
         {
             PackageVerification::PackageState state;
@@ -331,6 +351,101 @@ namespace WorkspacesLibUnitTests
                                 }).get();
             Assert::IsFalse(result.IsVerified());
             Assert::AreEqual(std::wstring(L"package-not-found"), result.Reason());
+        }
+
+        TEST_METHOD (MissingPackageIdentityDoesNotSkipResolution)
+        {
+            auto target = MissingPackageTarget();
+            int lookups = 0;
+            const auto current = PackageVerification::details::IsCurrent(target, {}, [&](const auto& application, const auto&) -> std::optional<PackageVerification::details::Registration> {
+                ++lookups;
+                Assert::AreEqual(RegisteredPackage().identity.applicationUserModelId, application.aumid);
+                return RegisteredPackage();
+            });
+            Assert::IsFalse(current);
+            Assert::AreEqual(1, lookups);
+        }
+
+        TEST_METHOD (MissingPackageIdentityRejectsAResolutionError)
+        {
+            auto target = MissingPackageTarget();
+            int lookups = 0;
+            const auto current = PackageVerification::details::IsCurrent(target, {}, [&](const auto&, const auto&) -> std::optional<PackageVerification::details::Registration> {
+                ++lookups;
+                winrt::throw_hresult(E_ACCESSDENIED);
+            });
+            Assert::IsFalse(current);
+            Assert::AreEqual(1, lookups);
+        }
+
+        TEST_METHOD (PublicRevalidationReachesLookupWithAMissingIdentity)
+        {
+            auto target = MissingPackageTarget();
+            int cancellationChecks = 0;
+            Assert::IsFalse(PackageVerification::IsCurrent(target, [&] {
+                // Stop inside the real resolver before it consults installed packages.
+                return ++cancellationChecks > 1;
+            }));
+            Assert::AreEqual(2, cancellationChecks);
+        }
+
+        TEST_METHOD (NonPackageTargetsDoNotResolvePackages)
+        {
+            SignatureVerification::LaunchTarget target;
+            target.path = L"C:\\Example\\app.exe";
+            int cancellationChecks = 0;
+            Assert::IsTrue(PackageVerification::IsCurrent(target, [&] {
+                ++cancellationChecks;
+                return false;
+            }));
+            Assert::AreEqual(1, cancellationChecks);
+            target.package.emplace();
+            Assert::IsFalse(PackageVerification::IsCurrent(target, {}));
+        }
+
+        TEST_METHOD (PackageRegistrationThatRemainsAbsentIsUnchanged)
+        {
+            auto target = MissingPackageTarget();
+            int lookups = 0;
+            const auto current = PackageVerification::details::IsCurrent(target, {}, [&](const auto&, const auto&) -> std::optional<PackageVerification::details::Registration> {
+                ++lookups;
+                return std::nullopt;
+            });
+            Assert::IsTrue(current);
+            Assert::AreEqual(1, lookups);
+        }
+
+        TEST_METHOD (ExistingPackageRegistrationMustRemainPresentAndIdentical)
+        {
+            auto target = MissingPackageTarget();
+            const auto original = RegisteredPackage();
+            target.package = original.identity;
+            Assert::IsTrue(PackageVerification::details::IsCurrent(target, {}, [&](const auto&, const auto&) { return std::optional{ original }; }));
+            Assert::IsFalse(PackageVerification::details::IsCurrent(target, {}, [](const auto&, const auto&) -> std::optional<PackageVerification::details::Registration> { return std::nullopt; }));
+            auto updated = original;
+            updated.identity.fullName = L"PowerToys.Test_2.0.0.0_x64__8wekyb3d8bbwe";
+            Assert::IsFalse(PackageVerification::details::IsCurrent(target, {}, [&](const auto&, const auto&) { return std::optional{ updated }; }));
+        }
+
+        TEST_METHOD (PreviouslyVerifiedPackageMustRetainEligibleMetadata)
+        {
+            auto target = MissingPackageTarget();
+            auto current = RegisteredPackage();
+            target.package = current.identity;
+            target.result = { Status::Verified, ERROR_SUCCESS };
+            Assert::IsTrue(PackageVerification::details::IsCurrent(target, {}, [&](const auto&, const auto&) { return std::optional{ current }; }));
+            current.state.statusOk = false;
+            Assert::IsFalse(PackageVerification::details::IsCurrent(target, {}, [&](const auto&, const auto&) { return std::optional{ current }; }));
+        }
+
+        TEST_METHOD (CanceledRevalidationDoesNotConsultTheResolver)
+        {
+            auto target = MissingPackageTarget();
+            int lookups = 0;
+            Assert::IsFalse(PackageVerification::details::IsCurrent(target, [] { return true; }, [&](const auto&, const auto&) {
+                ++lookups;
+                return std::optional{ RegisteredPackage() }; }));
+            Assert::AreEqual(0, lookups);
         }
     };
 

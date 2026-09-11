@@ -36,4 +36,17 @@ namespace PackageVerification
     SignatureVerification::Result Evaluate(const PackageState& state);
     SignatureVerification::LaunchTarget Verify(const std::wstring& target, const std::function<bool()>& isCanceled);
     bool IsCurrent(const SignatureVerification::LaunchTarget& target, const std::function<bool()>& isCanceled);
+
+    namespace details
+    {
+        struct Registration
+        {
+            SignatureVerification::PackageIdentity identity;
+            PackageState state;
+        };
+
+        using RegistrationResolver = std::function<std::optional<Registration>(const ApplicationIdentity&, const std::function<bool()>&)>;
+
+        bool IsCurrent(const SignatureVerification::LaunchTarget& target, const std::function<bool()>& isCanceled, const RegistrationResolver& resolve);
+    }
 }

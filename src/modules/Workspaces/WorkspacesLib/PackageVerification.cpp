@@ -223,22 +223,34 @@ namespace PackageVerification
 
     bool IsCurrent(const SignatureVerification::LaunchTarget& target, const std::function<bool()>& isCanceled)
     {
+        return details::IsCurrent(target, isCanceled, [](const ApplicationIdentity& application, const std::function<bool()>& canceled) -> std::optional<details::Registration> {
+            auto current = Resolve(application, canceled);
+            if (!current)
+            {
+                return std::nullopt;
+            }
+            return details::Registration{ std::move(current->identity), current->state };
+        });
+    }
+
+    bool details::IsCurrent(const SignatureVerification::LaunchTarget& target, const std::function<bool()>& isCanceled, const RegistrationResolver& resolve)
+    {
         if (isCanceled && isCanceled())
         {
             return false;
         }
-        if (!target.package)
-        {
-            return true;
-        }
         const auto application = ParseTarget(target.path);
         if (!application)
         {
-            return false;
+            return !target.package;
         }
         try
         {
-            const auto current = Resolve(application.value(), isCanceled);
+            const auto current = resolve(application.value(), isCanceled);
+            if (!target.package)
+            {
+                return !current;
+            }
             return current && current->identity == target.package.value() &&
                    (!target.result.IsVerified() || MetadataEligible(current->state));
         }

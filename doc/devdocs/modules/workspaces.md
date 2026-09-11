@@ -199,6 +199,9 @@ completion after cancellation or timeout. Registration
 identity (including package version and installed/effective/external/mutable paths) is checked again
 after verification and before execution; changes fail that launch without a
 fallback.
+Recognized package AUMIDs are re-resolved even when the initial lookup produced
+no package identity. An absent-to-present or present-to-absent registration
+transition, or an unsuccessful recheck, cannot reuse the earlier launch approval.
 
 `SignatureKind.Developer` does not mean development mode or malicious code.
 Developer/Enterprise-signed packages are reported as unverified under the current
