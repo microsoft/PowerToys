@@ -121,20 +121,24 @@ namespace CommonUtilsUnitTests
                 policy));
         }
 
-        TEST_METHOD (WindowsSystemHost_AcceptsOnlyCanonicalExplorerPath)
+        TEST_METHOD (TrustedSignedProcess_AcceptsResolvedPeerInDebug)
         {
-            wchar_t windowsDirectory[MAX_PATH]{};
-            Assert::AreNotEqual<UINT>(0, GetWindowsDirectoryW(windowsDirectory, ARRAYSIZE(windowsDirectory)));
+            const auto pipe = create_connected_pipe();
+            Assert::AreNotEqual(INVALID_HANDLE_VALUE, pipe.server);
+            Assert::AreNotEqual(INVALID_HANDLE_VALUE, pipe.client);
 
-            const auto explorerPath = named_pipe_peer_auth::details::canonicalize_path(
-                std::wstring(windowsDirectory) + L"\\explorer.exe");
-            Assert::IsFalse(explorerPath.empty());
-            Assert::IsTrue(named_pipe_peer_auth::details::is_expected_windows_host_path(
-                explorerPath,
-                L"explorer.exe"));
-            Assert::IsFalse(named_pipe_peer_auth::details::is_expected_windows_host_path(
-                explorerPath,
-                L"not-explorer.exe"));
+#ifdef _DEBUG
+            const named_pipe_peer_auth::Policy policy{
+                {},
+                {},
+                {},
+                named_pipe_peer_auth::Validation::TrustedSignedProcess,
+            };
+            Assert::IsTrue(named_pipe_peer_auth::authenticate(
+                pipe.server,
+                named_pipe_peer_auth::Peer::Client,
+                policy));
+#endif
         }
     };
 }

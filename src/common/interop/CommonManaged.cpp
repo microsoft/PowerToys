@@ -32,8 +32,8 @@ namespace winrt::PowerToys::Interop::implementation
             expectedProcessName.c_str(),
             trustedDirectory.c_str(),
             referenceBinaryPath.c_str(),
-            validation == winrt::PowerToys::Interop::NamedPipePeerValidation::WindowsSystemHost ?
-                named_pipe_peer_auth::Validation::WindowsSystemHost :
+            validation == winrt::PowerToys::Interop::NamedPipePeerValidation::TrustedSignedProcess ?
+                named_pipe_peer_auth::Validation::TrustedSignedProcess :
                 named_pipe_peer_auth::Validation::PowerToysPeer,
         };
         return named_pipe_peer_auth::authenticate(

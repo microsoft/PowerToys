@@ -173,10 +173,10 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
                 if (hStdin != INVALID_HANDLE_VALUE)
                 {
                     const named_pipe_peer_auth::Policy serverPolicy{
-                        L"explorer.exe",
                         {},
-                        get_module_filename(nullptr),
-                        named_pipe_peer_auth::Validation::WindowsSystemHost,
+                        {},
+                        {},
+                        named_pipe_peer_auth::Validation::TrustedSignedProcess,
                     };
                     if (!named_pipe_peer_auth::authenticate(hStdin, named_pipe_peer_auth::Peer::Server, serverPolicy))
                     {

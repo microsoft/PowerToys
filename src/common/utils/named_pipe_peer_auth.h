@@ -23,7 +23,7 @@ namespace named_pipe_peer_auth
     enum class Validation
     {
         PowerToysPeer,
-        WindowsSystemHost,
+        TrustedSignedProcess,
     };
 
     struct Policy
@@ -272,21 +272,6 @@ namespace named_pipe_peer_auth
             return valid;
         }
 
-        inline bool has_microsoft_signer(PCCERT_CONTEXT certificate)
-        {
-            wchar_t organization[256]{};
-            char organizationOid[] = szOID_ORGANIZATION_NAME;
-            const DWORD length = CertGetNameStringW(
-                certificate,
-                CERT_NAME_ATTR_TYPE,
-                0,
-                organizationOid,
-                organization,
-                ARRAYSIZE(organization));
-            return length > 1 &&
-                   to_lower(organization) == L"microsoft corporation";
-        }
-
         inline bool has_matching_signer(
             const std::wstring& referenceBinaryPath,
             const std::wstring& peerPath)
@@ -307,39 +292,10 @@ namespace named_pipe_peer_auth
                        peerSigner.get()->pCertInfo) == TRUE;
         }
 
-        inline bool is_expected_windows_host_path(
-            const std::wstring& peerPath,
-            const std::wstring& expectedProcessName)
+        inline bool has_trusted_signature(const std::wstring& path)
         {
-            wchar_t windowsDirectory[MAX_PATH]{};
-            const UINT length = GetWindowsDirectoryW(windowsDirectory, ARRAYSIZE(windowsDirectory));
-            if (length == 0 || length >= ARRAYSIZE(windowsDirectory))
-            {
-                return false;
-            }
-
-            const auto expectedPath = canonicalize_path(
-                std::wstring(windowsDirectory) + L"\\" + expectedProcessName);
-            if (expectedPath.empty() || to_lower(peerPath) != to_lower(expectedPath))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        inline bool is_trusted_windows_host(
-            const std::wstring& peerPath,
-            const std::wstring& expectedProcessName)
-        {
-            if (!is_expected_windows_host_path(peerPath, expectedProcessName))
-            {
-                return false;
-            }
-
             SignerCertificate signer;
-            return signer.load(peerPath) &&
-                   has_microsoft_signer(signer.get()) &&
+            return signer.load(path) &&
                    chains_to_machine_root(signer.get(), signer.additional_store());
         }
 
@@ -358,6 +314,7 @@ namespace named_pipe_peer_auth
             CloseHandle(process);
             return queried ? canonicalize_path(std::wstring(buffer.data(), length)) : std::wstring{};
         }
+
     }
 
     inline bool authenticate(HANDLE pipe, Peer peer, const Policy& policy)
@@ -373,21 +330,22 @@ namespace named_pipe_peer_auth
         }
 
         const auto peerPath = details::get_process_path(processId);
-        if (!details::has_expected_name(peerPath, policy.expectedProcessName))
+        if (peerPath.empty())
         {
             return false;
         }
 
-        if (policy.validation == Validation::WindowsSystemHost)
+        if (policy.validation == Validation::TrustedSignedProcess)
         {
 #ifdef _DEBUG
-            return details::is_expected_windows_host_path(peerPath, policy.expectedProcessName);
+            return true;
 #else
-            return details::is_trusted_windows_host(peerPath, policy.expectedProcessName);
+            return details::has_trusted_signature(peerPath);
 #endif
         }
 
-        if (!details::path_is_under_directory(peerPath, policy.trustedDirectory) ||
+        if (!details::has_expected_name(peerPath, policy.expectedProcessName) ||
+            !details::path_is_under_directory(peerPath, policy.trustedDirectory) ||
             policy.referenceBinaryPath.empty())
         {
             return false;

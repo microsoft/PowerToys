@@ -5,7 +5,7 @@ namespace PowerToys
         enum NamedPipePeerValidation
         {
             PowerToysPeer = 0,
-            WindowsSystemHost = 1,
+            TrustedSignedProcess = 1,
         };
 
         [default_interface] static runtimeclass CommonManaged {
