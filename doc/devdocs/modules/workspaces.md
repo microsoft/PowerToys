@@ -153,6 +153,11 @@ and matching file version, with the existing Microsoft-signature requirement in
 Release. Debug exempts only that Microsoft-signature requirement for local builds.
 The reused peer authenticator also disables online revocation retrieval, not just
 online intermediate/root retrieval. No shared IPC API or ABI is changed.
+Its existing Microsoft-peer policy tolerates unavailable cached revocation data
+in both the chain-status filter and the Windows Authenticode policy check, while
+still rejecting known revocation and all other chain trust errors. This differs
+from target-application verification: missing revocation data for an app still
+requires confirmation and is not silently accepted.
 The UI independently checks the OS-reported pipe server PID, its actual parent,
 the sibling Launcher image and matching version, and the parent's lifetime.
 No application details are sent before the authenticated UI reports readiness.
