@@ -762,29 +762,39 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             return null;
         }
 
+        // 1. Check if the command is already loaded in memory (TopLevelCommands or DockBands)
         var command = LookupCommand(providerId, commandId) ?? LookupDockBand(providerId, commandId);
         if (command is not null && ReferenceEquals(command.ProviderContext, provider))
         {
             return new(command, provider, ownsCommand: false);
         }
 
+        // 2. If not found, ask the provider to resolve the command (may involve async loading)
         cancellationToken.ThrowIfCancellationRequested();
-        var resolutionTask = Task.Run(() => provider.ResolveCommandItem(commandId, _serviceProvider));
+        var resolveCommandFromProviderTask = Task.Run(() => provider.ResolveCommandItem(commandId, _serviceProvider), cancellationToken);
         try
         {
-            command = await resolutionTask.WaitAsync(cancellationToken).ConfigureAwait(false);
-            if (command is not null && !IsProviderEnabled(providerId))
+            // Get the task from provider
+            command = await resolveCommandFromProviderTask.WaitAsync(cancellationToken).ConfigureAwait(false);
+            if (command is null)
             {
-                await Task.Run(command.Cleanup, CancellationToken.None).ConfigureAwait(false);
                 return null;
             }
 
-            return command is null ? null : new(command, provider, ownsCommand: true);
+            // The provider may have been disabled or replaced while we were waiting for the command to resolve
+            var actualProviderNow = LookupProvider(providerId);
+            if (!ReferenceEquals(actualProviderNow, provider) || !IsProviderEnabled(providerId))
+            {
+                _ = Task.Run(command.Cleanup, CancellationToken.None);
+                return null;
+            }
+
+            return new(command, provider, ownsCommand: true);
         }
         catch (OperationCanceledException)
         {
             // Release a result that arrives after the caller stops waiting.
-            _ = resolutionTask.ContinueWith(
+            _ = resolveCommandFromProviderTask.ContinueWith(
                 static task =>
                 {
                     if (task.Status == TaskStatus.RanToCompletion)
