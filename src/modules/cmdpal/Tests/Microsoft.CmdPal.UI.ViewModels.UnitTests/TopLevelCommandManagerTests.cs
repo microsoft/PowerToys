@@ -149,7 +149,9 @@ public partial class TopLevelCommandManagerTests
     }
 
     [TestMethod]
-    public async Task ResolveCommandAsync_RejectsProviderReplacedDuringLookupWithoutWaitingForCleanup()
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task ResolveCommandAsync_RetriesProviderReplacedDuringLookupWithoutWaitingForCleanup(bool replacementHasTopLevelCommand)
     {
         await using var services = CreateServices();
         using var continueCleanup = new ManualResetEventSlim();
@@ -176,7 +178,10 @@ public partial class TopLevelCommandManagerTests
             });
         var provider = new TestCommandProvider(TestCommandProvider.NestedCommandId, item.Object);
         var original = new CommandProviderWrapper(provider, TaskScheduler.Default);
-        var replacementProvider = new TestCommandProvider(TestCommandProvider.NestedCommandId);
+        var replacementProvider = new TestCommandProvider(TestCommandProvider.NestedCommandId)
+        {
+            IncludeTopLevelCommand = replacementHasTopLevelCommand,
+        };
         var replacement = new CommandProviderWrapper(replacementProvider, TaskScheduler.Default);
         var extensionService = CreateExtensionService(original);
         extensionService
@@ -194,9 +199,11 @@ public partial class TopLevelCommandManagerTests
             var resolution = await resolutionTask.WaitAsync(TimeSpan.FromSeconds(2));
 
             Assert.AreSame(replacement, manager.LookupProvider(provider.Id));
-            Assert.IsNull(resolution, "A result from the provider removed by reload must not be dispatched.");
+            Assert.IsNotNull(resolution);
+            Assert.AreSame(replacement, resolution.Provider);
+            Assert.AreSame(replacement, resolution.Command.ProviderContext);
             Assert.AreEqual(1, provider.LookupCount);
-            Assert.AreEqual(0, replacementProvider.LookupCount);
+            Assert.AreEqual(replacementHasTopLevelCommand ? 0 : 1, replacementProvider.LookupCount);
             item.VerifyRemove(commandItem => commandItem.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>(), Times.Once);
         }
         finally
@@ -205,6 +212,43 @@ public partial class TopLevelCommandManagerTests
             await cleanupFinished.Task.WaitAsync(TimeSpan.FromSeconds(2));
             await using var resolution = await resolutionTask.WaitAsync(TimeSpan.FromSeconds(2));
         }
+    }
+
+    [TestMethod]
+    public async Task ResolveCommandAsync_StopsAfterSecondProviderReplacement()
+    {
+        await using var services = CreateServices();
+        using var cleanupFinished = new SemaphoreSlim(0);
+        var item = new Mock<ICommandItem>();
+        item.SetupGet(commandItem => commandItem.Command).Returns(new NoOpCommand
+        {
+            Id = TestCommandProvider.NestedCommandId,
+            Name = "Nested command",
+        });
+        item.SetupRemove(commandItem => commandItem.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>())
+            .Callback<TypedEventHandler<object, IPropChangedEventArgs>>(_ => cleanupFinished.Release());
+        var provider = new TestCommandProvider(TestCommandProvider.NestedCommandId, item.Object);
+        var original = new CommandProviderWrapper(provider, TaskScheduler.Default);
+        var firstReplacement = new CommandProviderWrapper(provider, TaskScheduler.Default);
+        var secondReplacement = new CommandProviderWrapper(provider, TaskScheduler.Default);
+        var extensionService = CreateExtensionService(original);
+        extensionService
+            .SetupSequence(service => service.LoadProvidersAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync([original])
+            .ReturnsAsync([firstReplacement])
+            .ReturnsAsync([secondReplacement]);
+        using var manager = new TopLevelCommandManager(services, [extensionService.Object]);
+        await manager.LoadExternalProvidersAsync();
+        provider.OnLookup = () => manager.ReloadAllCommandsAsync().GetAwaiter().GetResult();
+
+        await using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+
+        Assert.IsNull(resolution);
+        Assert.AreSame(secondReplacement, manager.LookupProvider(provider.Id));
+        Assert.AreEqual(2, provider.LookupCount);
+        Assert.IsTrue(await cleanupFinished.WaitAsync(TimeSpan.FromSeconds(2)));
+        Assert.IsTrue(await cleanupFinished.WaitAsync(TimeSpan.FromSeconds(2)));
+        item.VerifyRemove(commandItem => commandItem.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>(), Times.Exactly(2));
     }
 
     [TestMethod]

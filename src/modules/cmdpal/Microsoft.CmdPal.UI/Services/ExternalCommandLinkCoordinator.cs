@@ -170,9 +170,9 @@ internal sealed partial class ExternalCommandLinkCoordinator : IDisposable
             return;
         }
 
-        // Re-resolve so consent cannot transfer across a provider reload.
+        // Re-resolve so authorization is checked against the current command and provider.
         await using var refreshedResolution = await ResolveCommandAsync(executeCommand);
-        if (_isDisposed)
+        if (_isDisposed || !_settingsService.Settings.EnableExternalCommandLinks)
         {
             return;
         }

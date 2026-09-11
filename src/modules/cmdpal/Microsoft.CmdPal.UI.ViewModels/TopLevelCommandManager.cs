@@ -755,67 +755,83 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         string commandId,
         CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        var provider = LookupProvider(providerId);
-        if (provider is null || !IsProviderEnabled(providerId))
+        for (var attempt = 0; attempt < 2; attempt++)
         {
-            return null;
-        }
+            if (attempt > 0)
+            {
+                await WaitForCurrentLoadAsync(cancellationToken).ConfigureAwait(false);
+            }
 
-        // 1. Check if the command is already loaded in memory (TopLevelCommands or DockBands)
-        var command = LookupCommand(providerId, commandId) ?? LookupDockBand(providerId, commandId);
-        if (command is not null && ReferenceEquals(command.ProviderContext, provider))
-        {
-            return new(command, provider, ownsCommand: false);
-        }
-
-        // 2. If not found, ask the provider to resolve the command (may involve async loading)
-        cancellationToken.ThrowIfCancellationRequested();
-        var resolveCommandFromProviderTask = Task.Run(() => provider.ResolveCommandItem(commandId, _serviceProvider), cancellationToken);
-        try
-        {
-            // Get the task from provider
-            command = await resolveCommandFromProviderTask.WaitAsync(cancellationToken).ConfigureAwait(false);
-            if (command is null)
+            cancellationToken.ThrowIfCancellationRequested();
+            var provider = LookupProvider(providerId);
+            if (provider is null || !IsProviderEnabled(providerId))
             {
                 return null;
             }
 
-            // The provider may have been disabled or replaced while we were waiting for the command to resolve
-            var actualProviderNow = LookupProvider(providerId);
-            if (!ReferenceEquals(actualProviderNow, provider) || !IsProviderEnabled(providerId))
+            // 1. Check if the command is already loaded in memory (TopLevelCommands or DockBands)
+            var command = LookupCommand(providerId, commandId) ?? LookupDockBand(providerId, commandId);
+            if (command is not null && ReferenceEquals(command.ProviderContext, provider))
             {
-                _ = Task.Run(command.Cleanup, CancellationToken.None);
-                return null;
+                return new(command, provider, ownsCommand: false);
             }
 
-            return new(command, provider, ownsCommand: true);
-        }
-        catch (OperationCanceledException)
-        {
-            // Release a result that arrives after the caller stops waiting.
-            _ = resolveCommandFromProviderTask.ContinueWith(
-                static task =>
+            // 2. If not found, ask the provider to resolve the command (may involve async loading)
+            cancellationToken.ThrowIfCancellationRequested();
+            var resolveCommandFromProviderTask = Task.Run(() => provider.ResolveCommandItem(commandId, _serviceProvider), cancellationToken);
+            try
+            {
+                // Get the task from provider
+                command = await resolveCommandFromProviderTask.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+                // The provider may have been disabled or replaced while we were waiting for the command to resolve
+                var actualProviderNow = LookupProvider(providerId);
+                var isProviderEnabled = IsProviderEnabled(providerId);
+                if (!ReferenceEquals(actualProviderNow, provider) || !isProviderEnabled)
                 {
-                    if (task.Status == TaskStatus.RanToCompletion)
+                    if (command is not null)
                     {
-                        task.Result?.Cleanup();
+                        _ = Task.Run(command.Cleanup, CancellationToken.None);
                     }
-                    else if (task.IsFaulted)
+
+                    if (!isProviderEnabled)
                     {
-                        _ = task.Exception;
+                        return null;
                     }
-                },
-                CancellationToken.None,
-                TaskContinuationOptions.None,
-                TaskScheduler.Default);
-            throw;
+
+                    continue;
+                }
+
+                return command is null ? null : new(command, provider, ownsCommand: true);
+            }
+            catch (OperationCanceledException)
+            {
+                // Release a result that arrives after the caller stops waiting.
+                _ = resolveCommandFromProviderTask.ContinueWith(
+                    static task =>
+                    {
+                        if (task.Status == TaskStatus.RanToCompletion)
+                        {
+                            task.Result?.Cleanup();
+                        }
+                        else if (task.IsFaulted)
+                        {
+                            _ = task.Exception;
+                        }
+                    },
+                    CancellationToken.None,
+                    TaskContinuationOptions.None,
+                    TaskScheduler.Default);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to resolve command {commandId} from provider {providerId}.", ex);
+                return null;
+            }
         }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Failed to resolve command {commandId} from provider {providerId}.", ex);
-            return null;
-        }
+
+        return null;
     }
 
     private TopLevelViewModel? LookupDockBand(string providerId, string commandId)
