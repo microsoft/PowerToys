@@ -142,6 +142,39 @@ Note: The DllHost process loads the DLL only when the context menu is triggered 
   
 - For development and testing, using the Windows 10 handler can be easier since it doesn't require signing.
 
+## Automated UI tests
+
+`src\modules\NewPlus\Tests\NewPlus.UITests` uses `Microsoft.PowerToys.UITest.Next` and winappcli.
+The suite automates [the New+ checklist](https://github.com/microsoft/PowerToys/issues/40683):
+
+| Checklist | Test |
+|---|---|
+| 1-2: enable/disable and context-menu visibility | `ContextMenuTracksModuleEnabledState` |
+| 3: create and choose an empty template folder | `ChangingTemplateLocationCreatesAnEmptyFolder` |
+| 4: create a file from a template | `FileTemplateCreatesAFileWithMatchingContents` |
+| 5: copy a folder and its contents | `FolderTemplateCopiesNestedFilesAndEmptyFolders` |
+| 6: remove all templates | `DeletingTemplatesRemovesThemFromTheMenu` |
+| 7: re-enable with an empty folder | `ReenablingWithAnEmptyFolderRestoresDefaultTemplates` |
+| 8: hide filename extensions | `HideFileExtensionChangesMenuButPreservesCreatedExtension` |
+| 9: hide leading digits, spaces, and dots | `HideStartingDigitsChangesMenuAndCreatedNames` |
+
+Run against a Release product runtime so classic handler registration is enabled. Windows 10 tests
+the classic folder-background menu; Windows 11 tests the modern tier-1 menu and requires a signed,
+trusted `NewPlusPackage.msix`. There is no Windows 11 classic-menu fallback. Release Runner and
+Settings also require compatible signatures for Settings IPC; UI Test Automation supplies both
+prerequisites through its existing test-signing step when `NewPlus.UITests` is selected.
+
+Build with `tools\build\build.cmd -Path src\modules\NewPlus\Tests\NewPlus.UITests -Platform x64 -Configuration Release`.
+Run the resulting `NewPlus.UITests.exe` in a dedicated interactive standard-user desktop with
+`--report-trx`; `--filter "FullyQualifiedName~ContextMenuTracksModuleEnabledState"` selects the
+initial smoke scenario. Use the `ui-tests-local-vm` skill for payload staging and complete runs on
+both Windows 10 and Windows 11.
+
+The fixture keeps one Runner per class, restarts Explorer once after registration, creates
+test-owned folders, and restores the original module settings after stopping the Runner. Run on
+a disposable desktop: Explorer file windows are closed during setup and cleanup. Assertions cover
+exact submenu inventories and recursive file contents, with menu screenshots attached to results.
+
 ## Restoring Built-in Windows New context menu
 If the Windows 11 built-in New context menu doesn't reappear on uninstalling PowerToys, some issue with settings etc. here's how to restore the built-in New context menu.
 
