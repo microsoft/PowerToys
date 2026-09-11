@@ -170,7 +170,7 @@ HRESULT AdvancedPasteProcessManager::start_named_pipe_server(const std::wstring&
         {
             connect_pending = true;
         }
-        else
+        else if (lastError != ERROR_PIPE_CONNECTED)
         {
             Logger::error(L"Error connecting to named pipe");
             return clean_up_and_fail();
