@@ -1500,6 +1500,26 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Dock position</value>
     <comment>Per-monitor dock position settings card header</comment>
   </data>
+  <data name="DockMonitor_DisplayName_SettingsCard.Header" xml:space="preserve">
+    <value>Display name</value>
+    <comment>Per-monitor setting for a user-defined display name</comment>
+  </data>
+  <data name="DockMonitor_DisplayName_SettingsCard.Description" xml:space="preserve">
+    <value>Leave blank to use the default name.</value>
+    <comment>The default is the friendly hardware name or the automatically assigned display label.</comment>
+  </data>
+  <data name="DockMonitor_DisplayName_TextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Display name</value>
+    <comment>Accessible name for the display name editor</comment>
+  </data>
+  <data name="DockMonitor_DisplayName_SaveButton.Content" xml:space="preserve">
+    <value>Save</value>
+    <comment>Save a user-defined display name</comment>
+  </data>
+  <data name="DockMonitor_DisplayName_ResetButton.Content" xml:space="preserve">
+    <value>Restore default</value>
+    <comment>Remove the user-defined display name and use the automatic name again</comment>
+  </data>
   <data name="AdaptiveListInput_Add" xml:space="preserve">
     <value>Add</value>
     <comment>Button that adds an entry to a list in an adaptive-card form.</comment>

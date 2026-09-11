@@ -282,6 +282,30 @@
                                     -->
                                     <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
                                     <controls:SettingsExpander.Items>
+                                        <controls:SettingsCard
+                                            x:Uid="DockMonitor_DisplayName_SettingsCard"
+                                            HorizontalContentAlignment="Stretch"
+                                            ContentAlignment="Vertical">
+                                            <Grid ColumnSpacing="8">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBox
+                                                    x:Uid="DockMonitor_DisplayName_TextBox"
+                                                    PlaceholderText="{x:Bind DefaultDisplayName, Mode=OneWay}"
+                                                    Text="{x:Bind DisplayNameInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                <Button
+                                                    x:Uid="DockMonitor_DisplayName_SaveButton"
+                                                    Grid.Column="1"
+                                                    Command="{x:Bind SaveDisplayNameCommand}" />
+                                                <Button
+                                                    x:Uid="DockMonitor_DisplayName_ResetButton"
+                                                    Grid.Column="2"
+                                                    Command="{x:Bind ResetDisplayNameCommand}" />
+                                            </Grid>
+                                        </controls:SettingsCard>
                                         <controls:SettingsCard x:Uid="DockMonitor_Position_SettingsCard">
                                             <ComboBox
                                                 MinWidth="{StaticResource SettingActionControlMinWidth}"

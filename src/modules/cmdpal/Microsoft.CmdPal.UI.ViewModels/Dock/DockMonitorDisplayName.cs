@@ -19,6 +19,23 @@ public static class DockMonitorDisplayName
 
     public static string Resolve(MonitorInfo monitor, DockMonitorConfig? config)
     {
+        var name = config?.DisplayNameOverride;
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            name = ResolveDefaultName(monitor, config);
+        }
+
+        // Primary status is current topology information, not part of the saved name.
+        return monitor.IsPrimary
+            ? string.Format(CultureInfo.CurrentCulture, PrimaryDisplayNameFormat, name)
+            : name;
+    }
+
+    /// <summary>
+    /// Gets the automatic name without a user override or primary-display suffix.
+    /// </summary>
+    public static string ResolveDefaultName(MonitorInfo monitor, DockMonitorConfig? config)
+    {
         var name = monitor.FriendlyName;
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -27,10 +44,7 @@ public static class DockMonitorDisplayName
                 : Properties.Resources.dock_monitor_display_name_default;
         }
 
-        // Primary status is current topology information, not part of the saved name.
-        return monitor.IsPrimary
-            ? string.Format(CultureInfo.CurrentCulture, PrimaryDisplayNameFormat, name)
-            : name;
+        return name;
     }
 
     private static string FormatLabel(int number)

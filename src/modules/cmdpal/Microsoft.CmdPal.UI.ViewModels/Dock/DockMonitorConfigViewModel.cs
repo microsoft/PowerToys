@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -25,6 +26,7 @@ public partial class DockMonitorConfigViewModel : ObservableObject
     private readonly MonitorInfo _monitorInfo;
     private readonly ISettingsService _settingsService;
     private readonly string _monitorDeviceId;
+    private string _displayNameInput;
 
     public DockMonitorConfigViewModel(
         DockMonitorConfig config,
@@ -34,10 +36,28 @@ public partial class DockMonitorConfigViewModel : ObservableObject
         _monitorInfo = monitorInfo;
         _settingsService = settingsService;
         _monitorDeviceId = config.MonitorDeviceId;
+        _displayNameInput = config.DisplayNameOverride ?? string.Empty;
     }
 
-    /// <summary>Gets the friendly hardware name or the persisted fallback display label.</summary>
+    /// <summary>Gets the user-defined name, friendly hardware name, or persisted fallback label.</summary>
     public string DisplayName => DockMonitorDisplayName.Resolve(_monitorInfo, GetConfig());
+
+    /// <summary>Gets the automatic name shown when the user has not set an override.</summary>
+    public string DefaultDisplayName => DockMonitorDisplayName.ResolveDefaultName(_monitorInfo, GetConfig());
+
+    /// <summary>Gets or sets the draft name. Editing does not write settings until saved.</summary>
+    public string DisplayNameInput
+    {
+        get => _displayNameInput;
+        set
+        {
+            if (SetProperty(ref _displayNameInput, value))
+            {
+                SaveDisplayNameCommand.NotifyCanExecuteChanged();
+                ResetDisplayNameCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
 
     /// <summary>Gets the current GDI device identifier for this monitor.</summary>
     public string DeviceId => _monitorInfo.DeviceId;
@@ -146,6 +166,36 @@ public partial class DockMonitorConfigViewModel : ObservableObject
 
             OnPropertyChanged();
         }
+    }
+
+    private string? NormalizedDisplayName => string.IsNullOrWhiteSpace(DisplayNameInput) ? null : DisplayNameInput.Trim();
+
+    private bool CanSaveDisplayName() => GetConfig() is { } config &&
+        !string.Equals(config.DisplayNameOverride, NormalizedDisplayName, StringComparison.Ordinal);
+
+    private bool CanResetDisplayName() =>
+        !string.IsNullOrEmpty(DisplayNameInput) || !string.IsNullOrEmpty(GetConfig()?.DisplayNameOverride);
+
+    [RelayCommand(CanExecute = nameof(CanSaveDisplayName))]
+    private void SaveDisplayName()
+    {
+        var name = NormalizedDisplayName;
+        if (CanSaveDisplayName())
+        {
+            UpdateConfig(c => c with { DisplayNameOverride = name });
+        }
+
+        DisplayNameInput = GetConfig()?.DisplayNameOverride ?? string.Empty;
+        OnPropertyChanged(nameof(DisplayName));
+        SaveDisplayNameCommand.NotifyCanExecuteChanged();
+        ResetDisplayNameCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanResetDisplayName))]
+    private void ResetDisplayName()
+    {
+        DisplayNameInput = string.Empty;
+        SaveDisplayName();
     }
 
     private DockMonitorConfig? GetConfig()
