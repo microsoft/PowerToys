@@ -28,6 +28,7 @@ public sealed class HtmlToTextHelperTests
     [DataRow("<table><tr><th>One</th><th>Two</th></tr><tr><td>A</td><td>B</td></tr></table>", "One\tTwo\nA\tB")]
     [DataRow("<p>&lt;tag&gt; &amp; &quot;quote&quot; &#39; &#x1F680; &nbsp;</p>", "<tag> & \"quote\" ' \U0001f680 \u00a0")]
     [DataRow("<p>&amp;lt; is decoded once</p>", "&lt; is decoded once")]
+    [DataRow("<p>a\u2009b\u202fc\u3000d\u200be</p>", "a\u2009b\u202fc\u3000d\u200be")]
     [DataRow("<html><head><title>hidden</title></head><body>visible<script>bad()</script><style>bad{}</style><!-- hidden --><template>hidden</template></body></html>", "visible")]
     [DataRow("<div hidden>hidden</div><p>visible</p>", "visible")]
     [DataRow("<div>one<br>two<b>three", "one\ntwothree")]

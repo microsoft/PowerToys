@@ -21,7 +21,7 @@ namespace AdvancedPaste.UITests;
 [TestClass]
 [DoNotParallelize]
 [TestCategory("AdvancedPaste")]
-public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
+public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
 {
     private const string EnableCard = "AdvancedPasteEnableToggleControlHeaderText";
     private const string MainShortcutCard = "AdvancedPasteUIShortcut";
@@ -98,7 +98,6 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                 SendShortcut(shortcuts[1].Keys);
                 Target.AssertText(ShortcutFixtureText);
                 Assert.IsFalse(IsAdvancedPasteVisible(), "The direct plain-text hotkey unexpectedly opened the Advanced Paste window.");
-                return Task.CompletedTask;
             },
             () => SetModuleEnabled(initiallyEnabled));
     }
@@ -131,7 +130,6 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                 AssertShortcutInactive(cancelled, ShortcutFixtureText);
                 OpenAdvancedPaste(replacement);
                 Assert.AreEqual(originalProcess, WaitForStableModuleProcess(), "Changing the shortcut restarted the module instead of updating it live.");
-                return Task.CompletedTask;
             },
             () => SetShortcut(MainShortcutCard, MainShortcutProperty, original));
     }
@@ -168,12 +166,11 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                     OpenShortcutDialog(card);
                     CloseShortcutDialog("ClearBtn");
                     WaitForSetting(p => IsUnassignedShortcut(p[property]!), $"Clearing {property} did not persist an unassigned shortcut.");
-                    Assert.AreEqual("Configure shortcut", ShortcutButton(card).HelpText, "The cleared shortcut still displays an assigned chord.");
+                    Assert.AreEqual(ProductStrings.ConfigureShortcut, ShortcutButton(card).HelpText, "The cleared shortcut still displays an assigned chord.");
                     AssertShortcutInactive(replacement, source);
                 }
 
                 Assert.AreEqual(originalProcess, WaitForStableModuleProcess(), "Editing a direct shortcut restarted Advanced Paste.");
-                return Task.CompletedTask;
             },
             () => SetShortcut(card, property, original));
     }
@@ -195,7 +192,7 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                 OpenShortcutDialog(card);
                 CloseShortcutDialog("ResetBtn");
                 WaitForSetting(p => IsUnassignedShortcut(p[property]!), "Reset did not restore the optional Markdown shortcut's unassigned default.");
-                Assert.AreEqual("Configure shortcut", ShortcutButton(card).HelpText, "Reset did not restore the shortcut control's unassigned display.");
+                Assert.AreEqual(ProductStrings.ConfigureShortcut, ShortcutButton(card).HelpText, "Reset did not restore the shortcut control's unassigned display.");
                 foreach (var binding in otherBindings)
                 {
                     Assert.IsTrue(JsonNode.DeepEquals(binding.Value, ReadProperties()[binding.Key]), $"Reset changed the unrelated {binding.Key} binding.");
@@ -204,7 +201,6 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                 SetClipboardText(ShortcutFixtureText);
                 AssertShortcutInactive(original, ShortcutFixtureText);
                 OpenAdvancedPaste();
-                return Task.CompletedTask;
             },
             () => SetShortcut(card, property, original));
     }
@@ -241,7 +237,7 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                     () => !HasText(window, second),
                     "Disabling clipboard preview did not hide the current clipboard content.",
                     shouldRetryException: AdvancedPasteUi.IsStaleElement);
-                Assert.IsTrue(HasAction(window, "Paste as plain text"), "Hiding the preview also removed the normal paste actions.");
+                Assert.IsTrue(HasAction(window, ProductStrings.PasteAsPlainText), "Hiding the preview also removed the normal paste actions.");
 
                 SetPreference(PreviewCard, "EnableClipboardPreview", true);
                 WaitUntil(
@@ -251,7 +247,6 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                 Assert.AreEqual(originalProcess, WaitForStableModuleProcess(), "Changing clipboard preview restarted the module.");
                 Assert.AreEqual(second, ReadClipboardText(), "Changing preview visibility modified the clipboard.");
                 Assert.AreEqual(string.Empty, Target.Text, "Changing preview visibility pasted into the destination.");
-                return Task.CompletedTask;
             },
             () => SetPreference(PreviewCard, "EnableClipboardPreview", original));
     }
@@ -290,8 +285,6 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                     Assert.AreEqual(originalProcess, WaitForStableModuleProcess(), "Losing focus terminated or restarted the module process.");
                     DismissAdvancedPaste();
                 }
-
-                return Task.CompletedTask;
             },
             () => SetPreference(CloseOnBlurCard, "CloseAfterLosingFocus", original));
     }
@@ -328,7 +321,6 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                 AssertAIUnavailable(window);
                 Assert.AreEqual(ShortcutFixtureText, ReadClipboardText(), "AI configuration without a provider changed the clipboard.");
                 Assert.AreEqual(string.Empty, Target.Text, "AI configuration without a provider pasted content.");
-                return Task.CompletedTask;
             },
             () =>
             {
@@ -364,7 +356,7 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                 DismissAdvancedPaste();
                 window = OpenAdvancedPaste();
                 Step("Invoking Image to text after disabling custom preview, without accepting any preview");
-                SelectAction(window, "Image to text");
+                SelectAction(window, ProductStrings.ImageToText);
                 WaitUntil(
                     () => Target.Text == ClipboardFixtures.OcrText,
                     "Image to text did not paste automatically after Settings disabled custom preview.",
@@ -400,19 +392,17 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                     Assert.AreEqual(value, ReadBoolean(property), $"The persisted {property} value changed during navigation.");
                     AssertNoProviders();
                 }
-
-                return Task.CompletedTask;
             },
             () => SetPreference(card, property, original));
     }
 
     [TestMethod]
-    [DataRow("ImageToText", "image-to-text", "image", "Image to text")]
-    [DataRow("PasteAsTxtFile", "paste-as-file.paste-as-txt-file", "text", "Paste as .txt file")]
-    [DataRow("PasteAsPngFile", "paste-as-file.paste-as-png-file", "image", "Paste as .png file")]
-    [DataRow("PasteAsHtmlFile", "paste-as-file.paste-as-html-file", "html", "Paste as .html file")]
-    [DataRow("TranscodeToMp3", "transcode.transcode-to-mp3", "video", "Transcode to .mp3")]
-    [DataRow("TranscodeToMp4", "transcode.transcode-to-mp4", "video", "Transcode to .mp4 (H.264/AAC)")]
+    [DataRow("ImageToText", "image-to-text", "image", ProductStrings.ImageToText)]
+    [DataRow("PasteAsTxtFile", "paste-as-file.paste-as-txt-file", "text", ProductStrings.PasteAsTxtFile)]
+    [DataRow("PasteAsPngFile", "paste-as-file.paste-as-png-file", "image", ProductStrings.PasteAsPngFile)]
+    [DataRow("PasteAsHtmlFile", "paste-as-file.paste-as-html-file", "html", ProductStrings.PasteAsHtmlFile)]
+    [DataRow("TranscodeToMp3", "transcode.transcode-to-mp3", "video", ProductStrings.TranscodeToMp3)]
+    [DataRow("TranscodeToMp4", "transcode.transcode-to-mp4", "video", ProductStrings.TranscodeToMp4)]
     public Task OfflineActionVisibilityChangesLive(string card, string propertyPath, string fixture, string action)
     {
         NavigateToSettings();
@@ -443,8 +433,8 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         NavigateToSettings();
         var original = AdditionalAction(ReadProperties(), propertyPath)["isShown"]!.GetValue<bool>();
         string[] actions = card == "PasteAsFile"
-            ? ["Paste as .txt file", "Paste as .png file", "Paste as .html file"]
-            : ["Transcode to .mp3", "Transcode to .mp4 (H.264/AAC)"];
+            ? [ProductStrings.PasteAsTxtFile, ProductStrings.PasteAsPngFile, ProductStrings.PasteAsHtmlFile]
+            : [ProductStrings.TranscodeToMp3, ProductStrings.TranscodeToMp4];
         var originalChildren = AdditionalAction(ReadProperties(), propertyPath).DeepClone();
 
         return RunAndRestoreAsync(
@@ -470,6 +460,15 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
             },
             () => SetActionShown(card, propertyPath, original));
     }
+
+    private Task RunAndRestoreAsync(Action scenario, Action restore) =>
+        RunAndRestoreAsync(
+            () =>
+            {
+                scenario();
+                return Task.CompletedTask;
+            },
+            restore);
 
     private async Task RunAndRestoreAsync(Func<Task> scenario, Action restore)
     {
@@ -813,7 +812,7 @@ public class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         {
             var path = Path.Combine(TestDirectory, "settings-video.mp4");
             await ClipboardFixtures.CreateVideoAsync(path);
-            await SetFileClipboard(path);
+            SetFileClipboard(path);
         }
         else if (fixture is "image" or "mixed")
         {

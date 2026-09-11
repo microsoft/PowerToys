@@ -16,7 +16,7 @@ namespace AdvancedPaste.UITests;
 [TestClass]
 [DoNotParallelize]
 [TestCategory("AdvancedPaste")]
-public class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
+public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
 {
     private const string HistoryCard = "AdvancedPasteClipboardHistoryEnabledSettingsCard";
     private const string ClipboardRegistryPath = @"Software\Microsoft\Clipboard";
@@ -100,8 +100,8 @@ public class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
                     "More options button for the test-owned deletion entry").Invoke(msPostAction: 0);
 
                 Step("Deleting the selected history entry through the Advanced Paste menu");
-                var delete = history.FindAll<Element>(By.Name("Delete"), 10_000)
-                    .Where(element => element.Name == "Delete" && element.ControlType.Equals("MenuItem", StringComparison.OrdinalIgnoreCase))
+                var delete = history.FindAll<Element>(By.Name(ProductStrings.DeleteHistoryItem), 10_000)
+                    .Where(element => element.Name == ProductStrings.DeleteHistoryItem && element.ControlType.Equals("MenuItem", StringComparison.OrdinalIgnoreCase))
                     .ToArray();
                 Assert.HasCount(1, delete, "The history entry's More options menu did not expose a unique Delete command.");
                 delete[0].Invoke(msPostAction: 0);
@@ -133,7 +133,7 @@ public class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
             {
                 await CopyHistoryFixtureAsync("before-disable");
                 var before = OpenAdvancedPaste();
-                Assert.IsTrue(before.Find<Button>(By.Name("Clipboard history"), 15_000).IsEnabled, "Clipboard history was not available before disabling it.");
+                Assert.IsTrue(before.Find<Button>(By.Name(ProductStrings.ClipboardHistory), 15_000).IsEnabled, "Clipboard history was not available before disabling it.");
                 DismissAdvancedPaste();
 
                 Step("Disabling OS clipboard history through the real Advanced Paste Settings checkbox");
@@ -159,7 +159,7 @@ public class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
                 var window = OpenAdvancedPaste();
                 Step("Checking the current product contract: history access is hidden, not merely disabled");
                 WaitUntil(
-                    () => !window.Has<Button>(By.Name("Clipboard history"), 0),
+                    () => !window.Has<Button>(By.Name(ProductStrings.ClipboardHistory), 0),
                     "The Advanced Paste history button remained available while OS clipboard history was disabled.");
                 Assert.IsTrue(window.Has(By.AccessibilityId("PasteOptionsListView")), "The module did not finish opening with history disabled.");
                 window.Find<TextBlock>(By.Name(content), 15_000);
@@ -257,7 +257,7 @@ public class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
         var window = OpenAdvancedPaste();
         Step("Opening the Advanced Paste clipboard-history flyout");
         var ready = WaitHelper.WaitForStable(
-            () => window.Find<Button>(By.Name("Clipboard history"), 15_000),
+            () => window.Find<Button>(By.Name(ProductStrings.ClipboardHistory), 15_000),
             button => button is not null && button.IsEnabled && !button.IsOffscreen && button.Width > 0 && button.Height > 0,
             timeoutMS: 15_000,
             requiredConsecutiveMatches: 2,
@@ -297,7 +297,10 @@ public class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
         return result.Items.ToArray();
     }
 
-    private async Task<ClipboardHistoryItem[]> WaitForHistoryAsync(Func<IReadOnlyList<ClipboardHistoryItem>, bool> matches, string message)
+    private async Task<ClipboardHistoryItem[]> WaitForHistoryAsync(
+        Func<IReadOnlyList<ClipboardHistoryItem>, bool> matches,
+        string message,
+        Action<IReadOnlyList<ClipboardHistoryItem>>? recover = null)
     {
         var timer = Stopwatch.StartNew();
         var consecutiveMatches = 0;
@@ -311,6 +314,11 @@ public class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
             if (consecutiveMatches >= 2)
             {
                 return items;
+            }
+
+            if (consecutiveMatches == 0)
+            {
+                recover?.Invoke(items);
             }
 
             await Task.Delay(100);
@@ -354,21 +362,25 @@ public class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
         EnableHistoryFixture();
         var deletedIds = new HashSet<string>(StringComparer.Ordinal);
         var remaining = await WaitForHistoryAsync(
-            history =>
+            history => history.All(item => !ownedHistoryItems.ContainsKey(item.Id)),
+            "Test-owned clipboard-history IDs remained after cleanup.",
+            recover: history =>
             {
                 foreach (var item in history.Where(item => ownedHistoryItems.ContainsKey(item.Id)))
                 {
-                    if (deletedIds.Add(item.Id))
+                    if (!deletedIds.Contains(item.Id))
                     {
-                        Assert.IsTrue(
-                            Target.Invoke(() => WinClipboard.DeleteItemFromHistory(item)),
-                            "Windows could not delete a test-owned clipboard-history item during cleanup.");
+                        if (Target.Invoke(() => WinClipboard.DeleteItemFromHistory(item)))
+                        {
+                            deletedIds.Add(item.Id);
+                        }
+                        else
+                        {
+                            Step($"Windows did not yet delete test-owned history ID '{item.Id}'; cleanup will recheck it.");
+                        }
                     }
                 }
-
-                return history.All(item => !ownedHistoryItems.ContainsKey(item.Id));
-            },
-            "Test-owned clipboard-history IDs remained after cleanup.");
+            });
         Assert.IsTrue(
             originalHistoryIds.IsSubsetOf(remaining.Select(item => item.Id)),
             "An unrelated original Windows history item was lost during the scenario.");

@@ -26,14 +26,14 @@ public sealed class AdvancedPasteOcrTests : AdvancedPasteTestBase
         var source = CreateOcrImage();
         if (fileInput)
         {
-            await SetFileClipboard(source);
+            SetFileClipboard(source);
         }
         else
         {
             await SetBitmapClipboard(source);
         }
 
-        SelectAction(OpenAdvancedPaste(), "Image to text");
+        SelectAction(OpenAdvancedPaste(), ProductStrings.ImageToText);
         var preview = Session.FromProcess(ProcessName);
         preview.Find<TextBlock>(By.Name(ClipboardFixtures.OcrText), 30_000);
         var paste = preview.Find<Button>(By.AccessibilityId("PreviewPasteBtn"), 15_000);
@@ -76,14 +76,14 @@ public sealed class AdvancedPasteOcrTests : AdvancedPasteTestBase
         ClipboardFixtures.CreateImage(source);
         await SetBitmapClipboard(source);
         var window = OpenAdvancedPaste();
-        SelectAction(window, "Image to text");
-        window.Find<TextBlock>(By.Name("An error occurred during the paste operation"), 30_000);
+        SelectAction(window, ProductStrings.ImageToText);
+        window.Find<TextBlock>(By.Name(ProductStrings.PasteError), 30_000);
         Assert.AreEqual(string.Empty, Target.Text, "Failed OCR pasted unexpected data.");
         Assert.IsTrue(WinClipboard.GetContent().Contains(StandardDataFormats.Bitmap), "Failed OCR replaced the original clipboard image.");
         Assert.IsTrue(IsAdvancedPasteVisible(), "The error unexpectedly closed Advanced Paste.");
         DismissAdvancedPaste();
         SetClipboardText("Still usable after an OCR error");
-        SelectAction(OpenAdvancedPaste(), "Paste as plain text");
+        SelectAction(OpenAdvancedPaste(), ProductStrings.PasteAsPlainText);
         Target.AssertText("Still usable after an OCR error");
     }
 

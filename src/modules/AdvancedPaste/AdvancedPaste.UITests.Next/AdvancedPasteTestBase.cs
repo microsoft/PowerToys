@@ -140,23 +140,12 @@ public abstract class AdvancedPasteTestBase : UITestBase
             }
             finally
             {
-                foreach (var path in generatedFiles)
-                {
-                    File.Delete(path);
-                    var parent = Path.GetDirectoryName(path)!;
-                    if (Path.GetFileName(parent).StartsWith("PowerToys_AdvancedPaste_", StringComparison.Ordinal) &&
-                        Directory.Exists(parent) && !Directory.EnumerateFileSystemEntries(parent).Any())
-                    {
-                        Directory.Delete(parent);
-                    }
-                }
-
-                testDirectory?.Delete(recursive: true);
-                if (TestContext.CurrentTestOutcome != UnitTestOutcome.Passed)
-                {
-                    // A failed conversion may still be running; do not let it overwrite the next fixture.
-                    StopSharedScope();
-                }
+                TestFileCleanup.Run(
+                    generatedFiles,
+                    testDirectory,
+                    TestContext.CurrentTestOutcome != UnitTestOutcome.Passed,
+                    StopSharedScope,
+                    message => TestContext.WriteLine(message));
             }
         }
     }
@@ -178,7 +167,7 @@ public abstract class AdvancedPasteTestBase : UITestBase
     protected void SendShortcut(params Key[] keys)
     {
         Step($"Sending [{string.Join(", ", keys)}] on the fixture's input thread");
-        Target.Invoke(() => TestKeyboard.SendChord(keys));
+        Target.Invoke(() => KeyboardHelper.SendChord(keys));
     }
 
     protected void NavigateToSettings()
@@ -345,7 +334,7 @@ public abstract class AdvancedPasteTestBase : UITestBase
         }
     }
 
-    protected Task SetFileClipboard(params string[] paths)
+    protected void SetFileClipboard(params string[] paths)
     {
         Step("Setting and verifying the file clipboard fixture");
         foreach (var path in paths)
@@ -361,7 +350,6 @@ public abstract class AdvancedPasteTestBase : UITestBase
             return true;
         });
         CollectionAssert.AreEqual(paths, ReadClipboardFilePaths(), "The file clipboard fixture was not established.");
-        return Task.CompletedTask;
     }
 
     protected string[] ReadClipboardFilePaths() => AccessClipboard(() =>
@@ -433,5 +421,4 @@ public abstract class AdvancedPasteTestBase : UITestBase
             shouldRetryException: shouldRetryException ?? AdvancedPasteUi.IsStaleElement);
         Assert.IsTrue(result.Succeeded, $"{message} Last exception: {result.LastException?.Message}");
     }
-
 }

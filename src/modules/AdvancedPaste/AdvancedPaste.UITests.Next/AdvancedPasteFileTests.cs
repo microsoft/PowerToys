@@ -36,7 +36,7 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
     {
         const string text = "Offline file\r\ncaf\u00e9 \u4e2d\u6587 \U0001f680\r\n\tindented";
         SetClipboardText(text);
-        var output = await PasteFile("Paste as .txt file", Key.T, ".txt", directShortcut);
+        var output = await PasteFile(ProductStrings.PasteAsTxtFile, Key.T, ".txt", directShortcut);
         CollectionAssert.AreEqual(Encoding.UTF8.GetBytes(text), File.ReadAllBytes(output), "The TXT file did not preserve UTF-8 text and whitespace.");
     }
 
@@ -44,7 +44,7 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
     public async Task HtmlOnlyClipboardIsPastedAsTextFile()
     {
         SetHtmlClipboard("<p>Offline text file</p>");
-        var output = await PasteFile("Paste as .txt file", Key.T, ".txt");
+        var output = await PasteFile(ProductStrings.PasteAsTxtFile, Key.T, ".txt");
         Assert.AreEqual("Offline text file", File.ReadAllText(output).Trim(), "The HTML-only clipboard did not produce a plain-text file.");
     }
 
@@ -55,7 +55,7 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
     {
         const string html = "<h2>Offline file</h2><p>alpha &amp; beta</p>";
         SetHtmlClipboard(html);
-        var output = await PasteFile("Paste as .html file", Key.H, ".html", directShortcut);
+        var output = await PasteFile(ProductStrings.PasteAsHtmlFile, Key.H, ".html", directShortcut);
         Assert.AreEqual(html, File.ReadAllText(output), "The HTML file changed the fragment or included CF_HTML metadata.");
     }
 
@@ -69,14 +69,14 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
         ClipboardFixtures.CreateImage(source);
         if (fileInput)
         {
-            await SetFileClipboard(source);
+            SetFileClipboard(source);
         }
         else
         {
             await SetBitmapClipboard(source);
         }
 
-        var output = await PasteFile("Paste as .png file", Key.P, ".png", directShortcut, source);
+        var output = await PasteFile(ProductStrings.PasteAsPngFile, Key.P, ".png", directShortcut, source);
         using var bitmap = new Bitmap(output);
         Assert.AreEqual(ClipboardFixtures.ImageWidth, bitmap.Width);
         Assert.AreEqual(ClipboardFixtures.ImageHeight, bitmap.Height);
@@ -90,8 +90,8 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
         var source = Path.Combine(TestDirectory, "offline-audio.wav");
         ClipboardFixtures.CreateWave(source);
         var original = File.ReadAllBytes(source);
-        await SetFileClipboard(source);
-        var output = await PasteFile("Transcode to .mp3", Key.F7, ".mp3", source: source);
+        SetFileClipboard(source);
+        var output = await PasteFile(ProductStrings.TranscodeToMp3, Key.F7, ".mp3", source: source);
         await AssertAudio(output);
         CollectionAssert.AreEqual(original, File.ReadAllBytes(source), "Transcoding modified the source audio.");
     }
@@ -101,8 +101,8 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
     {
         var source = Path.Combine(TestDirectory, "offline-video.mp4");
         await ClipboardFixtures.CreateVideoAsync(source);
-        await SetFileClipboard(source);
-        var output = await PasteFile("Transcode to .mp3", Key.F7, ".mp3", directShortcut: true, source: source);
+        SetFileClipboard(source);
+        var output = await PasteFile(ProductStrings.TranscodeToMp3, Key.F7, ".mp3", directShortcut: true, source: source);
         await AssertAudio(output);
     }
 
@@ -114,8 +114,8 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
         var source = Path.Combine(TestDirectory, "offline-video.mp4");
         await ClipboardFixtures.CreateVideoAsync(source);
         var original = File.ReadAllBytes(source);
-        await SetFileClipboard(source);
-        var output = await PasteFile("Transcode to .mp4", Key.F8, ".mp4", directShortcut, source);
+        SetFileClipboard(source);
+        var output = await PasteFile(ProductStrings.TranscodeToMp4Action, Key.F8, ".mp4", directShortcut, source);
         Assert.AreEqual("offline-video_1.mp4", Path.GetFileName(output), "Same-extension conversion did not use a distinct output name.");
         var profile = await MediaEncodingProfile.CreateFromFileAsync(await StorageFile.GetFileFromPathAsync(output));
         Assert.IsNotNull(profile.Video, "The MP4 output has no video stream.");

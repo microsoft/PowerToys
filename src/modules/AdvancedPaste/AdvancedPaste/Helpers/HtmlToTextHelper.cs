@@ -10,6 +10,10 @@ using HtmlAgilityPack;
 
 namespace AdvancedPaste.Helpers;
 
+/// <summary>
+/// Managed HTML-to-plain-text conversion for clipboard content, without native rendering.
+/// Windows.Data.Html.HtmlUtilities.ConvertToText can fail-fast after WinUI startup.
+/// </summary>
 internal static class HtmlToTextHelper
 {
     private static readonly HashSet<string> BlockElements = new(StringComparer.OrdinalIgnoreCase)
@@ -20,17 +24,20 @@ internal static class HtmlToTextHelper
         "table", "tr", "ul",
     };
 
+    /// <summary>Extracts text from an HTML fragment while retaining block boundaries and preformatted whitespace.</summary>
     internal static string ToPlainText(string html)
     {
         ArgumentNullException.ThrowIfNull(html);
 
-        // Windows.Data.Html.HtmlUtilities can fail-fast after WinUI startup.
         var document = new HtmlDocument();
         document.LoadHtml(html);
         var text = new StringBuilder();
         var nodes = new Stack<(HtmlNode Node, bool Closing, bool Preformatted)>();
         nodes.Push((document.DocumentNode, false, false));
         var pendingSpace = false;
+
+        // Only real text-node characters advance this boundary, never generated separators.
+        // Final truncation and table-row tab trimming both depend on that distinction.
         var contentLength = 0;
 
         // Walk iteratively so deeply nested clipboard markup cannot overflow our call stack.
@@ -42,6 +49,7 @@ internal static class HtmlToTextHelper
                 var value = WebUtility.HtmlDecode(((HtmlTextNode)node).Text);
                 foreach (var character in value)
                 {
+                    // Collapse HTML's ASCII whitespace only; preserve typographic and nonbreaking Unicode spaces.
                     if (!entry.Preformatted && character is ' ' or '\t' or '\r' or '\n' or '\f')
                     {
                         pendingSpace = true;

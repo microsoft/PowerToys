@@ -37,7 +37,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
         WaitUntil(() => Target.IsBold(0, 4), "The rich-text fixture was not bold before conversion.");
         Target.Clear();
 
-        InvokeCoreAction("Paste as plain text", Key.O, Key.Num1, invocation);
+        InvokeCoreAction(ProductStrings.PasteAsPlainText, Key.O, Key.Num1, invocation);
         Target.AssertText(text);
         Assert.IsFalse(Target.IsBold(0, 4), "Paste as plain text retained bold formatting.");
         var clipboard = WinClipboard.GetContent();
@@ -59,7 +59,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
     public void LegacyHtmlConvertsToMarkdown(Invocation invocation)
     {
         SetClipboardText(File.ReadAllText(FixturePath("PasteAsMarkdownFile.html")));
-        InvokeCoreAction("Paste as markdown", Key.M, Key.Num2, invocation);
+        InvokeCoreAction(ProductStrings.PasteAsMarkdown, Key.M, Key.Num2, invocation);
         AssertTransformedText();
         var expected = NormalizeMarkdown(File.ReadAllText(FixturePath("PasteAsMarkdownResultFile.txt")));
         Assert.AreEqual(expected, NormalizeMarkdown(Target.Text), "The legacy HTML fixture did not produce the expected Markdown.");
@@ -72,7 +72,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
     public void LegacyXmlConvertsToJson(Invocation invocation)
     {
         SetClipboardText(File.ReadAllText(FixturePath("PasteAsJsonFile.xml")));
-        InvokeCoreAction("Paste as JSON", Key.J, Key.Num3, invocation);
+        InvokeCoreAction(ProductStrings.PasteAsJson, Key.J, Key.Num3, invocation);
         AssertTransformedText();
         AssertJson(File.ReadAllText(FixturePath("PasteAsJsonResultFile.txt")));
     }
@@ -89,7 +89,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
     public void JsonSupportsOfflineInputFormats(string input, string expected)
     {
         SetClipboardText(input);
-        SelectAction(OpenAdvancedPaste(), "Paste as JSON");
+        SelectAction(OpenAdvancedPaste(), ProductStrings.PasteAsJson);
         AssertTransformedText();
         AssertJson(expected);
     }
@@ -99,7 +99,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
     {
         const string input = " { \"value\" : [true, null, 42], \"text\" : \"caf\\u00e9\" } ";
         SetClipboardText(input);
-        InvokeCoreAction("Paste as JSON", Key.J, Key.Num3, Invocation.DirectShortcut);
+        InvokeCoreAction(ProductStrings.PasteAsJson, Key.J, Key.Num3, Invocation.DirectShortcut);
         Target.AssertText(input);
         Assert.AreEqual(input, ReadClipboardText(), "Already-valid JSON was reformatted.");
     }
@@ -108,7 +108,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
     public void MarkdownPrefersHtmlAndRemovesScriptsAndFootnotes()
     {
         SetHtmlClipboard("<h2>Offline</h2><p><strong>Bold</strong> and <em>italic</em> <a href=\"https://example.test/\">link</a></p><script>never paste this</script><sup>omit footnote</sup>", "This fallback must not be used");
-        SelectAction(OpenAdvancedPaste(), "Paste as markdown");
+        SelectAction(OpenAdvancedPaste(), ProductStrings.PasteAsMarkdown);
         AssertTransformedText();
 
         // CF_HTML boundary comments remain inert HTML comments in the generated Markdown.
@@ -120,7 +120,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
     {
         var input = "  caf\u00e9 \u4e2d\u6587 \U0001f680\r\n\tsecond line\r\n" + new string('x', 32_768) + "  ";
         SetClipboardText(input);
-        InvokeCoreAction("Paste as plain text", Key.O, Key.Num1, Invocation.DirectShortcut);
+        InvokeCoreAction(ProductStrings.PasteAsPlainText, Key.O, Key.Num1, Invocation.DirectShortcut);
         Target.AssertText(input);
         Assert.AreEqual(input, ReadClipboardText(), "Plain-text conversion changed Unicode or whitespace.");
     }

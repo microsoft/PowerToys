@@ -83,7 +83,7 @@ internal sealed class PasteTarget : IDisposable
     internal void Paste()
     {
         Focus();
-        Invoke(() => TestKeyboard.SendChord(Key.Ctrl, Key.V));
+        Invoke(() => KeyboardHelper.SendChord(Key.Ctrl, Key.V));
     }
 
     internal void CopyRichText(string rtf)
@@ -93,7 +93,7 @@ internal sealed class PasteTarget : IDisposable
         {
             editor!.Rtf = rtf;
             editor.SelectAll();
-            TestKeyboard.SendChord(Key.Ctrl, Key.C);
+            KeyboardHelper.SendChord(Key.Ctrl, Key.C);
         });
     }
 

@@ -1,7 +1,7 @@
 # Advanced Paste UI tests
 
 Black-box UI tests using `Microsoft.PowerToys.UITest.Next` and the repository-pinned
-winapp CLI. The legacy `UITest-AdvancedPaste` project is retained unchanged. Its
+winapp CLI. The legacy `UITest-AdvancedPaste` test code and project are retained unchanged. Its
 HTML, XML, expected results, and initial settings are linked into this project's
 output rather than duplicated.
 
