@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
+using System.Text;
 using WorkspacesLauncherUI.Properties;
 
 namespace WorkspacesLauncherUI.Models
@@ -20,6 +22,18 @@ namespace WorkspacesLauncherUI.Models
         public string Reason { get; set; } = string.Empty;
 
         public string Status { get; set; } = string.Empty;
+
+        public string DisplayAppName => EscapeDisplayText(AppName);
+
+        public string DisplayPath => EscapeDisplayText(Path);
+
+        public string DisplayArguments => EscapeDisplayText(Arguments);
+
+        public string DisplayStatus => EscapeDisplayText(Status);
+
+        public bool HasEscapedDisplayValues => AppName != DisplayAppName || Path != DisplayPath || Arguments != DisplayArguments || Status != DisplayStatus;
+
+        public string EscapedDisplayExplanation => Resources.SignatureWarningEscapedDisplay;
 
         public string Title => Resources.SignatureWarningTitle;
 
@@ -91,5 +105,39 @@ namespace WorkspacesLauncherUI.Models
             "package-changed" => Resources.SignatureWarningPackageChanged,
             _ => Resources.SignatureWarningUnavailable,
         };
+
+        private static string EscapeDisplayText(string text)
+        {
+            ArgumentNullException.ThrowIfNull(text);
+            StringBuilder escaped = null;
+            for (var index = 0; index < text.Length; index++)
+            {
+                var character = text[index];
+                var requiresEscaping = char.IsControl(character) ||
+                    character is '\u061C' or '\u200E' or '\u200F' or
+                    (>= '\u2028' and <= '\u202E') or (>= '\u2066' and <= '\u206F');
+                if (!requiresEscaping)
+                {
+                    escaped?.Append(character);
+                    continue;
+                }
+
+                if (escaped == null)
+                {
+                    escaped = new StringBuilder(text.Length);
+                    escaped.Append(text, 0, index);
+                }
+
+                escaped.Append(character switch
+                {
+                    '\r' => "\\r",
+                    '\n' => "\\n",
+                    '\t' => "\\t",
+                    _ => "\\u" + ((int)character).ToString("X4", CultureInfo.InvariantCulture),
+                });
+            }
+
+            return escaped?.ToString() ?? text;
+        }
     }
 }

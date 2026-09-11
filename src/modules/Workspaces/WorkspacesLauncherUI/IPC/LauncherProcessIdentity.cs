@@ -26,6 +26,11 @@ namespace WorkspacesLauncherUI.IPC
 
         internal static LauncherProcessIdentity Open(int processId)
         {
+            return Open(processId, ObserveProcess);
+        }
+
+        internal static LauncherProcessIdentity Open(int processId, Func<SafeProcessHandle, ProcessObservation> observe)
+        {
             const uint synchronizeAndQueryLimitedInformation = 0x00101000;
             var handle = NativeMethods.OpenProcess(synchronizeAndQueryLimitedInformation, false, (uint)processId);
             if (handle.IsInvalid)
@@ -38,19 +43,13 @@ namespace WorkspacesLauncherUI.IPC
             var identity = new LauncherProcessIdentity(handle);
             try
             {
-                if (GetParentProcessId() != (uint)processId)
+                var observation = observe(handle);
+                if (observation.ParentProcessId != (uint)processId)
                 {
                     throw new InvalidDataException("The intended launcher is not this process's parent.");
                 }
 
-                var imagePath = new StringBuilder(32768);
-                var length = (uint)imagePath.Capacity;
-                if (!NativeMethods.QueryFullProcessImageName(handle, 0, imagePath, ref length))
-                {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
-                }
-
-                var ownPath = Environment.ProcessPath;
+                var ownPath = observation.OwnPath;
                 if (string.IsNullOrEmpty(ownPath) ||
                     !string.Equals(Path.GetFileName(ownPath), "PowerToys.WorkspacesLauncherUI.exe", StringComparison.OrdinalIgnoreCase))
                 {
@@ -58,14 +57,14 @@ namespace WorkspacesLauncherUI.IPC
                 }
 
                 var expectedPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ownPath), "PowerToys.WorkspacesLauncher.exe"));
-                var actualPath = Path.GetFullPath(imagePath.ToString());
+                var actualPath = Path.GetFullPath(observation.ImagePath);
                 if (!string.Equals(expectedPath, actualPath, StringComparison.OrdinalIgnoreCase))
                 {
                     throw new InvalidDataException("The launcher is not the expected sibling executable.");
                 }
 
-                var ownVersion = GetNumericVersion(ownPath);
-                if (ownVersion == (0, 0, 0, 0) || ownVersion != GetNumericVersion(actualPath))
+                var ownVersion = observation.OwnVersion;
+                if (ownVersion == (0, 0, 0, 0) || ownVersion != observation.ImageVersion)
                 {
                     throw new InvalidDataException("The launcher file version does not match the UI.");
                 }
@@ -126,7 +125,25 @@ namespace WorkspacesLauncherUI.IPC
             return (version.FileMajorPart, version.FileMinorPart, version.FileBuildPart, version.FilePrivatePart);
         }
 
-        private static uint GetParentProcessId()
+        private static ProcessObservation ObserveProcess(SafeProcessHandle handle)
+        {
+            var imagePath = new StringBuilder(32768);
+            var length = (uint)imagePath.Capacity;
+            if (!NativeMethods.QueryFullProcessImageName(handle, 0, imagePath, ref length))
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+
+            var ownPath = Environment.ProcessPath;
+            return new ProcessObservation(
+                GetParentProcessId(),
+                ownPath,
+                imagePath.ToString(),
+                string.IsNullOrEmpty(ownPath) ? default : GetNumericVersion(ownPath),
+                GetNumericVersion(imagePath.ToString()));
+        }
+
+        internal static uint GetParentProcessId()
         {
             using var snapshot = NativeMethods.CreateToolhelp32Snapshot(0x00000002, 0);
             if (snapshot.IsInvalid)
@@ -175,6 +192,13 @@ namespace WorkspacesLauncherUI.IPC
                 SafeWaitHandle = new SafeWaitHandle(handle.DangerousGetHandle(), ownsHandle: false);
             }
         }
+
+        internal sealed record ProcessObservation(
+            uint ParentProcessId,
+            string OwnPath,
+            string ImagePath,
+            (int Major, int Minor, int Build, int Revision) OwnVersion,
+            (int Major, int Minor, int Build, int Revision) ImageVersion);
 
         private sealed class SnapshotHandle : SafeHandleZeroOrMinusOneIsInvalid
         {

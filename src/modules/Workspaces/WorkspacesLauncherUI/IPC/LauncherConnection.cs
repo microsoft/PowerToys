@@ -20,10 +20,14 @@ namespace WorkspacesLauncherUI.IPC
     {
         private const string PipeNamePrefix = "PowerToys.Workspaces.Launcher.";
         private const int MaximumBodyLength = 4 * 1024 * 1024;
-        private const int OperationTimeoutMilliseconds = 5000;
 
         private readonly int _launcherProcessId;
         private readonly NamedPipeClientStream _pipe;
+        private readonly Stream _stream;
+        private readonly Func<int, LauncherProcessIdentity> _openParent;
+        private readonly int _connectTimeoutMilliseconds;
+        private readonly int _operationTimeoutMilliseconds;
+        private readonly int _parentExitTimeoutMilliseconds;
         private readonly CancellationTokenSource _lifetime = new CancellationTokenSource();
         private readonly SemaphoreSlim _sendLock = new SemaphoreSlim(1, 1);
         private readonly object _stateLock = new object();
@@ -40,14 +44,33 @@ namespace WorkspacesLauncherUI.IPC
         private bool _receiving;
 
         internal LauncherConnection(int launcherProcessId, string pipeName)
+            : this(
+                launcherProcessId,
+                new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous, TokenImpersonationLevel.Identification),
+                LauncherProcessIdentity.Open,
+                10000,
+                5000,
+                1000)
+        {
+        }
+
+        // Keep the OS-authenticated production construction above separate from injectable observations/deadlines.
+        internal LauncherConnection(
+            int launcherProcessId,
+            NamedPipeClientStream pipe,
+            Func<int, LauncherProcessIdentity> openParent,
+            int connectTimeoutMilliseconds,
+            int operationTimeoutMilliseconds,
+            int parentExitTimeoutMilliseconds,
+            Stream stream = null)
         {
             _launcherProcessId = launcherProcessId;
-            _pipe = new NamedPipeClientStream(
-                ".",
-                pipeName,
-                PipeDirection.InOut,
-                PipeOptions.Asynchronous,
-                TokenImpersonationLevel.Identification);
+            _pipe = pipe;
+            _stream = stream ?? pipe;
+            _openParent = openParent;
+            _connectTimeoutMilliseconds = connectTimeoutMilliseconds;
+            _operationTimeoutMilliseconds = operationTimeoutMilliseconds;
+            _parentExitTimeoutMilliseconds = parentExitTimeoutMilliseconds;
         }
 
         internal event Action Closed;
@@ -87,7 +110,8 @@ namespace WorkspacesLauncherUI.IPC
             {
                 if (args[index] == "--launcher-pid" && launcherProcessId == 0)
                 {
-                    if (!int.TryParse(args[index + 1], NumberStyles.None, CultureInfo.InvariantCulture, out launcherProcessId) ||
+                    if (args[index + 1]?.Contains('\0') == true ||
+                        !int.TryParse(args[index + 1], NumberStyles.None, CultureInfo.InvariantCulture, out launcherProcessId) ||
                         launcherProcessId <= 0 || launcherProcessId == Environment.ProcessId)
                     {
                         return false;
@@ -191,10 +215,10 @@ namespace WorkspacesLauncherUI.IPC
             try
             {
                 _lifetime.Token.ThrowIfCancellationRequested();
-                _parent = LauncherProcessIdentity.Open(_launcherProcessId);
+                _parent = _openParent(_launcherProcessId);
                 _parentTask = WatchParentAsync();
                 operation = "Unable to connect to the Workspaces launcher pipe";
-                await _pipe.ConnectAsync(10000, _lifetime.Token).ConfigureAwait(false);
+                await _pipe.ConnectAsync(_connectTimeoutMilliseconds, _lifetime.Token).ConfigureAwait(false);
                 _pipe.ReadMode = PipeTransmissionMode.Byte;
                 operation = "Unable to authenticate the Workspaces launcher pipe server";
                 _parent.AuthenticatePipe(_pipe, _launcherProcessId);
@@ -223,7 +247,7 @@ namespace WorkspacesLauncherUI.IPC
 
                 // Drain a buffered shutdown frame before classifying parent exit as a failure.
                 // A duplicated server handle must not keep the orphaned UI alive indefinitely.
-                await receiveTask.WaitAsync(TimeSpan.FromSeconds(1), _lifetime.Token).ConfigureAwait(false);
+                await receiveTask.WaitAsync(TimeSpan.FromMilliseconds(_parentExitTimeoutMilliseconds), _lifetime.Token).ConfigureAwait(false);
                 Fail("The Workspaces launcher exited without a graceful UI shutdown", new EndOfStreamException());
             }
             catch (OperationCanceledException) when (_lifetime.IsCancellationRequested)
@@ -243,11 +267,11 @@ namespace WorkspacesLauncherUI.IPC
                 while (!_lifetime.IsCancellationRequested)
                 {
                     // Only an idle channel may wait indefinitely; a partially sent frame is bounded.
-                    await _pipe.ReadExactlyAsync(header.AsMemory(0, 1), _lifetime.Token).ConfigureAwait(false);
+                    await _stream.ReadExactlyAsync(header.AsMemory(0, 1), _lifetime.Token).ConfigureAwait(false);
                     using (var headerTimeout = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token))
                     {
-                        headerTimeout.CancelAfter(OperationTimeoutMilliseconds);
-                        await _pipe.ReadExactlyAsync(header.AsMemory(1), headerTimeout.Token).ConfigureAwait(false);
+                        headerTimeout.CancelAfter(_operationTimeoutMilliseconds);
+                        await _stream.ReadExactlyAsync(header.AsMemory(1), headerTimeout.Token).ConfigureAwait(false);
                     }
 
                     var length = BinaryPrimitives.ReadUInt32LittleEndian(header);
@@ -259,8 +283,8 @@ namespace WorkspacesLauncherUI.IPC
                     var body = new byte[(int)length];
                     using (var bodyTimeout = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token))
                     {
-                        bodyTimeout.CancelAfter(OperationTimeoutMilliseconds);
-                        await _pipe.ReadExactlyAsync(body.AsMemory(), bodyTimeout.Token).ConfigureAwait(false);
+                        bodyTimeout.CancelAfter(_operationTimeoutMilliseconds);
+                        await _stream.ReadExactlyAsync(body.AsMemory(), bodyTimeout.Token).ConfigureAwait(false);
                     }
 
                     var message = LauncherMessage.Parse(body, _launcherProcessId);
@@ -298,7 +322,7 @@ namespace WorkspacesLauncherUI.IPC
             try
             {
                 using var timeout = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token, cancellationToken);
-                timeout.CancelAfter(OperationTimeoutMilliseconds);
+                timeout.CancelAfter(_operationTimeoutMilliseconds);
                 var body = JsonSerializer.SerializeToUtf8Bytes(message);
                 if (body.Length == 0 || body.Length > MaximumBodyLength)
                 {
@@ -311,8 +335,8 @@ namespace WorkspacesLauncherUI.IPC
                 entered = true;
                 timeout.Token.ThrowIfCancellationRequested();
                 writing = true;
-                await _pipe.WriteAsync(header.AsMemory(), timeout.Token).ConfigureAwait(false);
-                await _pipe.WriteAsync(body.AsMemory(), timeout.Token).ConfigureAwait(false);
+                await _stream.WriteAsync(header.AsMemory(), timeout.Token).ConfigureAwait(false);
+                await _stream.WriteAsync(body.AsMemory(), timeout.Token).ConfigureAwait(false);
                 return true;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested && !writing)

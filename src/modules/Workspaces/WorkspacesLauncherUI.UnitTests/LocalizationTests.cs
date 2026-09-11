@@ -73,6 +73,7 @@ namespace WorkspacesLauncherUI.UnitTests
         [DataTestMethod]
         [DataRow(nameof(SignatureWarningRequest.Title), nameof(Resources.SignatureWarningTitle))]
         [DataRow(nameof(SignatureWarningRequest.TrustLimits), nameof(Resources.SignatureWarningTrustLimits))]
+        [DataRow(nameof(SignatureWarningRequest.EscapedDisplayExplanation), nameof(Resources.SignatureWarningEscapedDisplay))]
         [DataRow(nameof(SignatureWarningRequest.AppLabel), nameof(Resources.SignatureWarningApp))]
         [DataRow(nameof(SignatureWarningRequest.PathLabel), nameof(Resources.SignatureWarningPath))]
         [DataRow(nameof(SignatureWarningRequest.ReasonLabel), nameof(Resources.SignatureWarningReason))]

@@ -13,6 +13,7 @@
     SizeToContent="Height"
     WindowStartupLocation="CenterOwner">
     <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
         <DataTemplate x:Key="WrappedButtonText">
             <TextBlock
                 Text="{Binding}"
@@ -43,6 +44,12 @@
                     Text="{Binding TrustLimits}"
                     TextWrapping="Wrap" />
                 <TextBlock
+                    Margin="0,0,0,16"
+                    AutomationProperties.AutomationId="SignatureWarningEscapedDisplay"
+                    Text="{Binding EscapedDisplayExplanation}"
+                    TextWrapping="Wrap"
+                    Visibility="{Binding HasEscapedDisplayValues, Converter={StaticResource BoolToVisibility}}" />
+                <TextBlock
                     x:Name="AppNameLabel"
                     FontWeight="SemiBold"
                     Text="{Binding AppLabel}" />
@@ -50,8 +57,8 @@
                     Margin="0,4,0,12"
                     AutomationProperties.AutomationId="SignatureWarningApp"
                     AutomationProperties.LabeledBy="{Binding ElementName=AppNameLabel}"
-                    AutomationProperties.Name="{Binding AppName}"
-                    Text="{Binding AppName, Mode=OneWay}"
+                    AutomationProperties.Name="{Binding DisplayAppName}"
+                    Text="{Binding DisplayAppName, Mode=OneWay}"
                     TextWrapping="Wrap" />
                 <TextBlock
                     x:Name="LocationLabel"
@@ -61,9 +68,9 @@
                     Margin="0,4,0,12"
                     AutomationProperties.AutomationId="SignatureWarningPath"
                     AutomationProperties.LabeledBy="{Binding ElementName=LocationLabel}"
-                    AutomationProperties.Name="{Binding Path}"
+                    AutomationProperties.Name="{Binding DisplayPath}"
                     FlowDirection="LeftToRight"
-                    Text="{Binding Path, Mode=OneWay}"
+                    Text="{Binding DisplayPath, Mode=OneWay}"
                     TextWrapping="Wrap" />
                 <TextBlock FontWeight="SemiBold" Text="{Binding ReasonLabel}" />
                 <TextBlock
@@ -82,9 +89,9 @@
                             Margin="0,4,0,12"
                             AutomationProperties.AutomationId="SignatureWarningArguments"
                             AutomationProperties.LabeledBy="{Binding ElementName=CommandLineLabel}"
-                            AutomationProperties.Name="{Binding Arguments}"
+                            AutomationProperties.Name="{Binding DisplayArguments}"
                             FlowDirection="LeftToRight"
-                            Text="{Binding Arguments, Mode=OneWay}"
+                            Text="{Binding DisplayArguments, Mode=OneWay}"
                             TextWrapping="Wrap" />
                         <TextBlock
                             x:Name="VerificationStatusLabel"
@@ -94,9 +101,9 @@
                             Margin="0,4,0,0"
                             AutomationProperties.AutomationId="SignatureWarningStatus"
                             AutomationProperties.LabeledBy="{Binding ElementName=VerificationStatusLabel}"
-                            AutomationProperties.Name="{Binding Status}"
+                            AutomationProperties.Name="{Binding DisplayStatus}"
                             FlowDirection="LeftToRight"
-                            Text="{Binding Status, Mode=OneWay}"
+                            Text="{Binding DisplayStatus, Mode=OneWay}"
                             TextWrapping="Wrap" />
                         <Button
                             Margin="0,12,0,0"

@@ -276,15 +276,20 @@ Warning strings and translator context live in the launcher's
 `Properties\Resources.resx`. Keep resource keys stable and regenerate
 `Properties\Resources.Designer.cs` when adding or removing keys; the warning and
 launch-state models use these strongly typed properties instead of string-key
-lookups. Keep paths, arguments, package identities, and Windows status codes
-verbatim. They are data, not translatable messages.
+lookups. Keep raw paths, arguments, package identities, and Windows status codes
+unchanged for launching and copying. They are data, not translatable messages.
 
 Both launch windows use the selected UI culture for language and text direction.
 The warning's technical values remain left-to-right in RTL languages. Action
 labels wrap within the available window width, while the warning body scrolls
 independently, so expanded translations do not push consent buttons off-screen.
 Application details are display text rather than input controls, with field
-labels associated with their values for automation. **Copy details** in the
+labels associated with their values for automation. The visual and automation
+values escape control characters, line separators, and bidirectional formatting
+controls (for example, `\n` and `\u202E`) so app-provided text cannot insert
+misleading hard line breaks or directional overrides. Ordinary Unicode text
+remains unchanged; this is not a general defense against look-alike characters.
+A notice explains when these display escapes are present. **Copy details** in the
 expanded Details section copies the displayed information, including raw paths,
 arguments, and the Windows status code, without changing the launch decision.
 
@@ -331,12 +336,22 @@ document describe a previous workflow, not the onboarding required here.
 
 `WorkspacesLauncherUI.UnitTests` covers resource-key access, reason mappings,
 satellite loading and English fallback, RTL technical values, expanded action
-labels, and safe default buttons. Its synthetic language resources are test
+labels, escaped visual/automation values, and safe default buttons. It also
+compiles the actual managed IPC sources to cover argument/message parsing,
+identity policy, real pipe-server PIDs, framing/timeouts, send cancellation,
+parent exit, and shutdown/drain races. Small internal observation, stream, and
+deadline seams make these tests deterministic; normal construction still uses
+the real OS identity checks and the original production deadlines. Positive
+image/version policy cases use supplied observations, not a claim of signed
+Release deployment validation.
+
+Its synthetic language resources are test
 fixtures, not translated product resources or inputs to Touchdown.
 After building that project, run
 `x64\<Configuration>\tests\WorkspacesLauncherUI\PowerToys.WorkspacesLauncherUI.UnitTests.dll`
-with `vstest.console.exe`. These in-process tests do not display windows, connect
-to the launcher, or read or modify the user's settings.
+with `vstest.console.exe`. Layout tests run in-process without displaying windows.
+IPC tests use isolated pipes and owned, benign child processes; they do not
+connect to a running launcher, request elevation, or read or modify user settings.
 
 Relevant implementation precedents:
 

@@ -205,6 +205,15 @@ namespace WorkspacesLauncherUI.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Formatting and control characters are shown as escape sequences. Copy details preserves the original text..
+        /// </summary>
+        public static string SignatureWarningEscapedDisplay {
+            get {
+                return ResourceManager.GetString("SignatureWarningEscapedDisplay", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to This signature could not be validated because a required certificate has expired..
         /// </summary>
         public static string SignatureWarningExpired {

@@ -70,6 +70,49 @@ namespace WorkspacesLauncherUI.UnitTests
         }
 
         [DataTestMethod]
+        [DataRow("en-US")]
+        [DataRow("ar-SA")]
+        public void WarningAndAutomationExposeEscapedDisplayValues(string cultureName)
+        {
+            RunOnSta(() =>
+            {
+                using var culture = new CultureScope(cultureName);
+                var request = new SignatureWarningRequest
+                {
+                    AppName = "Example\r\nPublisher: Microsoft",
+                    Path = "C:\\Apps\\file\u202Etxt.exe",
+                    Arguments = "--name\tvalue\u2028another line",
+                    Status = "0x800B0100\u2066hidden\u2069",
+                    Reason = "unsigned",
+                };
+                var window = new SignatureWarningWindow(request);
+                try
+                {
+                    var root = LayoutContent(window, 600);
+                    VisualDescendants<Expander>(root).Single().IsExpanded = true;
+                    LayoutContent(window, 600);
+
+                    var app = FindTextField(root, "SignatureWarningApp");
+                    Assert.AreEqual("Example\\r\\nPublisher: Microsoft", app.Text);
+                    AssertStaticTextPeer(app, request.AppLabel, request.DisplayAppName);
+                    AssertRawField(root, "SignatureWarningPath", "C:\\Apps\\file\\u202Etxt.exe");
+                    AssertRawField(root, "SignatureWarningArguments", "--name\\tvalue\\u2028another line");
+                    AssertRawField(root, "SignatureWarningStatus", "0x800B0100\\u2066hidden\\u2069");
+                    var explanation = FindTextField(root, "SignatureWarningEscapedDisplay");
+                    Assert.AreEqual(Visibility.Visible, explanation.Visibility);
+                    Assert.AreEqual(request.EscapedDisplayExplanation, explanation.Text);
+                    Assert.IsTrue(explanation.ActualWidth > 0 && explanation.ActualHeight > 0);
+                    StringAssert.Contains(request.DetailsText, request.Path);
+                    StringAssert.Contains(request.DetailsText, request.Arguments);
+                }
+                finally
+                {
+                    window.DismissWithoutResponse();
+                }
+            });
+        }
+
+        [DataTestMethod]
         [DataRow("fr-FR", 600)]
         [DataRow("fr-FR", 360)]
         [DataRow("ar-SA", 600)]

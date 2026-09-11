@@ -169,9 +169,13 @@
     <value>App</value>
     <comment>Label for the application display name in a per-app elevation warning. The displayed name itself is provided by the app or workspace and is not translated.</comment>
   </data>
+  <data name="SignatureWarningEscapedDisplay" xml:space="preserve">
+    <value>Formatting and control characters are shown as escape sequences. Copy details preserves the original text.</value>
+    <comment>Shown only when application-provided names, paths, arguments, or status contain control characters, line separators, or Unicode bidirectional formatting controls. These characters are displayed visibly, for example as \n or \u202E, to prevent misleading lines or reordered text. The original values used for launching and copying are unchanged.</comment>
+  </data>
   <data name="SignatureWarningPath" xml:space="preserve">
     <value>Location</value>
-    <comment>Label for the launch target, which can be a file path or a Windows app-package activation identifier. The target value is displayed verbatim, left to right, including in right-to-left languages.</comment>
+    <comment>Label for the launch target, which can be a file path or a Windows app-package activation identifier. The value is not translated and is displayed left to right, with misleading control characters escaped. Launching and copying preserve the original target.</comment>
   </data>
   <data name="SignatureWarningReason" xml:space="preserve">
     <value>Reason</value>
@@ -191,7 +195,7 @@
   </data>
   <data name="SignatureWarningArguments" xml:space="preserve">
     <value>Command-line arguments</value>
-    <comment>Label for the raw arguments that will be passed to the app. The argument value is not translated or verified and is displayed left to right.</comment>
+    <comment>Label for the arguments that will be passed to the app. The value is not translated or verified and is displayed left to right, with control characters escaped. Launching and copying preserve the original arguments.</comment>
   </data>
   <data name="SignatureWarningStatus" xml:space="preserve">
     <value>Windows verification status</value>
