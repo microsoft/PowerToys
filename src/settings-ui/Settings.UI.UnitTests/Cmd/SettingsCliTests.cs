@@ -3,10 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.CommandLine.Parsing;
 using System.IO.Abstractions.TestingHelpers;
 
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerToys.Settings.Cli;
 using PowerToys.Settings.Cli.Helpers;
 
 namespace Settings.UI.UnitTests.Cmd;
@@ -70,5 +72,15 @@ public class SettingsCliTests
         // Explicit enable
         var enabledState = SettingsCliHelper.ToggleModule("FancyZones", targetState: true, settingsUtils);
         Assert.IsTrue(enabledState);
+    }
+
+    [TestMethod]
+    public void TestCommandParsingReportsMissingArguments()
+    {
+        var parser = new Parser(Program.CreateRootCommand());
+
+        var parseResult = parser.Parse(["set"]);
+
+        Assert.IsTrue(parseResult.Errors.Count > 0);
     }
 }

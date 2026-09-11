@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
   </ItemGroup>
 
