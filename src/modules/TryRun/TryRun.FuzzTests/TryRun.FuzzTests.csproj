@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.FuzzTest.props" />
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>PowerToys.TryRun.FuzzTests</RootNamespace>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\TryRun.FuzzTests\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TryRun.Core\TryRun.Core.csproj" />
+    <Content Include="OneFuzzConfig.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

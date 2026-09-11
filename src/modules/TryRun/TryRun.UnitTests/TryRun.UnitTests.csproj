@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.props" />
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsTestProject>true</IsTestProject>
+    <EnableMSTestRunner>false</EnableMSTestRunner>
+    <RootNamespace>PowerToys.TryRun.UnitTests</RootNamespace>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\TryRun.UnitTests\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+    <ProjectReference Include="..\TryRun.Core\TryRun.Core.csproj" />
+    <ProjectReference Include="..\TryRun.FuzzTests\TryRun.FuzzTests.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,20 @@
+{
+  "configVersion": 3,
+  "entries": [
+    {
+      "fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "dll": "TryRun.FuzzTests.dll",
+        "class": "PowerToys.TryRun.FuzzTests.RequestFuzzer",
+        "method": "FuzzTarget",
+        "FuzzingTargetBinaries": ["TryRun.Core.dll"]
+      },
+      "skip": true,
+      "rebootAfterSetup": false,
+      "oneFuzzJobs": [
+        { "projectName": "PowerToys", "targetName": "TryRun-request-parser" }
+      ],
+      "jobDependencies": ["TryRun.FuzzTests.dll", "TryRun.FuzzTests.pdb", "TryRun.Core.dll"]
+    }
+  ]
+}

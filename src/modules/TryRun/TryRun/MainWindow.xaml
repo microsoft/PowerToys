@@ -1,0 +1,100 @@
+<Window
+    x:Class="PowerToys.TryRun.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Try Run — PowerToys (Experimental)"
+    Width="840"
+    Height="740"
+    MinWidth="620"
+    MinHeight="560"
+    Closing="OnClosing"
+    Loaded="OnLoaded"
+    WindowStartupLocation="CenterScreen">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Margin="0,0,0,16">
+            <TextBlock
+                FontSize="24"
+                FontWeight="SemiBold"
+                Text="Try a PowerShell script" />
+            <TextBlock
+                Margin="0,8,0,0"
+                Text="Experimental: MXC is not currently a security boundary."
+                TextWrapping="Wrap" />
+        </StackPanel>
+        <Label
+            Grid.Row="1"
+            Content="_Script"
+            Target="{Binding ElementName=ScriptBox}" />
+        <TextBox
+            x:Name="ScriptBox"
+            Grid.Row="2"
+            AcceptsReturn="True"
+            AcceptsTab="True"
+            AutomationProperties.Name="PowerShell script"
+            FontFamily="Cascadia Mono, Consolas"
+            MaxLength="8192"
+            Text="Write-Output 'Hello from Try Run'"
+            TextWrapping="Wrap"
+            VerticalScrollBarVisibility="Auto" />
+        <StackPanel Grid.Row="3" Margin="0,12,0,8">
+            <TextBlock Text="Write access: this run's temporary workspace. Network and clipboard: off." TextWrapping="Wrap" />
+            <TextBlock
+                Margin="0,4,0,0"
+                Text="Windows: allowed for PowerShell compatibility. Input injection: off."
+                TextWrapping="Wrap" />
+            <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
+                <Label Content="_Timeout (seconds)" Target="{Binding ElementName=TimeoutBox}" />
+                <TextBox
+                    x:Name="TimeoutBox"
+                    Width="64"
+                    VerticalContentAlignment="Center"
+                    AutomationProperties.Name="Timeout in seconds"
+                    MaxLength="3"
+                    Text="60" />
+                <Button
+                    x:Name="RunButton"
+                    Margin="16,0,0,0"
+                    Padding="16,6"
+                    Click="OnRun"
+                    Content="_Run"
+                    IsEnabled="False" />
+                <Button
+                    x:Name="StopButton"
+                    Margin="8,0,0,0"
+                    Padding="16,6"
+                    Click="OnStop"
+                    Content="_Stop"
+                    IsEnabled="False" />
+            </StackPanel>
+        </StackPanel>
+        <Label
+            Grid.Row="4"
+            Content="_Output"
+            Target="{Binding ElementName=OutputBox}" />
+        <TextBox
+            x:Name="OutputBox"
+            Grid.Row="5"
+            AcceptsReturn="True"
+            AutomationProperties.Name="Run output"
+            FontFamily="Cascadia Mono, Consolas"
+            IsReadOnly="True"
+            TextWrapping="Wrap"
+            VerticalScrollBarVisibility="Auto" />
+        <TextBlock
+            x:Name="StatusText"
+            Grid.Row="6"
+            Margin="0,12,0,0"
+            AutomationProperties.LiveSetting="Polite"
+            Text="Ready. Scripts run only when you choose Run."
+            TextWrapping="Wrap" />
+    </Grid>
+</Window>

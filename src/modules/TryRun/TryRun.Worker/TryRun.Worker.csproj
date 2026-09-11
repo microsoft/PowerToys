@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.props" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>PowerToys.TryRun.Worker</AssemblyName>
+    <RootNamespace>PowerToys.TryRun.Worker</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\TryRun\Worker\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TryRun.Core\TryRun.Core.csproj" />
+    <ProjectReference Include="$(MxcRoot)\sdk\dotnet\Microsoft.Mxc.Sdk\Microsoft.Mxc.Sdk.csproj" Condition="'$(MxcRoot)' != ''" />
+  </ItemGroup>
+  <Target Name="ValidateMxcRoot" BeforeTargets="ResolveProjectReferences">
+    <Error Condition="'$(MxcRoot)' == '' or !Exists('$(MxcRoot)\sdk\dotnet\Microsoft.Mxc.Sdk\Microsoft.Mxc.Sdk.csproj')" Text="Set MxcRoot to the pinned MXC checkout. See src/modules/TryRun/README.md." />
+    <ReadLinesFromFile File="..\mxc-version.txt">
+      <Output TaskParameter="Lines" PropertyName="ExpectedMxcRevision" />
+    </ReadLinesFromFile>
+    <Exec Command="git -C &quot;$(MxcRoot)&quot; rev-parse HEAD" ConsoleToMSBuild="true" StandardOutputImportance="low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="ActualMxcRevision" />
+    </Exec>
+    <Error Condition="'$(ActualMxcRevision)' != '$(ExpectedMxcRevision)'" Text="MXC must be at $(ExpectedMxcRevision). Build the managed SDK and native unit from that same checkout." />
+  </Target>
+</Project>
