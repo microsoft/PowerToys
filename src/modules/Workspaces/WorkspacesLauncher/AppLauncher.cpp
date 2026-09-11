@@ -28,7 +28,7 @@ namespace AppLauncher
         const std::wstring SteamProtocolPrefix = L"steam:";
     }
 
-    Result<SHELLEXECUTEINFO, std::wstring> LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
+    Result<SHELLEXECUTEINFO, LaunchError> LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
     {
         std::wstring dir = std::filesystem::path(appPath).parent_path();
 
@@ -44,9 +44,10 @@ namespace AppLauncher
 
         if (!ShellExecuteEx(&sei))
         {
-            std::wstring error = get_last_error_or_default(GetLastError());
+            const DWORD code = GetLastError();
+            std::wstring error = get_last_error_or_default(code);
             Logger::error(L"Failed to launch process. {}", error);
-            return Error(error);
+            return Error(LaunchError{ code, std::move(error) });
         }
 
         return Ok(sei);
@@ -87,9 +88,83 @@ namespace AppLauncher
         return false;
     }
 
-    bool Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList& launchErrors)
+    LaunchResult Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList& launchErrors, const ApprovalCallback& requestApproval, const std::function<bool()>& isCanceled)
     {
         bool launched{ false };
+        std::optional<LaunchResult> terminalResult;
+        const auto stop = [&](LaunchDecision decision) -> Result<SHELLEXECUTEINFO, LaunchError> {
+            if (decision == LaunchDecision::Skipped || decision == LaunchDecision::Canceled)
+            {
+                terminalResult = decision == LaunchDecision::Skipped ? LaunchResult::Skipped : LaunchResult::Canceled;
+                return Error(LaunchError{ ERROR_CANCELLED, L"Launch skipped or canceled." });
+            }
+            terminalResult = LaunchResult::Failed;
+            const auto reason = decision == LaunchDecision::TargetChanged ? L"Launch target changed after verification." :
+                                decision == LaunchDecision::TimedOut ? L"Elevation confirmation could not be displayed in time." :
+                                decision == LaunchDecision::InvalidResponse ? L"Invalid elevation confirmation response." :
+                                L"Elevation confirmation UI is unavailable.";
+            Logger::error(L"Elevated launch stopped: {}", reason);
+            launchErrors.push_back({ std::filesystem::path(app.path).filename(), reason });
+            return Error(LaunchError{ ERROR_NOT_READY, reason });
+        };
+        if (isCanceled())
+        {
+            return LaunchResult::Canceled;
+        }
+        const auto execute = [&](const std::wstring& path, const std::wstring& arguments) {
+            auto result = LaunchApp(path, arguments, app.isElevated);
+            if (result.isError() && result.error().code == ERROR_CANCELLED)
+            {
+                terminalResult = LaunchResult::Canceled;
+            }
+            if (result.isOk() && result.value().hProcess)
+            {
+                auto value = result.value();
+                CloseHandle(value.hProcess);
+                value.hProcess = nullptr;
+                return Result<SHELLEXECUTEINFO, LaunchError>(Ok(value));
+            }
+            return result;
+        };
+        const auto launch = [&](const std::wstring& path, const std::wstring& arguments) -> Result<SHELLEXECUTEINFO, LaunchError> {
+            if (terminalResult || isCanceled())
+            {
+                return stop(LaunchDecision::Canceled);
+            }
+            if (!app.isElevated)
+            {
+                return execute(path, arguments);
+            }
+
+            auto target = SignatureVerification::Verify(path, isCanceled);
+            if (isCanceled())
+            {
+                return stop(LaunchDecision::Canceled);
+            }
+            if (!target.result.IsVerified())
+            {
+                const auto decision = requestApproval(target.path, arguments, target.result);
+                if (isCanceled())
+                {
+                    return stop(LaunchDecision::Canceled);
+                }
+                if (decision != LaunchDecision::Approved)
+                {
+                    return stop(decision);
+                }
+            }
+            if (!SignatureVerification::IsCurrent(target, isCanceled))
+            {
+                return stop(isCanceled() ? LaunchDecision::Canceled : LaunchDecision::TargetChanged);
+            }
+            if (isCanceled())
+            {
+                return stop(LaunchDecision::Canceled);
+            }
+
+            // Direct file targets remain locked until ShellExecuteEx finishes the elevation request.
+            return execute(target.path, arguments);
+        };
 
         // packaged apps: check protocol in registry
         // usage example: Settings with cmd args
@@ -103,14 +178,14 @@ namespace AppLauncher
                 std::wstring uriProtocolName = names[0];
                 std::wstring command = std::wstring(uriProtocolName + (app.commandLineArgs.starts_with(L":") ? L"" : L":") + app.commandLineArgs);
 
-                auto res = LaunchApp(command, L"", app.isElevated);
+                auto res = launch(command, L"");
                 if (res.isOk())
                 {
                     launched = true;
                 }
-                else
+                else if (!terminalResult)
                 {
-                    launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error() });
+                    launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error().message });
                 }
             }
             else
@@ -121,38 +196,38 @@ namespace AppLauncher
 
         // packaged apps: try launching first by AppUserModel.ID
         // usage example: elevated Terminal
-        if (!launched && !app.appUserModelId.empty() && !app.packageFullName.empty())
+        if (!launched && !terminalResult && !app.appUserModelId.empty() && !app.packageFullName.empty())
         {
             Logger::trace(L"Launching {} as {} - {app.packageFullName}", app.name, app.appUserModelId, app.packageFullName);
-            auto res = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated);
+            auto res = launch(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs);
             if (res.isOk())
             {
                 launched = true;
             }
-            else
+            else if (!terminalResult)
             {
-                launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error() });
+                launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error().message });
             }
         }
 
         // protocol launch for steam
-        if (!launched && !app.appUserModelId.empty() && app.appUserModelId.contains(NonLocalizable::SteamProtocolPrefix))
+        if (!launched && !terminalResult && !app.appUserModelId.empty() && app.appUserModelId.contains(NonLocalizable::SteamProtocolPrefix))
         {
             Logger::trace(L"Launching {} as {}", app.name, app.appUserModelId);
-            auto res = LaunchApp(app.appUserModelId, app.commandLineArgs, app.isElevated);
+            auto res = launch(app.appUserModelId, app.commandLineArgs);
             if (res.isOk())
             {
                 launched = true;
             }
-            else
+            else if (!terminalResult)
             {
-                launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error() });
+                launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error().message });
             }
         }
 
         // packaged apps: try launching by package full name
         // doesn't work for elevated apps or apps with command line args
-        if (!launched && !app.packageFullName.empty() && app.commandLineArgs.empty() && !app.isElevated)
+        if (!launched && !terminalResult && !app.packageFullName.empty() && app.commandLineArgs.empty() && !app.isElevated && !isCanceled())
         {
             Logger::trace(L"Launching packaged app {}", app.name);
             launched = LaunchPackagedApp(app.packageFullName, launchErrors);
@@ -163,7 +238,7 @@ namespace AppLauncher
         appPathFinal = app.path;
         commandLineArgsFinal = app.commandLineArgs;
 
-        if (!launched && !app.pwaAppId.empty())
+        if (!launched && !terminalResult && !app.pwaAppId.empty())
         {
             int version = 0;
 
@@ -187,18 +262,18 @@ namespace AppLauncher
 
             if (version >= 1)
             {
-                auto res = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated);
+                auto res = launch(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs);
                 if (res.isOk())
                 {
                     launched = true;
                 }
-                else
+                else if (!terminalResult)
                 {
-                    launchErrors.push_back({ app.appUserModelId, res.error() });
+                    launchErrors.push_back({ app.appUserModelId, res.error().message });
                 }
             }
 
-            if (!launched)
+            if (!launched && !terminalResult)
             {
                 std::filesystem::path appPath(app.path);
                 if (appPath.filename() == NonLocalizable::EdgeFilename)
@@ -214,7 +289,7 @@ namespace AppLauncher
             }
         }
 
-        if (!launched)
+        if (!launched && !terminalResult)
         {
             Logger::trace(L"Launching {} at {}", app.name, appPathFinal);
 
@@ -223,21 +298,21 @@ namespace AppLauncher
             {
                 Logger::error(L"File not found at {}", appPathFinal);
                 launchErrors.push_back({ std::filesystem::path(appPathFinal).filename(), L"File not found" });
-                return false;
+                return LaunchResult::Failed;
             }
 
-            auto res = LaunchApp(appPathFinal, commandLineArgsFinal, app.isElevated);
+            auto res = launch(appPathFinal, commandLineArgsFinal);
             if (res.isOk())
             {
                 launched = true;
             }
-            else
+            else if (!terminalResult)
             {
-                launchErrors.push_back({ std::filesystem::path(appPathFinal).filename(), res.error() });
+                launchErrors.push_back({ std::filesystem::path(appPathFinal).filename(), res.error().message });
             }
         }
 
         Logger::trace(L"{} {} at {}", app.name, (launched ? L"launched" : L"not launched"), appPathFinal);
-        return launched;
+        return terminalResult.value_or(launched ? LaunchResult::Launched : LaunchResult::Failed);
     }
 }

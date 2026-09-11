@@ -1212,6 +1212,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/Workspaces/WorkspacesLauncherUI.UnitTests/WorkspacesLauncherUI.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/Workspaces/WorkspacesLib.UnitTests/WorkspacesLibUnitTests.vcxproj" Id="a85d4d9f-9a39-4b5d-8b5a-9f2d5c9a8b4c" />
   </Folder>
   <Folder Name="/modules/Workspaces/WindowProperties/">
