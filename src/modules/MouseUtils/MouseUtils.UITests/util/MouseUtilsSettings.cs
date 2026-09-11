@@ -19,6 +19,7 @@ namespace MouseUtils.UITests
             public const string MouseHighlighter = "MouseUtils_MouseHighlighterTestId";
             public const string MousePointerCrosshairs = "MouseUtils_MousePointerCrosshairsTestId";
             public const string MouseJump = "MouseUtils_MouseJumpTestId";
+            public const string MouseButtonLock = "MouseUtils_MouseButtonLockTestId";
 
             // ToggleSwitch IDs
             public const string FindMyMouseToggle = "MouseUtils_FindMyMouseToggleId";
@@ -46,6 +47,11 @@ namespace MouseUtils.UITests
             // Mouse Jump UI Element IDs
             public const string MouseJumpActivationShortcut = "MouseUtils_MouseJumpActivationShortcutId";
 
+            // Mouse Button Lock UI Element IDs
+            public const string MouseButtonLockOptions = "MouseUtils_MouseButtonLockOptionsId";
+            public const string MouseButtonLockHoldDuration = "MouseUtils_MouseButtonLockHoldDurationId";
+            public const string MouseButtonLockMoveCancelPixels = "MouseUtils_MouseButtonLockMoveCancelPixelsId";
+
             // Navigation IDs
             public const string InputOutputNavItem = "InputOutputNavItem";
             public const string MouseUtilitiesNavItem = "MouseUtilitiesNavItem";
@@ -59,6 +65,7 @@ namespace MouseUtils.UITests
             FindMyMouse,
             MousePointerCrosshairs,
             MouseJump,
+            MouseButtonLock,
         }
 
         private static readonly Dictionary<MouseUtils, string> MouseUtilUINameMap = new()
@@ -67,6 +74,7 @@ namespace MouseUtils.UITests
             [MouseUtils.FindMyMouse] = @"Find My Mouse",
             [MouseUtils.MousePointerCrosshairs] = @"Mouse Pointer Crosshairs",
             [MouseUtils.MouseJump] = @"Mouse Jump",
+            [MouseUtils.MouseButtonLock] = @"Mouse Button Lock",
         };
 
         private static readonly Dictionary<MouseUtils, string> MouseUtilUIToggleMap = new()
@@ -75,6 +83,7 @@ namespace MouseUtils.UITests
             [MouseUtils.FindMyMouse] = @"Find My Mouse",
             [MouseUtils.MousePointerCrosshairs] = @"Mouse Pointer Crosshairs",
             [MouseUtils.MouseJump] = @"Mouse Jump",
+            [MouseUtils.MouseButtonLock] = @"Mouse Button Lock",
         };
 
         public static string GetMouseUtilUIName(MouseUtils element)
