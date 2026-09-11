@@ -39,6 +39,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         private readonly VcpFeatureProbeService _probeService;
         private readonly ContinuousVcpInitializer _continuousInitializer;
         private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
+        private readonly Func<string, byte, int, bool>? _isVcpValueBlocked;
+        private readonly Func<IntPtr, byte, uint, bool> _writeVcpFeature;
 
         private bool _disposed;
 
@@ -54,9 +56,17 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// silently loses the discovery cache that maximum compatibility mode depends on.
         /// </param>
         public DdcCiController(IKnownGoodVcpStore knownGoodStore)
+            : this(knownGoodStore, new NativeVcpFeatureReader())
+        {
+        }
+
+        internal DdcCiController(
+            IKnownGoodVcpStore knownGoodStore,
+            Func<string, byte, int, bool> isVcpValueBlocked)
             : this(
                 knownGoodStore,
-                new NativeVcpFeatureReader())
+                new NativeVcpFeatureReader(),
+                isVcpValueBlocked: isVcpValueBlocked)
         {
         }
 
@@ -66,14 +76,20 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// Pacing delay for the capabilities retry loop and the VCP probe. Injected so tests can
         /// drive the discovery pipeline without waiting out the real inter-transaction intervals.
         /// </param>
+        /// <param name="isVcpValueBlocked">Optional user restriction lookup for raw VCP writes.</param>
+        /// <param name="writeVcpFeature">Optional native writer replacement for hardware-free tests.</param>
         internal DdcCiController(
             IKnownGoodVcpStore knownGoodStore,
             IVcpFeatureReader reader,
-            Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
+            Func<TimeSpan, CancellationToken, Task>? delayAsync = null,
+            Func<string, byte, int, bool>? isVcpValueBlocked = null,
+            Func<IntPtr, byte, uint, bool>? writeVcpFeature = null)
         {
             _knownGoodStore = knownGoodStore;
             _vcpReader = reader;
             _delayAsync = delayAsync ?? Task.Delay;
+            _isVcpValueBlocked = isVcpValueBlocked;
+            _writeVcpFeature = writeVcpFeature ?? SetVCPFeature;
             _probeService = new VcpFeatureProbeService(_vcpReader, _delayAsync);
             _continuousInitializer = new ContinuousVcpInitializer(_vcpReader, _knownGoodStore);
             _discoveryHelper = new MonitorDiscoveryHelper();
@@ -904,6 +920,12 @@ namespace PowerDisplay.Common.Drivers.DDC
             return Task.Run(
                 () =>
                 {
+                    if (VcpValueRestrictions.IsBlockedByHardware(monitor.Id, vcpCode, value) ||
+                        _isVcpValueBlocked?.Invoke(monitor.Id, vcpCode, value) == true)
+                    {
+                        return MonitorOperationResult.Failure($"VCP 0x{vcpCode:X2} value 0x{value:X2} is disabled for this monitor");
+                    }
+
                     if (monitor.Handle == IntPtr.Zero)
                     {
                         return MonitorOperationResult.Failure("Invalid monitor handle");
@@ -911,7 +933,7 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                     try
                     {
-                        if (SetVCPFeature(monitor.Handle, vcpCode, (uint)value))
+                        if (_writeVcpFeature(monitor.Handle, vcpCode, (uint)value))
                         {
                             RefreshKnownGoodAfterWrite(monitor, vcpCode, value);
                             return MonitorOperationResult.Success();

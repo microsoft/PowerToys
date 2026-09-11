@@ -134,6 +134,12 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             return false;
         }
 
+        if (_monitorManager.IsVcpValueBlocked(Id, vcpCode, value))
+        {
+            Logger.LogWarning($"[{Id}] VCP 0x{vcpCode:X2} value 0x{value:X2} is disabled, skipping");
+            return false;
+        }
+
         return true;
     }
 
@@ -600,13 +606,15 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             return;
         }
 
-        _availableColorPresets = colorTempInfo.SupportedValues.Select(value => new ColorTemperatureItem
-        {
-            VcpValue = value,
-            DisplayName = Common.Utils.VcpNames.GetValueName(0x14, value, _mainViewModel?.CustomVcpMappings, _monitor.Id) is string n ? $"{n} (0x{value:X2})" : $"0x{value:X2}",
-            IsSelected = value == _monitor.CurrentColorTemperature,
-            MonitorId = _monitor.Id,
-        }).ToList();
+        _availableColorPresets = colorTempInfo.SupportedValues
+            .Where(value => !_monitorManager.IsVcpValueBlocked(Id, 0x14, value))
+            .Select(value => new ColorTemperatureItem
+            {
+                VcpValue = value,
+                DisplayName = Common.Utils.VcpNames.GetValueName(0x14, value, _mainViewModel?.CustomVcpMappings, _monitor.Id) is string n ? $"{n} (0x{value:X2})" : $"0x{value:X2}",
+                IsSelected = value == _monitor.CurrentColorTemperature,
+                MonitorId = _monitor.Id,
+            }).ToList();
 
         OnPropertyChanged(nameof(AvailableColorPresets));
     }
@@ -659,13 +667,15 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             return;
         }
 
-        _availableInputSources = supportedSources.Select(value => new InputSourceItem
-        {
-            Value = value,
-            Name = Common.Utils.VcpNames.GetValueName(0x60, value, _mainViewModel?.CustomVcpMappings, _monitor.Id) ?? $"Source 0x{value:X2}",
-            SelectionVisibility = value == _monitor.CurrentInputSource ? Visibility.Visible : Visibility.Collapsed,
-            MonitorId = _monitor.Id,
-        }).ToList();
+        _availableInputSources = supportedSources
+            .Where(value => !_monitorManager.IsVcpValueBlocked(Id, 0x60, value))
+            .Select(value => new InputSourceItem
+            {
+                Value = value,
+                Name = Common.Utils.VcpNames.GetValueName(0x60, value, _mainViewModel?.CustomVcpMappings, _monitor.Id) ?? $"Source 0x{value:X2}",
+                SelectionVisibility = value == _monitor.CurrentInputSource ? Visibility.Visible : Visibility.Collapsed,
+                MonitorId = _monitor.Id,
+            }).ToList();
 
         OnPropertyChanged(nameof(AvailableInputSources));
     }
@@ -685,6 +695,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(CurrentInputSourceName));
         _availableInputSources = null;  // Force rebuild with new custom names
         OnPropertyChanged(nameof(AvailableInputSources));
+
+        _availablePowerStates = null;
+        OnPropertyChanged(nameof(AvailablePowerStates));
     }
 
     /// <summary>
@@ -776,13 +789,15 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             return;
         }
 
-        _availablePowerStates = supportedStates.Select(value => new PowerStateItem
-        {
-            Value = value,
-            Name = Common.Utils.VcpNames.GetValueName(0xD6, value) ?? $"State 0x{value:X2}",
-            IsSelected = value == _monitor.CurrentPowerState,
-            MonitorId = _monitor.Id,
-        }).ToList();
+        _availablePowerStates = supportedStates
+            .Where(value => !_monitorManager.IsVcpValueBlocked(Id, 0xD6, value))
+            .Select(value => new PowerStateItem
+            {
+                Value = value,
+                Name = Common.Utils.VcpNames.GetValueName(0xD6, value) ?? $"State 0x{value:X2}",
+                IsSelected = value == _monitor.CurrentPowerState,
+                MonitorId = _monitor.Id,
+            }).ToList();
 
         OnPropertyChanged(nameof(AvailablePowerStates));
     }

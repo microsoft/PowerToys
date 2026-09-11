@@ -35,6 +35,9 @@ namespace PowerDisplay.Common.Services
         // Built-in entries are loaded automatically by the service constructor.
         private readonly MonitorBlacklistService _blacklistService = new();
 
+        private IReadOnlyDictionary<string, List<VcpValueBlock>> _disabledVcpValues =
+            new Dictionary<string, List<VcpValueBlock>>(MonitorIdComparer.Instance);
+
         // Controllers stored by type for O(1) lookup based on CommunicationMethod
         private DdcCiController? _ddcController;
         private WmiController? _wmiController;
@@ -58,7 +61,7 @@ namespace PowerDisplay.Common.Services
             try
             {
                 // DDC/CI controller (external monitors)
-                _ddcController = new DdcCiController(knownGoodStore);
+                _ddcController = new DdcCiController(knownGoodStore, IsVcpValueBlocked);
             }
             catch (Exception ex)
             {
@@ -88,6 +91,46 @@ namespace PowerDisplay.Common.Services
             {
                 _ddcController.MaxCompatibilityMode = enabled;
             }
+        }
+
+        /// <summary>
+        /// Replaces the user-disabled raw VCP values with a snapshot of the current settings.
+        /// The DDC writer consults this snapshot immediately before sending a command.
+        /// </summary>
+        public void SetDisabledVcpValues(IEnumerable<KeyValuePair<string, List<VcpValueBlock>>> entries)
+        {
+            ArgumentNullException.ThrowIfNull(entries);
+
+            var snapshot = new Dictionary<string, List<VcpValueBlock>>(MonitorIdComparer.Instance);
+            foreach (var entry in entries)
+            {
+                if (string.IsNullOrEmpty(entry.Key))
+                {
+                    continue;
+                }
+
+                snapshot[entry.Key] = entry.Value?
+                    .Where(block => block != null)
+                    .Select(block => new VcpValueBlock
+                    {
+                        VcpCode = block.VcpCode,
+                        Values = block.Values?.ToList() ?? new List<int>(),
+                    })
+                    .ToList() ?? new List<VcpValueBlock>();
+            }
+
+            Volatile.Write(ref _disabledVcpValues, snapshot);
+        }
+
+        /// <summary>
+        /// Reports whether a raw VCP value is disabled by the user or a hardware compatibility rule.
+        /// Does not change the monitor's advertised capabilities or perform hardware I/O.
+        /// </summary>
+        public bool IsVcpValueBlocked(string monitorId, byte vcpCode, int value)
+        {
+            var snapshot = Volatile.Read(ref _disabledVcpValues);
+            snapshot.TryGetValue(monitorId, out var userBlocks);
+            return VcpValueRestrictions.IsBlocked(monitorId, vcpCode, value, userBlocks);
         }
 
         /// <summary>
