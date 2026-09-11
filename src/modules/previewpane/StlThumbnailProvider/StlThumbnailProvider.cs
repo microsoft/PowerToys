@@ -120,10 +120,10 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
         }
 
         /// <summary>
-        /// Checks that HelixToolkit can safely dispatch the stream to its binary or ASCII STL parser.
+        /// Checks that HelixToolkit cannot mistake a wrapped binary facet count for a valid payload length.
         /// </summary>
         /// <param name="stream">The STL stream.</param>
-        /// <returns><see langword="true"/> when the selected parser can make bounded forward progress.</returns>
+        /// <returns><see langword="true"/> when the stream can be delegated to HelixToolkit.</returns>
         public static bool IsSafeToParse(Stream stream)
         {
             if (stream == null || !stream.CanRead || !stream.CanSeek || stream.Position < 0 || stream.Position >= stream.Length)
@@ -137,7 +137,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
                 var remainingLength = stream.Length - initialPosition;
                 if (remainingLength < 84)
                 {
-                    return false;
+                    return true;
                 }
 
                 stream.Position = initialPosition + 80;
@@ -159,200 +159,14 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
                     return payloadLength == 50UL * triangleCount;
                 }
 
-                // A failed binary length check rewinds the stream and dispatches to the ASCII
-                // parser. Validate the line structure that parser relies on for forward progress.
-                return IsSafeAsciiStl(stream, initialPosition);
+                // HelixToolkit delegates every other stream to its ASCII parser. Do not duplicate
+                // that parser's grammar here, because doing so would reject supported extensions.
+                return true;
             }
             finally
             {
                 stream.Position = initialPosition;
             }
-        }
-
-        private static bool IsSafeAsciiStl(Stream stream, long initialPosition)
-        {
-            stream.Position = initialPosition;
-
-            Span<byte> bom = stackalloc byte[3];
-            if (stream.Read(bom) != bom.Length ||
-                bom[0] != 0xEF ||
-                bom[1] != 0xBB ||
-                bom[2] != 0xBF)
-            {
-                stream.Position = initialPosition;
-            }
-
-            var state = AsciiStlState.OutsideFacet;
-            var sawSolid = false;
-            var sawEndSolid = false;
-            var solidOpen = false;
-            var lineLength = 0;
-            var tokenLength = 0;
-            var tokenComplete = false;
-            var comment = false;
-            var previousLineTerminatorWasCr = false;
-            Span<byte> token = stackalloc byte[16];
-            Span<byte> buffer = stackalloc byte[4096];
-
-            while (true)
-            {
-                var bytesRead = stream.Read(buffer);
-                if (bytesRead == 0)
-                {
-                    break;
-                }
-
-                foreach (var value in buffer[..bytesRead])
-                {
-                    if (value == '\n' && previousLineTerminatorWasCr)
-                    {
-                        previousLineTerminatorWasCr = false;
-                        continue;
-                    }
-
-                    if (value == '\r' || value == '\n')
-                    {
-                        if (!ProcessAsciiLine(token[..tokenLength], comment, ref state, ref sawSolid, ref sawEndSolid, ref solidOpen))
-                        {
-                            return false;
-                        }
-
-                        lineLength = 0;
-                        tokenLength = 0;
-                        tokenComplete = false;
-                        comment = false;
-                        previousLineTerminatorWasCr = value == '\r';
-                        continue;
-                    }
-
-                    previousLineTerminatorWasCr = false;
-
-                    if (++lineLength > 4096)
-                    {
-                        return false;
-                    }
-
-                    if (value == '\t' || value == ' ')
-                    {
-                        tokenComplete |= tokenLength != 0;
-                        continue;
-                    }
-
-                    if (value < 0x20 || value > 0x7E)
-                    {
-                        return false;
-                    }
-
-                    if (tokenLength == 0 && (value == '#' || value == '!' || value == '$'))
-                    {
-                        comment = true;
-                    }
-
-                    if (!tokenComplete && !comment)
-                    {
-                        if (tokenLength == token.Length)
-                        {
-                            tokenComplete = true;
-                        }
-                        else
-                        {
-                            token[tokenLength++] = value >= (byte)'A' && value <= (byte)'Z' ? (byte)(value + 32) : value;
-                        }
-                    }
-                }
-            }
-
-            if (lineLength != 0 &&
-                !ProcessAsciiLine(token[..tokenLength], comment, ref state, ref sawSolid, ref sawEndSolid, ref solidOpen))
-            {
-                return false;
-            }
-
-            return state == AsciiStlState.OutsideFacet && sawSolid && sawEndSolid && !solidOpen;
-        }
-
-        private static bool ProcessAsciiLine(
-            ReadOnlySpan<byte> token,
-            bool comment,
-            ref AsciiStlState state,
-            ref bool sawSolid,
-            ref bool sawEndSolid,
-            ref bool solidOpen)
-        {
-            if (comment || token.IsEmpty)
-            {
-                return true;
-            }
-
-            switch (state)
-            {
-                case AsciiStlState.OutsideFacet:
-                    if (token.SequenceEqual("solid"u8))
-                    {
-                        if (solidOpen)
-                        {
-                            return false;
-                        }
-
-                        sawSolid = true;
-                        solidOpen = true;
-                        return true;
-                    }
-
-                    if (!solidOpen)
-                    {
-                        return false;
-                    }
-
-                    if (token.SequenceEqual("facet"u8))
-                    {
-                        state = AsciiStlState.ExpectOuterLoop;
-                    }
-                    else if (token.SequenceEqual("endsolid"u8))
-                    {
-                        sawEndSolid = true;
-                        solidOpen = false;
-                    }
-
-                    return true;
-
-                case AsciiStlState.ExpectOuterLoop:
-                    if (!token.SequenceEqual("outer"u8))
-                    {
-                        return false;
-                    }
-
-                    state = AsciiStlState.InLoop;
-                    return true;
-
-                case AsciiStlState.InLoop:
-                    if (token.SequenceEqual("endloop"u8))
-                    {
-                        state = AsciiStlState.ExpectEndFacet;
-                    }
-
-                    return true;
-
-                case AsciiStlState.ExpectEndFacet:
-                    if (!token.SequenceEqual("endfacet"u8))
-                    {
-                        return false;
-                    }
-
-                    state = AsciiStlState.OutsideFacet;
-                    return true;
-
-                default:
-                    return false;
-            }
-        }
-
-        private enum AsciiStlState
-        {
-            OutsideFacet,
-            ExpectOuterLoop,
-            InLoop,
-            ExpectEndFacet,
         }
 
         /// <summary>

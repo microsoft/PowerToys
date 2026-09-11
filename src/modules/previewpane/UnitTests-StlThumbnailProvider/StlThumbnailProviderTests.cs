@@ -73,11 +73,11 @@ namespace StlThumbnailProviderUnitTests
         }
 
         [TestMethod]
-        public void BinaryStlDeclaredFacetPastEofShouldFailPreflight()
+        public void BinaryStlDeclaredFacetPastEofShouldBeDelegatedToParser()
         {
             using var stream = CreateBinaryStl(triangleCount: 1, facetBytes: 0);
 
-            Assert.IsFalse(StlThumbnailProvider.IsSafeToParse(stream));
+            Assert.IsTrue(StlThumbnailProvider.IsSafeToParse(stream));
             Assert.IsNull(StlThumbnailProvider.GetThumbnail(stream, 256));
         }
 
@@ -122,6 +122,35 @@ namespace StlThumbnailProviderUnitTests
         }
 
         [TestMethod]
+        public void ValidAsciiStlWithLocalizedNameShouldPassPreflightAndRender()
+        {
+            using var stream = CreateAsciiStl(leadingCrLf: false, bom: false, uppercase: false, solidName: "café");
+
+            Assert.IsTrue(StlThumbnailProvider.IsSafeToParse(stream));
+            using var thumbnail = StlThumbnailProvider.GetThumbnail(stream, 256);
+            Assert.IsNotNull(thumbnail);
+        }
+
+        [TestMethod]
+        public void AsciiStlWithUnknownKeywordShouldBeDelegatedToParser()
+        {
+            const string content =
+                "solid extended\r\n" +
+                "facet normal 0 0 1\r\n" +
+                "future_keyword value\r\n" +
+                "outer loop\r\n" +
+                "vertex 0 0 0\r\n" +
+                "vertex 1 0 0\r\n" +
+                "vertex 0 1 0\r\n" +
+                "endloop\r\n" +
+                "endfacet\r\n" +
+                "endsolid extended\r\n";
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+
+            Assert.IsTrue(StlThumbnailProvider.IsSafeToParse(stream));
+        }
+
+        [TestMethod]
         public void ValidAsciiStlWithMultipleFacetsAndBlankLinesShouldRender()
         {
             const string content =
@@ -153,7 +182,7 @@ namespace StlThumbnailProviderUnitTests
 
         [TestMethod]
         [Timeout(5000)]
-        public void TruncatedAsciiStlWithUnterminatedFacetShouldFailBoundedly()
+        public void TruncatedAsciiStlWithUnterminatedFacetShouldBeDelegatedAndFailBoundedly()
         {
             const string lineEnding = "\r\n";
             var content =
@@ -167,7 +196,7 @@ namespace StlThumbnailProviderUnitTests
             using var stream = new MemoryStream(Encoding.ASCII.GetBytes(content));
             var stopwatch = Stopwatch.StartNew();
 
-            Assert.IsFalse(StlThumbnailProvider.IsSafeToParse(stream));
+            Assert.IsTrue(StlThumbnailProvider.IsSafeToParse(stream));
             Assert.IsNull(StlThumbnailProvider.GetThumbnail(stream, 256));
 
             stopwatch.Stop();
@@ -230,10 +259,10 @@ namespace StlThumbnailProviderUnitTests
             return stream;
         }
 
-        private static MemoryStream CreateAsciiStl(bool leadingCrLf, bool bom, bool uppercase, string lineEnding = "\r\n")
+        private static MemoryStream CreateAsciiStl(bool leadingCrLf, bool bom, bool uppercase, string lineEnding = "\r\n", string solidName = "sample")
         {
             var content =
-                $"solid sample{lineEnding}" +
+                $"solid {solidName}{lineEnding}" +
                 $"facet normal 0 0 1{lineEnding}" +
                 $"outer loop{lineEnding}" +
                 $"vertex 0 0 0{lineEnding}" +
@@ -241,7 +270,7 @@ namespace StlThumbnailProviderUnitTests
                 $"vertex 0 1 0{lineEnding}" +
                 $"endloop{lineEnding}" +
                 $"endfacet{lineEnding}" +
-                $"endsolid sample{lineEnding}";
+                $"endsolid {solidName}{lineEnding}";
 
             if (uppercase)
             {
