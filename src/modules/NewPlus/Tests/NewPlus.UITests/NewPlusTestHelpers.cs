@@ -166,7 +166,12 @@ public sealed partial class NewPlusTests
     private static void WaitForJsonValue(string path, Func<JsonNode?, bool> predicate, string description)
     {
         var result = WaitHelper.WaitForStable(
-            observe: () => JsonNode.Parse(File.ReadAllText(path)),
+            observe: () =>
+            {
+                // Observing settings must not deny the Runner's concurrent save or replacement.
+                using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                return JsonNode.Parse(stream);
+            },
             isMatch: predicate,
             timeoutMS: TimeoutMS,
             requiredConsecutiveMatches: 2,
