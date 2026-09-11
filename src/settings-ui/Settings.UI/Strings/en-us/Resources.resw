@@ -6104,6 +6104,9 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_ProfileEditor_Description.Text" xml:space="preserve">
     <value>Select what monitors and settings to include for this profile</value>
   </data>
+  <data name="PowerDisplay_ProfileEditor_PreservedSettings.Message" xml:space="preserve">
+    <value>Saved settings for unavailable monitors or features are kept. Uncheck a setting to remove it. Applying the profile still respects monitor capabilities.</value>
+  </data>
   <data name="PowerDisplay_ProfileEditor_Brightness.Text" xml:space="preserve">
     <value>Brightness</value>
   </data>
