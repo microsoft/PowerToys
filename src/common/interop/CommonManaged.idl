@@ -2,10 +2,22 @@ namespace PowerToys
 {
     namespace Interop
     {
+        enum NamedPipePeerValidation
+        {
+            PowerToysPeer = 0,
+            WindowsSystemHost = 1,
+        };
+
         [default_interface] static runtimeclass CommonManaged {
             static String GetProductVersion();
             static String GetProductVersionChannel();
             static String GetProductVersionSourceCommit();
+            static Boolean AuthenticateNamedPipeServer(
+                UInt64 pipeHandle,
+                String expectedProcessName,
+                String trustedDirectory,
+                String referenceBinaryPath,
+                NamedPipePeerValidation validation);
         }
     }
 }

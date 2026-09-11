@@ -2,6 +2,8 @@
 #include "AdvancedPasteProcessManager.h"
 
 #include <common/logger/logger.h>
+#include <common/utils/named_pipe_peer_auth.h>
+#include <common/utils/process_path.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/secure_named_pipe.h>
 #include <common/interop/shared_constants.h>
@@ -207,6 +209,18 @@ HRESULT AdvancedPasteProcessManager::start_named_pipe_server(const std::wstring&
                 CancelIoEx(hPipe, &overlapped);
                 return clean_up_and_fail();
         }
+    }
+
+    const named_pipe_peer_auth::Policy clientPolicy{
+        L"PowerToys.AdvancedPaste.exe",
+        get_module_folderpath(),
+        get_module_filename(nullptr),
+        named_pipe_peer_auth::Validation::PowerToysPeer,
+    };
+    if (!named_pipe_peer_auth::authenticate(hPipe, named_pipe_peer_auth::Peer::Client, clientPolicy))
+    {
+        Logger::error(L"Rejected untrusted Advanced Paste named pipe client");
+        return clean_up_and_fail();
     }
 
     CloseHandle(overlapped.hEvent);

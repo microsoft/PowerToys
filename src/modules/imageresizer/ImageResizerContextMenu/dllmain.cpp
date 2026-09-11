@@ -9,6 +9,7 @@
 
 #include <common/telemetry/EtwTrace/EtwTrace.h>
 #include <common/utils/elevation.h>
+#include <common/utils/named_pipe_peer_auth.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/utils/secure_named_pipe.h>
@@ -206,6 +207,19 @@ private:
                 CloseHandle(hPipe);
                 hPipe = INVALID_HANDLE_VALUE;
             }
+            return E_FAIL;
+        }
+
+        const named_pipe_peer_auth::Policy clientPolicy{
+            L"PowerToys.ImageResizer.exe",
+            get_module_folderpath(g_hInst),
+            get_module_filename(g_hInst),
+            named_pipe_peer_auth::Validation::PowerToysPeer,
+        };
+        if (!named_pipe_peer_auth::authenticate(hPipe, named_pipe_peer_auth::Peer::Client, clientPolicy))
+        {
+            CloseHandle(hPipe);
+            hPipe = INVALID_HANDLE_VALUE;
             return E_FAIL;
         }
 
