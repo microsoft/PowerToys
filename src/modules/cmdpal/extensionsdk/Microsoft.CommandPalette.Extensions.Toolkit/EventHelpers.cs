@@ -32,7 +32,7 @@ public static class EventHelpers
         Action<TypedEventHandler<object, TEventArgs>>? unsubscribe = null)
     {
         // A callback to a previous host must not prevent delivery to the current host.
-        foreach (TypedEventHandler<object, TEventArgs> handler in handlers?.GetInvocationList() ?? [])
+        foreach (TypedEventHandler<object, TEventArgs> handler in Delegate.EnumerateInvocationList(handlers))
         {
             try
             {
