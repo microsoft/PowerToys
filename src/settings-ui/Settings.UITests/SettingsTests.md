@@ -15,6 +15,16 @@
  - [x] turn on all the module, all module are now working
  - [] restart PT and verify that all module are still on in the settings page and they are actually working
 
+**Home module rows:**
+ - [ ] Clicking a module row opens that module's settings page, including when the module is disabled.
+ - [ ] Changing a row's toggle updates the module without navigating away from Home; restore its original state.
+ - [ ] Keyboard focus reaches the row and its toggle separately. Enter/Space on the row navigates; Space on the toggle changes only its state.
+ - [ ] Policy-controlled modules retain their lock indication and disabled toggle while the settings page remains reachable.
+ - [ ] Light, dark, and high-contrast themes preserve row spacing, icons, dividers, hover/pressed/disabled colors, and focus indicators.
+ - [ ] At narrow window sizes, larger text/display scale, and right-to-left layout, labels, badges, toggles, and chevrons retain their placement without overlap.
+ - [ ] Scrolling to the last module and back, then changing the sort order, retains the correct row labels, enabled states, navigation targets, and toggle targets.
+ - [ ] Quick Access's all-apps list retains its existing default row presentation and interactions.
+
 **Quick access tray icon flyout:**
  - [] Use left click on the system tray icon and verify the flyout appears.
  - [] Try to launch a module from the launch screen in the flyout.
