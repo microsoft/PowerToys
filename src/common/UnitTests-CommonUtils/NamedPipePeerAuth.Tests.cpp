@@ -3,6 +3,8 @@
 #include <common/utils/named_pipe_peer_auth.h>
 #include <common/utils/process_path.h>
 
+#include <format>
+
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace CommonUtilsUnitTests
@@ -139,6 +141,18 @@ namespace CommonUtilsUnitTests
                 named_pipe_peer_auth::Peer::Client,
                 policy));
 #endif
+        }
+
+        TEST_METHOD (TrustedSignature_AcceptsWindowsSignedBinary)
+        {
+            wchar_t windowsDirectory[MAX_PATH]{};
+            const UINT length = GetWindowsDirectoryW(windowsDirectory, ARRAYSIZE(windowsDirectory));
+            Assert::IsTrue(length > 0 && length < ARRAYSIZE(windowsDirectory));
+
+            const auto explorerPath = named_pipe_peer_auth::details::canonicalize_path(
+                std::wstring(windowsDirectory) + L"\\explorer.exe");
+            Assert::IsFalse(explorerPath.empty());
+            Assert::IsTrue(named_pipe_peer_auth::details::has_trusted_signature(explorerPath));
         }
     };
 }
