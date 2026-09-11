@@ -16,7 +16,6 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
-using Windows.Globalization;
 using Windows.Media.Ocr;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -42,7 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private int _languageIndex;
-        private List<Language> possibleOcrLanguages;
+        private List<(string NativeName, string DisplayName)> possibleOcrLanguages;
 
         public ObservableCollection<string> AvailableLanguages { get; } = new ObservableCollection<string>();
 
@@ -60,8 +59,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _languageIndex = value;
                     if (_powerOcrSettings != null && _languageIndex < possibleOcrLanguages.Count && _languageIndex >= 0)
                     {
-                        _powerOcrSettings.Properties.PreferredLanguage = possibleOcrLanguages[_languageIndex].NativeName;
-                        NotifySettingsChanged();
+                        string preferredLanguage = possibleOcrLanguages[_languageIndex].NativeName;
+                        if (!string.Equals(_powerOcrSettings.Properties.PreferredLanguage, preferredLanguage, StringComparison.Ordinal))
+                        {
+                            _powerOcrSettings.Properties.PreferredLanguage = preferredLanguage;
+                            NotifySettingsChanged();
+                        }
                     }
 
                     OnPropertyChanged(nameof(LanguageIndex));
@@ -180,16 +183,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         internal void UpdateLanguages()
         {
+            UpdateLanguages(
+                OcrEngine.AvailableRecognizerLanguages.Select(language => (language.NativeName, language.DisplayName)),
+                CultureInfo.CurrentUICulture);
+        }
+
+        internal void UpdateLanguages(IEnumerable<(string NativeName, string DisplayName)> languages, CultureInfo systemCulture)
+        {
             int preferredLanguageIndex = -1;
             int systemLanguageIndex = -1;
-            CultureInfo systemCulture = CultureInfo.CurrentUICulture;
 
             // get the list of all installed OCR languages. While processing them, search for the previously preferred language and also for the current ui language
-            possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.OrderBy(x => x.NativeName).ToList();
+            possibleOcrLanguages = languages.OrderBy(x => x.NativeName).ToList();
             AvailableLanguages.Clear();
-            foreach (Language language in possibleOcrLanguages)
+            foreach (var language in possibleOcrLanguages)
             {
-                if (_powerOcrSettings.Properties.PreferredLanguage?.Equals(language.DisplayName, StringComparison.Ordinal) == true)
+                // PreferredLanguage stores NativeName, not the localized DisplayName.
+                if (_powerOcrSettings.Properties.PreferredLanguage?.Equals(language.NativeName, StringComparison.Ordinal) == true)
                 {
                     preferredLanguageIndex = AvailableLanguages.Count;
                 }
