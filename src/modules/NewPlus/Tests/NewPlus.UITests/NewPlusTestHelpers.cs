@@ -316,13 +316,32 @@ public sealed partial class NewPlusTests
         Assert.IsNotNull(item, "New+ was missing from the open context menu.");
         Step("Expanding the New+ template submenu");
         item.Invoke(msPostAction: 0);
-        var submenu = WindowsFinder.WaitForWindowByApp(
-            "explorer",
-            window => window.Hwnd != root.WindowHandle && (window.ClassName == ClassicMenuClass || window.ClassName == ModernMenuClass),
-            timeoutMS: TimeoutMS);
-        Assert.IsNotNull(submenu, "The New+ template submenu did not open.");
-        Assert.IsNotNull(FindMenuItem(submenu, OpenTemplatesName), "The New+ submenu did not expose Open templates.");
-        return submenu;
+
+        // A popup HWND can precede UIA layout, and Explorer can replace it while animating.
+        // Resolve the submenu by its visible content instead of caching the first popup HWND.
+        var ready = WaitHelper.WaitForStable(
+            observe: () =>
+            {
+                foreach (var window in WindowsFinder.ListByApp("explorer").Where(window =>
+                    window.Hwnd != root.WindowHandle && (window.ClassName == ClassicMenuClass || window.ClassName == ModernMenuClass)))
+                {
+                    var candidate = WindowsFinder.WaitForWindow(
+                        current => current.Hwnd == window.Hwnd, timeoutMS: 250, pollIntervalMS: 100);
+                    if (candidate is not null && FindMenuItem(candidate, OpenTemplatesName, timeoutMS: 500) is not null)
+                    {
+                        return candidate;
+                    }
+                }
+
+                return null;
+            },
+            isMatch: submenu => submenu is not null,
+            timeoutMS: TimeoutMS,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 200,
+            shouldRetryException: IsStaleMenuElement);
+        Assert.IsTrue(ready.Succeeded, $"The New+ submenu did not expose a stable, visible Open templates item. Last error: {ready.LastException}");
+        return ready.LastObservation!;
     }
 
     private void AssertRootMenu(Session explorer, bool expected)
@@ -368,9 +387,21 @@ public sealed partial class NewPlusTests
             "The context menu did not close after creating the template.");
     }
 
-    private static Element? FindMenuItem(Session menu, string name) =>
-        menu.FindAll<Element>(By.Name(name), timeoutMS: 3_000)
-            .FirstOrDefault(item => item.Name == name && item.ControlType == "MenuItem" && item.Width > 0 && item.Height > 0);
+    private static Element? FindMenuItem(Session menu, string name, int timeoutMS = 3_000)
+    {
+        // FindAll returns as soon as the name exists, even when its geometry is not ready yet.
+        var ready = WaitHelper.WaitForStable(
+            observe: () => menu.FindAll<Element>(By.Name(name), timeoutMS: 0)
+                .FirstOrDefault(item => item.Name == name && item.ControlType == "MenuItem" && item.Width > 0 && item.Height > 0),
+            isMatch: item => item is not null,
+            timeoutMS: timeoutMS,
+            pollIntervalMS: 100,
+            shouldRetryException: IsStaleMenuElement);
+        return ready.Succeeded ? ready.LastObservation : null;
+    }
+
+    private static bool IsStaleMenuElement(Exception exception) =>
+        exception is AssertFailedException && exception.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase);
 
     private static IReadOnlyList<string> ReadMenuNames(Session menu)
     {
