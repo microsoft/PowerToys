@@ -985,10 +985,18 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/PowerOCR/PowerOCR.Core/PowerOCR.Core.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/PowerOCR/PowerOCRModuleInterface/PowerOCRModuleInterface.vcxproj" Id="6ab6a2d6-f859-4a82-9184-0bd29c9f07d1" />
   </Folder>
   <Folder Name="/modules/PowerOCR/Tests/">
     <Project Path="src/modules/PowerOCR/PowerOCR-UITests/PowerOCR.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/PowerOCR/PowerOCR.Core.UnitTests/PowerOCR.Core.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -1208,6 +1216,14 @@
     <Project Path="src/modules/Workspaces/WorkspacesWindowArranger/WorkspacesWindowArranger.vcxproj" Id="37d07516-4185-43a4-924f-3c7a5d95ecf6" />
   </Folder>
   <Folder Name="/modules/Workspaces/Tests/">
+    <Project Path="src/modules/Workspaces/Tests/Workspaces.TestApp/Workspaces.TestApp.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Workspaces/Tests/Workspaces.UITests.Next/Workspaces.UITests.Next.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/Workspaces/WorkspacesEditorUITest/Workspaces.Editor.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -1238,6 +1254,7 @@
     <Project Path="src/modules/ZoomIt/ZoomItBreak/ZoomItBreak.vcxproj" Id="94ba3051-c8d7-454a-9d46-1a7c78e228a3" />
     <Project Path="src/modules/ZoomIt/ZoomItModuleInterface/ZoomItModuleInterface.vcxproj" Id="e4585179-2ac1-4d5f-a3ff-cfc5392f694c" />
     <Project Path="src/modules/ZoomIt/ZoomItSettingsInterop/ZoomItSettingsInterop.vcxproj" Id="ca7d8106-30b9-4aec-9d05-b69b31b8c461" />
+    <Project Path="src/modules/ZoomIt/unittests/ZoomItAnimation.UnitTests.vcxproj" Id="67b0a49b-34da-4c99-9d1d-b247a6b9fb3e" />
   </Folder>
   <Folder Name="/modules/GrabAndMove/">
     <Project Path="src/modules/GrabAndMove/GrabAndMove/GrabAndMove.vcxproj" Id="568c4c30-2e3c-4c2c-a691-007362073765" />
