@@ -133,6 +133,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AdvancedPaste.Core\AdvancedPaste.Core.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />

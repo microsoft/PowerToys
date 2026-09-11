@@ -23,6 +23,12 @@
         </RegistryKey>
         <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="PowerToys.ImageResizer.CLI.exe" Id="CliShim_PowerToys.ImageResizer.CLI.exe" Checksum="yes" />
       </Component>
+      <Component Id="CliShim_PowerToys_AdvancedPaste_CLI_exe" Guid="C9E9B468-01E6-4C2B-B539-C4EDBFBC91B1" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="CliShim_PowerToys_AdvancedPaste_CLI_exe" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="PowerToys.AdvancedPaste.CLI.exe" Id="CliShim_PowerToys.AdvancedPaste.CLI.exe" Checksum="yes" />
+      </Component>
       <Component Id="CliShim_PowerToys_FileLocksmith_CLI_exe" Guid="2DD830DD-78D4-46EE-B23B-3EAB3D838EDF" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="CliShim_PowerToys_FileLocksmith_CLI_exe" Value="" KeyPath="yes" />
@@ -72,6 +78,7 @@
       </Component>
       <ComponentRef Id="CliShim_PowerToys_FancyZones_CLI_exe" />
       <ComponentRef Id="CliShim_PowerToys_ImageResizer_CLI_exe" />
+      <ComponentRef Id="CliShim_PowerToys_AdvancedPaste_CLI_exe" />
       <ComponentRef Id="CliShim_PowerToys_FileLocksmith_CLI_exe" />
       <ComponentRef Id="CliShim_PowerToys_PowerDisplay_CLI_exe" />
       <?if $(var.PerUser) = "true" ?>

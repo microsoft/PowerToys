@@ -18,6 +18,20 @@ Advanced Paste is a PowerToys module that provides enhanced clipboard pasting wi
 
 TODO: Add implementation details
 
+### Headless CLI
+
+`PowerToys.AdvancedPaste.CLI.exe` runs deterministic transformations without starting the Advanced Paste UI or communicating with Runner. It supports `plain-text`, `markdown` (HTML/text to Markdown), and `json` (JSON passthrough or XML/INI/CSV/plain-text conversion). AI, OCR, paste-as-file, and media-transcoding transformations are intentionally unavailable because they need module lifecycle, provider, or WinRT media infrastructure.
+
+```powershell
+Get-Clipboard | PowerToys.AdvancedPaste.CLI.exe transform --format plain-text --stdin
+PowerToys.AdvancedPaste.CLI.exe transform --format markdown --input notes.html --output notes.md
+PowerToys.AdvancedPaste.CLI.exe transform --format json --input notes.csv --json
+```
+
+Specify exactly one input source: `--input <path>`, `--stdin`, or `--clipboard`. Output defaults to stdout; use at most one of `--output <path>`, `--stdout`, or `--output-clipboard`. `--clipboard` and `--output-clipboard` are explicit and never simulate paste keys. Inputs are limited to 16 MiB and raw input/output is never written to the CLI log.
+
+`--json` emits one UTF-8 JSON result envelope on stdout (`status`, `format`, `outputPath`, `outputClipboard`, `output`) or one error envelope on stderr (`status`, `code`, `message`). The stable exit codes are `0` for success, `1` for input, I/O, cancellation, clipboard, or transformation failures, and `2` for parser/argument errors.
+
 ### Paste with AI Preview
 
 The "Show preview" setting (`ShowCustomPreview`) controls whether AI-generated results are displayed in a preview window before pasting. **The preview feature does not consume additional AI credits**—the preview displays the same AI response that was already generated, cached locally from a single API call.

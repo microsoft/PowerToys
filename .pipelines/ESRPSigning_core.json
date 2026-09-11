@@ -53,6 +53,8 @@
             "PowerToys.AdvancedPasteModuleInterface.dll",
             "WinUI3Apps\\PowerToys.AdvancedPaste.exe",
             "WinUI3Apps\\PowerToys.AdvancedPaste.dll",
+            "WinUI3Apps\\PowerToys.AdvancedPaste.Cli.exe",
+            "WinUI3Apps\\PowerToys.AdvancedPaste.Cli.dll",
 
             "PowerToys.AwakeModuleInterface.dll",
             "PowerToys.Awake.exe",

@@ -145,6 +145,14 @@
   </Folder>
   <Folder Name="/modules/" />
   <Folder Name="/modules/AdvancedPaste/">
+    <Project Path="src/modules/AdvancedPaste/AdvancedPaste.CLI/AdvancedPaste.CLI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/AdvancedPaste/AdvancedPaste.Core/AdvancedPaste.Core.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/AdvancedPaste/AdvancedPaste/AdvancedPaste.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -153,6 +161,10 @@
     <Project Path="src/modules/AdvancedPaste/AdvancedPasteModuleInterface/AdvancedPasteModuleInterface.vcxproj" Id="fc373b24-3293-453c-aaf5-cf2909dcee6a" />
   </Folder>
   <Folder Name="/modules/AdvancedPaste/Tests/">
+    <Project Path="src/modules/AdvancedPaste/AdvancedPaste.Cli.UnitTests/AdvancedPaste.Cli.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/AdvancedPaste/AdvancedPaste.FuzzTests/AdvancedPaste.FuzzTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />

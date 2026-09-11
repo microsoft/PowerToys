@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.SelfContained.props" />
+  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>PowerToys.AdvancedPaste.Cli</AssemblyName>
+    <RootNamespace>AdvancedPaste.Cli</RootNamespace>
+    <Platforms>x64;ARM64</Platforms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>AdvancedPaste.Cli.UnitTests</_Parameter1>
+    </AssemblyAttribute>
+    <ProjectReference Include="..\AdvancedPaste.Core\AdvancedPaste.Core.csproj" />
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+  </ItemGroup>
+</Project>
