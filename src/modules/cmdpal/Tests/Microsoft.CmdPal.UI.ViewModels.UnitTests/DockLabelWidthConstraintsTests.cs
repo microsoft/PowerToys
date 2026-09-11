@@ -226,4 +226,86 @@ public class DockLabelWidthConstraintsTests
         Assert.AreEqual((80d, 80d), constraints.Resolve(12, 12, 24, 100));
         Assert.AreEqual((80d, 80d), constraints.Resolve(12, 12, 24, 100, showSubtitle: false));
     }
+
+    [TestMethod]
+    [DataRow("Arbeitsspeicher")]
+    [DataRow("\u010cas aktivity")]
+    [DataRow("12ch")]
+    [DataRow("")]
+    public void FromProperties_PreservesLiteralSamplesWithoutParsingUnits(string sample)
+    {
+        var constraints = DockLabelWidthConstraints.FromProperties(new Dictionary<string, object?>
+        {
+            [WellKnownExtensionAttributes.DockTitleWidthSample] = sample,
+            [WellKnownExtensionAttributes.DockSubtitleWidthSample] = sample,
+        });
+
+        Assert.AreEqual(sample, constraints.TitleWidthSample);
+        Assert.AreEqual(sample, constraints.SubtitleWidthSample);
+        Assert.IsTrue(constraints.UsesFontMeasurements);
+        Assert.IsFalse(constraints.UsesCharacters);
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow(80d)]
+    [DataRow(true)]
+    public void FromProperties_IgnoresNonStringSamples(object? sample)
+    {
+        var constraints = DockLabelWidthConstraints.FromProperties(new Dictionary<string, object?>
+        {
+            [WellKnownExtensionAttributes.DockTitleWidthSample] = sample,
+            [WellKnownExtensionAttributes.DockSubtitleWidthSample] = sample,
+        });
+
+        Assert.AreSame(DockLabelWidthConstraints.Default, constraints);
+        Assert.IsFalse(constraints.UsesFontMeasurements);
+    }
+
+    [TestMethod]
+    public void Resolve_SamplesOverrideRowWidthsAndRespectRowVisibility()
+    {
+        var constraints = new DockLabelWidthConstraints(new(80, false), new(80, false), new(10, true), new(12, true), "100%", "Arbeitsspeicher");
+
+        Assert.AreEqual((45d, 45d), constraints.Resolve(6, 5, 24, 100, titleSampleWidth: 30, subtitleSampleWidth: 45));
+        Assert.AreEqual((30d, 30d), constraints.Resolve(6, 5, 24, 100, showSubtitle: false, titleSampleWidth: 30, subtitleSampleWidth: 45));
+        Assert.AreEqual((45d, 45d), constraints.Resolve(6, 5, 24, 100, showTitle: false, titleSampleWidth: 30, subtitleSampleWidth: 45));
+        Assert.AreEqual((0d, 100d), constraints.Resolve(6, 5, 24, 100, showTitle: false, showSubtitle: false, titleSampleWidth: 30, subtitleSampleWidth: 45));
+        Assert.AreEqual((90d, 90d), constraints.Resolve(12, 10, 24, 100, titleSampleWidth: 60, subtitleSampleWidth: 90));
+    }
+
+    [TestMethod]
+    public void Resolve_MixesSampleAndNumericRowsWithoutTreatingSamplesAsAMinimum()
+    {
+        var constraints = new DockLabelWidthConstraints(null, null, new(5, true), new(12, true), SubtitleWidthSample: "CPU");
+
+        Assert.AreEqual((30d, 30d), constraints.Resolve(6, 5, 24, 100, subtitleSampleWidth: 18));
+        Assert.AreEqual((18d, 18d), constraints.Resolve(6, 5, 24, 100, showTitle: false, subtitleSampleWidth: 18));
+        Assert.AreEqual((30d, 30d), constraints.Resolve(6, 5, 24, 100, showSubtitle: false, subtitleSampleWidth: 80));
+        Assert.AreEqual((80d, 80d), constraints.Resolve(6, 5, 24, 100, subtitleSampleWidth: 80));
+        Assert.AreEqual((80d, 80d), constraints.Resolve(6, 5, 24, 100, titleSampleWidth: 100, subtitleSampleWidth: 80));
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow(-1d)]
+    [DataRow(double.NaN)]
+    [DataRow(double.PositiveInfinity)]
+    [DataRow(double.MaxValue)]
+    public void Resolve_InvalidSampleMeasurementsFallBackToWidthHints(double? measuredWidth)
+    {
+        var constraints = new DockLabelWidthConstraints(new(80, false), new(80, false), new(5, true), TitleWidthSample: "100%", SubtitleWidthSample: "CPU");
+
+        Assert.AreEqual((30d, 30d), constraints.Resolve(6, 5, 24, 100, titleSampleWidth: measuredWidth, subtitleSampleWidth: measuredWidth));
+        Assert.AreEqual((80d, 80d), constraints.Resolve(6, 5, 24, 100, showTitle: false, subtitleSampleWidth: measuredWidth));
+    }
+
+    [TestMethod]
+    public void Resolve_EmptySampleCanReserveZeroWithoutNumericWidths()
+    {
+        var constraints = new DockLabelWidthConstraints(null, null, TitleWidthSample: string.Empty);
+
+        Assert.AreEqual((0d, 0d), constraints.Resolve(6, 5, 24, 100, titleSampleWidth: 0));
+        Assert.AreEqual((0d, 100d), constraints.Resolve(6, 5, 0, 100, showTitle: false, titleSampleWidth: 0));
+    }
 }

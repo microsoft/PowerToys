@@ -33,6 +33,7 @@ public sealed partial class DockItemControl
         TextBlock.CharacterSpacingProperty,
         TextBlock.IsTextScaleFactorEnabledProperty,
         LanguageProperty,
+        FlowDirectionProperty,
         Typography.NumeralAlignmentProperty,
         Typography.NumeralStyleProperty,
     ];
@@ -42,13 +43,20 @@ public sealed partial class DockItemControl
     private TextBlock? _subtitleText;
     private double? _titleCharacterWidth;
     private double? _subtitleCharacterWidth;
+    private double? _titleSampleWidth;
+    private double? _subtitleSampleWidth;
     private UISettings? _textSettings;
+    private XamlRoot? _labelXamlRoot;
+    private double _labelRasterizationScale;
     private long[]? _titleFontCallbackTokens;
     private long[]? _subtitleFontCallbackTokens;
 
     private static void OnLabelWidthConstraintsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        ((DockItemControl)d).UpdateTextVisibility();
+        var control = (DockItemControl)d;
+        control._titleSampleWidth = null;
+        control._subtitleSampleWidth = null;
+        control.UpdateTextVisibility();
     }
 
     private void InitializeLabelWidth()
@@ -59,6 +67,8 @@ public sealed partial class DockItemControl
         _subtitleText = GetTemplateChild("SubtitleText") as TextBlock;
         _titleCharacterWidth = null;
         _subtitleCharacterWidth = null;
+        _titleSampleWidth = null;
+        _subtitleSampleWidth = null;
     }
 
     private void UpdateLabelWidth()
@@ -70,7 +80,7 @@ public sealed partial class DockItemControl
 
         var hasVisibleText = TextVisibility == Visibility.Visible && HasText;
         var constraints = hasVisibleText ? LabelWidthConstraints ?? DockLabelWidthConstraints.Default : DockLabelWidthConstraints.Default;
-        if (constraints.UsesCharacters && IsLoaded)
+        if (constraints.UsesFontMeasurements && IsLoaded)
         {
             WatchLabelFont();
         }
@@ -80,10 +90,18 @@ public sealed partial class DockItemControl
         }
 
         // Cache each row's font measurement across ordinary label updates.
-        var titleCharacterWidth = constraints.UsesCharacters ? _titleCharacterWidth ??= MeasureCharacterWidth(_titleText) : 0;
-        var subtitleCharacterWidth = constraints.SubtitleWidth?.InCharacters == true ? _subtitleCharacterWidth ??= MeasureCharacterWidth(_subtitleText) : 0;
+        var showTitle = ShowTitle;
+        var showSubtitle = ShowSubtitle && !IsCompact;
+        var titleCharacterWidth = constraints.UsesCharacters ? _titleCharacterWidth ??= MeasureTextWidth(_titleText, "0") : 0;
+        var subtitleCharacterWidth = constraints.SubtitleWidth?.InCharacters == true ? _subtitleCharacterWidth ??= MeasureTextWidth(_subtitleText, "0") : 0;
+        double? titleSampleWidth = showTitle && constraints.TitleWidthSample is { } titleSample
+            ? _titleSampleWidth ??= MeasureTextWidth(_titleText, titleSample, useLayoutRounding: true)
+            : null;
+        double? subtitleSampleWidth = showSubtitle && constraints.SubtitleWidthSample is { } subtitleSample
+            ? _subtitleSampleWidth ??= MeasureTextWidth(_subtitleText, subtitleSample, useLayoutRounding: true)
+            : null;
         var defaultMinimum = hasVisibleText && HasTitle ? 24 : 0;
-        var (minimum, maximum) = constraints.Resolve(titleCharacterWidth, subtitleCharacterWidth, defaultMinimum, 100, ShowTitle, ShowSubtitle && !IsCompact);
+        var (minimum, maximum) = constraints.Resolve(titleCharacterWidth, subtitleCharacterWidth, defaultMinimum, 100, showTitle, showSubtitle, titleSampleWidth, subtitleSampleWidth);
 
         // A vertical Dock owns its width. A provider's reservation must not push the label outside it.
         if (_parentDock?.DockSide is DockSide.Left or DockSide.Right)
@@ -102,13 +120,14 @@ public sealed partial class DockItemControl
         }
     }
 
-    private double MeasureCharacterWidth(TextBlock text)
+    // Literal samples need pixel rounding; character units retain fractional glyph widths.
+    private double MeasureTextWidth(TextBlock text, string sample, bool useLayoutRounding = false)
     {
         _textSettings ??= new UISettings();
         var textScale = text.IsTextScaleFactorEnabled ? _textSettings.TextScaleFactor : 1;
         var measure = new TextBlock
         {
-            Text = "0",
+            Text = sample,
             FontFamily = text.FontFamily,
             FontSize = text.FontSize * textScale,
             FontWeight = text.FontWeight,
@@ -118,7 +137,8 @@ public sealed partial class DockItemControl
             Language = text.Language,
             FlowDirection = text.FlowDirection,
             IsTextScaleFactorEnabled = false,
-            UseLayoutRounding = false,
+            UseLayoutRounding = useLayoutRounding,
+            XamlRoot = text.XamlRoot,
         };
         Typography.SetNumeralAlignment(measure, Typography.GetNumeralAlignment(text));
         Typography.SetNumeralStyle(measure, Typography.GetNumeralStyle(text));
@@ -143,6 +163,12 @@ public sealed partial class DockItemControl
 
         _textSettings ??= new UISettings();
         _textSettings.TextScaleFactorChanged += TextSettings_TextScaleFactorChanged;
+        _labelXamlRoot = XamlRoot;
+        if (_labelXamlRoot is not null)
+        {
+            _labelRasterizationScale = _labelXamlRoot.RasterizationScale;
+            _labelXamlRoot.Changed += LabelXamlRoot_Changed;
+        }
     }
 
     private void StopWatchingLabelFont()
@@ -161,16 +187,35 @@ public sealed partial class DockItemControl
         _titleFontCallbackTokens = null;
         _subtitleFontCallbackTokens = null;
         _textSettings!.TextScaleFactorChanged -= TextSettings_TextScaleFactorChanged;
+        if (_labelXamlRoot is not null)
+        {
+            _labelXamlRoot.Changed -= LabelXamlRoot_Changed;
+            _labelXamlRoot = null;
+        }
+
         _titleCharacterWidth = null;
         _subtitleCharacterWidth = null;
+        _titleSampleWidth = null;
+        _subtitleSampleWidth = null;
     }
 
     private void OnLabelFontChanged(DependencyObject sender, DependencyProperty dp) => InvalidateLabelFont();
+
+    private void LabelXamlRoot_Changed(XamlRoot sender, XamlRootChangedEventArgs args)
+    {
+        if (_labelRasterizationScale != sender.RasterizationScale)
+        {
+            _labelRasterizationScale = sender.RasterizationScale;
+            InvalidateLabelFont();
+        }
+    }
 
     private void InvalidateLabelFont()
     {
         _titleCharacterWidth = null;
         _subtitleCharacterWidth = null;
+        _titleSampleWidth = null;
+        _subtitleSampleWidth = null;
         UpdateLabelWidth();
     }
 

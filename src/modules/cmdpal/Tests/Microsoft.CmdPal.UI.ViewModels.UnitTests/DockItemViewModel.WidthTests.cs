@@ -67,11 +67,14 @@ public partial class DockItemViewModelTests
             item.GetProperties()[WellKnownExtensionAttributes.DockMaxLabelWidth] = "10ch";
             item.GetProperties()[WellKnownExtensionAttributes.DockTitleWidth] = "5ch";
             item.GetProperties()[WellKnownExtensionAttributes.DockSubtitleWidth] = "12ch";
+            item.GetProperties()[WellKnownExtensionAttributes.DockSubtitleWidthSample] = "Arbeitsspeicher";
             item.NotifyPropertiesChanged();
 
             scheduler.ExecuteUntil(() => notified);
             Assert.AreEqual((60d, 60d), viewModel.LabelWidthConstraints.Resolve(6, 5, 24, 100));
             Assert.AreEqual((30d, 30d), viewModel.LabelWidthConstraints.Resolve(6, 5, 24, 100, showSubtitle: false));
+            Assert.AreEqual("Arbeitsspeicher", viewModel.LabelWidthConstraints.SubtitleWidthSample);
+            Assert.AreEqual((90d, 90d), viewModel.LabelWidthConstraints.Resolve(6, 5, 24, 100, subtitleSampleWidth: 90));
 
             notified = false;
             item.GetProperties().Clear();
@@ -138,6 +141,8 @@ public partial class DockItemViewModelTests
         item.GetProperties()[WellKnownExtensionAttributes.DockMinLabelWidth] = "10ch";
         item.GetProperties()[WellKnownExtensionAttributes.DockTitleWidth] = "5ch";
         item.GetProperties()[WellKnownExtensionAttributes.DockSubtitleWidth] = "12ch";
+        item.GetProperties()[WellKnownExtensionAttributes.DockTitleWidthSample] = "100%";
+        item.GetProperties()[WellKnownExtensionAttributes.DockSubtitleWidthSample] = "Arbeitsspeicher";
         var viewModel = new DockItemViewModel(new(item), new(context), true, true, DefaultContextMenuFactory.Instance);
         try
         {
@@ -151,10 +156,14 @@ public partial class DockItemViewModelTests
 
                 Assert.AreEqual((60d, 60d), viewModel.LabelWidthConstraints.Resolve(6, 5, 24, 100));
                 Assert.AreEqual((30d, 30d), viewModel.LabelWidthConstraints.Resolve(6, 5, 24, 100, showSubtitle: false));
+                Assert.AreEqual((90d, 90d), viewModel.LabelWidthConstraints.Resolve(6, 5, 24, 100, titleSampleWidth: 28, subtitleSampleWidth: 90));
+                Assert.AreEqual((28d, 28d), viewModel.LabelWidthConstraints.Resolve(6, 5, 24, 100, showSubtitle: false, titleSampleWidth: 28, subtitleSampleWidth: 90));
             }
 
             Assert.AreEqual(1, item.PropertyReads);
             Assert.AreSame(original, viewModel.LabelWidthConstraints);
+            Assert.AreEqual("100%", original.TitleWidthSample);
+            Assert.AreEqual("Arbeitsspeicher", original.SubtitleWidthSample);
         }
         finally
         {

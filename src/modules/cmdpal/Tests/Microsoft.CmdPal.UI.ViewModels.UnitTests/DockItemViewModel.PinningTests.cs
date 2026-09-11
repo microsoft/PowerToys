@@ -142,6 +142,45 @@ public partial class DockItemViewModelTests
     }
 
     [TestMethod]
+    public void WidthSamples_PinnedTopLevelItemInitializesUpdatesAndClearsInPlace()
+    {
+        var item = new ListItem { Title = "1%" }
+            .SetDockLabelWidths("5ch", "12ch")
+            .SetDockLabelWidthSamples("100%", "CPU");
+        var fixture = CreatePinnedBandFixture(item);
+        try
+        {
+            var dockItem = fixture.Band.Items[0];
+            Assert.AreEqual("100%", dockItem.LabelWidthConstraints.TitleWidthSample);
+            Assert.AreEqual("CPU", dockItem.LabelWidthConstraints.SubtitleWidthSample);
+            fixture.Scheduler.ExecuteAllAvailable();
+            var notified = false;
+            dockItem.PropertyChanged += (_, args) => notified |= args.PropertyName == nameof(dockItem.LabelWidthConstraints);
+
+            item.SetDockLabelWidthSamples(subtitleSample: "Arbeitsspeicher");
+
+            fixture.Scheduler.ExecuteUntil(() => notified);
+            Assert.IsNull(dockItem.LabelWidthConstraints.TitleWidthSample);
+            Assert.AreEqual("Arbeitsspeicher", dockItem.LabelWidthConstraints.SubtitleWidthSample);
+            Assert.AreEqual((90d, 90d), dockItem.LabelWidthConstraints.Resolve(6, 5, 24, 100, subtitleSampleWidth: 90));
+
+            notified = false;
+            item.ClearDockLabelWidthSamples();
+
+            fixture.Scheduler.ExecuteUntil(() => notified);
+            Assert.IsNull(dockItem.LabelWidthConstraints.SubtitleWidthSample);
+            Assert.AreEqual((60d, 60d), dockItem.LabelWidthConstraints.Resolve(6, 5, 24, 100));
+            Assert.AreSame(dockItem, fixture.Band.Items[0]);
+            Assert.IsFalse(fixture.TopLevel.GetProperties().ContainsKey(WellKnownExtensionAttributes.DockTitleWidthSample));
+            Assert.IsFalse(fixture.TopLevel.GetProperties().ContainsKey(WellKnownExtensionAttributes.DockSubtitleWidthSample));
+        }
+        finally
+        {
+            CleanupPinnedBandFixture(fixture);
+        }
+    }
+
+    [TestMethod]
     public void PresentationHints_PinnedTopLevelItemInitializeAndRefreshIndependently()
     {
         var item = new ListItem { Title = "1.00%" }.SetDockLabelTabularDigits();

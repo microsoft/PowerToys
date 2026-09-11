@@ -87,7 +87,7 @@ public static class DockLabelWidthExtensions
         }
 
         /// <summary>
-        /// Removes both row reservations, restoring fallback to the shared label bounds or host defaults.
+        /// Removes both row width hints, preserving text samples and shared label bounds.
         /// Notifies <see cref="WellKnownExtensionAttributes.DockLabelWidthPropertyName"/> once if either hint was present.
         /// Other extended attributes are preserved.
         /// </summary>
@@ -95,6 +95,55 @@ public static class DockLabelWidthExtensions
         /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
         /// <exception cref="InvalidOperationException">The item does not return writable extended attributes.</exception>
         public TItem ClearDockLabelWidths() => ClearDockWidthsCore(item, perRow: true);
+
+        /// <summary>
+        /// Reserves each row's width by measuring literal text in that row's font and text scale.
+        /// Samples take precedence over row width hints and are independent of the displayed text.
+        /// Preserves width hints and notifies <see cref="WellKnownExtensionAttributes.DockLabelWidthPropertyName"/>
+        /// once after updating both samples. Reapplying the same samples does not notify.
+        /// </summary>
+        /// <param name="titleSample">The title sample; null removes it, and an empty string reserves zero width.</param>
+        /// <param name="subtitleSample">The subtitle sample; null removes it, and an empty string reserves zero width.</param>
+        /// <returns>The same item, for fluent construction.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The item does not return writable extended attributes.</exception>
+        public TItem SetDockLabelWidthSamples(string? titleSample = null, string? subtitleSample = null)
+        {
+            var properties = GetWritableProperties(item);
+            var titleChanged = SetWidthSample(properties, WellKnownExtensionAttributes.DockTitleWidthSample, titleSample);
+            var subtitleChanged = SetWidthSample(properties, WellKnownExtensionAttributes.DockSubtitleWidthSample, subtitleSample);
+            if (titleChanged || subtitleChanged)
+            {
+                item.NotifyDockLabelWidthChanged();
+            }
+
+            return item;
+        }
+
+        /// <summary>
+        /// Removes both text samples, preserving row width hints and shared label bounds.
+        /// Notifies <see cref="WellKnownExtensionAttributes.DockLabelWidthPropertyName"/> once if either sample was present.
+        /// </summary>
+        /// <returns>The same item, for fluent construction.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The item does not return writable extended attributes.</exception>
+        public TItem ClearDockLabelWidthSamples() => item.SetDockLabelWidthSamples();
+    }
+
+    private static bool SetWidthSample(IDictionary<string, object> properties, string key, string? sample)
+    {
+        if (sample is null)
+        {
+            return properties.Remove(key);
+        }
+
+        if (properties.TryGetValue(key, out var previous) && Equals(previous, sample))
+        {
+            return false;
+        }
+
+        properties[key] = sample;
+        return true;
     }
 
     private static TItem SetDockWidthsCore<TItem>(TItem item, object firstWidth, object secondWidth, bool perRow)

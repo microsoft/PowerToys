@@ -264,6 +264,72 @@ public partial class ListItemDockLabelWidthTests
     }
 
     [TestMethod]
+    public void WidthSamples_UpdateBothRowsBeforeNotifyingAndPreserveWidthHints()
+    {
+        var item = new CustomPropertiesItem().SetDockLabelWidth(80).SetDockLabelWidths("5ch", "12ch");
+        var properties = ((IExtendedAttributesProvider)item).GetProperties();
+        var notifications = CaptureWidthNotifications(item, samples: true);
+
+        CustomPropertiesItem configured = item.SetDockLabelWidthSamples("100%", "Arbeitsspeicher");
+        item.SetDockLabelWidthSamples("100%", "Arbeitsspeicher");
+
+        Assert.AreSame(item, configured);
+        Assert.AreEqual(1, notifications.Count);
+        Assert.AreEqual((WellKnownExtensionAttributes.DockLabelWidthPropertyName, (object?)"100%", (object?)"Arbeitsspeicher"), notifications[0]);
+        Assert.AreEqual(0, item.GetProperties().Count);
+
+        item.SetDockLabelWidthSamples(subtitleSample: string.Empty);
+
+        Assert.AreEqual(2, notifications.Count);
+        Assert.AreEqual((WellKnownExtensionAttributes.DockLabelWidthPropertyName, (object?)null, (object?)string.Empty), notifications[1]);
+        Assert.IsFalse(properties.ContainsKey(WellKnownExtensionAttributes.DockTitleWidthSample));
+        Assert.AreEqual(80d, properties[WellKnownExtensionAttributes.DockMinLabelWidth]);
+        Assert.AreEqual(80d, properties[WellKnownExtensionAttributes.DockMaxLabelWidth]);
+        Assert.AreEqual("5ch", properties[WellKnownExtensionAttributes.DockTitleWidth]);
+        Assert.AreEqual("12ch", properties[WellKnownExtensionAttributes.DockSubtitleWidth]);
+    }
+
+    [TestMethod]
+    [DataRow("100%", "CPU")]
+    [DataRow(null, "CPU")]
+    [DataRow("100%", null)]
+    [DataRow(null, null)]
+    public void ClearWidthSamples_NotifiesOnceAndPreservesOtherAttributes(string? titleSample, string? subtitleSample)
+    {
+        var item = new ListItem().SetDockLabelWidths("5ch", "12ch").SetDockLabelWidthSamples(titleSample, subtitleSample);
+        var properties = item.GetProperties();
+        properties["Unrelated"] = "Keep me";
+        var notifications = CaptureWidthNotifications(item, samples: true);
+
+        Assert.AreSame(item, item.ClearDockLabelWidthSamples());
+        item.ClearDockLabelWidthSamples();
+
+        Assert.AreEqual(titleSample is not null || subtitleSample is not null ? 1 : 0, notifications.Count);
+        if (notifications.Count > 0)
+        {
+            Assert.AreEqual((WellKnownExtensionAttributes.DockLabelWidthPropertyName, (object?)null, (object?)null), notifications[0]);
+        }
+
+        Assert.AreEqual(3, properties.Count);
+        Assert.AreEqual("5ch", properties[WellKnownExtensionAttributes.DockTitleWidth]);
+        Assert.AreEqual("12ch", properties[WellKnownExtensionAttributes.DockSubtitleWidth]);
+        Assert.AreEqual("Keep me", properties["Unrelated"]);
+    }
+
+    [TestMethod]
+    public void WidthHelpers_PreserveTextSamples()
+    {
+        var item = new ListItem().SetDockLabelWidthSamples("100%", "CPU");
+
+        item.SetDockLabelWidth(80).SetDockLabelWidths("5ch", "12ch");
+        item.ClearDockLabelWidth().ClearDockLabelWidths();
+
+        Assert.AreEqual(2, item.GetProperties().Count);
+        Assert.AreEqual("100%", item.GetProperties()[WellKnownExtensionAttributes.DockTitleWidthSample]);
+        Assert.AreEqual("CPU", item.GetProperties()[WellKnownExtensionAttributes.DockSubtitleWidthSample]);
+    }
+
+    [TestMethod]
     public void Helpers_PreserveConcreteTypeAndUseTheProvidersPropertyBag()
     {
         var item = new CustomPropertiesItem();
@@ -294,6 +360,8 @@ public partial class ListItemDockLabelWidthTests
         Assert.ThrowsException<ArgumentNullException>(() => item.SetDockLabelWidths(30, 72));
         Assert.ThrowsException<ArgumentNullException>(() => item.SetDockLabelWidths("5ch", "12ch"));
         Assert.ThrowsException<ArgumentNullException>(() => item.ClearDockLabelWidths());
+        Assert.ThrowsException<ArgumentNullException>(() => item.SetDockLabelWidthSamples(subtitleSample: "CPU"));
+        Assert.ThrowsException<ArgumentNullException>(() => item.ClearDockLabelWidthSamples());
     }
 
     [TestMethod]
@@ -314,6 +382,8 @@ public partial class ListItemDockLabelWidthTests
         Assert.ThrowsException<InvalidOperationException>(() => item.SetDockLabelWidths(30, 72));
         Assert.ThrowsException<InvalidOperationException>(() => item.SetDockLabelWidths("5ch", "12ch"));
         Assert.ThrowsException<InvalidOperationException>(() => item.ClearDockLabelWidths());
+        Assert.ThrowsException<InvalidOperationException>(() => item.SetDockLabelWidthSamples(subtitleSample: "CPU"));
+        Assert.ThrowsException<InvalidOperationException>(() => item.ClearDockLabelWidthSamples());
 
         Assert.AreEqual(0, notifications);
     }
@@ -321,14 +391,22 @@ public partial class ListItemDockLabelWidthTests
     private static ListItem SetWidth(ListItem item, object width) =>
         width is string text ? item.SetDockLabelWidth(text) : item.SetDockLabelWidth((double)width);
 
-    private static List<(string Name, object? FirstWidth, object? SecondWidth)> CaptureWidthNotifications(CommandItem item, bool perRow = false)
+    private static List<(string Name, object? FirstWidth, object? SecondWidth)> CaptureWidthNotifications(CommandItem item, bool perRow = false, bool samples = false)
     {
         List<(string Name, object? FirstWidth, object? SecondWidth)> notifications = [];
+        var firstKey = perRow ? WellKnownExtensionAttributes.DockTitleWidth : WellKnownExtensionAttributes.DockMinLabelWidth;
+        var secondKey = perRow ? WellKnownExtensionAttributes.DockSubtitleWidth : WellKnownExtensionAttributes.DockMaxLabelWidth;
+        if (samples)
+        {
+            firstKey = WellKnownExtensionAttributes.DockTitleWidthSample;
+            secondKey = WellKnownExtensionAttributes.DockSubtitleWidthSample;
+        }
+
         item.PropChanged += (_, args) =>
         {
             var properties = ((IExtendedAttributesProvider)item).GetProperties();
-            properties.TryGetValue(perRow ? WellKnownExtensionAttributes.DockTitleWidth : WellKnownExtensionAttributes.DockMinLabelWidth, out var firstWidth);
-            properties.TryGetValue(perRow ? WellKnownExtensionAttributes.DockSubtitleWidth : WellKnownExtensionAttributes.DockMaxLabelWidth, out var secondWidth);
+            properties.TryGetValue(firstKey, out var firstWidth);
+            properties.TryGetValue(secondKey, out var secondWidth);
             notifications.Add((args.PropertyName, firstWidth, secondWidth));
         };
         return notifications;

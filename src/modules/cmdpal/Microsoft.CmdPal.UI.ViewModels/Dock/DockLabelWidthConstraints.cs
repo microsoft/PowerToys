@@ -11,9 +11,13 @@ public sealed record DockLabelWidthConstraints(
     DockLabelLength? Minimum,
     DockLabelLength? Maximum,
     DockLabelLength? TitleWidth = null,
-    DockLabelLength? SubtitleWidth = null)
+    DockLabelLength? SubtitleWidth = null,
+    string? TitleWidthSample = null,
+    string? SubtitleWidthSample = null)
 {
     public static DockLabelWidthConstraints Default { get; } = new(null, null);
+
+    public bool UsesFontMeasurements => UsesCharacters || TitleWidthSample is not null || SubtitleWidthSample is not null;
 
     public bool UsesCharacters
     {
@@ -32,29 +36,43 @@ public sealed record DockLabelWidthConstraints(
         object? maximum = null;
         object? titleWidth = null;
         object? subtitleWidth = null;
+        object? titleSample = null;
+        object? subtitleSample = null;
         properties?.TryGetValue(WellKnownExtensionAttributes.DockMinLabelWidth, out minimum);
         properties?.TryGetValue(WellKnownExtensionAttributes.DockMaxLabelWidth, out maximum);
         properties?.TryGetValue(WellKnownExtensionAttributes.DockTitleWidth, out titleWidth);
         properties?.TryGetValue(WellKnownExtensionAttributes.DockSubtitleWidth, out subtitleWidth);
+        properties?.TryGetValue(WellKnownExtensionAttributes.DockTitleWidthSample, out titleSample);
+        properties?.TryGetValue(WellKnownExtensionAttributes.DockSubtitleWidthSample, out subtitleSample);
 
         var minLength = DockLabelLength.Parse(minimum);
         var maxLength = DockLabelLength.Parse(maximum);
         var titleLength = DockLabelLength.Parse(titleWidth);
         var subtitleLength = DockLabelLength.Parse(subtitleWidth);
-        return minLength is null && maxLength is null && titleLength is null && subtitleLength is null
+        var titleText = titleSample as string;
+        var subtitleText = subtitleSample as string;
+        return minLength is null && maxLength is null && titleLength is null && subtitleLength is null && titleText is null && subtitleText is null
             ? Default
-            : new(minLength, maxLength, titleLength, subtitleLength);
+            : new(minLength, maxLength, titleLength, subtitleLength, titleText, subtitleText);
     }
 
-    public (double Minimum, double Maximum) Resolve(double titleCharacterWidth, double subtitleCharacterWidth, double defaultMinimum, double defaultMaximum, bool showTitle = true, bool showSubtitle = true)
+    public (double Minimum, double Maximum) Resolve(
+        double titleCharacterWidth,
+        double subtitleCharacterWidth,
+        double defaultMinimum,
+        double defaultMaximum,
+        bool showTitle = true,
+        bool showSubtitle = true,
+        double? titleSampleWidth = null,
+        double? subtitleSampleWidth = null)
     {
         if (!showTitle && !showSubtitle)
         {
             return (0, defaultMaximum);
         }
 
-        var titleWidth = showTitle ? TitleWidth?.Resolve(titleCharacterWidth) : null;
-        var subtitleWidth = showSubtitle ? SubtitleWidth?.Resolve(subtitleCharacterWidth) : null;
+        var titleWidth = showTitle ? ResolveRowWidth(TitleWidth, titleCharacterWidth, TitleWidthSample, titleSampleWidth) : null;
+        var subtitleWidth = showSubtitle ? ResolveRowWidth(SubtitleWidth, subtitleCharacterWidth, SubtitleWidthSample, subtitleSampleWidth) : null;
         if (titleWidth.HasValue || subtitleWidth.HasValue)
         {
             var width = Math.Max(titleWidth ?? 0, subtitleWidth ?? 0);
@@ -75,5 +93,15 @@ public sealed record DockLabelWidthConstraints(
         var min = minimum ?? Math.Min(defaultMinimum, maximum ?? defaultMaximum);
         var max = maximum ?? Math.Max(defaultMaximum, min);
         return (min, max);
+    }
+
+    private static double? ResolveRowWidth(DockLabelLength? length, double characterWidth, string? sample, double? sampleWidth)
+    {
+        if (sample is not null && sampleWidth is >= 0 and <= float.MaxValue)
+        {
+            return sampleWidth;
+        }
+
+        return length?.Resolve(characterWidth);
     }
 }

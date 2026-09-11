@@ -65,6 +65,22 @@ public static class WellKnownExtensionAttributes
     public const string DockSubtitleWidth = "Microsoft.CommandPalette.Dock.SubtitleWidth";
 
     /// <summary>
+    /// Optional literal text measured in the title's font and text scale to reserve a fixed width.
+    /// Takes precedence over <see cref="DockTitleWidth"/>; an empty string reserves zero width.
+    /// The sample is independent of the displayed title and is not rendered.
+    /// Use <c>SetDockLabelWidthSamples</c> or notify <see cref="DockLabelWidthPropertyName"/> after direct edits.
+    /// </summary>
+    public const string DockTitleWidthSample = "Microsoft.CommandPalette.Dock.TitleWidthSample";
+
+    /// <summary>
+    /// Optional literal text measured in the subtitle's font and text scale to reserve a fixed width.
+    /// Takes precedence over <see cref="DockSubtitleWidth"/>; compact mode excludes this reservation.
+    /// The sample is independent of the displayed subtitle and is not rendered.
+    /// Use <c>SetDockLabelWidthSamples</c> or notify <see cref="DockLabelWidthPropertyName"/> after direct edits.
+    /// </summary>
+    public const string DockSubtitleWidthSample = "Microsoft.CommandPalette.Dock.SubtitleWidthSample";
+
+    /// <summary>
     /// Optional <see cref="bool"/> hint that displays a Dock item's title and subtitle with tabular digits.
     /// The extension remains responsible for formatting consistent decimal precision.
     /// Use <see cref="DockLabelPresentationExtensions"/> to set or clear the hint and notify automatically.
