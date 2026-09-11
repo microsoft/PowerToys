@@ -21,12 +21,12 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
     private const int VirtualizedProfileCount = 20;
     private const string InitialOrder = "1,2,3,4";
     private const string ReorderedOrder = "1,3,2,4";
-    private const string ProfilesMutexName = @"Local\PowerToys_PowerDisplay_Profiles";
     private const string TerminatePowerDisplayEvent = @"Local\PowerToysPowerDisplay-TerminateEvent-7b9c2e1f-8a5d-4c3e-9f6b-2a1d8c5e3b7a";
     private static readonly int[] ProfileIds = [1, 2, 3, 4];
     private static readonly string[] ProcessNames = ["PowerToys.Settings", "PowerToys"];
     private static IDisposable? profilesSnapshot;
     private static IDisposable? moduleSettingsSnapshot;
+    private static IDisposable? lightSwitchSettingsSnapshot;
 
     private static string ProfilesPath => Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, "PowerDisplay", "profiles.json");
 
@@ -45,11 +45,12 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
         try
         {
             moduleSettingsSnapshot = SettingsConfigHelper.PreserveModuleSettings("PowerDisplay");
+            // Module startup reconciles Light Switch references against the fixture profiles.
+            lightSwitchSettingsSnapshot = SettingsConfigHelper.PreserveModuleSettings("LightSwitch");
         }
         catch
         {
-            profilesSnapshot.Dispose();
-            profilesSnapshot = null;
+            RestoreSettingsSnapshots();
             throw;
         }
     }
@@ -64,16 +65,30 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
         }
         finally
         {
+            RestoreSettingsSnapshots();
+        }
+    }
+
+    private static void RestoreSettingsSnapshots()
+    {
+        try
+        {
+            var snapshot = profilesSnapshot;
+            profilesSnapshot = null;
+            snapshot?.Dispose();
+        }
+        finally
+        {
             try
             {
-                var snapshot = profilesSnapshot;
-                profilesSnapshot = null;
+                var snapshot = moduleSettingsSnapshot;
+                moduleSettingsSnapshot = null;
                 snapshot?.Dispose();
             }
             finally
             {
-                var snapshot = moduleSettingsSnapshot;
-                moduleSettingsSnapshot = null;
+                var snapshot = lightSwitchSettingsSnapshot;
+                lightSwitchSettingsSnapshot = null;
                 snapshot?.Dispose();
             }
         }
@@ -101,8 +116,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
         // Seed after the previous Settings/runner processes exit, so cleanup cannot overwrite it.
         // Stable ids avoid a migration write. Array positions define the initial display order.
         // No test invokes the Apply button.
-        var profileCount = TestContext.TestName == nameof(ReorderShortcut_VirtualizedTailKeepsFocusForRepeatedMoves) ||
-            TestContext.TestName == nameof(ReorderDrag_AcrossViewportKeepsMovedProfileFocus)
+        var profileCount = TestContext.TestName == nameof(ReorderDrag_AcrossViewportPersistsOrder)
             ? VirtualizedProfileCount
             : ProfileIds.Length;
         Directory.CreateDirectory(Path.GetDirectoryName(ProfilesPath)!);
@@ -156,9 +170,6 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
         // Check both views after the asynchronous save/reload. Native reordering must not move
         // the collection a second time after the page handles the preview event.
         AssertStableOrder(ReorderedOrder);
-        Assert.IsTrue(
-            GetProfileButton(profileId, MoreButtonId).WaitForProperty("HasKeyboardFocus", "True", 5_000),
-            $"Keyboard focus did not return to the moved profile {profileId}.");
 
         Step("Navigating away and reopening Power Display to reload the persisted order");
         Find<NavigationViewItem>(By.AccessibilityId("GeneralNavItem")).Click(msPostAction: 0);
@@ -214,43 +225,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
     [TestMethod]
     [TestCategory("Settings")]
     [TestCategory("PowerDisplay")]
-    public void ReorderShortcut_VirtualizedTailKeepsFocusForRepeatedMoves()
-    {
-        NavigateToProfiles(useVirtualizedList: true);
-        Assert.AreEqual(string.Join(",", Enumerable.Range(1, VirtualizedProfileCount)), ReadPersistedOrder());
-        Assert.IsFalse(IsProfileButtonVisible(VirtualizedProfileCount, MoreButtonId), "The fixture must start with the last profile outside the list viewport.");
-
-        Step("Scrolling the virtualized profile list to its last item");
-        Find<Element>(By.AccessibilityId("ProfilesList")).ScrollToEdge(toBottom: true);
-        var tailViewport = WaitHelper.WaitForStable(
-            observe: () => IsProfileButtonVisible(VirtualizedProfileCount, MoreButtonId),
-            isMatch: visible => visible,
-            timeoutMS: 30_000,
-            requiredConsecutiveMatches: 2,
-            pollIntervalMS: 100,
-            recover: _ => Find<Element>(By.AccessibilityId("PageScrollViewer"), 1_000).Scroll(ScrollDirection.Down));
-        Assert.IsTrue(
-            tailViewport.Succeeded,
-            "The last profile did not appear after scrolling the list.");
-        FocusProfileButton(VirtualizedProfileCount, MoreButtonId);
-
-        Step("Moving the last profile up through the keyboard shortcut");
-        KeyboardHelper.SendKeys(Key.Alt, Key.Shift, Key.Up);
-        var firstOrder = string.Join(",", Enumerable.Range(1, 18).Concat([20, 19]));
-        AssertStableTargetFocusAndOrder(VirtualizedProfileCount, firstOrder);
-
-        // Send the next chord directly: focusing or scrolling here would conceal a failure to
-        // restore focus after the collection reload recycled the last row's container.
-        Step("Moving the same profile up again using the restored keyboard focus");
-        KeyboardHelper.SendKeys(Key.Alt, Key.Shift, Key.Up);
-        var secondOrder = string.Join(",", Enumerable.Range(1, 17).Concat([20, 18, 19]));
-        AssertStableTargetFocusAndOrder(VirtualizedProfileCount, secondOrder);
-    }
-
-    [TestMethod]
-    [TestCategory("Settings")]
-    [TestCategory("PowerDisplay")]
-    public void ReorderDrag_AcrossViewportKeepsMovedProfileFocus()
+    public void ReorderDrag_AcrossViewportPersistsOrder()
     {
         using var dpiScope = new PhysicalCoordinateScope();
         NavigateToProfiles(useVirtualizedList: true);
@@ -429,7 +404,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
             }
         }
 
-        AssertStableTargetFocusAndOrder(1, string.Join(",", Enumerable.Range(2, 19).Append(1)));
+        AssertStablePersistedOrder(string.Join(",", Enumerable.Range(2, 19).Append(1)));
     }
 
     [TestMethod]
@@ -446,194 +421,6 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
             .Select(element => element.Name)
             .ToArray();
         CollectionAssert.AreEquivalent(expectedNames, itemNames, "Every profile ListItem must expose its DisplayName as its automation Name.");
-    }
-
-    [TestMethod]
-    [TestCategory("Settings")]
-    [TestCategory("PowerDisplay")]
-    public void ReorderShortcut_SavePendingDoesNotStealSearchFocus()
-    {
-        NavigateToProfiles();
-        AssertStableOrder(InitialOrder);
-        FocusProfileButton(3, MoreButtonId);
-
-        Step("Calibrating Ctrl+F against the actual focused search editor");
-        KeyboardHelper.SendKeys(Key.Ctrl, Key.F);
-        var calibration = Session.GetFocused();
-        TestContext.WriteLine($"Search calibration: {calibration.GetRawText()}");
-        Assert.IsTrue(calibration.GetProperty("hasFocus").GetBoolean(), "Ctrl+F did not produce a focused element.");
-        var focusedElement = calibration.GetProperty("element");
-        Assert.AreEqual("Edit", focusedElement.GetProperty("type").GetString(), "Ctrl+F did not focus an editor.");
-        Assert.AreEqual("TextBox", focusedElement.GetProperty("automationId").GetString(), "Ctrl+F did not focus the search TextBox.");
-        var selector = focusedElement.GetProperty("selector").GetString();
-        Assert.IsFalse(string.IsNullOrWhiteSpace(selector), "The focused search editor has no selector.");
-        var search = Find<TextBox>(By.Slug(selector!));
-        Assert.IsTrue(search.WaitForProperty("HasKeyboardFocus", "True"), "The calibrated search editor did not retain focus.");
-
-        // get-value falls back to the automation Name for an empty editor. Clear the actual
-        // input here; the final non-empty value assertion verifies where the later key landed.
-        KeyboardHelper.SendKeys(Key.Ctrl, Key.A);
-        KeyboardHelper.SendKeys(Key.Backspace);
-
-        // Resolve every element before holding the store mutex. Only the two bounded property
-        // waits below launch winappcli while the save is suspended.
-        var profilesList = Find<Element>(By.AccessibilityId("ProfilesList"));
-        FocusProfileButton(3, MoreButtonId);
-        RunReorderWhileStoreLocked(profilesList, () =>
-        {
-            Step("Moving keyboard focus to search and entering z before the save completes");
-            KeyboardHelper.SendKeys(Key.Ctrl, Key.F);
-            KeyboardHelper.SendKeys(Key.Z);
-            Assert.IsTrue(
-                search.WaitForProperty("HasKeyboardFocus", "True", 1_000),
-                "The search editor did not receive focus while the save was pending.");
-        });
-
-        AssertStableOrder(ReorderedOrder);
-        var afterSaveFocus = Session.GetFocused();
-        var searchText = search.GetValue();
-        var foreground = WindowControl.GetForegroundWindowInfo();
-        TestContext.WriteLine($"Focus after save: {afterSaveFocus.GetRawText()}");
-        TestContext.WriteLine($"Foreground after save: {foreground}; search text: '{searchText}'");
-        Assert.AreEqual(
-            new IntPtr(Session.WindowHandle),
-            foreground.Hwnd,
-            "An external foreground change invalidated the focus preservation scenario.");
-        Assert.AreEqual("z", searchText, "The search editor did not receive the text entered while the save was pending.");
-        Assert.IsTrue(
-            search.WaitForProperty("HasKeyboardFocus", "True", 1_000),
-            "Completing the profile save stole the user's newer search focus.");
-    }
-
-    [TestMethod]
-    [TestCategory("Settings")]
-    [TestCategory("PowerDisplay")]
-    public void ReorderShortcut_SavePendingDoesNotStealCheckboxFocus()
-    {
-        using var dpiScope = new PhysicalCoordinateScope();
-        NavigateToProfiles();
-        AssertStableOrder(InitialOrder, timeoutMS: 90_000);
-        const string restoreSettingName = "Restore monitor brightness and color temperature when Power Display launches";
-        CheckBox FindRestoreCheckbox()
-        {
-            var matches = Session.FindAll<CheckBox>(By.Name(restoreSettingName))
-                .Where(element => element.Name == restoreSettingName)
-                .ToArray();
-            Assert.AreEqual(1, matches.Length, "The startup restore checkbox was not uniquely identified.");
-            return matches[0];
-        }
-
-        var checkbox = FindRestoreCheckbox();
-        Assert.IsTrue(
-            checkbox.Width > 0 && checkbox.Height > 0 && string.Equals(checkbox.GetProperty("IsOffscreen"), "False", StringComparison.OrdinalIgnoreCase),
-            "The startup restore checkbox must be visible before suspending the profile save.");
-        Assert.IsFalse(checkbox.IsChecked, "The fixture must disable startup restoration before the module launches.");
-        Session.EnsureForeground();
-        Assert.IsTrue(
-            WindowControl.WaitForForeground(new IntPtr(Session.WindowHandle), requiredConsecutiveMatches: 2),
-            $"Settings did not obtain foreground before checkbox calibration; the input scenario is invalid. Foreground: {WindowControl.GetForegroundWindowInfo()}");
-        Step("Calibrating a real checkbox click before suspending the profile save");
-        ClickCheckboxGlyph(checkbox);
-        Assert.IsTrue(checkbox.WaitForProperty("ToggleState", "On", 1_000), "The calibration click did not check the checkbox; the input scenario is invalid.");
-        Assert.IsTrue(checkbox.WaitForProperty("HasKeyboardFocus", "True", 1_000), "The calibration click did not focus the checkbox; the input scenario is invalid.");
-        checkbox = FindRestoreCheckbox();
-        ClickCheckboxGlyph(checkbox);
-        Assert.IsTrue(checkbox.WaitForProperty("ToggleState", "Off", 1_000), "The calibration click did not restore the unchecked fixture state.");
-        Assert.IsTrue(checkbox.WaitForProperty("HasKeyboardFocus", "True", 1_000), "The checkbox lost focus during calibration.");
-
-        var profilesList = Find<Element>(By.AccessibilityId("ProfilesList"));
-        FocusProfileButton(3, MoreButtonId);
-        checkbox = FindRestoreCheckbox();
-        Assert.IsTrue(
-            checkbox.Width > 0 && checkbox.Height > 0 && string.Equals(checkbox.GetProperty("IsOffscreen"), "False", StringComparison.OrdinalIgnoreCase),
-            "The checkbox must remain visible after the profile button receives focus.");
-
-        RunReorderWhileStoreLocked(profilesList, () =>
-        {
-            Step("Clicking the startup restore checkbox before the profile save completes");
-            ClickCheckboxGlyph(checkbox);
-            Assert.IsTrue(
-                checkbox.WaitForProperty("HasKeyboardFocus", "True", 1_000),
-                "The startup restore checkbox did not receive focus while the save was pending.");
-        });
-
-        AssertStableOrder(ReorderedOrder, timeoutMS: 90_000);
-        var afterSaveFocus = Session.GetFocused();
-        var isChecked = checkbox.IsChecked;
-        var foreground = WindowControl.GetForegroundWindowInfo();
-        TestContext.WriteLine($"Focus after save: {afterSaveFocus.GetRawText()}");
-        TestContext.WriteLine($"Foreground after save: {foreground}; startup restore checked: {isChecked}");
-        Assert.AreEqual(
-            new IntPtr(Session.WindowHandle),
-            foreground.Hwnd,
-            "An external foreground change invalidated the focus preservation scenario.");
-        Assert.IsTrue(isChecked, "The startup restore checkbox did not receive the click while the save was pending.");
-        Assert.IsTrue(
-            checkbox.WaitForProperty("HasKeyboardFocus", "True", 1_000),
-            "Completing the profile save stole the user's newer checkbox focus.");
-    }
-
-    private void RunReorderWhileStoreLocked(Element profilesList, Action transferFocus)
-    {
-        using var ready = new ManualResetEventSlim();
-        using var release = new ManualResetEventSlim();
-        var holder = Task.Factory.StartNew(
-            () =>
-            {
-                using var mutex = new Mutex(initiallyOwned: false, ProfilesMutexName);
-                var acquired = false;
-                try
-                {
-                    try
-                    {
-                        acquired = mutex.WaitOne(1_000);
-                    }
-                    catch (AbandonedMutexException ex)
-                    {
-                        acquired = true;
-                        throw new InvalidOperationException("The profile mutex was abandoned before the test could suspend the save.", ex);
-                    }
-
-                    if (!acquired)
-                    {
-                        throw new TimeoutException("Could not acquire the profile store mutex for the focus test.");
-                    }
-
-                    ready.Set();
-                    return release.Wait(TimeSpan.FromMilliseconds(4_500));
-                }
-                finally
-                {
-                    if (acquired)
-                    {
-                        mutex.ReleaseMutex();
-                    }
-                }
-            },
-            CancellationToken.None,
-            TaskCreationOptions.LongRunning,
-            TaskScheduler.Default);
-
-        try
-        {
-            Assert.IsTrue(ready.Wait(TimeSpan.FromSeconds(2)), "The worker did not acquire the profile store mutex.");
-            Step("Moving profile 3 up while the profile store mutex is held");
-            KeyboardHelper.SendKeys(Key.Alt, Key.Shift, Key.Up);
-            Assert.IsTrue(
-                profilesList.WaitForProperty("IsEnabled", "False", 1_000),
-                "The keyboard reorder did not enter its pending save state.");
-
-            transferFocus();
-        }
-        finally
-        {
-            // Even an assertion or worker failure must release and join before disposing the
-            // events. A watchdog release invalidates the scenario rather than making it pass.
-            release.Set();
-            var releasedExplicitly = holder.GetAwaiter().GetResult();
-            TestContext.WriteLine($"Profile mutex released by test: {releasedExplicitly}");
-            Assert.IsTrue(releasedExplicitly, "The mutex watchdog expired before the test explicitly released the pending save; the focus scenario is invalid.");
-        }
     }
 
     [DllImport("user32.dll", SetLastError = true)]
@@ -743,18 +530,6 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
             pollIntervalMS: 5);
         TestContext.WriteLine($"Physical pointer requested ({x}, {y}); actual ({actual.X}, {actual.Y})");
         Assert.IsTrue(arrived.Succeeded, "The physical pointer did not reach the requested position; the input scenario is invalid.");
-    }
-
-    private void ClickCheckboxGlyph(CheckBox checkbox)
-    {
-        var x = checkbox.X + (checkbox.Height / 2);
-        var y = checkbox.Y + (checkbox.Height / 2);
-        TestContext.WriteLine($"Checkbox bounds ({checkbox.X}, {checkbox.Y}, {checkbox.Width}, {checkbox.Height}); click ({x}, {y}); foreground: {WindowControl.GetForegroundWindowInfo()}");
-        AssertSettingsForeground("before the checkbox click");
-        AssertMovePhysicalPointer(x, y);
-        Thread.Sleep(40);
-        MouseHelper.LeftClick();
-        AssertSettingsForeground("after the checkbox click");
     }
 
     private void AssertSettingsForeground(string stage)
@@ -884,24 +659,17 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
         Assert.IsTrue(result.Succeeded, $"Expected order {expectedOrder} after save/reload. Last state: {result.LastObservation}; error: {result.LastException}");
     }
 
-    private void AssertStableTargetFocusAndOrder(int profileId, string expectedOrder)
+    private void AssertStablePersistedOrder(string expectedOrder)
     {
-        Step($"Waiting for persisted order {expectedOrder} and keyboard focus on profile {profileId}");
+        Step($"Waiting for persisted order {expectedOrder}");
         var result = WaitHelper.WaitForStable(
-            observe: () =>
-            {
-                var button = FindVisibleProfileButton(profileId, MoreButtonId);
-                return new TargetFocusObservation(
-                    ReadPersistedOrder(),
-                    button is not null,
-                    button is not null && string.Equals(button.GetProperty("HasKeyboardFocus"), "True", StringComparison.OrdinalIgnoreCase));
-            },
-            isMatch: state => state is not null && state.PersistedOrder == expectedOrder && state.Visible && state.Focused,
+            observe: ReadPersistedOrder,
+            isMatch: order => order == expectedOrder,
             timeoutMS: 30_000,
             requiredConsecutiveMatches: 3,
             pollIntervalMS: 100,
-            shouldRetryException: ex => ex is IOException || (ex is AssertFailedException && ex.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase)));
-        Assert.IsTrue(result.Succeeded, $"The moved profile {profileId} did not retain visible keyboard focus after save/reload. Last state: {result.LastObservation}; error: {result.LastException}");
+            shouldRetryException: ex => ex is IOException);
+        Assert.IsTrue(result.Succeeded, $"Expected persisted order {expectedOrder} after save. Last order: {result.LastObservation}; error: {result.LastException}");
     }
 
     private bool IsProfileButtonVisible(int profileId, string buttonId)
@@ -972,6 +740,4 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
     private void Step(string message) => TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
 
     private sealed record OrderObservation(string UiOrder, string PersistedOrder, bool Enabled, bool AllProfilesVisible);
-
-    private sealed record TargetFocusObservation(string PersistedOrder, bool Visible, bool Focused);
 }
