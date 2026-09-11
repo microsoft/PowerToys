@@ -22,6 +22,74 @@ internal static class GpuAdapterNames
 {
     internal readonly record struct AdapterInfo(string Description, bool IsSoftware);
 
+    // Driver descriptions have no separate short model field; preserve unrecognized names.
+    internal static string GetShortName(string? description)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            return string.Empty;
+        }
+
+        var name = description
+            .Replace("(R)", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("(TM)", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("\u00ae", string.Empty, StringComparison.Ordinal)
+            .Replace("\u2122", string.Empty, StringComparison.Ordinal);
+        name = string.Join(' ', name.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        var original = name;
+
+        if (name.StartsWith("NVIDIA ", StringComparison.OrdinalIgnoreCase))
+        {
+            name = RemovePrefix(name, "NVIDIA ");
+            name = RemovePrefix(name, "GeForce ").Replace(" GeForce ", " ", StringComparison.OrdinalIgnoreCase);
+            if (name.StartsWith("Quadro RTX ", StringComparison.OrdinalIgnoreCase))
+            {
+                name = RemovePrefix(name, "Quadro ");
+            }
+
+            name = RemoveSuffix(name, " Laptop GPU");
+            name = RemoveSuffix(name, " GPU");
+            name = RemoveSuffix(name, " Generation");
+        }
+        else if (name.StartsWith("AMD ", StringComparison.OrdinalIgnoreCase) || name.StartsWith("ATI ", StringComparison.OrdinalIgnoreCase))
+        {
+            name = name[4..];
+            if (name.StartsWith("Radeon RX ", StringComparison.OrdinalIgnoreCase) || name.StartsWith("Radeon Pro ", StringComparison.OrdinalIgnoreCase))
+            {
+                name = RemovePrefix(name, "Radeon ");
+            }
+
+            if (!name.Equals("Radeon Graphics", StringComparison.OrdinalIgnoreCase))
+            {
+                name = RemoveSuffix(name, " Graphics");
+            }
+        }
+        else if (name.StartsWith("Intel ", StringComparison.OrdinalIgnoreCase))
+        {
+            name = RemovePrefix(name, "Intel ");
+            if (name.StartsWith("UHD Graphics ", StringComparison.OrdinalIgnoreCase))
+            {
+                name = "UHD " + name[13..];
+            }
+            else if (name.StartsWith("HD Graphics ", StringComparison.OrdinalIgnoreCase))
+            {
+                name = "HD " + name[12..];
+            }
+            else if (name.StartsWith("Iris ", StringComparison.OrdinalIgnoreCase) || name.StartsWith("Arc ", StringComparison.OrdinalIgnoreCase))
+            {
+                name = RemoveSuffix(name, " Graphics");
+            }
+        }
+
+        return string.IsNullOrWhiteSpace(name) || name.Equals("Graphics", StringComparison.OrdinalIgnoreCase) ? original : name;
+    }
+
+    private static string RemovePrefix(string name, string prefix) =>
+        name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ? name[prefix.Length..] : name;
+
+    private static string RemoveSuffix(string name, string suffix) =>
+        name.EndsWith(suffix, StringComparison.OrdinalIgnoreCase) ? name[..^suffix.Length] : name;
+
     /// <summary>
     /// Enumerates the system's DXGI adapters and returns their descriptions keyed
     /// by LUID. The key matches <see cref="GPUStats"/>'s LUID parsing:
