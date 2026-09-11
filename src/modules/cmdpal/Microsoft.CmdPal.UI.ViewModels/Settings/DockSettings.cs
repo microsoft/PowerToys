@@ -173,9 +173,16 @@ public record DockSettings
 public sealed record DockMonitorConfig
 {
     /// <summary>
-    /// Gets the monitor device identifier (e.g. <c>\\.\DISPLAY1</c>).
+    /// Gets the monitor's stable hardware identifier. Legacy GDI device names
+    /// (e.g. <c>\\.\DISPLAY1</c>) are migrated during reconciliation.
     /// </summary>
     public required string MonitorDeviceId { get; init; }
+
+    /// <summary>
+    /// Gets the persistent ordinal used for fallback display labels (A, B, ...).
+    /// Independent of the Windows GDI display number. Zero means not yet assigned.
+    /// </summary>
+    public int FallbackDisplayNumber { get; init; }
 
     /// <summary>
     /// Gets a value indicating whether the dock is enabled on this monitor. Defaults to <c>true</c>.

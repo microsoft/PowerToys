@@ -1530,9 +1530,14 @@ public sealed partial class DockWindow : WindowEx,
 
     private void ShowMonitorLabel()
     {
-        var name = _targetMonitor?.DisplayName
-            ?? _monitorService.GetPrimaryMonitor()?.DisplayName
-            ?? string.Empty;
+        var monitor = _targetMonitor ?? _monitorService.GetPrimaryMonitor();
+        var name = string.Empty;
+        if (monitor is not null)
+        {
+            var config = _settings.MonitorConfigs.Find(c =>
+                string.Equals(c.MonitorDeviceId, monitor.StableId, StringComparison.OrdinalIgnoreCase));
+            name = DockMonitorDisplayName.Resolve(monitor, config);
+        }
 
         MonitorLabelTeachingTip.Title = name;
         MonitorLabelTeachingTip.Target = Root;

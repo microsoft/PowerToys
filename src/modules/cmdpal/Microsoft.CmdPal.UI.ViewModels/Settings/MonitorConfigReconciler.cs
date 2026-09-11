@@ -193,6 +193,34 @@ public static class MonitorConfigReconciler
             }
         }
 
+        // Reserve labels for retained monitors, including disconnected ones, before
+        // assigning any missing labels. Store ordinals rather than localized names
+        // so labels survive reconnects and can still follow the UI language.
+        var usedDisplayNumbers = new HashSet<int>();
+        foreach (var config in result)
+        {
+            if (config.FallbackDisplayNumber > 0)
+            {
+                usedDisplayNumbers.Add(config.FallbackDisplayNumber);
+            }
+        }
+
+        var nextDisplayNumber = 1;
+        for (var i = 0; i < result.Count; i++)
+        {
+            if (result[i].FallbackDisplayNumber > 0)
+            {
+                continue;
+            }
+
+            while (!usedDisplayNumbers.Add(nextDisplayNumber))
+            {
+                nextDisplayNumber++;
+            }
+
+            result[i] = result[i] with { FallbackDisplayNumber = nextDisplayNumber };
+        }
+
         // Return the original reference when nothing actually changed so callers
         // can use reference equality to skip no-op settings writes.
         if (result.Count == existingConfigs.Count)

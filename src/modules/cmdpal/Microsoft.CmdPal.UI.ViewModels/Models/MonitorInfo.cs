@@ -28,7 +28,14 @@ public sealed record MonitorInfo
     public required string StableId { get; init; }
 
     /// <summary>
-    /// Gets the human-readable display name (e.g. <c>DELL U2723QE</c>).
+    /// Gets the friendly hardware name without a primary-monitor suffix.
+    /// Can be empty or <c>null</c> when the display does not provide one.
+    /// </summary>
+    public string? FriendlyName { get; init; }
+
+    /// <summary>
+    /// Gets the runtime display name (e.g. <c>DELL U2723QE</c>).
+    /// Its fallback includes the current GDI display number, which may change.
     /// </summary>
     public required string DisplayName { get; init; }
 

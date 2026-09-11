@@ -36,10 +36,10 @@ public partial class DockMonitorConfigViewModel : ObservableObject
         _monitorDeviceId = config.MonitorDeviceId;
     }
 
-    /// <summary>Gets the human-readable display name from the monitor hardware.</summary>
-    public string DisplayName => _monitorInfo.DisplayName;
+    /// <summary>Gets the friendly hardware name or the persisted fallback display label.</summary>
+    public string DisplayName => DockMonitorDisplayName.Resolve(_monitorInfo, GetConfig());
 
-    /// <summary>Gets the stable device identifier for this monitor.</summary>
+    /// <summary>Gets the current GDI device identifier for this monitor.</summary>
     public string DeviceId => _monitorInfo.DeviceId;
 
     /// <summary>Gets a value indicating whether this is the primary monitor.</summary>

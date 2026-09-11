@@ -171,6 +171,7 @@ public sealed class MonitorService : IMonitorService
                     {
                         DeviceId = deviceName,
                         StableId = stableId,
+                        FriendlyName = friendlyName,
                         DisplayName = displayName,
                         Bounds = new ScreenRect(
                             rcMonitor.left,
