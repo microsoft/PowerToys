@@ -11,19 +11,41 @@ namespace Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests;
 public class PerformanceMonitorDockItemPresentationTests
 {
     [TestMethod]
-    public void ConfigureValueLabel_AppliesStableNumericPresentation()
+    [DataRow(PerformanceMonitorDockItemPresentation.CpuSubtitleWidth)]
+    [DataRow(PerformanceMonitorDockItemPresentation.MemorySubtitleWidth)]
+    [DataRow(PerformanceMonitorDockItemPresentation.NetworkUsageSubtitleWidth)]
+    [DataRow(PerformanceMonitorDockItemPresentation.DiskActiveTimeSubtitleWidth)]
+    [DataRow(PerformanceMonitorDockItemPresentation.GpuSubtitleWidth)]
+    [DataRow(PerformanceMonitorDockItemPresentation.BatterySubtitleWidth)]
+    public void ConfigureValueLabel_ReservesPercentageAndSubtitleWidthsIndependently(string subtitleWidth)
     {
         var item = new ListItem();
 
         var configured = PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
             item,
-            PerformanceMonitorDockItemPresentation.MemoryLabelWidth);
+            PerformanceMonitorDockItemPresentation.PercentageTitleWidth,
+            subtitleWidth);
 
         Assert.AreSame(item, configured);
         var properties = item.GetProperties();
-        Assert.AreEqual(PerformanceMonitorDockItemPresentation.MemoryLabelWidth, properties[WellKnownExtensionAttributes.DockMinLabelWidth]);
-        Assert.AreEqual(PerformanceMonitorDockItemPresentation.MemoryLabelWidth, properties[WellKnownExtensionAttributes.DockMaxLabelWidth]);
+        Assert.AreEqual("4.6ch", properties[WellKnownExtensionAttributes.DockTitleWidth]);
+        Assert.AreEqual(subtitleWidth, properties[WellKnownExtensionAttributes.DockSubtitleWidth]);
+        Assert.IsFalse(properties.ContainsKey(WellKnownExtensionAttributes.DockMinLabelWidth));
+        Assert.IsFalse(properties.ContainsKey(WellKnownExtensionAttributes.DockMaxLabelWidth));
         Assert.AreEqual(true, properties[WellKnownExtensionAttributes.DockLabelTabularDigits]);
         Assert.IsFalse(properties.ContainsKey(WellKnownExtensionAttributes.DockLabelTrailingAlignment));
+    }
+
+    [TestMethod]
+    public void ConfigureValueLabel_TransferRatesKeepTheirValueWidthInBothModes()
+    {
+        var item = PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+            new ListItem(),
+            PerformanceMonitorDockItemPresentation.TransferRateLabelWidth);
+        var properties = item.GetProperties();
+
+        Assert.AreEqual("10ch", properties[WellKnownExtensionAttributes.DockTitleWidth]);
+        Assert.AreEqual("10ch", properties[WellKnownExtensionAttributes.DockSubtitleWidth]);
+        Assert.AreEqual(true, properties[WellKnownExtensionAttributes.DockLabelTabularDigits]);
     }
 }

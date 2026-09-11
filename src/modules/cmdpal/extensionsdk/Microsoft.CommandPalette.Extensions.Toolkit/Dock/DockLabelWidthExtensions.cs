@@ -27,7 +27,7 @@ public static class DockLabelWidthExtensions
         /// <returns>The same item, for fluent construction.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
         /// <exception cref="InvalidOperationException">The item does not return writable extended attributes.</exception>
-        public TItem SetDockLabelWidth(double width) => SetDockLabelWidthCore(item, width);
+        public TItem SetDockLabelWidth(double width) => SetDockWidthsCore(item, width, width, perRow: false);
 
         /// <summary>
         /// Sets equal minimum and maximum Dock label width hints using a unit string.
@@ -42,11 +42,11 @@ public static class DockLabelWidthExtensions
         public TItem SetDockLabelWidth(string width)
         {
             ArgumentNullException.ThrowIfNull(width);
-            return SetDockLabelWidthCore(item, width);
+            return SetDockWidthsCore(item, width, width, perRow: false);
         }
 
         /// <summary>
-        /// Removes both Dock label width hints, restoring the host's default sizing.
+        /// Removes both shared Dock label bounds, preserving any title and subtitle reservations.
         /// Raises one <c>PropChanged</c> notification for
         /// <see cref="WellKnownExtensionAttributes.DockLabelWidthPropertyName"/> if either hint was present.
         /// Other extended attributes are preserved.
@@ -54,35 +54,80 @@ public static class DockLabelWidthExtensions
         /// <returns>The same item, for fluent construction.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
         /// <exception cref="InvalidOperationException">The item does not return writable extended attributes.</exception>
-        public TItem ClearDockLabelWidth()
-        {
-            var properties = GetWritableProperties(item);
-            var removedMinimum = properties.Remove(WellKnownExtensionAttributes.DockMinLabelWidth);
-            var removedMaximum = properties.Remove(WellKnownExtensionAttributes.DockMaxLabelWidth);
-            if (removedMinimum || removedMaximum)
-            {
-                item.NotifyDockLabelWidthChanged();
-            }
+        public TItem ClearDockLabelWidth() => ClearDockWidthsCore(item, perRow: false);
 
-            return item;
+        /// <summary>
+        /// Sets fixed title and subtitle reservations in DIPs. The host uses the larger enabled row's width.
+        /// Preserves shared bounds and notifies <see cref="WellKnownExtensionAttributes.DockLabelWidthPropertyName"/>
+        /// once after updating both hints. Reapplying the same hints does not notify.
+        /// </summary>
+        /// <param name="titleWidth">The title reservation in DIPs, stored as a <see cref="double"/>.</param>
+        /// <param name="subtitleWidth">The subtitle reservation in DIPs, stored as a <see cref="double"/>.</param>
+        /// <returns>The same item, for fluent construction.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The item does not return writable extended attributes.</exception>
+        public TItem SetDockLabelWidths(double titleWidth, double subtitleWidth) => SetDockWidthsCore(item, titleWidth, subtitleWidth, perRow: true);
+
+        /// <summary>
+        /// Sets fixed title and subtitle reservations using unit strings. The host uses the larger enabled row's width.
+        /// Character units use each row's own font and text scale before widths are compared.
+        /// Preserves shared bounds and notifies <see cref="WellKnownExtensionAttributes.DockLabelWidthPropertyName"/>
+        /// once after updating both hints. Reapplying the same hints does not notify.
+        /// </summary>
+        /// <param name="titleWidth">An invariant length such as <c>"5ch"</c> or <c>"500sqh"</c>.</param>
+        /// <param name="subtitleWidth">An invariant length such as <c>"12ch"</c> or <c>"1200sqh"</c>.</param>
+        /// <returns>The same item, for fluent construction.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="item"/>, <paramref name="titleWidth"/>, or <paramref name="subtitleWidth"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The item does not return writable extended attributes.</exception>
+        public TItem SetDockLabelWidths(string titleWidth, string subtitleWidth)
+        {
+            ArgumentNullException.ThrowIfNull(titleWidth);
+            ArgumentNullException.ThrowIfNull(subtitleWidth);
+            return SetDockWidthsCore(item, titleWidth, subtitleWidth, perRow: true);
         }
+
+        /// <summary>
+        /// Removes both row reservations, restoring fallback to the shared label bounds or host defaults.
+        /// Notifies <see cref="WellKnownExtensionAttributes.DockLabelWidthPropertyName"/> once if either hint was present.
+        /// Other extended attributes are preserved.
+        /// </summary>
+        /// <returns>The same item, for fluent construction.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The item does not return writable extended attributes.</exception>
+        public TItem ClearDockLabelWidths() => ClearDockWidthsCore(item, perRow: true);
     }
 
-    private static TItem SetDockLabelWidthCore<TItem>(TItem item, object width)
+    private static TItem SetDockWidthsCore<TItem>(TItem item, object firstWidth, object secondWidth, bool perRow)
         where TItem : CommandItem, IExtendedAttributesProvider
     {
         var properties = GetWritableProperties(item);
-        if (properties.TryGetValue(WellKnownExtensionAttributes.DockMinLabelWidth, out var minimum) &&
-            Equals(minimum, width) &&
-            properties.TryGetValue(WellKnownExtensionAttributes.DockMaxLabelWidth, out var maximum) &&
-            Equals(maximum, width))
+        var firstKey = perRow ? WellKnownExtensionAttributes.DockTitleWidth : WellKnownExtensionAttributes.DockMinLabelWidth;
+        var secondKey = perRow ? WellKnownExtensionAttributes.DockSubtitleWidth : WellKnownExtensionAttributes.DockMaxLabelWidth;
+        if (properties.TryGetValue(firstKey, out var first) &&
+            Equals(first, firstWidth) &&
+            properties.TryGetValue(secondKey, out var second) &&
+            Equals(second, secondWidth))
         {
             return item;
         }
 
-        properties[WellKnownExtensionAttributes.DockMinLabelWidth] = width;
-        properties[WellKnownExtensionAttributes.DockMaxLabelWidth] = width;
+        properties[firstKey] = firstWidth;
+        properties[secondKey] = secondWidth;
         item.NotifyDockLabelWidthChanged();
+        return item;
+    }
+
+    private static TItem ClearDockWidthsCore<TItem>(TItem item, bool perRow)
+        where TItem : CommandItem, IExtendedAttributesProvider
+    {
+        var properties = GetWritableProperties(item);
+        var removedFirst = properties.Remove(perRow ? WellKnownExtensionAttributes.DockTitleWidth : WellKnownExtensionAttributes.DockMinLabelWidth);
+        var removedSecond = properties.Remove(perRow ? WellKnownExtensionAttributes.DockSubtitleWidth : WellKnownExtensionAttributes.DockMaxLabelWidth);
+        if (removedFirst || removedSecond)
+        {
+            item.NotifyDockLabelWidthChanged();
+        }
+
         return item;
     }
 

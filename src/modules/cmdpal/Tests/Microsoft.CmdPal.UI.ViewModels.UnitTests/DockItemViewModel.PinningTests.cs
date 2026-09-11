@@ -38,7 +38,7 @@ public partial class DockItemViewModelTests
         {
             var dockItem = fixture.Band.Items[0];
             Assert.AreSame(fixture.TopLevel, dockItem.Model.Unsafe);
-            Assert.AreEqual((expectedWidth, expectedWidth), dockItem.LabelWidthConstraints.Resolve(6, 24, 100));
+            Assert.AreEqual((expectedWidth, expectedWidth), dockItem.LabelWidthConstraints.Resolve(6, 6, 24, 100));
             Assert.IsNotNull(dockItem.DataPackage);
             Assert.AreSame(fixture.TopLevel.ItemViewModel.DataPackage, dockItem.DataPackage);
         }
@@ -71,7 +71,7 @@ public partial class DockItemViewModelTests
             item.SetDockLabelWidth("12ch");
 
             fixture.Scheduler.ExecuteUntil(() => constraintsNotified && targetedNotificationForwarded);
-            Assert.AreEqual((72d, 72d), dockItem.LabelWidthConstraints.Resolve(6, 24, 100));
+            Assert.AreEqual((72d, 72d), dockItem.LabelWidthConstraints.Resolve(6, 6, 24, 100));
             Assert.IsFalse(propertiesInvalidated);
 
             constraintsNotified = false;
@@ -82,7 +82,7 @@ public partial class DockItemViewModelTests
             item.NotifyPropertiesChanged();
 
             fixture.Scheduler.ExecuteUntil(() => constraintsNotified && propertiesInvalidated);
-            Assert.AreEqual((80d, 120d), dockItem.LabelWidthConstraints.Resolve(6, 24, 100));
+            Assert.AreEqual((80d, 120d), dockItem.LabelWidthConstraints.Resolve(6, 6, 24, 100));
             Assert.IsFalse(targetedNotificationForwarded);
 
             constraintsNotified = false;
@@ -96,6 +96,44 @@ public partial class DockItemViewModelTests
             Assert.IsFalse(propertiesInvalidated);
             Assert.IsFalse(fixture.TopLevel.GetProperties().ContainsKey(WellKnownExtensionAttributes.DockMinLabelWidth));
             Assert.IsFalse(fixture.TopLevel.GetProperties().ContainsKey(WellKnownExtensionAttributes.DockMaxLabelWidth));
+        }
+        finally
+        {
+            CleanupPinnedBandFixture(fixture);
+        }
+    }
+
+    [TestMethod]
+    public void RowWidthHints_PinnedTopLevelItemInitializesUpdatesAndClearsInPlace()
+    {
+        var item = new ListItem { Title = "1%" }
+            .SetDockLabelWidth("12ch")
+            .SetDockLabelWidths("5ch", "12ch");
+        var fixture = CreatePinnedBandFixture(item);
+        try
+        {
+            var dockItem = fixture.Band.Items[0];
+            Assert.AreEqual((60d, 60d), dockItem.LabelWidthConstraints.Resolve(6, 5, 24, 100));
+            Assert.AreEqual((30d, 30d), dockItem.LabelWidthConstraints.Resolve(6, 5, 24, 100, showSubtitle: false));
+            fixture.Scheduler.ExecuteAllAvailable();
+            var notified = false;
+            dockItem.PropertyChanged += (_, args) => notified |= args.PropertyName == nameof(dockItem.LabelWidthConstraints);
+
+            item.SetDockLabelWidths("6ch", "10ch");
+
+            fixture.Scheduler.ExecuteUntil(() => notified);
+            Assert.AreEqual((36d, 36d), dockItem.LabelWidthConstraints.Resolve(6, 5, 24, 100, showSubtitle: false));
+            Assert.AreEqual((50d, 50d), dockItem.LabelWidthConstraints.Resolve(6, 5, 24, 100));
+
+            notified = false;
+            item.ClearDockLabelWidths();
+
+            fixture.Scheduler.ExecuteUntil(() => notified);
+            Assert.AreEqual((72d, 72d), dockItem.LabelWidthConstraints.Resolve(6, 5, 24, 100));
+            Assert.AreEqual((72d, 72d), dockItem.LabelWidthConstraints.Resolve(6, 5, 24, 100, showSubtitle: false));
+            Assert.AreSame(dockItem, fixture.Band.Items[0]);
+            Assert.IsFalse(fixture.TopLevel.GetProperties().ContainsKey(WellKnownExtensionAttributes.DockTitleWidth));
+            Assert.IsFalse(fixture.TopLevel.GetProperties().ContainsKey(WellKnownExtensionAttributes.DockSubtitleWidth));
         }
         finally
         {

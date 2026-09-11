@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
@@ -81,8 +83,9 @@ public class DockLabelWidthConstraintsTests
         var constraints = new DockLabelWidthConstraints(DockLabelLength.Parse(minimum), DockLabelLength.Parse(maximum));
 
         Assert.IsTrue(constraints.UsesCharacters);
-        Assert.AreEqual((60d, 60d), constraints.Resolve(6, 24, 100));
-        Assert.AreEqual((120d, 120d), constraints.Resolve(12, 24, 100));
+        Assert.AreEqual((60d, 60d), constraints.Resolve(6, 5, 24, 100));
+        Assert.AreEqual((120d, 120d), constraints.Resolve(12, 10, 24, 100));
+        Assert.AreEqual((60d, 60d), constraints.Resolve(6, 5, 24, 100, showTitle: false));
     }
 
     [TestMethod]
@@ -90,8 +93,8 @@ public class DockLabelWidthConstraintsTests
     {
         var constraints = new DockLabelWidthConstraints(new(80, false), new(80, false));
 
-        Assert.AreEqual((80d, 80d), constraints.Resolve(6, 24, 100));
-        Assert.AreEqual((80d, 80d), constraints.Resolve(12, 24, 100));
+        Assert.AreEqual((80d, 80d), constraints.Resolve(6, 6, 24, 100));
+        Assert.AreEqual((80d, 80d), constraints.Resolve(12, 12, 24, 100));
     }
 
     [TestMethod]
@@ -101,8 +104,8 @@ public class DockLabelWidthConstraintsTests
     {
         var constraints = new DockLabelWidthConstraints(DockLabelLength.Parse(minimum), new(80, false));
 
-        Assert.AreEqual((60d, 80d), constraints.Resolve(6, 24, 100));
-        Assert.AreEqual((24d, 100d), constraints.Resolve(12, 24, 100));
+        Assert.AreEqual((60d, 80d), constraints.Resolve(6, 6, 24, 100));
+        Assert.AreEqual((24d, 100d), constraints.Resolve(12, 12, 24, 100));
     }
 
     [TestMethod]
@@ -111,9 +114,9 @@ public class DockLabelWidthConstraintsTests
         var minimumOnly = new DockLabelWidthConstraints(new(120, false), null);
         var maximumOnly = new DockLabelWidthConstraints(null, new(10, false));
 
-        Assert.AreEqual((120d, 120d), minimumOnly.Resolve(6, 24, 100));
-        Assert.AreEqual((10d, 10d), maximumOnly.Resolve(6, 24, 100));
-        Assert.AreEqual((0d, 10d), maximumOnly.Resolve(6, 0, 100));
+        Assert.AreEqual((120d, 120d), minimumOnly.Resolve(6, 6, 24, 100));
+        Assert.AreEqual((10d, 10d), maximumOnly.Resolve(6, 6, 24, 100));
+        Assert.AreEqual((0d, 10d), maximumOnly.Resolve(6, 6, 0, 100));
     }
 
     [TestMethod]
@@ -121,14 +124,106 @@ public class DockLabelWidthConstraintsTests
     {
         var constraints = new DockLabelWidthConstraints(new(float.MaxValue, true), new(float.MaxValue, true));
 
-        Assert.AreEqual((24d, 100d), constraints.Resolve(12, 24, 100));
+        Assert.AreEqual((24d, 100d), constraints.Resolve(12, 12, 24, 100));
     }
 
     [TestMethod]
     public void Resolve_MissingHintsPreserveTitleAndSubtitleDefaults()
     {
         Assert.AreSame(DockLabelWidthConstraints.Default, DockLabelWidthConstraints.FromProperties(null));
-        Assert.AreEqual((24d, 100d), DockLabelWidthConstraints.Default.Resolve(6, 24, 100));
-        Assert.AreEqual((0d, 100d), DockLabelWidthConstraints.Default.Resolve(6, 0, 100));
+        Assert.AreEqual((24d, 100d), DockLabelWidthConstraints.Default.Resolve(6, 6, 24, 100));
+        Assert.AreEqual((0d, 100d), DockLabelWidthConstraints.Default.Resolve(6, 6, 0, 100));
+    }
+
+    [TestMethod]
+    public void Resolve_UsesTheLargerEnabledRowReservationAtEachTextScale()
+    {
+        var properties = new Dictionary<string, object?>
+        {
+            [WellKnownExtensionAttributes.DockMinLabelWidth] = 80d,
+            [WellKnownExtensionAttributes.DockMaxLabelWidth] = 80d,
+            [WellKnownExtensionAttributes.DockTitleWidth] = "5ch",
+            [WellKnownExtensionAttributes.DockSubtitleWidth] = "12ch",
+        };
+        var constraints = DockLabelWidthConstraints.FromProperties(properties);
+
+        Assert.AreEqual((60d, 60d), constraints.Resolve(6, 5, 24, 100));
+        Assert.AreEqual((30d, 30d), constraints.Resolve(6, 5, 24, 100, showSubtitle: false));
+        Assert.AreEqual((60d, 60d), constraints.Resolve(12, 10, 24, 100, showSubtitle: false));
+        Assert.AreEqual((120d, 120d), constraints.Resolve(12, 10, 24, 100));
+        Assert.AreEqual((60d, 60d), constraints.Resolve(6, 5, 24, 100));
+        Assert.AreEqual((60d, 60d), constraints.Resolve(6, 5, 24, 100, showTitle: false));
+        Assert.AreEqual((0d, 100d), constraints.Resolve(6, 5, 24, 100, showTitle: false, showSubtitle: false));
+    }
+
+    [TestMethod]
+    [DataRow("10ch", "12ch", 6d, 4d, 60d)]
+    [DataRow("10ch", "12ch", 4d, 6d, 72d)]
+    [DataRow("10ch", "12ch", 12d, 4d, 120d)]
+    [DataRow("1000sqh", "1200sqh", 6d, 4d, 60d)]
+    public void Resolve_ComparesRowWidthsAfterApplyingEachFont(
+        string titleWidth,
+        string subtitleWidth,
+        double titleCharacterWidth,
+        double subtitleCharacterWidth,
+        double expectedWidth)
+    {
+        var constraints = new DockLabelWidthConstraints(null, null, DockLabelLength.Parse(titleWidth), DockLabelLength.Parse(subtitleWidth));
+
+        Assert.AreEqual((expectedWidth, expectedWidth), constraints.Resolve(titleCharacterWidth, subtitleCharacterWidth, 24, 100));
+    }
+
+    [TestMethod]
+    [DataRow(null, null, 36d, 72d, 36d, 72d)]
+    [DataRow("4ch", null, 24d, 24d, 24d, 24d)]
+    [DataRow(null, "8ch", 48d, 48d, 36d, 72d)]
+    [DataRow("invalid", -1d, 36d, 72d, 36d, 72d)]
+    [DataRow("10ch", "5ch", 60d, 60d, 60d, 60d)]
+    [DataRow("0ch", "0ch", 0d, 0d, 0d, 0d)]
+    public void Resolve_MissingOrInvalidRowHintsUseOnlyApplicableReservations(
+        object? titleWidth,
+        object? subtitleWidth,
+        double expectedMinimum,
+        double expectedMaximum,
+        double expectedTitleMinimum,
+        double expectedTitleMaximum)
+    {
+        var properties = new Dictionary<string, object?>
+        {
+            [WellKnownExtensionAttributes.DockMinLabelWidth] = "6ch",
+            [WellKnownExtensionAttributes.DockMaxLabelWidth] = "12ch",
+            [WellKnownExtensionAttributes.DockTitleWidth] = titleWidth,
+            [WellKnownExtensionAttributes.DockSubtitleWidth] = subtitleWidth,
+        };
+        var constraints = DockLabelWidthConstraints.FromProperties(properties);
+
+        Assert.AreEqual((expectedMinimum, expectedMaximum), constraints.Resolve(6, 6, 24, 100));
+        Assert.AreEqual((expectedTitleMinimum, expectedTitleMaximum), constraints.Resolve(6, 6, 24, 100, showSubtitle: false));
+    }
+
+    [TestMethod]
+    public void Resolve_MixedRowUnitsAreComparedAfterTextScaling()
+    {
+        var properties = new Dictionary<string, object?>
+        {
+            [WellKnownExtensionAttributes.DockTitleWidth] = "1000sqh",
+            [WellKnownExtensionAttributes.DockSubtitleWidth] = 80d,
+        };
+        var constraints = DockLabelWidthConstraints.FromProperties(properties);
+
+        Assert.IsTrue(constraints.UsesCharacters);
+        Assert.AreEqual((80d, 80d), constraints.Resolve(6, 6, 24, 100));
+        Assert.AreEqual((120d, 120d), constraints.Resolve(12, 12, 24, 100));
+        Assert.AreEqual((60d, 60d), constraints.Resolve(6, 6, 24, 100, showSubtitle: false));
+        Assert.AreEqual((80d, 80d), constraints.Resolve(12, 12, 24, 100, showTitle: false));
+    }
+
+    [TestMethod]
+    public void Resolve_RowCharacterWidthOverflowFallsBackToSharedBounds()
+    {
+        var constraints = new DockLabelWidthConstraints(new(80, false), new(80, false), new(float.MaxValue, true), new(float.MaxValue, true));
+
+        Assert.AreEqual((80d, 80d), constraints.Resolve(12, 12, 24, 100));
+        Assert.AreEqual((80d, 80d), constraints.Resolve(12, 12, 24, 100, showSubtitle: false));
     }
 }

@@ -13,7 +13,7 @@ public static class WellKnownExtensionAttributes
     public const string FontFamily = "FontFamily";
 
     /// <summary>
-    /// The logical property name used with <c>PropChanged</c> when either Dock label-width hint changes.
+    /// The logical property name used with <c>PropChanged</c> when any Dock label-width hint changes.
     /// </summary>
     public const string DockLabelWidthPropertyName = "DockLabelWidth";
 
@@ -46,6 +46,23 @@ public static class WellKnownExtensionAttributes
     /// supplied maximum causes both bounds to be ignored.
     /// </summary>
     public const string DockMaxLabelWidth = "Microsoft.CommandPalette.Dock.MaxLabelWidth";
+
+    /// <summary>
+    /// Optional fixed width reserved for the title, even when its text is empty.
+    /// Accepts the same values as <see cref="DockMinLabelWidth"/>; character units use the title font and text scale.
+    /// The host fixes the shared label width to the largest valid reservation among the enabled rows.
+    /// Row reservations take precedence over shared label bounds. Hidden rows do not contribute.
+    /// Use <c>SetDockLabelWidths</c> or notify <see cref="DockLabelWidthPropertyName"/> after direct edits.
+    /// </summary>
+    public const string DockTitleWidth = "Microsoft.CommandPalette.Dock.TitleWidth";
+
+    /// <summary>
+    /// Optional fixed width reserved for the subtitle, even when its text is empty.
+    /// Character units use the subtitle font and text scale; compact mode excludes this reservation.
+    /// If no valid reservation applies to an enabled row, the host uses the shared label bounds or its defaults.
+    /// Use <c>SetDockLabelWidths</c> or notify <see cref="DockLabelWidthPropertyName"/> after direct edits.
+    /// </summary>
+    public const string DockSubtitleWidth = "Microsoft.CommandPalette.Dock.SubtitleWidth";
 
     /// <summary>
     /// Optional <see cref="bool"/> hint that displays a Dock item's title and subtitle with tabular digits.
