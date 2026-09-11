@@ -38,11 +38,14 @@
                             <local:DockItemControl
                                 Title="{x:Bind Title, Mode=OneWay}"
                                 KeyDown="BandItem_KeyDown"
+                                LabelWidthConstraints="{x:Bind LabelWidthConstraints, Mode=OneWay}"
                                 RightTapped="BandItem_RightTapped"
                                 Subtitle="{x:Bind Subtitle, Mode=OneWay}"
                                 Tag="{x:Bind}"
                                 Tapped="BandItem_Tapped"
-                                ToolTip="{x:Bind Tooltip, Mode=OneWay}">
+                                ToolTip="{x:Bind Tooltip, Mode=OneWay}"
+                                UseTabularDigits="{x:Bind UseTabularDigits, Mode=OneWay}"
+                                UseTrailingLabelAlignment="{x:Bind UseTrailingLabelAlignment, Mode=OneWay}">
                                 <local:DockItemControl.Icon>
                                     <cpcontrols:IconBox
                                         x:Name="IconBorder"
