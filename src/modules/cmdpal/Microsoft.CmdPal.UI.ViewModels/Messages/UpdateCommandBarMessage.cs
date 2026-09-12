@@ -10,35 +10,44 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 /// <summary>
-/// Used to update the command bar at the bottom to reflect the commands for a list item
+/// Updates the command bar for a selected item or content page.
 /// </summary>
 public record UpdateCommandBarMessage(ICommandBarContext? ViewModel)
 {
 }
 
+/// <summary>
+/// Provides the complete, ordered menu and its availability.
+/// SDK command collections are normalized before reaching this presentation contract.
+/// </summary>
 public interface IContextMenuContext : INotifyPropertyChanged
 {
-    public IReadOnlyList<IContextItemViewModel> MoreCommands { get; }
-
-    public bool HasMoreCommands { get; }
-
-    public bool CanOpenContextMenu { get; }
-
+    /// <summary>
+    /// Gets all menu entries, including the primary action when represented in the menu,
+    /// secondary and other actions, and separators. Entry count includes separators.
+    /// </summary>
     public IReadOnlyList<IContextItemViewModel> AllCommands { get; }
 
     /// <summary>
-    /// Generates a mapping of key -> command item for this particular item's
-    /// MoreCommands. (This won't include the primary Command, but it will
-    /// include the secondary one). This map can be used to quickly check if a
-    /// shortcut key was pressed
+    /// Gets whether the menu has at least one command that should be visible.
     /// </summary>
-    /// <returns>a dictionary of KeyChord -> Context commands, for all commands
-    /// that have a shortcut key set.</returns>
-    public Dictionary<KeyChord, CommandContextItemViewModel> Keybindings()
+    /// <remarks>
+    /// Used for keyboard and item context menu requests, independently of button visibility
+    /// in the command bar.
+    /// </remarks>
+    public bool CanOpenContextMenu { get; }
+
+    /// <summary>
+    /// Maps requested shortcuts from the full menu, including the primary action when it requests one.
+    /// </summary>
+    /// <returns>The first command for each requested shortcut, ignoring separators.</returns>
+    public Dictionary<KeyChord, CommandContextItemViewModel> Keybindings() => CreateKeybindings(AllCommands);
+
+    // Root and nested menus share the same shortcut and duplicate-resolution policy.
+    internal static Dictionary<KeyChord, CommandContextItemViewModel> CreateKeybindings(IEnumerable<IContextItemViewModel>? menu)
     {
         var result = new Dictionary<KeyChord, CommandContextItemViewModel>();
 
-        var menu = MoreCommands;
         if (menu is null)
         {
             return result;
@@ -61,16 +70,34 @@ public interface IContextMenuContext : INotifyPropertyChanged
     }
 }
 
-// Represents everything the command bar needs to know about to show command
-// buttons at the bottom.
-//
-// This is implemented by both ListItemViewModel and ContentPageViewModel,
-// the two things with sub-commands.
+/// <summary>
+/// Adds explicit command-bar actions and overflow availability to the menu context.
+/// </summary>
 public interface ICommandBarContext : IContextMenuContext
 {
+    /// <summary>
+    /// Gets the secondary action's name, or an empty string when there is no secondary action.
+    /// </summary>
     public string SecondaryCommandName { get; }
 
+    /// <summary>
+    /// Gets the primary action with its original invocation context, or <see langword="null"/>.
+    /// A menu may represent this action with a separate synthetic entry.
+    /// </summary>
     public CommandItemViewModel? PrimaryCommand { get; }
 
+    /// <summary>
+    /// Gets the visible secondary action shown in the command bar, or <see langword="null"/>.
+    /// Separators and hidden commands are skipped when selecting this action.
+    /// </summary>
     public CommandItemViewModel? SecondaryCommand { get; }
+
+    /// <summary>
+    /// Gets whether the menu contains visible command entries beyond the primary and secondary actions.
+    /// </summary>
+    /// <remarks>
+    /// Separators and hidden commands do not count. This controls the More button's visibility; use
+    /// <see cref="IContextMenuContext.CanOpenContextMenu"/> for menu availability.
+    /// </remarks>
+    public bool HasOverflowCommands { get; }
 }

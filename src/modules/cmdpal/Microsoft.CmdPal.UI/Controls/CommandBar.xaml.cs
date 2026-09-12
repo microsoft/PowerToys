@@ -46,8 +46,8 @@ public sealed partial class CommandBar : UserControl,
     {
         if (message.Element is null)
         {
-            // This is invoked from the "More" button on the command bar
-            if (!ViewModel.ShouldShowContextMenu)
+            // Ctrl+K can open the menu even when the More button is hidden.
+            if (!ViewModel.CanOpenContextMenu)
             {
                 return;
             }
@@ -58,7 +58,7 @@ public sealed partial class CommandBar : UserControl,
                 () =>
                 {
                     ContextMenuFlyout.ShowAt(
-                        MoreCommandsButton,
+                        ViewModel.ShouldShowMoreCommandsButton ? MoreCommandsButton : this,
                         new FlyoutShowOptions()
                         {
                             ShowMode = FlyoutShowMode.Standard,
@@ -101,7 +101,7 @@ public sealed partial class CommandBar : UserControl,
 
     public void Receive(TryCommandKeybindingMessage msg)
     {
-        if (!ViewModel.ShouldShowContextMenu)
+        if (!ViewModel.CanOpenContextMenu)
         {
             return;
         }
@@ -143,15 +143,6 @@ public sealed partial class CommandBar : UserControl,
     private void MoreCommandsButton_Clicked(object sender, RoutedEventArgs e)
     {
         WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
-    }
-
-    /// <summary>
-    /// Sets focus to the "More" button after closing the context menu,
-    /// keeping keyboard navigation intuitive.
-    /// </summary>
-    public void FocusMoreCommandsButton()
-    {
-        MoreCommandsButton?.Focus(FocusState.Programmatic);
     }
 
     private void ContextMenuFlyout_Opened(object sender, object e)
