@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Peek.Common\Peek.Common.csproj" />
+    <ProjectReference Include="..\Peek.FilePreviewer\Peek.FilePreviewer.csproj" />
   </ItemGroup>
 
 </Project>

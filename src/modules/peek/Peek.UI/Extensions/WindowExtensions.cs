@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Runtime.InteropServices;
 
 using ManagedCommon;
@@ -51,8 +52,15 @@ namespace Peek.UI.Extensions
             var dpi = PInvoke_PeekUI.GetDpiForWindow(new HWND((nint)hwndDesktop));
             PInvoke_PeekUI.GetWindowRect(hwndToCenter, out RECT windowRect);
             var scalingFactor = dpi / 96d;
-            var w = width.HasValue ? (int)(width * scalingFactor) : windowRect.right - windowRect.left;
-            var h = height.HasValue ? (int)(height * scalingFactor) : windowRect.bottom - windowRect.top;
+
+            // Quantize requested size to the nearest physical pixel so content sizing stays stable
+            // and does not alternate between under/over-allocation during repeated resizes.
+            var w = width.HasValue
+                ? Math.Max(1, (int)Math.Round(width.Value * scalingFactor, MidpointRounding.AwayFromZero))
+                : windowRect.right - windowRect.left;
+            var h = height.HasValue
+                ? Math.Max(1, (int)Math.Round(height.Value * scalingFactor, MidpointRounding.AwayFromZero))
+                : windowRect.bottom - windowRect.top;
             var cx = (info.rcMonitor.left + info.rcMonitor.right) / 2;
             var cy = (info.rcMonitor.bottom + info.rcMonitor.top) / 2;
             var left = cx - (w / 2);

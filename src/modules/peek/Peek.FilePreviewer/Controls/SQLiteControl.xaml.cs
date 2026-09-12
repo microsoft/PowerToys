@@ -188,15 +188,10 @@ namespace Peek.FilePreviewer.Controls
             TableDataGrid.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, AdjustLastColumnWidth);
 
             RecordCountText.Text = table.RowCount > table.Rows.Count
-                ? string.Format(
-                    CultureInfo.CurrentCulture,
-                    ResourceLoaderInstance.ResourceLoader.GetString("Sqlite_Row_Count_Truncated"),
-                    table.Rows.Count,
-                    table.RowCount)
-                : string.Format(
-                    CultureInfo.CurrentCulture,
-                    ResourceLoaderInstance.ResourceLoader.GetString("Sqlite_Row_Count"),
-                    table.RowCount);
+                ? ResourceLoaderInstance.FormatString(
+                    "Sqlite_Row_Count_Truncated", table.Rows.Count, table.RowCount)
+                : ResourceLoaderInstance.FormatString(
+                    "Sqlite_Row_Count", table.RowCount);
 
             RecordCountHeader.Visibility = Visibility.Visible;
             TableDataGrid.Visibility = Visibility.Visible;
