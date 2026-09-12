@@ -66,12 +66,10 @@ PowerToys.DSC.exe set --resource 'settings' --module ZoomIt --input $config
 
 This example configures the ZoomIt activation shortcut using Microsoft DSC.
 
-```bash
-dsc config set --file zoomit-config.dsc.yaml
-```
+Save the following configuration as `zoomit-config.dsc.config.yaml`:
 
 ```yaml
-# zoomit-config.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure ZoomIt shortcut
@@ -90,16 +88,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file zoomit-config.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and configures ZoomIt using WinGet.
 
-```bash
-winget configure winget-zoomit.yaml
-```
+Save the following configuration as `zoomit.dsc.config.winget`:
 
 ```yaml
-# winget-zoomit.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -127,16 +129,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure zoomit.dsc.config.winget
+```
+
 ### Example 4 - Presentation mode hotkey
 
 This example configures an easy-to-remember presentation hotkey.
 
-```bash
-dsc config set --file zoomit-presentation.dsc.yaml
-```
+Save the following configuration as `zoomit-presentation.dsc.config.yaml`:
 
 ```yaml
-# zoomit-presentation.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Presentation hotkey
@@ -153,6 +159,12 @@ resources:
             key: "="
         name: ZoomIt
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file zoomit-presentation.dsc.config.yaml
 ```
 
 ## Use cases

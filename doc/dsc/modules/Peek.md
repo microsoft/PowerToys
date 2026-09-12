@@ -75,12 +75,10 @@ PowerToys.DSC.exe set --resource 'settings' --module Peek --input $config
 
 This example configures Peek to remain open after losing focus.
 
-```bash
-dsc config set --file peek-focus.dsc.yaml
-```
+Save the following configuration as `peek-focus.dsc.config.yaml`:
 
 ```yaml
-# peek-focus.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Peek focus behavior
@@ -93,16 +91,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file peek-focus.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and configures Peek.
 
-```bash
-winget configure winget-peek.yaml
-```
+Save the following configuration as `peek.dsc.config.winget`:
 
 ```yaml
-# winget-peek.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -124,16 +126,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure peek.dsc.config.winget
+```
+
 ### Example 4 - Alternative activation shortcut
 
 This example uses Ctrl+Shift+Space as the activation shortcut.
 
-```bash
-dsc config set --file peek-altkey.dsc.yaml
-```
+Save the following configuration as `peek-altkey.dsc.config.yaml`:
 
 ```yaml
-# peek-altkey.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Alternative Peek shortcut
@@ -150,6 +156,12 @@ resources:
             key: Space
         name: Peek
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file peek-altkey.dsc.config.yaml
 ```
 
 ## Use cases

@@ -33,6 +33,7 @@ public abstract class BaseCommand : Command
     {
         { SettingsResource.ResourceName, module => new SettingsResource(module) },
         { ProfileResource.ResourceName, module => new ProfileResource(module) },
+        { LayoutsResource.ResourceName, module => new LayoutsResource(module) },
 
         // Add other resources here
     };

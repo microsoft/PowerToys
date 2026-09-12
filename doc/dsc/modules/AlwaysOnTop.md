@@ -131,12 +131,10 @@ PowerToys.DSC.exe set --resource 'settings' --module AlwaysOnTop `
 
 This example configures a custom border color and thickness.
 
-```bash
-dsc config set --file alwaysontop-appearance.dsc.yaml
-```
+Save the following configuration as `alwaysontop-appearance.dsc.config.yaml`:
 
 ```yaml
-# alwaysontop-appearance.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Customize Always On Top frame
@@ -153,17 +151,21 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file alwaysontop-appearance.dsc.config.yaml
+```
+
 ### Example 3 - Configure with accent color using WinGet
 
 This example installs PowerToys and configures Always On Top to use the
 Windows accent color.
 
-```bash
-winget configure winget-alwaysontop.yaml
-```
+Save the following configuration as `alwaysontop.dsc.config.winget`:
 
 ```yaml
-# winget-alwaysontop.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -188,12 +190,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure alwaysontop.dsc.config.winget
+```
+
 ### Example 4 - Disable for gaming
 
 This example ensures Always On Top is disabled during game mode.
 
+Save the following configuration as `alwaysontop-gaming.dsc.config.yaml`:
+
 ```yaml
-# alwaysontop-gaming.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure for gaming
@@ -231,8 +241,10 @@ PowerToys.DSC.exe set --resource 'settings' --module AlwaysOnTop --input $config
 
 This example excludes certain applications from Always On Top.
 
+Save the following configuration as `alwaysontop-exclusions.dsc.config.yaml`:
+
 ```yaml
-# alwaysontop-exclusions.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Exclude apps from Always On Top

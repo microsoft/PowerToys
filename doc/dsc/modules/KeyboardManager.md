@@ -54,12 +54,10 @@ PowerToys.DSC.exe set --resource 'settings' --module KeyboardManager --input $co
 
 This example enables Keyboard Manager through DSC configuration.
 
-```bash
-dsc config set --file keyboardmanager-config.dsc.yaml
-```
+Save the following configuration as `keyboardmanager-config.dsc.config.yaml`:
 
 ```yaml
-# keyboardmanager-config.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Enable Keyboard Manager
@@ -72,16 +70,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file keyboardmanager-config.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and enables Keyboard Manager.
 
-```bash
-winget configure winget-keyboardmanager.yaml
-```
+Save the following configuration as `keyboardmanager.dsc.config.winget`:
 
 ```yaml
-# winget-keyboardmanager.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -101,6 +103,12 @@ resources:
           Enabled: true
         name: KeyboardManager
         version: 1.0
+```
+
+Apply the configuration with WinGet:
+
+```bash
+winget configure keyboardmanager.dsc.config.winget
 ```
 
 ## Important notes

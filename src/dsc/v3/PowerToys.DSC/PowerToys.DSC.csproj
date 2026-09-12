@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\..\..\modules\fancyzones\FancyZonesEditorCommon\FancyZonesEditorCommon.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,5 +52,8 @@
 
     <Exec Command="&quot;$(TargetDir)$(AssemblyName).exe&quot; manifest --resource profile --outputDir &quot;$(TargetDir)DSCModules&quot;" Condition="'$(SelfContained)' == 'true'" />
     <Exec Command="dotnet &quot;$(TargetPath)&quot; manifest --resource profile --outputDir &quot;$(TargetDir)DSCModules&quot;" Condition="'$(SelfContained)' != 'true'" />
+
+    <Exec Command="&quot;$(TargetDir)$(AssemblyName).exe&quot; manifest --resource layouts --outputDir &quot;$(TargetDir)DSCModules&quot;" Condition="'$(SelfContained)' == 'true'" />
+    <Exec Command="dotnet &quot;$(TargetPath)&quot; manifest --resource layouts --outputDir &quot;$(TargetDir)DSCModules&quot;" Condition="'$(SelfContained)' != 'true'" />
   </Target>
 </Project>

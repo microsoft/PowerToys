@@ -124,6 +124,15 @@ namespace PowerToys.DSC.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid FancyZones layouts: {0}.
+        /// </summary>
+        internal static string InvalidLayoutsError {
+            get {
+                return ResourceManager.GetString("InvalidLayoutsError", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Invalid output directory: {0}.
         /// </summary>
         internal static string InvalidOutputDirectoryError {
@@ -150,6 +159,15 @@ namespace PowerToys.DSC.Properties {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to FancyZones layouts: {0}.
+        /// </summary>
+        internal static string LayoutsWarning {
+            get {
+                return ResourceManager.GetString("LayoutsWarning", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Get the manifest of the dsc resource.
         /// </summary>
